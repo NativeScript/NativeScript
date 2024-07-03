@@ -105,6 +105,12 @@ export interface ShowModalOptions {
 		 * For possible values see https://developer.android.com/reference/android/view/WindowManager.LayoutParams#softInputMode
 		 */
 		windowSoftInputMode?: number;
+
+		/**
+		 * An optional parameter to force show the modal from background. If used then you dont get android state save mechanism
+		 * if not used then the modal showing is delayed until the app is in foreground again
+		 */
+		showImmediatelyFromBackground?: boolean;
 	};
 	/**
 	 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.

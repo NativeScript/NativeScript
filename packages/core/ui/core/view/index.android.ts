@@ -84,7 +84,7 @@ interface TouchListener {
 }
 
 interface DialogFragment {
-	new (): androidx.fragment.app.DialogFragment;
+	new (): androidx.fragment.app.DialogFragment & { showImmediatelyFromBackground?: boolean };
 }
 
 function initializeTouchListener(): void {
@@ -170,6 +170,7 @@ function initializeDialogFragment() {
 	@NativeClass
 	class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
 		public owner: View;
+		public showImmediatelyFromBackground: boolean;
 		private _fullscreen: boolean;
 		private _windowSoftInputMode: number;
 		private _animated: boolean;
@@ -312,6 +313,20 @@ function initializeDialogFragment() {
 				owner._isAddedToNativeVisualTree = false;
 				owner._tearDownUI(true);
 				owner.parent = null;
+			}
+		}
+
+		public show(manager, tag: string) {
+			try {
+				return super.show(manager, tag);
+			} catch (e) {
+				if (this.showImmediatelyFromBackground && manager instanceof androidx.fragment.app.FragmentManager) {
+					const ft = manager.beginTransaction();
+					ft.add(this, tag);
+					ft.commitAllowingStateLoss();
+				} else {
+					throw e;
+				}
 			}
 		}
 	}
@@ -705,26 +720,32 @@ export class View extends ViewCommon {
 		return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
 	}
 	protected _showNativeModalView(parent: View, options: ShowModalOptions) {
+		// if the app is in background while triggering _showNativeModalView
+		// then DialogFragment.show will trigger IllegalStateException: Can not perform this action after onSaveInstanceState
+		// so if in background we create an event to call _showNativeModalView when loaded (going back in foreground)
+		if (Application.inBackground && !parent.isLoaded && options?.android?.showImmediatelyFromBackground !== true) {
+			const onLoaded = () => {
+				parent.off('loaded', onLoaded);
+				this._showNativeModalView(parent, options);
+			};
+			parent.on('loaded', onLoaded);
+			return;
+		}
 		super._showNativeModalView(parent, options);
 		initializeDialogFragment();
 
 		const df = new DialogFragment();
+		df.showImmediatelyFromBackground = options?.android?.showImmediatelyFromBackground;
 		const args = new android.os.Bundle();
 		args.putInt(DOMID, this._domId);
 		df.setArguments(args);
 
-		let cancelable = true;
+		const cancelable = options.cancelable !== undefined ? !!options.cancelable : true;
 		let windowSoftInputMode: number;
 
 		if (options.android) {
-			if ((<any>options).android.cancelable !== undefined) {
-				cancelable = !!(<any>options).android.cancelable;
-				console.log('ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.');
-			}
 			windowSoftInputMode = (<any>options).android.windowSoftInputMode;
 		}
-
-		cancelable = options.cancelable !== undefined ? !!options.cancelable : cancelable;
 
 		const dialogOptions: DialogOptions = {
 			owner: this,
