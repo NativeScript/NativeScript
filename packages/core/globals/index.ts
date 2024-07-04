@@ -328,7 +328,7 @@ export function initGlobal() {
 		global.registerModule('crypto', () => require('../wgc/crypto'));
 		installPolyfills('crypto', ['Crypto']);
 
-		global.registerModule('subtle', () => require('../wgc/crypto/Subtle'));
+		global.registerModule('subtle', () => require('../wgc/crypto/SubtleCrypto'));
 		installPolyfills('subtle-crypto', ['Subtle']);
 
 		global.crypto = new global.Crypto();

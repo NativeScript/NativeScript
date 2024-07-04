@@ -1,6 +1,6 @@
 ---
 triple:          'x86_64-apple-darwin'
-binary-path:     '/Users/triniwiz/Documents/GitHub/NativeScript/packages/ui-mobile-base/ios/TNSWidgets/build/Release-xrsimulator/TNSWidgets.framework/TNSWidgets'
+binary-path:     '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/ui-mobile-base/ios/TNSWidgets/build/Release-xrsimulator/TNSWidgets.framework/TNSWidgets'
 relocations:
   - { offsetInCU: 0x34, offset: 0x5503A, size: 0x8, addend: 0x0, symName: _TNSWidgetsVersionString, symObjAddr: 0x0, symBinAddr: 0x3700, symSize: 0x0 }
   - { offsetInCU: 0x69, offset: 0x5506F, size: 0x8, addend: 0x0, symName: _TNSWidgetsVersionNumber, symObjAddr: 0x30, symBinAddr: 0x3730, symSize: 0x0 }
@@ -26,7 +26,7 @@ relocations:
   - { offsetInCU: 0x5ED, offset: 0x55B61, size: 0x8, addend: 0x0, symName: '___54+[NSFileHandle(Async) fileHandleWith:data:completion:]_block_invoke', symObjAddr: 0x39A, symBinAddr: 0x1B3B, symSize: 0x141 }
   - { offsetInCU: 0x781, offset: 0x55CF5, size: 0x8, addend: 0x0, symName: '___54+[NSFileHandle(Async) fileHandleWith:data:completion:]_block_invoke_2', symObjAddr: 0x4DB, symBinAddr: 0x1C7C, symSize: 0x1A }
   - { offsetInCU: 0x27, offset: 0x5608B, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) initialize]', symObjAddr: 0x0, symBinAddr: 0x1C96, symSize: 0x27 }
-  - { offsetInCU: 0x4F, offset: 0x560B3, size: 0x8, addend: 0x0, symName: _image_queue, symObjAddr: 0x43A0, symBinAddr: 0x66B0, symSize: 0x0 }
+  - { offsetInCU: 0x4F, offset: 0x560B3, size: 0x8, addend: 0x0, symName: _image_queue, symObjAddr: 0x43B0, symBinAddr: 0x66B0, symSize: 0x0 }
   - { offsetInCU: 0x68, offset: 0x560CC, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) initialize]', symObjAddr: 0x0, symBinAddr: 0x1C96, symSize: 0x27 }
   - { offsetInCU: 0x131, offset: 0x56195, size: 0x8, addend: 0x0, symName: '-[UIImage(TNSBlocks) tns_forceDecode]', symObjAddr: 0x27, symBinAddr: 0x1CBD, symSize: 0xB2 }
   - { offsetInCU: 0x2E8, offset: 0x5634C, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_safeDecodeImageNamed:completion:]', symObjAddr: 0xD9, symBinAddr: 0x1D6F, symSize: 0xB3 }
@@ -62,8 +62,8 @@ relocations:
   - { offsetInCU: 0x5B6, offset: 0x5825E, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s, symObjAddr: 0x36F, symBinAddr: 0x2BDF, symSize: 0xF }
   - { offsetInCU: 0x27, offset: 0x58550, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) load]', symObjAddr: 0x0, symBinAddr: 0x2BEE, symSize: 0x12 }
   - { offsetInCU: 0x35, offset: 0x5855E, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) loadPropertyBag]', symObjAddr: 0x12, symBinAddr: 0x2C00, symSize: 0x70 }
-  - { offsetInCU: 0x5B, offset: 0x58584, size: 0x8, addend: 0x0, symName: _loadPropertyBag.onceToken, symObjAddr: 0x2D38, symBinAddr: 0x66B8, symSize: 0x0 }
-  - { offsetInCU: 0xBF, offset: 0x585E8, size: 0x8, addend: 0x0, symName: __propertyBagHolder, symObjAddr: 0x2D40, symBinAddr: 0x66C8, symSize: 0x0 }
+  - { offsetInCU: 0x5B, offset: 0x58584, size: 0x8, addend: 0x0, symName: _loadPropertyBag.onceToken, symObjAddr: 0x2D48, symBinAddr: 0x66B8, symSize: 0x0 }
+  - { offsetInCU: 0xBF, offset: 0x585E8, size: 0x8, addend: 0x0, symName: __propertyBagHolder, symObjAddr: 0x2D50, symBinAddr: 0x66C8, symSize: 0x0 }
   - { offsetInCU: 0xE4, offset: 0x5860D, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) load]', symObjAddr: 0x0, symBinAddr: 0x2BEE, symSize: 0x12 }
   - { offsetInCU: 0x178, offset: 0x586A1, size: 0x8, addend: 0x0, symName: '___38+[UIView(PropertyBag) loadPropertyBag]_block_invoke', symObjAddr: 0x82, symBinAddr: 0x2C70, symSize: 0x46 }
   - { offsetInCU: 0x22A, offset: 0x58753, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) propertyValueForKey:]', symObjAddr: 0xC8, symBinAddr: 0x2CB6, symSize: 0x7A }
@@ -75,7 +75,7 @@ relocations:
   - { offsetInCU: 0x27, offset: 0x58C1A, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) load]', symObjAddr: 0x0, symBinAddr: 0x300A, symSize: 0x12 }
   - { offsetInCU: 0x41, offset: 0x58C34, size: 0x8, addend: 0x0, symName: _TLKPassThroughParentKey, symObjAddr: 0x1F8, symBinAddr: 0x5280, symSize: 0x0 }
   - { offsetInCU: 0x55, offset: 0x58C48, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) loadHitTest]', symObjAddr: 0x12, symBinAddr: 0x301C, symSize: 0x70 }
-  - { offsetInCU: 0x7B, offset: 0x58C6E, size: 0x8, addend: 0x0, symName: _loadHitTest.onceToken, symObjAddr: 0x2640, symBinAddr: 0x66C0, symSize: 0x0 }
+  - { offsetInCU: 0x7B, offset: 0x58C6E, size: 0x8, addend: 0x0, symName: _loadHitTest.onceToken, symObjAddr: 0x2658, symBinAddr: 0x66C0, symSize: 0x0 }
   - { offsetInCU: 0xE8, offset: 0x58CDB, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) load]', symObjAddr: 0x0, symBinAddr: 0x300A, symSize: 0x12 }
   - { offsetInCU: 0x17D, offset: 0x58D70, size: 0x8, addend: 0x0, symName: '___40+[UIView(PassThroughParent) loadHitTest]_block_invoke', symObjAddr: 0x82, symBinAddr: 0x308C, symSize: 0x3B }
   - { offsetInCU: 0x1D7, offset: 0x58DCA, size: 0x8, addend: 0x0, symName: '-[UIView(PassThroughParent) passThroughParent]', symObjAddr: 0xBD, symBinAddr: 0x30C7, symSize: 0x54 }
