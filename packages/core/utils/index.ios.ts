@@ -27,7 +27,7 @@ export function openFile(filePath: string): boolean {
 	return false;
 }
 
-export function wrapNativeException(ex: NSError, wrapError: (...args) => Error = (msg) => new Error(msg)) {
+export function wrapNativeException<T = any>(ex: NSError, wrapError: (...args) => T = (msg) => new Error(msg) as any) {
 	if (!ex) {
 		return;
 	}

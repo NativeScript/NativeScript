@@ -56,7 +56,7 @@ export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/)
 /**
  * Wrap native exception in a JS Error
  */
-export function wrapNativeException(exception: any, wrapError: (...args) => Error = (msg) => new Error(msg)): Error;
+export function wrapNativeException<T = any>(exception: any, wrapError?: (...args) => T): T;
 
 /**
  * Queues the passed function to be ran in a macroTask

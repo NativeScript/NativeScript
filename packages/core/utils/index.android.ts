@@ -24,7 +24,7 @@ export function releaseNativeObject(object: java.lang.Object) {
 	__releaseNativeCounterpart(object);
 }
 
-export function wrapNativeException(ex, wrapError: (...args) => Error = (msg) => new Error(msg)) {
+export function wrapNativeException<T = any>(ex: NSError, wrapError: (...args) => T = (msg) => new Error(msg) as any) {
 	if (!ex) {
 		return;
 	}
