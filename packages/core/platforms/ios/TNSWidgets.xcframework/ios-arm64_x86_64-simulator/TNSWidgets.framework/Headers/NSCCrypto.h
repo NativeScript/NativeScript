@@ -3,7 +3,7 @@
 //  TNSWidgets
 //
 //  Created by Osei Fortune on 03/07/2024.
-//  Copyright © 2024 Telerik A D. All rights reserved.
+//  Copyright © 2024 NativeScript. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

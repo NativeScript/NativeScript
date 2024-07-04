@@ -24,7 +24,7 @@ export class Crypto {
 			(<any>org).nativescript.widgets.Crypto.getRandomValues(typedArray);
 		}
 		if (__IOS__) {
-			NSCCrypto.getRandomValues(typedArray, typedArray.byteLength);
+			NSCCrypto.getRandomValuesLength(typedArray, typedArray.byteLength);
 		}
 	}
 }
