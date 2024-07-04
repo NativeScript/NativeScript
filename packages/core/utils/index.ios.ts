@@ -27,12 +27,15 @@ export function openFile(filePath: string): boolean {
 	return false;
 }
 
-export function wrapNativeException(ex: NSError) {
+export function wrapNativeException(ex: NSError, wrapError: (...args) => Error = (msg) => new Error(msg)) {
+	if (!ex) {
+		return;
+	}
 	if (typeof ex === 'string') {
-		return new Error(ex);
+		return wrapError(ex);
 	}
 	if (!(ex instanceof Error)) {
-		const err = new Error(ex.localizedDescription);
+		const err = wrapError(ex.localizedDescription);
 		err['nativeException'] = ex;
 		err['code'] = ex.code;
 		err['domain'] = ex.domain;

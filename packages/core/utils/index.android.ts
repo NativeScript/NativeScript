@@ -24,12 +24,15 @@ export function releaseNativeObject(object: java.lang.Object) {
 	__releaseNativeCounterpart(object);
 }
 
-export function wrapNativeException(ex) {
+export function wrapNativeException(ex, wrapError: (...args) => Error = (msg) => new Error(msg)) {
+	if (!ex) {
+		return;
+	}
 	if (typeof ex === 'string') {
-		return new Error(ex);
+		return wrapError(ex);
 	}
 	if (!(ex instanceof Error)) {
-		const err = new Error(ex.toString());
+		const err = wrapError(ex.toString());
 		err['nativeException'] = ex;
 		//@ts-ignore
 		err['stackTrace'] = com.tns.NativeScriptException.getStackTraceAsString(ex);
@@ -109,7 +112,7 @@ External storage is unavailable (please check app permissions).
 Applications cannot access internal storage of other application on Android (see: https://developer.android.com/guide/topics/data/data-storage).
 `,
 				Trace.categories.Error,
-				Trace.messageType.error
+				Trace.messageType.error,
 			);
 
 			return false;
@@ -172,7 +175,7 @@ Applications cannot access internal storage of other application on Android (see
 Please ensure you have your manifest correctly configured with the FileProvider.
 (see: https://developer.android.com/reference/android/support/v4/content/FileProvider#ProviderDefinition)
 `,
-				Trace.categories.Error
+				Trace.categories.Error,
 			);
 		}
 
