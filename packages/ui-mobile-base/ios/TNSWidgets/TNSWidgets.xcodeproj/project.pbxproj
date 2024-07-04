@@ -21,6 +21,8 @@
 		D004031422FA27D60089EAD8 /* NSData+Async.m in Sources */ = {isa = PBXBuildFile; fileRef = D004031222FA27D60089EAD8 /* NSData+Async.m */; };
 		F11DE2162A02F39A00B70DC5 /* NSFileHandle+Async.m in Sources */ = {isa = PBXBuildFile; fileRef = F11DE2152A02F39A00B70DC5 /* NSFileHandle+Async.m */; };
 		F11DE2182A02F3B500B70DC5 /* NSFileHandle+Async.h in Headers */ = {isa = PBXBuildFile; fileRef = F11DE2172A02F3B500B70DC5 /* NSFileHandle+Async.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F17F81D52C35E1E200C3E780 /* NSCCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = F17F81D42C35E1E200C3E780 /* NSCCrypto.m */; };
+		F17F81D72C35E20600C3E780 /* NSCCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = F17F81D62C35E20600C3E780 /* NSCCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F915D3551EC9EF5E00071914 /* TNSProcess.m in Sources */ = {isa = PBXBuildFile; fileRef = F915D3531EC9EF5E00071914 /* TNSProcess.m */; };
 		F915D3561EC9EF5E00071914 /* TNSProcess.h in Headers */ = {isa = PBXBuildFile; fileRef = F915D3541EC9EF5E00071914 /* TNSProcess.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F98F5CB31CD0EFEA00978308 /* TNSWidgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F98F5CB21CD0EFEA00978308 /* TNSWidgets.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -55,6 +57,8 @@
 		D004031222FA27D60089EAD8 /* NSData+Async.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSData+Async.m"; sourceTree = "<group>"; };
 		F11DE2152A02F39A00B70DC5 /* NSFileHandle+Async.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSFileHandle+Async.m"; sourceTree = "<group>"; };
 		F11DE2172A02F3B500B70DC5 /* NSFileHandle+Async.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSFileHandle+Async.h"; sourceTree = "<group>"; };
+		F17F81D42C35E1E200C3E780 /* NSCCrypto.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSCCrypto.m; sourceTree = "<group>"; };
+		F17F81D62C35E20600C3E780 /* NSCCrypto.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSCCrypto.h; sourceTree = "<group>"; };
 		F915D3531EC9EF5E00071914 /* TNSProcess.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TNSProcess.m; path = ../TNSProcess.m; sourceTree = "<group>"; };
 		F915D3541EC9EF5E00071914 /* TNSProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TNSProcess.h; path = ../TNSProcess.h; sourceTree = "<group>"; };
 		F98F5CAF1CD0EFEA00978308 /* TNSWidgets.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TNSWidgets.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -127,6 +131,8 @@
 				D004031222FA27D60089EAD8 /* NSData+Async.m */,
 				F11DE2172A02F3B500B70DC5 /* NSFileHandle+Async.h */,
 				F11DE2152A02F39A00B70DC5 /* NSFileHandle+Async.m */,
+				F17F81D42C35E1E200C3E780 /* NSCCrypto.m */,
+				F17F81D62C35E20600C3E780 /* NSCCrypto.h */,
 			);
 			path = TNSWidgets;
 			sourceTree = "<group>";
@@ -154,6 +160,7 @@
 				F98F5CCB1CD0F09E00978308 /* UIImage+TNSBlocks.h in Headers */,
 				B8E76F52212C2DA2009CFCE2 /* NSObject+Swizzling.h in Headers */,
 				F11DE2182A02F3B500B70DC5 /* NSFileHandle+Async.h in Headers */,
+				F17F81D72C35E20600C3E780 /* NSCCrypto.h in Headers */,
 				B8E76F5A212C2F4E009CFCE2 /* UIView+PropertyBag.h in Headers */,
 				D004030F22F781A50089EAD8 /* NSString+Async.h in Headers */,
 				8B7321CF1D097ECD00884AC6 /* TNSLabel.h in Headers */,
@@ -266,6 +273,7 @@
 				D004031422FA27D60089EAD8 /* NSData+Async.m in Sources */,
 				B8E76F5B212C2F4E009CFCE2 /* UIView+PropertyBag.m in Sources */,
 				B8E76F5F212C3134009CFCE2 /* UIView+PassThroughParent.m in Sources */,
+				F17F81D52C35E1E200C3E780 /* NSCCrypto.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

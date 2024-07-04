@@ -16,6 +16,10 @@ NS_ASSUME_NONNULL_BEGIN
                         encoding:(NSStringEncoding)enc
                       completion:(void (^) (NSString*, NSError*))callback;
 
++ (NSString*)atob:(nonnull NSString*)data;
+
++ (NSString*)btoa:(nonnull NSString*)stringToEncode;
+
 - (void)writeToFile:(nonnull NSString*) path
          atomically:(BOOL)atomically
            encoding:(NSStringEncoding)enc

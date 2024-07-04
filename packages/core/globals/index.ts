@@ -322,6 +322,17 @@ export function initGlobal() {
 		global.registerModule('fetch', () => require('../fetch'));
 		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
 
+		global.registerModule('wgc', () => require('../wgc'));
+		installPolyfills('wgc', ['atob', 'btoa']);
+
+		global.registerModule('crypto', () => require('../wgc/crypto'));
+		installPolyfills('crypto', ['Crypto']);
+
+		global.registerModule('subtle', () => require('../wgc/crypto/Subtle'));
+		installPolyfills('subtle-crypto', ['Subtle']);
+
+		global.crypto = new global.Crypto();
+
 		// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 		// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
 
