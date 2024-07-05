@@ -173,15 +173,19 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
 	};
 }
 
-export function debounce(fn: any, delay = 300, { leading }: { leading?: boolean } = {}) {
+export function debounce(fn: any, delay = 300, { leading, trailing, ignoreFirstTrail }: { leading?: boolean; trailing?: boolean; ignoreFirstTrail?: boolean } = {}) {
 	let timer: NodeJS.Timeout;
 	return (...args: Array<any>) => {
+		let noTrail = false;
 		if (timer === undefined && leading) {
+			noTrail = ignoreFirstTrail === true;
 			fn.apply(this, args);
 		}
 		clearTimeout(timer);
 		timer = setTimeout(() => {
-			fn.apply(this, args);
+			if (trailing !== false && !noTrail) {
+				fn.apply(this, args);
+			}
 			timer = undefined;
 		}, delay);
 	};
@@ -215,7 +219,7 @@ export function queueGC(delay = 900, useThrottle?: boolean) {
 		if (!throttledGC.get(delay)) {
 			throttledGC.set(
 				delay,
-				throttle(() => GC(), delay)
+				throttle(() => GC(), delay),
 			);
 		}
 		throttledGC.get(delay)();
@@ -226,7 +230,7 @@ export function queueGC(delay = 900, useThrottle?: boolean) {
 		if (!debouncedGC.get(delay)) {
 			debouncedGC.set(
 				delay,
-				debounce(() => GC(), delay)
+				debounce(() => GC(), delay),
 			);
 		}
 		debouncedGC.get(delay)();

@@ -45,7 +45,7 @@ export function throttle<T extends Function = any>(fn: T, delay?: number): T;
  * @param fn Function to debounce
  * @param delay Customize the delay (default is 300ms)
  */
-export function debounce<T extends Function = any>(fn: T, delay?: number, options?: { leading?: boolean }): T;
+export function debounce<T extends Function = any>(fn: T, delay?: number, options?: { leading?: boolean; trailing?: boolean; ignoreFirstTrail?: boolean }): T;
 
 /**
  * Releases the reference to the wrapped native object
