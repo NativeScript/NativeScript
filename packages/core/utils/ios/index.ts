@@ -65,7 +65,7 @@ export function getRootViewController(): UIViewController {
 
 export function getWindow(): UIWindow {
 	let window: UIWindow;
-	if (SDK_VERSION >= 15) {
+	if (SDK_VERSION >= 15 && typeof NativeScriptViewFactory !== 'undefined') {
 		// UIWindowScene.keyWindow is only available 15+
 		window = NativeScriptViewFactory.getKeyWindow();
 	}
