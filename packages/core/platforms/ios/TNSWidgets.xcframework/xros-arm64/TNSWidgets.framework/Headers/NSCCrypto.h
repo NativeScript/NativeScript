@@ -53,5 +53,8 @@ typedef enum : NSUInteger {
 + (nullable NSData*)digest:(nonnull void*)data length:(unsigned int)length mode:(int)mode;
 + (nullable NSData *)generateKeyHmac:(int)hash length:(int)length;
 + (nullable NSCCryptoKeyPair*)generateKeyRsa:(NSCCryptoRsaHashedKeyGenParamsName)name modulusLength:(unsigned int)modulusLength publicExponent:(nullable void*)exponent size:(unsigned int)size hash:(NSCCryptoHash)hash extractable:(BOOL)extractable keyUsages:(nonnull NSArray*) usages;
++ (nullable NSData *)encryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull void*)data size:(unsigned int) size;
+
++ (nullable NSData *)decryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull void*)data size:(unsigned int) size;
 @end
 #endif /* NSCCrypto_h */

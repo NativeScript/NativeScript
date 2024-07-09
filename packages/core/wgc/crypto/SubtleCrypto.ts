@@ -1,22 +1,88 @@
 type TypedArray = Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | BigInt64Array | BigUint64Array | Float32Array | Float64Array;
-
+type Hash = 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512';
 export interface HmacKeyGenParams {
 	name: 'HMAC';
-	hash: 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512';
+	hash: Hash;
 	length?: number;
 }
 
 export type KeyUsages = 'encrypt' | 'decrypt' | 'sign' | 'verify' | 'deriveKey' | 'deriveBits' | 'wrapKey' | 'unwrapKey';
 
+const parent_ = Symbol('[[parent]]');
 const native_ = Symbol('[[native]]');
 const algorithm_ = Symbol('[[algorithm]]');
 const usages_ = Symbol('[[usages]]');
 const extractable_ = Symbol('[[extractable]]');
 const type_ = Symbol('[[type]]');
+const privateKey_ = Symbol('[[privateKey]]');
+const publicKey_ = Symbol('[[publicKey]]');
 
 declare const NSCCrypto;
 
+function parseHash(hash: Hash): number | null {
+	switch (hash) {
+		case 'SHA-1':
+			return 0;
+		case 'SHA-256':
+			return 1;
+		case 'SHA-384':
+			return 2;
+		case 'SHA-512':
+			return 3;
+		default:
+			return null;
+	}
+}
+
+function parseUsages(usages: KeyUsages[]) {
+	const ret = NSMutableArray.new();
+	if (Array.isArray(usages)) {
+		/*
+
+    kNSCCryptoDecrypt,
+    kNSCCryptoEncrypt,
+    kNSCCryptoSign,
+    kNSCCryptoVerify,
+    kNSCCryptoDeriveKey,
+    kNSCCryptoDeriveBits,
+    kNSCCryptoWrapKey,
+    kNSCCryptoUnwrapKey,
+*/
+
+		for (const usage of usages) {
+			switch (usage) {
+				case 'encrypt':
+					ret.addObject(1);
+					break;
+				case 'decrypt':
+					ret.addObject(0);
+					break;
+				case 'sign':
+					ret.addObject(2);
+					break;
+				case 'verify':
+					ret.addObject(3);
+					break;
+				case 'deriveKey':
+					ret.addObject(4);
+					break;
+				case 'deriveBits':
+					ret.addObject(5);
+					break;
+				case 'wrapKey':
+					ret.addObject(6);
+					break;
+				case 'unwrapKey':
+					ret.addObject(7);
+					break;
+			}
+		}
+	}
+	return ret;
+}
+
 export class CryptoKey {
+	[parent_];
 	[native_];
 	[algorithm_];
 	[usages_];
@@ -38,6 +104,64 @@ export class CryptoKey {
 	get type() {
 		return this[type_];
 	}
+
+	static fromNative(key) {
+		if (key) {
+			const ret = new CryptoKey();
+			ret[native_] = key;
+			return ret;
+		}
+		return null;
+	}
+}
+
+export class CryptoKeyPair {
+	[native_];
+	[privateKey_] = null;
+	[publicKey_] = null;
+
+	get privateKey() {
+		if (__IOS__) {
+			const kp = this[native_];
+			if (!this[privateKey_]) {
+				this[privateKey_] = CryptoKey.fromNative(kp.privateKey);
+			}
+		}
+
+		return this[privateKey_];
+	}
+
+	get publicKey() {
+		if (__IOS__) {
+			const kp = this[native_];
+			if (!this[publicKey_]) {
+				this[publicKey_] = CryptoKey.fromNative(kp.publicKey);
+			}
+		}
+
+		return this[publicKey_];
+	}
+
+	static fromNative(keyPair) {
+		if (keyPair) {
+			const ret = new CryptoKeyPair();
+			ret[native_] = keyPair;
+			return ret;
+		}
+		return null;
+	}
+}
+
+interface RsaOaepParams {
+	name: 'RSA-OAEP';
+	label?: TypedArray | ArrayBuffer;
+}
+
+interface RsaHashedKeyGenParams {
+	name: 'RSA-OAEP';
+	modulusLength: number;
+	publicExponent: Uint8Array;
+	hash: Hash;
 }
 
 export class SubtleCrypto {
@@ -109,7 +233,70 @@ export class SubtleCrypto {
 		});
 	}
 
-	generateKey(algorithm: HmacKeyGenParams, extractable: boolean, keyUsages: KeyUsages[]) {
+	encrypt(algorithm: RsaOaepParams, key: CryptoKey, data: TypedArray | ArrayBuffer) {
+		return new Promise((resolve, reject) => {
+			let error: Error;
+			switch (algorithm?.name) {
+				case 'RSA-OAEP':
+					{
+						try {
+							const hash = parseHash(key.algorithm.hash.name);
+							const ret = NSCCrypto.encryptRsaKeyHashDataSize(key.type === 'private', key[parent_], hash, data, data.byteLength);
+							if (ret) {
+								resolve(interop.bufferFromData(ret));
+							} else {
+								reject(new Error('Failed to encrypt data'));
+							}
+						} catch (error) {
+							reject(error);
+						}
+					}
+					break;
+				default:
+					error = new Error('Operation is not supported');
+					break;
+			}
+
+			if (error) {
+				reject(error);
+				return;
+			}
+		});
+	}
+
+	decrypt(algorithm: RsaOaepParams, key: CryptoKey, data: TypedArray | ArrayBuffer) {
+		return new Promise((resolve, reject) => {
+			let error: Error;
+			switch (algorithm?.name) {
+				case 'RSA-OAEP':
+					{
+						try {
+							const hash = parseHash(key.algorithm.hash.name);
+
+							const ret = NSCCrypto.decryptRsaKeyHashDataSize(key.type === 'private', key[parent_], hash, data, data.byteLength);
+							if (ret) {
+								resolve(interop.bufferFromData(ret));
+							} else {
+								reject(new Error('Failed to encrypt data'));
+							}
+						} catch (error) {
+							reject(error);
+						}
+					}
+					break;
+				default:
+					error = new Error('Operation is not supported');
+					break;
+			}
+
+			if (error) {
+				reject(error);
+				return;
+			}
+		});
+	}
+
+	generateKey(algorithm: HmacKeyGenParams | RsaHashedKeyGenParams, extractable: boolean, keyUsages: KeyUsages[]) {
 		return new Promise((resolve, reject) => {
 			switch (algorithm?.name) {
 				case 'HMAC':
@@ -148,6 +335,35 @@ export class SubtleCrypto {
 						ret[extractable_] = extractable;
 						ret[type_] = 'secret';
 						resolve(ret);
+					}
+					break;
+				case 'RSA-OAEP':
+					{
+						const hash = parseHash(algorithm.hash);
+						if (hash === null) {
+							// todo throw invalid hash
+						}
+						const usages = parseUsages(keyUsages);
+
+						// ignore publicExponent for now
+						const kp = NSCCrypto.generateKeyRsaModulusLengthPublicExponentSizeHashExtractableKeyUsages(2, algorithm.modulusLength, null, 0, hash, !!extractable, usages);
+
+						if (!kp) {
+							reject(new Error('Failed to generateKey'));
+						} else {
+							const ret = CryptoKeyPair.fromNative(kp);
+							ret.privateKey[parent_] = kp;
+							ret.privateKey[algorithm_] = { name: algorithm.name, hash: { name: algorithm.hash }, modulusLength: algorithm.modulusLength, publicExponent: new Uint8Array([1, 0, 1]) };
+							ret.privateKey[type_] = 'private';
+							ret.privateKey[extractable_] = extractable;
+
+							ret.publicKey[parent_] = kp;
+							ret.publicKey[algorithm_] = { name: algorithm.name, hash: { name: algorithm.hash }, modulusLength: algorithm.modulusLength, publicExponent: new Uint8Array([1, 0, 1]) };
+							ret.publicKey[type_] = 'public';
+							ret.publicKey[extractable_] = extractable;
+
+							resolve(ret);
+						}
 					}
 					break;
 				default:

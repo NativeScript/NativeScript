@@ -160,7 +160,7 @@
     CFDictionarySetValue(keyPairAttrs, kSecAttrKeyType, kSecAttrKeyTypeRSA);
     
     CFDictionarySetValue(keyPairAttrs, kSecAttrKeySizeInBits, (__bridge CFNumberRef)@(modulusLength));
-    CFDictionarySetValue(keyPairAttrs, kSecAttrEffectiveKeySize, (__bridge CFNumberRef)@(modulusLength));
+    //CFDictionarySetValue(keyPairAttrs, kSecAttrEffectiveKeySize, (__bridge CFNumberRef)@(modulusLength));
     
     
     
@@ -210,13 +210,182 @@
         CFRelease(keyPairAttrs);
         
         if (status == errSecSuccess) {
-            NSCCryptoKeyPair* pair = [[NSCCryptoKeyPair alloc] initWithPrivateKey:publicKey andPublicKey:privateKey];
+            NSCCryptoKeyPair* pair = [[NSCCryptoKeyPair alloc] initWithPrivateKey:privateKey andPublicKey: publicKey];
             return pair;
         } else {
             if (publicKey) CFRelease(publicKey);
             if (privateKey) CFRelease(privateKey);
             return NULL;
         }
+}
+
++ (nullable NSData *)encryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull void*)data size:(unsigned int) size {
+    NSData* toEncrypt = [NSData dataWithBytesNoCopy:data length:size];
+    NSData *cipherText = nil;
+    CFErrorRef error = NULL;
+    if(isPrivate){
+       
+        
+        switch (hash) {
+            case kNSCCryptoHashSHA1:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA1;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateEncryptedData(key.privateKey, algorithm, (__bridge CFDataRef)toEncrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA256:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA256;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateEncryptedData(key.privateKey, algorithm, (__bridge CFDataRef)toEncrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA384:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA384;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateEncryptedData(key.privateKey, algorithm, (__bridge CFDataRef)toEncrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA512:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA512;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateEncryptedData(key.privateKey, algorithm, (__bridge CFDataRef)toEncrypt, &error));
+            }
+                break;
+            default:
+                break;
+        }
+        
+          
+    }else {
+        switch (hash) {
+            case kNSCCryptoHashSHA1:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA1;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateEncryptedData(key.publicKey, algorithm, (__bridge CFDataRef)toEncrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA256:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA256;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateEncryptedData(key.publicKey, algorithm, (__bridge CFDataRef)toEncrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA384:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA384;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateEncryptedData(key.publicKey, algorithm, (__bridge CFDataRef)toEncrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA512:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA512;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateEncryptedData(key.publicKey, algorithm, (__bridge CFDataRef)toEncrypt, &error));
+            }
+                break;
+            default:
+                break;
+        }
+    }
+    
+    if (!cipherText) {
+            NSLog(@"Failed to encrypt message: %@", error);
+            CFRelease(error);
+        }
+    
+    return cipherText;
+}
+
+
++ (nullable NSData *)decryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull void*)data size:(unsigned int) size {
+    NSData* toDecrypt = [NSData dataWithBytesNoCopy:data length:size];
+    NSData *cipherText = nil;
+    CFErrorRef error = NULL;
+    if(isPrivate){
+       
+        
+        switch (hash) {
+            case kNSCCryptoHashSHA1:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA1;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateDecryptedData(key.privateKey, algorithm, (__bridge CFDataRef)toDecrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA256:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA256;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateDecryptedData(key.privateKey, algorithm, (__bridge CFDataRef)toDecrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA384:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA384;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateDecryptedData(key.privateKey, algorithm, (__bridge CFDataRef)toDecrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA512:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA512;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateDecryptedData(key.privateKey, algorithm, (__bridge CFDataRef)toDecrypt, &error));
+            }
+                break;
+            default:
+                break;
+        }
+        
+          
+    }else {
+        switch (hash) {
+            case kNSCCryptoHashSHA1:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA1;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateDecryptedData(key.publicKey, algorithm, (__bridge CFDataRef)toDecrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA256:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA256;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateDecryptedData(key.publicKey, algorithm, (__bridge CFDataRef)toDecrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA384:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA384;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateDecryptedData(key.publicKey, algorithm, (__bridge CFDataRef)toDecrypt, &error));
+            }
+                break;
+            case kNSCCryptoHashSHA512:
+            {
+                SecKeyAlgorithm algorithm = kSecKeyAlgorithmRSAEncryptionOAEPSHA512;
+
+                cipherText = (NSData *)CFBridgingRelease(SecKeyCreateDecryptedData(key.publicKey, algorithm, (__bridge CFDataRef)toDecrypt, &error));
+            }
+                break;
+            default:
+                break;
+        }
+    }
+    
+    if (!cipherText) {
+            NSLog(@"Failed to encrypt message: %@", error);
+            CFRelease(error);
+        }
+    
+    return cipherText;
 }
 
 @end
