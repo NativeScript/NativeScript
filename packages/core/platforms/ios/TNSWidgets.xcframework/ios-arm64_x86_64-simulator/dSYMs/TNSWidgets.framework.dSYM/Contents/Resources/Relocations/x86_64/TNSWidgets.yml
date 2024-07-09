@@ -1,88 +1,96 @@
 ---
 triple:          'x86_64-apple-darwin'
-binary-path:     '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/ui-mobile-base/ios/TNSWidgets/build/Release-iphonesimulator/TNSWidgets.framework/TNSWidgets'
+binary-path:     '/Users/triniwiz/Documents/GitHub/NativeScript/packages/ui-mobile-base/ios/TNSWidgets/build/Release-iphonesimulator/TNSWidgets.framework/TNSWidgets'
 relocations:
-  - { offsetInCU: 0x34, offset: 0x55DE8, size: 0x8, addend: 0x0, symName: _TNSWidgetsVersionString, symObjAddr: 0x0, symBinAddr: 0x4140, symSize: 0x0 }
-  - { offsetInCU: 0x69, offset: 0x55E1D, size: 0x8, addend: 0x0, symName: _TNSWidgetsVersionNumber, symObjAddr: 0x30, symBinAddr: 0x4170, symSize: 0x0 }
-  - { offsetInCU: 0x27, offset: 0x55E5A, size: 0x8, addend: 0x0, symName: '-[TNSLabel textRectForBounds:limitedToNumberOfLines:]', symObjAddr: 0x0, symBinAddr: 0x1300, symSize: 0x388 }
-  - { offsetInCU: 0xAB, offset: 0x55EDE, size: 0x8, addend: 0x0, symName: '-[TNSLabel textRectForBounds:limitedToNumberOfLines:]', symObjAddr: 0x0, symBinAddr: 0x1300, symSize: 0x388 }
-  - { offsetInCU: 0x17F, offset: 0x55FB2, size: 0x8, addend: 0x0, symName: '-[TNSLabel drawTextInRect:]', symObjAddr: 0x388, symBinAddr: 0x1688, symSize: 0xDD }
-  - { offsetInCU: 0x1EB, offset: 0x5601E, size: 0x8, addend: 0x0, symName: '-[TNSLabel padding]', symObjAddr: 0x465, symBinAddr: 0x1765, symSize: 0x20 }
-  - { offsetInCU: 0x220, offset: 0x56053, size: 0x8, addend: 0x0, symName: '-[TNSLabel setPadding:]', symObjAddr: 0x485, symBinAddr: 0x1785, symSize: 0x1E }
-  - { offsetInCU: 0x25E, offset: 0x56091, size: 0x8, addend: 0x0, symName: '-[TNSLabel borderThickness]', symObjAddr: 0x4A3, symBinAddr: 0x17A3, symSize: 0x20 }
-  - { offsetInCU: 0x293, offset: 0x560C6, size: 0x8, addend: 0x0, symName: '-[TNSLabel setBorderThickness:]', symObjAddr: 0x4C3, symBinAddr: 0x17C3, symSize: 0x1E }
-  - { offsetInCU: 0x27, offset: 0x5614F, size: 0x8, addend: 0x0, symName: ___tns_uptime, symObjAddr: 0x0, symBinAddr: 0x17E1, symSize: 0xF8 }
-  - { offsetInCU: 0x59, offset: 0x56181, size: 0x8, addend: 0x0, symName: ___tns_uptime, symObjAddr: 0x0, symBinAddr: 0x17E1, symSize: 0xF8 }
-  - { offsetInCU: 0x1B5, offset: 0x562DD, size: 0x8, addend: 0x0, symName: ___nslog, symObjAddr: 0xF8, symBinAddr: 0x18D9, symSize: 0x17 }
-  - { offsetInCU: 0x27, offset: 0x56343, size: 0x8, addend: 0x0, symName: '-[NSFileHandle(Async) appendData:completion:]', symObjAddr: 0x0, symBinAddr: 0x18F0, symSize: 0xD4 }
-  - { offsetInCU: 0x4A, offset: 0x56366, size: 0x8, addend: 0x0, symName: '-[NSFileHandle(Async) appendData:completion:]', symObjAddr: 0x0, symBinAddr: 0x18F0, symSize: 0xD4 }
-  - { offsetInCU: 0x1CE, offset: 0x564EA, size: 0x8, addend: 0x0, symName: '___45-[NSFileHandle(Async) appendData:completion:]_block_invoke', symObjAddr: 0xD4, symBinAddr: 0x19C4, symSize: 0x304 }
-  - { offsetInCU: 0x4C1, offset: 0x567DD, size: 0x8, addend: 0x0, symName: '___45-[NSFileHandle(Async) appendData:completion:]_block_invoke_2', symObjAddr: 0x3D8, symBinAddr: 0x1CC8, symSize: 0x13 }
-  - { offsetInCU: 0x518, offset: 0x56834, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40b, symObjAddr: 0x3EB, symBinAddr: 0x1CDB, symSize: 0x30 }
-  - { offsetInCU: 0x54D, offset: 0x56869, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s40s, symObjAddr: 0x41B, symBinAddr: 0x1D0B, symSize: 0x25 }
-  - { offsetInCU: 0x584, offset: 0x568A0, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40s48b, symObjAddr: 0x440, symBinAddr: 0x1D30, symSize: 0x44 }
-  - { offsetInCU: 0x5C5, offset: 0x568E1, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s40s48s, symObjAddr: 0x484, symBinAddr: 0x1D74, symSize: 0x2C }
-  - { offsetInCU: 0x608, offset: 0x56924, size: 0x8, addend: 0x0, symName: '+[NSFileHandle(Async) fileHandleWith:data:completion:]', symObjAddr: 0x4B0, symBinAddr: 0x1DA0, symSize: 0xF1 }
-  - { offsetInCU: 0x798, offset: 0x56AB4, size: 0x8, addend: 0x0, symName: '___54+[NSFileHandle(Async) fileHandleWith:data:completion:]_block_invoke', symObjAddr: 0x5A1, symBinAddr: 0x1E91, symSize: 0x348 }
-  - { offsetInCU: 0xAEA, offset: 0x56E06, size: 0x8, addend: 0x0, symName: '___54+[NSFileHandle(Async) fileHandleWith:data:completion:]_block_invoke_2', symObjAddr: 0x8E9, symBinAddr: 0x21D9, symSize: 0x27 }
-  - { offsetInCU: 0x27, offset: 0x571A6, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) initialize]', symObjAddr: 0x0, symBinAddr: 0x2200, symSize: 0x27 }
-  - { offsetInCU: 0x4F, offset: 0x571CE, size: 0x8, addend: 0x0, symName: _image_queue, symObjAddr: 0x4550, symBinAddr: 0x5F18, symSize: 0x0 }
-  - { offsetInCU: 0x68, offset: 0x571E7, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) initialize]', symObjAddr: 0x0, symBinAddr: 0x2200, symSize: 0x27 }
-  - { offsetInCU: 0x131, offset: 0x572B0, size: 0x8, addend: 0x0, symName: '-[UIImage(TNSBlocks) tns_forceDecode]', symObjAddr: 0x27, symBinAddr: 0x2227, symSize: 0xB2 }
-  - { offsetInCU: 0x2E8, offset: 0x57467, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_safeDecodeImageNamed:completion:]', symObjAddr: 0xD9, symBinAddr: 0x22D9, symSize: 0xB3 }
-  - { offsetInCU: 0x3FD, offset: 0x5757C, size: 0x8, addend: 0x0, symName: '___58+[UIImage(TNSBlocks) tns_safeDecodeImageNamed:completion:]_block_invoke', symObjAddr: 0x18C, symBinAddr: 0x238C, symSize: 0xD9 }
-  - { offsetInCU: 0x4DD, offset: 0x5765C, size: 0x8, addend: 0x0, symName: '___58+[UIImage(TNSBlocks) tns_safeDecodeImageNamed:completion:]_block_invoke_2', symObjAddr: 0x265, symBinAddr: 0x2465, symSize: 0x13 }
-  - { offsetInCU: 0x534, offset: 0x576B3, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_safeImageNamed:]', symObjAddr: 0x2CD, symBinAddr: 0x2478, symSize: 0x63 }
-  - { offsetInCU: 0x5BC, offset: 0x5773B, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_decodeImageWithData:completion:]', symObjAddr: 0x330, symBinAddr: 0x24DB, symSize: 0xB3 }
-  - { offsetInCU: 0x6B1, offset: 0x57830, size: 0x8, addend: 0x0, symName: '___57+[UIImage(TNSBlocks) tns_decodeImageWithData:completion:]_block_invoke', symObjAddr: 0x3E3, symBinAddr: 0x258E, symSize: 0xD9 }
-  - { offsetInCU: 0x791, offset: 0x57910, size: 0x8, addend: 0x0, symName: '___57+[UIImage(TNSBlocks) tns_decodeImageWithData:completion:]_block_invoke_2', symObjAddr: 0x4BC, symBinAddr: 0x2667, symSize: 0x13 }
-  - { offsetInCU: 0x7E8, offset: 0x57967, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_decodeImageWidthContentsOfFile:completion:]', symObjAddr: 0x4CF, symBinAddr: 0x267A, symSize: 0xB3 }
-  - { offsetInCU: 0x8DD, offset: 0x57A5C, size: 0x8, addend: 0x0, symName: '___68+[UIImage(TNSBlocks) tns_decodeImageWidthContentsOfFile:completion:]_block_invoke', symObjAddr: 0x582, symBinAddr: 0x272D, symSize: 0xD9 }
-  - { offsetInCU: 0x9BD, offset: 0x57B3C, size: 0x8, addend: 0x0, symName: '___68+[UIImage(TNSBlocks) tns_decodeImageWidthContentsOfFile:completion:]_block_invoke_2', symObjAddr: 0x65B, symBinAddr: 0x2806, symSize: 0x13 }
-  - { offsetInCU: 0x27, offset: 0x57F17, size: 0x8, addend: 0x0, symName: '+[NSObject(Swizzling) swizzleInstanceMethodWithOriginalSelector:fromClass:withSwizzlingSelector:]', symObjAddr: 0x0, symBinAddr: 0x2819, symSize: 0x78 }
-  - { offsetInCU: 0x43, offset: 0x57F33, size: 0x8, addend: 0x0, symName: '+[NSObject(Swizzling) swizzleInstanceMethodWithOriginalSelector:fromClass:withSwizzlingSelector:]', symObjAddr: 0x0, symBinAddr: 0x2819, symSize: 0x78 }
-  - { offsetInCU: 0x17F, offset: 0x5806F, size: 0x8, addend: 0x0, symName: '+[NSObject(Swizzling) swizzleMethodWithOriginalSelector:originalMethod:fromClass:withSwizzlingSelector:swizzlingMethod:]', symObjAddr: 0x78, symBinAddr: 0x2891, symSize: 0x122 }
-  - { offsetInCU: 0x27, offset: 0x58351, size: 0x8, addend: 0x0, symName: '+[NSString(Async) stringWithContentsOfFile:encoding:completion:]', symObjAddr: 0x0, symBinAddr: 0x29B3, symSize: 0xDD }
-  - { offsetInCU: 0x4A, offset: 0x58374, size: 0x8, addend: 0x0, symName: '+[NSString(Async) stringWithContentsOfFile:encoding:completion:]', symObjAddr: 0x0, symBinAddr: 0x29B3, symSize: 0xDD }
-  - { offsetInCU: 0x1DA, offset: 0x58504, size: 0x8, addend: 0x0, symName: '___64+[NSString(Async) stringWithContentsOfFile:encoding:completion:]_block_invoke', symObjAddr: 0xDD, symBinAddr: 0x2A90, symSize: 0xF1 }
-  - { offsetInCU: 0x30E, offset: 0x58638, size: 0x8, addend: 0x0, symName: '___64+[NSString(Async) stringWithContentsOfFile:encoding:completion:]_block_invoke_2', symObjAddr: 0x1CE, symBinAddr: 0x2B81, symSize: 0x1A }
-  - { offsetInCU: 0x375, offset: 0x5869F, size: 0x8, addend: 0x0, symName: '+[NSString(Async) atob:]', symObjAddr: 0x2AD, symBinAddr: 0x2B9B, symSize: 0x89 }
-  - { offsetInCU: 0x439, offset: 0x58763, size: 0x8, addend: 0x0, symName: '+[NSString(Async) btoa:]', symObjAddr: 0x336, symBinAddr: 0x2C24, symSize: 0x5A }
-  - { offsetInCU: 0x4B4, offset: 0x587DE, size: 0x8, addend: 0x0, symName: '-[NSString(Async) writeToFile:atomically:encoding:completion:]', symObjAddr: 0x390, symBinAddr: 0x2C7E, symSize: 0xEB }
-  - { offsetInCU: 0x60D, offset: 0x58937, size: 0x8, addend: 0x0, symName: '___62-[NSString(Async) writeToFile:atomically:encoding:completion:]_block_invoke', symObjAddr: 0x47B, symBinAddr: 0x2D69, symSize: 0xC9 }
-  - { offsetInCU: 0x72D, offset: 0x58A57, size: 0x8, addend: 0x0, symName: '___62-[NSString(Async) writeToFile:atomically:encoding:completion:]_block_invoke_2', symObjAddr: 0x544, symBinAddr: 0x2E32, symSize: 0x13 }
-  - { offsetInCU: 0x27, offset: 0x58DFC, size: 0x8, addend: 0x0, symName: '+[NSData(Async) dataWithContentsOfFile:completion:]', symObjAddr: 0x0, symBinAddr: 0x2E45, symSize: 0xC6 }
-  - { offsetInCU: 0x4A, offset: 0x58E1F, size: 0x8, addend: 0x0, symName: '+[NSData(Async) dataWithContentsOfFile:completion:]', symObjAddr: 0x0, symBinAddr: 0x2E45, symSize: 0xC6 }
-  - { offsetInCU: 0x225, offset: 0x58FFA, size: 0x8, addend: 0x0, symName: '___51+[NSData(Async) dataWithContentsOfFile:completion:]_block_invoke', symObjAddr: 0xC6, symBinAddr: 0x2F0B, symSize: 0xB4 }
-  - { offsetInCU: 0x2F9, offset: 0x590CE, size: 0x8, addend: 0x0, symName: '___51+[NSData(Async) dataWithContentsOfFile:completion:]_block_invoke_2', symObjAddr: 0x17A, symBinAddr: 0x2FBF, symSize: 0x13 }
-  - { offsetInCU: 0x350, offset: 0x59125, size: 0x8, addend: 0x0, symName: '-[NSData(Async) writeToFile:atomically:completion:]', symObjAddr: 0x1E2, symBinAddr: 0x2FD2, symSize: 0xE6 }
-  - { offsetInCU: 0x499, offset: 0x5926E, size: 0x8, addend: 0x0, symName: '___51-[NSData(Async) writeToFile:atomically:completion:]_block_invoke', symObjAddr: 0x2C8, symBinAddr: 0x30B8, symSize: 0x84 }
-  - { offsetInCU: 0x542, offset: 0x59317, size: 0x8, addend: 0x0, symName: '___51-[NSData(Async) writeToFile:atomically:completion:]_block_invoke_2', symObjAddr: 0x34C, symBinAddr: 0x313C, symSize: 0xC }
-  - { offsetInCU: 0x589, offset: 0x5935E, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32b, symObjAddr: 0x358, symBinAddr: 0x3148, symSize: 0x17 }
-  - { offsetInCU: 0x5B2, offset: 0x59387, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s, symObjAddr: 0x36F, symBinAddr: 0x315F, symSize: 0xF }
-  - { offsetInCU: 0x27, offset: 0x59679, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) load]', symObjAddr: 0x0, symBinAddr: 0x316E, symSize: 0x12 }
-  - { offsetInCU: 0x35, offset: 0x59687, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) loadPropertyBag]', symObjAddr: 0x12, symBinAddr: 0x3180, symSize: 0x70 }
-  - { offsetInCU: 0x5B, offset: 0x596AD, size: 0x8, addend: 0x0, symName: _loadPropertyBag.onceToken, symObjAddr: 0x2ED8, symBinAddr: 0x5F20, symSize: 0x0 }
-  - { offsetInCU: 0xBF, offset: 0x59711, size: 0x8, addend: 0x0, symName: __propertyBagHolder, symObjAddr: 0x2EE0, symBinAddr: 0x5F58, symSize: 0x0 }
-  - { offsetInCU: 0xE4, offset: 0x59736, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) load]', symObjAddr: 0x0, symBinAddr: 0x316E, symSize: 0x12 }
-  - { offsetInCU: 0x178, offset: 0x597CA, size: 0x8, addend: 0x0, symName: '___38+[UIView(PropertyBag) loadPropertyBag]_block_invoke', symObjAddr: 0x82, symBinAddr: 0x31F0, symSize: 0x5A }
-  - { offsetInCU: 0x23E, offset: 0x59890, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) propertyValueForKey:]', symObjAddr: 0xDC, symBinAddr: 0x324A, symSize: 0x7A }
-  - { offsetInCU: 0x2DA, offset: 0x5992C, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) setPropertyValue:forKey:]', symObjAddr: 0x156, symBinAddr: 0x32C4, symSize: 0x8B }
-  - { offsetInCU: 0x3B9, offset: 0x59A0B, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) propertyBag]', symObjAddr: 0x1E1, symBinAddr: 0x334F, symSize: 0xEA }
-  - { offsetInCU: 0x474, offset: 0x59AC6, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) setPropertyBag:]', symObjAddr: 0x2CB, symBinAddr: 0x3439, symSize: 0xC1 }
-  - { offsetInCU: 0x543, offset: 0x59B95, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) removePropertyBag]', symObjAddr: 0x38C, symBinAddr: 0x34FA, symSize: 0x76 }
-  - { offsetInCU: 0x5B2, offset: 0x59C04, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) propertyBag_dealloc]', symObjAddr: 0x402, symBinAddr: 0x3570, symSize: 0x2E }
-  - { offsetInCU: 0x27, offset: 0x59D57, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) load]', symObjAddr: 0x0, symBinAddr: 0x359E, symSize: 0x12 }
-  - { offsetInCU: 0x41, offset: 0x59D71, size: 0x8, addend: 0x0, symName: _TLKPassThroughParentKey, symObjAddr: 0x210, symBinAddr: 0x5320, symSize: 0x0 }
-  - { offsetInCU: 0x55, offset: 0x59D85, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) loadHitTest]', symObjAddr: 0x12, symBinAddr: 0x35B0, symSize: 0x70 }
-  - { offsetInCU: 0x7B, offset: 0x59DAB, size: 0x8, addend: 0x0, symName: _loadHitTest.onceToken, symObjAddr: 0x2790, symBinAddr: 0x5F28, symSize: 0x0 }
-  - { offsetInCU: 0xE8, offset: 0x59E18, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) load]', symObjAddr: 0x0, symBinAddr: 0x359E, symSize: 0x12 }
-  - { offsetInCU: 0x17D, offset: 0x59EAD, size: 0x8, addend: 0x0, symName: '___40+[UIView(PassThroughParent) loadHitTest]_block_invoke', symObjAddr: 0x82, symBinAddr: 0x3620, symSize: 0x4F }
-  - { offsetInCU: 0x1EB, offset: 0x59F1B, size: 0x8, addend: 0x0, symName: '-[UIView(PassThroughParent) passThroughParent]', symObjAddr: 0xD1, symBinAddr: 0x366F, symSize: 0x54 }
-  - { offsetInCU: 0x262, offset: 0x59F92, size: 0x8, addend: 0x0, symName: '-[UIView(PassThroughParent) setPassThroughParent:]', symObjAddr: 0x125, symBinAddr: 0x36C3, symSize: 0x5A }
-  - { offsetInCU: 0x2D9, offset: 0x5A009, size: 0x8, addend: 0x0, symName: '-[UIView(PassThroughParent) passThrough_hitTest:withEvent:]', symObjAddr: 0x17F, symBinAddr: 0x371D, symSize: 0x55 }
-  - { offsetInCU: 0x27, offset: 0x5A196, size: 0x8, addend: 0x0, symName: '+[NSCCrypto randomUUID]', symObjAddr: 0x0, symBinAddr: 0x3774, symSize: 0x81 }
-  - { offsetInCU: 0x44, offset: 0x5A1B3, size: 0x8, addend: 0x0, symName: '+[NSCCrypto randomUUID]', symObjAddr: 0x0, symBinAddr: 0x3774, symSize: 0x81 }
-  - { offsetInCU: 0xC3, offset: 0x5A232, size: 0x8, addend: 0x0, symName: '+[NSCCrypto getRandomValues:length:]', symObjAddr: 0x81, symBinAddr: 0x37F5, symSize: 0x35 }
-  - { offsetInCU: 0x16D, offset: 0x5A2DC, size: 0x8, addend: 0x0, symName: '+[NSCCrypto digest:length:mode:]', symObjAddr: 0xB6, symBinAddr: 0x382A, symSize: 0x112 }
+  - { offsetInCU: 0x34, offset: 0x55DE8, size: 0x8, addend: 0x0, symName: _TNSWidgetsVersionString, symObjAddr: 0x0, symBinAddr: 0x4F20, symSize: 0x0 }
+  - { offsetInCU: 0x69, offset: 0x55E1D, size: 0x8, addend: 0x0, symName: _TNSWidgetsVersionNumber, symObjAddr: 0x30, symBinAddr: 0x4F50, symSize: 0x0 }
+  - { offsetInCU: 0x27, offset: 0x55E5A, size: 0x8, addend: 0x0, symName: '-[TNSLabel textRectForBounds:limitedToNumberOfLines:]', symObjAddr: 0x0, symBinAddr: 0x18D0, symSize: 0x388 }
+  - { offsetInCU: 0xAB, offset: 0x55EDE, size: 0x8, addend: 0x0, symName: '-[TNSLabel textRectForBounds:limitedToNumberOfLines:]', symObjAddr: 0x0, symBinAddr: 0x18D0, symSize: 0x388 }
+  - { offsetInCU: 0x17F, offset: 0x55FB2, size: 0x8, addend: 0x0, symName: '-[TNSLabel drawTextInRect:]', symObjAddr: 0x388, symBinAddr: 0x1C58, symSize: 0xDD }
+  - { offsetInCU: 0x1EB, offset: 0x5601E, size: 0x8, addend: 0x0, symName: '-[TNSLabel padding]', symObjAddr: 0x465, symBinAddr: 0x1D35, symSize: 0x20 }
+  - { offsetInCU: 0x220, offset: 0x56053, size: 0x8, addend: 0x0, symName: '-[TNSLabel setPadding:]', symObjAddr: 0x485, symBinAddr: 0x1D55, symSize: 0x1E }
+  - { offsetInCU: 0x25E, offset: 0x56091, size: 0x8, addend: 0x0, symName: '-[TNSLabel borderThickness]', symObjAddr: 0x4A3, symBinAddr: 0x1D73, symSize: 0x20 }
+  - { offsetInCU: 0x293, offset: 0x560C6, size: 0x8, addend: 0x0, symName: '-[TNSLabel setBorderThickness:]', symObjAddr: 0x4C3, symBinAddr: 0x1D93, symSize: 0x1E }
+  - { offsetInCU: 0x27, offset: 0x5614F, size: 0x8, addend: 0x0, symName: ___tns_uptime, symObjAddr: 0x0, symBinAddr: 0x1DB1, symSize: 0xF8 }
+  - { offsetInCU: 0x59, offset: 0x56181, size: 0x8, addend: 0x0, symName: ___tns_uptime, symObjAddr: 0x0, symBinAddr: 0x1DB1, symSize: 0xF8 }
+  - { offsetInCU: 0x1B5, offset: 0x562DD, size: 0x8, addend: 0x0, symName: ___nslog, symObjAddr: 0xF8, symBinAddr: 0x1EA9, symSize: 0x17 }
+  - { offsetInCU: 0x27, offset: 0x56343, size: 0x8, addend: 0x0, symName: '-[NSFileHandle(Async) appendData:completion:]', symObjAddr: 0x0, symBinAddr: 0x1EC0, symSize: 0xD4 }
+  - { offsetInCU: 0x4A, offset: 0x56366, size: 0x8, addend: 0x0, symName: '-[NSFileHandle(Async) appendData:completion:]', symObjAddr: 0x0, symBinAddr: 0x1EC0, symSize: 0xD4 }
+  - { offsetInCU: 0x1CE, offset: 0x564EA, size: 0x8, addend: 0x0, symName: '___45-[NSFileHandle(Async) appendData:completion:]_block_invoke', symObjAddr: 0xD4, symBinAddr: 0x1F94, symSize: 0x304 }
+  - { offsetInCU: 0x4C1, offset: 0x567DD, size: 0x8, addend: 0x0, symName: '___45-[NSFileHandle(Async) appendData:completion:]_block_invoke_2', symObjAddr: 0x3D8, symBinAddr: 0x2298, symSize: 0x13 }
+  - { offsetInCU: 0x518, offset: 0x56834, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40b, symObjAddr: 0x3EB, symBinAddr: 0x22AB, symSize: 0x30 }
+  - { offsetInCU: 0x54D, offset: 0x56869, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s40s, symObjAddr: 0x41B, symBinAddr: 0x22DB, symSize: 0x25 }
+  - { offsetInCU: 0x584, offset: 0x568A0, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40s48b, symObjAddr: 0x440, symBinAddr: 0x2300, symSize: 0x44 }
+  - { offsetInCU: 0x5C5, offset: 0x568E1, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s40s48s, symObjAddr: 0x484, symBinAddr: 0x2344, symSize: 0x2C }
+  - { offsetInCU: 0x608, offset: 0x56924, size: 0x8, addend: 0x0, symName: '+[NSFileHandle(Async) fileHandleWith:data:completion:]', symObjAddr: 0x4B0, symBinAddr: 0x2370, symSize: 0xF1 }
+  - { offsetInCU: 0x798, offset: 0x56AB4, size: 0x8, addend: 0x0, symName: '___54+[NSFileHandle(Async) fileHandleWith:data:completion:]_block_invoke', symObjAddr: 0x5A1, symBinAddr: 0x2461, symSize: 0x348 }
+  - { offsetInCU: 0xAEA, offset: 0x56E06, size: 0x8, addend: 0x0, symName: '___54+[NSFileHandle(Async) fileHandleWith:data:completion:]_block_invoke_2', symObjAddr: 0x8E9, symBinAddr: 0x27A9, symSize: 0x27 }
+  - { offsetInCU: 0x27, offset: 0x571A6, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) initialize]', symObjAddr: 0x0, symBinAddr: 0x27D0, symSize: 0x27 }
+  - { offsetInCU: 0x4F, offset: 0x571CE, size: 0x8, addend: 0x0, symName: _image_queue, symObjAddr: 0x4540, symBinAddr: 0x7280, symSize: 0x0 }
+  - { offsetInCU: 0x68, offset: 0x571E7, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) initialize]', symObjAddr: 0x0, symBinAddr: 0x27D0, symSize: 0x27 }
+  - { offsetInCU: 0x131, offset: 0x572B0, size: 0x8, addend: 0x0, symName: '-[UIImage(TNSBlocks) tns_forceDecode]', symObjAddr: 0x27, symBinAddr: 0x27F7, symSize: 0xB2 }
+  - { offsetInCU: 0x2E8, offset: 0x57467, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_safeDecodeImageNamed:completion:]', symObjAddr: 0xD9, symBinAddr: 0x28A9, symSize: 0xB3 }
+  - { offsetInCU: 0x3FD, offset: 0x5757C, size: 0x8, addend: 0x0, symName: '___58+[UIImage(TNSBlocks) tns_safeDecodeImageNamed:completion:]_block_invoke', symObjAddr: 0x18C, symBinAddr: 0x295C, symSize: 0xD9 }
+  - { offsetInCU: 0x4DD, offset: 0x5765C, size: 0x8, addend: 0x0, symName: '___58+[UIImage(TNSBlocks) tns_safeDecodeImageNamed:completion:]_block_invoke_2', symObjAddr: 0x265, symBinAddr: 0x2A35, symSize: 0x13 }
+  - { offsetInCU: 0x534, offset: 0x576B3, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_safeImageNamed:]', symObjAddr: 0x2CD, symBinAddr: 0x2A48, symSize: 0x63 }
+  - { offsetInCU: 0x5BC, offset: 0x5773B, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_decodeImageWithData:completion:]', symObjAddr: 0x330, symBinAddr: 0x2AAB, symSize: 0xB3 }
+  - { offsetInCU: 0x6B1, offset: 0x57830, size: 0x8, addend: 0x0, symName: '___57+[UIImage(TNSBlocks) tns_decodeImageWithData:completion:]_block_invoke', symObjAddr: 0x3E3, symBinAddr: 0x2B5E, symSize: 0xD9 }
+  - { offsetInCU: 0x791, offset: 0x57910, size: 0x8, addend: 0x0, symName: '___57+[UIImage(TNSBlocks) tns_decodeImageWithData:completion:]_block_invoke_2', symObjAddr: 0x4BC, symBinAddr: 0x2C37, symSize: 0x13 }
+  - { offsetInCU: 0x7E8, offset: 0x57967, size: 0x8, addend: 0x0, symName: '+[UIImage(TNSBlocks) tns_decodeImageWidthContentsOfFile:completion:]', symObjAddr: 0x4CF, symBinAddr: 0x2C4A, symSize: 0xB3 }
+  - { offsetInCU: 0x8DD, offset: 0x57A5C, size: 0x8, addend: 0x0, symName: '___68+[UIImage(TNSBlocks) tns_decodeImageWidthContentsOfFile:completion:]_block_invoke', symObjAddr: 0x582, symBinAddr: 0x2CFD, symSize: 0xD9 }
+  - { offsetInCU: 0x9BD, offset: 0x57B3C, size: 0x8, addend: 0x0, symName: '___68+[UIImage(TNSBlocks) tns_decodeImageWidthContentsOfFile:completion:]_block_invoke_2', symObjAddr: 0x65B, symBinAddr: 0x2DD6, symSize: 0x13 }
+  - { offsetInCU: 0x27, offset: 0x57F17, size: 0x8, addend: 0x0, symName: '+[NSObject(Swizzling) swizzleInstanceMethodWithOriginalSelector:fromClass:withSwizzlingSelector:]', symObjAddr: 0x0, symBinAddr: 0x2DE9, symSize: 0x78 }
+  - { offsetInCU: 0x43, offset: 0x57F33, size: 0x8, addend: 0x0, symName: '+[NSObject(Swizzling) swizzleInstanceMethodWithOriginalSelector:fromClass:withSwizzlingSelector:]', symObjAddr: 0x0, symBinAddr: 0x2DE9, symSize: 0x78 }
+  - { offsetInCU: 0x17F, offset: 0x5806F, size: 0x8, addend: 0x0, symName: '+[NSObject(Swizzling) swizzleMethodWithOriginalSelector:originalMethod:fromClass:withSwizzlingSelector:swizzlingMethod:]', symObjAddr: 0x78, symBinAddr: 0x2E61, symSize: 0x122 }
+  - { offsetInCU: 0x27, offset: 0x58351, size: 0x8, addend: 0x0, symName: '+[NSString(Async) stringWithContentsOfFile:encoding:completion:]', symObjAddr: 0x0, symBinAddr: 0x2F83, symSize: 0xDD }
+  - { offsetInCU: 0x4A, offset: 0x58374, size: 0x8, addend: 0x0, symName: '+[NSString(Async) stringWithContentsOfFile:encoding:completion:]', symObjAddr: 0x0, symBinAddr: 0x2F83, symSize: 0xDD }
+  - { offsetInCU: 0x1DA, offset: 0x58504, size: 0x8, addend: 0x0, symName: '___64+[NSString(Async) stringWithContentsOfFile:encoding:completion:]_block_invoke', symObjAddr: 0xDD, symBinAddr: 0x3060, symSize: 0xF1 }
+  - { offsetInCU: 0x30E, offset: 0x58638, size: 0x8, addend: 0x0, symName: '___64+[NSString(Async) stringWithContentsOfFile:encoding:completion:]_block_invoke_2', symObjAddr: 0x1CE, symBinAddr: 0x3151, symSize: 0x1A }
+  - { offsetInCU: 0x375, offset: 0x5869F, size: 0x8, addend: 0x0, symName: '+[NSString(Async) atob:]', symObjAddr: 0x2AD, symBinAddr: 0x316B, symSize: 0x89 }
+  - { offsetInCU: 0x439, offset: 0x58763, size: 0x8, addend: 0x0, symName: '+[NSString(Async) btoa:]', symObjAddr: 0x336, symBinAddr: 0x31F4, symSize: 0x5A }
+  - { offsetInCU: 0x4B4, offset: 0x587DE, size: 0x8, addend: 0x0, symName: '-[NSString(Async) writeToFile:atomically:encoding:completion:]', symObjAddr: 0x390, symBinAddr: 0x324E, symSize: 0xEB }
+  - { offsetInCU: 0x60D, offset: 0x58937, size: 0x8, addend: 0x0, symName: '___62-[NSString(Async) writeToFile:atomically:encoding:completion:]_block_invoke', symObjAddr: 0x47B, symBinAddr: 0x3339, symSize: 0xC9 }
+  - { offsetInCU: 0x72D, offset: 0x58A57, size: 0x8, addend: 0x0, symName: '___62-[NSString(Async) writeToFile:atomically:encoding:completion:]_block_invoke_2', symObjAddr: 0x544, symBinAddr: 0x3402, symSize: 0x13 }
+  - { offsetInCU: 0x27, offset: 0x58DFC, size: 0x8, addend: 0x0, symName: '+[NSData(Async) dataWithContentsOfFile:completion:]', symObjAddr: 0x0, symBinAddr: 0x3415, symSize: 0xC6 }
+  - { offsetInCU: 0x4A, offset: 0x58E1F, size: 0x8, addend: 0x0, symName: '+[NSData(Async) dataWithContentsOfFile:completion:]', symObjAddr: 0x0, symBinAddr: 0x3415, symSize: 0xC6 }
+  - { offsetInCU: 0x225, offset: 0x58FFA, size: 0x8, addend: 0x0, symName: '___51+[NSData(Async) dataWithContentsOfFile:completion:]_block_invoke', symObjAddr: 0xC6, symBinAddr: 0x34DB, symSize: 0xB4 }
+  - { offsetInCU: 0x2F9, offset: 0x590CE, size: 0x8, addend: 0x0, symName: '___51+[NSData(Async) dataWithContentsOfFile:completion:]_block_invoke_2', symObjAddr: 0x17A, symBinAddr: 0x358F, symSize: 0x13 }
+  - { offsetInCU: 0x350, offset: 0x59125, size: 0x8, addend: 0x0, symName: '-[NSData(Async) writeToFile:atomically:completion:]', symObjAddr: 0x1E2, symBinAddr: 0x35A2, symSize: 0xE6 }
+  - { offsetInCU: 0x499, offset: 0x5926E, size: 0x8, addend: 0x0, symName: '___51-[NSData(Async) writeToFile:atomically:completion:]_block_invoke', symObjAddr: 0x2C8, symBinAddr: 0x3688, symSize: 0x84 }
+  - { offsetInCU: 0x542, offset: 0x59317, size: 0x8, addend: 0x0, symName: '___51-[NSData(Async) writeToFile:atomically:completion:]_block_invoke_2', symObjAddr: 0x34C, symBinAddr: 0x370C, symSize: 0xC }
+  - { offsetInCU: 0x589, offset: 0x5935E, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32b, symObjAddr: 0x358, symBinAddr: 0x3718, symSize: 0x17 }
+  - { offsetInCU: 0x5B2, offset: 0x59387, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s, symObjAddr: 0x36F, symBinAddr: 0x372F, symSize: 0xF }
+  - { offsetInCU: 0x27, offset: 0x59679, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) load]', symObjAddr: 0x0, symBinAddr: 0x373E, symSize: 0x12 }
+  - { offsetInCU: 0x35, offset: 0x59687, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) loadPropertyBag]', symObjAddr: 0x12, symBinAddr: 0x3750, symSize: 0x70 }
+  - { offsetInCU: 0x5B, offset: 0x596AD, size: 0x8, addend: 0x0, symName: _loadPropertyBag.onceToken, symObjAddr: 0x2EC8, symBinAddr: 0x7288, symSize: 0x0 }
+  - { offsetInCU: 0xBF, offset: 0x59711, size: 0x8, addend: 0x0, symName: __propertyBagHolder, symObjAddr: 0x2ED0, symBinAddr: 0x72C0, symSize: 0x0 }
+  - { offsetInCU: 0xE4, offset: 0x59736, size: 0x8, addend: 0x0, symName: '+[UIView(PropertyBag) load]', symObjAddr: 0x0, symBinAddr: 0x373E, symSize: 0x12 }
+  - { offsetInCU: 0x178, offset: 0x597CA, size: 0x8, addend: 0x0, symName: '___38+[UIView(PropertyBag) loadPropertyBag]_block_invoke', symObjAddr: 0x82, symBinAddr: 0x37C0, symSize: 0x5A }
+  - { offsetInCU: 0x23E, offset: 0x59890, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) propertyValueForKey:]', symObjAddr: 0xDC, symBinAddr: 0x381A, symSize: 0x7A }
+  - { offsetInCU: 0x2DA, offset: 0x5992C, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) setPropertyValue:forKey:]', symObjAddr: 0x156, symBinAddr: 0x3894, symSize: 0x8B }
+  - { offsetInCU: 0x3B9, offset: 0x59A0B, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) propertyBag]', symObjAddr: 0x1E1, symBinAddr: 0x391F, symSize: 0xEA }
+  - { offsetInCU: 0x474, offset: 0x59AC6, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) setPropertyBag:]', symObjAddr: 0x2CB, symBinAddr: 0x3A09, symSize: 0xC1 }
+  - { offsetInCU: 0x543, offset: 0x59B95, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) removePropertyBag]', symObjAddr: 0x38C, symBinAddr: 0x3ACA, symSize: 0x76 }
+  - { offsetInCU: 0x5B2, offset: 0x59C04, size: 0x8, addend: 0x0, symName: '-[UIView(PropertyBag) propertyBag_dealloc]', symObjAddr: 0x402, symBinAddr: 0x3B40, symSize: 0x2E }
+  - { offsetInCU: 0x27, offset: 0x59D57, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) load]', symObjAddr: 0x0, symBinAddr: 0x3B6E, symSize: 0x12 }
+  - { offsetInCU: 0x41, offset: 0x59D71, size: 0x8, addend: 0x0, symName: _TLKPassThroughParentKey, symObjAddr: 0x210, symBinAddr: 0x63D8, symSize: 0x0 }
+  - { offsetInCU: 0x55, offset: 0x59D85, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) loadHitTest]', symObjAddr: 0x12, symBinAddr: 0x3B80, symSize: 0x70 }
+  - { offsetInCU: 0x7B, offset: 0x59DAB, size: 0x8, addend: 0x0, symName: _loadHitTest.onceToken, symObjAddr: 0x2778, symBinAddr: 0x7290, symSize: 0x0 }
+  - { offsetInCU: 0xE8, offset: 0x59E18, size: 0x8, addend: 0x0, symName: '+[UIView(PassThroughParent) load]', symObjAddr: 0x0, symBinAddr: 0x3B6E, symSize: 0x12 }
+  - { offsetInCU: 0x17D, offset: 0x59EAD, size: 0x8, addend: 0x0, symName: '___40+[UIView(PassThroughParent) loadHitTest]_block_invoke', symObjAddr: 0x82, symBinAddr: 0x3BF0, symSize: 0x4F }
+  - { offsetInCU: 0x1EB, offset: 0x59F1B, size: 0x8, addend: 0x0, symName: '-[UIView(PassThroughParent) passThroughParent]', symObjAddr: 0xD1, symBinAddr: 0x3C3F, symSize: 0x54 }
+  - { offsetInCU: 0x262, offset: 0x59F92, size: 0x8, addend: 0x0, symName: '-[UIView(PassThroughParent) setPassThroughParent:]', symObjAddr: 0x125, symBinAddr: 0x3C93, symSize: 0x5A }
+  - { offsetInCU: 0x2D9, offset: 0x5A009, size: 0x8, addend: 0x0, symName: '-[UIView(PassThroughParent) passThrough_hitTest:withEvent:]', symObjAddr: 0x17F, symBinAddr: 0x3CED, symSize: 0x55 }
+  - { offsetInCU: 0x27, offset: 0x5A196, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair dealloc]', symObjAddr: 0x0, symBinAddr: 0x3D44, symSize: 0x8A }
+  - { offsetInCU: 0x12E, offset: 0x5A29D, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair dealloc]', symObjAddr: 0x0, symBinAddr: 0x3D44, symSize: 0x8A }
+  - { offsetInCU: 0x1FF, offset: 0x5A36E, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair initWithPrivateKey:andPublicKey:]', symObjAddr: 0x8A, symBinAddr: 0x3DCE, symSize: 0x75 }
+  - { offsetInCU: 0x28C, offset: 0x5A3FB, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair privateKey]', symObjAddr: 0xFF, symBinAddr: 0x3E43, symSize: 0xA }
+  - { offsetInCU: 0x2C1, offset: 0x5A430, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair setPrivateKey:]', symObjAddr: 0x109, symBinAddr: 0x3E4D, symSize: 0xA }
+  - { offsetInCU: 0x2FE, offset: 0x5A46D, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair publicKey]', symObjAddr: 0x113, symBinAddr: 0x3E57, symSize: 0xA }
+  - { offsetInCU: 0x333, offset: 0x5A4A2, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair setPublicKey:]', symObjAddr: 0x11D, symBinAddr: 0x3E61, symSize: 0xA }
+  - { offsetInCU: 0x370, offset: 0x5A4DF, size: 0x8, addend: 0x0, symName: '+[NSCCrypto randomUUID]', symObjAddr: 0x127, symBinAddr: 0x3E6B, symSize: 0x81 }
+  - { offsetInCU: 0x3EF, offset: 0x5A55E, size: 0x8, addend: 0x0, symName: '+[NSCCrypto getRandomValues:length:]', symObjAddr: 0x1A8, symBinAddr: 0x3EEC, symSize: 0x35 }
+  - { offsetInCU: 0x492, offset: 0x5A601, size: 0x8, addend: 0x0, symName: '+[NSCCrypto digest:length:mode:]', symObjAddr: 0x1DD, symBinAddr: 0x3F21, symSize: 0x187 }
+  - { offsetInCU: 0x6AC, offset: 0x5A81B, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyHmac:length:]', symObjAddr: 0x364, symBinAddr: 0x40A8, symSize: 0x2CC }
+  - { offsetInCU: 0x967, offset: 0x5AAD6, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyRsa:modulusLength:publicExponent:size:hash:extractable:keyUsages:]', symObjAddr: 0x630, symBinAddr: 0x4374, symSize: 0x338 }
 ...

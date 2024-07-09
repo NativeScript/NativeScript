@@ -13,6 +13,9 @@ const algorithm_ = Symbol('[[algorithm]]');
 const usages_ = Symbol('[[usages]]');
 const extractable_ = Symbol('[[extractable]]');
 const type_ = Symbol('[[type]]');
+
+declare const NSCCrypto;
+
 export class CryptoKey {
 	[native_];
 	[algorithm_];
@@ -64,20 +67,25 @@ export class SubtleCrypto {
 				return;
 			}
 
+			if (data instanceof ArrayBuffer || data instanceof Uint8Array || data instanceof Uint8ClampedArray) {
+				// noop
+			} else if (data?.BYTES_PER_ELEMENT !== 1) {
+				data = new Uint8Array(data.buffer, data.byteOffset);
+			} else {
+				reject(new TypeError('Argument 2 could not be converted to any of: ArrayBufferView, ArrayBuffer.'));
+				return;
+			}
+
 			if (__ANDROID__) {
 				//const instance = java.security.MessageDigest.getInstance(algorithm);
 
-				if (data instanceof ArrayBuffer || data instanceof Uint8Array || data instanceof Uint8ClampedArray) {
-					// noop
-				} else if (data?.BYTES_PER_ELEMENT !== 1) {
-					data = new Uint8Array(data.buffer, data.byteOffset);
-				} else {
-					reject(new TypeError('Argument 2 could not be converted to any of: ArrayBufferView, ArrayBuffer.'));
-					return;
-				}
-
 				const buffer = (<any>org).nativescript.widgets.Crypto.digest(mode, data);
 				const ab = (<any>ArrayBuffer).from(buffer);
+
+				if (!ab) {
+					// todo throw failure
+				}
+
 				resolve(ab);
 
 				/* instance.update(data as any);
@@ -91,49 +99,65 @@ export class SubtleCrypto {
                 */
 			}
 
-			// if(__IOS__){
-			//     Insecure
-			// }
+			if (__IOS__) {
+				const ab = NSCCrypto.digestLengthMode(data, data.byteLength, mode);
+				if (!ab) {
+					// todo throw failure
+				}
+				resolve(interop.bufferFromData(ab));
+			}
 		});
 	}
 
 	generateKey(algorithm: HmacKeyGenParams, extractable: boolean, keyUsages: KeyUsages[]) {
 		return new Promise((resolve, reject) => {
-			if (algorithm?.name === 'HMAC') {
-				let algo;
-				let error: Error;
-				switch (algorithm.hash) {
-					case 'SHA-1':
-						algo = 'HmacSHA1';
-						break;
-					case 'SHA-256':
-						algo = 'HmacSHA256';
-						break;
-					case 'SHA-384':
-						algo = 'HmacSHA384';
-						break;
-					case 'SHA-512':
-						algo = 'HmacSHA512';
-						break;
-					default:
-						error = new Error('Operation is not supported');
-						break;
-				}
+			switch (algorithm?.name) {
+				case 'HMAC':
+					{
+						let algo;
+						let error: Error;
+						switch (algorithm.hash) {
+							case 'SHA-1':
+								algo = 'HmacSHA1';
+								break;
+							case 'SHA-256':
+								algo = 'HmacSHA256';
+								break;
+							case 'SHA-384':
+								algo = 'HmacSHA384';
+								break;
+							case 'SHA-512':
+								algo = 'HmacSHA512';
+								break;
+							default:
+								error = new Error('Operation is not supported');
+								break;
+						}
 
-				if (error) {
-					reject(error);
-					return;
-				}
+						if (error) {
+							reject(error);
+							return;
+						}
 
-				const mac = javax.crypto.KeyGenerator.getInstance(algo);
-				const key = mac.generateKey();
-				const ret = new CryptoKey();
-				ret[algorithm_] = { name: algorithm.name, hash: { name: algorithm.hash } };
-				ret[native_] = key;
-				ret[usages_] = keyUsages;
-				ret[extractable_] = extractable;
-				ret[type_] = 'secret';
-				resolve(ret);
+						const mac = javax.crypto.KeyGenerator.getInstance(algo);
+						const key = mac.generateKey();
+						const ret = new CryptoKey();
+						ret[algorithm_] = { name: algorithm.name, hash: { name: algorithm.hash } };
+						ret[native_] = key;
+						ret[usages_] = keyUsages;
+						ret[extractable_] = extractable;
+						ret[type_] = 'secret';
+						resolve(ret);
+					}
+					break;
+				default:
+					reject(
+						new Error(
+							`'subtle.generateKey()' is not implemented for ${algorithm.name}.
+						  Unrecognized algorithm name`,
+						),
+					);
+					break;
 			}
 		});
 	}
