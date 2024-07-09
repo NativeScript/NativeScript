@@ -1,14 +1,36 @@
 
+/**
+ * @since 4.1
+ * @deprecated 100000
+ */
 declare function CNCopyCurrentNetworkInfo(interfaceName: string): NSDictionary<any, any>;
 
+/**
+ * @since 4.1
+ */
 declare function CNCopySupportedInterfaces(): NSArray<any>;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare function CNMarkPortalOffline(interfaceName: string): boolean;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare function CNMarkPortalOnline(interfaceName: string): boolean;
 
+/**
+ * @since 4.0
+ * @deprecated 9.0
+ */
 declare function CNSetSupportedSSIDs(ssidArray: NSArray<any> | any[]): boolean;
 
+/**
+ * @since 2.0
+ */
 declare function SCCopyLastError(): NSError;
 
 interface SCDynamicStoreContext {
@@ -20,9 +42,15 @@ interface SCDynamicStoreContext {
 }
 declare var SCDynamicStoreContext: interop.StructType<SCDynamicStoreContext>;
 
+/**
+ * @since 2.0
+ */
 declare function SCError(): number;
 
-declare function SCErrorString(status: number): string;
+/**
+ * @since 2.0
+ */
+declare function SCErrorString(status: number): interop.Pointer | interop.Reference<any>;
 
 interface SCNetworkConnectionContext {
 	version: number;
@@ -86,10 +114,22 @@ interface SCNetworkReachabilityContext {
 }
 declare var SCNetworkReachabilityContext: interop.StructType<SCNetworkReachabilityContext>;
 
+/**
+ * @since 2.0
+ * @deprecated 17.4
+ */
 declare function SCNetworkReachabilityCreateWithAddress(allocator: any, address: interop.Pointer | interop.Reference<sockaddr>): any;
 
+/**
+ * @since 2.0
+ * @deprecated 17.4
+ */
 declare function SCNetworkReachabilityCreateWithAddressPair(allocator: any, localAddress: interop.Pointer | interop.Reference<sockaddr>, remoteAddress: interop.Pointer | interop.Reference<sockaddr>): any;
 
+/**
+ * @since 2.0
+ * @deprecated 17.4
+ */
 declare function SCNetworkReachabilityCreateWithName(allocator: any, nodename: string | interop.Pointer | interop.Reference<any>): any;
 
 declare const enum SCNetworkReachabilityFlags {
@@ -115,16 +155,40 @@ declare const enum SCNetworkReachabilityFlags {
 	kSCNetworkReachabilityFlagsConnectionAutomatic = 8
 }
 
+/**
+ * @since 2.0
+ * @deprecated 17.4
+ */
 declare function SCNetworkReachabilityGetFlags(target: any, flags: interop.Pointer | interop.Reference<SCNetworkReachabilityFlags>): boolean;
 
+/**
+ * @since 2.0
+ * @deprecated 17.4
+ */
 declare function SCNetworkReachabilityGetTypeID(): number;
 
+/**
+ * @since 2.0
+ * @deprecated 17.4
+ */
 declare function SCNetworkReachabilityScheduleWithRunLoop(target: any, runLoop: any, runLoopMode: string): boolean;
 
+/**
+ * @since 2.0
+ * @deprecated 17.4
+ */
 declare function SCNetworkReachabilitySetCallback(target: any, callout: interop.FunctionReference<(p1: any, p2: SCNetworkReachabilityFlags, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<SCNetworkReachabilityContext>): boolean;
 
-declare function SCNetworkReachabilitySetDispatchQueue(target: any, queue: interop.Pointer | interop.Reference<any>): boolean;
+/**
+ * @since 4.0
+ * @deprecated 17.4
+ */
+declare function SCNetworkReachabilitySetDispatchQueue(target: any, queue: NSObject & OS_dispatch_queue): boolean;
 
+/**
+ * @since 2.0
+ * @deprecated 17.4
+ */
 declare function SCNetworkReachabilityUnscheduleFromRunLoop(target: any, runLoop: any, runLoopMode: string): boolean;
 
 interface SCPreferencesContext {
@@ -143,12 +207,24 @@ declare const enum SCPreferencesNotification {
 	kSCPreferencesNotificationApply = 2
 }
 
+/**
+ * @since 2.0
+ */
 declare var kCFErrorDomainSystemConfiguration: string;
 
+/**
+ * @since 4.1
+ */
 declare var kCNNetworkInfoKeyBSSID: string;
 
+/**
+ * @since 4.1
+ */
 declare var kCNNetworkInfoKeySSID: string;
 
+/**
+ * @since 4.1
+ */
 declare var kCNNetworkInfoKeySSIDData: string;
 
 declare const kSCBondStatusLinkInvalid: number;

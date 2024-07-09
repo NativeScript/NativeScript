@@ -11,10 +11,11 @@ function sanitizeName(appName: string): string {
 	).join("");
 }
 function getDistPath() {
-	// try projectName from nativescript.config.ts, if not set, use original method
+	// if nativescript.config projectName is defined, use that custom name
+	// otherwise, default to base project directory name for project name
 	const appName = getValue('projectName') ?? sanitizeName(basename(getProjectRootPath()));
-
-	return `${env.buildPath ?? "platforms"}/ios/${appName}/app`;
+	const platform = process.env.USER_PROJECT_PLATFORMS_IOS ? process.env.USER_PROJECT_PLATFORMS_IOS : `${env.buildPath ?? "platforms"}/ios`;
+	return `${platform}/${appName}/app`;
 }
 
 const iOSPlatform: INativeScriptPlatform = {

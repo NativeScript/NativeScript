@@ -1,5 +1,5 @@
-import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, iosSymbolEffectProperty, ImageSymbolEffect, ImageSymbolEffects } from './image-common';
-import { ImageSource } from '../../image-source';
+import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, iosSymbolEffectProperty, ImageSymbolEffect, ImageSymbolEffects, iosSymbolScaleProperty } from './image-common';
+import { ImageSource, iosSymbolScaleType } from '../../image-source';
 import { ImageAsset } from '../../image-asset';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
@@ -192,8 +192,17 @@ export class Image extends ImageBase {
 		this._setNativeImage(value ? value.ios : null);
 	}
 
-	[srcProperty.setNative](value: string | ImageSource | ImageAsset) {
+	private _setSrc(value: string | ImageSource | ImageAsset) {
 		this._createImageSourceFromSrc(value);
+		if (this.iosSymbolScale) {
+			// when applying symbol scale, contentMode must be center
+			// https://stackoverflow.com/a/65787627
+			this.nativeViewProtected.contentMode = UIViewContentMode.Center;
+		}
+	}
+
+	[srcProperty.setNative](value: string | ImageSource | ImageAsset) {
+		this._setSrc(value);
 	}
 
 	[iosSymbolEffectProperty.setNative](value: ImageSymbolEffect | ImageSymbolEffects) {
@@ -201,10 +210,17 @@ export class Image extends ImageBase {
 			return;
 		}
 		const symbol = typeof value === 'string' ? ImageSymbolEffect.fromSymbol(value) : value;
-		if (symbol && symbol.effect) {
+		if (symbol?.effect) {
+			// Note: https://developer.apple.com/documentation/symbols/symboleffectoptions/4197883-repeating
+			// Will want to move to https://developer.apple.com/documentation/symbols/nssymboleffectoptionsrepeatbehavior?language=objc as fallback once optionsWithRepeating is removed
 			this.nativeViewProtected.addSymbolEffectOptionsAnimatedCompletion(symbol.effect, symbol.options || NSSymbolEffectOptions.optionsWithRepeating(), true, symbol.completion || null);
 		} else {
 			this.nativeViewProtected.removeAllSymbolEffects();
 		}
+	}
+
+	[iosSymbolScaleProperty.setNative](value: iosSymbolScaleType) {
+		// reset src to configure scale
+		this._setSrc(this.src);
 	}
 }

@@ -1,4 +1,8 @@
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKBaseEffect extends NSObject implements GLKNamedEffect {
 
 	static alloc(): GLKBaseEffect; // inherited from NSObject
@@ -36,6 +40,10 @@ declare class GLKBaseEffect extends NSObject implements GLKNamedEffect {
 	prepareToDraw(): void;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKEffectProperty extends NSObject {
 
 	static alloc(): GLKEffectProperty; // inherited from NSObject
@@ -43,6 +51,10 @@ declare class GLKEffectProperty extends NSObject {
 	static new(): GLKEffectProperty; // inherited from NSObject
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKEffectPropertyFog extends GLKEffectProperty {
 
 	static alloc(): GLKEffectPropertyFog; // inherited from NSObject
@@ -60,6 +72,10 @@ declare class GLKEffectPropertyFog extends GLKEffectProperty {
 	start: number;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKEffectPropertyLight extends GLKEffectProperty {
 
 	static alloc(): GLKEffectPropertyLight; // inherited from NSObject
@@ -81,6 +97,10 @@ declare class GLKEffectPropertyLight extends GLKEffectProperty {
 	transform: GLKEffectPropertyTransform;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKEffectPropertyMaterial extends GLKEffectProperty {
 
 	static alloc(): GLKEffectPropertyMaterial; // inherited from NSObject
@@ -90,6 +110,10 @@ declare class GLKEffectPropertyMaterial extends GLKEffectProperty {
 	shininess: number;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKEffectPropertyTexture extends GLKEffectProperty {
 
 	static alloc(): GLKEffectPropertyTexture; // inherited from NSObject
@@ -105,6 +129,10 @@ declare class GLKEffectPropertyTexture extends GLKEffectProperty {
 	target: GLKTextureTarget;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKEffectPropertyTransform extends GLKEffectProperty {
 
 	static alloc(): GLKEffectPropertyTransform; // inherited from NSObject
@@ -112,6 +140,9 @@ declare class GLKEffectPropertyTransform extends GLKEffectProperty {
 	static new(): GLKEffectPropertyTransform; // inherited from NSObject
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKFogMode {
 
 	Exp = 0,
@@ -121,6 +152,9 @@ declare const enum GLKFogMode {
 	Linear = 2
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKLightingType {
 
 	PerVertex = 0,
@@ -152,6 +186,10 @@ declare function GLKMatrixStackSize(stack: any): number;
 
 declare function GLKMatrixStackTranslate(stack: any, tx: number, ty: number, tz: number): void;
 
+/**
+ * @since 9.0
+ * @deprecated 12.0
+ */
 declare class GLKMesh extends NSObject {
 
 	static alloc(): GLKMesh; // inherited from NSObject
@@ -175,6 +213,10 @@ declare class GLKMesh extends NSObject {
 	initWithMeshError(mesh: MDLMesh): this;
 }
 
+/**
+ * @since 9.0
+ * @deprecated 12.0
+ */
 declare class GLKMeshBuffer extends NSObject implements MDLMeshBuffer {
 
 	static alloc(): GLKMeshBuffer; // inherited from NSObject
@@ -232,6 +274,10 @@ declare class GLKMeshBuffer extends NSObject implements MDLMeshBuffer {
 	self(): this;
 }
 
+/**
+ * @since 9.0
+ * @deprecated 12.0
+ */
 declare class GLKMeshBufferAllocator extends NSObject implements MDLMeshBufferAllocator {
 
 	static alloc(): GLKMeshBufferAllocator; // inherited from NSObject
@@ -294,6 +340,10 @@ declare var GLKNamedEffect: {
 	prototype: GLKNamedEffect;
 };
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKReflectionMapEffect extends GLKBaseEffect implements GLKNamedEffect {
 
 	static alloc(): GLKReflectionMapEffect; // inherited from NSObject
@@ -305,6 +355,10 @@ declare class GLKReflectionMapEffect extends GLKBaseEffect implements GLKNamedEf
 	prepareToDraw(): void;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKSkyboxEffect extends NSObject implements GLKNamedEffect {
 
 	static alloc(): GLKSkyboxEffect; // inherited from NSObject
@@ -328,6 +382,10 @@ declare class GLKSkyboxEffect extends NSObject implements GLKNamedEffect {
 	prepareToDraw(): void;
 }
 
+/**
+ * @since 9.0
+ * @deprecated 12.0
+ */
 declare class GLKSubmesh extends NSObject {
 
 	static alloc(): GLKSubmesh; // inherited from NSObject
@@ -347,6 +405,9 @@ declare class GLKSubmesh extends NSObject {
 	readonly type: number;
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKTextureEnvMode {
 
 	Replace = 0,
@@ -356,6 +417,10 @@ declare const enum GLKTextureEnvMode {
 	Decal = 2
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKTextureInfo extends NSObject implements NSCopying {
 
 	static alloc(): GLKTextureInfo; // inherited from NSObject
@@ -385,6 +450,9 @@ declare class GLKTextureInfo extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKTextureInfoAlphaState {
 
 	None = 0,
@@ -394,6 +462,9 @@ declare const enum GLKTextureInfoAlphaState {
 	Premultiplied = 2
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKTextureInfoOrigin {
 
 	Unknown = 0,
@@ -403,6 +474,10 @@ declare const enum GLKTextureInfoOrigin {
 	BottomLeft = 2
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKTextureLoader extends NSObject {
 
 	static alloc(): GLKTextureLoader; // inherited from NSObject
@@ -427,27 +502,33 @@ declare class GLKTextureLoader extends NSObject {
 
 	constructor(o: { sharegroup: EAGLSharegroup; });
 
-	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	cubeMapWithContentsOfFilesOptionsQueueCompletionHandler(paths: NSArray<any> | any[], options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfFilesOptionsQueueCompletionHandler(paths: NSArray<any> | any[], options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	cubeMapWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	cubeMapWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
 	initWithSharegroup(sharegroup: EAGLSharegroup): this;
 
-	textureWithCGImageOptionsQueueCompletionHandler(cgImage: any, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithCGImageOptionsQueueCompletionHandler(cgImage: any, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	textureWithContentsOfDataOptionsQueueCompletionHandler(data: NSData, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfDataOptionsQueueCompletionHandler(data: NSData, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	textureWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	textureWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	textureWithNameScaleFactorBundleOptionsQueueCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>, queue: interop.Pointer | interop.Reference<any>, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+	textureWithNameScaleFactorBundleOptionsQueueCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>, queue: NSObject & OS_dispatch_queue, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 }
 
+/**
+ * @since 5.0
+ */
 declare var GLKTextureLoaderApplyPremultiplication: string;
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKTextureLoaderError {
 
 	FileOrURLNotFound = 0,
@@ -491,20 +572,45 @@ declare const enum GLKTextureLoaderError {
 	UnsupportedTextureTarget = 19
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare var GLKTextureLoaderErrorDomain: string;
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare var GLKTextureLoaderErrorKey: string;
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare var GLKTextureLoaderGLErrorKey: string;
 
+/**
+ * @since 5.0
+ */
 declare var GLKTextureLoaderGenerateMipmaps: string;
 
 declare var GLKTextureLoaderGrayscaleAsAlpha: string;
 
+/**
+ * @since 5.0
+ */
 declare var GLKTextureLoaderOriginBottomLeft: string;
 
+/**
+ * @since 7.0
+ * @deprecated 12.0
+ */
 declare var GLKTextureLoaderSRGB: string;
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKTextureTarget {
 
 	Target2D = 3553,
@@ -514,6 +620,9 @@ declare const enum GLKTextureTarget {
 	TargetCt = 2
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKVertexAttrib {
 
 	Position = 0,
@@ -529,20 +638,41 @@ declare const enum GLKVertexAttrib {
 
 declare function GLKVertexAttributeParametersFromModelIO(vertexFormat: MDLVertexFormat): _GLKVertexAttributeParameters;
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKView extends UIView implements NSCoding {
 
 	static alloc(): GLKView; // inherited from NSObject
 
 	static appearance(): GLKView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): GLKView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): GLKView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): GLKView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): GLKView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): GLKView; // inherited from UIAppearance
 
 	static new(): GLKView; // inherited from NSObject
@@ -584,6 +714,10 @@ declare class GLKView extends UIView implements NSCoding {
 	initWithFrameContext(frame: CGRect, context: EAGLContext): this;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 12.0
+ */
 declare class GLKViewController extends UIViewController implements GLKViewDelegate, NSCoding {
 
 	static alloc(): GLKViewController; // inherited from NSObject
@@ -675,6 +809,9 @@ declare var GLKViewDelegate: {
 	prototype: GLKViewDelegate;
 };
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKViewDrawableColorFormat {
 
 	RGBA8888 = 0,
@@ -684,6 +821,9 @@ declare const enum GLKViewDrawableColorFormat {
 	SRGBA8888 = 2
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKViewDrawableDepthFormat {
 
 	FormatNone = 0,
@@ -693,6 +833,9 @@ declare const enum GLKViewDrawableDepthFormat {
 	Format24 = 2
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKViewDrawableMultisample {
 
 	MultisampleNone = 0,
@@ -700,6 +843,9 @@ declare const enum GLKViewDrawableMultisample {
 	Multisample4X = 1
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum GLKViewDrawableStencilFormat {
 
 	FormatNone = 0,
@@ -714,6 +860,14 @@ interface _GLKVertexAttributeParameters {
 }
 declare var _GLKVertexAttributeParameters: interop.StructType<_GLKVertexAttributeParameters>;
 
+/**
+ * @since 9.0
+ * @deprecated 12.0
+ */
 declare var kGLKModelErrorDomain: string;
 
+/**
+ * @since 9.0
+ * @deprecated 12.0
+ */
 declare var kGLKModelErrorKey: string;

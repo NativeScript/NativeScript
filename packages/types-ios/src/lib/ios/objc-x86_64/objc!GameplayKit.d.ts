@@ -1,4 +1,7 @@
 
+/**
+ * @since 9.0
+ */
 declare class GKARC4RandomSource extends GKRandomSource {
 
 	static alloc(): GKARC4RandomSource; // inherited from NSObject
@@ -14,6 +17,9 @@ declare class GKARC4RandomSource extends GKRandomSource {
 	initWithSeed(seed: NSData): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKAgent extends GKComponent implements NSSecureCoding {
 
 	static alloc(): GKAgent; // inherited from NSObject
@@ -43,6 +49,9 @@ declare class GKAgent extends GKComponent implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKAgent2D extends GKAgent implements NSSecureCoding {
 
 	static alloc(): GKAgent2D; // inherited from NSObject
@@ -64,6 +73,9 @@ declare class GKAgent2D extends GKAgent implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKAgent3D extends GKAgent {
 
 	static alloc(): GKAgent3D; // inherited from NSObject
@@ -90,6 +102,9 @@ declare var GKAgentDelegate: {
 	prototype: GKAgentDelegate;
 };
 
+/**
+ * @since 9.0
+ */
 declare class GKBehavior extends NSObject implements NSCopying, NSFastEnumeration {
 
 	static alloc(): GKBehavior; // inherited from NSObject
@@ -125,6 +140,9 @@ declare class GKBehavior extends NSObject implements NSCopying, NSFastEnumeratio
 	weightForGoal(goal: GKGoal): number;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKBillowNoiseSource extends GKCoherentNoiseSource {
 
 	static alloc(): GKBillowNoiseSource; // inherited from NSObject
@@ -146,6 +164,9 @@ interface GKBox {
 }
 declare var GKBox: interop.StructType<GKBox>;
 
+/**
+ * @since 10.0
+ */
 declare class GKCheckerboardNoiseSource extends GKNoiseSource {
 
 	static alloc(): GKCheckerboardNoiseSource; // inherited from NSObject
@@ -161,6 +182,9 @@ declare class GKCheckerboardNoiseSource extends GKNoiseSource {
 	initWithSquareSize(squareSize: number): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKCircleObstacle extends GKObstacle {
 
 	static alloc(): GKCircleObstacle; // inherited from NSObject
@@ -178,6 +202,9 @@ declare class GKCircleObstacle extends GKObstacle {
 	initWithRadius(radius: number): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKCoherentNoiseSource extends GKNoiseSource {
 
 	static alloc(): GKCoherentNoiseSource; // inherited from NSObject
@@ -193,6 +220,9 @@ declare class GKCoherentNoiseSource extends GKNoiseSource {
 	seed: number;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKComponent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): GKComponent; // inherited from NSObject
@@ -218,6 +248,9 @@ declare class GKComponent extends NSObject implements NSCopying, NSSecureCoding 
 	willRemoveFromEntity(): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKComponentSystem<ComponentType> extends NSObject implements NSFastEnumeration {
 
 	static alloc<ComponentType>(): GKComponentSystem<ComponentType>; // inherited from NSObject
@@ -226,13 +259,13 @@ declare class GKComponentSystem<ComponentType> extends NSObject implements NSFas
 
 	readonly componentClass: typeof NSObject;
 
-	readonly components: NSArray<ComponentType>;
-	[index: number]: ComponentType;
+	readonly components: NSArray<GKComponent>;
+	[index: number]: GKComponent;
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { componentClass: typeof NSObject; });
 
-	addComponent(component: ComponentType): void;
+	addComponent(component: GKComponent): void;
 
 	addComponentWithEntity(entity: GKEntity): void;
 
@@ -240,9 +273,9 @@ declare class GKComponentSystem<ComponentType> extends NSObject implements NSFas
 
 	initWithComponentClass(cls: typeof NSObject): this;
 
-	objectAtIndexedSubscript(idx: number): ComponentType;
+	objectAtIndexedSubscript(idx: number): GKComponent;
 
-	removeComponent(component: ComponentType): void;
+	removeComponent(component: GKComponent): void;
 
 	removeComponentWithEntity(entity: GKEntity): void;
 
@@ -285,6 +318,9 @@ declare class GKCompositeBehavior extends GKBehavior {
 	weightForBehavior(behavior: GKBehavior): number;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKConstantNoiseSource extends GKNoiseSource {
 
 	static alloc(): GKConstantNoiseSource; // inherited from NSObject
@@ -300,6 +336,9 @@ declare class GKConstantNoiseSource extends GKNoiseSource {
 	initWithValue(value: number): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKCylindersNoiseSource extends GKNoiseSource {
 
 	static alloc(): GKCylindersNoiseSource; // inherited from NSObject
@@ -315,6 +354,9 @@ declare class GKCylindersNoiseSource extends GKNoiseSource {
 	initWithFrequency(frequency: number): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKDecisionNode extends NSObject {
 
 	static alloc(): GKDecisionNode; // inherited from NSObject
@@ -328,6 +370,9 @@ declare class GKDecisionNode extends NSObject {
 	createBranchWithWeightAttribute(weight: number, attribute: NSObjectProtocol): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	static alloc(): GKDecisionTree; // inherited from NSObject
@@ -363,6 +408,9 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 	initWithURLError(url: NSURL, error: NSError): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKEntity extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): GKEntity; // inherited from NSObject
@@ -439,6 +487,9 @@ declare var GKGameModelUpdate: {
 	prototype: GKGameModelUpdate;
 };
 
+/**
+ * @since 9.0
+ */
 declare class GKGaussianDistribution extends GKRandomDistribution {
 
 	static alloc(): GKGaussianDistribution; // inherited from NSObject
@@ -462,6 +513,9 @@ declare class GKGaussianDistribution extends GKRandomDistribution {
 	initWithRandomSourceMeanDeviation(source: GKRandom, mean: number, deviation: number): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKGoal extends NSObject implements NSCopying {
 
 	static alloc(): GKGoal; // inherited from NSObject
@@ -495,6 +549,9 @@ declare class GKGoal extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKGraph extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): GKGraph; // inherited from NSObject
@@ -528,6 +585,9 @@ declare class GKGraph extends NSObject implements NSCopying, NSSecureCoding {
 	removeNodes(nodes: NSArray<GKGraphNode> | GKGraphNode[]): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKGraphNode extends NSObject implements NSSecureCoding {
 
 	static alloc(): GKGraphNode; // inherited from NSObject
@@ -557,6 +617,9 @@ declare class GKGraphNode extends NSObject implements NSSecureCoding {
 	removeConnectionsToNodesBidirectional(nodes: NSArray<GKGraphNode> | GKGraphNode[], bidirectional: boolean): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKGraphNode2D extends GKGraphNode {
 
 	static alloc(): GKGraphNode2D; // inherited from NSObject
@@ -572,6 +635,9 @@ declare class GKGraphNode2D extends GKGraphNode {
 	initWithPoint(point: interop.Reference<number>): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKGraphNode3D extends GKGraphNode {
 
 	static alloc(): GKGraphNode3D; // inherited from NSObject
@@ -587,6 +653,9 @@ declare class GKGraphNode3D extends GKGraphNode {
 	initWithPoint(point: interop.Reference<number>): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKGridGraph<NodeType> extends GKGraph {
 
 	static alloc<NodeType>(): GKGridGraph<NodeType>; // inherited from NSObject
@@ -619,9 +688,12 @@ declare class GKGridGraph<NodeType> extends GKGraph {
 
 	initFromGridStartingAtWidthHeightDiagonalsAllowedNodeClass(position: interop.Reference<number>, width: number, height: number, diagonalsAllowed: boolean, nodeClass: typeof NSObject): this;
 
-	nodeAtGridPosition(position: interop.Reference<number>): NodeType;
+	nodeAtGridPosition(position: interop.Reference<number>): GKGridGraphNode;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKGridGraphNode extends GKGraphNode {
 
 	static alloc(): GKGridGraphNode; // inherited from NSObject
@@ -637,6 +709,9 @@ declare class GKGridGraphNode extends GKGraphNode {
 	initWithGridPosition(gridPosition: interop.Reference<number>): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKLinearCongruentialRandomSource extends GKRandomSource {
 
 	static alloc(): GKLinearCongruentialRandomSource; // inherited from NSObject
@@ -650,6 +725,9 @@ declare class GKLinearCongruentialRandomSource extends GKRandomSource {
 	initWithSeed(seed: number): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKMersenneTwisterRandomSource extends GKRandomSource {
 
 	static alloc(): GKMersenneTwisterRandomSource; // inherited from NSObject
@@ -663,6 +741,9 @@ declare class GKMersenneTwisterRandomSource extends GKRandomSource {
 	initWithSeed(seed: number): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKMeshGraph<NodeType> extends GKGraph {
 
 	static alloc<NodeType>(): GKMeshGraph<NodeType>; // inherited from NSObject
@@ -691,7 +772,7 @@ declare class GKMeshGraph<NodeType> extends GKGraph {
 
 	classForGenericArgumentAtIndex(index: number): typeof NSObject;
 
-	connectNodeUsingObstacles(node: NodeType): void;
+	connectNodeUsingObstacles(node: GKGraphNode2D): void;
 
 	initWithBufferRadiusMinCoordinateMaxCoordinate(bufferRadius: number, min: interop.Reference<number>, max: interop.Reference<number>): this;
 
@@ -713,6 +794,9 @@ declare const enum GKMeshGraphTriangulationMode {
 	EdgeMidpoints = 4
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKMinmaxStrategist extends NSObject implements GKStrategist {
 
 	static alloc(): GKMinmaxStrategist; // inherited from NSObject
@@ -766,6 +850,9 @@ declare class GKMinmaxStrategist extends NSObject implements GKStrategist {
 	self(): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKMonteCarloStrategist extends NSObject implements GKStrategist {
 
 	static alloc(): GKMonteCarloStrategist; // inherited from NSObject
@@ -817,6 +904,9 @@ declare class GKMonteCarloStrategist extends NSObject implements GKStrategist {
 	self(): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKNSPredicateRule extends GKRule {
 
 	static alloc(): GKNSPredicateRule; // inherited from NSObject
@@ -836,6 +926,9 @@ declare class GKNSPredicateRule extends GKRule {
 	initWithPredicate(predicate: NSPredicate): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKNoise extends NSObject {
 
 	static alloc(): GKNoise; // inherited from NSObject
@@ -895,6 +988,9 @@ declare class GKNoise extends NSObject {
 	valueAtPosition(position: interop.Reference<number>): number;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKNoiseMap extends NSObject {
 
 	static alloc(): GKNoiseMap; // inherited from NSObject
@@ -928,6 +1024,9 @@ declare class GKNoiseMap extends NSObject {
 	valueAtPosition(position: interop.Reference<number>): number;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKNoiseSource extends NSObject {
 
 	static alloc(): GKNoiseSource; // inherited from NSObject
@@ -935,6 +1034,9 @@ declare class GKNoiseSource extends NSObject {
 	static new(): GKNoiseSource; // inherited from NSObject
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKObstacle extends NSObject {
 
 	static alloc(): GKObstacle; // inherited from NSObject
@@ -942,6 +1044,9 @@ declare class GKObstacle extends NSObject {
 	static new(): GKObstacle; // inherited from NSObject
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKObstacleGraph<NodeType> extends GKGraph {
 
 	static alloc<NodeType>(): GKObstacleGraph<NodeType>; // inherited from NSObject
@@ -966,29 +1071,32 @@ declare class GKObstacleGraph<NodeType> extends GKGraph {
 
 	classForGenericArgumentAtIndex(index: number): typeof NSObject;
 
-	connectNodeUsingObstacles(node: NodeType): void;
+	connectNodeUsingObstacles(node: GKGraphNode2D): void;
 
-	connectNodeUsingObstaclesIgnoringBufferRadiusOfObstacles(node: NodeType, obstaclesBufferRadiusToIgnore: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
+	connectNodeUsingObstaclesIgnoringBufferRadiusOfObstacles(node: GKGraphNode2D, obstaclesBufferRadiusToIgnore: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
-	connectNodeUsingObstaclesIgnoringObstacles(node: NodeType, obstaclesToIgnore: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
+	connectNodeUsingObstaclesIgnoringObstacles(node: GKGraphNode2D, obstaclesToIgnore: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
 	initWithObstaclesBufferRadius(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[], bufferRadius: number): this;
 
 	initWithObstaclesBufferRadiusNodeClass(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[], bufferRadius: number, nodeClass: typeof NSObject): this;
 
-	isConnectionLockedFromNodeToNode(startNode: NodeType, endNode: NodeType): boolean;
+	isConnectionLockedFromNodeToNode(startNode: GKGraphNode2D, endNode: GKGraphNode2D): boolean;
 
-	lockConnectionFromNodeToNode(startNode: NodeType, endNode: NodeType): void;
+	lockConnectionFromNodeToNode(startNode: GKGraphNode2D, endNode: GKGraphNode2D): void;
 
-	nodesForObstacle(obstacle: GKPolygonObstacle): NSArray<NodeType>;
+	nodesForObstacle(obstacle: GKPolygonObstacle): NSArray<GKGraphNode2D>;
 
 	removeAllObstacles(): void;
 
 	removeObstacles(obstacles: NSArray<GKPolygonObstacle> | GKPolygonObstacle[]): void;
 
-	unlockConnectionFromNodeToNode(startNode: NodeType, endNode: NodeType): void;
+	unlockConnectionFromNodeToNode(startNode: GKGraphNode2D, endNode: GKGraphNode2D): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKOctree<ElementType> extends NSObject {
 
 	static alloc<ElementType>(): GKOctree<ElementType>; // inherited from NSObject
@@ -999,21 +1107,24 @@ declare class GKOctree<ElementType> extends NSObject {
 
 	constructor(o: { boundingBox: GKBox; minimumCellSize: number; });
 
-	addElementWithBox(element: ElementType, box: GKBox): GKOctreeNode;
+	addElementWithBox(element: NSObject, box: GKBox): GKOctreeNode;
 
-	addElementWithPoint(element: ElementType, point: interop.Reference<number>): GKOctreeNode;
+	addElementWithPoint(element: NSObject, point: interop.Reference<number>): GKOctreeNode;
 
-	elementsAtPoint(point: interop.Reference<number>): NSArray<ElementType>;
+	elementsAtPoint(point: interop.Reference<number>): NSArray<NSObject>;
 
-	elementsInBox(box: GKBox): NSArray<ElementType>;
+	elementsInBox(box: GKBox): NSArray<NSObject>;
 
 	initWithBoundingBoxMinimumCellSize(box: GKBox, minCellSize: number): this;
 
-	removeElement(element: ElementType): boolean;
+	removeElement(element: NSObject): boolean;
 
-	removeElementWithNode(element: ElementType, node: GKOctreeNode): boolean;
+	removeElementWithNode(element: NSObject, node: GKOctreeNode): boolean;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKOctreeNode extends NSObject {
 
 	static alloc(): GKOctreeNode; // inherited from NSObject
@@ -1023,12 +1134,18 @@ declare class GKOctreeNode extends NSObject {
 	readonly box: GKBox;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKPath extends NSObject {
 
 	static alloc(): GKPath; // inherited from NSObject
 
 	static new(): GKPath; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	static pathWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): GKPath;
 
 	static pathWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode> | GKGraphNode[], radius: number): GKPath;
@@ -1041,25 +1158,44 @@ declare class GKPath extends NSObject {
 
 	radius: number;
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { float3Points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; radius: number; cyclical: boolean; });
 
 	constructor(o: { graphNodes: NSArray<GKGraphNode> | GKGraphNode[]; radius: number; });
 
 	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; radius: number; cyclical: boolean; });
 
+	/**
+	 * @since 10.0
+	 */
 	float2AtIndex(index: number): interop.Reference<number>;
 
+	/**
+	 * @since 10.0
+	 */
 	float3AtIndex(index: number): interop.Reference<number>;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithFloat3PointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): this;
 
 	initWithGraphNodesRadius(graphNodes: NSArray<GKGraphNode> | GKGraphNode[], radius: number): this;
 
 	initWithPointsCountRadiusCyclical(points: interop.Pointer | interop.Reference<interop.Reference<number>>, count: number, radius: number, cyclical: boolean): this;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 10.0
+	 */
 	pointAtIndex(index: number): interop.Reference<number>;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKPerlinNoiseSource extends GKCoherentNoiseSource {
 
 	static alloc(): GKPerlinNoiseSource; // inherited from NSObject
@@ -1075,6 +1211,9 @@ declare class GKPerlinNoiseSource extends GKCoherentNoiseSource {
 	initWithFrequencyOctaveCountPersistenceLacunaritySeed(frequency: number, octaveCount: number, persistence: number, lacunarity: number, seed: number): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKPolygonObstacle extends GKObstacle implements NSSecureCoding {
 
 	static alloc(): GKPolygonObstacle; // inherited from NSObject
@@ -1106,6 +1245,9 @@ interface GKQuad {
 }
 declare var GKQuad: interop.StructType<GKQuad>;
 
+/**
+ * @since 10.0
+ */
 declare class GKQuadtree<ElementType> extends NSObject {
 
 	static alloc<ElementType>(): GKQuadtree<ElementType>; // inherited from NSObject
@@ -1116,21 +1258,24 @@ declare class GKQuadtree<ElementType> extends NSObject {
 
 	constructor(o: { boundingQuad: GKQuad; minimumCellSize: number; });
 
-	addElementWithPoint(element: ElementType, point: interop.Reference<number>): GKQuadtreeNode;
+	addElementWithPoint(element: NSObject, point: interop.Reference<number>): GKQuadtreeNode;
 
-	addElementWithQuad(element: ElementType, quad: GKQuad): GKQuadtreeNode;
+	addElementWithQuad(element: NSObject, quad: GKQuad): GKQuadtreeNode;
 
-	elementsAtPoint(point: interop.Reference<number>): NSArray<ElementType>;
+	elementsAtPoint(point: interop.Reference<number>): NSArray<NSObject>;
 
-	elementsInQuad(quad: GKQuad): NSArray<ElementType>;
+	elementsInQuad(quad: GKQuad): NSArray<NSObject>;
 
 	initWithBoundingQuadMinimumCellSize(quad: GKQuad, minCellSize: number): this;
 
-	removeElement(element: ElementType): boolean;
+	removeElement(element: NSObject): boolean;
 
-	removeElementWithNode(data: ElementType, node: GKQuadtreeNode): boolean;
+	removeElementWithNode(data: NSObject, node: GKQuadtreeNode): boolean;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKQuadtreeNode extends NSObject {
 
 	static alloc(): GKQuadtreeNode; // inherited from NSObject
@@ -1140,6 +1285,9 @@ declare class GKQuadtreeNode extends NSObject {
 	readonly quad: GKQuad;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKRTree<ElementType> extends NSObject {
 
 	static alloc<ElementType>(): GKRTree<ElementType>; // inherited from NSObject
@@ -1152,13 +1300,13 @@ declare class GKRTree<ElementType> extends NSObject {
 
 	constructor(o: { maxNumberOfChildren: number; });
 
-	addElementBoundingRectMinBoundingRectMaxSplitStrategy(element: ElementType, boundingRectMin: interop.Reference<number>, boundingRectMax: interop.Reference<number>, splitStrategy: GKRTreeSplitStrategy): void;
+	addElementBoundingRectMinBoundingRectMaxSplitStrategy(element: NSObject, boundingRectMin: interop.Reference<number>, boundingRectMax: interop.Reference<number>, splitStrategy: GKRTreeSplitStrategy): void;
 
-	elementsInBoundingRectMinRectMax(rectMin: interop.Reference<number>, rectMax: interop.Reference<number>): NSArray<ElementType>;
+	elementsInBoundingRectMinRectMax(rectMin: interop.Reference<number>, rectMax: interop.Reference<number>): NSArray<NSObject>;
 
 	initWithMaxNumberOfChildren(maxNumberOfChildren: number): this;
 
-	removeElementBoundingRectMinBoundingRectMax(element: ElementType, boundingRectMin: interop.Reference<number>, boundingRectMax: interop.Reference<number>): void;
+	removeElementBoundingRectMinBoundingRectMax(element: NSObject, boundingRectMin: interop.Reference<number>, boundingRectMax: interop.Reference<number>): void;
 }
 
 declare const enum GKRTreeSplitStrategy {
@@ -1187,6 +1335,9 @@ declare var GKRandom: {
 	prototype: GKRandom;
 };
 
+/**
+ * @since 9.0
+ */
 declare class GKRandomDistribution extends NSObject implements GKRandom {
 
 	static alloc(): GKRandomDistribution; // inherited from NSObject
@@ -1220,6 +1371,9 @@ declare class GKRandomDistribution extends NSObject implements GKRandom {
 	nextUniform(): number;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKRandomSource extends NSObject implements GKRandom, NSCopying, NSSecureCoding {
 
 	static alloc(): GKRandomSource; // inherited from NSObject
@@ -1249,6 +1403,9 @@ declare class GKRandomSource extends NSObject implements GKRandom, NSCopying, NS
 	nextUniform(): number;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKRidgedNoiseSource extends GKCoherentNoiseSource {
 
 	static alloc(): GKRidgedNoiseSource; // inherited from NSObject
@@ -1262,6 +1419,9 @@ declare class GKRidgedNoiseSource extends GKCoherentNoiseSource {
 	initWithFrequencyOctaveCountLacunaritySeed(frequency: number, octaveCount: number, lacunarity: number, seed: number): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKRule extends NSObject {
 
 	static alloc(): GKRule; // inherited from NSObject
@@ -1281,6 +1441,9 @@ declare class GKRule extends NSObject {
 	performActionWithSystem(system: GKRuleSystem): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKRuleSystem extends NSObject {
 
 	static alloc(): GKRuleSystem; // inherited from NSObject
@@ -1322,6 +1485,9 @@ declare class GKRuleSystem extends NSObject {
 	retractFactGrade(fact: NSObjectProtocol, grade: number): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class GKSCNNodeComponent extends GKComponent implements GKAgentDelegate {
 
 	static alloc(): GKSCNNodeComponent; // inherited from NSObject
@@ -1375,6 +1541,9 @@ declare class GKSCNNodeComponent extends GKComponent implements GKAgentDelegate 
 	self(): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKSKNodeComponent extends GKComponent implements GKAgentDelegate {
 
 	static alloc(): GKSKNodeComponent; // inherited from NSObject
@@ -1428,6 +1597,9 @@ declare class GKSKNodeComponent extends GKComponent implements GKAgentDelegate {
 	self(): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKScene extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): GKScene; // inherited from NSObject
@@ -1470,6 +1642,9 @@ declare var GKSceneRootNodeType: {
 	prototype: GKSceneRootNodeType;
 };
 
+/**
+ * @since 9.0
+ */
 declare class GKShuffledDistribution extends GKRandomDistribution {
 
 	static alloc(): GKShuffledDistribution; // inherited from NSObject
@@ -1485,6 +1660,9 @@ declare class GKShuffledDistribution extends GKRandomDistribution {
 	static new(): GKShuffledDistribution; // inherited from NSObject
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKSphereObstacle extends GKObstacle {
 
 	static alloc(): GKSphereObstacle; // inherited from NSObject
@@ -1502,6 +1680,9 @@ declare class GKSphereObstacle extends GKObstacle {
 	initWithRadius(radius: number): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class GKSpheresNoiseSource extends GKNoiseSource {
 
 	static alloc(): GKSpheresNoiseSource; // inherited from NSObject
@@ -1517,6 +1698,9 @@ declare class GKSpheresNoiseSource extends GKNoiseSource {
 	initWithFrequency(frequency: number): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKState extends NSObject {
 
 	static alloc(): GKState; // inherited from NSObject
@@ -1536,6 +1720,9 @@ declare class GKState extends NSObject {
 	willExitWithNextState(nextState: GKState): void;
 }
 
+/**
+ * @since 9.0
+ */
 declare class GKStateMachine extends NSObject {
 
 	static alloc(): GKStateMachine; // inherited from NSObject
@@ -1577,6 +1764,9 @@ interface GKTriangle {
 }
 declare var GKTriangle: interop.StructType<GKTriangle>;
 
+/**
+ * @since 10.0
+ */
 declare class GKVoronoiNoiseSource extends GKNoiseSource {
 
 	static alloc(): GKVoronoiNoiseSource; // inherited from NSObject

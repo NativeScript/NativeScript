@@ -1,0 +1,25 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="onNavigatedTo">
+  <ActionBar>
+    <Label text="Media Queries"></Label>
+  </ActionBar>
+
+  <ScrollView>
+    <StackLayout padding="20">
+      <Label text="Orientation change" fontSize="16" fontWeight="bold" marginBottom="12"/>
+      <StackLayout>
+        <Label text="CSS media query - color change" fontSize="14"/>
+        <Button class="orientation-btn" text="My color is different after orientation!"/>
+        <Label text="The matchMedia API - text change" fontSize="14"/>
+        <Button id="orientation-match-media-btn"/>
+      </StackLayout>
+
+      <Label text="Theme mode change" fontSize="16" fontWeight="bold" marginTop="12" marginBottom="12"/>
+      <StackLayout>
+        <Label text="CSS media query - color change" fontSize="14"/>
+        <Button class="theme-mode-btn" text="My color is different after theme change!"/>
+        <Label text="The matchMedia API - text change" fontSize="14"/>
+        <Button id="theme-match-media-btn"/>
+      </StackLayout>
+    </StackLayout>
+  </ScrollView>
+</Page>

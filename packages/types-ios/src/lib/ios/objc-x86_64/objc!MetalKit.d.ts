@@ -1,4 +1,7 @@
 
+/**
+ * @since 9.0
+ */
 declare class MTKMesh extends NSObject {
 
 	static alloc(): MTKMesh; // inherited from NSObject
@@ -22,6 +25,9 @@ declare class MTKMesh extends NSObject {
 	initWithMeshDeviceError(mesh: MDLMesh, device: MTLDevice): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class MTKMeshBuffer extends NSObject implements MDLMeshBuffer, MDLNamed {
 
 	static alloc(): MTKMeshBuffer; // inherited from NSObject
@@ -81,6 +87,9 @@ declare class MTKMeshBuffer extends NSObject implements MDLMeshBuffer, MDLNamed 
 	self(): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare class MTKMeshBufferAllocator extends NSObject implements MDLMeshBufferAllocator {
 
 	static alloc(): MTKMeshBufferAllocator; // inherited from NSObject
@@ -140,22 +149,49 @@ declare class MTKMeshBufferAllocator extends NSObject implements MDLMeshBufferAl
 	self(): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare function MTKMetalVertexDescriptorFromModelIO(modelIODescriptor: MDLVertexDescriptor): MTLVertexDescriptor;
 
+/**
+ * @since 10.0
+ */
 declare function MTKMetalVertexDescriptorFromModelIOWithError(modelIODescriptor: MDLVertexDescriptor, error: interop.Pointer | interop.Reference<NSError>): MTLVertexDescriptor;
 
+/**
+ * @since 9.0
+ */
 declare function MTKMetalVertexFormatFromModelIO(vertexFormat: MDLVertexFormat): MTLVertexFormat;
 
+/**
+ * @since 9.0
+ */
 declare var MTKModelErrorDomain: string;
 
+/**
+ * @since 9.0
+ */
 declare var MTKModelErrorKey: string;
 
+/**
+ * @since 9.0
+ */
 declare function MTKModelIOVertexDescriptorFromMetal(metalDescriptor: MTLVertexDescriptor): MDLVertexDescriptor;
 
+/**
+ * @since 10.0
+ */
 declare function MTKModelIOVertexDescriptorFromMetalWithError(metalDescriptor: MTLVertexDescriptor, error: interop.Pointer | interop.Reference<NSError>): MDLVertexDescriptor;
 
+/**
+ * @since 9.0
+ */
 declare function MTKModelIOVertexFormatFromMetal(vertexFormat: MTLVertexFormat): MDLVertexFormat;
 
+/**
+ * @since 9.0
+ */
 declare class MTKSubmesh extends NSObject {
 
 	static alloc(): MTKSubmesh; // inherited from NSObject
@@ -175,6 +211,9 @@ declare class MTKSubmesh extends NSObject {
 	readonly primitiveType: MTLPrimitiveType;
 }
 
+/**
+ * @since 9.0
+ */
 declare class MTKTextureLoader extends NSObject {
 
 	static alloc(): MTKTextureLoader; // inherited from NSObject
@@ -199,65 +238,151 @@ declare class MTKTextureLoader extends NSObject {
 
 	newTextureWithDataOptionsError(data: NSData, options: NSDictionary<string, any>): MTLTexture;
 
+	/**
+	 * @since 10.0
+	 */
 	newTextureWithMDLTextureOptionsCompletionHandler(texture: MDLTexture, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
+	/**
+	 * @since 10.0
+	 */
 	newTextureWithMDLTextureOptionsError(texture: MDLTexture, options: NSDictionary<string, any>): MTLTexture;
 
+	/**
+	 * @since 10.0
+	 */
 	newTextureWithNameScaleFactorBundleOptionsCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
+	/**
+	 * @since 10.0
+	 */
 	newTextureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>): MTLTexture;
 
+	/**
+	 * @since 10.0
+	 */
 	newTexturesWithContentsOfURLsOptionsCompletionHandler(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
 
+	/**
+	 * @since 10.0
+	 */
 	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any>): NSArray<MTLTexture>;
 
+	/**
+	 * @since 10.0
+	 */
 	newTexturesWithNamesScaleFactorBundleOptionsCompletionHandler(names: NSArray<string> | string[], scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, completionHandler: (p1: NSArray<MTLTexture>, p2: NSError) => void): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare var MTKTextureLoaderCubeLayoutVertical: string;
 
+/**
+ * @since 9.0
+ */
 declare var MTKTextureLoaderErrorDomain: string;
 
+/**
+ * @since 9.0
+ */
 declare var MTKTextureLoaderErrorKey: string;
 
+/**
+ * @since 9.0
+ */
 declare var MTKTextureLoaderOptionAllocateMipmaps: string;
 
+/**
+ * @since 10.0
+ */
 declare var MTKTextureLoaderOptionCubeLayout: string;
 
+/**
+ * @since 10.0
+ */
 declare var MTKTextureLoaderOptionGenerateMipmaps: string;
 
+/**
+ * @since 17.0
+ */
 declare var MTKTextureLoaderOptionLoadAsArray: string;
 
+/**
+ * @since 10.0
+ */
 declare var MTKTextureLoaderOptionOrigin: string;
 
+/**
+ * @since 9.0
+ */
 declare var MTKTextureLoaderOptionSRGB: string;
 
+/**
+ * @since 9.0
+ */
 declare var MTKTextureLoaderOptionTextureCPUCacheMode: string;
 
+/**
+ * @since 10.0
+ */
 declare var MTKTextureLoaderOptionTextureStorageMode: string;
 
+/**
+ * @since 9.0
+ */
 declare var MTKTextureLoaderOptionTextureUsage: string;
 
+/**
+ * @since 10.0
+ */
 declare var MTKTextureLoaderOriginBottomLeft: string;
 
+/**
+ * @since 10.0
+ */
 declare var MTKTextureLoaderOriginFlippedVertically: string;
 
+/**
+ * @since 10.0
+ */
 declare var MTKTextureLoaderOriginTopLeft: string;
 
+/**
+ * @since 9.0
+ */
 declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	static alloc(): MTKView; // inherited from NSObject
 
 	static appearance(): MTKView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): MTKView; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MTKView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MTKView; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MTKView; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MTKView; // inherited from UIAppearance
 
 	static new(): MTKView; // inherited from NSObject
@@ -278,10 +403,16 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	delegate: MTKViewDelegate;
 
+	/**
+	 * @since 13.0
+	 */
 	depthStencilAttachmentTextureUsage: MTLTextureUsage;
 
 	depthStencilPixelFormat: MTLPixelFormat;
 
+	/**
+	 * @since 16.0
+	 */
 	depthStencilStorageMode: MTLStorageMode;
 
 	readonly depthStencilTexture: MTLTexture;
@@ -294,12 +425,18 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	framebufferOnly: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	multisampleColorAttachmentTextureUsage: MTLTextureUsage;
 
 	readonly multisampleColorTexture: MTLTexture;
 
 	paused: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	readonly preferredDevice: MTLDevice;
 
 	readonly preferredDrawableSize: CGSize;
@@ -350,6 +487,9 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	layerWillDraw(layer: CALayer): void;
 
 	layoutSublayersOfLayer(layer: CALayer): void;
@@ -369,6 +509,9 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 	self(): this;
 }
 
+/**
+ * @since 9.0
+ */
 interface MTKViewDelegate extends NSObjectProtocol {
 
 	drawInMTKView(view: MTKView): void;

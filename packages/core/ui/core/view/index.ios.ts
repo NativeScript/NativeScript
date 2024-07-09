@@ -905,8 +905,8 @@ export class View extends ViewCommon implements ViewDefinition {
 
 		let notification: number;
 		let args: string | UIView | null = this.nativeViewProtected;
-		if (typeof msg === 'string' && msg) {
-			args = msg;
+		if (options?.message) {
+			args = options.message;
 		}
 
 		switch (options.iosNotificationType) {

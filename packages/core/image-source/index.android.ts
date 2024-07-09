@@ -1,5 +1,5 @@
 // Definitions.
-import { ImageSource as ImageSourceDefinition } from '.';
+import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
 import * as httpModule from '../http';
 
@@ -147,6 +147,10 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 
 		return ImageSource.fromFileSync(path);
+	}
+
+	static iosSymbolScaleFor(scale: iosSymbolScaleType): number {
+		return 0;
 	}
 
 	static fromSystemImageSync(name: string): ImageSource {

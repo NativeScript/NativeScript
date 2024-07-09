@@ -1,4 +1,7 @@
 
+/**
+ * @since 14
+ */
 declare class ATTrackingManager extends NSObject {
 
 	static alloc(): ATTrackingManager; // inherited from NSObject
@@ -10,6 +13,9 @@ declare class ATTrackingManager extends NSObject {
 	static readonly trackingAuthorizationStatus: ATTrackingManagerAuthorizationStatus;
 }
 
+/**
+ * @since 14
+ */
 declare const enum ATTrackingManagerAuthorizationStatus {
 
 	NotDetermined = 0,

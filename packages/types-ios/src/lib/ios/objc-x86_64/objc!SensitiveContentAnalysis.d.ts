@@ -1,4 +1,7 @@
 
+/**
+ * @since 17.0
+ */
 declare class SCSensitivityAnalysis extends NSObject {
 
 	static alloc(): SCSensitivityAnalysis; // inherited from NSObject
@@ -8,6 +11,9 @@ declare class SCSensitivityAnalysis extends NSObject {
 	readonly sensitive: boolean;
 }
 
+/**
+ * @since 17.0
+ */
 declare const enum SCSensitivityAnalysisPolicy {
 
 	Disabled = 0,
@@ -17,6 +23,9 @@ declare const enum SCSensitivityAnalysisPolicy {
 	DescriptiveInterventions = 2
 }
 
+/**
+ * @since 17.0
+ */
 declare class SCSensitivityAnalyzer extends NSObject {
 
 	static alloc(): SCSensitivityAnalyzer; // inherited from NSObject

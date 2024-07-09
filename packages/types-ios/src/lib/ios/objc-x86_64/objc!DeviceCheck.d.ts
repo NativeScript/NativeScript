@@ -1,4 +1,7 @@
 
+/**
+ * @since 14.0
+ */
 declare class DCAppAttestService extends NSObject {
 
 	static alloc(): DCAppAttestService; // inherited from NSObject
@@ -16,6 +19,9 @@ declare class DCAppAttestService extends NSObject {
 	generateKeyWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class DCDevice extends NSObject {
 
 	static alloc(): DCDevice; // inherited from NSObject
@@ -29,6 +35,9 @@ declare class DCDevice extends NSObject {
 	generateTokenWithCompletionHandler(completion: (p1: NSData, p2: NSError) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum DCError {
 
 	UnknownSystemFailure = 0,
@@ -42,4 +51,7 @@ declare const enum DCError {
 	ServerUnavailable = 4
 }
 
+/**
+ * @since 11.0
+ */
 declare var DCErrorDomain: string;

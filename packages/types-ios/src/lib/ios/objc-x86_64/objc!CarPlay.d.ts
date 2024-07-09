@@ -1,4 +1,7 @@
 
+/**
+ * @since 12.0
+ */
 declare class CPActionSheetTemplate extends CPTemplate {
 
 	static alloc(): CPActionSheetTemplate; // inherited from NSObject
@@ -16,12 +19,18 @@ declare class CPActionSheetTemplate extends CPTemplate {
 	initWithTitleMessageActions(title: string, message: string, actions: NSArray<CPAlertAction> | CPAlertAction[]): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPAlertAction extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPAlertAction; // inherited from NSObject
 
 	static new(): CPAlertAction; // inherited from NSObject
 
+	/**
+	 * @since 16.0
+	 */
 	readonly color: UIColor;
 
 	readonly handler: (p1: CPAlertAction) => void;
@@ -34,6 +43,9 @@ declare class CPAlertAction extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 16.0
+	 */
 	constructor(o: { title: string; color: UIColor; handler: (p1: CPAlertAction) => void; });
 
 	constructor(o: { title: string; style: CPAlertActionStyle; handler: (p1: CPAlertAction) => void; });
@@ -42,11 +54,17 @@ declare class CPAlertAction extends NSObject implements NSSecureCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 16.0
+	 */
 	initWithTitleColorHandler(title: string, color: UIColor, handler: (p1: CPAlertAction) => void): this;
 
 	initWithTitleStyleHandler(title: string, style: CPAlertActionStyle, handler: (p1: CPAlertAction) => void): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum CPAlertActionStyle {
 
 	Default = 0,
@@ -56,6 +74,9 @@ declare const enum CPAlertActionStyle {
 	Destructive = 2
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPAlertTemplate extends CPTemplate {
 
 	static alloc(): CPAlertTemplate; // inherited from NSObject
@@ -66,6 +87,9 @@ declare class CPAlertTemplate extends CPTemplate {
 
 	readonly titleVariants: NSArray<string>;
 
+	/**
+	 * @since 14.0
+	 */
 	static readonly maximumActionCount: number;
 
 	constructor(o: { titleVariants: NSArray<string> | string[]; actions: NSArray<CPAlertAction> | CPAlertAction[]; });
@@ -73,6 +97,10 @@ declare class CPAlertTemplate extends CPTemplate {
 	initWithTitleVariantsActions(titleVariants: NSArray<string> | string[], actions: NSArray<CPAlertAction> | CPAlertAction[]): this;
 }
 
+/**
+ * @since 12.0
+ * @deprecated 13.0
+ */
 interface CPApplicationDelegate extends UIApplicationDelegate {
 
 	applicationDidConnectCarInterfaceControllerToWindow(application: UIApplication, interfaceController: CPInterfaceController, window: CPWindow): void;
@@ -88,6 +116,9 @@ declare var CPApplicationDelegate: {
 	prototype: CPApplicationDelegate;
 };
 
+/**
+ * @since 15.0
+ */
 declare const enum CPAssistantCellActionType {
 
 	PlayMedia = 0,
@@ -95,6 +126,9 @@ declare const enum CPAssistantCellActionType {
 	StartCall = 1
 }
 
+/**
+ * @since 15.0
+ */
 declare class CPAssistantCellConfiguration extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPAssistantCellConfiguration; // inherited from NSObject
@@ -120,6 +154,9 @@ declare class CPAssistantCellConfiguration extends NSObject implements NSSecureC
 	initWithPositionVisibilityAssistantAction(position: CPAssistantCellPosition, visibility: CPAssistantCellVisibility, assistantAction: CPAssistantCellActionType): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare const enum CPAssistantCellPosition {
 
 	Top = 0,
@@ -127,6 +164,9 @@ declare const enum CPAssistantCellPosition {
 	Bottom = 1
 }
 
+/**
+ * @since 15.0
+ */
 declare const enum CPAssistantCellVisibility {
 
 	Off = 0,
@@ -136,14 +176,24 @@ declare const enum CPAssistantCellVisibility {
 	Always = 2
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPBarButton extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPBarButton; // inherited from NSObject
 
 	static new(): CPBarButton; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	buttonStyle: CPBarButtonStyle;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	readonly buttonType: CPBarButtonType;
 
 	enabled: boolean;
@@ -156,23 +206,46 @@ declare class CPBarButton extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 14.0
+	 */
 	constructor(o: { image: UIImage; handler: (p1: CPBarButton) => void; });
 
+	/**
+	 * @since 14.0
+	 */
 	constructor(o: { title: string; handler: (p1: CPBarButton) => void; });
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	constructor(o: { type: CPBarButtonType; handler: (p1: CPBarButton) => void; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 14.0
+	 */
 	initWithImageHandler(image: UIImage, handler: (p1: CPBarButton) => void): this;
 
+	/**
+	 * @since 14.0
+	 */
 	initWithTitleHandler(title: string, handler: (p1: CPBarButton) => void): this;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	initWithTypeHandler(type: CPBarButtonType, handler: (p1: CPBarButton) => void): this;
 }
 
+/**
+ * @since 12.0
+ */
 interface CPBarButtonProviding extends NSObjectProtocol {
 
 	backButton: CPBarButton;
@@ -186,6 +259,9 @@ declare var CPBarButtonProviding: {
 	prototype: CPBarButtonProviding;
 };
 
+/**
+ * @since 14.0
+ */
 declare const enum CPBarButtonStyle {
 
 	None = 0,
@@ -193,6 +269,9 @@ declare const enum CPBarButtonStyle {
 	Rounded = 1
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum CPBarButtonType {
 
 	Text = 0,
@@ -200,6 +279,9 @@ declare const enum CPBarButtonType {
 	Image = 1
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPButton extends NSObject {
 
 	static alloc(): CPButton; // inherited from NSObject
@@ -219,6 +301,9 @@ declare class CPButton extends NSObject {
 
 declare var CPButtonMaximumImageSize: CGSize;
 
+/**
+ * @since 14.0
+ */
 declare class CPContact extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPContact; // inherited from NSObject
@@ -248,6 +333,9 @@ declare class CPContact extends NSObject implements NSSecureCoding {
 	initWithNameImage(name: string, image: UIImage): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPContactCallButton extends CPButton {
 
 	static alloc(): CPContactCallButton; // inherited from NSObject
@@ -259,6 +347,9 @@ declare class CPContactCallButton extends CPButton {
 	initWithHandler(handler: (p1: CPButton) => void): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPContactDirectionsButton extends CPButton {
 
 	static alloc(): CPContactDirectionsButton; // inherited from NSObject
@@ -270,6 +361,9 @@ declare class CPContactDirectionsButton extends CPButton {
 	initWithHandler(handler: (p1: CPButton) => void): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPContactMessageButton extends CPButton {
 
 	static alloc(): CPContactMessageButton; // inherited from NSObject
@@ -283,6 +377,9 @@ declare class CPContactMessageButton extends CPButton {
 	initWithPhoneOrEmail(phoneOrEmail: string): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPContactTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPContactTemplate; // inherited from NSObject
@@ -336,6 +433,9 @@ declare class CPContactTemplate extends CPTemplate implements CPBarButtonProvidi
 	self(): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum CPContentStyle {
 
 	Light = 1,
@@ -343,6 +443,9 @@ declare const enum CPContentStyle {
 	Dark = 2
 }
 
+/**
+ * @since 13.4
+ */
 declare class CPDashboardButton extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPDashboardButton; // inherited from NSObject
@@ -368,6 +471,9 @@ declare class CPDashboardButton extends NSObject implements NSSecureCoding {
 	initWithTitleVariantsSubtitleVariantsImageHandler(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], image: UIImage, handler: (p1: CPDashboardButton) => void): this;
 }
 
+/**
+ * @since 13.4
+ */
 declare class CPDashboardController extends NSObject {
 
 	static alloc(): CPDashboardController; // inherited from NSObject
@@ -377,6 +483,9 @@ declare class CPDashboardController extends NSObject {
 	shortcutButtons: NSArray<CPDashboardButton>;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPGridButton extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPGridButton; // inherited from NSObject
@@ -402,6 +511,9 @@ declare class CPGridButton extends NSObject implements NSSecureCoding {
 	initWithTitleVariantsImageHandler(titleVariants: NSArray<string> | string[], image: UIImage, handler: (p1: CPGridButton) => void): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPGridTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPGridTemplate; // inherited from NSObject
@@ -456,13 +568,25 @@ declare class CPGridTemplate extends CPTemplate implements CPBarButtonProviding 
 
 	self(): this;
 
+	/**
+	 * @since 15.0
+	 */
 	updateGridButtons(gridButtons: NSArray<CPGridButton> | CPGridButton[]): void;
 
+	/**
+	 * @since 15.0
+	 */
 	updateTitle(title: string): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare var CPGridTemplateMaximumItems: number;
 
+/**
+ * @since 12.0
+ */
 declare class CPImageSet extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPImageSet; // inherited from NSObject
@@ -486,6 +610,9 @@ declare class CPImageSet extends NSObject implements NSSecureCoding {
 	initWithLightContentImageDarkContentImage(lightImage: UIImage, darkImage: UIImage): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPInformationItem extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPInformationItem; // inherited from NSObject
@@ -509,6 +636,9 @@ declare class CPInformationItem extends NSObject implements NSSecureCoding {
 	initWithTitleDetail(title: string, detail: string): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPInformationRatingItem extends CPInformationItem {
 
 	static alloc(): CPInformationRatingItem; // inherited from NSObject
@@ -524,6 +654,9 @@ declare class CPInformationRatingItem extends CPInformationItem {
 	initWithRatingMaximumRatingTitleDetail(rating: number, maximumRating: number, title: string, detail: string): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPInformationTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPInformationTemplate; // inherited from NSObject
@@ -583,6 +716,9 @@ declare class CPInformationTemplate extends CPTemplate implements CPBarButtonPro
 	self(): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum CPInformationTemplateLayout {
 
 	Leading = 0,
@@ -590,6 +726,9 @@ declare const enum CPInformationTemplateLayout {
 	TwoColumn = 1
 }
 
+/**
+ * @since 15.4
+ */
 declare class CPInstrumentClusterController extends NSObject {
 
 	static alloc(): CPInstrumentClusterController; // inherited from NSObject
@@ -609,6 +748,9 @@ declare class CPInstrumentClusterController extends NSObject {
 	readonly speedLimitSetting: CPInstrumentClusterSetting;
 }
 
+/**
+ * @since 15.4
+ */
 interface CPInstrumentClusterControllerDelegate extends NSObjectProtocol {
 
 	instrumentClusterControllerDidChangeCompassSetting?(instrumentClusterController: CPInstrumentClusterController, compassSetting: CPInstrumentClusterSetting): void;
@@ -628,6 +770,9 @@ declare var CPInstrumentClusterControllerDelegate: {
 	prototype: CPInstrumentClusterControllerDelegate;
 };
 
+/**
+ * @since 15.4
+ */
 declare const enum CPInstrumentClusterSetting {
 
 	Unspecified = 0,
@@ -639,16 +784,25 @@ declare const enum CPInstrumentClusterSetting {
 	UserPreference = 3
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPInterfaceController extends NSObject {
 
 	static alloc(): CPInterfaceController; // inherited from NSObject
 
 	static new(): CPInterfaceController; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	readonly carTraitCollection: UITraitCollection;
 
 	delegate: CPInterfaceControllerDelegate;
 
+	/**
+	 * @since 13.0
+	 */
 	prefersDarkUserInterfaceStyle: boolean;
 
 	readonly presentedTemplate: CPTemplate;
@@ -659,35 +813,87 @@ declare class CPInterfaceController extends NSObject {
 
 	readonly topTemplate: CPTemplate;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	dismissTemplateAnimated(animated: boolean): void;
 
+	/**
+	 * @since 14.0
+	 */
 	dismissTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	popTemplateAnimated(animated: boolean): void;
 
+	/**
+	 * @since 14.0
+	 */
 	popTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	popToRootTemplateAnimated(animated: boolean): void;
 
+	/**
+	 * @since 14.0
+	 */
 	popToRootTemplateAnimatedCompletion(animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	popToTemplateAnimated(targetTemplate: CPTemplate, animated: boolean): void;
 
+	/**
+	 * @since 14.0
+	 */
 	popToTemplateAnimatedCompletion(targetTemplate: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	presentTemplateAnimated(templateToPresent: CPTemplate, animated: boolean): void;
 
+	/**
+	 * @since 14.0
+	 */
 	presentTemplateAnimatedCompletion(templateToPresent: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	pushTemplateAnimated(templateToPush: CPTemplate, animated: boolean): void;
 
+	/**
+	 * @since 14.0
+	 */
 	pushTemplateAnimatedCompletion(templateToPush: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	setRootTemplateAnimated(rootTemplate: CPTemplate, animated: boolean): void;
 
+	/**
+	 * @since 14.0
+	 */
 	setRootTemplateAnimatedCompletion(rootTemplate: CPTemplate, animated: boolean, completion: (p1: boolean, p2: NSError) => void): void;
 }
 
+/**
+ * @since 12.0
+ */
 interface CPInterfaceControllerDelegate extends NSObjectProtocol {
 
 	templateDidAppearAnimated?(aTemplate: CPTemplate, animated: boolean): void;
@@ -703,6 +909,9 @@ declare var CPInterfaceControllerDelegate: {
 	prototype: CPInterfaceControllerDelegate;
 };
 
+/**
+ * @since 17.4
+ */
 declare const enum CPJunctionType {
 
 	Intersection = 0,
@@ -710,19 +919,53 @@ declare const enum CPJunctionType {
 	Roundabout = 1
 }
 
+/**
+ * @since 17.4
+ */
 declare class CPLane extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CPLane; // inherited from NSObject
 
 	static new(): CPLane; // inherited from NSObject
 
+	/**
+	 * @since 18.0
+	 */
+	readonly angles: NSArray<NSMeasurement<NSUnitAngle>>;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly highlightedAngle: NSMeasurement<NSUnitAngle>;
+
+	/**
+	 * @since 17.4
+	 * @deprecated 18.0
+	 */
 	primaryAngle: NSMeasurement<NSUnitAngle>;
 
+	/**
+	 * @since 17.4
+	 * @deprecated 18.0
+	 */
 	secondaryAngles: NSArray<NSMeasurement<NSUnitAngle>>;
 
+	/**
+	 * @since 17.4
+	 */
 	status: CPLaneStatus;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	/**
+	 * @since 18.0
+	 */
+	constructor(o: { angles: NSArray<NSMeasurement<NSUnitAngle>> | NSMeasurement<NSUnitAngle>[]; });
+
+	/**
+	 * @since 18.0
+	 */
+	constructor(o: { angles: NSArray<NSMeasurement<NSUnitAngle>> | NSMeasurement<NSUnitAngle>[]; highlightedAngle: NSMeasurement<NSUnitAngle>; isPreferred: boolean; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -730,17 +973,42 @@ declare class CPLane extends NSObject implements NSCopying, NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 18.0
+	 */
+	initWithAngles(angles: NSArray<NSMeasurement<NSUnitAngle>> | NSMeasurement<NSUnitAngle>[]): this;
+
+	/**
+	 * @since 18.0
+	 */
+	initWithAnglesHighlightedAngleIsPreferred(angles: NSArray<NSMeasurement<NSUnitAngle>> | NSMeasurement<NSUnitAngle>[], highlightedAngle: NSMeasurement<NSUnitAngle>, preferred: boolean): this;
+
 	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 17.4
+	 * @deprecated 18.0
+	 */
+	setStatus(status: CPLaneStatus): void;
 }
 
+/**
+ * @since 17.4
+ */
 declare class CPLaneGuidance extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CPLaneGuidance; // inherited from NSObject
 
 	static new(): CPLaneGuidance; // inherited from NSObject
 
+	/**
+	 * @since 17.4
+	 */
 	instructionVariants: NSArray<string>;
 
+	/**
+	 * @since 17.4
+	 */
 	lanes: NSArray<CPLane>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -754,6 +1022,9 @@ declare class CPLaneGuidance extends NSObject implements NSCopying, NSSecureCodi
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum CPLaneStatus {
 
 	NotGood = 0,
@@ -763,6 +1034,9 @@ declare const enum CPLaneStatus {
 	Preferred = 2
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum CPLimitableUserInterface {
 
 	Keyboard = 1,
@@ -770,6 +1044,9 @@ declare const enum CPLimitableUserInterface {
 	Lists = 2
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPListImageRowItem extends NSObject implements CPSelectableListItem {
 
 	static alloc(): CPListImageRowItem; // inherited from NSObject
@@ -778,6 +1055,9 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	readonly gridImages: NSArray<UIImage>;
 
+	/**
+	 * @since 17.4
+	 */
 	imageTitles: NSArray<string>;
 
 	listImageRowHandler: (p1: CPListImageRowItem, p2: number, p3: () => void) => void;
@@ -790,6 +1070,9 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	enabled: boolean; // inherited from CPListTemplateItem
 
 	handler: (p1: CPSelectableListItem, p2: () => void) => void; // inherited from CPSelectableListItem
@@ -806,6 +1089,9 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	constructor(o: { text: string; images: NSArray<UIImage> | UIImage[]; });
 
+	/**
+	 * @since 17.4
+	 */
 	constructor(o: { text: string; images: NSArray<UIImage> | UIImage[]; imageTitles: NSArray<string> | string[]; });
 
 	class(): typeof NSObject;
@@ -814,6 +1100,9 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	initWithTextImages(text: string, images: NSArray<UIImage> | UIImage[]): this;
 
+	/**
+	 * @since 17.4
+	 */
 	initWithTextImagesImageTitles(text: string, images: NSArray<UIImage> | UIImage[], imageTitles: NSArray<string> | string[]): this;
 
 	isEqual(object: any): boolean;
@@ -837,6 +1126,9 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 	updateImages(gridImages: NSArray<UIImage> | UIImage[]): void;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPListItem extends NSObject implements CPSelectableListItem {
 
 	static alloc(): CPListItem; // inherited from NSObject
@@ -845,30 +1137,59 @@ declare class CPListItem extends NSObject implements CPSelectableListItem {
 
 	readonly accessoryImage: UIImage;
 
+	/**
+	 * @since 14.0
+	 */
 	accessoryType: CPListItemAccessoryType;
 
 	readonly detailText: string;
 
+	/**
+	 * @since 14.0
+	 */
 	explicitContent: boolean;
 
 	readonly image: UIImage;
 
+	/**
+	 * @since 14.0
+	 */
 	playbackProgress: number;
 
+	/**
+	 * @since 14.0
+	 */
 	playing: boolean;
 
+	/**
+	 * @since 14.0
+	 */
 	playingIndicatorLocation: CPListItemPlayingIndicatorLocation;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	readonly showsDisclosureIndicator: boolean;
 
+	/**
+	 * @since 14.0
+	 * @deprecated 14.0
+	 */
 	showsExplicitLabel: boolean;
 
+	/**
+	 * @since 14.0
+	 */
 	static readonly maximumImageSize: CGSize;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	enabled: boolean; // inherited from CPListTemplateItem
 
 	handler: (p1: CPSelectableListItem, p2: () => void) => void; // inherited from CPSelectableListItem
@@ -889,8 +1210,15 @@ declare class CPListItem extends NSObject implements CPSelectableListItem {
 
 	constructor(o: { text: string; detailText: string; image: UIImage; });
 
+	/**
+	 * @since 14.0
+	 */
 	constructor(o: { text: string; detailText: string; image: UIImage; accessoryImage: UIImage; accessoryType: CPListItemAccessoryType; });
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	constructor(o: { text: string; detailText: string; image: UIImage; showsDisclosureIndicator: boolean; });
 
 	class(): typeof NSObject;
@@ -901,8 +1229,15 @@ declare class CPListItem extends NSObject implements CPSelectableListItem {
 
 	initWithTextDetailTextImage(text: string, detailText: string, image: UIImage): this;
 
+	/**
+	 * @since 14.0
+	 */
 	initWithTextDetailTextImageAccessoryImageAccessoryType(text: string, detailText: string, image: UIImage, accessoryImage: UIImage, accessoryType: CPListItemAccessoryType): this;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	initWithTextDetailTextImageShowsDisclosureIndicator(text: string, detailText: string, image: UIImage, showsDisclosureIndicator: boolean): this;
 
 	isEqual(object: any): boolean;
@@ -923,12 +1258,24 @@ declare class CPListItem extends NSObject implements CPSelectableListItem {
 
 	self(): this;
 
+	/**
+	 * @since 14.0
+	 */
 	setAccessoryImage(accessoryImage: UIImage): void;
 
+	/**
+	 * @since 14.0
+	 */
 	setDetailText(detailText: string): void;
 
+	/**
+	 * @since 14.0
+	 */
 	setImage(image: UIImage): void;
 
+	/**
+	 * @since 14.0
+	 */
 	setText(text: string): void;
 }
 
@@ -948,6 +1295,9 @@ declare const enum CPListItemPlayingIndicatorLocation {
 	Trailing = 1
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPListSection extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPListSection; // inherited from NSObject
@@ -956,10 +1306,19 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 
 	readonly header: string;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly headerButton: CPButton;
 
+	/**
+	 * @since 15.0
+	 */
 	headerImage: UIImage;
 
+	/**
+	 * @since 15.0
+	 */
 	readonly headerSubtitle: string;
 
 	readonly items: NSArray<CPListTemplateItem>;
@@ -972,6 +1331,9 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 
 	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; });
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; header: string; headerSubtitle: string; headerImage: UIImage; headerButton: CPButton; sectionIndexTitle: string; });
 
 	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; header: string; sectionIndexTitle: string; });
@@ -984,6 +1346,9 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 
 	initWithItems(items: NSArray<CPListTemplateItem> | CPListTemplateItem[]): this;
 
+	/**
+	 * @since 15.0
+	 */
 	initWithItemsHeaderHeaderSubtitleHeaderImageHeaderButtonSectionIndexTitle(items: NSArray<CPListTemplateItem> | CPListTemplateItem[], header: string, headerSubtitle: string, headerImage: UIImage, headerButton: CPButton, sectionIndexTitle: string): this;
 
 	initWithItemsHeaderSectionIndexTitle(items: NSArray<CPListTemplateItem> | CPListTemplateItem[], header: string, sectionIndexTitle: string): this;
@@ -991,30 +1356,58 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 	itemAtIndex(index: number): CPListTemplateItem;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPListTemplate; // inherited from NSObject
 
 	static new(): CPListTemplate; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	assistantCellConfiguration: CPAssistantCellConfiguration;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	delegate: CPListTemplateDelegate;
 
+	/**
+	 * @since 14.0
+	 */
 	emptyViewSubtitleVariants: NSArray<string>;
 
+	/**
+	 * @since 14.0
+	 */
 	emptyViewTitleVariants: NSArray<string>;
 
+	/**
+	 * @since 14.0
+	 */
 	readonly itemCount: number;
 
+	/**
+	 * @since 14.0
+	 */
 	readonly sectionCount: number;
 
 	readonly sections: NSArray<CPListSection>;
 
 	readonly title: string;
 
+	/**
+	 * @since 14.0
+	 */
 	static readonly maximumItemCount: number;
 
+	/**
+	 * @since 14.0
+	 */
 	static readonly maximumSectionCount: number;
 
 	backButton: CPBarButton; // inherited from CPBarButtonProviding
@@ -1037,16 +1430,25 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 
 	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; });
 
+	/**
+	 * @since 15.0
+	 */
 	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	/**
+	 * @since 14.0
+	 */
 	indexPathForItem(item: CPListTemplateItem): NSIndexPath;
 
 	initWithTitleSections(title: string, sections: NSArray<CPListSection> | CPListSection[]): this;
 
+	/**
+	 * @since 15.0
+	 */
 	initWithTitleSectionsAssistantCellConfiguration(title: string, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration): this;
 
 	isEqual(object: any): boolean;
@@ -1070,8 +1472,16 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	updateSections(sections: NSArray<CPListSection> | CPListSection[]): void;
 }
 
+/**
+ * @since 12.0
+ * @deprecated 14.0
+ */
 interface CPListTemplateDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 12.0
+	 * @deprecated 14.0
+	 */
 	listTemplateDidSelectListItemCompletionHandler(listTemplate: CPListTemplate, item: CPListItem, completionHandler: () => void): void;
 }
 declare var CPListTemplateDelegate: {
@@ -1079,8 +1489,14 @@ declare var CPListTemplateDelegate: {
 	prototype: CPListTemplateDelegate;
 };
 
+/**
+ * @since 14.0
+ */
 interface CPListTemplateItem extends NSObjectProtocol {
 
+	/**
+	 * @since 15.0
+	 */
 	enabled: boolean;
 
 	text: string;
@@ -1092,6 +1508,9 @@ declare var CPListTemplateItem: {
 	prototype: CPListTemplateItem;
 };
 
+/**
+ * @since 12.0
+ */
 declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CPManeuver; // inherited from NSObject
@@ -1100,46 +1519,98 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 
 	attributedInstructionVariants: NSArray<NSAttributedString>;
 
+	/**
+	 * @since 15.4
+	 */
 	cardBackgroundColor: UIColor;
 
+	/**
+	 * @since 14.0
+	 */
 	dashboardAttributedInstructionVariants: NSArray<NSAttributedString>;
 
+	/**
+	 * @since 14.0
+	 */
 	dashboardInstructionVariants: NSArray<string>;
 
+	/**
+	 * @since 14.0
+	 */
 	dashboardJunctionImage: UIImage;
 
+	/**
+	 * @since 14.0
+	 */
 	dashboardSymbolImage: UIImage;
 
+	/**
+	 * @since 17.4
+	 */
 	highwayExitLabel: string;
 
 	initialTravelEstimates: CPTravelEstimates;
 
 	instructionVariants: NSArray<string>;
 
+	/**
+	 * @since 17.4
+	 */
 	junctionElementAngles: NSSet<NSMeasurement<NSUnitAngle>>;
 
+	/**
+	 * @since 17.4
+	 */
 	junctionExitAngle: NSMeasurement<NSUnitAngle>;
 
 	junctionImage: UIImage;
 
+	/**
+	 * @since 17.4
+	 */
 	junctionType: CPJunctionType;
 
+	/**
+	 * @since 17.4
+	 */
 	linkedLaneGuidance: CPLaneGuidance;
 
+	/**
+	 * @since 17.4
+	 */
 	maneuverType: CPManeuverType;
 
+	/**
+	 * @since 14.0
+	 */
 	notificationAttributedInstructionVariants: NSArray<NSAttributedString>;
 
+	/**
+	 * @since 14.0
+	 */
 	notificationInstructionVariants: NSArray<string>;
 
+	/**
+	 * @since 14.0
+	 */
 	notificationSymbolImage: UIImage;
 
+	/**
+	 * @since 17.4
+	 */
 	roadFollowingManeuverVariants: NSArray<string>;
 
 	symbolImage: UIImage;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 13.0
+	 */
 	symbolSet: CPImageSet;
 
+	/**
+	 * @since 17.4
+	 */
 	trafficSide: CPTrafficSide;
 
 	userInfo: any;
@@ -1155,6 +1626,9 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum CPManeuverDisplayStyle {
 
 	Default = 0,
@@ -1168,6 +1642,9 @@ declare const enum CPManeuverDisplayStyle {
 	InstructionOnly = 4
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum CPManeuverState {
 
 	Continue = 0,
@@ -1179,6 +1656,9 @@ declare const enum CPManeuverState {
 	Execute = 3
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum CPManeuverType {
 
 	NoTurn = 0,
@@ -1290,6 +1770,9 @@ declare const enum CPManeuverType {
 	ChangeHighwayRight = 53
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPMapButton extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPMapButton; // inherited from NSObject
@@ -1317,6 +1800,9 @@ declare class CPMapButton extends NSObject implements NSSecureCoding {
 	initWithHandler(handler: (p1: CPMapButton) => void): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPMapTemplate; // inherited from NSObject
@@ -1391,6 +1877,9 @@ declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	showRouteChoicesPreviewForTripTextConfiguration(tripPreview: CPTrip, textConfiguration: CPTripPreviewTextConfiguration): void;
 
+	/**
+	 * @since 14.0
+	 */
 	showTripPreviewsSelectedTripTextConfiguration(tripPreviews: NSArray<CPTrip> | CPTrip[], selectedTrip: CPTrip, textConfiguration: CPTripPreviewTextConfiguration): void;
 
 	showTripPreviewsTextConfiguration(tripPreviews: NSArray<CPTrip> | CPTrip[], textConfiguration: CPTripPreviewTextConfiguration): void;
@@ -1402,6 +1891,9 @@ declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 	updateTravelEstimatesForTripWithTimeRemainingColor(estimates: CPTravelEstimates, trip: CPTrip, timeRemainingColor: CPTimeRemainingColor): void;
 }
 
+/**
+ * @since 12.0
+ */
 interface CPMapTemplateDelegate extends NSObjectProtocol {
 
 	mapTemplateDidBeginPanGesture?(mapTemplate: CPMapTemplate): void;
@@ -1457,6 +1949,9 @@ declare var CPMaximumMessageItemImageSize: CGSize;
 
 declare var CPMaximumNumberOfGridImages: number;
 
+/**
+ * @since 14.0
+ */
 declare class CPMessageComposeBarButton extends CPBarButton {
 
 	static alloc(): CPMessageComposeBarButton; // inherited from NSObject
@@ -1477,6 +1972,9 @@ declare const enum CPMessageLeadingItem {
 	Star = 2
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPMessageListItem extends NSObject implements CPListTemplateItem {
 
 	static alloc(): CPMessageListItem; // inherited from NSObject
@@ -1501,6 +1999,9 @@ declare class CPMessageListItem extends NSObject implements CPListTemplateItem {
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	/**
+	 * @since 15.0
+	 */
 	enabled: boolean; // inherited from CPListTemplateItem
 
 	readonly hash: number; // inherited from NSObjectProtocol
@@ -1544,6 +2045,9 @@ declare class CPMessageListItem extends NSObject implements CPListTemplateItem {
 	self(): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPMessageListItemLeadingConfiguration extends NSObject {
 
 	static alloc(): CPMessageListItemLeadingConfiguration; // inherited from NSObject
@@ -1561,6 +2065,9 @@ declare class CPMessageListItemLeadingConfiguration extends NSObject {
 	initWithLeadingItemLeadingImageUnread(leadingItem: CPMessageLeadingItem, leadingImage: UIImage, unread: boolean): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPMessageListItemTrailingConfiguration extends NSObject {
 
 	static alloc(): CPMessageListItemTrailingConfiguration; // inherited from NSObject
@@ -1583,6 +2090,9 @@ declare const enum CPMessageTrailingItem {
 	Mute = 1
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPNavigationAlert; // inherited from NSObject
@@ -1609,6 +2119,10 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; image: UIImage; primaryAction: CPAlertAction; secondaryAction: CPAlertAction; duration: number; });
 
+	/**
+	 * @since 12.0
+	 * @deprecated 13.0
+	 */
 	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; imageSet: CPImageSet; primaryAction: CPAlertAction; secondaryAction: CPAlertAction; duration: number; });
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -1617,11 +2131,18 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	initWithTitleVariantsSubtitleVariantsImagePrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], image: UIImage, primaryAction: CPAlertAction, secondaryAction: CPAlertAction, duration: number): this;
 
+	/**
+	 * @since 12.0
+	 * @deprecated 13.0
+	 */
 	initWithTitleVariantsSubtitleVariantsImageSetPrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], imageSet: CPImageSet, primaryAction: CPAlertAction, secondaryAction: CPAlertAction, duration: number): this;
 
 	updateTitleVariantsSubtitleVariants(newTitleVariants: NSArray<string> | string[], newSubtitleVariants: NSArray<string> | string[]): void;
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum CPNavigationAlertDismissalContext {
 
 	Timeout = 0,
@@ -1633,6 +2154,9 @@ declare const enum CPNavigationAlertDismissalContext {
 
 declare var CPNavigationAlertMinimumDuration: number;
 
+/**
+ * @since 12.0
+ */
 declare class CPNavigationSession extends NSObject {
 
 	static alloc(): CPNavigationSession; // inherited from NSObject
@@ -1659,13 +2183,22 @@ declare class CPNavigationSession extends NSObject {
 
 	pauseTripForReasonDescription(reason: CPTripPauseReason, description: string): void;
 
+	/**
+	 * @since 15.4
+	 */
 	pauseTripForReasonDescriptionTurnCardColor(reason: CPTripPauseReason, description: string, turnCardColor: UIColor): void;
 
+	/**
+	 * @since 17.4
+	 */
 	resumeTripWithUpdatedRouteInformation(routeInformation: CPRouteInformation): void;
 
 	updateTravelEstimatesForManeuver(estimates: CPTravelEstimates, maneuver: CPManeuver): void;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPNowPlayingAddToLibraryButton extends CPNowPlayingButton {
 
 	static alloc(): CPNowPlayingAddToLibraryButton; // inherited from NSObject
@@ -1673,6 +2206,9 @@ declare class CPNowPlayingAddToLibraryButton extends CPNowPlayingButton {
 	static new(): CPNowPlayingAddToLibraryButton; // inherited from NSObject
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPNowPlayingButton extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPNowPlayingButton; // inherited from NSObject
@@ -1698,6 +2234,9 @@ declare class CPNowPlayingButton extends NSObject implements NSSecureCoding {
 
 declare var CPNowPlayingButtonMaximumImageSize: CGSize;
 
+/**
+ * @since 14.0
+ */
 declare class CPNowPlayingImageButton extends CPNowPlayingButton {
 
 	static alloc(): CPNowPlayingImageButton; // inherited from NSObject
@@ -1711,6 +2250,9 @@ declare class CPNowPlayingImageButton extends CPNowPlayingButton {
 	initWithImageHandler(image: UIImage, handler: (p1: CPNowPlayingButton) => void): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPNowPlayingMoreButton extends CPNowPlayingButton {
 
 	static alloc(): CPNowPlayingMoreButton; // inherited from NSObject
@@ -1718,6 +2260,9 @@ declare class CPNowPlayingMoreButton extends CPNowPlayingButton {
 	static new(): CPNowPlayingMoreButton; // inherited from NSObject
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPNowPlayingPlaybackRateButton extends CPNowPlayingButton {
 
 	static alloc(): CPNowPlayingPlaybackRateButton; // inherited from NSObject
@@ -1725,6 +2270,9 @@ declare class CPNowPlayingPlaybackRateButton extends CPNowPlayingButton {
 	static new(): CPNowPlayingPlaybackRateButton; // inherited from NSObject
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPNowPlayingRepeatButton extends CPNowPlayingButton {
 
 	static alloc(): CPNowPlayingRepeatButton; // inherited from NSObject
@@ -1732,6 +2280,9 @@ declare class CPNowPlayingRepeatButton extends CPNowPlayingButton {
 	static new(): CPNowPlayingRepeatButton; // inherited from NSObject
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPNowPlayingShuffleButton extends CPNowPlayingButton {
 
 	static alloc(): CPNowPlayingShuffleButton; // inherited from NSObject
@@ -1739,6 +2290,9 @@ declare class CPNowPlayingShuffleButton extends CPNowPlayingButton {
 	static new(): CPNowPlayingShuffleButton; // inherited from NSObject
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPNowPlayingTemplate extends CPTemplate {
 
 	static alloc(): CPNowPlayingTemplate; // inherited from NSObject
@@ -1762,6 +2316,9 @@ declare class CPNowPlayingTemplate extends CPTemplate {
 	updateNowPlayingButtons(nowPlayingButtons: NSArray<CPNowPlayingButton> | CPNowPlayingButton[]): void;
 }
 
+/**
+ * @since 14.0
+ */
 interface CPNowPlayingTemplateObserver extends NSObjectProtocol {
 
 	nowPlayingTemplateAlbumArtistButtonTapped?(nowPlayingTemplate: CPNowPlayingTemplate): void;
@@ -1773,6 +2330,9 @@ declare var CPNowPlayingTemplateObserver: {
 	prototype: CPNowPlayingTemplateObserver;
 };
 
+/**
+ * @since 12.0
+ */
 declare const enum CPPanDirection {
 
 	None = 0,
@@ -1786,6 +2346,9 @@ declare const enum CPPanDirection {
 	Down = 8
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPPointOfInterest; // inherited from NSObject
@@ -1806,6 +2369,9 @@ declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	secondaryButton: CPTextButton;
 
+	/**
+	 * @since 16.0
+	 */
 	selectedPinImage: UIImage;
 
 	subtitle: string;
@@ -1816,8 +2382,14 @@ declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	userInfo: any;
 
+	/**
+	 * @since 16.0
+	 */
 	static readonly pinImageSize: CGSize;
 
+	/**
+	 * @since 16.0
+	 */
 	static readonly selectedPinImageSize: CGSize;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -1826,6 +2398,9 @@ declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	constructor(o: { location: MKMapItem; title: string; subtitle: string; summary: string; detailTitle: string; detailSubtitle: string; detailSummary: string; pinImage: UIImage; });
 
+	/**
+	 * @since 16.0
+	 */
 	constructor(o: { location: MKMapItem; title: string; subtitle: string; summary: string; detailTitle: string; detailSubtitle: string; detailSummary: string; pinImage: UIImage; selectedPinImage: UIImage; });
 
 	encodeWithCoder(coder: NSCoder): void;
@@ -1834,9 +2409,15 @@ declare class CPPointOfInterest extends NSObject implements NSSecureCoding {
 
 	initWithLocationTitleSubtitleSummaryDetailTitleDetailSubtitleDetailSummaryPinImage(location: MKMapItem, title: string, subtitle: string, summary: string, detailTitle: string, detailSubtitle: string, detailSummary: string, pinImage: UIImage): this;
 
+	/**
+	 * @since 16.0
+	 */
 	initWithLocationTitleSubtitleSummaryDetailTitleDetailSubtitleDetailSummaryPinImageSelectedPinImage(location: MKMapItem, title: string, subtitle: string, summary: string, detailTitle: string, detailSubtitle: string, detailSummary: string, pinImage: UIImage, selectedPinImage: UIImage): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CPPointOfInterestTemplate extends CPTemplate implements CPBarButtonProviding {
 
 	static alloc(): CPPointOfInterestTemplate; // inherited from NSObject
@@ -1898,6 +2479,9 @@ declare class CPPointOfInterestTemplate extends CPTemplate implements CPBarButto
 	setPointsOfInterestSelectedIndex(pointsOfInterest: NSArray<CPPointOfInterest> | CPPointOfInterest[], selectedIndex: number): void;
 }
 
+/**
+ * @since 14.0
+ */
 interface CPPointOfInterestTemplateDelegate extends NSObjectProtocol {
 
 	pointOfInterestTemplateDidChangeMapRegion(pointOfInterestTemplate: CPPointOfInterestTemplate, region: MKCoordinateRegion): void;
@@ -1909,6 +2493,9 @@ declare var CPPointOfInterestTemplateDelegate: {
 	prototype: CPPointOfInterestTemplateDelegate;
 };
 
+/**
+ * @since 12.0
+ */
 declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CPRouteChoice; // inherited from NSObject
@@ -1938,22 +2525,43 @@ declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCodin
 	initWithSummaryVariantsAdditionalInformationVariantsSelectionSummaryVariants(summaryVariants: NSArray<string> | string[], additionalInformationVariants: NSArray<string> | string[], selectionSummaryVariants: NSArray<string> | string[]): this;
 }
 
+/**
+ * @since 17.4
+ */
 declare class CPRouteInformation extends NSObject {
 
 	static alloc(): CPRouteInformation; // inherited from NSObject
 
 	static new(): CPRouteInformation; // inherited from NSObject
 
+	/**
+	 * @since 17.4
+	 */
 	readonly currentLaneGuidance: CPLaneGuidance;
 
+	/**
+	 * @since 17.4
+	 */
 	readonly currentManeuvers: NSArray<CPManeuver>;
 
+	/**
+	 * @since 17.4
+	 */
 	readonly laneGuidances: NSArray<CPLaneGuidance>;
 
+	/**
+	 * @since 17.4
+	 */
 	readonly maneuverTravelEstimates: CPTravelEstimates;
 
+	/**
+	 * @since 17.4
+	 */
 	readonly maneuvers: NSArray<CPManeuver>;
 
+	/**
+	 * @since 17.4
+	 */
 	readonly tripTravelEstimates: CPTravelEstimates;
 
 	constructor(o: { maneuvers: NSArray<CPManeuver> | CPManeuver[]; laneGuidances: NSArray<CPLaneGuidance> | CPLaneGuidance[]; currentManeuvers: NSArray<CPManeuver> | CPManeuver[]; currentLaneGuidance: CPLaneGuidance; tripTravelEstimates: CPTravelEstimates; maneuverTravelEstimates: CPTravelEstimates; });
@@ -1961,6 +2569,9 @@ declare class CPRouteInformation extends NSObject {
 	initWithManeuversLaneGuidancesCurrentManeuversCurrentLaneGuidanceTripTravelEstimatesManeuverTravelEstimates(maneuvers: NSArray<CPManeuver> | CPManeuver[], laneGuidances: NSArray<CPLaneGuidance> | CPLaneGuidance[], currentManeuvers: NSArray<CPManeuver> | CPManeuver[], currentLaneGuidance: CPLaneGuidance, tripTravelEstimates: CPTravelEstimates, maneuverTravelEstimates: CPTravelEstimates): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPSearchTemplate extends CPTemplate {
 
 	static alloc(): CPSearchTemplate; // inherited from NSObject
@@ -1970,6 +2581,9 @@ declare class CPSearchTemplate extends CPTemplate {
 	delegate: CPSearchTemplateDelegate;
 }
 
+/**
+ * @since 12.0
+ */
 interface CPSearchTemplateDelegate extends NSObjectProtocol {
 
 	searchTemplateSearchButtonPressed?(searchTemplate: CPSearchTemplate): void;
@@ -1983,6 +2597,9 @@ declare var CPSearchTemplateDelegate: {
 	prototype: CPSearchTemplateDelegate;
 };
 
+/**
+ * @since 14.0
+ */
 interface CPSelectableListItem extends CPListTemplateItem {
 
 	handler: (p1: CPSelectableListItem, p2: () => void) => void;
@@ -1992,12 +2609,18 @@ declare var CPSelectableListItem: {
 	prototype: CPSelectableListItem;
 };
 
+/**
+ * @since 12.0
+ */
 declare class CPSessionConfiguration extends NSObject {
 
 	static alloc(): CPSessionConfiguration; // inherited from NSObject
 
 	static new(): CPSessionConfiguration; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	readonly contentStyle: CPContentStyle;
 
 	delegate: CPSessionConfigurationDelegate;
@@ -2009,8 +2632,14 @@ declare class CPSessionConfiguration extends NSObject {
 	initWithDelegate(delegate: CPSessionConfigurationDelegate): this;
 }
 
+/**
+ * @since 12.0
+ */
 interface CPSessionConfigurationDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 13.0
+	 */
 	sessionConfigurationContentStyleChanged?(sessionConfiguration: CPSessionConfiguration, contentStyle: CPContentStyle): void;
 
 	sessionConfigurationLimitedUserInterfacesChanged?(sessionConfiguration: CPSessionConfiguration, limitedUserInterfaces: CPLimitableUserInterface): void;
@@ -2020,6 +2649,9 @@ declare var CPSessionConfigurationDelegate: {
 	prototype: CPSessionConfigurationDelegate;
 };
 
+/**
+ * @since 14.0
+ */
 declare class CPTabBarTemplate extends CPTemplate {
 
 	static alloc(): CPTabBarTemplate; // inherited from NSObject
@@ -2038,13 +2670,22 @@ declare class CPTabBarTemplate extends CPTemplate {
 
 	initWithTemplates(templates: NSArray<CPTemplate> | CPTemplate[]): this;
 
+	/**
+	 * @since 17.0
+	 */
 	selectTemplate(newTemplate: CPTemplate): void;
 
+	/**
+	 * @since 17.0
+	 */
 	selectTemplateAtIndex(index: number): void;
 
 	updateTemplates(newTemplates: NSArray<CPTemplate> | CPTemplate[]): void;
 }
 
+/**
+ * @since 14.0
+ */
 interface CPTabBarTemplateDelegate extends NSObjectProtocol {
 
 	tabBarTemplateDidSelectTemplate(tabBarTemplate: CPTabBarTemplate, selectedTemplate: CPTemplate): void;
@@ -2054,18 +2695,33 @@ declare var CPTabBarTemplateDelegate: {
 	prototype: CPTabBarTemplateDelegate;
 };
 
+/**
+ * @since 12.0
+ */
 declare class CPTemplate extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPTemplate; // inherited from NSObject
 
 	static new(): CPTemplate; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	showsTabBadge: boolean;
 
+	/**
+	 * @since 14.0
+	 */
 	tabImage: UIImage;
 
+	/**
+	 * @since 14.0
+	 */
 	tabSystemItem: UITabBarSystemItem;
 
+	/**
+	 * @since 14.0
+	 */
 	tabTitle: string;
 
 	userInfo: any;
@@ -2079,6 +2735,9 @@ declare class CPTemplate extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 13.4
+ */
 declare class CPTemplateApplicationDashboardScene extends UIScene {
 
 	static alloc(): CPTemplateApplicationDashboardScene; // inherited from NSObject
@@ -2092,6 +2751,9 @@ declare class CPTemplateApplicationDashboardScene extends UIScene {
 	delegate: CPTemplateApplicationDashboardSceneDelegate;
 }
 
+/**
+ * @since 13.4
+ */
 interface CPTemplateApplicationDashboardSceneDelegate extends UISceneDelegate {
 
 	templateApplicationDashboardSceneDidConnectDashboardControllerToWindow?(templateApplicationDashboardScene: CPTemplateApplicationDashboardScene, dashboardController: CPDashboardController, window: UIWindow): void;
@@ -2103,8 +2765,14 @@ declare var CPTemplateApplicationDashboardSceneDelegate: {
 	prototype: CPTemplateApplicationDashboardSceneDelegate;
 };
 
+/**
+ * @since 13.4
+ */
 declare var CPTemplateApplicationDashboardSceneSessionRoleApplication: string;
 
+/**
+ * @since 15.4
+ */
 declare class CPTemplateApplicationInstrumentClusterScene extends UIScene {
 
 	static alloc(): CPTemplateApplicationInstrumentClusterScene; // inherited from NSObject
@@ -2118,6 +2786,9 @@ declare class CPTemplateApplicationInstrumentClusterScene extends UIScene {
 	readonly instrumentClusterController: CPInstrumentClusterController;
 }
 
+/**
+ * @since 15.4
+ */
 interface CPTemplateApplicationInstrumentClusterSceneDelegate extends UISceneDelegate {
 
 	contentStyleDidChange?(contentStyle: UIUserInterfaceStyle): void;
@@ -2131,8 +2802,14 @@ declare var CPTemplateApplicationInstrumentClusterSceneDelegate: {
 	prototype: CPTemplateApplicationInstrumentClusterSceneDelegate;
 };
 
+/**
+ * @since 15.4
+ */
 declare var CPTemplateApplicationInstrumentClusterSceneSessionRoleApplication: string;
 
+/**
+ * @since 13.0
+ */
 declare class CPTemplateApplicationScene extends UIScene {
 
 	static alloc(): CPTemplateApplicationScene; // inherited from NSObject
@@ -2141,6 +2818,9 @@ declare class CPTemplateApplicationScene extends UIScene {
 
 	readonly carWindow: CPWindow;
 
+	/**
+	 * @since 15.4
+	 */
 	readonly contentStyle: UIUserInterfaceStyle;
 
 	delegate: CPTemplateApplicationSceneDelegate;
@@ -2148,14 +2828,26 @@ declare class CPTemplateApplicationScene extends UIScene {
 	readonly interfaceController: CPInterfaceController;
 }
 
+/**
+ * @since 13.0
+ */
 interface CPTemplateApplicationSceneDelegate extends UISceneDelegate {
 
+	/**
+	 * @since 15.4
+	 */
 	contentStyleDidChange?(contentStyle: UIUserInterfaceStyle): void;
 
+	/**
+	 * @since 14.0
+	 */
 	templateApplicationSceneDidConnectInterfaceController?(templateApplicationScene: CPTemplateApplicationScene, interfaceController: CPInterfaceController): void;
 
 	templateApplicationSceneDidConnectInterfaceControllerToWindow?(templateApplicationScene: CPTemplateApplicationScene, interfaceController: CPInterfaceController, window: CPWindow): void;
 
+	/**
+	 * @since 14.0
+	 */
 	templateApplicationSceneDidDisconnectInterfaceController?(templateApplicationScene: CPTemplateApplicationScene, interfaceController: CPInterfaceController): void;
 
 	templateApplicationSceneDidDisconnectInterfaceControllerFromWindow?(templateApplicationScene: CPTemplateApplicationScene, interfaceController: CPInterfaceController, window: CPWindow): void;
@@ -2169,8 +2861,14 @@ declare var CPTemplateApplicationSceneDelegate: {
 	prototype: CPTemplateApplicationSceneDelegate;
 };
 
+/**
+ * @since 13.0
+ */
 declare var CPTemplateApplicationSceneSessionRoleApplication: string;
 
+/**
+ * @since 14.0
+ */
 declare class CPTextButton extends NSObject {
 
 	static alloc(): CPTextButton; // inherited from NSObject
@@ -2186,6 +2884,9 @@ declare class CPTextButton extends NSObject {
 	initWithTitleTextStyleHandler(title: string, textStyle: CPTextButtonStyle, handler: (p1: CPTextButton) => void): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum CPTextButtonStyle {
 
 	Normal = 0,
@@ -2195,6 +2896,9 @@ declare const enum CPTextButtonStyle {
 	Confirm = 2
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum CPTimeRemainingColor {
 
 	Default = 0,
@@ -2206,6 +2910,9 @@ declare const enum CPTimeRemainingColor {
 	Red = 3
 }
 
+/**
+ * @since 17.4
+ */
 declare const enum CPTrafficSide {
 
 	Right = 0,
@@ -2213,6 +2920,9 @@ declare const enum CPTrafficSide {
 	Left = 1
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPTravelEstimates; // inherited from NSObject
@@ -2242,6 +2952,9 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 	initWithDistanceRemainingTimeRemaining(distance: NSMeasurement<NSUnitLength>, time: number): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPTrip extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPTrip; // inherited from NSObject
@@ -2271,6 +2984,9 @@ declare class CPTrip extends NSObject implements NSSecureCoding {
 	initWithOriginDestinationRouteChoices(origin: MKMapItem, destination: MKMapItem, routeChoices: NSArray<CPRouteChoice> | CPRouteChoice[]): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum CPTripEstimateStyle {
 
 	Light = 0,
@@ -2278,6 +2994,9 @@ declare const enum CPTripEstimateStyle {
 	Dark = 1
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum CPTripPauseReason {
 
 	Arrived = 1,
@@ -2291,6 +3010,9 @@ declare const enum CPTripPauseReason {
 	ProceedToRoute = 5
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPTripPreviewTextConfiguration extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPTripPreviewTextConfiguration; // inherited from NSObject
@@ -2316,6 +3038,9 @@ declare class CPTripPreviewTextConfiguration extends NSObject implements NSSecur
 	initWithStartButtonTitleAdditionalRoutesButtonTitleOverviewButtonTitle(startButtonTitle: string, additionalRoutesButtonTitle: string, overviewButtonTitle: string): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPVoiceControlState extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPVoiceControlState; // inherited from NSObject
@@ -2343,6 +3068,9 @@ declare class CPVoiceControlState extends NSObject implements NSSecureCoding {
 	initWithIdentifierTitleVariantsImageRepeats(identifier: string, titleVariants: NSArray<string> | string[], image: UIImage, repeats: boolean): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPVoiceControlTemplate extends CPTemplate {
 
 	static alloc(): CPVoiceControlTemplate; // inherited from NSObject
@@ -2360,20 +3088,40 @@ declare class CPVoiceControlTemplate extends CPTemplate {
 	initWithVoiceControlStates(voiceControlStates: NSArray<CPVoiceControlState> | CPVoiceControlState[]): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CPWindow extends UIWindow {
 
 	static alloc(): CPWindow; // inherited from NSObject
 
 	static appearance(): CPWindow; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 */
 	static appearanceForTraitCollection(trait: UITraitCollection): CPWindow; // inherited from UIAppearance
 
+	/**
+	 * @since 8.0
+	 * @deprecated 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): CPWindow; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): CPWindow; // inherited from UIAppearance
 
+	/**
+	 * @since 5.0
+	 * @deprecated 9.0
+	 */
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): CPWindow; // inherited from UIAppearance
 
+	/**
+	 * @since 9.0
+	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): CPWindow; // inherited from UIAppearance
 
 	static new(): CPWindow; // inherited from NSObject

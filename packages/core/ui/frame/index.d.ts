@@ -18,6 +18,16 @@ export interface NavigationData extends EventData {
  */
 export class Frame extends FrameBase {
 	/**
+	 * @private
+	 */
+	_originalBackground?: any;
+
+	/**
+	 * @private
+	 */
+	_saveFragmentsState?();
+
+	/**
 	 * Gets a frame by id.
 	 */
 	static getFrameById(id: string): Frame;
@@ -260,6 +270,12 @@ export function setFragmentClass(clazz: any): void;
 export function getFrameById(id: string): Frame;
 
 /**
+ *
+ * (Android Only) Gets a frame by internally tracked id.
+ */
+export function getFrameByNumberId(frameId: number): Frame;
+
+/**
  * @deprecated Use Frame.topmost() instead.
  *
  * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
@@ -432,6 +448,8 @@ export interface BackstackEntry {
  * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
  */
 export interface AndroidFrame extends Observable {
+	frameId?: any;
+
 	/**
 	 * Gets the native [android ViewGroup](http://developer.android.com/reference/android/view/ViewGroup.html) instance that represents the root layout part of the Frame.
 	 */

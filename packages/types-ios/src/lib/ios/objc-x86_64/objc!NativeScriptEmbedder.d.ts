@@ -3,7 +3,11 @@ declare class NativeScriptEmbedder extends NSObject {
 
 	static alloc(): NativeScriptEmbedder; // inherited from NSObject
 
+	static boot(): void;
+
 	static new(): NativeScriptEmbedder; // inherited from NSObject
+
+	static setup(): void;
 
 	static sharedInstance(): NativeScriptEmbedder;
 

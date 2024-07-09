@@ -63,20 +63,23 @@ function convertGridLength(value: string): ItemSpec {
 	}
 }
 
-function parseAndAddItemSpecs(value: string, func: (itemSpec: ItemSpec) => void): void {
+function parseAndAddItemSpecs(value: string) {
 	// ensure value is a string since view bindings could be parsed as number/int's here
+	const specs: ItemSpec[] = [];
 	const arr = `${value}`.split(/[\s,]+/);
 	for (let i = 0, length = arr.length; i < length; i++) {
 		const str = arr[i].trim();
 		if (str.length > 0) {
-			func(convertGridLength(arr[i].trim()));
+			specs.push(convertGridLength(arr[i].trim()));
 		}
 	}
+	return specs;
 }
 
 export class ItemSpec extends Observable implements ItemSpecDefinition {
 	private _value: number;
 	private _unitType: GridUnitType;
+	toJSON?: () => any;
 
 	constructor(...args) {
 		super();
@@ -147,8 +150,8 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
 
 @CSSType('GridLayout')
 export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
-	private _rows: Array<ItemSpec> = new Array<ItemSpec>();
-	private _cols: Array<ItemSpec> = new Array<ItemSpec>();
+	protected _rows: Array<ItemSpec> = new Array<ItemSpec>();
+	protected _cols: Array<ItemSpec> = new Array<ItemSpec>();
 
 	public static getColumn(element: View): number {
 		return validateArgs(element).col;
@@ -182,19 +185,45 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
 		validateArgs(element).rowSpan = value;
 	}
 
-	public addRow(itemSpec: ItemSpec) {
+	public _addRow(itemSpec: ItemSpec) {
 		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
 		this._rows.push(itemSpec);
+	}
+
+	public addRow(itemSpec: ItemSpec) {
+		this._addRow(itemSpec);
 		this._onRowAdded(itemSpec);
 		this.invalidate();
 	}
 
-	public addColumn(itemSpec: ItemSpec) {
+	public addRows(itemSpecs: ItemSpec[]) {
+		for (let index = 0; index < itemSpecs.length; index++) {
+			const itemSpec = itemSpecs[index];
+			this._addRow(itemSpec);
+			this._onRowAdded(itemSpec);
+		}
+		this.invalidate();
+	}
+
+	public _addColumn(itemSpec: ItemSpec) {
 		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
 		this._cols.push(itemSpec);
+	}
+
+	public addColumn(itemSpec: ItemSpec) {
+		this._addColumn(itemSpec);
 		this._onColumnAdded(itemSpec);
+		this.invalidate();
+	}
+
+	public addColumns(itemSpecs: ItemSpec[]) {
+		for (let index = 0; index < itemSpecs.length; index++) {
+			const itemSpec = itemSpecs[index];
+			this._addColumn(itemSpec);
+			this._onColumnAdded(itemSpec);
+		}
 		this.invalidate();
 	}
 
@@ -316,12 +345,14 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
 
 	set rows(value: string) {
 		this.removeRows();
-		parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addRow(spec));
+		const specs = parseAndAddItemSpecs(value);
+		this.addRows(specs);
 	}
 
 	set columns(value: string) {
 		this.removeColumns();
-		parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addColumn(spec));
+		const specs = parseAndAddItemSpecs(value);
+		this.addColumns(specs);
 	}
 }
 

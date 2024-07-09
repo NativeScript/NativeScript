@@ -1,5 +1,6 @@
 import { profile } from '../profiling';
-import { View } from '../ui';
+import { View } from '../ui/core/view';
+import { isEmbedded } from '../ui/embedding';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 import * as Utils from '../utils';
@@ -231,7 +232,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	get rootController() {
-		return this.window.rootViewController;
+		return this.window?.rootViewController;
 	}
 
 	get nativeApp() {
@@ -367,7 +368,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		});
 
 		if (this._window) {
-			if (root !== null && !NativeScriptEmbedder.sharedInstance().delegate) {
+			if (root !== null && !isEmbedded()) {
 				this.setWindowContent(root);
 			}
 		} else {

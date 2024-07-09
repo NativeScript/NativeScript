@@ -1,4 +1,7 @@
 
+/**
+ * @since 12.5
+ */
 declare const enum ENActivityFlags {
 
 	Reserved1 = 1,
@@ -14,6 +17,9 @@ declare const ENAttenuationMax: number;
 
 declare const ENAttenuationMin: number;
 
+/**
+ * @since 12.5
+ */
 declare const enum ENAuthorizationStatus {
 
 	Unknown = 0,
@@ -25,6 +31,9 @@ declare const enum ENAuthorizationStatus {
 	Authorized = 3
 }
 
+/**
+ * @since 12.5
+ */
 declare const enum ENCalibrationConfidence {
 
 	Lowest = 0,
@@ -36,8 +45,15 @@ declare const enum ENCalibrationConfidence {
 	High = 3
 }
 
+/**
+ * @since 14.0
+ * @deprecated 14.2
+ */
 declare var ENDaysSinceOnsetOfSymptomsUnknown: number;
 
+/**
+ * @since 12.5
+ */
 declare const enum ENDiagnosisReportType {
 
 	Unknown = 0,
@@ -53,6 +69,9 @@ declare const enum ENDiagnosisReportType {
 	Revoked = 5
 }
 
+/**
+ * @since 12.5
+ */
 declare const enum ENErrorCode {
 
 	Unknown = 1,
@@ -90,8 +109,14 @@ declare const enum ENErrorCode {
 	TravelStatusNotAvailable = 17
 }
 
+/**
+ * @since 12.5
+ */
 declare var ENErrorDomain: string;
 
+/**
+ * @since 12.5
+ */
 declare class ENExposureConfiguration extends NSObject {
 
 	static alloc(): ENExposureConfiguration; // inherited from NSObject
@@ -106,6 +131,9 @@ declare class ENExposureConfiguration extends NSObject {
 
 	daysSinceLastExposureLevelValues: NSArray<number>;
 
+	/**
+	 * @since 12.5
+	 */
 	daysSinceLastExposureThreshold: number;
 
 	daysSinceLastExposureWeight: number;
@@ -114,14 +142,29 @@ declare class ENExposureConfiguration extends NSObject {
 
 	durationWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	immediateDurationWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	infectiousnessForDaysSinceOnsetOfSymptoms: NSDictionary<number, number>;
 
+	/**
+	 * @since 12.5
+	 */
 	infectiousnessHighWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	infectiousnessStandardWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	mediumDurationWeight: number;
 
 	metadata: NSDictionary<any, any>;
@@ -130,18 +173,39 @@ declare class ENExposureConfiguration extends NSObject {
 
 	minimumRiskScoreFullRange: number;
 
+	/**
+	 * @since 12.5
+	 */
 	nearDurationWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	otherDurationWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	reportTypeConfirmedClinicalDiagnosisWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	reportTypeConfirmedTestWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	reportTypeNoneMap: ENDiagnosisReportType;
 
+	/**
+	 * @since 12.5
+	 */
 	reportTypeRecursiveWeight: number;
 
+	/**
+	 * @since 12.5
+	 */
 	reportTypeSelfReportedWeight: number;
 
 	transmissionRiskLevelValues: NSArray<number>;
@@ -149,6 +213,9 @@ declare class ENExposureConfiguration extends NSObject {
 	transmissionRiskWeight: number;
 }
 
+/**
+ * @since 12.5
+ */
 declare class ENExposureDaySummary extends NSObject {
 
 	static alloc(): ENExposureDaySummary; // inherited from NSObject
@@ -168,6 +235,9 @@ declare class ENExposureDaySummary extends NSObject {
 	readonly selfReportedSummary: ENExposureSummaryItem;
 }
 
+/**
+ * @since 12.5
+ */
 declare class ENExposureDetectionSummary extends NSObject {
 
 	static alloc(): ENExposureDetectionSummary; // inherited from NSObject
@@ -176,6 +246,9 @@ declare class ENExposureDetectionSummary extends NSObject {
 
 	readonly attenuationDurations: NSArray<number>;
 
+	/**
+	 * @since 12.5
+	 */
 	readonly daySummaries: NSArray<ENExposureDaySummary>;
 
 	readonly daysSinceLastExposure: number;
@@ -191,6 +264,9 @@ declare class ENExposureDetectionSummary extends NSObject {
 	readonly riskScoreSumFullRange: number;
 }
 
+/**
+ * @since 12.5
+ */
 declare class ENExposureInfo extends NSObject {
 
 	static alloc(): ENExposureInfo; // inherited from NSObject
@@ -203,8 +279,14 @@ declare class ENExposureInfo extends NSObject {
 
 	readonly date: Date;
 
+	/**
+	 * @since 12.5
+	 */
 	readonly daysSinceOnsetOfSymptoms: number;
 
+	/**
+	 * @since 12.5
+	 */
 	readonly diagnosisReportType: ENDiagnosisReportType;
 
 	readonly duration: number;
@@ -218,6 +300,9 @@ declare class ENExposureInfo extends NSObject {
 	readonly transmissionRiskLevel: number;
 }
 
+/**
+ * @since 12.5
+ */
 declare class ENExposureSummaryItem extends NSObject {
 
 	static alloc(): ENExposureSummaryItem; // inherited from NSObject
@@ -231,6 +316,9 @@ declare class ENExposureSummaryItem extends NSObject {
 	readonly weightedDurationSum: number;
 }
 
+/**
+ * @since 12.5
+ */
 declare class ENExposureWindow extends NSObject {
 
 	static alloc(): ENExposureWindow; // inherited from NSObject
@@ -247,9 +335,15 @@ declare class ENExposureWindow extends NSObject {
 
 	readonly scanInstances: NSArray<ENScanInstance>;
 
+	/**
+	 * @since 15.2
+	 */
 	readonly variantOfConcernType: ENVariantOfConcernType;
 }
 
+/**
+ * @since 12.5
+ */
 declare const enum ENInfectiousness {
 
 	None = 0,
@@ -259,15 +353,26 @@ declare const enum ENInfectiousness {
 	High = 2
 }
 
+/**
+ * @since 12.5
+ */
 declare class ENManager extends NSObject {
 
 	static alloc(): ENManager; // inherited from NSObject
 
 	static new(): ENManager; // inherited from NSObject
 
+	/**
+	 * @since 12.5
+	 */
 	activityHandler: (p1: ENActivityFlags) => void;
 
+	/**
+	 * @since 14.4
+	 */
 	diagnosisKeysAvailableHandler: (p1: NSArray<ENTemporaryExposureKey>) => void;
+
+	dispatchQueue: NSObject & OS_dispatch_queue;
 
 	readonly exposureNotificationEnabled: boolean;
 
@@ -279,24 +384,43 @@ declare class ENManager extends NSObject {
 
 	activateWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 12.5
+	 */
 	detectExposuresWithConfigurationCompletionHandler(configuration: ENExposureConfiguration, completionHandler: (p1: ENExposureDetectionSummary, p2: NSError) => void): NSProgress;
 
 	detectExposuresWithConfigurationDiagnosisKeyURLsCompletionHandler(configuration: ENExposureConfiguration, diagnosisKeyURLs: NSArray<NSURL> | NSURL[], completionHandler: (p1: ENExposureDetectionSummary, p2: NSError) => void): NSProgress;
 
 	getDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSArray<ENTemporaryExposureKey>, p2: NSError) => void): void;
 
+	/**
+	 * @since 13.5
+	 * @deprecated 13.6
+	 */
 	getExposureInfoFromSummaryUserExplanationCompletionHandler(summary: ENExposureDetectionSummary, userExplanation: string, completionHandler: (p1: NSArray<ENExposureInfo>, p2: NSError) => void): NSProgress;
 
+	/**
+	 * @since 12.5
+	 */
 	getExposureWindowsFromSummaryCompletionHandler(summary: ENExposureDetectionSummary, completionHandler: (p1: NSArray<ENExposureWindow>, p2: NSError) => void): NSProgress;
 
 	getTestDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSArray<ENTemporaryExposureKey>, p2: NSError) => void): void;
 
+	/**
+	 * @since 12.5
+	 */
 	getUserTraveledWithCompletionHandler(completionHandler: (p1: boolean, p2: NSError) => void): void;
 
 	invalidate(): void;
 
+	/**
+	 * @since 14.4
+	 */
 	preAuthorizeDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 14.4
+	 */
 	requestPreAuthorizedDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	setExposureNotificationEnabledCompletionHandler(enabled: boolean, completionHandler: (p1: NSError) => void): void;
@@ -324,6 +448,9 @@ declare const ENRiskWeightMaxV2: number;
 
 declare const ENRiskWeightMin: number;
 
+/**
+ * @since 12.5
+ */
 declare class ENScanInstance extends NSObject {
 
 	static alloc(): ENScanInstance; // inherited from NSObject
@@ -337,6 +464,9 @@ declare class ENScanInstance extends NSObject {
 	readonly typicalAttenuation: number;
 }
 
+/**
+ * @since 12.5
+ */
 declare const enum ENStatus {
 
 	Unknown = 0,
@@ -354,6 +484,9 @@ declare const enum ENStatus {
 	Unauthorized = 6
 }
 
+/**
+ * @since 12.5
+ */
 declare class ENTemporaryExposureKey extends NSObject {
 
 	static alloc(): ENTemporaryExposureKey; // inherited from NSObject
@@ -369,6 +502,9 @@ declare class ENTemporaryExposureKey extends NSObject {
 	transmissionRiskLevel: number;
 }
 
+/**
+ * @since 15.2
+ */
 declare const enum ENVariantOfConcernType {
 
 	TypeUnknown = 0,

@@ -6,7 +6,6 @@ export namespace CSSUtils {
 	export const CLASS_PREFIX = 'ns-';
 	export const MODAL_ROOT_VIEW_CSS_CLASS = `${CLASS_PREFIX}${MODAL}`;
 	export const ROOT_VIEW_CSS_CLASS = `${CLASS_PREFIX}${ROOT}`;
-	export const IgnoredCssDynamicAttributeTracking = new Set<string>();
 
 	export function getSystemCssClasses(): string[] {
 		return cssClasses;

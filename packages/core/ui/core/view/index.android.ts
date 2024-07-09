@@ -16,9 +16,8 @@ import { CoreTypes } from '../../../core-types';
 import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
-import { Screen } from '../../../platform';
+import { Device, Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, Application } from '../../../application';
-import { Device } from '../../../platform';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
@@ -687,6 +686,17 @@ export class View extends ViewCommon {
 		return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
 	}
 	protected _showNativeModalView(parent: View, options: ShowModalOptions) {
+		// if the app is in background while triggering _showNativeModalView
+		// then DialogFragment.show will trigger IllegalStateException: Can not perform this action after onSaveInstanceState
+		// so if in background we create an event to call _showNativeModalView when loaded (going back in foreground)
+		if (Application.inBackground &&  !parent.isLoaded) {
+				const onLoaded = ()=> {
+						parent.off('loaded', onLoaded)
+						this._showNativeModalView(parent, options);
+				};
+				parent.on('loaded', onLoaded);
+				return;
+		}
 		super._showNativeModalView(parent, options);
 		initializeDialogFragment();
 
