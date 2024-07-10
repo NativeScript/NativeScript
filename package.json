@@ -53,7 +53,7 @@
     "jest-environment-jsdom": "~29.7.0",
     "lint-staged": "^15.2.0",
     "module-alias": "^2.2.2",
-    "nativescript": "next",
+    "nativescript": "8.8.0-pre-next-07-03-2024-9781798152",
     "nativescript-typedoc-theme": "1.1.0",
     "nx": "19.4.2",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
