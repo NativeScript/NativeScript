@@ -24,7 +24,11 @@ export class Crypto {
 			(<any>org).nativescript.winter_cg.Crypto.getRandomValues(typedArray);
 		}
 		if (__IOS__) {
+			if (typedArray.BYTES_PER_ELEMENT !== 1) {
+				typedArray = new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+			}
 			const data = NSMutableData.dataWithBytesNoCopyLength(typedArray as never, typedArray.byteLength);
+
 			NSCCrypto.getRandomValues(data);
 		}
 	}
