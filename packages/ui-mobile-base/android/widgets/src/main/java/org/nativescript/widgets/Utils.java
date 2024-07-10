@@ -39,6 +39,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class Utils {
+
 	public static Drawable getDrawable(String uri, Context context) {
 		int resId = 0;
 		int resPrefixLength = "res://".length();
