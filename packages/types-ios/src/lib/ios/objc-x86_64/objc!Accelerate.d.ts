@@ -989,6 +989,11 @@ declare function BNNSGraphGetArgumentIntents(graph: bnns_graph_t, _function: str
 /**
  * @since 18.0
  */
+declare function BNNSGraphGetArgumentInterleaveFactors(graph: bnns_graph_t, _function: string | interop.Pointer | interop.Reference<any>, argument_count: number, argument_interleave: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, argument_interleave_counts: interop.Pointer | interop.Reference<number>): number;
+
+/**
+ * @since 18.0
+ */
 declare function BNNSGraphGetArgumentNames(graph: bnns_graph_t, _function: string | interop.Pointer | interop.Reference<any>, argument_names_count: number, argument_names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**

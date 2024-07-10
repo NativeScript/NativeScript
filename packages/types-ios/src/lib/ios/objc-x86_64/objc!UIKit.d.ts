@@ -2482,6 +2482,11 @@ declare var NSTextHighlightStyleAttributeName: string;
 declare var NSTextHighlightStyleDefault: string;
 
 /**
+ * @since 18.0
+ */
+declare var NSTextKit1ListMarkerFormatDocumentOption: string;
+
+/**
  * @since 15.0
  */
 declare class NSTextLayoutFragment extends NSObject implements NSSecureCoding {
@@ -7117,6 +7122,11 @@ declare class UIBackgroundConfiguration extends NSObject implements NSCopying, N
 	 * @since 15.0
 	 */
 	imageContentMode: UIViewContentMode;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly shadowProperties: UIShadowProperties;
 
 	strokeColor: UIColor;
 
@@ -20680,6 +20690,11 @@ declare class UIListContentConfiguration extends NSObject implements NSSecureCod
 
 	static valueCellConfiguration(): UIListContentConfiguration;
 
+	/**
+	 * @since 18.0
+	 */
+	alpha: number;
+
 	attributedText: NSAttributedString;
 
 	axesPreservingSuperviewLayoutMargins: UIAxis;
@@ -20776,6 +20791,21 @@ declare class UIListContentImageProperties extends NSObject implements NSCopying
 
 	reservedLayoutSize: CGSize;
 
+	/**
+	 * @since 18.0
+	 */
+	strokeColor: UIColor;
+
+	/**
+	 * @since 18.0
+	 */
+	strokeColorTransformer: (p1: UIColor) => UIColor;
+
+	/**
+	 * @since 18.0
+	 */
+	strokeWidth: number;
+
 	tintColor: UIColor;
 
 	tintColorTransformer: (p1: UIColor) => UIColor;
@@ -20789,6 +20819,11 @@ declare class UIListContentImageProperties extends NSObject implements NSCopying
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 18.0
+	 */
+	resolvedStrokeColorForTintColor(tintColor: UIColor): UIColor;
 
 	resolvedTintColorForTintColor(tintColor: UIColor): UIColor;
 }
@@ -28857,6 +28892,36 @@ declare const enum UISemanticContentAttribute {
 }
 
 /**
+ * @since 18.0
+ */
+declare class UIShadowProperties extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UIShadowProperties; // inherited from NSObject
+
+	static new(): UIShadowProperties; // inherited from NSObject
+
+	color: UIColor;
+
+	offset: CGSize;
+
+	opacity: number;
+
+	path: UIBezierPath;
+
+	radius: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
  * @since 17.0
  */
 declare class UIShape extends NSObject implements NSCopying, UIShapeProvider {
@@ -34391,6 +34456,11 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 	 */
 	insertAdaptiveImageGlyphReplacementRange(adaptiveImageGlyph: NSAdaptiveImageGlyph, replacementRange: UITextRange): void;
 
+	/**
+	 * @since 12.0
+	 */
+	insertAttributedText(string: NSAttributedString): void;
+
 	insertDictationResult(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
 	insertText(text: string): void;
@@ -34430,6 +34500,11 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 	removeDictationResultPlaceholderWillInsertResult(placeholder: any, willInsertResult: boolean): void;
 
 	removeTextPlaceholder(textPlaceholder: UITextPlaceholder): void;
+
+	/**
+	 * @since 13.0
+	 */
+	replaceRangeWithAttributedText(range: UITextRange, attributedText: NSAttributedString): void;
 
 	replaceRangeWithText(range: UITextRange, text: string): void;
 
@@ -34638,6 +34713,503 @@ declare var UITextFormattingCoordinatorDelegate: {
 	prototype: UITextFormattingCoordinatorDelegate;
 };
 
+/**
+ * @since 18.0
+ */
+declare class UITextFormattingViewController extends UIViewController {
+
+	static alloc(): UITextFormattingViewController; // inherited from NSObject
+
+	static new(): UITextFormattingViewController; // inherited from NSObject
+
+	readonly configuration: UITextFormattingViewControllerConfiguration;
+
+	delegate: UITextFormattingViewControllerDelegate;
+
+	formattingDescriptor: UITextFormattingViewControllerFormattingDescriptor;
+
+	constructor(o: { configuration: UITextFormattingViewControllerConfiguration; });
+
+	initWithConfiguration(configuration: UITextFormattingViewControllerConfiguration): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare class UITextFormattingViewControllerChangeValue extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UITextFormattingViewControllerChangeValue; // inherited from NSObject
+
+	static new(): UITextFormattingViewControllerChangeValue; // inherited from NSObject
+
+	readonly changeType: string;
+
+	readonly color: UIColor;
+
+	readonly font: UIFont;
+
+	readonly formattingStyleKey: string;
+
+	readonly highlight: string;
+
+	readonly numberValue: number;
+
+	readonly textAlignment: NSTextAlignment;
+
+	readonly textList: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare class UITextFormattingViewControllerComponent extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UITextFormattingViewControllerComponent; // inherited from NSObject
+
+	static new(): UITextFormattingViewControllerComponent; // inherited from NSObject
+
+	readonly componentKey: string;
+
+	readonly preferredSize: UITextFormattingViewControllerComponentSize;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { componentKey: string; preferredSize: UITextFormattingViewControllerComponentSize; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithComponentKeyPreferredSize(componentKey: string, preferredSize: UITextFormattingViewControllerComponentSize): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare class UITextFormattingViewControllerComponentGroup extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UITextFormattingViewControllerComponentGroup; // inherited from NSObject
+
+	static new(): UITextFormattingViewControllerComponentGroup; // inherited from NSObject
+
+	readonly components: NSArray<UITextFormattingViewControllerComponent>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { components: NSArray<UITextFormattingViewControllerComponent> | UITextFormattingViewControllerComponent[]; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithComponents(components: NSArray<UITextFormattingViewControllerComponent> | UITextFormattingViewControllerComponent[]): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum UITextFormattingViewControllerComponentSize {
+
+	Automatic = 0,
+
+	Mini = 1,
+
+	Small = 2,
+
+	Regular = 3,
+
+	Large = 4,
+
+	ExtraLarge = 5
+}
+
+/**
+ * @since 18.0
+ */
+declare class UITextFormattingViewControllerConfiguration extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UITextFormattingViewControllerConfiguration; // inherited from NSObject
+
+	static new(): UITextFormattingViewControllerConfiguration; // inherited from NSObject
+
+	fontPickerConfiguration: UIFontPickerViewControllerConfiguration;
+
+	formattingStyles: NSArray<UITextFormattingViewControllerFormattingStyle>;
+
+	readonly groups: NSArray<UITextFormattingViewControllerComponentGroup>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { groups: NSArray<UITextFormattingViewControllerComponentGroup> | UITextFormattingViewControllerComponentGroup[]; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithGroups(groups: NSArray<UITextFormattingViewControllerComponentGroup> | UITextFormattingViewControllerComponentGroup[]): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerDecreaseFontSizeChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerDecreaseIndentationChangeType: string;
+
+/**
+ * @since 18.0
+ */
+interface UITextFormattingViewControllerDelegate extends NSObjectProtocol {
+
+	textFormattingDidFinish?(viewController: UITextFormattingViewController): void;
+
+	textFormattingViewControllerDidChangeValue(viewController: UITextFormattingViewController, changeValue: UITextFormattingViewControllerChangeValue): void;
+
+	textFormattingViewControllerShouldPresentColorPicker?(viewController: UITextFormattingViewController, colorPicker: UIColorPickerViewController): boolean;
+
+	textFormattingViewControllerShouldPresentFontPicker?(viewController: UITextFormattingViewController, fontPicker: UIFontPickerViewController): boolean;
+}
+declare var UITextFormattingViewControllerDelegate: {
+
+	prototype: UITextFormattingViewControllerDelegate;
+};
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerFontAttributesComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerFontChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerFontPickerComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerFontPointSizeComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerFontSizeChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerFontSizeComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare class UITextFormattingViewControllerFormattingDescriptor extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UITextFormattingViewControllerFormattingDescriptor; // inherited from NSObject
+
+	static new(): UITextFormattingViewControllerFormattingDescriptor; // inherited from NSObject
+
+	fonts: NSArray<UIFont>;
+
+	formattingStyleKey: string;
+
+	highlights: NSSet<string>;
+
+	lineHeight: number;
+
+	strikethroughPresent: boolean;
+
+	textAlignments: NSSet<string>;
+
+	textColors: NSArray<UIColor>;
+
+	textLists: NSSet<string>;
+
+	underlinePresent: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { attributes: NSDictionary<string, any>; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { string: NSAttributedString; range: NSRange; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithAttributes(attributes: NSDictionary<string, any>): this;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithStringRange(string: NSAttributedString, range: NSRange): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare class UITextFormattingViewControllerFormattingStyle extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): UITextFormattingViewControllerFormattingStyle; // inherited from NSObject
+
+	static new(): UITextFormattingViewControllerFormattingStyle; // inherited from NSObject
+
+	readonly attributes: NSDictionary<string, any>;
+
+	readonly styleKey: string;
+
+	readonly title: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { styleKey: string; title: string; attributes: NSDictionary<string, any>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithStyleKeyTitleAttributes(styleKey: string, string: string, attributes: NSDictionary<string, any>): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerFormattingStyleChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerFormattingStylesComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightBlue: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightDefault: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightMint: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightOrange: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightPickerComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightPink: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerHighlightPurple: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerIncreaseFontSizeChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerIncreaseIndentationChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerLineHeightComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerLineHeightPointSizeChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerListStylesComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerRemoveBoldChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerRemoveItalicChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerRemoveStrikethroughChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerRemoveUnderlineChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerSetBoldChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerSetItalicChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerSetStrikethroughChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerSetUnderlineChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextAlignmentAndJustificationComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextAlignmentCenter: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextAlignmentChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextAlignmentComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextAlignmentJustified: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextAlignmentLeft: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextAlignmentNatural: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextAlignmentRight: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextColorChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextColorComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextIndentationComponentKey: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextListChangeType: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextListDecimal: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextListDisc: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextListHyphen: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerTextListOther: string;
+
+/**
+ * @since 18.0
+ */
+declare var UITextFormattingViewControllerUndefinedChangeType: string;
+
 declare const enum UITextGranularity {
 
 	Character = 0,
@@ -34746,6 +35318,11 @@ interface UITextInput extends UIKeyInput {
 	 */
 	insertAdaptiveImageGlyphReplacementRange?(adaptiveImageGlyph: NSAdaptiveImageGlyph, replacementRange: UITextRange): void;
 
+	/**
+	 * @since 12.0
+	 */
+	insertAttributedText?(string: NSAttributedString): void;
+
 	insertDictationResult?(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
 	insertTextAlternativesStyle?(text: string, alternatives: NSArray<string> | string[], style: UITextAlternativeStyle): void;
@@ -34765,6 +35342,11 @@ interface UITextInput extends UIKeyInput {
 	removeDictationResultPlaceholderWillInsertResult?(placeholder: any, willInsertResult: boolean): void;
 
 	removeTextPlaceholder?(textPlaceholder: UITextPlaceholder): void;
+
+	/**
+	 * @since 13.0
+	 */
+	replaceRangeWithAttributedText?(range: UITextRange, attributedText: NSAttributedString): void;
 
 	replaceRangeWithText(range: UITextRange, text: string): void;
 
@@ -35802,6 +36384,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	/**
 	 * @since 18.0
 	 */
+	textFormattingConfiguration: UITextFormattingViewControllerConfiguration;
+
+	/**
+	 * @since 18.0
+	 */
 	textHighlightAttributes: NSDictionary<string, any>;
 
 	/**
@@ -36044,6 +36631,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	 */
 	insertAdaptiveImageGlyphReplacementRange(adaptiveImageGlyph: NSAdaptiveImageGlyph, replacementRange: UITextRange): void;
 
+	/**
+	 * @since 12.0
+	 */
+	insertAttributedText(string: NSAttributedString): void;
+
 	insertDictationResult(dictationResult: NSArray<UIDictationPhrase> | UIDictationPhrase[]): void;
 
 	insertText(text: string): void;
@@ -36085,6 +36677,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	replaceAllOccurrencesOfQueryStringUsingOptionsWithText(queryString: string, options: UITextSearchOptions, replacementText: string): void;
 
 	replaceFoundTextInRangeInDocumentWithText(range: UITextRange, document: any, replacementText: string): void;
+
+	/**
+	 * @since 13.0
+	 */
+	replaceRangeWithAttributedText(range: UITextRange, attributedText: NSAttributedString): void;
 
 	replaceRangeWithText(range: UITextRange, text: string): void;
 
@@ -36156,11 +36753,21 @@ interface UITextViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 
 	textViewDidBeginEditing?(textView: UITextView): void;
 
+	/**
+	 * @since 18.0
+	 */
+	textViewDidBeginFormattingWithViewController?(textView: UITextView, viewController: UITextFormattingViewController): void;
+
 	textViewDidChange?(textView: UITextView): void;
 
 	textViewDidChangeSelection?(textView: UITextView): void;
 
 	textViewDidEndEditing?(textView: UITextView): void;
+
+	/**
+	 * @since 18.0
+	 */
+	textViewDidEndFormattingWithViewController?(textView: UITextView, viewController: UITextFormattingViewController): void;
 
 	/**
 	 * @since 16.0
@@ -36218,9 +36825,19 @@ interface UITextViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 	textViewTextItemMenuWillEndForTextItemAnimator?(textView: UITextView, textItem: UITextItem, animator: UIContextMenuInteractionAnimating): void;
 
 	/**
+	 * @since 18.0
+	 */
+	textViewWillBeginFormattingWithViewController?(textView: UITextView, viewController: UITextFormattingViewController): void;
+
+	/**
 	 * @since 16.0
 	 */
 	textViewWillDismissEditMenuWithAnimator?(textView: UITextView, animator: UIEditMenuInteractionAnimating): void;
+
+	/**
+	 * @since 18.0
+	 */
+	textViewWillEndFormattingWithViewController?(textView: UITextView, viewController: UITextFormattingViewController): void;
 
 	/**
 	 * @since 16.0

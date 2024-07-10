@@ -13788,6 +13788,11 @@ declare class NSTermOfAddress extends NSObject implements NSCopying, NSSecureCod
 
 	static alloc(): NSTermOfAddress; // inherited from NSObject
 
+	/**
+	 * @since 18.0
+	 */
+	static currentUser(): NSTermOfAddress;
+
 	static feminine(): NSTermOfAddress;
 
 	static localizedForLanguageIdentifierWithPronouns(language: string, pronouns: NSArray<NSMorphologyPronoun> | NSMorphologyPronoun[]): NSTermOfAddress;

@@ -7842,6 +7842,11 @@ declare class AVMediaSelectionOption extends NSObject implements NSCopying {
 declare var AVMediaTypeAudio: string;
 
 /**
+ * @since 14.0
+ */
+declare var AVMediaTypeAuxiliaryPicture: string;
+
+/**
  * @since 4.0
  */
 declare var AVMediaTypeClosedCaption: string;
@@ -11258,6 +11263,8 @@ declare class AVMetricHLSMediaSegmentRequestEvent extends AVMetricEvent {
 
 	readonly byteRange: NSRange;
 
+	readonly indexFileURL: NSURL;
+
 	readonly isMapSegment: boolean;
 
 	readonly mediaResourceRequestEvent: AVMetricMediaResourceRequestEvent;
@@ -11435,6 +11442,22 @@ declare class AVMetricPlayerItemVariantSwitchEvent extends AVMetricEvent {
 	static new(): AVMetricPlayerItemVariantSwitchEvent; // inherited from NSObject
 
 	readonly didSucceed: boolean;
+
+	readonly fromVariant: AVAssetVariant;
+
+	readonly loadedTimeRanges: NSArray<NSValue>;
+
+	readonly toVariant: AVAssetVariant;
+}
+
+/**
+ * @since 18
+ */
+declare class AVMetricPlayerItemVariantSwitchStartEvent extends AVMetricEvent {
+
+	static alloc(): AVMetricPlayerItemVariantSwitchStartEvent; // inherited from NSObject
+
+	static new(): AVMetricPlayerItemVariantSwitchStartEvent; // inherited from NSObject
 
 	readonly fromVariant: AVAssetVariant;
 

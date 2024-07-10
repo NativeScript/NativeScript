@@ -1,25 +1,5 @@
 
 /**
- * @since 18.0
- */
-declare const enum PhoneticEmbedderInitFlag {
-
-	All = 0,
-
-	Embedder = 1
-}
-
-/**
- * @since 18.0
- */
-declare const enum PhoneticEncoderType {
-
-	Grapheme = 0,
-
-	Phoneme = 1
-}
-
-/**
  * @since 13
  */
 declare class SFAcousticFeature extends NSObject implements NSCopying, NSSecureCoding {

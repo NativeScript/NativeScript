@@ -551,11 +551,6 @@ declare class MPMediaItem extends MPMediaEntity {
 	readonly skipCount: number;
 
 	/**
-	 * @since 18.0
-	 */
-	readonly storeCanonicalID: string;
-
-	/**
 	 * @since 7.0
 	 */
 	readonly title: string;
@@ -816,11 +811,6 @@ declare var MPMediaItemPropertyReleaseDate: string;
  * @since 3.0
  */
 declare var MPMediaItemPropertySkipCount: string;
-
-/**
- * @since 18.0
- */
-declare var MPMediaItemPropertyStoreCanonicalId: string;
 
 /**
  * @since 3.0

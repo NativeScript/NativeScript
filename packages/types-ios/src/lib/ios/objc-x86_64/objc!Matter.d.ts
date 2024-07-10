@@ -6105,6 +6105,46 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterWiFiNetworkManagementAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeBorderRouterNameID = 0,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeBorderAgentIDID = 1,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeThreadVersionID = 2,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeInterfaceEnabledID = 3,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeActiveDatasetTimestampID = 5,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributePreferredExtendedPanIDID = 0,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributeThreadNetworksID = 1,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributeThreadNetworkTableSizeID = 2,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterThreadNetworkDirectoryAttributeClusterRevisionID = 65533,
+
 	ClusterWakeOnLanAttributeMACAddressID = 0,
 
 	ClusterWakeOnLanAttributeGeneratedCommandListID = 65528,
@@ -65727,6 +65767,10 @@ declare const enum MTRClusterIDType {
 
 	IDTypeWiFiNetworkManagementID = 1105,
 
+	IDTypeThreadBorderRouterManagementID = 1106,
+
+	IDTypeThreadNetworkDirectoryID = 1107,
+
 	IDTypeWakeOnLANID = 1283,
 
 	IDTypeChannelID = 1284,
@@ -75722,6 +75766,24 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterWiFiNetworkManagementCommandNetworkPassphraseResponseID = 1,
 
+	CommandIDTypeClusterThreadBorderRouterManagementCommandGetActiveDatasetRequestID = 0,
+
+	CommandIDTypeClusterThreadBorderRouterManagementCommandGetPendingDatasetRequestID = 1,
+
+	CommandIDTypeClusterThreadBorderRouterManagementCommandDatasetResponseID = 3,
+
+	CommandIDTypeClusterThreadBorderRouterManagementCommandSetActiveDatasetRequestID = 4,
+
+	CommandIDTypeClusterThreadBorderRouterManagementCommandSetPendingDatasetRequestID = 5,
+
+	CommandIDTypeClusterThreadNetworkDirectoryCommandAddNetworkID = 0,
+
+	CommandIDTypeClusterThreadNetworkDirectoryCommandRemoveNetworkID = 1,
+
+	CommandIDTypeClusterThreadNetworkDirectoryCommandGetOperationalDatasetID = 2,
+
+	CommandIDTypeClusterThreadNetworkDirectoryCommandOperationalDatasetResponseID = 3,
+
 	ClusterChannelCommandChangeChannelID = 0,
 
 	ClusterChannelCommandChangeChannelResponseID = 1,
@@ -76837,6 +76899,9 @@ declare class MTRDevice extends NSObject {
 	 */
 	readonly estimatedStartTime: Date;
 
+	/**
+	 * @since 17.6
+	 */
 	readonly estimatedSubscriptionLatency: number;
 
 	/**
@@ -76845,6 +76910,10 @@ declare class MTRDevice extends NSObject {
 	readonly nodeID: number;
 
 	readonly state: MTRDeviceState;
+
+	addDelegateQueue(delegate: MTRDeviceDelegate, queue: NSObject & OS_dispatch_queue): void;
+
+	addDelegateQueueInterestedPathsForAttributesInterestedPathsForEvents(delegate: MTRDeviceDelegate, queue: NSObject & OS_dispatch_queue, interestedPathsForAttributes: NSArray<any> | any[], interestedPathsForEvents: NSArray<any> | any[]): void;
 
 	/**
 	 * @since 17.6
@@ -76878,6 +76947,8 @@ declare class MTRDevice extends NSObject {
 	openCommissioningWindowWithSetupPasscodeDiscriminatorDurationQueueCompletion(setupPasscode: number, discriminator: number, duration: number, queue: NSObject & OS_dispatch_queue, completion: (p1: MTRSetupPayload, p2: NSError) => void): void;
 
 	readAttributeWithEndpointIDClusterIDAttributeIDParams(endpointID: number, clusterID: number, attributeID: number, params: MTRReadParams): NSDictionary<string, any>;
+
+	removeDelegate(delegate: MTRDeviceDelegate): void;
 
 	setDelegateQueue(delegate: MTRDeviceDelegate, queue: NSObject & OS_dispatch_queue): void;
 
@@ -77337,6 +77408,9 @@ declare class MTRDeviceControllerParameters extends MTRDeviceControllerAbstractP
 
 	certificationDeclarationCertificates: NSArray<NSData>;
 
+	/**
+	 * @since 17.6
+	 */
 	concurrentSubscriptionEstablishmentsAllowedOnThread: number;
 
 	productAttestationAuthorityCertificates: NSArray<NSData>;
@@ -77579,6 +77653,9 @@ declare const enum MTRDeviceState {
 	Unreachable = 2
 }
 
+/**
+ * @since 17.6
+ */
 declare class MTRDeviceStorageBehaviorConfiguration extends NSObject implements NSCopying {
 
 	static alloc(): MTRDeviceStorageBehaviorConfiguration; // inherited from NSObject
@@ -80880,6 +80957,8 @@ declare const enum MTREventIDType {
 	EventIDTypeClusterPumpConfigurationAndControlEventAirDetectionID = 15,
 
 	EventIDTypeClusterPumpConfigurationAndControlEventTurbineOperationID = 16,
+
+	EventIDTypeClusterThreadNetworkDirectoryEventNetworkChangedID = 0,
 
 	EventIDTypeClusterTargetNavigatorEventTargetUpdatedID = 0,
 
@@ -88930,6 +89009,8 @@ declare class MTRServerAttribute extends NSObject {
 
 	static new(): MTRServerAttribute; // inherited from NSObject
 
+	static newFeatureMapAttributeWithInitialValue(value: number): MTRServerAttribute;
+
 	readonly attributeID: number;
 
 	readonly requiredReadPrivilege: MTRAccessControlEntryPrivilege;
@@ -89781,7 +89862,9 @@ declare const enum MTRSwitchFeature {
 
 	MomentarySwitchLongPress = 8,
 
-	MomentarySwitchMultiPress = 16
+	MomentarySwitchMultiPress = 16,
+
+	ActionSwitch = 32
 }
 
 /**
