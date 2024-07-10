@@ -48,6 +48,11 @@ declare const enum BEAccessibilityPressedState {
 /**
  * @since 18.0
  */
+declare var BEAccessibilitySelectionChangedNotification: number;
+
+/**
+ * @since 18.0
+ */
 declare var BEAccessibilityTraitMenuItem: number;
 
 /**
@@ -69,6 +74,11 @@ declare var BEAccessibilityTraitReadOnly: number;
  * @since 18.0
  */
 declare var BEAccessibilityTraitVisited: number;
+
+/**
+ * @since 18.0
+ */
+declare var BEAccessibilityValueChangedNotification: number;
 
 /**
  * @since 17.4

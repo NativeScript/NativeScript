@@ -716,6 +716,11 @@ declare class MLModelAsset extends NSObject {
 	/**
 	 * @since 18.0
 	 */
+	functionNamesWithCompletionHandler(handler: (p1: NSArray<string>, p2: NSError) => void): void;
+
+	/**
+	 * @since 18.0
+	 */
 	modelDescriptionOfFunctionNamedCompletionHandler(functionName: string, handler: (p1: MLModelDescription, p2: NSError) => void): void;
 
 	/**

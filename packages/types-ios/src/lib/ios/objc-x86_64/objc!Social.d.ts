@@ -112,11 +112,21 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	textViewDidBeginEditing(textView: UITextView): void;
 
+	/**
+	 * @since 18.0
+	 */
+	textViewDidBeginFormattingWithViewController(textView: UITextView, viewController: UITextFormattingViewController): void;
+
 	textViewDidChange(textView: UITextView): void;
 
 	textViewDidChangeSelection(textView: UITextView): void;
 
 	textViewDidEndEditing(textView: UITextView): void;
+
+	/**
+	 * @since 18.0
+	 */
+	textViewDidEndFormattingWithViewController(textView: UITextView, viewController: UITextFormattingViewController): void;
 
 	/**
 	 * @since 16.0
@@ -174,9 +184,19 @@ declare class SLComposeServiceViewController extends UIViewController implements
 	textViewTextItemMenuWillEndForTextItemAnimator(textView: UITextView, textItem: UITextItem, animator: UIContextMenuInteractionAnimating): void;
 
 	/**
+	 * @since 18.0
+	 */
+	textViewWillBeginFormattingWithViewController(textView: UITextView, viewController: UITextFormattingViewController): void;
+
+	/**
 	 * @since 16.0
 	 */
 	textViewWillDismissEditMenuWithAnimator(textView: UITextView, animator: UIEditMenuInteractionAnimating): void;
+
+	/**
+	 * @since 18.0
+	 */
+	textViewWillEndFormattingWithViewController(textView: UITextView, viewController: UITextFormattingViewController): void;
 
 	/**
 	 * @since 16.0

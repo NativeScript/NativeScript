@@ -946,6 +946,8 @@ declare const kAudioFormatAMR: number;
 
 declare const kAudioFormatAMR_WB: number;
 
+declare const kAudioFormatAPAC: number;
+
 declare const kAudioFormatAppleIMA4: number;
 
 declare const kAudioFormatAppleLossless: number;

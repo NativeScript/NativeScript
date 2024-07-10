@@ -1038,6 +1038,11 @@ declare var HMCharacteristicPropertyHidden: string;
 declare var HMCharacteristicPropertyReadable: string;
 
 /**
+ * @since 18.0
+ */
+declare var HMCharacteristicPropertyRequiresAuthorizationData: string;
+
+/**
  * @since 8.0
  */
 declare var HMCharacteristicPropertySupportsEventNotification: string;
@@ -1674,6 +1679,11 @@ declare var HMCharacteristicTypeTargetHumidifierDehumidifierState: string;
 declare var HMCharacteristicTypeTargetLockMechanismState: string;
 
 /**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeTargetMediaState: string;
+
+/**
  * @since 9.0
  */
 declare var HMCharacteristicTypeTargetPosition: string;
@@ -1732,6 +1742,16 @@ declare var HMCharacteristicTypeVolatileOrganicCompoundDensity: string;
  * @since 10.0
  */
 declare var HMCharacteristicTypeVolume: string;
+
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeVolumeControlType: string;
+
+/**
+ * @since 18.0
+ */
+declare var HMCharacteristicTypeVolumeSelector: string;
 
 /**
  * @since 18.0
@@ -2432,6 +2452,18 @@ declare const enum HMCharacteristicValueTargetLockMechanismState {
 }
 
 /**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueTargetMediaState {
+
+	Play = 0,
+
+	Pause = 1,
+
+	Stop = 2
+}
+
+/**
  * @since 9.0
  */
 declare const enum HMCharacteristicValueTargetSecuritySystemState {
@@ -2487,6 +2519,30 @@ declare const enum HMCharacteristicValueValveType {
 	ShowerHead = 2,
 
 	WaterFaucet = 3
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueVolumeControlType {
+
+	None = 0,
+
+	Relative = 1,
+
+	RelativeWithCurrent = 2,
+
+	Absolute = 3
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum HMCharacteristicValueVolumeSelector {
+
+	VolumeIncrement = 0,
+
+	VolumeDecrement = 1
 }
 
 /**
@@ -3497,6 +3553,11 @@ declare class HMService extends NSObject {
 	 * @since 9.0
 	 */
 	readonly localizedDescription: string;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly matterEndpointID: number;
 
 	readonly name: string;
 

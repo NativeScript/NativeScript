@@ -579,6 +579,11 @@ declare class PKToolPicker extends NSObject {
 
 	colorUserInterfaceStyle: UIUserInterfaceStyle;
 
+	/**
+	 * @since 18.0
+	 */
+	delegate: PKToolPickerDelegate;
+
 	readonly isVisible: boolean;
 
 	/**
@@ -649,6 +654,8 @@ declare class PKToolPickerCustomItem extends PKToolPickerItem {
 
 	static new(): PKToolPickerCustomItem; // inherited from NSObject
 
+	allowsColorSelection: boolean;
+
 	color: UIColor;
 
 	readonly configuration: PKToolPickerCustomItemConfiguration;
@@ -683,6 +690,8 @@ declare class PKToolPickerCustomItemConfiguration extends NSObject implements NS
 
 	name: string;
 
+	toolAttributeControls: PKToolPickerCustomItemControlOptions;
+
 	viewControllerProvider: (p1: PKToolPickerCustomItem) => UIViewController;
 
 	widthVariants: NSDictionary<number, UIImage>;
@@ -693,6 +702,25 @@ declare class PKToolPickerCustomItemConfiguration extends NSObject implements NS
 
 	initWithIdentifierName(identifier: string, name: string): this;
 }
+
+declare const enum PKToolPickerCustomItemControlOptions {
+
+	None = 0,
+
+	Width = 1,
+
+	Opacity = 2
+}
+
+/**
+ * @since 18.0
+ */
+interface PKToolPickerDelegate extends NSObjectProtocol {
+}
+declare var PKToolPickerDelegate: {
+
+	prototype: PKToolPickerDelegate;
+};
 
 /**
  * @since 18.0
@@ -723,15 +751,29 @@ declare class PKToolPickerInkingItem extends PKToolPickerItem {
 
 	static new(): PKToolPickerInkingItem; // inherited from NSObject
 
+	allowsColorSelection: boolean;
+
 	readonly inkingTool: PKInkingTool;
+
+	constructor(o: { inkType: string; });
+
+	constructor(o: { inkType: string; color: UIColor; });
 
 	constructor(o: { inkType: string; color: UIColor; width: number; });
 
 	constructor(o: { inkType: string; color: UIColor; width: number; identifier: string; });
 
+	constructor(o: { inkType: string; width: number; });
+
+	initWithInkType(inkType: string): this;
+
+	initWithInkTypeColor(inkType: string, color: UIColor): this;
+
 	initWithInkTypeColorWidth(inkType: string, color: UIColor, width: number): this;
 
 	initWithInkTypeColorWidthIdentifier(inkType: string, color: UIColor, width: number, identifier: string): this;
+
+	initWithInkTypeWidth(inkType: string, width: number): this;
 }
 
 /**

@@ -521,6 +521,36 @@ declare class NSObject implements NSObjectProtocol {
 
 	awakeFromNib(): void;
 
+	/**
+	 * @since 18.0
+	 */
+	browserAccessibilityAttributedValueInRange(range: NSRange): NSAttributedString;
+
+	/**
+	 * @since 18.0
+	 */
+	browserAccessibilityDeleteTextAtCursor(numberOfCharacters: number): void;
+
+	/**
+	 * @since 18.0
+	 */
+	browserAccessibilityInsertTextAtCursor(text: string): void;
+
+	/**
+	 * @since 18.0
+	 */
+	browserAccessibilitySelectedTextRange(): NSRange;
+
+	/**
+	 * @since 18.0
+	 */
+	browserAccessibilitySetSelectedTextRange(range: NSRange): void;
+
+	/**
+	 * @since 18.0
+	 */
+	browserAccessibilityValueInRange(range: NSRange): string;
+
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;

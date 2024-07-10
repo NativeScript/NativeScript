@@ -2839,6 +2839,8 @@ declare const kCMMPEG2VideoProfile_XF: number;
 
 declare const kCMMediaType_Audio: number;
 
+declare const kCMMediaType_AuxiliaryPicture: number;
+
 declare const kCMMediaType_ClosedCaption: number;
 
 declare const kCMMediaType_Metadata: number;
