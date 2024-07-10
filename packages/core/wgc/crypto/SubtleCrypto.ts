@@ -580,6 +580,7 @@ export class SubtleCrypto {
 				default:
 					reject(
 						new Error(
+							// @ts-expect-error
 							`'subtle.generateKey()' is not implemented for ${algorithm?.name}.
 						  Unrecognized algorithm name`,
 						),
