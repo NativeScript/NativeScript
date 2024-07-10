@@ -21,9 +21,7 @@ function run() {
 	async function digestMessage(message) {
 		const encoder = new TextEncoder();
 		const data = encoder.encode(message);
-		console.time('digestMessage');
 		const hash = await crypto.subtle.digest('SHA-256', data);
-		console.timeEnd('digestMessage');
 		return hash;
 	}
 
@@ -90,7 +88,6 @@ async function gen_rsa_oaep() {
 			kp.publicKey,
 			encoded,
 		);
-
 		let decrypted = await crypto.subtle.decrypt(
 			{
 				name: 'RSA-OAEP',
