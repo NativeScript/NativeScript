@@ -141,6 +141,65 @@
     return ret;
 }
 
++ (BOOL)verifyHmac:(nonnull NSData *)key hash:(NSCCryptoHash)hash signature:(nonnull NSData *)signature data:(nonnull NSData *)data {
+    switch (hash) {
+        case kNSCCryptoHashSHA1:
+        {
+            return [[NSCCrypto signHmac:key hash:hash data:data] isEqualToData:signature];
+        }
+        case kNSCCryptoHashSHA256:
+        {
+              return [[NSCCrypto signHmac:key hash:hash data:data] isEqualToData:signature];
+        }
+        case kNSCCryptoHashSHA384:
+        {
+              return [[NSCCrypto signHmac:key hash:hash data:data] isEqualToData:signature];
+        }
+        case kNSCCryptoHashSHA512:
+        {
+              return [[NSCCrypto signHmac:key hash:hash data:data] isEqualToData:signature];
+        }
+        default:
+            return false;;
+    }
+}
+
+
++ (nullable NSData *)signHmac:(nonnull NSData *)key hash:(NSCCryptoHash)hash data:(nonnull NSData *)data {
+    NSMutableData* ret = nil;
+    switch (hash) {
+        case kNSCCryptoHashSHA1:
+        {
+            ret = [NSMutableData dataWithLength:CC_SHA1_DIGEST_LENGTH];
+            CCHmac(kCCHmacAlgSHA1, key.bytes, key.length, data.bytes, data.length, ret.mutableBytes);
+        }
+            break;
+        case kNSCCryptoHashSHA256:
+        {
+            ret = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+            CCHmac(kCCHmacAlgSHA256, key.bytes, key.length, data.bytes, data.length, ret.mutableBytes);
+        }
+            break;
+        case kNSCCryptoHashSHA384:
+        {
+            ret = [NSMutableData dataWithLength:CC_SHA384_DIGEST_LENGTH];
+            CCHmac(kCCHmacAlgSHA384, key.bytes, key.length, data.bytes, data.length, ret.mutableBytes);
+        }
+            break;
+        case kNSCCryptoHashSHA512:
+        {
+            ret = [NSMutableData dataWithLength:CC_SHA512_DIGEST_LENGTH];
+            CCHmac(kCCHmacAlgSHA512, key.bytes, key.length, data.bytes, data.length, ret.mutableBytes);
+        }
+            break;
+        default:
+            break;
+    }
+    return ret;
+}
+
+
+
 
 + (nullable NSCCryptoKeyPair *)generateKeyRsa:(NSCCryptoRsaHashedKeyGenParamsName)name modulusLength:(unsigned int)modulusLength publicExponent:(nullable void *)exponent size:(unsigned int)size hash:(NSCCryptoHash)hash extractable:(BOOL)extractable keyUsages:(nonnull NSArray *)usages{
     

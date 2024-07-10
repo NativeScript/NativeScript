@@ -1,24 +1,26 @@
 ---
 triple:          'arm64-apple-darwin'
-binary-path:     '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/winter-cg/ios/NSCWinterCG/build/Release-maccatalyst/NSCWinterCG.framework/Versions/A/NSCWinterCG'
+binary-path:     '/Users/triniwiz/Documents/GitHub/NativeScript/packages/winter-cg/ios/NSCWinterCG/build/Release-maccatalyst/NSCWinterCG.framework/Versions/A/NSCWinterCG'
 relocations:
-  - { offsetInCU: 0x34, offset: 0x8175D, size: 0x8, addend: 0x0, symName: _NSCWinterCGVersionString, symObjAddr: 0x0, symBinAddr: 0x3B48, symSize: 0x0 }
-  - { offsetInCU: 0x69, offset: 0x81792, size: 0x8, addend: 0x0, symName: _NSCWinterCGVersionNumber, symObjAddr: 0x30, symBinAddr: 0x3B78, symSize: 0x0 }
-  - { offsetInCU: 0x27, offset: 0x817CF, size: 0x8, addend: 0x0, symName: '+[NSString(WinterCG) atob:]', symObjAddr: 0x0, symBinAddr: 0x2B98, symSize: 0x74 }
-  - { offsetInCU: 0x3C, offset: 0x817E4, size: 0x8, addend: 0x0, symName: '+[NSString(WinterCG) atob:]', symObjAddr: 0x0, symBinAddr: 0x2B98, symSize: 0x74 }
-  - { offsetInCU: 0x8F, offset: 0x81837, size: 0x8, addend: 0x0, symName: '+[NSString(WinterCG) btoa:]', symObjAddr: 0x74, symBinAddr: 0x2C0C, symSize: 0x50 }
-  - { offsetInCU: 0x27, offset: 0x818E6, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair dealloc]', symObjAddr: 0x0, symBinAddr: 0x2C5C, symSize: 0x6C }
-  - { offsetInCU: 0x159, offset: 0x81A18, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair dealloc]', symObjAddr: 0x0, symBinAddr: 0x2C5C, symSize: 0x6C }
-  - { offsetInCU: 0x1BD, offset: 0x81A7C, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair initWithPrivateKey:andPublicKey:]', symObjAddr: 0x6C, symBinAddr: 0x2CC8, symSize: 0x70 }
-  - { offsetInCU: 0x214, offset: 0x81AD3, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair privateKey]', symObjAddr: 0xDC, symBinAddr: 0x2D38, symSize: 0x8 }
-  - { offsetInCU: 0x24B, offset: 0x81B0A, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair setPrivateKey:]', symObjAddr: 0xE4, symBinAddr: 0x2D40, symSize: 0x8 }
-  - { offsetInCU: 0x288, offset: 0x81B47, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair publicKey]', symObjAddr: 0xEC, symBinAddr: 0x2D48, symSize: 0x8 }
-  - { offsetInCU: 0x2BF, offset: 0x81B7E, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair setPublicKey:]', symObjAddr: 0xF4, symBinAddr: 0x2D50, symSize: 0x8 }
-  - { offsetInCU: 0x2FC, offset: 0x81BBB, size: 0x8, addend: 0x0, symName: '+[NSCCrypto randomUUID]', symObjAddr: 0xFC, symBinAddr: 0x2D58, symSize: 0x6C }
-  - { offsetInCU: 0x32F, offset: 0x81BEE, size: 0x8, addend: 0x0, symName: '+[NSCCrypto getRandomValues:length:]', symObjAddr: 0x168, symBinAddr: 0x2DC4, symSize: 0x44 }
-  - { offsetInCU: 0x3D2, offset: 0x81C91, size: 0x8, addend: 0x0, symName: '+[NSCCrypto digest:length:mode:]', symObjAddr: 0x1AC, symBinAddr: 0x2E08, symSize: 0x134 }
-  - { offsetInCU: 0x59C, offset: 0x81E5B, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyHmac:length:]', symObjAddr: 0x2E0, symBinAddr: 0x2F3C, symSize: 0x230 }
-  - { offsetInCU: 0x73F, offset: 0x81FFE, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyRsa:modulusLength:publicExponent:size:hash:extractable:keyUsages:]', symObjAddr: 0x510, symBinAddr: 0x316C, symSize: 0x2D8 }
-  - { offsetInCU: 0xA9A, offset: 0x82359, size: 0x8, addend: 0x0, symName: '+[NSCCrypto encryptRsa:key:hash:data:size:]', symObjAddr: 0x7E8, symBinAddr: 0x3444, symSize: 0x178 }
-  - { offsetInCU: 0xC82, offset: 0x82541, size: 0x8, addend: 0x0, symName: '+[NSCCrypto decryptRsa:key:hash:data:size:]', symObjAddr: 0x960, symBinAddr: 0x35BC, symSize: 0x178 }
+  - { offsetInCU: 0x34, offset: 0x8175D, size: 0x8, addend: 0x0, symName: _NSCWinterCGVersionString, symObjAddr: 0x0, symBinAddr: 0x3A90, symSize: 0x0 }
+  - { offsetInCU: 0x69, offset: 0x81792, size: 0x8, addend: 0x0, symName: _NSCWinterCGVersionNumber, symObjAddr: 0x30, symBinAddr: 0x3AC0, symSize: 0x0 }
+  - { offsetInCU: 0x27, offset: 0x817CF, size: 0x8, addend: 0x0, symName: '+[NSString(WinterCG) atob:]', symObjAddr: 0x0, symBinAddr: 0x2890, symSize: 0x74 }
+  - { offsetInCU: 0x3C, offset: 0x817E4, size: 0x8, addend: 0x0, symName: '+[NSString(WinterCG) atob:]', symObjAddr: 0x0, symBinAddr: 0x2890, symSize: 0x74 }
+  - { offsetInCU: 0x8F, offset: 0x81837, size: 0x8, addend: 0x0, symName: '+[NSString(WinterCG) btoa:]', symObjAddr: 0x74, symBinAddr: 0x2904, symSize: 0x50 }
+  - { offsetInCU: 0x27, offset: 0x818E6, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair dealloc]', symObjAddr: 0x0, symBinAddr: 0x2954, symSize: 0x6C }
+  - { offsetInCU: 0x159, offset: 0x81A18, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair dealloc]', symObjAddr: 0x0, symBinAddr: 0x2954, symSize: 0x6C }
+  - { offsetInCU: 0x1BD, offset: 0x81A7C, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair initWithPrivateKey:andPublicKey:]', symObjAddr: 0x6C, symBinAddr: 0x29C0, symSize: 0x70 }
+  - { offsetInCU: 0x214, offset: 0x81AD3, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair privateKey]', symObjAddr: 0xDC, symBinAddr: 0x2A30, symSize: 0x8 }
+  - { offsetInCU: 0x24B, offset: 0x81B0A, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair setPrivateKey:]', symObjAddr: 0xE4, symBinAddr: 0x2A38, symSize: 0x8 }
+  - { offsetInCU: 0x288, offset: 0x81B47, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair publicKey]', symObjAddr: 0xEC, symBinAddr: 0x2A40, symSize: 0x8 }
+  - { offsetInCU: 0x2BF, offset: 0x81B7E, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair setPublicKey:]', symObjAddr: 0xF4, symBinAddr: 0x2A48, symSize: 0x8 }
+  - { offsetInCU: 0x2FC, offset: 0x81BBB, size: 0x8, addend: 0x0, symName: '+[NSCCrypto randomUUID]', symObjAddr: 0xFC, symBinAddr: 0x2A50, symSize: 0x6C }
+  - { offsetInCU: 0x32F, offset: 0x81BEE, size: 0x8, addend: 0x0, symName: '+[NSCCrypto getRandomValues:length:]', symObjAddr: 0x168, symBinAddr: 0x2ABC, symSize: 0x44 }
+  - { offsetInCU: 0x3D2, offset: 0x81C91, size: 0x8, addend: 0x0, symName: '+[NSCCrypto digest:length:mode:]', symObjAddr: 0x1AC, symBinAddr: 0x2B00, symSize: 0x134 }
+  - { offsetInCU: 0x59C, offset: 0x81E5B, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyHmac:length:]', symObjAddr: 0x2E0, symBinAddr: 0x2C34, symSize: 0x230 }
+  - { offsetInCU: 0x73F, offset: 0x81FFE, size: 0x8, addend: 0x0, symName: '+[NSCCrypto verifyHmac:hash:signature:data:]', symObjAddr: 0x510, symBinAddr: 0x2E64, symSize: 0xBC }
+  - { offsetInCU: 0x7B2, offset: 0x82071, size: 0x8, addend: 0x0, symName: '+[NSCCrypto signHmac:hash:data:]', symObjAddr: 0x5CC, symBinAddr: 0x2F20, symSize: 0x110 }
+  - { offsetInCU: 0x87E, offset: 0x8213D, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyRsa:modulusLength:publicExponent:size:hash:extractable:keyUsages:]', symObjAddr: 0x6DC, symBinAddr: 0x3030, symSize: 0x2D8 }
+  - { offsetInCU: 0xBDD, offset: 0x8249C, size: 0x8, addend: 0x0, symName: '+[NSCCrypto encryptRsa:key:hash:data:size:]', symObjAddr: 0x9B4, symBinAddr: 0x3308, symSize: 0x178 }
+  - { offsetInCU: 0xDD2, offset: 0x82691, size: 0x8, addend: 0x0, symName: '+[NSCCrypto decryptRsa:key:hash:data:size:]', symObjAddr: 0xB2C, symBinAddr: 0x3480, symSize: 0x178 }
 ...
