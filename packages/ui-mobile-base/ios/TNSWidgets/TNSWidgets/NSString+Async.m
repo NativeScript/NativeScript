@@ -28,17 +28,6 @@
 }
 
 
-+ (NSString*)atob:(nonnull NSString*)data {
-    NSData* decodedData = [[NSData alloc] initWithBase64EncodedString:data options:0];
-    return [[NSString alloc] initWithData:decodedData encoding:NSUTF8StringEncoding];
-}
-
-+ (NSString*)btoa:(nonnull NSString*)stringToEncode {
-    NSData* encoded = [stringToEncode dataUsingEncoding: NSUTF8StringEncoding];
-    return [encoded base64EncodedStringWithOptions:0];
-}
-
-
 - (void)writeToFile:(nonnull NSString*)path
          atomically:(BOOL)atomically
            encoding:(NSStringEncoding)enc

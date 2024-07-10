@@ -18,7 +18,6 @@ FOUNDATION_EXPORT const unsigned char TNSWidgetsVersionString[];
 
 #import "UIImage+TNSBlocks.h"
 #import "UIView+PassThroughParent.h"
-#import "NSCCrypto.h"
 #import "TNSLabel.h"
 #import "TNSProcess.h"
 #import "NSString+Async.h"

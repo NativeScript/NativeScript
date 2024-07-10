@@ -1,6 +1,6 @@
 //
 //  NSCCrypto.m
-//  TNSWidgets
+//  NSCWinterCG
 //
 //  Created by Osei Fortune on 03/07/2024.
 //  Copyright © 2024 NativeScript. All rights reserved.

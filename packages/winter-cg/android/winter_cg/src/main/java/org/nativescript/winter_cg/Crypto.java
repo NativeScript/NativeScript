@@ -1,4 +1,4 @@
-package org.nativescript.widgets;
+package org.nativescript.winter_cg;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
