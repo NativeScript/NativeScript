@@ -203,7 +203,7 @@ export class SubtleCrypto {
 			if (__ANDROID__) {
 				//const instance = java.security.MessageDigest.getInstance(algorithm);
 
-				const buffer = (<any>org).nativescript.widgets.Crypto.digest(mode, data);
+				const buffer = (<any>org).nativescript.winter_cg.Crypto.digest(mode, data);
 				const ab = (<any>ArrayBuffer).from(buffer);
 
 				if (!ab) {
@@ -216,7 +216,7 @@ export class SubtleCrypto {
                 const digest = instance.digest();
     
                 const ab = new ArrayBuffer(digest.length);
-                (<any>org).nativescript.widgets.Utils.copyToBuffer(ab, digest);
+                (<any>org).nativescript.winter_cg.Utils.copyToBuffer(ab, digest);
     
                 resolve(ab);
 

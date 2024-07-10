@@ -1,6 +1,6 @@
 export function btoa(stringToEncode: string) {
 	if (__ANDROID__) {
-		return (<any>org).nativescript.widgets.Utils.btoa(stringToEncode);
+		return (<any>org).nativescript.winter_cg.Utils.btoa(stringToEncode);
 	}
 
 	if (__IOS__) {

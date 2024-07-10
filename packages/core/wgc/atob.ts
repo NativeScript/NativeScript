@@ -1,6 +1,6 @@
 export function atob(data: string) {
 	if (__ANDROID__) {
-		return (<any>org).nativescript.widgets.Utils.atob(data);
+		return (<any>org).nativescript.winter_cg.Utils.atob(data);
 	}
 
 	if (__IOS__) {

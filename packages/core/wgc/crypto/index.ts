@@ -9,7 +9,7 @@ export class Crypto {
 	}
 	randomUUID() {
 		if (__ANDROID__) {
-			return (<any>org).nativescript.widgets.Crypto.randomUUID();
+			return (<any>org).nativescript.winter_cg.Crypto.randomUUID();
 		}
 		if (__IOS__) {
 			return NSCCrypto.randomUUID();
@@ -21,7 +21,7 @@ export class Crypto {
 			if (typedArray.BYTES_PER_ELEMENT !== 1) {
 				typedArray = new Uint8Array(typedArray.buffer, typedArray.byteOffset);
 			}
-			(<any>org).nativescript.widgets.Crypto.getRandomValues(typedArray);
+			(<any>org).nativescript.winter_cg.Crypto.getRandomValues(typedArray);
 		}
 		if (__IOS__) {
 			NSCCrypto.getRandomValuesLength(typedArray, typedArray.byteLength);
