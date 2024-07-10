@@ -38,13 +38,18 @@
 				"@typescript-eslint/no-explicit-any": "off",
 				"@typescript-eslint/no-this-alias": "warn",
 				"@typescript-eslint/no-namespace": "off",
-				"@typescript-eslint/no-inferrable-types": "off"
+				"@typescript-eslint/no-inferrable-types": "off",
+				"@typescript-eslint/no-extra-semi": "error",
+				"no-extra-semi": "off"
 			}
 		},
 		{
 			"files": ["*.js", "*.jsx"],
 			"extends": ["plugin:@nx/javascript"],
-			"rules": {}
+			"rules": {
+				"@typescript-eslint/no-extra-semi": "error",
+				"no-extra-semi": "off"
+			}
 		},
 		{
 			"files": ["references.d.ts"],

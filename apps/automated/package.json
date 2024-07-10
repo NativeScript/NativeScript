@@ -11,8 +11,8 @@
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
   },
   "devDependencies": {
-    "@nativescript/android": "~8.7.0",
-    "@nativescript/ios": "~8.7.0",
+    "@nativescript/android": "~8.8.0",
+    "@nativescript/ios": "~8.8.0",
     "@nativescript/visionos": "~8.7.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
     "circular-dependency-plugin": "^5.2.2",

@@ -57,3 +57,4 @@ Thumbs.db
 ios-typings-prj
 
 .nx/cache
+.nx/workspace-data

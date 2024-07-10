@@ -27,3 +27,4 @@ package.json
 !packages/webpack/templates/*.js
 
 /.nx/cache
+/.nx/workspace-data
