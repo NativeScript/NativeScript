@@ -32,12 +32,9 @@ function run() {
 		console.log(new Uint8Array(digestBuffer));
 	});
 
-	// async function a() {
-	// 	const key = await crypto.subtle.generateKey({ name: 'HMAC', hash: 'SHA-256' }, true, ['sign', 'verify']);
-	//     console.log(key.algorithm);
-	// }
+	gen_hmac();
 
-	// a();
+	gen_rsa_oaep();
 }
 
 export function encodeDecode() {
@@ -46,4 +43,67 @@ export function encodeDecode() {
 	console.log(encoded);
 
 	console.log(atob(encoded) === 'Osei');
+}
+
+async function gen_hmac() {
+	let message = 'Hello World';
+	let enc = new TextEncoder();
+	const encoded = enc.encode(message);
+
+	const key = await crypto.subtle.generateKey(
+		{
+			name: 'HMAC',
+			hash: { name: 'SHA-512' },
+		},
+		true,
+		['sign', 'verify'],
+	);
+
+	const signature = await crypto.subtle.sign('HMAC', key, encoded);
+
+	let result = await crypto.subtle.verify('HMAC', key, signature, encoded);
+
+	console.log('gen_hmac is valid? ', result);
+}
+
+async function gen_rsa_oaep() {
+	let message = 'Hello World';
+	let enc = new TextEncoder();
+	const encoded = enc.encode(message);
+
+	const kp = await crypto.subtle.generateKey(
+		{
+			name: 'RSA-OAEP',
+			modulusLength: 4096,
+			publicExponent: new Uint8Array([1, 0, 1]),
+			hash: 'SHA-256',
+		},
+		true,
+		['encrypt', 'decrypt'],
+	);
+
+	try {
+		const ciphertext = await crypto.subtle.encrypt(
+			{
+				name: 'RSA-OAEP',
+			},
+			kp.publicKey,
+			encoded,
+		);
+
+		let decrypted = await crypto.subtle.decrypt(
+			{
+				name: 'RSA-OAEP',
+			},
+			kp.privateKey,
+			ciphertext,
+		);
+
+		let dec = new TextDecoder();
+		const decryptedValue = dec.decode(decrypted);
+
+		console.log('decryptedValue', decryptedValue, decryptedValue === message);
+	} catch (error) {
+		console.log('gen: error', error);
+	}
 }
