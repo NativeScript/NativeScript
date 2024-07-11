@@ -239,11 +239,19 @@ export class SubtleCrypto {
 			}
 
 			if (__IOS__) {
-				const ab = NSCCrypto.digestLengthMode(data, data.byteLength, mode);
-				if (!ab) {
-					// todo throw failure
-				}
-				resolve(interop.bufferFromData(ab));
+				const d = NSData.dataWithData(data as never);
+				NSCCrypto.digestModeCompletion(d, mode, (ab, error) => {
+					if (!ab) {
+						// todo throw failure
+					}
+
+					resolve(interop.bufferFromData(ab));
+				});
+				// const ab = NSCCrypto.digestMode(d, mode);
+				// if (!ab) {
+				// 	// todo throw failure
+				// }
+				// resolve(interop.bufferFromData(ab));
 			}
 		});
 	}
@@ -257,12 +265,15 @@ export class SubtleCrypto {
 						try {
 							if (__IOS__) {
 								const hash = parseHash(key.algorithm.hash.name);
-								const ret = NSCCrypto.encryptRsaKeyHashDataSize(key.type === 'private', key[parent_], hash, data, data.byteLength);
-								if (ret) {
-									resolve(interop.bufferFromData(ret));
-								} else {
-									reject(new Error('Failed to encrypt data'));
-								}
+								const d = NSData.dataWithData(data as never);
+
+								NSCCrypto.encryptRsaKeyHashDataCompletion(key.type === 'private', key[parent_], hash, d, (ret, error) => {
+									if (ret) {
+										resolve(interop.bufferFromData(ret));
+									} else {
+										reject(new Error('Failed to encrypt data'));
+									}
+								});
 							}
 
 							if (__ANDROID__) {
@@ -300,13 +311,14 @@ export class SubtleCrypto {
 						try {
 							if (__IOS__) {
 								const hash = parseHash(key.algorithm.hash.name);
-
-								const ret = NSCCrypto.decryptRsaKeyHashDataSize(key.type === 'private', key[parent_], hash, data, data.byteLength);
-								if (ret) {
-									resolve(interop.bufferFromData(ret));
-								} else {
-									reject(new Error('Failed to decrypt data'));
-								}
+								const d = NSData.dataWithData(data as never);
+								NSCCrypto.decryptRsaKeyHashDataCompletion(key.type === 'private', key[parent_], hash, d, (ret, error) => {
+									if (ret) {
+										resolve(interop.bufferFromData(ret));
+									} else {
+										reject(new Error('Failed to decrypt data'));
+									}
+								});
 							}
 
 							if (__ANDROID__) {
@@ -527,6 +539,25 @@ export class SubtleCrypto {
 							}
 							const usages = parseUsages(keyUsages);
 
+							NSCCrypto.generateKeyRsaModulusLengthPublicExponentSizeHashExtractableKeyUsagesCompletion(2, algorithm.modulusLength, null, 0, hash, !!extractable, usages, (kp, error) => {
+								if (!kp) {
+									reject(new Error('Failed to generateKey'));
+								} else {
+									const ret = CryptoKeyPair.fromNative(kp);
+									ret.privateKey[parent_] = kp;
+									ret.privateKey[algorithm_] = { name: algorithm.name, hash: { name: algorithm.hash }, modulusLength: algorithm.modulusLength, publicExponent: new Uint8Array([1, 0, 1]) };
+									ret.privateKey[type_] = 'private';
+									ret.privateKey[extractable_] = extractable;
+
+									ret.publicKey[parent_] = kp;
+									ret.publicKey[algorithm_] = { name: algorithm.name, hash: { name: algorithm.hash }, modulusLength: algorithm.modulusLength, publicExponent: new Uint8Array([1, 0, 1]) };
+									ret.publicKey[type_] = 'public';
+									ret.publicKey[extractable_] = extractable;
+
+									resolve(ret);
+								}
+							});
+							/*
 							// ignore publicExponent for now
 							const kp = NSCCrypto.generateKeyRsaModulusLengthPublicExponentSizeHashExtractableKeyUsages(2, algorithm.modulusLength, null, 0, hash, !!extractable, usages);
 
@@ -546,6 +577,7 @@ export class SubtleCrypto {
 
 								resolve(ret);
 							}
+							*/
 						}
 
 						if (__ANDROID__) {

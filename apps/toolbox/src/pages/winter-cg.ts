@@ -10,20 +10,20 @@ export function navigatingTo(args: EventData) {
 function run() {
 	console.log(crypto.randomUUID());
 
-	const buf = new BigUint64Array(3);
+	const array = new Uint32Array(10);
+	crypto.getRandomValues(array);
 
-	crypto.getRandomValues(buf);
-
-	console.log(buf);
+	console.log('Your lucky numbers:');
+	for (const num of array) {
+		console.log(num);
+	}
 
 	const text = 'An obscure body in the S-K System, your majesty. The inhabitants refer to it as the planet Earth.';
 
 	async function digestMessage(message) {
 		const encoder = new TextEncoder();
 		const data = encoder.encode(message);
-		console.time('digestMessage');
 		const hash = await crypto.subtle.digest('SHA-256', data);
-		console.timeEnd('digestMessage');
 		return hash;
 	}
 
@@ -90,7 +90,6 @@ async function gen_rsa_oaep() {
 			kp.publicKey,
 			encoded,
 		);
-
 		let decrypted = await crypto.subtle.decrypt(
 			{
 				name: 'RSA-OAEP',
