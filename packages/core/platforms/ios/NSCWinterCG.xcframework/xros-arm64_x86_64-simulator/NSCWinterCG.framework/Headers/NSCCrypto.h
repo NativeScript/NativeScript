@@ -42,22 +42,38 @@ typedef enum : NSUInteger {
 
 
 @interface NSCCryptoKeyPair : NSObject
-@property (nonatomic, nonnull) SecKeyRef privateKey;
-@property (nonatomic, nonnull) SecKeyRef publicKey;
+@property (nonatomic, readonly, nonnull) SecKeyRef privateKey;
+@property (nonatomic, readonly, nonnull) SecKeyRef publicKey;
 -(nonnull id)initWithPrivateKey:(nonnull SecKeyRef)privKey andPublicKey:(nonnull SecKeyRef)pubKey;
 @end
 
+typedef void (^DigestCompletionHandler)(NSData * _Nullable result,NSError * _Nullable error);
+typedef void (^GenerateKeyCompletionHandler)(NSCCryptoKeyPair * _Nullable result,NSError * _Nullable error);
+typedef void (^DecryptCompletionHandler)(NSData * _Nullable result,NSError * _Nullable error);
+typedef void (^EncryptCompletionHandler)(NSData * _Nullable result,NSError * _Nullable error);
+
+
 @interface NSCCrypto:NSObject
 + (nonnull NSString*)randomUUID;
-+ (nullable NSString*)getRandomValues:(nonnull void*)buffer length:(unsigned int)length;
-+ (nullable NSData*)digest:(nonnull void*)data length:(unsigned int)length mode:(int)mode;
++ (nullable NSString*)getRandomValues:(nonnull NSMutableData*)buffer;
++ (nullable NSData*)digest:(nonnull NSData*)data mode:(int)mode;
++ (void)digest:(nonnull NSData*)data mode:(int)mode completion:(DigestCompletionHandler _Nonnull ) completion;
 + (nullable NSData *)generateKeyHmac:(int)hash length:(int)length;
 + (nullable NSData *)signHmac:(nonnull NSData*)key hash:(NSCCryptoHash)hash data:(nonnull NSData*)data;
 + (BOOL)verifyHmac:(nonnull NSData*)key hash:(NSCCryptoHash)hash signature:(nonnull NSData*)signature data:(nonnull NSData*)data;
 
 + (nullable NSCCryptoKeyPair*)generateKeyRsa:(NSCCryptoRsaHashedKeyGenParamsName)name modulusLength:(unsigned int)modulusLength publicExponent:(nullable void*)exponent size:(unsigned int)size hash:(NSCCryptoHash)hash extractable:(BOOL)extractable keyUsages:(nonnull NSArray*) usages;
-+ (nullable NSData *)encryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull void*)data size:(unsigned int) size;
 
-+ (nullable NSData *)decryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull void*)data size:(unsigned int) size;
++ (void)generateKeyRsa:(NSCCryptoRsaHashedKeyGenParamsName)name modulusLength:(unsigned int)modulusLength publicExponent:(nullable void*)exponent size:(unsigned int)size hash:(NSCCryptoHash)hash extractable:(BOOL)extractable keyUsages:(nonnull NSArray*) usages completion:(GenerateKeyCompletionHandler _Nonnull ) completion;
+
+
+
++ (nullable NSData *)encryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull NSData*)data;
+
++ (void)encryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull NSData*)data completion:(EncryptCompletionHandler _Nonnull ) completion;
+
++ (nullable NSData *)decryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull NSData*)data;
+
++ (void)decryptRsa:(BOOL)isPrivate key:(nonnull NSCCryptoKeyPair *)key hash:(NSCCryptoHash)hash data:(nonnull NSData*)data completion:(DecryptCompletionHandler _Nonnull ) completion;
 @end
 #endif /* NSCCrypto_h */
