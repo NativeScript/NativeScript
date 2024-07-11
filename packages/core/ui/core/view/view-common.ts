@@ -16,7 +16,7 @@ import { setupAccessibleView } from '../../../accessibility';
 
 import { PercentLength } from '../../styling/style-properties';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, toString as gestureToString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
@@ -71,6 +71,9 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 export const _rootModalViews = new Array<ViewBase>();
 
 type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; options?: SharedTransitionInteractiveOptions };
+
+// TODO: remove once we fully switch to the new event system
+const warnedEvent = new Set<string>();
 
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
@@ -300,6 +303,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
 		thisArg = thisArg || undefined;
 
+		// TODO: Remove this once we fully switch to the new event system
+		if (typeof eventNames === 'number') {
+			// likely a gesture type from a plugin
+			const gestureName = gestureToString(eventNames);
+			if (!warnedEvent.has(gestureName)) {
+				console.warn(`Using a gesture type (${gestureName}) as an event name is deprecated. Please use the event name instead.`);
+				warnedEvent.add(gestureName);
+			}
+			eventNames = gestureName;
+		}
+
 		// Normalize "ontap" -> "tap"
 		const normalizedName = getEventOrGestureName(eventNames);
 
@@ -318,6 +332,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
 		thisArg = thisArg || undefined;
+
+		// TODO: Remove this once we fully switch to the new event system
+		if (typeof eventNames === 'number') {
+			// likely a gesture type from a plugin
+			const gestureName = gestureToString(eventNames);
+			if (!warnedEvent.has(gestureName)) {
+				console.warn(`Using a gesture type (${gestureName}) as an event name is deprecated. Please use the event name instead.`);
+				warnedEvent.add(gestureName);
+			}
+			eventNames = gestureName;
+		}
 
 		// Normalize "ontap" -> "tap"
 		const normalizedName = getEventOrGestureName(eventNames);

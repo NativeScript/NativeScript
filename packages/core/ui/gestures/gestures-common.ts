@@ -318,7 +318,28 @@ export function toString(type: GestureTypes): (typeof GestureTypes)[GestureTypes
  * @param type - A string representation of a single gesture type (e.g. "tap").
  */
 export function fromString(type: (typeof GestureTypes)[GestureTypes]): GestureTypes | undefined {
-	return GestureTypes[type];
+	const t = type.trim().toLowerCase();
+
+	switch (t) {
+		case 'tap':
+			return GestureTypes.tap;
+		case 'doubletap':
+			return GestureTypes.doubleTap;
+		case 'pinch':
+			return GestureTypes.pinch;
+		case 'pan':
+			return GestureTypes.pan;
+		case 'swipe':
+			return GestureTypes.swipe;
+		case 'rotation':
+			return GestureTypes.rotation;
+		case 'longpress':
+			return GestureTypes.longPress;
+		case 'touch':
+			return GestureTypes.touch;
+	}
+
+	return undefined;
 }
 
 export abstract class GesturesObserverBase implements GesturesObserverDefinition {
