@@ -26,12 +26,13 @@ let isShowingGridLayout: boolean = true;
 
 export function showHide() {
 	let gridContainer = page.getViewById('grid-container');
-	console.log('tap tap');
 	isShowingGridLayout = !isShowingGridLayout;
 
 	if (!isShowingGridLayout) {
+		console.info('hiding grid');
 		gridContainer.visibility = 'hidden';
 	} else {
+		console.info('showing grid');
 		gridContainer.visibility = 'visible';
 	}
 }

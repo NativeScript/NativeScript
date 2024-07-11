@@ -2,10 +2,10 @@
     <ScrollView id="grid-layout" height="100%">
         <GridLayout height="80%" backgroundColor="red" rows="auto auto">
             <StackLayout backgroundColor="green">
-                <Button backgroundColor="mediumblue" color="#fff" height="42" width="80" fontSize="20" tap="showHide" text="Show It"></Button>
+                <Button backgroundColor="mediumblue" color="#fff" height="42" width="170" fontSize="20" tap="showHide" text="Toggle Show/Hide"></Button>
             </StackLayout>
             <StackLayout row="1">
-                <GridLayout id="grid-container" columns="* * * * * * *" rows="* * *" height="400">
+                <GridLayout id="grid-container" columns="* auto * 45 * * *" rows="* auto 50" height="400">
                     <StackLayout col="0" row="0" backgroundColor='maroon'>
                         <Label text="TNT" color="#fff" fontSize="22"/>
                     </StackLayout>
