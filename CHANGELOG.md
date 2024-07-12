@@ -1,3 +1,12 @@
+## [8.8.1](https://github.com/NativeScript/NativeScript/compare/8.8.0-core...8.8.1) (2024-07-12)
+
+
+### Bug Fixes
+
+* **android:** targetSdk 34 registerBroadcastReceiver ([#10585](https://github.com/NativeScript/NativeScript/issues/10585)) ([4c70596](https://github.com/NativeScript/NativeScript/commit/4c705967d20817c55bac73c21701a96e60874da7))
+
+
+
 # [8.8.0](https://github.com/NativeScript/NativeScript/compare/8.7.2-core...8.8.0-core) (2024-07-11)
 
 
