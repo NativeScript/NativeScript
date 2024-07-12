@@ -2,6 +2,7 @@ import { profile } from '../profiling';
 import { View } from '../ui/core/view';
 import { isEmbedded } from '../ui/embedding';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
+import { SDK_VERSION } from '../utils/constants';
 import type { AndroidApplication as IAndroidApplication } from './application';
 import { ApplicationCommon } from './application-common';
 import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
@@ -442,10 +443,18 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		return this._packageName;
 	}
 
-	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {
+	// Possible flags are:
+	// RECEIVER_EXPORTED (2)
+	// RECEIVER_NOT_EXPORTED (4)
+	// RECEIVER_VISIBLE_TO_INSTANT_APPS (1)
+	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void, flags = 2): void {
 		const registerFunc = (context: android.content.Context) => {
 			const receiver: android.content.BroadcastReceiver = new (initBroadcastReceiver())(onReceiveCallback);
-			context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
+			if (SDK_VERSION >= 26) {
+				context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter), flags);
+			} else {
+				context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
+			}
 			this._registeredReceivers[intentFilter] = receiver;
 		};
 
