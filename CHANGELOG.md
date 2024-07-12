@@ -1,3 +1,62 @@
+## [8.8.1](https://github.com/NativeScript/NativeScript/compare/8.8.0-core...8.8.1) (2024-07-12)
+
+
+### Bug Fixes
+
+* **android:** targetSdk 34 registerBroadcastReceiver ([#10585](https://github.com/NativeScript/NativeScript/issues/10585)) ([4c70596](https://github.com/NativeScript/NativeScript/commit/4c705967d20817c55bac73c21701a96e60874da7))
+
+
+
+# [8.8.0](https://github.com/NativeScript/NativeScript/compare/8.7.2-core...8.8.0-core) (2024-07-11)
+
+
+### Bug Fixes
+
+* **action-bar:** provide correct page during navigation when title change occurs ([#10563](https://github.com/NativeScript/NativeScript/issues/10563)) ([12dd329](https://github.com/NativeScript/NativeScript/commit/12dd329ed19adbd95d44fd29628e8423080f9dbe))
+* **android:** dont add to parent from `_setupAsRootView` ([#10554](https://github.com/NativeScript/NativeScript/issues/10554)) ([88a0472](https://github.com/NativeScript/NativeScript/commit/88a047254bb9542106f52a204930342a76dbdded))
+* **android:** prevent error on navigation back after using page transition ([#10439](https://github.com/NativeScript/NativeScript/issues/10439)) ([7036f12](https://github.com/NativeScript/NativeScript/commit/7036f12b5c149a383ed33748090d850cb8ead759))
+* **android:** prevent error while opening modal from background ([#10570](https://github.com/NativeScript/NativeScript/issues/10570)) ([7e9be32](https://github.com/NativeScript/NativeScript/commit/7e9be32e28ed96c2dd6f232c16f149222b7985d6))
+* **android:** transition state handling ([#10528](https://github.com/NativeScript/NativeScript/issues/10528)) ([632a348](https://github.com/NativeScript/NativeScript/commit/632a348e9ad8184468cf33a37aa17552d9092ca5))
+* **core:** clean up event handling in Observable ([#10531](https://github.com/NativeScript/NativeScript/issues/10531)) ([53e958e](https://github.com/NativeScript/NativeScript/commit/53e958e6230d5a962bedbc7199f261c944e78521))
+* **core:** clean up event handling in ViewCommon ([#10534](https://github.com/NativeScript/NativeScript/issues/10534)) ([4a7e40d](https://github.com/NativeScript/NativeScript/commit/4a7e40d1291a575cf567783694536d17cf864653))
+* **core:** drop support for plural event/gesture names ([#10539](https://github.com/NativeScript/NativeScript/issues/10539)) ([9be392f](https://github.com/NativeScript/NativeScript/commit/9be392fbb0269b6468c5d710722af53653503609))
+* **core:** handle GestureObservers same as event listeners ([#10538](https://github.com/NativeScript/NativeScript/issues/10538)) ([d323672](https://github.com/NativeScript/NativeScript/commit/d323672b292699aefb5fb692e841818366ff9dcc))
+* **core:** stop accepting GestureTypes enum as an eventName ([#10537](https://github.com/NativeScript/NativeScript/issues/10537)) ([3b77fff](https://github.com/NativeScript/NativeScript/commit/3b77fffad58db801490232e787377e58f5cd34ac))
+* **crypto:** error expectation ([2bfe8b3](https://github.com/NativeScript/NativeScript/commit/2bfe8b38e3ae0fdb0f9f98a88829bde25bc73898))
+* **embed:** use factory only when it's available ([#10579](https://github.com/NativeScript/NativeScript/issues/10579)) ([9541b1b](https://github.com/NativeScript/NativeScript/commit/9541b1b68ce9d6efc08c2ef5e58484d6b372e059))
+* **gestures:** lowercase gesture handling and add deprecation notice when using non-string events ([#10581](https://github.com/NativeScript/NativeScript/issues/10581)) ([6041b2d](https://github.com/NativeScript/NativeScript/commit/6041b2d0831d6d2d461251939b28ef01f6a3a028))
+* **view:** modal stack tracking ([#10557](https://github.com/NativeScript/NativeScript/issues/10557)) ([84e1a67](https://github.com/NativeScript/NativeScript/commit/84e1a67d6db89a0da6ce510356a30fa7a6e423c0))
+* **webpack:** union type ([#10575](https://github.com/NativeScript/NativeScript/issues/10575)) ([0e2db6e](https://github.com/NativeScript/NativeScript/commit/0e2db6e586c6d05d7996fc0bdad7b014c687dea4))
+* **winter-cg:** crypto ([#10580](https://github.com/NativeScript/NativeScript/issues/10580)) ([41f938c](https://github.com/NativeScript/NativeScript/commit/41f938c5eec70395bc87262257b3e22bb1f8a949))
+
+
+### Features
+
+* **android:** background color/image handling improvements ([#10451](https://github.com/NativeScript/NativeScript/issues/10451)) ([4abcb21](https://github.com/NativeScript/NativeScript/commit/4abcb216dab4dd305dc7f68b4c8755868a80ac18))
+* **config:** embed options for existing platform host projects ([#10568](https://github.com/NativeScript/NativeScript/issues/10568)) ([c736f72](https://github.com/NativeScript/NativeScript/commit/c736f72fce64d53dbdd717fb89e3b4b943b6e5f6))
+* **core:** ability to embed into platform host projects ([#10465](https://github.com/NativeScript/NativeScript/issues/10465)) ([779d792](https://github.com/NativeScript/NativeScript/commit/779d79285d37919ebbf6f064dfa852e20b33f195))
+* **core:** add `sys://` support for SF Symbol usage on images with effects ([#10555](https://github.com/NativeScript/NativeScript/issues/10555)) ([d678915](https://github.com/NativeScript/NativeScript/commit/d67891523461e5a0543c040fd172e94bd1a65225))
+* **core:** css media query support ([#10530](https://github.com/NativeScript/NativeScript/issues/10530)) ([9fd361c](https://github.com/NativeScript/NativeScript/commit/9fd361c2e6a14d79e61c9565f7c1b532d5ba499b))
+* **core:** css-what parser for CSS selectors + support for :not(), :is(), and :where() Level 4 and ~ ([#10514](https://github.com/NativeScript/NativeScript/issues/10514)) ([2fb4f23](https://github.com/NativeScript/NativeScript/commit/2fb4f23670daf94be1dbc5f9f4711f9d22ced3af))
+* **ios:** SF Symbol scale support via iosSymbolScale ([#10569](https://github.com/NativeScript/NativeScript/issues/10569)) ([80f3ff2](https://github.com/NativeScript/NativeScript/commit/80f3ff2042adf4ab8ee77e0e210c2dd4309a4b87))
+* **types-ios:** iOS 18 ([#10558](https://github.com/NativeScript/NativeScript/issues/10558)) ([893b858](https://github.com/NativeScript/NativeScript/commit/893b858b80e7ffe29a019b230cd67705236e28f2))
+* **types:** iOS 18 beta 3 ([492eef0](https://github.com/NativeScript/NativeScript/commit/492eef087eefbc3b77c9638d3d7193a9aa976e7b))
+* **webpack:** allow custom 'projectName' on Xcode project name from config ([#10550](https://github.com/NativeScript/NativeScript/issues/10550)) ([b8fff38](https://github.com/NativeScript/NativeScript/commit/b8fff3833ee05854452997df898f6a51376c2674))
+* **winter-cg:** crypto, atob, btoa ([#10577](https://github.com/NativeScript/NativeScript/issues/10577)) ([f7679d7](https://github.com/NativeScript/NativeScript/commit/f7679d725a420a398ed0a4424cc2cdce6282fe36))
+
+
+### Performance Improvements
+
+* **android:** gridlayout with less JNI calls  ([#10402](https://github.com/NativeScript/NativeScript/issues/10402)) ([6dd441d](https://github.com/NativeScript/NativeScript/commit/6dd441d6ba7d6c4b07596976451ebd1615fcd745))
+* improve attribute selectors by adding single listeners ([#10384](https://github.com/NativeScript/NativeScript/issues/10384)) ([bb83add](https://github.com/NativeScript/NativeScript/commit/bb83addb5ce77906799fabb9a225b4814b109657))
+
+
+### Reverts
+
+* "perf: improve attribute selectors by adding single listeners ([#10384](https://github.com/NativeScript/NativeScript/issues/10384))" ([7f2d51e](https://github.com/NativeScript/NativeScript/commit/7f2d51e7d00884a1abd8a3995cef96f546661150))
+
+
+
 ## [8.7.2](https://github.com/NativeScript/NativeScript/compare/5.0.21-webpack...8.7.2) (2024-04-23)
 
 
