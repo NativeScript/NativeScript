@@ -45,6 +45,7 @@ apps/**/*/webpack.*.js
 *.tgz
 .npmrc
 **/**/*.log
+.nx
 
 # System Files
 .DS_Store
