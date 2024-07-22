@@ -709,7 +709,7 @@ function normalizeTransformation({ property, value }: Transformation): Transform
 }
 
 function convertTransformValue(property: string, stringValue: string): TransformationValue {
-	/* eslint-disable prefer-const */
+	// eslint-disable-next-line prefer-const
 	let [x, y, z] = stringValue.split(',').map(parseFloat);
 	if (property === 'translate') {
 		y ??= IDENTITY_TRANSFORMATION.translate.y;

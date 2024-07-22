@@ -1,6 +1,6 @@
 import { Font } from '../styling/font';
 import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty, selectedTextColorProperty } from './segmented-bar-common';
-import { isEnabledProperty } from '../core/view';
+import { AndroidHelper, isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { layout } from '../../utils';
@@ -171,8 +171,8 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 			const color = value.android;
 			const backgroundDrawable = viewGroup.getBackground();
 			if (SDK_VERSION > 21 && backgroundDrawable) {
-				const newDrawable = tryCloneDrawable(backgroundDrawable, nativeView.getResources());
-				newDrawable.setColorFilter(new android.graphics.Paint(color).getColorFilter());
+				const newDrawable = AndroidHelper.getCopyOrDrawable(backgroundDrawable, nativeView.getResources());
+				AndroidHelper.setDrawableColor(color, newDrawable);
 				viewGroup.setBackground(newDrawable);
 			} else {
 				const stateDrawable = new android.graphics.drawable.StateListDrawable();
@@ -184,21 +184,10 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 				viewGroup.setBackground(stateDrawable);
 			}
 		} else {
-			const backgroundDrawable = tryCloneDrawable(value, nativeView.getResources());
+			const backgroundDrawable = AndroidHelper.getCopyOrDrawable(value, nativeView.getResources());
 			viewGroup.setBackground(backgroundDrawable);
 		}
 	}
-}
-
-function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
-	if (value) {
-		const constantState = value.getConstantState();
-		if (constantState) {
-			return constantState.newDrawable(resources);
-		}
-	}
-
-	return value;
 }
 
 export class SegmentedBar extends SegmentedBarBase {

@@ -158,10 +158,9 @@ export function chainWebpack(
  * @param mergeFn An object or a function that optionally returns an object (can mutate the object directly and return nothing)
  */
 export function mergeWebpack(
-	mergeFn: (
-		config: Partial<webpack.Configuration>,
-		env: IWebpackEnv,
-	) => any | Partial<webpack.Configuration>,
+	mergeFn:
+		| ((config: Partial<webpack.Configuration>, env: IWebpackEnv) => any)
+		| Partial<webpack.Configuration>,
 ) {
 	webpackMerges.push(mergeFn);
 }

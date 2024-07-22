@@ -2,7 +2,7 @@ import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-h
 import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
-import { Device } from '../platform';
+import { Device, Screen } from '../platform';
 import { profile } from '../profiling';
 import { Trace } from '../trace';
 import { Builder } from '../ui/builder';
@@ -221,13 +221,17 @@ export class ApplicationCommon {
 	 * @param rootView
 	 * @param cssClasses
 	 * @param newCssClass
+	 * @param skipCssUpdate
 	 */
-	applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
+	applyCssClass(rootView: View, cssClasses: string[], newCssClass: string, skipCssUpdate: boolean = false): void {
 		if (!rootView.cssClasses.has(newCssClass)) {
 			cssClasses.forEach((cssClass) => this.removeCssClass(rootView, cssClass));
 			this.addCssClass(rootView, newCssClass);
 			this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
-			rootView._onCssStateChange();
+
+			if (!skipCssUpdate) {
+				rootView._onCssStateChange();
+			}
 
 			if (Trace.isEnabled()) {
 				const rootCssClasses = Array.from(rootView.cssClasses);
@@ -460,7 +464,13 @@ export class ApplicationCommon {
 		if (this._orientation === value) {
 			return;
 		}
+
 		this._orientation = value;
+
+		// Update metrics early enough regardless of the existence of root view
+		// Also, CSS will use the correct size values during update trigger
+		Screen.mainScreen._updateMetrics();
+
 		this.orientationChanged(this.getRootView(), value);
 		this.notify(<OrientationChangedEventData>{
 			eventName: this.orientationChangedEvent,
@@ -481,12 +491,18 @@ export class ApplicationCommon {
 		}
 
 		const newOrientationCssClass = `${CSSUtils.CLASS_PREFIX}${newOrientation}`;
-		this.applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
+		this.applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass, true);
 
 		const rootModalViews = <Array<View>>rootView._getRootModalViews();
 		rootModalViews.forEach((rootModalView) => {
-			this.applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
+			this.applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass, true);
+
+			// Trigger state change for root modal view classes and media queries
+			rootModalView._onCssStateChange();
 		});
+
+		// Trigger state change for root view classes and media queries
+		rootView._onCssStateChange();
 	}
 
 	getNativeApplication(): any {
@@ -552,12 +568,18 @@ export class ApplicationCommon {
 		}
 
 		const newSystemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${newSystemAppearance}`;
-		this.applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
+		this.applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass, true);
 
 		const rootModalViews = rootView._getRootModalViews();
 		rootModalViews.forEach((rootModalView) => {
-			this.applyCssClass(rootModalView as View, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
+			this.applyCssClass(rootModalView as View, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass, true);
+
+			// Trigger state change for root modal view classes and media queries
+			rootModalView._onCssStateChange();
 		});
+
+		// Trigger state change for root view classes and media queries
+		rootView._onCssStateChange();
 	}
 
 	private _inBackground: boolean = false;

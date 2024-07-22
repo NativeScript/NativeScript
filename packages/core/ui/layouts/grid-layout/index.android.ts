@@ -47,22 +47,25 @@ export class GridLayout extends GridLayoutBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		// Update native GridLayout
-		if (this.rowsInternal.length || this.columnsInternal.length) {
-			const jsonRows = JSON.stringify(this.rowsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
-			const jsonColumns = JSON.stringify(this.columnsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
-			this.nativeViewProtected.addRowsAndColumnsFromJSON(jsonRows, jsonColumns);
-		}
+		const jsonRows = JSON.stringify(this.rowsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
+		const jsonColumns = JSON.stringify(this.columnsInternal.map((itemSpec: ItemSpec) => itemSpec.toJSON()).filter((j) => !!j));
+		this.nativeViewProtected.addRowsAndColumnsFromJSON(jsonRows, jsonColumns);
+	}
+
+	public resetNativeView() {
+		// Update native GridLayout
+		this.nativeViewProtected.reset();
+		super.resetNativeView();
 	}
 
 	public _onRowAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
-			const nativeData = itemSpec.toJSON();
-			this.nativeViewProtected.addRow(nativeData.value, nativeData.type);
+			this.nativeViewProtected.addRowsFromJSON(JSON.stringify([itemSpec.toJSON()]));
 		}
 	}
 
 	public addRows(itemSpecs: ItemSpec[]) {
-		let jsonArray = [];
+		const jsonArray = [];
 		const nativeView = this.nativeViewProtected;
 		const initialized = !!nativeView;
 		for (let index = 0; index < itemSpecs.length; index++) {
@@ -78,7 +81,7 @@ export class GridLayout extends GridLayoutBase {
 	}
 
 	public addColumns(itemSpecs: ItemSpec[]) {
-		let jsonArray = [];
+		const jsonArray = [];
 		const nativeView = this.nativeViewProtected;
 		const initialized = !!nativeView;
 		for (let index = 0; index < itemSpecs.length; index++) {
@@ -95,8 +98,7 @@ export class GridLayout extends GridLayoutBase {
 
 	public _onColumnAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {
-			const nativeData = itemSpec.toJSON();
-			this.nativeViewProtected.addColumn(nativeData.value, nativeData.type);
+			this.nativeViewProtected.addColumnsFromJSON(JSON.stringify([itemSpec.toJSON()]));
 		}
 	}
 

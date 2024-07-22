@@ -14,12 +14,12 @@ import { getProjectFilePath } from './project';
 export function addVirtualEntry(
 	config: Config,
 	name: string,
-	contents: string
+	contents: string,
 ): string {
 	return addVirtualModule(
 		config,
 		`__@nativescript_webpack_virtual_entry_${name}__`,
-		contents
+		contents,
 	);
 }
 
@@ -29,7 +29,7 @@ export function addVirtualEntry(
 export function addVirtualModule(
 	config: Config,
 	name: string,
-	contents: string
+	contents: string,
 ): string {
 	const virtualEntryPath = join(getEntryDirPath(), `${name}`);
 
@@ -51,7 +51,7 @@ export function addVirtualModule(
 	// todo: we can remove this special handling once we no longer support v11
 	if (config.plugins.has('AngularCompilerPlugin')) {
 		const compatEntryPath = getProjectFilePath(
-			join('node_modules', '.nativescript', `${name}`)
+			join('node_modules', '.nativescript', `${name}`),
 		);
 		mkdirSync(dirname(compatEntryPath), { recursive: true });
 		writeFileSync(compatEntryPath, options[virtualEntryPath]);

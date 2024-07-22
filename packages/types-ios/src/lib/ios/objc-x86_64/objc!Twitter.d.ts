@@ -1,4 +1,8 @@
 
+/**
+ * @since 5.0
+ * @deprecated 6.0
+ */
 declare class TWRequest extends NSObject {
 
 	static alloc(): TWRequest; // inherited from NSObject
@@ -30,6 +34,10 @@ declare const TWRequestMethodGET: number;
 
 declare const TWRequestMethodPOST: number;
 
+/**
+ * @since 5.0
+ * @deprecated 6.0
+ */
 declare class TWTweetComposeViewController extends UIViewController {
 
 	static alloc(): TWTweetComposeViewController; // inherited from NSObject

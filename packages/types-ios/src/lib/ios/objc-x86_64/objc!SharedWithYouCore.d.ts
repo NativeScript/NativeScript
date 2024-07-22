@@ -1,4 +1,7 @@
 
+/**
+ * @since 16.0
+ */
 declare class SWAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWAction; // inherited from NSObject
@@ -24,6 +27,9 @@ declare class SWAction extends NSObject implements NSCopying, NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 interface SWCollaborationActionHandler extends NSObjectProtocol {
 
 	collaborationCoordinatorHandleStartCollaborationAction(coordinator: SWCollaborationCoordinator, action: SWStartCollaborationAction): void;
@@ -35,6 +41,9 @@ declare var SWCollaborationActionHandler: {
 	prototype: SWCollaborationActionHandler;
 };
 
+/**
+ * @since 16.0
+ */
 declare class SWCollaborationCoordinator extends NSObject {
 
 	static alloc(): SWCollaborationCoordinator; // inherited from NSObject
@@ -46,6 +55,9 @@ declare class SWCollaborationCoordinator extends NSObject {
 	static readonly sharedCoordinator: SWCollaborationCoordinator;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWCollaborationMetadata extends NSObject implements NSCopying, NSItemProviderReading, NSItemProviderWriting, NSMutableCopying, NSSecureCoding {
 
 	static alloc(): SWCollaborationMetadata; // inherited from NSObject
@@ -135,6 +147,9 @@ declare class SWCollaborationMetadata extends NSObject implements NSCopying, NSI
 	self(): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWCollaborationOption extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWCollaborationOption; // inherited from NSObject
@@ -168,6 +183,9 @@ declare class SWCollaborationOption extends NSObject implements NSCopying, NSSec
 	initWithTitleIdentifier(title: string, identifier: string): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWCollaborationOptionsGroup extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWCollaborationOptionsGroup; // inherited from NSObject
@@ -199,6 +217,9 @@ declare class SWCollaborationOptionsGroup extends NSObject implements NSCopying,
 	initWithIdentifierOptions(identifier: string, options: NSArray<SWCollaborationOption> | SWCollaborationOption[]): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWCollaborationOptionsPickerGroup extends SWCollaborationOptionsGroup {
 
 	static alloc(): SWCollaborationOptionsPickerGroup; // inherited from NSObject
@@ -208,6 +229,9 @@ declare class SWCollaborationOptionsPickerGroup extends SWCollaborationOptionsGr
 	selectedOptionIdentifier: string;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWCollaborationShareOptions extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWCollaborationShareOptions; // inherited from NSObject
@@ -241,6 +265,9 @@ declare class SWCollaborationShareOptions extends NSObject implements NSCopying,
 	initWithOptionsGroupsSummary(optionsGroups: NSArray<SWCollaborationOptionsGroup> | SWCollaborationOptionsGroup[], summary: string): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWPerson extends NSObject implements NSSecureCoding {
 
 	static alloc(): SWPerson; // inherited from NSObject
@@ -260,6 +287,9 @@ declare class SWPerson extends NSObject implements NSSecureCoding {
 	initWithHandleIdentityDisplayNameThumbnailImageData(handle: string, identity: SWPersonIdentity, displayName: string, thumbnailImageData: NSData): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWPersonIdentity extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWPersonIdentity; // inherited from NSObject
@@ -283,6 +313,9 @@ declare class SWPersonIdentity extends NSObject implements NSCopying, NSSecureCo
 	initWithRootHash(rootHash: NSData): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWPersonIdentityProof extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWPersonIdentityProof; // inherited from NSObject
@@ -306,6 +339,9 @@ declare class SWPersonIdentityProof extends NSObject implements NSCopying, NSSec
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWSignedPersonIdentityProof extends SWPersonIdentityProof {
 
 	static alloc(): SWSignedPersonIdentityProof; // inherited from NSObject
@@ -319,6 +355,9 @@ declare class SWSignedPersonIdentityProof extends SWPersonIdentityProof {
 	initWithPersonIdentityProofSignatureData(personIdentityProof: SWPersonIdentityProof, data: NSData): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWStartCollaborationAction extends SWAction implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWStartCollaborationAction; // inherited from NSObject
@@ -340,6 +379,9 @@ declare class SWStartCollaborationAction extends SWAction implements NSCopying, 
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class SWUpdateCollaborationParticipantsAction extends SWAction implements NSCopying, NSSecureCoding {
 
 	static alloc(): SWUpdateCollaborationParticipantsAction; // inherited from NSObject
@@ -367,4 +409,7 @@ declare var SharedWithYouCoreVersionNumber: number;
 
 declare var SharedWithYouCoreVersionString: interop.Reference<number>;
 
+/**
+ * @since 16.0
+ */
 declare var UTCollaborationOptionsTypeIdentifier: string;

@@ -13,7 +13,7 @@ export type { BindingOptions } from './core/bindable';
 export { ControlStateChangeListener } from './core/control-state-change';
 export { ViewBase, eachDescendant, getAncestor, getViewById, booleanConverter, querySelectorAll } from './core/view-base';
 export type { ShowModalOptions } from './core/view-base';
-export { View, CSSType, ContainerView, ViewHelper, IOSHelper, isUserInteractionEnabledProperty, PseudoClassHandler, CustomLayoutView } from './core/view';
+export { View, CSSType, ContainerView, ViewHelper, AndroidHelper, IOSHelper, isUserInteractionEnabledProperty, PseudoClassHandler, CustomLayoutView } from './core/view';
 export type { Template, KeyedTemplate, ShownModallyData, AddArrayFromBuilder, AddChildFromBuilder, Size } from './core/view';
 export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue, makeParser, makeValidator } from './core/properties';
 export { addWeakEventListener, removeWeakEventListener } from './core/weak-event-listener';
@@ -24,6 +24,7 @@ export { DialogStrings, action, alert, confirm, login, prompt, getCurrentPage, D
 export type { DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions } from './dialogs';
 
 export * from './editable-text-base';
+export { isEmbedded } from './embedding';
 export { Frame, setActivityCallbacks } from './frame';
 export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks } from './frame';
 
@@ -31,7 +32,7 @@ export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDi
 export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData, TouchAnimationOptions, VisionHoverOptions } from './gestures';
 
 export { HtmlView } from './html-view';
-export { Image } from './image';
+export { Image, ImageSymbolEffect, ImageSymbolEffects } from './image';
 export { Cache as ImageCache } from './image-cache';
 export type { DownloadError, DownloadRequest, DownloadedData } from './image-cache';
 export { Label } from './label';

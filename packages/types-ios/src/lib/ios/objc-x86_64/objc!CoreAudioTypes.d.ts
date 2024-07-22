@@ -848,6 +848,8 @@ declare const kAudioChannelLayoutTag_MPEG_5_0_C: number;
 
 declare const kAudioChannelLayoutTag_MPEG_5_0_D: number;
 
+declare const kAudioChannelLayoutTag_MPEG_5_0_E: number;
+
 declare const kAudioChannelLayoutTag_MPEG_5_1_A: number;
 
 declare const kAudioChannelLayoutTag_MPEG_5_1_B: number;
@@ -856,13 +858,19 @@ declare const kAudioChannelLayoutTag_MPEG_5_1_C: number;
 
 declare const kAudioChannelLayoutTag_MPEG_5_1_D: number;
 
+declare const kAudioChannelLayoutTag_MPEG_5_1_E: number;
+
 declare const kAudioChannelLayoutTag_MPEG_6_1_A: number;
+
+declare const kAudioChannelLayoutTag_MPEG_6_1_B: number;
 
 declare const kAudioChannelLayoutTag_MPEG_7_1_A: number;
 
 declare const kAudioChannelLayoutTag_MPEG_7_1_B: number;
 
 declare const kAudioChannelLayoutTag_MPEG_7_1_C: number;
+
+declare const kAudioChannelLayoutTag_MPEG_7_1_D: number;
 
 declare const kAudioChannelLayoutTag_MatrixStereo: number;
 
@@ -937,6 +945,8 @@ declare const kAudioFormatALaw: number;
 declare const kAudioFormatAMR: number;
 
 declare const kAudioFormatAMR_WB: number;
+
+declare const kAudioFormatAPAC: number;
 
 declare const kAudioFormatAppleIMA4: number;
 

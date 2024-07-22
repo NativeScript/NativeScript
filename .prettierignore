@@ -1,4 +1,3 @@
-.github
 .gitignore
 .npmignore
 *.yml
@@ -25,3 +24,5 @@ package.json
 *.scss
 *.sh
 !packages/webpack/templates/*.js
+
+/.nx

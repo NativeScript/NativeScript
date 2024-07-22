@@ -79,7 +79,7 @@ function binding_busy_to_image() {
 			sourceProperty: 'isLoading',
 			targetProperty: 'busy',
 		},
-		image
+		image,
 	);
 	// << activity-indicator-loading
 }

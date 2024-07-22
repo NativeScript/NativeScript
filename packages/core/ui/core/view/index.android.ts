@@ -3,7 +3,7 @@ import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -16,10 +16,8 @@ import { CoreTypes } from '../../../core-types';
 import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
-import { Screen } from '../../../platform';
+import { Device, Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, Application } from '../../../application';
-import { Device } from '../../../platform';
-import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
@@ -27,6 +25,7 @@ import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
 import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from '../../frame/fragment.transitions';
 import { _getStoredClassDefaultPropertyValue } from '../properties';
+import { NativeScriptAndroidView } from '../../utils';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -63,10 +62,6 @@ const modalMap = new Map<number, DialogOptions>();
 
 let TouchListener: TouchListener;
 let DialogFragment: DialogFragment;
-
-interface AndroidView {
-	_cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
-}
 
 interface DialogOptions {
 	owner: View;
@@ -1071,23 +1066,7 @@ export class View extends ViewCommon {
 
 	[backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
 		const nativeView = this.nativeViewProtected;
-		let drawable = (<any>nativeView)._cachedDrawable;
-		if (drawable !== undefined) {
-			return drawable;
-		}
-		drawable = nativeView.getBackground();
-		if (drawable) {
-			const constantState = drawable.getConstantState();
-			if (constantState) {
-				try {
-					drawable = constantState.newDrawable(nativeView.getResources());
-					// eslint-disable-next-line no-empty
-				} catch {}
-			}
-		}
-		(<any>nativeView)._cachedDrawable = drawable;
-
-		return drawable;
+		return AndroidHelper.getCopyOrDrawable(nativeView.getBackground(), nativeView.getResources());
 	}
 	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
 		this._redrawNativeBackground(value);
@@ -1110,36 +1089,56 @@ export class View extends ViewCommon {
 	}
 
 	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any) {
-		const nativeView = this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected as NativeScriptAndroidView;
 		const canUseOutlineProvider = !background.hasBorderWidth() && !background.hasBoxShadow() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
-		if (!isBorderDrawable && (onlyColor || canUseOutlineProvider)) {
-			if (background.color) {
-				if (backgroundDrawable && backgroundDrawable.setColor) {
-					// android.graphics.drawable.ColorDrawable
-					backgroundDrawable.setColor(background.color.android);
+		if (onlyColor || canUseOutlineProvider) {
+			const backgroundColor = background.color?.android;
+			if (isBorderDrawable) {
+				// We need to duplicate the drawable or we lose the "default" cached drawable
+				backgroundDrawable = nativeView._cachedDrawable != null ? AndroidHelper.getCopyOrDrawable(nativeView._cachedDrawable, nativeView.getResources()) : null;
+				nativeView.setBackground(backgroundDrawable);
+			}
+			if (backgroundColor) {
+				if (backgroundDrawable) {
+					backgroundDrawable.mutate();
+
+					AndroidHelper.setDrawableColor(backgroundColor, backgroundDrawable);
 					backgroundDrawable.invalidateSelf();
 				} else {
-					nativeView.setBackgroundColor(background.color.android);
+					nativeView.setBackgroundColor(backgroundColor);
 				}
 			}
 			// borderDrawable is slow
 			// let s use outline provider when we can
 			ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
-		} else if (!background.isEmpty()) {
-			ViewHelper.clearOutlineProvider(nativeView);
-			if (isBorderDrawable) {
-				// org.nativescript.widgets.BorderDrawable
-				refreshBorderDrawable(this, backgroundDrawable);
-			} else {
-				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), this.toString());
-				refreshBorderDrawable(this, backgroundDrawable);
-				nativeView.setBackground(backgroundDrawable);
-			}
 		} else {
 			ViewHelper.clearOutlineProvider(nativeView);
-			//empty background let's reset
-			const cachedDrawable = (<any>nativeView)._cachedDrawable;
-			nativeView.setBackground(cachedDrawable);
+			if (background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR) {
+				if (backgroundDrawable) {
+					backgroundDrawable.mutate();
+
+					AndroidHelper.clearDrawableColor(backgroundDrawable);
+					backgroundDrawable.invalidateSelf();
+				} else {
+					nativeView.setBackgroundColor(-1);
+				}
+				if (background.isEmpty()) {
+					// Reset background to default if not already set
+					const defaultDrawable = nativeView._cachedDrawable ?? null;
+					if (backgroundDrawable !== defaultDrawable) {
+						nativeView.setBackground(defaultDrawable);
+					}
+				} else {
+					if (isBorderDrawable) {
+						// org.nativescript.widgets.BorderDrawable
+						refreshBorderDrawable(this, backgroundDrawable);
+					} else {
+						const borderDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), this.toString());
+						refreshBorderDrawable(this, borderDrawable);
+						nativeView.setBackground(borderDrawable);
+					}
+				}
+			}
 		}
 	}
 
@@ -1177,31 +1176,26 @@ export class View extends ViewCommon {
 	}
 
 	protected onBackgroundOrBorderPropertyChanged() {
-		const nativeView = <
-			android.view.View & {
-				_cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
-			}
-		>this.nativeViewProtected;
+		const nativeView = <NativeScriptAndroidView>this.nativeViewProtected;
 		if (!nativeView) {
 			return;
 		}
 
 		const background = this.style.backgroundInternal;
-
-		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW || background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR) {
-			// clear background if we're clearing the box shadow
-			// or the background has been removed
-			nativeView.setBackground(null);
-		}
-
 		const drawable = nativeView.getBackground();
-		const androidView = (<any>this) as AndroidView;
-		// use undefined as not set. getBackground will never return undefined only Drawable or null;
-		if (androidView._cachedDrawable === undefined && drawable) {
-			const constantState = drawable.getConstantState();
-			androidView._cachedDrawable = constantState || drawable;
-		}
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
+
+		// Use undefined as not set. getBackground will never return undefined only Drawable or null;
+		if (nativeView._cachedDrawable === undefined) {
+			nativeView._cachedDrawable = drawable;
+		}
+
+		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) {
+			// Clear background if we're clearing the box shadow
+			if (drawable instanceof org.nativescript.widgets.BoxShadowDrawable) {
+				nativeView.setBackground(nativeView._cachedDrawable ?? null);
+			}
+		}
 
 		// prettier-ignore
 		const onlyColor = !background.hasBorderWidth()

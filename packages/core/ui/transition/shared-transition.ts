@@ -286,7 +286,7 @@ export class SharedTransition {
 	 */
 	static getSharedElements(
 		fromPage: ViewBase,
-		toPage: ViewBase
+		toPage: ViewBase,
 	): {
 		sharedElements: Array<View>;
 		presented: Array<View>;

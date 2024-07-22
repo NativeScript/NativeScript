@@ -13,6 +13,7 @@
   "devDependencies": {
     "@nativescript/android": "*",
     "@nativescript/ios": "*",
+    "@nativescript/visionos": "*",
     "@nativescript/webpack": "*",
     "typescript": "~5.2.0"
   },

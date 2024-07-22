@@ -2,9 +2,8 @@ import type { View } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { BackstackEntry } from '../frame';
 import { isNumber } from '../../utils/types';
-import { FadeTransition } from './fade-transition';
 import { Transition } from '.';
-import { getPageStartDefaultsForType, getRectFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionEventData } from './shared-transition';
+import { getRectFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionEventData } from './shared-transition';
 import { ImageSource } from '../../image-source';
 import { ContentView } from '../content-view';
 import { GridLayout } from '../layouts/grid-layout';
@@ -78,7 +77,11 @@ function setTransitionName(view: ViewBase, value?) {
 }
 
 export class PageTransition extends Transition {
-	constructor(duration?: number, curve?: any, private pageLoadedTimeout: number = 0) {
+	constructor(
+		duration?: number,
+		curve?: any,
+		private pageLoadedTimeout: number = 0,
+	) {
 		// disable custom curves until we can fix the issue with the animation not completing
 		if (curve) {
 			console.warn('PageTransition does not support custom curves at the moment. The passed in curve will be ignored.');

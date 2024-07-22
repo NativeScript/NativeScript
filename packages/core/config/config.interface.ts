@@ -173,6 +173,28 @@ interface IConfigHook {
 	script: string;
 }
 
+interface IConfigEmbedProps {
+	/**
+	 * Relative path to the platform host project directory.
+	 */
+	hostProjectPath?: string;
+	/**
+	 * (Android only) Optional custom module name.
+	 */
+	hostProjectModuleName?: string;
+}
+
+interface IConfigEmbed extends IConfigEmbedProps {
+	/**
+	 * iOS specific embed configurations
+	 */
+	ios?: IConfigEmbedProps;
+	/**
+	 * Android specific embed configurations
+	 */
+	android?: IConfigEmbedProps;
+}
+
 export interface NativeScriptConfig {
 	/**
 	 * App's bundle id
@@ -196,6 +218,16 @@ export interface NativeScriptConfig {
 	shared?: boolean;
 	previewAppSchema?: string;
 	overridePods?: string;
+	/**
+	 * Custom platform project name.
+	 * By default, the platforms/{platform}/{name} is based on the basename of the project directory.
+	 * You can override that to use a name of your choice by setting this.
+	 */
+	projectName?: string;
+	/**
+	 * For embedding into existing platform host projects.
+	 */
+	embed?: IConfigEmbed;
 	/**
 	 * Custom webpack config path
 	 * The default is `webpack.config.js` in the root however you can use a custom name and place elsewhere.

@@ -7,7 +7,6 @@
 
 # dependencies
 **/node_modules
-**/package-lock.json
 **/yarn.lock
 **/pnpm-lock.yaml
 .npmrc
@@ -42,10 +41,10 @@ apps/**/*/*.js
 apps/**/*/*.map
 apps/**/*/platforms
 apps/**/*/webpack.*.js
+apps/**/package-lock.json
 *.tgz
 .npmrc
 **/**/*.log
-.nx
 
 # System Files
 .DS_Store
@@ -59,3 +58,4 @@ Thumbs.db
 ios-typings-prj
 
 /packages/core/platforms/android/core.aar
+.nx

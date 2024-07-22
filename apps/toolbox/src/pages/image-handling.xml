@@ -5,9 +5,34 @@
     </Page.actionBar>
 
     <StackLayout class="p-20">
+
         <Label text="Test Memory leaks with image picking and saving to device. Best to profile from platform IDE like Xcode." textWrap="true" />
 
         <Button text="Pick and Save Image" tap="{{ pickImage }}" />
+
+        <ios>
+            <!-- SF Symbols with Effects -->
+            <ContentView height="1" width="100%" backgroundColor="#efefef" margin="10"></ContentView>
+            <GridLayout rows="auto,auto,auto,auto,auto" columns="*,*">
+                <Image src="sys://photo.on.rectangle.angled" width="100" tintColor="green" iosSymbolEffect="{{symbolBounceEffect}}" padding="8"/>
+                <Image col="1" src="sys://photo.on.rectangle.angled" width="100" tintColor="green" iosSymbolEffect="{{symbolBounceEffect}}" iosSymbolScale="small" padding="8" />
+
+                <Image row="1" src="sys://photo.on.rectangle.angled" width="100" tintColor="green" iosSymbolEffect="{{symbolBounceEffect}}" iosSymbolScale="medium" padding="8"/>
+                <Image row="1" col="1" src="sys://photo.on.rectangle.angled" width="100" tintColor="green" iosSymbolEffect="{{symbolBounceEffect}}" iosSymbolScale="large" padding="8"/>
+
+                <Image row="2" src="sys://airpods.pro.chargingcase.wireless.radiowaves.left.and.right.fill" width="100" iosSymbolEffect="{{symbolBounceEffect}}" padding="8" />
+                <Image row="2" col="1" src="sys://lungs.fill" width="100" iosSymbolEffect="{{symbolBreathEffect}}" padding="8" />
+
+
+                <Image row="3" src="sys://clock.arrow.trianglehead.2.counterclockwise.rotate.90" width="100" iosSymbolEffect="{{symbolRotateEffect}}" padding="8" />
+                <Image row="3" col="1" src="sys://square.and.arrow.up" width="100" iosSymbolEffect="{{symbolWiggleEffect}}" padding="8" />
+
+                <Image row="4" src="sys://steeringwheel.and.hands" width="100" tintColor="black" iosSymbolEffect="{{symbolWiggleEffect}}" padding="8" />
+                <Image row="4" col="1" src="sys://steeringwheel.and.hands" width="100" tintColor="black" iosSymbolEffect="{{symbolWiggleEffect}}" iosSymbolScale="large" padding="8" />
+
+            </GridLayout>
+        </ios>
+
 
     </StackLayout>
 </Page>

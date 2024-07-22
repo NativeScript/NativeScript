@@ -8,6 +8,7 @@ export * from './mainthread-helper';
 export * from './macrotask-scheduler';
 
 export const RESOURCE_PREFIX = 'res://';
+export const SYSTEM_PREFIX = 'sys://';
 export const FILE_PREFIX = 'file:///';
 
 export function escapeRegexSymbols(source: string): string {
@@ -75,7 +76,8 @@ export function isFileOrResourcePath(path: string): boolean {
 	return (
 		path.indexOf('~/') === 0 || // relative to AppRoot
 		path.indexOf('/') === 0 || // absolute path
-		path.indexOf(RESOURCE_PREFIX) === 0
+		path.indexOf(RESOURCE_PREFIX) === 0 ||
+		path.indexOf(SYSTEM_PREFIX) === 0
 	); // resource
 }
 

@@ -280,72 +280,63 @@ export interface RotationGestureEventData extends GestureEventDataWithState {
 
 /**
  * Returns a string representation of a gesture type.
- * @param type - Type of the gesture.
- * @param separator(optional) - Text separator between gesture type strings.
+ * @param type - The singular type of the gesture. Looks for an exact match, so
+ *   passing plural types like `GestureTypes.tap & GestureTypes.doubleTap` will
+ *   simply return undefined.
  */
-export function toString(type: GestureTypes, separator?: string): string {
-	const types = new Array<string>();
+export function toString(type: GestureTypes): (typeof GestureTypes)[GestureTypes] | undefined {
+	switch (type) {
+		case GestureTypes.tap:
+			return GestureTypes[GestureTypes.tap];
 
-	if (type & GestureTypes.tap) {
-		types.push('tap');
+		case GestureTypes.doubleTap:
+			return GestureTypes[GestureTypes.doubleTap];
+
+		case GestureTypes.pinch:
+			return GestureTypes[GestureTypes.pinch];
+
+		case GestureTypes.pan:
+			return GestureTypes[GestureTypes.pan];
+
+		case GestureTypes.swipe:
+			return GestureTypes[GestureTypes.swipe];
+
+		case GestureTypes.rotation:
+			return GestureTypes[GestureTypes.rotation];
+
+		case GestureTypes.longPress:
+			return GestureTypes[GestureTypes.longPress];
+
+		case GestureTypes.touch:
+			return GestureTypes[GestureTypes.touch];
 	}
-
-	if (type & GestureTypes.doubleTap) {
-		types.push('doubleTap');
-	}
-
-	if (type & GestureTypes.pinch) {
-		types.push('pinch');
-	}
-
-	if (type & GestureTypes.pan) {
-		types.push('pan');
-	}
-
-	if (type & GestureTypes.swipe) {
-		types.push('swipe');
-	}
-
-	if (type & GestureTypes.rotation) {
-		types.push('rotation');
-	}
-
-	if (type & GestureTypes.longPress) {
-		types.push('longPress');
-	}
-
-	if (type & GestureTypes.touch) {
-		types.push('touch');
-	}
-
-	return types.join(separator);
 }
 
-// NOTE: toString could return the text of multiple GestureTypes.
-// Souldn't fromString do split on separator and return multiple GestureTypes?
 /**
  * Returns a gesture type enum value from a string (case insensitive).
- * @param type - A string representation of a gesture type (e.g. Tap).
+ *
+ * @param type - A string representation of a single gesture type (e.g. "tap").
  */
-export function fromString(type: string): GestureTypes {
+export function fromString(type: (typeof GestureTypes)[GestureTypes]): GestureTypes | undefined {
 	const t = type.trim().toLowerCase();
 
-	if (t === 'tap') {
-		return GestureTypes.tap;
-	} else if (t === 'doubletap') {
-		return GestureTypes.doubleTap;
-	} else if (t === 'pinch') {
-		return GestureTypes.pinch;
-	} else if (t === 'pan') {
-		return GestureTypes.pan;
-	} else if (t === 'swipe') {
-		return GestureTypes.swipe;
-	} else if (t === 'rotation') {
-		return GestureTypes.rotation;
-	} else if (t === 'longpress') {
-		return GestureTypes.longPress;
-	} else if (t === 'touch') {
-		return GestureTypes.touch;
+	switch (t) {
+		case 'tap':
+			return GestureTypes.tap;
+		case 'doubletap':
+			return GestureTypes.doubleTap;
+		case 'pinch':
+			return GestureTypes.pinch;
+		case 'pan':
+			return GestureTypes.pan;
+		case 'swipe':
+			return GestureTypes.swipe;
+		case 'rotation':
+			return GestureTypes.rotation;
+		case 'longpress':
+			return GestureTypes.longPress;
+		case 'touch':
+			return GestureTypes.touch;
 	}
 
 	return undefined;
@@ -354,9 +345,10 @@ export function fromString(type: string): GestureTypes {
 export abstract class GesturesObserverBase implements GesturesObserverDefinition {
 	private _callback: (args: GestureEventData) => void;
 	private _target: View;
-	private _context: any;
+	private _context?: any;
 
-	public type: GestureTypes;
+	/** This is populated on the first call to observe(). */
+	type: GestureTypes;
 
 	public get callback(): (args: GestureEventData) => void {
 		return this._callback;
@@ -370,7 +362,7 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 		return this._context;
 	}
 
-	constructor(target: View, callback: (args: GestureEventData) => void, context: any) {
+	constructor(target: View, callback: (args: GestureEventData) => void, context?: any) {
 		this._target = target;
 		this._callback = callback;
 		this._context = context;
@@ -380,21 +372,6 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 	public abstract observe(type: GestureTypes);
 
 	public disconnect() {
-		// remove gesture observer from map
-		if (this.target) {
-			const list = this.target.getGestureObservers(this.type);
-			if (list && list.length > 0) {
-				for (let i = 0; i < list.length; i++) {
-					if (list[i].callback === this.callback) {
-						break;
-					}
-				}
-				list.length = 0;
-
-				this.target._gestureObservers[this.type] = undefined;
-				delete this.target._gestureObservers[this.type];
-			}
-		}
 		this._target = null;
 		this._callback = null;
 		this._context = null;

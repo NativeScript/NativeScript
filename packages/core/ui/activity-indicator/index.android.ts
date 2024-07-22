@@ -3,6 +3,7 @@ import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { colorProperty, visibilityProperty } from '../styling/style-properties';
 import { VIEW_GONE, VIEW_INVISIBLE, VIEW_VISIBLE } from '../core/view/index.android';
+import { AndroidHelper } from '../core/view';
 
 export * from './activity-indicator-common';
 
@@ -53,9 +54,9 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		const color = value instanceof Color ? value.android : value;
 		const drawable = this.nativeViewProtected.getIndeterminateDrawable().mutate();
 		if (color) {
-			drawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+			AndroidHelper.setDrawableColor(color, drawable);
 		} else {
-			drawable.clearColorFilter();
+			AndroidHelper.clearDrawableColor(drawable);
 		}
 	}
 }

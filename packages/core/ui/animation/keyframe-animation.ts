@@ -11,9 +11,12 @@ import { Animation } from '.';
 import { scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, rotateXProperty, rotateYProperty } from '../styling/style-properties';
 import { AnimationNonAnimatableProperties, getPropertyFromKey } from './animation-common';
 
-export class Keyframes {
+export interface Keyframes {
 	name: string;
 	keyframes: Array<UnparsedKeyframe>;
+	tag?: string | number;
+	scopedTag?: string;
+	mediaQueryString?: string;
 }
 
 export class UnparsedKeyframe {
@@ -68,6 +71,13 @@ export class KeyframeAnimation {
 	private _target: View;
 
 	public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo): KeyframeAnimation {
+		if (!info?.keyframes?.length) {
+			if (Trace.isEnabled()) {
+				Trace.write(`No keyframes found for animation '${info.name}'.`, Trace.categories.Animation, Trace.messageType.warn);
+			}
+			return null;
+		}
+
 		const length = info.keyframes.length;
 		const animations = new Array<Keyframe>();
 		let startDuration = 0;

@@ -308,6 +308,9 @@ export function initGlobal() {
 			global.registerModule('animation', () => require('../animation-frame'));
 			installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
 
+			global.registerModule('media-query-list', () => require('../media-query-list'));
+			installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
+
 			global.registerModule('ui-dialogs', () => require('../ui/dialogs'));
 			installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
 
@@ -323,6 +326,17 @@ export function initGlobal() {
 			global.registerModule('fetch', () => require('../fetch'));
 			installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
 		}
+
+		global.registerModule('wgc', () => require('../wgc'));
+		installPolyfills('wgc', ['atob', 'btoa']);
+
+		global.registerModule('crypto', () => require('../wgc/crypto'));
+		installPolyfills('crypto', ['Crypto']);
+
+		global.registerModule('subtle', () => require('../wgc/crypto/SubtleCrypto'));
+		installPolyfills('subtle-crypto', ['Subtle']);
+
+		global.crypto = new global.Crypto();
 
 		// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 		// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);

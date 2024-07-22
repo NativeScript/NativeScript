@@ -56,7 +56,6 @@ public class FolderHelper {
 		handler = new Handler(Looper.myLooper());
 		this.context = new WeakReference<>(context);
 		this.uri = uri;
-		Log.d("JS", "FolderHelper " + uri + " " + DocumentFile.isDocumentUri(context, uri) + " " + DocumentFile.fromTreeUri(context, uri));
 		// if (DocumentFile.isDocumentUri(context, uri)) {
 			documentFile = DocumentFile.fromTreeUri(context, uri);
 		// }

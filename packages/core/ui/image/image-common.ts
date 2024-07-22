@@ -3,13 +3,14 @@ import { View, CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { CoreTypes } from '../../core-types';
 import { ImageAsset } from '../../image-asset';
-import { ImageSource } from '../../image-source';
-import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from '../../utils';
+import { ImageSource, iosSymbolScaleType } from '../../image-source';
+import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX, SYSTEM_PREFIX } from '../../utils';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
 import { Length, colorConverter } from '../styling/style-properties';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { Trace } from '../../trace';
+import { ImageSymbolEffect, ImageSymbolEffects } from './symbol-effects';
 
 @CSSType('Image')
 export abstract class ImageBase extends View implements ImageDefinition {
@@ -20,6 +21,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 	public loadMode: 'sync' | 'async';
 	public decodeWidth: CoreTypes.LengthType;
 	public decodeHeight: CoreTypes.LengthType;
+	public iosSymbolScale: iosSymbolScaleType;
 
 	get tintColor(): Color {
 		return this.style.tintColor;
@@ -75,12 +77,20 @@ export abstract class ImageBase extends View implements ImageDefinition {
 				}
 			} else if (isFileOrResourcePath(value)) {
 				if (value.indexOf(RESOURCE_PREFIX) === 0) {
-					const resPath = value.substr(RESOURCE_PREFIX.length);
+					const resPath = value.slice(RESOURCE_PREFIX.length);
 					if (sync) {
 						imageLoaded(ImageSource.fromResourceSync(resPath));
 					} else {
 						this.imageSource = null;
 						ImageSource.fromResource(resPath).then(imageLoaded);
+					}
+				} else if (value.indexOf(SYSTEM_PREFIX) === 0) {
+					const sysPath = value.slice(SYSTEM_PREFIX.length);
+					if (sync) {
+						imageLoaded(ImageSource.fromSystemImageSync(sysPath, this.iosSymbolScale));
+					} else {
+						this.imageSource = null;
+						ImageSource.fromSystemImage(sysPath, this.iosSymbolScale).then(imageLoaded);
 					}
 				} else {
 					if (sync) {
@@ -108,7 +118,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 							}
 							Trace.write(err, Trace.categories.Debug);
 						}
-					}
+					},
 				);
 			}
 		} else if (value instanceof ImageSource) {
@@ -178,3 +188,21 @@ export const decodeWidthProperty = new Property<ImageBase, CoreTypes.LengthType>
 	valueConverter: Length.parse,
 });
 decodeWidthProperty.register(ImageBase);
+
+/**
+ * iOS only
+ */
+export const iosSymbolEffectProperty = new Property<ImageBase, ImageSymbolEffect | ImageSymbolEffects>({
+	name: 'iosSymbolEffect',
+});
+iosSymbolEffectProperty.register(ImageBase);
+
+/**
+ * iOS only
+ */
+export const iosSymbolScaleProperty = new Property<ImageBase, iosSymbolScaleType>({
+	name: 'iosSymbolScale',
+});
+iosSymbolScaleProperty.register(ImageBase);
+
+export { ImageSymbolEffect, ImageSymbolEffects };

@@ -18,6 +18,16 @@ export interface NavigationData extends EventData {
  */
 export class Frame extends FrameBase {
 	/**
+	 * @private
+	 */
+	_originalBackground?: any;
+
+	/**
+	 * @private
+	 */
+	_saveFragmentsState?();
+
+	/**
 	 * Gets a frame by id.
 	 */
 	static getFrameById(id: string): Frame;
@@ -225,12 +235,16 @@ export class Frame extends FrameBase {
 	//@endprivate
 
 	/**
-	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
-	 * @param callback - Callback function which will be executed when event is raised.
-	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * Adds a listener for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback The event listener to add. Will be called when an event of
+	 * the given name is raised.
+	 * @param thisArg An optional parameter which, when set, will be bound as the
+	 * `this` context when the callback is called. Falsy values will be not be
+	 * bound.
 	 */
-	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (args: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has started.
@@ -254,6 +268,12 @@ export function setFragmentClass(clazz: any): void;
  * Gets a frame by id.
  */
 export function getFrameById(id: string): Frame;
+
+/**
+ *
+ * (Android Only) Gets a frame by internally tracked id.
+ */
+export function getFrameByNumberId(frameId: number): Frame;
 
 /**
  * @deprecated Use Frame.topmost() instead.
@@ -428,6 +448,8 @@ export interface BackstackEntry {
  * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
  */
 export interface AndroidFrame extends Observable {
+	frameId?: any;
+
 	/**
 	 * Gets the native [android ViewGroup](http://developer.android.com/reference/android/view/ViewGroup.html) instance that represents the root layout part of the Frame.
 	 */

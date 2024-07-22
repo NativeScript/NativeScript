@@ -431,10 +431,16 @@ export class File extends FileSystemEntity {
 
 			getFileAccess()
 				.appendTextAsync(this.path, content, encoding)
-				.then(() => {
-					resolve(true);
-					this._locked = false;
-				}, this._onCallback(reject));
+				.then(
+					() => {
+						resolve(true);
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					},
+				);
 		});
 	}
 
@@ -463,10 +469,16 @@ export class File extends FileSystemEntity {
 
 			getFileAccess()
 				.copyAsync(this.path, dest)
-				.then((result) => {
-					resolve(result);
-					this._locked = false;
-				}, this._onCallback(reject));
+				.then(
+					(result) => {
+						resolve(result);
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					},
+				);
 		});
 	}
 
@@ -495,10 +507,16 @@ export class File extends FileSystemEntity {
 
 			getFileAccess()
 				.readAsync(this.path)
-				.then((result) => {
-					resolve(result);
-					this._locked = false;
-				}, this._onCallback(reject));
+				.then(
+					(result) => {
+						resolve(result);
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					},
+				);
 		});
 	}
 
@@ -528,10 +546,16 @@ export class File extends FileSystemEntity {
 
 			getFileAccess()
 				.writeAsync(this.path, content)
-				.then(() => {
-					resolve();
-					this._locked = false;
-				}, this._onCallback(reject));
+				.then(
+					() => {
+						resolve();
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					},
+				);
 		});
 	}
 
@@ -561,10 +585,16 @@ export class File extends FileSystemEntity {
 
 			getFileAccess()
 				.readTextAsync(this.path, encoding)
-				.then((result) => {
-					resolve(result);
-					this._locked = false;
-				}, this._onCallback(reject));
+				.then(
+					(result) => {
+						resolve(result);
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					},
+				);
 		});
 	}
 
@@ -593,10 +623,16 @@ export class File extends FileSystemEntity {
 
 			getFileAccess()
 				.writeTextAsync(this.path, content, encoding)
-				.then(() => {
-					resolve(true);
-					this._locked = false;
-				}, this._onCallback(reject));
+				.then(
+					() => {
+						resolve(true);
+						this._locked = false;
+					},
+					(error) => {
+						reject(error);
+						this._locked = false;
+					},
+				);
 		});
 	}
 

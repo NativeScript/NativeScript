@@ -1,4 +1,7 @@
 
+/**
+ * @since 10.0
+ */
 declare class CXAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CXAction; // inherited from NSObject
@@ -26,6 +29,9 @@ declare class CXAction extends NSObject implements NSCopying, NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXAnswerCallAction extends CXCallAction {
 
 	static alloc(): CXAnswerCallAction; // inherited from NSObject
@@ -35,6 +41,9 @@ declare class CXAnswerCallAction extends CXCallAction {
 	fulfillWithDateConnected(dateConnected: Date): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXCall extends NSObject {
 
 	static alloc(): CXCall; // inherited from NSObject
@@ -54,6 +63,9 @@ declare class CXCall extends NSObject {
 	isEqualToCall(call: CXCall): boolean;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXCallAction extends CXAction {
 
 	static alloc(): CXCallAction; // inherited from NSObject
@@ -67,6 +79,9 @@ declare class CXCallAction extends CXAction {
 	initWithCallUUID(callUUID: NSUUID): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXCallController extends NSObject {
 
 	static alloc(): CXCallController; // inherited from NSObject
@@ -75,17 +90,26 @@ declare class CXCallController extends NSObject {
 
 	readonly callObserver: CXCallObserver;
 
-	constructor(o: { queue: interop.Pointer | interop.Reference<any>; });
+	constructor(o: { queue: NSObject & OS_dispatch_queue; });
 
-	initWithQueue(queue: interop.Pointer | interop.Reference<any>): this;
+	initWithQueue(queue: NSObject & OS_dispatch_queue): this;
 
 	requestTransactionCompletion(transaction: CXTransaction, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	requestTransactionWithActionCompletion(action: CXAction, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	requestTransactionWithActionsCompletion(actions: NSArray<CXAction> | CXAction[], completion: (p1: NSError) => void): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CXCallDirectoryEnabledStatus {
 
 	Unknown = 0,
@@ -95,6 +119,9 @@ declare const enum CXCallDirectoryEnabledStatus {
 	Enabled = 2
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXCallDirectoryExtensionContext extends NSExtensionContext {
 
 	static alloc(): CXCallDirectoryExtensionContext; // inherited from NSObject
@@ -103,6 +130,9 @@ declare class CXCallDirectoryExtensionContext extends NSExtensionContext {
 
 	delegate: CXCallDirectoryExtensionContextDelegate;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly incremental: boolean;
 
 	addBlockingEntryWithNextSequentialPhoneNumber(phoneNumber: number): void;
@@ -111,15 +141,30 @@ declare class CXCallDirectoryExtensionContext extends NSExtensionContext {
 
 	completeRequestWithCompletionHandler(completion: (p1: boolean) => void): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAllBlockingEntries(): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeAllIdentificationEntries(): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeBlockingEntryWithPhoneNumber(phoneNumber: number): void;
 
+	/**
+	 * @since 11.0
+	 */
 	removeIdentificationEntryWithPhoneNumber(phoneNumber: number): void;
 }
 
+/**
+ * @since 10.0
+ */
 interface CXCallDirectoryExtensionContextDelegate extends NSObjectProtocol {
 
 	requestFailedForExtensionContextWithError(extensionContext: CXCallDirectoryExtensionContext, error: NSError): void;
@@ -129,6 +174,9 @@ declare var CXCallDirectoryExtensionContextDelegate: {
 	prototype: CXCallDirectoryExtensionContextDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class CXCallDirectoryManager extends NSObject {
 
 	static alloc(): CXCallDirectoryManager; // inherited from NSObject
@@ -139,6 +187,9 @@ declare class CXCallDirectoryManager extends NSObject {
 
 	getEnabledStatusForExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: CXCallDirectoryEnabledStatus, p2: NSError) => void): void;
 
+	/**
+	 * @since 13.4
+	 */
 	openSettingsWithCompletionHandler(completion: (p1: NSError) => void): void;
 
 	reloadExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: NSError) => void): void;
@@ -146,6 +197,9 @@ declare class CXCallDirectoryManager extends NSObject {
 
 declare var CXCallDirectoryPhoneNumberMax: number;
 
+/**
+ * @since 10.0
+ */
 declare class CXCallDirectoryProvider extends NSObject implements NSExtensionRequestHandling {
 
 	static alloc(): CXCallDirectoryProvider; // inherited from NSObject
@@ -189,6 +243,9 @@ declare class CXCallDirectoryProvider extends NSObject implements NSExtensionReq
 	self(): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CXCallEndedReason {
 
 	Failed = 1,
@@ -202,6 +259,9 @@ declare const enum CXCallEndedReason {
 	DeclinedElsewhere = 5
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXCallObserver extends NSObject {
 
 	static alloc(): CXCallObserver; // inherited from NSObject
@@ -210,9 +270,12 @@ declare class CXCallObserver extends NSObject {
 
 	readonly calls: NSArray<CXCall>;
 
-	setDelegateQueue(delegate: CXCallObserverDelegate, queue: interop.Pointer | interop.Reference<any>): void;
+	setDelegateQueue(delegate: CXCallObserverDelegate, queue: NSObject & OS_dispatch_queue): void;
 }
 
+/**
+ * @since 10.0
+ */
 interface CXCallObserverDelegate extends NSObjectProtocol {
 
 	callObserverCallChanged(callObserver: CXCallObserver, call: CXCall): void;
@@ -222,6 +285,9 @@ declare var CXCallObserverDelegate: {
 	prototype: CXCallObserverDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class CXCallUpdate extends NSObject implements NSCopying {
 
 	static alloc(): CXCallUpdate; // inherited from NSObject
@@ -245,6 +311,9 @@ declare class CXCallUpdate extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXEndCallAction extends CXCallAction {
 
 	static alloc(): CXEndCallAction; // inherited from NSObject
@@ -254,6 +323,9 @@ declare class CXEndCallAction extends CXCallAction {
 	fulfillWithDateEnded(dateEnded: Date): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CXErrorCode {
 
 	UnknownError = 0,
@@ -265,6 +337,9 @@ declare const enum CXErrorCode {
 	MissingVoIPBackgroundMode = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CXErrorCodeCallDirectoryManagerError {
 
 	Unknown = 0,
@@ -286,6 +361,9 @@ declare const enum CXErrorCodeCallDirectoryManagerError {
 	UnexpectedIncrementalRemoval = 8
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CXErrorCodeIncomingCallError {
 
 	Unknown = 0,
@@ -298,9 +376,14 @@ declare const enum CXErrorCodeIncomingCallError {
 
 	FilteredByBlockList = 4,
 
-	FilteredDuringRestrictedSharingMode = 5
+	FilteredDuringRestrictedSharingMode = 5,
+
+	CallIsProtected = 6
 }
 
+/**
+ * @since 14.5
+ */
 declare const enum CXErrorCodeNotificationServiceExtensionError {
 
 	Unknown = 0,
@@ -310,6 +393,9 @@ declare const enum CXErrorCodeNotificationServiceExtensionError {
 	MissingNotificationFilteringEntitlement = 2
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CXErrorCodeRequestTransactionError {
 
 	Unknown = 0,
@@ -326,19 +412,39 @@ declare const enum CXErrorCodeRequestTransactionError {
 
 	InvalidAction = 6,
 
-	MaximumCallGroupsReached = 7
+	MaximumCallGroupsReached = 7,
+
+	CallIsProtected = 8
 }
 
+/**
+ * @since 10.0
+ */
 declare var CXErrorDomain: string;
 
+/**
+ * @since 10.0
+ */
 declare var CXErrorDomainCallDirectoryManager: string;
 
+/**
+ * @since 10.0
+ */
 declare var CXErrorDomainIncomingCall: string;
 
+/**
+ * @since 14.5
+ */
 declare var CXErrorDomainNotificationServiceExtension: string;
 
+/**
+ * @since 10.0
+ */
 declare var CXErrorDomainRequestTransaction: string;
 
+/**
+ * @since 10.0
+ */
 declare class CXHandle extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CXHandle; // inherited from NSObject
@@ -366,6 +472,9 @@ declare class CXHandle extends NSObject implements NSCopying, NSSecureCoding {
 	isEqualToHandle(handle: CXHandle): boolean;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CXHandleType {
 
 	Generic = 1,
@@ -375,6 +484,9 @@ declare const enum CXHandleType {
 	EmailAddress = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXPlayDTMFCallAction extends CXCallAction {
 
 	static alloc(): CXPlayDTMFCallAction; // inherited from NSObject
@@ -390,6 +502,9 @@ declare class CXPlayDTMFCallAction extends CXCallAction {
 	initWithCallUUIDDigitsType(callUUID: NSUUID, digits: string, type: CXPlayDTMFCallActionType): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CXPlayDTMFCallActionType {
 
 	SingleTone = 1,
@@ -399,12 +514,18 @@ declare const enum CXPlayDTMFCallActionType {
 	HardPause = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXProvider extends NSObject {
 
 	static alloc(): CXProvider; // inherited from NSObject
 
 	static new(): CXProvider; // inherited from NSObject
 
+	/**
+	 * @since 14.5
+	 */
 	static reportNewIncomingVoIPPushPayloadCompletion(dictionaryPayload: NSDictionary<any, any>, completion: (p1: NSError) => void): void;
 
 	configuration: CXProviderConfiguration;
@@ -429,9 +550,12 @@ declare class CXProvider extends NSObject {
 
 	reportOutgoingCallWithUUIDStartedConnectingAtDate(UUID: NSUUID, dateStartedConnecting: Date): void;
 
-	setDelegateQueue(delegate: CXProviderDelegate, queue: interop.Pointer | interop.Reference<any>): void;
+	setDelegateQueue(delegate: CXProviderDelegate, queue: NSObject & OS_dispatch_queue): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXProviderConfiguration extends NSObject implements NSCopying {
 
 	static alloc(): CXProviderConfiguration; // inherited from NSObject
@@ -440,8 +564,15 @@ declare class CXProviderConfiguration extends NSObject implements NSCopying {
 
 	iconTemplateImageData: NSData;
 
+	/**
+	 * @since 11.0
+	 */
 	includesCallsInRecents: boolean;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 14.0
+	 */
 	readonly localizedName: string;
 
 	maximumCallGroups: number;
@@ -454,13 +585,24 @@ declare class CXProviderConfiguration extends NSObject implements NSCopying {
 
 	supportsVideo: boolean;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 14.0
+	 */
 	constructor(o: { localizedName: string; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	/**
+	 * @since 10.0
+	 * @deprecated 14.0
+	 */
 	initWithLocalizedName(localizedName: string): this;
 }
 
+/**
+ * @since 10.0
+ */
 interface CXProviderDelegate extends NSObjectProtocol {
 
 	providerDidActivateAudioSession?(provider: CXProvider, audioSession: AVAudioSession): void;
@@ -494,6 +636,9 @@ declare var CXProviderDelegate: {
 	prototype: CXProviderDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class CXSetGroupCallAction extends CXCallAction {
 
 	static alloc(): CXSetGroupCallAction; // inherited from NSObject
@@ -507,6 +652,9 @@ declare class CXSetGroupCallAction extends CXCallAction {
 	initWithCallUUIDCallUUIDToGroupWith(callUUID: NSUUID, callUUIDToGroupWith: NSUUID): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXSetHeldCallAction extends CXCallAction {
 
 	static alloc(): CXSetHeldCallAction; // inherited from NSObject
@@ -520,6 +668,9 @@ declare class CXSetHeldCallAction extends CXCallAction {
 	initWithCallUUIDOnHold(callUUID: NSUUID, onHold: boolean): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXSetMutedCallAction extends CXCallAction {
 
 	static alloc(): CXSetMutedCallAction; // inherited from NSObject
@@ -533,6 +684,9 @@ declare class CXSetMutedCallAction extends CXCallAction {
 	initWithCallUUIDMuted(callUUID: NSUUID, muted: boolean): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXStartCallAction extends CXCallAction {
 
 	static alloc(): CXStartCallAction; // inherited from NSObject
@@ -552,6 +706,9 @@ declare class CXStartCallAction extends CXCallAction {
 	initWithCallUUIDHandle(callUUID: NSUUID, handle: CXHandle): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CXTransaction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CXTransaction; // inherited from NSObject

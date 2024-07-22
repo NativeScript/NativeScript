@@ -12,22 +12,20 @@ function cleanup(data: any[]) {
 }
 
 export function error(...data: any): Error {
-	console.warn(`[@akylas/nativescript-webpack] Error: \n`, ...cleanup(data));
+	console.warn(`[@nativescript/webpack] Error: \n`, ...cleanup(data));
 
 	// we return the error - the caller can throw or ignore
 	if (typeof data[0] === 'string') {
 		return new Error(
-			'\n\n[@akylas/nativescript-webpack]\n---\n\n' +
-				dedent(data[0]) +
-				'\n\n---\n',
+			'\n\n[@nativescript/webpack]\n---\n\n' + dedent(data[0]) + '\n\n---\n',
 		);
 	}
 
-	return new Error('@akylas/nativescript-webpack ran into a problem...');
+	return new Error('@nativescript/webpack ran into a problem...');
 }
 
 export function warn(...data: any): void {
-	console.warn(`[@akylas/nativescript-webpack] Warn: \n`, ...cleanup(data));
+	console.warn(`[@nativescript/webpack] Warn: \n`, ...cleanup(data));
 }
 
 const warnedMap: any = {};
@@ -42,7 +40,7 @@ export function warnOnce(key: string, ...data: any): void {
 
 export function info(...data: any): void {
 	if (env.verbose) {
-		console.log(`[@akylas/nativescript-webpack] Info: \n`, ...cleanup(data));
+		console.log(`[@nativescript/webpack] Info: \n`, ...cleanup(data));
 	}
 }
 

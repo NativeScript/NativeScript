@@ -10,3 +10,4 @@ css/parser.js*
 css/system-classes.js*
 !css-value/**/*.*
 !fetch/**/*.*
+/coverage
