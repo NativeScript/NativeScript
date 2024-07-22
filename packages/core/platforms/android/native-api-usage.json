@@ -215,6 +215,8 @@
         "androidx.appcompat.widget:Toolbar.OnMenuItemClickListener",
         "androidx.core.content:FileProvider",
         "androidx.core.content:FileProvider",
+        "androidx.core.graphics:BlendModeColorFilterCompat",
+        "androidx.core.graphics:BlendModeCompat",
         "androidx.core.view.accessibility:AccessibilityManagerCompat",
         "androidx.core.view.accessibility:AccessibilityManagerCompat.AccessibilityStateChangeListener",
         "androidx.core.view.accessibility:AccessibilityManagerCompat.TouchExplorationStateChangeListener",

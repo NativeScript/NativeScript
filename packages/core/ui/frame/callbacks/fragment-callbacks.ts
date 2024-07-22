@@ -26,6 +26,9 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 	public onCreateAnimator(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
 		let animator = null;
 		const entry = <any>this.entry;
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onCreateAnimator(${transit},${enter}, ${nextAnim})`, Trace.categories.Animation);
+		}
 
 		// Return enterAnimator only when new (no current entry) nested transition.
 		if (enter && entry.isNestedDefaultTransition) {
@@ -34,6 +37,14 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 		}
 
 		return animator || superFunc.call(fragment, transit, enter, nextAnim);
+	}
+
+	@profile
+	public onCreateAnimation(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): globalAndroid.view.animation.Animation {
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onCreateAnimation(${transit},${enter}, ${nextAnim})`, Trace.categories.Animation);
+		}
+		return superFunc.call(fragment, transit, enter, nextAnim);
 	}
 
 	@profile

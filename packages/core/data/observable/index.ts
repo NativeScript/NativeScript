@@ -228,7 +228,7 @@ export class Observable {
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
 	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
-		if (typeof event !== 'string') {
+		if (typeof eventName !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
 

@@ -1,7 +1,6 @@
 {
 	"name": "@akylas/nativescript-webpack",
 	"version": "5.0.22",
-	"private": false,
 	"main": "dist/index.js",
 	"files": [
 		"dist"
