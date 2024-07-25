@@ -5,20 +5,23 @@ set -e
 
 echo "Use dumb gradle terminal"
 export TERM=dumb
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-rm -rf dist/package/platforms/android || true
-mkdir -p dist/package/platforms/android
+OUTDIR=$SCRIPT_DIR/../../dist/packages/ui-mobile-base
+
+rm -rf $OUTDIR/platforms/android || true
+mkdir -p $OUTDIR/platforms/android
 
 echo "Build android"
 cd android
 ./gradlew --quiet assembleRelease
 cd ..
-cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
+cp android/widgets/build/outputs/aar/widgets-release.aar $OUTDIR/platforms/android/widgets-release.aar
 
 if [ "$1" ]
 then
   echo "Suffix package.json's version with tag: $1"
-  sed -i.bak 's/\(\"version\"\:[[:space:]]*\"[^\"]*\)\"/\1-'$1'"/g' ./dist/package/package.json
+  sed -i.bak 's/\(\"version\"\:[[:space:]]*\"[^\"]*\)\"/\1-'$1'"/g' ./$OUTDIR/package.json
 fi
 
 if [ "$SKIP_PACK" ]
@@ -26,11 +29,10 @@ then
   echo "SKIP pack" 
 else
   echo "Copy NPM artefacts"
-  cp .npmignore LICENSE README.md package.json dist/package
+  cp .npmignore LICENSE README.md package.json $OUTDIR
   echo "NPM pack"
-  cd dist/package
-  PACKAGE="$(npm pack)"
-  cd ../..
-  mv dist/package/$PACKAGE dist/$PACKAGE
+  cd $OUTDIR
+  cd ..
+  PACKAGE="$(npm pack $OUTDIR)"
   echo "Output: dist/$PACKAGE"
 fi

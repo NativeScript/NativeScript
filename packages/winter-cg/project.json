@@ -7,8 +7,10 @@
 	"targets": {
 		"build": {
 			"executor": "nx:run-commands",
+			"outputs": ["{workspaceRoot}/dist/packages/winter-cg"],
+			"inputs": ["default", "!{projectRoot}/android/.gradle/**/*", "!{projectRoot}/android/*/build/**/*", "!{projectRoot}/ios/*/build/**/*"],
 			"options": {
-				"commands": ["./build.sh", "cp -R dist/package/platforms/* ../../packages/core/platforms"],
+				"commands": ["./build.sh"],
 				"cwd": "packages/winter-cg",
 				"parallel": false
 			}
