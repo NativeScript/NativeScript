@@ -529,7 +529,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 		let parentController = parentWithController.viewController;
 		// we loop to ensure we are showing from the top presented view controller
-		while (parentController.presentedViewController) {
+		while (parentController.presentedViewController && !parentController.presentedViewController.beingDismissed) {
 			parentController = parentController.presentedViewController;
 			parentWithController = parentWithController['_modal'] || parentWithController;
 		}
