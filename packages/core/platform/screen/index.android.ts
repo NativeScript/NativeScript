@@ -44,6 +44,3 @@ class MainScreen {
 export class Screen {
 	static mainScreen = new MainScreen();
 }
-
-// This retains compatibility with NS6
-export const screen = Screen;
