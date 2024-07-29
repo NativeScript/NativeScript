@@ -341,6 +341,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		try {
 			this._nativeApp = nativeApp;
 			this._context = nativeApp.getApplicationContext();
+			this._prevConfiguration = new android.content.res.Configuration(this._context.getResources().getConfiguration());
 			this._packageName = nativeApp.getPackageName();
 
 			// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
@@ -362,10 +363,17 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		this._pendingReceiverRegistrations.forEach((func) => func(this.context));
 		this._pendingReceiverRegistrations.length = 0;
 	}
-
+	private _prevConfiguration: android.content.res.Configuration;
 	onConfigurationChanged(configuration: android.content.res.Configuration): void {
-		this.setOrientation(this.getOrientationValue(configuration));
-		this.setSystemAppearance(this.getSystemAppearanceValue(configuration));
+		const diff = configuration.diff(this._prevConfiguration);
+
+		if ((diff & 128) /* ActivityInfo.CONFIG_ORIENTATION */ !== 0) {
+			this.setOrientation(this.getOrientationValue(configuration));
+		}
+		if ((diff & 512) /* ActivityInfo.CONFIG_UI_MODE */ !== 0) {
+			this.setSystemAppearance(this.getSystemAppearanceValue(configuration));
+		}
+		this._prevConfiguration = new android.content.res.Configuration(configuration);
 	}
 
 	getNativeApplication() {
