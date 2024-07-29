@@ -1122,21 +1122,21 @@ export class View extends ViewCommon {
 				} else {
 					nativeView.setBackgroundColor(-1);
 				}
-				if (background.isEmpty()) {
-					// Reset background to default if not already set
-					const defaultDrawable = nativeView._cachedDrawable ?? null;
-					if (backgroundDrawable !== defaultDrawable) {
-						nativeView.setBackground(defaultDrawable);
-					}
+			}
+			if (background.isEmpty()) {
+				// Reset background to default if not already set
+				const defaultDrawable = nativeView._cachedDrawable ?? null;
+				if (backgroundDrawable !== defaultDrawable) {
+					nativeView.setBackground(defaultDrawable);
+				}
+			} else {
+				if (isBorderDrawable) {
+					// org.nativescript.widgets.BorderDrawable
+					refreshBorderDrawable(this, backgroundDrawable);
 				} else {
-					if (isBorderDrawable) {
-						// org.nativescript.widgets.BorderDrawable
-						refreshBorderDrawable(this, backgroundDrawable);
-					} else {
-						const borderDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), this.toString());
-						refreshBorderDrawable(this, borderDrawable);
-						nativeView.setBackground(borderDrawable);
-					}
+					const borderDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), this.toString());
+					refreshBorderDrawable(this, borderDrawable);
+					nativeView.setBackground(borderDrawable);
 				}
 			}
 		}
