@@ -48,9 +48,9 @@
     "acorn": "^8.7.0",
     "css-tree": "^1.1.2",
     "css-what": "^6.1.0",
-    "emoji-regex": "^10.2.1",
-    "reduce-css-calc": "^2.1.7",
-    "tslib": "^2.0.0"
+    "emoji-regex": "^10.3.0",
+    "reduce-css-calc": "^2.1.8",
+    "tslib": "^2.6.3"
   },
   "nativescript": {
     "platforms": {
