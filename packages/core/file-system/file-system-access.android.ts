@@ -711,7 +711,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	private deleteFolderContent(file: java.io.File): boolean {
 		const filesList = file.listFiles();
-		if (filesList.length === 0) {
+		if (!filesList || filesList.length === 0) {
 			return true; // Nothing to delete, so success!
 		}
 
