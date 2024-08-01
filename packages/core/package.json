@@ -9,6 +9,15 @@
     "./globals/index.js",
     "./globals"
   ],
+  "files": [
+    "**/*.d.ts",
+    "**/*.js",
+    "**/*.map",
+    "**/platforms/ios/**",
+    "platforms/android/**",
+    "!platforms/android/*.aar",
+    "**/package.json"
+  ],
   "keywords": [
     "NativeScript",
     "JavaScript",
