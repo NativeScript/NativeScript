@@ -17,7 +17,7 @@ import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
 import { ContentView } from '../content-view';
-import { Transition } from 'ui/transition';
+import { Transition } from '../transition';
 import { ensureFragmentClass, fragmentClass } from './fragment';
 import { FragmentCallbacksImplementation } from './callbacks/fragment-callbacks';
 import { ActivityCallbacksImplementation } from './callbacks/activity-callbacks';
