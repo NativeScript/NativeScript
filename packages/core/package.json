@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/core",
-  "version": "8.8.2",
+  "version": "8.8.3",
   "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
   "main": "index",
   "types": "index.d.ts",
@@ -16,7 +16,7 @@
     "**/platforms/ios/**",
     "platforms/android/**",
     "!platforms/android/core.aar",
-    "!platforms/android/nativescript.aar",
+    "!platforms/android/nativescripts.aar",
     "!platforms/android/winter_cg-release.aar",
     "**/package.json"
   ],
