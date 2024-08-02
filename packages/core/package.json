@@ -15,7 +15,9 @@
     "**/*.map",
     "**/platforms/ios/**",
     "platforms/android/**",
-    "!platforms/android/*.aar",
+    "!platforms/android/core.aar",
+    "!platforms/android/nativescript.aar",
+    "!platforms/android/winter_cg-release.aar",
     "**/package.json"
   ],
   "keywords": [
