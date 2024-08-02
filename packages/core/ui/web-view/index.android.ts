@@ -2,7 +2,7 @@ import { disableZoomProperty, WebViewBase, WebViewClient } from './web-view-comm
 import { Trace } from '../../trace';
 import { knownFolders } from '../../file-system';
 import { openUrl } from '../../utils';
-import { FILE_PREFIX } from 'utils/common';
+import { FILE_PREFIX } from '../../utils/common';
 
 export * from './web-view-common';
 

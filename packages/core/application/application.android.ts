@@ -1,4 +1,4 @@
-import { ApplicationSettings } from 'index';
+import * as ApplicationSettings from '../application-settings';
 import { profile } from '../profiling';
 import { View } from '../ui/core/view';
 import { isEmbedded } from '../ui/embedding';

@@ -5,7 +5,7 @@ import { Property } from '../core/properties';
 import { EventData } from '../../data/observable';
 import { knownFolders } from '../../file-system';
 import { booleanConverter } from '../core/view-base';
-import { FILE_PREFIX } from 'utils/common';
+import { FILE_PREFIX } from '../../utils/common';
 
 export * from './web-view-interfaces';
 

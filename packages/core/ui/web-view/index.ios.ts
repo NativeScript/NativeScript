@@ -5,7 +5,7 @@ import { Trace } from '../../trace';
 export * from './web-view-common';
 import { knownFolders } from '../../file-system';
 import { booleanConverter } from '../core/view-base';
-import { FILE_PREFIX } from 'utils';
+import { FILE_PREFIX } from '../../utils';
 
 @NativeClass
 class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate {
