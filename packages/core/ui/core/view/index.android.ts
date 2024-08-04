@@ -336,8 +336,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
-		super.on(eventNames, callback, thisArg);
+	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
+		super.addEventListener(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
@@ -345,8 +345,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
-		super.off(eventNames, callback, thisArg);
+	removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+		super.removeEventListener(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		// Remove native listener only if there are no more user listeners for LayoutChanged event
@@ -687,13 +687,13 @@ export class View extends ViewCommon {
 		// if the app is in background while triggering _showNativeModalView
 		// then DialogFragment.show will trigger IllegalStateException: Can not perform this action after onSaveInstanceState
 		// so if in background we create an event to call _showNativeModalView when loaded (going back in foreground)
-		if (Application.inBackground &&  !parent.isLoaded) {
-				const onLoaded = ()=> {
-						parent.off('loaded', onLoaded)
-						this._showNativeModalView(parent, options);
-				};
-				parent.on('loaded', onLoaded);
-				return;
+		if (Application.inBackground && !parent.isLoaded) {
+			const onLoaded = () => {
+				parent.off('loaded', onLoaded);
+				this._showNativeModalView(parent, options);
+			};
+			parent.on('loaded', onLoaded);
+			return;
 		}
 		super._showNativeModalView(parent, options);
 		initializeDialogFragment();
