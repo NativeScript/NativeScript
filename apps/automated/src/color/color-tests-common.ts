@@ -17,11 +17,37 @@ export var test_Hex_Color = function () {
 	TKUnit.assertEqual(color.argb, 0xffff0000, 'Color.argb not properly parsed');
 };
 
+export var test_Hex_rgba_Color = function () {
+	// >> color-hex-rgba
+	// Creates the red color
+	var color = new Color('#FF0000FF');
+	// << color-hex-rgba
+	TKUnit.assertEqual(color.a, 255, 'Color.a not properly parsed');
+	TKUnit.assertEqual(color.r, 255, 'Color.r not properly parsed');
+	TKUnit.assertEqual(color.g, 0, 'Color.g not properly parsed');
+	TKUnit.assertEqual(color.b, 0, 'Color.b not properly parsed');
+	TKUnit.assertEqual(color.hex, '#FF0000', 'Color.hex not properly parsed');
+	TKUnit.assertEqual(color.argb, 0xffff0000, 'Color.argb not properly parsed');
+};
+
 export var test_ShortHex_Color = function () {
 	// >> color-hex-short
 	// Creates the color #FF8800
 	var color = new Color('#F80');
 	// << color-hex-short
+	TKUnit.assertEqual(color.a, 255, 'Color.a not properly parsed');
+	TKUnit.assertEqual(color.r, 255, 'Color.r not properly parsed');
+	TKUnit.assertEqual(color.g, 136, 'Color.g not properly parsed'); // 0x88 == 136
+	TKUnit.assertEqual(color.b, 0, 'Color.b not properly parsed');
+	TKUnit.assertEqual(color.hex, '#FF8800', 'Color.hex not properly parsed');
+	TKUnit.assertEqual(color.argb, 0xffff8800, 'Color.argb not properly parsed');
+};
+
+export var test_ShortHex_rgba_Color = function () {
+	// >> color-hex-short-rgba
+	// Creates the color #FF8800
+	var color = new Color('#F80F');
+	// << color-hex-short-rgba
 	TKUnit.assertEqual(color.a, 255, 'Color.a not properly parsed');
 	TKUnit.assertEqual(color.r, 255, 'Color.r not properly parsed');
 	TKUnit.assertEqual(color.g, 136, 'Color.g not properly parsed'); // 0x88 == 136
@@ -112,7 +138,10 @@ export var test_Color_isValid = function () {
 	var color = new Color('#FF0000');
 
 	TKUnit.assertEqual(Color.isValid(color), true, 'Failed to validate color instance');
-	TKUnit.assertEqual(Color.isValid('#FF0000'), true, 'Failed to validate hex color');
+	TKUnit.assertEqual(Color.isValid('#FFF'), true, 'Failed to validate 3-digit hex color');
+	TKUnit.assertEqual(Color.isValid('#FFF0'), true, 'Failed to validate 4-digit hex color');
+	TKUnit.assertEqual(Color.isValid('#FF0000'), true, 'Failed to validate 6-digit hex color');
+	TKUnit.assertEqual(Color.isValid('#FF000000'), true, 'Failed to validate 8-digit hex color');
 	TKUnit.assertEqual(Color.isValid('rgb(255, 100, 100)'), true, 'Failed to validate rgb color');
 	TKUnit.assertEqual(Color.isValid('hsl(50, 50%, 50%)'), true, 'Failed to validate hsl color');
 	TKUnit.assertEqual(Color.isValid(null) || Color.isValid(undefined), false, 'Failed to invalidate nullish value');
