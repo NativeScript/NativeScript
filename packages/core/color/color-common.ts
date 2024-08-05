@@ -4,7 +4,7 @@ import * as knownColors from './known-colors';
 import { Color } from '.';
 
 const SHARP = '#';
-const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
+const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)|(^#[0-9A-F]{4}$)/i;
 
 export class ColorBase implements definition.Color {
 	private _argb: number;
@@ -29,7 +29,7 @@ export class ColorBase implements definition.Color {
 					const argb = knownColors.getKnownColor(lowered);
 					this._name = arg;
 					this._argb = argb;
-				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
+				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 5 || arg.length === 7 || arg.length === 9)) {
 					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
 					// strange that it would not be. And if it is not a thrown error seems best
 					// The parameter is a "#RRGGBBAA" formatted string
@@ -578,7 +578,7 @@ function hsvToRgb(h1, s1, v1) {
 	const s = s1 / 100;
 	const v = v1 / 100;
 
-	var i = Math.floor(h),
+	const i = Math.floor(h),
 		f = h - i,
 		p = v * (1 - s),
 		q = v * (1 - f * s),
