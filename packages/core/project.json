@@ -24,6 +24,17 @@
 				"verbose": true
 			}
 		},
+		"copy-native-deps": {
+			"dependsOn": ["winter-cg:build", "ui-mobile-base:build"],
+			"inputs": ["{workspaceRoot}/dist/packages/winter-cg/platforms/**/*", "{workspaceRoot}/dist/packages/ui-mobile-base/platforms/**/*"],
+			"outputs": ["{projectRoot}/platforms/android/winter_cg-release.aar", "{projectRoot}/platforms/android/widgets-release.aar"],
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": ["cp -R dist/packages/winter-cg/platforms/* packages/core/platforms", "cp -R dist/packages/ui-mobile-base/platforms/* packages/core/platforms"],
+				"cwd": ".",
+				"parallel": false
+			}
+		},
 		"build": {
 			"executor": "nx:run-commands",
 			"inputs": ["default", "^production"],
