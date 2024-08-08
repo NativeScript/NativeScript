@@ -460,8 +460,9 @@ export class ListView extends ListViewBase {
 			if (!cell.view) {
 				cell.owner = new WeakRef(view);
 			} else if (cell.view !== view) {
+				// Remove view from super view now as nativeViewProtected will be null afterwards
+				(<UIView>cell.view.nativeViewProtected)?.removeFromSuperview();
 				this._removeContainer(cell);
-				(<UIView>cell.view?.nativeViewProtected)?.removeFromSuperview();
 				cell.owner = new WeakRef(view);
 			}
 
