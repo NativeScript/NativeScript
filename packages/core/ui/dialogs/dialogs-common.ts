@@ -6,6 +6,8 @@ import { Frame } from '../frame';
 import { CSSUtils } from '../../css/system-classes';
 import { isObject, isString } from '../../utils/types';
 
+const CSS_CLASS = `${CSSUtils.CLASS_PREFIX}dialog-item`;
+
 export namespace DialogStrings {
 	export const STRING = 'string';
 	export const PROMPT = 'Prompt';
@@ -15,8 +17,6 @@ export namespace DialogStrings {
 	export const OK = 'OK';
 	export const CANCEL = 'Cancel';
 }
-
-const CSS_CLASS = `${CSSUtils.CLASS_PREFIX}dialog-item`;
 
 /**
  * Provides options for the dialog.
