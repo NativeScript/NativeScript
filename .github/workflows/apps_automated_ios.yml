@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   test-ios:
-    runs-on: flyci-macos-14-m2
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4
