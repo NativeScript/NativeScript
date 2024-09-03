@@ -82,6 +82,9 @@ export class ViewHelper {
 			default:
 				childTop = top + effectiveMarginTop;
 				childHeight = bottom - top - (effectiveMarginTop + effectiveMarginBottom);
+				if (childHeight < 0) {
+					childHeight = 0;
+				}
 				break;
 		}
 
@@ -112,6 +115,9 @@ export class ViewHelper {
 			default:
 				childLeft = left + effectiveMarginLeft;
 				childWidth = right - left - (effectiveMarginLeft + effectiveMarginRight);
+				if (childWidth < 0) {
+					childWidth = 0;
+				}
 				break;
 		}
 
