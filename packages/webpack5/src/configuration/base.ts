@@ -132,6 +132,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.globalObject('global')
 		.set('clean', true);
 
+	if (env?.uniqueBundle) {
+		config.output.filename(`[name].${env.uniqueBundle}.js`);
+	}
+
 	config.watchOptions({
 		ignored: [
 			`${getProjectFilePath(env.buildPath ?? 'platforms')}/**`,

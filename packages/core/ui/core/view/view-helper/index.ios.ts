@@ -264,9 +264,14 @@ export class IOSHelper {
 
 		const left = layout.toDeviceIndependentPixels(position.left + insets.left);
 		const top = layout.toDeviceIndependentPixels(position.top + insets.top);
-		const width = layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right);
-		const height = layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom);
-
+		let width = layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right);
+		let height = layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom);
+		if (width < 0) {
+			width = 0;
+		}
+		if (height < 0) {
+			height = 0;
+		}
 		return CGRectMake(left, top, width, height);
 	}
 

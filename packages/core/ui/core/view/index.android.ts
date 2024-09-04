@@ -362,8 +362,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
-		super.on(eventNames, callback, thisArg);
+	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
+		super.addEventListener(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
@@ -371,8 +371,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	off(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
-		super.off(eventNames, callback, thisArg);
+	removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+		super.removeEventListener(eventNames, callback, thisArg);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		// Remove native listener only if there are no more user listeners for LayoutChanged event

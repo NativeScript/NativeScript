@@ -734,15 +734,20 @@ function calculateNonUniformBorderCappedRadii(bounds: CGRect, background: Backgr
 
 function drawNonUniformBorders(nativeView: NativeScriptUIView, background: BackgroundDefinition): void {
 	const layer: CALayer = nativeView.layer;
-	const layerBounds = layer.bounds;
+	// There are some cases like drawing when Core Animation API has trouble with fractional coordinates,
+	// so get the difference between the fractional and integral origin points and use it as offset
+	const { x: frameX, y: frameY } = layer.frame.origin;
+	const offsetX = Math.round(frameX) - frameX;
+	const offsetY = Math.round(frameY) - frameY;
+	const drawingBounds = CGRectOffset(layer.bounds, offsetX, offsetY);
 
 	layer.borderColor = null;
 	layer.borderWidth = 0;
 	layer.cornerRadius = 0;
 
-	const cappedOuterRadii = calculateNonUniformBorderCappedRadii(layerBounds, background);
+	const cappedOuterRadii = calculateNonUniformBorderCappedRadii(drawingBounds, background);
 	if (nativeView.maskType === iosViewUtils.LayerMask.BORDER && layer.mask instanceof CAShapeLayer) {
-		layer.mask.path = generateNonUniformBorderOuterClipPath(layerBounds, cappedOuterRadii);
+		layer.mask.path = generateNonUniformBorderOuterClipPath(drawingBounds, cappedOuterRadii);
 	}
 
 	if (background.hasBorderWidth()) {
@@ -755,7 +760,7 @@ function drawNonUniformBorders(nativeView: NativeScriptUIView, background: Backg
 
 		if (background.hasUniformBorderColor()) {
 			nativeView.borderLayer.fillColor = background.borderTopColor?.ios?.CGColor || UIColor.blackColor.CGColor;
-			nativeView.borderLayer.path = generateNonUniformBorderInnerClipPath(layerBounds, background, cappedOuterRadii);
+			nativeView.borderLayer.path = generateNonUniformBorderInnerClipPath(drawingBounds, background, cappedOuterRadii);
 		} else {
 			// Non-uniform borders need more layers in order to display multiple colors at the same time
 			let borderTopLayer, borderRightLayer, borderBottomLayer, borderLeftLayer;
@@ -783,7 +788,7 @@ function drawNonUniformBorders(nativeView: NativeScriptUIView, background: Backg
 				borderLeftLayer = nativeView.borderLayer.sublayers[3];
 			}
 
-			const paths = generateNonUniformMultiColorBorderPaths(layerBounds, background);
+			const paths = generateNonUniformMultiColorBorderPaths(drawingBounds, background);
 
 			borderTopLayer.fillColor = background.borderTopColor?.ios?.CGColor || UIColor.blackColor.CGColor;
 			borderTopLayer.path = paths[0];
@@ -796,7 +801,7 @@ function drawNonUniformBorders(nativeView: NativeScriptUIView, background: Backg
 
 			// Clip inner area to create borders
 			if (nativeView.borderLayer.mask instanceof CAShapeLayer) {
-				nativeView.borderLayer.mask.path = generateNonUniformBorderInnerClipPath(layerBounds, background, cappedOuterRadii);
+				nativeView.borderLayer.mask.path = generateNonUniformBorderInnerClipPath(drawingBounds, background, cappedOuterRadii);
 			}
 		}
 	}

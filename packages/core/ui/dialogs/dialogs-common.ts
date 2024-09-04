@@ -3,7 +3,10 @@ import { View } from '../core/view';
 import { Color } from '../../color';
 import { Page } from '../page';
 import { Frame } from '../frame';
+import { CSSUtils } from '../../css/system-classes';
 import { isObject, isString } from '../../utils/types';
+
+const CSS_CLASS = `${CSSUtils.CLASS_PREFIX}dialog-item`;
 
 export namespace DialogStrings {
 	export const STRING = 'string';
@@ -276,6 +279,7 @@ export function getButtonColors(): { color: Color; backgroundColor: Color } {
 	if (!button) {
 		const Button = require('../button').Button;
 		button = new Button();
+		button.className = CSS_CLASS;
 		if (__APPLE__) {
 			button._setupUI(<any>{});
 		}
@@ -295,6 +299,7 @@ export function getLabelColor(): Color {
 	if (!label) {
 		const Label = require('../label').Label;
 		label = new Label();
+		label.className = CSS_CLASS;
 		if (__APPLE__) {
 			label._setupUI(<any>{});
 		}
@@ -312,6 +317,7 @@ export function getTextFieldColor(): Color {
 	if (!textField) {
 		const TextField = require('../text-field').TextField;
 		textField = new TextField();
+		textField.className = CSS_CLASS;
 		if (__APPLE__) {
 			textField._setupUI(<any>{});
 		}

@@ -717,25 +717,40 @@ export class CssState {
 				cssExpsProperties[property] = value;
 				continue;
 			}
-			delete oldProperties[property];
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
+
+			if (property in oldProperties) {
+				const oldValue = oldProperties[property];
+
+				delete oldProperties[property];
+
+				if (oldValue === value) {
+					// Skip unchanged values
+					continue;
+				}
 			}
+
 			if (isCssVariable(property)) {
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
 				continue;
 			}
+
 			valuesToApply[property] = value;
 		}
-		//we need to parse CSS vars first before evaluating css expressions
+
+		// we need to parse CSS vars first before evaluating css expressions
 		for (const property in cssExpsProperties) {
-			delete oldProperties[property];
 			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
+
+			if (property in oldProperties) {
+				const oldValue = oldProperties[property];
+
+				delete oldProperties[property];
+
+				if (oldValue === value) {
+					// Skip unchanged values
+					continue;
+				}
 			}
 			if (value === unsetValue) {
 				delete newPropertyValues[property];
@@ -757,9 +772,11 @@ export class CssState {
 				view[camelCasedProperty] = unsetValue;
 			}
 		}
+
 		// Set new values to the style
 		for (const property in valuesToApply) {
 			const value = valuesToApply[property];
+
 			try {
 				if (property in view.style) {
 					view.style[`css:${property}`] = value;

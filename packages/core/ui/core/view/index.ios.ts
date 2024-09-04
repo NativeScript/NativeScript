@@ -1062,7 +1062,11 @@ export class View extends ViewCommon implements ViewDefinition {
 		const popoverPresentationController = controller.popoverPresentationController;
 		this._popoverPresentationDelegate = IOSHelper.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
 		popoverPresentationController.delegate = <UIPopoverPresentationControllerDelegate>this._popoverPresentationDelegate;
-		const view = parent.nativeViewProtected;
+		let view: UIView;
+		do {
+			view = parent.nativeViewProtected;
+			parent = parent.parent as View;
+		} while (parent && !view);
 		// Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
 		// Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
 		popoverPresentationController.sourceView = view;
