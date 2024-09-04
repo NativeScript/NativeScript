@@ -317,16 +317,30 @@ export abstract class GridLayoutBase extends LayoutBase implements GridLayoutDef
 
 	protected abstract invalidate();
 
+	_rowsStr: string;
+	get rows() {
+		return this._rowsStr;
+	}
 	set rows(value: string) {
-		this.removeRows();
-		const specs = parseAndAddItemSpecs(value);
-		this.addRows(specs);
+		if (this._rowsStr !== value) {
+			this._rowsStr = value;
+			this.removeRows();
+			const specs = parseAndAddItemSpecs(value);
+			this.addRows(specs);
+		}
 	}
 
+	_colsStr: string;
+	get columns() {
+		return this._colsStr;
+	}
 	set columns(value: string) {
-		this.removeColumns();
-		const specs = parseAndAddItemSpecs(value);
-		this.addColumns(specs);
+		if (this._colsStr !== value) {
+			this._colsStr = value;
+			this.removeColumns();
+			const specs = parseAndAddItemSpecs(value);
+			this.addColumns(specs);
+		}
 	}
 }
 
