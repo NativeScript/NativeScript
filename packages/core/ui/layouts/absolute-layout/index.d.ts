@@ -6,6 +6,8 @@ import { CoreTypes } from '../../../core-types';
 
 /**
  *  A layout that lets you specify exact locations (left/top coordinates) of its children.
+ *
+ * @nsView AbsoluteLayout
  */
 export class AbsoluteLayout extends LayoutBase {
 	/**
