@@ -1,5 +1,5 @@
 import { Trace } from '../trace';
-import { ios as iOSUtils } from './native-helper';
+import { dataSerialize, ios as iOSUtils } from './native-helper';
 
 export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
 export * from './common';
@@ -39,7 +39,8 @@ export function openUrl(location: string): boolean {
 	try {
 		const url = NSURL.URLWithString(location.trim());
 		if (UIApplication.sharedApplication.canOpenURL(url)) {
-			return UIApplication.sharedApplication.openURL(url);
+			UIApplication.sharedApplication.openURLOptionsCompletionHandler(url, dataSerialize({}), null);
+			return true;
 		}
 	} catch (e) {
 		// We Don't do anything with an error.  We just output it
