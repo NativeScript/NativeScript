@@ -720,27 +720,8 @@ public class FileHelper {
 
 	public boolean delete(Context context) {
 		try {
-			if (Build.VERSION.SDK_INT >= 19) {
-				if (isExternalStorageDocument(uri)) {
-					File file = getFile(context, uri);
-					if (file != null) {
-						return file.delete();
-					}
-					return false;
-				} else {
-					if (DocumentsContract.isDocumentUri(context, uri)) {
-						if (Build.VERSION.SDK_INT >= 29) {
-							if (!uri.toString().startsWith("content://com.android.providers.downloads.documents")) {
-								return context.getContentResolver().delete(
-									MediaStore.getMediaUri(context, uri), null, null
-								) > 0;
-							}
-
-						} else {
-							return DocumentsContract.deleteDocument(context.getContentResolver(), uri);
-						}
-					}
-				}
+			if (Build.VERSION.SDK_INT >= 19 && DocumentsContract.isDocumentUri(context, uri)) {
+				return DocumentsContract.deleteDocument(context.getContentResolver(), uri);
 			}
 			return context.getContentResolver().delete(uri, null, null) > 0;
 		} catch (SecurityException | FileNotFoundException e) {

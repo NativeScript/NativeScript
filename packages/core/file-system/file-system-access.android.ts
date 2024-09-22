@@ -1504,10 +1504,9 @@ export class FileSystemAccess29 extends FileSystemAccess {
 	} {
 		if (isContentUri(path)) {
 			const documentFile = getOrSetFolderHelper(path).getOrCreateFolder(fileName, create);
-			const subPath = documentFile.getUri().toString();
 			return documentFile
 				? {
-						path: subPath,
+						path: documentFile.getUri().toString(),
 						name: documentFile.getName(),
 					}
 				: undefined;
