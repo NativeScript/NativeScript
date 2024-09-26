@@ -358,6 +358,11 @@ declare const enum CGColorRenderingIntent {
 declare function CGColorRetain(color: any): any;
 
 /**
+ * @since 18.0
+ */
+declare function CGColorSpaceCopyBaseColorSpace(space: any): any;
+
+/**
  * @since 10.0
  */
 declare function CGColorSpaceCopyICCData(space: any): NSData;

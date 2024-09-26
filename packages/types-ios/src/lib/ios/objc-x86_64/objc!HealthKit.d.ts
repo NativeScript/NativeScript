@@ -187,6 +187,26 @@ declare const enum HKAppleECGAlgorithmVersion {
 }
 
 /**
+ * @since 18.0
+ */
+declare const enum HKAppleSleepingBreathingDisturbancesClassification {
+
+	NotElevated = 0,
+
+	Elevated = 1
+}
+
+/**
+ * @since 18.0
+ */
+declare function HKAppleSleepingBreathingDisturbancesClassificationForQuantity(value: HKQuantity): number;
+
+/**
+ * @since 18.0
+ */
+declare function HKAppleSleepingBreathingDisturbancesMinimumQuantityForClassification(classification: HKAppleSleepingBreathingDisturbancesClassification): HKQuantity;
+
+/**
  * @since 15.0
  */
 declare const enum HKAppleWalkingSteadinessClassification {
@@ -857,6 +877,11 @@ declare var HKCategoryTypeIdentifierSkippedHeartbeat: string;
  * @since 8.0
  */
 declare var HKCategoryTypeIdentifierSleepAnalysis: string;
+
+/**
+ * @since 18.0
+ */
+declare var HKCategoryTypeIdentifierSleepApneaEvent: string;
 
 /**
  * @since 13.6
@@ -3384,6 +3409,11 @@ declare var HKQuantityTypeIdentifierAppleExerciseTime: string;
  * @since 14.5
  */
 declare var HKQuantityTypeIdentifierAppleMoveTime: string;
+
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierAppleSleepingBreathingDisturbances: string;
 
 /**
  * @since 16.0
