@@ -39,6 +39,16 @@ declare function CFAbsoluteTimeGetWeekOfYear(at: number, tz: NSTimeZone): number
 
 declare function CFAllocatorAllocate(allocator: any, size: number, hint: number): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 18.0
+ */
+declare function CFAllocatorAllocateBytes(allocator: any, size: number, hint: number): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.0
+ */
+declare function CFAllocatorAllocateTyped(allocator: any, size: number, descriptor: number, hint: number): interop.Pointer | interop.Reference<any>;
+
 interface CFAllocatorContext {
 	version: number;
 	info: interop.Pointer | interop.Reference<any>;
@@ -65,6 +75,16 @@ declare function CFAllocatorGetPreferredSizeForSize(allocator: any, size: number
 declare function CFAllocatorGetTypeID(): number;
 
 declare function CFAllocatorReallocate(allocator: any, ptr: interop.Pointer | interop.Reference<any>, newsize: number, hint: number): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.0
+ */
+declare function CFAllocatorReallocateBytes(allocator: any, ptr: interop.Pointer | interop.Reference<any>, newsize: number, hint: number): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.0
+ */
+declare function CFAllocatorReallocateTyped(allocator: any, ptr: interop.Pointer | interop.Reference<any>, newsize: number, descriptor: number, hint: number): interop.Pointer | interop.Reference<any>;
 
 declare function CFAllocatorSetDefault(allocator: any): void;
 

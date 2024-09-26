@@ -6269,6 +6269,11 @@ declare var kCIImageRepresentationDepthImage: string;
 declare var kCIImageRepresentationDisparityImage: string;
 
 /**
+ * @since 14.1
+ */
+declare var kCIImageRepresentationHDRGainMapImage: string;
+
+/**
  * @since 18.0
  */
 declare var kCIImageRepresentationHDRImage: string;

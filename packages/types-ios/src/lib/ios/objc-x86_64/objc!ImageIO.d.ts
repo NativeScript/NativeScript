@@ -3911,6 +3911,11 @@ declare var kCGImageSourceDecodeToHDR: string;
 declare var kCGImageSourceDecodeToSDR: string;
 
 /**
+ * @since 18.0
+ */
+declare var kCGImageSourceGenerateImageSpecificLumaScaling: string;
+
+/**
  * @since 4.0
  */
 declare var kCGImageSourceShouldAllowFloat: string;

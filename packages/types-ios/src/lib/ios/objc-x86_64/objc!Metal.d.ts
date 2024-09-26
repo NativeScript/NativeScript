@@ -3768,6 +3768,8 @@ declare const enum MTLFunctionOptions {
 
 	CompileToBinary = 1,
 
+	StoreFunctionInMetalPipelinesScript = 2,
+
 	StoreFunctionInMetalScript = 2,
 
 	FailOnBinaryArchiveMiss = 4
@@ -7527,7 +7529,7 @@ declare const enum MTLStitchedLibraryOptions {
 
 	FailOnBinaryArchiveMiss = 1,
 
-	StoreLibraryInMetalScript = 2
+	StoreLibraryInMetalPipelinesScript = 2
 }
 
 /**

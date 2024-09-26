@@ -3475,6 +3475,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterICDManagementAttributeOperatingModeID = 8,
 
+	AttributeIDTypeClusterICDManagementAttributeMaximumCheckInBackOffID = 9,
+
 	AttributeIDTypeClusterICDManagementAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterICDManagementAttributeAcceptedCommandListID = 65529,
@@ -4133,6 +4135,30 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterElectricalEnergyMeasurementAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterWaterHeaterManagementAttributeHeaterTypesID = 0,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeHeatDemandID = 1,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeTankVolumeID = 2,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeEstimatedHeatRequiredID = 3,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeTankPercentageID = 4,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeBoostStateID = 5,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterWaterHeaterManagementAttributeClusterRevisionID = 65533,
+
 	AttributeIDTypeClusterDemandResponseLoadControlAttributeLoadControlProgramsID = 0,
 
 	AttributeIDTypeClusterDemandResponseLoadControlAttributeNumberOfLoadControlProgramsID = 1,
@@ -4320,6 +4346,26 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterEnergyEVSEModeAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterEnergyEVSEModeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeSupportedModesID = 0,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeCurrentModeID = 1,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeStartUpModeID = 2,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeOnModeID = 3,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterWaterHeaterModeAttributeClusterRevisionID = 65533,
 
 	AttributeIDTypeClusterDeviceEnergyManagementModeAttributeSupportedModesID = 0,
 
@@ -4696,6 +4742,30 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterBarrierControlAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterBarrierControlAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterServiceAreaAttributeSupportedLocationsID = 0,
+
+	AttributeIDTypeClusterServiceAreaAttributeSupportedMapsID = 1,
+
+	AttributeIDTypeClusterServiceAreaAttributeSelectedLocationsID = 2,
+
+	AttributeIDTypeClusterServiceAreaAttributeCurrentLocationID = 3,
+
+	AttributeIDTypeClusterServiceAreaAttributeEstimatedEndTimeID = 4,
+
+	AttributeIDTypeClusterServiceAreaAttributeProgressID = 5,
+
+	AttributeIDTypeClusterServiceAreaAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterServiceAreaAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterServiceAreaAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterServiceAreaAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterServiceAreaAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterServiceAreaAttributeClusterRevisionID = 65533,
 
 	ClusterPumpConfigurationAndControlAttributeMaxPressureID = 0,
 
@@ -5721,6 +5791,10 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterOccupancySensingAttributeOccupancySensorTypeBitmapID = 2,
 
+	AttributeIDTypeClusterOccupancySensingAttributeHoldTimeID = 3,
+
+	AttributeIDTypeClusterOccupancySensingAttributeHoldTimeLimitsID = 4,
+
 	AttributeIDTypeClusterOccupancySensingAttributePIROccupiedToUnoccupiedDelayID = 16,
 
 	AttributeIDTypeClusterOccupancySensingAttributePIRUnoccupiedToOccupiedDelayID = 17,
@@ -6113,7 +6187,7 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterThreadBorderRouterManagementAttributeInterfaceEnabledID = 3,
 
-	AttributeIDTypeClusterThreadBorderRouterManagementAttributeActiveDatasetTimestampID = 5,
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributeActiveDatasetTimestampID = 4,
 
 	AttributeIDTypeClusterThreadBorderRouterManagementAttributeGeneratedCommandListID = 65528,
 
@@ -6574,6 +6648,20 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterContentAppObserverAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterContentAppObserverAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterCommissionerControlAttributeSupportedDeviceCategoriesID = 0,
+
+	AttributeIDTypeClusterCommissionerControlAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterCommissionerControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterCommissionerControlAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterCommissionerControlAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterCommissionerControlAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterCommissionerControlAttributeClusterRevisionID = 65533,
 
 	ClusterElectricalMeasurementAttributeMeasurementTypeID = 0,
 
@@ -65699,6 +65787,8 @@ declare const enum MTRClusterIDType {
 
 	IDTypeElectricalEnergyMeasurementID = 145,
 
+	IDTypeWaterHeaterManagementID = 148,
+
 	IDTypeDemandResponseLoadControlID = 150,
 
 	IDTypeMessagesID = 151,
@@ -65713,6 +65803,8 @@ declare const enum MTRClusterIDType {
 
 	IDTypeEnergyEVSEModeID = 157,
 
+	IDTypeWaterHeaterModeID = 158,
+
 	IDTypeDeviceEnergyManagementModeID = 159,
 
 	IDTypeDoorLockID = 257,
@@ -65720,6 +65812,8 @@ declare const enum MTRClusterIDType {
 	IDTypeWindowCoveringID = 258,
 
 	IDTypeBarrierControlID = 259,
+
+	IDTypeServiceAreaID = 336,
 
 	IDTypePumpConfigurationAndControlID = 512,
 
@@ -65798,6 +65892,8 @@ declare const enum MTRClusterIDType {
 	IDTypeContentControlID = 1295,
 
 	IDTypeContentAppObserverID = 1296,
+
+	IDTypeCommissionerControlID = 1873,
 
 	IDTypeElectricalMeasurementID = 2820,
 
@@ -75458,6 +75554,10 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterValveConfigurationAndControlCommandCloseID = 1,
 
+	CommandIDTypeClusterWaterHeaterManagementCommandBoostID = 0,
+
+	CommandIDTypeClusterWaterHeaterManagementCommandCancelBoostID = 1,
+
 	CommandIDTypeClusterDemandResponseLoadControlCommandRegisterLoadControlProgramRequestID = 0,
 
 	CommandIDTypeClusterDemandResponseLoadControlCommandUnregisterLoadControlProgramRequestID = 1,
@@ -75507,6 +75607,10 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterEnergyEVSEModeCommandChangeToModeID = 0,
 
 	CommandIDTypeClusterEnergyEVSEModeCommandChangeToModeResponseID = 1,
+
+	CommandIDTypeClusterWaterHeaterModeCommandChangeToModeID = 0,
+
+	CommandIDTypeClusterWaterHeaterModeCommandChangeToModeResponseID = 1,
 
 	CommandIDTypeClusterDeviceEnergyManagementModeCommandChangeToModeID = 0,
 
@@ -75650,6 +75754,14 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterBarrierControlCommandBarrierControlStopID = 1,
 
+	CommandIDTypeClusterServiceAreaCommandSelectLocationsID = 0,
+
+	CommandIDTypeClusterServiceAreaCommandSelectLocationsResponseID = 1,
+
+	CommandIDTypeClusterServiceAreaCommandSkipCurrentLocationID = 2,
+
+	CommandIDTypeClusterServiceAreaCommandSkipCurrentLocationResponseID = 3,
+
 	ClusterThermostatCommandSetpointRaiseLowerID = 0,
 
 	ClusterThermostatCommandGetWeeklyScheduleResponseID = 0,
@@ -75770,11 +75882,11 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterThreadBorderRouterManagementCommandGetPendingDatasetRequestID = 1,
 
-	CommandIDTypeClusterThreadBorderRouterManagementCommandDatasetResponseID = 3,
+	CommandIDTypeClusterThreadBorderRouterManagementCommandDatasetResponseID = 2,
 
-	CommandIDTypeClusterThreadBorderRouterManagementCommandSetActiveDatasetRequestID = 4,
+	CommandIDTypeClusterThreadBorderRouterManagementCommandSetActiveDatasetRequestID = 3,
 
-	CommandIDTypeClusterThreadBorderRouterManagementCommandSetPendingDatasetRequestID = 5,
+	CommandIDTypeClusterThreadBorderRouterManagementCommandSetPendingDatasetRequestID = 4,
 
 	CommandIDTypeClusterThreadNetworkDirectoryCommandAddNetworkID = 0,
 
@@ -75976,6 +76088,12 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterContentAppObserverCommandContentAppMessageResponseID = 1,
 
+	CommandIDTypeClusterCommissionerControlCommandRequestCommissioningApprovalID = 0,
+
+	CommandIDTypeClusterCommissionerControlCommandCommissionNodeID = 1,
+
+	CommandIDTypeClusterCommissionerControlCommandReverseOpenCommissioningWindowID = 2,
+
 	ClusterElectricalMeasurementCommandGetProfileInfoResponseCommandID = 0,
 
 	ClusterElectricalMeasurementCommandGetProfileInfoCommandID = 0,
@@ -76114,6 +76232,8 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterUnitTestingCommandTestListInt8UReverseRequestID = 13,
 
+	CommandIDTypeClusterUnitTestingCommandStringEchoResponseID = 13,
+
 	CommandIDTypeClusterUnitTestingCommandTestEnumsRequestID = 14,
 
 	CommandIDTypeClusterUnitTestingCommandTestNullableOptionalRequestID = 15,
@@ -76133,6 +76253,8 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterUnitTestingCommandTestBatchHelperRequestID = 22,
 
 	CommandIDTypeClusterUnitTestingCommandTestSecondBatchHelperRequestID = 23,
+
+	CommandIDTypeClusterUnitTestingCommandStringEchoRequestID = 24,
 
 	CommandIDTypeClusterUnitTestingCommandTestDifferentVendorMeiRequestID = 4294049962,
 
@@ -76911,8 +77033,14 @@ declare class MTRDevice extends NSObject {
 
 	readonly state: MTRDeviceState;
 
+	/**
+	 * @since 18.0
+	 */
 	addDelegateQueue(delegate: MTRDeviceDelegate, queue: NSObject & OS_dispatch_queue): void;
 
+	/**
+	 * @since 18.0
+	 */
 	addDelegateQueueInterestedPathsForAttributesInterestedPathsForEvents(delegate: MTRDeviceDelegate, queue: NSObject & OS_dispatch_queue, interestedPathsForAttributes: NSArray<any> | any[], interestedPathsForEvents: NSArray<any> | any[]): void;
 
 	/**
@@ -76948,8 +77076,15 @@ declare class MTRDevice extends NSObject {
 
 	readAttributeWithEndpointIDClusterIDAttributeIDParams(endpointID: number, clusterID: number, attributeID: number, params: MTRReadParams): NSDictionary<string, any>;
 
+	/**
+	 * @since 18.0
+	 */
 	removeDelegate(delegate: MTRDeviceDelegate): void;
 
+	/**
+	 * @since 16.1
+	 * @deprecated 18.0
+	 */
 	setDelegateQueue(delegate: MTRDeviceDelegate, queue: NSObject & OS_dispatch_queue): void;
 
 	writeAttributeWithEndpointIDClusterIDAttributeIDValueExpectedValueIntervalTimedWriteTimeout(endpointID: number, clusterID: number, attributeID: number, value: any, expectedValueInterval: number, timeout: number): void;
@@ -80958,8 +81093,6 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterPumpConfigurationAndControlEventTurbineOperationID = 16,
 
-	EventIDTypeClusterThreadNetworkDirectoryEventNetworkChangedID = 0,
-
 	EventIDTypeClusterTargetNavigatorEventTargetUpdatedID = 0,
 
 	EventIDTypeClusterMediaPlaybackEventStateChangedID = 0,
@@ -80967,6 +81100,8 @@ declare const enum MTREventIDType {
 	EventIDTypeClusterAccountLoginEventLoggedOutID = 0,
 
 	EventIDTypeClusterContentControlEventRemainingScreenTimeExpiredID = 0,
+
+	EventIDTypeClusterCommissionerControlEventCommissioningRequestResultID = 0,
 
 	ClusterTestClusterEventTestEventID = 1,
 

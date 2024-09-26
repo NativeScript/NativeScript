@@ -3361,6 +3361,8 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 	 */
 	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
 
+	readonly focusItemDeferralMode: UIFocusItemDeferralMode; // inherited from UIFocusItem
+
 	/**
 	 * @since 12.0
 	 */

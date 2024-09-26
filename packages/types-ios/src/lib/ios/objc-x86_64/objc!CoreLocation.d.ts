@@ -1211,9 +1211,6 @@ declare class CLMonitor extends NSObject {
 
 	static new(): CLMonitor; // inherited from NSObject
 
-	/**
-	 * @since 17.0
-	 */
 	static requestMonitorWithConfigurationCompletion(config: CLMonitorConfiguration, completionHandler: (p1: CLMonitor) => void): void;
 
 	readonly monitoredIdentifiers: NSArray<string>;

@@ -1379,7 +1379,13 @@ declare class ASAuthorizationPublicKeyCredentialPRFRegistrationInput extends NSO
 
 	static new(): ASAuthorizationPublicKeyCredentialPRFRegistrationInput; // inherited from NSObject
 
+	readonly inputValues: ASAuthorizationPublicKeyCredentialPRFAssertionInputValues;
+
 	readonly shouldCheckForSupport: boolean;
+
+	constructor(o: { inputValues: ASAuthorizationPublicKeyCredentialPRFAssertionInputValues; });
+
+	initWithInputValues(inputValues: ASAuthorizationPublicKeyCredentialPRFAssertionInputValues): this;
 }
 
 /**
@@ -1391,7 +1397,11 @@ declare class ASAuthorizationPublicKeyCredentialPRFRegistrationOutput extends NS
 
 	static new(): ASAuthorizationPublicKeyCredentialPRFRegistrationOutput; // inherited from NSObject
 
+	readonly first: NSData;
+
 	readonly isSupported: boolean;
+
+	readonly second: NSData;
 }
 
 /**
@@ -3447,6 +3457,9 @@ declare class ASSettingsHelper extends NSObject {
 
 	static openVerificationCodeAppSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
+	/**
+	 * @since 18.0
+	 */
 	static requestToTurnOnCredentialProviderExtensionWithCompletionHandler(completionHandler: (p1: boolean) => void): void;
 }
 

@@ -528,6 +528,11 @@ declare function CTFontGetVerticalTranslationsForGlyphs(font: UIFont, glyphs: in
  */
 declare function CTFontGetXHeight(font: UIFont): number;
 
+/**
+ * @since 13.0
+ */
+declare function CTFontHasTable(font: UIFont, tag: number): boolean;
+
 declare const enum CTFontManagerAutoActivationSetting {
 
 	kCTFontManagerAutoActivationDefault = 0,

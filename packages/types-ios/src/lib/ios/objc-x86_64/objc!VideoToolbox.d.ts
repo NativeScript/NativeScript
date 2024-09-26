@@ -566,6 +566,11 @@ declare var kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration: string;
 declare var kVTCompressionPropertyKey_MaximizePowerEfficiency: string;
 
 /**
+ * @since 18.0
+ */
+declare var kVTCompressionPropertyKey_MaximumRealTimeFrameRate: string;
+
+/**
  * @since 16.0
  */
 declare var kVTCompressionPropertyKey_MinAllowedFrameQP: string;
@@ -718,6 +723,11 @@ declare const kVTCouldNotFindVideoDecoderErr: number;
 declare const kVTCouldNotFindVideoEncoderErr: number;
 
 declare const kVTCouldNotOutputTaggedBufferGroupErr: number;
+
+/**
+ * @since 18.0
+ */
+declare var kVTDecompressionPropertyKey_AllowBitstreamToChangeFrameDimensions: string;
 
 /**
  * @since 8.0

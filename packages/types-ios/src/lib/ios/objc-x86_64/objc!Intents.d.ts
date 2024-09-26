@@ -540,38 +540,6 @@ declare const enum INAddTasksTemporalEventTriggerUnsupportedReason {
 }
 
 /**
- * @since 18.0
- */
-declare class INAggregatedMessageReaction extends NSObject implements NSCopying, NSSecureCoding {
-
-	static alloc(): INAggregatedMessageReaction; // inherited from NSObject
-
-	static new(): INAggregatedMessageReaction; // inherited from NSObject
-
-	readonly emoji: string;
-
-	readonly reactionCount: number;
-
-	readonly reactionType: INMessageReactionType;
-
-	readonly senders: NSArray<INPerson>;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { reactionType: INMessageReactionType; emoji: string; senders: NSArray<INPerson> | INPerson[]; reactionCount: number; });
-
-	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithReactionTypeEmojiSendersReactionCount(reactionType: INMessageReactionType, emoji: string, senders: NSArray<INPerson> | INPerson[], reactionCount: number): this;
-}
-
-/**
  * @since 13.0
  */
 declare class INAirline extends NSObject implements NSCopying, NSSecureCoding {
@@ -5473,11 +5441,6 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	static new(): INMessage; // inherited from NSObject
 
 	/**
-	 * @since 18.0
-	 */
-	aggregatedReactions: NSArray<INAggregatedMessageReaction>;
-
-	/**
 	 * @since 17.0
 	 */
 	readonly attachmentFiles: NSArray<INFile>;
@@ -5571,12 +5534,12 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 18.0
 	 */
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; messageType: INMessageType; referencedMessage: INMessage; reaction: INMessageReaction; aggregatedReactions: NSArray<INAggregatedMessageReaction> | INAggregatedMessageReaction[]; });
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; messageType: INMessageType; referencedMessage: INMessage; reaction: INMessageReaction; });
 
 	/**
 	 * @since 18.0
 	 */
-	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; messageType: INMessageType; referencedMessage: INMessage; sticker: INSticker; reaction: INMessageReaction; aggregatedReactions: NSArray<INAggregatedMessageReaction> | INAggregatedMessageReaction[]; });
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; serviceName: string; messageType: INMessageType; referencedMessage: INMessage; sticker: INSticker; reaction: INMessageReaction; });
 
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; messageType: INMessageType; });
 
@@ -5615,12 +5578,12 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 18.0
 	 */
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeReferencedMessageReactionAggregatedReactions(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, messageType: INMessageType, referencedMessage: INMessage, reaction: INMessageReaction, aggregatedReactions: NSArray<INAggregatedMessageReaction> | INAggregatedMessageReaction[]): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeReferencedMessageReaction(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, messageType: INMessageType, referencedMessage: INMessage, reaction: INMessageReaction): this;
 
 	/**
 	 * @since 18.0
 	 */
-	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeReferencedMessageStickerReactionAggregatedReactions(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, messageType: INMessageType, referencedMessage: INMessage, sticker: INSticker, reaction: INMessageReaction, aggregatedReactions: NSArray<INAggregatedMessageReaction> | INAggregatedMessageReaction[]): this;
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameServiceNameMessageTypeReferencedMessageStickerReaction(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, serviceName: string, messageType: INMessageType, referencedMessage: INMessage, sticker: INSticker, reaction: INMessageReaction): this;
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], messageType: INMessageType): this;
 }
@@ -5814,11 +5777,9 @@ declare const enum INMessageReactionType {
 
 	Unknown = 0,
 
-	EmojiReaction = 1,
+	Emoji = 1,
 
-	Emoji = 2,
-
-	Generic = 3
+	Generic = 2
 }
 
 /**

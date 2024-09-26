@@ -2646,6 +2646,11 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 
 	managedObjectIDForURIRepresentation(url: NSURL): NSManagedObjectID;
 
+	/**
+	 * @since 5.0
+	 */
+	managedObjectIDFromUTF8StringLength(utf8string: string | interop.Pointer | interop.Reference<any>, len: number): NSManagedObjectID;
+
 	metadataForPersistentStore(store: NSPersistentStore): NSDictionary<string, any>;
 
 	migratePersistentStoreToURLOptionsWithTypeError(store: NSPersistentStore, URL: NSURL, options: NSDictionary<any, any>, storeType: string): NSPersistentStore;
@@ -2777,6 +2782,11 @@ declare const NSPersistentStoreIncompatibleVersionHashError: number;
 declare const NSPersistentStoreIncompleteSaveError: number;
 
 declare const NSPersistentStoreInvalidTypeError: number;
+
+/**
+ * @since 18.0
+ */
+declare var NSPersistentStoreModelVersionChecksumKey: string;
 
 /**
  * @since 3.0

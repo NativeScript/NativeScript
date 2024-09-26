@@ -29,7 +29,7 @@ declare class PKAddCarKeyPassConfiguration extends PKAddSecureElementPassConfigu
 /**
  * @since 18.0
  */
-declare class PKAddIdentityDocumentConfiguration extends PKAddPushablePassConfiguration {
+declare class PKAddIdentityDocumentConfiguration extends PKAddSecureElementPassConfiguration {
 
 	static alloc(): PKAddIdentityDocumentConfiguration; // inherited from NSObject
 
@@ -308,16 +308,6 @@ declare var PKAddPaymentPassViewControllerDelegate: {
 };
 
 /**
- * @since 18.0
- */
-declare class PKAddPushablePassConfiguration extends PKAddSecureElementPassConfiguration {
-
-	static alloc(): PKAddPushablePassConfiguration; // inherited from NSObject
-
-	static new(): PKAddPushablePassConfiguration; // inherited from NSObject
-}
-
-/**
  * @since 13.4
  */
 declare class PKAddSecureElementPassConfiguration extends NSObject {
@@ -397,7 +387,7 @@ declare var PKAddSecureElementPassViewControllerDelegate: {
 /**
  * @since 14.0
  */
-declare class PKAddShareablePassConfiguration extends PKAddPushablePassConfiguration {
+declare class PKAddShareablePassConfiguration extends PKAddSecureElementPassConfiguration {
 
 	static alloc(): PKAddShareablePassConfiguration; // inherited from NSObject
 
@@ -958,11 +948,21 @@ declare var PKIdentityDocumentDescriptor: {
 /**
  * @since 18.0
  */
-declare class PKIdentityDocumentMetadata extends PKPushablePassMetadata {
+declare class PKIdentityDocumentMetadata extends NSObject {
 
 	static alloc(): PKIdentityDocumentMetadata; // inherited from NSObject
 
 	static new(): PKIdentityDocumentMetadata; // inherited from NSObject
+
+	readonly cardConfigurationIdentifier: string;
+
+	readonly cardTemplateIdentifier: string;
+
+	readonly credentialIdentifier: string;
+
+	serverEnvironmentIdentifier: string;
+
+	readonly sharingInstanceIdentifier: string;
 }
 
 /**
@@ -2919,26 +2919,6 @@ declare class PKPaymentTokenContext extends NSObject {
 }
 
 /**
- * @since 18.0
- */
-declare class PKPushablePassMetadata extends NSObject {
-
-	static alloc(): PKPushablePassMetadata; // inherited from NSObject
-
-	static new(): PKPushablePassMetadata; // inherited from NSObject
-
-	readonly cardConfigurationIdentifier: string;
-
-	readonly cardTemplateIdentifier: string;
-
-	readonly credentialIdentifier: string;
-
-	serverEnvironmentIdentifier: string;
-
-	readonly sharingInstanceIdentifier: string;
-}
-
-/**
  * @since 14.5
  */
 declare const enum PKRadioTechnology {
@@ -3103,7 +3083,7 @@ declare var PKShareSecureElementPassViewControllerDelegate: {
 /**
  * @since 14.0
  */
-declare class PKShareablePassMetadata extends PKPushablePassMetadata {
+declare class PKShareablePassMetadata extends NSObject {
 
 	static alloc(): PKShareablePassMetadata; // inherited from NSObject
 
@@ -3113,6 +3093,15 @@ declare class PKShareablePassMetadata extends PKPushablePassMetadata {
 	 * @since 15.0
 	 */
 	accountHash: string;
+
+	readonly cardConfigurationIdentifier: string;
+
+	/**
+	 * @since 16.0
+	 */
+	readonly cardTemplateIdentifier: string;
+
+	readonly credentialIdentifier: string;
 
 	/**
 	 * @since 14.0
@@ -3146,6 +3135,13 @@ declare class PKShareablePassMetadata extends PKPushablePassMetadata {
 	 * @since 15.0
 	 */
 	requiresUnifiedAccessCapableDevice: boolean;
+
+	/**
+	 * @since 16.0
+	 */
+	serverEnvironmentIdentifier: string;
+
+	readonly sharingInstanceIdentifier: string;
 
 	/**
 	 * @since 15.0
