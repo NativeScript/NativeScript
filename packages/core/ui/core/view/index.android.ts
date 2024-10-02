@@ -17,7 +17,7 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Device, Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, Application } from '../../../application';
+import { AndroidActivityBackPressedEventData, AndroidDialogFragmentOnCreateViewEventData, Application } from '../../../application';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
@@ -245,6 +245,12 @@ function initializeDialogFragment() {
 			// we need to set the window SoftInputMode here.
 			// it wont work is set in onStart
 			const window = this.getDialog().getWindow();
+			Application.android.notify(<AndroidDialogFragmentOnCreateViewEventData>{
+				eventName: 'dialogOnCreateView',
+				object: owner,
+				dialog: this.getDialog(),
+				window,
+			});
 			if (this._windowSoftInputMode !== undefined) {
 				window.setSoftInputMode(this._windowSoftInputMode);
 			} else {

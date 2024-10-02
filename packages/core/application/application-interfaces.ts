@@ -218,3 +218,27 @@ export interface AndroidActivityBackPressedEventData extends AndroidActivityEven
 export interface LoadAppCSSEventData extends ApplicationEventData {
 	cssFile: string;
 }
+
+/**
+ * Data for the Android dialog fragment onCreateView event.
+ */
+export interface AndroidDialogFragmentOnCreateViewEventData {
+	/**
+	 * The name of the event.
+	 */
+	eventName: string;
+
+	/**
+	 * Gets the native Android event arguments. Valid only when running on Android.
+	 */
+	window?: any; // android.view.Window;
+	/**
+	 * Gets the native Android event arguments. Valid only when running on Android.
+	 */
+	dialog?: any; // AndroidApplication;
+
+	/**
+	 * The instance that has raised the event.
+	 */
+	object: ApplicationCommon | Observable;
+}
