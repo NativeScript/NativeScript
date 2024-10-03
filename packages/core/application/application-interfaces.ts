@@ -23,7 +23,7 @@ export interface NativeScriptError extends Error {
 /**
  * Event data containing information for the application events.
  */
-export interface ApplicationEventData {
+export interface ApplicationEventData extends EventData {
 	/**
 	 * The name of the event.
 	 */
@@ -42,7 +42,8 @@ export interface ApplicationEventData {
 	/**
 	 * The instance that has raised the event.
 	 */
-	object: ApplicationCommon | Observable;
+	// TODO: find a way to do object: ApplicationCommon | Observable;
+	object: any;
 }
 
 /**
@@ -212,7 +213,7 @@ export interface LoadAppCSSEventData extends ApplicationEventData {
 /**
  * Data for the Android dialog fragment onCreateView event.
  */
-export interface AndroidDialogFragmentOnCreateViewEventData {
+export interface AndroidDialogFragmentOnCreateViewEventData extends ApplicationEventData {
 	/**
 	 * The name of the event.
 	 */
@@ -226,17 +227,12 @@ export interface AndroidDialogFragmentOnCreateViewEventData {
 	 * Gets native dialog
 	 */
 	dialog?: any; // AndroidApplication;
-
-	/**
-	 * The instance that has raised the event.
-	 */
-	object: ApplicationCommon | Observable;
 }
 
 /**
  * Data for the Android onConfigurationChange event.
  */
-export interface AndroidConfigurationChangeEventData {
+export interface AndroidConfigurationChangeEventData extends ApplicationEventData {
 	/**
 	 * The name of the event.
 	 */
@@ -250,9 +246,4 @@ export interface AndroidConfigurationChangeEventData {
 	 * Gets the diff from the previous configuration
 	 */
 	diff?: number;
-
-	/**
-	 * The instance that has raised the event.
-	 */
-	object: ApplicationCommon | Observable;
 }
