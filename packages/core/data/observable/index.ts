@@ -1,9 +1,9 @@
-import { Optional } from '../../utils/typescript-utils';
+import { Optional, OptionalAll } from '../../utils/typescript-utils';
 
 /**
  * Base event data.
  */
-export interface EventData<T = Observable> {
+export interface EventData<T = OptionalAll<Observable>> {
 	/**
 	 * The name of the event.
 	 */
@@ -36,7 +36,7 @@ export interface PropertyChangeData<T = Observable> extends EventData<T> {
 	oldValue?: any;
 }
 
-interface ListenerEntry<T = Observable> {
+interface ListenerEntry<T = OptionalAll<Observable>> {
 	callback: (data: EventData<T>) => void;
 	thisArg: any;
 	once?: boolean;
