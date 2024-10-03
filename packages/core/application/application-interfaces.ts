@@ -128,21 +128,11 @@ export interface InitRootViewEventData extends ApplicationEventData {
 /**
  * Data for the Android activity events.
  */
-export interface AndroidActivityEventData {
+export interface AndroidActivityEventData extends ApplicationEventData {
 	/**
 	 * The activity.
 	 */
-	activity: androidx.appcompat.app.AppCompatActivity;
-
-	/**
-	 * The name of the event.
-	 */
-	eventName: string;
-
-	/**
-	 * The instance that has raised the event.
-	 */
-	object: any;
+	activity?: androidx.appcompat.app.AppCompatActivity;
 }
 
 /**
@@ -152,7 +142,7 @@ export interface AndroidActivityBundleEventData extends AndroidActivityEventData
 	/**
 	 * The bundle.
 	 */
-	bundle: android.os.Bundle;
+	bundle?: android.os.Bundle;
 }
 
 /**
@@ -162,17 +152,17 @@ export interface AndroidActivityRequestPermissionsEventData extends AndroidActiv
 	/**
 	 * The request code.
 	 */
-	requestCode: number;
+	requestCode?: number;
 
 	/**
 	 * The Permissions.
 	 */
-	permissions: Array<string>;
+	permissions?: Array<string>;
 
 	/**
 	 * The Granted.
 	 */
-	grantResults: Array<number>;
+	grantResults?: Array<number>;
 }
 
 /**
@@ -182,17 +172,17 @@ export interface AndroidActivityResultEventData extends AndroidActivityEventData
 	/**
 	 * The request code.
 	 */
-	requestCode: number;
+	requestCode?: number;
 
 	/**
 	 * The result code.
 	 */
-	resultCode: number;
+	resultCode?: number;
 
 	/**
 	 * The intent.
 	 */
-	intent: android.content.Intent;
+	intent?: android.content.Intent;
 }
 
 /**
@@ -202,7 +192,7 @@ export interface AndroidActivityNewIntentEventData extends AndroidActivityEventD
 	/**
 	 * The intent.
 	 */
-	intent: any /* android.content.Intent */;
+	intent?: any /* android.content.Intent */;
 }
 
 /**
@@ -212,7 +202,7 @@ export interface AndroidActivityBackPressedEventData extends AndroidActivityEven
 	/**
 	 * In the event handler, set this value to true if you want to cancel the back navigation and do something else instead.
 	 */
-	cancel: boolean;
+	cancel?: boolean;
 }
 
 export interface LoadAppCSSEventData extends ApplicationEventData {
@@ -229,13 +219,37 @@ export interface AndroidDialogFragmentOnCreateViewEventData {
 	eventName: string;
 
 	/**
-	 * Gets the native Android event arguments. Valid only when running on Android.
+	 * Gets the window of the created dialog_min_width_major
 	 */
 	window?: any; // android.view.Window;
 	/**
-	 * Gets the native Android event arguments. Valid only when running on Android.
+	 * Gets native dialog
 	 */
 	dialog?: any; // AndroidApplication;
+
+	/**
+	 * The instance that has raised the event.
+	 */
+	object: ApplicationCommon | Observable;
+}
+
+/**
+ * Data for the Android onConfigurationChange event.
+ */
+export interface AndroidConfigurationChangeEventData {
+	/**
+	 * The name of the event.
+	 */
+	eventName: string;
+
+	/**
+	 * Gets the configuration from the event
+	 */
+	config?: any; // android.content.res.Configuration;
+	/**
+	 * Gets the diff from the previous configuration
+	 */
+	diff?: number;
 
 	/**
 	 * The instance that has raised the event.

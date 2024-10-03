@@ -1,4 +1,5 @@
 ﻿import { ApplicationCommon } from './application-common';
+import * as Interfaces from './application-interfaces';
 
 export * from './application-common';
 export * from './application-interfaces';
@@ -59,6 +60,9 @@ export class AndroidApplication extends ApplicationCommon {
 	 */
 	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
 
+	static readonly dialogOnCreateViewEvent = 'dialogOnCreateView';
+	static readonly configurationChangeEvent = 'configurationChange';
+
 	readonly fragmentCreateEvent = AndroidApplication.fragmentCreateEvent;
 	readonly activityCreateEvent = AndroidApplication.activityCreateEvent;
 	readonly activityCreatedEvent = AndroidApplication.activityCreatedEvent;
@@ -72,6 +76,8 @@ export class AndroidApplication extends ApplicationCommon {
 	readonly activityBackPressedEvent = AndroidApplication.activityBackPressedEvent;
 	readonly activityNewIntentEvent = AndroidApplication.activityNewIntentEvent;
 	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
+	readonly dialogOnCreateViewEvent = AndroidApplication.activityRequestPermissionsEvent;
+	readonly configurationChangeEvent = AndroidApplication.activityRequestPermissionsEvent;
 
 	getNativeApplication(): android.app.Application;
 
@@ -138,17 +144,20 @@ export class AndroidApplication extends ApplicationCommon {
 	 */
 	getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver;
 
-	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
-	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
-	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
-	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
-	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
-	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+	on(event: 'activityCreate', callback: (args: Interfaces.AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on(event: 'activityCreated', callback: (args: Interfaces.AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on(event: 'activityDestroyed', callback: (args: Interfaces.AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityStarted', callback: (args: Interfaces.AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityPaused', callback: (args: Interfaces.AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityResumed', callback: (args: Interfaces.AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityStopped', callback: (args: Interfaces.AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'saveActivityState', callback: (args: Interfaces.AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on(event: 'activityResult', callback: (args: Interfaces.AndroidActivityResultEventData) => void, thisArg?: any): void;
+	on(event: 'activityBackPressed', callback: (args: Interfaces.AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
+	on(event: 'activityNewIntent', callback: (args: Interfaces.AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
+	on(event: 'activityRequestPermissions', callback: (args: Interfaces.AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+	on(event: 'dialogOnCreateView', callback: (args: Interfaces.AndroidDialogFragmentOnCreateViewEventData) => void, thisArg?: any): void;
+	on(event: 'configurationChange', callback: (args: Interfaces.AndroidDialogFragmentOnCreateViewEventData) => void, thisArg?: any): void;
 }
 
 export class iOSApplication extends ApplicationCommon {

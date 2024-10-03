@@ -246,7 +246,7 @@ function initializeDialogFragment() {
 			// it wont work is set in onStart
 			const window = this.getDialog().getWindow();
 			Application.android.notify(<AndroidDialogFragmentOnCreateViewEventData>{
-				eventName: 'dialogOnCreateView',
+				eventName: Application.android.dialogOnCreateViewEvent,
 				object: owner,
 				dialog: this.getDialog(),
 				window,

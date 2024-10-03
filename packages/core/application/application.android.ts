@@ -306,6 +306,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	static readonly activityBackPressedEvent = 'activityBackPressed';
 	static readonly activityNewIntentEvent = 'activityNewIntent';
 	static readonly activityRequestPermissionsEvent = 'activityRequestPermissions';
+	static readonly dialogOnCreateViewEvent = 'dialogOnCreateView';
+	static readonly configurationChangeEvent = 'configurationChange';
 
 	readonly fragmentCreateEvent = AndroidApplication.fragmentCreateEvent;
 	readonly activityCreateEvent = AndroidApplication.activityCreateEvent;
@@ -320,6 +322,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	readonly activityBackPressedEvent = AndroidApplication.activityBackPressedEvent;
 	readonly activityNewIntentEvent = AndroidApplication.activityNewIntentEvent;
 	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
+	readonly dialogOnCreateViewEvent = AndroidApplication.activityRequestPermissionsEvent;
+	readonly configurationChangeEvent = AndroidApplication.activityRequestPermissionsEvent;
 
 	private _nativeApp: android.app.Application;
 	private _context: android.content.Context;
@@ -373,6 +377,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		if ((diff & 512) /* ActivityInfo.CONFIG_UI_MODE */ !== 0) {
 			this.setSystemAppearance(this.getSystemAppearanceValue(configuration));
 		}
+		this.notify({ eventName: this.configurationChangeEvent, configuration, diff });
 		this._prevConfiguration = new android.content.res.Configuration(configuration);
 	}
 

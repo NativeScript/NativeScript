@@ -249,29 +249,14 @@ export class Observable {
 		}
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static on(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		this.addEventListener(eventName, callback, thisArg, once);
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
 		this.addEventListener(eventName, callback, thisArg, true);
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		this.removeEventListener(eventName, callback, thisArg);
 	}
@@ -298,11 +283,6 @@ export class Observable {
 		}
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		thisArg = thisArg || undefined;
 
@@ -335,11 +315,6 @@ export class Observable {
 		}
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		once = once || undefined;
 		thisArg = thisArg || undefined;
