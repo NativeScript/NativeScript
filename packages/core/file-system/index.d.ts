@@ -257,16 +257,14 @@ export class Folder extends FileSystemEntity {
 	/**
 	 * Gets or creates a File entity with the specified name within this Folder.
 	 * @param name The name of the file to get/create.
-	 * @param create create the file if not existing (default to true)
 	 */
-	getFile(name: string, create?: boolean): File;
+	getFile(name: string): File;
 
 	/**
 	 * Gets or creates a Folder entity with the specified name within this Folder.
 	 * @param name The name of the folder to get/create.
-	 * @param create create the file if not existing (default to true)
 	 */
-	getFolder(name: string, create?: boolean): Folder;
+	getFolder(name: string): Folder;
 
 	/**
 	 * Gets all the top-level entities residing within this folder.

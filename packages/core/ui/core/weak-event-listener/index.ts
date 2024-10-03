@@ -1,8 +1,7 @@
 import { Observable, EventData } from '../../../data/observable';
-import { OptionalAll } from '../../../utils/typescript-utils';
 
 const handlersForEventName = new Map<string, (eventData: EventData) => void>();
-const sourcesMap = new WeakMap<OptionalAll<Observable>, Map<string, Array<TargetHandlerPair>>>();
+const sourcesMap = new WeakMap<Observable, Map<string, Array<TargetHandlerPair>>>();
 
 class TargetHandlerPair {
 	tagetRef: WeakRef<Object>;
