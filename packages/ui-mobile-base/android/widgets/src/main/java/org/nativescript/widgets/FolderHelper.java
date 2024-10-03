@@ -58,12 +58,17 @@ public class FolderHelper {
 		this.uri = uri;
 		// if (DocumentFile.isDocumentUri(context, uri)) {
 			documentFile = DocumentFile.fromTreeUri(context, uri);
-			// if the path ends with subpaths with %2F fromTreeUri wont get them and get the parent folder...
-			// if so we try to get it with findFile
-			String[] subDirParts = uri.toString().split("%2F");
-			if (!documentFile.getName().equals(subDirParts[subDirParts.length -1 ])) {
-				for (int index = 1; index < subDirParts.length; index++) {
-					documentFile = documentFile.findFile(subDirParts[index]);
+			String[] split1 = uri.toString().split("/");
+			String[] split2 = documentFile.getUri().toString().split("/");
+
+			if (!split1[split1.length - 1].equals(split2[split2.length - 1])) {
+				// if the path ends with subpaths with %2F fromTreeUri wont get them and get the parent folder...
+				// if so we try to get it with findFile
+				String[] subDirParts = uri.toString().split("%2F");
+				if (subDirParts.length > 0 &&  !documentFile.getName().equals(subDirParts[subDirParts.length -1 ])) {
+					for (int index = 1; index < subDirParts.length; index++) {
+						documentFile = documentFile.findFile(subDirParts[index]);
+					}
 				}
 			}
 		// }
