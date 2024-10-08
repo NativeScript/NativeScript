@@ -98,6 +98,11 @@ export class File extends FileSystemEntity {
 	static exists(path: string): boolean;
 
 	/**
+	 * Can be used to determine if an entity is a Folder without testing for class (uglified).
+	 */
+	isFolder: false;
+
+	/**
 	 * Gets the extension of the file.
 	 */
 	extension: string;
@@ -220,6 +225,11 @@ export class File extends FileSystemEntity {
  */
 export class Folder extends FileSystemEntity {
 	/**
+	 * Can be used to determine if an entity is a Folder without testing for class (uglified).
+	 */
+	isFolder: true;
+
+	/**
 	 * Determines whether this instance is a KnownFolder (accessed through the KnownFolders object).
 	 */
 	isKnown: boolean;
@@ -257,14 +267,16 @@ export class Folder extends FileSystemEntity {
 	/**
 	 * Gets or creates a File entity with the specified name within this Folder.
 	 * @param name The name of the file to get/create.
+	 * @param create create the file if not existing (default to true)
 	 */
-	getFile(name: string): File;
+	getFile(name: string, create?: boolean): File;
 
 	/**
 	 * Gets or creates a Folder entity with the specified name within this Folder.
 	 * @param name The name of the folder to get/create.
+	 * @param create create the file if not existing (default to true)
 	 */
-	getFolder(name: string): Folder;
+	getFolder(name: string, create?: boolean): Folder;
 
 	/**
 	 * Gets all the top-level entities residing within this folder.

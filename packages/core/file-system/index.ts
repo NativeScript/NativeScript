@@ -315,6 +315,7 @@ class iOS {}
 const ios = new iOS();
 
 export class File extends FileSystemEntity {
+	isFolder = false;
 	public static get ios() {
 		return ios;
 	}
@@ -655,6 +656,7 @@ export class File extends FileSystemEntity {
 }
 
 export class Folder extends FileSystemEntity {
+	isFolder = true;
 	public static fromPath(path: string, create = true): Folder {
 		if (__IOS__ && path.startsWith(FILE_PREFIX)) {
 			// if the path starts with file:// then fileAccess will see it as non existing even if it exists
