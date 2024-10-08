@@ -96,38 +96,8 @@ export function getAllKeys(): Array<string> {
 	return utils.ios.collections.nsArrayToJSArray(userDefaults.dictionaryRepresentation().allKeys);
 }
 export function getAllJSON(ignoreRegexp?: string | RegExp): string {
-	const nsDictionary = userDefaults.dictionaryRepresentation();
-	const jsonDictionary = NSMutableDictionary.new();
-	nsDictionary.enumerateKeysAndObjectsUsingBlock((key, value, stop) => {
-		// we try to filter Apple internal settings. Though some might still be there like AddingEmojiKeybordHandled
-		if (key.startsWith('AK') || key.startsWith('Apple') || key.startsWith('NS') || key.startsWith('PK') || (ignoreRegexp && key.match(ignoreRegexp))) {
-			return;
-		}
-
-		let valueClassString = value.classForCoder || value.class ? NSStringFromClass(value.classForCoder?.() ?? value.class?.()) : undefined;
-		if (valueClassString) {
-			if (valueClassString.startsWith('__')) {
-				valueClassString = valueClassString.slice(2);
-			}
-			switch (valueClassString) {
-				case 'NSDate':
-					jsonDictionary.setObjectForKey(NSISO8601DateFormatter.alloc().init().stringFromDate(value), key);
-					break;
-				case 'NSURL':
-					jsonDictionary.setObjectForKey((value as NSURL).absoluteString, key);
-					break;
-				default:
-					jsonDictionary.setObjectForKey(value, key);
-			}
-		} else {
-			jsonDictionary.setObjectForKey(value, key);
-		}
-	});
-	const jsonData = NSJSONSerialization.dataWithJSONObjectOptionsError(jsonDictionary, 0 as any);
-	if (jsonData) {
-		return NSString.alloc().initWithDataEncoding(jsonData, NSUTF8StringEncoding).toString();
-	}
-	return null;
+	//@ts-ignore
+	return NSApplicationSettings.userDefaultsToJSONStringWithIgnoreRegexp(typeof ignoreRegexp === 'string' ? ignoreRegexp : ignoreRegexp?.toString());
 }
 
 export function getNative() {
