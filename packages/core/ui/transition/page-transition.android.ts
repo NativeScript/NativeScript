@@ -194,7 +194,7 @@ export class PageTransition extends Transition {
 		//we can't look for presented right now as the toPage might not be loaded
 		// and thus some views like ListView/Pager... might not have loaded their "children"
 		// presented will be handled in loaded event of toPage
-		let { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
+		let { presenting } = SharedTransition.getSharedElements(fromPage, null);
 
 		if (pageStart?.sharedTransitionTags) {
 			const keys = Object.keys(pageStart?.sharedTransitionTags);

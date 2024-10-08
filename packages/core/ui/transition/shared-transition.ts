@@ -292,12 +292,30 @@ export class SharedTransition {
 		presented: Array<View>;
 		presenting: Array<View>;
 	} {
+		let presentedSharedElements: Array<View> = [];
+		let presentingSharedElements: Array<View> = [];
 		// 1. Presented view: gather all sharedTransitionTag views
-		const presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
-		// console.log('presented sharedTransitionTag total:', presentedSharedElements.length);
+		if (toPage) {
+			if (toPage.hasListeners('sharedElementTo')) {
+				toPage.notify({ eventName: 'sharedElementTo', views: presentedSharedElements });
+			} else {
+				presentedSharedElements = <Array<View>>querySelectorAll(toPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
+			}
+		}
+
+		// console.log(
+		// 	'presented sharedTransitionTags:',
+		// 	presentedSharedElements.map((v) => v.sharedTransitionTag)
+		// );
 
 		// 2. Presenting view: gather all sharedTransitionTag views
-		const presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
+		if (fromPage) {
+			if (fromPage.hasListeners('sharedElementFrom')) {
+				fromPage.notify({ eventName: 'sharedElementFrom', views: presentingSharedElements });
+			} else {
+				presentingSharedElements = <Array<View>>querySelectorAll(fromPage, 'sharedTransitionTag').filter((v) => !v.sharedTransitionIgnore && typeof v.sharedTransitionTag === 'string');
+			}
+		}
 		// console.log(
 		// 	'presenting sharedTransitionTags:',
 		// 	presentingSharedElements.map((v) => v.sharedTransitionTag)
