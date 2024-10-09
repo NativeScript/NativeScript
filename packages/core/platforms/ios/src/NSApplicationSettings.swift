@@ -63,9 +63,11 @@ class NSApplicationSettings : NSObject {
                         jsonDictionary.setObject(urlValue.absoluteString, forKey: key as NSString)
                     }
                 default:
-                    jsonDictionary.setObject(value, forKey: key as NSString)
+                    if (JSONSerialization.isValidJSONObject(value)) {
+                        jsonDictionary.setObject(value, forKey: key as NSString)
+                    }
                 }
-            } else {
+            } else if (JSONSerialization.isValidJSONObject(value)) {
                 jsonDictionary.setObject(value, forKey: key as NSString)
             }
         }
