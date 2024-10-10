@@ -96,6 +96,10 @@ export interface ShowModalOptions {
 		 * For possible values see https://developer.android.com/reference/android/view/WindowManager.LayoutParams#softInputMode
 		 */
 		windowSoftInputMode?: number;
+		/**
+		 * An optional parameter specifying the style of the dialog window
+		 */
+		style?: number;
 	};
 	/**
 	 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.

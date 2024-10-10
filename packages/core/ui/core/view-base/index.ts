@@ -107,6 +107,11 @@ export interface ShowModalOptions {
 		windowSoftInputMode?: number;
 
 		/**
+		 * An optional parameter specifying the style of the dialog window.
+		 */
+		style?: number;
+
+		/**
 		 * An optional parameter to force show the modal from background. If used then you dont get android state save mechanism
 		 * if not used then the modal showing is delayed until the app is in foreground again
 		 */

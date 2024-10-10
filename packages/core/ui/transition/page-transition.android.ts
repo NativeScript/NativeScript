@@ -284,21 +284,19 @@ export class PageTransition extends Transition {
 		}
 	}
 	onTransitionEnd(entry) {
-		if (__ANDROID__) {
-			// as we use hide on fragments instead of remove
-			// we need to reset setTransitionName after transition end
-			// otherwise it will break next transitions using the same transitionName
-			const fromPage = entry?.resolvedPage;
-			const { presenting } = SharedTransition.getSharedElements(fromPage, null);
-			presenting.forEach((v) => {
-				setTransitionName(v, null);
-				// androidx.transition.ChangeTransform does not restore setTransitionAlpha
-				// which makes the view invisible.
-				// can be a problem when the transition view on the return animation is not the same as enter
-				// one example is RecyclerView to ViewPager transition
-				(v.nativeViewProtected as android.view.View).setTransitionAlpha(1);
-			});
-		}
+		// as we use hide on fragments instead of remove
+		// we need to reset setTransitionName after transition end
+		// otherwise it will break next transitions using the same transitionName
+		const fromPage = entry?.resolvedPage;
+		const { presenting } = SharedTransition.getSharedElements(fromPage, null);
+		presenting.forEach((v) => {
+			setTransitionName(v, null);
+			// androidx.transition.ChangeTransform does not restore setTransitionAlpha
+			// which makes the view invisible.
+			// can be a problem when the transition view on the return animation is not the same as enter
+			// one example is RecyclerView to ViewPager transition
+			(v.nativeViewProtected as android.view.View).setTransitionAlpha(1);
+		});
 	}
 }
 
