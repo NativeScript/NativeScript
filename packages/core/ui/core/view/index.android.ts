@@ -69,7 +69,8 @@ interface DialogOptions {
 	animated: boolean;
 	stretched: boolean;
 	cancelable: boolean;
-	windowSoftInputMode: number;
+	windowSoftInputMode?: number;
+	style?: number;
 	shownCallback: () => void;
 	dismissCallback: () => void;
 }
@@ -168,6 +169,7 @@ function initializeDialogFragment() {
 		public showImmediatelyFromBackground: boolean;
 		private _fullscreen: boolean;
 		private _windowSoftInputMode: number;
+		private _animationStyle: number;
 		private _animated: boolean;
 		private _stretched: boolean;
 		private _cancelable: boolean;
@@ -203,6 +205,7 @@ function initializeDialogFragment() {
 			this._dismissCallback = options.dismissCallback;
 			this._shownCallback = options.shownCallback;
 			this._windowSoftInputMode = options.windowSoftInputMode;
+			this._animationStyle = options.style;
 			this.setStyle(androidx.fragment.app.DialogFragment.STYLE_NO_TITLE, 0);
 
 			let theme = this.getTheme();
@@ -226,8 +229,9 @@ function initializeDialogFragment() {
 
 			// set the modal window animation
 			// https://github.com/NativeScript/NativeScript/issues/5989
+			console.log('setWindowAnimations', this._animationStyle, styleAnimationDialog);
 			if (this._animated) {
-				dialog.getWindow().setWindowAnimations(styleAnimationDialog);
+				dialog.getWindow().setWindowAnimations(this._animationStyle ?? styleAnimationDialog);
 			}
 
 			dialog.setCanceledOnTouchOutside(this._cancelable);
@@ -267,7 +271,8 @@ function initializeDialogFragment() {
 				const window = this.getDialog().getWindow();
 				const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 				// set the animations to use on showing and hiding the dialog
-				window.setWindowAnimations(16973826); //android.R.style.Animation_Dialog
+				// window.setWindowAnimations(16973826); //android.R.style.Animation_Dialog
+				window.setWindowAnimations(this._animationStyle ?? 16973826 /* android.R.style.Animation_Dialog */);
 				window.setLayout(length, length);
 				// This removes the default backgroundDrawable so there are no margins.
 				window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
@@ -742,11 +747,6 @@ export class View extends ViewCommon {
 		df.setArguments(args);
 
 		const cancelable = options.cancelable !== undefined ? !!options.cancelable : true;
-		let windowSoftInputMode: number;
-
-		if (options.android) {
-			windowSoftInputMode = (<any>options).android.windowSoftInputMode;
-		}
 
 		const dialogOptions: DialogOptions = {
 			owner: this,
@@ -754,7 +754,7 @@ export class View extends ViewCommon {
 			animated: !!options.animated,
 			stretched: !!options.stretched,
 			cancelable: cancelable,
-			windowSoftInputMode: windowSoftInputMode,
+			...(options?.android || {}),
 			shownCallback: () => this._raiseShownModallyEvent(),
 			dismissCallback: () => this.closeModal(),
 		};
