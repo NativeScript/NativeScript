@@ -13,7 +13,8 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
-
+    outputs:
+      npm_version: ${{ steps.npm_version_output.outputs.NPM_VERSION }}
     steps:
       - uses: actions/checkout@v2
 
@@ -21,9 +22,11 @@ jobs:
         run: npm run setup
 
       - name: Generate Version
+        id: npm_version_output
         working-directory: packages/core
         run: |
           echo NPM_VERSION=$(node -e "console.log(require('./package.json').version);")-$NPM_TAG-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID >> $GITHUB_ENV
+          echo NPM_VERSION=$NPM_VERSION >> $GITHUB_OUTPUT
 
       - name: Bump Version
         working-directory: packages/core
@@ -39,5 +42,41 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../../.npmrc
-          echo "Publishing @nativescript/core@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG
+          echo "Publishing @akylas/nativescript@$NPM_VERSION to NPM with tag $NPM_TAG..."
+          npm publish akylas-nativescript-$NPM_VERSION.tgz --tag $NPM_TAG
+
+      - name: Bump version and push tag
+        uses: laputansoft/github-tag-action@v4.6
+        with:
+          github_token: ${{ env.github-token }}
+          tag: $NPM_VERSION-core
+  github-release:
+    runs-on: ubuntu-latest
+    # only runs on tagged commits
+    if: ${{ contains(github.ref, 'refs/tags/') }}
+    permissions:
+      contents: write
+    needs:
+      - release
+      # - test
+    env:
+      NPM_VERSION: ${{needs.release.outputs.npm_version}}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Setup
+        run: npm install
+      - uses: actions/download-artifact@v3
+        with:
+          name: npm-package
+          path: dist
+      - name: Partial Changelog
+        run: npx conventional-changelog -p angular -r2 > body.md
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/packages/akylas-nativescript-$NPM_VERSION.tgz"
+          bodyFile: "body.md"

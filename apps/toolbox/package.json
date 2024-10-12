@@ -7,7 +7,7 @@
     "url": "https://github.com/NativeScript/NativeScript.git"
   },
   "dependencies": {
-    "@akylas/nativescript": "portal:../../dist/packages/core",
+    "@akylas/nativescript": "*",
     "@nativescript/imagepicker": "*",
     "@nativescript/theme": "*"
   },
