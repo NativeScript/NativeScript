@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.8.7](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.6...@akylas/nativescript@8.8.7) (2024-10-14)
+
+**Note:** Version bump only for package @akylas/nativescript
+
 ## 8.8.6 (2024-10-14)
 
 ### Bug Fixes
