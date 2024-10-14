@@ -1,7 +1,7 @@
 {
 	"version": "independent",
 	"$schema": "node_modules/@lerna-lite/cli/schemas/lerna-schema.json",
-	"packages": ["packages/*"],
+	"packages": ["packages/webpack5", "packages/types-android", "packages/types-ios", "packages/types-minimal", "packages/types", "dist/packages/core"],
 	"loglevel": "silly",
 	"npmClient": "yarn",
 	"useWorkspaces": false,
