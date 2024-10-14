@@ -2,6 +2,7 @@
 	"version": "independent",
 	"$schema": "node_modules/@lerna-lite/cli/schemas/lerna-schema.json",
 	"packages": ["packages/*"],
+	"loglevel": "silly",
 	"npmClient": "yarn",
 	"useWorkspaces": false,
 	"command": {
