@@ -1436,12 +1436,25 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		return super.getPathSeparator();
 	}
 	normalizePath(path: string): string {
+		if (isContentUri(path)) {
+			return android.net.Uri.parse(path).toString();
+		}
 		return super.normalizePath(path);
 	}
 	joinPath(left: string, right: string): string {
 		return super.joinPath(left, right);
 	}
 	joinPaths(paths: string[]): string {
+		const [firstPath, ...others] = paths;
+		if (isContentUri(firstPath)) {
+			// custom SAF uri generation
+			const split = firstPath.split('%3A');
+			if (split.length === 2) {
+				return [[firstPath, 'document', firstPath.split('/').pop()].join('/'), ...others].join('%2F');
+			} else {
+				return [firstPath, ...others].join('%2F');
+			}
+		}
 		return super.joinPaths(paths);
 	}
 	contains(path: string, fileName: string): boolean {
