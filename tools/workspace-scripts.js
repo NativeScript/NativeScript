@@ -5,7 +5,7 @@ module.exports = {
 		default: 'nps-i',
 		nx: {
       script: 'nx',
-      description: 'Execute any command with the @nrwl/cli'
+      description: 'Execute any command with the Nx cli'
     },
 		format: {
       script: 'nx format:write',
@@ -24,19 +24,19 @@ module.exports = {
 			// Automated test runner which executes e2e tests on the target platform
 			automated: {
 				clean: {
-          script: 'nx run apps-automated:clean',
+          script: 'nx clean apps-automated',
           description: '⚆  Clean  🧹'
         },
 				ios: {
-          script: 'nx run apps-automated:ios',
+          script: 'nx debug apps-automated ios',
           description: '⚆  Run iOS  '
         },
         visionos: {
-          script: 'nx run apps-automated:vision',
+          script: 'nx debug apps-automated vision',
           description: '⚆  Run visionOS  🥽'
         },
 				android: {
-          script: 'nx run apps-automated:android',
+          script: 'nx debug apps-automated android',
           description: '⚆  Run Android  🤖'
         },
       },
@@ -47,19 +47,19 @@ module.exports = {
 			// Toolbox useful for livesyncing changes and experimenting
 			toolbox: {
 				clean: {
-          script: 'nx run apps-toolbox:clean',
+          script: 'nx clean apps-toolbox',
           description: '⚆  Clean  🧹'
         },
 				ios: {
-          script: 'nx run apps-toolbox:ios',
+          script: 'nx debug apps-toolbox ios',
           description: '⚆  Run iOS  '
         },
         visionos: {
-          script: 'nx run apps-toolbox:vision',
+          script: 'nx debug apps-toolbox vision',
           description: '⚆  Run visionOS  🥽'
         },
 				android: {
-          script: 'nx run apps-toolbox:android',
+          script: 'nx debug apps-toolbox android',
           description: '⚆  Run Android  🤖'
         },
       },
@@ -70,19 +70,19 @@ module.exports = {
 			// Various UI level setups for @nativescript/core testing
 			ui: {
 				clean: {
-          script: 'nx run apps-ui:clean',
+          script: 'nx clean apps-ui',
           description: '⚆  Clean  🧹'
         },
 				ios: {
-          script: 'nx run apps-ui:ios',
+          script: 'nx debug apps-ui ios',
           description: '⚆  Run iOS  '
         },
         visionos: {
-          script: 'nx run apps-ui:vision',
+          script: 'nx debug apps-ui vision',
           description: '⚆  Run visionOS  🥽'
         },
 				android: {
-          script: 'nx run apps-ui:android',
+          script: 'nx debug apps-ui android',
           description: '⚆  Run Android  🤖'
         },
 			},
@@ -97,36 +97,36 @@ module.exports = {
 			// @nativescript/core
 			core: {
 				build: {
-          script: 'nx run core:build',
+          script: 'nx build core',
           description: '@nativescript/core: Build'
         },
 				test: {
-          script: 'nx run core:test',
+          script: 'nx test core',
           description: '@nativescript/core: Unit tests'
 				},
 			},
       // @nativescript/core API Reference Docs
       'core-api-docs': {
 				build: {
-          script: 'nx run core-api-docs:build',
+          script: 'nx build core-api-docs',
           description: '@nativescript/core: API Reference Docs Build'
         }
       },
 			// @nativescript/ui-mobile-base
 			'ui-mobile-base': {
 				build: {
-          script: 'nx run ui-mobile-base:build',
+          script: 'nx build ui-mobile-base',
           description: '@nativescript/ui-mobile-base: Build for npm'
         },
 			},
       // @nativescript/webpack (5)
 			webpack5: {
 				build: {
-          script: 'nx run webpack5:build',
+          script: 'nx build webpack5',
           description: '@nativescript/webpack(5): Build for npm'
         },
 				test: {
-					script: 'nx run webpack5:test',
+					script: 'nx test webpack5',
 					description: '@nativescript/webpack(5): Unit tests'
 				},
 			},
