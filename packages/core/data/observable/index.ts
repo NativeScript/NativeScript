@@ -97,6 +97,7 @@ const _globalEventHandlers: {
 export class Observable {
 	/**
 	 * String value used when hooking to propertyChange event.
+	 * @nsEvent  {PropertyChangeData} propertyChange
 	 */
 	public static propertyChangeEvent = 'propertyChange';
 

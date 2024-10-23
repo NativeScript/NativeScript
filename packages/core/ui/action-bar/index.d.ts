@@ -4,36 +4,49 @@ import { EventData } from '../../data/observable';
 
 /**
  * Provides an abstraction over the ActionBar (android) and NavigationBar (iOS).
+ *
+ * @nsView ActionBar
  */
 export class ActionBar extends View {
 	/**
 	 * Gets or sets the action bar title.
+	 *
+	 * @nsProperty
 	 */
 	title: string;
 
 	/**
 	 * Gets or sets the title view. When set - replaces the title with a custom view.
+	 *
+	 * @nsProperty
 	 */
 	titleView: View;
 
 	/**
 	 * Gets or sets the navigation button (a.k.a. the back button).
+	 *
+	 * @nsProperty
 	 */
 	navigationButton: NavigationButton;
 
 	/**
 	 * Removes the shadow/border at the bottom of the ActionBar and removes translucency on iOS.
 	 * Default false.
+	 *
+	 * @nsProperty
 	 */
 	flat: boolean;
 
 	/**
 	 * Gets the collection of action items.
+	 *
+	 * @nsProperty
 	 */
 	actionItems: ActionItems;
 
 	/**
 	 * Gets the android specific options of the action bar.
+	 *
 	 */
 	android: AndroidActionBarSettings;
 
@@ -48,6 +61,8 @@ export class ActionBar extends View {
 	 *  - automatic
 	 *  - alwaysOriginal
 	 *  - alwaysTemplate
+	 *
+	 * @nsProperty
 	 */
 	iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
 
@@ -73,6 +88,7 @@ export class ActionBar extends View {
 
 /**
  * Represents a collection of ActionItems.
+ *
  */
 export class ActionItems {
 	/**
@@ -101,25 +117,42 @@ export class ActionItems {
 
 /**
  * Represents an action item in the action bar.
+ *
+ * @nsView ActionItem
  */
 export class ActionItem extends ViewBase {
 	/**
+	 * String value used when hooking to layoutChanged event.
+	 *
+	 * @nsEvent {EventData} tap
+	 */
+	public static tapEvent: string;
+
+	/**
 	 * Gets or sets the text of the action item.
+	 *
+	 * @nsProperty
 	 */
 	text: string;
 
 	/**
 	 * Gets or sets the icon of the action item.
+	 *
+	 * @nsProperty
 	 */
 	icon: string;
 
 	/**
 	 * Gets or sets the custom action view of the action item.
+	 *
+	 * @nsProperty
 	 */
 	actionView: View;
 
 	/**
 	 * Gets or sets the visibility of the action item.
+	 *
+	 * @nsProperty
 	 */
 	visibility: string;
 

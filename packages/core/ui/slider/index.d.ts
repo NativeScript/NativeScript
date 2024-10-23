@@ -5,9 +5,28 @@ import type { SliderBase } from './slider-common';
 
 /**
  * Represents a slider component.
+ *
+ * @nsView Slider
  */
 export class Slider extends View {
+	/**
+	 * String value used when hooking to valueChange event.
+	 *
+	 * @nsEvent {PropertyChangeData} valueChange
+	 */
+	static readonly valueChangeEvent = 'valueChange';
+	/**
+	 * String value used when hooking to accessibilityDecrement event.
+	 *
+	 * @nsEvent {accessibilityDecrementEvent} accessibilityDecrement
+	 */
 	static readonly accessibilityDecrementEvent = 'accessibilityDecrement';
+
+	/**
+	 * String value used when hooking to accessibilityIncrement event.
+	 *
+	 * @nsEvent {AccessibilityIncrementEventData} accessibilityIncrement
+	 */
 	static readonly accessibilityIncrementEvent = 'accessibilityIncrement';
 
 	/**
@@ -22,21 +41,29 @@ export class Slider extends View {
 
 	/**
 	 * Gets or sets a slider current value. The default value is 0.
+	 *
+	 * @nsProperty
 	 */
 	value: number;
 
 	/**
 	 * Gets or sets a slider min value. The default value is 0.
+	 *
+	 * @nsProperty
 	 */
 	minValue: number;
 
 	/**
 	 * Gets or sets a slider max value. The default value is 100.
+	 *
+	 * @nsProperty
 	 */
 	maxValue: number;
 
 	/**
 	 * Increase/Decrease step size for iOS Increment-/Decrement events
+	 *
+	 * @nsProperty
 	 */
 	accessibilityStep: number;
 }

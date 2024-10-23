@@ -26,53 +26,76 @@ export interface NavigatedData extends EventData {
 
 /**
  * Represents a logical unit for navigation (inside Frame).
+ *
+ * @nsView Page
  */
 export declare class Page extends PageBase {
 	/**
 	 * String value used when hooking to navigatingTo event.
+	 *
+	 * @nsEvent {NavigatedData} navigatingTo
 	 */
 	public static readonly navigatingToEvent = 'navigatingTo';
 
 	/**
 	 * String value used when hooking to navigatedTo event.
+	 *
+	 * @nsEvent {NavigatedData} navigatedTo
 	 */
 	public static readonly navigatedToEvent = 'navigatedTo';
 
 	/**
 	 * String value used when hooking to navigatingFrom event.
+	 *
+	 * @nsEvent {NavigatedData} navigatingFrom
 	 */
 	public static readonly navigatingFromEvent = 'navigatingFrom';
 
 	/**
 	 * String value used when hooking to navigatedFrom event.
+	 *
+	 * @nsEvent {NavigatedData} navigatedFrom
 	 */
 	public static readonly navigatedFromEvent = 'navigatedFrom';
 
 	/**
 	 * Gets or sets whether page background spans under status bar.
+	 *
+	 * @nsProperty
 	 */
 	public backgroundSpanUnderStatusBar: boolean;
 
 	/**
 	 * Gets or sets the style of the status bar.
+	 *
+	 * @nsProperty
 	 */
 	// @ts-ignore
 	public statusBarStyle: 'light' | 'dark';
 
 	/**
 	 * Gets or sets the color of the status bar in Android.
+	 *
+	 * @nsProperty
 	 */
 	// @ts-ignore
 	public androidStatusBarBackground: Color;
 
 	/**
 	 * Used to hide the Navigation Bar in iOS and the Action Bar in Android.
+	 *
+	 * @nsProperty
 	 */
 	// @ts-ignore
 	public actionBarHidden: boolean;
 
 	/**
-	 * Used to control if swipe back navigation in iOS is enabled. This property is iOS specific. Default value: true
+	 * Used to control if swipe back navigation in iOS is enabled.
+	 *
+	 * This property is iOS specific.
+	 * Default value: true
+	 *
+	 * @nsProperty
 	 */
 	public enableSwipeBackNavigation: boolean;
 
@@ -83,6 +106,8 @@ export declare class Page extends PageBase {
 
 	/**
 	 * A property that is used to pass a data from another page (while navigate to).
+	 *
+	 * @nsProperty
 	 */
 	// @ts-ignore
 	public navigationContext: any;
@@ -102,11 +127,15 @@ export declare class Page extends PageBase {
 	/**
 	 * iOS Only
 	 * Perform an action when user performans the "escape" gesture
+	 *
+	 * @nsProperty
 	 */
 	public onAccessibilityPerformEscape?: () => boolean;
 
 	/**
-	 * Should page changed be annnounced to the screen reader.
+	 * Should page changed be announced to the screen reader.
+	 *
+	 * @nsProperty
 	 */
 	public accessibilityAnnouncePageEnabled: boolean;
 

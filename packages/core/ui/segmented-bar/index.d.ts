@@ -7,10 +7,14 @@ import { Style } from '../styling/style';
 
 /**
  * Represents a SegmentedBar item.
+ *
+ * @nsView SegmentedBarItem
  */
 export class SegmentedBarItem extends ViewBase {
 	/**
 	 * Gets or sets the title of the SegmentedBarItem.
+	 *
+	 * @nsProperty
 	 */
 	public title: string;
 }
@@ -32,32 +36,44 @@ export interface SelectedIndexChangedEventData extends EventData {
 
 /**
  * Represents a UI SegmentedBar component.
+ *
+ * @nsView SegmentedBar
  */
 export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayFromBuilder {
 	/**
+	 * String value used when hooking to the selectedIndexChanged event.
+	 *
+	 * @nsEvent {SelectedIndexChangedEventData} selectedIndexChanged
+	 */
+	public static selectedIndexChangedEvent;
+
+	/**
 	 * Gets or sets the selected index of the SegmentedBar component.
+	 *
+	 * @nsProperty
 	 */
 	selectedIndex: number;
 
 	/**
 	 * Gets or sets the selected background color of the SegmentedBar component.
+	 *
+	 * @nsProperty
 	 */
 	selectedBackgroundColor: Color;
 
 	/**
 	 * Gets or sets the selected text color of the SegmentedBar component.
+	 *
+	 * @nsProperty
 	 */
 	selectedTextColor: Color;
 
 	/**
 	 * Gets or sets the items of the SegmentedBar.
+	 *
+	 * @nsProperty
 	 */
 	items: Array<SegmentedBarItem>;
-
-	/**
-	 * String value used when hooking to the selectedIndexChanged event.
-	 */
-	public static selectedIndexChangedEvent: string;
 
 	/**
 	 * Adds a listener for the specified event name.

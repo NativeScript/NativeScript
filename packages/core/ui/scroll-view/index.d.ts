@@ -5,15 +5,21 @@ import { CoreTypes } from '../../core-types';
 
 /**
  * Represents a scrollable area that can have content that is larger than its bounds.
+ *
+ * @nsView ScrollView
  */
 export class ScrollView extends ContentView {
 	/**
 	 * String value used when hooking to scroll event.
+	 *
+	 * @nsEvent {ScrollEventData} scroll
 	 */
 	public static scrollEvent: string;
 
 	/**
 	 * Gets or sets a value indicating whether scroll is enabled.
+	 *
+	 * @nsProperty
 	 */
 	isScrollEnabled: boolean;
 
@@ -39,6 +45,8 @@ export class ScrollView extends ContentView {
 
 	/**
 	 * Toggles scrollbar indicator visibility
+	 *
+	 * @nsProperty
 	 */
 	scrollBarIndicatorVisible: boolean;
 
@@ -58,6 +66,8 @@ export class ScrollView extends ContentView {
 
 	/**
 	 * Gets or sets direction in which the content can be scrolled.
+	 *
+	 * @nsProperty
 	 */
 	orientation: CoreTypes.OrientationType;
 

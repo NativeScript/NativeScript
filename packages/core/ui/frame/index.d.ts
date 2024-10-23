@@ -1,7 +1,7 @@
 ﻿import { NavigationType, FrameBase } from './frame-common';
 import { NavigatedData, Page } from '../page';
 import { Observable, EventData } from '../../data/observable';
-import { View } from '../core/view';
+import { Property, View } from '../core/view';
 import { Transition } from '../transition';
 
 export * from './frame-interfaces';
@@ -15,8 +15,37 @@ export interface NavigationData extends EventData {
 /**
  * Represents the logical View unit that is responsible for navigation within an application.
  * Nested frames are supported, enabling hierarchical navigation scenarios.
+ *
+ * @nsView Frame
  */
 export class Frame extends FrameBase {
+	/**
+	 * String value used when hooking to OptionSelected event.
+	 *
+	 * @nsEvent optionSelected
+	 */
+	public static androidOptionSelectedEvent: string;
+
+	/**
+	 * String value used when hooking to navigatingTo event.
+	 *
+	 * @nsEvent {NavigationData} navigatingTo
+	 */
+	public static navigatingToEvent: string;
+
+	/**
+	 * String value used when hooking to navigatedTo event.
+	 *
+	 * @nsEvent {NavigationData} navigatedTo
+	 */
+	public static navigatedToEvent: string;
+
+	/**
+	 * @nsProperty
+	 */
+
+	public defaultPage?: string;
+
 	/**
 	 * @private
 	 */
@@ -91,6 +120,8 @@ export class Frame extends FrameBase {
 
 	/**
 	 * Used to control the visibility the Navigation Bar in iOS and the Action Bar in Android.
+	 *
+	 * @nsProperty
 	 */
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 
@@ -103,7 +134,6 @@ export class Frame extends FrameBase {
 	/**
 	 * Gets the Page instance the Frame is currently navigated to.
 	 */
-	// @ts-ignore
 	currentPage: Page;
 
 	/**
@@ -146,10 +176,14 @@ export class Frame extends FrameBase {
 
 	/**
 	 * Specify a custom UINavigationBar class (iOS only)
+	 *
+	 * @nsProperty
 	 */
 	iosNavigationBarClass: any;
 	/**
 	 * Specify a custom UIToolbar class (iOS only)
+	 *
+	 * @nsProperty
 	 */
 	iosToolBarClass: any;
 
@@ -256,6 +290,9 @@ export class Frame extends FrameBase {
 	 */
 	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any): void;
 }
+
+export const defaultPageProperty: Property<Frame, string>;
+export const actionBarVisibilityProperty: Property<Frame, 'auto' | 'never' | 'always'>;
 
 /**
  * Sets the extended androidx.fragment.app.Fragment class to the Frame and navigation routine. An instance of this class will be created to represent the Page currently visible on the srceen. This method is available only for the Android platform.

@@ -7,6 +7,9 @@ import { CoreTypes } from '../../core-types';
 import { ShadowCSSValues } from '../styling/css-shadow';
 import { StrokeCSSValues } from '../styling/css-stroke';
 
+/**
+ * @nsView TextBase
+ */
 export class TextBase extends View implements AddChildFromBuilder {
 	/**
 	 * Gets of the text widget. In some cases(android TextInputLayout) the TextView is made of 2 views: the layout and the text view
@@ -16,91 +19,135 @@ export class TextBase extends View implements AddChildFromBuilder {
 
 	/**
 	 * Gets or sets the text.
+	 *
+	 * @nsProperty
 	 */
 	text: string;
 
 	/**
 	 * Gets or sets a formatted string.
+	 *
+	 * @nsProperty
 	 */
 	formattedText: FormattedString;
 
 	/**
 	 * Gets or sets font-size style property.
+	 *
+	 * @nsProperty
 	 */
 	fontSize: number;
 
 	/**
 	 * Gets or sets letterSpace style property.
+	 *
+	 * @nsProperty
 	 */
 	letterSpacing: number;
 
 	/**
 	 * Gets or sets lineHeight style property.
+	 *
+	 * @nsProperty
 	 */
 	lineHeight: number;
 
 	/**
 	 * Gets or sets text-alignment style property.
+	 *
+	 * @nsProperty
 	 */
 	textAlignment: CoreTypes.TextAlignmentType;
 
 	/**
 	 * Gets or sets text decorations style property.
+	 *
+	 * @nsProperty
 	 */
 	textDecoration: CoreTypes.TextDecorationType;
 
 	/**
 	 * Gets or sets text transform style property.
+	 *
+	 * @nsProperty
 	 */
 	textTransform: CoreTypes.TextTransformType;
 
 	/**
 	 * Gets or sets text shadow style property.
+	 *
+	 * @nsProperty
 	 */
 	textShadow: ShadowCSSValues;
 
 	/**
+	 * Gets or sets text stroke style property.
+	 *
+	 * @nsProperty
+	 */
+
+	textStroke: StrokeCSSValues;
+
+	/**
 	 * Gets or sets white space style property.
+	 *
+	 * @nsProperty
 	 */
 	whiteSpace: CoreTypes.WhiteSpaceType;
 
 	/**
 	 * Gets or sets text-overflow style property.
+	 *
+	 * @nsProperty
 	 */
 	textOverflow: CoreTypes.TextOverflowType;
 
 	/**
 	 * Gets or sets white space style property.
+	 *
+	 * @nsProperty
 	 */
 	maxLines: CoreTypes.MaxLinesType;
 
 	/**
 	 * Gets or sets padding style property.
+	 *
+	 * @nsProperty
 	 */
 	padding: string | CoreTypes.LengthType;
 
 	/**
 	 * Specify the bottom padding of this layout.
+	 *
+	 * @nsProperty
 	 */
 	paddingBottom: CoreTypes.LengthType;
 
 	/**
 	 * Specify the left padding of this layout.
+	 *
+	 * @nsProperty
 	 */
 	paddingLeft: CoreTypes.LengthType;
 
 	/**
 	 * Specify the right padding of this layout.
+	 *
+	 * @nsProperty
 	 */
 	paddingRight: CoreTypes.LengthType;
 
 	/**
 	 * Specify the top padding of this layout.
+	 *
+	 * @nsProperty
 	 */
 	paddingTop: CoreTypes.LengthType;
 
 	/**
 	 * Specify wether the native text should be applied with or without animations
+	 *
+	 * @nsProperty
 	 */
 	iosTextAnimation: 'inherit' | boolean;
 

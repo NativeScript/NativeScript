@@ -3,10 +3,14 @@ import { EventData } from '../../data/observable';
 
 /**
  * Represents a standard Button widget.
+ *
+ * @nsView Button
  */
 export class Button extends TextBase {
 	/**
 	 * String value used when hooking to tap event.
+	 *
+	 * @nsEvent {EventData} string;
 	 */
 	public static tapEvent: string;
 
@@ -22,6 +26,8 @@ export class Button extends TextBase {
 
 	/**
 	 * Gets or sets whether the Button wraps text or not.
+	 *
+	 * @nsProperty
 	 */
 	textWrap: boolean;
 

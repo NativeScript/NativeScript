@@ -11,6 +11,8 @@ import { CoreTypes } from '../../core-types';
 
 /**
  * A class used to create a formatted (rich text) string.
+ *
+ * @nsView FormattedString
  */
 export class FormattedString extends ViewBase {
 	/**
@@ -25,56 +27,78 @@ export class FormattedString extends ViewBase {
 
 	/**
 	 * Gets or sets the font family which will be used for all spans that doesn't have a specific value.
+	 *
+	 * @nsProperty
 	 */
 	public fontFamily: string;
 
 	/**
 	 * Gets or sets the font size which will be used for all spans that doesn't have a specific value.
+	 *
+	 * @nsProperty
 	 */
 	public fontSize: number;
 
 	/**
 	 * Gets or sets the font style which will be used for all spans that doesn't have a specific value.
+	 *
+	 * @nsProperty
 	 */
 	public fontStyle: FontStyleType;
 
 	/**
 	 * Gets or sets the font weight which will be used for all spans that doesn't have a specific value.
+	 *
+	 * @nsProperty
 	 */
 	public fontWeight: FontWeightType;
 
 	/**
 	 * Gets or sets the font variation settings which will be used for all spans that doesn't have a specific value.
+	 *
+	 * @nsProperty
 	 */
 	public fontVariationSettings: FontVariationSettingsType[];
 
 	/**
 	 * Gets or sets text decorations which will be used for all spans that doesn't have a specific value.
+	 *
+	 * @nsProperty
 	 */
 	public textDecoration: CoreTypes.TextDecorationType;
 
 	/**
 	 * Gets or sets the font foreground color which will be used for all spans that doesn't have a specific value.
+	 *
+	 * @nsProperty
 	 */
 	public color: Color;
 
 	/**
 	 * Gets or sets the font background color which will be used for all spans that doesn't have a specific value.
+	 *
+	 * @nsProperty
 	 */
 	public backgroundColor: Color;
 
 	/**
 	 * Defines whether accessibility font scale should affect font size.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityAdjustsFontSize: boolean;
 
 	/**
 	 * Gets or sets the minimum accessibility font scale.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityMinFontScale: number;
 
 	/**
 	 * Gets or sets the maximum accessibility font scale.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityMaxFontScale: number;
 }

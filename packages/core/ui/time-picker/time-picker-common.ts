@@ -90,6 +90,7 @@ function getErrorMessage(picker: TimePickerDefinition, propertyName: string, new
 
 @CSSType('TimePicker')
 export abstract class TimePickerBase extends View implements TimePickerDefinition {
+	public static timeChangeEvent: string = 'timeChange';
 	public hour: number;
 	public minute: number;
 	public time: Date;

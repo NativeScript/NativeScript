@@ -4,8 +4,15 @@ import { ItemsSource } from './list-picker-common';
 
 /**
  * Represents an list picker.
+ *
+ * @nsView ListPicker
  */
 export class ListPicker extends View {
+	/**
+	 * @nsEvent {PropertyChangeData} selectedIndexChange
+	 */
+	public static selectedIndexChangeEvent: string;
+
 	/**
 	 * Gets the native [android.widget.NumberPicker](http://developer.android.com/reference/android/widget/NumberPicker.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
@@ -18,14 +25,18 @@ export class ListPicker extends View {
 
 	/**
 	 * Gets or sets the selected index.
+	 *
+	 * @nsProperty
 	 */
 	selectedIndex: number;
 
 	/**
 	 * Gets or set the items collection of the ListPicker.
 	 * The items property can be set to an array or an object defining length and getItem(index) method.
+	 *
+	 * @nsProperty
 	 */
-	items: any;
+	items: any[] | ItemsSource;
 }
 
 export const selectedIndexProperty: Property<ListPicker, number>;

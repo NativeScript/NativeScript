@@ -4,11 +4,14 @@ import { CoreTypes } from '../../../core-types';
 
 /**
  * A Layout that arranges its children horizontally or vertically. The direction can be set by orientation property.
+ *
+ * @nsView StackLayout
  */
 export class StackLayout extends LayoutBase {
 	/**
 	 * Gets or sets if layout should be horizontal or vertical.
 	 * The default value is vertical.
+	 * @nsProperty
 	 */
 	orientation: CoreTypes.OrientationType;
 }
