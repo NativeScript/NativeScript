@@ -113,6 +113,12 @@ export function isDataURI(uri: string): boolean;
 export function openUrl(url: string): boolean;
 
 /**
+ * Opens url asynchronously.
+ * @param url The url.
+ */
+export function openUrlAsync(url: string): Promise<boolean>;
+
+/**
  * Opens file.
  * @param filePath The file.
  * @param title Optional title for Android. Default is: 'Open File...'
