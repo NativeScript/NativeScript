@@ -238,12 +238,10 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 
 		const attributedString = NSAttributedString.alloc().initWithStringAttributes(source, <NSDictionary<string, any>>attributes);
-
-		UIGraphicsBeginImageContextWithOptions(attributedString.size(), false, 0.0);
-		attributedString.drawAtPoint(CGPointMake(0, 0));
-
-		const iconImage = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
+		const renderer = UIGraphicsImageRenderer.alloc().initWithSize(attributedString.size());
+		const iconImage = renderer.imageWithActions((context: UIGraphicsRendererContext) => {
+			attributedString.drawAtPoint(CGPointMake(0, 0));
+		});
 
 		return iconImage ? new ImageSource(iconImage) : null;
 	}
@@ -443,18 +441,7 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	public resize(maxSize: number, options?: any): ImageSource {
-		const size: CGSize = this.ios.size;
-		const dim = getScaledDimensions(size.width, size.height, maxSize);
-
-		const newSize: CGSize = CGSizeMake(dim.width, dim.height);
-
-		UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
-		this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
-
-		const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
-
-		return new ImageSource(resizedImage);
+		return new ImageSource(_resizeImage(this.ios, maxSize, options));
 	}
 
 	public resizeAsync(maxSize: number, options?: any): Promise<ImageSource> {
@@ -465,22 +452,31 @@ export class ImageSource implements ImageSourceDefinition {
 			const main_queue = dispatch_get_current_queue();
 			const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
 			dispatch_async(background_queue, () => {
-				const size: CGSize = this.ios.size;
-				const dim = getScaledDimensions(size.width, size.height, maxSize);
+				const resizedImage = _resizeImage(this.ios, maxSize, options);
 
-				const newSize: CGSize = CGSizeMake(dim.width, dim.height);
-
-				UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
-				this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
-
-				const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
-				UIGraphicsEndImageContext();
 				dispatch_async(main_queue, () => {
 					resolve(new ImageSource(resizedImage));
 				});
 			});
 		});
 	}
+}
+
+function _resizeImage(image: UIImage, maxSize: number, options?: any): UIImage {
+	const size: CGSize = image.size;
+	const dim = getScaledDimensions(size.width, size.height, maxSize);
+	const newSize: CGSize = CGSizeMake(dim.width, dim.height);
+
+	const rendererFormat = UIGraphicsImageRendererFormat.defaultFormat();
+	rendererFormat.opaque = !!options.opaque;
+	rendererFormat.scale = image.scale;
+
+	const renderer = UIGraphicsImageRenderer.alloc().initWithSizeFormat(newSize, rendererFormat);
+	const resizedImage = renderer.imageWithActions((context: UIGraphicsRendererContext) => {
+		image.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
+	});
+
+	return resizedImage;
 }
 
 function getFileName(path: string): string {

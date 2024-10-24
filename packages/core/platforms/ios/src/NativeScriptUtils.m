@@ -114,10 +114,15 @@
 +(UIImage*)scaleImage:(UIImage*)image width:(CGFloat)width height:(CGFloat)height scaleFactor:(CGFloat)scaleFactor {
     UIImage *resultImage;
     @autoreleasepool {
-        UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), NO, scaleFactor);
-        [image drawInRect:CGRectMake(0, 0, width, height)];
-        resultImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
+        UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat defaultFormat];
+        format.scale = scaleFactor;
+        format.opaque = NO;
+
+        UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(width, height) format:format];
+
+        resultImage = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull context) {
+            [image drawInRect:CGRectMake(0, 0, width, height)];
+        }];
     }
     return resultImage;
 }

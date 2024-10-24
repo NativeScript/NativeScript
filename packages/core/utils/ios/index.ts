@@ -215,10 +215,17 @@ export function snapshotView(view: UIView, scale: number): UIImage {
 	// console.log('snapshotView view.frame:', printRect(view.frame));
 	const originalOpacity = view.layer.opacity;
 	view.layer.opacity = originalOpacity > 0 ? originalOpacity : 1;
-	UIGraphicsBeginImageContextWithOptions(CGSizeMake(view.frame.size.width, view.frame.size.height), false, scale);
-	view.layer.renderInContext(UIGraphicsGetCurrentContext());
-	const image = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
+
+	const size = CGSizeMake(view.frame.size.width, view.frame.size.height);
+	const rendererFormat = UIGraphicsImageRendererFormat.defaultFormat();
+	rendererFormat.scale = scale;
+
+	const renderer = UIGraphicsImageRenderer.alloc().initWithSizeFormat(size, rendererFormat);
+	const image = renderer.imageWithActions((context: UIGraphicsRendererContext) => {
+		const ctx = context.CGContext;
+		view.layer.renderInContext(ctx);
+	});
+
 	setTimeout(() => {
 		// ensure set back properly on next tick
 		view.layer.opacity = originalOpacity;
