@@ -1,3 +1,12 @@
+## [8.8.4](https://github.com/NativeScript/NativeScript/compare/8.8.3-core...8.8.4) (2024-10-24)
+
+
+### Reverts
+
+* "perf(core): avoid setting the same value to view properties" ([#10618](https://github.com/NativeScript/NativeScript/issues/10618)) ([a320ca1](https://github.com/NativeScript/NativeScript/commit/a320ca1fb34c8ff61f5dec47d81d225c42abe41e)), closes [#10602](https://github.com/NativeScript/NativeScript/issues/10602)
+
+
+
 ## [8.8.3](https://github.com/NativeScript/NativeScript/compare/8.8.1-core...8.8.3) (2024-10-23)
 
 
