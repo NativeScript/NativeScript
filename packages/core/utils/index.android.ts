@@ -40,6 +40,22 @@ export function openUrl(location: string): boolean {
 	return true;
 }
 
+export function openUrlAsync(location: string): Promise<boolean> {
+	return new Promise<boolean>((resolve, reject) => {
+		try {
+			const context = AndroidUtils.getApplicationContext();
+			const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
+			intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+			context.startActivity(intent);
+			resolve(true);
+		} catch (e) {
+			// We don't do anything with an error. We just output it
+			Trace.write(`Failed to start activity for handling URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
+			resolve(false);
+		}
+	});
+}
+
 /**
  * Check whether external storage is read only
  *
@@ -98,7 +114,7 @@ External storage is unavailable (please check app permissions).
 Applications cannot access internal storage of other application on Android (see: https://developer.android.com/guide/topics/data/data-storage).
 `,
 				Trace.categories.Error,
-				Trace.messageType.error
+				Trace.messageType.error,
 			);
 
 			return false;
@@ -161,7 +177,7 @@ Applications cannot access internal storage of other application on Android (see
 Please ensure you have your manifest correctly configured with the FileProvider.
 (see: https://developer.android.com/reference/android/support/v4/content/FileProvider#ProviderDefinition)
 `,
-				Trace.categories.Error
+				Trace.categories.Error,
 			);
 		}
 
