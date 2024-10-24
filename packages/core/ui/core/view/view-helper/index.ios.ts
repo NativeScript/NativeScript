@@ -13,6 +13,9 @@ export const AndroidHelper = 0;
 @NativeClass
 class UILayoutViewController extends UIViewController {
 	public owner: WeakRef<View>;
+	// used to know if we are a modal controller
+	// in this case the owner has a parent (rootView) but we still need to load/unload it
+	public modal;
 
 	public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
 		const controller = <UILayoutViewController>UILayoutViewController.new();
@@ -99,7 +102,7 @@ class UILayoutViewController extends UIViewController {
 
 		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
-		if (!owner.isLoaded && !owner.parent) {
+		if (!owner.isLoaded && (!owner.parent || this.modal)) {
 			owner.callLoaded();
 		}
 	}
@@ -107,7 +110,7 @@ class UILayoutViewController extends UIViewController {
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
 		const owner = this.owner?.deref();
-		if (owner && owner.isLoaded && !owner.parent) {
+		if (owner && owner.isLoaded && (!owner.parent || this.modal)) {
 			owner.callUnloaded();
 		}
 	}
