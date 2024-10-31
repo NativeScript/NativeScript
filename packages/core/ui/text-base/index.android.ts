@@ -374,10 +374,20 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[lineHeightProperty.getDefault](): number {
-		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
+		return this.nativeTextViewProtected.getLineHeight() / layout.getDisplayDensity();
 	}
 	[lineHeightProperty.setNative](value: number) {
-		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
+		const dpValue = value * layout.getDisplayDensity();
+
+		if (SDK_VERSION >= 28) {
+			this.nativeTextViewProtected.setLineHeight(dpValue);
+		} else {
+			const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
+			// Actual line spacing is the diff of line height and font height
+			const lineSpacing = Math.max(dpValue - fontHeight, 0);
+
+			this.nativeTextViewProtected.setLineSpacing(lineSpacing, 1);
+		}
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
