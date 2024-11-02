@@ -12863,6 +12863,10 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	static alloc(): NSString; // inherited from NSObject
 
+	static atob(data: string): string;
+
+	static btoa(stringToEncode: string): string;
+
 	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
 	static localizedNameOfStringEncoding(encoding: number): string;
