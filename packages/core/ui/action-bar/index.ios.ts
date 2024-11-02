@@ -485,17 +485,18 @@ export class ActionBar extends ActionBarBase {
 				});
 
 				callback(img);
-			} else {
-				if (navBar.gradientLayer) {
-					navBar.gradientLayer = null;
-				}
-				iosBackground.createUIImageFromURI(this, value, false, callback);
+				// Return here to avoid unnecessary cleanups
+				return;
 			}
+
+			// Background image
+			iosBackground.createUIImageFromURI(this, value, false, callback);
 		} else {
-			if (navBar.gradientLayer) {
-				navBar.gradientLayer = null;
-			}
 			callback(null);
+		}
+
+		if (navBar.gradientLayer) {
+			navBar.gradientLayer = null;
 		}
 	}
 
