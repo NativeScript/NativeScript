@@ -1,5 +1,6 @@
 ﻿import { EditableTextBase } from '../editable-text-base';
 import { Property } from '../core/properties';
+export { WritingToolsAllowedInput, WritingToolsBehavior } from './text-view-common';
 
 /**
  * Represents an editable multiline text view.

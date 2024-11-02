@@ -10,6 +10,10 @@ export class TextViewBase extends EditableTextBase implements TextViewDefinition
 	public enableWritingToolsEvents: boolean;
 }
 
+/**
+ * (iOS Only) Behavior for Apple Intelligence Writing Tools
+ * @since 8.9
+ */
 export enum WritingToolsBehavior {
 	Complete,
 	Default,
@@ -22,6 +26,10 @@ export const iosWritingToolsBehaviorProperty = new Property<TextViewBase, Writin
 });
 iosWritingToolsBehaviorProperty.register(TextViewBase);
 
+/**
+ * (iOS Only) Allowed input for Apple Intelligence Writing Tools
+ * @since 8.9
+ */
 export enum WritingToolsAllowedInput {
 	Default,
 	List,

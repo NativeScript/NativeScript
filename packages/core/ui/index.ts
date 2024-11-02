@@ -73,7 +73,7 @@ export { TextBase, getTransformedText, letterSpacingProperty, textAlignmentPrope
 export { FormattedString } from './text-base/formatted-string';
 export { Span } from './text-base/span';
 export { TextField } from './text-field';
-export { TextView } from './text-view';
+export { TextView, WritingToolsAllowedInput, WritingToolsBehavior } from './text-view';
 export { TimePicker } from './time-picker';
 export { Transition } from './transition';
 export { ModalTransition } from './transition/modal-transition';
