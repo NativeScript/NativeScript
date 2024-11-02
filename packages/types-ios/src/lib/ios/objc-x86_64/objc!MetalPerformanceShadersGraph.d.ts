@@ -774,6 +774,11 @@ declare class MPSGraph extends MPSGraphObject {
 	 */
 	realToHermiteanFFTWithTensorAxesTensorDescriptorName(tensor: MPSGraphTensor, axesTensor: MPSGraphTensor, descriptor: MPSGraphFFTDescriptor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 18.0
+	 */
+	reciprocalSquareRootWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
+
 	reciprocalWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	/**
@@ -941,6 +946,10 @@ declare class MPSGraph extends MPSGraphObject {
 	 */
 	resizeWithGradientTensorInputScaleTensorOffsetTensorModeName(gradient: MPSGraphTensor, input: MPSGraphTensor, scale: MPSGraphTensor, offset: MPSGraphTensor, mode: MPSGraphResizeMode, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 14.0
+	 * @deprecated 18.0
+	 */
 	reverseSquareRootWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
 	/**

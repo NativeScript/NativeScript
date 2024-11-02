@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@nativescript/core": "file:../../packages/core",
-    "@nativescript/imagepicker": "^3.2.1",
+    "@nativescript/imagepicker": "^4.1.0",
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
   },
   "devDependencies": {
