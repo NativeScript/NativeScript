@@ -20,6 +20,10 @@
       </TextField>
       <Label text="{{ formattedPhoneInput }}" marginTop="6" />
 
+      <Label text="TextView" fontWeight="bold" marginTop="12" />
+      <TextView hint="Type text..." style.placeholderColor="silver" textChange="{{textChangeArea}}" color="black" width="80%" borderColor="silver" borderWidth="1" height="200" borderRadius="4" fontSize="14">
+      </TextView>
+
     </StackLayout>
   </ScrollView>
 </Page>

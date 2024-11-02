@@ -1,16 +1,15 @@
 import { ScrollEventData } from '../scroll-view';
 import { textProperty } from '../text-base';
-import { TextViewBase as TextViewBaseCommon } from './text-view-common';
+import { iosWritingToolsAllowedInputProperty, iosWritingToolsBehaviorProperty, TextViewBase as TextViewBaseCommon, WritingToolsAllowedInput, WritingToolsBehavior } from './text-view-common';
 import { editableProperty, hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
 import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
 import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length } from '../styling/style-properties';
-import { iOSNativeHelper, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 import { profile } from '../../profiling';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
@@ -70,6 +69,21 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 			return owner.scrollViewDidScroll(sv);
 		}
 	}
+
+	public textViewWritingToolsWillBegin(textView: UITextView): void {
+		const owner = this._owner?.deref();
+		if (owner) {
+			owner.isWritingToolsActive = true;
+		}
+	}
+
+	public textViewWritingToolsDidEnd(textView: UITextView): void {
+		const owner = this._owner?.deref();
+		if (owner) {
+			owner.isWritingToolsActive = false;
+			owner.textViewDidChange(textView);
+		}
+	}
 }
 
 @NativeClass
@@ -91,8 +105,8 @@ export class TextView extends TextViewBaseCommon {
 	_isShowingHint: boolean;
 	public _isEditing: boolean;
 
-	private _hintColor = majorVersion <= 12 || !UIColor.placeholderTextColor ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
-	private _textColor = majorVersion <= 12 || !UIColor.labelColor ? null : UIColor.labelColor;
+	private _hintColor = SDK_VERSION <= 12 || !UIColor.placeholderTextColor ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
+	private _textColor = SDK_VERSION <= 12 || !UIColor.labelColor ? null : UIColor.labelColor;
 
 	createNativeView() {
 		const textView = NoScrollAnimationUITextView.new();
@@ -143,10 +157,12 @@ export class TextView extends TextViewBaseCommon {
 	}
 
 	public textViewDidChange(textView: UITextView): void {
-		if (this.updateTextTrigger === 'textChanged') {
-			textProperty.nativeValueChange(this, textView.text);
+		if (!this.isWritingToolsActive || this.enableWritingToolsEvents) {
+			if (this.updateTextTrigger === 'textChanged') {
+				textProperty.nativeValueChange(this, textView.text);
+			}
+			this.requestLayout();
 		}
-		this.requestLayout();
 	}
 
 	public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
@@ -397,6 +413,48 @@ export class TextView extends TextViewBaseCommon {
 			bottom: inset.bottom,
 			right: inset.right,
 		};
+	}
+
+	[iosWritingToolsBehaviorProperty.setNative](value: WritingToolsBehavior) {
+		if (SDK_VERSION >= 18) {
+			this.nativeTextViewProtected.writingToolsBehavior = this._writingToolsBehaviorType(value);
+		}
+	}
+
+	[iosWritingToolsAllowedInputProperty.setNative](value: Array<WritingToolsAllowedInput>) {
+		if (SDK_VERSION >= 18) {
+			let writingToolsInput = UIWritingToolsResultOptions.Default;
+			for (const inputType of value) {
+				writingToolsInput = writingToolsInput | this._writingToolsAllowedType(inputType);
+			}
+			this.nativeTextViewProtected.allowedWritingToolsResultOptions = writingToolsInput;
+		}
+	}
+
+	private _writingToolsBehaviorType(value: WritingToolsBehavior) {
+		switch (value) {
+			case WritingToolsBehavior.Complete:
+				return UIWritingToolsBehavior.Complete;
+			case WritingToolsBehavior.Default:
+				return UIWritingToolsBehavior.Default;
+			case WritingToolsBehavior.Limited:
+				return UIWritingToolsBehavior.Limited;
+			case WritingToolsBehavior.None:
+				return UIWritingToolsBehavior.None;
+		}
+	}
+
+	private _writingToolsAllowedType(value: WritingToolsAllowedInput) {
+		switch (value) {
+			case WritingToolsAllowedInput.Default:
+				return UIWritingToolsResultOptions.Default;
+			case WritingToolsAllowedInput.List:
+				return UIWritingToolsResultOptions.List;
+			case WritingToolsAllowedInput.PlainText:
+				return UIWritingToolsResultOptions.PlainText;
+			case WritingToolsAllowedInput.RichText:
+				return UIWritingToolsResultOptions.RichText;
+		}
 	}
 }
 

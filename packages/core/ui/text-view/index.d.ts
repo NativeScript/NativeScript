@@ -19,6 +19,16 @@ export class TextView extends EditableTextBase {
 	 * Limits input to a certain number of lines.
 	 */
 	maxLines: number;
+
+	/**
+	 * (iOS Only) Are Apple Intelligence writing tools active
+	 */
+	isWritingToolsActive: boolean;
+
+	/**
+	 * (iOS Only) Allow Apple Intelligence writing tools to emit text changes on each alteration instead of after the final change (default).
+	 */
+	enableWritingToolsEvents: boolean;
 }
 
 export const maxLinesProperty: Property<EditableTextBase, number>;
