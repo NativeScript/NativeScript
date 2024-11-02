@@ -3,6 +3,7 @@ import { View } from '../core/view';
 import { BackgroundRepeat } from '../../css/parser';
 import { LinearGradient } from '../styling/linear-gradient';
 import { BoxShadow } from './box-shadow';
+import { Background as BackgroundDefinition } from './background-common';
 
 export * from './background-common';
 
@@ -78,6 +79,7 @@ export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
 	export function drawBackgroundVisualEffects(view: View): void;
 	export function clearBackgroundVisualEffects(view: View): void;
+	export function createUIImageFromURI(view: View, imageURI: string, flip: boolean, callback: (image: any) => void): void;
 	export function generateClipPath(view: View, bounds: CGRect): any;
 	export function generateShadowLayerPaths(view: View, bounds: CGRect): { maskPath: any; shadowPath: any };
 	export function getUniformBorderRadius(view: View, bounds: CGRect): number;
