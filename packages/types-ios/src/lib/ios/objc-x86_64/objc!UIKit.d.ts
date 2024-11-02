@@ -21713,6 +21713,11 @@ declare var UIMenuNewScene: string;
 /**
  * @since 14.0
  */
+declare var UIMenuOpen: string;
+
+/**
+ * @since 14.0
+ */
 declare var UIMenuOpenRecent: string;
 
 /**
@@ -24929,7 +24934,11 @@ declare const enum UIPressType {
 
 	PageUp = 30,
 
-	PageDown = 31
+	PageDown = 31,
+
+	TVRemoteOneTwoThree = 32,
+
+	TVRemoteFourColors = 33
 }
 
 /**

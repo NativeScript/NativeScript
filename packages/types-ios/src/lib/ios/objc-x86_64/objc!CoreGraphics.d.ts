@@ -212,10 +212,29 @@ declare const enum CGBlendMode {
 	kCGBlendModePlusLighter = 27
 }
 
+interface CGColorBufferFormat {
+	version: number;
+	bitmapInfo: CGBitmapInfo;
+	bitsPerComponent: number;
+	bitsPerPixel: number;
+	bytesPerRow: number;
+}
+declare var CGColorBufferFormat: interop.StructType<CGColorBufferFormat>;
+
+/**
+ * @since 18.0
+ */
+declare function CGColorConversionInfoConvertData(info: any, width: number, height: number, dst_data: interop.Pointer | interop.Reference<any>, dst_format: CGColorBufferFormat, src_data: interop.Pointer | interop.Reference<any>, src_format: CGColorBufferFormat, options: NSDictionary<any, any>): boolean;
+
 /**
  * @since 10.0
  */
 declare function CGColorConversionInfoCreate(src: any, dst: any): any;
+
+/**
+ * @since 18.0
+ */
+declare function CGColorConversionInfoCreateForToneMapping(from: any, source_headroom: number, to: any, target_headroom: number, method: CGToneMapping, options: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
 
 /**
  * @since 13
@@ -3538,3 +3557,8 @@ declare var kCGUse100nitsHLGOOTF: string;
  * @since 18.0
  */
 declare var kCGUseBT1886ForCoreVideoGamma: string;
+
+/**
+ * @since 18.1
+ */
+declare var kCGUseLegacyHDREcosystem: string;

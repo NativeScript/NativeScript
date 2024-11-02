@@ -2656,7 +2656,9 @@ declare const enum NEProviderStopReason {
 
 	Sleep = 15,
 
-	AppUpdate = 16
+	AppUpdate = 16,
+
+	InternalError = 17
 }
 
 /**
