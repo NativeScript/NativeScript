@@ -5,6 +5,7 @@ import { Color } from '../../color';
 import { ios as iosBackground } from '../styling/background';
 import { LinearGradient } from '../styling/linear-gradient';
 import { colorProperty, backgroundInternalProperty, backgroundColorProperty, backgroundImageProperty } from '../styling/style-properties';
+import { ios as iosViewUtils } from '../utils';
 import { ImageSource } from '../../image-source';
 import { layout, iOSNativeHelper, isFontIconURI } from '../../utils';
 import { accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityValueProperty } from '../../accessibility/accessibility-properties';
@@ -13,6 +14,10 @@ export * from './action-bar-common';
 
 const majorVersion = iOSNativeHelper.MajorVersion;
 const UNSPECIFIED = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+
+interface NSUINavigationBar extends UINavigationBar {
+	gradientLayer?: CAGradientLayer;
+}
 
 function loadActionIcon(item: ActionItemDefinition): any /* UIImage */ {
 	let is = null;
@@ -142,6 +147,15 @@ export class ActionBar extends ActionBarBase {
 		return this.ios;
 	}
 
+	public disposeNativeView() {
+		const navBar = this.navBar as NSUINavigationBar;
+		if (navBar?.gradientLayer) {
+			navBar.gradientLayer = null;
+		}
+
+		super.disposeNativeView();
+	}
+
 	public _addChildFromBuilder(name: string, value: any) {
 		if (value instanceof NavigationButton) {
 			this.navigationButton = value;
@@ -153,12 +167,12 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	public get _getActualSize(): { width: number; height: number } {
-		const navBar = this.ios;
-		if (!navBar) {
+		const nativeView = this.ios;
+		if (!nativeView) {
 			return { width: 0, height: 0 };
 		}
 
-		const frame = navBar.frame;
+		const frame = nativeView.frame;
 		const size = frame.size;
 		const width = layout.toDevicePixels(size.width);
 		const height = layout.toDevicePixels(size.height);
@@ -452,17 +466,35 @@ export class ActionBar extends ActionBarBase {
 		return image;
 	}
 
-	private _createBackgroundUIImage(navBar: UINavigationBar, value: string | LinearGradient, callback: (image: UIImage) => void): void {
+	private _createBackgroundUIImage(navBar: NSUINavigationBar, value: string | LinearGradient, callback: (image: UIImage) => void): void {
 		if (!navBar) {
 			return;
 		}
 
 		if (value) {
 			if (value instanceof LinearGradient) {
+				if (!navBar.gradientLayer) {
+					navBar.gradientLayer = CAGradientLayer.new();
+				}
+
+				iosViewUtils.drawGradient(navBar, navBar.gradientLayer, value);
+
+				const renderer = UIGraphicsImageRenderer.alloc().initWithSize(navBar.bounds.size);
+				const img = renderer.imageWithActions((context: UIGraphicsRendererContext) => {
+					navBar.gradientLayer.renderInContext(context.CGContext);
+				});
+
+				callback(img);
 			} else {
+				if (navBar.gradientLayer) {
+					navBar.gradientLayer = null;
+				}
 				iosBackground.createUIImageFromURI(this, value, false, callback);
 			}
 		} else {
+			if (navBar.gradientLayer) {
+				navBar.gradientLayer = null;
+			}
 			callback(null);
 		}
 	}
