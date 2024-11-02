@@ -24,6 +24,7 @@
 			"executor": "@nativescript/nx:debug",
 			"options": {
 				"noHmr": true,
+				"debug": false,
 				"uglify": false,
 				"release": false,
 				"forDevice": false,
