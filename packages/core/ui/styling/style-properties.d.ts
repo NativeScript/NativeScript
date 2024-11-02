@@ -77,7 +77,6 @@ export const minWidthProperty: CssProperty<Style, CoreTypes.dip | CoreTypes.Leng
 export const minHeightProperty: CssProperty<Style, CoreTypes.dip | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit>;
 export const widthProperty: CssAnimationProperty<Style, CoreTypes.PercentLengthType>;
 export const heightProperty: CssAnimationProperty<Style, CoreTypes.PercentLengthType>;
-export const lineHeightProperty: CssProperty<Style, number>;
 export const marginProperty: ShorthandProperty<Style, string | CoreTypes.PercentLengthType>;
 export const marginLeftProperty: CssProperty<Style, CoreTypes.PercentLengthType>;
 export const marginRightProperty: CssProperty<Style, CoreTypes.PercentLengthType>;
