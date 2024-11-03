@@ -279,7 +279,7 @@ export class FileSystemAccess {
 						if (didRemove) {
 							onError(error);
 						} else {
-							onError(error);
+							onError(exception);
 						}
 					}
 				}
