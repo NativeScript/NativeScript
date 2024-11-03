@@ -6,10 +6,11 @@ import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
 import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length } from '../styling/style-properties';
-import { layout } from '../../utils';
+import { layout, isRealDevice } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 
 import { profile } from '../../profiling';
+export { WritingToolsAllowedInput, WritingToolsBehavior } from './text-view-common';
 
 @NativeClass
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
@@ -416,17 +417,21 @@ export class TextView extends TextViewBaseCommon {
 	}
 
 	[iosWritingToolsBehaviorProperty.setNative](value: WritingToolsBehavior) {
-		if (SDK_VERSION >= 18) {
+		if (SDK_VERSION >= 18 && isRealDevice()) {
 			this.nativeTextViewProtected.writingToolsBehavior = this._writingToolsBehaviorType(value);
 		}
 	}
 
 	[iosWritingToolsAllowedInputProperty.setNative](value: Array<WritingToolsAllowedInput>) {
-		if (SDK_VERSION >= 18) {
-			let writingToolsInput = UIWritingToolsResultOptions.Default;
+		if (SDK_VERSION >= 18 && isRealDevice()) {
+			let writingToolsInput = null;
 			for (const inputType of value) {
-				writingToolsInput = writingToolsInput | this._writingToolsAllowedType(inputType);
+				writingToolsInput = (writingToolsInput != null ? writingToolsInput : 0) + this._writingToolsAllowedType(inputType);
 			}
+			if (writingToolsInput === null) {
+				writingToolsInput = UIWritingToolsResultOptions.Default;
+			}
+			this.nativeTextViewProtected.allowsEditingTextAttributes = true;
 			this.nativeTextViewProtected.allowedWritingToolsResultOptions = writingToolsInput;
 		}
 	}
