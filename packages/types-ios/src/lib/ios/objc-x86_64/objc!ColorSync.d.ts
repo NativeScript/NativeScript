@@ -764,6 +764,11 @@ declare var kColorSyncTransformSrcSpace: string;
 declare var kColorSyncTransformTag: string;
 
 /**
+ * @since 18.0
+ */
+declare var kColorSyncTransformUseITU709OETF: string;
+
+/**
  * @since 16.1
  */
 declare var kColorSyncWebSafeColorsProfile: string;

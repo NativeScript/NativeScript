@@ -12,6 +12,8 @@ declare class ASAccessory extends NSObject {
 
 	readonly bluetoothIdentifier: NSUUID;
 
+	readonly bluetoothTransportBridgingIdentifier: NSData;
+
 	readonly descriptor: ASDiscoveryDescriptor;
 
 	readonly displayName: string;
@@ -51,9 +53,17 @@ declare const enum ASAccessoryEventType {
 
 	AccessoryChanged = 32,
 
-	PickerDidPresent = 42,
+	PickerDidPresent = 40,
 
-	PickerDidDismiss = 45
+	PickerDidDismiss = 50,
+
+	PickerSetupBridging = 60,
+
+	PickerSetupFailed = 70,
+
+	PickerSetupPairing = 80,
+
+	PickerSetupRename = 90
 }
 
 declare const enum ASAccessoryRenameOptions {
@@ -73,6 +83,8 @@ declare class ASAccessorySession extends NSObject {
 	readonly accessories: NSArray<ASAccessory>;
 
 	activateWithQueueEventHandler(queue: NSObject & OS_dispatch_queue, eventHandler: (p1: ASAccessoryEvent) => void): void;
+
+	failAuthorizationCompletionHandler(accessory: ASAccessory, completionHandler: (p1: NSError) => void): void;
 
 	finishAuthorizationSettingsCompletionHandler(accessory: ASAccessory, settings: ASAccessorySettings, completionHandler: (p1: NSError) => void): void;
 
@@ -97,6 +109,10 @@ declare class ASAccessorySettings extends NSObject {
 	static new(): ASAccessorySettings; // inherited from NSObject
 
 	SSID: string;
+
+	bluetoothTransportBridgingIdentifier: NSData;
+
+	static readonly defaultSettings: ASAccessorySettings;
 }
 
 declare const enum ASAccessoryState {
@@ -136,6 +152,8 @@ declare class ASDiscoveryDescriptor extends NSObject {
 
 	bluetoothNameSubstring: string;
 
+	bluetoothRange: ASDiscoveryDescriptorRange;
+
 	bluetoothServiceDataBlob: NSData;
 
 	bluetoothServiceDataMask: NSData;
@@ -143,6 +161,13 @@ declare class ASDiscoveryDescriptor extends NSObject {
 	bluetoothServiceUUID: CBUUID;
 
 	supportedOptions: ASAccessorySupportOptions;
+}
+
+declare const enum ASDiscoveryDescriptorRange {
+
+	Default = 0,
+
+	Immediate = 10
 }
 
 /**
@@ -156,11 +181,15 @@ declare const enum ASErrorCode {
 
 	ActivationFailed = 100,
 
+	ConnectionFailed = 150,
+
 	DiscoveryTimeout = 200,
 
 	ExtensionNotFound = 300,
 
 	Invalidated = 400,
+
+	InvalidRequest = 450,
 
 	PickerAlreadyActive = 500,
 
@@ -196,8 +225,6 @@ declare class ASPickerDisplayItem extends NSObject {
 
 	static new(): ASPickerDisplayItem; // inherited from NSObject
 
-	allowsRename: boolean;
-
 	readonly descriptor: ASDiscoveryDescriptor;
 
 	readonly name: string;
@@ -206,7 +233,18 @@ declare class ASPickerDisplayItem extends NSObject {
 
 	renameOptions: ASAccessoryRenameOptions;
 
+	setupOptions: ASPickerDisplayItemSetupOptions;
+
 	constructor(o: { name: string; productImage: UIImage; descriptor: ASDiscoveryDescriptor; });
 
 	initWithNameProductImageDescriptor(name: string, productImage: UIImage, descriptor: ASDiscoveryDescriptor): this;
+}
+
+declare const enum ASPickerDisplayItemSetupOptions {
+
+	Rename = 1,
+
+	ConfirmAuthorization = 2,
+
+	FinishInApp = 4
 }

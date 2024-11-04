@@ -1,3 +1,39 @@
+## [8.8.4](https://github.com/NativeScript/NativeScript/compare/8.8.3-core...8.8.4) (2024-10-24)
+
+
+### Reverts
+
+* "perf(core): avoid setting the same value to view properties" ([#10618](https://github.com/NativeScript/NativeScript/issues/10618)) ([a320ca1](https://github.com/NativeScript/NativeScript/commit/a320ca1fb34c8ff61f5dec47d81d225c42abe41e)), closes [#10602](https://github.com/NativeScript/NativeScript/issues/10602)
+
+
+
+## [8.8.3](https://github.com/NativeScript/NativeScript/compare/8.8.1-core...8.8.3) (2024-10-23)
+
+
+### Bug Fixes
+
+* **android:** layout change listeners are ignored when using addEventListener ([#10597](https://github.com/NativeScript/NativeScript/issues/10597)) ([89fa6ec](https://github.com/NativeScript/NativeScript/commit/89fa6ec84db8c40546b2fcc2fd151c49f1cae8c0))
+* **android:** RootLayout shade cover null color handling ([#10599](https://github.com/NativeScript/NativeScript/issues/10599)) ([f7b9d06](https://github.com/NativeScript/NativeScript/commit/f7b9d06e9123f67377a29cf96d21f420fbabd520))
+* **color:** four-digit hex color parse failure ([#10593](https://github.com/NativeScript/NativeScript/issues/10593)) ([8877bec](https://github.com/NativeScript/NativeScript/commit/8877becdf9e18ad2edd2fb5888590f3f2645c53e))
+* **core:** include everything but core.aar in android platforms ([#10592](https://github.com/NativeScript/NativeScript/issues/10592)) ([423a2d2](https://github.com/NativeScript/NativeScript/commit/423a2d2dce16ce42d9489f04294d8a5c8d094ea7))
+* **ios:** popover delegate should ignore non-native views ([#10609](https://github.com/NativeScript/NativeScript/issues/10609)) ([ba3316e](https://github.com/NativeScript/NativeScript/commit/ba3316e7494730e2a2e069ef1822f02300aa62de))
+* **ios:** proper cleanup of reused listview cell content ([#10603](https://github.com/NativeScript/NativeScript/issues/10603)) ([dca7718](https://github.com/NativeScript/NativeScript/commit/dca77183d1287309a564059402f3d12ca84e0a9a))
+* **ios:** proper drawing bounds for colored borders ([#10600](https://github.com/NativeScript/NativeScript/issues/10600)) ([75c8e94](https://github.com/NativeScript/NativeScript/commit/75c8e941a021511381a0c57b7e3535551471218b))
+* **ios:** replace deprecated UIApplication.shared.openUrl method call ([#10627](https://github.com/NativeScript/NativeScript/issues/10627)) ([1cee35d](https://github.com/NativeScript/NativeScript/commit/1cee35d4fb2b7eaaa7fbd6aa08b28e3e00dcc7dc))
+* **layout:** prevent negative width/height values ([#10616](https://github.com/NativeScript/NativeScript/issues/10616)) ([0506012](https://github.com/NativeScript/NativeScript/commit/050601232ac4f424e9d3ba6b711f3ada4afe253b))
+
+
+### Features
+
+* **core:** added css class for styling dialog nested elements ([#10605](https://github.com/NativeScript/NativeScript/issues/10605)) ([6104b5b](https://github.com/NativeScript/NativeScript/commit/6104b5bfa30d915bd6e4092c9451f6d87043dd60))
+
+
+### Performance Improvements
+
+* **core:** avoid setting the same value to view properties ([#10602](https://github.com/NativeScript/NativeScript/issues/10602)) ([499fe8d](https://github.com/NativeScript/NativeScript/commit/499fe8dc82db623550a38d3f91eb9f9252304e31))
+
+
+
 ## [8.8.1](https://github.com/NativeScript/NativeScript/compare/8.8.0-core...8.8.1) (2024-07-12)
 
 

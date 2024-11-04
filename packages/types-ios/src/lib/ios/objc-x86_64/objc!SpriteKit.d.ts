@@ -1258,6 +1258,8 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	 */
 	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
 
+	readonly focusItemDeferralMode: UIFocusItemDeferralMode; // inherited from UIFocusItem
+
 	/**
 	 * @since 12.0
 	 */

@@ -14,7 +14,7 @@
 	"overrides": [
 		{
 			"files": ["*.ts", "*.tsx"],
-			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
+			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
 			"rules": {
 				"no-empty": "off",
 				"no-useless-escape": "off",
@@ -30,15 +30,13 @@
 				"@typescript-eslint/no-this-alias": "warn",
 				"@typescript-eslint/no-namespace": "off",
 				"@typescript-eslint/no-inferrable-types": "off",
-				"@typescript-eslint/no-extra-semi": "error",
-				"no-extra-semi": "off"
+				"prettier/prettier": "warn"
 			}
 		},
 		{
 			"files": ["*.js", "*.jsx"],
 			"rules": {
-				"@typescript-eslint/no-extra-semi": "error",
-				"no-extra-semi": "off"
+				"prettier/prettier": "warn"
 			}
 		},
 		{
@@ -50,7 +48,9 @@
 		{
 			"files": "*.json",
 			"parser": "jsonc-eslint-parser",
-			"rules": {}
+			"rules": {
+				"prettier/prettier": "warn"
+			}
 		}
 	]
 }

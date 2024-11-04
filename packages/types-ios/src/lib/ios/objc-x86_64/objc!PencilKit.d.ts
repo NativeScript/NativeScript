@@ -136,6 +136,8 @@ interface PKCanvasViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 
 	canvasViewDidFinishRendering?(canvasView: PKCanvasView): void;
 
+	canvasViewDidRefineStrokesWithNewStrokes?(canvasView: PKCanvasView, strokes: NSArray<PKStroke> | PKStroke[], newStrokes: NSArray<any> | any[]): void;
+
 	canvasViewDrawingDidChange?(canvasView: PKCanvasView): void;
 }
 declare var PKCanvasViewDelegate: {
