@@ -1,3 +1,66 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [8.8.8](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.7...@akylas/nativescript@8.8.8) (2024-11-07)
+
+
+### Bug Fixes
+
+* **core:** corrected references in file system access ([#10644](https://github.com/NativeScript/NativeScript/issues/10644)) ([e5caa2c](https://github.com/NativeScript/NativeScript/commit/e5caa2cc539a5c78b6cb3c467d3204a8724fd5df))
+* **core:** proper line-height calculation ([#10642](https://github.com/NativeScript/NativeScript/issues/10642)) ([ec7fa5d](https://github.com/NativeScript/NativeScript/commit/ec7fa5d05e68f7ee2bc6025aa8f0af7309e5ff92))
+* Frame onLoaded should not load pages in backstack ([8544e1b](https://github.com/NativeScript/NativeScript/commit/8544e1bded308e5454124168482da2789cdf78e8))
+* **ios:** anti-aliasing for accurate borders ([#10619](https://github.com/NativeScript/NativeScript/issues/10619)) ([4f46815](https://github.com/NativeScript/NativeScript/commit/4f46815b27cc8a0840e81e802e54bcaec90cfe26))
+* **ios:** replace deprecated UIApplication.shared.openUrl method call ([#10627](https://github.com/NativeScript/NativeScript/issues/10627)) ([1cee35d](https://github.com/NativeScript/NativeScript/commit/1cee35d4fb2b7eaaa7fbd6aa08b28e3e00dcc7dc))
+
+## [8.8.7](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.6...@akylas/nativescript@8.8.7) (2024-10-14)
+
+**Note:** Version bump only for package @akylas/nativescript
+
+## 8.8.6 (2024-10-14)
+
+### Bug Fixes
+
+* **android:** `path.join` now supports SAF paths (to be tested among more paths) ([8d9a7ae](https://github.com/NativeScript/NativeScript/commit/8d9a7aea8c6d997b5702089ecc5060c636da0f0e))
+
+## 8.8.5-core (2024-10-10)
+
+### Features
+
+* **core:** added css class for styling dialog nested elements ([#10605](https://github.com/NativeScript/NativeScript/issues/10605)) ([6104b5b](https://github.com/NativeScript/NativeScript/commit/6104b5bfa30d915bd6e4092c9451f6d87043dd60))
+
+### Bug Fixes
+
+* **android:** `onConfigurationChanged` now calls what needed only when needed ([633e9d6](https://github.com/NativeScript/NativeScript/commit/633e9d6bba9f24d604c705467baad59e81f1bb8c))
+* **android:** custom animation `android.style` for `showModal` ([aa15af8](https://github.com/NativeScript/NativeScript/commit/aa15af8135386588e3f1e7e6a3ac1a887ec8a67a))
+* **android:** layout change listeners are ignored when using addEventListener ([#10597](https://github.com/NativeScript/NativeScript/issues/10597)) ([89fa6ec](https://github.com/NativeScript/NativeScript/commit/89fa6ec84db8c40546b2fcc2fd151c49f1cae8c0))
+* **android:** multiple fixes for handling content:// operations in file-system ([b3f06a5](https://github.com/NativeScript/NativeScript/commit/b3f06a566f31b3c9df2704c10a5d59803372897c))
+* **android:** new `configurationChange` and refactored types ([3c8d22d](https://github.com/NativeScript/NativeScript/commit/3c8d22d9c22f9428e34223a9757f5815a0040e3e))
+* **android:** new `dialogOnCreateView` event on `Application.android` ([a1b9923](https://github.com/NativeScript/NativeScript/commit/a1b992308170b46b4a4e509c674493fb7036e6be))
+* **android:** prevent error while using SAF paths ([15a566d](https://github.com/NativeScript/NativeScript/commit/15a566dc3e86c3f261eb2f09a1f4794a3c7d8df5))
+* **android:** regression after merge ([0a44ce9](https://github.com/NativeScript/NativeScript/commit/0a44ce92c9ce4c91ba9446e4008513c07c791504))
+* **android:** RootLayout shade cover null color handling ([#10599](https://github.com/NativeScript/NativeScript/issues/10599)) ([f7b9d06](https://github.com/NativeScript/NativeScript/commit/f7b9d06e9123f67377a29cf96d21f420fbabd520))
+* **android:** targetSdk 34 registerBroadcastReceiver ([#10585](https://github.com/NativeScript/NativeScript/issues/10585)) ([4c70596](https://github.com/NativeScript/NativeScript/commit/4c705967d20817c55bac73c21701a96e60874da7))
+* **color:** four-digit hex color parse failure ([#10593](https://github.com/NativeScript/NativeScript/issues/10593)) ([8877bec](https://github.com/NativeScript/NativeScript/commit/8877becdf9e18ad2edd2fb5888590f3f2645c53e))
+* **core:** android fix if folder content cant be acquired ([7e2fba8](https://github.com/NativeScript/NativeScript/commit/7e2fba82db931ea914d620a27d39f4b540914d7d))
+* **core:** include everything but core.aar in android platforms ([#10592](https://github.com/NativeScript/NativeScript/issues/10592)) ([423a2d2](https://github.com/NativeScript/NativeScript/commit/423a2d2dce16ce42d9489f04294d8a5c8d094ea7))
+* **core:** iOS fix for showModal just after another modal still dismissing ([dce30ab](https://github.com/NativeScript/NativeScript/commit/dce30abc89d127d20648bdcaf50ae24559a4cad6))
+* fix for GridLayout and external UI frameworks which could not compare colums/rows to existing property ([a05201f](https://github.com/NativeScript/NativeScript/commit/a05201f5d0303c8fe1f7b1548aa77485f15becb9))
+* Folder and File now have a `isFolder` property ([a91cd15](https://github.com/NativeScript/NativeScript/commit/a91cd1591d780b0cbd9948ddf104d031d5d8e0b8))
+* import fixes ([feb958e](https://github.com/NativeScript/NativeScript/commit/feb958e4e15a13693dc51118a3dc00625b43c8b2))
+* **ios:** ApplicationSettings.getAllJSON now uses native method ([4cd08ed](https://github.com/NativeScript/NativeScript/commit/4cd08edda3b43d73f4cc686459d3f26df69d887d))
+* **ios:** correct error on `ImageSource.saveToFileAsync` when no native image is passed ([4ecf43e](https://github.com/NativeScript/NativeScript/commit/4ecf43ef1778ed4b0604a20877fe8e8093233800))
+* **ios:** popover delegate should ignore non-native views ([#10609](https://github.com/NativeScript/NativeScript/issues/10609)) ([ba3316e](https://github.com/NativeScript/NativeScript/commit/ba3316e7494730e2a2e069ef1822f02300aa62de))
+* **ios:** proper cleanup of reused listview cell content ([#10603](https://github.com/NativeScript/NativeScript/issues/10603)) ([dca7718](https://github.com/NativeScript/NativeScript/commit/dca77183d1287309a564059402f3d12ca84e0a9a))
+* **ios:** proper drawing bounds for colored borders ([#10600](https://github.com/NativeScript/NativeScript/issues/10600)) ([75c8e94](https://github.com/NativeScript/NativeScript/commit/75c8e941a021511381a0c57b7e3535551471218b))
+* **layout:** prevent negative width/height values ([#10616](https://github.com/NativeScript/NativeScript/issues/10616)) ([0506012](https://github.com/NativeScript/NativeScript/commit/050601232ac4f424e9d3ba6b711f3ada4afe253b))
+* new `sharedElementFrom` and `sharedElementTo` events to handle custom sharedElements. The events has a `views` array that you can fill ([ad0a35a](https://github.com/NativeScript/NativeScript/commit/ad0a35a73ea8ab83e8294cd9b15642b27f4ed356))
+
+### Reverts
+
+* Revert "chore: trick to get Typings to work correctly. Application event object was using `ApplicationCommon | Observable` which is not compatible with `Observable`. Rendering `Observable` optional with `OptionalAll` did the trick" ([92e9d4d](https://github.com/NativeScript/NativeScript/commit/92e9d4d70369b93ee34e94fc2b937c0553ac8d8f))
+
+
 ## [8.8.4](https://github.com/NativeScript/NativeScript/compare/8.8.3-core...8.8.4) (2024-10-24)
 
 
