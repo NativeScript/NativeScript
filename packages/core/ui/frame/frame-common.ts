@@ -116,10 +116,15 @@ export class FrameBase extends CustomLayoutView {
 	public _addChildFromBuilder(name: string, value: any) {
 		throw new Error(`Frame should not have a view. Use 'defaultPage' property instead.`);
 	}
-
+	inOnLoaded = false;
 	@profile
 	public onLoaded() {
+		console.log('Frame', 'onLoaded');
+
+		// there we dont want to call "loadView" on pages in the backstack as they are not visible
+		this.inOnLoaded = true;
 		super.onLoaded();
+		this.inOnLoaded = false;
 
 		this._processNextNavigationEntry();
 	}
@@ -560,6 +565,9 @@ export class FrameBase extends CustomLayoutView {
 		const page = this._resolvedPage;
 		if (page) {
 			callback(page);
+		}
+		if (this.inOnLoaded) {
+			return;
 		}
 		for (let index = 0; index < this.backStack.length; index++) {
 			const backstackEntry = this.backStack[index];
