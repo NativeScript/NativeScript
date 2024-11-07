@@ -1,7 +1,17 @@
-# Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [8.8.8](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.7...@akylas/nativescript@8.8.8) (2024-11-07)
+
+
+### Bug Fixes
+
+* **core:** corrected references in file system access ([#10644](https://github.com/NativeScript/NativeScript/issues/10644)) ([e5caa2c](https://github.com/NativeScript/NativeScript/commit/e5caa2cc539a5c78b6cb3c467d3204a8724fd5df))
+* **core:** proper line-height calculation ([#10642](https://github.com/NativeScript/NativeScript/issues/10642)) ([ec7fa5d](https://github.com/NativeScript/NativeScript/commit/ec7fa5d05e68f7ee2bc6025aa8f0af7309e5ff92))
+* Frame onLoaded should not load pages in backstack ([8544e1b](https://github.com/NativeScript/NativeScript/commit/8544e1bded308e5454124168482da2789cdf78e8))
+* **ios:** anti-aliasing for accurate borders ([#10619](https://github.com/NativeScript/NativeScript/issues/10619)) ([4f46815](https://github.com/NativeScript/NativeScript/commit/4f46815b27cc8a0840e81e802e54bcaec90cfe26))
+* **ios:** replace deprecated UIApplication.shared.openUrl method call ([#10627](https://github.com/NativeScript/NativeScript/issues/10627)) ([1cee35d](https://github.com/NativeScript/NativeScript/commit/1cee35d4fb2b7eaaa7fbd6aa08b28e3e00dcc7dc))
 
 ## [8.8.7](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.6...@akylas/nativescript@8.8.7) (2024-10-14)
 
