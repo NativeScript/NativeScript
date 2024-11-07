@@ -30,7 +30,7 @@
     "core:test": "jest --config packages/core/jest.config.ts",
     "core:unit": "cd packages/core/__tests__ ; tsc ; mocha",
     "core:unit.watch": "cd packages/core/__tests__ ; tsc ; mocha --watch",
-    "core:publish": "lerna-lite version --scope @akylas/nativescript --conventional-commits --bump patch && npm run core:build.full && lerna-lite publish from-package --scope @akylas/nativescript",
+    "core:publish": "lerna version --scope @akylas/nativescript --conventional-commits && npm run core:build.full && lerna publish from-package --scope @akylas/nativescript",
     "core-compat:build": "cd packages/core-compat ; rimraf node_modules package-lock.json ; $npm_package_config_npm_alias i  ; tsc -p tsconfig.json ; mv \"$(npm pack | tail -n 1)\" ../../dist/packages/tns-core-modules.tgz",
     "doc:build": "rimraf dist/api-reference; npx typedoc --tsconfig ./tools/scripts/tsconfig.typedoc.json",
     "types-ios:lint": "cd packages/types-ios ; eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/types-ios/**",
