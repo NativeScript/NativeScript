@@ -1029,9 +1029,7 @@ export namespace path {
 	}
 
 	export function join(...paths: string[]): string {
-		const fileAccess = getFileAccess();
-
-		return fileAccess.joinPaths(paths);
+		return getFileAccess().joinPaths(paths);
 	}
 
 	export const separator = getFileAccess().getPathSeparator();

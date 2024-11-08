@@ -1,0 +1,21 @@
+{
+	"version": "independent",
+	"$schema": "node_modules/@lerna-lite/cli/schemas/lerna-schema.json",
+	"packages": ["packages/webpack5", "packages/types-android", "packages/types-ios", "packages/types-minimal", "packages/types", "dist/packages/core"],
+	"loglevel": "silly",
+	"npmClient": "yarn",
+	"useWorkspaces": false,
+	"command": {
+		"publish": {
+			"cleanupTempFiles": true
+		}
+	},
+	"npmClientArgs": ["--no-package-lock"],
+	"commitHooks": false,
+	"createRelease": "github",
+	"conventionalCommits": true,
+	"private": false,
+	"message": "chore(release): publish new version %v",
+	"changelogPreset": "conventional-changelog-conventionalcommits",
+	"ignoreChanges": []
+}

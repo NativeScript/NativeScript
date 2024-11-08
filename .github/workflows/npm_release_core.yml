@@ -1,43 +1,103 @@
 name: '@nativescript/core -> npm'
 
 on:
-  push:
-    branches: [ 'main' ]
-    paths:
-      - 'packages/core/**'
   workflow_dispatch:
+    inputs:
+      release_type:
+        type: choice
+        default: auto
+        description: What kind of version upgrade
+        options: 
+        - auto
+        - patch
+        - minor
+        - major
 
-env:
-  NPM_TAG: 'next'
 
 jobs:
   release:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+          submodules: true
 
-      - name: Setup
-        run: npm run setup
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
+      
+      - uses: oNaiPs/secrets-to-env-action@v1
+        with:
+          secrets: ${{ toJSON(secrets) }}
 
-      - name: Generate Version
-        working-directory: packages/core
-        run: |
-          echo NPM_VERSION=$(node -e "console.log(require('./package.json').version);")-$NPM_TAG-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID >> $GITHUB_ENV
-
-      - name: Bump Version
-        working-directory: packages/core
-        run: npm version $NPM_VERSION
-
-      # TODO: build ui-mobile-base first
-      - name: Build @nativescript/core
-        run: npm run core:build
-
-      - name: Publish @nativescript/core
-        working-directory: dist/packages
+      - uses: oleksiyrudenko/gha-git-credentials@v2-latest
+        with:
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          name: Martin Guillon
+          email: dev@akylas.fr
+      
+      - name: "NPM Identity"
         env:
-          NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../../.npmrc
-          echo "Publishing @nativescript/core@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+
+      - name: Enable CorePack
+        run: |
+          corepack enable 
+          yarn config get globalFolder # the yarn command will ensure the correct yarn version is downloaded and installed
+
+
+          - name: Get yarn cache directory path
+          id: yarn-cache-dir-path
+          run: echo "::set-output name=dir::$(yarn config get globalFolder)"
+
+      - uses: actions/cache@v4
+        name: Handle node_modules Cache
+        id: yarn-node_modules # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-node_modules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node_modules-
+
+      - uses: actions/cache@v4
+        if: steps.yarn-node_modules.outputs.cache-hit != 'true'
+        name: Handle Yarn cache
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install deps
+        if: steps.yarn-node_modules.outputs.cache-hit != 'true'
+        uses: bahmutov/npm-install@v1
+        with:
+          install-command: yarn install --silent
+        env: 
+          YARN_ENABLE_IMMUTABLE_INSTALLS: false
+  
+
+      - name: publish auto
+        if: github.event.inputs.release_type == 'auto'
+        run: |
+          npm run publish -- --force-publish --no-verify-access --no-private --no-commit-hooks --yes
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: publish
+        if: github.event.inputs.release_type != 'auto'
+        run: |
+          npm run publish -- --force-publish --no-verify-access --no-private --no-commit-hooks --yes --bump ${{ github.event.inputs.release_type }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

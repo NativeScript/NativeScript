@@ -10,7 +10,7 @@
 	},
 	"targets": {
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/eslint:lint",
 			"options": {
 				"lintFilePatterns": ["packages/core/**/*.ts", "packages/core/references.d.ts", "packages/core/**/*.spec.ts", "packages/core/**/*.spec.tsx", "packages/core/**/*.spec.js", "packages/core/**/*.spec.jsx", "packages/core/**/*.d.ts"]
 			}

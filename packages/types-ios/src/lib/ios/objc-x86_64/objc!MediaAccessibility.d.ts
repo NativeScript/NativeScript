@@ -131,6 +131,11 @@ declare function MACaptionAppearanceGetWindowOpacity(domain: MACaptionAppearance
 declare function MACaptionAppearanceGetWindowRoundedCornerRadius(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
 
 /**
+ * @since 18.0
+ */
+declare function MACaptionAppearanceIsCustomized(domain: MACaptionAppearanceDomain): boolean;
+
+/**
  * @since 7.0
  */
 declare function MACaptionAppearanceSetDisplayType(domain: MACaptionAppearanceDomain, displayType: MACaptionAppearanceDisplayType): void;

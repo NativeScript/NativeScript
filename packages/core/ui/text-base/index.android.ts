@@ -1,23 +1,22 @@
 // Types
-import { getClosestPropertyValue, maxLinesProperty, textOverflowProperty } from './text-base-common';
 import { ShadowCSSValues } from '../styling/css-shadow';
+import { getClosestPropertyValue, maxLinesProperty, textOverflowProperty } from './text-base-common';
 
 // Requires
-import { Font } from '../styling/font';
-import { backgroundColorProperty } from '../styling/style-properties';
-import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
+import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
-import { StrokeCSSValues } from '../styling/css-stroke';
-import { FormattedString } from './formatted-string';
-import { Span } from './span';
 import { CoreTypes } from '../../core-types';
+import { testIDProperty } from '../../ui/core/view';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
-import { isString, isNullOrUndefined } from '../../utils/types';
-import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
-import { testIDProperty } from '../../ui/core/view';
+import { isString } from '../../utils/types';
 import { _getStoredClassDefaultPropertyValue } from '../core/properties';
+import { StrokeCSSValues } from '../styling/css-stroke';
+import { Font } from '../styling/font';
+import { Length, backgroundColorProperty, colorProperty, fontInternalProperty, fontSizeProperty, paddingBottomProperty, paddingLeftProperty, paddingRightProperty, paddingTopProperty } from '../styling/style-properties';
+import { FormattedString } from './formatted-string';
+import { Span } from './span';
+import { TextBaseCommon, formattedTextProperty, isBold, letterSpacingProperty, lineHeightProperty, resetSymbol, textAlignmentProperty, textDecorationProperty, textProperty, textShadowProperty, textStrokeProperty, textTransformProperty, whiteSpaceProperty } from './text-base-common';
 
 export * from './text-base-common';
 
@@ -346,10 +345,20 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[lineHeightProperty.getDefault](): number {
-		return _getStoredClassDefaultPropertyValue(lineHeightProperty, this, () => this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity());
+		return _getStoredClassDefaultPropertyValue(lineHeightProperty, this, () => this.nativeTextViewProtected.getLineHeight() / layout.getDisplayDensity());
 	}
 	[lineHeightProperty.setNative](value: number) {
-		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
+		const dpValue = value * layout.getDisplayDensity();
+
+		if (SDK_VERSION >= 28) {
+			this.nativeTextViewProtected.setLineHeight(dpValue);
+		} else {
+			const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
+			// Actual line spacing is the diff of line height and font height
+			const lineSpacing = Math.max(dpValue - fontHeight, 0);
+
+			this.nativeTextViewProtected.setLineSpacing(lineSpacing, 1);
+		}
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
@@ -358,6 +367,9 @@ export class TextBase extends TextBaseCommon {
 	[fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
 		if (!this.formattedText || !(value instanceof Font)) {
 			this.nativeTextViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+			if (SDK_VERSION < 28 && this.lineHeight !== undefined) {
+				this[lineHeightProperty.setNative](this.lineHeight);
+			}
 		}
 	}
 

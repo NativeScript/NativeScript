@@ -187,6 +187,26 @@ declare const enum HKAppleECGAlgorithmVersion {
 }
 
 /**
+ * @since 18.0
+ */
+declare const enum HKAppleSleepingBreathingDisturbancesClassification {
+
+	NotElevated = 0,
+
+	Elevated = 1
+}
+
+/**
+ * @since 18.0
+ */
+declare function HKAppleSleepingBreathingDisturbancesClassificationForQuantity(value: HKQuantity): number;
+
+/**
+ * @since 18.0
+ */
+declare function HKAppleSleepingBreathingDisturbancesMinimumQuantityForClassification(classification: HKAppleSleepingBreathingDisturbancesClassification): HKQuantity;
+
+/**
  * @since 15.0
  */
 declare const enum HKAppleWalkingSteadinessClassification {
@@ -270,12 +290,29 @@ declare class HKAttachmentStore extends NSObject {
 }
 
 /**
+ * @since 18.1
+ */
+declare const enum HKAudiogramConductionType {
+
+	Air = 0
+}
+
+/**
  * @since 13.0
  */
 declare class HKAudiogramSample extends HKSample {
 
 	static alloc(): HKAudiogramSample; // inherited from NSObject
 
+	/**
+	 * @since 18.1
+	 */
+	static audiogramSampleWithSensitivityPointsStartDateEndDateDeviceMetadata(sensitivityPoints: NSArray<HKAudiogramSensitivityPoint> | HKAudiogramSensitivityPoint[], startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKAudiogramSample;
+
+	/**
+	 * @since 13.0
+	 * @deprecated 18.1
+	 */
 	static audiogramSampleWithSensitivityPointsStartDateEndDateMetadata(sensitivityPoints: NSArray<HKAudiogramSensitivityPoint> | HKAudiogramSensitivityPoint[], startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKAudiogramSample;
 
 	static new(): HKAudiogramSample; // inherited from NSObject
@@ -302,13 +339,35 @@ declare class HKAudiogramSensitivityPoint extends NSObject implements NSSecureCo
 
 	static new(): HKAudiogramSensitivityPoint; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 * @deprecated 18.1
+	 */
 	static sensitivityPointWithFrequencyLeftEarSensitivityRightEarSensitivityError(frequency: HKQuantity, leftEarSensitivity: HKQuantity, rightEarSensitivity: HKQuantity): HKAudiogramSensitivityPoint;
+
+	/**
+	 * @since 18.1
+	 */
+	static sensitivityPointWithFrequencyTestsError(frequency: HKQuantity, tests: NSArray<HKAudiogramSensitivityTest> | HKAudiogramSensitivityTest[]): HKAudiogramSensitivityPoint;
 
 	readonly frequency: HKQuantity;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 18.1
+	 */
 	readonly leftEarSensitivity: HKQuantity;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 18.1
+	 */
 	readonly rightEarSensitivity: HKQuantity;
+
+	/**
+	 * @since 18.1
+	 */
+	readonly tests: NSArray<HKAudiogramSensitivityTest>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -317,6 +376,76 @@ declare class HKAudiogramSensitivityPoint extends NSObject implements NSSecureCo
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.1
+ */
+declare class HKAudiogramSensitivityPointClampingRange extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKAudiogramSensitivityPointClampingRange; // inherited from NSObject
+
+	static clampingRangeWithLowerBoundUpperBoundError(lowerBound: number, upperBound: number): HKAudiogramSensitivityPointClampingRange;
+
+	static new(): HKAudiogramSensitivityPointClampingRange; // inherited from NSObject
+
+	readonly lowerBound: HKQuantity;
+
+	readonly upperBound: HKQuantity;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.1
+ */
+declare class HKAudiogramSensitivityTest extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKAudiogramSensitivityTest; // inherited from NSObject
+
+	static new(): HKAudiogramSensitivityTest; // inherited from NSObject
+
+	readonly clampingRange: HKAudiogramSensitivityPointClampingRange;
+
+	readonly masked: boolean;
+
+	readonly sensitivity: HKQuantity;
+
+	readonly side: HKAudiogramSensitivityTestSide;
+
+	readonly type: HKAudiogramConductionType;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { sensitivity: HKQuantity; type: HKAudiogramConductionType; masked: boolean; side: HKAudiogramSensitivityTestSide; clampingRange: HKAudiogramSensitivityPointClampingRange; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithSensitivityTypeMaskedSideClampingRangeError(sensitivity: HKQuantity, type: HKAudiogramConductionType, masked: boolean, side: HKAudiogramSensitivityTestSide, clampingRange: HKAudiogramSensitivityPointClampingRange): this;
+}
+
+/**
+ * @since 18.1
+ */
+declare const enum HKAudiogramSensitivityTestSide {
+
+	Left = 0,
+
+	Right = 1
 }
 
 /**
@@ -857,6 +986,11 @@ declare var HKCategoryTypeIdentifierSkippedHeartbeat: string;
  * @since 8.0
  */
 declare var HKCategoryTypeIdentifierSleepAnalysis: string;
+
+/**
+ * @since 18.0
+ */
+declare var HKCategoryTypeIdentifierSleepApneaEvent: string;
 
 /**
  * @since 13.6
@@ -3384,6 +3518,11 @@ declare var HKQuantityTypeIdentifierAppleExerciseTime: string;
  * @since 14.5
  */
 declare var HKQuantityTypeIdentifierAppleMoveTime: string;
+
+/**
+ * @since 18.0
+ */
+declare var HKQuantityTypeIdentifierAppleSleepingBreathingDisturbances: string;
 
 /**
  * @since 16.0
