@@ -15,8 +15,8 @@
     }
     BOOL isTextType = [self isKindOfClass:[UITextField class]] || [self isKindOfClass:[UITextView class]] | [self isKindOfClass:[UILabel class]] | [self isKindOfClass:[UIButton class]];
     
-    if (letterSpacing != 0 && isTextType && ((UITextView*)self).font != nil) {
-        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
+    if (letterSpacing != 0 && isTextType) {
+        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing];
         attrDict[NSKernAttributeName] = kern;
         if ([self isKindOfClass:[UITextField class]]) {
             [((UITextField*)self).defaultTextAttributes setValue:kern forKey:NSKernAttributeName];
@@ -30,8 +30,16 @@
         // make sure a possible previously set text alignment setting is not lost when line height is specified
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;
+
+            if (((UIButton*)self).titleLabel.font) {
+                paragraphStyle.lineSpacing = lineHeight - ((UIButton*)self).titleLabel.font.lineHeight;
+            }
         } else {
             paragraphStyle.alignment = ((UILabel*)self).textAlignment;
+
+            if (((UILabel*)self).font) {
+                paragraphStyle.lineSpacing = lineHeight - ((UILabel*)self).font.lineHeight;
+            }
         }
         
         if ([self isKindOfClass:[UILabel class]]) {
@@ -78,7 +86,7 @@
 -(void)nativeScriptSetFormattedTextDecorationAndTransform:(NSDictionary*)details letterSpacing:(CGFloat)letterSpacing lineHeight:(CGFloat)lineHeight {
     NSMutableAttributedString *attrText = [NativeScriptUtils createMutableStringWithDetails:details];
     if (letterSpacing != 0) {
-        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
+        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing];
         [attrText addAttribute:NSKernAttributeName value:kern range:(NSRange){
             0,
             attrText.length
@@ -92,9 +100,17 @@
         // make sure a possible previously set text alignment setting is not lost when line height is specified
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;
+
+            if (((UIButton*)self).titleLabel.font) {
+                paragraphStyle.lineSpacing = lineHeight - ((UIButton*)self).titleLabel.font.lineHeight;
+            }
         } else {
             // Paragraph alignment is also important for tappable spans as NSTextContainer takes it into account
             paragraphStyle.alignment = ((UILabel*)self).textAlignment;
+
+            if (((UILabel*)self).font) {
+                paragraphStyle.lineSpacing = lineHeight - ((UILabel*)self).font.lineHeight;
+            }
         }
         
         if (isLabel) {

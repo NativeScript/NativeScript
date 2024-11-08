@@ -360,15 +360,24 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[fontSizeProperty.getDefault](): { nativeSize: number } {
-		return { nativeSize: this.nativeTextViewProtected.getTextSize() };
+	[fontSizeProperty.getDefault](): number {
+		return this.nativeTextViewProtected.getTextSize() / layout.getDisplayDensity();
 	}
-	[fontSizeProperty.setNative](value: number | { nativeSize: number }) {
-		if (!this.formattedText || typeof value !== 'number') {
-			if (typeof value === 'number') {
-				this.nativeTextViewProtected.setTextSize(value);
-			} else {
-				this.nativeTextViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+	[fontSizeProperty.setNative](value: number) {
+		if (!this.formattedText) {
+			this.nativeTextViewProtected.setTextSize(value);
+
+			// Re-calculate line-height
+			if (this.lineHeight != 0) {
+				// It's done automatically for API 28+
+				if (SDK_VERSION < 28) {
+					this._setLineHeightLegacy(this.lineHeight);
+				}
+			}
+
+			// Re-calculate letter-spacing
+			if (this.letterSpacing != 0) {
+				this._updateLetterSpacing(this.letterSpacing);
 			}
 		}
 	}
@@ -433,10 +442,10 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[letterSpacingProperty.getDefault](): number {
-		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
+		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected) * this.fontSize;
 	}
 	[letterSpacingProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
+		this._updateLetterSpacing(value);
 	}
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
@@ -483,6 +492,20 @@ export class TextBase extends TextBaseCommon {
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
 			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
 		}
+	}
+
+	_setLineHeightLegacy(value: number): void {
+		const dpValue = value * layout.getDisplayDensity();
+		const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
+		// Actual line spacing is the diff of line height and font height
+		const lineSpacing = Math.max(dpValue - fontHeight, 0);
+
+		this.nativeTextViewProtected.setLineSpacing(lineSpacing, 1);
+	}
+
+	_updateLetterSpacing(value: number): void {
+		const emValue = value / this.fontSize;
+		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, emValue);
 	}
 
 	_setNativeText(reset = false): void {
