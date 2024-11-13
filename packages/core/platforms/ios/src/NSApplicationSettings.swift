@@ -46,7 +46,9 @@ class NSApplicationSettings : NSObject {
             
             if let valueClassString = valueClassString {
                 var formattedValueClassString = valueClassString
-                
+                if valueClassString == "__NSCFData" {
+                    return
+                }
                 // Remove '__' prefix if present
                 if formattedValueClassString.hasPrefix("__") {
                     formattedValueClassString.removeFirst(2)
