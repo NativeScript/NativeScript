@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.8.9](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.8...@akylas/nativescript@8.8.9) (2024-11-13)
+
+
+### Bug Fixes
+
+* **ios:** getAllJSON fix ([261bf86](https://github.com/NativeScript/NativeScript/commit/261bf8600972d125ce831c5f6b99933827690732))
+* **ios:** prevent `ApplicationSettings.getAllJSON` error ([ea85225](https://github.com/NativeScript/NativeScript/commit/ea85225299634662ae45abd7fbef7adf92f8d348))
+
 ### [8.8.8](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.7...@akylas/nativescript@8.8.8) (2024-11-07)
 
 
