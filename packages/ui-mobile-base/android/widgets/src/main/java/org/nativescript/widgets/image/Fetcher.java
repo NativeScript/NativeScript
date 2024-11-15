@@ -547,7 +547,6 @@ public class Fetcher extends Worker {
 		int sourceWidth = bitmap.getWidth();
 		int sourceHeight = bitmap.getHeight();
 
-		// TODO: Consider removing this as background images have no size specified and these limits could affect spritesheets
 		reqWidth = reqWidth > 0 ? reqWidth : Math.min(sourceWidth, mDeviceWidthPixels);
 		reqHeight = reqHeight > 0 ? reqHeight : Math.min(sourceHeight, mDeviceHeightPixels);
 
