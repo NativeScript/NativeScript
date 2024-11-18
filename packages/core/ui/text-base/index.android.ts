@@ -367,14 +367,6 @@ export class TextBase extends TextBaseCommon {
 		if (!this.formattedText) {
 			this.nativeTextViewProtected.setTextSize(value);
 
-			// Re-calculate line-height
-			if (this.lineHeight != 0) {
-				// It's done automatically for API 28+
-				if (SDK_VERSION < 28) {
-					this._setLineHeightLegacy(this.lineHeight);
-				}
-			}
-
 			// Re-calculate letter-spacing
 			if (this.letterSpacing != 0) {
 				this._updateLetterSpacing(this.letterSpacing);
@@ -492,15 +484,6 @@ export class TextBase extends TextBaseCommon {
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
 			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
 		}
-	}
-
-	_setLineHeightLegacy(value: number): void {
-		const dpValue = value * layout.getDisplayDensity();
-		const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
-		// Actual line spacing is the diff of line height and font height
-		const lineSpacing = Math.max(dpValue - fontHeight, 0);
-
-		this.nativeTextViewProtected.setLineSpacing(lineSpacing, 1);
 	}
 
 	_updateLetterSpacing(value: number): void {
