@@ -1132,7 +1132,8 @@ export class View extends ViewCommon {
 				nativeView.setBackground(backgroundDrawable);
 			}
 
-			if (backgroundDrawable) {
+			// Apply color to drawables when there is the need to maintain visual things like button ripple effect
+			if (this.needsNativeDrawableFill && backgroundDrawable) {
 				backgroundDrawable.mutate();
 
 				AndroidHelper.setDrawableColor(backgroundColor, backgroundDrawable);
