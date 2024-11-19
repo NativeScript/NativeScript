@@ -984,6 +984,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return true;
 	}
 
+	get needsNativeDrawableFill(): boolean {
+		return false;
+	}
+
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
 		this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
 	}
