@@ -18,6 +18,16 @@ export interface NavigationData extends EventData {
  */
 export class Frame extends FrameBase {
 	/**
+	 * String value used when hooking to navigatingTo event.
+	 */
+	public static readonly navigatingToEvent = 'navigatingTo';
+
+	/**
+	 * String value used when hooking to navigatedTo event.
+	 */
+	public static readonly navigatedToEvent = 'navigatedTo';
+
+	/**
 	 * @private
 	 */
 	_originalBackground?: any;
