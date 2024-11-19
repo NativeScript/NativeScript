@@ -17,44 +17,38 @@
 				"uglify": true,
 				"release": true,
 				"forDevice": true
-			}
+			},
+			"configurations": {}
 		},
-		"ios": {
-			"executor": "@nativescript/nx:build",
-			"inputs": ["default", "^production"],
-			"outputs": [],
+		"debug": {
+			"executor": "@nativescript/nx:debug",
 			"options": {
 				"noHmr": true,
-				"platform": "ios"
-			}
+				"uglify": false,
+				"release": false,
+				"forDevice": false,
+				"prepare": false
+			},
+			"configurations": {}
 		},
-		"vision": {
-			"executor": "@nativescript/nx:build",
-			"inputs": ["default", "^production"],
-			"outputs": [],
+		"prepare": {
+			"executor": "@nativescript/nx:prepare",
 			"options": {
 				"noHmr": true,
-				"debug": false,
-				"platform": "vision"
-			}
-		},
-		"android": {
-			"executor": "@nativescript/nx:build",
-			"inputs": ["default", "^production"],
-			"outputs": [],
-			"options": {
-				"noHmr": true,
-				"platform": "android"
-			}
+				"production": true,
+				"uglify": true,
+				"release": true,
+				"forDevice": true,
+				"prepare": true
+			},
+			"configurations": {}
 		},
 		"clean": {
-			"executor": "@nativescript/nx:build",
-			"options": {
-				"clean": true
-			}
+			"executor": "@nativescript/nx:clean",
+			"options": {}
 		},
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/eslint:lint",
 			"options": {
 				"lintFilePatterns": ["apps/automated/**/*.ts", "apps/automated/src/**/*.html"]
 			}

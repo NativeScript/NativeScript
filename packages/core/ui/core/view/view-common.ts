@@ -194,9 +194,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			}
 		}
 		super.onLoaded();
-		if (this.accessible) {
-			setupAccessibleView(this);
-		}
+
+		setupAccessibleView(this);
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -982,6 +981,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	get isLayoutRequired(): boolean {
 		return true;
+	}
+
+	get needsNativeDrawableFill(): boolean {
+		return false;
 	}
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {

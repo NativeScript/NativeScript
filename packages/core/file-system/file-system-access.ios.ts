@@ -274,7 +274,7 @@ export class FileSystemAccess {
 				try {
 					didRemove = fileManager.removeItemAtPathError(dest);
 					return fileManager.copyItemAtPathToPathError(src, dest);
-				} catch (error) {
+				} catch (exception) {
 					if (onError) {
 						if (didRemove) {
 							onError(error);
@@ -285,7 +285,7 @@ export class FileSystemAccess {
 				}
 			}
 			if (onError) {
-				onError(exception);
+				onError(error);
 			}
 		}
 
