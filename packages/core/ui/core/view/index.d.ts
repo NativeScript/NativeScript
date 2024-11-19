@@ -784,6 +784,10 @@ export abstract class View extends ViewCommon {
 	/**
 	 * @private
 	 */
+	get needsNativeDrawableFill(): boolean;
+	/**
+	 * @private
+	 */
 	_gestureObservers: any;
 	/**
 	 * @private
