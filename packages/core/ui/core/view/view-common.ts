@@ -194,9 +194,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			}
 		}
 		super.onLoaded();
-		if (this.accessible) {
-			setupAccessibleView(this);
-		}
+
+		setupAccessibleView(this);
 	}
 
 	public _closeAllModalViewsInternal(): boolean {

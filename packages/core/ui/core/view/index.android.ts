@@ -832,9 +832,7 @@ export class View extends ViewCommon {
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
 
-		if (value) {
-			updateAccessibilityProperties(this);
-		}
+		updateAccessibilityProperties(this);
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
