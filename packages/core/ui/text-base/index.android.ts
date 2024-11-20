@@ -4,10 +4,9 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
-import { backgroundColorProperty } from '../styling/style-properties';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
+import { backgroundColorProperty, colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
@@ -374,11 +373,29 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[lineHeightProperty.getDefault](): number {
-		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
+	[lineHeightProperty.getDefault](): CoreTypes.PercentLengthType {
+		return { value: this.nativeTextViewProtected.getLineHeight(), unit: 'px' };
 	}
-	[lineHeightProperty.setNative](value: number) {
-		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
+	[lineHeightProperty.setNative](value: CoreTypes.PercentLengthType) {
+		const lengthType = value;
+
+		if (!lengthType) {
+			this.nativeTextViewProtected.setLineSpacing(0, 1);
+		} else if (typeof lengthType !== 'number' && lengthType !== 'auto' && lengthType.unit === '%') {
+			this.nativeTextViewProtected.setLineSpacing(0, lengthType.value);
+		} else {
+			const dpValue = Length.toDevicePixels(lengthType, 0);
+
+			if (SDK_VERSION >= 28) {
+				this.nativeTextViewProtected.setLineHeight(dpValue);
+			} else {
+				const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
+				// Actual line spacing is the diff of line height and font height
+				const lineSpacing = Math.max(dpValue - fontHeight, 0);
+
+				this.nativeTextViewProtected.setLineSpacing(lineSpacing, 1);
+			}
+		}
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {

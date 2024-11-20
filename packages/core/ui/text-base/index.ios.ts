@@ -256,7 +256,7 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[lineHeightProperty.setNative](value: number) {
+	[lineHeightProperty.setNative](value: CoreTypes.PercentLengthType) {
 		this._setNativeText();
 	}
 
@@ -318,7 +318,8 @@ export class TextBase extends TextBaseCommon {
 			}
 
 			const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
-			const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
+			const lineHeight = this._calculateLineHeight();
+
 			if (this.formattedText) {
 				this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
 			} else {
@@ -330,6 +331,7 @@ export class TextBase extends TextBaseCommon {
 					this._setColor(UIColor.labelColor);
 				}
 			}
+
 			if (this.style?.textStroke) {
 				this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 			}
@@ -420,6 +422,23 @@ export class TextBase extends TextBaseCommon {
 		if (align === 'sub') {
 			return (font.descender - font.ascender) * 0.4;
 		}
+	}
+
+	private _calculateLineHeight(): number {
+		const lengthType = this.style.lineHeight;
+		const fontHeight = this.nativeTextViewProtected.font?.lineHeight || 0;
+
+		let lineHeight: number;
+
+		if (!lengthType) {
+			lineHeight = 0;
+		} else if (typeof lengthType !== 'number' && lengthType !== 'auto' && lengthType.unit === '%') {
+			lineHeight = lengthType.value * fontHeight;
+		} else {
+			lineHeight = layout.toDeviceIndependentPixels(Length.toDevicePixels(lengthType, 0));
+		}
+
+		return lineHeight;
 	}
 
 	_setShadow(value: ShadowCSSValues): void {

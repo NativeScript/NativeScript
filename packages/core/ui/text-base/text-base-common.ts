@@ -15,6 +15,7 @@ import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
 import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
 import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
+import { Length, PercentLength } from '../styling/style-properties';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
@@ -86,10 +87,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.letterSpacing = value;
 	}
 
-	get lineHeight(): number {
+	get lineHeight(): CoreTypes.PercentLengthType {
 		return this.style.lineHeight;
 	}
-	set lineHeight(value: number) {
+	set lineHeight(value: CoreTypes.PercentLengthType) {
 		this.style.lineHeight = value;
 	}
 
@@ -361,11 +362,12 @@ export const letterSpacingProperty = new InheritedCssProperty<Style, number>({
 });
 letterSpacingProperty.register(Style);
 
-export const lineHeightProperty = new InheritedCssProperty<Style, number>({
+export const lineHeightProperty = new InheritedCssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'lineHeight',
 	cssName: 'line-height',
 	affectsLayout: __APPLE__,
-	valueConverter: (v) => parseFloat(v),
+	equalityComparer: Length.equals,
+	valueConverter: PercentLength.parse,
 });
 lineHeightProperty.register(Style);
 

@@ -26,12 +26,20 @@
     BOOL isTextView = [self isKindOfClass:[UITextView class]];
     if (lineHeight > 0) {
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-        paragraphStyle.lineSpacing = lineHeight;
+
         // make sure a possible previously set text alignment setting is not lost when line height is specified
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;
+
+            if (((UIButton*)self).titleLabel.font) {
+                paragraphStyle.lineSpacing = fmax(lineHeight - ((UIButton*)self).titleLabel.font.lineHeight, 0);
+            }
         } else {
             paragraphStyle.alignment = ((UILabel*)self).textAlignment;
+
+            if (((UILabel*)self).font) {
+                paragraphStyle.lineSpacing = fmax(lineHeight - ((UILabel*)self).font.lineHeight, 0);
+            }
         }
         
         if ([self isKindOfClass:[UILabel class]]) {
@@ -88,13 +96,21 @@
     BOOL isLabel = [self isKindOfClass:[UILabel class]];
     if (lineHeight > 0) {
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-        paragraphStyle.lineSpacing = lineHeight;
+
         // make sure a possible previously set text alignment setting is not lost when line height is specified
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;
+
+            if (((UIButton*)self).titleLabel.font) {
+                paragraphStyle.lineSpacing = fmax(lineHeight - ((UIButton*)self).titleLabel.font.lineHeight, 0);
+            }
         } else {
             // Paragraph alignment is also important for tappable spans as NSTextContainer takes it into account
             paragraphStyle.alignment = ((UILabel*)self).textAlignment;
+
+            if (((UILabel*)self).font) {
+                paragraphStyle.lineSpacing = fmax(lineHeight - ((UILabel*)self).font.lineHeight, 0);
+            }
         }
         
         if (isLabel) {
