@@ -301,16 +301,20 @@ export class ImageSource implements ImageSourceDefinition {
 		return !!this.android;
 	}
 
-	public setNativeSource(source: any): void {
-		if (source && !(source instanceof android.graphics.Bitmap)) {
-			if (source instanceof android.graphics.drawable.Drawable) {
-				this.android = org.nativescript.widgets.Utils.getBitmapFromDrawable(source);
-				return;
-			}
+	public getNativeSource(): android.graphics.Bitmap | android.graphics.drawable.Drawable {
+		return this.android;
+	}
+
+	public setNativeSource(source: android.graphics.Bitmap | android.graphics.drawable.Drawable): void {
+		if (!source) {
+			this.android = null;
+		} else if (source instanceof android.graphics.Bitmap) {
+			this.android = source;
+		} else if (source instanceof android.graphics.drawable.Drawable) {
+			this.android = org.nativescript.widgets.Utils.getBitmapFromDrawable(source);
+		} else {
 			throw new Error('The method setNativeSource() expects an android.graphics.Bitmap or android.graphics.drawable.Drawable instance.');
 		}
-
-		this.android = source;
 	}
 
 	public saveToFile(path: string, format: 'png' | 'jpeg' | 'jpg', quality = 100): boolean {
