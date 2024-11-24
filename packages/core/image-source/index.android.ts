@@ -69,7 +69,7 @@ export class ImageSource implements ImageSourceDefinition {
 		this._rotationAngle = value;
 	}
 
-	constructor(nativeSource?: any) {
+	constructor(nativeSource?: android.graphics.Bitmap | android.graphics.drawable.Drawable) {
 		if (nativeSource) {
 			this.setNativeSource(nativeSource);
 		}
