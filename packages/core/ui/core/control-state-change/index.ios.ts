@@ -3,14 +3,20 @@ import { ControlStateChangeListener as ControlStateChangeListenerDefinition } fr
 
 @NativeClass
 class ObserverClass extends NSObject {
-	// NOTE: Refactor this - use Typescript property instead of strings....
-	observeValueForKeyPathOfObjectChangeContext(path: string) {
-		if (path === 'selected') {
-			this['_owner']._onSelectedChanged();
-		} else if (path === 'enabled') {
-			this['_owner']._onEnabledChanged();
-		} else if (path === 'highlighted') {
-			this['_owner']._onHighlightedChanged();
+	public callback: WeakRef<(state: string, add: boolean) => void>;
+
+	public static initWithCallback(callback: WeakRef<(state: string, add: boolean) => void>): ObserverClass {
+		const observer = <ObserverClass>ObserverClass.alloc().init();
+		observer.callback = callback;
+
+		return observer;
+	}
+
+	public observeValueForKeyPathOfObjectChangeContext(path: string, object: UIControl) {
+		const callback = this.callback?.deref();
+
+		if (callback) {
+			callback(path, object[path]);
 		}
 	}
 }
@@ -18,52 +24,33 @@ class ObserverClass extends NSObject {
 export class ControlStateChangeListener implements ControlStateChangeListenerDefinition {
 	private _observer: NSObject;
 	private _control: UIControl;
-	private _observing = false;
+	private _observing: boolean = false;
 
-	private _callback: (state: string) => void;
+	// States like :disabled are handled elsewhere
+	private readonly _states: string[] = ['highlighted'];
 
-	constructor(control: UIControl, callback: (state: string) => void) {
-		this._observer = ObserverClass.alloc().init();
-		this._observer['_owner'] = this;
+	constructor(control: UIControl, callback: (state: string, add: boolean) => void) {
+		this._observer = ObserverClass.initWithCallback(new WeakRef(callback));
 		this._control = control;
-		this._callback = callback;
 	}
 
 	public start() {
 		if (!this._observing) {
-			this._control.addObserverForKeyPathOptionsContext(this._observer, 'highlighted', NSKeyValueObservingOptions.New, null);
 			this._observing = true;
-			this._updateState();
+
+			for (const state of this._states) {
+				this._control.addObserverForKeyPathOptionsContext(this._observer, state, NSKeyValueObservingOptions.New, null);
+			}
 		}
 	}
 
 	public stop() {
 		if (this._observing) {
+			for (const state of this._states) {
+				this._control.removeObserverForKeyPath(this._observer, state);
+			}
+
 			this._observing = false;
-			this._control.removeObserverForKeyPath(this._observer, 'highlighted');
 		}
-	}
-
-	//@ts-ignore
-	private _onEnabledChanged() {
-		this._updateState();
-	}
-
-	//@ts-ignore
-	private _onSelectedChanged() {
-		this._updateState();
-	}
-
-	//@ts-ignore
-	private _onHighlightedChanged() {
-		this._updateState();
-	}
-
-	private _updateState() {
-		let state = 'normal';
-		if (this._control.highlighted) {
-			state = 'highlighted';
-		}
-		this._callback(state);
 	}
 }

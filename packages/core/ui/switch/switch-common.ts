@@ -10,27 +10,21 @@ export class SwitchBase extends View implements SwitchDefinition {
 
 	public checked: boolean;
 	public offBackgroundColor: Color;
-
-	_onCheckedPropertyChanged(newValue: boolean) {
-		if (newValue) {
-			this.addPseudoClass('checked');
-		} else {
-			this.deletePseudoClass('checked');
-		}
-	}
 }
 
 SwitchBase.prototype.recycleNativeView = 'auto';
-
-function onCheckedPropertyChanged(switchBase: SwitchBase, oldValue: boolean, newValue: boolean) {
-	switchBase._onCheckedPropertyChanged(newValue);
-}
 
 export const checkedProperty = new Property<SwitchBase, boolean>({
 	name: 'checked',
 	defaultValue: false,
 	valueConverter: booleanConverter,
-	valueChanged: onCheckedPropertyChanged,
+	valueChanged: (target: SwitchBase, oldValue: boolean, newValue: boolean) => {
+		if (newValue) {
+			target._addVisualState('checked');
+		} else {
+			target._removeVisualState('checked');
+		}
+	},
 });
 checkedProperty.register(SwitchBase);
 

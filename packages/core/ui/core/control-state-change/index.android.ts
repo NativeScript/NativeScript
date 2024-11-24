@@ -3,7 +3,7 @@
 import { ControlStateChangeListener as ControlStateChangeListenerDefinition } from '.';
 
 export class ControlStateChangeListener implements ControlStateChangeListenerDefinition {
-	constructor(control: any /* UIControl */, callback: (state: string) => void) {
+	constructor(control: any /* UIControl */, callback: (state: string, add: boolean) => void) {
 		console.log('ControlStateChangeListener is intended for IOS usage only.');
 	}
 	public start() {}

@@ -70,23 +70,19 @@ export class Switch extends SwitchBase {
 		}
 	}
 
-	_onCheckedPropertyChanged(newValue: boolean) {
-		super._onCheckedPropertyChanged(newValue);
-
-		if (this.offBackgroundColor) {
-			if (!newValue) {
-				this.setNativeBackgroundColor(this.offBackgroundColor);
-			} else {
-				this.setNativeBackgroundColor(this.backgroundColor);
-			}
-		}
-	}
-
 	[checkedProperty.getDefault](): boolean {
 		return false;
 	}
 	[checkedProperty.setNative](value: boolean) {
 		this.nativeViewProtected.setChecked(value);
+
+		if (this.offBackgroundColor) {
+			if (!value) {
+				this.setNativeBackgroundColor(this.offBackgroundColor);
+			} else {
+				this.setNativeBackgroundColor(this.backgroundColor);
+			}
+		}
 	}
 
 	[colorProperty.getDefault](): number {

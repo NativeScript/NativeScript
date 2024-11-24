@@ -826,6 +826,15 @@ export abstract class View extends ViewCommon {
 	/**
 	 * @private
 	 */
+	_addVisualState(state: string): void;
+	/**
+	 * @private
+	 */
+	_removeVisualState(state: string): void;
+	/**
+	 * @deprecated Use View.addPseudoClass() and View.deletePseudoClass() instead.
+	 * @private
+	 */
 	_goToVisualState(state: string);
 	/**
 	 * @private
