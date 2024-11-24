@@ -71,6 +71,23 @@ export class Switch extends SwitchBase {
 		}
 	}
 
+	_onCheckedPropertyChanged(newValue: boolean) {
+		// only add :checked pseudo handling on supported iOS versions
+		// ios <13 works but causes glitchy animations when toggling
+		// so we decided to keep the old behavior on older versions.
+		if (majorVersion >= 13) {
+			super._onCheckedPropertyChanged(newValue);
+
+			if (this.offBackgroundColor) {
+				if (!newValue) {
+					this.setNativeBackgroundColor(this.offBackgroundColor);
+				} else {
+					this.setNativeBackgroundColor(this.backgroundColor instanceof Color ? this.backgroundColor : new Color(this.backgroundColor));
+				}
+			}
+		}
+	}
+
 	// @ts-ignore
 	get ios(): UISwitch {
 		return this.nativeViewProtected;
@@ -92,19 +109,6 @@ export class Switch extends SwitchBase {
 	}
 	[checkedProperty.setNative](value: boolean) {
 		this.nativeViewProtected.on = value;
-
-		// only add :checked pseudo handling on supported iOS versions
-		// ios <13 works but causes glitchy animations when toggling
-		// so we decided to keep the old behavior on older versions.
-		if (majorVersion >= 13) {
-			if (this.offBackgroundColor) {
-				if (!value) {
-					this.setNativeBackgroundColor(this.offBackgroundColor);
-				} else {
-					this.setNativeBackgroundColor(this.backgroundColor instanceof Color ? this.backgroundColor : new Color(this.backgroundColor));
-				}
-			}
-		}
 	}
 
 	[colorProperty.getDefault](): UIColor {
