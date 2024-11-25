@@ -1,12 +1,12 @@
 import { TimePickerBase, timeProperty, minuteIntervalProperty, minuteProperty, minMinuteProperty, maxMinuteProperty, hourProperty, minHourProperty, maxHourProperty } from './time-picker-common';
 import { Color } from '../../color';
 import { colorProperty } from '../styling/style-properties';
-import { Device } from '../../platform';
+import { SDK_VERSION } from '../../utils';
 
 export * from './time-picker-common';
 
-const SUPPORT_DATE_PICKER_STYLE = __VISIONOS__ || parseFloat(Device.osVersion) >= 13.4;
-const SUPPORT_TEXT_COLOR = !__VISIONOS__ && parseFloat(Device.osVersion) < 14.0;
+const SUPPORT_DATE_PICKER_STYLE = __VISIONOS__ || SDK_VERSION >= 13.4;
+const SUPPORT_TEXT_COLOR = !__VISIONOS__ && SDK_VERSION < 14.0;
 
 function getDate(hour: number, minute: number): Date {
 	const components = NSDateComponents.alloc().init();

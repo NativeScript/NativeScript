@@ -1,12 +1,12 @@
 import { DatePickerBase, yearProperty, monthProperty, dayProperty, dateProperty, maxDateProperty, minDateProperty, hourProperty, minuteProperty, secondProperty, showTimeProperty, iosPreferredDatePickerStyleProperty } from './date-picker-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { Device } from '../../platform';
+import { SDK_VERSION } from '../../utils';
 
 export * from './date-picker-common';
 
-const SUPPORT_DATE_PICKER_STYLE = __VISIONOS__ || parseFloat(Device.osVersion) >= 13.4;
-const SUPPORT_TEXT_COLOR = !__VISIONOS__ && parseFloat(Device.osVersion) < 14.0;
+const SUPPORT_DATE_PICKER_STYLE = __VISIONOS__ || SDK_VERSION >= 13.4;
+const SUPPORT_TEXT_COLOR = !__VISIONOS__ && SDK_VERSION < 14.0;
 
 export class DatePicker extends DatePickerBase {
 	private _changeHandler: NSObject;
