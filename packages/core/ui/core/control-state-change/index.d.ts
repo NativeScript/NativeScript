@@ -10,7 +10,7 @@ export class ControlStateChangeListener {
 	 * @param control An instance of the UIControl which state will be watched.
 	 * @param callback A callback called when a visual state of the UIControl is changed.
 	 */
-	constructor(control: any /* UIControl */, callback: ControlStateChangeListenerCallback);
+	constructor(control: any /* UIControl */, states: string[], callback: ControlStateChangeListenerCallback);
 
 	start();
 	stop();
