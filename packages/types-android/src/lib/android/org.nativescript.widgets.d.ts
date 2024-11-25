@@ -73,6 +73,7 @@
                         public error: java.lang.Exception;
                     }
 
+                    export function initializeCookieManager(): void;
                     export function MakeRequest(options: RequestOptions, callback: CompleteCallback, context: any);
                 }
             }
