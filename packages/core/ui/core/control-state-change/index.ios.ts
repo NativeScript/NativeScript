@@ -1,11 +1,11 @@
 ﻿/* tslint:disable:no-unused-variable */
-import { ControlStateChangeListener as ControlStateChangeListenerDefinition } from '.';
+import { ControlStateChangeListenerCallback, ControlStateChangeListener as ControlStateChangeListenerDefinition } from '.';
 
 @NativeClass
 class ObserverClass extends NSObject {
-	public callback: WeakRef<(state: string, add: boolean) => void>;
+	public callback: WeakRef<ControlStateChangeListenerCallback>;
 
-	public static initWithCallback(callback: WeakRef<(state: string, add: boolean) => void>): ObserverClass {
+	public static initWithCallback(callback: WeakRef<ControlStateChangeListenerCallback>): ObserverClass {
 		const observer = <ObserverClass>ObserverClass.alloc().init();
 		observer.callback = callback;
 
@@ -29,7 +29,7 @@ export class ControlStateChangeListener implements ControlStateChangeListenerDef
 	// States like :disabled are handled elsewhere
 	private readonly _states: string[] = ['highlighted'];
 
-	constructor(control: UIControl, callback: (state: string, add: boolean) => void) {
+	constructor(control: UIControl, callback: ControlStateChangeListenerCallback) {
 		this._observer = ObserverClass.initWithCallback(new WeakRef(callback));
 		this._control = control;
 	}
