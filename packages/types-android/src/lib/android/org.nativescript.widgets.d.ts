@@ -73,7 +73,8 @@
                         public error: java.lang.Exception;
                     }
 
-                    export function initializeCookieManager(): void;
+                    export function setCookieManager(cookieManager: java.net.CookieManager): void;
+                    export function initializeCookieManager(): java.net.CookieManager;
                     export function MakeRequest(options: RequestOptions, callback: CompleteCallback, context: any);
                 }
             }

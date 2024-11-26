@@ -297,7 +297,16 @@ public class Async {
 		private static final String HEAD_METHOD = "HEAD";
 		private static CookieManager cookieManager;
 
-    public static void initializeCookieManager() {
+		public static void setCookieManager(CookieManager manager) {
+			if(manager == null) return;
+
+			cookieManager = manager;
+			if (CookieHandler.getDefault() == null) {
+				CookieHandler.setDefault(manager);
+			}
+    }
+		
+		public static CookieManager initializeCookieManager() {
 			if (cookieManager == null) {
 				CookieHandler defaultHandler = CookieHandler.getDefault();
 				if (defaultHandler instanceof CookieManager) {
@@ -307,6 +316,8 @@ public class Async {
 					CookieHandler.setDefault(cookieManager);
 				}
 			}
+
+			return cookieManager;
     }
 
 		public static void MakeRequest(final RequestOptions options, final CompleteCallback callback, final Object context) {
