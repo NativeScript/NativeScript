@@ -44,11 +44,24 @@ function initializeClickListener(): void {
 	ClickListener = ClickListenerImpl;
 }
 
+function onButtonStateChange(args: TouchGestureEventData) {
+	const button = args.object as Button;
+
+	switch (args.action) {
+		case TouchAction.up:
+		case TouchAction.cancel:
+			button._removeVisualState('highlighted');
+			break;
+		case TouchAction.down:
+			button._addVisualState('highlighted');
+			break;
+	}
+}
+
 export class Button extends ButtonBase {
 	nativeViewProtected: android.widget.Button;
 
 	private _stateListAnimator: any;
-	private _highlightedHandler: (args: TouchGestureEventData) => void;
 
 	@profile
 	public createNativeView() {
@@ -87,22 +100,9 @@ export class Button extends ButtonBase {
 	@PseudoClassHandler('normal', 'highlighted', 'pressed', 'active')
 	_updateButtonStateChangeHandler(subscribe: boolean) {
 		if (subscribe) {
-			this._highlightedHandler =
-				this._highlightedHandler ||
-				((args: TouchGestureEventData) => {
-					switch (args.action) {
-						case TouchAction.up:
-						case TouchAction.cancel:
-							this._removeVisualState('highlighted');
-							break;
-						case TouchAction.down:
-							this._addVisualState('highlighted');
-							break;
-					}
-				});
-			this.on(GestureTypes[GestureTypes.touch], this._highlightedHandler);
+			this.on(GestureTypes[GestureTypes.touch], onButtonStateChange);
 		} else {
-			this.off(GestureTypes[GestureTypes.touch], this._highlightedHandler);
+			this.off(GestureTypes[GestureTypes.touch], onButtonStateChange);
 		}
 	}
 
