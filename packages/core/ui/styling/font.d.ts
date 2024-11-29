@@ -1,6 +1,8 @@
 ﻿import { Font as FontBase } from './font-common';
 export type { FontStyleType, FontWeightType, ParsedFont, FontVariationSettingsType } from './font-interfaces';
 
+export const FONTS_BASE_PATH = '/fonts/';
+
 export declare class Font extends FontBase {
 	public static default: Font;
 
@@ -56,6 +58,7 @@ export namespace FontVariationSettings {
 }
 
 export function parseFont(fontValue: string): ParsedFont;
+export function isFontWeightBold(fontWeight: FontWeightType): boolean;
 
 export namespace ios {
 	export function registerFont(fontFile: string);

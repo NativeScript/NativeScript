@@ -1,4 +1,4 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontVariationSettings } from './font-common';
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontVariationSettings, FONTS_BASE_PATH } from './font-common';
 import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import { SDK_VERSION } from '../../utils/constants';
@@ -7,7 +7,6 @@ import { ad } from '../../utils';
 
 export * from './font-common';
 
-const FONTS_BASE_PATH = '/fonts/';
 const typefaceCache = new Map<string, android.graphics.Typeface>();
 let appAssets: android.content.res.AssetManager;
 
@@ -66,24 +65,28 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 		return null;
 	}
 
-	let result = typefaceCache.get(cacheKey);
-	// Check for undefined explicitly as null mean we tried to load the font, but failed.
-	if (result === undefined) {
-		result = null;
+	let result: android.graphics.Typeface;
+
+	if (typefaceCache.has(cacheKey)) {
+		result = typefaceCache.get(cacheKey);
+	} else {
+		const basePath = fs.path.join(fs.knownFolders.currentApp().path, FONTS_BASE_PATH, fontFamily);
 
 		let fontAssetPath: string;
-		const basePath = fs.path.join(fs.knownFolders.currentApp().path, 'fonts', fontFamily);
+
 		if (fs.File.exists(basePath + '.ttf')) {
-			fontAssetPath = FONTS_BASE_PATH + fontFamily + '.ttf';
+			fontAssetPath = basePath + '.ttf';
 		} else if (fs.File.exists(basePath + '.otf')) {
-			fontAssetPath = FONTS_BASE_PATH + fontFamily + '.otf';
+			fontAssetPath = basePath + '.otf';
 		} else if (Trace.isEnabled()) {
+			fontAssetPath = null;
 			Trace.write('Could not find font file for ' + fontFamily, Trace.categories.Error, Trace.messageType.error);
 		}
 
+		result = null; // Default
+
 		if (fontAssetPath) {
 			try {
-				fontAssetPath = fs.path.join(fs.knownFolders.currentApp().path, fontAssetPath);
 				if (SDK_VERSION >= 26) {
 					const builder = new android.graphics.Typeface.Builder(fontAssetPath);
 					if (builder) {
@@ -104,6 +107,8 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 				}
 			}
 		}
+
+		// The value might be null if there has already been an attempt to load the font but failed
 		typefaceCache.set(cacheKey, result);
 	}
 
@@ -111,28 +116,39 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 }
 
 function createTypeface(font: Font): android.graphics.Typeface {
-	let fontStyle = 0;
-	if (font.isBold) {
-		fontStyle |= android.graphics.Typeface.BOLD;
-	}
-	if (font.isItalic) {
-		fontStyle |= android.graphics.Typeface.ITALIC;
+	const fontFamilies = parseFontFamily(font.fontFamily);
+	const fontWeight = font.fontWeight;
+	const supportsFontWeight = SDK_VERSION > 27;
+
+	let result: android.graphics.Typeface;
+	let fontStyle: number = 0;
+	// https://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
+	let fontSuffix: string;
+
+	if (supportsFontWeight) {
+		fontSuffix = '';
+	} else {
+		if (font.isBold) {
+			fontStyle |= android.graphics.Typeface.BOLD;
+		}
+		if (font.isItalic) {
+			fontStyle |= android.graphics.Typeface.ITALIC;
+		}
+
+		fontSuffix = getFontWeightSuffix(fontWeight);
 	}
 
-	//http://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
-	const fontFamilies = parseFontFamily(font.fontFamily);
-	let result: android.graphics.Typeface = null;
 	for (const fontFamily of fontFamilies) {
 		switch (fontFamily.toLowerCase()) {
 			case genericFontFamilies.serif:
-				result = android.graphics.Typeface.create('serif' + getFontWeightSuffix(font.fontWeight), fontStyle);
+				result = android.graphics.Typeface.create('serif' + fontSuffix, fontStyle);
 				break;
 			case genericFontFamilies.sansSerif:
 			case genericFontFamilies.system:
-				result = android.graphics.Typeface.create('sans-serif' + getFontWeightSuffix(font.fontWeight), fontStyle);
+				result = android.graphics.Typeface.create('sans-serif' + fontSuffix, fontStyle);
 				break;
 			case genericFontFamilies.monospace:
-				result = android.graphics.Typeface.create('monospace' + getFontWeightSuffix(font.fontWeight), fontStyle);
+				result = android.graphics.Typeface.create('monospace' + fontSuffix, fontStyle);
 				break;
 			default: {
 				result = loadFontFromFile(fontFamily, font);
@@ -143,14 +159,19 @@ function createTypeface(font: Font): android.graphics.Typeface {
 			}
 		}
 
+		// Found the font!
 		if (result) {
-			// Found the font!
 			break;
 		}
 	}
 
 	if (!result) {
-		result = android.graphics.Typeface.create('sans-serif' + getFontWeightSuffix(font.fontWeight), fontStyle);
+		result = android.graphics.Typeface.create('sans-serif' + fontSuffix, fontStyle);
+	}
+
+	// Newer versions can accept a specific font weight number
+	if (supportsFontWeight) {
+		result = android.graphics.Typeface.create(result, getFontWeightNumber(fontWeight), font.isItalic);
 	}
 
 	return result;
@@ -183,4 +204,28 @@ function getFontWeightSuffix(fontWeight: FontWeightType): string {
 		default:
 			throw new Error(`Invalid font weight: "${fontWeight}"`);
 	}
+}
+
+function getFontWeightNumber(fontWeight: FontWeightType): number {
+	let value: number;
+
+	if (typeof fontWeight === 'number') {
+		value = fontWeight;
+	} else {
+		switch (fontWeight) {
+			case FontWeight.NORMAL:
+			case undefined:
+			case null:
+				value = 400;
+				break;
+			case FontWeight.BOLD:
+				value = 700;
+				break;
+			default:
+				value = parseInt(fontWeight);
+				break;
+		}
+	}
+
+	return value;
 }
