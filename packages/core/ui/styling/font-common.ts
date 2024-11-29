@@ -3,6 +3,8 @@ import { ParsedFont, FontStyleType, FontWeightType, FontVariationSettingsType } 
 import { makeValidator, makeParser } from '../core/properties';
 import { Trace } from '../../trace';
 
+export const FONTS_BASE_PATH = '/fonts/';
+
 export abstract class Font implements FontDefinition {
 	public static default = undefined;
 	public readonly fontStyle: FontStyleType;
@@ -14,7 +16,7 @@ export abstract class Font implements FontDefinition {
 	}
 
 	get isBold(): boolean {
-		return this.fontWeight === FontWeight.SEMI_BOLD || this.fontWeight === FontWeight.BOLD || this.fontWeight === '700' || this.fontWeight === FontWeight.EXTRA_BOLD || this.fontWeight === FontWeight.BLACK;
+		return isFontWeightBold(this.fontWeight);
 	}
 
 	protected constructor(
@@ -137,6 +139,10 @@ export function parseFontFamily(value: string): Array<string> {
 		.filter((v) => !!v);
 }
 
+export function isFontWeightBold(fontWeight: FontWeightType): boolean {
+	return fontWeight === FontWeight.SEMI_BOLD || fontWeight === FontWeight.BOLD || fontWeight === '700' || fontWeight === FontWeight.EXTRA_BOLD || fontWeight === FontWeight.BLACK;
+}
+
 export namespace genericFontFamilies {
 	export const serif = 'serif';
 	export const sansSerif = 'sans-serif';
@@ -144,8 +150,7 @@ export namespace genericFontFamilies {
 	export const system = 'system';
 }
 
-const styles = new Set();
-[FontStyle.NORMAL, FontStyle.ITALIC].forEach((val, i, a) => styles.add(val));
+const styles = new Set<string>([FontStyle.NORMAL, FontStyle.ITALIC]);
 
 // http://www.w3schools.com/cssref/pr_font_weight.asp
 //- normal(same as 400)
@@ -159,8 +164,7 @@ const styles = new Set();
 //- 700(Bold) (API16 -bold)
 //- 800(Extra Bold / Ultra Bold) (API16 -bold)
 //- 900(Black / Heavy) (API21 -black)
-const weights = new Set();
-[FontWeight.THIN, FontWeight.EXTRA_LIGHT, FontWeight.LIGHT, FontWeight.NORMAL, '400', FontWeight.MEDIUM, FontWeight.SEMI_BOLD, FontWeight.BOLD, '700', FontWeight.EXTRA_BOLD, FontWeight.BLACK].forEach((val, i, a) => weights.add(val));
+const weights = new Set<string>([FontWeight.THIN, FontWeight.EXTRA_LIGHT, FontWeight.LIGHT, FontWeight.NORMAL, '400', FontWeight.MEDIUM, FontWeight.SEMI_BOLD, FontWeight.BOLD, '700', FontWeight.EXTRA_BOLD, FontWeight.BLACK]);
 
 export function parseFont(fontValue: string): ParsedFont {
 	const result: ParsedFont = {
