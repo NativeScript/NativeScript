@@ -2,6 +2,14 @@ import SwiftUI
 import NativeScriptEmbedder
 import UIKit
 
+// Ensure runtime phases are called only once per app lifecycle
+// In multi-scene apps, we need to ensure runtime doesn't reinit alongside main window
+// For example, if @State is used to drive @Environment at the root level, we need to ensure
+// a rerender of the main body doesn't cause runtime to cycle again
+var hasMainInit = false
+var hasMainBoot = false
+var hasMainSetMainScene = false
+
 @available(iOS 14.0, *)
 struct NativeScriptMainWindow: Scene {
     
@@ -18,12 +26,18 @@ struct NativeScriptMainWindow: Scene {
         // windowStyle is only supported on visionOS
         WindowGroup {
             NativeScriptAppView(found: { windowScene in
-                NativeScriptEmbedder.sharedInstance().setWindowScene(windowScene)
+                if (!hasMainSetMainScene) {
+                    hasMainSetMainScene = true
+                    NativeScriptEmbedder.sharedInstance().setWindowScene(windowScene)
+                }
             }).onAppear {
                 // print("NativeScriptAppView onAppear")
-                DispatchQueue.main.async {
-                    NativeScriptEmbedder.boot()
-                }
+                if (!hasMainBoot) {
+                    hasMainBoot = true
+                    DispatchQueue.main.async {
+                        NativeScriptEmbedder.boot()
+                    }
+                 }
             }.onReceive(NotificationCenter.default
                 .publisher(for: NSNotification.Name("NativeScriptWindowOpen")), perform: { obj in
                     let info = parseWindowInfo(obj: obj)
@@ -68,9 +82,12 @@ struct NativeScriptMainWindow: Scene {
     }
 
     init() {
-        NativeScriptViewFactory.initShared()
-        NativeScriptEmbedder.sharedInstance().setDelegate(NativeScriptViewFactory.shared)
-        NativeScriptEmbedder.setup()
+        if (!hasMainInit) {
+            hasMainInit = true
+            NativeScriptViewFactory.initShared()
+            NativeScriptEmbedder.sharedInstance().setDelegate(NativeScriptViewFactory.shared)
+            NativeScriptEmbedder.setup()
+        }
     }
 
     #if os(visionOS)
