@@ -1,9 +1,7 @@
 import { ScrollEventData } from '../scroll-view';
-import { CoreTypes } from '../../core-types';
 import { Background as BackgroundDefinition } from './background';
-import { View, Point } from '../core/view';
+import { View, Point, Position } from '../core/view';
 import { LinearGradient } from './linear-gradient';
-import { Color } from '../../color';
 import { Screen } from '../../platform';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
@@ -14,13 +12,6 @@ import { Length } from './style-properties';
 import { BackgroundClearFlags } from './background-common';
 
 export * from './background-common';
-
-interface Position {
-	top: number;
-	right: number;
-	bottom: number;
-	left: number;
-}
 
 interface BackgroundDrawParams {
 	repeatX: boolean;

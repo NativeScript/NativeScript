@@ -64,6 +64,13 @@ export interface Point {
 	z?: number;
 }
 
+export interface Position {
+	top: number;
+	right: number;
+	bottom: number;
+	left: number;
+}
+
 /**
  * The Size interface describes abstract dimensions in two dimensional space.
  * It has two properties width and height, representing the width and height values of the size.
@@ -817,12 +824,7 @@ export abstract class View extends ViewCommon {
 	 * Return view bounds.
 	 * @private
 	 */
-	_getCurrentLayoutBounds(): {
-		left: number;
-		top: number;
-		right: number;
-		bottom: number;
-	};
+	_getCurrentLayoutBounds(): Position;
 	/**
 	 * @private
 	 */

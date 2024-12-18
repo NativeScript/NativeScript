@@ -1,5 +1,5 @@
 // Types.
-import { Point, View as ViewDefinition } from '.';
+import { Point, Position, View as ViewDefinition } from '.';
 
 // Requires
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
@@ -117,7 +117,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 		const needsLayout = result.boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
 		if (needsLayout) {
-			let position = { left, top, right, bottom };
+			let position: Position;
 
 			if (this.nativeViewProtected && SDK_VERSION > 10) {
 				// on iOS 11+ it is possible to have a changed layout frame due to safe area insets
@@ -130,6 +130,8 @@ export class View extends ViewCommon implements ViewDefinition {
 				if (positionChanged && !sizeChanged) {
 					sizeChanged = true;
 				}
+			} else {
+				position = { left, top, right, bottom };
 			}
 
 			this.onLayout(position.left, position.top, position.right, position.bottom);
@@ -947,12 +949,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		});
 	}
 
-	_getCurrentLayoutBounds(): {
-		left: number;
-		top: number;
-		right: number;
-		bottom: number;
-	} {
+	_getCurrentLayoutBounds(): Position {
 		const nativeView = this.nativeViewProtected;
 		if (nativeView && !this.isCollapsed) {
 			const frame = nativeView.frame;
