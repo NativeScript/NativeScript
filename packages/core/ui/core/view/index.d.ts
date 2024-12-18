@@ -668,7 +668,7 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Returns the iOS safe area insets of this view.
 	 */
-	public getSafeAreaInsets(): { left; top; right; bottom };
+	public getSafeAreaInsets(): Position;
 
 	/**
 	 * Returns the location of this view in the window coordinate system.

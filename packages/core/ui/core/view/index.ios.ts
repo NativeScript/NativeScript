@@ -327,7 +327,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		return null;
 	}
 
-	public getSafeAreaInsets(): { left; top; right; bottom } {
+	public getSafeAreaInsets(): Position {
 		const safeAreaInsets = this.nativeViewProtected && this.nativeViewProtected.safeAreaInsets;
 		const insets = { left: 0, top: 0, right: 0, bottom: 0 };
 		if (this.iosIgnoreSafeArea) {
