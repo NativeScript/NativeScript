@@ -124,11 +124,12 @@ export class View extends ViewCommon implements ViewDefinition {
 				// get the frame and adjust the position, so that onLayout works correctly
 				position = IOSHelper.getPositionFromFrame(this.nativeViewProtected.frame);
 
-				// If frame has actually changed, there is the need to update view background and border styles as they depend on native view bounds
-				// To trigger the needed visual update, mark size as changed
-				const positionChanged = position.left !== left || position.top !== top || position.right !== right || position.bottom !== bottom;
-				if (positionChanged && !sizeChanged) {
-					sizeChanged = true;
+				if (!sizeChanged) {
+					// If frame has actually changed, there is the need to update view background and border styles as they depend on native view bounds
+					// To trigger the needed visual update, mark size as changed
+					if (position.left !== left || position.top !== top || position.right !== right || position.bottom !== bottom) {
+						sizeChanged = true;
+					}
 				}
 			} else {
 				position = { left, top, right, bottom };
