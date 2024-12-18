@@ -108,19 +108,28 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	@profile
 	public layout(left: number, top: number, right: number, bottom: number, setFrame = true): void {
-		const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
+		const result = this._setCurrentLayoutBounds(left, top, right, bottom);
+		let { sizeChanged } = result;
+
 		if (setFrame) {
 			this.layoutNativeView(left, top, right, bottom);
 		}
 
-		const needsLayout = boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
+		const needsLayout = result.boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
 		if (needsLayout) {
 			let position = { left, top, right, bottom };
+
 			if (this.nativeViewProtected && SDK_VERSION > 10) {
 				// on iOS 11+ it is possible to have a changed layout frame due to safe area insets
 				// get the frame and adjust the position, so that onLayout works correctly
-				const frame = this.nativeViewProtected.frame;
-				position = IOSHelper.getPositionFromFrame(frame);
+				position = IOSHelper.getPositionFromFrame(this.nativeViewProtected.frame);
+
+				// If frame has actually changed, there is the need to update view background and border styles as they depend on native view bounds
+				// To trigger the needed visual update, mark size as changed
+				const positionChanged = position.left !== left || position.top !== top || position.right !== right || position.bottom !== bottom;
+				if (positionChanged && !sizeChanged) {
+					sizeChanged = true;
+				}
 			}
 
 			this.onLayout(position.left, position.top, position.right, position.bottom);
