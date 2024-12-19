@@ -43,7 +43,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		//Overridden
 	}
 
-	@profile()
+	@profile
 	public addChild(child: View): void {
 		// TODO: Do we need this method since we have the core logic in the View implementation?
 		this._subViews.push(child);

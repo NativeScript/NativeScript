@@ -35,7 +35,8 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 
 @CSSType('Frame')
 export class FrameBase extends CustomLayoutView {
-	public static androidOptionSelectedEvent = 'optionSelected';
+	public static navigatingToEvent = 'navigatingTo';
+	public static navigatedToEvent = 'navigatedTo';
 
 	private _animated: boolean;
 	private _transition: NavigationTransition;
@@ -269,7 +270,7 @@ export class FrameBase extends CustomLayoutView {
 
 		newPage.onNavigatedTo(isBack);
 		this.notify({
-			eventName: Page.navigatedToEvent,
+			eventName: FrameBase.navigatedToEvent,
 			object: this,
 			isBack,
 			entry,
@@ -469,7 +470,7 @@ export class FrameBase extends CustomLayoutView {
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
 		this.notify({
-			eventName: Page.navigatingToEvent,
+			eventName: FrameBase.navigatingToEvent,
 			object: this,
 			isBack,
 			entry: backstackEntry,

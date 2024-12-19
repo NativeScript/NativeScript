@@ -731,9 +731,8 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.isAccessibilityElement = !!value;
-		if (value) {
-			updateAccessibilityProperties(this);
-		}
+
+		updateAccessibilityProperties(this);
 	}
 
 	[accessibilityIdentifierProperty.getDefault](): string {

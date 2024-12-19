@@ -1105,7 +1105,7 @@ export class View extends ViewCommon {
 				nativeView.setBackground(backgroundDrawable);
 			}
 			if (backgroundColor) {
-				if (backgroundDrawable) {
+				if (this.needsNativeDrawableFill && backgroundDrawable) {
 					backgroundDrawable.mutate();
 
 					AndroidHelper.setDrawableColor(backgroundColor, backgroundDrawable);
