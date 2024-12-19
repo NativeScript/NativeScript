@@ -43,7 +43,7 @@ export interface ApplicationEventData extends EventData {
 	 * The instance that has raised the event.
 	 */
 	// TODO: find a way to do object: ApplicationCommon | Observable;
-	object: any;
+	object?: any;
 }
 
 /**

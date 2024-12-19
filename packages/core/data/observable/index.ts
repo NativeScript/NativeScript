@@ -11,7 +11,7 @@ export interface EventData<T = Observable> {
 	/**
 	 * The Observable instance that has raised the event.
 	 */
-	object: T;
+	object?: T;
 }
 
 export interface EventDataValue<T = Observable> extends EventData<T> {
