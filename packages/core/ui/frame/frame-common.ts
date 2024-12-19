@@ -119,8 +119,6 @@ export class FrameBase extends CustomLayoutView {
 	inOnLoaded = false;
 	@profile
 	public onLoaded() {
-		console.log('Frame', 'onLoaded');
-
 		// there we dont want to call "loadView" on pages in the backstack as they are not visible
 		this.inOnLoaded = true;
 		super.onLoaded();
