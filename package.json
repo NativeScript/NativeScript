@@ -55,6 +55,11 @@
   "devDependencies": {
     "@commitlint/cli": "~19.5.0",
     "@commitlint/config-conventional": "~19.5.0",
+    "@lerna-lite/changed": "3.10.1",
+    "@lerna-lite/cli": "3.10.1",
+    "@lerna-lite/publish": "3.10.1",
+    "@lerna-lite/run": "3.10.1",
+    "@lerna-lite/version": "3.10.1",
     "@nativescript/hook": "^2.0.0",
     "@prettier/plugin-xml": "^3.4.1",
     "@types/jest": "~29.5.13",
