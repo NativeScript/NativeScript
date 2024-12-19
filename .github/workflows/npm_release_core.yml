@@ -67,6 +67,7 @@ jobs:
         if: github.event.inputs.release_type == 'auto'
         run: |
           npm run core:publish -- --no-verify-access --no-private --no-commit-hooks --yes
+          git push --tags
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,6 +77,7 @@ jobs:
         if: github.event.inputs.release_type != 'auto'
         run: |
           npm run core:publish -- --no-verify-access --no-private --no-commit-hooks --yes --bump ${{ github.event.inputs.release_type }}
+          git push --tags
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
