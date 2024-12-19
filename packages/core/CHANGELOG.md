@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.8.10](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.9...@akylas/nativescript@8.8.10) (2024-12-19)
+
+
+### Bug Fixes
+
+* **android:** background color is not applied to certain views ([#10652](https://github.com/NativeScript/NativeScript/issues/10652)) ([4f36748](https://github.com/NativeScript/NativeScript/commit/4f367483ef9f89e2d2a3b8f50f23a5cd8e56078f))
+* **core:** frame ignored event listeners in xml markup ([#10646](https://github.com/NativeScript/NativeScript/issues/10646)) ([750d2ee](https://github.com/NativeScript/NativeScript/commit/750d2ee455786bf06bde853039e5500a3b445568))
+* **visionos:** multi-scene improvements ([#10653](https://github.com/NativeScript/NativeScript/issues/10653)) ([d6922b9](https://github.com/NativeScript/NativeScript/commit/d6922b9896ff60d819c5439d6828c7907618b0a9))
+
 ### [8.8.9](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.8...@akylas/nativescript@8.8.9) (2024-11-13)
 
 
