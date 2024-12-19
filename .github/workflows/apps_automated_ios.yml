@@ -1,10 +1,6 @@
 name: 'apps/automated/ios'
 
 on:
-  push:
-    branches:
-      - main
-      - 'ci/**'
   pull_request:
   workflow_dispatch:
 
