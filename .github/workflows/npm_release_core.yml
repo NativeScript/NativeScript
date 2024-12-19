@@ -51,32 +51,11 @@ jobs:
           corepack enable 
           yarn config get globalFolder # the yarn command will ensure the correct yarn version is downloaded and installed
 
-
-          - name: Get yarn cache directory path
-          id: yarn-cache-dir-path
-          run: echo "::set-output name=dir::$(yarn config get globalFolder)"
-
-      - uses: actions/cache@v4
-        name: Handle node_modules Cache
-        id: yarn-node_modules # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-yarn-node_modules-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node_modules-
-
-      - uses: actions/cache@v4
-        if: steps.yarn-node_modules.outputs.cache-hit != 'true'
-        name: Handle Yarn cache
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get globalFolder)"
 
       - name: Install deps
-        if: steps.yarn-node_modules.outputs.cache-hit != 'true'
         uses: bahmutov/npm-install@v1
         with:
           install-command: yarn install --silent
