@@ -23,7 +23,7 @@
 				"commands": [
 					"npx rimraf dist/packages/core",
 					"npx tsc -p packages/core/tsconfig.lib.json",
-					"npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/**/*.d.ts\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/js-libs/**/*\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/cli-hooks/**/*.js\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/platforms/**/*\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/fetch/**/*\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css/**/*\" dist && npx copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css-value/**/*\" dist",
+					"npx copyfiles -e \"packages/core/**/*.d.ts\" dist && npx copyfiles -e \"packages/core/js-libs/**/*\" dist && npx copyfiles -e \"packages/core/cli-hooks/**/*.js\" dist && npx copyfiles -e \"packages/core/platforms/**/*\" dist && npx copyfiles -e \"packages/core/fetch/**/*\" dist && npx copyfiles -e \"packages/core/css/**/*\" dist && npx copyfiles -e \"packages/core/css-value/**/*\" dist",
 					"npx copyfiles -f \"packages/core/package.json\" \"packages/core/README.md\" \"LICENSE\" dist/packages/core",
 					"cd dist/packages/core && npm pack --pack-destination=.."
 				],

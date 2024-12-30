@@ -21,6 +21,6 @@
 			}
 		]
 	},
-	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__", "vite.config.ts"],
+	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__", "vite.config.ts", "vitest.setup.ts"],
 	"include": ["**/*.ts", "./references.d.ts"]
 }
