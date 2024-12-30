@@ -15,15 +15,6 @@
 				"lintFilePatterns": ["packages/core/**/*.ts", "packages/core/references.d.ts", "packages/core/**/*.spec.ts", "packages/core/**/*.spec.tsx", "packages/core/**/*.spec.js", "packages/core/**/*.spec.jsx", "packages/core/**/*.d.ts"]
 			}
 		},
-		"test": {
-			"executor": "@nx/jest:jest",
-			"inputs": ["default", "^production"],
-			"outputs": ["{workspaceRoot}/dist/out-tsc"],
-			"options": {
-				"jestConfig": "packages/core/jest.config.ts",
-				"verbose": true
-			}
-		},
 		"build": {
 			"executor": "nx:run-commands",
 			"inputs": ["default", "^production"],
@@ -38,6 +29,13 @@
 				],
 				"cwd": ".",
 				"parallel": false
+			}
+		},
+		"test": {
+			"executor": "@nx/vite:test",
+			"outputs": ["{options.reportsDirectory}"],
+			"options": {
+				"reportsDirectory": "../../coverage/packages/core"
 			}
 		}
 	}
