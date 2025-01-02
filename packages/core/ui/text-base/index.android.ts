@@ -365,11 +365,6 @@ export class TextBase extends TextBaseCommon {
 	[fontSizeProperty.setNative](value: number) {
 		if (!this.formattedText) {
 			this.nativeTextViewProtected.setTextSize(value);
-
-			// Re-calculate letter-spacing
-			if (this.letterSpacing != 0) {
-				this._updateLetterSpacing(this.letterSpacing);
-			}
 		}
 	}
 
@@ -451,10 +446,10 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[letterSpacingProperty.getDefault](): number {
-		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected) * this.fontSize;
+		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
 	}
 	[letterSpacingProperty.setNative](value: number) {
-		this._updateLetterSpacing(value);
+		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
 	}
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
@@ -501,11 +496,6 @@ export class TextBase extends TextBaseCommon {
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
 			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
 		}
-	}
-
-	_updateLetterSpacing(value: number): void {
-		const emValue = value / this.fontSize;
-		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, emValue);
 	}
 
 	_setNativeText(reset = false): void {

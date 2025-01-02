@@ -15,8 +15,8 @@
     }
     BOOL isTextType = [self isKindOfClass:[UITextField class]] || [self isKindOfClass:[UITextView class]] | [self isKindOfClass:[UILabel class]] | [self isKindOfClass:[UIButton class]];
     
-    if (letterSpacing != 0 && isTextType) {
-        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing];
+    if (letterSpacing != 0 && isTextType && ((UITextView*)self).font != nil) {
+        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
         attrDict[NSKernAttributeName] = kern;
         if ([self isKindOfClass:[UITextField class]]) {
             [((UITextField*)self).defaultTextAttributes setValue:kern forKey:NSKernAttributeName];
@@ -31,13 +31,13 @@
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;
 
-            if (((UIButton*)self).titleLabel.font) {
+            if (((UIButton*)self).titleLabel.font != nil) {
                 paragraphStyle.lineSpacing = fmax(lineHeight - ((UIButton*)self).titleLabel.font.lineHeight, 0);
             }
         } else {
             paragraphStyle.alignment = ((UILabel*)self).textAlignment;
 
-            if (((UILabel*)self).font) {
+            if (((UILabel*)self).font != nil) {
                 paragraphStyle.lineSpacing = fmax(lineHeight - ((UILabel*)self).font.lineHeight, 0);
             }
         }
@@ -86,7 +86,7 @@
 -(void)nativeScriptSetFormattedTextDecorationAndTransform:(NSDictionary*)details letterSpacing:(CGFloat)letterSpacing lineHeight:(CGFloat)lineHeight {
     NSMutableAttributedString *attrText = [NativeScriptUtils createMutableStringWithDetails:details];
     if (letterSpacing != 0) {
-        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing];
+        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
         [attrText addAttribute:NSKernAttributeName value:kern range:(NSRange){
             0,
             attrText.length
@@ -101,14 +101,14 @@
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;
 
-            if (((UIButton*)self).titleLabel.font) {
+            if (((UIButton*)self).titleLabel.font != nil) {
                 paragraphStyle.lineSpacing = fmax(lineHeight - ((UIButton*)self).titleLabel.font.lineHeight, 0);
             }
         } else {
             // Paragraph alignment is also important for tappable spans as NSTextContainer takes it into account
             paragraphStyle.alignment = ((UILabel*)self).textAlignment;
 
-            if (((UILabel*)self).font) {
+            if (((UILabel*)self).font != nil) {
                 paragraphStyle.lineSpacing = fmax(lineHeight - ((UILabel*)self).font.lineHeight, 0);
             }
         }
