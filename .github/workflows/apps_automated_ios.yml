@@ -15,7 +15,7 @@ concurrency:
 jobs:
   test-ios:
     # runs-on: macos-latest
-    runs-on: [self-hosted, macosOS, ARM64]
+    runs-on: [self-hosted, macOS, ARM64]
 
     steps:
       - uses: actions/checkout@v4
