@@ -38,7 +38,9 @@ jobs:
         run: npx nx run-many --target=test --configuration=ci --projects=core
 
       - name: Start iOS Simulator
-        uses: futureware-tech/simulator-action@v3
+        uses: futureware-tech/simulator-action@v4
+        with:
+          model: 'iPhone 15'
 
       - name: Run tests on iOS Simulator
         run: node tools/scripts/run-automated.js ios
