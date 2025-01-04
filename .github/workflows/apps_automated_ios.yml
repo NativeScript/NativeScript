@@ -41,6 +41,7 @@ jobs:
         uses: futureware-tech/simulator-action@v4
         with:
           model: 'iPhone 15'
+          os_version: '17.5'
 
       - name: Run tests on iOS Simulator
         run: node tools/scripts/run-automated.js ios
