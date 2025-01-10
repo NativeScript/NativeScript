@@ -627,59 +627,60 @@ function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor)
 
 	if (params.sizeX > 0 && params.sizeY > 0) {
 		const resizeRect = CGRectMake(0, 0, params.sizeX, params.sizeY);
-		UIGraphicsBeginImageContextWithOptions(resizeRect.size, false, 0.0);
-		img.drawInRect(resizeRect);
-		img = UIGraphicsGetImageFromCurrentImageContext();
-		UIGraphicsEndImageContext();
+		const oldImage = img;
+		const renderer = UIGraphicsImageRenderer.alloc().initWithSize(resizeRect.size);
+		img = renderer.imageWithActions((context: UIGraphicsRendererContext) => {
+			oldImage.drawInRect(resizeRect);
+		});
 	}
 
-	UIGraphicsBeginImageContextWithOptions(CGSizeFromString(`{${boundsWidth},${boundsHeight}}`), false, 0.0);
-	const context = UIGraphicsGetCurrentContext();
+	const renderer = UIGraphicsImageRenderer.alloc().initWithSize(CGSizeFromString(`{${boundsWidth},${boundsHeight}}`));
+	const bgImage = renderer.imageWithActions((context: UIGraphicsRendererContext) => {
+		const ctx = context.CGContext;
 
-	if (background.color && background.color.ios) {
-		CGContextSetFillColorWithColor(context, background.color.ios.CGColor);
-		CGContextFillRect(context, CGRectMake(0, 0, boundsWidth, boundsHeight));
-	}
+		if (background.color && background.color.ios) {
+			CGContextSetFillColorWithColor(ctx, background.color.ios.CGColor);
+			CGContextFillRect(ctx, CGRectMake(0, 0, boundsWidth, boundsHeight));
+		}
 
-	if (!params.repeatX && !params.repeatY) {
-		img.drawAtPoint(CGPointMake(params.posX, params.posY));
-	} else {
-		const w = params.repeatX ? boundsWidth : img.size.width;
-		const h = params.repeatY ? boundsHeight : img.size.height;
+		if (!params.repeatX && !params.repeatY) {
+			img.drawAtPoint(CGPointMake(params.posX, params.posY));
+		} else {
+			const w = params.repeatX ? boundsWidth : img.size.width;
+			const h = params.repeatY ? boundsHeight : img.size.height;
 
-		CGContextSetPatternPhase(context, CGSizeMake(params.posX, params.posY));
+			CGContextSetPatternPhase(ctx, CGSizeMake(params.posX, params.posY));
 
-		params.posX = params.repeatX ? 0 : params.posX;
-		params.posY = params.repeatY ? 0 : params.posY;
+			params.posX = params.repeatX ? 0 : params.posX;
+			params.posY = params.repeatY ? 0 : params.posY;
 
-		const patternRect = CGRectMake(params.posX, params.posY, w, h);
+			const patternRect = CGRectMake(params.posX, params.posY, w, h);
 
-		img.drawAsPatternInRect(patternRect);
-	}
-
-	const bkgImage = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
+			img.drawAsPatternInRect(patternRect);
+		}
+	});
 
 	if (flip) {
-		const flippedImage = _flipImage(bkgImage);
+		const flippedImage = _flipImage(bgImage);
 		callback(UIColor.alloc().initWithPatternImage(flippedImage));
 	} else {
-		callback(UIColor.alloc().initWithPatternImage(bkgImage));
+		callback(UIColor.alloc().initWithPatternImage(bgImage));
 	}
 }
 
 // Flipping the default coordinate system
 // https://developer.apple.com/library/ios/documentation/2DDrawing/Conceptual/DrawingPrintingiOS/GraphicsDrawingOverview/GraphicsDrawingOverview.html
 function _flipImage(originalImage: UIImage): UIImage {
-	UIGraphicsBeginImageContextWithOptions(originalImage.size, false, 0.0);
-	const context = UIGraphicsGetCurrentContext();
-	CGContextSaveGState(context);
-	CGContextTranslateCTM(context, 0.0, originalImage.size.height);
-	CGContextScaleCTM(context, 1.0, -1.0);
-	originalImage.drawInRect(CGRectMake(0, 0, originalImage.size.width, originalImage.size.height));
-	CGContextRestoreGState(context);
-	const flippedImage = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
+	const renderer = UIGraphicsImageRenderer.alloc().initWithSize(originalImage.size);
+	const flippedImage = renderer.imageWithActions((context: UIGraphicsRendererContext) => {
+		const ctx = context.CGContext;
+
+		CGContextSaveGState(ctx);
+		CGContextTranslateCTM(ctx, 0.0, originalImage.size.height);
+		CGContextScaleCTM(ctx, 1.0, -1.0);
+		originalImage.drawInRect(CGRectMake(0, 0, originalImage.size.width, originalImage.size.height));
+		CGContextRestoreGState(ctx);
+	});
 
 	return flippedImage;
 }
