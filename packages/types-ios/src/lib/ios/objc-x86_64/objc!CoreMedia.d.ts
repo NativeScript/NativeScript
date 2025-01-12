@@ -4275,6 +4275,8 @@ declare const kCMVideoCodecType_JPEG: number;
 
 declare const kCMVideoCodecType_JPEG_OpenDML: number;
 
+declare const kCMVideoCodecType_JPEG_XL: number;
+
 declare const kCMVideoCodecType_MPEG1Video: number;
 
 declare const kCMVideoCodecType_MPEG2Video: number;

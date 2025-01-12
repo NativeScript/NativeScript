@@ -277,6 +277,11 @@ export abstract class View extends ViewCommon {
 	color: Color;
 
 	/**
+	 * If `true` the element is an accessibility element and all the children will be treated as a single selectable component.
+	 */
+	accessible: boolean;
+
+	/**
 	 * Hide the view and its children from the a11y service
 	 *
 	 * @nsProperty
@@ -977,6 +982,10 @@ export abstract class View extends ViewCommon {
 	 * @private
 	 */
 	isLayoutRequired: boolean;
+	/**
+	 * @private
+	 */
+	get needsNativeDrawableFill(): boolean;
 	/**
 	 * @private
 	 */

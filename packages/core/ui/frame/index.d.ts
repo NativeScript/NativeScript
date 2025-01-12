@@ -1,4 +1,4 @@
-﻿import { NavigationType, FrameBase } from './frame-common';
+import { NavigationType, FrameBase } from './frame-common';
 import { NavigatedData, Page } from '../page';
 import { Observable, EventData } from '../../data/observable';
 import { Property, View } from '../core/view';

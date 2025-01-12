@@ -106,11 +106,15 @@
 					"codeCoverage": true
 				}
 			}
+		},
+		"@nx/vite:test": {
+			"cache": true,
+			"inputs": ["default", "^production"]
 		}
 	},
 	"useDaemonProcess": false,
-	"nxCloudAccessToken": "NzRmNDM3NDgtZjlmNy00MTUwLWIxZDktYjJlZTRhMWM5ODY3fHJlYWQtd3JpdGU=",
 	"parallel": 1,
 	"useInferencePlugins": false,
-	"defaultBase": "master"
+	"defaultBase": "master",
+	"useLegacyCache": true
 }
