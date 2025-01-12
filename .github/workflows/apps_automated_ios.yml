@@ -15,10 +15,13 @@ concurrency:
 jobs:
   test-ios:
     # runs-on: macos-latest
-    runs-on: [self-hosted, macOS, ARM64]
+    runs-on: warp-macos-15-arm64-6x
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: ActionDebugger By Warpbuild
+        uses: Warpbuilds/action-debugger@v1.3
 
       - uses: actions/setup-node@v4
         with:
