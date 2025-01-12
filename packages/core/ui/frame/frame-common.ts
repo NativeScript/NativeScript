@@ -767,13 +767,13 @@ export function _stack(): Array<FrameBase> {
 	return FrameBase._stack();
 }
 
-export const defaultPage = new Property<FrameBase, string>({
+export const defaultPageProperty = new Property<FrameBase, string>({
 	name: 'defaultPage',
 	valueChanged: (frame: FrameBase, oldValue: string, newValue: string) => {
 		frame.navigate({ moduleName: newValue });
 	},
 });
-defaultPage.register(FrameBase);
+defaultPageProperty.register(FrameBase);
 
 export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: __APPLE__ });
 actionBarVisibilityProperty.register(FrameBase);

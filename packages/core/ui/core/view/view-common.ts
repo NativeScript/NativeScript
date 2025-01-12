@@ -29,6 +29,7 @@ import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibili
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
 import { ShadowCSSValues } from '../../styling/css-shadow';
 import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
+import { Flex, FlexFlow } from '../../layouts/flexbox-layout';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -88,6 +89,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityLabel: string;
 	public accessibilityValue: string;
 	public accessibilityHint: string;
+	public accessibilityIgnoresInvertColors: boolean;
 
 	public testID: string;
 
@@ -546,6 +548,22 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	// START Style property shortcuts
+	get flexFlow(): FlexFlow {
+		return this.style.flexFlow;
+	}
+
+	set flexFlow(value: FlexFlow) {
+		this.style.flexFlow = value;
+	}
+
+	get flex(): Flex {
+		return this.style.flex;
+	}
+
+	set flex(value: Flex) {
+		this.style.flex = value;
+	}
+
 	get borderColor(): string | Color {
 		return this.style.borderColor;
 	}
