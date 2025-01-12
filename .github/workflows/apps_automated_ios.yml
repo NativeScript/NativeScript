@@ -20,8 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: ActionDebugger By Warpbuild
-        uses: Warpbuilds/action-debugger@v1.3
+      # - name: ActionDebugger By Warpbuild
+      #   uses: Warpbuilds/action-debugger@v1.3
 
       - uses: actions/setup-node@v4
         with:
