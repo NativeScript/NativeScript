@@ -106,6 +106,10 @@
 					"codeCoverage": true
 				}
 			}
+		},
+		"@nx/vite:test": {
+			"cache": true,
+			"inputs": ["default", "^production"]
 		}
 	},
 	"useDaemonProcess": false,
