@@ -14,6 +14,7 @@ import { ImageSymbolEffect, ImageSymbolEffects } from './symbol-effects';
 
 @CSSType('Image')
 export abstract class ImageBase extends View implements ImageDefinition {
+	public static isLoadingChangeEvent = 'isLoadingChange';
 	public imageSource: ImageSource;
 	public src: string | ImageSource | ImageAsset;
 	public isLoading: boolean;
@@ -22,6 +23,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 	public decodeWidth: CoreTypes.LengthType;
 	public decodeHeight: CoreTypes.LengthType;
 	public iosSymbolScale: iosSymbolScaleType;
+	public iosSymbolEffect: ImageSymbolEffect | ImageSymbolEffects;
 
 	get tintColor(): Color {
 		return this.style.tintColor;

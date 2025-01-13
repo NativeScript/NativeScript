@@ -14,27 +14,25 @@ concurrency:
 
 jobs:
   test-ios:
-    runs-on: macos-latest
+    # runs-on: macos-latest
+    runs-on: warp-macos-15-arm64-6x
 
     steps:
       - uses: actions/checkout@v4
 
+      # - name: ActionDebugger By Warpbuild
+      #   uses: Warpbuilds/action-debugger@v1.3
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.10.0
-
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3'
+          node-version: 23.5.0
 
       - name: Install NativeScript
         run: |
-          python3 -m pip install --upgrade pip six
           npm i -g nativescript --ignore-scripts --legacy-peer-deps
           ns usage-reporting disable
           ns error-reporting disable
-          ns doctor
+          # ns doctor
 
       - name: Setup
         run: npm run setup
@@ -43,7 +41,10 @@ jobs:
         run: npx nx run-many --target=test --configuration=ci --projects=core
 
       - name: Start iOS Simulator
-        uses: futureware-tech/simulator-action@v3
+        uses: futureware-tech/simulator-action@v4
+        with:
+          model: 'iPhone 15'
+          os_version: '17.5'
 
       - name: Run tests on iOS Simulator
         run: node tools/scripts/run-automated.js ios

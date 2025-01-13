@@ -16,7 +16,7 @@ const spawned_process = spawn(
 	[
 		"nx",
 		"run",
-		`apps-automated:${platform}`,
+		`apps-automated:debug:${platform}`,
 		// "--log=trace",
 		// `--flags="--log=trace"`,
 		"--timeout=600" // 10 minutes, booting avds on CI is very slow...
