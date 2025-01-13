@@ -1,3 +1,24 @@
+## [8.8.6](https://github.com/NativeScript/NativeScript/compare/8.8.5-core...8.8.6) (2024-11-19)
+
+
+### Bug Fixes
+
+* **android:** background color is not applied to certain views ([#10652](https://github.com/NativeScript/NativeScript/issues/10652)) ([4f36748](https://github.com/NativeScript/NativeScript/commit/4f367483ef9f89e2d2a3b8f50f23a5cd8e56078f))
+* **core:** corrected references in file system access ([#10644](https://github.com/NativeScript/NativeScript/issues/10644)) ([e5caa2c](https://github.com/NativeScript/NativeScript/commit/e5caa2cc539a5c78b6cb3c467d3204a8724fd5df))
+* **core:** frame ignored event listeners in xml markup ([#10646](https://github.com/NativeScript/NativeScript/issues/10646)) ([750d2ee](https://github.com/NativeScript/NativeScript/commit/750d2ee455786bf06bde853039e5500a3b445568))
+* **ios:** anti-aliasing for accurate borders ([#10619](https://github.com/NativeScript/NativeScript/issues/10619)) ([4f46815](https://github.com/NativeScript/NativeScript/commit/4f46815b27cc8a0840e81e802e54bcaec90cfe26))
+
+
+## [8.8.5](https://github.com/NativeScript/NativeScript/compare/8.8.4-core...8.8.5) (2024-11-14)
+
+### Bug Fixes
+
+* **visionos:** multi-scene improvements ([#10653](https://github.com/NativeScript/NativeScript/issues/10653)) ([d6922b9](https://github.com/NativeScript/NativeScript/commit/d6922b9896ff60d819c5439d6828c7907618b0a9))
+  
+
+### Bug Fixes
+
+
 ## [8.8.4](https://github.com/NativeScript/NativeScript/compare/8.8.3-core...8.8.4) (2024-10-24)
 
 

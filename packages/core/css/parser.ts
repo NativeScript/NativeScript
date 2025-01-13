@@ -54,7 +54,8 @@ export interface BackgroundPosition {
 	text?: string;
 }
 
-const urlRegEx = /\s*url\((?:(['"])([^\1]*)\1|([^)]*))\)\s*/gy;
+const urlRegEx = /\s*url\((?:(['"])(.*?)\1|([^)]*))\)\s*/gy;
+// const urlRegEx = /(?:^|\s*#[a-fA-F0-9]{3,6}\s*|^\s*)url\((['"]?)(.*?)\1\)\s*/gi;
 export function parseURL(text: string, start = 0): Parsed<URL> {
 	urlRegEx.lastIndex = start;
 	const result = urlRegEx.exec(text);

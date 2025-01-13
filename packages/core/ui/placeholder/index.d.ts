@@ -5,10 +5,14 @@ export * from './placeholder-common';
 
 /**
  * Represents a Placeholder, which is used to add a native view to the visual tree.
+ *
+ * @nsView Placeholder
  */
 export class Placeholder extends View {
 	/**
 	 * String value used when hooking to creatingView event.
+	 *
+	 * @nsEvent {CreateViewEventData} creatingView
 	 */
 	public static creatingViewEvent: string;
 

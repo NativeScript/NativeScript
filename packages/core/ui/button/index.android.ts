@@ -106,6 +106,10 @@ export class Button extends ButtonBase {
 		}
 	}
 
+	override get needsNativeDrawableFill(): boolean {
+		return true;
+	}
+
 	[minWidthProperty.getDefault](): CoreTypes.LengthType {
 		const dips = org.nativescript.widgets.ViewHelper.getMinWidth(this.nativeViewProtected);
 
