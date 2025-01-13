@@ -8,18 +8,26 @@ import { Property, CssProperty } from '../core/properties';
 
 /**
  * Represents a view that shows items in a vertically scrolling list.
+ *
+ * @nsView ListView
  */
 export class ListView extends View {
 	/**
 	 * String value used when hooking to itemLoading event.
+	 *
+	 * @nsEvent {ItemEventData} itemLoading
 	 */
 	public static itemLoadingEvent: string;
 	/**
 	 * String value used when hooking to itemTap event.
+	 *
+	 * @nsEvent {ItemEventData} itemTap
 	 */
 	public static itemTapEvent: string;
 	/**
 	 * String value used when hooking to loadMoreItems event.
+	 *
+	 * @nsEvent itemLoading
 	 */
 	public static loadMoreItemsEvent: string;
 
@@ -36,42 +44,58 @@ export class ListView extends View {
 	/**
 	 * Gets or set the items collection of the ListView.
 	 * The items property can be set to an array or an object defining length and getItem(index) method.
+	 *
+	 * @nsProperty
 	 */
 	items: any[] | ItemsSource;
 
 	/**
 	 * Gets or set the item template of the ListView.
+	 *
+	 * @nsProperty
 	 */
 	itemTemplate: string | Template;
 
 	/**
 	 * Gets or set the list of item templates for the item template selector
+	 *
+	 * @nsProperty
 	 */
 	itemTemplates: string | Array<KeyedTemplate>;
 
 	/**
 	 * A function that returns the appropriate ket template based on the data item.
+	 *
+	 * @nsProperty
 	 */
 	itemTemplateSelector: string | ((item: any, index: number, items: any) => string);
 
 	/**
 	 * Item id generator
+	 *
+	 * @nsProperty
 	 */
 	itemIdGenerator: (item: any, index: number, items: any) => number;
 
 	/**
 	 * Gets or set the items separator line color of the ListView.
+	 *
+	 * @nsProperty
 	 */
 	separatorColor: Color;
 
 	/**
 	 * Gets or set row height of the ListView.
+	 *
+	 * @nsProperty
 	 */
 	rowHeight: CoreTypes.LengthType;
 
 	/**
 	 * Gets or set the estimated height of rows in the ListView.
 	 * The default value is 44px.
+	 *
+	 * @nsProperty
 	 */
 	iosEstimatedRowHeight: CoreTypes.LengthType;
 

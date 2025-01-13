@@ -35,7 +35,8 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 
 @CSSType('Frame')
 export class FrameBase extends CustomLayoutView {
-	public static androidOptionSelectedEvent = 'optionSelected';
+	public static navigatingToEvent = 'navigatingTo';
+	public static navigatedToEvent = 'navigatedTo';
 
 	private _animated: boolean;
 	private _transition: NavigationTransition;
@@ -267,7 +268,7 @@ export class FrameBase extends CustomLayoutView {
 
 		newPage.onNavigatedTo(isBack);
 		this.notify({
-			eventName: Page.navigatedToEvent,
+			eventName: FrameBase.navigatedToEvent,
 			object: this,
 			isBack,
 			entry,
@@ -452,7 +453,7 @@ export class FrameBase extends CustomLayoutView {
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
 		this.notify({
-			eventName: Page.navigatingToEvent,
+			eventName: FrameBase.navigatingToEvent,
 			object: this,
 			isBack,
 			entry: backstackEntry,
@@ -766,13 +767,13 @@ export function _stack(): Array<FrameBase> {
 	return FrameBase._stack();
 }
 
-export const defaultPage = new Property<FrameBase, string>({
+export const defaultPageProperty = new Property<FrameBase, string>({
 	name: 'defaultPage',
 	valueChanged: (frame: FrameBase, oldValue: string, newValue: string) => {
 		frame.navigate({ moduleName: newValue });
 	},
 });
-defaultPage.register(FrameBase);
+defaultPageProperty.register(FrameBase);
 
 export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: __APPLE__ });
 actionBarVisibilityProperty.register(FrameBase);
