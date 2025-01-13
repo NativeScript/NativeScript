@@ -31,7 +31,7 @@ export { CSSUtils } from './css/system-classes';
 export { ObservableArray, ChangeType } from './data/observable-array';
 export type { ChangedData } from './data/observable-array';
 export { Observable, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
-export type { PropertyChangeData, EventData } from './data/observable';
+export type { PropertyChangeData, EventData, EventDataValue } from './data/observable';
 export { VirtualArray } from './data/virtual-array';
 export type { ItemsLoading } from './data/virtual-array';
 export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess, AndroidDirectory } from './file-system';

@@ -1,13 +1,13 @@
-import { ViewBase } from '../view-base';
-import { Property, InheritedProperty } from '../properties';
-import { EventData } from '../../../data/observable';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { Color } from '../../../color';
-import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
-import { GestureTypes, GesturesObserver } from '../../gestures';
-import { LinearGradient } from '../../styling/linear-gradient';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
 import { CoreTypes } from '../../../core-types';
+import { EventData } from '../../../data/observable';
+import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
+import { GestureTypes, GesturesObserver, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
 import { ShadowCSSValues } from '../../styling/css-shadow';
+import { LinearGradient } from '../../styling/linear-gradient';
+import { InheritedProperty, Property } from '../properties';
+import { ViewBase } from '../view-base';
 import { ViewCommon } from './view-common';
 
 export * from './view-common';
@@ -100,34 +100,48 @@ export interface ShownModallyData extends EventData {
 /**
  * This class is the base class for all UI components.
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within.
+ *
+ * @nsView View
  */
 export abstract class View extends ViewCommon {
 	/**
 	 * String value used when hooking to layoutChanged event.
+	 *
+	 * @nsEvent layoutChanged
 	 */
 	public static layoutChangedEvent: string;
 	/**
 	 * String value used when hooking to showingModally event.
+	 *
+	 * @nsEvent {ShownModallyData} showingModally
 	 */
 	public static showingModallyEvent: string;
 
 	/**
 	 * String value used when hooking to shownModally event.
+	 *
+	 * @nsEvent {ShownModallyData} shownModally
 	 */
 	public static shownModallyEvent: string;
 
 	/**
 	 * String value used when hooking to accessibilityBlur event.
+	 *
+	 * @nsEvent accessibilityBlur
 	 */
 	public static accessibilityBlurEvent: string;
 
 	/**
 	 * String value used when hooking to accessibilityFocus event.
+	 *
+	 * @nsEvent accessibilityFocus
 	 */
 	public static accessibilityFocusEvent: string;
 
 	/**
 	 * String value used when hooking to accessibilityFocusChanged event.
+	 *
+	 * @nsEvent {EventDataValue} accessibilityFocusChanged
 	 */
 	public static accessibilityFocusChangedEvent: string;
 
@@ -145,86 +159,120 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
+	 *
+	 * @nsProperty
 	 */
 	bindingContext: any;
 
 	/**
 	 * Gets or sets the border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderColor: string | Color;
 
 	/**
 	 * Gets or sets the top border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderTopColor: Color;
 
 	/**
 	 * Gets or sets the right border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderRightColor: Color;
 
 	/**
 	 * Gets or sets the bottom border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderBottomColor: Color;
 
 	/**
 	 * Gets or sets the left border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderLeftColor: Color;
 
 	/**
 	 * Gets or sets the border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderWidth: string | CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderTopWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the right border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderRightWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderBottomWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the left border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderLeftWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderRadius: string | CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top left border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderTopLeftRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top right border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderTopRightRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom right border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderBottomRightRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom left border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderBottomLeftRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the color of the view.
+	 *
+	 * @nsProperty
 	 */
 	color: Color;
 
@@ -235,6 +283,8 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * Hide the view and its children from the a11y service
+	 *
+	 * @nsProperty
 	 */
 	accessibilityHidden: boolean;
 
@@ -242,58 +292,90 @@ export abstract class View extends ViewCommon {
 	 * The view's unique accessibilityIdentifier.
 	 *
 	 * This is used for automated testing.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityIdentifier: string;
 
 	/**
 	 * Which role should this view be treated by the a11y service?
+	 *
+	 * @nsProperty
 	 */
 	accessibilityRole: AccessibilityRole;
 
 	/**
 	 * Which state should this view be treated as by the a11y service?
+	 *
+	 * @nsProperty
+	 *
 	 */
 	accessibilityState: AccessibilityState;
 
 	/**
 	 * Short description of the element, ideally one word.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityLabel: string;
 
 	/**
 	 * Current value of the element in a localized string.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityValue: string;
 
 	/**
 	 * A hint describes the elements behavior. Example: 'Tap change playback speed'
+	 *
+	 * @nsProperty
 	 */
 	accessibilityHint: string;
+
+	/**
+	 * When components dynamically change, we want TalkBack to alert the end user. This is made possible by the accessibilityLiveRegion property.
+	 */
 	accessibilityLiveRegion: AccessibilityLiveRegion;
 
 	/**
 	 * Sets the language in which to speak the element's label and value.
 	 * Accepts language ID tags that follows the "BCP 47" specification.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityLanguage: string;
 
 	/**
 	 * This view starts a media session. Equivalent to trait = startsMedia
+	 *
+	 * @nsProperty
 	 */
 	accessibilityMediaSession: boolean;
 
 	/**
+	 * @nsProperty
+	 */
+	accessibilityIgnoresInvertColors: boolean;
+
+	/**
 	 * Defines whether accessibility font scale should affect font size.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityAdjustsFontSize: boolean;
 
 	/**
 	 * Gets or sets the minimum accessibility font scale.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityMinFontScale: number;
 
 	/**
 	 * Gets or sets the maximum accessibility font scale.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityMaxFontScale: number;
 
@@ -302,141 +384,199 @@ export abstract class View extends ViewCommon {
 	 */
 	_androidContentDescriptionUpdated?: boolean;
 
+	/**
+	 *
+	 * @nsProperty
+	 */
 	automationText: string;
 
 	/**
 	 * Gets or sets the elevation of the android view.
+	 *
+	 * @nsProperty
 	 */
 	androidElevation: number;
 
 	/**
 	 * Gets or sets the dynamic elevation offset of the android view.
+	 *
+	 * @nsProperty
 	 */
 	androidDynamicElevationOffset: number;
 
 	/**
 	 * Gets or sets the background style property.
+	 *
+	 * @nsProperty
 	 */
 	background: string;
 
 	/**
 	 * Gets or sets the background color of the view.
+	 *
+	 * @nsProperty
 	 */
 	backgroundColor: string | Color;
 
 	/**
 	 * Gets or sets the background image of the view.
+	 *
+	 * @nsProperty
 	 */
 	backgroundImage: string | LinearGradient;
 
 	/**
 	 * Gets or sets the box shadow of the view.
+	 *
+	 * @nsProperty
 	 */
 	boxShadow: string | ShadowCSSValues;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.
+	 *
+	 * @nsProperty
 	 */
 	minWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the minimum height the view may grow to.
+	 *
+	 * @nsProperty
 	 */
 	minHeight: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the desired width of the view.
+	 *
+	 * @nsProperty
 	 */
 	width: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the desired height of the view.
+	 *
+	 * @nsProperty
 	 */
 	height: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets margin style property.
+	 *
+	 * @nsProperty
 	 */
 	margin: string | CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the left side of this view.
+	 *
+	 * @nsProperty
 	 */
 	marginLeft: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the top side of this view.
+	 *
+	 * @nsProperty
 	 */
 	marginTop: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the right side of this view.
+	 *
+	 * @nsProperty
 	 */
 	marginRight: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the bottom side of this view.
+	 *
+	 * @nsProperty
 	 */
 	marginBottom: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Horizontal axis.
+	 *
+	 * @nsProperty
 	 */
 	horizontalAlignment: CoreTypes.HorizontalAlignmentType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Vertical axis.
+	 *
+	 * @nsProperty
 	 */
 	verticalAlignment: CoreTypes.VerticalAlignmentType;
 
 	/**
 	 * Gets or sets the visibility of the view.
+	 *
+	 * @nsProperty
 	 */
 	visibility: CoreTypes.VisibilityType;
 
 	/**
 	 * Gets or sets the opacity style property.
+	 *
+	 * @nsProperty
 	 */
 	opacity: number;
 
 	/**
 	 * Gets or sets the rotate affine transform of the view along the Z axis.
+	 *
+	 * @nsProperty
 	 */
 	rotate: number;
 
 	/**
 	 * Gets or sets the rotate affine transform of the view along the X axis.
+	 *
+	 * @nsProperty
 	 */
 	rotateX: number;
 
 	/**
 	 * Gets or sets the rotate affine transform of the view along the Y axis.
+	 *
+	 * @nsProperty
 	 */
 	rotateY: number;
 
 	/**
 	 * Gets or sets the distance of the camera form the view perspective.
 	 * Usually needed when rotating the view over the X or Y axis.
+	 *
+	 * @nsProperty
 	 */
 	perspective: number;
 
 	/**
 	 * Gets or sets the translateX affine transform of the view in device independent pixels.
+	 *
+	 * @nsProperty
 	 */
 	translateX: CoreTypes.dip;
 
 	/**
 	 * Gets or sets the translateY affine transform of the view in device independent pixels.
+	 *
+	 * @nsProperty
 	 */
 	translateY: CoreTypes.dip;
 
 	/**
 	 * Gets or sets the scaleX affine transform of the view.
+	 *
+	 * @nsProperty
 	 */
 	scaleX: number;
 
 	/**
 	 * Gets or sets the scaleY affine transform of the view.
+	 *
+	 * @nsProperty
 	 */
 	scaleY: number;
 
@@ -444,38 +584,94 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * Gets or sets the X component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
+	 *
+	 * @nsProperty
 	 */
 	originX: number;
 
 	/**
 	 * Gets or sets the Y component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
+	 *
+	 * @nsProperty
 	 */
 	originY: number;
 
 	/**
+	 * The flex-flow Shorthand property specifies the direction of a flex container, as well as its wrapping behavior.
+	 * @nsProperty
+	 */
+	flexFlow: FlexFlow;
+	/**
+	 * The flex shorthand property sets how a flex item will grow or shrink to fit the space available in its flex container.
+	 * @nsProperty
+	 */
+	flex: Flex;
+
+	/**
 	 * Gets or sets a value indicating whether the the view is enabled. This affects the appearance of the view.
+	 *
+	 * @nsProperty
 	 */
 	isEnabled: boolean;
 
 	/**
 	 * Gets or sets a value indicating whether the user can interact with the view. This does not affect the appearance of the view.
+	 *
+	 * @nsProperty
 	 */
 	isUserInteractionEnabled: boolean;
 
 	/**
 	 * Instruct container view to expand beyond the safe area. This property is iOS specific. Default value: false
+	 *
+	 * @nsProperty
 	 */
 	iosOverflowSafeArea: boolean;
 
 	/**
 	 * Enables or disables the iosOverflowSafeArea property for all children. This property is iOS specific. Default value: true
+	 *
+	 * @nsProperty
 	 */
 	iosOverflowSafeAreaEnabled: boolean;
 
 	/**
 	 * Gets or sets a value indicating whether the the view should totally ignore safe areas computation. This property is iOS specific. Default value: false
+	 *
+	 * @nsProperty
 	 */
 	iosIgnoreSafeArea: boolean;
+
+	/**
+	 * visionOS only
+	 *
+	 * @nsProperty
+	 */
+	visionIgnoreHoverStyle: boolean;
+
+	/**
+	 * visionOS only
+	 *
+	 * @nsProperty
+	 */
+	visionHoverStyle: string | VisionHoverOptions;
+
+	/**
+	 * @nsProperty
+	 */
+	public testID: string;
+	/**
+	 * @nsProperty
+	 */
+	public touchAnimation: boolean | TouchAnimationOptions;
+	/**
+	 * @nsProperty
+	 */
+	public ignoreTouchAnimation: boolean;
+	/**
+	 * @nsProperty
+	 */
+	public touchDelay: number;
 
 	/**
 	 * Gets is layout is valid. This is a read-only property.
@@ -926,6 +1122,8 @@ export abstract class View extends ViewCommon {
 export class ContainerView extends View {
 	/**
 	 * Instruct container view to expand beyond the safe area. This property is iOS specific. Default value: true
+	 *
+	 * @nsProperty
 	 */
 	public iosOverflowSafeArea: boolean;
 }
@@ -1008,3 +1206,9 @@ export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 export const iosOverflowSafeAreaProperty: Property<View, boolean>;
 export const iosOverflowSafeAreaEnabledProperty: InheritedProperty<View, boolean>;
+export const visionHoverStyleProperty: Property<View, string | VisionHoverOptions>;
+export const visionIgnoreHoverStyleProperty: Property<View, boolean>;
+export const touchAnimationProperty: Property<View, boolean | TouchAnimationOptions>;
+export const ignoreTouchAnimationProperty: Property<View, boolean>;
+export const touchDelayProperty: Property<View, number>;
+export const testIDProperty: Property<View, string>;

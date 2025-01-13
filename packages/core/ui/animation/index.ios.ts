@@ -1,9 +1,7 @@
 // Types
-import { AnimationDefinitionInternal, AnimationPromise, IOSView, PropertyAnimation, PropertyAnimationInfo } from './animation-common';
+import { AnimationDefinitionInternal, AnimationPromise, IOSView, PropertyAnimation, PropertyAnimationInfo, AnimationBase, Properties } from './animation-common';
 import { View } from '../core/view';
-
-// Requires
-import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animation-common';
+import { CubicBezierAnimationCurve } from './animation-interfaces';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
 import { ios as iosBackground } from '../styling/background';
@@ -134,9 +132,7 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
 			if (curve instanceof CAMediaTimingFunction) {
 				return curve;
 			} else if (curve instanceof CubicBezierAnimationCurve) {
-				const animationCurve = <CubicBezierAnimationCurve>curve;
-
-				return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
+				return CAMediaTimingFunction.functionWithControlPoints(curve.x1, curve.y1, curve.x2, curve.y2);
 			} else {
 				console.error(`Invalid animation curve: ${curve}`);
 			}
@@ -660,7 +656,7 @@ export class Animation extends AnimationBase {
 				if (animationDidFinish && nextAnimation) {
 					nextAnimation();
 				}
-			}
+			},
 		);
 	}
 
@@ -786,9 +782,9 @@ export class Animation extends AnimationBase {
 							fromValue: nativeView.layer.mask.path,
 							toValue,
 						},
-						animation
+						animation,
 					),
-					'path'
+					'path',
 				);
 			}
 		}
@@ -809,9 +805,9 @@ export class Animation extends AnimationBase {
 									fromValue: borderMask.path,
 									toValue: innerClipPath,
 								},
-								animation
+								animation,
 							),
-							'path'
+							'path',
 						);
 					}
 
@@ -830,9 +826,9 @@ export class Animation extends AnimationBase {
 											fromValue: layer.path,
 											toValue: paths[i],
 										},
-										animation
+										animation,
 									),
-									'path'
+									'path',
 								);
 							}
 						}
@@ -846,9 +842,9 @@ export class Animation extends AnimationBase {
 								fromValue: nativeView.borderLayer.path,
 								toValue: innerClipPath,
 							},
-							animation
+							animation,
 						),
-						'path'
+						'path',
 					);
 				}
 			}
@@ -864,9 +860,9 @@ export class Animation extends AnimationBase {
 							fromValue: nativeView.layer.cornerRadius,
 							toValue: iosBackground.getUniformBorderRadius(animation.target, bounds),
 						},
-						animation
+						animation,
 					),
-					'cornerRadius'
+					'cornerRadius',
 				);
 			}
 		}
@@ -885,9 +881,9 @@ export class Animation extends AnimationBase {
 							fromValue: shadowClipMask.path,
 							toValue: clipPath,
 						},
-						animation
+						animation,
 					),
-					'path'
+					'path',
 				);
 			}
 
@@ -906,9 +902,9 @@ export class Animation extends AnimationBase {
 								fromValue: shadowLayer.shadowPath,
 								toValue: shadowPath,
 							},
-							animation
+							animation,
 						),
-						'shadowPath'
+						'shadowPath',
 					);
 
 					if (shadowLayer.mask instanceof CAShapeLayer) {
@@ -920,9 +916,9 @@ export class Animation extends AnimationBase {
 									fromValue: shadowLayer.mask.path,
 									toValue: maskPath,
 								},
-								animation
+								animation,
 							),
-							'path'
+							'path',
 						);
 					}
 				}

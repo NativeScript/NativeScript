@@ -39,6 +39,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 	public abstract dismissSoftInput();
 	public abstract _setInputType(inputType: number): void;
 	public abstract setSelection(start: number, stop?: number);
+	placeholderColor: Color;
 
 	@PseudoClassHandler('focus', 'blur')
 	_updateTextBaseFocusStateHandler(subscribe) {
