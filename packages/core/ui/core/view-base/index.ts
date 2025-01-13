@@ -345,7 +345,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private _androidView: Object;
 	private _style: Style;
 	private _isLoaded: boolean;
+
+	/**
+	 * @deprecated
+	 */
 	private _visualState: string;
+
 	private _templateParent: ViewBase;
 	private __nativeView: any;
 	// private _disableNativeViewRecycling: boolean;
@@ -557,10 +562,18 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public reusable: boolean;
 
+	public readonly cssClasses: Set<string>;
+	public readonly cssPseudoClasses: Set<string>;
+
 	constructor() {
 		super();
 		this._domId = viewIdCounter++;
 		this._style = new Style(new WeakRef(this));
+		this.cssClasses = new Set();
+		this.cssPseudoClasses = new Set();
+
+		this.cssPseudoClasses.add(this.defaultVisualState);
+
 		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });
 	}
 
@@ -800,14 +813,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		highlighted: ['active', 'pressed'],
 	};
 
-	public cssClasses: Set<string> = new Set();
-	public cssPseudoClasses: Set<string> = new Set();
+	private getAllAliasedStates(name: string): string[] {
+		const allStates: string[] = [name];
 
-	private getAllAliasedStates(name: string): Array<string> {
-		const allStates = [];
-		allStates.push(name);
 		if (name in this.pseudoClassAliases) {
-			for (let i = 0; i < this.pseudoClassAliases[name].length; i++) {
+			for (let i = 0, length = this.pseudoClassAliases[name].length; i < length; i++) {
 				allStates.push(this.pseudoClassAliases[name][i]);
 			}
 		}
@@ -823,7 +833,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	@profile
 	public addPseudoClass(name: string): void {
 		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0; i < allStates.length; i++) {
+		for (let i = 0, length = allStates.length; i < length; i++) {
 			if (!this.cssPseudoClasses.has(allStates[i])) {
 				this.cssPseudoClasses.add(allStates[i]);
 				this.notifyPseudoClassChanged(allStates[i]);
@@ -839,7 +849,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	@profile
 	public deletePseudoClass(name: string): void {
 		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0; i < allStates.length; i++) {
+		for (let i = 0, length = allStates.length; i < length; i++) {
 			if (this.cssPseudoClasses.has(allStates[i])) {
 				this.cssPseudoClasses.delete(allStates[i]);
 				this.notifyPseudoClassChanged(allStates[i]);
@@ -1334,11 +1344,32 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		view._isAddedToNativeVisualTree = false;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public get visualState() {
 		return this._visualState;
 	}
 
+	public _addVisualState(state: string): void {
+		this.deletePseudoClass(this.defaultVisualState);
+		this.addPseudoClass(state);
+	}
+
+	public _removeVisualState(state: string): void {
+		this.deletePseudoClass(state);
+
+		if (!this.cssPseudoClasses.size) {
+			this.addPseudoClass(this.defaultVisualState);
+		}
+	}
+
+	/**
+	 * @deprecated Use View._addVisualState() and View._removeVisualState() instead.
+	 */
 	public _goToVisualState(state: string) {
+		console.log('_goToVisualState() is deprecated. Use View._addVisualState() and View._removeVisualState() instead.');
+
 		if (Trace.isEnabled()) {
 			Trace.write(this + ' going to state: ' + state, Trace.categories.Style);
 		}
@@ -1583,6 +1614,21 @@ export const idProperty = new Property<ViewBase, string>({
 	valueChanged: (view, oldValue, newValue) => view._onCssStateChange(),
 });
 idProperty.register(ViewBase);
+
+export const defaultVisualStateProperty = new Property<ViewBase, string>({
+	name: 'defaultVisualState',
+	defaultValue: 'normal',
+	valueChanged(this: void, target, oldValue, newValue): void {
+		const value = newValue || 'normal';
+
+		// Append new default if old one is currently applied
+		if (target.cssPseudoClasses && target.cssPseudoClasses.has(oldValue)) {
+			target.deletePseudoClass(oldValue);
+			target.addPseudoClass(newValue);
+		}
+	},
+});
+defaultVisualStateProperty.register(ViewBase);
 
 export function booleanConverter(v: string | boolean): boolean {
 	const lowercase = (v + '').toLowerCase();

@@ -24,7 +24,7 @@ import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
 import * as am from '../../animation';
-import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
 import { ShadowCSSValues } from '../../styling/css-shadow';
@@ -1266,24 +1266,18 @@ export const originYProperty = new Property<ViewCommon, number>({
 });
 originYProperty.register(ViewCommon);
 
-export const defaultVisualStateProperty = new Property<ViewCommon, string>({
-	name: 'defaultVisualState',
-	defaultValue: 'normal',
-	valueChanged(this: void, target, oldValue, newValue): void {
-		target.defaultVisualState = newValue || 'normal';
-		if (!target.visualState || target.visualState === oldValue) {
-			target._goToVisualState(target.defaultVisualState);
-		}
-	},
-});
-defaultVisualStateProperty.register(ViewCommon);
-
 export const isEnabledProperty = new Property<ViewCommon, boolean>({
 	name: 'isEnabled',
 	defaultValue: true,
 	valueConverter: booleanConverter,
 	valueChanged(this: void, target, oldValue, newValue): void {
-		target._goToVisualState(newValue ? target.defaultVisualState : 'disabled');
+		const state = 'disabled';
+
+		if (newValue) {
+			target._removeVisualState(state);
+		} else {
+			target._addVisualState(state);
+		}
 	},
 });
 isEnabledProperty.register(ViewCommon);
