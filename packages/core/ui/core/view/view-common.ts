@@ -1,5 +1,5 @@
 // Definitions.
-import { View as ViewDefinition, Point, Size, ShownModallyData } from '.';
+import { View as ViewDefinition, Point, Size, ShownModallyData, Position } from '.';
 
 import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
@@ -1066,12 +1066,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return changed;
 	}
 
-	_getCurrentLayoutBounds(): {
-		left: number;
-		top: number;
-		right: number;
-		bottom: number;
-	} {
+	_getCurrentLayoutBounds(): Position {
 		return { left: 0, top: 0, right: 0, bottom: 0 };
 	}
 
@@ -1110,7 +1105,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return undefined;
 	}
 
-	public getSafeAreaInsets(): { left; top; right; bottom } {
+	public getSafeAreaInsets(): Position {
 		return { left: 0, top: 0, right: 0, bottom: 0 };
 	}
 
