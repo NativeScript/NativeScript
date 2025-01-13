@@ -5,6 +5,8 @@ import { Property } from '../core/properties';
  * Represents a view with html content. Use this component instead WebView when you want to show just static HTML content.
  * [iOS support](https://developer.apple.com/documentation/foundation/nsattributedstring/1524613-initwithdata)
  * [android support](http://developer.android.com/reference/android/text/Html.html)
+ *
+ * @nsView HtmlView
  */
 export class HtmlView extends View {
 	/**
@@ -17,11 +19,23 @@ export class HtmlView extends View {
 	 */
 	ios: any /* UITextView */;
 
-	/** Gets or sets html string for the HtmlView. */
+	/** Gets or sets html string for the HtmlView.
+	 *
+	 * @nsProperty
+	 */
 	html: string;
 
-	/** Gets or sets a value indicating whether HtmlView is selectable. */
+	/** Gets or sets a value indicating whether HtmlView is selectable.
+	 *
+	 * @nsProperty
+	 */
 	selectable: boolean;
+	/**
+	 * Gets of sets color of links in the rendered HTML.
+	 *
+	 * @nsProperty
+	 */
+	linkColor: Color;
 }
 
 export const htmlProperty: Property<HtmlView, string>;

@@ -24,11 +24,12 @@ import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
 import * as am from '../../animation';
-import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
 import { ShadowCSSValues } from '../../styling/css-shadow';
 import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
+import { Flex, FlexFlow } from '../../layouts/flexbox-layout';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -88,6 +89,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityLabel: string;
 	public accessibilityValue: string;
 	public accessibilityHint: string;
+	public accessibilityIgnoresInvertColors: boolean;
 
 	public testID: string;
 
@@ -546,6 +548,22 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	// START Style property shortcuts
+	get flexFlow(): FlexFlow {
+		return this.style.flexFlow;
+	}
+
+	set flexFlow(value: FlexFlow) {
+		this.style.flexFlow = value;
+	}
+
+	get flex(): Flex {
+		return this.style.flex;
+	}
+
+	set flex(value: Flex) {
+		this.style.flex = value;
+	}
+
 	get borderColor(): string | Color {
 		return this.style.borderColor;
 	}
@@ -1243,24 +1261,18 @@ export const originYProperty = new Property<ViewCommon, number>({
 });
 originYProperty.register(ViewCommon);
 
-export const defaultVisualStateProperty = new Property<ViewCommon, string>({
-	name: 'defaultVisualState',
-	defaultValue: 'normal',
-	valueChanged(this: void, target, oldValue, newValue): void {
-		target.defaultVisualState = newValue || 'normal';
-		if (!target.visualState || target.visualState === oldValue) {
-			target._goToVisualState(target.defaultVisualState);
-		}
-	},
-});
-defaultVisualStateProperty.register(ViewCommon);
-
 export const isEnabledProperty = new Property<ViewCommon, boolean>({
 	name: 'isEnabled',
 	defaultValue: true,
 	valueConverter: booleanConverter,
 	valueChanged(this: void, target, oldValue, newValue): void {
-		target._goToVisualState(newValue ? target.defaultVisualState : 'disabled');
+		const state = 'disabled';
+
+		if (newValue) {
+			target._removeVisualState(state);
+		} else {
+			target._addVisualState(state);
+		}
 	},
 });
 isEnabledProperty.register(ViewCommon);

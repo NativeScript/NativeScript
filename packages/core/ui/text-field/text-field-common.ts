@@ -7,6 +7,7 @@ import { booleanConverter } from '../core/view-base';
 @CSSType('TextField')
 export class TextFieldBase extends EditableTextBase implements TextFieldDefinition {
 	public static returnPressEvent = 'returnPress';
+
 	public secure: boolean;
 	public closeOnReturn: boolean;
 	// iOS only (to avoid 12+ suggested strong password handling)
