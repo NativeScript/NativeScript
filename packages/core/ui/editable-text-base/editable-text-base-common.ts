@@ -6,6 +6,19 @@ import { booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
+import { EventData } from '../../data/observable';
+
+function focusChangeHandler(args: EventData): void {
+	const view = args.object as EditableTextBase;
+
+	if (args.eventName === 'focus') {
+		view._addVisualState('focus');
+		view._removeVisualState('blur');
+	} else {
+		view._addVisualState('blur');
+		view._removeVisualState('focus');
+	}
+}
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
 	public static blurEvent = 'blur';
@@ -26,16 +39,14 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 	public abstract dismissSoftInput();
 	public abstract _setInputType(inputType: number): void;
 	public abstract setSelection(start: number, stop?: number);
-
-	private _focusHandler = () => this._goToVisualState('focus');
-	private _blurHandler = () => this._goToVisualState('blur');
+	placeholderColor: Color;
 
 	@PseudoClassHandler('focus', 'blur')
 	_updateTextBaseFocusStateHandler(subscribe) {
 		const method = subscribe ? 'on' : 'off';
 
-		this[method]('focus', this._focusHandler);
-		this[method]('blur', this._blurHandler);
+		this[method]('focus', focusChangeHandler);
+		this[method]('blur', focusChangeHandler);
 	}
 }
 

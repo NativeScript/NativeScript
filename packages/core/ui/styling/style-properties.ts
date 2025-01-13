@@ -782,7 +782,7 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
 			return value1 === value2;
 		}
 	},
-	valueConverter: (value: any) => {
+	valueConverter: (value: string | LinearGradient) => {
 		if (typeof value === 'string') {
 			const parsed = parseBackground(value);
 			if (parsed) {

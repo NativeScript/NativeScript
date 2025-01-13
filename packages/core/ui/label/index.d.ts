@@ -2,6 +2,8 @@
 
 /**
  * Represents a text label.
+ *
+ * @nsView Label
  */
 export class Label extends TextBase {
 	/**
@@ -16,6 +18,8 @@ export class Label extends TextBase {
 
 	/**
 	 * Gets or sets whether the Label wraps text or not.
+	 *
+	 * @nsProperty
 	 */
 	textWrap: boolean;
 }

@@ -29,7 +29,14 @@
 				"forDevice": false,
 				"prepare": false
 			},
-			"configurations": {}
+			"configurations": {
+				"ios": {
+					"platform": "ios"
+				},
+				"android": {
+					"platform": "android"
+				}
+			}
 		},
 		"prepare": {
 			"executor": "@nativescript/nx:prepare",
