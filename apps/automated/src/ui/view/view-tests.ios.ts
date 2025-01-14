@@ -75,17 +75,22 @@ export function testBackgroundInternalChangedOnceOnResize() {
 	layout.requestLayout();
 	layout.layout(0, 0, 200, 200);
 
-	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is layed-out on 0 0 200 200.');
+	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is laid-out on 0 0 200 200.');
+
+	// Ignore safe area as it may result in re-calculating view frame, thus trigger a size change regardless
+	layout.iosIgnoreSafeArea = true;
 
 	layout.requestLayout();
 	layout.layout(50, 50, 250, 250);
 
-	TKUnit.assertEqual(trackCount(), 0, 'Expected background to NOT change when view is layed-out from 0 0 200 200 to 50 50 250 250.');
+	TKUnit.assertEqual(trackCount(), 0, 'Expected background to NOT change when view is laid-out from 0 0 200 200 to 50 50 250 250.');
+
+	layout.iosIgnoreSafeArea = false;
 
 	layout.requestLayout();
 	layout.layout(0, 0, 250, 250);
 
-	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is layed-out from 50 50 250 250 to 0 0 250 250.');
+	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is laid-out from 50 50 250 250 to 0 0 250 250.');
 }
 
 export function test_automation_text_set_to_native() {

@@ -40,5 +40,5 @@ export namespace ios {
 	 * @param gradient Parsed LinearGradient
 	 * @param gradientLayerOpacity Initial layer opacity (in case you'd like to use with animation sequence)
 	 */
-	export function drawGradient(uiView: NativeScriptUIView, gradientLayer: CAGradientLayer, gradient: LinearGradient, gradientLayerOpacity?: number): void;
+	export function drawGradient(uiView: any /* UIView */, gradientLayer: CAGradientLayer, gradient: LinearGradient, gradientLayerOpacity?: number): void;
 }

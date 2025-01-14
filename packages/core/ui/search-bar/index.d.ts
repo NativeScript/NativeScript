@@ -5,15 +5,21 @@ import { Color } from '../../color';
 
 /**
  * Represents a search bar component.
+ *
+ * @nsView SearchBar
  */
 export class SearchBar extends View {
 	/**
 	 * String value used when hooking to submit event.
+	 *
+	 * @nsEvent {EventData} submit
 	 */
 	public static submitEvent: string;
 
 	/**
 	 * String value used when hooking to clear event.
+	 *
+	 * @nsEvent {EventData} submit
 	 */
 	public static clearEvent: string;
 
@@ -29,21 +35,29 @@ export class SearchBar extends View {
 
 	/**
 	 * Gets or sets a search bar text.
+	 *
+	 * @nsProperty
 	 */
 	text: string;
 
 	/**
 	 * Gets or sets the text of the search bar text field hint/placeholder.
+	 *
+	 * @nsProperty
 	 */
 	hint: string;
 
 	/**
 	 * Gets or sets the TextField background color of the SearchBar component.
+	 *
+	 * @nsProperty
 	 */
 	textFieldBackgroundColor: Color;
 
 	/**
 	 * Gets or sets the TextField Hint color of the SearchBar component.
+	 *
+	 * @nsProperty
 	 */
 	textFieldHintColor: Color;
 

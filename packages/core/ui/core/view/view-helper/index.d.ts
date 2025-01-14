@@ -1,4 +1,4 @@
-import { View } from '..';
+import { Position, View } from '..';
 
 export class ViewHelper {
 	/**
@@ -60,8 +60,8 @@ export namespace IOSHelper {
 	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
 	export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
 	export function layoutView(controller: any /* UIViewController */, owner: View): void;
-	export function getPositionFromFrame(frame: any /* CGRect */): { left; top; right; bottom };
-	export function getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): any; /* CGRect */
+	export function getPositionFromFrame(frame: any /* CGRect */): Position;
+	export function getFrameFromPosition(position: Position, insets?: Position): any; /* CGRect */
 	export function shrinkToSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
 	export function expandBeyondSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
 	export class UILayoutViewController {
