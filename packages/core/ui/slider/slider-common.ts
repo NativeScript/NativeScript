@@ -6,6 +6,7 @@ import { CSSType, View } from '../core/view';
 // TODO: Extract base Range class for slider and progress
 @CSSType('Slider')
 export class SliderBase extends View implements SliderDefinition {
+	static readonly valueChangeEvent = 'valueChange';
 	static readonly accessibilityIncrementEvent = 'accessibilityIncrement';
 	static readonly accessibilityDecrementEvent = 'accessibilityDecrement';
 

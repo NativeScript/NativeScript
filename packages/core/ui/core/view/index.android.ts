@@ -1,5 +1,5 @@
 // Definitions.
-import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
+import type { Point, CustomLayoutView as CustomLayoutViewDefinition, Position } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
@@ -577,12 +577,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	_getCurrentLayoutBounds(): {
-		left: number;
-		top: number;
-		right: number;
-		bottom: number;
-	} {
+	_getCurrentLayoutBounds(): Position {
 		if (this.nativeViewProtected && !this.isCollapsed) {
 			return {
 				left: this.nativeViewProtected.getLeft(),

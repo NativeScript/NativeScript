@@ -202,6 +202,11 @@ export class ImageSource {
 	loadFromFontIconCode(source: string, font: Font, color: Color): boolean;
 
 	/**
+	 * Gets the native source object (typically a Bitmap or a UIImage).
+	 */
+	getNativeSource(): any;
+
+	/**
 	 * Sets the provided native source object (typically a Bitmap or a UIImage).
 	 * This will update either the android or ios properties, depending on the target os.
 	 * @param nativeSource The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
