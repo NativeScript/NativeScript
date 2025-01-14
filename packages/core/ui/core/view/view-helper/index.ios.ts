@@ -1,5 +1,5 @@
 // Types
-import { View } from '..';
+import { Position, View } from '..';
 
 // Requires
 import { ViewHelper } from './view-helper-common';
@@ -247,7 +247,7 @@ export class IOSHelper {
 		}
 	}
 
-	static getPositionFromFrame(frame: CGRect): { left; top; right; bottom } {
+	static getPositionFromFrame(frame: CGRect): Position {
 		const left = layout.round(layout.toDevicePixels(frame.origin.x));
 		const top = layout.round(layout.toDevicePixels(frame.origin.y));
 		const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
@@ -256,7 +256,7 @@ export class IOSHelper {
 		return { left, right, top, bottom };
 	}
 
-	static getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): CGRect {
+	static getFrameFromPosition(position: Position, insets?: Position): CGRect {
 		insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
 
 		const left = layout.toDeviceIndependentPixels(position.left + insets.left);

@@ -1,7 +1,11 @@
 // @ts-nocheck
+// vitest.setup.ts
+import { beforeAll, afterAll, vi } from 'vitest';
 
-jest.mock('@nativescript/core/application', () => null, { virtual: true });
+vi.mock('@nativescript/core/application', () => null);
 
+// Set up global variable
+global.__UNIT_TEST__ = true;
 global.__DEV__ = true;
 global.__ANDROID__ = false;
 global.__IOS__ = true;
@@ -72,6 +76,13 @@ global.UIScreen = {
 			},
 		},
 	},
+};
+global.UIInterfaceOrientation = {
+	Unknown: 0,
+	Portrait: 1,
+	PortraitUpsideDown: 2,
+	LandscapeLeft: 4,
+	LandscapeRight: 3,
 };
 const cgColors = { CGColor: 1 };
 global.UIColor = {
@@ -245,3 +256,12 @@ global.UIContentSizeCategoryAccessibilityExtraExtraExtraLarge = 4;
 
 // 	willPresentActionSheet(actionSheet: UIActionSheet): void;
 // }
+
+// Example of a lifecycle hook
+beforeAll(() => {
+	console.log('Setting up tests...');
+});
+
+afterAll(() => {
+	console.log('Cleaning up after tests...');
+});

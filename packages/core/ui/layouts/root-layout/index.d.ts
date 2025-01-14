@@ -1,6 +1,9 @@
 import { GridLayout } from '../grid-layout';
 import { View } from '../../core/view';
 
+/**
+ * @nsView RootLayout
+ */
 export class RootLayout extends GridLayout {
 	open(view: View, options: RootLayoutOptions = {}): Promise<void>;
 	close(view: View, exitTo?: TransitionAnimation): Promise<void>;

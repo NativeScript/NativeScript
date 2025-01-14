@@ -94,3 +94,54 @@ export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
 
 	helper.do_PageTest_WithButton(test);
 };
+
+export var test_addVisualState = function () {
+	var test = function (views: Array<view.View>) {
+		(<page.Page>views[0]).css = 'button:hovered { color: red; background-color: orange } button:pressed { color: white }';
+
+		var btn = views[1];
+
+		assertInState(btn, btn.defaultVisualState, ['hovered', 'pressed', btn.defaultVisualState]);
+
+		btn._addVisualState('hovered');
+
+		assertInState(btn, 'hovered', ['hovered', 'pressed', btn.defaultVisualState]);
+
+		TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === 'red');
+		TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === 'orange');
+
+		btn._addVisualState('pressed');
+
+		assertInState(btn, 'hovered', ['hovered', btn.defaultVisualState]);
+		assertInState(btn, 'pressed', ['pressed', btn.defaultVisualState]);
+
+		TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === 'white');
+		TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === 'orange');
+	};
+
+	helper.do_PageTest_WithButton(test);
+};
+
+export var test_removeVisualState = function () {
+	var test = function (views: Array<view.View>) {
+		(<page.Page>views[0]).css = 'button { background-color: yellow; color: green } button:pressed { background-color: red; color: white }';
+
+		var btn = views[1];
+
+		btn._addVisualState('pressed');
+
+		assertInState(btn, 'pressed', ['pressed', 'hovered', btn.defaultVisualState]);
+
+		TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === 'white');
+		TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === 'red');
+
+		btn._removeVisualState('pressed');
+
+		assertInState(btn, btn.defaultVisualState, ['hovered', 'pressed', btn.defaultVisualState]);
+
+		TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === 'green');
+		TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === 'yellow');
+	};
+
+	helper.do_PageTest_WithButton(test);
+};
