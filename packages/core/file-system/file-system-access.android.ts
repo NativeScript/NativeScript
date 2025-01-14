@@ -261,7 +261,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 			return org.nativescript.widgets.Async.File.copySync(src, dest, getApplicationContext());
 		} catch (error) {
 			if (onError) {
-				onError(exception);
+				onError(error);
 			}
 		}
 

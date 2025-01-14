@@ -2,7 +2,7 @@
 // https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 
 import * as definition from '.';
-import { EasySAXParser } from '../js-libs/easysax';
+import { EasySAXParser } from '../js-libs/easysax/easysax.js';
 
 /**
  * Defines a position within string, in line and column form.

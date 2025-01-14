@@ -31,5 +31,6 @@ export class Crypto {
 
 			NSCCrypto.getRandomValues(data);
 		}
+		return typedArray;
 	}
 }

@@ -107,6 +107,7 @@
 /// <reference path="objc-x86_64/objc!MetricKit.d.ts" />
 /// <reference path="objc-x86_64/objc!ModelIO.d.ts" />
 /// <reference path="objc-x86_64/objc!MultipeerConnectivity.d.ts" />
+/// <reference path="objc-x86_64/objc!NSCWinterCG.d.ts" />
 /// <reference path="objc-x86_64/objc!NativeScriptEmbedder.d.ts" />
 /// <reference path="objc-x86_64/objc!NativeScriptUtils.d.ts" />
 /// <reference path="objc-x86_64/objc!NaturalLanguage.d.ts" />

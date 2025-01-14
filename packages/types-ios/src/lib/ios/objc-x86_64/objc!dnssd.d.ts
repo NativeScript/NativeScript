@@ -32,6 +32,11 @@ declare function DNSServiceAttributeDeallocate(attr: interop.Pointer | interop.R
 declare function DNSServiceAttributeSetAAAAPolicy(attr: interop.Pointer | interop.Reference<any>, policy: DNSServiceAAAAPolicy): number;
 
 /**
+ * @since 18.0
+ */
+declare function DNSServiceAttributeSetHostKeyHash(attr: interop.Pointer | interop.Reference<any>, hostkeyhash: number): number;
+
+/**
  * @since 16.0
  */
 declare function DNSServiceAttributeSetTimestamp(attr: interop.Pointer | interop.Reference<any>, timestamp: number): number;
@@ -177,6 +182,8 @@ declare const kDNSServiceErr_PollingMode: number;
 declare const kDNSServiceErr_Refused: number;
 
 declare const kDNSServiceErr_ServiceNotRunning: number;
+
+declare const kDNSServiceErr_StaleData: number;
 
 declare const kDNSServiceErr_Timeout: number;
 

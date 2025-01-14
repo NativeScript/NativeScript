@@ -189,6 +189,10 @@ export class ActionBar extends ActionBarBase {
 		this.update();
 	}
 
+	override get needsNativeDrawableFill(): boolean {
+		return true;
+	}
+
 	public update() {
 		if (!this.nativeViewProtected) {
 			return;

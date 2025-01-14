@@ -77,7 +77,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
 		const view: UIView = layout.page.actionBar.nativeViewProtected;
 		// use the action bar position and size instead of the status bar and action bar heights as those are unreliable on iOS 16+
-		const topInset = round(dipToDp(view.frame.origin.y + view.frame.size.height));
+		const topInset = Math.round(dipToDp(view.frame.origin.y + view.frame.size.height));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
@@ -87,7 +87,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 		const keyWindow = Utils.ios.getWindow();
 		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
 		// use window inset instead of status bar frame as that's unreliable on iOS 16+
-		const topInset = round(dipToDp(keyWindow ? keyWindow.safeAreaInsets.top : UIApplication.sharedApplication.keyWindow.safeAreaInsets.top));
+		const topInset = Math.round(dipToDp(keyWindow ? keyWindow.safeAreaInsets.top : UIApplication.sharedApplication.keyWindow.safeAreaInsets.top));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);

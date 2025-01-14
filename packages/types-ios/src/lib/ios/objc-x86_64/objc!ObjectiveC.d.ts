@@ -315,6 +315,16 @@ declare class NSObject implements NSObjectProtocol {
 	accessibilityShouldGroupAccessibilityChildrenBlock: () => boolean;
 
 	/**
+	 * @since 18.1
+	 */
+	accessibilityTextInputResponder: UITextInput;
+
+	/**
+	 * @since 18.1
+	 */
+	accessibilityTextInputResponderBlock: () => UITextInput;
+
+	/**
 	 * @since 13.0
 	 */
 	accessibilityTextualContext: string;

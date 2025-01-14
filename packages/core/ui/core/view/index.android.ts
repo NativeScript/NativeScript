@@ -1,5 +1,5 @@
 // Definitions.
-import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
+import type { Point, CustomLayoutView as CustomLayoutViewDefinition, Position } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
@@ -577,12 +577,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	_getCurrentLayoutBounds(): {
-		left: number;
-		top: number;
-		right: number;
-		bottom: number;
-	} {
+	_getCurrentLayoutBounds(): Position {
 		if (this.nativeViewProtected && !this.isCollapsed) {
 			return {
 				left: this.nativeViewProtected.getLeft(),
@@ -832,9 +827,7 @@ export class View extends ViewCommon {
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
 
-		if (value) {
-			updateAccessibilityProperties(this);
-		}
+		updateAccessibilityProperties(this);
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
@@ -1134,7 +1127,8 @@ export class View extends ViewCommon {
 				nativeView.setBackground(backgroundDrawable);
 			}
 
-			if (backgroundDrawable) {
+			// Apply color to drawables when there is the need to maintain visual things like button ripple effect
+			if (this.needsNativeDrawableFill && backgroundDrawable) {
 				backgroundDrawable.mutate();
 
 				AndroidHelper.setDrawableColor(backgroundColor, backgroundDrawable);

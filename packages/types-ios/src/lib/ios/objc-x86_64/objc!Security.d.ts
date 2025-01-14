@@ -1152,6 +1152,8 @@ declare const TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA: number;
 
 declare const TLS_ECDHE_PSK_WITH_AES_256_CBC_SHA: number;
 
+declare const TLS_ECDHE_PSK_WITH_CHACHA20_POLY1305_SHA256: number;
+
 declare const TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA: number;
 
 declare const TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA: number;

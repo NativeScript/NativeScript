@@ -6,6 +6,8 @@ import { Trace } from '../../trace';
 /**
  * Proxy view container that adds all its native children directly to the parent.
  * To be used as a logical grouping container of views.
+ *
+ * @nsView ProxyViewContainer
  */
 // Cases to cover:
 // * Child is added to the attached proxy. Handled in _addViewToNativeVisualTree.
