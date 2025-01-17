@@ -1,0 +1,24 @@
+{
+	"name": "@nativescript/winter-tc",
+	"version": "0.0.1",
+	"description": "WinterTC compliance for NativeScript",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/NativeScript/NativeScript"
+	},
+	"author": "NativeScript team",
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://github.com/NativeScript/NativeScript/issues"
+	},
+	"homepage": "https://nativescript.org",
+	"nativescript": {
+		"platforms": {
+			"ios": "6.0.0",
+			"android": "6.0.0"
+		}
+	}
+}

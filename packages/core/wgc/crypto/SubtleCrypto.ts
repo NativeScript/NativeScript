@@ -218,7 +218,7 @@ export class SubtleCrypto {
 			if (__ANDROID__) {
 				//const instance = java.security.MessageDigest.getInstance(algorithm);
 
-				const buffer = (<any>org).nativescript.winter_cg.Crypto.digest(mode, data);
+				const buffer = (<any>org).nativescript.winter_tc.Crypto.digest(mode, data);
 				const ab = (<any>ArrayBuffer).from(buffer);
 
 				if (!ab) {
@@ -231,7 +231,7 @@ export class SubtleCrypto {
                 const digest = instance.digest();
     
                 const ab = new ArrayBuffer(digest.length);
-                (<any>org).nativescript.winter_cg.Utils.copyToBuffer(ab, digest);
+                (<any>org).nativescript.winter_tc.Utils.copyToBuffer(ab, digest);
     
                 resolve(ab);
 
@@ -278,7 +278,7 @@ export class SubtleCrypto {
 
 							if (__ANDROID__) {
 								const hash = parseHash(key.algorithm.hash.name);
-								const ret = (<any>org).nativescript.winter_cg.Crypto.encryptRsaOAEP(key[parent_], hash, data);
+								const ret = (<any>org).nativescript.winter_tc.Crypto.encryptRsaOAEP(key[parent_], hash, data);
 								if (ret) {
 									resolve((<any>ArrayBuffer).from(ret));
 								} else {
@@ -323,7 +323,7 @@ export class SubtleCrypto {
 
 							if (__ANDROID__) {
 								const hash = parseHash(key.algorithm.hash.name);
-								const ret = (<any>org).nativescript.winter_cg.Crypto.decryptRsaOAEP(key[parent_], hash, data);
+								const ret = (<any>org).nativescript.winter_tc.Crypto.decryptRsaOAEP(key[parent_], hash, data);
 								if (ret) {
 									resolve((<any>ArrayBuffer).from(ret));
 								} else {
@@ -391,7 +391,7 @@ export class SubtleCrypto {
 									return;
 								}
 
-								const ab = (<any>org).nativescript.winter_cg.Crypto.signHMAC(algo, key[native_], data);
+								const ab = (<any>org).nativescript.winter_tc.Crypto.signHMAC(algo, key[native_], data);
 								resolve((<any>ArrayBuffer).from(ab));
 							}
 						} catch (error) {
@@ -453,7 +453,7 @@ export class SubtleCrypto {
 									return;
 								}
 
-								const ret = (<any>org).nativescript.winter_cg.Crypto.verifyHMAC(algo, key[native_], signature, data);
+								const ret = (<any>org).nativescript.winter_tc.Crypto.verifyHMAC(algo, key[native_], signature, data);
 								resolve(ret);
 							}
 						} catch (error) {
@@ -507,7 +507,7 @@ export class SubtleCrypto {
 						if (__ANDROID__) {
 							// const mac = javax.crypto.KeyGenerator.getInstance(algo);
 							// const key = mac.generateKey();
-							const key = (<any>org).nativescript.winter_cg.Crypto.generateKeyHMAC(algo);
+							const key = (<any>org).nativescript.winter_tc.Crypto.generateKeyHMAC(algo);
 							const ret = new CryptoKey();
 							ret[algorithm_] = { name: algorithm.name, hash: { name: algorithmHash } };
 							ret[native_] = key;
@@ -588,7 +588,7 @@ export class SubtleCrypto {
 							//	const usages = parseUsages(keyUsages);
 
 							// ignore publicExponent for now
-							const kp = (<any>org).nativescript.winter_cg.Crypto.generateKeyRsaOAEP(algorithm.modulusLength);
+							const kp = (<any>org).nativescript.winter_tc.Crypto.generateKeyRsaOAEP(algorithm.modulusLength);
 
 							if (!kp) {
 								reject(new Error('Failed to generateKey'));
