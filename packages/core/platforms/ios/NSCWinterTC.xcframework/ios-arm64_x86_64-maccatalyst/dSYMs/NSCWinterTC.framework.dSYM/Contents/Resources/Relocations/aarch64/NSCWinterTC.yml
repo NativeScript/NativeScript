@@ -1,0 +1,40 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/winter-tc/ios/NSCWinterTC/build/Release-maccatalyst/NSCWinterTC.framework/Versions/A/NSCWinterTC'
+relocations:
+  - { offset: 0x85AEE, size: 0x8, addend: 0x0, symName: _NSCWinterTCVersionString, symObjAddr: 0x0, symBinAddr: 0x39A0, symSize: 0x0 }
+  - { offset: 0x85B23, size: 0x8, addend: 0x0, symName: _NSCWinterTCVersionNumber, symObjAddr: 0x30, symBinAddr: 0x39D0, symSize: 0x0 }
+  - { offset: 0x85B60, size: 0x8, addend: 0x0, symName: '+[NSString(WinterTC) atob:]', symObjAddr: 0x0, symBinAddr: 0x1E74, symSize: 0x74 }
+  - { offset: 0x85B6E, size: 0x8, addend: 0x0, symName: '+[NSString(WinterTC) atob:]', symObjAddr: 0x0, symBinAddr: 0x1E74, symSize: 0x74 }
+  - { offset: 0x85BC1, size: 0x8, addend: 0x0, symName: '+[NSString(WinterTC) btoa:]', symObjAddr: 0x74, symBinAddr: 0x1EE8, symSize: 0x50 }
+  - { offset: 0x85C77, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair dealloc]', symObjAddr: 0x0, symBinAddr: 0x1F38, symSize: 0x58 }
+  - { offset: 0x85D92, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair dealloc]', symObjAddr: 0x0, symBinAddr: 0x1F38, symSize: 0x58 }
+  - { offset: 0x85DF6, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair initWithPrivateKey:andPublicKey:]', symObjAddr: 0x58, symBinAddr: 0x1F90, symSize: 0x70 }
+  - { offset: 0x85E8C, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair privateKey]', symObjAddr: 0xC8, symBinAddr: 0x2000, symSize: 0x8 }
+  - { offset: 0x85EC3, size: 0x8, addend: 0x0, symName: '-[NSCCryptoKeyPair publicKey]', symObjAddr: 0xD0, symBinAddr: 0x2008, symSize: 0x8 }
+  - { offset: 0x85EFA, size: 0x8, addend: 0x0, symName: '+[NSCCrypto randomUUID]', symObjAddr: 0xD8, symBinAddr: 0x2010, symSize: 0x6C }
+  - { offset: 0x85F2D, size: 0x8, addend: 0x0, symName: '+[NSCCrypto getRandomValues:]', symObjAddr: 0x144, symBinAddr: 0x207C, symSize: 0x80 }
+  - { offset: 0x85FCF, size: 0x8, addend: 0x0, symName: '+[NSCCrypto digest:mode:]', symObjAddr: 0x1C4, symBinAddr: 0x20FC, symSize: 0x1E4 }
+  - { offset: 0x86182, size: 0x8, addend: 0x0, symName: '+[NSCCrypto digest:mode:completion:]', symObjAddr: 0x3A8, symBinAddr: 0x22E0, symSize: 0xE0 }
+  - { offset: 0x86251, size: 0x8, addend: 0x0, symName: '___36+[NSCCrypto digest:mode:completion:]_block_invoke', symObjAddr: 0x488, symBinAddr: 0x23C0, symSize: 0xB0 }
+  - { offset: 0x862E1, size: 0x8, addend: 0x0, symName: '___36+[NSCCrypto digest:mode:completion:]_block_invoke_2', symObjAddr: 0x538, symBinAddr: 0x2470, symSize: 0x14 }
+  - { offset: 0x8633F, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40b, symObjAddr: 0x54C, symBinAddr: 0x2484, symSize: 0x34 }
+  - { offset: 0x86368, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s40s, symObjAddr: 0x580, symBinAddr: 0x24B8, symSize: 0x28 }
+  - { offset: 0x86387, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyHmac:length:]', symObjAddr: 0x5A8, symBinAddr: 0x24E0, symSize: 0x230 }
+  - { offset: 0x8653A, size: 0x8, addend: 0x0, symName: '+[NSCCrypto verifyHmac:hash:signature:data:]', symObjAddr: 0x7D8, symBinAddr: 0x2710, symSize: 0xBC }
+  - { offset: 0x865AD, size: 0x8, addend: 0x0, symName: '+[NSCCrypto signHmac:hash:data:]', symObjAddr: 0x894, symBinAddr: 0x27CC, symSize: 0x110 }
+  - { offset: 0x86679, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyRsa:modulusLength:publicExponent:size:hash:extractable:keyUsages:]', symObjAddr: 0x9A4, symBinAddr: 0x28DC, symSize: 0x2D8 }
+  - { offset: 0x869D1, size: 0x8, addend: 0x0, symName: '+[NSCCrypto generateKeyRsa:modulusLength:publicExponent:size:hash:extractable:keyUsages:completion:]', symObjAddr: 0xC7C, symBinAddr: 0x2BB4, symSize: 0x114 }
+  - { offset: 0x86ABD, size: 0x8, addend: 0x0, symName: '___100+[NSCCrypto generateKeyRsa:modulusLength:publicExponent:size:hash:extractable:keyUsages:completion:]_block_invoke', symObjAddr: 0xD90, symBinAddr: 0x2CC8, symSize: 0xC0 }
+  - { offset: 0x86BA8, size: 0x8, addend: 0x0, symName: '___100+[NSCCrypto generateKeyRsa:modulusLength:publicExponent:size:hash:extractable:keyUsages:completion:]_block_invoke_2', symObjAddr: 0xE50, symBinAddr: 0x2D88, symSize: 0x14 }
+  - { offset: 0x86C0A, size: 0x8, addend: 0x0, symName: '+[NSCCrypto encryptRsa:key:hash:data:]', symObjAddr: 0xE64, symBinAddr: 0x2D9C, symSize: 0x158 }
+  - { offset: 0x86E00, size: 0x8, addend: 0x0, symName: '+[NSCCrypto encryptRsa:key:hash:data:completion:]', symObjAddr: 0xFBC, symBinAddr: 0x2EF4, symSize: 0x11C }
+  - { offset: 0x86EB9, size: 0x8, addend: 0x0, symName: '___49+[NSCCrypto encryptRsa:key:hash:data:completion:]_block_invoke', symObjAddr: 0x10D8, symBinAddr: 0x3010, symSize: 0xB4 }
+  - { offset: 0x86F71, size: 0x8, addend: 0x0, symName: '___49+[NSCCrypto encryptRsa:key:hash:data:completion:]_block_invoke_2', symObjAddr: 0x118C, symBinAddr: 0x30C4, symSize: 0x14 }
+  - { offset: 0x86FD3, size: 0x8, addend: 0x0, symName: ___copy_helper_block_e8_32s40s48b, symObjAddr: 0x11A0, symBinAddr: 0x30D8, symSize: 0x3C }
+  - { offset: 0x86FFC, size: 0x8, addend: 0x0, symName: ___destroy_helper_block_e8_32s40s48s, symObjAddr: 0x11DC, symBinAddr: 0x3114, symSize: 0x30 }
+  - { offset: 0x8701B, size: 0x8, addend: 0x0, symName: '+[NSCCrypto decryptRsa:key:hash:data:]', symObjAddr: 0x120C, symBinAddr: 0x3144, symSize: 0x158 }
+  - { offset: 0x871F7, size: 0x8, addend: 0x0, symName: '+[NSCCrypto decryptRsa:key:hash:data:completion:]', symObjAddr: 0x1364, symBinAddr: 0x329C, symSize: 0x11C }
+  - { offset: 0x872B0, size: 0x8, addend: 0x0, symName: '___49+[NSCCrypto decryptRsa:key:hash:data:completion:]_block_invoke', symObjAddr: 0x1480, symBinAddr: 0x33B8, symSize: 0xB4 }
+  - { offset: 0x87368, size: 0x8, addend: 0x0, symName: '___49+[NSCCrypto decryptRsa:key:hash:data:completion:]_block_invoke_2', symObjAddr: 0x1534, symBinAddr: 0x346C, symSize: 0x14 }
+...
