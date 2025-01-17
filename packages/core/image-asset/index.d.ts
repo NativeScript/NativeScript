@@ -1,4 +1,4 @@
-import { Observable } from '../data/observable';
+import { Observable } from "../data/observable";
 
 export class ImageAsset extends Observable {
 	constructor(asset: any);
@@ -10,8 +10,8 @@ export class ImageAsset extends Observable {
 }
 
 export interface ImageAssetOptions {
-	width?: number;
-	height?: number;
+	width?: number | string;
+	height?: number | string;
 	keepAspectRatio?: boolean;
 	autoScaleFactor?: boolean;
 }
