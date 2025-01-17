@@ -1,17 +1,17 @@
-import { ImageAssetBase, getRequestedImageSize } from "./image-asset-common";
-import { path as fsPath, knownFolders } from "../file-system";
-import { ad } from "../utils";
-import { Screen } from "../platform";
-export * from "./image-asset-common";
+import { ImageAssetBase, getRequestedImageSize } from './image-asset-common';
+import { path as fsPath, knownFolders } from '../file-system';
+import { ad } from '../utils';
+import { Screen } from '../platform';
+export * from './image-asset-common';
 
 export class ImageAsset extends ImageAssetBase {
 	private _android: string; //file name of the image
 
 	constructor(asset: string) {
 		super();
-		let fileName = typeof asset === "string" ? asset.trim() : "";
-		if (fileName.indexOf("~/") === 0) {
-			fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
+		let fileName = typeof asset === 'string' ? asset.trim() : '';
+		if (fileName.indexOf('~/') === 0) {
+			fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace('~/', ''));
 		}
 		this.android = fileName;
 	}
@@ -40,7 +40,7 @@ export class ImageAsset extends ImageAssetBase {
 	 */
 	private _validateDimensions(width: number | string, height: number | string): { width: number; height: number } {
 		const parseSize = (size: number | string): number => {
-			return typeof size === "string" ? parseInt(size, 10) : size;
+			return typeof size === 'string' ? parseInt(size, 10) : size;
 		};
 
 		let w = parseSize(width);

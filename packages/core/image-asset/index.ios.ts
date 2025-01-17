@@ -1,17 +1,17 @@
-import { ImageAssetBase, getRequestedImageSize } from "./image-asset-common";
-import { path as fsPath, knownFolders } from "../file-system";
-import { queueGC } from "../utils";
+import { ImageAssetBase, getRequestedImageSize } from './image-asset-common';
+import { path as fsPath, knownFolders } from '../file-system';
+import { queueGC } from '../utils';
 
-export * from "./image-asset-common";
+export * from './image-asset-common';
 
 export class ImageAsset extends ImageAssetBase {
 	private _ios: PHAsset;
 
 	constructor(asset: string | PHAsset | UIImage) {
 		super();
-		if (typeof asset === "string") {
-			if (asset.indexOf("~/") === 0) {
-				asset = fsPath.join(knownFolders.currentApp().path, asset.replace("~/", ""));
+		if (typeof asset === 'string') {
+			if (asset.indexOf('~/') === 0) {
+				asset = fsPath.join(knownFolders.currentApp().path, asset.replace('~/', ''));
 			}
 
 			this.nativeImage = UIImage.imageWithContentsOfFile(asset);
@@ -40,16 +40,16 @@ export class ImageAsset extends ImageAssetBase {
 	 */
 	public getImageAsync(callback: (image, error) => void, options?: { width?: number | string; height?: number | string }) {
 		if (options) {
-			if (typeof options.width === "string") {
+			if (typeof options.width === 'string') {
 				options.width = parseInt(options.width, 10);
 			}
-			if (typeof options.height === "string") {
+			if (typeof options.height === 'string') {
 				options.height = parseInt(options.height, 10);
 			}
 		}
 
 		if (!this.ios && !this.nativeImage) {
-			callback(null, "Asset cannot be found.");
+			callback(null, 'Asset cannot be found.');
 		}
 
 		const srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
