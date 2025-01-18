@@ -26,8 +26,7 @@
     BOOL isTextView = [self isKindOfClass:[UITextView class]];
     if (lineHeight > 0) {
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-        // Note: Avoid using lineSpacing as it will append the height as extra space
-        paragraphStyle.minimumLineHeight = lineHeight;
+        paragraphStyle.lineSpacing = lineHeight;
         // make sure a possible previously set text alignment setting is not lost when line height is specified
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;
@@ -89,8 +88,7 @@
     BOOL isLabel = [self isKindOfClass:[UILabel class]];
     if (lineHeight > 0) {
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-        // Note: Avoid using lineSpacing as it will append the height as extra space
-        paragraphStyle.minimumLineHeight = lineHeight;
+        paragraphStyle.lineSpacing = lineHeight;
         // make sure a possible previously set text alignment setting is not lost when line height is specified
         if ([self isKindOfClass:[UIButton class]]) {
             paragraphStyle.alignment = ((UIButton*)self).titleLabel.textAlignment;

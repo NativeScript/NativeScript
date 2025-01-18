@@ -1,16 +1,16 @@
-export function isString(value: any): boolean {
+export function isString(value: any): value is string {
 	return typeof value === 'string' || value instanceof String;
 }
 
-export function isNumber(value: any): boolean {
+export function isNumber(value: any): value is number {
 	return typeof value === 'number' || value instanceof Number;
 }
 
-export function isBoolean(value: any): boolean {
+export function isBoolean(value: any): value is boolean {
 	return typeof value === 'boolean' || value instanceof Boolean;
 }
 
-export function isFunction(value: any): boolean {
+export function isFunction(value: any): value is Function {
 	if (!value) {
 		return false;
 	}
@@ -18,7 +18,7 @@ export function isFunction(value: any): boolean {
 	return typeof value === 'function';
 }
 
-export function isObject(value: any): boolean {
+export function isObject(value: any): value is Record<string,any> {
 	if (!value) {
 		return false;
 	}
@@ -26,7 +26,7 @@ export function isObject(value: any): boolean {
 	return typeof value === 'object';
 }
 
-export function isUndefined(value: any): boolean {
+export function isUndefined(value: any): value is undefined {
 	return typeof value === 'undefined';
 }
 

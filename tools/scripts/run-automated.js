@@ -16,7 +16,7 @@ const spawned_process = spawn(
 	[
 		"nx",
 		"debug",
-		`apps-automated`,
+		"apps-automated",
 		platform,
 		// "--log=trace",
 		// `--flags="--log=trace"`,

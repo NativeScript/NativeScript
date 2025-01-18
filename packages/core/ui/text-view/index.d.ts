@@ -4,8 +4,17 @@ export { WritingToolsAllowedInput, WritingToolsBehavior } from './text-view-comm
 
 /**
  * Represents an editable multiline text view.
+ *
+ * @nsView TextView
  */
 export class TextView extends EditableTextBase {
+	/**
+	 * String value used when hooking to the returnPress event.
+	 *
+	 * @nsEvent returnPress
+	 */
+	public static returnPressEvent: string;
+
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/EditText.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
@@ -18,6 +27,8 @@ export class TextView extends EditableTextBase {
 
 	/**
 	 * Limits input to a certain number of lines.
+	 *
+	 * @nsProperty
 	 */
 	maxLines: number;
 

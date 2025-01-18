@@ -297,10 +297,32 @@ public class Async {
 		private static final String HEAD_METHOD = "HEAD";
 		private static CookieManager cookieManager;
 
+		public static void setCookieManager(CookieManager manager) {
+			if(manager == null) return;
+
+			cookieManager = manager;
+			if (CookieHandler.getDefault() == null) {
+				CookieHandler.setDefault(manager);
+			}
+    }
+		
+		public static CookieManager initializeCookieManager() {
+			if (cookieManager == null) {
+				CookieHandler defaultHandler = CookieHandler.getDefault();
+				if (defaultHandler instanceof CookieManager) {
+					cookieManager = (CookieManager) defaultHandler;
+				} else {
+					cookieManager = new CookieManager();
+					CookieHandler.setDefault(cookieManager);
+				}
+			}
+
+			return cookieManager;
+    }
+
 		public static void MakeRequest(final RequestOptions options, final CompleteCallback callback, final Object context) {
 			if (cookieManager == null) {
-				cookieManager = new CookieManager();
-				CookieHandler.setDefault(cookieManager);
+				initializeCookieManager();
 			}
 
 			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());

@@ -11,14 +11,20 @@ export enum GestureEvents {
 	/**
 	 * When the gesture is attached to the view
 	 * Provides access to the native gesture recognizer for further customization
+	 *
+	 * @nsEvent {GestureEventData} gestureAttached
 	 */
 	gestureAttached = 'gestureAttached',
 	/**
 	 * When a touch down was detected
+	 *
+	 * @nsEvent touchDown
 	 */
 	touchDown = 'touchDown',
 	/**
 	 * When a touch up was detected
+	 *
+	 * @nsEvent touchUp
 	 */
 	touchUp = 'touchUp',
 }
@@ -29,34 +35,50 @@ export enum GestureEvents {
 export enum GestureTypes {
 	/**
 	 * Denotes tap (click) gesture.
+	 *
+	 * @nsEvent {TapGestureEventData} tap
 	 */
 	tap = 1 << 0,
 	/**
 	 * Denotes double tap gesture.
+	 *
+	 * @nsEvent {TapGestureEventData} doubleTap
 	 */
 	doubleTap = 1 << 1,
 	/**
 	 * Denotes pinch gesture.
+	 *
+	 * @nsEvent {PinchGestureEventData} pinch
 	 */
 	pinch = 1 << 2,
 	/**
 	 * Denotes pan gesture.
+	 *
+	 * @nsEvent {PanGestureEventData} pan
 	 */
 	pan = 1 << 3,
 	/**
 	 * Denotes swipe gesture.
+	 *
+	 * @nsEvent {SwipeGestureEventData} swipe
 	 */
 	swipe = 1 << 4,
 	/**
 	 * Denotes rotation gesture.
+	 *
+	 * @nsEvent {RotationGestureEventData} rotate
 	 */
 	rotation = 1 << 5,
 	/**
 	 * Denotes long press gesture.
+	 *
+	 * @nsEvent {GestureEventDataWithState} longPress
 	 */
 	longPress = 1 << 6,
 	/**
 	 * Denotes touch action.
+	 *
+	 * @nsEvent {TouchGestureEventData} touch
 	 */
 	touch = 1 << 7,
 }

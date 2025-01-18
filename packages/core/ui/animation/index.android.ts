@@ -1,9 +1,6 @@
-// Types.
-import { AnimationDefinitionInternal, AnimationPromise, PropertyAnimation } from './animation-common';
+import { AnimationDefinitionInternal, AnimationPromise, PropertyAnimation, AnimationBase, Properties } from './animation-common';
 import { View } from '../core/view';
-
-// Requires
-import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animation-common';
+import { CubicBezierAnimationCurve } from './animation-interfaces';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
@@ -325,7 +322,7 @@ export class Animation extends AnimationBase {
 							const argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
 							propertyAnimation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = new Color(argb);
 						},
-					})
+					}),
 				);
 
 				propertyUpdateCallbacks.push(() => {
@@ -466,7 +463,7 @@ export class Animation extends AnimationBase {
 							const argb = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
 							propertyAnimation.target.style[setLocal ? extentProperty.name : extentProperty.keyframe] = argb;
 						},
-					})
+					}),
 				);
 				propertyUpdateCallbacks.push(() => {
 					propertyAnimation.target.style[targetStyle] = propertyAnimation.value;
