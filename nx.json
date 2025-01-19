@@ -116,5 +116,19 @@
 	"parallel": 1,
 	"useInferencePlugins": false,
 	"defaultBase": "master",
-	"useLegacyCache": true
+	"useLegacyCache": true,
+	"release": {
+		"releaseTagPattern": "${version}-${projectName}",
+		"projects": ["packages/core", "packages/webpack5"],
+		"projectsRelationship": "independent",
+		"changelog": {
+			"projectChangelogs": {
+				"renderOptions": {
+					"authors": true,
+					"commitReferences": true,
+					"versionTitleDate": true
+				}
+			}
+		}
+	}
 }

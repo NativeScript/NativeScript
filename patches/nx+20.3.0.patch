@@ -1,0 +1,33 @@
+diff --git a/node_modules/nx/src/command-line/release/utils/git.js b/node_modules/nx/src/command-line/release/utils/git.js
+index 1ab6081..1e0b30b 100644
+--- a/node_modules/nx/src/command-line/release/utils/git.js
++++ b/node_modules/nx/src/command-line/release/utils/git.js
+@@ -48,18 +48,22 @@ async function getLatestGitTagForPattern(releaseTagPattern, additionalInterpolat
+         if (!tags.length) {
+             return null;
+         }
++        // This doesn't seem to work with custom tag format
+         const interpolatedTagPattern = (0, utils_1.interpolate)(releaseTagPattern, {
+             version: '%v%',
+             projectName: '%p%',
+             ...additionalInterpolationData,
+         });
+-        const tagRegexp = `^${escapeRegExp(interpolatedTagPattern)
+-            .replace('%v%', '(.+)')
+-            .replace('%p%', '(.+)')}`;
+-        const matchingSemverTags = tags.filter((tag) => 
++        // const tagRegexp = `^${escapeRegExp(interpolatedTagPattern)
++        //     .replace('%v%', '(.+)')
++        //     .replace('%p%', '(.+)')}`;
++        //     console.log('tagRegexp:', tagRegexp)
++        // custom tag format
++        const tagRegexp = /^\d+\.\d+\.\d+-[a-zA-Z]+$/;
++        const matchingSemverTags = tags.filter((tag) => {
+         // Do the match against SEMVER_REGEX to ensure that we skip tags that aren't valid semver versions
+-        !!tag.match(tagRegexp) &&
+-            tag.match(tagRegexp).some((r) => r.match(SEMVER_REGEX)));
++        return !!tag.match(tagRegexp) &&
++            tag.match(tagRegexp).some((r) => r.match(SEMVER_REGEX)) });
+         if (!matchingSemverTags.length) {
+             return null;
+         }
