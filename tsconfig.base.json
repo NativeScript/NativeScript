@@ -2,8 +2,8 @@
 	"compileOnSave": false,
 	"compilerOptions": {
 		"rootDir": ".",
-		"target": "ES2020",
-		"module": "esnext",
+		"target": "ES5",
+		"module": "ES2015",
 		"sourceMap": true,
 		"declaration": true,
 		"moduleResolution": "node",
@@ -14,7 +14,8 @@
 		"diagnostics": true,
 		"skipLibCheck": true,
 		"skipDefaultLibCheck": true,
-		"lib": ["ESNext", "dom"],
+		"noCheck": true,
+		"lib": ["ES5", "dom", "ESNext.WeakRef"],
 		"types": ["node", "jest"],
 		"baseUrl": ".",
 		"paths": {
