@@ -1,5 +1,5 @@
 // Types.
-import { CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition, Animation as AnimationBaseDefinition } from '.';
+import { Animation as AnimationBaseDefinition } from '.';
 import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
 
 // Requires.
@@ -23,22 +23,7 @@ export namespace Properties {
 	export const height = 'height';
 	export const width = 'width';
 }
-
 export const AnimationNonAnimatableProperties = ['duration', 'valueSource', 'delay', 'iterations', 'curve', 'target'];
-
-export class CubicBezierAnimationCurve implements CubicBezierAnimationCurveDefinition {
-	public x1: number;
-	public y1: number;
-	public x2: number;
-	public y2: number;
-
-	constructor(x1: number, y1: number, x2: number, y2: number) {
-		this.x1 = x1;
-		this.y1 = y1;
-		this.x2 = x2;
-		this.y2 = y2;
-	}
-}
 
 export abstract class AnimationBase implements AnimationBaseDefinition {
 	public _propertyAnimations: Array<PropertyAnimation>;

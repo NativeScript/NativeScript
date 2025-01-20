@@ -132,6 +132,14 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.textShadow = value;
 	}
 
+	get textStroke(): StrokeCSSValues {
+		return this.style.textStroke;
+	}
+
+	set textStroke(value: StrokeCSSValues) {
+		this.style.textStroke = value;
+	}
+
 	get whiteSpace(): CoreTypes.WhiteSpaceType {
 		return this.style.whiteSpace;
 	}

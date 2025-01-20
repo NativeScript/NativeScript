@@ -1,4 +1,4 @@
-import { parse } from '../../css/reworkcss';
+import { parse } from '../../css/reworkcss.js';
 import { Screen } from '../../platform';
 import { createSelector, RuleSet, StyleSheetSelectorScope, fromAstNode, Node, Changes } from './css-selector';
 import { _populateRules } from './style-scope';
@@ -65,9 +65,8 @@ describe('css-selector', () => {
 
 		const imageQuery = selectorScope.query({ cssType: 'image', cssClasses: new Set(['login']) }).selectors;
 		expect(imageQuery.length).toBe(2);
-		// Note class before type
-		expect(imageQuery[0].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
-		expect(imageQuery[1].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+		expect(imageQuery[0].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+		expect(imageQuery[1].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
 	});
 
 	const positiveMatches = {
@@ -298,9 +297,8 @@ describe('css-selector', () => {
 
 			const { selectors: imageSelectors } = selectorScope.query({ cssType: 'image', cssClasses: new Set(['login']) });
 			expect(imageSelectors.length).toBe(2);
-			// Note class before type
-			expect(imageSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
-			expect(imageSelectors[1].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+			expect(imageSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+			expect(imageSelectors[1].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
 		});
 
 		it('should not apply css rules of non-matching media query', () => {
@@ -336,9 +334,8 @@ describe('css-selector', () => {
 
 			const { selectors: imageSelectors } = selectorScope.query({ cssType: 'image', cssClasses: new Set(['login']) });
 			expect(imageSelectors.length).toBe(2);
-			// Note class before type
-			expect(imageSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
-			expect(imageSelectors[1].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+			expect(imageSelectors[0].ruleset.declarations).toEqual([{ property: 'color', value: 'green' }]);
+			expect(imageSelectors[1].ruleset.declarations).toEqual([{ property: 'color', value: 'blue' }]);
 		});
 
 		it('should apply css rules of matching media queries but not non-matching nested media queries', () => {

@@ -45,17 +45,26 @@ export class ItemSpec {
 
 /**
  * Defines a rectangular layout area that consists of columns and rows.
+ *
+ * @nsView GridLayout
  */
 export class GridLayout extends LayoutBase {
 	/**
-	 * Get or set the array of row specifications defined on this instance of GridLayout.
+	 * A string value representing row heights delimited with commas.
+	 *
+	 * Valid values: an absolute number, auto, or *:
+	 *
+	 * @nsProperty
 	 */
-	public rows: string;
-
+	rows: string;
 	/**
-	 * Get or set the array of row specifications defined on this instance of GridLayout.
+	 * A string value representing column widths delimited with commas.
+	 *
+	 * Valid values: an absolute number, auto, or *:
+	 *
+	 * @nsProperty
 	 */
-	public columns: string;
+	columns: string;
 
 	/**
 	 * Gets the value of the Column attached property from a given View.

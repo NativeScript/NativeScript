@@ -16,6 +16,6 @@
     "@nativescript/core": "*",
     "@nativescript/ios": "*",
     "@nativescript/webpack": "*",
-    "typescript": "~5.4.0"
+    "typescript": "~5.6.0"
   }
 }

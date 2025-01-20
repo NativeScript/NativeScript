@@ -8,8 +8,17 @@ export const tapEvent: string;
 
 /**
  * Represents a standard Button widget.
+ *
+ * @nsView Button
  */
 export class Button extends TextBase {
+	/**
+	 * String value used when hooking to tap event.
+	 *
+	 * @nsEvent {EventData} string;
+	 */
+	public static tapEvent: string;
+
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/Button.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
@@ -22,6 +31,8 @@ export class Button extends TextBase {
 
 	/**
 	 * Gets or sets whether the Button wraps text or not.
+	 *
+	 * @nsProperty
 	 */
 	textWrap: boolean;
 

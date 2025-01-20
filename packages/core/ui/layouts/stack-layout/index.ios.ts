@@ -1,6 +1,6 @@
 import { StackLayoutBase } from './stack-layout-common';
 import { CoreTypes } from '../../../core-types';
-import { View } from '../../core/view';
+import { Position, View } from '../../core/view';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 
@@ -101,7 +101,7 @@ export class StackLayout extends StackLayoutBase {
 		}
 	}
 
-	private layoutVertical(left: number, top: number, right: number, bottom: number, insets: { left; top; right; bottom }): void {
+	private layoutVertical(left: number, top: number, right: number, bottom: number, insets: Position): void {
 		const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
 		const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
 		const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
@@ -136,7 +136,7 @@ export class StackLayout extends StackLayoutBase {
 		});
 	}
 
-	private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: { left; top; right; bottom }): void {
+	private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: Position): void {
 		const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
 		const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
 		const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;

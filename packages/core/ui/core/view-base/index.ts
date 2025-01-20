@@ -1,4 +1,4 @@
-import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
+import { AlignSelf, Flex, FlexFlow, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
 import { Page } from '../../page';
 import { CoreTypes } from '../../../core-types';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
@@ -10,7 +10,6 @@ import { Observable, PropertyChangeData, WrappedValue } from '../../../data/obse
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 import type { ModalTransition } from '../../transition/modal-transition';
-import type { GestureEventData } from '../../gestures';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
@@ -321,21 +320,33 @@ namespace SuspendType {
 
 const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
 
+/**
+ *
+ * @nsView ViewBase
+ */
 export abstract class ViewBase extends Observable implements ViewBaseDefinition {
 	/**
 	 * String value used when hooking to loaded event.
+	 *
+	 * @nsEvent loaded
 	 */
 	public static loadedEvent = 'loaded';
 	/**
 	 * String value used when hooking to unloaded event.
+	 *
+	 * @nsEvent unloaded
 	 */
 	public static unloadedEvent = 'unloaded';
 	/**
 	 * String value used when hooking to creation event
+	 *
+	 * @nsEvent created
 	 */
 	public static createdEvent = 'created';
 	/**
 	 * String value used when hooking to disposeNativeView event
+	 *
+	 * @nsEvent disposeNativeView
 	 */
 	public static disposeNativeViewEvent = 'disposeNativeView';
 
@@ -345,7 +356,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private _androidView: Object;
 	private _style: Style;
 	private _isLoaded: boolean = false;
+
+	/**
+	 * @deprecated
+	 */
 	private _visualState: string;
+
 	private _templateParent: ViewBase;
 	private __nativeView: any;
 
@@ -360,6 +376,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * returns the native UIViewController.
 	 */
 	public viewController: any;
+	/**
+	 * @nsProperty
+	 */
 	public bindingContext: any;
 	/**
 	 * read-only. If you want to set out-of-band the nativeView use the setNativeView method.
@@ -378,24 +397,40 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	/**
 	 * Gets or sets the id for this view.
+	 *
+	 * @nsProperty
 	 */
 	public id: string;
 	/**
 	 * Gets or sets the CSS class name for this view.
+	 *
+	 * @nsProperty
 	 */
 	public className: string;
 	public disableCss: boolean;
+
+	/**
+	 * Gets or sets the visual state of the view.
+	 * @nsProperty
+	 */
+	public hidden: boolean;
 	/**
 	 * Gets or sets the shared transition tag for animated view transitions
+	 *
+	 * @nsProperty
 	 */
 	public sharedTransitionTag: string;
 	/**
 	 * Opt out of shared transition under different binding conditions
+	 *
+	 * @nsProperty
 	 */
 	public sharedTransitionIgnore: boolean;
 
 	/**
 	 * Default visual state, defaults to 'normal'
+	 *
+	 * @nsProperty
 	 */
 	public defaultVisualState: string = 'normal';
 
@@ -427,22 +462,77 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _automaticallyAdjustsScrollViewInsets: boolean;
 
 	// Dynamic properties.
+	/**
+	 * Gets or sets the distance, in pixels, between the left edge of the child and the left edge of its parent.
+	 * @nsProperty
+	 */
 	left: CoreTypes.LengthType;
+	/**
+	 * Gets or sets the distance, in pixels, between the top edge of the child and the top edge of its parent.
+	 * @nsProperty
+	 */
 	top: CoreTypes.LengthType;
 	effectiveLeft: number;
 	effectiveTop: number;
+	/**
+	 * Dock position of the view within its parent.
+	 * @nsProperty
+	 */
 	dock: 'left' | 'top' | 'right' | 'bottom';
+	/**
+	 * The row for the element. The rows are 0-indexed, so the first row is indicated by 0.
+	 *
+	 * @nsProperty
+	 */
 	row: number;
+	/**
+	 * The column for the element. The columns are 0-indexed, so the first column is indicated by 0.
+	 * @nsProperty
+	 */
 	col: number;
+	/**
+	 * The column for the element. The columns are 0-indexed, so the first column is indicated by 0.
+	 * @nsProperty
+	 */
 	column: number; // synonym for "col"
+	/**
+	 * The number of rows for the element to span across.
+	 * @nsProperty
+	 */
 	rowSpan: number;
+	/**
+	 * The number of columns for the element to span across.
+	 * @nsProperty
+	 */
 	colSpan: number;
+	/**
+	 * @nsProperty
+	 */
 	columnSpan: number; // synonym for "columnSpan"
-
+	/**
+	 * Sets the order in which child elements inside a Flex appear in relation to one another.
+	 * @nsProperty
+	 */
 	order: Order;
+	/**
+	 * Indicates that the child should grow in size, if necessary. Sets how much the child will grow in proportion to the rest of the child elements in the flex container.
+	 * @nsProperty
+	 */
 	flexGrow: FlexGrow;
+	/**
+	 * Indicates that the child should shrink when the row runs out of space. Sets how much the flex item will shrink in proportion to the rest of the child elements in the flex container. When not specified, its value is set to 1.
+	 * @nsProperty
+	 */
 	flexShrink: FlexShrink;
+	/**
+	 * When true, forces the item to wrap onto a new line.
+	 * @nsProperty
+	 */
 	flexWrapBefore: FlexWrapBefore;
+	/**
+	 * (Android-only) Overrides the alignItems value for the child.
+	 * @nsProperty
+	 */
 	alignSelf: AlignSelf;
 
 	_oldLeft: number;
@@ -481,15 +571,24 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _moduleName: string;
 
 	/**
-	 * Gets or sets if the view is reusable.
-	 * Reusable views are not automatically destroyed when removed from the View tree.
+	 * Gets or sets if the view is reusable. Reusable views are not automatically destroyed when removed from the View tree.
+	 *
+	 * @nsProperty
 	 */
 	public reusable: boolean;
+
+	public readonly cssClasses: Set<string>;
+	public readonly cssPseudoClasses: Set<string>;
 
 	constructor() {
 		super();
 		this._domId = viewIdCounter++;
 		this._style = new Style(new WeakRef(this));
+		this.cssClasses = new Set();
+		this.cssPseudoClasses = new Set();
+
+		this.cssPseudoClasses.add(this.defaultVisualState);
+
 		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });
 	}
 
@@ -526,6 +625,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	get style(): Style {
 		return this._style;
 	}
+
+	/**
+	 *
+	 * @nsProperty
+	 */
 	set style(inlineStyle: Style /* | string */) {
 		if (typeof inlineStyle === 'string') {
 			this.setInlineStyle(inlineStyle);
@@ -753,14 +857,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		highlighted: ['active', 'pressed'],
 	};
 
-	public cssClasses: Set<string> = new Set();
-	public cssPseudoClasses: Set<string> = new Set();
+	private getAllAliasedStates(name: string): string[] {
+		const allStates: string[] = [name];
 
-	private getAllAliasedStates(name: string): Array<string> {
-		const allStates = [];
-		allStates.push(name);
 		if (name in this.pseudoClassAliases) {
-			for (let i = 0; i < this.pseudoClassAliases[name].length; i++) {
+			for (let i = 0, length = this.pseudoClassAliases[name].length; i < length; i++) {
 				allStates.push(this.pseudoClassAliases[name][i]);
 			}
 		}
@@ -776,7 +877,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	@profile
 	public addPseudoClass(name: string): void {
 		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0; i < allStates.length; i++) {
+		for (let i = 0, length = allStates.length; i < length; i++) {
 			if (!this.cssPseudoClasses.has(allStates[i])) {
 				this.cssPseudoClasses.add(allStates[i]);
 				this.notifyPseudoClassChanged(allStates[i]);
@@ -792,7 +893,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	@profile
 	public deletePseudoClass(name: string): void {
 		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0; i < allStates.length; i++) {
+		for (let i = 0, length = allStates.length; i < length; i++) {
 			if (this.cssPseudoClasses.has(allStates[i])) {
 				this.cssPseudoClasses.delete(allStates[i]);
 				this.notifyPseudoClassChanged(allStates[i]);
@@ -1288,11 +1389,32 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		view._isAddedToNativeVisualTree = false;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public get visualState() {
 		return this._visualState;
 	}
 
+	public _addVisualState(state: string): void {
+		this.deletePseudoClass(this.defaultVisualState);
+		this.addPseudoClass(state);
+	}
+
+	public _removeVisualState(state: string): void {
+		this.deletePseudoClass(state);
+
+		if (!this.cssPseudoClasses.size) {
+			this.addPseudoClass(this.defaultVisualState);
+		}
+	}
+
+	/**
+	 * @deprecated Use View._addVisualState() and View._removeVisualState() instead.
+	 */
 	public _goToVisualState(state: string) {
+		console.log('_goToVisualState() is deprecated. Use View._addVisualState() and View._removeVisualState() instead.');
+
 		if (Trace.isEnabled()) {
 			Trace.write(this + ' going to state: ' + state, Trace.categories.Style);
 		}
@@ -1553,6 +1675,21 @@ export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 disableCssProperty.register(ViewBase);
+
+export const defaultVisualStateProperty = new Property<ViewBase, string>({
+	name: 'defaultVisualState',
+	defaultValue: 'normal',
+	valueChanged(this: void, target, oldValue, newValue): void {
+		const value = newValue || 'normal';
+
+		// Append new default if old one is currently applied
+		if (target.cssPseudoClasses && target.cssPseudoClasses.has(oldValue)) {
+			target.deletePseudoClass(oldValue);
+			target.addPseudoClass(newValue);
+		}
+	},
+});
+defaultVisualStateProperty.register(ViewBase);
 
 export function booleanConverter(v: string | boolean): boolean {
 	const lowercase = (v + '').toLowerCase();

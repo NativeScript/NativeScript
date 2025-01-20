@@ -54,6 +54,22 @@ export function openUrl(location: string): boolean {
 	return true;
 }
 
+export function openUrlAsync(location: string): Promise<boolean> {
+	return new Promise<boolean>((resolve, reject) => {
+		try {
+			const context = AndroidUtils.getApplicationContext();
+			const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
+			intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+			context.startActivity(intent);
+			resolve(true);
+		} catch (e) {
+			// We don't do anything with an error. We just output it
+			Trace.write(`Failed to start activity for handling URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
+			resolve(false);
+		}
+	});
+}
+
 /**
  * Check whether external storage is read only
  *

@@ -21,6 +21,6 @@
 			}
 		]
 	},
-	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "jest.config.ts", "jest.setup.ts", "node_modules", "tmp", "platforms", "__tests__"],
+	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "jest.config.ts", "jest.setup.ts", "node_modules", "tmp", "platforms", "__tests__", "vite.config.ts", "vitest.setup.ts"],
 	"include": ["**/*.ts", "./references.d.ts"]
 }

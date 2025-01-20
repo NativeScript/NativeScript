@@ -11,6 +11,7 @@ import { HtmlView as HtmlViewDefinition } from '.';
 export class HtmlViewBase extends View implements HtmlViewDefinition {
 	public html: string;
 	public selectable: boolean;
+	public linkColor: Color;
 }
 
 HtmlViewBase.prototype.recycleNativeView = 'auto';

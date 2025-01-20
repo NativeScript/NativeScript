@@ -602,9 +602,9 @@ export function test_restore_original_values_when_state_is_changed() {
 	page.css = 'button { color: blue; } ' + 'button:pressed { color: red; } ';
 
 	helper.assertViewColor(btn, '#0000FF');
-	btn._goToVisualState('pressed');
+	btn._addVisualState('pressed');
 	helper.assertViewColor(btn, '#FF0000');
-	btn._goToVisualState('normal');
+	btn._removeVisualState('pressed');
 	helper.assertViewColor(btn, '#0000FF');
 }
 
@@ -655,9 +655,9 @@ export const test_composite_selector_type_class_state = function () {
 
 		// The button with no class should not react to state changes.
 		TKUnit.assertNull(btnWithNoClass.style.color, 'Color should not have a value.');
-		btnWithNoClass._goToVisualState('pressed');
+		btnWithNoClass._addVisualState('pressed');
 		TKUnit.assertNull(btnWithNoClass.style.color, 'Color should not have a value.');
-		btnWithNoClass._goToVisualState('normal');
+		btnWithNoClass._removeVisualState('pressed');
 		TKUnit.assertNull(btnWithNoClass.style.color, 'Color should not have a value.');
 
 		TKUnit.assertNull(lblWithClass.style.color, 'Color should not have a value');
@@ -864,11 +864,11 @@ function testSelectorsPrioritiesTemplate(css: string) {
 function testButtonPressedStateIsRed(btn: Button) {
 	TKUnit.assert(btn.style.color === undefined, 'Color should not have a value.');
 
-	btn._goToVisualState('pressed');
+	btn._addVisualState('pressed');
 
 	helper.assertViewColor(btn, '#FF0000');
 
-	btn._goToVisualState('normal');
+	btn._removeVisualState('pressed');
 
 	TKUnit.assert(btn.style.color === undefined, 'Color should not have a value after returned to normal state.');
 }

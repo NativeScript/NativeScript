@@ -15,7 +15,7 @@
     "@nativescript/ios": "*",
     "@nativescript/visionos": "*",
     "@nativescript/webpack": "*",
-    "typescript": "~5.2.0"
+    "typescript": "~5.6.0"
   },
   "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
   "readme": "NativeScript Application",

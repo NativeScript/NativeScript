@@ -275,7 +275,7 @@ export var test_StateHighlighted_also_fires_pressedState = function () {
 
 		helper.waitUntilLayoutReady(view);
 
-		view._goToVisualState('highlighted');
+		view._addVisualState('highlighted');
 
 		var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
 		TKUnit.assert(actualResult.hex === expectedNormalizedColor, 'Actual: ' + actualResult.hex + '; Expected: ' + expectedNormalizedColor);
@@ -292,7 +292,7 @@ export var test_StateHighlighted_also_fires_activeState = function () {
 
 		helper.waitUntilLayoutReady(view);
 
-		view._goToVisualState('highlighted');
+		view._addVisualState('highlighted');
 
 		var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
 		TKUnit.assert(actualResult.hex === expectedNormalizedColor, 'Actual: ' + actualResult.hex + '; Expected: ' + expectedNormalizedColor);

@@ -383,12 +383,14 @@ export function initGlobal() {
 
 declare const jest: any;
 function isTestingEnv() {
-	return typeof jest !== 'undefined';
+	return typeof jest !== 'undefined' || global.__UNIT_TEST__;
 }
 
 if (!global.NativeScriptHasInitGlobal && !isTestingEnv()) {
 	initGlobal();
 }
 
-// ensure the Application instance is initialized before any other module imports it.
-require('@nativescript/core/application');
+if (!isTestingEnv()) {
+	// ensure the Application instance is initialized before any other module imports it.
+	require('@nativescript/core/application');
+}

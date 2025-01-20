@@ -1,26 +1,18 @@
 import { ScrollEventData } from '../scroll-view';
-import { CoreTypes } from '../../core-types';
 import { Background as BackgroundDefinition } from './background';
-import { View, Point } from '../core/view';
+import { View, Point, Position } from '../core/view';
 import { LinearGradient } from './linear-gradient';
-import { Color } from '../../color';
 import { Screen } from '../../platform';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 import { ImageSource } from '../../image-source';
-import { CSSValue, parse as cssParse } from '../../css-value';
+import type { CSSValue } from '../../css-value/reworkcss-value';
+import { parse as cssParse } from '../../css-value/reworkcss-value.js';
 import { BoxShadow } from './box-shadow';
 import { Length } from './style-properties';
 import { BackgroundClearFlags } from './background-common';
 
 export * from './background-common';
-
-interface Position {
-	top: number;
-	right: number;
-	bottom: number;
-	left: number;
-}
 
 interface BackgroundDrawParams {
 	repeatX: boolean;
@@ -68,7 +60,9 @@ export namespace ios {
 			callback(background?.color?.ios);
 		} else {
 			if (!(background.image instanceof LinearGradient)) {
-				setUIColorFromImage(view, nativeView, callback, flip);
+				createUIImageFromURI(view, background.image, flip, (image: UIImage) => {
+					callback(image ? UIColor.alloc().initWithPatternImage(image) : background?.color?.ios);
+				});
 			}
 		}
 	}
@@ -180,6 +174,52 @@ export namespace ios {
 
 		// Reset clear flags
 		background.clearFlags = BackgroundClearFlags.NONE;
+	}
+
+	export function createUIImageFromURI(view: View, imageURI: string, flip: boolean, callback: (image: UIImage) => void): void {
+		const nativeView: UIView = view.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+
+		const frame = nativeView.frame;
+		const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
+		const boundsHeight = view.scaleY ? frame.size.height / view.scaleY : frame.size.height;
+		if (!boundsWidth || !boundsHeight) {
+			return undefined;
+		}
+
+		const style = view.style;
+
+		if (imageURI) {
+			const match = imageURI.match(uriPattern);
+			if (match && match[2]) {
+				imageURI = match[2];
+			}
+		}
+
+		let bitmap: UIImage;
+		if (isDataURI(imageURI)) {
+			const base64Data = imageURI.split(',')[1];
+			if (base64Data !== undefined) {
+				const imageSource = ImageSource.fromBase64Sync(base64Data);
+				bitmap = imageSource && imageSource.ios;
+			}
+		} else if (isFileOrResourcePath(imageURI)) {
+			const imageSource = ImageSource.fromFileOrResourceSync(imageURI);
+			bitmap = imageSource && imageSource.ios;
+		} else if (imageURI.indexOf('http') !== -1) {
+			style[symbolUrl] = imageURI;
+			ImageSource.fromUrl(imageURI)
+				.then((r) => {
+					if (style && style[symbolUrl] === imageURI) {
+						callback(generatePatternImage(r.ios, view, flip));
+					}
+				})
+				.catch(() => {});
+		}
+
+		callback(generatePatternImage(bitmap, view, flip));
 	}
 
 	export function generateShadowLayerPaths(view: View, bounds: CGRect): { maskPath: any; shadowPath: any } {
@@ -431,48 +471,6 @@ function clearNonUniformBorders(nativeView: NativeScriptUIView): void {
 	nativeView.hasNonUniformBorder = false;
 }
 
-function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor: UIColor) => void, flip?: boolean): void {
-	const frame = nativeView.frame;
-	const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
-	const boundsHeight = view.scaleY ? frame.size.height / view.scaleY : frame.size.height;
-	if (!boundsWidth || !boundsHeight) {
-		return undefined;
-	}
-
-	const style = view.style;
-	const background = style.backgroundInternal;
-	let imageUri = background.image as string;
-	if (imageUri) {
-		const match = imageUri.match(uriPattern);
-		if (match && match[2]) {
-			imageUri = match[2];
-		}
-	}
-
-	let bitmap: UIImage;
-	if (isDataURI(imageUri)) {
-		const base64Data = imageUri.split(',')[1];
-		if (base64Data !== undefined) {
-			const imageSource = ImageSource.fromBase64Sync(base64Data);
-			bitmap = imageSource && imageSource.ios;
-		}
-	} else if (isFileOrResourcePath(imageUri)) {
-		const imageSource = ImageSource.fromFileOrResourceSync(imageUri);
-		bitmap = imageSource && imageSource.ios;
-	} else if (imageUri.indexOf('http') !== -1) {
-		style[symbolUrl] = imageUri;
-		ImageSource.fromUrl(imageUri)
-			.then((r) => {
-				if (style && style[symbolUrl] === imageUri) {
-					uiColorFromImage(r.ios, view, callback, flip);
-				}
-			})
-			.catch(() => {});
-	}
-
-	uiColorFromImage(bitmap, view, callback, flip);
-}
-
 function parsePosition(pos: string): { x: CSSValue; y: CSSValue } {
 	const values = cssParse(pos);
 	if (values.length === 2) {
@@ -618,14 +616,12 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
 	return res;
 }
 
-function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
+function generatePatternImage(img: UIImage, view: View, flip?: boolean): UIImage {
 	const background = view.style.backgroundInternal;
 	const nativeView: NativeScriptUIView = view.nativeViewProtected;
 
 	if (!img || !nativeView) {
-		callback(background.color && background.color.ios);
-
-		return;
+		return null;
 	}
 
 	const frame = nativeView.frame;
@@ -666,15 +662,10 @@ function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor)
 		img.drawAsPatternInRect(patternRect);
 	}
 
-	const bkgImage = UIGraphicsGetImageFromCurrentImageContext();
+	const bgImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 
-	if (flip) {
-		const flippedImage = _flipImage(bkgImage);
-		callback(UIColor.alloc().initWithPatternImage(flippedImage));
-	} else {
-		callback(UIColor.alloc().initWithPatternImage(bkgImage));
-	}
+	return flip ? _flipImage(bgImage) : bgImage;
 }
 
 // Flipping the default coordinate system
@@ -828,7 +819,7 @@ function calculateInnerBorderClipRadius(radius: number, insetX: number, insetY: 
  * @param offset
  * @returns
  */
-export function generateNonUniformBorderOuterClipPath(bounds: CGRect, cappedRadii: CappedOuterRadii, offset: number = 0): any {
+function generateNonUniformBorderOuterClipPath(bounds: CGRect, cappedRadii: CappedOuterRadii, offset: number = 0): any {
 	const { width, height } = bounds.size;
 	const { x, y } = bounds.origin;
 

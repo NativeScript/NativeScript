@@ -546,11 +546,14 @@ public class Fetcher extends Worker {
 
 		int sourceWidth = bitmap.getWidth();
 		int sourceHeight = bitmap.getHeight();
+
 		reqWidth = reqWidth > 0 ? reqWidth : Math.min(sourceWidth, mDeviceWidthPixels);
 		reqHeight = reqHeight > 0 ? reqHeight : Math.min(sourceHeight, mDeviceHeightPixels);
 
 		// scale
 		if (reqWidth != sourceWidth || reqHeight != sourceHeight) {
+			boolean needsResize;
+
 			if (keepAspectRatio) {
 				double widthCoef = (double) sourceWidth / (double) reqWidth;
 				double heightCoef = (double) sourceHeight / (double) reqHeight;
@@ -558,9 +561,17 @@ public class Fetcher extends Worker {
 
 				reqWidth = (int) Math.floor(sourceWidth / aspectCoef);
 				reqHeight = (int) Math.floor(sourceHeight / aspectCoef);
+
+				// Update resize flag as values might revert back to original
+				needsResize = reqWidth != sourceWidth || reqHeight != sourceHeight;
+			} else {
+				needsResize = true;
 			}
 
-			bitmap = Bitmap.createScaledBitmap(bitmap, reqWidth, reqHeight, true);
+			// After preserving aspect ratio, check if bitmap still needs scaling
+			if (needsResize) {
+				bitmap = Bitmap.createScaledBitmap(bitmap, reqWidth, reqHeight, true);
+			}
 		}
 
 		// rotate

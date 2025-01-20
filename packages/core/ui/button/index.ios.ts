@@ -9,6 +9,8 @@ import { Color } from '../../color';
 
 export * from './button-common';
 
+const observableVisualStates = ['highlighted']; // States like :disabled are handled elsewhere
+
 export class Button extends ButtonBase {
 	// we dont defile tapEvent to let the gesture obserers handle it
 	// in some weird case with UICollectionView UIControlEvents.TouchUpInside is not working
@@ -37,8 +39,12 @@ export class Button extends ButtonBase {
 	_updateButtonStateChangeHandler(subscribe: boolean) {
 		if (subscribe) {
 			if (!this._stateChangedHandler) {
-				this._stateChangedHandler = new ControlStateChangeListener(this.nativeViewProtected, (s: string) => {
-					this._goToVisualState(s);
+				this._stateChangedHandler = new ControlStateChangeListener(this.nativeViewProtected, observableVisualStates, (state: string, add: boolean) => {
+					if (add) {
+						this._addVisualState(state);
+					} else {
+						this._removeVisualState(state);
+					}
 				});
 			}
 			this._stateChangedHandler.start();

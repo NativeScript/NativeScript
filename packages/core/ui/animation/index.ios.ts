@@ -1,16 +1,12 @@
 // Types
-import { AnimationDefinitionInternal, AnimationPromise, IOSView, PropertyAnimation, PropertyAnimationInfo } from './animation-common';
+import { AnimationDefinitionInternal, AnimationPromise, IOSView, PropertyAnimation, PropertyAnimationInfo, AnimationBase, Properties } from './animation-common';
 import { View } from '../core/view';
-
-// Requires
-import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animation-common';
+import { CubicBezierAnimationCurve } from './animation-interfaces';
 import { Trace } from '../../trace';
 import { rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
 import { CssAnimationProperty, Property } from '../core/properties';
 import { ios as iosBackground } from '../styling/background';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
-
-import { ios as iosHelper } from '../../utils/native-helper';
 
 import { Screen } from '../../platform';
 import { Color } from '../../color';
@@ -141,9 +137,7 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
 			if (curve instanceof CAMediaTimingFunction) {
 				return curve;
 			} else if (curve instanceof CubicBezierAnimationCurve) {
-				const animationCurve = <CubicBezierAnimationCurve>curve;
-
-				return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
+				return CAMediaTimingFunction.functionWithControlPoints(curve.x1, curve.y1, curve.x2, curve.y2);
 			} else {
 				console.error(`Invalid animation curve: ${curve}`);
 			}

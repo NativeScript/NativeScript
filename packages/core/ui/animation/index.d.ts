@@ -75,19 +75,6 @@ export interface AnimationDefinition {
 }
 
 /**
- * Defines a custom animation timing curve by using the cubic-bezier function.
- * Possible values are numeric values from 0 to 1
- */
-export class CubicBezierAnimationCurve {
-	public x1: number;
-	public y1: number;
-	public x2: number;
-	public y2: number;
-
-	constructor(x1: number, y1: number, x2: number, y2: number);
-}
-
-/**
  * Defines a key-value pair for css transformation
  */
 export type Transformation = {

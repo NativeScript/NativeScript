@@ -6,7 +6,7 @@ import { CSSNativeScript } from './CSSNativeScript';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as shadyCss from 'shady-css-parser';
-import * as reworkCss from 'css';
+const reworkCss = await import('./reworkcss.js');
 
 const parseCss: any = require('parse-css');
 const gonzales: any = require('gonzales');

@@ -59,3 +59,5 @@ ios-typings-prj
 
 /packages/core/platforms/android/core.aar
 .nx
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

@@ -18,7 +18,7 @@ export function isFunction(value: any): value is Function {
 	return typeof value === 'function';
 }
 
-export function isObject(value: any): value is Record<string, any> {
+export function isObject(value: any): value is Record<string,any> {
 	if (!value) {
 		return false;
 	}

@@ -49,7 +49,7 @@ export class ImageSource implements ImageSourceDefinition {
 		// compatibility with Android
 	}
 
-	constructor(nativeSource?: any) {
+	constructor(nativeSource?: UIImage) {
 		if (nativeSource) {
 			this.setNativeSource(nativeSource);
 		}
@@ -343,14 +343,20 @@ export class ImageSource implements ImageSourceDefinition {
 		return !!this.ios;
 	}
 
-	public setNativeSource(source: any): void {
-		if (source && !(source instanceof UIImage)) {
+	public getNativeSource(): UIImage {
+		return this.ios;
+	}
+
+	public setNativeSource(source: UIImage): void {
+		if (!source) {
+			this.ios = null;
+		} else if (source instanceof UIImage) {
+			this.ios = source;
+		} else {
 			if (Trace.isEnabled()) {
 				Trace.write('The method setNativeSource() expects UIImage instance.', Trace.categories.Binding, Trace.messageType.error);
 			}
-			return;
 		}
-		this.ios = source;
 	}
 
 	public saveToFile(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): boolean {

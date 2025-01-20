@@ -3,8 +3,8 @@
  */
 
 // imported for definition purposes only
-import * as animationModule from '../ui/animation';
 import { makeValidator, makeParser } from '../ui/core/properties';
+import { CubicBezierAnimationCurve } from '../ui/animation/animation-interfaces';
 
 export namespace CoreTypes {
 	/**
@@ -268,8 +268,6 @@ export namespace CoreTypes {
 		export const parse = makeParser<BackgroundRepeatType>(isValid);
 	}
 
-	let animation: typeof animationModule;
-
 	export namespace AnimationCurve {
 		export const ease = 'ease';
 		export const easeIn = 'easeIn';
@@ -278,9 +276,7 @@ export namespace CoreTypes {
 		export const linear = 'linear';
 		export const spring = 'spring';
 		export function cubicBezier(x1: number, y1: number, x2: number, y2: number) {
-			animation = animation || require('../ui/animation');
-
-			return new animation.CubicBezierAnimationCurve(x1, y1, x2, y2);
+			return new CubicBezierAnimationCurve(x1, y1, x2, y2);
 		}
 	}
 

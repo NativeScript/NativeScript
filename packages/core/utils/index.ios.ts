@@ -1,5 +1,5 @@
 import { Trace } from '../trace';
-import { dataSerialize, ios as iOSUtils } from './native-helper';
+import { ios as iOSUtils } from './native-helper';
 
 export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
 export * from './common';
@@ -57,13 +57,32 @@ export function openUrl(location: string): boolean {
 	try {
 		const url = NSURL.URLWithString(location.trim());
 		if (UIApplication.sharedApplication.canOpenURL(url)) {
-			UIApplication.sharedApplication.openURLOptionsCompletionHandler(url, dataSerialize({}), null);
+			openUrlAsync(location);
 			return true;
 		}
 	} catch (e) {
 		// We Don't do anything with an error.  We just output it
 		Trace.write('Error in OpenURL', Trace.categories.Error, Trace.messageType.error);
 	}
+}
+
+export function openUrlAsync(location: string): Promise<boolean> {
+	return new Promise<boolean>((resolve, reject) => {
+		try {
+			const url = NSURL.URLWithString(location.trim());
+			const app = UIApplication.sharedApplication;
+			if (app.canOpenURL(url)) {
+				app.openURLOptionsCompletionHandler(url, null, (success: boolean) => {
+					resolve(success);
+				});
+			} else {
+				resolve(false);
+			}
+		} catch (e) {
+			Trace.write('Error in OpenURL', Trace.categories.Error, Trace.messageType.error);
+			reject(e);
+		}
+	});
 }
 
 export function isRealDevice(): boolean {
