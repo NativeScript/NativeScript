@@ -229,7 +229,6 @@ function initializeDialogFragment() {
 
 			// set the modal window animation
 			// https://github.com/NativeScript/NativeScript/issues/5989
-			console.log('setWindowAnimations', this._animationStyle, styleAnimationDialog);
 			if (this._animated) {
 				dialog.getWindow().setWindowAnimations(this._animationStyle ?? styleAnimationDialog);
 			}
