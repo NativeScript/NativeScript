@@ -1,6 +1,6 @@
 // Definitions.
 import { GestureEventData, TapGestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, GestureEventDataWithState } from '.';
-import { View } from '../core/view';
+import type { View } from '../core/view';
 import { EventData } from '../../data/observable';
 
 // Types.
