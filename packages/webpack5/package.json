@@ -53,8 +53,8 @@
 		"webpack-virtual-modules": "^0.4.0"
 	},
 	"devDependencies": {
-		"@angular/compiler-cli": "^19.0.0",
 		"@angular-devkit/build-angular": "^19.0.0",
+		"@angular/compiler-cli": "^19.0.0",
 		"@types/css": "0.0.33",
 		"@types/jest": "29.5.4",
 		"@types/loader-utils": "2.0.3",
