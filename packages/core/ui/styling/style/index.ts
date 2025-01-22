@@ -42,7 +42,7 @@ export class Style extends Observable implements StyleDefinition {
 		super();
 
 		// HACK: Could not find better way for cross platform WeakRef type checking.
-		if (ownerView.constructor.toString().indexOf('[native code]') !== -1) {
+		if (ownerView.constructor.toString().indexOf('[native code]') !== -1 || ownerView.toString() == '[object WeakRef]') {
 			this.viewRef = <WeakRef<ViewBase>>ownerView;
 		} else {
 			this.viewRef = new WeakRef(<ViewBase>ownerView);
