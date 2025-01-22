@@ -1112,6 +1112,7 @@ export class View extends ViewCommon {
 			// let s use outline provider when we can
 			if (shouldClipToOutline) {
 				ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
+
 			}
 		} else {
 			ViewHelper.clearOutlineProvider(nativeView);
@@ -1205,7 +1206,7 @@ export class View extends ViewCommon {
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
-		const shouldClipToOutline = onlyColor && !background.hasBoxShadow();
+		const shouldClipToOutline = !onlyColor || !background.hasBoxShadow();
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable, shouldClipToOutline);
 		if (background.hasBoxShadow()) {
 			this._drawBoxShadow(background.getBoxShadow());
