@@ -1077,7 +1077,7 @@ export abstract class View extends ViewCommon {
 	 * @private
 	 *  method called on Android to apply the background. This allows custom handling
 	 */
-	_applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any);
+	_applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any, shouldClipToOutline: boolean);
 
 	/**
 	 * @private

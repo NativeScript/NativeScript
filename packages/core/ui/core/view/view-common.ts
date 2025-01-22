@@ -1233,7 +1233,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _redrawNativeBackground(value: any): void {
 		//
 	}
-	public _applyBackground(background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: android.graphics.drawable.Drawable) {
+	public _applyBackground(background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any, shouldClipToOutline: boolean) {
 		//
 	}
 
