@@ -1088,7 +1088,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any) {
+	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any, shouldClipToOutline: boolean) {
 		const nativeView = this.nativeViewProtected as NativeScriptAndroidView;
 		const canUseOutlineProvider = !background.hasBorderWidth() && !background.hasBoxShadow() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
 		if (onlyColor || canUseOutlineProvider) {
@@ -1110,7 +1110,9 @@ export class View extends ViewCommon {
 			}
 			// borderDrawable is slow
 			// let s use outline provider when we can
-			ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
+			if (shouldClipToOutline) {
+				ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
+			}
 		} else {
 			ViewHelper.clearOutlineProvider(nativeView);
 			if (background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR) {
@@ -1203,8 +1205,8 @@ export class View extends ViewCommon {
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
-		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
-
+		const shouldClipToOutline = onlyColor && !background.hasBoxShadow();
+		this._applyBackground(background, isBorderDrawable, onlyColor, drawable, shouldClipToOutline);
 		if (background.hasBoxShadow()) {
 			this._drawBoxShadow(background.getBoxShadow());
 		}
@@ -1240,8 +1242,7 @@ export class View extends ViewCommon {
 	}
 }
 
-export class ContainerView extends View {
-}
+export class ContainerView extends View {}
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
 	declare nativeViewProtected: android.view.ViewGroup;
