@@ -219,8 +219,8 @@ export class FrameBase extends CustomLayoutView {
 
 	protected _disposeBackstackEntry(entry: BackstackEntry): void {
 		const page = entry.resolvedPage;
-		if (page && page._context) {
-			entry.resolvedPage._tearDownUI(true);
+		if (page) {
+			page._tearDownUI(true);
 		}
 	}
 
