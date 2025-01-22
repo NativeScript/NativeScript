@@ -217,6 +217,13 @@ export class FrameBase extends CustomLayoutView {
 		removed.resolvedPage = null;
 	}
 
+	protected _disposeBackstackEntry(entry: BackstackEntry): void {
+		const page = entry.resolvedPage;
+		if (page && page._context) {
+			entry.resolvedPage._tearDownUI(true);
+		}
+	}
+
 	public navigate(param: any) {
 		if (Trace.isEnabled()) {
 			Trace.write(`NAVIGATE`, Trace.categories.Navigation);
