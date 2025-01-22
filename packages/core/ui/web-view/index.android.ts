@@ -99,7 +99,7 @@ function initializeWebViewClient(): void {
 }
 
 export class WebView extends WebViewBase {
-	nativeViewProtected: android.webkit.WebView;
+	declare nativeViewProtected: android.webkit.WebView;
 
 	public createNativeView() {
 		const nativeView = new android.webkit.WebView(this._context);

@@ -10,7 +10,7 @@ const SUPPORT_TEXT_COLOR = !__VISIONOS__ && SDK_VERSION < 14.0;
 
 export class DatePicker extends DatePickerBase {
 	private _changeHandler: NSObject;
-	public nativeViewProtected: UIDatePicker;
+	public declare nativeViewProtected: UIDatePicker;
 
 	public createNativeView() {
 		const picker = UIDatePicker.new();

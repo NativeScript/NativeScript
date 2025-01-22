@@ -23,7 +23,7 @@ const NON_ANIMATED_TRANSITION = 'non-animated';
 let navDepth = -1;
 
 export class Frame extends FrameBase {
-	viewController: UINavigationControllerImpl;
+	declare viewController: UINavigationControllerImpl;
 	_animatedDelegate: UINavigationControllerDelegate;
 	public _ios: iOSFrame;
 	iosNavigationBarClass: typeof NSObject;

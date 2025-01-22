@@ -51,7 +51,7 @@ function getListener(): android.widget.SeekBar.OnSeekBarChangeListener {
 
 export class Slider extends SliderBase {
 	_supressNativeValue: boolean;
-	nativeViewProtected: OwnerSeekBar;
+	declare nativeViewProtected: OwnerSeekBar;
 
 	public createNativeView() {
 		if (!SeekBar) {

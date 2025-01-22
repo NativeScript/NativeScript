@@ -81,7 +81,7 @@ const alignSelfMap = {
 };
 
 export class FlexboxLayout extends FlexboxLayoutBase {
-	nativeViewProtected: org.nativescript.widgets.FlexboxLayout;
+	declare nativeViewProtected: org.nativescript.widgets.FlexboxLayout;
 
 	constructor() {
 		super();

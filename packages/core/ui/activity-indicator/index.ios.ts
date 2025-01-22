@@ -6,7 +6,7 @@ import { SDK_VERSION } from '../../utils';
 export * from './activity-indicator-common';
 
 export class ActivityIndicator extends ActivityIndicatorBase {
-	nativeViewProtected: UIActivityIndicatorView;
+	declare nativeViewProtected: UIActivityIndicatorView;
 
 	private _activityIndicatorViewStyle = SDK_VERSION <= 12 || !UIActivityIndicatorViewStyle.Medium ? UIActivityIndicatorViewStyle.Gray : UIActivityIndicatorViewStyle.Medium;
 

@@ -15,7 +15,7 @@ const STATUS_BAR_LIGHT_BCKG = -657931;
 const STATUS_BAR_DARK_BCKG = 1711276032;
 
 export class Page extends PageBase {
-	nativeViewProtected: org.nativescript.widgets.GridLayout;
+	declare nativeViewProtected: org.nativescript.widgets.GridLayout;
 
 	public createNativeView() {
 		const layout = new org.nativescript.widgets.GridLayout(this._context);

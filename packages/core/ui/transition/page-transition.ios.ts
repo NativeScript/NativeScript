@@ -7,13 +7,13 @@ import { SharedTransition, SharedTransitionAnimationType } from './shared-transi
 import { SharedTransitionHelper } from './shared-transition-helper';
 
 export class PageTransition extends Transition {
-	transitionController: PageTransitionController;
-	interactiveController: UIPercentDrivenInteractiveTransition;
-	presented: UIViewController;
-	presenting: UIViewController;
+	declare transitionController: PageTransitionController;
+	declare interactiveController: UIPercentDrivenInteractiveTransition;
+	declare presented: UIViewController;
+	declare presenting: UIViewController;
 	navigationController: UINavigationController;
 	operation: number;
-	sharedElements: {
+	declare sharedElements: {
 		presented?: Array<SharedElementSettings>;
 		presenting?: Array<SharedElementSettings>;
 		// independent sharedTransitionTags which are part of the shared transition but only on one page

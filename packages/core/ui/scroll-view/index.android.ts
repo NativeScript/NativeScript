@@ -6,7 +6,7 @@ import { isUserInteractionEnabledProperty } from '../core/view';
 export * from './scroll-view-common';
 
 export class ScrollView extends ScrollViewBase {
-	nativeViewProtected: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
+	declare nativeViewProtected: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
 	private _androidViewId = -1;
 	private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
 	private scrollChangeHandler: androidx.core.widget.NestedScrollView.OnScrollChangeListener;

@@ -17,6 +17,7 @@
 			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
 			"rules": {
 				"no-empty": "off",
+				"prefer-const": "warn",
 				"no-useless-escape": "off",
 				"no-inner-declarations": "off",
 				"no-prototype-builtins": "off",
@@ -30,6 +31,8 @@
 				"@typescript-eslint/no-this-alias": "warn",
 				"@typescript-eslint/no-namespace": "off",
 				"@typescript-eslint/no-inferrable-types": "off",
+				"@typescript-eslint/no-unsafe-function-type": "off",
+				"@typescript-eslint/no-require-imports": "off",
 				"prettier/prettier": "warn"
 			}
 		},

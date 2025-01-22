@@ -52,7 +52,7 @@ function initializeItemClickListener(): void {
 }
 
 export class ListView extends ListViewBase {
-	nativeViewProtected: android.widget.ListView;
+	declare nativeViewProtected: android.widget.ListView;
 	private _androidViewId = -1;
 
 	public _realizedItems = new Map<

@@ -45,7 +45,7 @@ function initializeImageLoadedListener() {
 }
 
 export class Image extends ImageBase {
-	nativeViewProtected: org.nativescript.widgets.ImageView;
+	declare nativeViewProtected: org.nativescript.widgets.ImageView;
 
 	public useCache = true;
 

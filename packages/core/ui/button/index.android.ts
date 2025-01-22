@@ -62,7 +62,7 @@ export class Button extends ButtonBase {
 	// defining this here means tap event wont be handled
 	// by the gesture observers
 	public static tapEvent = tapEvent;
-	nativeViewProtected: android.widget.Button;
+	declare nativeViewProtected: android.widget.Button;
 
 	private _stateListAnimator: any;
 

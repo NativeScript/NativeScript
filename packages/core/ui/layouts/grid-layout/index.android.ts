@@ -38,7 +38,7 @@ interface ItemSpec extends ItemSpecBase {
 }
 
 export class GridLayout extends GridLayoutBase {
-	nativeViewProtected: org.nativescript.widgets.GridLayout;
+	declare nativeViewProtected: org.nativescript.widgets.GridLayout;
 
 	public createNativeView() {
 		return new org.nativescript.widgets.GridLayout(this._context);

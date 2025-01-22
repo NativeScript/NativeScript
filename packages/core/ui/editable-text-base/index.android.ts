@@ -88,8 +88,8 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	_dirtyTextAccumulator: string;
 	/* tslint:enable */
 
-	nativeViewProtected: android.widget.EditText;
-	nativeTextViewProtected: android.widget.EditText;
+	declare nativeViewProtected: android.widget.EditText;
+	declare nativeTextViewProtected: android.widget.EditText;
 	private _keyListenerCache: android.text.method.KeyListener;
 	private _inputType: number;
 

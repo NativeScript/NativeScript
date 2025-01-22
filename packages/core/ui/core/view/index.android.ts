@@ -355,14 +355,14 @@ export class View extends ViewCommon {
 	public static androidBackPressedEvent = androidBackPressedEvent;
 
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
-	public _manager: androidx.fragment.app.FragmentManager;
+	public declare _manager: androidx.fragment.app.FragmentManager;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
 	private layoutChangeListenerIsSet: boolean;
 	private layoutChangeListener: android.view.View.OnLayoutChangeListener;
 	private _rootManager: androidx.fragment.app.FragmentManager;
 
-	nativeViewProtected: android.view.View;
+	declare nativeViewProtected: android.view.View;
 
 	// TODO: Implement unobserve that detach the touchListener.
 	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
@@ -1241,11 +1241,10 @@ export class View extends ViewCommon {
 }
 
 export class ContainerView extends View {
-	public iosOverflowSafeArea: boolean;
 }
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
-	nativeViewProtected: android.view.ViewGroup;
+	declare nativeViewProtected: android.view.ViewGroup;
 
 	public createNativeView() {
 		return new org.nativescript.widgets.ContentLayout(this._context);

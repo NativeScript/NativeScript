@@ -180,7 +180,7 @@ function initializeBaselineAdjustedSpan(): void {
 }
 
 export class TextBase extends TextBaseCommon {
-	nativeViewProtected: org.nativescript.widgets.StyleableTextView;
+	declare nativeViewProtected: org.nativescript.widgets.StyleableTextView;
 	// @ts-ignore
 	nativeTextViewProtected: org.nativescript.widgets.StyleableTextView;
 	// private _defaultTransformationMethod: android.text.method.TransformationMethod;

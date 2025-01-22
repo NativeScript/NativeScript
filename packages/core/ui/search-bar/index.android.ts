@@ -111,7 +111,7 @@ function enableUserInteractionSearchView(nativeView: any, value: boolean) {
 }
 
 export class SearchBar extends SearchBarBase {
-	nativeViewProtected: androidx.appcompat.widget.SearchView;
+	declare nativeViewProtected: androidx.appcompat.widget.SearchView;
 	private _searchTextView: android.widget.TextView;
 	private _searchPlate: android.widget.LinearLayout;
 

@@ -5,8 +5,8 @@ import { CoreTypes } from '../../core-types';
 export * from './editable-text-base-common';
 
 export abstract class EditableTextBase extends EditableTextBaseCommon {
-	public nativeViewProtected: UITextField | UITextView;
-	public readonly nativeTextViewProtected: UITextField | UITextView;
+	public declare nativeViewProtected: UITextField | UITextView;
+	public declare readonly nativeTextViewProtected: UITextField | UITextView;
 	public dismissSoftInput() {
 		this.nativeTextViewProtected.resignFirstResponder();
 		this.notify({ eventName: EditableTextBase.blurEvent, object: this });

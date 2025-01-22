@@ -8,7 +8,7 @@ import { AndroidHelper } from '../core/view';
 export * from './activity-indicator-common';
 
 export class ActivityIndicator extends ActivityIndicatorBase {
-	nativeViewProtected: android.widget.ProgressBar;
+	declare nativeViewProtected: android.widget.ProgressBar;
 
 	public createNativeView() {
 		const progressBar = new android.widget.ProgressBar(this._context);

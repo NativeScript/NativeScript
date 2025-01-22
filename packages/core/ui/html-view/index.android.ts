@@ -7,7 +7,7 @@ import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } fro
 export * from './html-view-common';
 
 export class HtmlView extends HtmlViewBase {
-	nativeViewProtected: android.widget.TextView;
+	declare nativeViewProtected: android.widget.TextView;
 
 	public createNativeView() {
 		return new android.widget.TextView(this._context);

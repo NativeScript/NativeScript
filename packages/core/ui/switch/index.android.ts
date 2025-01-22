@@ -35,8 +35,8 @@ function initializeCheckedChangeListener(): void {
 }
 
 export class Switch extends SwitchBase {
-	nativeViewProtected: android.widget.Switch;
-	public checked: boolean;
+	declare nativeViewProtected: android.widget.Switch;
+	declare checked: boolean;
 
 	public createNativeView() {
 		return new android.widget.Switch(this._context);

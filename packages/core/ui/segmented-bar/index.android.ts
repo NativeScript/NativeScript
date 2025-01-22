@@ -105,7 +105,7 @@ function initializeNativeClasses(): void {
 }
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
-	nativeViewProtected: android.widget.TextView;
+	declare nativeViewProtected: android.widget.TextView;
 
 	public setupNativeView(tabIndex: number): void {
 		// TabHost.TabSpec.setIndicator DOES NOT WORK once the title has been set.
@@ -191,7 +191,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 }
 
 export class SegmentedBar extends SegmentedBarBase {
-	nativeViewProtected: android.widget.TabHost;
+	declare nativeViewProtected: android.widget.TabHost;
 	private _tabContentFactory: android.widget.TabHost.TabContentFactory;
 	private _addingTab: boolean;
 

@@ -8,7 +8,7 @@ import { SDK_VERSION, layout } from '../../utils';
 export * from './html-view-common';
 
 export class HtmlView extends HtmlViewBase {
-	nativeViewProtected: UITextView;
+	declare nativeViewProtected: UITextView;
 	private currentHtml: string;
 
 	public createNativeView() {

@@ -157,7 +157,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 }
 
 export class WebView extends WebViewBase {
-	nativeViewProtected: WKWebView;
+	declare nativeViewProtected: WKWebView;
 	private _delegate: WKNavigationDelegateImpl;
 	private _scrollDelegate: UIScrollViewDelegateImpl;
 	private _uiDelegate: WKUIDelegateImpl;

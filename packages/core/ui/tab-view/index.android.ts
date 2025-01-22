@@ -280,7 +280,7 @@ function getDefaultAccentColor(context: android.content.Context): number {
 }
 
 export class TabViewItem extends TabViewItemBase {
-	nativeViewProtected: android.widget.TextView;
+	declare nativeViewProtected: android.widget.TextView;
 	public tabItemSpec: org.nativescript.widgets.TabItemSpec;
 	public index: number;
 	private _defaultTransformationMethod: android.text.method.TransformationMethod;

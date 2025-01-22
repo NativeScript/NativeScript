@@ -30,7 +30,7 @@ class SwitchChangeHandlerImpl extends NSObject {
 
 const zeroSize = { width: 0, height: 0 };
 export class Switch extends SwitchBase {
-	nativeViewProtected: UISwitch;
+	declare nativeViewProtected: UISwitch;
 	private _handler: NSObject;
 
 	constructor() {

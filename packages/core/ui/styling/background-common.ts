@@ -234,6 +234,7 @@ export class Background {
 			value1.borderTopRightRadius === value2.borderTopRightRadius &&
 			value1.borderBottomRightRadius === value2.borderBottomRightRadius &&
 			value1.borderBottomLeftRadius === value2.borderBottomLeftRadius &&
+			value1.boxShadow === value2.boxShadow &&
 			value1.clipPath === value2.clipPath
 			// && value1.clearFlags === value2.clearFlags
 		);

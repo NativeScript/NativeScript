@@ -140,7 +140,7 @@ export class NavigationButton extends ActionItem {}
 
 export class ActionBar extends ActionBarBase {
 	private _android: AndroidActionBarSettings;
-	public nativeViewProtected: androidx.appcompat.widget.Toolbar;
+	public declare nativeViewProtected: androidx.appcompat.widget.Toolbar;
 
 	constructor() {
 		super();

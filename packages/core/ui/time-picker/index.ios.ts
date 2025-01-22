@@ -21,7 +21,7 @@ function getComponents(date: Date | NSDate): NSDateComponents {
 }
 
 export class TimePicker extends TimePickerBase {
-	nativeViewProtected: UIDatePicker;
+	declare nativeViewProtected: UIDatePicker;
 	private _changeHandler: NSObject;
 
 	constructor() {

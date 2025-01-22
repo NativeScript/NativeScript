@@ -28,8 +28,8 @@ export class Repeater extends CustomLayoutView {
 	private _isDirty = false;
 	private _itemTemplateSelector: (item: any, index: number, items: any) => string;
 	private _itemTemplateSelectorBindable;
-	public ios;
-	public android;
+	declare ios;
+	declare android;
 
 	constructor() {
 		super();

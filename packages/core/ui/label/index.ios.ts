@@ -18,7 +18,7 @@ enum FixedSize {
 
 @CSSType('Label')
 export class Label extends TextBase implements LabelDefinition {
-	nativeViewProtected: TNSLabel;
+	declare nativeViewProtected: TNSLabel;
 	private _fixedSize: FixedSize;
 
 	public createNativeView() {

@@ -419,8 +419,8 @@ class UIViewControllerImpl extends UIViewController {
 }
 
 export class Page extends PageBase {
-	nativeViewProtected: UIView;
-	viewController: UIViewControllerImpl;
+	declare nativeViewProtected: UIView;
+	declare viewController: UIViewControllerImpl;
 	onAccessibilityPerformEscape: () => boolean;
 
 	private _backgroundColor = SDK_VERSION <= 12 && !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;

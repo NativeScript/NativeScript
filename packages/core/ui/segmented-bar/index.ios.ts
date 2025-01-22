@@ -19,7 +19,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 }
 
 export class SegmentedBar extends SegmentedBarBase {
-	nativeViewProtected: UISegmentedControl;
+	declare nativeViewProtected: UISegmentedControl;
 	private _selectionHandler: NSObject;
 
 	createNativeView() {

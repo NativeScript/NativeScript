@@ -113,7 +113,7 @@ class UITextFieldImpl extends UITextField {
 }
 
 export class TextField extends TextFieldBase {
-	nativeViewProtected: UITextField;
+	declare nativeViewProtected: UITextField;
 	private _delegate: UITextFieldDelegateImpl;
 
 	createNativeView() {

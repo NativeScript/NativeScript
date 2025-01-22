@@ -14,7 +14,7 @@ const observableVisualStates = ['highlighted']; // States like :disabled are han
 export class Button extends ButtonBase {
 	// we dont defile tapEvent to let the gesture obserers handle it
 	// in some weird case with UICollectionView UIControlEvents.TouchUpInside is not working
-	public nativeViewProtected: UIButton;
+	public declare nativeViewProtected: UIButton;
 
 	private _tapHandler: NSObject;
 	private _stateChangedHandler: ControlStateChangeListener;
