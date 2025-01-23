@@ -300,11 +300,11 @@ export class Frame extends FrameBase {
 			if (this._tearDownPending) {
 				this._tearDownPending = false;
 				if (!entry.recreated) {
-					clearEntry(entry);
+					this._disposeBackstackEntry(entry);
 				}
 
 				if (current && !current.recreated) {
-					clearEntry(current);
+					this._disposeBackstackEntry(current);
 				}
 
 				// If we have context activity was recreated. Create new fragment
@@ -534,6 +534,17 @@ export class Frame extends FrameBase {
 		removed.viewSavedState = null;
 	}
 
+	protected _disposeBackstackEntry(entry: BackstackEntry): void {
+		if (entry.fragment) {
+			_clearFragment(entry);
+		}
+
+		entry.recreated = false;
+		entry.fragment = null;
+
+		super._disposeBackstackEntry(entry);
+	}
+
 	public createNativeView() {
 		// Create native view with available _currentEntry occur in Don't Keep Activities
 		// scenario when Activity is recreated on app suspend/resume. Push frame back in frame stack
@@ -568,12 +579,12 @@ export class Frame extends FrameBase {
 			// Don't destroy current and executing entries or UI will look blank.
 			// We will do it in setCurrent.
 			if (entry !== executingEntry) {
-				clearEntry(entry);
+				this._disposeBackstackEntry(entry);
 			}
 		});
 
 		if (current && !executingEntry) {
-			clearEntry(current);
+			this._disposeBackstackEntry(current);
 		}
 
 		this._android.rootViewGroup = null;
@@ -680,19 +691,6 @@ function restoreTransitionState(entry: BackstackEntry, snapshot: TransitionState
 	}
 
 	expandedEntry.transitionName = snapshot.transitionName;
-}
-
-function clearEntry(entry: BackstackEntry): void {
-	if (entry.fragment) {
-		_clearFragment(entry);
-	}
-
-	entry.recreated = false;
-	entry.fragment = null;
-	const page = entry.resolvedPage;
-	if (page && page._context) {
-		entry.resolvedPage._tearDownUI(true);
-	}
 }
 
 let framesCounter = 0;

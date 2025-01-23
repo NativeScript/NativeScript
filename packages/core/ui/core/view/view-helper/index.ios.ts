@@ -203,20 +203,38 @@ export class IOSHelper {
 		}
 	}
 
+	/**
+	 * This method simulates the iOS 11+ safeAreaLayoutGuide property and its constraints for older versions.
+	 *
+	 * @param controller
+	 * @param owner
+	 */
 	static updateConstraints(controller: UIViewController, owner: View): void {
 		if (!__VISIONOS__ && SDK_VERSION <= 10) {
-			const layoutGuide = IOSHelper.initLayoutGuide(controller);
-			(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
+			if (!controller.view.safeAreaLayoutGuide) {
+				IOSHelper.initLayoutGuide(controller);
+			}
 		}
 	}
 
-	static initLayoutGuide(controller: UIViewController) {
+	/**
+	 * This method simulates the iOS 11+ safeAreaLayoutGuide property for older versions.
+	 *
+	 * @param controller
+	 */
+	static initLayoutGuide(controller: UIViewController): UILayoutGuide {
 		const rootView = controller.view;
-		const layoutGuide = UILayoutGuide.new();
-		rootView.addLayoutGuide(layoutGuide);
-		NSLayoutConstraint.activateConstraints(<any>[layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
 
-		return layoutGuide;
+		if (!rootView.safeAreaLayoutGuide) {
+			const layoutGuide = UILayoutGuide.new();
+
+			rootView.addLayoutGuide(layoutGuide);
+			NSLayoutConstraint.activateConstraints([layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
+
+			(<any>rootView).safeAreaLayoutGuide = layoutGuide;
+		}
+
+		return rootView.safeAreaLayoutGuide;
 	}
 
 	static layoutView(controller: UIViewController, owner: View): void {
