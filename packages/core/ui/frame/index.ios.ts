@@ -42,6 +42,23 @@ export class Frame extends FrameBase {
 	}
 
 	public disposeNativeView() {
+		const current = this._currentEntry;
+		const executingEntry = this._executingContext ? this._executingContext.entry : null;
+
+		if (executingEntry) {
+			this._disposeBackstackEntry(executingEntry);
+		}
+
+		this.backStack.forEach((entry) => {
+			if (entry !== executingEntry) {
+				this._disposeBackstackEntry(entry);
+			}
+		});
+
+		if (current) {
+			this._disposeBackstackEntry(current);
+		}
+
 		this._removeFromFrameStack();
 		this.viewController = null;
 		this._animatedDelegate = null;
