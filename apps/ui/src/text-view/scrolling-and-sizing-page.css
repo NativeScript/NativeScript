@@ -2,6 +2,10 @@
     padding: 10 20 10 20;
 }
 
+.p-20 {
+    padding: 20;
+}
+
 .m-b-10 {
     margin-bottom: 10;
 }
@@ -47,7 +51,7 @@ TextView {
 }
 
 .shadow {
-    box-shadow: inset 0 0 5 5 #000000;
+    box-shadow: 2 2 6 6 #ff0000;
 }
 
 .body {
