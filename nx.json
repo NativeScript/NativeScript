@@ -118,10 +118,11 @@
 	"defaultBase": "master",
 	"useLegacyCache": true,
 	"release": {
-		"releaseTagPattern": "${version}-${projectName}",
-		"projects": ["packages/core", "packages/webpack5"],
+		"releaseTagPattern": "{version}-{projectName}",
+		"projects": ["packages/*", "!packages/ui-mobile-base", "!packages/types-minimal", "!packages/winter-tc"],
 		"projectsRelationship": "independent",
 		"changelog": {
+			"workspaceChangelog": false,
 			"projectChangelogs": {
 				"renderOptions": {
 					"authors": true,
