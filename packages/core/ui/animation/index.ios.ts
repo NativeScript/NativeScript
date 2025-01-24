@@ -79,8 +79,8 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 				targetStyle[setLocal ? widthProperty.name : widthProperty.keyframe] = value;
 				break;
 			case Properties.scale:
-				targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = value.x === 0 ? 0.001 : value.x;
-				targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = value.y === 0 ? 0.001 : value.y;
+				targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = value.x === 0 ? 1e-6 : value.x;
+				targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = value.y === 0 ? 1e-6 : value.y;
 				break;
 			case _transform:
 				if (value[Properties.translate] !== undefined) {
@@ -95,8 +95,8 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 				if (value[Properties.scale] !== undefined) {
 					const x = value[Properties.scale].x;
 					const y = value[Properties.scale].y;
-					targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = x === 0 ? 0.001 : x;
-					targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = y === 0 ? 0.001 : y;
+					targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = x === 0 ? 1e-6 : x;
+					targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = y === 0 ? 1e-6 : y;
 				}
 				break;
 		}
@@ -365,10 +365,10 @@ export class Animation extends AnimationBase {
 					break;
 				case Properties.scale:
 					if (toValue.x === 0) {
-						toValue.x = 0.001;
+						toValue.x = 1e-6;
 					}
 					if (toValue.y === 0) {
-						toValue.y = 0.001;
+						toValue.y = 1e-6;
 					}
 					animation._originalValue = { x: view.scaleX, y: view.scaleY };
 					animation._propertyResetCallback = (value, valueSource) => {
