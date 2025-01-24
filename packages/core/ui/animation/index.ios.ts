@@ -498,8 +498,18 @@ export class Animation extends AnimationBase {
 		const groupAnimation = CAAnimationGroup.new();
 		groupAnimation.duration = args.duration;
 
+		if (args.repeatCount !== undefined) {
+			groupAnimation.repeatCount = args.repeatCount;
+		}
+		if (args.delay !== undefined) {
+			groupAnimation.beginTime = CACurrentMediaTime() + args.delay;
+		}
+		if (animation.curve !== undefined) {
+			groupAnimation.timingFunction = animation.curve;
+		}
+
 		args.subPropertiesToAnimate.forEach((property) => {
-			const basicAnimationArgs = { ...args };
+			const basicAnimationArgs = { ...args, duration: undefined, repeatCount: undefined, delay: undefined, curve: undefined };
 			basicAnimationArgs.propertyNameToAnimate = `${args.propertyNameToAnimate}.${property}`;
 			basicAnimationArgs.fromValue = args.fromValue[property];
 			basicAnimationArgs.toValue = args.toValue[property];
