@@ -149,7 +149,8 @@ export class TextField extends TextFieldBase {
 	}
 
 	public textFieldDidEndEditing(textField: UITextField) {
-		if (this.updateTextTrigger === 'focusLost') {
+		//sometimes it did end editing with 'textChanged' trigger for specific keyboard layout, eg: vietnamese telex
+		if (this.updateTextTrigger === 'focusLost' || this.updateTextTrigger === 'textChanged') {
 			textProperty.nativeValueChange(this, textField.text);
 		}
 
