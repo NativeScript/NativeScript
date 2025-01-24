@@ -517,21 +517,12 @@ export class Animation extends AnimationBase {
 	}
 
 	private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
+		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
 		const groupAnimation = CAAnimationGroup.new();
 		groupAnimation.duration = args.duration;
-		if (args.repeatCount !== undefined) {
-			groupAnimation.repeatCount = args.repeatCount;
-		}
-		if (args.delay !== undefined) {
-			groupAnimation.beginTime = CACurrentMediaTime() + args.delay;
-		}
-		if (animation.curve !== undefined) {
-			groupAnimation.timingFunction = animation.curve;
-		}
-		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
 
 		args.subPropertiesToAnimate.forEach((property) => {
-			const basicAnimationArgs = { ...args, duration: undefined, repeatCount: undefined, delay: undefined, curve: undefined };
+			const basicAnimationArgs = { ...args };
 			basicAnimationArgs.propertyNameToAnimate = `${args.propertyNameToAnimate}.${property}`;
 			basicAnimationArgs.fromValue = args.fromValue[property];
 			basicAnimationArgs.toValue = args.toValue[property];
@@ -676,11 +667,18 @@ export class Animation extends AnimationBase {
 			result = CATransform3DScale(result, x === 0 ? 0.001 : x, y === 0 ? 0.001 : y, 1);
 		}
 
+		if (value[Properties.rotate] !== undefined) {
+			const x = value[Properties.rotate].x;
+			const y = value[Properties.rotate].y;
+			const z = value[Properties.rotate].z;
+			result = iosHelper.applyRotateTransform(result, x, y, z);
+		}
+
 		return result;
 	}
 
 	private static _isAffineTransform(property: string): boolean {
-		return property === _transform || property === Properties.translate || property === Properties.scale;
+		return property === _transform || property === Properties.translate || property === Properties.scale || property === Properties.rotate;
 	}
 
 	private static _canBeMerged(animation1: PropertyAnimation, animation2: PropertyAnimation) {
