@@ -658,6 +658,13 @@ export class Animation extends AnimationBase {
 			const x = value[Properties.rotate].x;
 			const y = value[Properties.rotate].y;
 			const z = value[Properties.rotate].z;
+			const perspective = animation.target.perspective || 300;
+
+			// Set perspective in case of rotation since we use z
+			if (x || y) {
+				result.m34 = -1 / perspective;
+			}
+
 			result = iosHelper.applyRotateTransform(result, x, y, z);
 		}
 
@@ -932,11 +939,11 @@ function calculateTransform(view: View): CATransform3D {
 	// Order is important: translate, rotate, scale
 	let expectedTransform = new CATransform3D(CATransform3DIdentity);
 
-	// Only set perspective if there is 3D rotation
 	// TODO: Add perspective property to transform animations (not just rotation)
-	// if (view.rotateX || view.rotateY) {
-	// 	expectedTransform.m34 = -1 / perspective;
-	// }
+	// Set perspective in case of rotation since we use z
+	if (view.rotateX || view.rotateY) {
+		expectedTransform.m34 = -1 / perspective;
+	}
 
 	expectedTransform = CATransform3DTranslate(expectedTransform, view.translateX, view.translateY, 0);
 	expectedTransform = iosHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
