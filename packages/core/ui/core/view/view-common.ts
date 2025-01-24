@@ -470,6 +470,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 					}
 
 					this._tearDownUI(true);
+					this.parent = null;
 				}
 			};
 
