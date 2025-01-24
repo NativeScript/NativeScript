@@ -309,7 +309,6 @@ export class Animation extends AnimationBase {
 		const parent = view.parent as View;
 
 		let propertyNameToAnimate = animation.property;
-		let subPropertyNameToAnimate;
 		let toValue = animation.value;
 		let fromValue;
 		if (nativeView) {
@@ -347,30 +346,9 @@ export class Animation extends AnimationBase {
 						style[setLocal ? rotateYProperty.name : rotateYProperty.keyframe] = value.y;
 					};
 
-					propertyNameToAnimate = 'transform.rotation';
-					subPropertyNameToAnimate = ['x', 'y', 'z'];
-					fromValue = {
-						x: nativeView.layer.valueForKeyPath('transform.rotation.x'),
-						y: nativeView.layer.valueForKeyPath('transform.rotation.y'),
-						z: nativeView.layer.valueForKeyPath('transform.rotation.z'),
-					};
-
-					if (animation.target.rotateX !== undefined && animation.target.rotateX !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.x = (animation.target.rotateX * Math.PI) / 180;
-					}
-					if (animation.target.rotateY !== undefined && animation.target.rotateY !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.y = (animation.target.rotateY * Math.PI) / 180;
-					}
-					if (animation.target.rotate !== undefined && animation.target.rotate !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.z = (animation.target.rotate * Math.PI) / 180;
-					}
-
-					// Respect only value.z for back-compat until 3D rotations are implemented
-					toValue = {
-						x: (toValue.x * Math.PI) / 180,
-						y: (toValue.y * Math.PI) / 180,
-						z: (toValue.z * Math.PI) / 180,
-					};
+					propertyNameToAnimate = 'transform';
+					fromValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+					toValue = NSValue.valueWithCATransform3D(iosHelper.applyRotateTransform(nativeView.layer.transform, toValue.x, toValue.y, toValue.z));
 					break;
 				case Properties.translate:
 					animation._originalValue = {
@@ -473,7 +451,6 @@ export class Animation extends AnimationBase {
 		return {
 			propertyNameToAnimate: propertyNameToAnimate,
 			fromValue: fromValue,
-			subPropertiesToAnimate: subPropertyNameToAnimate,
 			toValue: toValue,
 			duration: duration,
 			repeatCount: repeatCount,
@@ -517,7 +494,7 @@ export class Animation extends AnimationBase {
 	}
 
 	private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
-		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
+		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(args.subPropertiesToAnimate.length);
 		const groupAnimation = CAAnimationGroup.new();
 		groupAnimation.duration = args.duration;
 
@@ -946,9 +923,10 @@ function calculateTransform(view: View): CATransform3D {
 	let expectedTransform = new CATransform3D(CATransform3DIdentity);
 
 	// Only set perspective if there is 3D rotation
-	if (view.rotateX || view.rotateY) {
-		expectedTransform.m34 = -1 / perspective;
-	}
+	// TODO: Add perspective property to transform animations (not just rotation)
+	// if (view.rotateX || view.rotateY) {
+	// 	expectedTransform.m34 = -1 / perspective;
+	// }
 
 	expectedTransform = CATransform3DTranslate(expectedTransform, view.translateX, view.translateY, 0);
 	expectedTransform = iosHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
