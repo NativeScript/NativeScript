@@ -639,9 +639,9 @@ export class Animation extends AnimationBase {
 		}
 
 		if (value[Properties.scale] !== undefined) {
-			const x = value[Properties.scale].x;
-			const y = value[Properties.scale].y;
-			result = CATransform3DScale(result, x === 0 ? 0.001 : x, y === 0 ? 0.001 : y, 1);
+			const x = value[Properties.scale].x || 1e-6;
+			const y = value[Properties.scale].y || 1e-6;
+			result = CATransform3DScale(result, x, y, 1);
 		}
 
 		if (value[Properties.rotate] !== undefined) {
