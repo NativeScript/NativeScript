@@ -440,13 +440,10 @@ export class TextBase extends TextBaseCommon {
 
 		let lineHeight: number;
 
-		if (!lengthType) {
-			lineHeight = 0;
+		if (lengthType == null || typeof lengthType === 'string') {
+			lineHeight = fontHeight;
 		} else if (typeof lengthType === 'number') {
 			lineHeight = lengthType;
-		} else if (typeof lengthType === 'string') {
-			// e.g. normal
-			lineHeight = fontHeight;
 		} else if (lengthType.unit === '%') {
 			lineHeight = lengthType.value * fontHeight;
 		} else {

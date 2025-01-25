@@ -374,19 +374,30 @@ export class TextBase extends TextBaseCommon {
 	[lineHeightProperty.setNative](value: CoreTypes.PercentLengthType) {
 		const lengthType = value;
 
-		if (!lengthType) {
+		if (lengthType == null || typeof lengthType === 'string') {
+			// Method setLineHeight calls this one internally so it's enough to do the cleanup
 			this.nativeTextViewProtected.setLineSpacing(0, 1);
-		} else if (typeof lengthType !== 'number' && lengthType !== 'auto' && lengthType.unit === '%') {
-			this.nativeTextViewProtected.setLineSpacing(0, lengthType.value);
 		} else {
-			const dpValue = Length.toDevicePixels(lengthType, 0);
+			let finalValue: number;
+
+			if (typeof lengthType === 'number') {
+				finalValue = Length.toDevicePixels(lengthType, 0);
+			} else if (lengthType.unit === '%') {
+				const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
+				finalValue = lengthType.value * fontHeight;
+			} else {
+				finalValue = Length.toDevicePixels(lengthType, 0);
+			}
+
+			// Method setLineHeight throws in case of a negative value
+			finalValue = Math.max(finalValue, 0);
 
 			if (SDK_VERSION >= 28) {
-				this.nativeTextViewProtected.setLineHeight(dpValue);
+				this.nativeTextViewProtected.setLineHeight(finalValue);
 			} else {
 				const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
 				// Actual line spacing is the diff of line height and font height
-				const lineSpacing = Math.max(dpValue - fontHeight, 0);
+				const lineSpacing = finalValue - fontHeight;
 
 				this.nativeTextViewProtected.setLineSpacing(lineSpacing, 1);
 			}
