@@ -37,7 +37,8 @@
     }
     
     BOOL isTextView = [self isKindOfClass:[UITextView class]];
-    if (lineHeight > 0) {
+    // TODO: Find a good alternative of lineSpacing that works well with layout as it doesn't accept values less than the standard height
+    if (lineHeight >= 0) {
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
 
         // make sure a possible previously set text alignment setting is not lost when line height is specified
@@ -114,7 +115,8 @@
     }
     
     BOOL isLabel = [self isKindOfClass:[UILabel class]];
-    if (lineHeight > 0) {
+    // TODO: Find a good alternative of lineSpacing that works well with layout as it doesn't accept values less than the standard height
+    if (lineHeight >= 0) {
         NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
 
         // make sure a possible previously set text alignment setting is not lost when line height is specified
