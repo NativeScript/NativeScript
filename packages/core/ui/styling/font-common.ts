@@ -83,10 +83,10 @@ export namespace FontVariationSettings {
 			return null;
 		}
 
-		const allowedValues = ['normal', 'inherit', 'initial', 'revert', 'revert-layer', 'unset'];
+		const excluded = ['normal', 'inherit', 'initial', 'revert', 'revert-layer', 'unset'];
 		const variationSettingsValue: string = fontVariationSettings.trim();
 
-		if (allowedValues.indexOf(variationSettingsValue.toLowerCase()) !== -1) {
+		if (excluded.indexOf(variationSettingsValue.toLowerCase()) !== -1) {
 			return null;
 		}
 
