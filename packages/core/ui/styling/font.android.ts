@@ -121,14 +121,14 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 function createTypeface(font: Font): android.graphics.Typeface {
 	const fontFamilies = parseFontFamily(font.fontFamily);
 	const fontWeight = font.fontWeight;
-	const supportsFontWeight = SDK_VERSION > 27;
+	const isNumericFontWeightSupported = SDK_VERSION > 27;
 
 	let result: android.graphics.Typeface;
 	let fontStyle: number = 0;
 	// https://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
 	let fontSuffix: string;
 
-	if (supportsFontWeight) {
+	if (isNumericFontWeightSupported) {
 		fontSuffix = '';
 	} else {
 		if (font.isBold) {
@@ -172,9 +172,9 @@ function createTypeface(font: Font): android.graphics.Typeface {
 		result = android.graphics.Typeface.create('sans-serif' + fontSuffix, fontStyle);
 	}
 
-	// Newer versions can accept a specific font weight number
-	if (supportsFontWeight) {
-		result = android.graphics.Typeface.create(result, getFontWeightNumber(fontWeight), font.isItalic);
+	// Newer android versions can accept a numeric font weight
+	if (isNumericFontWeightSupported) {
+		result = android.graphics.Typeface.create(result, getNumericFontWeight(fontWeight), font.isItalic);
 	}
 
 	return result;
@@ -209,7 +209,7 @@ function getFontWeightSuffix(fontWeight: FontWeightType): string {
 	}
 }
 
-function getFontWeightNumber(fontWeight: FontWeightType): number {
+function getNumericFontWeight(fontWeight: FontWeightType): number {
 	let value: number;
 
 	if (typeof fontWeight === 'number') {
