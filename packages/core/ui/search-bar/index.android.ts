@@ -1,7 +1,7 @@
 import { Font } from '../styling/font';
 import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty } from './search-bar-common';
 import { isUserInteractionEnabledProperty, isEnabledProperty } from '../core/view';
-import { ad } from '../../utils';
+import { ad, layout } from '../../utils';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 
@@ -199,15 +199,11 @@ export class SearchBar extends SearchBarBase {
 		textView.setTextColor(color);
 	}
 
-	[fontSizeProperty.getDefault](): { nativeSize: number } {
-		return { nativeSize: this._getTextView().getTextSize() };
+	[fontSizeProperty.getDefault](): number {
+		return this._getTextView().getTextSize() / layout.getDisplayDensity();
 	}
-	[fontSizeProperty.setNative](value: number | { nativeSize: number }) {
-		if (typeof value === 'number') {
-			this._getTextView().setTextSize(value);
-		} else {
-			this._getTextView().setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-		}
+	[fontSizeProperty.setNative](value: number) {
+		this._getTextView().setTextSize(value);
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {

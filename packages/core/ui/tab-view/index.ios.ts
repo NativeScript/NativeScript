@@ -580,7 +580,7 @@ export class TabView extends TabViewBase {
 	[tabTextFontSizeProperty.getDefault](): number {
 		return null;
 	}
-	[tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
+	[tabTextFontSizeProperty.setNative](value: number) {
 		this._updateIOSTabBarColorsAndFonts();
 	}
 

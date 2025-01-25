@@ -1,4 +1,5 @@
 ﻿import { Color } from '../../color';
+import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { Font } from '../styling/font';
 import { colorProperty, fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
@@ -86,14 +87,10 @@ export class HtmlView extends HtmlViewBase {
 		this.nativeViewProtected.setTypeface(font);
 	}
 
-	[fontSizeProperty.getDefault](): { nativeSize: number } {
-		return { nativeSize: this.nativeViewProtected.getTextSize() };
+	[fontSizeProperty.getDefault](): number {
+		return this.nativeViewProtected.getTextSize() / layout.getDisplayDensity();
 	}
-	[fontSizeProperty.setNative](value: number | { nativeSize: number }) {
-		if (typeof value === 'number') {
-			this.nativeViewProtected.setTextSize(value);
-		} else {
-			this.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-		}
+	[fontSizeProperty.setNative](value: number) {
+		this.nativeViewProtected.setTextSize(value);
 	}
 }

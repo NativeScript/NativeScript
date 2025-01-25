@@ -392,15 +392,11 @@ export class TabViewItem extends TabViewItemBase {
 		return tabFragment.getChildFragmentManager();
 	}
 
-	[fontSizeProperty.getDefault](): { nativeSize: number } {
-		return { nativeSize: this.nativeViewProtected.getTextSize() };
+	[fontSizeProperty.getDefault](): number {
+		return this.nativeViewProtected.getTextSize() / layout.getDisplayDensity();
 	}
-	[fontSizeProperty.setNative](value: number | { nativeSize: number }) {
-		if (typeof value === 'number') {
-			this.nativeViewProtected.setTextSize(value);
-		} else {
-			this.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-		}
+	[fontSizeProperty.setNative](value: number) {
+		this.nativeViewProtected.setTextSize(value);
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
@@ -494,7 +490,7 @@ export class TabView extends TabViewBase {
 				JSON.stringify([
 					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
 					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
-				])
+				]),
 			);
 			viewPager.setLayoutParams(lp);
 
@@ -506,7 +502,7 @@ export class TabView extends TabViewBase {
 				JSON.stringify([
 					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
 					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
-				])
+				]),
 			);
 			tabLayout.setLayoutParams(lp);
 			viewPager.setSwipePageEnabled(false);
@@ -771,12 +767,8 @@ export class TabView extends TabViewBase {
 	[tabTextFontSizeProperty.getDefault](): number {
 		return this._tabLayout.getTabTextFontSize();
 	}
-	[tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
-		if (typeof value === 'number') {
-			this._tabLayout.setTabTextFontSize(value);
-		} else {
-			this._tabLayout.setTabTextFontSize(value.nativeSize);
-		}
+	[tabTextFontSizeProperty.setNative](value: number) {
+		this._tabLayout.setTabTextFontSize(value);
 	}
 
 	[tabTextColorProperty.getDefault](): number {

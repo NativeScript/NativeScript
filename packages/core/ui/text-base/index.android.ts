@@ -4,10 +4,9 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
-import { backgroundColorProperty } from '../styling/style-properties';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
+import { backgroundColorProperty, colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
@@ -360,24 +359,49 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[fontSizeProperty.getDefault](): { nativeSize: number } {
-		return { nativeSize: this.nativeTextViewProtected.getTextSize() };
+	[fontSizeProperty.getDefault](): number {
+		return this.nativeTextViewProtected.getTextSize() / layout.getDisplayDensity();
 	}
-	[fontSizeProperty.setNative](value: number | { nativeSize: number }) {
-		if (!this.formattedText || typeof value !== 'number') {
-			if (typeof value === 'number') {
-				this.nativeTextViewProtected.setTextSize(value);
-			} else {
-				this.nativeTextViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-			}
+	[fontSizeProperty.setNative](value: number) {
+		if (!this.formattedText) {
+			this.nativeTextViewProtected.setTextSize(value);
 		}
 	}
 
-	[lineHeightProperty.getDefault](): number {
-		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
+	[lineHeightProperty.getDefault](): CoreTypes.PercentLengthType {
+		return { value: this.nativeTextViewProtected.getLineHeight(), unit: 'px' };
 	}
-	[lineHeightProperty.setNative](value: number) {
-		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
+	[lineHeightProperty.setNative](value: CoreTypes.PercentLengthType) {
+		const lengthType = value;
+
+		if (lengthType == null || typeof lengthType === 'string') {
+			// Method setLineHeight calls this one internally so it's enough to do the cleanup
+			this.nativeTextViewProtected.setLineSpacing(0, 1);
+		} else {
+			let finalValue: number;
+
+			if (typeof lengthType === 'number') {
+				finalValue = Length.toDevicePixels(lengthType, -1);
+			} else if (lengthType.unit === '%') {
+				const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
+				finalValue = lengthType.value * fontHeight;
+			} else {
+				finalValue = Length.toDevicePixels(lengthType, -1);
+			}
+
+			// Method setLineHeight throws in case of a negative value
+			finalValue = Math.max(finalValue, 0);
+
+			if (SDK_VERSION >= 28) {
+				this.nativeTextViewProtected.setLineHeight(finalValue);
+			} else {
+				const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
+				// Actual line spacing is the diff of line height and font height
+				const lineSpacing = finalValue - fontHeight;
+
+				this.nativeTextViewProtected.setLineSpacing(lineSpacing, 1);
+			}
+		}
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {

@@ -168,7 +168,7 @@ export class Style extends Observable implements StyleDefinition {
 	public visibility: CoreTypes.VisibilityType;
 
 	public letterSpacing: number;
-	public lineHeight: number;
+	public lineHeight: CoreTypes.PercentLengthType;
 	public textAlignment: CoreTypes.TextAlignmentType;
 	public textDecoration: CoreTypes.TextDecorationType;
 	public textTransform: CoreTypes.TextTransformType;

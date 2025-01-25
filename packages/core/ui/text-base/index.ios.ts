@@ -256,7 +256,13 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[lineHeightProperty.setNative](value: number) {
+	[lineHeightProperty.getDefault](): CoreTypes.PercentLengthType {
+		const nativeTextView = this.nativeTextViewProtected;
+		const nativeFont = nativeTextView instanceof UIButton ? nativeTextView.titleLabel.font : nativeTextView.font;
+		return nativeFont?.lineHeight ?? 0;
+	}
+
+	[lineHeightProperty.setNative](value: CoreTypes.PercentLengthType) {
 		this._setNativeText();
 	}
 
@@ -318,18 +324,20 @@ export class TextBase extends TextBaseCommon {
 			}
 
 			const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
-			const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
+			const lineHeight = this._calculateLineHeight();
+
 			if (this.formattedText) {
 				this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
 			} else {
-				// console.log('setTextDecorationAndTransform...')
 				const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
 				this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
-
-				if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
-					this._setColor(UIColor.labelColor);
-				}
 			}
+
+			// Apply this default to both regular and formatted text, otherwise UIButton will use its own default
+			if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
+				this._setColor(UIColor.labelColor);
+			}
+
 			if (this.style?.textStroke) {
 				this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 			}
@@ -420,6 +428,28 @@ export class TextBase extends TextBaseCommon {
 		if (align === 'sub') {
 			return (font.descender - font.ascender) * 0.4;
 		}
+	}
+
+	private _calculateLineHeight(): number {
+		const lengthType = this.style.lineHeight;
+		const nativeTextView = this.nativeTextViewProtected;
+		const nativeFont = nativeTextView instanceof UIButton ? nativeTextView.titleLabel.font : nativeTextView.font;
+		// Get font lineHeight value to simulate what android does with getFontMetricsInt
+		const fontHeight = nativeFont?.lineHeight ?? 0;
+
+		let lineHeight: number;
+
+		if (lengthType == null || typeof lengthType === 'string') {
+			lineHeight = -1; // This indicates that line-height is normal
+		} else if (typeof lengthType === 'number') {
+			lineHeight = lengthType;
+		} else if (lengthType.unit === '%') {
+			lineHeight = lengthType.value * fontHeight;
+		} else {
+			lineHeight = layout.toDeviceIndependentPixels(Length.toDevicePixels(lengthType, -1));
+		}
+
+		return lineHeight;
 	}
 
 	_setShadow(value: ShadowCSSValues): void {

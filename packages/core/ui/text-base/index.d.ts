@@ -50,7 +50,7 @@ export class TextBase extends View implements AddChildFromBuilder {
 	 *
 	 * @nsProperty
 	 */
-	lineHeight: number;
+	lineHeight: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets text-alignment style property.
@@ -200,7 +200,7 @@ export const textStrokeProperty: CssProperty<Style, StrokeCSSValues>;
 export const whiteSpaceProperty: CssProperty<Style, CoreTypes.WhiteSpaceType>;
 export const textOverflowProperty: CssProperty<Style, CoreTypes.TextOverflowType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
-export const lineHeightProperty: CssProperty<Style, number>;
+export const lineHeightProperty: InheritedCssProperty<Style, CoreTypes.PercentLengthType>;
 
 //Used by tab view
 export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string;
