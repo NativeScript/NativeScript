@@ -435,7 +435,7 @@ export class TextBase extends TextBaseCommon {
 		const nativeTextView = this.nativeTextViewProtected;
 		const nativeFont = nativeTextView instanceof UIButton ? nativeTextView.titleLabel.font : nativeTextView.font;
 		// Get font lineHeight value to simulate what android does with getFontMetricsInt
-		const fontHeight = nativeFont?.lineHeight || 0;
+		const fontHeight = nativeFont?.lineHeight ?? 0;
 
 		let lineHeight: number;
 
