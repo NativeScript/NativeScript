@@ -3,7 +3,7 @@ import { ParsedFont, FontStyleType, FontWeightType, FontVariationSettingsType } 
 import { makeValidator, makeParser } from '../core/properties';
 import { Trace } from '../../trace';
 
-export const FONTS_BASE_PATH = '/fonts/';
+export const FONTS_BASE_PATH = '/fonts';
 
 export abstract class Font implements FontDefinition {
 	public static default = undefined;

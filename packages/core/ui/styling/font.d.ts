@@ -1,7 +1,7 @@
 ﻿import { Font as FontBase } from './font-common';
 export type { FontStyleType, FontWeightType, ParsedFont, FontVariationSettingsType } from './font-interfaces';
 
-export const FONTS_BASE_PATH = '/fonts/';
+export const FONTS_BASE_PATH = '/fonts';
 
 export declare class Font extends FontBase {
 	public static default: Font;
