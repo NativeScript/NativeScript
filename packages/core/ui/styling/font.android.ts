@@ -78,9 +78,12 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 			fontAssetPath = basePath + '.ttf';
 		} else if (fs.File.exists(basePath + '.otf')) {
 			fontAssetPath = basePath + '.otf';
-		} else if (Trace.isEnabled()) {
+		} else {
 			fontAssetPath = null;
-			Trace.write('Could not find font file for ' + fontFamily, Trace.categories.Error, Trace.messageType.error);
+
+			if (Trace.isEnabled()) {
+				Trace.write('Could not find font file for ' + fontFamily, Trace.categories.Error, Trace.messageType.error);
+			}
 		}
 
 		result = null; // Default
@@ -108,7 +111,7 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 			}
 		}
 
-		// The value might be null if there has already been an attempt to load the font but failed
+		// The value will be null if there has already been an attempt to load the font but failed
 		typefaceCache.set(cacheKey, result);
 	}
 
