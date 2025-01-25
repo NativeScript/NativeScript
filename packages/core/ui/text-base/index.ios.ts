@@ -256,6 +256,13 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
+	[lineHeightProperty.getDefault](): CoreTypes.PercentLengthType {
+		const nativeTextView = this.nativeTextViewProtected;
+		const nativeFont = nativeTextView instanceof UIButton ? nativeTextView.titleLabel.font : nativeTextView.font;
+
+		return nativeFont?.lineHeight ?? 0;
+	}
+
 	[lineHeightProperty.setNative](value: CoreTypes.PercentLengthType) {
 		this._setNativeText();
 	}
@@ -426,13 +433,21 @@ export class TextBase extends TextBaseCommon {
 
 	private _calculateLineHeight(): number {
 		const lengthType = this.style.lineHeight;
-		const fontHeight = this.nativeTextViewProtected.font?.lineHeight || 0;
+		const nativeTextView = this.nativeTextViewProtected;
+		const nativeFont = nativeTextView instanceof UIButton ? nativeTextView.titleLabel.font : nativeTextView.font;
+		// Get font lineHeight value to simulate what android does with getFontMetricsInt
+		const fontHeight = nativeFont?.lineHeight || 0;
 
 		let lineHeight: number;
 
 		if (!lengthType) {
 			lineHeight = 0;
-		} else if (typeof lengthType !== 'number' && lengthType !== 'auto' && lengthType.unit === '%') {
+		} else if (typeof lengthType === 'number') {
+			lineHeight = lengthType;
+		} else if (typeof lengthType === 'string') {
+			// e.g. normal
+			lineHeight = fontHeight;
+		} else if (lengthType.unit === '%') {
 			lineHeight = lengthType.value * fontHeight;
 		} else {
 			lineHeight = layout.toDeviceIndependentPixels(Length.toDevicePixels(lengthType, 0));
