@@ -1067,7 +1067,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Clean up references to the native view.
 	 */
 	public disposeNativeView() {
-		// Unset those values so that view checks for resize the next time it's added back to view tree
+		// Unset these values so that view checks for resize the next time it's added back to view tree
 		this._oldLeft = 0;
 		this._oldTop = 0;
 		this._oldRight = 0;
