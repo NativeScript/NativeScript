@@ -330,13 +330,13 @@ export class TextBase extends TextBaseCommon {
 			if (this.formattedText) {
 				this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
 			} else {
-				// console.log('setTextDecorationAndTransform...')
 				const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
 				this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
+			}
 
-				if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
-					this._setColor(UIColor.labelColor);
-				}
+			// Apply this default to both regular and formatted text, otherwise UIButton will use its own default
+			if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
+				this._setColor(UIColor.labelColor);
 			}
 
 			if (this.style?.textStroke) {
