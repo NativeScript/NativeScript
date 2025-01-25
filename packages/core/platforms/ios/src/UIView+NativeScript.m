@@ -15,11 +15,24 @@
     }
     BOOL isTextType = [self isKindOfClass:[UITextField class]] || [self isKindOfClass:[UITextView class]] | [self isKindOfClass:[UILabel class]] | [self isKindOfClass:[UIButton class]];
     
-    if (letterSpacing != 0 && isTextType && ((UITextView*)self).font != nil) {
-        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
-        attrDict[NSKernAttributeName] = kern;
-        if ([self isKindOfClass:[UITextField class]]) {
-            [((UITextField*)self).defaultTextAttributes setValue:kern forKey:NSKernAttributeName];
+    if (letterSpacing != 0 && isTextType) {
+        NSNumber *kern = nil;
+
+        if ([self isKindOfClass:[UIButton class]]) {
+            if (((UIButton*)self).titleLabel.font != nil) {
+                kern = [NSNumber numberWithDouble:letterSpacing * ((UIButton*)self).titleLabel.font.pointSize];
+            }
+        } else {
+            if (((UITextView*)self).font != nil) {
+                kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
+            }
+        }
+
+        if (kern != nil) {
+            attrDict[NSKernAttributeName] = kern;
+            if ([self isKindOfClass:[UITextField class]]) {
+                [((UITextField*)self).defaultTextAttributes setValue:kern forKey:NSKernAttributeName];
+            }
         }
     }
     
@@ -86,7 +99,14 @@
 -(void)nativeScriptSetFormattedTextDecorationAndTransform:(NSDictionary*)details letterSpacing:(CGFloat)letterSpacing lineHeight:(CGFloat)lineHeight {
     NSMutableAttributedString *attrText = [NativeScriptUtils createMutableStringWithDetails:details];
     if (letterSpacing != 0) {
-        NSNumber *kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
+        NSNumber *kern = nil;
+
+        if ([self isKindOfClass:[UIButton class]]) {
+            kern = [NSNumber numberWithDouble:letterSpacing * ((UIButton*)self).titleLabel.font.pointSize];
+        } else {
+            kern = [NSNumber numberWithDouble:letterSpacing * ((UITextView*)self).font.pointSize];
+        }
+
         [attrText addAttribute:NSKernAttributeName value:kern range:(NSRange){
             0,
             attrText.length
