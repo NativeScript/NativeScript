@@ -446,7 +446,7 @@ export class TextBase extends TextBaseCommon {
 		} else if (lengthType.unit === '%') {
 			lineHeight = lengthType.value * fontHeight;
 		} else {
-			lineHeight = layout.toDeviceIndependentPixels(Length.toDevicePixels(lengthType, 0));
+			lineHeight = layout.toDeviceIndependentPixels(Length.toDevicePixels(lengthType, -1));
 		}
 
 		return lineHeight;

@@ -381,12 +381,12 @@ export class TextBase extends TextBaseCommon {
 			let finalValue: number;
 
 			if (typeof lengthType === 'number') {
-				finalValue = Length.toDevicePixels(lengthType, 0);
+				finalValue = Length.toDevicePixels(lengthType, -1);
 			} else if (lengthType.unit === '%') {
 				const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
 				finalValue = lengthType.value * fontHeight;
 			} else {
-				finalValue = Length.toDevicePixels(lengthType, 0);
+				finalValue = Length.toDevicePixels(lengthType, -1);
 			}
 
 			// Method setLineHeight throws in case of a negative value
