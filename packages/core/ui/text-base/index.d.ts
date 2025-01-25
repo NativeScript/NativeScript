@@ -200,7 +200,7 @@ export const textStrokeProperty: CssProperty<Style, StrokeCSSValues>;
 export const whiteSpaceProperty: CssProperty<Style, CoreTypes.WhiteSpaceType>;
 export const textOverflowProperty: CssProperty<Style, CoreTypes.TextOverflowType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
-export const lineHeightProperty: CssProperty<Style, CoreTypes.PercentLengthType>;
+export const lineHeightProperty: InheritedCssProperty<Style, CoreTypes.PercentLengthType>;
 
 //Used by tab view
 export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string;

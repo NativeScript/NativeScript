@@ -259,7 +259,6 @@ export class TextBase extends TextBaseCommon {
 	[lineHeightProperty.getDefault](): CoreTypes.PercentLengthType {
 		const nativeTextView = this.nativeTextViewProtected;
 		const nativeFont = nativeTextView instanceof UIButton ? nativeTextView.titleLabel.font : nativeTextView.font;
-
 		return nativeFont?.lineHeight ?? 0;
 	}
 
