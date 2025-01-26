@@ -47,7 +47,7 @@ export class Font extends FontBase {
 		return this._typeface;
 	}
 
-	getUIFont(defaultFont: UIFont): UIFont {
+	getUIFont(defaultFont: any): any {
 		return undefined;
 	}
 }
@@ -121,7 +121,7 @@ function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Type
 function createTypeface(font: Font): android.graphics.Typeface {
 	const fontFamilies = parseFontFamily(font.fontFamily);
 	const fontWeight = font.fontWeight;
-	const isNumericFontWeightSupported = SDK_VERSION > 27;
+	const isNumericFontWeightSupported = SDK_VERSION >= 28;
 
 	let result: android.graphics.Typeface;
 	let fontStyle: number = 0;

@@ -654,7 +654,7 @@
             }
 
             export class CustomTypefaceSpan extends android.text.style.TypefaceSpan {
-                constructor(family: string, typeface: android.graphics.Typeface);
+                constructor(typeface: android.graphics.Typeface);
             }
         }
     }
