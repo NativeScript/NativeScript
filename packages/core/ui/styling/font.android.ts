@@ -124,7 +124,7 @@ function createTypeface(font: Font): android.graphics.Typeface {
 	const isNumericFontWeightSupported = SDK_VERSION >= 28;
 
 	let result: android.graphics.Typeface;
-	let fontStyle: number = 0;
+	let fontStyle: number = 0; // This will be empty if numeric font weight is supported
 	// https://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
 	let fontSuffix: string;
 
