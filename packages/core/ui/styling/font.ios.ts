@@ -109,7 +109,7 @@ export class Font extends FontBase {
 		});
 	}
 
-	getAndroidTypeface(): android.graphics.Typeface {
+	getAndroidTypeface(): any {
 		return undefined;
 	}
 }

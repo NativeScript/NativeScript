@@ -7,15 +7,12 @@ import android.text.style.TypefaceSpan;
 
 /**
  * Created by hhristov on 2/27/17.
+ * Updated by CatchABus on 1/26/25.
  */
-
 @SuppressLint("ParcelCreator")
 public class CustomTypefaceSpan extends TypefaceSpan {
-	private final Typeface typeface;
-
-	public CustomTypefaceSpan(String family, Typeface typeface) {
-		super(family);
-		this.typeface = typeface;
+	public CustomTypefaceSpan(Typeface typeface) {
+		super(typeface);
 	}
 
 	public void updateDrawState(TextPaint ds) {
@@ -30,7 +27,7 @@ public class CustomTypefaceSpan extends TypefaceSpan {
 		final Typeface old = paint.getTypeface();
 		final int oldStyle = (old == null) ? 0 : old.getStyle();
 
-		Typeface typeface = this.typeface;
+		Typeface typeface = this.getTypeface();
 		int fake = oldStyle & ~typeface.getStyle();
 		if ((fake & android.graphics.Typeface.BOLD) != 0) {
 			paint.setFakeBoldText(true);
