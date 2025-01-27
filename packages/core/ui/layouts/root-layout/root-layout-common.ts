@@ -93,10 +93,10 @@ export class RootLayoutBase extends GridLayout {
 								},
 								(err) => {
 									rej(new Error(`Error playing enter animation: ${err}`));
-								}
+								},
 							);
 					});
-				})
+				}),
 			);
 
 			Promise.all(toOpen).then(
@@ -105,7 +105,7 @@ export class RootLayoutBase extends GridLayout {
 				},
 				(err) => {
 					reject(err);
-				}
+				},
 			);
 		});
 	}
@@ -140,7 +140,9 @@ export class RootLayoutBase extends GridLayout {
 			const exitAnimationDefinition = exitTo || poppedView?.options?.animation?.exitTo;
 
 			// Remove view from tracked popupviews
-			this.popupViews.splice(popupIndex, 1);
+			if (popupIndex > -1) {
+				this.popupViews.splice(popupIndex, 1);
+			}
 
 			toClose.push(
 				new Promise<void>((res, rej) => {
@@ -153,7 +155,7 @@ export class RootLayoutBase extends GridLayout {
 					} else {
 						res();
 					}
-				})
+				}),
 			);
 
 			if (this.shadeCover) {
@@ -177,7 +179,7 @@ export class RootLayoutBase extends GridLayout {
 				},
 				(err) => {
 					reject(err);
-				}
+				},
 			);
 		});
 	}
@@ -264,8 +266,8 @@ export class RootLayoutBase extends GridLayout {
 			}
 
 			// keep the popupViews array in sync with the stacking of the views
-			const currentView = this.popupViews[this.getPopupIndex(view)];
-			this.popupViews.splice(this.getPopupIndex(view), 1);
+			const currentView = this.popupViews[popupIndex];
+			this.popupViews.splice(popupIndex, 1);
 			this.popupViews.push(currentView);
 
 			const exitAnimation = this.getViewExitState(view);
