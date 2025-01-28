@@ -59,7 +59,7 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 		const subscribeKey = Symbol(propertyKey + '_flag');
 
 		function onSubscribe(subscribe: boolean) {
-			if (subscribe !== !!this[subscribeKey]) {
+			if (subscribe != !!this[subscribeKey]) {
 				this[subscribeKey] = subscribe;
 				this[propertyKey](subscribe);
 			}
