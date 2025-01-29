@@ -53,19 +53,21 @@ export function viewMatchesModuleContext(view: ViewDefinition, context: ModuleCo
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
 	const stateEventNames = pseudoClasses.map((s) => ':' + s);
-	const listeners = Symbol('listeners');
 
-	return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
-		function update(change: number) {
-			const prev = this[listeners] || 0;
-			const next = prev + change;
-			if (prev <= 0 && next > 0) {
-				this[propertyKey](true);
-			} else if (prev > 0 && next <= 0) {
-				this[propertyKey](false);
+	return <T>(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) => {
+		// This will help keep track of pseudo-class subscription changes
+		const subscribeKey = Symbol(propertyKey + '_flag');
+
+		function onSubscribe(subscribe: boolean) {
+			if (subscribe != !!this[subscribeKey]) {
+				this[subscribeKey] = subscribe;
+				this[propertyKey](subscribe);
 			}
 		}
-		stateEventNames.forEach((s) => (target[s] = update));
+
+		for (const eventName of stateEventNames) {
+			target[eventName] = onSubscribe;
+		}
 	};
 }
 
