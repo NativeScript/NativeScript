@@ -7,12 +7,11 @@ import { FontStyleType, FontWeightType } from '../styling/font-interfaces';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { View } from '../core/view';
-import { Property, CssAnimationProperty, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
+import { Property, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
 import { Style } from '../styling/style';
 import { Observable } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
-import { Color } from '../../color';
 import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
 import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
 
@@ -269,7 +268,7 @@ function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: Form
 	}
 }
 
-export function getClosestPropertyValue<T>(property: CssProperty<any, T> | CssAnimationProperty<any, T>, span: Span): T {
+export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: Span): T {
 	if (property.isSet(span.style)) {
 		return span.style[property.name];
 	} else if (property.isSet(span.parent.style)) {
