@@ -624,10 +624,8 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 		ssb.setSpan(new android.text.style.ForegroundColorSpan(color.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
-	const backgroundColor: Color = getClosestPropertyValue(backgroundColorProperty, span);
-
-	if (backgroundColor) {
-		ssb.setSpan(new android.text.style.BackgroundColorSpan(backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+	if (spanStyle.backgroundColor) {
+		ssb.setSpan(new android.text.style.BackgroundColorSpan(spanStyle.backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
 	const textDecoration: CoreTypes.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
