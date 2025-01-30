@@ -5,6 +5,7 @@ export const platformNames = {
 	android: 'Android',
 	ios: 'iOS',
 	visionos: 'visionOS',
+	apple: 'apple',
 };
 
 export const isAndroid = !!__ANDROID__;
