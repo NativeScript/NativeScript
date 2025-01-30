@@ -2,9 +2,9 @@
 
 @NativeClass
 class ObserverClass extends NSObject {
-	public callback: WeakRef<ControlStateChangeListenerCallback>;
+	public callback: ControlStateChangeListenerCallback;
 
-	public static initWithCallback(callback: WeakRef<ControlStateChangeListenerCallback>): ObserverClass {
+	public static initWithCallback(callback: ControlStateChangeListenerCallback): ObserverClass {
 		const observer = <ObserverClass>ObserverClass.alloc().init();
 		observer.callback = callback;
 
@@ -12,8 +12,7 @@ class ObserverClass extends NSObject {
 	}
 
 	public observeValueForKeyPathOfObjectChangeContext(path: string, object: UIControl) {
-		const callback = this.callback?.deref();
-
+		const callback = this.callback;
 		if (callback) {
 			callback(path, object[path]);
 		}
@@ -30,7 +29,7 @@ export class ControlStateChangeListener implements ControlStateChangeListenerDef
 	constructor(control: UIControl, states: string[], callback: ControlStateChangeListenerCallback) {
 		this._control = control;
 		this._states = states;
-		this._observer = ObserverClass.initWithCallback(new WeakRef(callback));
+		this._observer = ObserverClass.initWithCallback(callback);
 	}
 
 	public start() {
