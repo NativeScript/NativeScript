@@ -34,7 +34,7 @@ class UILabelClickHandlerImpl extends NSObject {
 	public linkTap(tapGesture: UITapGestureRecognizer) {
 		const owner = this._owner?.deref();
 		if (owner) {
-			const label = <UILabel>owner.nativeTextViewProtected;
+			const nativeView = owner.nativeTextViewProtected instanceof UIButton ? owner.nativeTextViewProtected.titleLabel : owner.nativeTextViewProtected;
 
 			// This offset along with setting paragraph style alignment will achieve perfect horizontal alignment for NSTextContainer
 			let offsetXMultiplier: number;
@@ -53,18 +53,27 @@ class UILabelClickHandlerImpl extends NSObject {
 
 			const layoutManager = NSLayoutManager.alloc().init();
 			const textContainer = NSTextContainer.alloc().initWithSize(CGSizeZero);
-			const textStorage = NSTextStorage.alloc().initWithAttributedString(owner.nativeTextViewProtected['attributedText']);
+			const textStorage = NSTextStorage.alloc().initWithAttributedString(nativeView.attributedText);
 
 			layoutManager.addTextContainer(textContainer);
 			textStorage.addLayoutManager(layoutManager);
 
 			textContainer.lineFragmentPadding = 0;
-			textContainer.lineBreakMode = label.lineBreakMode;
-			textContainer.maximumNumberOfLines = label.numberOfLines;
-			const labelSize = label.bounds.size;
+
+			if (nativeView instanceof UITextView) {
+				textContainer.lineBreakMode = nativeView.textContainer.lineBreakMode;
+				textContainer.maximumNumberOfLines = nativeView.textContainer.maximumNumberOfLines;
+			} else {
+				if (!(nativeView instanceof UITextField)) {
+					textContainer.lineBreakMode = nativeView.lineBreakMode;
+					textContainer.maximumNumberOfLines = nativeView.numberOfLines;
+				}
+			}
+
+			const labelSize = nativeView.bounds.size;
 			textContainer.size = labelSize;
 
-			const locationOfTouchInLabel = tapGesture.locationInView(label);
+			const locationOfTouchInLabel = tapGesture.locationInView(nativeView);
 			const textBoundingBox = layoutManager.usedRectForTextContainer(textContainer);
 
 			const textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * offsetXMultiplier - textBoundingBox.origin.x, (labelSize.height - textBoundingBox.size.height) * offsetYMultiplier - textBoundingBox.origin.y);
@@ -117,31 +126,46 @@ class UILabelClickHandlerImpl extends NSObject {
 
 export class TextBase extends TextBaseCommon {
 	public nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
-	// @ts-ignore
-	public nativeTextViewProtected: UITextField | UITextView | UILabel | UIButton;
-	private _tappable = false;
-	private _tapGestureRecognizer: UITapGestureRecognizer;
 	public _spanRanges: NSRange[];
+
+	private _tappable = false;
+	private _linkTapHandler: UILabelClickHandlerImpl;
+	private _tapGestureRecognizer: UITapGestureRecognizer;
+
+	get nativeTextViewProtected(): UITextField | UITextView | UILabel | UIButton {
+		return super.nativeTextViewProtected;
+	}
 
 	public initNativeView(): void {
 		super.initNativeView();
 		this._setTappableState(false);
 	}
 
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+
+		this._tappable = false;
+		this._linkTapHandler = null;
+		this._tapGestureRecognizer = null;
+	}
+
 	_setTappableState(tappable: boolean) {
 		if (this._tappable !== tappable) {
+			const nativeTextView = this.nativeTextViewProtected;
+
 			this._tappable = tappable;
 			if (this._tappable) {
 				const tapHandler = UILabelClickHandlerImpl.initWithOwner(new WeakRef(this));
-				// associate handler with menuItem or it will get collected by JSC.
-				(<any>this).handler = tapHandler;
+				// Associate handler with menuItem or it will get collected by JSC
+				this._linkTapHandler = tapHandler;
 
-				this._tapGestureRecognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, 'linkTap');
-				this.nativeViewProtected.userInteractionEnabled = true;
-				this.nativeViewProtected.addGestureRecognizer(this._tapGestureRecognizer);
+				this._tapGestureRecognizer = UITapGestureRecognizer.alloc().initWithTargetAction(this._linkTapHandler, 'linkTap');
+				nativeTextView.addGestureRecognizer(this._tapGestureRecognizer);
 			} else {
-				this.nativeViewProtected.userInteractionEnabled = false;
-				this.nativeViewProtected.removeGestureRecognizer(this._tapGestureRecognizer);
+				nativeTextView.removeGestureRecognizer(this._tapGestureRecognizer);
+
+				this._linkTapHandler = null;
+				this._tapGestureRecognizer = null;
 			}
 		}
 	}
