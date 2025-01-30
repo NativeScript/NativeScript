@@ -34,19 +34,25 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 	public autocorrect: boolean;
 	public hint: string;
 	public maxLength: number;
+	public placeholderColor: Color;
 	public valueFormatter: (value: string) => string;
 
 	public abstract dismissSoftInput();
 	public abstract _setInputType(inputType: number): void;
 	public abstract setSelection(start: number, stop?: number);
-	placeholderColor: Color;
 
 	@PseudoClassHandler('focus', 'blur')
-	_updateTextBaseFocusStateHandler(subscribe) {
-		const method = subscribe ? 'on' : 'off';
+	_updateTextBaseFocusStateHandler(subscribe: boolean) {
+		if (subscribe) {
+			this.on('focus', focusChangeHandler);
+			this.on('blur', focusChangeHandler);
+		} else {
+			this.off('focus', focusChangeHandler);
+			this.off('blur', focusChangeHandler);
 
-		this[method]('focus', focusChangeHandler);
-		this[method]('blur', focusChangeHandler);
+			this._removeVisualState('focus');
+			this._removeVisualState('blur');
+		}
 	}
 }
 
