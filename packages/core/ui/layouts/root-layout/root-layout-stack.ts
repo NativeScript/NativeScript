@@ -20,6 +20,6 @@ export function _removeFromRootLayoutStack(rootLayout: RootLayoutBase): void {
 	}
 }
 
-export function _topmost(): RootLayoutBase {
-	return rootLayoutStack[rootLayoutStack.length - 1];
+export function _geRootLayoutFromStack(index: number): RootLayoutBase {
+	return rootLayoutStack.length > index ? rootLayoutStack[index] : null;
 }

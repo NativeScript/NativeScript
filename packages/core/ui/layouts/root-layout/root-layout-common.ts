@@ -6,7 +6,7 @@ import { RootLayout, RootLayoutOptions, ShadeCoverOptions, TransitionAnimation }
 import { Animation } from '../../animation';
 import { AnimationDefinition } from '../../animation';
 import { isNumber } from '../../../utils/types';
-import { _findRootLayoutById, _pushInRootLayoutStack, _removeFromRootLayoutStack, _topmost } from './root-layout-stack';
+import { _findRootLayoutById, _pushInRootLayoutStack, _removeFromRootLayoutStack, _geRootLayoutFromStack } from './root-layout-stack';
 
 @CSSType('RootLayout')
 export class RootLayoutBase extends GridLayout {
@@ -52,16 +52,17 @@ export class RootLayoutBase extends GridLayout {
 			}
 
 			if (this.hasChild(view)) {
-				return reject(new Error(`${view} has already been added`));
+				return reject(new Error(`View ${view} has already been added to the root layout`));
 			}
 
 			const toOpen = [];
 			const enterAnimationDefinition = options.animation ? options.animation.enterFrom : null;
 
-			// keep track of the views locally to be able to use their options later
+			// Keep track of the views locally to be able to use their options later
 			this._popupViews.push({ view: view, options: options });
 
-			view.opacity = 0; // always begin with view invisible when adding dynamically
+			// Always begin with view invisible when adding dynamically
+			view.opacity = 0;
 			// Add view to view tree before adding shade cover
 			this.insertChild(view, this.getChildrenCount());
 
@@ -123,7 +124,7 @@ export class RootLayoutBase extends GridLayout {
 			}
 
 			if (!this.hasChild(view)) {
-				return reject(new Error(`Unable to close popup. ${view} not found`));
+				return reject(new Error(`Unable to close popup. View ${view} not found`));
 			}
 
 			const toClose = [];
@@ -259,7 +260,13 @@ export class RootLayoutBase extends GridLayout {
 		return this._popupViews.length ? this._popupViews[this._popupViews.length - 1].view : null;
 	}
 
-	// bring any view instance open on the rootlayout to front of all the children visually
+	/**
+	 * This method causes the requested view to overlap its siblings by bring it to front.
+	 *
+	 * @param view
+	 * @param animated
+	 * @returns
+	 */
 	bringToFront(view: View, animated: boolean = false): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!(view instanceof View)) {
@@ -267,13 +274,17 @@ export class RootLayoutBase extends GridLayout {
 			}
 
 			if (!this.hasChild(view)) {
-				return reject(new Error(`${view} not found or already at topmost`));
+				return reject(new Error(`View ${view} is not a child of the root layout`));
 			}
 
 			const popupIndex = this.getPopupIndex(view);
-			// popupview should be present and not already the topmost view
-			if (popupIndex < 0 || popupIndex == this._popupViews.length - 1) {
-				return reject(new Error(`${view} not found or already at topmost`));
+
+			if (popupIndex < 0) {
+				return reject(new Error(`View ${view} is not a child of the root layout`));
+			}
+
+			if (popupIndex == this._popupViews.length - 1) {
+				return reject(new Error(`View ${view} is already the topmost view in the rootlayout`));
 			}
 
 			// keep the popupViews array in sync with the stacking of the views
@@ -439,7 +450,7 @@ export class RootLayoutBase extends GridLayout {
 }
 
 export function getRootLayout(): RootLayout {
-	return _topmost();
+	return _geRootLayoutFromStack(0);
 }
 
 export function getRootLayoutById(id: string): RootLayout {
