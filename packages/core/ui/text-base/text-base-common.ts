@@ -12,7 +12,6 @@ import { Style } from '../styling/style';
 import { Observable } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
-import { Color } from '../../color';
 import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
 import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
 
