@@ -6,7 +6,7 @@ import { RootLayout, RootLayoutOptions, ShadeCoverOptions, TransitionAnimation }
 import { Animation } from '../../animation';
 import { AnimationDefinition } from '../../animation';
 import { isNumber } from '../../../utils/types';
-import { _findRootLayoutById, _pushInRootLayoutStack, _removeFromRootLayoutStack, _geRootLayoutFromStack } from './root-layout-stack';
+import { _findRootLayoutById, _pushIntoRootLayoutStack, _removeFromRootLayoutStack, _geRootLayoutFromStack } from './root-layout-stack';
 
 @CSSType('RootLayout')
 export class RootLayoutBase extends GridLayout {
@@ -16,10 +16,12 @@ export class RootLayoutBase extends GridLayout {
 	public initNativeView(): void {
 		super.initNativeView();
 
-		_pushInRootLayoutStack(this);
+		_pushIntoRootLayoutStack(this);
 	}
 
 	public disposeNativeView(): void {
+		super.disposeNativeView();
+
 		_removeFromRootLayoutStack(this);
 	}
 

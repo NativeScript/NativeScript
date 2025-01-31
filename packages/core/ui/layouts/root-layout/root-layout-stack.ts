@@ -6,7 +6,7 @@ export function _findRootLayoutById(id: string): RootLayoutBase {
 	return rootLayoutStack.find((rootLayout) => rootLayout.id && rootLayout.id === id);
 }
 
-export function _pushInRootLayoutStack(rootLayout: RootLayoutBase): void {
+export function _pushIntoRootLayoutStack(rootLayout: RootLayoutBase): void {
 	if (!rootLayoutStack.includes(rootLayout)) {
 		rootLayoutStack.push(rootLayout);
 	}
