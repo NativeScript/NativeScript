@@ -41,7 +41,7 @@ export class FrameBase extends CustomLayoutView {
 	private _animated: boolean;
 	private _transition: NavigationTransition;
 	private _backStack = new Array<BackstackEntry>();
-	_navigationQueue = new Array<NavigationContext>();
+	private _navigationQueue = new Array<NavigationContext>();
 
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 	public _currentEntry: BackstackEntry;
@@ -300,7 +300,16 @@ export class FrameBase extends CustomLayoutView {
 			this._backStack.pop();
 		} else if (!isReplace) {
 			if (entry.entry.clearHistory) {
-				this._backStack.forEach((e) => this._removeEntry(e));
+				this._backStack.forEach((e) => {
+					if (e !== entry) {
+						this._removeEntry(e);
+					} else {
+						// This case is extremely rare but can occur when fragment resumes
+						if (Trace.isEnabled()) {
+							Trace.write(`Failed to dispose backstack entry ${entry}. This entry is the one frame is navigating to.`, Trace.categories.Navigation, Trace.messageType.warn);
+						}
+					}
+				});
 				this._backStack.length = 0;
 			} else if (FrameBase._isEntryBackstackVisible(current)) {
 				this._backStack.push(current);
@@ -429,16 +438,20 @@ export class FrameBase extends CustomLayoutView {
 
 	@profile
 	performGoBack(navigationContext: NavigationContext) {
-		let backstackEntry = navigationContext.entry;
 		const backstack = this._backStack;
-		if (!backstackEntry) {
-			backstackEntry = backstack[backstack.length - 1];
-			navigationContext.entry = backstackEntry;
-		}
+		const backstackEntry = navigationContext.entry || backstack[backstack.length - 1];
 
-		this._executingContext = navigationContext;
-		this._onNavigatingTo(backstackEntry, true);
-		this._goBackCore(backstackEntry);
+		if (backstackEntry) {
+			navigationContext.entry = backstackEntry;
+
+			this._executingContext = navigationContext;
+			this._onNavigatingTo(backstackEntry, true);
+			this._goBackCore(backstackEntry);
+		} else {
+			if (Trace.isEnabled()) {
+				Trace.write(`No backstack entry found to navigate back to`, Trace.categories.Navigation, Trace.messageType.warn);
+			}
+		}
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry) {

@@ -2,11 +2,11 @@
 
 ## Tabs vs Spaces
 
-Use 4 spaces indentation.
+Use 2 spaces indentation.
 
 ## Line length
 
-Try to limit your lines to 80 characters.
+Try to limit your lines to 600 characters.
 
 ## Semicolons, statement Termination
 
@@ -26,18 +26,18 @@ let x = 1
 
 ## Quotes
 
-Use double quotes for strings:
+Use single quotes for strings:
 
 *Right:*
 
 ```TypeScript
-let foo = "bar";
+let foo = 'bar';
 ```
 
 *Wrong:*
 
 ```TypeScript
-let foo = 'bar';
+let foo = "bar";
 ```
 
 ## Braces
@@ -48,7 +48,7 @@ Your opening braces go on the same line as the statement.
 
 ```TypeScript
 if (true) {
-    console.log("winning");
+  console.log("winning");
 }
 ```
 
@@ -57,7 +57,7 @@ if (true) {
 ```TypeScript
 if (true)
 {
-    console.log("losing");
+  console.log("losing");
 }
 ```
 
@@ -69,9 +69,9 @@ Follow the JavaScript convention of stacking `else/catch` clauses on the same li
 
 ```TypeScript
 if (i % 2 === 0) {
-    console.log("even");
+  console.log("even");
 } else {
-    console.log("odd");
+  console.log("odd");
 }
 ```
 
@@ -79,10 +79,10 @@ if (i % 2 === 0) {
 
 ```TypeScript
 if (i % 2 === 0) {
-    console.log("even");
+  console.log("even");
 }
 else {
-    console.log("odd");
+  console.log("odd");
 }
 ```
 
@@ -96,7 +96,7 @@ Declare variables with `let` instead of `var`. Use `const` when possible.
 const button = new Button();
 
 for (let i = 0; i < items.length; i++) {
-    // do something
+  // do something
 }
 ```
 
@@ -106,7 +106,7 @@ for (let i = 0; i < items.length; i++) {
 var button = new Button();
 
 for (var i = 0; i < items.length; i++) {
-    // do something
+  // do something
 }
 
 ```
@@ -196,14 +196,14 @@ let b = {"good": "code"
 
 ## Equality operator
 
-Use the [strict comparison operators][comparisonoperators]. The triple equality operator helps to maintain data type integrity throughout the code.
+Use the [strict comparison operators][comparisonoperators] when needed. The triple equality operator helps to maintain data type integrity throughout the code.
 
 *Right:*
 
 ```TypeScript
 let a = 0;
 if (a === "") {
-    console.log("winning");
+  console.log("winning");
 }
 
 ```
@@ -213,7 +213,7 @@ if (a === "") {
 ```TypeScript
 let a = 0;
 if (a == "") {
-    console.log("losing");
+  console.log("losing");
 }
 ```
 
@@ -247,7 +247,7 @@ Always use curly braces even in the cases of one line conditional operations.
 
 ```TypeScript
 if (a) {
-    return "winning";
+  return "winning";
 }
 
 ```
@@ -257,7 +257,7 @@ if (a) {
 ```TypeScript
 
 if (a)
-    return "winning";
+  return "winning";
 
 if (a) return "winning";
 ```
@@ -271,11 +271,11 @@ if (a) return "winning";
 ```TypeScript
 
 if (condition) {
-    console.log("winning");
+  console.log("winning");
 }
 
 if (!condition) {
-    console.log("winning");
+  console.log("winning");
 }
 
 ```
@@ -285,15 +285,15 @@ if (!condition) {
 ```TypeScript
 
 if (condition === true) {
-    console.log("losing");
+  console.log("losing");
 }
 
 if (condition !== true) {
-    console.log("losing");
+  console.log("losing");
 }
 
 if (condition !== false) {
-    console.log("losing");
+  console.log("losing");
 }
 
 ```
@@ -306,7 +306,7 @@ Do not use the **Yoda Conditions** when writing boolean expressions:
 ```TypeScript
 let num;
 if (num >= 0) {
-    console.log("winning");
+  console.log("winning");
 }
 ```
 
@@ -315,14 +315,14 @@ if (num >= 0) {
 ```TypeScript
 let num;
 if (0 <= num) {
-    console.log("losing");
+  console.log("losing");
 }
 ```
 
 **NOTE** It is OK to use constants on the left when comparing for a range.
 ```TypeScript
 if (0 <= num && num <= 100) {
-    console.log("winning");
+  console.log("winning");
 }
 ```
 
@@ -341,22 +341,22 @@ as possible. In certain routines, once you know the answer, you want to return i
 
 ```TypeScript
 function getSomething(val) {
-    if (val < 0) {
-        return false;
-    }
+  if (val < 0) {
+    return false;
+  }
 
-    if (val > 100) {
-        return false;
-    }
+  if (val > 100) {
+    return false;
+  }
 
-    let res1 = doOne();
-    let res2 = doTwo();
-    let options = {
-        a: 1,
-        b: 2
-    };
-    let result = doThree(res1, res2, options);
-    return result;
+  let res1 = doOne();
+  let res2 = doTwo();
+  let options = {
+    a: 1,
+    b: 2
+  };
+  let result = doThree(res1, res2, options);
+  return result;
 }
 ```
 
@@ -364,24 +364,24 @@ function getSomething(val) {
 
 ```TypeScript
 function getSomething(val) {
-    if (val >= 0) {
-        if (val < 100) {
-            let res1 = doOne();
-            let res2 = doTwo();
-            let options = {
-                             a: 1,
-                             b: 2
-                          };
-            let result = doThree(res1, res2, options);
-            return result;    
-        }
-        else {
-            return false;
-        }
+  if (val >= 0) {
+    if (val < 100) {
+      let res1 = doOne();
+      let res2 = doTwo();
+      let options = {
+        a: 1,
+        b: 2
+      };
+      let result = doThree(res1, res2, options);
+      return result;
     }
     else {
-        return false;
+      return false;
     }
+  }
+  else {
+    return false;
+  }
 }
 ```
 
@@ -393,9 +393,9 @@ Use arrow functions over anonymous function expressions. Typescript will take ca
 
 ```TypeScript
 req.on("end", () => {
-    exp1();
-    exp2();
-    this.doSomething();
+  exp1();
+  exp2();
+  this.doSomething();
 });
 ```
 
@@ -404,9 +404,9 @@ req.on("end", () => {
 ```TypeScript
 let that = this;
 req.on("end", function () {
-    exp1();
-    exp2();
-    that.doSomething();
+  exp1();
+  exp2();
+  that.doSomething();
 });
 ```
 
@@ -449,16 +449,16 @@ When you **need** to keep a reference to **this** use **that** as the name of th
 *Right:*
 ```TypeScript
 let that = this;
-doSomething(function(){
-    that.doNothing();
+doSomething(function() {
+  that.doNothing();
 });
 ```
 
 *Wrong:*
 ```TypeScript
 let me = this;
-doSomething(function(){
-    me.doNothing();
+doSomething(function() {
+  me.doNothing();
 });
 ```
 
@@ -468,34 +468,34 @@ Although there is the **private** keyword in TypeScript, it is only a syntax sug
 *Right:*
 ```TypeScript
 class Foo {
-    private _myBoolean: boolean;
-    
-    public publicAPIMethod() {
-    }
-    
-    public _frameworkMethod() {
-        // this method is for internal use only
-    }
-    
-    private _doSomething() {
-    }
+  private _myBoolean: boolean;
+  
+  public publicAPIMethod() {
+  }
+  
+  public _frameworkMethod() {
+      // this method is for internal use only
+  }
+  
+  private _doSomething() {
+  }
 }
 ```
 
 *Wrong:*
 ```TypeScript
 class Foo {
-    private myBoolean: boolean;
-    
-    public _publicAPIMethod() {
-    }
-    
-    public frameworkMethod() {
-        // this method is for internal use only
-    }
-    
-    private doSomething() {
-    }
+  private myBoolean: boolean;
+  
+  public _publicAPIMethod() {
+  }
+  
+  public frameworkMethod() {
+      // this method is for internal use only
+  }
+  
+  private doSomething() {
+  }
 }
 ```
 
@@ -509,14 +509,14 @@ export declare function concat(...categories: string[]): string;
 
 // implementation
 export function concat(): string {
-    let i;
-    let result: string;
-    // use the arguments object to iterate the parameters
-    for (i = 0; i < arguments.length; i++) {
-        // do something
-    }
+  let i;
+  let result: string;
+  // use the arguments object to iterate the parameters
+  for (i = 0; i < arguments.length; i++) {
+    // do something
+  }
 
-    return result;
+  return result;
 }
 ```
 
@@ -527,14 +527,14 @@ export declare function concat(...categories: string[]): string;
 
 // implementation
 export function concat(...categories: string[]): string {
-    let i;
-    let result: string;
-    // use the arguments object to iterate the parameters
-    for (i = 0; i < categories.length; i++) {
-        // do something
-    }
+  let i;
+  let result: string;
+  // use the arguments object to iterate the parameters
+  for (i = 0; i < categories.length; i++) {
+    // do something
+  }
 
-    return result;
+  return result;
 }
 ```
 
@@ -544,6 +544,6 @@ Name your test function with `test_` so that our test runner can find them and a
 *Right:*
 ```TypeScript
 export function test_goToVisualState_NoState_ShouldResetStyledProperties() {
-    // Test code here.
+  // Test code here.
 }
 ```
