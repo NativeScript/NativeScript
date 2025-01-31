@@ -8,10 +8,6 @@ import { LinearGradient } from '../../styling/linear-gradient';
 export * from './root-layout-common';
 
 export class RootLayout extends RootLayoutBase {
-	constructor() {
-		super();
-	}
-
 	insertChild(view: View, atIndex: number): void {
 		super.insertChild(view, atIndex);
 		if (!view.hasGestureObservers()) {
