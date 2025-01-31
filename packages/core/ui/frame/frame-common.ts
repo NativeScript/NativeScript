@@ -377,6 +377,16 @@ export class FrameBase extends CustomLayoutView {
 		return entry;
 	}
 
+	public getNavigationQueueContextByEntry(entry: BackstackEntry): NavigationContext {
+		for (const context of this._navigationQueue) {
+			if (context.entry === entry) {
+				return context;
+			}
+		}
+
+		return null;
+	}
+
 	public navigationQueueIsEmpty(): boolean {
 		return this._navigationQueue.length === 0;
 	}

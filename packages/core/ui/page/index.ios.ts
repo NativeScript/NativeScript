@@ -37,14 +37,8 @@ function isBackNavigationTo(page: Page, entry): boolean {
 		return true;
 	}
 
-	const navigationQueue = (<any>frame)._navigationQueue;
-	for (let i = 0; i < navigationQueue.length; i++) {
-		if (navigationQueue[i].entry === entry) {
-			return navigationQueue[i].navigationType === NavigationType.back;
-		}
-	}
-
-	return false;
+	const queueContext = frame.getNavigationQueueContextByEntry(entry);
+	return queueContext && queueContext.navigationType === NavigationType.back;
 }
 
 function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boolean {
