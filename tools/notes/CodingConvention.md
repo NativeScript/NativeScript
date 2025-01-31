@@ -48,7 +48,7 @@ Your opening braces go on the same line as the statement.
 
 ```TypeScript
 if (true) {
-  console.log("winning");
+  console.log('winning');
 }
 ```
 
@@ -57,7 +57,7 @@ if (true) {
 ```TypeScript
 if (true)
 {
-  console.log("losing");
+  console.log('losing');
 }
 ```
 
@@ -69,9 +69,9 @@ Follow the JavaScript convention of stacking `else/catch` clauses on the same li
 
 ```TypeScript
 if (i % 2 === 0) {
-  console.log("even");
+  console.log('even');
 } else {
-  console.log("odd");
+  console.log('odd');
 }
 ```
 
@@ -79,10 +79,10 @@ if (i % 2 === 0) {
 
 ```TypeScript
 if (i % 2 === 0) {
-  console.log("even");
+  console.log('even');
 }
 else {
-  console.log("odd");
+  console.log('odd');
 }
 ```
 
@@ -120,13 +120,13 @@ uncommon abbreviations should generally be avoided unless it is something well k
 *Right:*
 
 ```TypeScript
-let adminUser = db.query("SELECT * FROM users ...");
+let adminUser = db.query('SELECT * FROM users ...');
 ```
 
 *Wrong:*
 
 ```TypeScript
-let admin_user = db.query("SELECT * FROM users ...");
+let admin_user = db.query('SELECT * FROM users ...');
 ```
 
 [camelcase]: https://en.wikipedia.org/wiki/camelCase#Variations_and_synonyms
@@ -139,7 +139,7 @@ Type names should be capitalized using [upper camel case][camelcase].
 
 ```TypeScript
 class UserAccount() {
-  this.field = "a";
+  this.field = 'a';
 }
 ```
 
@@ -147,7 +147,7 @@ class UserAccount() {
 
 ```TypeScript
 class userAccount() {
-  this.field = "a";
+  this.field = 'a';
 }
 ```
 
@@ -176,10 +176,10 @@ keys when your interpreter complains:
 *Right:*
 
 ```TypeScript
-let a = ["hello", "world"];
+let a = ['hello', 'world'];
 let b = {
-  good: "code",
-  "is generally": "pretty",
+  good: 'code',
+  'is generally': 'pretty',
 };
 ```
 
@@ -187,10 +187,10 @@ let b = {
 
 ```TypeScript
 let a = [
-  "hello", "world"
+  'hello', 'world'
 ];
-let b = {"good": "code"
-        , is generally: "pretty"
+let b = {'good': 'code'
+        , is generally: 'pretty'
         };
 ```
 
@@ -202,8 +202,8 @@ Use the [strict comparison operators][comparisonoperators] when needed. The trip
 
 ```TypeScript
 let a = 0;
-if (a === "") {
-  console.log("winning");
+if (a === '') {
+  console.log('winning');
 }
 
 ```
@@ -212,8 +212,8 @@ if (a === "") {
 
 ```TypeScript
 let a = 0;
-if (a == "") {
-  console.log("losing");
+if (a == '') {
+  console.log('losing');
 }
 ```
 
@@ -227,8 +227,8 @@ Try to avoid short-hand operators except in very simple scenarios.
 
 ```TypeScript
 let default = x || 50;
-let extraLarge = "xxl";
-let small = "s"
+let extraLarge = 'xxl';
+let small = 's'
 let big = (x > 10) ? extraLarge : small;
 ```
 
@@ -247,7 +247,7 @@ Always use curly braces even in the cases of one line conditional operations.
 
 ```TypeScript
 if (a) {
-  return "winning";
+  return 'winning';
 }
 
 ```
@@ -257,9 +257,9 @@ if (a) {
 ```TypeScript
 
 if (a)
-  return "winning";
+  return 'winning';
 
-if (a) return "winning";
+if (a) return 'winning';
 ```
 
 ## Boolean comparisons
@@ -271,11 +271,11 @@ if (a) return "winning";
 ```TypeScript
 
 if (condition) {
-  console.log("winning");
+  console.log('winning');
 }
 
 if (!condition) {
-  console.log("winning");
+  console.log('winning');
 }
 
 ```
@@ -285,15 +285,15 @@ if (!condition) {
 ```TypeScript
 
 if (condition === true) {
-  console.log("losing");
+  console.log('losing');
 }
 
 if (condition !== true) {
-  console.log("losing");
+  console.log('losing');
 }
 
 if (condition !== false) {
-  console.log("losing");
+  console.log('losing');
 }
 
 ```
@@ -306,7 +306,7 @@ Do not use the **Yoda Conditions** when writing boolean expressions:
 ```TypeScript
 let num;
 if (num >= 0) {
-  console.log("winning");
+  console.log('winning');
 }
 ```
 
@@ -315,14 +315,14 @@ if (num >= 0) {
 ```TypeScript
 let num;
 if (0 <= num) {
-  console.log("losing");
+  console.log('losing');
 }
 ```
 
 **NOTE** It is OK to use constants on the left when comparing for a range.
 ```TypeScript
 if (0 <= num && num <= 100) {
-  console.log("winning");
+  console.log('winning');
 }
 ```
 
@@ -392,7 +392,7 @@ Use arrow functions over anonymous function expressions. Typescript will take ca
 *Right:*
 
 ```TypeScript
-req.on("end", () => {
+req.on('end', () => {
   exp1();
   exp2();
   this.doSomething();
@@ -403,7 +403,7 @@ req.on("end", () => {
 
 ```TypeScript
 let that = this;
-req.on("end", function () {
+req.on('end', function () {
   exp1();
   exp2();
   that.doSomething();
