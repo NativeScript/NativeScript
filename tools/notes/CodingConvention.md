@@ -2,7 +2,7 @@
 
 ## Tabs vs Spaces
 
-Use 2 spaces indentation.
+Use tab width 2 indentation.
 
 ## Line length
 
