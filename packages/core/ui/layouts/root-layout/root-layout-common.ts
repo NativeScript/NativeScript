@@ -66,6 +66,7 @@ export class RootLayoutBase extends GridLayout {
 			// Always begin with view invisible when adding dynamically
 			view.opacity = 0;
 			// Add view to view tree before adding shade cover
+			// Before being added to view tree, shade cover calculates the index to be inserted based on existing popup views
 			this.insertChild(view, this.getChildrenCount());
 
 			if (options.shadeCover) {
