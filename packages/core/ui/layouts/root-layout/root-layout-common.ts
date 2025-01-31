@@ -229,7 +229,7 @@ export class RootLayoutBase extends GridLayout {
 				});
 
 				this._shadeCover = shadeCover;
-				// Insert shade cover at index right above the first layout
+				// Insert shade cover at index right below the first popup view
 				this.insertChild(this._shadeCover, indexToAdd);
 			}
 		});
