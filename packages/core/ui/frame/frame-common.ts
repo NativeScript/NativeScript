@@ -305,9 +305,7 @@ export class FrameBase extends CustomLayoutView {
 						this._removeEntry(e);
 					} else {
 						// This case is extremely rare but can occur when fragment resumes
-						if (Trace.isEnabled()) {
-							Trace.write(`Failed to dispose backstack entry ${entry}. This entry is the one frame is navigating to.`, Trace.categories.Navigation, Trace.messageType.warn);
-						}
+						Trace.write(`Failed to dispose backstack entry ${entry}. This entry is the one frame is navigating to.`, Trace.categories.Navigation, Trace.messageType.warn);
 					}
 				});
 				this._backStack.length = 0;
@@ -448,9 +446,7 @@ export class FrameBase extends CustomLayoutView {
 			this._onNavigatingTo(backstackEntry, true);
 			this._goBackCore(backstackEntry);
 		} else {
-			if (Trace.isEnabled()) {
-				Trace.write(`No backstack entry found to navigate back to`, Trace.categories.Navigation, Trace.messageType.warn);
-			}
+			Trace.write('Frame.performGoBack: No backstack entry found to navigate back to', Trace.categories.Navigation, Trace.messageType.warn);
 		}
 	}
 
