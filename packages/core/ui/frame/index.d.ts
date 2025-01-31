@@ -203,6 +203,10 @@ export class Frame extends FrameBase {
 	/**
 	 * @private
 	 */
+	getNavigationQueueContextByEntry(entry: BackstackEntry): NavigationContext;
+	/**
+	 * @private
+	 */
 	navigationQueueIsEmpty(): boolean;
 	/**
 	 * @private
