@@ -4,6 +4,8 @@ import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssPrope
 import { Style } from './style';
 import { Font, FontStyleType, FontWeightType, FontVariationSettingsType } from './font';
 import { Background } from './background';
+import { ClipPathFunction } from './clip-path-function';
+import { LinearGradient } from './linear-gradient';
 
 export namespace FixedLength {
 	export function parse(text: string): CoreTypes.FixedLengthType;
@@ -49,12 +51,12 @@ export const scaleYProperty: CssAnimationProperty<Style, number>;
 export const translateXProperty: CssAnimationProperty<Style, CoreTypes.dip>;
 export const translateYProperty: CssAnimationProperty<Style, CoreTypes.dip>;
 
-export const clipPathProperty: CssProperty<Style, string>;
+export const clipPathProperty: CssProperty<Style, string | ClipPathFunction>;
 export const colorProperty: InheritedCssProperty<Style, Color>;
 
 export const backgroundProperty: ShorthandProperty<Style, string>;
 export const backgroundColorProperty: CssAnimationProperty<Style, Color>;
-export const backgroundImageProperty: CssProperty<Style, string>;
+export const backgroundImageProperty: CssProperty<Style, string | LinearGradient>;
 export const backgroundRepeatProperty: CssProperty<Style, CoreTypes.BackgroundRepeatType>;
 export const backgroundSizeProperty: CssProperty<Style, string>;
 export const backgroundPositionProperty: CssProperty<Style, string>;

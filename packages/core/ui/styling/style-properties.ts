@@ -1,4 +1,3 @@
-// Types
 import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
 import { Style } from './style';
 
@@ -14,10 +13,9 @@ import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
 import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
+import { ClipPathFunction } from './clip-path-function';
 
-const supportedClipPaths = ['rect', 'circle', 'ellipse', 'polygon', 'inset'];
-
-interface CSSPositioning {
+interface ShorthandPositioning {
 	top: string;
 	right: string;
 	bottom: string;
@@ -202,16 +200,31 @@ export namespace Length {
 	} = convertToStringCommon;
 }
 
-function isClipPathValid(value: string): boolean {
-	if (!value) {
-		return true;
-	}
+function parseClipPath(value: string): string | ClipPathFunction {
+	const functionStartIndex = value.indexOf('(');
 
-	const functionName = value.substring(0, value.indexOf('(')).trim();
-	return supportedClipPaths.indexOf(functionName) !== -1;
+	if (functionStartIndex > -1) {
+		const functionName = value.substring(0, functionStartIndex).trim();
+
+		switch (functionName) {
+			case 'rect':
+			case 'circle':
+			case 'ellipse':
+			case 'polygon':
+			case 'inset': {
+				const rule: string = value.replace(`${functionName}(`, '').replace(')', '');
+				return new ClipPathFunction(functionName, rule);
+			}
+			default:
+				throw new Error(`Clip-path function ${functionName} is not valid.`);
+		}
+	} else {
+		// Only shape functions are supported for now
+		throw new Error(`Clip-path value ${value} is not valid.`);
+	}
 }
 
-function parseShorthandPositioning(value: string): CSSPositioning {
+function parseShorthandPositioning(value: string): ShorthandPositioning {
 	const arr = value.split(/[ ,]+/);
 
 	let top: string;
@@ -251,7 +264,7 @@ function parseShorthandPositioning(value: string): CSSPositioning {
 	};
 }
 
-function parseBorderColorPositioning(value: string): CSSPositioning {
+function parseBorderColorPositioning(value: string): ShorthandPositioning {
 	if (value.indexOf('rgb') === 0 || value.indexOf('hsl') === 0) {
 		return {
 			top: value,
@@ -264,7 +277,7 @@ function parseBorderColorPositioning(value: string): CSSPositioning {
 	return parseShorthandPositioning(value);
 }
 
-function convertToBackgrounds(value: string): [CssProperty<any, any>, any][] {
+function convertToBackgrounds(value: string): [CssProperty<any, any> | CssAnimationProperty<any, any>, any][] {
 	if (typeof value === 'string') {
 		const backgrounds = parseBackground(value).value;
 		let backgroundColor = unsetValue;
@@ -283,14 +296,14 @@ function convertToBackgrounds(value: string): [CssProperty<any, any>, any][] {
 		const backgroundPosition = backgrounds.position ? backgrounds.position.text : unsetValue;
 
 		return [
-			[<any>backgroundColorProperty, backgroundColor],
+			[backgroundColorProperty, backgroundColor],
 			[backgroundImageProperty, backgroundImage],
 			[backgroundRepeatProperty, backgroundRepeat],
 			[backgroundPositionProperty, backgroundPosition],
 		];
 	} else {
 		return [
-			[<any>backgroundColorProperty, unsetValue],
+			[backgroundColorProperty, unsetValue],
 			[backgroundImageProperty, unsetValue],
 			[backgroundRepeatProperty, unsetValue],
 			[backgroundPositionProperty, unsetValue],
@@ -1098,15 +1111,24 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 });
 boxShadowProperty.register(Style);
 
-export const clipPathProperty = new CssProperty<Style, string>({
+export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction>({
 	name: 'clipPath',
 	cssName: 'clip-path',
 	valueChanged: (target, oldValue, newValue) => {
-		if (!isClipPathValid(newValue)) {
-			throw new Error('clip-path is not valid.');
+		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue);
+	},
+	equalityComparer: (value1, value2) => {
+		if (value1 instanceof ClipPathFunction && value2 instanceof ClipPathFunction) {
+			return ClipPathFunction.equals(value1, value2);
+		}
+		return value1 === value2;
+	},
+	valueConverter(value: string | ClipPathFunction) {
+		if (typeof value === 'string') {
+			return parseClipPath(value);
 		}
 
-		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue);
+		return value;
 	},
 });
 clipPathProperty.register(Style);
@@ -1129,7 +1151,7 @@ export const opacityProperty = new CssAnimationProperty<Style, number>({
 	name: 'opacity',
 	cssName: 'opacity',
 	defaultValue: 1,
-	valueConverter: (value: any): number => {
+	valueConverter: (value: string): number => {
 		const newValue = parseFloat(value);
 		if (!isNaN(newValue) && 0 <= newValue && newValue <= 1) {
 			return newValue;
