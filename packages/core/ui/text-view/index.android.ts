@@ -1,6 +1,6 @@
 import { TextViewBase as TextViewBaseCommon } from './text-view-common';
 import { CSSType } from '../core/view';
-
+export { WritingToolsAllowedInput, WritingToolsBehavior } from './text-view-common';
 export * from '../text-base';
 
 @CSSType('TextView')

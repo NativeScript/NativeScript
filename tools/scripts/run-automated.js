@@ -20,7 +20,7 @@ const spawned_process = spawn(
 		platform,
 		// "--log=trace",
 		// `--flags="--log=trace"`,
-		"--timeout=600" // 10 minutes, booting avds on CI is very slow...
+		`--timeout=${TIMEOUT_MS}`
 	],
 	{
 		cwd: workspaceDir,

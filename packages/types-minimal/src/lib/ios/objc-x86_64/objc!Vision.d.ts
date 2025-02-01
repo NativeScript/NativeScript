@@ -827,6 +827,7 @@ declare var VNDetectBarcodesRequestRevision1: number;
 
 /**
  * @since 15.0
+ * @deprecated 18.0
  */
 declare var VNDetectBarcodesRequestRevision2: number;
 
@@ -2788,6 +2789,7 @@ declare var VNRecognizeTextRequestRevision1: number;
 
 /**
  * @since 14.0
+ * @deprecated 18.0
  */
 declare var VNRecognizeTextRequestRevision2: number;
 

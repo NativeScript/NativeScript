@@ -1,4 +1,4 @@
-import { Page, Observable, EventData, TextField, PropertyChangeData } from '@nativescript/core';
+import { Page, Observable, EventData, TextField, PropertyChangeData, TextView } from '@nativescript/core';
 
 let page: Page;
 
@@ -27,6 +27,12 @@ export class SampleData extends Observable {
 	textChangePhone(args: PropertyChangeData) {
 		console.log(args.value);
 		this.notifyPropertyChange('formattedPhoneInput', args.value);
+	}
+
+	textChangeArea(args: PropertyChangeData) {
+		const textArea = args.object as TextView;
+		console.log('---- AI active:', textArea.isWritingToolsActive);
+		console.log('textChangeArea:', args.value);
 	}
 }
 
