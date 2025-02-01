@@ -10,11 +10,17 @@ export type Transformation = {
 
 export type TransformationType = 'rotate' | 'translate' | 'translateX' | 'translateY' | 'scale' | 'scaleX' | 'scaleY';
 
-export type TransformationValue = Pair | number;
+export type TransformationValue = Point3D | Pair | number;
+
+export interface Point3D {
+	x: number;
+	y: number;
+	z: number;
+}
 
 export type TransformFunctionsInfo = {
 	translate: Pair;
-	rotate: number;
+	rotate: Point3D;
 	scale: Pair;
 };
 
@@ -26,6 +32,7 @@ export interface AnimationPromise extends Promise<any>, Cancelable {
 export interface Pair {
 	x: number;
 	y: number;
+	z: number;
 }
 
 export interface Cancelable {
@@ -55,7 +62,7 @@ export interface AnimationDefinition {
 	scale?: Pair;
 	height?: CoreTypes.PercentLengthType | string;
 	width?: CoreTypes.PercentLengthType | string;
-	rotate?: number;
+	rotate?: Point3D;
 	duration?: number;
 	delay?: number;
 	iterations?: number;
