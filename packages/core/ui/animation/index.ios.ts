@@ -477,9 +477,11 @@ export class Animation extends AnimationBase {
 				this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animation, args, nativeAnimation);
 			}
 
-			// Shadow layers do not inherit from animating view layer
-			if (nativeView.outerShadowContainerLayer) {
-				nativeView.outerShadowContainerLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+			// Shadow container layer belongs to the parent view layer, so animate all its properties (except for colors) separately
+			if (args.propertyNameToAnimate && !args.propertyNameToAnimate.endsWith('Color')) {
+				if (nativeView.outerShadowContainerLayer) {
+					nativeView.outerShadowContainerLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+				}
 			}
 		}
 		let callback = undefined;
@@ -594,7 +596,7 @@ export class Animation extends AnimationBase {
 						animation._originalValue = nativeView.layer.transform;
 						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 
-						// Shadow layers do not inherit from animating view layer
+						// Shadow container layer belongs to the parent view layer, so animate its transform separately
 						if (nativeView.outerShadowContainerLayer) {
 							nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 						}
@@ -859,7 +861,7 @@ export class Animation extends AnimationBase {
 			}
 		}
 
-		// Shadow layers do not inherit from animating view layer
+		// Shadow container layer belongs to the parent view layer, so animate its properties separately
 		if (nativeView.outerShadowContainerLayer) {
 			const shadowClipMask = nativeView.outerShadowContainerLayer.mask;
 
