@@ -410,9 +410,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = iosUtils.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 
-		const needsTransform: boolean = !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform);
-
-		if (needsTransform) {
+		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
 			const updateSuspended = this._isPresentationLayerUpdateSuspended();
 			if (!updateSuspended) {
 				CATransaction.begin();
