@@ -1114,6 +1114,7 @@ function drawBoxShadow(view: View): void {
 	}
 
 	outerShadowContainerLayer.bounds = bounds;
+	outerShadowContainerLayer.transform = layer.transform;
 	outerShadowContainerLayer.anchorPoint = layer.anchorPoint;
 	outerShadowContainerLayer.position = nativeView.center;
 	outerShadowContainerLayer.zPosition = layer.zPosition;
