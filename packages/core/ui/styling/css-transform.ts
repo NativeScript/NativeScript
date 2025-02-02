@@ -1,4 +1,4 @@
-import { Pair, Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
+import { Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo } from '../animation';
 import { radiansToDegrees } from '../../utils/number-utils';
 import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d } from '../../matrix';
 import { hasDuplicates } from '../../utils';
@@ -14,7 +14,7 @@ const IDENTITY_TRANSFORMATION = {
 };
 
 const TRANSFORM_SPLITTER = new RegExp(/\s*(.+?)\((.*?)\)/g);
-const TRANSFORMATIONS = Object.freeze(['rotate', 'rotateX', 'rotateY', 'rotate3d', 'translate', 'translate3d', 'translateX', 'translateY', 'scale', 'scale3d', 'scaleX', 'scaleY']);
+const TRANSFORMATIONS = Object.freeze<TransformationType[]>(['rotate', 'rotateX', 'rotateY', 'rotate3d', 'translate', 'translate3d', 'translateX', 'translateY', 'scale', 'scale3d', 'scaleX', 'scaleY']);
 
 const STYLE_TRANSFORMATION_MAP: TransformationStyleMap = Object.freeze<TransformationStyleMap>({
 	scale: (value: number) => ({ property: 'scale', value }),
@@ -88,31 +88,31 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 	return decompose2DTransformMatrix(cssMatrix);
 }
 
+function isTransformType(propertyName: string): propertyName is TransformationType {
+	return (TRANSFORMATIONS as string[]).indexOf(propertyName) !== -1;
+}
+
 // using general regex and manually checking the matched
 // properties is faster than using more specific regex
 // https://jsperf.com/cssparse
 function parseTransformString(text: string): Transformation[] {
 	const matches: Transformation[] = [];
-	let match;
+	let match: RegExpExecArray;
 
 	while ((match = TRANSFORM_SPLITTER.exec(text)) !== null) {
 		const property = match[1];
-		const value = convertTransformValue(property, match[2]);
 
-		if (TRANSFORMATIONS.indexOf(property) !== -1) {
-			matches.push(normalizeTransformation({ property, value }));
+		if (isTransformType(property)) {
+			const value = convertTransformValue(property, match[2]);
+			matches.push(STYLE_TRANSFORMATION_MAP[property](value));
 		}
 	}
 
 	return matches;
 }
 
-function normalizeTransformation({ property, value }: Transformation): Transformation {
-	return STYLE_TRANSFORMATION_MAP[property](value);
-}
-
-function convertTransformValue(property: string, stringValue: string): TransformationValue {
-	const values = stringValue.split(',').map(parseFloat);
+function convertTransformValue(property: TransformationType, rawValue: string): TransformationValue {
+	const values = rawValue.split(',').map(parseFloat);
 	const x = values[0];
 
 	let y = values[1];
@@ -126,7 +126,7 @@ function convertTransformValue(property: string, stringValue: string): Transform
 	}
 
 	if (property === 'rotate' || property === 'rotateX' || property === 'rotateY') {
-		return stringValue.slice(-3) === 'rad' ? radiansToDegrees(x) : x;
+		return rawValue.slice(-3) === 'rad' ? radiansToDegrees(x) : x;
 	}
 
 	return { x, y, z };

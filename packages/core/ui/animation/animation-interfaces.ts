@@ -8,7 +8,7 @@ export type Transformation = {
 	value: TransformationValue;
 };
 
-export type TransformationType = 'rotate' | 'translate' | 'translateX' | 'translateY' | 'scale' | 'scaleX' | 'scaleY';
+export type TransformationType = 'rotate' | 'rotate3d' | 'rotateX' | 'rotateY' | 'translate' | 'translate3d' | 'translateX' | 'translateY' | 'scale' | 'scale3d' | 'scaleX' | 'scaleY';
 
 export type TransformationValue = Point3D | Pair | number;
 
