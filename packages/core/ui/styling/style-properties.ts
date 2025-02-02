@@ -179,10 +179,6 @@ export namespace FixedLength {
 	} = convertToStringCommon;
 }
 
-function isNonNegativeFiniteNumber(value: number): boolean {
-	return isFinite(value) && !isNaN(value) && value >= 0;
-}
-
 export namespace Length {
 	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.LengthType {
 		if (fromValue == 'auto') {
@@ -198,6 +194,10 @@ export namespace Length {
 	export const convertToString: {
 		(length: CoreTypes.LengthType): string;
 	} = convertToStringCommon;
+}
+
+function isNonNegativeFiniteNumber(value: number): boolean {
+	return isFinite(value) && !isNaN(value) && value >= 0;
 }
 
 function parseClipPath(value: string): string | ClipPathFunction {
@@ -1157,11 +1157,11 @@ export const opacityProperty = new CssAnimationProperty<Style, number>({
 	defaultValue: 1,
 	valueConverter: (value: string): number => {
 		const newValue = parseFloat(value);
-		if (!isNaN(newValue) && 0 <= newValue && newValue <= 1) {
-			return newValue;
+		if (!isNonNegativeFiniteNumber(newValue) || newValue > 1) {
+			throw new Error(`Opacity should be between [0, 1]. Value: ${newValue}`);
 		}
 
-		throw new Error(`Opacity should be between [0, 1]. Value: ${newValue}`);
+		return newValue;
 	},
 });
 opacityProperty.register(Style);
