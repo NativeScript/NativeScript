@@ -1,5 +1,6 @@
 import { View } from '../core/view';
 import { LinearGradient } from './linear-gradient';
+import { ClipPathFunction } from './clip-path-function';
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, FILE_PREFIX } from '../../utils';
 import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
@@ -92,7 +93,7 @@ export function refreshBorderDrawable(view: View, borderDrawable: org.nativescri
 			background.borderBottomRightRadius,
 			background.borderBottomLeftRadius,
 
-			background.clipPath,
+			background.clipPath instanceof ClipPathFunction ? background.clipPath.toString() : background.clipPath,
 
 			background.color ? background.color.android : 0,
 			imageUri,
@@ -103,7 +104,7 @@ export function refreshBorderDrawable(view: View, borderDrawable: org.nativescri
 			background.position,
 			backgroundPositionParsedCSSValues,
 			background.size,
-			backgroundSizeParsedCSSValues
+			backgroundSizeParsedCSSValues,
 		);
 		//console.log(`>>> ${borderDrawable.toDebugString()}`);
 	}

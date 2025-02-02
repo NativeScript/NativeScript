@@ -8,13 +8,19 @@ export type Transformation = {
 	value: TransformationValue;
 };
 
-export type TransformationType = 'rotate' | 'translate' | 'translateX' | 'translateY' | 'scale' | 'scaleX' | 'scaleY';
+export type TransformationType = 'rotate' | 'rotate3d' | 'rotateX' | 'rotateY' | 'translate' | 'translate3d' | 'translateX' | 'translateY' | 'scale' | 'scale3d' | 'scaleX' | 'scaleY';
 
-export type TransformationValue = Pair | number;
+export type TransformationValue = Point3D | Pair | number;
+
+export interface Point3D {
+	x: number;
+	y: number;
+	z: number;
+}
 
 export type TransformFunctionsInfo = {
 	translate: Pair;
-	rotate: number;
+	rotate: Point3D;
 	scale: Pair;
 };
 
@@ -55,7 +61,7 @@ export interface AnimationDefinition {
 	scale?: Pair;
 	height?: CoreTypes.PercentLengthType | string;
 	width?: CoreTypes.PercentLengthType | string;
-	rotate?: number;
+	rotate?: Point3D;
 	duration?: number;
 	delay?: number;
 	iterations?: number;

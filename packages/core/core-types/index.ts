@@ -29,8 +29,9 @@ export namespace CoreTypes {
 	export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
 	export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
 
-	export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
-	export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
+	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit;
+	export type LengthType = 'auto' | FixedLengthType;
+	export type PercentLengthType = 'auto' | FixedLengthType | LengthPercentUnit;
 
 	export const zeroLength: LengthType = {
 		value: 0,

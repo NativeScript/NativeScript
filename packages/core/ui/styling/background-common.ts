@@ -3,6 +3,7 @@ import { LinearGradient } from './linear-gradient';
 // Types.
 import { Color } from '../../color';
 import { BoxShadow } from './box-shadow';
+import { ClipPathFunction } from './clip-path-function';
 
 /**
  * Flags used to hint the background handler if it has to clear a specific property
@@ -39,7 +40,7 @@ export class Background {
 	public borderTopRightRadius = 0;
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
-	public clipPath: string;
+	public clipPath: string | ClipPathFunction;
 	public boxShadow: BoxShadow;
 	public clearFlags: number = BackgroundClearFlags.NONE;
 
@@ -192,7 +193,7 @@ export class Background {
 		return clone;
 	}
 
-	public withClipPath(value: string): Background {
+	public withClipPath(value: string | ClipPathFunction): Background {
 		const clone = this.clone();
 		clone.clipPath = value;
 
@@ -224,16 +225,23 @@ export class Background {
 			return false;
 		}
 
-		let imagesEqual = false;
+		let isImageEqual = false;
 		if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
-			imagesEqual = LinearGradient.equals(value1, value2);
+			isImageEqual = LinearGradient.equals(value1, value2);
 		} else {
-			imagesEqual = value1.image === value2.image;
+			isImageEqual = value1.image === value2.image;
+		}
+
+		let isClipPathEqual = false;
+		if (value1.clipPath instanceof ClipPathFunction && value2.clipPath instanceof ClipPathFunction) {
+			isClipPathEqual = ClipPathFunction.equals(value1.clipPath, value2.clipPath);
+		} else {
+			isClipPathEqual = value1.clipPath === value2.clipPath;
 		}
 
 		return (
 			Color.equals(value1.color, value2.color) &&
-			imagesEqual &&
+			isImageEqual &&
 			value1.position === value2.position &&
 			value1.repeat === value2.repeat &&
 			value1.size === value2.size &&
@@ -249,7 +257,7 @@ export class Background {
 			value1.borderTopRightRadius === value2.borderTopRightRadius &&
 			value1.borderBottomRightRadius === value2.borderBottomRightRadius &&
 			value1.borderBottomLeftRadius === value2.borderBottomLeftRadius &&
-			value1.clipPath === value2.clipPath
+			isClipPathEqual
 			// && value1.clearFlags === value2.clearFlags
 		);
 	}
