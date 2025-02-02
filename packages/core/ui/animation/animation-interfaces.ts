@@ -32,7 +32,6 @@ export interface AnimationPromise extends Promise<any>, Cancelable {
 export interface Pair {
 	x: number;
 	y: number;
-	z: number;
 }
 
 export interface Cancelable {
