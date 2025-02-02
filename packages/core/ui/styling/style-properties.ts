@@ -219,7 +219,11 @@ function parseClipPath(value: string): string | ClipPathFunction {
 				throw new Error(`Clip-path function ${functionName} is not valid.`);
 		}
 	} else {
-		// Only shape functions are supported for now
+		if (value === 'none') {
+			return null;
+		}
+
+		// Only shape functions and none are supported for now
 		throw new Error(`Clip-path value ${value} is not valid.`);
 	}
 }
