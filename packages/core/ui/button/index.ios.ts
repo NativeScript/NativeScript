@@ -213,14 +213,18 @@ export class Button extends ButtonBase {
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Left;
 				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
 				break;
-			case 'initial':
-			case 'center':
-				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Center;
-				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
-				break;
 			case 'right':
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Right;
 				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
+				break;
+			case 'justify':
+				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Justified;
+				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
+				break;
+			default:
+				// initial | center
+				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Center;
+				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
 				break;
 		}
 	}

@@ -247,7 +247,6 @@ export class TextBase extends TextBaseCommon {
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const nativeView = <UITextField | UITextView | UILabel>this.nativeTextViewProtected;
 		switch (value) {
-			case 'initial':
 			case 'left':
 				nativeView.textAlignment = NSTextAlignment.Left;
 				break;
@@ -259,6 +258,9 @@ export class TextBase extends TextBaseCommon {
 				break;
 			case 'justify':
 				nativeView.textAlignment = NSTextAlignment.Justified;
+				break;
+			default:
+				nativeView.textAlignment = NSTextAlignment.Natural;
 				break;
 		}
 	}

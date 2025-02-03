@@ -309,6 +309,9 @@ export class TextBase extends TextBaseCommon {
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
 		switch (value) {
+			case 'left':
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.LEFT | verticalGravity);
+				break;
 			case 'center':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;
@@ -316,8 +319,8 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.RIGHT | verticalGravity);
 				break;
 			default:
-				// initial | left | justify
-				this.nativeTextViewProtected.setGravity(android.view.Gravity.LEFT | verticalGravity);
+				// initial | justify
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
 		}
 
