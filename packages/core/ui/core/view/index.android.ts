@@ -1103,9 +1103,16 @@ export class View extends ViewCommon {
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		const gravity = lp.gravity;
 		const weight = lp.weight;
+
 		// Set only if params gravity exists.
-		if (gravity !== undefined) {
+		if (gravity != null) {
 			switch (value) {
+				case 'start':
+					lp.gravity = (this.direction === 'rtl' ? GRAVITY_RIGHT : GRAVITY_LEFT) | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
 				case 'left':
 					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
@@ -1120,6 +1127,12 @@ export class View extends ViewCommon {
 					break;
 				case 'right':
 					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
+				case 'end':
+					lp.gravity = (this.direction === 'rtl' ? GRAVITY_LEFT : GRAVITY_RIGHT) | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}

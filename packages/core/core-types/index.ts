@@ -125,13 +125,15 @@ export namespace CoreTypes {
 		export const unknown = 'unknown';
 	}
 
-	export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch' | CSSWideKeywords;
+	export type HorizontalAlignmentType = 'start' | 'left' | 'center' | 'right' | 'end' | 'stretch' | CSSWideKeywords;
 	export namespace HorizontalAlignment {
+		export const start = 'start';
 		export const left = 'left';
 		export const center = 'center';
 		export const right = 'right';
+		export const end = 'end';
 		export const stretch = 'stretch';
-		export const isValid = makeValidator<HorizontalAlignmentType>(left, center, right, stretch);
+		export const isValid = makeValidator<HorizontalAlignmentType>(start, left, center, right, end, stretch);
 		export const parse = makeParser<HorizontalAlignmentType>(isValid);
 	}
 

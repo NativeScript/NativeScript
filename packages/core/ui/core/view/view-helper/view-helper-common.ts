@@ -95,18 +95,21 @@ export class ViewHelper {
 		}
 
 		switch (hAlignment) {
+			case 'start':
+				childLeft = child.direction === 'rtl' ? right - childWidth - effectiveMarginRight : left + effectiveMarginLeft;
+				break;
 			case 'left':
 				childLeft = left + effectiveMarginLeft;
 				break;
-
 			case 'center':
 				childLeft = left + (right - left - childWidth + (effectiveMarginLeft - effectiveMarginRight)) / 2;
 				break;
-
 			case 'right':
 				childLeft = right - childWidth - effectiveMarginRight;
 				break;
-
+			case 'end':
+				childLeft = child.direction === 'rtl' ? left + effectiveMarginLeft : right - childWidth - effectiveMarginRight;
+				break;
 			case 'stretch':
 			default:
 				childLeft = left + effectiveMarginLeft;
