@@ -313,13 +313,14 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;
 			case 'right':
-				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.RIGHT | verticalGravity);
 				break;
 			default:
 				// initial | left | justify
-				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.LEFT | verticalGravity);
 				break;
 		}
+
 		if (SDK_VERSION >= 26) {
 			if (value === 'justify') {
 				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD);
