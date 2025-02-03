@@ -4,7 +4,7 @@ import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -1097,6 +1097,28 @@ export class View extends ViewCommon {
 	}
 	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
 		this._redrawNativeBackground(value);
+	}
+
+	[directionProperty.getDefault](): CoreTypes.LayoutDirection {
+		const nativeView = this.nativeViewProtected;
+		const direction = nativeView.getLayoutDirection();
+
+		return direction === android.view.View.LAYOUT_DIRECTION_RTL ? 'rtl' : 'ltr';
+	}
+	[directionProperty.setNative](value: CoreTypes.LayoutDirection) {
+		const nativeView = this.nativeViewProtected;
+
+		switch (value) {
+			case 'ltr':
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LTR);
+				break;
+			case 'rtl':
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
+				break;
+			default:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LOCALE);
+				break;
+		}
 	}
 
 	[minWidthProperty.setNative](value: CoreTypes.LengthType) {
