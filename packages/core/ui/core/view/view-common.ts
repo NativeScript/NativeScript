@@ -736,10 +736,16 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.boxShadow = value;
 	}
 
+	get direction(): CoreTypes.LayoutDirection {
+		return this.style.direction;
+	}
+	set direction(value: CoreTypes.LayoutDirection) {
+		this.style.direction = value;
+	}
+
 	get minWidth(): CoreTypes.LengthType {
 		return this.style.minWidth;
 	}
-
 	set minWidth(value: CoreTypes.LengthType) {
 		this.style.minWidth = value;
 	}

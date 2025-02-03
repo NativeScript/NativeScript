@@ -387,6 +387,13 @@ export abstract class View extends ViewCommon {
 	boxShadow: string | ShadowCSSValues[];
 
 	/**
+	 * Gets or sets the layout direction of the view.
+	 *
+	 * @nsProperty
+	 */
+	direction: CoreTypes.LayoutDirection;
+
+	/**
 	 * Gets or sets the minimum width the view may grow to.
 	 *
 	 * @nsProperty

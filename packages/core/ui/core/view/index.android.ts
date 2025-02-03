@@ -2,8 +2,7 @@ import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
-import { Length } from '../../styling/length-shared';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -1259,10 +1258,6 @@ export class View extends ViewCommon {
 		return this._context.getWindow();
 	}
 
-	[testIDProperty.setNative](value: string) {
-		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
-	}
-
 	setAccessibilityIdentifier(view, value) {
 		const id = Utils.android.resources.getId(':id/nativescript_accessibility_id');
 
@@ -1273,6 +1268,32 @@ export class View extends ViewCommon {
 
 		if (this.testID && this.testID !== value) this.testID = value;
 		if (this.accessibilityIdentifier !== value) this.accessibilityIdentifier = value;
+	}
+
+	[directionProperty.getDefault](): CoreTypes.LayoutDirection {
+		const nativeView = this.nativeViewProtected;
+		const direction = nativeView.getLayoutDirection();
+
+		return direction === android.view.View.LAYOUT_DIRECTION_RTL ? 'rtl' : 'ltr';
+	}
+	[directionProperty.setNative](value: CoreTypes.LayoutDirection) {
+		const nativeView = this.nativeViewProtected;
+
+		switch (value) {
+			case 'ltr':
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LTR);
+				break;
+			case 'rtl':
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
+				break;
+			default:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LOCALE);
+				break;
+		}
+	}
+
+	[testIDProperty.setNative](value: string) {
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {

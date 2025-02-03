@@ -1,6 +1,4 @@
-﻿import { ScrollView as ScrollViewDefinition, ScrollEventData } from '.';
-import { ContentView } from '../content-view';
-import { profile } from '../../profiling';
+﻿import { ContentView } from '../content-view';
 import { Property, makeParser, makeValidator } from '../core/properties';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
@@ -8,7 +6,7 @@ import { EventData } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 
 @CSSType('ScrollView')
-export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
+export abstract class ScrollViewBase extends ContentView {
 	public static scrollEvent = 'scroll';
 
 	public orientation: CoreTypes.OrientationType;
@@ -88,10 +86,6 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 	public abstract scrollToVerticalOffset(value: number, animated: boolean);
 	public abstract scrollToHorizontalOffset(value: number, animated: boolean);
 	public abstract _onOrientationChanged();
-}
-export interface ScrollViewBase {
-	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
-	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any): void;
 }
 
 const converter = makeParser<CoreTypes.OrientationType>(makeValidator(CoreTypes.Orientation.horizontal, CoreTypes.Orientation.vertical));

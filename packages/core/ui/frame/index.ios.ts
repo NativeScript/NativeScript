@@ -3,6 +3,7 @@ import { iOSFrame as iOSFrameDefinition, NavigationTransition } from '.';
 import { FrameBase, NavigationType } from './frame-common';
 import type { BackstackEntry } from './frame-interfaces';
 import type { Page } from '../page';
+import { CoreTypes } from '../enums';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
@@ -128,7 +129,7 @@ export class Frame extends FrameBase {
 			viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, true);
+		const nativeTransition = _getNativeTransition(navigationTransition, true, this.direction);
 		if (!nativeTransition && navigationTransition) {
 			if (!navControllerDelegate) {
 				navControllerDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
@@ -432,6 +433,9 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 			return null;
 		}
 
+		const owner = this.owner?.deref();
+		const layoutDirection: CoreTypes.LayoutDirection = owner?.direction;
+
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
@@ -442,8 +446,13 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 			if (navigationTransition.name) {
 				const curve = _getNativeCurve(navigationTransition);
 				const name = navigationTransition.name.toLowerCase();
-				if (name.indexOf('slide') === 0) {
-					const direction = name.substring('slide'.length) || 'left'; // Extract the direction from the string
+				const type = 'slide';
+				const defaultDirection = layoutDirection === 'rtl' ? 'right' : 'left';
+
+				if (name.indexOf(type) === 0) {
+					// Extract the direction from the string
+					const direction = name === type ? defaultDirection : name.substring(type.length);
+
 					transition = new SlideTransition(direction, navigationTransition.duration, curve);
 				} else if (name === 'fade') {
 					transition = new FadeTransition(navigationTransition.duration, curve);
@@ -535,14 +544,15 @@ class UINavigationControllerImpl extends UINavigationController {
 	@profile
 	public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
 		const navigationTransition = <NavigationTransition>viewController[TRANSITION];
+		const owner = this._owner?.deref?.();
+
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.pushViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, true);
+		const nativeTransition = _getNativeTransition(navigationTransition, true, owner?.direction);
 		if (!animated || !navigationTransition || !nativeTransition) {
 			super.pushViewControllerAnimated(viewController, animated);
-
 			return;
 		}
 
@@ -555,12 +565,13 @@ class UINavigationControllerImpl extends UINavigationController {
 	public setViewControllersAnimated(viewControllers: NSArray<any>, animated: boolean): void {
 		const viewController = viewControllers.lastObject;
 		const navigationTransition = <NavigationTransition>viewController[TRANSITION];
+		const owner = this._owner?.deref?.();
 
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, true);
+		const nativeTransition = _getNativeTransition(navigationTransition, true, owner?.direction);
 		if (!animated || !navigationTransition || !nativeTransition) {
 			super.setViewControllersAnimated(viewControllers, animated);
 
@@ -575,6 +586,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	public popViewControllerAnimated(animated: boolean): UIViewController {
 		const lastViewController = this.viewControllers.lastObject;
 		const navigationTransition = <NavigationTransition>lastViewController[TRANSITION];
+
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
@@ -584,7 +596,9 @@ class UINavigationControllerImpl extends UINavigationController {
 			return super.popViewControllerAnimated(false);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, false);
+		const owner = this._owner?.deref?.();
+
+		const nativeTransition = _getNativeTransition(navigationTransition, false, owner?.direction);
 		if (!animated || !navigationTransition || !nativeTransition) {
 			return super.popViewControllerAnimated(animated);
 		}
@@ -599,6 +613,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	public popToViewControllerAnimated(viewController: UIViewController, animated: boolean): NSArray<UIViewController> {
 		const lastViewController = this.viewControllers.lastObject;
 		const navigationTransition = <NavigationTransition>lastViewController[TRANSITION];
+
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
@@ -608,7 +623,9 @@ class UINavigationControllerImpl extends UINavigationController {
 			return super.popToViewControllerAnimated(viewController, false);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, false);
+		const owner = this._owner?.deref?.();
+
+		const nativeTransition = _getNativeTransition(navigationTransition, false, owner?.direction);
 		if (!animated || !navigationTransition || !nativeTransition) {
 			return super.popToViewControllerAnimated(viewController, animated);
 		}
@@ -664,10 +681,14 @@ function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitio
 	return `${name} ${transitionType}`;
 }
 
-function _getNativeTransition(navigationTransition: NavigationTransition, push: boolean): UIViewAnimationTransition {
+function _getNativeTransition(navigationTransition: NavigationTransition, push: boolean, direction: CoreTypes.LayoutDirection): UIViewAnimationTransition {
 	if (navigationTransition && navigationTransition.name) {
 		switch (navigationTransition.name.toLowerCase()) {
 			case 'flip':
+				if (direction === 'rtl') {
+					return push ? UIViewAnimationTransition.FlipFromLeft : UIViewAnimationTransition.FlipFromRight;
+				}
+				return push ? UIViewAnimationTransition.FlipFromRight : UIViewAnimationTransition.FlipFromLeft;
 			case 'flipright':
 				return push ? UIViewAnimationTransition.FlipFromRight : UIViewAnimationTransition.FlipFromLeft;
 			case 'flipleft':

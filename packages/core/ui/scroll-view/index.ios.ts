@@ -34,8 +34,10 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 
 export class ScrollView extends ScrollViewBase {
 	public nativeViewProtected: UIScrollView;
+
 	private _contentMeasuredWidth = 0;
 	private _contentMeasuredHeight = 0;
+	private _isFirstLayout: boolean = true;
 	private _delegate: UIScrollViewDelegateImpl;
 
 	public createNativeView() {
@@ -46,6 +48,12 @@ export class ScrollView extends ScrollViewBase {
 		super.initNativeView();
 		this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);
 		this._setNativeClipToBounds();
+	}
+
+	public disposeNativeView() {
+		super.disposeNativeView();
+
+		this._isFirstLayout = true;
 	}
 
 	_setNativeClipToBounds() {
@@ -169,9 +177,11 @@ export class ScrollView extends ScrollViewBase {
 		if (!this.nativeViewProtected) {
 			return;
 		}
+
 		const insets = this.getSafeAreaInsets();
-		let width = right - left - insets.right - insets.left;
-		let height = bottom - top - insets.bottom - insets.top;
+
+		let scrollWidth = right - left - insets.right - insets.left;
+		let scrollHeight = bottom - top - insets.bottom - insets.top;
 
 		if (SDK_VERSION > 10) {
 			// Disable automatic adjustment of scroll view insets
@@ -180,21 +190,38 @@ export class ScrollView extends ScrollViewBase {
 			this.nativeViewProtected.contentInsetAdjustmentBehavior = 2;
 		}
 
-		let scrollWidth = width + insets.left + insets.right;
-		let scrollHeight = height + insets.top + insets.bottom;
+		let scrollInsetWidth = scrollWidth + insets.left + insets.right;
+		let scrollInsetHeight = scrollHeight + insets.top + insets.bottom;
+
 		if (this.orientation === 'horizontal') {
-			scrollWidth = Math.max(this._contentMeasuredWidth + insets.left + insets.right, scrollWidth);
-			width = Math.max(this._contentMeasuredWidth, width);
+			scrollInsetWidth = Math.max(this._contentMeasuredWidth + insets.left + insets.right, scrollInsetWidth);
+			scrollWidth = Math.max(this._contentMeasuredWidth, scrollWidth);
 		} else {
-			scrollHeight = Math.max(this._contentMeasuredHeight + insets.top + insets.bottom, scrollHeight);
-			height = Math.max(this._contentMeasuredHeight, height);
+			scrollInsetHeight = Math.max(this._contentMeasuredHeight + insets.top + insets.bottom, scrollInsetHeight);
+			scrollHeight = Math.max(this._contentMeasuredHeight, scrollHeight);
 		}
 
-		this.nativeViewProtected.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(scrollWidth), layout.toDeviceIndependentPixels(scrollHeight));
-		View.layoutChild(this, this.layoutView, insets.left, insets.top, insets.left + width, insets.top + height);
+		this.nativeViewProtected.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(scrollInsetWidth), layout.toDeviceIndependentPixels(scrollInsetHeight));
+
+		// RTL handling
+		if (this.orientation === 'horizontal') {
+			if (this._isFirstLayout) {
+				this._isFirstLayout = false;
+
+				if (this.direction === 'rtl') {
+					const scrollableWidth = scrollInsetWidth - this.getMeasuredWidth();
+					if (scrollableWidth > 0) {
+						this.nativeViewProtected.contentOffset = CGPointMake(layout.toDeviceIndependentPixels(scrollableWidth), this.verticalOffset);
+					}
+				}
+			}
+		}
+
+		View.layoutChild(this, this.layoutView, insets.left, insets.top, insets.left + scrollWidth, insets.top + scrollHeight);
 	}
 
 	public _onOrientationChanged() {
+		this._isFirstLayout = true;
 		this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);
 	}
 }
