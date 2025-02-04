@@ -11,6 +11,7 @@ import { parse as cssParse } from '../../css-value/reworkcss-value.js';
 import { BoxShadow } from './box-shadow';
 import { Length } from './style-properties';
 import { BackgroundClearFlags } from './background-common';
+import { ClipPathFunction } from './clip-path-function';
 
 export * from './background-common';
 
@@ -303,30 +304,28 @@ export namespace ios {
 		let path: UIBezierPath;
 		const clipPath = background.clipPath;
 
-		const functionName: string = clipPath.substring(0, clipPath.indexOf('('));
-		const value: string = clipPath.replace(`${functionName}(`, '').replace(')', '');
-
-		switch (functionName) {
-			case 'rect':
-				path = rectPath(value, position);
-				break;
-
-			case 'inset':
-				path = insetPath(value, position);
-				break;
-
-			case 'circle':
-				path = circlePath(value, position);
-				break;
-
-			case 'ellipse':
-				path = ellipsePath(value, position);
-				break;
-
-			case 'polygon':
-				path = polygonPath(value, position);
-				break;
+		if (clipPath instanceof ClipPathFunction) {
+			switch (clipPath.shape) {
+				case 'rect':
+					path = rectPath(clipPath.rule, position);
+					break;
+				case 'inset':
+					path = insetPath(clipPath.rule, position);
+					break;
+				case 'circle':
+					path = circlePath(clipPath.rule, position);
+					break;
+				case 'ellipse':
+					path = ellipsePath(clipPath.rule, position);
+					break;
+				case 'polygon':
+					path = polygonPath(clipPath.rule, position);
+					break;
+			}
+		} else {
+			path = null;
 		}
+
 		return path;
 	}
 
