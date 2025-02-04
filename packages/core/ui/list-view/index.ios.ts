@@ -527,7 +527,7 @@ export class ListView extends ListViewBase {
 	}
 	[iosEstimatedRowHeightProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeViewProtected;
-		const estimatedHeight = Length.toDevicePixels(value, 0);
+		const estimatedHeight = layout.toDeviceIndependentPixels(Length.toDevicePixels(value, 0));
 		nativeView.estimatedRowHeight = estimatedHeight < 0 ? DEFAULT_HEIGHT : estimatedHeight;
 	}
 }
