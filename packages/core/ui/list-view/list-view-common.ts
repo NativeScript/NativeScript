@@ -237,7 +237,8 @@ rowHeightProperty.register(ListViewBase);
 
 export const iosEstimatedRowHeightProperty = new Property<ListViewBase, CoreTypes.LengthType>({
 	name: 'iosEstimatedRowHeight',
-	valueConverter: (v) => Length.parse(v),
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
 });
 iosEstimatedRowHeightProperty.register(ListViewBase);
 
