@@ -34,6 +34,8 @@ export class Label extends TextBase implements LabelDefinition {
 		textView.setSingleLine(true);
 		textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
 		textView.setGravity(android.view.Gravity.CENTER_VERTICAL);
+		// This is a default to match iOS layout direction behaviour
+		textView.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
 	}
 
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
