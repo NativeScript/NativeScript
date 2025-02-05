@@ -17,7 +17,10 @@ export class Button extends ButtonBase {
 	private _stateChangedHandler: ControlStateChangeListener;
 
 	createNativeView() {
-		return UIButton.buttonWithType(UIButtonType.System);
+		const nativeView = UIButton.buttonWithType(UIButtonType.System);
+		// This is the default for both platforms
+		nativeView.titleLabel.textAlignment = NSTextAlignment.Center;
+		return nativeView;
 	}
 
 	public initNativeView(): void {
