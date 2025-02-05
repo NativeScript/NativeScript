@@ -49,12 +49,14 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		this._registerLayoutChild(child);
 	}
 
-	public insertChild(child: View, atIndex: number): void {
+	public insertChild(child: View, atIndex: number): boolean {
 		if (atIndex > -1) {
 			this._subViews.splice(atIndex, 0, child);
 			this._addView(child, atIndex);
 			this._registerLayoutChild(child);
+			return true;
 		}
+		return false;
 	}
 
 	public removeChild(child: View): void {
