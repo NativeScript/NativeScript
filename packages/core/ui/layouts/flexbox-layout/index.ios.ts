@@ -961,7 +961,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				this._layoutHorizontal(isRtl, left, top, right, bottom, insets);
 				break;
 			case FlexDirection.ROW_REVERSE:
-				this._layoutHorizontal(isRtl, left, top, right, bottom, insets);
+				this._layoutHorizontal(!isRtl, left, top, right, bottom, insets);
 				break;
 			case FlexDirection.COLUMN:
 				if (this.flexWrap === FlexWrap.WRAP_REVERSE) {
