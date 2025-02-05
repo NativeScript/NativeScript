@@ -164,9 +164,29 @@ export class Button extends ButtonBase {
 	}
 
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
-		// Button initial value is center.
-		const newValue = value === 'initial' ? 'center' : value;
-		super[textAlignmentProperty.setNative](newValue);
+		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+
+		switch (value) {
+			case 'left':
+			case 'justify':
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.LEFT | verticalGravity);
+				break;
+			case 'right':
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.RIGHT | verticalGravity);
+				break;
+			default:
+				// initial | center
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
+				break;
+		}
+
+		if (SDK_VERSION >= 26) {
+			if (value === 'justify') {
+				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD);
+			} else {
+				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_NONE);
+			}
+		}
 	}
 
 	protected getDefaultElevation(): number {
