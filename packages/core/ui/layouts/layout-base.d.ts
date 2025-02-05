@@ -34,7 +34,7 @@ export class LayoutBase extends CustomLayoutView {
 	 * @param view The view to be added to the end of the children array.
 	 * @param atIndex The insertion index.
 	 */
-	insertChild(child: View, atIndex: number): void;
+	insertChild(child: View, atIndex: number): boolean;
 
 	/**
 	 * Removes the specified view from the children array.
