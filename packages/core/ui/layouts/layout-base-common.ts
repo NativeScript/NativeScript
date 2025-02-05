@@ -50,13 +50,11 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 	}
 
 	public insertChild(child: View, atIndex: number): void {
-		if (atIndex < 0) {
-			throw new Error('Cannot insert a child to a negative index.');
+		if (atIndex > -1) {
+			this._subViews.splice(atIndex, 0, child);
+			this._addView(child, atIndex);
+			this._registerLayoutChild(child);
 		}
-
-		this._subViews.splice(atIndex, 0, child);
-		this._addView(child, atIndex);
-		this._registerLayoutChild(child);
 	}
 
 	public removeChild(child: View): void {
