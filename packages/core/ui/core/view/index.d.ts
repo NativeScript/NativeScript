@@ -765,11 +765,6 @@ export abstract class View extends ViewCommon {
 	public static combineMeasuredStates(curState: number, newState): number;
 
 	/**
-	 * Check if RTL is supported by the app
-	 */
-	public static hasRtlSupport(): boolean;
-
-	/**
 	 * Tries to focus the view.
 	 * Returns a value indicating whether this view or one of its descendants actually took focus.
 	 */

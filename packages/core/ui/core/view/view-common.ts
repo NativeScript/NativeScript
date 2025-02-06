@@ -82,8 +82,6 @@ export abstract class ViewCommon extends ViewBase {
 	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
 	public static androidOverflowInsetEvent = 'androidOverflowInset';
 
-	public static _hasRtlSupport: boolean;
-
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
 	public accessibilityValue: string;
@@ -1094,14 +1092,6 @@ export abstract class ViewCommon extends ViewBase {
 
 	public static measureChild(parent: ViewCommon, child: ViewCommon, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
 		return ViewHelper.measureChild(parent, child, widthMeasureSpec, heightMeasureSpec);
-	}
-
-	public static hasRtlSupport(): boolean {
-		if (this._hasRtlSupport == null) {
-			this._hasRtlSupport = layout.hasRtlSupport();
-		}
-
-		return this._hasRtlSupport;
 	}
 
 	_setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean {

@@ -185,6 +185,7 @@ export class TextBase extends TextBaseCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 		initializeTextTransformation();
+
 		const nativeView = this.nativeTextViewProtected;
 
 		// Fix for custom font over-height issue on Android
@@ -197,6 +198,11 @@ export class TextBase extends TextBaseCommon {
 		this._maxHeight = nativeView.getMaxHeight();
 		this._minLines = nativeView.getMinLines();
 		this._maxLines = nativeView.getMaxLines();
+
+		if (layout.hasRtlSupport() && this._isManualRtlTextStyleNeeded) {
+			// This is a default to match iOS layout direction behaviour
+			nativeView.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
+		}
 	}
 
 	public disposeNativeView(): void {
@@ -307,21 +313,38 @@ export class TextBase extends TextBaseCommon {
 		return 'initial';
 	}
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
+		// TextAlignment API has no effect unless app has rtl support defined in manifest
+		const supportsRtlTextAlign = layout.hasRtlSupport() && this._isManualRtlTextStyleNeeded;
 		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
 
+		// In the cases of left and right, use gravity alignment as TEXT_ALIGNMENT_TEXT_START
+		// and TEXT_ALIGNMENT_TEXT_END are affected by text direction
+		// Also, gravity start seem to affect text direction based on language, so use gravity left and right respectively
 		switch (value) {
 			case 'left':
 			case 'justify':
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_GRAVITY);
+				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.LEFT | verticalGravity);
 				break;
 			case 'center':
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;
 			case 'right':
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_GRAVITY);
+				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.RIGHT | verticalGravity);
 				break;
 			default:
 				// initial
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
+				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
 		}

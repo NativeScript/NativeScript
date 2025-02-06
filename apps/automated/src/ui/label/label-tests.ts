@@ -510,39 +510,6 @@ export class LabelTest extends testModule.UITest<Label> {
 		TKUnit.assertEqual(view.style.backgroundColor.hex, '#FF0000');
 	}
 
-	public testNativeTextAlignmentWithoutRtlSupportFromCss() {
-		const view = this.testView;
-		const page = this.testPage;
-		const hasRtlSupportOrig = LabelModule.Label.hasRtlSupport();
-
-		this.waitUntilTestElementIsLoaded();
-
-		LabelModule.Label._hasRtlSupport = false;
-		page.css = 'label { text-align: ' + this.expectedTextAlignment + '; }';
-
-		const actualResult = labelTestsNative.getNativeTextAlignmentWithoutRtlSupport(view);
-
-		LabelModule.Label._hasRtlSupport = hasRtlSupportOrig;
-
-		TKUnit.assert(actualResult, this.expectedTextAlignment);
-	}
-
-	public testNativeTextAlignmentWithoutRtlSupportFromLocal() {
-		const view = this.testView;
-		const hasRtlSupportOrig = LabelModule.Label.hasRtlSupport();
-
-		this.waitUntilTestElementIsLoaded();
-
-		LabelModule.Label._hasRtlSupport = false;
-		view.style.textAlignment = this.expectedTextAlignment;
-
-		const actualResult = labelTestsNative.getNativeTextAlignmentWithoutRtlSupport(view);
-
-		LabelModule.Label._hasRtlSupport = hasRtlSupportOrig;
-
-		TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
-	}
-
 	public testNativeTextAlignmentFromCss() {
 		const view = this.testView;
 		const page = this.testPage;
