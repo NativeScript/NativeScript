@@ -510,7 +510,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		TKUnit.assertEqual(view.style.backgroundColor.hex, '#FF0000');
 	}
 
-	public testNativeTextAlignmentGravityFromCss() {
+	public testNativeTextAlignmentWithoutRtlSupportFromCss() {
 		const view = this.testView;
 		const page = this.testPage;
 		const hasRtlSupportOrig = view.hasRtlSupport;
@@ -520,14 +520,14 @@ export class LabelTest extends testModule.UITest<Label> {
 		view._hasRtlSupport = false;
 		page.css = 'label { text-align: ' + this.expectedTextAlignment + '; }';
 
-		const actualResult = labelTestsNative.getNativeTextGravity(view);
+		const actualResult = labelTestsNative.getNativeTextAlignmentWithoutRtlSupport(view);
 
 		view._hasRtlSupport = hasRtlSupportOrig;
 
 		TKUnit.assert(actualResult, this.expectedTextAlignment);
 	}
 
-	public testNativeTextAlignmentGravityFromLocal() {
+	public testNativeTextAlignmentWithoutRtlSupportFromLocal() {
 		const view = this.testView;
 		const hasRtlSupportOrig = view.hasRtlSupport;
 
@@ -536,7 +536,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		view._hasRtlSupport = false;
 		view.style.textAlignment = this.expectedTextAlignment;
 
-		const actualResult = labelTestsNative.getNativeTextGravity(view);
+		const actualResult = labelTestsNative.getNativeTextAlignmentWithoutRtlSupport(view);
 
 		view._hasRtlSupport = hasRtlSupportOrig;
 

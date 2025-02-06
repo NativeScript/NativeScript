@@ -28,7 +28,7 @@ export function getNativeTextAlignment(label: labelModule.Label): string {
 	return UNEXPECTED_VALUE;
 }
 
-export function getNativeTextGravity(label: labelModule.Label): string {
+export function getNativeTextAlignmentWithoutRtlSupport(label: labelModule.Label): string {
 	let hGravity = label.android.getGravity() & android.view.Gravity.HORIZONTAL_GRAVITY_MASK;
 
 	if (hGravity === android.view.Gravity.START) {
