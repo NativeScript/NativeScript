@@ -36,7 +36,7 @@ export class Label extends TextBase implements LabelDefinition {
 		textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
 		textView.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
-		if (this.hasRtlSupport) {
+		if (Label.hasRtlSupport()) {
 			// This is a default to match iOS layout direction behaviour
 			textView.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
 		}
@@ -51,7 +51,7 @@ export class Label extends TextBase implements LabelDefinition {
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		// TextAlignment API has no effect unless app has rtl support defined in manifest
 		// so use gravity to align text as a fallback
-		if (!this.hasRtlSupport) {
+		if (!Label.hasRtlSupport()) {
 			super[textAlignmentProperty.setNative](value);
 		} else {
 			switch (value) {
