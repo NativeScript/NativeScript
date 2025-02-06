@@ -93,6 +93,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public accessibilityHint: string;
 	public accessibilityIgnoresInvertColors: boolean;
 
+	public originX: number;
+	public originY: number;
+	public isEnabled: boolean;
+	public isUserInteractionEnabled: boolean;
+	public iosOverflowSafeArea: boolean;
+	public iosOverflowSafeAreaEnabled: boolean;
+	public iosIgnoreSafeArea: boolean;
+
 	public testID: string;
 
 	public touchAnimation: boolean | TouchAnimationOptions;
@@ -110,6 +118,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _modalParent: ViewCommon;
 	private _modalContext: any;
 	private _modal: ViewCommon;
+
+	public _hasRtlSupport: boolean;
 
 	/**
 	 * Active transition instance id for tracking state
@@ -985,13 +995,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	//END Style property shortcuts
 
-	public originX: number;
-	public originY: number;
-	public isEnabled: boolean;
-	public isUserInteractionEnabled: boolean;
-	public iosOverflowSafeArea: boolean;
-	public iosOverflowSafeAreaEnabled: boolean;
-	public iosIgnoreSafeArea: boolean;
+	get hasRtlSupport(): boolean {
+		if (this._hasRtlSupport == null) {
+			this._hasRtlSupport = layout.hasRtlSupport();
+		}
+
+		return this._hasRtlSupport;
+	}
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
