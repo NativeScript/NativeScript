@@ -16,10 +16,6 @@ export function getNativeTextAlignment(label: labelModule.Label): string {
 	}
 }
 
-export function getNativeTextAlignmentWithoutRtlSupport(label: labelModule.Label): string {
-	return getNativeTextAlignment(label);
-}
-
 export function getNativeBackgroundColor(label: labelModule.Label): colorModule.Color {
 	var layer = (<UILabel>label.ios).layer;
 	if (!layer || !layer.backgroundColor) {
