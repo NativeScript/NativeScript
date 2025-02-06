@@ -1015,12 +1015,6 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[directionProperty.getDefault](): CoreTypes.LayoutDirection {
-		const nativeView = this.nativeViewProtected;
-		const effectiveDirection = nativeView.effectiveUserInterfaceLayoutDirection;
-
-		return effectiveDirection === UIUserInterfaceLayoutDirection.RightToLeft ? 'rtl' : 'ltr';
-	}
 	[directionProperty.setNative](value: CoreTypes.LayoutDirection) {
 		const nativeView = this.nativeViewProtected;
 
