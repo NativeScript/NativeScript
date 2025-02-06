@@ -32,6 +32,10 @@ export namespace layout {
 		return (Math.round(Math.max(0, size)) & ~layoutCommon.MODE_MASK) | (mode & layoutCommon.MODE_MASK);
 	}
 
+	export function hasRtlSupport(): boolean {
+		return true;
+	}
+
 	export function getDisplayDensity(): number {
 		return getMainScreen().scale;
 	}
