@@ -20,11 +20,12 @@ const CHILD_FORMATTED_TEXT = 'formattedText';
 const CHILD_FORMATTED_STRING = 'FormattedString';
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
+	public static iosTextAnimationFallback = true;
+
 	public _isSingleLine: boolean;
 	public text: string;
 	public formattedText: FormattedString;
 	public iosTextAnimation: 'inherit' | boolean;
-	static iosTextAnimationFallback = true;
 
 	/***
 	 * In the NativeScript Core; by default the nativeTextViewProtected points to the same value as nativeViewProtected.

@@ -307,20 +307,22 @@ export class TextBase extends TextBaseCommon {
 		return 'initial';
 	}
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
+		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+
 		switch (value) {
 			case 'left':
 			case 'justify':
-				this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_TEXT_START);
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.LEFT | verticalGravity);
 				break;
 			case 'center':
-				this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;
 			case 'right':
-				this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_TEXT_END);
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.RIGHT | verticalGravity);
 				break;
 			default:
 				// initial
-				this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
 		}
 

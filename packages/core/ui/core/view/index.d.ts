@@ -635,7 +635,12 @@ export abstract class View extends ViewCommon {
 	public touchDelay: number;
 
 	/**
-	 * Gets is layout is valid. This is a read-only property.
+	 * Gets the RTL support flag. This is a read-only property.
+	 */
+	hasRtlSupport: boolean;
+
+	/**
+	 * Gets if layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;
 
@@ -977,6 +982,10 @@ export abstract class View extends ViewCommon {
 	 * androidx.fragment.app.FragmentManager
 	 */
 	_manager: any;
+	/**
+	 * @private
+	 */
+	_hasRtlSupport: boolean;
 	/**
 	 * @private
 	 */
