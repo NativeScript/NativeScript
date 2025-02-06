@@ -1112,12 +1112,6 @@ export class View extends ViewCommon {
 		this._redrawNativeBackground(value);
 	}
 
-	[directionProperty.getDefault](): CoreTypes.LayoutDirection {
-		const nativeView = this.nativeViewProtected;
-		const direction = nativeView.getLayoutDirection();
-
-		return direction === android.view.View.LAYOUT_DIRECTION_RTL ? 'rtl' : 'ltr';
-	}
 	[directionProperty.setNative](value: CoreTypes.LayoutDirection) {
 		const nativeView = this.nativeViewProtected;
 
