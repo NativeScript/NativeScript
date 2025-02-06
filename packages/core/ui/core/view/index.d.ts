@@ -100,6 +100,11 @@ export abstract class View extends ViewCommon {
 	public static androidOverflowInsetEvent: string;
 
 	/**
+	 * @private
+	 */
+	public static _hasRtlSupport: boolean;
+
+	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
 	 */
 	// @ts-ignore
@@ -635,11 +640,6 @@ export abstract class View extends ViewCommon {
 	public touchDelay: number;
 
 	/**
-	 * Gets the RTL support flag. This is a read-only property.
-	 */
-	hasRtlSupport: boolean;
-
-	/**
 	 * Gets if layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;
@@ -763,6 +763,11 @@ export abstract class View extends ViewCommon {
 	public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;
 
 	public static combineMeasuredStates(curState: number, newState): number;
+
+	/**
+	 * Check if RTL is supported by the app
+	 */
+	public static hasRtlSupport(): boolean;
 
 	/**
 	 * Tries to focus the view.
@@ -982,10 +987,6 @@ export abstract class View extends ViewCommon {
 	 * androidx.fragment.app.FragmentManager
 	 */
 	_manager: any;
-	/**
-	 * @private
-	 */
-	_hasRtlSupport: boolean;
 	/**
 	 * @private
 	 */

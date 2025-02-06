@@ -513,32 +513,32 @@ export class LabelTest extends testModule.UITest<Label> {
 	public testNativeTextAlignmentWithoutRtlSupportFromCss() {
 		const view = this.testView;
 		const page = this.testPage;
-		const hasRtlSupportOrig = view.hasRtlSupport;
+		const hasRtlSupportOrig = LabelModule.Label.hasRtlSupport();
 
 		this.waitUntilTestElementIsLoaded();
 
-		view._hasRtlSupport = false;
+		LabelModule.Label._hasRtlSupport = false;
 		page.css = 'label { text-align: ' + this.expectedTextAlignment + '; }';
 
 		const actualResult = labelTestsNative.getNativeTextAlignmentWithoutRtlSupport(view);
 
-		view._hasRtlSupport = hasRtlSupportOrig;
+		LabelModule.Label._hasRtlSupport = hasRtlSupportOrig;
 
 		TKUnit.assert(actualResult, this.expectedTextAlignment);
 	}
 
 	public testNativeTextAlignmentWithoutRtlSupportFromLocal() {
 		const view = this.testView;
-		const hasRtlSupportOrig = view.hasRtlSupport;
+		const hasRtlSupportOrig = LabelModule.Label.hasRtlSupport();
 
 		this.waitUntilTestElementIsLoaded();
 
-		view._hasRtlSupport = false;
+		LabelModule.Label._hasRtlSupport = false;
 		view.style.textAlignment = this.expectedTextAlignment;
 
 		const actualResult = labelTestsNative.getNativeTextAlignmentWithoutRtlSupport(view);
 
-		view._hasRtlSupport = hasRtlSupportOrig;
+		LabelModule.Label._hasRtlSupport = hasRtlSupportOrig;
 
 		TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
 	}
