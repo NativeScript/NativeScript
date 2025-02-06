@@ -7,6 +7,7 @@ let density: number;
 
 let sdkVersion: number;
 let useOldMeasureSpec = false;
+let supportsRtl: boolean;
 
 export namespace layout {
 	// cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Java
@@ -47,6 +48,15 @@ export namespace layout {
 		}
 
 		return (size & ~MODE_MASK) | (mode & MODE_MASK);
+	}
+
+	export function hasRtlSupport(): boolean {
+		if (supportsRtl === undefined) {
+			const FLAG_SUPPORTS_RTL = android.content.pm.ApplicationInfo.FLAG_SUPPORTS_RTL;
+			supportsRtl = (AndroidUtils.getApplicationContext().getApplicationInfo().flags & FLAG_SUPPORTS_RTL) == FLAG_SUPPORTS_RTL;
+		}
+
+		return supportsRtl;
 	}
 
 	export function getDisplayDensity(): number {
