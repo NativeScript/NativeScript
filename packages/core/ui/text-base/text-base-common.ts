@@ -23,6 +23,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	public static iosTextAnimationFallback = true;
 
 	public _isSingleLine: boolean;
+	public _isManualRtlTextStyleNeeded: boolean;
 	public text: string;
 	public formattedText: FormattedString;
 	public iosTextAnimation: 'inherit' | boolean;
@@ -223,6 +224,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 }
 
 TextBaseCommon.prototype._isSingleLine = false;
+TextBaseCommon.prototype._isManualRtlTextStyleNeeded = false;
 
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',

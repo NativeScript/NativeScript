@@ -153,11 +153,6 @@ export abstract class View extends ViewCommon {
 	public static accessibilityFocusChangedEvent: string;
 
 	/**
-	 * @private
-	 */
-	public static _hasRtlSupport: boolean;
-
-	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
 	 */
 	// @ts-ignore
@@ -800,11 +795,6 @@ export abstract class View extends ViewCommon {
 	public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;
 
 	public static combineMeasuredStates(curState: number, newState): number;
-
-	/**
-	 * Check if RTL is supported by the app
-	 */
-	public static hasRtlSupport(): boolean;
 
 	/**
 	 * Tries to focus the view.
