@@ -1,5 +1,5 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from '.';
-import { ActionItemBase, ActionBarBase, isVisible, flatProperty, iosIconRenderingModeProperty, traceMissingIcon } from './action-bar-common';
+import { ActionItemBase, ActionBarBase, isVisible, flatProperty, iosIconRenderingModeProperty, traceMissingIcon, iosShadowProperty, iosLargeTitleProperty } from './action-bar-common';
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { ios as iosBackground } from '../styling/background';
@@ -8,6 +8,7 @@ import { colorProperty, backgroundInternalProperty, backgroundColorProperty, bac
 import { ios as iosViewUtils } from '../utils';
 import { ImageSource } from '../../image-source';
 import { layout, iOSNativeHelper, isFontIconURI } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityValueProperty } from '../../accessibility/accessibility-properties';
 
 export * from './action-bar-common';
@@ -533,7 +534,7 @@ export class ActionBar extends ActionBarBase {
 				if (navBar.standardAppearance) {
 					// Not flat and never been set do nothing.
 					const appearance = navBar.standardAppearance;
-					appearance.shadowColor = UINavigationBarAppearance.new().shadowColor;
+					appearance.shadowColor = this.iosShadow ? UINavigationBarAppearance.new().shadowColor : UIColor.clearColor;
 					this._updateAppearance(navBar, appearance);
 				}
 			} else {
@@ -644,9 +645,6 @@ export class ActionBar extends ActionBarBase {
 	[backgroundInternalProperty.getDefault](): UIColor {
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: UIColor) {
-		// tslint:disable-line
-	}
 
 	[flatProperty.setNative](value: boolean) {
 		const navBar = this.navBar;
@@ -660,5 +658,14 @@ export class ActionBar extends ActionBarBase {
 	}
 	[iosIconRenderingModeProperty.setNative](value: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate') {
 		this.update();
+	}
+
+	[iosLargeTitleProperty.setNative](value: boolean) {
+		if (!this.navBar) {
+			return;
+		}
+		if (SDK_VERSION >= 11) {
+			this.navBar.prefersLargeTitles = value;
+		}
 	}
 }
