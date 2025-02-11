@@ -645,6 +645,8 @@ export class ActionBar extends ActionBarBase {
 	[backgroundInternalProperty.getDefault](): UIColor {
 		return null;
 	}
+	// @ts-ignore
+	[backgroundInternalProperty.setNative](value: UIColor) {}
 
 	[flatProperty.setNative](value: boolean) {
 		const navBar = this.navBar;
