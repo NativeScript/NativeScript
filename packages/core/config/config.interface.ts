@@ -12,16 +12,22 @@ interface IConfigPlatform {
 	discardUncaughtJsExceptions?: boolean;
 }
 
-export interface IOSRemoteSPMPackage {
+interface IOSSPMPackageBase {
 	name: string;
 	libs: string[];
+	/**
+	 * Optional: If you have more targets (like widgets for example)
+	 * you can list their names here to include the Swift Package with them
+	 */
+	targets?: string[];
+}
+
+export interface IOSRemoteSPMPackage extends IOSSPMPackageBase {
 	repositoryURL: string;
 	version: string;
 }
 
-export interface IOSLocalSPMPackage {
-	name: string;
-	libs: string[];
+export interface IOSLocalSPMPackage extends IOSSPMPackageBase {
 	path: string;
 }
 
