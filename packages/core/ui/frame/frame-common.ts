@@ -12,6 +12,7 @@ import { sanitizeModuleName } from '../../utils/common';
 import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
 import { SharedTransition } from '../transition/shared-transition';
+import { NavigationData } from '.';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
@@ -256,6 +257,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
+		const fromEntry = this._currentEntry;
 		const newPage = entry.resolvedPage;
 
 		// In case we navigated forward to a page that was in the backstack
@@ -274,11 +276,12 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		newPage.onNavigatedTo(isBack);
-		this.notify({
+		this.notify<NavigationData>({
 			eventName: FrameBase.navigatedToEvent,
 			object: this,
 			isBack,
 			entry,
+			fromEntry,
 		});
 
 		// Reset executing context after NavigatedTo is raised;
@@ -478,7 +481,7 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
-		this.notify({
+		this.notify<NavigationData>({
 			eventName: FrameBase.navigatingToEvent,
 			object: this,
 			isBack,
