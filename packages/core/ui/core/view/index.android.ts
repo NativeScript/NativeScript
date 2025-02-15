@@ -1108,7 +1108,7 @@ export class View extends ViewCommon {
 		if (gravity != null) {
 			switch (value) {
 				case 'start':
-					lp.gravity = (this.direction === 'rtl' ? GRAVITY_RIGHT : GRAVITY_LEFT) | (gravity & VERTICAL_GRAVITY_MASK);
+					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_RIGHT : GRAVITY_LEFT) | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}
@@ -1132,7 +1132,7 @@ export class View extends ViewCommon {
 					}
 					break;
 				case 'end':
-					lp.gravity = (this.direction === 'rtl' ? GRAVITY_LEFT : GRAVITY_RIGHT) | (gravity & VERTICAL_GRAVITY_MASK);
+					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_LEFT : GRAVITY_RIGHT) | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}
@@ -1283,14 +1283,14 @@ export class View extends ViewCommon {
 		if (this.accessibilityIdentifier !== value) this.accessibilityIdentifier = value;
 	}
 
-	[directionProperty.setNative](value: CoreTypes.LayoutDirection) {
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
 		const nativeView = this.nativeViewProtected;
 
 		switch (value) {
-			case 'ltr':
+			case CoreTypes.LayoutDirection.ltr:
 				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LTR);
 				break;
-			case 'rtl':
+			case CoreTypes.LayoutDirection.rtl:
 				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
 				break;
 			default:

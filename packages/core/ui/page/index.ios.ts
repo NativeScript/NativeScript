@@ -319,11 +319,20 @@ class UIViewControllerImpl extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this._owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this._owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}

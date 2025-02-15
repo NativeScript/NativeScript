@@ -35,6 +35,7 @@ const MAX_SIZE = 0x00ffffff & MEASURED_SIZE_MASK;
 import makeMeasureSpec = layout.makeMeasureSpec;
 import getMeasureSpecMode = layout.getMeasureSpecMode;
 import getMeasureSpecSize = layout.getMeasureSpecSize;
+import { CoreTypes } from '../../enums';
 
 // `eachLayoutChild` iterates over children, and we need more - indexed access.
 // This class tries to accomodate that by collecting all children in an
@@ -954,7 +955,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
 	public onLayout(left: number, top: number, right: number, bottom: number) {
 		const insets = this.getSafeAreaInsets();
-		let isRtl = this.direction === 'rtl';
+		let isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
 
 		switch (this.flexDirection) {
 			case FlexDirection.ROW:

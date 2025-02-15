@@ -434,7 +434,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 		}
 
 		const owner = this.owner?.deref();
-		const layoutDirection: CoreTypes.LayoutDirection = owner?.direction;
+		const layoutDirection: CoreTypes.LayoutDirectionType = owner?.direction;
 
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
@@ -447,7 +447,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 				const curve = _getNativeCurve(navigationTransition);
 				const name = navigationTransition.name.toLowerCase();
 				const type = 'slide';
-				const defaultDirection = layoutDirection === 'rtl' ? 'right' : 'left';
+				const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'right' : 'left';
 
 				if (name.indexOf(type) === 0) {
 					// Extract the direction from the string
@@ -641,11 +641,20 @@ class UINavigationControllerImpl extends UINavigationController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this._owner?.deref?.();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this._owner?.deref?.();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
@@ -681,11 +690,11 @@ function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitio
 	return `${name} ${transitionType}`;
 }
 
-function _getNativeTransition(navigationTransition: NavigationTransition, push: boolean, direction: CoreTypes.LayoutDirection): UIViewAnimationTransition {
+function _getNativeTransition(navigationTransition: NavigationTransition, push: boolean, direction: CoreTypes.LayoutDirectionType): UIViewAnimationTransition {
 	if (navigationTransition && navigationTransition.name) {
 		switch (navigationTransition.name.toLowerCase()) {
 			case 'flip':
-				if (direction === 'rtl') {
+				if (direction === CoreTypes.LayoutDirection.rtl) {
 					return push ? UIViewAnimationTransition.FlipFromLeft : UIViewAnimationTransition.FlipFromRight;
 				}
 				return push ? UIViewAnimationTransition.FlipFromRight : UIViewAnimationTransition.FlipFromLeft;

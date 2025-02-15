@@ -96,7 +96,7 @@ export class ViewHelper {
 
 		switch (hAlignment) {
 			case 'start':
-				childLeft = child.direction === 'rtl' ? right - childWidth - effectiveMarginRight : left + effectiveMarginLeft;
+				childLeft = child.direction === CoreTypes.LayoutDirection.rtl ? right - childWidth - effectiveMarginRight : left + effectiveMarginLeft;
 				break;
 			case 'left':
 				childLeft = left + effectiveMarginLeft;
@@ -108,7 +108,7 @@ export class ViewHelper {
 				childLeft = right - childWidth - effectiveMarginRight;
 				break;
 			case 'end':
-				childLeft = child.direction === 'rtl' ? left + effectiveMarginLeft : right - childWidth - effectiveMarginRight;
+				childLeft = child.direction === CoreTypes.LayoutDirection.rtl ? left + effectiveMarginLeft : right - childWidth - effectiveMarginRight;
 				break;
 			case 'stretch':
 			default:

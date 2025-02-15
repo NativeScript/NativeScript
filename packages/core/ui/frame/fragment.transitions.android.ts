@@ -56,7 +56,7 @@ export interface ExpandedEntry extends BackstackEntry {
 	isAnimationRunning: boolean;
 }
 
-export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, layoutDirection: CoreTypes.LayoutDirection, isNestedDefaultTransition?: boolean): void {
+export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, layoutDirection: CoreTypes.LayoutDirectionType, isNestedDefaultTransition?: boolean): void {
 	const currentFragment: androidx.fragment.app.Fragment = currentEntry ? currentEntry.fragment : null;
 	const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 	const entries = waitingQueue.get(frameId);
@@ -138,7 +138,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 			setupCurrentFragmentFadeTransition({ duration: 150, curve: null }, currentEntry);
 		}
 	} else if (name.indexOf('slide') === 0) {
-		const defaultDirection = layoutDirection === 'rtl' ? 'right' : 'left';
+		const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'right' : 'left';
 		const direction = name.substring('slide'.length) || defaultDirection; // Extract the direction from the string
 
 		setupNewFragmentSlideTransition(navigationTransition, newEntry, direction);
@@ -156,7 +156,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 			setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
 		}
 	} else if (name.indexOf('flip') === 0) {
-		const defaultDirection = layoutDirection === 'rtl' ? 'left' : 'right';
+		const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'left' : 'right';
 		const direction = name.substring('flip'.length) || defaultDirection; // Extract the direction from the string
 		const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
 

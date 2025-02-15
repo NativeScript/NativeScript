@@ -396,7 +396,7 @@ export abstract class View extends ViewCommon {
 	 *
 	 * @nsProperty
 	 */
-	direction: CoreTypes.LayoutDirection;
+	direction: CoreTypes.LayoutDirectionType;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.

@@ -294,6 +294,12 @@ export namespace CoreTypes {
 		export const light = 'light';
 		export const dark = 'dark';
 	}
+
+	export type LayoutDirectionType = 'ltr' | 'rtl';
+	export namespace LayoutDirection {
+		export const ltr = 'ltr';
+		export const rtl = 'rtl';
+	}
 }
 
 /**
@@ -378,6 +384,7 @@ export const Enums = {
 	StatusBarStyle: CoreTypes.StatusBarStyle,
 	Stretch: CoreTypes.ImageStretch,
 	SystemAppearance: CoreTypes.SystemAppearance,
+	LayoutDirection: CoreTypes.LayoutDirection,
 	TextAlignment: CoreTypes.TextAlignment,
 	TextDecoration: CoreTypes.TextDecoration,
 	TextTransform: CoreTypes.TextTransform,

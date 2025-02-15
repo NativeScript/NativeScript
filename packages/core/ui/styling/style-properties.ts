@@ -1051,7 +1051,7 @@ export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction
 });
 clipPathProperty.register(Style);
 
-export const directionProperty = new InheritedCssProperty<Style, CoreTypes.LayoutDirection>({
+export const directionProperty = new InheritedCssProperty<Style, CoreTypes.LayoutDirectionType>({
 	defaultValue: null,
 	name: 'direction',
 	cssName: 'direction',
