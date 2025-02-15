@@ -1,14 +1,11 @@
 import { ButtonBase } from './button-common';
-import { AndroidHelper, PseudoClassHandler } from '../core/view';
+import { PseudoClassHandler } from '../core/view';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
 import { textAlignmentProperty } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
 import { TouchGestureEventData, TouchAction, GestureTypes } from '../gestures';
-import { Device } from '../../platform';
 import { SDK_VERSION } from '../../utils/constants';
-import type { Background } from '../styling/background';
-import { NativeScriptAndroidView } from '../utils';
 
 export * from './button-common';
 
@@ -164,7 +161,7 @@ export class Button extends ButtonBase {
 	}
 
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
-		// Button initial value is center.
+		// Button initial value is center
 		const newValue = value === 'initial' ? 'center' : value;
 		super[textAlignmentProperty.setNative](newValue);
 	}

@@ -4,7 +4,7 @@ import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -980,9 +980,16 @@ export class View extends ViewCommon {
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		const gravity = lp.gravity;
 		const weight = lp.weight;
+
 		// Set only if params gravity exists.
-		if (gravity !== undefined) {
+		if (gravity != null) {
 			switch (value) {
+				case 'start':
+					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_RIGHT : GRAVITY_LEFT) | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
 				case 'left':
 					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
@@ -997,6 +1004,12 @@ export class View extends ViewCommon {
 					break;
 				case 'right':
 					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
+				case 'end':
+					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_LEFT : GRAVITY_RIGHT) | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}
@@ -1097,6 +1110,22 @@ export class View extends ViewCommon {
 	}
 	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
 		this._redrawNativeBackground(value);
+	}
+
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		const nativeView = this.nativeViewProtected;
+
+		switch (value) {
+			case CoreTypes.LayoutDirection.ltr:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LTR);
+				break;
+			case CoreTypes.LayoutDirection.rtl:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
+				break;
+			default:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LOCALE);
+				break;
+		}
 	}
 
 	[minWidthProperty.setNative](value: CoreTypes.LengthType) {

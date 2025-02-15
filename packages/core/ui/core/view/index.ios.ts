@@ -8,7 +8,7 @@ import { Trace } from '../../../trace';
 import { layout, ios as iosUtils, SDK_VERSION } from '../../../utils';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
@@ -885,6 +885,22 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._nativeBackgroundState = 'invalid';
 		if (this.isLayoutValid) {
 			this._redrawNativeBackground(value);
+		}
+	}
+
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		const nativeView = this.nativeViewProtected;
+
+		switch (value) {
+			case CoreTypes.LayoutDirection.ltr:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.ForceLeftToRight;
+				break;
+			case CoreTypes.LayoutDirection.rtl:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft;
+				break;
+			default:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.Unspecified;
+				break;
 		}
 	}
 

@@ -79,6 +79,8 @@ export const borderTopRightRadiusProperty: CssProperty<Style, CoreTypes.LengthTy
 export const borderBottomRightRadiusProperty: CssProperty<Style, CoreTypes.LengthType>;
 export const borderBottomLeftRadiusProperty: CssProperty<Style, CoreTypes.LengthType>;
 
+export const directionProperty: InheritedCssProperty<Style, CoreTypes.LayoutDirection>;
+
 export const zIndexProperty: CssProperty<Style, number>;
 export const visibilityProperty: CssProperty<Style, CoreTypes.VisibilityType>;
 export const opacityProperty: CssAnimationProperty<Style, number>;

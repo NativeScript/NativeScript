@@ -5,7 +5,6 @@ import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProp
 import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 import { CoreTypes } from '../../core-types';
-import { Color } from '../../color';
 
 export * from './button-common';
 
@@ -18,7 +17,10 @@ export class Button extends ButtonBase {
 	private _stateChangedHandler: ControlStateChangeListener;
 
 	createNativeView() {
-		return UIButton.buttonWithType(UIButtonType.System);
+		const nativeView = UIButton.buttonWithType(UIButtonType.System);
+		// This is the default for both platforms
+		nativeView.titleLabel.textAlignment = NSTextAlignment.Center;
+		return nativeView;
 	}
 
 	public initNativeView(): void {
@@ -214,14 +216,18 @@ export class Button extends ButtonBase {
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Left;
 				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
 				break;
-			case 'initial':
-			case 'center':
-				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Center;
-				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
-				break;
 			case 'right':
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Right;
 				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
+				break;
+			case 'justify':
+				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Justified;
+				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
+				break;
+			default:
+				// initial | center
+				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Center;
+				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
 				break;
 		}
 	}
