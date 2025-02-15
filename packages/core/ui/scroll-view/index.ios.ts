@@ -2,6 +2,7 @@ import { ScrollEventData } from '.';
 import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty } from './scroll-view-common';
 import { iOSNativeHelper, layout } from '../../utils';
 import { View } from '../core/view';
+import { CoreTypes } from '../enums';
 
 export * from './scroll-view-common';
 
@@ -209,7 +210,7 @@ export class ScrollView extends ScrollViewBase {
 			if (this._isFirstLayout) {
 				this._isFirstLayout = false;
 
-				if (this.direction === 'rtl') {
+				if (this.direction === CoreTypes.LayoutDirection.rtl) {
 					const scrollableWidth = scrollInsetWidth - this.getMeasuredWidth();
 					if (scrollableWidth > 0) {
 						this.nativeViewProtected.contentOffset = CGPointMake(layout.toDeviceIndependentPixels(scrollableWidth), this.verticalOffset);

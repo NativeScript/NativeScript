@@ -888,14 +888,14 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 	}
 
-	[directionProperty.setNative](value: CoreTypes.LayoutDirection) {
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
 		const nativeView = this.nativeViewProtected;
 
 		switch (value) {
-			case 'ltr':
+			case CoreTypes.LayoutDirection.ltr:
 				nativeView.semanticContentAttribute = UISemanticContentAttribute.ForceLeftToRight;
 				break;
-			case 'rtl':
+			case CoreTypes.LayoutDirection.rtl:
 				nativeView.semanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft;
 				break;
 			default:

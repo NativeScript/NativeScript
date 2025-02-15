@@ -53,6 +53,11 @@ export namespace IOSHelper {
 	export const traitCollectionColorAppearanceChangedEvent: string;
 
 	/**
+	 * String value used when hooking to traitCollectionLayoutDirectionChangedEvent event.
+	 */
+	export const traitCollectionLayoutDirectionChangedEvent: string;
+
+	/**
 	 * Returns a view with viewController or undefined if no such found along the view's parent chain.
 	 * @param view The view form which to start the search.
 	 */

@@ -738,10 +738,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.boxShadow = value;
 	}
 
-	get direction(): CoreTypes.LayoutDirection {
+	get direction(): CoreTypes.LayoutDirectionType {
 		return this.style.direction;
 	}
-	set direction(value: CoreTypes.LayoutDirection) {
+	set direction(value: CoreTypes.LayoutDirectionType) {
 		this.style.direction = value;
 	}
 

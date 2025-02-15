@@ -116,11 +116,20 @@ class UILayoutViewController extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (iOSUtils.MajorVersion >= 13) {
-			const owner = this.owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (iOSUtils.MajorVersion >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
@@ -176,6 +185,7 @@ class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIP
 
 export class IOSHelper {
 	static traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
+	static traitCollectionLayoutDirectionChangedEvent = 'traitCollectionLayoutDirectionChanged';
 	static UILayoutViewController = UILayoutViewController;
 	static UIAdaptivePresentationControllerDelegateImp = UIAdaptivePresentationControllerDelegateImp;
 	static UIPopoverPresentationControllerDelegateImp = UIPopoverPresentationControllerDelegateImp;

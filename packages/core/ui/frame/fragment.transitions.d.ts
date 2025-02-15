@@ -4,7 +4,7 @@ import { CoreTypes } from '../enums';
 /**
  * @private
  */
-export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: BackstackEntry, newEntry: BackstackEntry, frameId: number, fragmentTransaction: any, layoutDirection: CoreTypes.LayoutDirection, isNestedDefaultTransition?: boolean): void;
+export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: BackstackEntry, newEntry: BackstackEntry, frameId: number, fragmentTransaction: any, layoutDirection: CoreTypes.LayoutDirectionType, isNestedDefaultTransition?: boolean): void;
 /**
  * @private
  */
