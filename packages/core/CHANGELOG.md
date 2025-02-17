@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [8.9.0](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.10...@akylas/nativescript@8.9.0) (2025-02-17)
+
+
+### Features
+
+* apple view filtering ([#10681](https://github.com/NativeScript/NativeScript/issues/10681)) ([20fc1cc](https://github.com/NativeScript/NativeScript/commit/20fc1cc1d45e4ec4b2be2daf493bdac1008bbdbf))
+* **config:** multi target support for swift packages ([#10695](https://github.com/NativeScript/NativeScript/issues/10695)) ([b649c35](https://github.com/NativeScript/NativeScript/commit/b649c353fb355f6c15d9cc7cd9328d50790dd977))
+* **core:** flexibility using multiple RootLayouts ([#10684](https://github.com/NativeScript/NativeScript/issues/10684)) ([4b87a35](https://github.com/NativeScript/NativeScript/commit/4b87a35e51ecd08efdda69086b8295131c564577))
+* **core:** openUrlAsync utility  ([#10637](https://github.com/NativeScript/NativeScript/issues/10637)) ([f6eab0d](https://github.com/NativeScript/NativeScript/commit/f6eab0d62f00321470b4a6553089c51001d74142))
+* **core:** style properties module improvements and organization ([#10685](https://github.com/NativeScript/NativeScript/issues/10685)) ([3a7206f](https://github.com/NativeScript/NativeScript/commit/3a7206fc3b1d0582312030736e63c6e128a57dda))
+* **core:** support for simultaneous pseudo states ([#10656](https://github.com/NativeScript/NativeScript/issues/10656)) ([f970455](https://github.com/NativeScript/NativeScript/commit/f970455007b7505ade15b69745e7328203ba6bfa))
+* **core:** tailwind v4 support ([#10692](https://github.com/NativeScript/NativeScript/issues/10692)) ([c7039dd](https://github.com/NativeScript/NativeScript/commit/c7039ddec48b7a607151fe5789dce124001d5d86))
+* **core:** textbase span interaction and styling improvements ([#10682](https://github.com/NativeScript/NativeScript/issues/10682)) ([966dccd](https://github.com/NativeScript/NativeScript/commit/966dccd0f93c2e79e66169eb60edd3ff0b7c0784))
+* **ios:** background-image support for action bar ([#10645](https://github.com/NativeScript/NativeScript/issues/10645)) ([5e85d88](https://github.com/NativeScript/NativeScript/commit/5e85d8873c45c90e13f67fe62702b674a2ba22c9))
+* winter-tc ([#10667](https://github.com/NativeScript/NativeScript/issues/10667)) ([845ceea](https://github.com/NativeScript/NativeScript/commit/845ceea4bcff998ca3e931c1e6688dc141149432))
+
+
+### Bug Fixes
+
+* Added asset path fallback null value inside an else clause ([8726d02](https://github.com/NativeScript/NativeScript/commit/8726d026fef9b93d12f34930f4dabaae6cfcb698))
+* **android:** background image aspect ratio ([#10651](https://github.com/NativeScript/NativeScript/issues/10651)) ([eb21056](https://github.com/NativeScript/NativeScript/commit/eb21056a64bc1be46bc51ecf380e11cb1f15d0b7))
+* **android:** display soft input on search bar focus ([#10696](https://github.com/NativeScript/NativeScript/issues/10696)) ([317b098](https://github.com/NativeScript/NativeScript/commit/317b098321ff40b88d6ee050ada1a88b15837319))
+* **android:** Span should accept all font weight types ([a21d4f9](https://github.com/NativeScript/NativeScript/commit/a21d4f94acd21fe87a76b4f58398fcee6655a903))
+* boxShadow not working on android only backgroundColor ([79928af](https://github.com/NativeScript/NativeScript/commit/79928af691e904a3b94314fde159358105e23b5e))
+* circular imports ([#10670](https://github.com/NativeScript/NativeScript/issues/10670)) ([2afed08](https://github.com/NativeScript/NativeScript/commit/2afed0827b0a41aa64de0870ef7264fc1a93cb73))
+* **core:** added missing length property equality comparers ([#10689](https://github.com/NativeScript/NativeScript/issues/10689)) ([56af0b2](https://github.com/NativeScript/NativeScript/commit/56af0b2f7e2421eb13502343b6e3f8c36df3a5c7))
+* **core:** avoid splicing arrays using a negative start index ([#10679](https://github.com/NativeScript/NativeScript/issues/10679)) ([9bd147c](https://github.com/NativeScript/NativeScript/commit/9bd147c9d0ced984da46985eb508c1aa1540a128))
+* **core:** corrected Frame navigation event types ([#10697](https://github.com/NativeScript/NativeScript/issues/10697)) ([1b72912](https://github.com/NativeScript/NativeScript/commit/1b72912f81ef20b4e5c14896a5c986acc7ff979d))
+* **core:** ignore inserting child if < 0 ([#10690](https://github.com/NativeScript/NativeScript/issues/10690)) ([2305511](https://github.com/NativeScript/NativeScript/commit/23055111872285c34ab79922a69116c8dc10d275))
+* **core:** improved types for common utils ([#10628](https://github.com/NativeScript/NativeScript/issues/10628)) ([17a94a2](https://github.com/NativeScript/NativeScript/commit/17a94a2b3234ff4e07cc4a08c73012405ad873d6))
+* **core:** provided image source can be unintentionally disposed ([#10654](https://github.com/NativeScript/NativeScript/issues/10654)) ([a883a79](https://github.com/NativeScript/NativeScript/commit/a883a79e3bdf9db145ed432af2b341bab009ef12))
+* **core:** pseudo-class handlers failing to unsubscribe listeners ([#10680](https://github.com/NativeScript/NativeScript/issues/10680)) ([e6beb1d](https://github.com/NativeScript/NativeScript/commit/e6beb1d8165f8c84b8a8f4632d10fed31c1ad68a))
+* **core:** safety-checks to prevent potential navigation exceptions ([#10683](https://github.com/NativeScript/NativeScript/issues/10683)) ([03cca58](https://github.com/NativeScript/NativeScript/commit/03cca58712778cdf61243ad62a10a560a675023e))
+* Corrected font-weight support for span ([045986d](https://github.com/NativeScript/NativeScript/commit/045986de8fe7ae75f5fdc7c58a8fff1747c0e450))
+* **crypto:** getRandomValues return value ([#10658](https://github.com/NativeScript/NativeScript/issues/10658)) ([603b2dc](https://github.com/NativeScript/NativeScript/commit/603b2dc5476d17b8c80f5ce831e73d8c72359b15))
+* disableCss would break css for next parent children ([753187b](https://github.com/NativeScript/NativeScript/commit/753187b47827f16f5ed5d328dd7838b73149753d))
+* **ios:** background styles after frame changed by safe area ([#10661](https://github.com/NativeScript/NativeScript/issues/10661)) ([1e86ed9](https://github.com/NativeScript/NativeScript/commit/1e86ed9da8b1a587a0376cc2fdab8ba4a9243f90))
+* **ios:** corrected rotate animation ([#10676](https://github.com/NativeScript/NativeScript/issues/10676)) ([e545f58](https://github.com/NativeScript/NativeScript/commit/e545f5869cd25e09bfd2ec167774e0fcb6665e4a))
+* **ios:** frame backstack disposal handling ([#10672](https://github.com/NativeScript/NativeScript/issues/10672)) ([5f8fb2c](https://github.com/NativeScript/NativeScript/commit/5f8fb2c36aaf59b64fc4abec175c7ed68f3ed5ca))
+* **ios:** invalid transform if set before any layout ([#10675](https://github.com/NativeScript/NativeScript/issues/10675)) ([a531232](https://github.com/NativeScript/NativeScript/commit/a531232fbb96042e4197ae4fc059955af32ae20d))
+* **ios:** prevent animator from animating colors on shadow layer ([#10686](https://github.com/NativeScript/NativeScript/issues/10686)) ([79a0306](https://github.com/NativeScript/NativeScript/commit/79a0306f325f2e0cc5e2c0d7a898c0cffca1e4ec))
+* **ios:** safe area memory leak on iOS 10 and older versions ([#10673](https://github.com/NativeScript/NativeScript/issues/10673)) ([0eb2745](https://github.com/NativeScript/NativeScript/commit/0eb274558906e03c8aaf250c459136611e301be7))
+
 ### [8.8.10](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.8.9...@akylas/nativescript@8.8.10) (2024-12-19)
 
 
