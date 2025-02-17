@@ -8,24 +8,23 @@ import { LinearGradient } from '../../styling/linear-gradient';
 export * from './root-layout-common';
 
 export class RootLayout extends RootLayoutBase {
-	constructor() {
-		super();
-	}
-
-	insertChild(view: View, atIndex: number): void {
-		super.insertChild(view, atIndex);
-		if (!view.hasGestureObservers()) {
-			// block tap events from going through to layers behind the view
-			if (view.nativeViewProtected) {
-				view.nativeViewProtected.setOnTouchListener(
-					new android.view.View.OnTouchListener({
-						onTouch: function (view, event) {
-							return true;
-						},
-					}),
-				);
+	insertChild(view: View, atIndex: number): boolean {
+		if (super.insertChild(view, atIndex)) {
+			if (!view.hasGestureObservers()) {
+				// block tap events from going through to layers behind the view
+				if (view.nativeViewProtected) {
+					view.nativeViewProtected.setOnTouchListener(
+						new android.view.View.OnTouchListener({
+							onTouch: function (view, event) {
+								return true;
+							},
+						}),
+					);
+				}
 			}
+			return true;
 		}
+		return false;
 	}
 	removeChild(view: View): void {
 		if (view.hasGestureObservers() && view.nativeViewProtected) {

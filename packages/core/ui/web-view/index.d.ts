@@ -18,15 +18,21 @@ export type WebViewNavigationType = 'linkClicked' | 'formSubmitted' | 'backForwa
 
 /**
  * Represents a standard WebView widget.
+ *
+ * @nsView
  */
 export class WebView extends View {
 	/**
 	 * String value used when hooking to loadStarted event.
+	 *
+	 * @nsEvent {LoadEventData} loadStarted
 	 */
 	public static loadStartedEvent: string;
 
 	/**
 	 * String value used when hooking to loadFinished event.
+	 *
+	 * @nsEvent {LoadEventData} loadFinished
 	 */
 	public static loadFinishedEvent: string;
 
@@ -42,6 +48,8 @@ export class WebView extends View {
 
 	/**
 	 * Gets or sets the url, local file path or HTML string.
+	 *
+	 * @nsProperty
 	 */
 	src: string;
 
@@ -57,12 +65,16 @@ export class WebView extends View {
 
 	/**
 	 *  Disable scrolling in the WebView
+	 *
+	 * @nsProperty
 	 */
 	disableZoom: boolean;
 
 	/**
 	 * Enables inline media playback on iOS.
 	 * By default, webview forces iPhone into fullscreen media playback.
+	 *
+	 * @nsProperty
 	 */
 	iosAllowInlineMediaPlayback: boolean;
 

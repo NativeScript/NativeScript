@@ -1,5 +1,5 @@
 // Types
-import { View } from '..';
+import { Position, View } from '..';
 
 // Requires
 import { ViewHelper } from './view-helper-common';
@@ -200,20 +200,38 @@ export class IOSHelper {
 		}
 	}
 
+	/**
+	 * This method simulates the iOS 11+ safeAreaLayoutGuide property and its constraints for older versions.
+	 *
+	 * @param controller
+	 * @param owner
+	 */
 	static updateConstraints(controller: UIViewController, owner: View): void {
 		if (!__VISIONOS__ && SDK_VERSION <= 10) {
-			const layoutGuide = IOSHelper.initLayoutGuide(controller);
-			(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
+			if (!controller.view.safeAreaLayoutGuide) {
+				IOSHelper.initLayoutGuide(controller);
+			}
 		}
 	}
 
-	static initLayoutGuide(controller: UIViewController) {
+	/**
+	 * This method simulates the iOS 11+ safeAreaLayoutGuide property for older versions.
+	 *
+	 * @param controller
+	 */
+	static initLayoutGuide(controller: UIViewController): UILayoutGuide {
 		const rootView = controller.view;
-		const layoutGuide = UILayoutGuide.new();
-		rootView.addLayoutGuide(layoutGuide);
-		NSLayoutConstraint.activateConstraints(<any>[layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
 
-		return layoutGuide;
+		if (!rootView.safeAreaLayoutGuide) {
+			const layoutGuide = UILayoutGuide.new();
+
+			rootView.addLayoutGuide(layoutGuide);
+			NSLayoutConstraint.activateConstraints([layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
+
+			(<any>rootView).safeAreaLayoutGuide = layoutGuide;
+		}
+
+		return rootView.safeAreaLayoutGuide;
 	}
 
 	static layoutView(controller: UIViewController, owner: View): void {
@@ -247,7 +265,7 @@ export class IOSHelper {
 		}
 	}
 
-	static getPositionFromFrame(frame: CGRect): { left; top; right; bottom } {
+	static getPositionFromFrame(frame: CGRect): Position {
 		const left = layout.round(layout.toDevicePixels(frame.origin.x));
 		const top = layout.round(layout.toDevicePixels(frame.origin.y));
 		const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
@@ -256,7 +274,7 @@ export class IOSHelper {
 		return { left, right, top, bottom };
 	}
 
-	static getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): CGRect {
+	static getFrameFromPosition(position: Position, insets?: Position): CGRect {
 		insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
 
 		const left = layout.toDeviceIndependentPixels(position.left + insets.left);

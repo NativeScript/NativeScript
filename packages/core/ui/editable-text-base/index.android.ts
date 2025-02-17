@@ -84,12 +84,10 @@ function initializeEditTextListeners(): void {
 }
 
 export abstract class EditableTextBase extends EditableTextBaseCommon {
-	/* tslint:disable */
-	_dirtyTextAccumulator: string;
-	/* tslint:enable */
-
 	nativeViewProtected: android.widget.EditText;
 	nativeTextViewProtected: android.widget.EditText;
+
+	private _dirtyTextAccumulator: string;
 	private _keyListenerCache: android.text.method.KeyListener;
 	private _inputType: number;
 
@@ -120,12 +118,16 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 	public disposeNativeView(): void {
 		const editText = this.nativeTextViewProtected;
+
 		editText.removeTextChangedListener((<any>editText).listener);
 		editText.setOnFocusChangeListener(null);
 		editText.setOnEditorActionListener(null);
 		(<any>editText).listener.owner = null;
 		(<any>editText).listener = null;
 		this._keyListenerCache = null;
+		this._dirtyTextAccumulator = undefined;
+		this._inputType = 0;
+
 		super.disposeNativeView();
 	}
 

@@ -73,7 +73,7 @@ class UISearchBarImpl extends UISearchBar {
 export class SearchBar extends SearchBarBase {
 	nativeViewProtected: UISearchBar;
 	private _delegate;
-	private __textField: UITextField;
+	private _textField: UITextField;
 
 	createNativeView() {
 		return UISearchBarImpl.new();
@@ -87,6 +87,7 @@ export class SearchBar extends SearchBarBase {
 
 	disposeNativeView() {
 		this._delegate = null;
+		this._textField = null;
 		super.disposeNativeView();
 	}
 
@@ -94,17 +95,17 @@ export class SearchBar extends SearchBarBase {
 		(<UIResponder>this.ios).resignFirstResponder();
 	}
 
+	private _getTextField(): UITextField {
+		if (!this._textField) {
+			this._textField = this.ios.valueForKey('searchField');
+		}
+
+		return this._textField;
+	}
+
 	// @ts-ignore
 	get ios(): UISearchBar {
 		return this.nativeViewProtected;
-	}
-
-	get _textField(): UITextField {
-		if (!this.__textField) {
-			this.__textField = this.ios.valueForKey('searchField');
-		}
-
-		return this.__textField;
 	}
 
 	[isEnabledProperty.setNative](value: boolean) {
@@ -113,7 +114,7 @@ export class SearchBar extends SearchBarBase {
 			nativeView.enabled = value;
 		}
 
-		const textField = this._textField;
+		const textField = this._getTextField();
 		if (textField) {
 			textField.enabled = value;
 		}
@@ -128,7 +129,7 @@ export class SearchBar extends SearchBarBase {
 	}
 
 	[colorProperty.getDefault](): UIColor {
-		const sf = this._textField;
+		const sf = this._getTextField();
 		if (sf) {
 			return sf.textColor;
 		}
@@ -136,7 +137,7 @@ export class SearchBar extends SearchBarBase {
 		return null;
 	}
 	[colorProperty.setNative](value: UIColor | Color) {
-		const sf = this._textField;
+		const sf = this._getTextField();
 		const color = value instanceof Color ? value.ios : value;
 		if (sf) {
 			sf.textColor = color;
@@ -145,12 +146,12 @@ export class SearchBar extends SearchBarBase {
 	}
 
 	[fontInternalProperty.getDefault](): UIFont {
-		const sf = this._textField;
+		const sf = this._getTextField();
 
 		return sf ? sf.font : null;
 	}
 	[fontInternalProperty.setNative](value: UIFont | Font) {
-		const sf = this._textField;
+		const sf = this._getTextField();
 		if (sf) {
 			sf.font = value instanceof Font ? value.getUIFont(sf.font) : value;
 		}
@@ -179,7 +180,7 @@ export class SearchBar extends SearchBarBase {
 	}
 
 	[textFieldBackgroundColorProperty.getDefault](): UIColor {
-		const textField = this._textField;
+		const textField = this._getTextField();
 		if (textField) {
 			return textField.backgroundColor;
 		}
@@ -188,7 +189,7 @@ export class SearchBar extends SearchBarBase {
 	}
 	[textFieldBackgroundColorProperty.setNative](value: Color | UIColor) {
 		const color = value instanceof Color ? value.ios : value;
-		const textField = this._textField;
+		const textField = this._getTextField();
 		if (textField) {
 			textField.backgroundColor = color;
 		}
@@ -219,6 +220,6 @@ export class SearchBar extends SearchBarBase {
 			attributes[NSForegroundColorAttributeName] = this.textFieldHintColor.ios;
 		}
 		const attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, attributes);
-		this._textField.attributedPlaceholder = attributedPlaceholder;
+		this._getTextField().attributedPlaceholder = attributedPlaceholder;
 	}
 }

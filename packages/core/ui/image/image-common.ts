@@ -14,6 +14,7 @@ import { ImageSymbolEffect, ImageSymbolEffects } from './symbol-effects';
 
 @CSSType('Image')
 export abstract class ImageBase extends View implements ImageDefinition {
+	public static isLoadingChangeEvent = 'isLoadingChange';
 	public imageSource: ImageSource;
 	public src: string | ImageSource | ImageAsset;
 	public isLoading: boolean;
@@ -22,6 +23,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 	public decodeWidth: CoreTypes.LengthType;
 	public decodeHeight: CoreTypes.LengthType;
 	public iosSymbolScale: iosSymbolScaleType;
+	public iosSymbolEffect: ImageSymbolEffect | ImageSymbolEffects;
 
 	get tintColor(): Color {
 		return this.style.tintColor;
@@ -123,7 +125,9 @@ export abstract class ImageBase extends View implements ImageDefinition {
 			}
 		} else if (value instanceof ImageSource) {
 			// Support binding the imageSource trough the src property
-			this.imageSource = value;
+
+			// This will help avoid cleanup on the actual provided image source in case view gets disposed
+			this.imageSource = new ImageSource(value.getNativeSource());
 			this.isLoading = false;
 		} else if (value instanceof ImageAsset) {
 			ImageSource.fromAsset(value).then((result) => {
@@ -178,6 +182,7 @@ tintColorProperty.register(Style);
 export const decodeHeightProperty = new Property<ImageBase, CoreTypes.LengthType>({
 	name: 'decodeHeight',
 	defaultValue: { value: 0, unit: 'dip' },
+	equalityComparer: Length.equals,
 	valueConverter: Length.parse,
 });
 decodeHeightProperty.register(ImageBase);
@@ -185,6 +190,7 @@ decodeHeightProperty.register(ImageBase);
 export const decodeWidthProperty = new Property<ImageBase, CoreTypes.LengthType>({
 	name: 'decodeWidth',
 	defaultValue: { value: 0, unit: 'dip' },
+	equalityComparer: Length.equals,
 	valueConverter: Length.parse,
 });
 decodeWidthProperty.register(ImageBase);

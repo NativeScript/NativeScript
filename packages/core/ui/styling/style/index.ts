@@ -6,12 +6,13 @@ import { ViewBase } from '../../core/view-base';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { Observable } from '../../../data/observable';
 
-import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
+import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf, FlexFlow, Flex } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { ShadowCSSValues } from '../css-shadow';
 import { StrokeCSSValues } from '../css-stroke';
+import { ClipPathFunction } from '../clip-path-function';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -122,7 +123,7 @@ export class Style extends Observable implements StyleDefinition {
 	public translateX: CoreTypes.dip;
 	public translateY: CoreTypes.dip;
 
-	public clipPath: string;
+	public clipPath: string | ClipPathFunction;
 	public color: Color;
 	public tintColor: Color;
 	public placeholderColor: Color;
@@ -228,6 +229,8 @@ export class Style extends Observable implements StyleDefinition {
 	public flexShrink: FlexShrink;
 	public flexWrapBefore: FlexWrapBefore;
 	public alignSelf: AlignSelf;
+	public flexFlow: FlexFlow;
+	public flex: Flex;
 
 	// Accessibility properties
 	public accessible: boolean;

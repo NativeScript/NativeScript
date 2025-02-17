@@ -1,9 +1,7 @@
 // Types
-import { AnimationDefinitionInternal, AnimationPromise, IOSView, PropertyAnimation, PropertyAnimationInfo } from './animation-common';
+import { AnimationDefinitionInternal, AnimationPromise, IOSView, PropertyAnimation, PropertyAnimationInfo, AnimationBase, Properties } from './animation-common';
 import { View } from '../core/view';
-
-// Requires
-import { AnimationBase, Properties, CubicBezierAnimationCurve } from './animation-common';
+import { CubicBezierAnimationCurve } from './animation-interfaces';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
 import { ios as iosBackground } from '../styling/background';
@@ -81,8 +79,8 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 				targetStyle[setLocal ? widthProperty.name : widthProperty.keyframe] = value;
 				break;
 			case Properties.scale:
-				targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = value.x === 0 ? 0.001 : value.x;
-				targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = value.y === 0 ? 0.001 : value.y;
+				targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = value.x === 0 ? 1e-6 : value.x;
+				targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = value.y === 0 ? 1e-6 : value.y;
 				break;
 			case _transform:
 				if (value[Properties.translate] !== undefined) {
@@ -97,8 +95,8 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 				if (value[Properties.scale] !== undefined) {
 					const x = value[Properties.scale].x;
 					const y = value[Properties.scale].y;
-					targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = x === 0 ? 0.001 : x;
-					targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = y === 0 ? 0.001 : y;
+					targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = x === 0 ? 1e-6 : x;
+					targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = y === 0 ? 1e-6 : y;
 				}
 				break;
 		}
@@ -134,9 +132,7 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
 			if (curve instanceof CAMediaTimingFunction) {
 				return curve;
 			} else if (curve instanceof CubicBezierAnimationCurve) {
-				const animationCurve = <CubicBezierAnimationCurve>curve;
-
-				return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
+				return CAMediaTimingFunction.functionWithControlPoints(curve.x1, curve.y1, curve.x2, curve.y2);
 			} else {
 				console.error(`Invalid animation curve: ${curve}`);
 			}
@@ -313,7 +309,6 @@ export class Animation extends AnimationBase {
 		const parent = view.parent as View;
 
 		let propertyNameToAnimate = animation.property;
-		let subPropertyNameToAnimate;
 		let toValue = animation.value;
 		let fromValue;
 		if (nativeView) {
@@ -351,30 +346,9 @@ export class Animation extends AnimationBase {
 						style[setLocal ? rotateYProperty.name : rotateYProperty.keyframe] = value.y;
 					};
 
-					propertyNameToAnimate = 'transform.rotation';
-					subPropertyNameToAnimate = ['x', 'y', 'z'];
-					fromValue = {
-						x: nativeView.layer.valueForKeyPath('transform.rotation.x'),
-						y: nativeView.layer.valueForKeyPath('transform.rotation.y'),
-						z: nativeView.layer.valueForKeyPath('transform.rotation.z'),
-					};
-
-					if (animation.target.rotateX !== undefined && animation.target.rotateX !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.x = (animation.target.rotateX * Math.PI) / 180;
-					}
-					if (animation.target.rotateY !== undefined && animation.target.rotateY !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.y = (animation.target.rotateY * Math.PI) / 180;
-					}
-					if (animation.target.rotate !== undefined && animation.target.rotate !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.z = (animation.target.rotate * Math.PI) / 180;
-					}
-
-					// Respect only value.z for back-compat until 3D rotations are implemented
-					toValue = {
-						x: (toValue.x * Math.PI) / 180,
-						y: (toValue.y * Math.PI) / 180,
-						z: (toValue.z * Math.PI) / 180,
-					};
+					propertyNameToAnimate = 'transform';
+					fromValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+					toValue = NSValue.valueWithCATransform3D(iosHelper.applyRotateTransform(nativeView.layer.transform, toValue.x, toValue.y, toValue.z));
 					break;
 				case Properties.translate:
 					animation._originalValue = {
@@ -391,10 +365,10 @@ export class Animation extends AnimationBase {
 					break;
 				case Properties.scale:
 					if (toValue.x === 0) {
-						toValue.x = 0.001;
+						toValue.x = 1e-6;
 					}
 					if (toValue.y === 0) {
-						toValue.y = 0.001;
+						toValue.y = 1e-6;
 					}
 					animation._originalValue = { x: view.scaleX, y: view.scaleY };
 					animation._propertyResetCallback = (value, valueSource) => {
@@ -477,7 +451,6 @@ export class Animation extends AnimationBase {
 		return {
 			propertyNameToAnimate: propertyNameToAnimate,
 			fromValue: fromValue,
-			subPropertiesToAnimate: subPropertyNameToAnimate,
 			toValue: toValue,
 			duration: duration,
 			repeatCount: repeatCount,
@@ -504,9 +477,11 @@ export class Animation extends AnimationBase {
 				this.animateNestedLayerSizeUsingBasicAnimation(nativeView, args.toValue.CGRectValue, animation, args, nativeAnimation);
 			}
 
-			// Shadow layers do not inherit from animating view layer
-			if (nativeView.outerShadowContainerLayer) {
-				nativeView.outerShadowContainerLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+			// Shadow container layer belongs to the parent view layer, so animate all its properties (except for colors) separately
+			if (args.propertyNameToAnimate && !args.propertyNameToAnimate.endsWith('Color')) {
+				if (nativeView.outerShadowContainerLayer) {
+					nativeView.outerShadowContainerLayer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
+				}
 			}
 		}
 		let callback = undefined;
@@ -521,8 +496,10 @@ export class Animation extends AnimationBase {
 	}
 
 	private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
+		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(args.subPropertiesToAnimate.length);
 		const groupAnimation = CAAnimationGroup.new();
 		groupAnimation.duration = args.duration;
+
 		if (args.repeatCount !== undefined) {
 			groupAnimation.repeatCount = args.repeatCount;
 		}
@@ -532,7 +509,6 @@ export class Animation extends AnimationBase {
 		if (animation.curve !== undefined) {
 			groupAnimation.timingFunction = animation.curve;
 		}
-		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
 
 		args.subPropertiesToAnimate.forEach((property) => {
 			const basicAnimationArgs = { ...args, duration: undefined, repeatCount: undefined, delay: undefined, curve: undefined };
@@ -620,7 +596,7 @@ export class Animation extends AnimationBase {
 						animation._originalValue = nativeView.layer.transform;
 						nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 
-						// Shadow layers do not inherit from animating view layer
+						// Shadow container layer belongs to the parent view layer, so animate its transform separately
 						if (nativeView.outerShadowContainerLayer) {
 							nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
 						}
@@ -660,7 +636,7 @@ export class Animation extends AnimationBase {
 				if (animationDidFinish && nextAnimation) {
 					nextAnimation();
 				}
-			}
+			},
 		);
 	}
 
@@ -675,16 +651,30 @@ export class Animation extends AnimationBase {
 		}
 
 		if (value[Properties.scale] !== undefined) {
-			const x = value[Properties.scale].x;
-			const y = value[Properties.scale].y;
-			result = CATransform3DScale(result, x === 0 ? 0.001 : x, y === 0 ? 0.001 : y, 1);
+			const x = value[Properties.scale].x || 1e-6;
+			const y = value[Properties.scale].y || 1e-6;
+			result = CATransform3DScale(result, x, y, 1);
+		}
+
+		if (value[Properties.rotate] !== undefined) {
+			const x = value[Properties.rotate].x;
+			const y = value[Properties.rotate].y;
+			const z = value[Properties.rotate].z;
+			const perspective = animation.target.perspective || 300;
+
+			// Set perspective in case of rotation since we use z
+			if (x || y) {
+				result.m34 = -1 / perspective;
+			}
+
+			result = iosHelper.applyRotateTransform(result, x, y, z);
 		}
 
 		return result;
 	}
 
 	private static _isAffineTransform(property: string): boolean {
-		return property === _transform || property === Properties.translate || property === Properties.scale;
+		return property === _transform || property === Properties.translate || property === Properties.scale || property === Properties.rotate;
 	}
 
 	private static _canBeMerged(animation1: PropertyAnimation, animation2: PropertyAnimation) {
@@ -786,9 +776,9 @@ export class Animation extends AnimationBase {
 							fromValue: nativeView.layer.mask.path,
 							toValue,
 						},
-						animation
+						animation,
 					),
-					'path'
+					'path',
 				);
 			}
 		}
@@ -809,9 +799,9 @@ export class Animation extends AnimationBase {
 									fromValue: borderMask.path,
 									toValue: innerClipPath,
 								},
-								animation
+								animation,
 							),
-							'path'
+							'path',
 						);
 					}
 
@@ -830,9 +820,9 @@ export class Animation extends AnimationBase {
 											fromValue: layer.path,
 											toValue: paths[i],
 										},
-										animation
+										animation,
 									),
-									'path'
+									'path',
 								);
 							}
 						}
@@ -846,9 +836,9 @@ export class Animation extends AnimationBase {
 								fromValue: nativeView.borderLayer.path,
 								toValue: innerClipPath,
 							},
-							animation
+							animation,
 						),
-						'path'
+						'path',
 					);
 				}
 			}
@@ -864,14 +854,14 @@ export class Animation extends AnimationBase {
 							fromValue: nativeView.layer.cornerRadius,
 							toValue: iosBackground.getUniformBorderRadius(animation.target, bounds),
 						},
-						animation
+						animation,
 					),
-					'cornerRadius'
+					'cornerRadius',
 				);
 			}
 		}
 
-		// Shadow layers do not inherit from animating view layer
+		// Shadow container layer belongs to the parent view layer, so animate its properties separately
 		if (nativeView.outerShadowContainerLayer) {
 			const shadowClipMask = nativeView.outerShadowContainerLayer.mask;
 
@@ -885,9 +875,9 @@ export class Animation extends AnimationBase {
 							fromValue: shadowClipMask.path,
 							toValue: clipPath,
 						},
-						animation
+						animation,
 					),
-					'path'
+					'path',
 				);
 			}
 
@@ -906,9 +896,9 @@ export class Animation extends AnimationBase {
 								fromValue: shadowLayer.shadowPath,
 								toValue: shadowPath,
 							},
-							animation
+							animation,
 						),
-						'shadowPath'
+						'shadowPath',
 					);
 
 					if (shadowLayer.mask instanceof CAShapeLayer) {
@@ -920,9 +910,9 @@ export class Animation extends AnimationBase {
 									fromValue: shadowLayer.mask.path,
 									toValue: maskPath,
 								},
-								animation
+								animation,
 							),
-							'path'
+							'path',
 						);
 					}
 				}
@@ -951,7 +941,8 @@ function calculateTransform(view: View): CATransform3D {
 	// Order is important: translate, rotate, scale
 	let expectedTransform = new CATransform3D(CATransform3DIdentity);
 
-	// Only set perspective if there is 3D rotation
+	// TODO: Add perspective property to transform animations (not just rotation)
+	// Set perspective in case of rotation since we use z
 	if (view.rotateX || view.rotateY) {
 		expectedTransform.m34 = -1 / perspective;
 	}

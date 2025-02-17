@@ -10,7 +10,7 @@
 
         <Button text="Pick and Save Image" tap="{{ pickImage }}" />
 
-        <ios>
+        <apple>
             <!-- SF Symbols with Effects -->
             <ContentView height="1" width="100%" backgroundColor="#efefef" margin="10"></ContentView>
             <GridLayout rows="auto,auto,auto,auto,auto" columns="*,*">
@@ -31,7 +31,7 @@
                 <Image row="4" col="1" src="sys://steeringwheel.and.hands" width="100" tintColor="black" iosSymbolEffect="{{symbolWiggleEffect}}" iosSymbolScale="large" padding="8" />
 
             </GridLayout>
-        </ios>
+        </apple>
 
 
     </StackLayout>

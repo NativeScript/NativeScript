@@ -4,8 +4,15 @@ import { Color } from '../../color';
 
 /**
  * Represents a switch component.
+ *
+ * @nsView Switch
  */
 export class Switch extends View {
+	/**
+	 * String value used when hooking to checkedChange event.
+	 *
+	 * @nsEvent {PropertyChangeData} checkedChange
+	 */
 	public static checkedChangeEvent: string;
 
 	/**
@@ -20,11 +27,15 @@ export class Switch extends View {
 
 	/**
 	 * Gets or sets if a switch is checked or not.
+	 *
+	 * @nsProperty
 	 */
 	checked: boolean;
 
 	/**
 	 * Gets or sets the background color of the Switch when it is turned off.
+	 *
+	 * @nsProperty
 	 */
 	offBackgroundColor: Color;
 }

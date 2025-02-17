@@ -76,10 +76,11 @@ export function dataSerialize(data: any, wrapPrimitives: boolean = false) {
 			const node = Object.fromEntries(
 				Object.entries(data)
 					.map(([key, value]) => [key, dataSerialize(value, wrapPrimitives)])
-					.filter(([, value]) => value !== null)
+					.filter(([, value]) => value !== null),
 			);
 
-			return NSDictionary.dictionaryWithDictionary(node);
+			// cast to any avoids signature overload on tsc build
+			return NSDictionary.dictionaryWithDictionary(node as any);
 		}
 
 		default:

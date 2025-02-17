@@ -792,7 +792,7 @@ export class CssState {
 					const eventName = ':' + pseudoClass;
 					view.addEventListener(':' + pseudoClass, this._onDynamicStateChangeHandler);
 					if (view[eventName]) {
-						view[eventName](+1);
+						view[eventName](true);
 					}
 				});
 			}
@@ -812,7 +812,7 @@ export class CssState {
 					const eventName = ':' + pseudoClass;
 					view.removeEventListener(eventName, this._onDynamicStateChangeHandler);
 					if (view[eventName]) {
-						view[eventName](-1);
+						view[eventName](false);
 					}
 				});
 			}

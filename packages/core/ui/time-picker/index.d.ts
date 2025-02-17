@@ -3,8 +3,17 @@ import { Property } from '../core/properties';
 
 /**
  * Represents an time picker.
+ *
+ * @nsView TimePicker
  */
 export class TimePicker extends View {
+	/**
+	 * String value used when hooking to the timeChange event.
+	 *
+	 * @nsEvent timeChange
+	 */
+	public static timeChangeEvent: string;
+
 	/**
 	 * Gets the native [android.widget.TimePicker](http://developer.android.com/reference/android/widget/TimePicker.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
@@ -17,41 +26,57 @@ export class TimePicker extends View {
 
 	/**
 	 * Gets or sets the time hour.
+	 *
+	 * @nsProperty
 	 */
 	hour: number;
 
 	/**
 	 * Gets or sets the time minute.
+	 *
+	 * @nsProperty
 	 */
 	minute: number;
 
 	/**
 	 * Gets or sets the time.
+	 *
+	 * @nsProperty
 	 */
 	time: Date;
 
 	/**
 	 * Gets or sets the max time hour.
+	 *
+	 * @nsProperty
 	 */
 	maxHour: number;
 
 	/**
 	 * Gets or sets the max time minute.
+	 *
+	 * @nsProperty
 	 */
 	maxMinute: number;
 
 	/**
 	 * Gets or sets the min time hour.
+	 *
+	 * @nsProperty
 	 */
 	minHour: number;
 
 	/**
 	 * Gets or sets the min time minute.
+	 *
+	 * @nsProperty
 	 */
 	minMinute: number;
 
 	/**
 	 * Gets or sets the minute interval.
+	 *
+	 * @nsProperty
 	 */
 	minuteInterval: number;
 
@@ -62,6 +87,8 @@ export class TimePicker extends View {
 	 *  - 1: wheels (the date picker displays as a wheel picker)
 	 *  - 2: compact (the date picker displays as a label that when tapped displays a calendar-style editor)
 	 *  - 3: inline  (the date pickers displays as an inline, editable field)
+	 *
+	 * @nsProperty
 	 */
 	iosPreferredDatePickerStyle: number;
 }
