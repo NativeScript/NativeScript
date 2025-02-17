@@ -6,7 +6,7 @@ import { getComponentModule } from './component-builder';
 import type { ComponentModule } from './component-builder';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
-import { android, ios, visionos, loadCustomComponent, defaultNameSpaceMatcher, getExports, Builder } from './index';
+import { android, ios, visionos, apple, loadCustomComponent, defaultNameSpaceMatcher, getExports, Builder } from './index';
 
 export namespace xml2ui {
 	/**
@@ -135,14 +135,15 @@ export namespace xml2ui {
 			if (value) {
 				const toLower = value.toLowerCase();
 
-				return toLower === android || toLower === ios || toLower === visionos;
+				return toLower === android || toLower === ios || toLower === visionos || toLower === apple;
 			}
 
 			return false;
 		}
 
 		private static isCurentPlatform(value: string): boolean {
-			return value && value.toLowerCase() === Device.os.toLowerCase();
+			value = value && value.toLowerCase();
+			return value === apple ? __APPLE__ : value === Device.os.toLowerCase();
 		}
 	}
 

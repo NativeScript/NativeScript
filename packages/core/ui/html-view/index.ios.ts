@@ -27,7 +27,7 @@ export class HtmlView extends HtmlViewBase {
 
 		// Remove extra padding
 		this.nativeViewProtected.textContainer.lineFragmentPadding = 0;
-		this.nativeViewProtected.textContainerInset = (UIEdgeInsets as any).zero;
+		this.nativeViewProtected.textContainerInset = UIEdgeInsetsZero;
 	}
 
 	// @ts-ignore

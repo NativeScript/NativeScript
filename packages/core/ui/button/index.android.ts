@@ -97,6 +97,7 @@ export class Button extends ButtonBase {
 			this.on(GestureTypes[GestureTypes.touch], onButtonStateChange);
 		} else {
 			this.off(GestureTypes[GestureTypes.touch], onButtonStateChange);
+			this._removeVisualState('highlighted');
 		}
 	}
 

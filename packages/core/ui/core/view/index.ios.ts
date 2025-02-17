@@ -42,8 +42,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	 */
 	private _modalAnimatedOptions: Array<boolean>;
 	private _isLaidOut = false;
-	private _hasTransform = false;
-	private _hasPendingTransform = false;
+	private _isTransformed = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
 	private _cachedFrame: CGRect;
 	private _suspendCATransaction = false;
@@ -90,8 +89,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 		this._cachedFrame = null;
 		this._isLaidOut = false;
-		this._hasTransform = false;
-		this._hasPendingTransform = false;
+		this._isTransformed = false;
 	}
 
 	public requestLayout(): void {
@@ -169,10 +167,6 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		this.updateBackground(sizeChanged, needsLayout);
-		if (this._hasPendingTransform) {
-			this.updateNativeTransform();
-			this._hasPendingTransform = false;
-		}
 		this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
 	}
 
@@ -251,7 +245,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			this._cachedFrame = frame;
 			let adjustedFrame = null;
 			let transform = null;
-			if (this._hasTransform) {
+			if (this._isTransformed) {
 				// Always set identity transform before setting frame;
 				transform = nativeView.layer.transform;
 				nativeView.layer.transform = CATransform3DIdentity;
@@ -265,7 +259,7 @@ export class View extends ViewCommon implements ViewDefinition {
 				nativeView.frame = adjustedFrame;
 			}
 
-			if (this._hasTransform) {
+			if (this._isTransformed) {
 				// re-apply the transform after the frame is adjusted
 				nativeView.layer.transform = transform;
 			}
@@ -455,9 +449,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		transform = iosUtils.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
 		transform = CATransform3DScale(transform, scaleX, scaleY, 1);
 
-		const needsTransform: boolean = !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform) || (nativeView.outerShadowContainerLayer && !CATransform3DEqualToTransform(nativeView.outerShadowContainerLayer.transform, transform));
-
-		if (needsTransform) {
+		if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
 			const updateSuspended = this._isPresentationLayerUpdateSuspended();
 			if (!updateSuspended) {
 				CATransaction.begin();
@@ -471,7 +463,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			if (nativeView.outerShadowContainerLayer) {
 				nativeView.outerShadowContainerLayer.transform = transform;
 			}
-			this._hasTransform = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
+			this._isTransformed = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
 
 			if (!isInTheMiddleOfAnimation) {
 				CATransaction.setDisableActions(false);

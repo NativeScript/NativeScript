@@ -180,17 +180,77 @@ function initializeBaselineAdjustedSpan(): void {
 }
 
 export class TextBase extends TextBaseCommon {
-	declare nativeViewProtected: org.nativescript.widgets.StyleableTextView;
-	// @ts-ignore
-	nativeTextViewProtected: org.nativescript.widgets.StyleableTextView;
-	// private _defaultTransformationMethod: android.text.method.TransformationMethod;
+	public nativeViewProtected: org.nativescript.widgets.StyleableTextView;
+
+	private _defaultTransformationMethod: android.text.method.TransformationMethod;
+	private _paintFlags: number;
+	private _minHeight: number;
+	private _maxHeight: number;
+	private _minLines: number;
+	private _maxLines: number;
 	private _tappable = false;
 	private _defaultMovementMethod: android.text.method.MovementMethod;
-
-	// public ignoreNextTransform = false;
-
 	// so that we dont set fontInternal when setting fontSize (useless)
-	handleFontSize = true;
+	protected handleFontSize = true;
+
+	get nativeTextViewProtected(): org.nativescript.widgets.StyleableTextView {
+		return super.nativeTextViewProtected;
+	}
+
+	// public initNativeView(): void {
+	// 	super.initNativeView();
+	// 	initializeTextTransformation();
+	// 	const nativeView = this.nativeTextViewProtected;
+	// 	this._defaultTransformationMethod = nativeView.getTransformationMethod();
+	// 	this._defaultMovementMethod = nativeView.getMovementMethod();
+	// 	this._minHeight = nativeView.getMinHeight();
+	// 	this._maxHeight = nativeView.getMaxHeight();
+	// 	this._minLines = nativeView.getMinLines();
+	// 	this._maxLines = nativeView.getMaxLines();
+	// }
+
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+
+		this._tappable = false;
+		// this._defaultTransformationMethod = null;
+		// this._defaultMovementMethod = null;
+		// this._paintFlags = 0;
+		// this._minHeight = 0;
+		// this._maxHeight = 0;
+		// this._minLines = 0;
+		// this._maxLines = 0;
+	}
+
+	// public resetNativeView(): void {
+	// 	super.resetNativeView();
+	// 	const nativeView = this.nativeTextViewProtected;
+	// 	// We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
+	// 	nativeView.setSingleLine(this._isSingleLine);
+	// 	nativeView.setTransformationMethod(this._defaultTransformationMethod);
+	// 	this._defaultTransformationMethod = null;
+
+	// 	if (this._paintFlags !== undefined) {
+	// 		nativeView.setPaintFlags(this._paintFlags);
+	// 		this._paintFlags = undefined;
+	// 	}
+
+	// 	if (this._minLines !== -1) {
+	// 		nativeView.setMinLines(this._minLines);
+	// 	} else {
+	// 		nativeView.setMinHeight(this._minHeight);
+	// 	}
+
+	// 	this._minHeight = this._minLines = undefined;
+
+	// 	if (this._maxLines !== -1) {
+	// 		nativeView.setMaxLines(this._maxLines);
+	// 	} else {
+	// 		nativeView.setMaxHeight(this._maxHeight);
+	// 	}
+
+	// 	this._maxHeight = this._maxLines = undefined;
+	// }
 
 	[textProperty.getDefault](): symbol | number {
 		return resetSymbol;
@@ -477,13 +537,13 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		if (this.style?.textStroke) {
-			this.nativeViewProtected.setTextStroke(Length.toDevicePixels(this.style.textStroke.width), this.style.textStroke.color.android, this.style.color.android);
-		} else if (this.nativeViewProtected.setTextStroke) {
+			this.nativeTextViewProtected.setTextStroke(Length.toDevicePixels(this.style.textStroke.width), this.style.textStroke.color.android, this.style.color.android);
+		} else if (this.nativeTextViewProtected.setTextStroke) {
 			// reset
-			this.nativeViewProtected.setTextStroke(0, 0, 0);
+			this.nativeTextViewProtected.setTextStroke(0, 0, 0);
 		}
 
-		this.nativeTextViewProtected.setText(<any>transformedText);
+		this.nativeTextViewProtected.setText(transformedText);
 	}
 
 	_setTappableState(tappable: boolean) {
@@ -572,40 +632,23 @@ function createSpannableStringBuilder(formattedString: FormattedString, defaultF
 
 function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, start: number, end: number, defaultFontSize: number): void {
 	const spanStyle = span.style;
-	const bold = isBold(spanStyle.fontWeight);
-	const italic = spanStyle.fontStyle === 'italic';
 	const align = spanStyle.verticalAlignment;
 
-	if (bold && italic) {
-		ssb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD_ITALIC), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-	} else if (bold) {
-		ssb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-	} else if (italic) {
-		ssb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.ITALIC), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+	const font = new Font(spanStyle.fontFamily, spanStyle.fontSize, spanStyle.fontStyle, spanStyle.fontWeight, spanStyle.fontScaleInternal, spanStyle.fontVariationSettings);
+	const typefaceSpan = new org.nativescript.widgets.CustomTypefaceSpan(font.getAndroidTypeface());
+	ssb.setSpan(typefaceSpan, start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+	if (spanStyle.fontSize) {
+		ssb.setSpan(new android.text.style.AbsoluteSizeSpan(layout.toDevicePixels(spanStyle.fontSize)), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
-	const fontFamily = span.fontFamily;
-	if (fontFamily) {
-		const font = new Font(fontFamily, 0, italic ? 'italic' : 'normal', bold ? 'bold' : 'normal', spanStyle.fontScaleInternal, spanStyle.fontVariationSettings);
-		const typeface = font.getAndroidTypeface() || android.graphics.Typeface.create(fontFamily, 0);
-		const typefaceSpan: android.text.style.TypefaceSpan = new org.nativescript.widgets.CustomTypefaceSpan(fontFamily, typeface);
-		ssb.setSpan(typefaceSpan, start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-	}
-
-	const realFontSize = span.fontSize;
-	if (realFontSize) {
-		ssb.setSpan(new android.text.style.AbsoluteSizeSpan(realFontSize * layout.getDisplayDensity()), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-	}
-
-	const color = span.color;
+	const color = spanStyle.color;
 	if (color) {
 		ssb.setSpan(new android.text.style.ForegroundColorSpan(color.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
-	const backgroundColor: Color = getClosestPropertyValue(<any>backgroundColorProperty, span);
-
-	if (backgroundColor) {
-		ssb.setSpan(new android.text.style.BackgroundColorSpan(backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+	if (spanStyle.backgroundColor) {
+		ssb.setSpan(new android.text.style.BackgroundColorSpan(spanStyle.backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
 	const textDecoration: CoreTypes.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
@@ -624,7 +667,7 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 
 	if (align) {
 		initializeBaselineAdjustedSpan();
-		ssb.setSpan(new BaselineAdjustedSpan(defaultFontSize * layout.getDisplayDensity(), align), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		ssb.setSpan(new BaselineAdjustedSpan(layout.toDevicePixels(defaultFontSize), align), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
 	const tappable = span.tappable;

@@ -1,4 +1,4 @@
-import { FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch } from './font-common';
+import { FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch, FONTS_BASE_PATH } from './font-common';
 import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import * as fs from '../../file-system';
@@ -85,16 +85,15 @@ export class Font extends FontBase {
 		});
 	}
 
-	getAndroidTypeface(): android.graphics.Typeface {
+	getAndroidTypeface(): any {
 		return undefined;
 	}
 }
 
 function getNativeFontWeight(fontWeight: FontWeightType): number {
-	if (typeof fontWeight === 'number') {
-		fontWeight = (fontWeight + '') as any;
-	}
-	switch (fontWeight) {
+	const value = typeof fontWeight === 'number' ? fontWeight + '' : fontWeight;
+
+	switch (value) {
 		case FontWeight.THIN:
 			return UIFontWeightUltraLight;
 		case FontWeight.EXTRA_LIGHT:
@@ -124,7 +123,7 @@ function getNativeFontWeight(fontWeight: FontWeightType): number {
 
 export namespace ios {
 	export function registerFont(fontFile: string) {
-		let filePath = fs.path.join(fs.knownFolders.currentApp().path, 'fonts', fontFile);
+		let filePath = fs.path.join(fs.knownFolders.currentApp().path, FONTS_BASE_PATH, fontFile);
 		if (!fs.File.exists(filePath)) {
 			filePath = fs.path.join(fs.knownFolders.currentApp().path, fontFile);
 		}
@@ -155,7 +154,8 @@ function registerFontsInFolder(fontsFolderPath) {
 		if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
 			return true;
 		}
-		if (fileEntity instanceof fs.File && ((<fs.File>fileEntity).extension === '.ttf' || (<fs.File>fileEntity).extension === '.otf')) {
+
+		if (fileEntity instanceof fs.File && (fileEntity.extension === '.ttf' || fileEntity.extension === '.otf')) {
 			ios.registerFont(fileEntity.name);
 		}
 
@@ -165,7 +165,7 @@ function registerFontsInFolder(fontsFolderPath) {
 
 function registerCustomFonts() {
 	const appDir = fs.knownFolders.currentApp().path;
-	const fontsDir = fs.path.join(appDir, 'fonts');
+	const fontsDir = fs.path.join(appDir, FONTS_BASE_PATH);
 	if (fs.Folder.exists(fontsDir)) {
 		registerFontsInFolder(fontsDir);
 	}

@@ -18,7 +18,7 @@ const DELEGATE = '_delegate';
 const TRANSITION = '_transition';
 const NON_ANIMATED_TRANSITION = 'non-animated';
 
-function isBackNavigationTo(page: Page, entry): boolean {
+function isBackNavigationTo(page: Page, entry: BackstackEntry): boolean {
 	const frame = page.frame;
 	if (!frame) {
 		return false;
@@ -37,14 +37,8 @@ function isBackNavigationTo(page: Page, entry): boolean {
 		return true;
 	}
 
-	const navigationQueue = (<any>frame)._navigationQueue;
-	for (let i = 0; i < navigationQueue.length; i++) {
-		if (navigationQueue[i].entry === entry) {
-			return navigationQueue[i].navigationType === NavigationType.back;
-		}
-	}
-
-	return false;
+	const queueContext = frame.getNavigationQueueContextByEntry(entry);
+	return queueContext && queueContext.navigationType === NavigationType.back;
 }
 
 function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boolean {
@@ -141,7 +135,7 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		const frame: Frame = this.navigationController ? (<any>this.navigationController).owner : null;
-		const newEntry = this[ENTRY];
+		const newEntry: BackstackEntry = this[ENTRY];
 
 		// Don't raise event if currentPage was showing modal page.
 		if (!owner._presentedViewController && newEntry && (!frame || frame.currentPage !== owner)) {

@@ -18,7 +18,9 @@ enum FixedSize {
 
 @CSSType('Label')
 export class Label extends TextBase implements LabelDefinition {
-	declare nativeViewProtected: TNSLabel;
+	nativeViewProtected: TNSLabel;
+	nativeTextViewProtected: TNSLabel;
+
 	private _fixedSize: FixedSize;
 
 	public createNativeView() {
@@ -26,6 +28,11 @@ export class Label extends TextBase implements LabelDefinition {
 		view.userInteractionEnabled = true;
 
 		return view;
+	}
+
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+		this._fixedSize = null;
 	}
 
 	// @ts-ignore
@@ -102,7 +109,7 @@ export class Label extends TextBase implements LabelDefinition {
 	}
 
 	private _measureNativeView(width: number, widthMode: number, height: number, heightMode: number): { width: number; height: number } {
-		const view = <UILabel>this.nativeTextViewProtected;
+		const view = this.nativeTextViewProtected;
 
 		const nativeSize = view.textRectForBoundsLimitedToNumberOfLines(CGRectMake(0, 0, widthMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(width), heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(height)), view.numberOfLines).size;
 
@@ -123,7 +130,8 @@ export class Label extends TextBase implements LabelDefinition {
 	private adjustLineBreak() {
 		const whiteSpace = this.whiteSpace;
 		const textOverflow = this.textOverflow;
-		const nativeView = this.nativeViewProtected;
+		const nativeView = this.nativeTextViewProtected;
+
 		switch (whiteSpace) {
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
@@ -158,7 +166,7 @@ export class Label extends TextBase implements LabelDefinition {
 						const cgColor = color ? color.CGColor : null;
 						nativeView.layer.backgroundColor = cgColor;
 					},
-					true
+					true,
 				);
 			}
 		}

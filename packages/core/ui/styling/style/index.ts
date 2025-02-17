@@ -12,6 +12,7 @@ import { CoreTypes } from '../../../core-types';
 import type { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { ShadowCSSValues } from '../css-shadow';
 import { StrokeCSSValues } from '../css-stroke';
+import { ClipPathFunction } from '../clip-path-function';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -122,7 +123,7 @@ export class Style extends Observable implements StyleDefinition {
 	public translateX: CoreTypes.dip;
 	public translateY: CoreTypes.dip;
 
-	public clipPath: string;
+	public clipPath: string | ClipPathFunction;
 	public color: Color;
 	public tintColor: Color;
 	public placeholderColor: Color;

@@ -33,7 +33,7 @@ export type { ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
 export { ModuleNameResolver, _setResolver } from './module-name-resolver';
 export type { ModuleListProvider, PlatformContext } from './module-name-resolver';
-export { isAndroid, isIOS, Screen, Device, platformNames } from './platform';
+export { isAndroid, isIOS, isVisionOS, isApple, Screen, Device, platformNames } from './platform';
 export type { IDevice } from './platform';
 
 // Profiling

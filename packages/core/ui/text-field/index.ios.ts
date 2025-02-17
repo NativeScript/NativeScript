@@ -113,8 +113,10 @@ class UITextFieldImpl extends UITextField {
 }
 
 export class TextField extends TextFieldBase {
-	declare nativeViewProtected: UITextField;
+	nativeViewProtected: UITextField;
+
 	private _delegate: UITextFieldDelegateImpl;
+	private _firstEdit: boolean;
 
 	createNativeView() {
 		return UITextFieldImpl.initWithOwner(new WeakRef(this));
@@ -128,6 +130,7 @@ export class TextField extends TextFieldBase {
 
 	disposeNativeView() {
 		this._delegate = null;
+		this._firstEdit = false;
 		super.disposeNativeView();
 	}
 
@@ -136,10 +139,8 @@ export class TextField extends TextFieldBase {
 		return this.nativeViewProtected;
 	}
 
-	private firstEdit: boolean;
-
 	public textFieldShouldBeginEditing(textField: UITextField): boolean {
-		this.firstEdit = true;
+		this._firstEdit = true;
 
 		return this.editable;
 	}
@@ -157,7 +158,7 @@ export class TextField extends TextFieldBase {
 	}
 
 	public textFieldShouldClear(textField: UITextField) {
-		this.firstEdit = false;
+		this._firstEdit = false;
 		textProperty.nativeValueChange(this, '');
 
 		return true;
@@ -207,7 +208,7 @@ export class TextField extends TextFieldBase {
 				// 1. secureTextEntry with firstEdit should not replace
 				// 2. emoji's should not replace value
 				// 3. convenient keyboard shortcuts should not replace value (eg, '.com')
-				const shouldReplaceString = (textField.secureTextEntry && this.firstEdit) || (delta > 1 && !isEmoji(replacementString) && delta !== replacementString.length);
+				const shouldReplaceString = (textField.secureTextEntry && this._firstEdit) || (delta > 1 && !isEmoji(replacementString) && delta !== replacementString.length);
 				if (shouldReplaceString) {
 					textProperty.nativeValueChange(this, replacementString);
 				} else {
@@ -226,7 +227,7 @@ export class TextField extends TextFieldBase {
 			// if the textfield is in auto size we need to request a layout to take the new text width into account
 			this.requestLayout();
 		}
-		this.firstEdit = false;
+		this._firstEdit = false;
 
 		return true;
 	}

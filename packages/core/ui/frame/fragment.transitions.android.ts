@@ -116,7 +116,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 				curve: customTransition.getCurve(),
 			},
 			newEntry,
-			customTransition
+			customTransition,
 		);
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentCustomTransition(
@@ -125,7 +125,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 					curve: customTransition.getCurve(),
 				},
 				currentEntry,
-				customTransition
+				customTransition,
 			);
 		}
 	} else if (name === 'default') {
@@ -343,7 +343,10 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 		@Interfaces([(<any>androidx).transition.Transition.TransitionListener])
 		class TransitionListenerImpl extends java.lang.Object implements androidx.transition.Transition.TransitionListener {
 			public backEntry?: BackstackEntry;
-			constructor(public entry: ExpandedEntry, public transition: androidx.transition.Transition) {
+			constructor(
+				public entry: ExpandedEntry,
+				public transition: androidx.transition.Transition,
+			) {
 				super();
 
 				return global.__native(this);
@@ -648,7 +651,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 	if (entries.size === 0) {
 		// We have 0 or 1 entry per frameId in completedEntries
 		// So there is no need to make it to Set like waitingQueue
-		const previousCompletedAnimationEntry = completedEntries.get(frameId);
+		const previousCompletedEntry = completedEntries.get(frameId);
 		completedEntries.delete(frameId);
 		waitingQueue.delete(frameId);
 
@@ -662,8 +665,8 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 		const navigationContext = frame._executingContext || {
 			navigationType: NavigationType.back,
 		};
-		let current = frame.isCurrent(entry) ? previousCompletedAnimationEntry : entry;
-		current = current || entry;
+		const current = frame.isCurrent(entry) && previousCompletedEntry ? previousCompletedEntry : entry;
+
 		// Will be null if Frame is shown modally...
 		// transitionOrAnimationCompleted fires again (probably bug in android).
 		if (current) {

@@ -182,6 +182,7 @@ tintColorProperty.register(Style);
 export const decodeHeightProperty = new Property<ImageBase, CoreTypes.LengthType>({
 	name: 'decodeHeight',
 	defaultValue: { value: 0, unit: 'dip' },
+	equalityComparer: Length.equals,
 	valueConverter: Length.parse,
 });
 decodeHeightProperty.register(ImageBase);
@@ -189,6 +190,7 @@ decodeHeightProperty.register(ImageBase);
 export const decodeWidthProperty = new Property<ImageBase, CoreTypes.LengthType>({
 	name: 'decodeWidth',
 	defaultValue: { value: 0, unit: 'dip' },
+	equalityComparer: Length.equals,
 	valueConverter: Length.parse,
 });
 decodeWidthProperty.register(ImageBase);

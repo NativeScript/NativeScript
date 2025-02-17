@@ -84,7 +84,8 @@ export class TextView extends TextViewBaseCommon {
 	declare nativeViewProtected: UITextView;
 	declare nativeTextViewProtected: UITextView;
 	private _delegate: UITextViewDelegateImpl;
-	_isShowingHint: boolean;
+	private _isShowingHint: boolean;
+
 	public _isEditing: boolean;
 
 	private _hintColor = SDK_VERSION <= 12 || !UIColor.placeholderTextColor ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;

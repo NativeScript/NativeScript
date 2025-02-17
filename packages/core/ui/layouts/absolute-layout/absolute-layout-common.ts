@@ -61,7 +61,8 @@ export const leftProperty = new Property<View, CoreTypes.LengthType>({
 			layout.onLeftChanged(target, oldValue, newValue);
 		}
 	},
-	valueConverter: (v) => Length.parse(v),
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
 });
 leftProperty.register(View);
 
@@ -75,6 +76,7 @@ export const topProperty = new Property<View, CoreTypes.LengthType>({
 			layout.onTopChanged(target, oldValue, newValue);
 		}
 	},
-	valueConverter: (v) => Length.parse(v),
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
 });
 topProperty.register(View);

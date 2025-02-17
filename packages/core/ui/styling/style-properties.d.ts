@@ -1,17 +1,29 @@
-import { TransformFunctionsInfo } from '../animation';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
 import { Style } from './style';
 import { Font, FontStyleType, FontWeightType, FontVariationSettingsType } from './font';
 import { Background } from './background';
+import { ClipPathFunction } from './clip-path-function';
+import { LinearGradient } from './linear-gradient';
+
+export namespace FixedLength {
+	export function parse(text: string): CoreTypes.FixedLengthType;
+	export function equals(a: CoreTypes.FixedLengthType, b: CoreTypes.FixedLengthType): boolean;
+	/**
+	 * Converts FixedLengthType unit to device pixels.
+	 * @param length The FixedLengthType to convert.
+	 */
+	export function toDevicePixels(length: CoreTypes.FixedLengthType): number;
+	export function convertToString(length: CoreTypes.FixedLengthType): string;
+}
 
 export namespace Length {
 	export function parse(text: string): CoreTypes.LengthType;
 	export function equals(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
 	/**
-	 * Converts Length unit to device pixels.
-	 * @param length The Length to convert.
+	 * Converts LengthType unit to device pixels.
+	 * @param length The LengthType to convert.
 	 * @param auto Value to use for conversion of "auto". By default is Math.NaN.
 	 */
 	export function toDevicePixels(length: CoreTypes.LengthType, auto?: number): number;
@@ -39,14 +51,12 @@ export const scaleYProperty: CssAnimationProperty<Style, number>;
 export const translateXProperty: CssAnimationProperty<Style, CoreTypes.dip>;
 export const translateYProperty: CssAnimationProperty<Style, CoreTypes.dip>;
 
-export function transformConverter(text: string): TransformFunctionsInfo;
-
-export const clipPathProperty: CssProperty<Style, string>;
+export const clipPathProperty: CssProperty<Style, string | ClipPathFunction>;
 export const colorProperty: InheritedCssProperty<Style, Color>;
 
 export const backgroundProperty: ShorthandProperty<Style, string>;
 export const backgroundColorProperty: CssAnimationProperty<Style, Color>;
-export const backgroundImageProperty: CssProperty<Style, string>;
+export const backgroundImageProperty: CssProperty<Style, string | LinearGradient>;
 export const backgroundRepeatProperty: CssProperty<Style, CoreTypes.BackgroundRepeatType>;
 export const backgroundSizeProperty: CssProperty<Style, string>;
 export const backgroundPositionProperty: CssProperty<Style, string>;

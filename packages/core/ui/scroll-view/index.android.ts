@@ -9,7 +9,6 @@ export class ScrollView extends ScrollViewBase {
 	declare nativeViewProtected: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
 	private _androidViewId = -1;
 	private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
-	private scrollChangeHandler: androidx.core.widget.NestedScrollView.OnScrollChangeListener;
 
 	get horizontalOffset(): number {
 		const nativeView = this.nativeViewProtected;

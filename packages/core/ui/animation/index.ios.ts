@@ -8,10 +8,11 @@ import { CssAnimationProperty, Property } from '../core/properties';
 import { ios as iosBackground } from '../styling/background';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 
+import { ios as iosHelper } from '../../utils/native-helper';
+
 import { Screen } from '../../platform';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
-import { applyRotateTransform } from '../../utils/ios';
 
 export * from './animation-common';
 export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
@@ -313,7 +314,6 @@ export class Animation extends AnimationBase {
 		const parent = view.parent as View;
 
 		let propertyNameToAnimate = animation.propertyName;
-		let subPropertyNameToAnimate;
 		let toValue = animation.value;
 		let fromValue;
 		const setKeyFrame = this._valueSource === 'keyframe';
@@ -331,30 +331,9 @@ export class Animation extends AnimationBase {
 						applyAnimationProperty(style, rotateProperty, value.z, setKeyFrame);
 					};
 
-					propertyNameToAnimate = 'transform.rotation';
-					subPropertyNameToAnimate = ['x', 'y', 'z'];
-					fromValue = {
-						x: nativeView.layer.valueForKeyPath('transform.rotation.x'),
-						y: nativeView.layer.valueForKeyPath('transform.rotation.y'),
-						z: nativeView.layer.valueForKeyPath('transform.rotation.z'),
-					};
-
-					if (animation.target.rotateX !== undefined && animation.target.rotateX !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.x = (animation.target.rotateX * Math.PI) / 180;
-					}
-					if (animation.target.rotateY !== undefined && animation.target.rotateY !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.y = (animation.target.rotateY * Math.PI) / 180;
-					}
-					if (animation.target.rotate !== undefined && animation.target.rotate !== 0 && Math.floor(toValue / 360) - toValue / 360 === 0) {
-						fromValue.z = (animation.target.rotate * Math.PI) / 180;
-					}
-
-					// Respect only value.z for back-compat until 3D rotations are implemented
-					toValue = {
-						x: (toValue.x * Math.PI) / 180,
-						y: (toValue.y * Math.PI) / 180,
-						z: (toValue.z * Math.PI) / 180,
-					};
+					propertyNameToAnimate = 'transform';
+					fromValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+					toValue = NSValue.valueWithCATransform3D(iosHelper.applyRotateTransform(nativeView.layer.transform, toValue.x, toValue.y, toValue.z));
 					break;
 				case Properties.translate:
 					animation._originalValue = {
@@ -457,7 +436,6 @@ export class Animation extends AnimationBase {
 		return {
 			propertyNameToAnimate: propertyNameToAnimate,
 			fromValue: fromValue,
-			subPropertiesToAnimate: subPropertyNameToAnimate,
 			toValue: toValue,
 			duration,
 			delay,
@@ -615,6 +593,10 @@ export class Animation extends AnimationBase {
 
 						// we set the destination value in animate to persist it after animation end
 						nativeView.layer.transform = args.toValue.CATransform3DValue;
+						// Shadow container layer belongs to the parent view layer, so animate its transform separately
+						if (nativeView.outerShadowContainerLayer) {
+							nativeView.outerShadowContainerLayer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+						}
 
 						// we start the animation
 						nativeView.layer.addAnimationForKey(basicAnimation, args.propertyNameToAnimate);
@@ -757,11 +739,13 @@ export class Animation extends AnimationBase {
 			const y = value[Properties.rotate].y;
 			const z = value[Properties.rotate].z;
 			const perspective = animation.target.perspective || 300;
-			// Only set perspective if there is 3D rotation
+
+			// Set perspective in case of rotation since we use z
 			if (x || y) {
 				result.m34 = -1 / perspective;
 			}
-			result = applyRotateTransform(result, x, y, z);
+
+			result = iosHelper.applyRotateTransform(result, x, y, z);
 		}
 
 		return result;
@@ -971,7 +955,7 @@ export class Animation extends AnimationBase {
 			}
 		}
 
-		// Shadow layers do not inherit from animating view layer
+		// Shadow container layer belongs to the parent view layer, so animate its properties separately
 		if (nativeView.outerShadowContainerLayer) {
 			const shadowClipMask = nativeView.outerShadowContainerLayer.mask;
 
@@ -1060,13 +1044,14 @@ function calculateTransform(view: View): CATransform3D {
 	// Order is important: translate, rotate, scale
 	let expectedTransform = new CATransform3D(CATransform3DIdentity);
 
-	// Only set perspective if there is 3D rotation
+	// TODO: Add perspective property to transform animations (not just rotation)
+	// Set perspective in case of rotation since we use z
 	if (view.rotateX || view.rotateY) {
 		expectedTransform.m34 = -1 / perspective;
 	}
 
 	expectedTransform = CATransform3DTranslate(expectedTransform, view.translateX, view.translateY, 0);
-	expectedTransform = applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
+	expectedTransform = iosHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
 	expectedTransform = CATransform3DScale(expectedTransform, scaleX, scaleY, 1);
 
 	return expectedTransform;

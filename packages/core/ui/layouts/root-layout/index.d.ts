@@ -16,6 +16,7 @@ export class RootLayout extends GridLayout {
 }
 
 export function getRootLayout(): RootLayout;
+export function getRootLayoutById(id: string): RootLayout;
 
 export interface RootLayoutOptions {
 	shadeCover?: ShadeCoverOptions;

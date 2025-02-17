@@ -121,8 +121,15 @@ export class SearchBar extends SearchBarBase {
 
 	public focus(): boolean {
 		const result = super.focus();
+
 		if (result) {
-			ad.showSoftInput(this.nativeViewProtected);
+			if (this.nativeViewProtected) {
+				// Android search view is a view consisted of multiple views, so get the focused view
+				const focusedNativeView = this.nativeViewProtected.findFocus();
+				if (focusedNativeView) {
+					ad.showSoftInput(focusedNativeView);
+				}
+			}
 		}
 
 		return result;

@@ -163,7 +163,12 @@ export function _evaluateCssCalcExpression(value: string) {
 
 	if (isCssCalcExpression(value)) {
 		// WORKAROUND: reduce-css-calc can't handle the dip-unit.
-		return require('reduce-css-calc')(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1'));
+		let cssValue = value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1');
+		if (cssValue.includes('unset')) {
+			// ensure unset is properly handled before processing calc
+			cssValue = cssValue.replace(/unset/g, '0');
+		}
+		return require('reduce-css-calc')(cssValue);
 	} else {
 		return value;
 	}

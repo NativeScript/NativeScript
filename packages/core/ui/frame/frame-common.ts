@@ -12,6 +12,7 @@ import { sanitizeModuleName } from '../../utils/common';
 import { profile } from '../../profiling';
 import { FRAME_SYMBOL } from './frame-helpers';
 import { SharedTransition } from '../transition/shared-transition';
+import { NavigationData } from '.';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
@@ -41,7 +42,7 @@ export class FrameBase extends CustomLayoutView {
 	private _animated: boolean;
 	private _transition: NavigationTransition;
 	private _backStack = new Array<BackstackEntry>();
-	_navigationQueue = new Array<NavigationContext>();
+	private _navigationQueue = new Array<NavigationContext>();
 
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 	public _currentEntry: BackstackEntry;
@@ -259,6 +260,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
+		const fromEntry = this._currentEntry;
 		const newPage = entry.resolvedPage;
 
 		// In case we navigated forward to a page that was in the backstack
@@ -276,11 +278,12 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		newPage.onNavigatedTo(isBack);
-		this.notify({
+		this.notify<NavigationData>({
 			eventName: FrameBase.navigatedToEvent,
 			object: this,
 			isBack,
 			entry,
+			fromEntry,
 		});
 
 		// Reset executing context after NavigatedTo is raised;
@@ -302,7 +305,14 @@ export class FrameBase extends CustomLayoutView {
 			this._backStack.pop();
 		} else if (!isReplace) {
 			if (entry.entry.clearHistory) {
-				this._backStack.forEach((e) => this._removeEntry(e));
+				this._backStack.forEach((e) => {
+					if (e !== entry) {
+						this._removeEntry(e);
+					} else {
+						// This case is extremely rare but can occur when fragment resumes
+						Trace.write(`Failed to dispose backstack entry ${entry}. This entry is the one frame is navigating to.`, Trace.categories.Navigation, Trace.messageType.warn);
+					}
+				});
 				this._backStack.length = 0;
 			} else if (FrameBase._isEntryBackstackVisible(current)) {
 				this._backStack.push(current);
@@ -372,6 +382,16 @@ export class FrameBase extends CustomLayoutView {
 		return entry;
 	}
 
+	public getNavigationQueueContextByEntry(entry: BackstackEntry): NavigationContext {
+		for (const context of this._navigationQueue) {
+			if (context.entry === entry) {
+				return context;
+			}
+		}
+
+		return null;
+	}
+
 	public navigationQueueIsEmpty(): boolean {
 		return this._navigationQueue.length === 0;
 	}
@@ -438,16 +458,18 @@ export class FrameBase extends CustomLayoutView {
 	@profile
 	performGoBack(navigationContext: NavigationContext) {
 		try {
-			let backstackEntry = navigationContext.entry;
 			const backstack = this._backStack;
-			if (!backstackEntry) {
-				backstackEntry = backstack[backstack.length - 1];
-				navigationContext.entry = backstackEntry;
-			}
+			const backstackEntry = navigationContext.entry || backstack[backstack.length - 1];
 
-			this._executingContext = navigationContext;
-			this._onNavigatingTo(backstackEntry, true);
-			this._goBackCore(backstackEntry);
+			if (backstackEntry) {
+				navigationContext.entry = backstackEntry;
+
+				this._executingContext = navigationContext;
+				this._onNavigatingTo(backstackEntry, true);
+				this._goBackCore(backstackEntry);
+			} else {
+				Trace.write('Frame.performGoBack: No backstack entry found to navigate back to', Trace.categories.Navigation, Trace.messageType.warn);
+			}
 		} catch (error) {
 			// reset _executingContext or next navigations will be blocked
 			this._executingContext = null;
@@ -476,7 +498,7 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
-		this.notify({
+		this.notify<NavigationData>({
 			eventName: FrameBase.navigatingToEvent,
 			object: this,
 			isBack,
