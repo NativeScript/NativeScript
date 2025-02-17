@@ -63,20 +63,19 @@ jobs:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
   
 
-      - name: publish auto
-        if: github.event.inputs.release_type == 'auto'
+      - name: bump release auto
+        if: github.event.inputs.release_type == 'auto' 
         run: |
-          npm run core:publish -- --no-verify-access --no-private --no-commit-hooks --yes
-          git push --tags
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npm run core:changelog --
 
       - name: publish
         if: github.event.inputs.release_type != 'auto'
         run: |
-          npm run core:publish -- --no-verify-access --no-private --no-commit-hooks --yes --bump ${{ github.event.inputs.release_type }}
+          npm run core:changelog -- --release-as ${{ github.event.inputs.release_type }}
+
+      - name: publish
+        run: |
+          npm run core:publish -- --no-verify-access --no-private --no-commit-hooks --yes
           git push --tags
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
