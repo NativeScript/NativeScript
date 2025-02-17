@@ -1497,7 +1497,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	_onCssStateChange(force = false): boolean {
 		if (this.disableCss) {
-			return false;
+			return true;
 		}
 		if (!this.isLoaded && !force) {
 			this._needsCssChange = true;
