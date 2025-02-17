@@ -290,7 +290,7 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.T
 textAlignmentProperty.register(Style);
 
 const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValidator<CoreTypes.TextTransformType>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
-export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransformType>({
+export const textTransformProperty = new InheritedCssProperty<Style, CoreTypes.TextTransformType>({
 	name: 'textTransform',
 	cssName: 'text-transform',
 	defaultValue: 'initial',
@@ -298,7 +298,7 @@ export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransf
 });
 textTransformProperty.register(Style);
 
-export const textShadowProperty = new CssProperty<Style, string | ShadowCSSValues>({
+export const textShadowProperty = new InheritedCssProperty<Style, string | ShadowCSSValues>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
 	affectsLayout: __APPLE__,
@@ -308,7 +308,7 @@ export const textShadowProperty = new CssProperty<Style, string | ShadowCSSValue
 });
 textShadowProperty.register(Style);
 
-export const textStrokeProperty = new CssProperty<Style, string | StrokeCSSValues>({
+export const textStrokeProperty = new InheritedCssProperty<Style, string | StrokeCSSValues>({
 	name: 'textStroke',
 	cssName: 'text-stroke',
 	affectsLayout: __APPLE__,
@@ -319,7 +319,7 @@ export const textStrokeProperty = new CssProperty<Style, string | StrokeCSSValue
 textStrokeProperty.register(Style);
 
 const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('initial', 'normal', 'nowrap'));
-export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceType>({
+export const whiteSpaceProperty = new InheritedCssProperty<Style, CoreTypes.WhiteSpaceType>({
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
