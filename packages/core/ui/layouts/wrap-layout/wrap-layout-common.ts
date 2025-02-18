@@ -22,7 +22,8 @@ export const itemWidthProperty = new Property<WrapLayoutBase, CoreTypes.LengthTy
 	name: 'itemWidth',
 	defaultValue: 'auto',
 	affectsLayout: __APPLE__,
-	valueConverter: (v) => Length.parse(v),
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
 	valueChanged: (target, oldValue, newValue) => (target.effectiveItemWidth = Length.toDevicePixels(newValue, -1)),
 });
 itemWidthProperty.register(WrapLayoutBase);
@@ -31,7 +32,8 @@ export const itemHeightProperty = new Property<WrapLayoutBase, CoreTypes.LengthT
 	name: 'itemHeight',
 	defaultValue: 'auto',
 	affectsLayout: __APPLE__,
-	valueConverter: (v) => Length.parse(v),
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
 	valueChanged: (target, oldValue, newValue) => (target.effectiveItemHeight = Length.toDevicePixels(newValue, -1)),
 });
 itemHeightProperty.register(WrapLayoutBase);

@@ -7,6 +7,7 @@ import { Color } from '../../color';
 export abstract class SearchBarBase extends View implements SearchBarDefinition {
 	public static submitEvent = 'submit';
 	public static clearEvent = 'clear';
+
 	public text: string;
 	public hint: string;
 	public textFieldBackgroundColor: Color;

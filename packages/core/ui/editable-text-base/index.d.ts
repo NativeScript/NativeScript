@@ -7,56 +7,98 @@ import { CoreTypes } from '../../core-types';
 
 /**
  * Represents the base class for all editable text views.
+ *
+ * @nsView EditableTextBase
  */
 export class EditableTextBase extends TextBase {
+	/**
+	 * String value used when hooking to the blur event.
+	 *
+	 * @nsEvent blurEvent
+	 */
 	public static blurEvent: string;
+	/**
+	 * String value used when hooking to the focus event.
+	 *
+	 * @nsEvent focusEvent
+	 */
 	public static focusEvent: string;
+	/**
+	 * String value used when hooking to the textChange event.
+	 *
+	 * @nsEvent {PropertyChangeData} textChangeEvent
+	 */
 	public static textChangeEvent: string;
 
 	/**
 	 * Gets or sets the soft keyboard type.
+	 *
+	 * @nsProperty
 	 */
 	keyboardType: CoreTypes.KeyboardInputType;
 
 	/**
 	 * Gets or sets the soft keyboard return key flavor.
+	 *
+	 * @nsProperty
 	 */
 	returnKeyType: CoreTypes.ReturnKeyButtonType;
 
 	/**
 	 * Gets or sets a value indicating when the text property will be updated.
+	 *
+	 * @nsProperty
 	 */
 	updateTextTrigger: CoreTypes.UpdateTextTriggerType;
 
 	/**
 	 * Gets or sets the autocapitalization type.
+	 *
+	 * @nsProperty
 	 */
 	autocapitalizationType: CoreTypes.AutocapitalizationInputType;
 
 	/**
 	 * Gets or sets the autofill type.
+	 *
+	 * @nsProperty
 	 */
 	autofillType: CoreTypes.AutofillType;
 
 	/**
 	 * Gets or sets whether the instance is editable.
+	 *
+	 * @nsProperty
 	 */
 	editable: boolean;
 
 	/**
 	 * Enables or disables autocorrection.
+	 *
+	 * @nsProperty
 	 */
 	autocorrect: boolean;
 
 	/**
 	 * Gets or sets the placeholder text.
+	 *
+	 * @nsProperty
 	 */
 	hint: string;
 
 	/**
 	 * Limits input to a certain number of characters.
+	 *
+	 * @nsProperty
 	 */
 	maxLength: number;
+
+	/**
+	 * Gets or sets the color of the placeholder text
+	 *
+	 * @nsProperty
+	 */
+	placeholderColor: Color;
 
 	/**
 	 * Format input values

@@ -106,12 +106,30 @@
 					"codeCoverage": true
 				}
 			}
+		},
+		"@nx/vite:test": {
+			"cache": true,
+			"inputs": ["default", "^production"]
 		}
 	},
 	"useDaemonProcess": false,
-	"nxCloudAccessToken": "NzRmNDM3NDgtZjlmNy00MTUwLWIxZDktYjJlZTRhMWM5ODY3fHJlYWQtd3JpdGU=",
 	"parallel": 1,
 	"useInferencePlugins": false,
 	"defaultBase": "master",
-	"useLegacyCache": true
+	"useLegacyCache": true,
+	"release": {
+		"releaseTagPattern": "{version}-{projectName}",
+		"projects": ["packages/*", "!packages/ui-mobile-base", "!packages/types-minimal", "!packages/winter-tc"],
+		"projectsRelationship": "independent",
+		"changelog": {
+			"workspaceChangelog": false,
+			"projectChangelogs": {
+				"renderOptions": {
+					"authors": true,
+					"commitReferences": true,
+					"versionTitleDate": true
+				}
+			}
+		}
+	}
 }

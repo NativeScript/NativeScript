@@ -1,5 +1,5 @@
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, FlexboxLayoutBase, FlexBasisPercent, orderProperty, flexGrowProperty, flexShrinkProperty, flexWrapBeforeProperty, alignSelfProperty } from './flexbox-layout-common';
-import { View } from '../../core/view';
+import { Position, View } from '../../core/view';
 import { layout } from '../../../utils';
 
 export * from './flexbox-layout-common';
@@ -977,7 +977,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		}
 	}
 
-	private _layoutHorizontal(isRtl: boolean, left: number, top: number, right: number, bottom: number, insets: { left; top; right; bottom }) {
+	private _layoutHorizontal(isRtl: boolean, left: number, top: number, right: number, bottom: number, insets: Position) {
 		// include insets
 		const paddingLeft = this.effectivePaddingLeft + insets.left;
 		const paddingTop = this.effectivePaddingTop + insets.top;
@@ -1122,7 +1122,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		}
 	}
 
-	private _layoutVertical(isRtl: boolean, fromBottomToTop: boolean, left: number, top: number, right: number, bottom: number, insets: { left; top; right; bottom }) {
+	private _layoutVertical(isRtl: boolean, fromBottomToTop: boolean, left: number, top: number, right: number, bottom: number, insets: Position) {
 		const paddingLeft = this.effectivePaddingLeft + insets.left;
 		const paddingTop = this.effectivePaddingTop + insets.top;
 		const paddingRight = this.effectivePaddingRight + insets.right;

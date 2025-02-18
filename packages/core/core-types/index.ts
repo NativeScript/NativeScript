@@ -3,8 +3,8 @@
  */
 
 // imported for definition purposes only
-import * as animationModule from '../ui/animation';
 import { makeValidator, makeParser } from '../ui/core/properties';
+import { CubicBezierAnimationCurve } from '../ui/animation/animation-interfaces';
 
 export namespace CoreTypes {
 	/**
@@ -29,8 +29,9 @@ export namespace CoreTypes {
 	export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
 	export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
 
-	export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
-	export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
+	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit;
+	export type LengthType = 'auto' | FixedLengthType;
+	export type PercentLengthType = 'auto' | FixedLengthType | LengthPercentUnit;
 
 	export const zeroLength: LengthType = {
 		value: 0,
@@ -263,8 +264,6 @@ export namespace CoreTypes {
 		export const parse = makeParser<BackgroundRepeatType>(isValid);
 	}
 
-	let animation: typeof animationModule;
-
 	export namespace AnimationCurve {
 		export const ease = 'ease';
 		export const easeIn = 'easeIn';
@@ -273,9 +272,7 @@ export namespace CoreTypes {
 		export const linear = 'linear';
 		export const spring = 'spring';
 		export function cubicBezier(x1: number, y1: number, x2: number, y2: number) {
-			animation = animation || require('../ui/animation');
-
-			return new animation.CubicBezierAnimationCurve(x1, y1, x2, y2);
+			return new CubicBezierAnimationCurve(x1, y1, x2, y2);
 		}
 	}
 

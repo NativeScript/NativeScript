@@ -8,13 +8,19 @@ export type Transformation = {
 	value: TransformationValue;
 };
 
-export type TransformationType = 'rotate' | 'translate' | 'translateX' | 'translateY' | 'scale' | 'scaleX' | 'scaleY';
+export type TransformationType = 'rotate' | 'rotate3d' | 'rotateX' | 'rotateY' | 'translate' | 'translate3d' | 'translateX' | 'translateY' | 'scale' | 'scale3d' | 'scaleX' | 'scaleY';
 
-export type TransformationValue = Pair | number;
+export type TransformationValue = Point3D | Pair | number;
+
+export interface Point3D {
+	x: number;
+	y: number;
+	z: number;
+}
 
 export type TransformFunctionsInfo = {
 	translate: Pair;
-	rotate: number;
+	rotate: Point3D;
 	scale: Pair;
 };
 
@@ -55,7 +61,7 @@ export interface AnimationDefinition {
 	scale?: Pair;
 	height?: CoreTypes.PercentLengthType | string;
 	width?: CoreTypes.PercentLengthType | string;
-	rotate?: number;
+	rotate?: Point3D;
 	duration?: number;
 	delay?: number;
 	iterations?: number;
@@ -70,4 +76,22 @@ export interface IOSView extends View {
 	_suspendPresentationLayerUpdates();
 	_resumePresentationLayerUpdates();
 	_isPresentationLayerUpdateSuspended();
+}
+
+/**
+ * Defines a custom animation timing curve by using the cubic-bezier function.
+ * Possible values are numeric values from 0 to 1
+ */
+export class CubicBezierAnimationCurve {
+	public x1: number;
+	public y1: number;
+	public x2: number;
+	public y2: number;
+
+	constructor(x1: number, y1: number, x2: number, y2: number) {
+		this.x1 = x1;
+		this.y1 = y1;
+		this.x2 = x2;
+		this.y2 = y2;
+	}
 }

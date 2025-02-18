@@ -34,7 +34,7 @@ export namespace ios {
 		return utils.layout.toDevicePixels(min);
 	}
 
-	export function drawGradient(nativeView: NativeScriptUIView, gradientLayer: CAGradientLayer, gradient: LinearGradient, gradientLayerOpacity?: number): void {
+	export function drawGradient(nativeView: UIView, gradientLayer: CAGradientLayer, gradient: LinearGradient, gradientLayerOpacity?: number): void {
 		if (!nativeView || !gradient) {
 			return;
 		}

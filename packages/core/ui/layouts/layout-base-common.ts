@@ -3,21 +3,9 @@ import { CoreTypes } from '../../core-types';
 import { View, CustomLayoutView, AddChildFromBuilder } from '../core/view';
 import { booleanConverter, getViewById } from '../core/view-base';
 import { Property } from '../core/properties';
-import { accessibilityEnabledProperty } from '../../accessibility/accessibility-properties';
 
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 	private _subViews = new Array<View>();
-
-	constructor() {
-		super();
-
-		/**
-		 * mark accessible as false without triggering property change
-		 * equivalent to changing the default
-		 * TODO: Remove this when we have a more flexible API for declaring default property values per type of view
-		 */
-		this.style[accessibilityEnabledProperty.key] = false;
-	}
 
 	public _addChildFromBuilder(name: string, value: any) {
 		if (value instanceof View) {
@@ -61,10 +49,14 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		this._registerLayoutChild(child);
 	}
 
-	public insertChild(child: View, atIndex: number): void {
-		this._subViews.splice(atIndex, 0, child);
-		this._addView(child, atIndex);
-		this._registerLayoutChild(child);
+	public insertChild(child: View, atIndex: number): boolean {
+		if (atIndex > -1) {
+			this._subViews.splice(atIndex, 0, child);
+			this._addView(child, atIndex);
+			this._registerLayoutChild(child);
+			return true;
+		}
+		return false;
 	}
 
 	public removeChild(child: View): void {
@@ -72,8 +64,10 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 
 		// TODO: consider caching the index on the child.
 		const index = this._subViews.indexOf(child);
-		this._subViews.splice(index, 1);
-		this._unregisterLayoutChild(child);
+		if (index > -1) {
+			this._subViews.splice(index, 1);
+			this._unregisterLayoutChild(child);
+		}
 	}
 
 	public removeChildren(): void {

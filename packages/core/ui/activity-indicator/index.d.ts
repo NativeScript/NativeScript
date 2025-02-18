@@ -4,6 +4,8 @@ export type IOSIndicatorViewStyle = 'medium' | 'large';
 
 /**
  * Represents a UI widget which displays a progress indicator hinting the user for some background operation running.
+ *
+ * @nsView ActivityIndicator
  */
 export class ActivityIndicator extends View {
 	/**
@@ -18,6 +20,8 @@ export class ActivityIndicator extends View {
 
 	/**
 	 * Gets or sets a value indicating whether the widget is currently displaying progress.
+	 *
+	 * @nsProperty
 	 */
 	busy: boolean;
 

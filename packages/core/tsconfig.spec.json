@@ -1,13 +1,11 @@
 {
+	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"outDir": "../../dist/out-tsc",
-		"types": ["jest", "node"],
-		"target": "ESNext",
-		"module": "esnext",
-		"moduleResolution": "node",
 		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
 		"allowJs": true,
-		"experimentalDecorators": true
+		"types": ["vitest/globals", "vitest/importMeta", "vite/client", "node", "vitest"]
 	},
-	"include": ["./references.d.ts", "**/*.spec.ts"]
+	"include": ["references.d.ts", "vite.config.ts", "vitest.setup.ts", "**/*.test.ts", "**/*.spec.ts", "**/*.ts", "**/*.ios.ts"]
 }

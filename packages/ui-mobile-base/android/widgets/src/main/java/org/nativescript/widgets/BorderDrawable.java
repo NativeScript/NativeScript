@@ -273,10 +273,11 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			Fetcher fetcher = Fetcher.getInstance(context);
 			// TODO: Implement option to pass load-mode like in ImageView class.
 			boolean loadAsync = backgroundImageUri.startsWith("http");
-			fetcher.loadImage(backgroundImageUri, this, 0, 0, false, true, loadAsync, null);
+
+			// Maintain aspect ratio for background images by default and size will be handled by border drawable
+			fetcher.loadImage(backgroundImageUri, this, 0, 0, true, true, loadAsync, null);
 		}
 	}
-
 
 	RectF backgroundBoundsF = new RectF();
 	Path backgroundPath = new Path();

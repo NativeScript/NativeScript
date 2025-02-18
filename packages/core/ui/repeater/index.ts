@@ -17,6 +17,8 @@ export interface ItemsSource {
 
 /**
  * Represents a UI Repeater component.
+ *
+ * @nsView Repeater
  */
 @CSSType('Repeater')
 export class Repeater extends CustomLayoutView {
