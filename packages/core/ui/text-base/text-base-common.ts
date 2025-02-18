@@ -12,7 +12,6 @@ import { Style } from '../styling/style';
 import { Observable } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
-import { Color } from '../../color';
 import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
 import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
 
@@ -223,10 +222,6 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 }
 
 TextBaseCommon.prototype._isSingleLine = false;
-
-export function isBold(fontWeight: FontWeightType): boolean {
-	return fontWeight === 'bold' || fontWeight === '700' || fontWeight === '800' || fontWeight === '900';
-}
 
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',

@@ -29,6 +29,12 @@ export class Button extends ButtonBase {
 
 	public disposeNativeView(): void {
 		this._tapHandler = null;
+
+		if (this._stateChangedHandler) {
+			this._stateChangedHandler.stop();
+			this._stateChangedHandler = null;
+		}
+
 		super.disposeNativeView();
 	}
 
@@ -37,28 +43,32 @@ export class Button extends ButtonBase {
 		return this.nativeViewProtected;
 	}
 
-	public onUnloaded() {
-		super.onUnloaded();
-		if (this._stateChangedHandler) {
-			this._stateChangedHandler.stop();
-		}
-	}
-
 	@PseudoClassHandler('normal', 'highlighted', 'pressed', 'active')
 	_updateButtonStateChangeHandler(subscribe: boolean) {
 		if (subscribe) {
 			if (!this._stateChangedHandler) {
+				const viewRef = new WeakRef<Button>(this);
+
 				this._stateChangedHandler = new ControlStateChangeListener(this.nativeViewProtected, observableVisualStates, (state: string, add: boolean) => {
-					if (add) {
-						this._addVisualState(state);
-					} else {
-						this._removeVisualState(state);
+					const view = viewRef?.deref?.();
+
+					if (view) {
+						if (add) {
+							view._addVisualState(state);
+						} else {
+							view._removeVisualState(state);
+						}
 					}
 				});
 			}
 			this._stateChangedHandler.start();
 		} else {
 			this._stateChangedHandler.stop();
+
+			// Remove any possible pseudo-class leftovers
+			for (const state of observableVisualStates) {
+				this._removeVisualState(state);
+			}
 		}
 	}
 
