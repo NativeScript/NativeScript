@@ -3162,6 +3162,18 @@ declare class AVCaptureConnection extends NSObject {
 }
 
 /**
+ * @since 18.0
+ */
+declare class AVCaptureControl extends NSObject {
+
+	static alloc(): AVCaptureControl; // inherited from NSObject
+
+	static new(): AVCaptureControl; // inherited from NSObject
+
+	enabled: boolean;
+}
+
+/**
  * @since 11.0
  */
 declare class AVCaptureDataOutputSynchronizer extends NSObject {
@@ -3436,6 +3448,11 @@ declare class AVCaptureDevice extends NSObject {
 	 * @since 8.0
 	 */
 	readonly deviceWhiteBalanceGains: AVCaptureWhiteBalanceGains;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly displayVideoZoomFactorMultiplier: number;
 
 	/**
 	 * @since 11.0
@@ -4008,6 +4025,16 @@ declare class AVCaptureDeviceFormat extends NSObject {
 	readonly supportedVideoZoomRangesForDepthDataDelivery: NSArray<AVZoomRange>;
 
 	/**
+	 * @since 18.0
+	 */
+	readonly systemRecommendedExposureBiasRange: AVExposureBiasRange;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly systemRecommendedVideoZoomRange: AVZoomRange;
+
+	/**
 	 * @since 11.0
 	 */
 	readonly unsupportedCaptureOutputClasses: NSArray<typeof NSObject>;
@@ -4118,6 +4145,16 @@ declare class AVCaptureDeviceInput extends AVCaptureInput {
 	 * @since 13.0
 	 */
 	videoMinFrameDurationOverride: CMTime;
+
+	/**
+	 * @since 18.0
+	 */
+	windNoiseRemovalEnabled: boolean;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly windNoiseRemovalSupported: boolean;
 
 	constructor(o: { device: AVCaptureDevice; });
 
@@ -4297,6 +4334,21 @@ declare class AVCaptureFileOutput extends AVCaptureOutput {
 
 	readonly recording: boolean;
 
+	/**
+	 * @since 18.0
+	 */
+	readonly recordingPaused: boolean;
+
+	/**
+	 * @since 18.0
+	 */
+	pauseRecording(): void;
+
+	/**
+	 * @since 18.0
+	 */
+	resumeRecording(): void;
+
 	startRecordingToOutputFileURLRecordingDelegate(outputFileURL: NSURL, delegate: AVCaptureFileOutputRecordingDelegate): void;
 
 	stopRecording(): void;
@@ -4308,6 +4360,16 @@ declare class AVCaptureFileOutput extends AVCaptureOutput {
 interface AVCaptureFileOutputRecordingDelegate extends NSObjectProtocol {
 
 	captureOutputDidFinishRecordingToOutputFileAtURLFromConnectionsError(output: AVCaptureFileOutput, outputFileURL: NSURL, connections: NSArray<AVCaptureConnection> | AVCaptureConnection[], error: NSError): void;
+
+	/**
+	 * @since 18.0
+	 */
+	captureOutputDidPauseRecordingToOutputFileAtURLFromConnections?(output: AVCaptureFileOutput, fileURL: NSURL, connections: NSArray<AVCaptureConnection> | AVCaptureConnection[]): void;
+
+	/**
+	 * @since 18.0
+	 */
+	captureOutputDidResumeRecordingToOutputFileAtURLFromConnections?(output: AVCaptureFileOutput, fileURL: NSURL, connections: NSArray<AVCaptureConnection> | AVCaptureConnection[]): void;
 
 	captureOutputDidStartRecordingToOutputFileAtURLFromConnections?(output: AVCaptureFileOutput, fileURL: NSURL, connections: NSArray<AVCaptureConnection> | AVCaptureConnection[]): void;
 }
@@ -4344,6 +4406,42 @@ declare const enum AVCaptureFocusMode {
  * @since 8.0
  */
 declare var AVCaptureISOCurrent: number;
+
+/**
+ * @since 18.0
+ */
+declare class AVCaptureIndexPicker extends AVCaptureControl {
+
+	static alloc(): AVCaptureIndexPicker; // inherited from NSObject
+
+	static new(): AVCaptureIndexPicker; // inherited from NSObject
+
+	accessibilityIdentifier: string;
+
+	readonly localizedIndexTitles: NSArray<string>;
+
+	readonly localizedTitle: string;
+
+	readonly numberOfIndexes: number;
+
+	selectedIndex: number;
+
+	readonly symbolName: string;
+
+	constructor(o: { localizedTitle: string; symbolName: string; localizedIndexTitles: NSArray<string> | string[]; });
+
+	constructor(o: { localizedTitle: string; symbolName: string; numberOfIndexes: number; });
+
+	constructor(o: { localizedTitle: string; symbolName: string; numberOfIndexes: number; localizedTitleTransform: (p1: number) => string; });
+
+	initWithLocalizedTitleSymbolNameLocalizedIndexTitles(localizedTitle: string, symbolName: string, localizedIndexTitles: NSArray<string> | string[]): this;
+
+	initWithLocalizedTitleSymbolNameNumberOfIndexes(localizedTitle: string, symbolName: string, numberOfIndexes: number): this;
+
+	initWithLocalizedTitleSymbolNameNumberOfIndexesLocalizedTitleTransform(localizedTitle: string, symbolName: string, numberOfIndexes: number, localizedTitleTransform: (p1: number) => string): this;
+
+	setActionQueueAction(actionQueue: NSObject & OS_dispatch_queue, action: (p1: number) => void): void;
+}
 
 /**
  * @since 4.0
@@ -4599,7 +4697,9 @@ declare const enum AVCaptureMultichannelAudioMode {
 
 	None = 0,
 
-	Stereo = 1
+	Stereo = 1,
+
+	FirstOrderAmbisonics = 2
 }
 
 /**
@@ -4925,6 +5025,11 @@ declare class AVCapturePhotoOutput extends AVCaptureOutput {
 	readonly availablePhotoPixelFormatTypes: NSArray<number>;
 
 	/**
+	 * @since 18.0
+	 */
+	readonly availableRawPhotoCodecTypes: NSArray<string>;
+
+	/**
 	 * @since 11.0
 	 */
 	readonly availableRawPhotoFileTypes: NSArray<string>;
@@ -5125,6 +5230,11 @@ declare class AVCapturePhotoOutput extends AVCaptureOutput {
 	 * @since 11.0
 	 */
 	supportedPhotoPixelFormatTypesForFileType(fileType: string): NSArray<number>;
+
+	/**
+	 * @since 18.0
+	 */
+	supportedRawPhotoCodecTypesForRawPhotoPixelFormatTypeFileType(pixelFormatType: number, fileType: string): NSArray<string>;
 
 	/**
 	 * @since 11.0
@@ -5365,6 +5475,11 @@ declare class AVCapturePhotoSettings extends NSObject implements NSCopying {
 	rawEmbeddedThumbnailPhotoFormat: NSDictionary<string, any>;
 
 	/**
+	 * @since 18.0
+	 */
+	rawFileFormat: NSDictionary<string, any>;
+
+	/**
 	 * @since 11.0
 	 */
 	readonly rawFileType: string;
@@ -5603,6 +5718,21 @@ declare class AVCaptureSession extends NSObject {
 	readonly connections: NSArray<AVCaptureConnection>;
 
 	/**
+	 * @since 18.0
+	 */
+	readonly controls: NSArray<AVCaptureControl>;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly controlsDelegate: AVCaptureSessionControlsDelegate;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly controlsDelegateCallbackQueue: NSObject & OS_dispatch_queue;
+
+	/**
 	 * @since 16.0
 	 */
 	readonly hardwareCost: number;
@@ -5621,6 +5751,11 @@ declare class AVCaptureSession extends NSObject {
 	readonly masterClock: any;
 
 	/**
+	 * @since 18.0
+	 */
+	readonly maxControlsCount: number;
+
+	/**
 	 * @since 16.0
 	 */
 	multitaskingCameraAccessEnabled: boolean;
@@ -5637,6 +5772,11 @@ declare class AVCaptureSession extends NSObject {
 	sessionPreset: string;
 
 	/**
+	 * @since 18.0
+	 */
+	readonly supportsControls: boolean;
+
+	/**
 	 * @since 15.4
 	 */
 	readonly synchronizationClock: any;
@@ -5650,6 +5790,11 @@ declare class AVCaptureSession extends NSObject {
 	 * @since 8.0
 	 */
 	addConnection(connection: AVCaptureConnection): void;
+
+	/**
+	 * @since 18.0
+	 */
+	addControl(control: AVCaptureControl): void;
 
 	addInput(input: AVCaptureInput): void;
 
@@ -5672,6 +5817,11 @@ declare class AVCaptureSession extends NSObject {
 	 */
 	canAddConnection(connection: AVCaptureConnection): boolean;
 
+	/**
+	 * @since 18.0
+	 */
+	canAddControl(control: AVCaptureControl): boolean;
+
 	canAddInput(input: AVCaptureInput): boolean;
 
 	canAddOutput(output: AVCaptureOutput): boolean;
@@ -5685,14 +5835,42 @@ declare class AVCaptureSession extends NSObject {
 	 */
 	removeConnection(connection: AVCaptureConnection): void;
 
+	/**
+	 * @since 18.0
+	 */
+	removeControl(control: AVCaptureControl): void;
+
 	removeInput(input: AVCaptureInput): void;
 
 	removeOutput(output: AVCaptureOutput): void;
+
+	/**
+	 * @since 18.0
+	 */
+	setControlsDelegateQueue(controlsDelegate: AVCaptureSessionControlsDelegate, controlsDelegateCallbackQueue: NSObject & OS_dispatch_queue): void;
 
 	startRunning(): void;
 
 	stopRunning(): void;
 }
+
+/**
+ * @since 18.0
+ */
+interface AVCaptureSessionControlsDelegate extends NSObjectProtocol {
+
+	sessionControlsDidBecomeActive(session: AVCaptureSession): void;
+
+	sessionControlsDidBecomeInactive(session: AVCaptureSession): void;
+
+	sessionControlsWillEnterFullscreenAppearance(session: AVCaptureSession): void;
+
+	sessionControlsWillExitFullscreenAppearance(session: AVCaptureSession): void;
+}
+declare var AVCaptureSessionControlsDelegate: {
+
+	prototype: AVCaptureSessionControlsDelegate;
+};
 
 /**
  * @since 4.0
@@ -5809,6 +5987,42 @@ declare var AVCaptureSessionRuntimeErrorNotification: string;
  * @since 4.0
  */
 declare var AVCaptureSessionWasInterruptedNotification: string;
+
+/**
+ * @since 18.0
+ */
+declare class AVCaptureSlider extends AVCaptureControl {
+
+	static alloc(): AVCaptureSlider; // inherited from NSObject
+
+	static new(): AVCaptureSlider; // inherited from NSObject
+
+	accessibilityIdentifier: string;
+
+	readonly localizedTitle: string;
+
+	localizedValueFormat: string;
+
+	prominentValues: NSArray<number>;
+
+	readonly symbolName: string;
+
+	value: number;
+
+	constructor(o: { localizedTitle: string; symbolName: string; minValue: number; maxValue: number; });
+
+	constructor(o: { localizedTitle: string; symbolName: string; minValue: number; maxValue: number; step: number; });
+
+	constructor(o: { localizedTitle: string; symbolName: string; values: NSArray<number> | number[]; });
+
+	initWithLocalizedTitleSymbolNameMinValueMaxValue(localizedTitle: string, symbolName: string, minValue: number, maxValue: number): this;
+
+	initWithLocalizedTitleSymbolNameMinValueMaxValueStep(localizedTitle: string, symbolName: string, minValue: number, maxValue: number, step: number): this;
+
+	initWithLocalizedTitleSymbolNameValues(localizedTitle: string, symbolName: string, values: NSArray<number> | number[]): this;
+
+	setActionQueueAction(actionQueue: NSObject & OS_dispatch_queue, action: (p1: number) => void): void;
+}
 
 /**
  * @since 4.0
@@ -5960,6 +6174,24 @@ declare class AVCaptureSynchronizedSampleBufferData extends AVCaptureSynchronize
 }
 
 /**
+ * @since 18.0
+ */
+declare class AVCaptureSystemExposureBiasSlider extends AVCaptureControl {
+
+	static alloc(): AVCaptureSystemExposureBiasSlider; // inherited from NSObject
+
+	static new(): AVCaptureSystemExposureBiasSlider; // inherited from NSObject
+
+	constructor(o: { device: AVCaptureDevice; });
+
+	constructor(o: { device: AVCaptureDevice; action: (p1: number) => void; });
+
+	initWithDevice(device: AVCaptureDevice): this;
+
+	initWithDeviceAction(device: AVCaptureDevice, action: (p1: number) => void): this;
+}
+
+/**
  * @since 11.1
  */
 declare const enum AVCaptureSystemPressureFactors {
@@ -6022,6 +6254,24 @@ declare const enum AVCaptureSystemUserInterface {
 	VideoEffects = 1,
 
 	MicrophoneModes = 2
+}
+
+/**
+ * @since 18.0
+ */
+declare class AVCaptureSystemZoomSlider extends AVCaptureControl {
+
+	static alloc(): AVCaptureSystemZoomSlider; // inherited from NSObject
+
+	static new(): AVCaptureSystemZoomSlider; // inherited from NSObject
+
+	constructor(o: { device: AVCaptureDevice; });
+
+	constructor(o: { device: AVCaptureDevice; action: (p1: number) => void; });
+
+	initWithDevice(device: AVCaptureDevice): this;
+
+	initWithDeviceAction(device: AVCaptureDevice, action: (p1: number) => void): this;
 }
 
 /**
@@ -7129,7 +7379,11 @@ declare const enum AVError {
 
 	SandboxExtensionDenied = -11884,
 
-	ToneMappingFailed = -11885
+	ToneMappingFailed = -11885,
+
+	MediaExtensionDisabled = -11886,
+
+	MediaExtensionConflict = -11887
 }
 
 /**
@@ -7181,6 +7435,22 @@ declare var AVErrorRecordingSuccessfullyFinishedKey: string;
  * @since 4.0
  */
 declare var AVErrorTimeKey: string;
+
+/**
+ * @since 18.0
+ */
+declare class AVExposureBiasRange extends NSObject {
+
+	static alloc(): AVExposureBiasRange; // inherited from NSObject
+
+	static new(): AVExposureBiasRange; // inherited from NSObject
+
+	readonly maxExposureBias: number;
+
+	readonly minExposureBias: number;
+
+	containsExposureBias(exposureBias: number): boolean;
+}
 
 /**
  * @since 17.4
@@ -9570,6 +9840,11 @@ declare var AVMetadataIdentifierQuickTimeMetadataDisplayName: string;
 declare var AVMetadataIdentifierQuickTimeMetadataEncodedBy: string;
 
 /**
+ * @since 18.0
+ */
+declare var AVMetadataIdentifierQuickTimeMetadataFullFrameRatePlaybackIntent: string;
+
+/**
  * @since 8.0
  */
 declare var AVMetadataIdentifierQuickTimeMetadataGenre: string;
@@ -10592,6 +10867,11 @@ declare var AVMetadataQuickTimeMetadataKeyDisplayName: string;
  * @since 4.0
  */
 declare var AVMetadataQuickTimeMetadataKeyEncodedBy: string;
+
+/**
+ * @since 18.0
+ */
+declare var AVMetadataQuickTimeMetadataKeyFullFrameRatePlaybackIntent: string;
 
 /**
  * @since 4.0
@@ -11760,10 +12040,6 @@ declare class AVMutableComposition extends AVComposition {
 
 	insertEmptyTimeRange(timeRange: CMTimeRange): void;
 
-	/**
-	 * @since 16.0
-	 * @deprecated 18.0
-	 */
 	insertTimeRangeOfAssetAtTimeCompletionHandler(timeRange: CMTimeRange, asset: AVAsset, startTime: CMTime, completionHandler: (p1: NSError) => void): void;
 
 	/**
@@ -11771,11 +12047,6 @@ declare class AVMutableComposition extends AVComposition {
 	 * @deprecated 18.0
 	 */
 	insertTimeRangeOfAssetAtTimeError(timeRange: CMTimeRange, asset: AVAsset, startTime: CMTime): boolean;
-
-	/**
-	 * @since 18.0
-	 */
-	insertTimeRangeOfTracksAtTimeError(timeRange: CMTimeRange, tracks: NSArray<AVAssetTrack> | AVAssetTrack[], startTime: CMTime): boolean;
 
 	/**
 	 * @since 15.0
@@ -15362,6 +15633,11 @@ declare var AVVideoCodecTypeHEVCWithAlpha: string;
  * @since 11.0
  */
 declare var AVVideoCodecTypeJPEG: string;
+
+/**
+ * @since 18.0
+ */
+declare var AVVideoCodecTypeJPEGXL: string;
 
 /**
  * @since 10.0

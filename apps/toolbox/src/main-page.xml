@@ -1,11 +1,11 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
   <Page.actionBar>
-    <ActionBar title="Dev Toolbox" icon="" class="action-bar">
+    <ActionBar title="Dev Toolbox" icon="" class="action-bar" iosLargeTitle="true" iosShadow="false">
     </ActionBar>
   </Page.actionBar>
-  <StackLayout class="p-20">
+  <StackLayout>
     <ScrollView class="h-full">
-      <StackLayout>
+      <StackLayout class="p-20" paddingBottom="40" iosOverflowSafeArea="false">
         <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="css-playground" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />

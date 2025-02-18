@@ -1,7 +1,8 @@
-import { ActivityIndicatorBase, busyProperty } from './activity-indicator-common';
+import { ActivityIndicatorBase, busyProperty, iosIndicatorViewStyleProperty } from './activity-indicator-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { iOSNativeHelper } from '../../utils';
+import { IOSIndicatorViewStyle } from '.';
 
 export * from './activity-indicator-common';
 
@@ -10,10 +11,8 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 export class ActivityIndicator extends ActivityIndicatorBase {
 	nativeViewProtected: UIActivityIndicatorView;
 
-	private _activityIndicatorViewStyle = majorVersion <= 12 || !UIActivityIndicatorViewStyle.Medium ? UIActivityIndicatorViewStyle.Gray : UIActivityIndicatorViewStyle.Medium;
-
 	createNativeView() {
-		const viewStyle = this._activityIndicatorViewStyle;
+		const viewStyle = this._getNativeIndicatorViewStyle(this.iosIndicatorViewStyle);
 		const view = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(viewStyle);
 		view.hidesWhenStopped = true;
 
@@ -25,15 +24,27 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		return this.nativeViewProtected;
 	}
 
-	[busyProperty.getDefault](): boolean {
-		if ((<any>this.nativeViewProtected).isAnimating) {
-			return (<any>this.nativeViewProtected).isAnimating();
-		} else {
-			return this.nativeViewProtected.animating;
+	private _getNativeIndicatorViewStyle(value: IOSIndicatorViewStyle): UIActivityIndicatorViewStyle {
+		let viewStyle: UIActivityIndicatorViewStyle;
+
+		switch (value) {
+			case 'large':
+				viewStyle = majorVersion > 12 ? UIActivityIndicatorViewStyle.Large : UIActivityIndicatorViewStyle.WhiteLarge;
+				break;
+			default:
+				viewStyle = majorVersion > 12 ? UIActivityIndicatorViewStyle.Medium : UIActivityIndicatorViewStyle.Gray;
+				break;
 		}
+
+		return viewStyle;
+	}
+
+	[busyProperty.getDefault](): boolean {
+		return this.nativeViewProtected.animating;
 	}
 	[busyProperty.setNative](value: boolean) {
 		const nativeView = this.nativeViewProtected;
+
 		if (value) {
 			nativeView.startAnimating();
 		} else {
@@ -50,5 +61,9 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 	}
 	[colorProperty.setNative](value: UIColor | Color) {
 		this.nativeViewProtected.color = value instanceof Color ? value.ios : value;
+	}
+
+	[iosIndicatorViewStyleProperty.setNative](value: IOSIndicatorViewStyle) {
+		this.nativeViewProtected.activityIndicatorViewStyle = this._getNativeIndicatorViewStyle(value);
 	}
 }

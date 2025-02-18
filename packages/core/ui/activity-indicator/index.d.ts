@@ -1,5 +1,7 @@
 ﻿import { View } from '../core/view';
 
+export type IOSIndicatorViewStyle = 'medium' | 'large';
+
 /**
  * Represents a UI widget which displays a progress indicator hinting the user for some background operation running.
  *
@@ -22,4 +24,9 @@ export class ActivityIndicator extends View {
 	 * @nsProperty
 	 */
 	busy: boolean;
+
+	/**
+	 * Gets or sets the iOS indicator view style (e.g. medium, large).
+	 */
+	iosIndicatorViewStyle: IOSIndicatorViewStyle;
 }

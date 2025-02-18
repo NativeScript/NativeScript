@@ -16291,6 +16291,8 @@ interface UIFocusItem extends UIFocusEnvironment {
 	 */
 	focusGroupPriority?: number;
 
+	focusItemDeferralMode?: UIFocusItemDeferralMode;
+
 	/**
 	 * @since 12.0
 	 */
@@ -16324,6 +16326,18 @@ declare var UIFocusItemContainer: {
 
 	prototype: UIFocusItemContainer;
 };
+
+/**
+ * @since 18.0
+ */
+declare const enum UIFocusItemDeferralMode {
+
+	Automatic = 0,
+
+	Always = 1,
+
+	Never = 2
+}
 
 /**
  * @since 12.0
@@ -21699,6 +21713,11 @@ declare var UIMenuNewScene: string;
 /**
  * @since 14.0
  */
+declare var UIMenuOpen: string;
+
+/**
+ * @since 14.0
+ */
 declare var UIMenuOpenRecent: string;
 
 /**
@@ -24711,6 +24730,9 @@ declare class UIPresentationController extends NSObject implements UIAppearanceC
 
 	readonly shouldRemovePresentersView: boolean;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly traitOverrides: UITraitOverrides;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -24912,7 +24934,11 @@ declare const enum UIPressType {
 
 	PageUp = 30,
 
-	PageDown = 31
+	PageDown = 31,
+
+	TVRemoteOneTwoThree = 32,
+
+	TVRemoteFourColors = 33
 }
 
 /**
@@ -26496,6 +26522,8 @@ declare class UIScene extends UIResponder {
 	 */
 	subtitle: string;
 
+	readonly systemProtectionManager: UISceneSystemProtectionManager;
+
 	title: string;
 
 	constructor(o: { session: UISceneSession; connectionOptions: UISceneConnectionOptions; });
@@ -26819,6 +26847,23 @@ declare class UISceneSizeRestrictions extends NSObject {
 	maximumSize: CGSize;
 
 	minimumSize: CGSize;
+}
+
+/**
+ * @since 18.0
+ */
+declare var UISceneSystemProtectionDidChangeNotification: string;
+
+/**
+ * @since 18.0
+ */
+declare class UISceneSystemProtectionManager extends NSObject {
+
+	static alloc(): UISceneSystemProtectionManager; // inherited from NSObject
+
+	static new(): UISceneSystemProtectionManager; // inherited from NSObject
+
+	readonly userAuthenticationEnabled: boolean;
 }
 
 /**
@@ -27775,6 +27820,11 @@ declare class UISearchBar extends UIView implements UIBarPositioning, UILookToDi
 	 */
 	translucent: boolean;
 
+	/**
+	 * @since 18.0
+	 */
+	allowedWritingToolsResultOptions: UIWritingToolsResultOptions; // inherited from UITextInputTraits
+
 	autocapitalizationType: UITextAutocapitalizationType; // inherited from UITextInputTraits
 
 	autocorrectionType: UITextAutocorrectionType; // inherited from UITextInputTraits
@@ -27845,11 +27895,6 @@ declare class UISearchBar extends UIView implements UIBarPositioning, UILookToDi
 	 * @since 10.0
 	 */
 	textContentType: string; // inherited from UITextInputTraits
-
-	/**
-	 * @since 18.0
-	 */
-	writingToolsAllowedInputOptions: UIWritingToolsAllowedInputOptions; // inherited from UITextInputTraits
 
 	/**
 	 * @since 18.0
@@ -30519,6 +30564,8 @@ declare class UITab extends NSObject implements UIAccessibilityIdentification, U
 
 	image: UIImage;
 
+	readonly managingTabGroup: UITabGroup;
+
 	readonly parent: UITabGroup;
 
 	preferredPlacement: UITabPlacement;
@@ -30921,7 +30968,7 @@ interface UITabBarControllerDelegate extends NSObjectProtocol {
 	/**
 	 * @since 18.0
 	 */
-	tabBarControllerDidSelectTabPreviousTab?(tabBarController: UITabBarController, tab: UITab, tab2: UITab): void;
+	tabBarControllerDidSelectTabPreviousTab?(tabBarController: UITabBarController, selectedTab: UITab, previousTab: UITab): void;
 
 	tabBarControllerDidSelectViewController?(tabBarController: UITabBarController, viewController: UIViewController): void;
 
@@ -30929,6 +30976,11 @@ interface UITabBarControllerDelegate extends NSObjectProtocol {
 	 * @since 18.0
 	 */
 	tabBarControllerDisplayOrderDidChangeForGroup?(tabBarController: UITabBarController, group: UITabGroup): void;
+
+	/**
+	 * @since 18.0
+	 */
+	tabBarControllerDisplayedViewControllersForTabProposedViewControllers?(tabBarController: UITabBarController, tab: UITab, proposedViewControllers: NSArray<UIViewController> | UIViewController[]): NSArray<UIViewController>;
 
 	/**
 	 * @since 7.0
@@ -31031,6 +31083,20 @@ declare class UITabBarControllerSidebar extends NSObject {
 /**
  * @since 18.0
  */
+interface UITabBarControllerSidebarAnimating extends NSObjectProtocol {
+
+	addAnimations(animations: () => void): void;
+
+	addCompletion(completion: () => void): void;
+}
+declare var UITabBarControllerSidebarAnimating: {
+
+	prototype: UITabBarControllerSidebarAnimating;
+};
+
+/**
+ * @since 18.0
+ */
 interface UITabBarControllerSidebarDelegate extends NSObjectProtocol {
 
 	tabBarControllerSidebarContextMenuConfigurationForTab?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, tab: UITab): UIContextMenuConfiguration;
@@ -31045,7 +31111,7 @@ interface UITabBarControllerSidebarDelegate extends NSObjectProtocol {
 
 	tabBarControllerSidebarUpdateItem?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, item: UITabSidebarItem): void;
 
-	tabBarControllerSidebarVisibilityDidChange?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar): void;
+	tabBarControllerSidebarVisibilityWillChangeAnimator?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, animator: UITabBarControllerSidebarAnimating): void;
 
 	tabBarControllerSidebarWillBeginDisplayingTab?(tabBarController: UITabBarController, sidebar: UITabBarControllerSidebar, tab: UITab): void;
 }
@@ -34251,6 +34317,11 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 
 	adjustsFontForContentSizeCategory: boolean; // inherited from UIContentSizeCategoryAdjusting
 
+	/**
+	 * @since 18.0
+	 */
+	allowedWritingToolsResultOptions: UIWritingToolsResultOptions; // inherited from UITextInputTraits
+
 	autocapitalizationType: UITextAutocapitalizationType; // inherited from UITextInputTraits
 
 	autocorrectionType: UITextAutocorrectionType; // inherited from UITextInputTraits
@@ -34370,16 +34441,16 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 	/**
 	 * @since 18.0
 	 */
-	writingToolsAllowedInputOptions: UIWritingToolsAllowedInputOptions; // inherited from UITextInputTraits
-
-	/**
-	 * @since 18.0
-	 */
 	writingToolsBehavior: UIWritingToolsBehavior; // inherited from UITextInputTraits
 
 	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	/**
+	 * @since 12.0
+	 */
+	attributedTextInRange(range: UITextRange): NSAttributedString;
 
 	baseWritingDirectionForPositionInDirection(position: UITextPosition, direction: UITextStorageDirection): NSWritingDirection;
 
@@ -34422,6 +34493,11 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 	dictationRecognitionFailed(): void;
 
 	dictationRecordingDidEnd(): void;
+
+	/**
+	 * @since 18.0
+	 */
+	didDismissWritingTools(): void;
 
 	drawPlaceholderInRect(rect: CGRect): void;
 
@@ -34556,6 +34632,11 @@ declare class UITextField extends UIControl implements NSCoding, UIContentSizeCa
 	 * @since 16.0
 	 */
 	willPresentEditMenuWithAnimator(animator: UIEditMenuInteractionAnimating): void;
+
+	/**
+	 * @since 18.0
+	 */
+	willPresentWritingTools(): void;
 }
 
 interface UITextFieldDelegate extends NSObjectProtocol {
@@ -35269,6 +35350,11 @@ interface UITextInput extends UIKeyInput {
 
 	tokenizer: UITextInputTokenizer;
 
+	/**
+	 * @since 12.0
+	 */
+	attributedTextInRange?(range: UITextRange): NSAttributedString;
+
 	baseWritingDirectionForPositionInDirection(position: UITextPosition, direction: UITextStorageDirection): NSWritingDirection;
 
 	/**
@@ -35298,6 +35384,11 @@ interface UITextInput extends UIKeyInput {
 	dictationRecognitionFailed?(): void;
 
 	dictationRecordingDidEnd?(): void;
+
+	/**
+	 * @since 18.0
+	 */
+	didDismissWritingTools?(): void;
 
 	/**
 	 * @since 16.0
@@ -35388,6 +35479,11 @@ interface UITextInput extends UIKeyInput {
 	 * @since 16.0
 	 */
 	willPresentEditMenuWithAnimator?(animator: UIEditMenuInteractionAnimating): void;
+
+	/**
+	 * @since 18.0
+	 */
+	willPresentWritingTools?(): void;
 }
 declare var UITextInput: {
 
@@ -35591,6 +35687,11 @@ declare var UITextInputTokenizer: {
 
 interface UITextInputTraits extends NSObjectProtocol {
 
+	/**
+	 * @since 18.0
+	 */
+	allowedWritingToolsResultOptions?: UIWritingToolsResultOptions;
+
 	autocapitalizationType?: UITextAutocapitalizationType;
 
 	autocorrectionType?: UITextAutocorrectionType;
@@ -35644,11 +35745,6 @@ interface UITextInputTraits extends NSObjectProtocol {
 	 * @since 10.0
 	 */
 	textContentType?: string;
-
-	/**
-	 * @since 18.0
-	 */
-	writingToolsAllowedInputOptions?: UIWritingToolsAllowedInputOptions;
 
 	/**
 	 * @since 18.0
@@ -36418,6 +36514,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 
 	adjustsFontForContentSizeCategory: boolean; // inherited from UIContentSizeCategoryAdjusting
 
+	/**
+	 * @since 18.0
+	 */
+	allowedWritingToolsResultOptions: UIWritingToolsResultOptions; // inherited from UITextInputTraits
+
 	autocapitalizationType: UITextAutocapitalizationType; // inherited from UITextInputTraits
 
 	autocorrectionType: UITextAutocorrectionType; // inherited from UITextInputTraits
@@ -36536,11 +36637,6 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	/**
 	 * @since 18.0
 	 */
-	writingToolsAllowedInputOptions: UIWritingToolsAllowedInputOptions; // inherited from UITextInputTraits
-
-	/**
-	 * @since 18.0
-	 */
 	writingToolsBehavior: UIWritingToolsBehavior; // inherited from UITextInputTraits
 
 	readonly  // inherited from NSObjectProtocol
@@ -36549,6 +36645,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	 * @since 7.0
 	 */
 	constructor(o: { frame: CGRect; textContainer: NSTextContainer; });
+
+	/**
+	 * @since 12.0
+	 */
+	attributedTextInRange(range: UITextRange): NSAttributedString;
 
 	baseWritingDirectionForPositionInDirection(position: UITextPosition, direction: UITextStorageDirection): NSWritingDirection;
 
@@ -36595,6 +36696,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	dictationRecognitionFailed(): void;
 
 	dictationRecordingDidEnd(): void;
+
+	/**
+	 * @since 18.0
+	 */
+	didDismissWritingTools(): void;
 
 	/**
 	 * @since 18.0
@@ -36737,6 +36843,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	 * @since 16.0
 	 */
 	willPresentEditMenuWithAnimator(animator: UIEditMenuInteractionAnimating): void;
+
+	/**
+	 * @since 18.0
+	 */
+	willPresentWritingTools(): void;
 }
 
 /**
@@ -38914,6 +39025,9 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	 */
 	readonly trailingAnchor: NSLayoutXAxisAnchor;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly traitOverrides: UITraitOverrides;
 
 	/**
@@ -38988,6 +39102,8 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	 * @since 12.0
 	 */
 	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
+
+	readonly focusItemDeferralMode: UIFocusItemDeferralMode; // inherited from UIFocusItem
 
 	readonly hash: number; // inherited from NSObjectProtocol
 
@@ -39367,6 +39483,9 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	updateFocusIfNeeded(): void;
 
+	/**
+	 * @since 17.0
+	 */
 	updateTraitsIfNeeded(): void;
 
 	/**
@@ -39993,6 +40112,9 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 	 */
 	readonly topLayoutGuide: UILayoutSupport;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly traitOverrides: UITraitOverrides;
 
 	/**
@@ -40417,6 +40539,9 @@ declare class UIViewController extends UIResponder implements NSCoding, NSExtens
 
 	updateFocusIfNeeded(): void;
 
+	/**
+	 * @since 17.0
+	 */
 	updateTraitsIfNeeded(): void;
 
 	/**
@@ -41495,6 +41620,9 @@ declare class UIWindowScene extends UIScene implements UITraitChangeObservable, 
 	 */
 	readonly statusBarManager: UIStatusBarManager;
 
+	/**
+	 * @since 17.0
+	 */
 	readonly traitOverrides: UITraitOverrides;
 
 	/**
@@ -41893,7 +42021,21 @@ declare class UIWindowSceneStandardPlacement extends UIWindowScenePlacement {
 /**
  * @since 18.0
  */
-declare const enum UIWritingToolsAllowedInputOptions {
+declare const enum UIWritingToolsBehavior {
+
+	None = -1,
+
+	Default = 0,
+
+	Complete = 1,
+
+	Limited = 2
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum UIWritingToolsResultOptions {
 
 	Default = 0,
 
@@ -41904,20 +42046,6 @@ declare const enum UIWritingToolsAllowedInputOptions {
 	List = 4,
 
 	Table = 8
-}
-
-/**
- * @since 18.0
- */
-declare const enum UIWritingToolsBehavior {
-
-	None = -1,
-
-	Default = 0,
-
-	Complete = 1,
-
-	Limited = 2
 }
 
 /**
