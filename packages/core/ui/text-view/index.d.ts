@@ -1,5 +1,6 @@
 ﻿import { EditableTextBase } from '../editable-text-base';
 import { Property } from '../core/properties';
+export { WritingToolsAllowedInput, WritingToolsBehavior } from './text-view-common';
 
 /**
  * Represents an editable multiline text view.
@@ -30,6 +31,16 @@ export class TextView extends EditableTextBase {
 	 * @nsProperty
 	 */
 	maxLines: number;
+
+	/**
+	 * (iOS Only) Are Apple Intelligence writing tools active
+	 */
+	isWritingToolsActive: boolean;
+
+	/**
+	 * (iOS Only) Allow Apple Intelligence writing tools to emit text changes on each alteration instead of after the final change (default).
+	 */
+	enableWritingToolsEvents: boolean;
 }
 
 export const maxLinesProperty: Property<EditableTextBase, number>;

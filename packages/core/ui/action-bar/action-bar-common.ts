@@ -18,6 +18,10 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 	public title: string;
 	public flat: boolean;
 	public iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
+	// prefer large titles
+	public iosLargeTitle = false;
+	// show bottom border shadow (always defaulted to true)
+	public iosShadow = true;
 
 	public effectiveContentInsetLeft: number;
 	public effectiveContentInsetRight: number;
@@ -388,6 +392,12 @@ function convertToContentInset(this: void, value: string | CoreTypes.LengthType)
 
 export const iosIconRenderingModeProperty = new Property<ActionBarBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'iosIconRenderingMode', defaultValue: 'alwaysOriginal' });
 iosIconRenderingModeProperty.register(ActionBarBase);
+
+export const iosLargeTitleProperty = new Property<ActionBarBase, boolean>({ name: 'iosLargeTitle', defaultValue: false, valueConverter: booleanConverter });
+iosLargeTitleProperty.register(ActionBarBase);
+
+export const iosShadowProperty = new Property<ActionBarBase, boolean>({ name: 'iosShadow', defaultValue: true, valueConverter: booleanConverter });
+iosShadowProperty.register(ActionBarBase);
 
 export const textProperty = new Property<ActionItemBase, string>({
 	name: 'text',

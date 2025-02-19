@@ -63,7 +63,7 @@ export interface AnimationDefinition {
 	scale?: Pair;
 	height?: CoreTypes.PercentLengthType | string;
 	width?: CoreTypes.PercentLengthType | string;
-	rotate?: Point3D;
+	rotate?: number | Point3D;
 	duration?: number;
 	delay?: number;
 	iterations?: number;

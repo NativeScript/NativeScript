@@ -219,11 +219,10 @@ export function createUIDocumentInteractionControllerDelegate(): NSObject {
 
 export function isRealDevice() {
 	try {
-		// https://stackoverflow.com/a/5093092/4936697
-		const sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
-		const mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
-
-		return !!mediaTypes;
+		if (NSProcessInfo.processInfo.environment.valueForKey('SIMULATOR_DEVICE_NAME')) {
+			return false;
+		}
+		return true;
 	} catch (e) {
 		return true;
 	}

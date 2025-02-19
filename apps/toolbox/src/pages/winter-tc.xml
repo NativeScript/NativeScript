@@ -1,6 +1,9 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-
-   <StackLayout>
-            <Button text="Btoa y Atob" tap="encodeDecode" />
+    <Page.actionBar>
+        <ActionBar title="WinterTC" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+    <StackLayout>
+        <Button text="Btoa y Atob" tap="encodeDecode" />
     </StackLayout>
 </Page>
