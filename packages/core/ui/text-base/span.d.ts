@@ -2,6 +2,7 @@
 import { ViewBase } from '../core/view-base';
 import { FontStyleType, FontVariationSettingsType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
+import { FormattedString } from './formatted-string';
 
 /**
  * A class used to create a single part of formatted string with a common text properties.
@@ -9,6 +10,8 @@ import { CoreTypes } from '../../core-types';
  * @nsView Span
  */
 export class Span extends ViewBase {
+	declare parent: FormattedString;
+
 	/**
 	 * Gets or sets the font family of the span.
 	 *

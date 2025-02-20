@@ -394,7 +394,8 @@ export class TextBase extends TextBaseCommon {
 		const fontScale = adjustMinMaxFontScale(span.style.fontScaleInternal, span);
 		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale, span.style.fontVariationSettings);
 		const iosFont = font.getUIFont(this.nativeTextViewProtected.font);
-		const backgroundColor = span.style.backgroundColor;
+		// Use span or formatted string color
+		const backgroundColor = span.style.backgroundColor || span.parent.backgroundColor;
 
 		return {
 			text,
