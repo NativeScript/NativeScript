@@ -5,11 +5,15 @@ import { FontStyleType, FontVariationSettingsType, FontWeightType } from '../sty
 import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
 import { isNullOrUndefined, isString } from '../../utils/types';
+import type { FormattedString } from './formatted-string';
 
 export class Span extends ViewBase implements SpanDefinition {
-	static linkTapEvent = 'linkTap';
+	public static linkTapEvent = 'linkTap';
+
 	private _text: string;
 	private _tappable = false;
+
+	declare parent: FormattedString;
 
 	get fontFamily(): string {
 		return this.style.fontFamily;
