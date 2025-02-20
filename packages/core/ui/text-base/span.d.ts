@@ -10,6 +10,13 @@ import { FormattedString } from './formatted-string';
  * @nsView Span
  */
 export class Span extends ViewBase {
+	/**
+	 * String value used when hooking to linkTap event.
+	 *
+	 * @nsEvent linkTap
+	 */
+	public static linkTapEvent: string;
+
 	declare parent: FormattedString;
 
 	/**
@@ -95,12 +102,6 @@ export class Span extends ViewBase {
 	 *  @nsProperty
 	 */
 	public text: string;
-	/**
-	 * String value used when hooking to linkTap event.
-	 *
-	 * @nsEvent linkTap
-	 */
-	public static linkTapEvent: string;
 
 	/**
 	 * Gets if the span is tappable or not.
