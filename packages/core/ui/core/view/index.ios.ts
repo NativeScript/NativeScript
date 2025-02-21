@@ -246,6 +246,8 @@ export class View extends ViewCommon implements ViewDefinition {
 			this._raiseLayoutChangedEvent();
 			this._isLaidOut = true;
 		} else if (!this._isLaidOut) {
+			this._cachedFrame = frame;
+
 			// Rects could be equal on the first layout and an event should be raised.
 			this._raiseLayoutChangedEvent();
 			// But make sure event is raised only once if rects are equal on the first layout as
