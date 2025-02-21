@@ -28,7 +28,7 @@
                 <Image row="3" col="1" src="sys://square.and.arrow.up" width="100" iosSymbolEffect="{{symbolWiggleEffect}}" padding="8" />
 
                 <Image row="4" src="sys://steeringwheel.and.hands" width="100" tintColor="black" iosSymbolEffect="{{symbolWiggleEffect}}" padding="8" />
-                <Image row="4" col="1" src="sys://steeringwheel.and.hands" width="100" tintColor="black" iosSymbolEffect="{{symbolWiggleEffect}}" iosSymbolScale="large" padding="8" />
+                <Image row="4" col="1" src="sys://steeringwheel.and.hands" width="100" tintColor="black" iosSymbolEffect="{{symbolWiggleEffect}}" iosSymbolScale="large" style="font-size: 45; font-weight: bold;" />
 
             </GridLayout>
         </apple>

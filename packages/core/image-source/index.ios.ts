@@ -1,6 +1,7 @@
 // Definitions.
 import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
+import type { ImageBase } from '../ui/image/image-common';
 import * as httpModule from '../http';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
@@ -86,9 +87,9 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 	}
 
-	static fromSystemImageSync(name: string, scale?: iosSymbolScaleType): ImageSource {
-		if (scale) {
-			const image = UIImage.systemImageNamedWithConfiguration(name, UIImageSymbolConfiguration.configurationWithScale(ImageSource.iosSystemScaleFor(scale)));
+	static fromSystemImageSync(name: string, instance?: ImageBase): ImageSource {
+		if (instance?.iosSymbolScale) {
+			const image = ImageSource.systemImageWithConfig(name, instance);
 			return image ? new ImageSource(image) : null;
 		} else {
 			const image = UIImage.systemImageNamed(name);
@@ -97,12 +98,12 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 	}
 
-	static fromSystemImage(name: string, scale?: iosSymbolScaleType): Promise<ImageSource> {
+	static fromSystemImage(name: string, instance?: ImageBase): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				let image: UIImage;
-				if (scale) {
-					image = UIImage.systemImageNamedWithConfiguration(name, UIImageSymbolConfiguration.configurationWithScale(ImageSource.iosSystemScaleFor(scale)));
+				if (instance?.iosSymbolScale) {
+					image = ImageSource.systemImageWithConfig(name, instance);
 				} else {
 					image = UIImage.systemImageNamed(name);
 				}
@@ -115,6 +116,12 @@ export class ImageSource implements ImageSourceDefinition {
 				reject(ex);
 			}
 		});
+	}
+
+	static systemImageWithConfig(name: string, instance?: ImageBase) {
+		const fontSize = instance.style.fontSize;
+		const fontWeight = instance.style.fontWeight;
+		return UIImage.systemImageNamedWithConfiguration(name, fontSize ? UIImageSymbolConfiguration.configurationWithPointSizeWeightScale(fontSize, fontWeight === 'bold' ? UIImageSymbolWeight.Bold : UIImageSymbolWeight.Regular, ImageSource.iosSystemScaleFor(instance.iosSymbolScale)) : UIImageSymbolConfiguration.configurationWithScale(ImageSource.iosSystemScaleFor(instance.iosSymbolScale)));
 	}
 
 	static fromResourceSync(name: string): ImageSource {
