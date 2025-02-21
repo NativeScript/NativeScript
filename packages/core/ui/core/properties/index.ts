@@ -150,11 +150,13 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 
 	if (isCssCalcExpression(value)) {
-		// WORKAROUND: reduce-css-calc can't handle the dip-unit.
+		// Note: reduce-css-calc can't handle certain values
 		let cssValue = value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1');
 		if (cssValue.includes('unset')) {
-			// ensure unset is properly handled before processing calc
 			cssValue = cssValue.replace(/unset/g, '0');
+		}
+		if (cssValue.includes('infinity')) {
+			cssValue = cssValue.replace(/infinity/g, '999999');
 		}
 		return require('reduce-css-calc')(cssValue);
 	} else {
