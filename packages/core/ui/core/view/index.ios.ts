@@ -202,38 +202,46 @@ export class View extends ViewCommon implements ViewDefinition {
 		//
 	}
 
+	public _modifyNativeViewFrame(nativeView: UIView, frame: CGRect): void {
+		let transform: CATransform3D;
+
+		if (this._isTransformed) {
+			// Always set identity transform before setting frame
+			transform = nativeView.layer.transform;
+			nativeView.layer.transform = CATransform3DIdentity;
+		} else {
+			transform = null;
+		}
+
+		nativeView.frame = frame;
+
+		const adjustedFrame = this.applySafeAreaInsets(frame);
+		if (adjustedFrame) {
+			nativeView.frame = adjustedFrame;
+		}
+
+		if (transform != null) {
+			// Re-apply the transform after the frame is adjusted
+			nativeView.layer.transform = transform;
+		}
+
+		const boundsOrigin = nativeView.bounds.origin;
+		const boundsFrame = adjustedFrame || frame;
+
+		nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
+		nativeView.layoutIfNeeded();
+	}
+
 	public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
 		const oldFrame = this._cachedFrame || nativeView.frame;
+
 		if (!CGRectEqualToRect(oldFrame, frame)) {
 			if (Trace.isEnabled()) {
 				Trace.write(this + ' :_setNativeViewFrame: ' + JSON.stringify(IOSHelper.getPositionFromFrame(frame)), Trace.categories.Layout);
 			}
+
 			this._cachedFrame = frame;
-			let adjustedFrame = null;
-			let transform = null;
-			if (this._isTransformed) {
-				// Always set identity transform before setting frame;
-				transform = nativeView.layer.transform;
-				nativeView.layer.transform = CATransform3DIdentity;
-				nativeView.frame = frame;
-			} else {
-				nativeView.frame = frame;
-			}
-
-			adjustedFrame = this.applySafeAreaInsets(frame);
-			if (adjustedFrame) {
-				nativeView.frame = adjustedFrame;
-			}
-
-			if (this._isTransformed) {
-				// re-apply the transform after the frame is adjusted
-				nativeView.layer.transform = transform;
-			}
-
-			const boundsOrigin = nativeView.bounds.origin;
-			const boundsFrame = adjustedFrame || frame;
-			nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, boundsFrame.size.width, boundsFrame.size.height);
-			nativeView.layoutIfNeeded();
+			this._modifyNativeViewFrame(nativeView, frame);
 
 			this._raiseLayoutChangedEvent();
 			this._isLaidOut = true;

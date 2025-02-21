@@ -423,11 +423,7 @@ export class Page extends PageBase {
 		return this._ios;
 	}
 
-	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-		//
-	}
-
-	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+	public _modifyNativeViewFrame(nativeView: UIView, frame: CGRect) {
 		//
 	}
 
