@@ -6,6 +6,7 @@ import { Property, CssProperty, InheritedCssProperty } from '../core/properties'
 import { CoreTypes } from '../../core-types';
 import { ShadowCSSValues } from '../styling/css-shadow';
 import { StrokeCSSValues } from '../styling/css-stroke';
+import { FontStyleType, FontWeightType } from '../styling/font-interfaces';
 
 /**
  * @nsView TextBase
@@ -32,11 +33,32 @@ export class TextBase extends View implements AddChildFromBuilder {
 	formattedText: FormattedString;
 
 	/**
+	 * Gets or sets font-family style property.
+	 *
+	 * @nsProperty
+	 */
+	fontFamily: string;
+
+	/**
 	 * Gets or sets font-size style property.
 	 *
 	 * @nsProperty
 	 */
 	fontSize: number;
+
+	/**
+	 * Gets or sets font-style style property.
+	 *
+	 * @nsProperty
+	 */
+	fontStyle: FontStyleType;
+
+	/**
+	 * Gets or sets font-weight style property.
+	 *
+	 * @nsProperty
+	 */
+	fontWeight: FontWeightType;
 
 	/**
 	 * Gets or sets letterSpace style property.
