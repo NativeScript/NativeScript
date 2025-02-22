@@ -78,7 +78,7 @@ export class HtmlView extends HtmlViewBase {
 		htmlContent += `body {${bodyStyles.join('')}}`;
 
 		if (this.linkColor) {
-			htmlContent += `a, a:link, a:visited { color: ${this.linkColor.hex}; }`;
+			htmlContent += `a, a:link, a:visited { color: ${this.linkColor.hex} !important; }`;
 		}
 
 		htmlContent += '</style>';
