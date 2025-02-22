@@ -1176,6 +1176,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		super.resetNativeView();
 	}
 
+	public _modifyNativeViewFrame(nativeView: any, frame: any) {
+		//
+	}
+
 	public _setNativeViewFrame(nativeView: any, frame: any) {
 		//
 	}
