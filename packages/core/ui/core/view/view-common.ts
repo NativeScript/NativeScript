@@ -1203,6 +1203,18 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return false;
 	}
 
+	// public resetNativeView(): void {
+	// 	if (this._localAnimations) {
+	// 		this._localAnimations.forEach((a) => this._removeAnimation(a));
+	// 	}
+
+	// 	super.resetNativeView();
+	// }
+
+	public _modifyNativeViewFrame(nativeView: any, frame: any) {
+		//
+	}
+
 	public _setNativeViewFrame(nativeView: any, frame: any) {
 		//
 	}

@@ -89,10 +89,10 @@ export abstract class ImageBase extends View implements ImageDefinition {
 				} else if (value.indexOf(SYSTEM_PREFIX) === 0) {
 					const sysPath = value.slice(SYSTEM_PREFIX.length);
 					if (sync) {
-						imageLoaded(ImageSource.fromSystemImageSync(sysPath, this.iosSymbolScale));
+						imageLoaded(ImageSource.fromSystemImageSync(sysPath, this));
 					} else {
 						this.imageSource = null;
-						ImageSource.fromSystemImage(sysPath, this.iosSymbolScale).then(imageLoaded);
+						ImageSource.fromSystemImage(sysPath, this).then(imageLoaded);
 					}
 				} else {
 					if (sync) {

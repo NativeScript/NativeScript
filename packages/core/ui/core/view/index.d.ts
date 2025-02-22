@@ -1047,6 +1047,10 @@ export abstract class View extends ViewCommon {
 	/**
 	 * @private
 	 */
+	_modifyNativeViewFrame(nativeView: any, frame: any): void;
+	/**
+	 * @private
+	 */
 	_setNativeViewFrame(nativeView: any, frame: any): void;
 	// _onStylePropertyChanged(property: dependencyObservable.Property): void;
 	/**

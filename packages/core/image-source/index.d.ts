@@ -1,6 +1,7 @@
 ﻿import { ImageAsset } from '../image-asset';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
+import type { ImageBase } from '../ui/image/image-common';
 /**
  * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
  */
@@ -64,13 +65,13 @@ export class ImageSource {
 	 * Loads this instance from the specified system image name.
 	 * @param name the name of the system image
 	 */
-	static fromSystemImageSync(name: string, scale?: iosSymbolScaleType): ImageSource;
+	static fromSystemImageSync(name: string, instance: ImageBase): ImageSource;
 
 	/**
 	 * Loads this instance from the specified system image name asynchronously.
 	 * @param name the name of the system image
 	 */
-	static fromSystemImage(name: string, scale?: iosSymbolScaleType): Promise<ImageSource>;
+	static fromSystemImage(name: string, instance: ImageBase): Promise<ImageSource>;
 
 	/**
 	 * Loads this instance from the specified file.

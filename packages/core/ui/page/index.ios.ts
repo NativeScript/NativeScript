@@ -444,10 +444,19 @@ export class Page extends PageBase {
 	}
 
 	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-		//
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+
+		const currentFrame = nativeView.frame;
+		// Create a copy of current view frame
+		const newFrame = CGRectMake(currentFrame.origin.x, currentFrame.origin.y, currentFrame.size.width, currentFrame.size.height);
+
+		this._setNativeViewFrame(nativeView, newFrame);
 	}
 
-	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+	public _modifyNativeViewFrame(nativeView: UIView, frame: CGRect) {
 		//
 	}
 
