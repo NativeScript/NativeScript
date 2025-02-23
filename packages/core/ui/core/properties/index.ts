@@ -7,6 +7,7 @@ import { Trace } from '../../../trace';
 import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
+import { CoreTypes } from '../../enums';
 
 /**
  * Value specifying that Property should be set to its initial value.
@@ -53,6 +54,14 @@ const cssSymbolPropertyMap = {};
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
 const inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
 
+const enum ValueSource {
+	Default = 0,
+	Inherited = 1,
+	Css = 2,
+	Local = 3,
+	Keyframe = 4,
+}
+
 function print(map) {
 	const symbols = Object.getOwnPropertySymbols(map);
 	for (const symbol of symbols) {
@@ -63,17 +72,17 @@ function print(map) {
 	}
 }
 
+function isCssUnsetValue(value: any): boolean {
+	return value === 'unset' || value === 'revert';
+}
+
+function isResetValue(value: any): boolean {
+	return value === unsetValue || value === '' || value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
+}
+
 export function _printUnregisteredProperties(): void {
 	print(symbolPropertyMap);
 	print(cssSymbolPropertyMap);
-}
-
-const enum ValueSource {
-	Default = 0,
-	Inherited = 1,
-	Css = 2,
-	Local = 3,
-	Keyframe = 4,
 }
 
 export function _getProperties(): Property<any, any>[] {
@@ -94,6 +103,10 @@ export function isCssCalcExpression(value: string) {
 
 export function isCssVariableExpression(value: string) {
 	return value.includes('var(--');
+}
+
+export function isCssWideKeyword(value: any): value is CoreTypes.CSSWideKeywords {
+	return value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
 }
 
 export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
@@ -236,7 +249,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 		const property = this;
 
 		this.set = function (this: T, boxedValue: U): void {
-			const reset = boxedValue === unsetValue;
+			const reset = isResetValue(boxedValue);
 			let value: U;
 			let wrapped: boolean;
 			if (reset) {
@@ -419,7 +432,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 		};
 
 		this.set = function (this: T, boxedValue: U): void {
-			const reset = boxedValue === unsetValue;
+			const reset = isResetValue(boxedValue);
 			let value: U;
 			let wrapped: boolean;
 			if (reset) {
@@ -528,11 +541,11 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 				let unboxedValue: U;
 				let newValueSource: number;
 
-				if (value === unsetValue) {
-					// If unsetValue - we want to reset the property.
+				if (isResetValue(value)) {
 					const parent: ViewBase = that.parent;
-					// If we have parent and it has non-default value we use as our inherited value.
-					if (parent && parent[sourceKey] !== ValueSource.Default) {
+
+					// If value is not initial or unset and view has a parent that has non-default value, use it as the reset value.
+					if (value !== 'initial' && parent && parent[sourceKey] !== ValueSource.Default) {
 						unboxedValue = parent[name];
 						newValueSource = ValueSource.Inherited;
 					} else {
@@ -659,8 +672,9 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 				return;
 			}
 
-			const reset = newValue === unsetValue || newValue === '';
+			const reset = isResetValue(newValue);
 			let value: U;
+
 			if (reset) {
 				value = defaultValue;
 				delete this[sourceKey];
@@ -744,8 +758,9 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 				return;
 			}
 
-			const reset = newValue === unsetValue || newValue === '';
+			const reset = isResetValue(newValue);
 			let value: U;
+
 			if (reset) {
 				value = defaultValue;
 				delete this[sourceKey];
@@ -942,7 +957,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 					const oldValue = this[computedValue];
 					const oldSource = this[computedSource];
 					const wasSet = oldSource !== ValueSource.Default;
-					const reset = boxedValue === unsetValue || boxedValue === '';
+					const reset = isResetValue(boxedValue);
 
 					if (reset) {
 						this[symbol] = unsetValue;
@@ -1082,9 +1097,9 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 		const getDefault = this.getDefault;
 		const setNative = this.setNative;
 		const defaultValueKey = this.defaultValueKey;
-
 		const eventName = propertyName + 'Change';
-		let defaultValue: U = options.defaultValue;
+		const defaultValue: U = options.defaultValue;
+
 		let affectsLayout: boolean = options.affectsLayout;
 		let equalityComparer = options.equalityComparer;
 		let valueChanged = options.valueChanged;
@@ -1112,12 +1127,12 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 				const view = this.viewRef.get();
 				if (!view) {
 					Trace.write(`${boxedValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
-
 					return;
 				}
 
-				const reset = boxedValue === unsetValue || boxedValue === '';
+				const reset = isResetValue(boxedValue);
 				const currentValueSource: number = this[sourceKey] || ValueSource.Default;
+
 				if (reset) {
 					// If we want to reset cssValue and we have localValue - return;
 					if (valueSource === ValueSource.Css && currentValueSource === ValueSource.Local) {
@@ -1132,13 +1147,13 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 				const oldValue: U = key in this ? this[key] : defaultValue;
 				let value: U;
 				let unsetNativeValue = false;
+
 				if (reset) {
-					// If unsetValue - we want to reset this property.
-					const parent = view.parent;
-					const style = parent ? parent.style : null;
-					// If we have parent and it has non-default value we use as our inherited value.
-					if (style && style[sourceKey] > ValueSource.Default) {
-						value = style[propertyName];
+					const parentStyle = view.parent ? view.parent.style : null;
+
+					// If value is not initial or unset and view has a parent that has non-default value, use it as the reset value.
+					if (boxedValue !== 'initial' && parentStyle && parentStyle[sourceKey] > ValueSource.Default) {
+						value = parentStyle[propertyName];
 						this[sourceKey] = ValueSource.Inherited;
 						this[key] = value;
 					} else {

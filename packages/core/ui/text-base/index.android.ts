@@ -16,7 +16,7 @@ import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
-import { testIDProperty } from '../../ui/core/view';
+import { isCssWideKeyword, testIDProperty } from '../../ui/core/view';
 
 export * from './text-base-common';
 
@@ -289,7 +289,6 @@ export class TextBase extends TextBaseCommon {
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		if (value === 'initial') {
 			this.nativeTextViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-
 			return;
 		}
 
@@ -411,9 +410,6 @@ export class TextBase extends TextBaseCommon {
 
 	[textDecorationProperty.setNative](value: number | CoreTypes.TextDecorationType) {
 		switch (value) {
-			case 'none':
-				this.nativeTextViewProtected.setPaintFlags(0);
-				break;
 			case 'underline':
 				this.nativeTextViewProtected.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG);
 				break;
@@ -424,7 +420,11 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
 				break;
 			default:
-				this.nativeTextViewProtected.setPaintFlags(value);
+				if (value === 'none' || isCssWideKeyword(value)) {
+					this.nativeTextViewProtected.setPaintFlags(0);
+				} else {
+					this.nativeTextViewProtected.setPaintFlags(value);
+				}
 				break;
 		}
 	}
