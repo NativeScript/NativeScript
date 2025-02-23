@@ -1,5 +1,5 @@
 // Definitions.
-import { type Point, type CustomLayoutView as CustomLayoutViewDefinition, type Position } from '.';
+import type { Point, CustomLayoutView as CustomLayoutViewDefinition, Position } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
