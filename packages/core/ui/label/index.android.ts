@@ -44,4 +44,5 @@ export class Label extends TextBase implements LabelDefinition {
 }
 
 Label.prototype._isSingleLine = true;
+Label.prototype._isManualRtlTextStyleNeeded = true;
 Label.prototype.recycleNativeView = 'auto';

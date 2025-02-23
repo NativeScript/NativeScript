@@ -440,6 +440,13 @@ export abstract class View extends ViewCommon {
 	boxShadow: string | ShadowCSSValues;
 
 	/**
+	 * Gets or sets the layout direction of the view.
+	 *
+	 * @nsProperty
+	 */
+	direction: CoreTypes.LayoutDirectionType;
+
+	/**
 	 * Gets or sets the minimum width the view may grow to.
 	 *
 	 * @nsProperty
@@ -681,7 +688,7 @@ export abstract class View extends ViewCommon {
 	public touchDelay: number;
 
 	/**
-	 * Gets is layout is valid. This is a read-only property.
+	 * Gets if layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;
 

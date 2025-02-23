@@ -365,7 +365,7 @@ export class Frame extends FrameBase {
 			const currentEntry = null;
 			const newEntry = entry;
 			const transaction = null;
-			_setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, this._android.frameId, transaction);
+			_setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, this._android.frameId, transaction, this.direction);
 		}
 	}
 
@@ -443,7 +443,7 @@ export class Frame extends FrameBase {
 
 		const isNestedDefaultTransition = !currentEntry;
 
-		_setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, this._android.frameId, transaction, isNestedDefaultTransition);
+		_setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, this._android.frameId, transaction, this.direction, isNestedDefaultTransition);
 
 		if (currentEntry && animated && !navigationTransition) {
 			//TODO: Check whether or not this is still necessary. For Modal views?

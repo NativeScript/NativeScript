@@ -203,6 +203,11 @@ export class TextBase extends View implements AddChildFromBuilder {
 	 * @private
 	 */
 	_isSingleLine: boolean;
+
+	/**
+	 * @private
+	 */
+	_isManualRtlTextStyleNeeded: boolean;
 	//@endprivate
 }
 

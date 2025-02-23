@@ -153,6 +153,8 @@ export class Style extends Observable implements StyleDefinition {
 
 	public boxShadow: ShadowCSSValues;
 
+	public direction: CoreTypes.LayoutDirectionType;
+
 	public fontSize: number;
 	public fontFamily: string;
 	public fontStyle: FontStyleType;
