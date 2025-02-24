@@ -3630,6 +3630,11 @@ declare const enum NSWritingDirectionFormatType {
 }
 
 /**
+ * @since 18.2
+ */
+declare var NSWritingToolsExclusionAttributeName: string;
+
+/**
  * @since 2.0
  * @deprecated 5.0
  */
@@ -6153,6 +6158,11 @@ declare class UIApplication extends UIResponder {
 	completeStateRestoration(): void;
 
 	/**
+	 * @since 18.2
+	 */
+	defaultStatusForCategoryError(category: UIApplicationCategory): UIApplicationCategoryDefaultStatus;
+
+	/**
 	 * @since 3.0
 	 * @deprecated 8.0
 	 */
@@ -6316,6 +6326,49 @@ declare var UIApplicationBackgroundFetchIntervalNever: number;
  * @since 7.0
  */
 declare var UIApplicationBackgroundRefreshStatusDidChangeNotification: string;
+
+/**
+ * @since 18.2
+ */
+declare const enum UIApplicationCategory {
+
+	WebBrowser = 1
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum UIApplicationCategoryDefaultErrorCode {
+
+	RateLimited = 1
+}
+
+/**
+ * @since 18.2
+ */
+declare var UIApplicationCategoryDefaultErrorDomain: string;
+
+/**
+ * @since 18.2
+ */
+declare var UIApplicationCategoryDefaultRetryAvailabilityDateErrorKey: string;
+
+/**
+ * @since 18.2
+ */
+declare const enum UIApplicationCategoryDefaultStatus {
+
+	Unavailable = 0,
+
+	IsDefault = 1,
+
+	NotDefault = 2
+}
+
+/**
+ * @since 18.2
+ */
+declare var UIApplicationCategoryDefaultStatusLastProvidedDateErrorKey: string;
 
 interface UIApplicationDelegate extends NSObjectProtocol {
 
@@ -6699,6 +6752,11 @@ declare var UIApplicationLaunchOptionsUserActivityDictionaryKey: string;
 declare var UIApplicationLaunchOptionsUserActivityTypeKey: string;
 
 declare function UIApplicationMain(argc: number, argv: interop.Reference<interop.Pointer | interop.Reference<any>>, principalClassName: string, delegateClassName: string): never;
+
+/**
+ * @since 18.3
+ */
+declare var UIApplicationOpenDefaultApplicationsSettingsURLString: string;
 
 /**
  * @since 14.5
@@ -7885,7 +7943,9 @@ declare const enum UIBarButtonSystemItem {
 
 	PageCurl = 23,
 
-	Close = 24
+	Close = 24,
+
+	WritingTools = 25
 }
 
 /**
@@ -26259,6 +26319,11 @@ declare class UIResponder extends NSObject implements UIActivityItemsConfigurati
 	self(): this;
 
 	/**
+	 * @since 18.2
+	 */
+	showWritingTools(sender: any): void;
+
+	/**
 	 * @since 7.0
 	 */
 	targetForActionWithSender(action: string, sender: any): any;
@@ -26418,6 +26483,11 @@ interface UIResponderStandardEditActions extends NSObjectProtocol {
 	 * @since 3.0
 	 */
 	selectAll?(sender: any): void;
+
+	/**
+	 * @since 18.2
+	 */
+	showWritingTools?(sender: any): void;
 
 	/**
 	 * @since 6.0
@@ -36512,6 +36582,11 @@ declare class UITextView extends UIScrollView implements UIContentSizeCategoryAd
 	 */
 	readonly writingToolsActive: boolean;
 
+	/**
+	 * @since 18.2
+	 */
+	readonly writingToolsCoordinator: UIWritingToolsCoordinator;
+
 	adjustsFontForContentSizeCategory: boolean; // inherited from UIContentSizeCategoryAdjusting
 
 	/**
@@ -42030,6 +42105,221 @@ declare const enum UIWritingToolsBehavior {
 	Complete = 1,
 
 	Limited = 2
+}
+
+/**
+ * @since 18.2
+ */
+declare class UIWritingToolsCoordinator extends NSObject implements UIInteraction {
+
+	static alloc(): UIWritingToolsCoordinator; // inherited from NSObject
+
+	static new(): UIWritingToolsCoordinator; // inherited from NSObject
+
+	readonly behavior: UIWritingToolsBehavior;
+
+	decorationContainerView: UIView;
+
+	readonly delegate: UIWritingToolsCoordinatorDelegate;
+
+	effectContainerView: UIView;
+
+	preferredBehavior: UIWritingToolsBehavior;
+
+	preferredResultOptions: UIWritingToolsResultOptions;
+
+	readonly resultOptions: UIWritingToolsResultOptions;
+
+	readonly state: UIWritingToolsCoordinatorState;
+
+	static readonly isWritingToolsAvailable: boolean;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly view: UIView; // inherited from UIInteraction
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { delegate: UIWritingToolsCoordinatorDelegate; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	didMoveToView(view: UIView): void;
+
+	initWithDelegate(delegate: UIWritingToolsCoordinatorDelegate): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	stopWritingTools(): void;
+
+	updateForReflowedTextInContextWithIdentifier(contextID: NSUUID): void;
+
+	updateRangeWithTextReasonForContextWithIdentifier(range: NSRange, replacementText: NSAttributedString, reason: UIWritingToolsCoordinatorTextUpdateReason, contextID: NSUUID): void;
+
+	willMoveToView(view: UIView): void;
+}
+
+/**
+ * @since 18.2
+ */
+declare class UIWritingToolsCoordinatorAnimationParameters extends NSObject {
+
+	static alloc(): UIWritingToolsCoordinatorAnimationParameters; // inherited from NSObject
+
+	static new(): UIWritingToolsCoordinatorAnimationParameters; // inherited from NSObject
+
+	completionHandler: () => void;
+
+	readonly delay: number;
+
+	readonly duration: number;
+
+	progressHandler: (p1: number) => void;
+}
+
+/**
+ * @since 18.2
+ */
+declare class UIWritingToolsCoordinatorContext extends NSObject {
+
+	static alloc(): UIWritingToolsCoordinatorContext; // inherited from NSObject
+
+	static new(): UIWritingToolsCoordinatorContext; // inherited from NSObject
+
+	readonly attributedString: NSAttributedString;
+
+	readonly identifier: NSUUID;
+
+	readonly range: NSRange;
+
+	readonly resolvedRange: NSRange;
+
+	constructor(o: { attributedString: NSAttributedString; range: NSRange; });
+
+	initWithAttributedStringRange(attributedString: NSAttributedString, range: NSRange): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorContextScope {
+
+	UserSelection = 0,
+
+	FullDocument = 1,
+
+	VisibleArea = 2
+}
+
+/**
+ * @since 18.2
+ */
+interface UIWritingToolsCoordinatorDelegate extends NSObjectProtocol {
+
+	writingToolsCoordinatorFinishTextAnimationForRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, textAnimation: UIWritingToolsCoordinatorTextAnimation, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: () => void): void;
+
+	writingToolsCoordinatorPrepareForTextAnimationForRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, textAnimation: UIWritingToolsCoordinatorTextAnimation, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: () => void): void;
+
+	writingToolsCoordinatorReplaceRangeInContextProposedTextReasonAnimationParametersCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, replacementText: NSAttributedString, reason: UIWritingToolsCoordinatorTextReplacementReason, animationParameters: UIWritingToolsCoordinatorAnimationParameters, completion: (p1: NSAttributedString) => void): void;
+
+	writingToolsCoordinatorRequestsBoundingBezierPathsForRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: NSArray<UIBezierPath>) => void): void;
+
+	writingToolsCoordinatorRequestsContextsForScopeCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, scope: UIWritingToolsCoordinatorContextScope, completion: (p1: NSArray<UIWritingToolsCoordinatorContext>) => void): void;
+
+	writingToolsCoordinatorRequestsDecorationContainerViewForRangeInContextCompletion?(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: UIView) => void): void;
+
+	writingToolsCoordinatorRequestsPreviewForTextAnimationOfRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, textAnimation: UIWritingToolsCoordinatorTextAnimation, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: UITargetedPreview) => void): void;
+
+	writingToolsCoordinatorRequestsRangeInContextWithIdentifierForPointCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, point: CGPoint, completion: (p1: NSRange, p2: NSUUID) => void): void;
+
+	writingToolsCoordinatorRequestsSingleContainerSubrangesOfRangeInContextCompletion?(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: NSArray<NSValue>) => void): void;
+
+	writingToolsCoordinatorRequestsUnderlinePathsForRangeInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, range: NSRange, context: UIWritingToolsCoordinatorContext, completion: (p1: NSArray<UIBezierPath>) => void): void;
+
+	writingToolsCoordinatorSelectRangesInContextCompletion(writingToolsCoordinator: UIWritingToolsCoordinator, ranges: NSArray<NSValue> | NSValue[], context: UIWritingToolsCoordinatorContext, completion: () => void): void;
+
+	writingToolsCoordinatorWillChangeToStateCompletion?(writingToolsCoordinator: UIWritingToolsCoordinator, newState: UIWritingToolsCoordinatorState, completion: () => void): void;
+}
+declare var UIWritingToolsCoordinatorDelegate: {
+
+	prototype: UIWritingToolsCoordinatorDelegate;
+};
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorState {
+
+	Inactive = 0,
+
+	Noninteractive = 1,
+
+	InteractiveResting = 2,
+
+	InteractiveStreaming = 3
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorTextAnimation {
+
+	Anticipate = 0,
+
+	Remove = 1,
+
+	Insert = 2
+}
+
+/**
+ * @since 18.2
+ */
+declare function UIWritingToolsCoordinatorTextAnimationDebugDescription(animationType: UIWritingToolsCoordinatorTextAnimation): string;
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorTextReplacementReason {
+
+	Interactive = 0,
+
+	Noninteractive = 1
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum UIWritingToolsCoordinatorTextUpdateReason {
+
+	Typing = 0,
+
+	UndoRedo = 1
 }
 
 /**

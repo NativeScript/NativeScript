@@ -5829,6 +5829,11 @@ declare var NSHTTPCookieSameSiteStrict: string;
 declare var NSHTTPCookieSecure: string;
 
 /**
+ * @since 18.2
+ */
+declare var NSHTTPCookieSetByJavaScript: string;
+
+/**
  * @since 2.0
  */
 declare class NSHTTPCookieStorage extends NSObject {
@@ -9537,6 +9542,11 @@ declare class NSMutableURLRequest extends NSURLRequest {
 	attribution: NSURLRequestAttribution;
 
 	cachePolicy: NSURLRequestCachePolicy;
+
+	/**
+	 * @since 18.2
+	 */
+	cookiePartitionIdentifier: string;
 
 	mainDocumentURL: NSURL;
 
@@ -16181,6 +16191,11 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 	readonly attribution: NSURLRequestAttribution;
 
 	readonly cachePolicy: NSURLRequestCachePolicy;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly cookiePartitionIdentifier: string;
 
 	readonly mainDocumentURL: NSURL;
 

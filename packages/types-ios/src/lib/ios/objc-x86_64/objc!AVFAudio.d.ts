@@ -122,6 +122,11 @@ declare class AVAudioApplication extends NSObject {
 	static new(): AVAudioApplication; // inherited from NSObject
 
 	/**
+	 * @since 18.2
+	 */
+	static requestMicrophoneInjectionPermissionWithCompletionHandler(response: (p1: AVAudioApplicationMicrophoneInjectionPermission) => void): void;
+
+	/**
 	 * @since 17.0
 	 */
 	static requestRecordPermissionWithCompletionHandler(response: (p1: boolean) => void): void;
@@ -130,6 +135,11 @@ declare class AVAudioApplication extends NSObject {
 	 * @since 17.0
 	 */
 	readonly inputMuted: boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly microphoneInjectionPermission: AVAudioApplicationMicrophoneInjectionPermission;
 
 	/**
 	 * @since 17.0
@@ -148,6 +158,17 @@ declare class AVAudioApplication extends NSObject {
  * @since 17.0
  */
 declare var AVAudioApplicationInputMuteStateChangeNotification: string;
+
+declare const enum AVAudioApplicationMicrophoneInjectionPermission {
+
+	ServiceDisabled = 1936876659,
+
+	Undetermined = 1970168948,
+
+	Denied = 1684369017,
+
+	Granted = 1735552628
+}
 
 /**
  * @since 17.0
@@ -2040,6 +2061,21 @@ declare class AVAudioSession extends NSObject {
 	readonly inputOrientation: AVAudioStereoOrientation;
 
 	/**
+	 * @since 18.2
+	 */
+	readonly isEchoCancelledInputAvailable: boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly isEchoCancelledInputEnabled: boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly isMicrophoneInjectionAvailable: boolean;
+
+	/**
 	 * @since 7.0
 	 */
 	readonly maximumInputNumberOfChannels: number;
@@ -2111,6 +2147,11 @@ declare class AVAudioSession extends NSObject {
 	readonly preferredInputOrientation: AVAudioStereoOrientation;
 
 	/**
+	 * @since 18.2
+	 */
+	readonly preferredMicrophoneInjectionMode: AVAudioSessionMicrophoneInjectionMode;
+
+	/**
 	 * @since 7.0
 	 */
 	readonly preferredOutputNumberOfChannels: number;
@@ -2119,6 +2160,11 @@ declare class AVAudioSession extends NSObject {
 	 * @since 6.0
 	 */
 	readonly preferredSampleRate: number;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly prefersEchoCancelledInput: boolean;
 
 	/**
 	 * @since 17.0
@@ -2277,6 +2323,11 @@ declare class AVAudioSession extends NSObject {
 	setPreferredInputOrientationError(orientation: AVAudioStereoOrientation): boolean;
 
 	/**
+	 * @since 18.2
+	 */
+	setPreferredMicrophoneInjectionModeError(inValue: AVAudioSessionMicrophoneInjectionMode): boolean;
+
+	/**
 	 * @since 7.0
 	 */
 	setPreferredOutputNumberOfChannelsError(count: number): boolean;
@@ -2285,6 +2336,11 @@ declare class AVAudioSession extends NSObject {
 	 * @since 6.0
 	 */
 	setPreferredSampleRateError(sampleRate: number): boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	setPrefersEchoCancelledInputError(value: boolean): boolean;
 
 	/**
 	 * @since 17.0
@@ -2541,6 +2597,23 @@ declare var AVAudioSessionMediaServicesWereLostNotification: string;
  * @since 6.0
  */
 declare var AVAudioSessionMediaServicesWereResetNotification: string;
+
+/**
+ * @since 18.2
+ */
+declare var AVAudioSessionMicrophoneInjectionCapabilitiesChangeNotification: string;
+
+/**
+ * @since 18.2
+ */
+declare var AVAudioSessionMicrophoneInjectionIsAvailableKey: string;
+
+declare const enum AVAudioSessionMicrophoneInjectionMode {
+
+	None = 0,
+
+	SpokenAudio = 1
+}
 
 /**
  * @since 5.0

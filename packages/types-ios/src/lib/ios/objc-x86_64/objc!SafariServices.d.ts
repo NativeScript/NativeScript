@@ -11,7 +11,13 @@ interface SFAddToHomeScreenActivityItem extends NSObjectProtocol {
 	title: string;
 
 	/**
+	 * @since 18.2
+	 */
+	getHomeScreenWebAppInfoWithCompletionHandler?(completionHandler: (p1: SFAddToHomeScreenInfo) => void): void;
+
+	/**
 	 * @since 17.5
+	 * @deprecated 100000
 	 */
 	getWebAppManifestWithCompletionHandler?(completionHandler: (p1: BEWebAppManifest) => void): void;
 }
@@ -19,6 +25,26 @@ declare var SFAddToHomeScreenActivityItem: {
 
 	prototype: SFAddToHomeScreenActivityItem;
 };
+
+/**
+ * @since 18.2
+ */
+declare class SFAddToHomeScreenInfo extends NSObject implements NSCopying {
+
+	static alloc(): SFAddToHomeScreenInfo; // inherited from NSObject
+
+	static new(): SFAddToHomeScreenInfo; // inherited from NSObject
+
+	readonly manifest: BEWebAppManifest;
+
+	websiteCookies: NSArray<NSHTTPCookie>;
+
+	constructor(o: { manifest: BEWebAppManifest; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithManifest(manifest: BEWebAppManifest): this;
+}
 
 /**
  * @since 11.0

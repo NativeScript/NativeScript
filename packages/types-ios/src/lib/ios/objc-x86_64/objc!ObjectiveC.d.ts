@@ -497,6 +497,21 @@ declare class NSObject implements NSObjectProtocol {
 	accessibilityIncrement(): void;
 
 	/**
+	 * @since 18.2
+	 */
+	accessibilityLineEndPositionFromCurrentSelection(): number;
+
+	/**
+	 * @since 18.2
+	 */
+	accessibilityLineRangeForPosition(position: number): NSRange;
+
+	/**
+	 * @since 18.2
+	 */
+	accessibilityLineStartPositionFromCurrentSelection(): number;
+
+	/**
 	 * @since 5.0
 	 */
 	accessibilityPerformEscape(): boolean;

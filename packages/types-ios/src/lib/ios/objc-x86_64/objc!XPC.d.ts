@@ -1,9 +1,23 @@
 
+interface OS_xpc_listener extends NSObjectProtocol {
+}
+declare var OS_xpc_listener: {
+
+	prototype: OS_xpc_listener;
+};
+
 interface OS_xpc_object extends NSObjectProtocol {
 }
 declare var OS_xpc_object: {
 
 	prototype: OS_xpc_object;
+};
+
+interface OS_xpc_session extends NSObjectProtocol {
+}
+declare var OS_xpc_session: {
+
+	prototype: OS_xpc_session;
 };
 
 /**
@@ -128,6 +142,8 @@ declare var _xpc_type_int64: void;
 declare var _xpc_type_null: void;
 
 declare var _xpc_type_rich_error: void;
+
+declare var _xpc_type_session: void;
 
 /**
  * @since 5.0
@@ -686,6 +702,17 @@ declare function xpc_int64_create(value: number): NSObject & OS_xpc_object;
  */
 declare function xpc_int64_get_value(xint: NSObject & OS_xpc_object): number;
 
+declare const enum xpc_listener_create_flags_t {
+
+	XPC_LISTENER_CREATE_NONE = 0,
+
+	XPC_LISTENER_CREATE_INACTIVE = 1,
+
+	XPC_LISTENER_CREATE_FORCE_MACH = 2,
+
+	XPC_LISTENER_CREATE_FORCE_XPCSERVICE = 4
+}
+
 /**
  * @since 5.0
  */
@@ -700,6 +727,64 @@ declare function xpc_release(object: NSObject & OS_xpc_object): void;
  * @since 5.0
  */
 declare function xpc_retain(object: NSObject & OS_xpc_object): NSObject & OS_xpc_object;
+
+declare function xpc_rich_error_can_retry(error: NSObject & OS_xpc_object): boolean;
+
+declare function xpc_rich_error_copy_description(error: NSObject & OS_xpc_object): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 16.0
+ */
+declare function xpc_session_activate(session: NSObject & OS_xpc_session, error_out: interop.Pointer | interop.Reference<NSObject & OS_xpc_object>): boolean;
+
+/**
+ * @since 16.0
+ */
+declare function xpc_session_cancel(session: NSObject & OS_xpc_session): void;
+
+/**
+ * @since 16.0
+ */
+declare function xpc_session_copy_description(session: NSObject & OS_xpc_session): interop.Pointer | interop.Reference<any>;
+
+declare const enum xpc_session_create_flags_t {
+
+	XPC_SESSION_CREATE_NONE = 0,
+
+	XPC_SESSION_CREATE_INACTIVE = 1,
+
+	XPC_SESSION_CREATE_MACH_PRIVILEGED = 2
+}
+
+/**
+ * @since 16.0
+ */
+declare function xpc_session_send_message(session: NSObject & OS_xpc_session, message: NSObject & OS_xpc_object): NSObject & OS_xpc_object;
+
+/**
+ * @since 16.0
+ */
+declare function xpc_session_send_message_with_reply_async(session: NSObject & OS_xpc_session, message: NSObject & OS_xpc_object, reply_handler: (p1: NSObject & OS_xpc_object, p2: NSObject & OS_xpc_object) => void): void;
+
+/**
+ * @since 16.0
+ */
+declare function xpc_session_send_message_with_reply_sync(session: NSObject & OS_xpc_session, message: NSObject & OS_xpc_object, error_out: interop.Pointer | interop.Reference<NSObject & OS_xpc_object>): NSObject & OS_xpc_object;
+
+/**
+ * @since 16.0
+ */
+declare function xpc_session_set_cancel_handler(session: NSObject & OS_xpc_session, cancel_handler: (p1: NSObject & OS_xpc_object) => void): void;
+
+/**
+ * @since 16.0
+ */
+declare function xpc_session_set_incoming_message_handler(session: NSObject & OS_xpc_session, handler: (p1: NSObject & OS_xpc_object) => void): void;
+
+/**
+ * @since 17.0
+ */
+declare function xpc_session_set_target_queue(session: NSObject & OS_xpc_session, target_queue: NSObject & OS_dispatch_queue): void;
 
 /**
  * @since 5.0

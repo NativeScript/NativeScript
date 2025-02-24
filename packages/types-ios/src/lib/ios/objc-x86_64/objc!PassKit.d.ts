@@ -1550,6 +1550,8 @@ declare class PKPassLibrary extends NSObject {
 	 */
 	passesOfType(passType: PKPassType): NSArray<PKPass>;
 
+	passesWithReaderIdentifier(readerIdentifier: string): NSSet<PKSecureElementPass>;
+
 	/**
 	 * @since 10.0
 	 * @deprecated 100000

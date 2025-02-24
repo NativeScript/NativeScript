@@ -469,6 +469,11 @@ declare var UTTypeItem: UTType;
 declare var UTTypeJPEG: UTType;
 
 /**
+ * @since 18.2
+ */
+declare var UTTypeJPEGXL: UTType;
+
+/**
  * @since 14.0
  */
 declare var UTTypeJSON: UTType;
