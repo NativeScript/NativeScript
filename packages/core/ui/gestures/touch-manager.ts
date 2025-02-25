@@ -5,7 +5,7 @@
 import { GestureEventData, GestureEventDataWithState, TouchGestureEventData } from '.';
 import { Animation } from '../animation';
 import { AnimationDefinition } from '../animation/animation-interfaces';
-import { View } from '../core/view';
+import type { View } from '../core/view';
 import { isObject, isFunction } from '../../utils/types';
 import { GestureEvents, GestureStateTypes, GestureTypes } from './gestures-common';
 
@@ -169,7 +169,7 @@ export class TouchManager {
 			}
 		}
 
-		view.on(View.disposeNativeViewEvent, (args) => {
+		view.on('disposeNativeView', (args) => {
 			const index = TouchManager.touchHandlers?.findIndex((handler) => handler.view === args.object);
 			if (index > -1) {
 				TouchManager.touchHandlers.splice(index, 1);
