@@ -2499,6 +2499,11 @@ declare var HKMetadataKeyAppleDeviceCalibrated: string;
 declare var HKMetadataKeyAppleECGAlgorithmVersion: string;
 
 /**
+ * @since 18.2
+ */
+declare var HKMetadataKeyAppleFitnessPlusCatalogIdentifier: string;
+
+/**
  * @since 17.0
  */
 declare var HKMetadataKeyAppleFitnessPlusSession: string;

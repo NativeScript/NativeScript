@@ -4618,6 +4618,8 @@ declare const kAudioUnitErr_MIDIOutputBufferFull: number;
 
 declare const kAudioUnitErr_MissingKey: number;
 
+declare const kAudioUnitErr_MultipleVoiceProcessors: number;
+
 declare const kAudioUnitErr_NoConnection: number;
 
 declare const kAudioUnitErr_PropertyNotInUse: number;

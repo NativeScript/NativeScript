@@ -52,7 +52,9 @@ declare const enum SFSpeechErrorCode {
 
 	UndefinedTemplateClassName = 7,
 
-	MalformedSupplementalModel = 8
+	MalformedSupplementalModel = 8,
+
+	Timeout = 10
 }
 
 /**

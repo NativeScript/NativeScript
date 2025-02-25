@@ -152,6 +152,11 @@ declare class ASDiscoveryDescriptor extends NSObject {
 
 	bluetoothNameSubstring: string;
 
+	/**
+	 * @since 18.2
+	 */
+	bluetoothNameSubstringCompareOptions: NSStringCompareOptions;
+
 	bluetoothRange: ASDiscoveryDescriptorRange;
 
 	bluetoothServiceDataBlob: NSData;

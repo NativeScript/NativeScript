@@ -51,6 +51,84 @@ declare const enum BEAccessibilityPressedState {
 declare var BEAccessibilitySelectionChangedNotification: number;
 
 /**
+ * @since 18.2
+ */
+declare class BEAccessibilityTextMarker extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): BEAccessibilityTextMarker; // inherited from NSObject
+
+	static new(): BEAccessibilityTextMarker; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class BEAccessibilityTextMarkerRange extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): BEAccessibilityTextMarkerRange; // inherited from NSObject
+
+	static new(): BEAccessibilityTextMarkerRange; // inherited from NSObject
+
+	endMarker: BEAccessibilityTextMarker;
+
+	startMarker: BEAccessibilityTextMarker;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.2
+ */
+interface BEAccessibilityTextMarkerSupport extends NSObjectProtocol {
+
+	accessibilityBoundsForTextMarkerRange(range: BEAccessibilityTextMarkerRange): CGRect;
+
+	accessibilityContentForTextMarkerRange(range: BEAccessibilityTextMarkerRange): string;
+
+	accessibilityLineEndMarkerForMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+
+	accessibilityLineStartMarkerForMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+
+	accessibilityMarkerForPoint(point: CGPoint): BEAccessibilityTextMarker;
+
+	accessibilityNextTextMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+
+	accessibilityPreviousTextMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+
+	accessibilityRangeForTextMarkerRange(range: BEAccessibilityTextMarkerRange): NSRange;
+
+	accessibilityTextMarkerForPosition(position: number): BEAccessibilityTextMarker;
+
+	accessibilityTextMarkerRange(): BEAccessibilityTextMarkerRange;
+
+	accessibilityTextMarkerRangeForCurrentSelection(): BEAccessibilityTextMarkerRange;
+
+	accessibilityTextMarkerRangeForRange(range: NSRange): BEAccessibilityTextMarkerRange;
+}
+declare var BEAccessibilityTextMarkerSupport: {
+
+	prototype: BEAccessibilityTextMarkerSupport;
+};
+
+/**
  * @since 18.0
  */
 declare var BEAccessibilityTraitMenuItem: number;
@@ -111,6 +189,48 @@ interface BEDirectionalTextRange {
 	length: number;
 }
 declare var BEDirectionalTextRange: interop.StructType<BEDirectionalTextRange>;
+
+/**
+ * @since 18.2
+ */
+declare class BEDownloadMonitor extends NSObject {
+
+	static alloc(): BEDownloadMonitor; // inherited from NSObject
+
+	static createAccessToken(): NSData;
+
+	static new(): BEDownloadMonitor; // inherited from NSObject
+
+	readonly destinationURL: NSURL;
+
+	readonly identifier: NSUUID;
+
+	readonly sourceURL: NSURL;
+
+	constructor(o: { sourceURL: NSURL; destinationURL: NSURL; observedProgress: NSProgress; liveActivityAccessToken: NSData; });
+
+	beginMonitoring(completion: (p1: BEDownloadMonitorLocation, p2: NSError) => void): void;
+
+	initWithSourceURLDestinationURLObservedProgressLiveActivityAccessToken(sourceURL: NSURL, destinationURL: NSURL, observedProgress: NSProgress, liveActivityAccessToken: NSData): this;
+
+	resumeMonitoringCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
+
+	useDownloadsFolderWithPlaceholderTypeFinalFileCreatedHandler(type: UTType, finalFileCreatedHandler: (p1: BEDownloadMonitorLocation) => void): void;
+}
+
+/**
+ * @since 18.2
+ */
+declare class BEDownloadMonitorLocation extends NSObject {
+
+	static alloc(): BEDownloadMonitorLocation; // inherited from NSObject
+
+	static new(): BEDownloadMonitorLocation; // inherited from NSObject
+
+	readonly bookmarkData: NSData;
+
+	readonly url: NSURL;
+}
 
 /**
  * @since 17.4
@@ -394,6 +514,11 @@ declare class BENetworkingProcess extends NSObject {
 
 	static alloc(): BENetworkingProcess; // inherited from NSObject
 
+	/**
+	 * @since 18.2
+	 */
+	static networkProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BENetworkingProcess, p2: NSError) => void): void;
+
 	static networkProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BENetworkingProcess, p2: NSError) => void): void;
 
 	static new(): BENetworkingProcess; // inherited from NSObject
@@ -449,6 +574,11 @@ declare class BERenderingProcess extends NSObject {
 	static alloc(): BERenderingProcess; // inherited from NSObject
 
 	static new(): BERenderingProcess; // inherited from NSObject
+
+	/**
+	 * @since 18.2
+	 */
+	static renderingProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BERenderingProcess, p2: NSError) => void): void;
 
 	static renderingProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BERenderingProcess, p2: NSError) => void): void;
 
@@ -1016,6 +1146,11 @@ declare class BEWebContentProcess extends NSObject {
 	static alloc(): BEWebContentProcess; // inherited from NSObject
 
 	static new(): BEWebContentProcess; // inherited from NSObject
+
+	/**
+	 * @since 18.2
+	 */
+	static webContentProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BEWebContentProcess, p2: NSError) => void): void;
 
 	static webContentProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BEWebContentProcess, p2: NSError) => void): void;
 

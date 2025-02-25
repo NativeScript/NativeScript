@@ -1492,7 +1492,13 @@ declare const enum MTRApplicationLauncherStatus {
 
 	AppNotAvailable = 1,
 
-	SystemBusy = 2
+	SystemBusy = 2,
+
+	PendingUserApproval = 3,
+
+	Downloading = 4,
+
+	Installing = 5
 }
 
 /**
@@ -1578,6 +1584,30 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeGlobalAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeGlobalAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterAppleDeviceInformationAttributeSupportsTapToUnlockID = 0,
+
+	AttributeIDTypeClusterAppleDeviceInformationAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterAppleDeviceInformationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterAppleDeviceInformationAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterAppleDeviceInformationAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterAppleDeviceInformationAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterAppleLockClusterAttributeIntentDetectionID = 0,
+
+	AttributeIDTypeClusterAppleLockClusterAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterAppleLockClusterAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterAppleLockClusterAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterAppleLockClusterAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterAppleLockClusterAttributeClusterRevisionID = 65533,
 
 	ClusterIdentifyAttributeIdentifyTimeID = 0,
 
@@ -1677,36 +1707,6 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterOnOffAttributeClusterRevisionID = 65533,
 
-	ClusterOnOffSwitchConfigurationAttributeSwitchTypeID = 0,
-
-	ClusterOnOffSwitchConfigurationAttributeSwitchActionsID = 16,
-
-	ClusterOnOffSwitchConfigurationAttributeGeneratedCommandListID = 65528,
-
-	ClusterOnOffSwitchConfigurationAttributeAcceptedCommandListID = 65529,
-
-	ClusterOnOffSwitchConfigurationAttributeAttributeListID = 65531,
-
-	ClusterOnOffSwitchConfigurationAttributeFeatureMapID = 65532,
-
-	ClusterOnOffSwitchConfigurationAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeSwitchTypeID = 0,
-
-	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeSwitchActionsID = 16,
-
-	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeEventListID = 65530,
-
-	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeClusterRevisionID = 65533,
-
 	ClusterLevelControlAttributeCurrentLevelID = 0,
 
 	ClusterLevelControlAttributeRemainingTimeID = 1,
@@ -1784,64 +1784,6 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterLevelControlAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterLevelControlAttributeClusterRevisionID = 65533,
-
-	ClusterBinaryInputBasicAttributeActiveTextID = 4,
-
-	ClusterBinaryInputBasicAttributeDescriptionID = 28,
-
-	ClusterBinaryInputBasicAttributeInactiveTextID = 46,
-
-	ClusterBinaryInputBasicAttributeOutOfServiceID = 81,
-
-	ClusterBinaryInputBasicAttributePolarityID = 84,
-
-	ClusterBinaryInputBasicAttributePresentValueID = 85,
-
-	ClusterBinaryInputBasicAttributeReliabilityID = 103,
-
-	ClusterBinaryInputBasicAttributeStatusFlagsID = 111,
-
-	ClusterBinaryInputBasicAttributeApplicationTypeID = 256,
-
-	ClusterBinaryInputBasicAttributeGeneratedCommandListID = 65528,
-
-	ClusterBinaryInputBasicAttributeAcceptedCommandListID = 65529,
-
-	ClusterBinaryInputBasicAttributeAttributeListID = 65531,
-
-	ClusterBinaryInputBasicAttributeFeatureMapID = 65532,
-
-	ClusterBinaryInputBasicAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeActiveTextID = 4,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeDescriptionID = 28,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeInactiveTextID = 46,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeOutOfServiceID = 81,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributePolarityID = 84,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributePresentValueID = 85,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeReliabilityID = 103,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeStatusFlagsID = 111,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeApplicationTypeID = 256,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeEventListID = 65530,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterBinaryInputBasicAttributeClusterRevisionID = 65533,
 
 	ClusterPulseWidthModulationAttributeGeneratedCommandListID = 65528,
 
@@ -1962,6 +1904,10 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterAccessControlAttributeTargetsPerAccessControlEntryID = 3,
 
 	AttributeIDTypeClusterAccessControlAttributeAccessControlEntriesPerFabricID = 4,
+
+	AttributeIDTypeClusterAccessControlAttributeCommissioningARLID = 5,
+
+	AttributeIDTypeClusterAccessControlAttributeARLID = 6,
 
 	AttributeIDTypeClusterAccessControlAttributeGeneratedCommandListID = 65528,
 
@@ -2470,6 +2416,16 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterGeneralCommissioningAttributeLocationCapabilityID = 3,
 
 	AttributeIDTypeClusterGeneralCommissioningAttributeSupportsConcurrentConnectionID = 4,
+
+	AttributeIDTypeClusterGeneralCommissioningAttributeTCAcceptedVersionID = 5,
+
+	AttributeIDTypeClusterGeneralCommissioningAttributeTCMinRequiredVersionID = 6,
+
+	AttributeIDTypeClusterGeneralCommissioningAttributeTCAcknowledgementsID = 7,
+
+	AttributeIDTypeClusterGeneralCommissioningAttributeTCAcknowledgementsRequiredID = 8,
+
+	AttributeIDTypeClusterGeneralCommissioningAttributeTCUpdateDeadlineID = 9,
 
 	AttributeIDTypeClusterGeneralCommissioningAttributeGeneratedCommandListID = 65528,
 
@@ -3188,6 +3144,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeVendorIDID = 2,
 
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeProductNameID = 3,
+
+	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeProductIDID = 4,
 
 	AttributeIDTypeClusterBridgedDeviceBasicInformationAttributeNodeLabelID = 5,
 
@@ -4571,6 +4529,24 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterDoorLockAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterDoorLockAttributeAppleAliroReaderVerificationKeyID = 323551232,
+
+	AttributeIDTypeClusterDoorLockAttributeAppleAliroReaderGroupIdentifierID = 323551233,
+
+	AttributeIDTypeClusterDoorLockAttributeAppleAliroReaderGroupSubIdentifierID = 323551234,
+
+	AttributeIDTypeClusterDoorLockAttributeAppleAliroExpeditedTransactionSupportedProtocolVersionsID = 323551235,
+
+	AttributeIDTypeClusterDoorLockAttributeAppleAliroGroupResolvingKeyID = 323551236,
+
+	AttributeIDTypeClusterDoorLockAttributeAppleAliroSupportedBLEUWBProtocolVersionsID = 323551237,
+
+	AttributeIDTypeClusterDoorLockAttributeAppleAliroBLEAdvertisingVersionID = 323551238,
+
+	AttributeIDTypeClusterDoorLockAttributeAppleNumberOfAliroCredentialIssuerKeysSupportedID = 323551239,
+
+	AttributeIDTypeClusterDoorLockAttributeAppleNumberOfAliroEndpointKeysSupportedID = 323551240,
+
 	ClusterWindowCoveringAttributeTypeID = 0,
 
 	ClusterWindowCoveringAttributePhysicalClosedLimitLiftID = 1,
@@ -4681,75 +4657,13 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterWindowCoveringAttributeClusterRevisionID = 65533,
 
-	ClusterBarrierControlAttributeBarrierMovingStateID = 1,
-
-	ClusterBarrierControlAttributeBarrierSafetyStatusID = 2,
-
-	ClusterBarrierControlAttributeBarrierCapabilitiesID = 3,
-
-	ClusterBarrierControlAttributeBarrierOpenEventsID = 4,
-
-	ClusterBarrierControlAttributeBarrierCloseEventsID = 5,
-
-	ClusterBarrierControlAttributeBarrierCommandOpenEventsID = 6,
-
-	ClusterBarrierControlAttributeBarrierCommandCloseEventsID = 7,
-
-	ClusterBarrierControlAttributeBarrierOpenPeriodID = 8,
-
-	ClusterBarrierControlAttributeBarrierClosePeriodID = 9,
-
-	ClusterBarrierControlAttributeBarrierPositionID = 10,
-
-	ClusterBarrierControlAttributeGeneratedCommandListID = 65528,
-
-	ClusterBarrierControlAttributeAcceptedCommandListID = 65529,
-
-	ClusterBarrierControlAttributeAttributeListID = 65531,
-
-	ClusterBarrierControlAttributeFeatureMapID = 65532,
-
-	ClusterBarrierControlAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierMovingStateID = 1,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierSafetyStatusID = 2,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierCapabilitiesID = 3,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierOpenEventsID = 4,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierCloseEventsID = 5,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierCommandOpenEventsID = 6,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierCommandCloseEventsID = 7,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierOpenPeriodID = 8,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierClosePeriodID = 9,
-
-	AttributeIDTypeClusterBarrierControlAttributeBarrierPositionID = 10,
-
-	AttributeIDTypeClusterBarrierControlAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterBarrierControlAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterBarrierControlAttributeEventListID = 65530,
-
-	AttributeIDTypeClusterBarrierControlAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterBarrierControlAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterBarrierControlAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterServiceAreaAttributeSupportedLocationsID = 0,
+	AttributeIDTypeClusterServiceAreaAttributeSupportedAreasID = 0,
 
 	AttributeIDTypeClusterServiceAreaAttributeSupportedMapsID = 1,
 
-	AttributeIDTypeClusterServiceAreaAttributeSelectedLocationsID = 2,
+	AttributeIDTypeClusterServiceAreaAttributeSelectedAreasID = 2,
 
-	AttributeIDTypeClusterServiceAreaAttributeCurrentLocationID = 3,
+	AttributeIDTypeClusterServiceAreaAttributeCurrentAreaID = 3,
 
 	AttributeIDTypeClusterServiceAreaAttributeEstimatedEndTimeID = 4,
 
@@ -5107,13 +5021,7 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterThermostatAttributeSchedulesID = 81,
 
-	AttributeIDTypeClusterThermostatAttributePresetsSchedulesEditableID = 82,
-
-	AttributeIDTypeClusterThermostatAttributeTemperatureSetpointHoldPolicyID = 83,
-
-	AttributeIDTypeClusterThermostatAttributeSetpointHoldExpiryTimestampID = 84,
-
-	AttributeIDTypeClusterThermostatAttributeQueuedPresetID = 85,
+	AttributeIDTypeClusterThermostatAttributeSetpointHoldExpiryTimestampID = 82,
 
 	AttributeIDTypeClusterThermostatAttributeGeneratedCommandListID = 65528,
 
@@ -6165,7 +6073,9 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterRadonConcentrationMeasurementAttributeClusterRevisionID = 65533,
 
-	AttributeIDTypeClusterWiFiNetworkManagementAttributeSSIDID = 1,
+	AttributeIDTypeClusterWiFiNetworkManagementAttributeSSIDID = 0,
+
+	AttributeIDTypeClusterWiFiNetworkManagementAttributePassphraseSurrogateID = 1,
 
 	AttributeIDTypeClusterWiFiNetworkManagementAttributeGeneratedCommandListID = 65528,
 
@@ -6188,6 +6098,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterThreadBorderRouterManagementAttributeInterfaceEnabledID = 3,
 
 	AttributeIDTypeClusterThreadBorderRouterManagementAttributeActiveDatasetTimestampID = 4,
+
+	AttributeIDTypeClusterThreadBorderRouterManagementAttributePendingDatasetTimestampID = 5,
 
 	AttributeIDTypeClusterThreadBorderRouterManagementAttributeGeneratedCommandListID = 65528,
 
@@ -6649,6 +6561,194 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterContentAppObserverAttributeClusterRevisionID = 65533,
 
+	AttributeIDTypeClusterZoneManagementAttributeSupportedZoneSourcesID = 0,
+
+	AttributeIDTypeClusterZoneManagementAttributeZonesID = 1,
+
+	AttributeIDTypeClusterZoneManagementAttributeTimeControlID = 2,
+
+	AttributeIDTypeClusterZoneManagementAttributeSensitivityID = 3,
+
+	AttributeIDTypeClusterZoneManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterZoneManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterZoneManagementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterZoneManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterZoneManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterZoneManagementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMaxConcurrentVideoEncodersID = 0,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMaxEncodedPixelRateID = 1,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeVideoSensorParamsID = 2,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeNightVisionCapableID = 3,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMinViewportID = 4,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeRateDistortionTradeOffPointsID = 5,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMaxPreRollBufferSizeID = 6,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMicrophoneCapabilitiesID = 7,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeSpeakerCapabilitiesID = 8,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeTwoWayTalkSupportID = 9,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeSupportedSnapshotParamsID = 10,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMaxNetworkBandwidthID = 11,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeCurrentFrameRateID = 12,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeHDRModeEnabledID = 13,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeCurrentVideoCodecsID = 14,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeCurrentSnapshotConfigID = 15,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeFabricsUsingCameraID = 16,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeAllocatedVideoStreamsID = 17,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeAllocatedAudioStreamsID = 18,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeAllocatedSnapshotStreamsID = 19,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeRankedVideoStreamPrioritiesListID = 20,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeSoftRecordingPrivacyModeEnabledID = 21,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeSoftLivestreamPrivacyModeEnabledID = 22,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeHardPrivacyModeOnID = 23,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeNightVisionID = 24,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeNightVisionIllumID = 25,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeAWBEnabledID = 26,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeAutoShutterSpeedEnabledID = 27,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeAutoISOEnabledID = 28,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeViewportID = 29,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeSpeakerMutedID = 30,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeSpeakerVolumeLevelID = 31,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeSpeakerMaxLevelID = 32,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeSpeakerMinLevelID = 33,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMicrophoneMutedID = 34,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMicrophoneVolumeLevelID = 35,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMicrophoneMaxLevelID = 36,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMicrophoneMinLevelID = 37,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeMicrophoneAGCEnabledID = 38,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeImageRotationID = 39,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeImageFlipHorizontalID = 40,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeImageFlipVerticalID = 41,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeLocalVideoRecordingEnabledID = 42,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeLocalSnapshotRecordingEnabledID = 43,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeStatusLightEnabledID = 44,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeStatusLightBrightnessID = 45,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeDepthSensorStatusID = 46,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterCameraAVStreamManagementAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterWebRTCTransportProviderAttributeCurrentSessionsID = 0,
+
+	AttributeIDTypeClusterWebRTCTransportProviderAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterWebRTCTransportProviderAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterWebRTCTransportProviderAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterWebRTCTransportProviderAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterWebRTCTransportProviderAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterWebRTCTransportProviderAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterWebRTCTransportRequestorAttributeCurrentSessionsID = 0,
+
+	AttributeIDTypeClusterWebRTCTransportRequestorAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterWebRTCTransportRequestorAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterWebRTCTransportRequestorAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterWebRTCTransportRequestorAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterWebRTCTransportRequestorAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterWebRTCTransportRequestorAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterChimeAttributeInstalledChimeSoundsID = 0,
+
+	AttributeIDTypeClusterChimeAttributeActiveChimeIDID = 1,
+
+	AttributeIDTypeClusterChimeAttributeEnabledID = 2,
+
+	AttributeIDTypeClusterChimeAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterChimeAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterChimeAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterChimeAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterChimeAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterChimeAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterEcosystemInformationAttributeDeviceDirectoryID = 0,
+
+	AttributeIDTypeClusterEcosystemInformationAttributeLocationDirectoryID = 1,
+
+	AttributeIDTypeClusterEcosystemInformationAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterEcosystemInformationAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterEcosystemInformationAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterEcosystemInformationAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterEcosystemInformationAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterEcosystemInformationAttributeClusterRevisionID = 65533,
+
 	AttributeIDTypeClusterCommissionerControlAttributeSupportedDeviceCategoriesID = 0,
 
 	AttributeIDTypeClusterCommissionerControlAttributeGeneratedCommandListID = 65528,
@@ -6662,6 +6762,500 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterCommissionerControlAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterCommissionerControlAttributeClusterRevisionID = 65533,
+
+	ClusterTestClusterAttributeBooleanID = 0,
+
+	ClusterTestClusterAttributeBitmap8ID = 1,
+
+	ClusterTestClusterAttributeBitmap16ID = 2,
+
+	ClusterTestClusterAttributeBitmap32ID = 3,
+
+	ClusterTestClusterAttributeBitmap64ID = 4,
+
+	ClusterTestClusterAttributeInt8uID = 5,
+
+	ClusterTestClusterAttributeInt16uID = 6,
+
+	ClusterTestClusterAttributeInt24uID = 7,
+
+	ClusterTestClusterAttributeInt32uID = 8,
+
+	ClusterTestClusterAttributeInt40uID = 9,
+
+	ClusterTestClusterAttributeInt48uID = 10,
+
+	ClusterTestClusterAttributeInt56uID = 11,
+
+	ClusterTestClusterAttributeInt64uID = 12,
+
+	ClusterTestClusterAttributeInt8sID = 13,
+
+	ClusterTestClusterAttributeInt16sID = 14,
+
+	ClusterTestClusterAttributeInt24sID = 15,
+
+	ClusterTestClusterAttributeInt32sID = 16,
+
+	ClusterTestClusterAttributeInt40sID = 17,
+
+	ClusterTestClusterAttributeInt48sID = 18,
+
+	ClusterTestClusterAttributeInt56sID = 19,
+
+	ClusterTestClusterAttributeInt64sID = 20,
+
+	ClusterTestClusterAttributeEnum8ID = 21,
+
+	ClusterTestClusterAttributeEnum16ID = 22,
+
+	ClusterTestClusterAttributeFloatSingleID = 23,
+
+	ClusterTestClusterAttributeFloatDoubleID = 24,
+
+	ClusterTestClusterAttributeOctetStringID = 25,
+
+	ClusterTestClusterAttributeListInt8uID = 26,
+
+	ClusterTestClusterAttributeListOctetStringID = 27,
+
+	ClusterTestClusterAttributeListStructOctetStringID = 28,
+
+	ClusterTestClusterAttributeLongOctetStringID = 29,
+
+	ClusterTestClusterAttributeCharStringID = 30,
+
+	ClusterTestClusterAttributeLongCharStringID = 31,
+
+	ClusterTestClusterAttributeEpochUsID = 32,
+
+	ClusterTestClusterAttributeEpochSID = 33,
+
+	ClusterTestClusterAttributeVendorIdID = 34,
+
+	ClusterTestClusterAttributeListNullablesAndOptionalsStructID = 35,
+
+	ClusterTestClusterAttributeEnumAttrID = 36,
+
+	ClusterTestClusterAttributeStructAttrID = 37,
+
+	ClusterTestClusterAttributeRangeRestrictedInt8uID = 38,
+
+	ClusterTestClusterAttributeRangeRestrictedInt8sID = 39,
+
+	ClusterTestClusterAttributeRangeRestrictedInt16uID = 40,
+
+	ClusterTestClusterAttributeRangeRestrictedInt16sID = 41,
+
+	ClusterTestClusterAttributeListLongOctetStringID = 42,
+
+	ClusterTestClusterAttributeListFabricScopedID = 43,
+
+	ClusterTestClusterAttributeTimedWriteBooleanID = 48,
+
+	ClusterTestClusterAttributeGeneralErrorBooleanID = 49,
+
+	ClusterTestClusterAttributeClusterErrorBooleanID = 50,
+
+	ClusterTestClusterAttributeUnsupportedID = 255,
+
+	ClusterTestClusterAttributeNullableBooleanID = 16384,
+
+	ClusterTestClusterAttributeNullableBitmap8ID = 16385,
+
+	ClusterTestClusterAttributeNullableBitmap16ID = 16386,
+
+	ClusterTestClusterAttributeNullableBitmap32ID = 16387,
+
+	ClusterTestClusterAttributeNullableBitmap64ID = 16388,
+
+	ClusterTestClusterAttributeNullableInt8uID = 16389,
+
+	ClusterTestClusterAttributeNullableInt16uID = 16390,
+
+	ClusterTestClusterAttributeNullableInt24uID = 16391,
+
+	ClusterTestClusterAttributeNullableInt32uID = 16392,
+
+	ClusterTestClusterAttributeNullableInt40uID = 16393,
+
+	ClusterTestClusterAttributeNullableInt48uID = 16394,
+
+	ClusterTestClusterAttributeNullableInt56uID = 16395,
+
+	ClusterTestClusterAttributeNullableInt64uID = 16396,
+
+	ClusterTestClusterAttributeNullableInt8sID = 16397,
+
+	ClusterTestClusterAttributeNullableInt16sID = 16398,
+
+	ClusterTestClusterAttributeNullableInt24sID = 16399,
+
+	ClusterTestClusterAttributeNullableInt32sID = 16400,
+
+	ClusterTestClusterAttributeNullableInt40sID = 16401,
+
+	ClusterTestClusterAttributeNullableInt48sID = 16402,
+
+	ClusterTestClusterAttributeNullableInt56sID = 16403,
+
+	ClusterTestClusterAttributeNullableInt64sID = 16404,
+
+	ClusterTestClusterAttributeNullableEnum8ID = 16405,
+
+	ClusterTestClusterAttributeNullableEnum16ID = 16406,
+
+	ClusterTestClusterAttributeNullableFloatSingleID = 16407,
+
+	ClusterTestClusterAttributeNullableFloatDoubleID = 16408,
+
+	ClusterTestClusterAttributeNullableOctetStringID = 16409,
+
+	ClusterTestClusterAttributeNullableCharStringID = 16414,
+
+	ClusterTestClusterAttributeNullableEnumAttrID = 16420,
+
+	ClusterTestClusterAttributeNullableStructID = 16421,
+
+	ClusterTestClusterAttributeNullableRangeRestrictedInt8uID = 16422,
+
+	ClusterTestClusterAttributeNullableRangeRestrictedInt8sID = 16423,
+
+	ClusterTestClusterAttributeNullableRangeRestrictedInt16uID = 16424,
+
+	ClusterTestClusterAttributeNullableRangeRestrictedInt16sID = 16425,
+
+	ClusterTestClusterAttributeWriteOnlyInt8uID = 16426,
+
+	ClusterTestClusterAttributeGeneratedCommandListID = 65528,
+
+	ClusterTestClusterAttributeAcceptedCommandListID = 65529,
+
+	ClusterTestClusterAttributeAttributeListID = 65531,
+
+	ClusterTestClusterAttributeFeatureMapID = 65532,
+
+	ClusterTestClusterAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterUnitTestingAttributeBooleanID = 0,
+
+	AttributeIDTypeClusterUnitTestingAttributeBitmap8ID = 1,
+
+	AttributeIDTypeClusterUnitTestingAttributeBitmap16ID = 2,
+
+	AttributeIDTypeClusterUnitTestingAttributeBitmap32ID = 3,
+
+	AttributeIDTypeClusterUnitTestingAttributeBitmap64ID = 4,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt8uID = 5,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt16uID = 6,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt24uID = 7,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt32uID = 8,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt40uID = 9,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt48uID = 10,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt56uID = 11,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt64uID = 12,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt8sID = 13,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt16sID = 14,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt24sID = 15,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt32sID = 16,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt40sID = 17,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt48sID = 18,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt56sID = 19,
+
+	AttributeIDTypeClusterUnitTestingAttributeInt64sID = 20,
+
+	AttributeIDTypeClusterUnitTestingAttributeEnum8ID = 21,
+
+	AttributeIDTypeClusterUnitTestingAttributeEnum16ID = 22,
+
+	AttributeIDTypeClusterUnitTestingAttributeFloatSingleID = 23,
+
+	AttributeIDTypeClusterUnitTestingAttributeFloatDoubleID = 24,
+
+	AttributeIDTypeClusterUnitTestingAttributeOctetStringID = 25,
+
+	AttributeIDTypeClusterUnitTestingAttributeListInt8uID = 26,
+
+	AttributeIDTypeClusterUnitTestingAttributeListOctetStringID = 27,
+
+	AttributeIDTypeClusterUnitTestingAttributeListStructOctetStringID = 28,
+
+	AttributeIDTypeClusterUnitTestingAttributeLongOctetStringID = 29,
+
+	AttributeIDTypeClusterUnitTestingAttributeCharStringID = 30,
+
+	AttributeIDTypeClusterUnitTestingAttributeLongCharStringID = 31,
+
+	AttributeIDTypeClusterUnitTestingAttributeEpochUsID = 32,
+
+	AttributeIDTypeClusterUnitTestingAttributeEpochSID = 33,
+
+	AttributeIDTypeClusterUnitTestingAttributeVendorIdID = 34,
+
+	AttributeIDTypeClusterUnitTestingAttributeListNullablesAndOptionalsStructID = 35,
+
+	AttributeIDTypeClusterUnitTestingAttributeEnumAttrID = 36,
+
+	AttributeIDTypeClusterUnitTestingAttributeStructAttrID = 37,
+
+	AttributeIDTypeClusterUnitTestingAttributeRangeRestrictedInt8uID = 38,
+
+	AttributeIDTypeClusterUnitTestingAttributeRangeRestrictedInt8sID = 39,
+
+	AttributeIDTypeClusterUnitTestingAttributeRangeRestrictedInt16uID = 40,
+
+	AttributeIDTypeClusterUnitTestingAttributeRangeRestrictedInt16sID = 41,
+
+	AttributeIDTypeClusterUnitTestingAttributeListLongOctetStringID = 42,
+
+	AttributeIDTypeClusterUnitTestingAttributeListFabricScopedID = 43,
+
+	AttributeIDTypeClusterUnitTestingAttributeTimedWriteBooleanID = 48,
+
+	AttributeIDTypeClusterUnitTestingAttributeGeneralErrorBooleanID = 49,
+
+	AttributeIDTypeClusterUnitTestingAttributeClusterErrorBooleanID = 50,
+
+	AttributeIDTypeClusterUnitTestingAttributeGlobalEnumID = 51,
+
+	AttributeIDTypeClusterUnitTestingAttributeGlobalStructID = 52,
+
+	AttributeIDTypeClusterUnitTestingAttributeUnsupportedID = 255,
+
+	AttributeIDTypeClusterUnitTestingAttributeReadFailureCodeID = 12288,
+
+	AttributeIDTypeClusterUnitTestingAttributeFailureInt32UID = 12289,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableBooleanID = 16384,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableBitmap8ID = 16385,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableBitmap16ID = 16386,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableBitmap32ID = 16387,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableBitmap64ID = 16388,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt8uID = 16389,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt16uID = 16390,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt24uID = 16391,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt32uID = 16392,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt40uID = 16393,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt48uID = 16394,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt56uID = 16395,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt64uID = 16396,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt8sID = 16397,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt16sID = 16398,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt24sID = 16399,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt32sID = 16400,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt40sID = 16401,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt48sID = 16402,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt56sID = 16403,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableInt64sID = 16404,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableEnum8ID = 16405,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableEnum16ID = 16406,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableFloatSingleID = 16407,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableFloatDoubleID = 16408,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableOctetStringID = 16409,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableCharStringID = 16414,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableEnumAttrID = 16420,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableStructID = 16421,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableRangeRestrictedInt8uID = 16422,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableRangeRestrictedInt8sID = 16423,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableRangeRestrictedInt16uID = 16424,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableRangeRestrictedInt16sID = 16425,
+
+	AttributeIDTypeClusterUnitTestingAttributeWriteOnlyInt8uID = 16426,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableGlobalEnumID = 16435,
+
+	AttributeIDTypeClusterUnitTestingAttributeNullableGlobalStructID = 16436,
+
+	AttributeIDTypeClusterUnitTestingAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterUnitTestingAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterUnitTestingAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterUnitTestingAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterUnitTestingAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterUnitTestingAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterUnitTestingAttributeMeiInt8uID = 4294070017,
+
+	AttributeIDTypeClusterSampleMEIAttributeFlipFlopID = 0,
+
+	AttributeIDTypeClusterSampleMEIAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterSampleMEIAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterSampleMEIAttributeEventListID = 65530,
+
+	AttributeIDTypeClusterSampleMEIAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterSampleMEIAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterSampleMEIAttributeClusterRevisionID = 65533,
+
+	ClusterBarrierControlAttributeBarrierMovingStateID = 1,
+
+	ClusterBarrierControlAttributeBarrierSafetyStatusID = 2,
+
+	ClusterBarrierControlAttributeBarrierCapabilitiesID = 3,
+
+	ClusterBarrierControlAttributeBarrierOpenEventsID = 4,
+
+	ClusterBarrierControlAttributeBarrierCloseEventsID = 5,
+
+	ClusterBarrierControlAttributeBarrierCommandOpenEventsID = 6,
+
+	ClusterBarrierControlAttributeBarrierCommandCloseEventsID = 7,
+
+	ClusterBarrierControlAttributeBarrierOpenPeriodID = 8,
+
+	ClusterBarrierControlAttributeBarrierClosePeriodID = 9,
+
+	ClusterBarrierControlAttributeBarrierPositionID = 10,
+
+	ClusterBarrierControlAttributeGeneratedCommandListID = 65528,
+
+	ClusterBarrierControlAttributeAcceptedCommandListID = 65529,
+
+	ClusterBarrierControlAttributeAttributeListID = 65531,
+
+	ClusterBarrierControlAttributeFeatureMapID = 65532,
+
+	ClusterBarrierControlAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierMovingStateID = 1,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierSafetyStatusID = 2,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierCapabilitiesID = 3,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierOpenEventsID = 4,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierCloseEventsID = 5,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierCommandOpenEventsID = 6,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierCommandCloseEventsID = 7,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierOpenPeriodID = 8,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierClosePeriodID = 9,
+
+	AttributeIDTypeClusterBarrierControlAttributeBarrierPositionID = 10,
+
+	AttributeIDTypeClusterBarrierControlAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterBarrierControlAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterBarrierControlAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterBarrierControlAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterBarrierControlAttributeClusterRevisionID = 65533,
+
+	ClusterBinaryInputBasicAttributeActiveTextID = 4,
+
+	ClusterBinaryInputBasicAttributeDescriptionID = 28,
+
+	ClusterBinaryInputBasicAttributeInactiveTextID = 46,
+
+	ClusterBinaryInputBasicAttributeOutOfServiceID = 81,
+
+	ClusterBinaryInputBasicAttributePolarityID = 84,
+
+	ClusterBinaryInputBasicAttributePresentValueID = 85,
+
+	ClusterBinaryInputBasicAttributeReliabilityID = 103,
+
+	ClusterBinaryInputBasicAttributeStatusFlagsID = 111,
+
+	ClusterBinaryInputBasicAttributeApplicationTypeID = 256,
+
+	ClusterBinaryInputBasicAttributeGeneratedCommandListID = 65528,
+
+	ClusterBinaryInputBasicAttributeAcceptedCommandListID = 65529,
+
+	ClusterBinaryInputBasicAttributeAttributeListID = 65531,
+
+	ClusterBinaryInputBasicAttributeFeatureMapID = 65532,
+
+	ClusterBinaryInputBasicAttributeClusterRevisionID = 65533,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeActiveTextID = 4,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeDescriptionID = 28,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeInactiveTextID = 46,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeOutOfServiceID = 81,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributePolarityID = 84,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributePresentValueID = 85,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeReliabilityID = 103,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeStatusFlagsID = 111,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeApplicationTypeID = 256,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeGeneratedCommandListID = 65528,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeAcceptedCommandListID = 65529,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeAttributeListID = 65531,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeFeatureMapID = 65532,
+
+	AttributeIDTypeClusterBinaryInputBasicAttributeClusterRevisionID = 65533,
 
 	ClusterElectricalMeasurementAttributeMeasurementTypeID = 0,
 
@@ -7189,379 +7783,39 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterElectricalMeasurementAttributeAcceptedCommandListID = 65529,
 
-	AttributeIDTypeClusterElectricalMeasurementAttributeEventListID = 65530,
-
 	AttributeIDTypeClusterElectricalMeasurementAttributeAttributeListID = 65531,
 
 	AttributeIDTypeClusterElectricalMeasurementAttributeFeatureMapID = 65532,
 
 	AttributeIDTypeClusterElectricalMeasurementAttributeClusterRevisionID = 65533,
 
-	ClusterTestClusterAttributeBooleanID = 0,
+	ClusterOnOffSwitchConfigurationAttributeSwitchTypeID = 0,
 
-	ClusterTestClusterAttributeBitmap8ID = 1,
+	ClusterOnOffSwitchConfigurationAttributeSwitchActionsID = 16,
 
-	ClusterTestClusterAttributeBitmap16ID = 2,
+	ClusterOnOffSwitchConfigurationAttributeGeneratedCommandListID = 65528,
 
-	ClusterTestClusterAttributeBitmap32ID = 3,
+	ClusterOnOffSwitchConfigurationAttributeAcceptedCommandListID = 65529,
 
-	ClusterTestClusterAttributeBitmap64ID = 4,
+	ClusterOnOffSwitchConfigurationAttributeAttributeListID = 65531,
 
-	ClusterTestClusterAttributeInt8uID = 5,
+	ClusterOnOffSwitchConfigurationAttributeFeatureMapID = 65532,
 
-	ClusterTestClusterAttributeInt16uID = 6,
+	ClusterOnOffSwitchConfigurationAttributeClusterRevisionID = 65533,
 
-	ClusterTestClusterAttributeInt24uID = 7,
+	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeSwitchTypeID = 0,
 
-	ClusterTestClusterAttributeInt32uID = 8,
+	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeSwitchActionsID = 16,
 
-	ClusterTestClusterAttributeInt40uID = 9,
+	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeGeneratedCommandListID = 65528,
 
-	ClusterTestClusterAttributeInt48uID = 10,
+	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeAcceptedCommandListID = 65529,
 
-	ClusterTestClusterAttributeInt56uID = 11,
+	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeAttributeListID = 65531,
 
-	ClusterTestClusterAttributeInt64uID = 12,
+	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeFeatureMapID = 65532,
 
-	ClusterTestClusterAttributeInt8sID = 13,
-
-	ClusterTestClusterAttributeInt16sID = 14,
-
-	ClusterTestClusterAttributeInt24sID = 15,
-
-	ClusterTestClusterAttributeInt32sID = 16,
-
-	ClusterTestClusterAttributeInt40sID = 17,
-
-	ClusterTestClusterAttributeInt48sID = 18,
-
-	ClusterTestClusterAttributeInt56sID = 19,
-
-	ClusterTestClusterAttributeInt64sID = 20,
-
-	ClusterTestClusterAttributeEnum8ID = 21,
-
-	ClusterTestClusterAttributeEnum16ID = 22,
-
-	ClusterTestClusterAttributeFloatSingleID = 23,
-
-	ClusterTestClusterAttributeFloatDoubleID = 24,
-
-	ClusterTestClusterAttributeOctetStringID = 25,
-
-	ClusterTestClusterAttributeListInt8uID = 26,
-
-	ClusterTestClusterAttributeListOctetStringID = 27,
-
-	ClusterTestClusterAttributeListStructOctetStringID = 28,
-
-	ClusterTestClusterAttributeLongOctetStringID = 29,
-
-	ClusterTestClusterAttributeCharStringID = 30,
-
-	ClusterTestClusterAttributeLongCharStringID = 31,
-
-	ClusterTestClusterAttributeEpochUsID = 32,
-
-	ClusterTestClusterAttributeEpochSID = 33,
-
-	ClusterTestClusterAttributeVendorIdID = 34,
-
-	ClusterTestClusterAttributeListNullablesAndOptionalsStructID = 35,
-
-	ClusterTestClusterAttributeEnumAttrID = 36,
-
-	ClusterTestClusterAttributeStructAttrID = 37,
-
-	ClusterTestClusterAttributeRangeRestrictedInt8uID = 38,
-
-	ClusterTestClusterAttributeRangeRestrictedInt8sID = 39,
-
-	ClusterTestClusterAttributeRangeRestrictedInt16uID = 40,
-
-	ClusterTestClusterAttributeRangeRestrictedInt16sID = 41,
-
-	ClusterTestClusterAttributeListLongOctetStringID = 42,
-
-	ClusterTestClusterAttributeListFabricScopedID = 43,
-
-	ClusterTestClusterAttributeTimedWriteBooleanID = 48,
-
-	ClusterTestClusterAttributeGeneralErrorBooleanID = 49,
-
-	ClusterTestClusterAttributeClusterErrorBooleanID = 50,
-
-	ClusterTestClusterAttributeUnsupportedID = 255,
-
-	ClusterTestClusterAttributeNullableBooleanID = 16384,
-
-	ClusterTestClusterAttributeNullableBitmap8ID = 16385,
-
-	ClusterTestClusterAttributeNullableBitmap16ID = 16386,
-
-	ClusterTestClusterAttributeNullableBitmap32ID = 16387,
-
-	ClusterTestClusterAttributeNullableBitmap64ID = 16388,
-
-	ClusterTestClusterAttributeNullableInt8uID = 16389,
-
-	ClusterTestClusterAttributeNullableInt16uID = 16390,
-
-	ClusterTestClusterAttributeNullableInt24uID = 16391,
-
-	ClusterTestClusterAttributeNullableInt32uID = 16392,
-
-	ClusterTestClusterAttributeNullableInt40uID = 16393,
-
-	ClusterTestClusterAttributeNullableInt48uID = 16394,
-
-	ClusterTestClusterAttributeNullableInt56uID = 16395,
-
-	ClusterTestClusterAttributeNullableInt64uID = 16396,
-
-	ClusterTestClusterAttributeNullableInt8sID = 16397,
-
-	ClusterTestClusterAttributeNullableInt16sID = 16398,
-
-	ClusterTestClusterAttributeNullableInt24sID = 16399,
-
-	ClusterTestClusterAttributeNullableInt32sID = 16400,
-
-	ClusterTestClusterAttributeNullableInt40sID = 16401,
-
-	ClusterTestClusterAttributeNullableInt48sID = 16402,
-
-	ClusterTestClusterAttributeNullableInt56sID = 16403,
-
-	ClusterTestClusterAttributeNullableInt64sID = 16404,
-
-	ClusterTestClusterAttributeNullableEnum8ID = 16405,
-
-	ClusterTestClusterAttributeNullableEnum16ID = 16406,
-
-	ClusterTestClusterAttributeNullableFloatSingleID = 16407,
-
-	ClusterTestClusterAttributeNullableFloatDoubleID = 16408,
-
-	ClusterTestClusterAttributeNullableOctetStringID = 16409,
-
-	ClusterTestClusterAttributeNullableCharStringID = 16414,
-
-	ClusterTestClusterAttributeNullableEnumAttrID = 16420,
-
-	ClusterTestClusterAttributeNullableStructID = 16421,
-
-	ClusterTestClusterAttributeNullableRangeRestrictedInt8uID = 16422,
-
-	ClusterTestClusterAttributeNullableRangeRestrictedInt8sID = 16423,
-
-	ClusterTestClusterAttributeNullableRangeRestrictedInt16uID = 16424,
-
-	ClusterTestClusterAttributeNullableRangeRestrictedInt16sID = 16425,
-
-	ClusterTestClusterAttributeWriteOnlyInt8uID = 16426,
-
-	ClusterTestClusterAttributeGeneratedCommandListID = 65528,
-
-	ClusterTestClusterAttributeAcceptedCommandListID = 65529,
-
-	ClusterTestClusterAttributeAttributeListID = 65531,
-
-	ClusterTestClusterAttributeFeatureMapID = 65532,
-
-	ClusterTestClusterAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterUnitTestingAttributeBooleanID = 0,
-
-	AttributeIDTypeClusterUnitTestingAttributeBitmap8ID = 1,
-
-	AttributeIDTypeClusterUnitTestingAttributeBitmap16ID = 2,
-
-	AttributeIDTypeClusterUnitTestingAttributeBitmap32ID = 3,
-
-	AttributeIDTypeClusterUnitTestingAttributeBitmap64ID = 4,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt8uID = 5,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt16uID = 6,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt24uID = 7,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt32uID = 8,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt40uID = 9,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt48uID = 10,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt56uID = 11,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt64uID = 12,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt8sID = 13,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt16sID = 14,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt24sID = 15,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt32sID = 16,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt40sID = 17,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt48sID = 18,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt56sID = 19,
-
-	AttributeIDTypeClusterUnitTestingAttributeInt64sID = 20,
-
-	AttributeIDTypeClusterUnitTestingAttributeEnum8ID = 21,
-
-	AttributeIDTypeClusterUnitTestingAttributeEnum16ID = 22,
-
-	AttributeIDTypeClusterUnitTestingAttributeFloatSingleID = 23,
-
-	AttributeIDTypeClusterUnitTestingAttributeFloatDoubleID = 24,
-
-	AttributeIDTypeClusterUnitTestingAttributeOctetStringID = 25,
-
-	AttributeIDTypeClusterUnitTestingAttributeListInt8uID = 26,
-
-	AttributeIDTypeClusterUnitTestingAttributeListOctetStringID = 27,
-
-	AttributeIDTypeClusterUnitTestingAttributeListStructOctetStringID = 28,
-
-	AttributeIDTypeClusterUnitTestingAttributeLongOctetStringID = 29,
-
-	AttributeIDTypeClusterUnitTestingAttributeCharStringID = 30,
-
-	AttributeIDTypeClusterUnitTestingAttributeLongCharStringID = 31,
-
-	AttributeIDTypeClusterUnitTestingAttributeEpochUsID = 32,
-
-	AttributeIDTypeClusterUnitTestingAttributeEpochSID = 33,
-
-	AttributeIDTypeClusterUnitTestingAttributeVendorIdID = 34,
-
-	AttributeIDTypeClusterUnitTestingAttributeListNullablesAndOptionalsStructID = 35,
-
-	AttributeIDTypeClusterUnitTestingAttributeEnumAttrID = 36,
-
-	AttributeIDTypeClusterUnitTestingAttributeStructAttrID = 37,
-
-	AttributeIDTypeClusterUnitTestingAttributeRangeRestrictedInt8uID = 38,
-
-	AttributeIDTypeClusterUnitTestingAttributeRangeRestrictedInt8sID = 39,
-
-	AttributeIDTypeClusterUnitTestingAttributeRangeRestrictedInt16uID = 40,
-
-	AttributeIDTypeClusterUnitTestingAttributeRangeRestrictedInt16sID = 41,
-
-	AttributeIDTypeClusterUnitTestingAttributeListLongOctetStringID = 42,
-
-	AttributeIDTypeClusterUnitTestingAttributeListFabricScopedID = 43,
-
-	AttributeIDTypeClusterUnitTestingAttributeTimedWriteBooleanID = 48,
-
-	AttributeIDTypeClusterUnitTestingAttributeGeneralErrorBooleanID = 49,
-
-	AttributeIDTypeClusterUnitTestingAttributeClusterErrorBooleanID = 50,
-
-	AttributeIDTypeClusterUnitTestingAttributeUnsupportedID = 255,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableBooleanID = 16384,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableBitmap8ID = 16385,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableBitmap16ID = 16386,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableBitmap32ID = 16387,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableBitmap64ID = 16388,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt8uID = 16389,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt16uID = 16390,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt24uID = 16391,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt32uID = 16392,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt40uID = 16393,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt48uID = 16394,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt56uID = 16395,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt64uID = 16396,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt8sID = 16397,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt16sID = 16398,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt24sID = 16399,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt32sID = 16400,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt40sID = 16401,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt48sID = 16402,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt56sID = 16403,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableInt64sID = 16404,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableEnum8ID = 16405,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableEnum16ID = 16406,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableFloatSingleID = 16407,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableFloatDoubleID = 16408,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableOctetStringID = 16409,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableCharStringID = 16414,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableEnumAttrID = 16420,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableStructID = 16421,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableRangeRestrictedInt8uID = 16422,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableRangeRestrictedInt8sID = 16423,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableRangeRestrictedInt16uID = 16424,
-
-	AttributeIDTypeClusterUnitTestingAttributeNullableRangeRestrictedInt16sID = 16425,
-
-	AttributeIDTypeClusterUnitTestingAttributeWriteOnlyInt8uID = 16426,
-
-	AttributeIDTypeClusterUnitTestingAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterUnitTestingAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterUnitTestingAttributeEventListID = 65530,
-
-	AttributeIDTypeClusterUnitTestingAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterUnitTestingAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterUnitTestingAttributeClusterRevisionID = 65533,
-
-	AttributeIDTypeClusterUnitTestingAttributeMeiInt8uID = 4294070017,
-
-	AttributeIDTypeClusterSampleMEIAttributeFlipFlopID = 0,
-
-	AttributeIDTypeClusterSampleMEIAttributeGeneratedCommandListID = 65528,
-
-	AttributeIDTypeClusterSampleMEIAttributeAcceptedCommandListID = 65529,
-
-	AttributeIDTypeClusterSampleMEIAttributeEventListID = 65530,
-
-	AttributeIDTypeClusterSampleMEIAttributeAttributeListID = 65531,
-
-	AttributeIDTypeClusterSampleMEIAttributeFeatureMapID = 65532,
-
-	AttributeIDTypeClusterSampleMEIAttributeClusterRevisionID = 65533
+	AttributeIDTypeClusterOnOffSwitchConfigurationAttributeClusterRevisionID = 65533
 }
 
 /**
@@ -7634,7 +7888,7 @@ declare class MTRAttributeReport extends NSObject {
 /**
  * @since 17.0
  */
-declare class MTRAttributeRequestPath extends NSObject implements NSCopying {
+declare class MTRAttributeRequestPath extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): MTRAttributeRequestPath; // inherited from NSObject
 
@@ -7660,7 +7914,15 @@ declare class MTRAttributeRequestPath extends NSObject implements NSCopying {
 	 */
 	readonly endpoint: number;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 /**
@@ -7780,6 +8042,7 @@ declare const enum MTRAudioOutputOutputType {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRBarrierControlClusterBarrierControlGoToPercentParams extends NSObject implements NSCopying {
 
@@ -7789,6 +8052,7 @@ declare class MTRBarrierControlClusterBarrierControlGoToPercentParams extends NS
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	percentOpen: number;
 
@@ -7801,6 +8065,7 @@ declare class MTRBarrierControlClusterBarrierControlGoToPercentParams extends NS
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRBarrierControlClusterBarrierControlStopParams extends NSObject implements NSCopying {
 
@@ -11505,6 +11770,7 @@ declare class MTRBaseClusterBallastConfiguration extends MTRGenericBaseCluster {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
@@ -11520,6 +11786,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcceptedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -11531,6 +11798,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAttributeListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -11542,6 +11810,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierCapabilitiesWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11553,6 +11822,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierCloseEventsWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11564,6 +11834,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierClosePeriodWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11575,6 +11846,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierCommandCloseEventsWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11586,6 +11858,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierCommandOpenEventsWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11597,6 +11870,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierMovingStateWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11608,6 +11882,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierOpenEventsWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11619,6 +11894,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierOpenPeriodWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11630,6 +11906,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierPositionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11641,6 +11918,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeBarrierSafetyStatusWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11652,6 +11930,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeClusterRevisionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11663,6 +11942,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeFeatureMapWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -11674,11 +11954,13 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeGeneratedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	constructor(o: { device: MTRBaseDevice; endpointID: number; queue: NSObject & OS_dispatch_queue; });
 
@@ -11690,6 +11972,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	barrierControlGoToPercentWithParamsCompletion(params: MTRBarrierControlClusterBarrierControlGoToPercentParams, completion: (p1: NSError) => void): void;
 
@@ -11701,6 +11984,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	barrierControlStopWithCompletion(completion: (p1: NSError) => void): void;
 
@@ -11712,6 +11996,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	barrierControlStopWithParamsCompletion(params: MTRBarrierControlClusterBarrierControlStopParams, completion: (p1: NSError) => void): void;
 
@@ -11723,6 +12008,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: NSObject & OS_dispatch_queue): this;
 
@@ -11734,6 +12020,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcceptedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -11745,6 +12032,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAttributeListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -11756,6 +12044,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierCapabilitiesWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11767,6 +12056,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierCloseEventsWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11778,6 +12068,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierClosePeriodWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11789,6 +12080,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierCommandCloseEventsWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11800,6 +12092,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierCommandOpenEventsWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11811,6 +12104,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierMovingStateWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11822,6 +12116,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierOpenEventsWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11833,6 +12128,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierOpenPeriodWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11844,6 +12140,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierPositionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11855,6 +12152,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierSafetyStatusWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11866,6 +12164,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeClusterRevisionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11877,6 +12176,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -11888,6 +12188,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -11905,6 +12206,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcceptedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -11916,6 +12218,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAttributeListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -11927,6 +12230,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierCapabilitiesWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -11938,6 +12242,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierCloseEventsWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -11949,6 +12254,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierClosePeriodWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -11960,6 +12266,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierCommandCloseEventsWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -11971,6 +12278,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierCommandOpenEventsWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -11982,6 +12290,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierMovingStateWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -11993,6 +12302,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierOpenEventsWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -12004,6 +12314,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierOpenPeriodWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -12015,6 +12326,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierPositionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -12026,6 +12338,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeBarrierSafetyStatusWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -12037,6 +12350,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeClusterRevisionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -12048,6 +12362,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -12059,11 +12374,13 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCloseEventsWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -12075,6 +12392,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCloseEventsWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -12086,6 +12404,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierClosePeriodWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -12097,6 +12416,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierClosePeriodWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -12108,6 +12428,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCommandCloseEventsWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -12119,6 +12440,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCommandCloseEventsWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -12130,6 +12452,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCommandOpenEventsWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -12141,6 +12464,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCommandOpenEventsWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -12152,6 +12476,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierOpenEventsWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -12163,6 +12488,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierOpenEventsWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -12174,6 +12500,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierOpenPeriodWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -12185,6 +12512,7 @@ declare class MTRBaseClusterBarrierControl extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierOpenPeriodWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -13158,6 +13486,7 @@ declare class MTRBaseClusterBasicInformation extends MTRGenericBaseCluster {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
@@ -13173,6 +13502,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcceptedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13184,6 +13514,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActiveTextWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: string, p2: NSError) => void): void;
 
@@ -13195,6 +13526,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeApplicationTypeWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -13206,6 +13538,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAttributeListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13217,6 +13550,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeClusterRevisionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -13228,6 +13562,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDescriptionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: string, p2: NSError) => void): void;
 
@@ -13239,6 +13574,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeFeatureMapWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -13250,6 +13586,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeGeneratedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13261,6 +13598,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeInactiveTextWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: string, p2: NSError) => void): void;
 
@@ -13272,6 +13610,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeOutOfServiceWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -13283,6 +13622,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributePolarityWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -13294,6 +13634,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributePresentValueWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -13305,6 +13646,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeReliabilityWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -13316,11 +13658,13 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeStatusFlagsWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	constructor(o: { device: MTRBaseDevice; endpointID: number; queue: NSObject & OS_dispatch_queue; });
 
@@ -13332,6 +13676,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: NSObject & OS_dispatch_queue): this;
 
@@ -13343,6 +13688,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcceptedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13354,6 +13700,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActiveTextWithCompletion(completion: (p1: string, p2: NSError) => void): void;
 
@@ -13365,6 +13712,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeApplicationTypeWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -13376,6 +13724,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAttributeListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13387,6 +13736,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeClusterRevisionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -13398,6 +13748,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDescriptionWithCompletion(completion: (p1: string, p2: NSError) => void): void;
 
@@ -13409,6 +13760,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -13420,6 +13772,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13431,6 +13784,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeInactiveTextWithCompletion(completion: (p1: string, p2: NSError) => void): void;
 
@@ -13442,6 +13796,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeOutOfServiceWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -13453,6 +13808,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributePolarityWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -13464,6 +13820,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributePresentValueWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -13475,6 +13832,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeReliabilityWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -13486,6 +13844,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeStatusFlagsWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -13503,6 +13862,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcceptedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13514,6 +13874,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActiveTextWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: string, p2: NSError) => void): void;
 
@@ -13525,6 +13886,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeApplicationTypeWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -13536,6 +13898,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAttributeListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13547,6 +13910,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeClusterRevisionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -13558,6 +13922,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDescriptionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: string, p2: NSError) => void): void;
 
@@ -13569,6 +13934,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -13580,6 +13946,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -13591,6 +13958,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeInactiveTextWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: string, p2: NSError) => void): void;
 
@@ -13602,6 +13970,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeOutOfServiceWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -13613,6 +13982,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributePolarityWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -13624,6 +13994,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributePresentValueWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -13635,6 +14006,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeReliabilityWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -13646,11 +14018,13 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeStatusFlagsWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeActiveTextWithValueCompletion(value: string, completion: (p1: NSError) => void): void;
 
@@ -13662,6 +14036,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeActiveTextWithValueParamsCompletion(value: string, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -13673,6 +14048,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeDescriptionWithValueCompletion(value: string, completion: (p1: NSError) => void): void;
 
@@ -13684,6 +14060,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeDescriptionWithValueParamsCompletion(value: string, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -13695,6 +14072,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeInactiveTextWithValueCompletion(value: string, completion: (p1: NSError) => void): void;
 
@@ -13706,6 +14084,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeInactiveTextWithValueParamsCompletion(value: string, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -13717,6 +14096,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeOutOfServiceWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -13728,6 +14108,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeOutOfServiceWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -13739,6 +14120,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributePresentValueWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -13750,6 +14132,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributePresentValueWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -13761,6 +14144,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeReliabilityWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -13772,6 +14156,7 @@ declare class MTRBaseClusterBinaryInputBasic extends MTRGenericBaseCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeReliabilityWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -21516,6 +21901,7 @@ declare class MTRBaseClusterElectricalEnergyMeasurement extends MTRGenericBaseCl
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster {
 
@@ -21531,6 +21917,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcActivePowerOverloadWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21542,6 +21929,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcCurrentDivisorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21553,6 +21941,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcCurrentMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21564,6 +21953,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcCurrentOverloadWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21575,6 +21965,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcFrequencyDivisorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21586,6 +21977,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcFrequencyMaxWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21597,6 +21989,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcFrequencyMinWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21608,6 +22001,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcFrequencyMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21619,6 +22013,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcFrequencyWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21630,6 +22025,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcOverloadAlarmsMaskWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21641,6 +22037,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcPowerDivisorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21652,6 +22049,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcPowerMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21663,6 +22061,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcReactivePowerOverloadWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21674,6 +22073,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcVoltageDivisorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21685,6 +22085,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcVoltageMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21696,6 +22097,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcVoltageOverloadWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21707,6 +22109,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcceptedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -21718,6 +22121,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActiveCurrentPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21729,6 +22133,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActiveCurrentPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21740,6 +22145,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerMaxPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21751,6 +22157,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerMaxPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21762,6 +22169,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerMaxWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21773,6 +22181,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerMinPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21784,6 +22193,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerMinPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21795,6 +22205,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerMinWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21806,6 +22217,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21817,6 +22229,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21828,6 +22241,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeActivePowerWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21839,6 +22253,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeApparentPowerPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21850,6 +22265,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeApparentPowerPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21861,6 +22277,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeApparentPowerWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21872,6 +22289,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAttributeListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -21883,6 +22301,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsOverVoltageCounterPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21894,6 +22313,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsOverVoltageCounterPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21905,6 +22325,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsOverVoltageWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21916,6 +22337,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsUnderVoltageCounterPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21927,6 +22349,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsUnderVoltageCounterPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21938,6 +22361,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsUnderVoltageCounterWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21949,6 +22373,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsUnderVoltageWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21960,6 +22385,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsVoltageMeasurementPeriodPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21971,6 +22397,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsVoltageMeasurementPeriodPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21982,6 +22409,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAverageRmsVoltageMeasurementPeriodWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -21993,6 +22421,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeClusterRevisionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22004,6 +22433,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeCurrentOverloadWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22015,6 +22445,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcCurrentDivisorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22026,6 +22457,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcCurrentMaxWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22037,6 +22469,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcCurrentMinWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22048,6 +22481,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcCurrentMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22059,6 +22493,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22070,6 +22505,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcPowerDivisorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22081,6 +22517,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcPowerMaxWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22092,6 +22529,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcPowerMinWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22103,6 +22541,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcPowerMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22114,6 +22553,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcPowerWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22125,6 +22565,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcVoltageDivisorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22136,6 +22577,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcVoltageMaxWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22147,6 +22589,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcVoltageMinWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22158,6 +22601,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcVoltageMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22169,6 +22613,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeDcVoltageWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22180,6 +22625,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeFeatureMapWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22191,6 +22637,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeGeneratedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -22202,6 +22649,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeHarmonicCurrentMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22213,6 +22661,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeInstantaneousActiveCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22224,6 +22673,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeInstantaneousLineCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22235,6 +22685,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeInstantaneousPowerWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22246,6 +22697,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeInstantaneousReactiveCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22257,6 +22709,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeInstantaneousVoltageWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22268,6 +22721,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeLineCurrentPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22279,6 +22733,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeLineCurrentPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22290,6 +22745,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasured11thHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22301,6 +22757,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasured1stHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22312,6 +22769,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasured3rdHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22323,6 +22781,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasured5thHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22334,6 +22793,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasured7thHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22345,6 +22805,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasured9thHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22356,6 +22817,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasuredPhase11thHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22367,6 +22829,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasuredPhase1stHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22378,6 +22841,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasuredPhase3rdHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22389,6 +22853,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasuredPhase5thHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22400,6 +22865,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasuredPhase7thHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22411,6 +22877,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasuredPhase9thHarmonicCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22422,6 +22889,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeMeasurementTypeWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22433,6 +22901,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeNeutralCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22444,6 +22913,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeOverloadAlarmsMaskWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22455,6 +22925,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributePhaseHarmonicCurrentMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22466,6 +22937,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributePowerDivisorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22477,6 +22949,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributePowerFactorPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22488,6 +22961,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributePowerFactorPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22499,6 +22973,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributePowerFactorWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22510,6 +22985,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributePowerMultiplierWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22521,6 +22997,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeReactiveCurrentPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22532,6 +23009,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeReactiveCurrentPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22543,6 +23021,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeReactivePowerPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22554,6 +23033,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeReactivePowerPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22565,6 +23045,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeReactivePowerWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22576,6 +23057,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentMaxPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22587,6 +23069,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentMaxPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22598,6 +23081,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentMaxWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22609,6 +23093,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentMinPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22620,6 +23105,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentMinPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22631,6 +23117,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentMinWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22642,6 +23129,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22653,6 +23141,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22664,6 +23153,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsCurrentWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22675,6 +23165,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsExtremeOverVoltagePeriodPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22686,6 +23177,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsExtremeOverVoltagePeriodPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22697,6 +23189,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsExtremeOverVoltagePeriodWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22708,6 +23201,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsExtremeOverVoltageWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22719,6 +23213,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsExtremeUnderVoltagePeriodPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22730,6 +23225,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsExtremeUnderVoltagePeriodPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22741,6 +23237,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsExtremeUnderVoltagePeriodWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22752,6 +23249,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsExtremeUnderVoltageWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22763,6 +23261,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageMaxPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22774,6 +23273,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageMaxPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22785,6 +23285,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageMaxWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22796,6 +23297,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageMinPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22807,6 +23309,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageMinPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22818,6 +23321,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageMinWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22829,6 +23333,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltagePhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22840,6 +23345,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltagePhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22851,6 +23357,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageSagPeriodPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22862,6 +23369,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageSagPeriodPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22873,6 +23381,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageSagPeriodWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22884,6 +23393,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageSagWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22895,6 +23405,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageSwellPeriodPhaseBWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22906,6 +23417,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageSwellPeriodPhaseCWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22917,6 +23429,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageSwellPeriodWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22928,6 +23441,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageSwellWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22939,6 +23453,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeRmsVoltageWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22950,6 +23465,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeTotalActivePowerWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22961,6 +23477,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeTotalApparentPowerWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22972,6 +23489,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeTotalReactivePowerWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -22983,11 +23501,13 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeVoltageOverloadWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	constructor(o: { device: MTRBaseDevice; endpointID: number; queue: NSObject & OS_dispatch_queue; });
 
@@ -22999,6 +23519,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	getMeasurementProfileCommandWithParamsCompletion(params: MTRElectricalMeasurementClusterGetMeasurementProfileCommandParams, completion: (p1: NSError) => void): void;
 
@@ -23010,6 +23531,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	getProfileInfoCommandWithCompletion(completion: (p1: NSError) => void): void;
 
@@ -23021,6 +23543,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	getProfileInfoCommandWithParamsCompletion(params: MTRElectricalMeasurementClusterGetProfileInfoCommandParams, completion: (p1: NSError) => void): void;
 
@@ -23032,6 +23555,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: NSObject & OS_dispatch_queue): this;
 
@@ -23043,6 +23567,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcActivePowerOverloadWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23054,6 +23579,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcCurrentDivisorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23065,6 +23591,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcCurrentMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23076,6 +23603,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcCurrentOverloadWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23087,6 +23615,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyDivisorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23098,6 +23627,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyMaxWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23109,6 +23639,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyMinWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23120,6 +23651,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23131,6 +23663,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23142,6 +23675,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcOverloadAlarmsMaskWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23153,6 +23687,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcPowerDivisorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23164,6 +23699,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcPowerMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23175,6 +23711,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcReactivePowerOverloadWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23186,6 +23723,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcVoltageDivisorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23197,6 +23735,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcVoltageMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23208,6 +23747,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcVoltageOverloadWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23219,6 +23759,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcceptedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -23230,6 +23771,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActiveCurrentPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23241,6 +23783,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActiveCurrentPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23252,6 +23795,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMaxPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23263,6 +23807,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMaxPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23274,6 +23819,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMaxWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23285,6 +23831,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMinPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23296,6 +23843,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMinPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23307,6 +23855,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMinWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23318,6 +23867,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23329,6 +23879,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23340,6 +23891,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23351,6 +23903,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeApparentPowerPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23362,6 +23915,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeApparentPowerPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23373,6 +23927,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeApparentPowerWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23384,6 +23939,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAttributeListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -23395,6 +23951,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsOverVoltageCounterPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23406,6 +23963,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsOverVoltageCounterPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23417,6 +23975,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsOverVoltageWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23428,6 +23987,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsUnderVoltageCounterPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23439,6 +23999,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsUnderVoltageCounterPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23450,6 +24011,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsUnderVoltageCounterWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23461,6 +24023,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsUnderVoltageWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23472,6 +24035,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsVoltageMeasurementPeriodPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23483,6 +24047,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsVoltageMeasurementPeriodPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23494,6 +24059,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsVoltageMeasurementPeriodWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23505,6 +24071,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeClusterRevisionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23516,6 +24083,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeCurrentOverloadWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23527,6 +24095,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentDivisorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23538,6 +24107,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentMaxWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23549,6 +24119,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentMinWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23560,6 +24131,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23571,6 +24143,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23582,6 +24155,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerDivisorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23593,6 +24167,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerMaxWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23604,6 +24179,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerMinWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23615,6 +24191,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23626,6 +24203,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23637,6 +24215,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageDivisorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23648,6 +24227,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageMaxWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23659,6 +24239,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageMinWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23670,6 +24251,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23681,6 +24263,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23692,6 +24275,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23703,6 +24287,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -23714,6 +24299,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeHarmonicCurrentMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23725,6 +24311,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousActiveCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23736,6 +24323,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousLineCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23747,6 +24335,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousPowerWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23758,6 +24347,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousReactiveCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23769,6 +24359,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousVoltageWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23780,6 +24371,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeLineCurrentPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23791,6 +24383,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeLineCurrentPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23802,6 +24395,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured11thHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23813,6 +24407,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured1stHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23824,6 +24419,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured3rdHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23835,6 +24431,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured5thHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23846,6 +24443,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured7thHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23857,6 +24455,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured9thHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23868,6 +24467,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase11thHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23879,6 +24479,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase1stHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23890,6 +24491,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase3rdHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23901,6 +24503,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase5thHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23912,6 +24515,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase7thHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23923,6 +24527,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase9thHarmonicCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23934,6 +24539,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasurementTypeWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23945,6 +24551,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeNeutralCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23956,6 +24563,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeOverloadAlarmsMaskWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23967,6 +24575,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributePhaseHarmonicCurrentMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23978,6 +24587,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributePowerDivisorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -23989,6 +24599,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributePowerFactorPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24000,6 +24611,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributePowerFactorPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24011,6 +24623,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributePowerFactorWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24022,6 +24635,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributePowerMultiplierWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24033,6 +24647,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeReactiveCurrentPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24044,6 +24659,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeReactiveCurrentPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24055,6 +24671,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeReactivePowerPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24066,6 +24683,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeReactivePowerPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24077,6 +24695,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeReactivePowerWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24088,6 +24707,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMaxPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24099,6 +24719,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMaxPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24110,6 +24731,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMaxWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24121,6 +24743,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMinPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24132,6 +24755,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMinPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24143,6 +24767,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMinWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24154,6 +24779,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24165,6 +24791,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24176,6 +24803,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24187,6 +24815,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeOverVoltagePeriodPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24198,6 +24827,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeOverVoltagePeriodPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24209,6 +24839,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeOverVoltagePeriodWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24220,6 +24851,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeOverVoltageWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24231,6 +24863,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeUnderVoltagePeriodPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24242,6 +24875,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeUnderVoltagePeriodPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24253,6 +24887,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeUnderVoltagePeriodWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24264,6 +24899,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeUnderVoltageWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24275,6 +24911,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMaxPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24286,6 +24923,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMaxPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24297,6 +24935,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMaxWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24308,6 +24947,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMinPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24319,6 +24959,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMinPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24330,6 +24971,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMinWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24341,6 +24983,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltagePhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24352,6 +24995,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltagePhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24363,6 +25007,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSagPeriodPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24374,6 +25019,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSagPeriodPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24385,6 +25031,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSagPeriodWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24396,6 +25043,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSagWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24407,6 +25055,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSwellPeriodPhaseBWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24418,6 +25067,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSwellPeriodPhaseCWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24429,6 +25079,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSwellPeriodWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24440,6 +25091,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSwellWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24451,6 +25103,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24462,6 +25115,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeTotalActivePowerWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24473,6 +25127,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeTotalApparentPowerWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24484,6 +25139,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeTotalReactivePowerWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24495,6 +25151,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeVoltageOverloadWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -24512,6 +25169,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcActivePowerOverloadWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24523,6 +25181,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcCurrentDivisorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24534,6 +25193,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcCurrentMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24545,6 +25205,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcCurrentOverloadWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24556,6 +25217,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcFrequencyDivisorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24567,6 +25229,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcFrequencyMaxWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24578,6 +25241,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcFrequencyMinWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24589,6 +25253,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcFrequencyMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24600,6 +25265,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcFrequencyWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24611,6 +25277,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcOverloadAlarmsMaskWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24622,6 +25289,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcPowerDivisorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24633,6 +25301,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcPowerMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24644,6 +25313,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcReactivePowerOverloadWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24655,6 +25325,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcVoltageDivisorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24666,6 +25337,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcVoltageMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24677,6 +25349,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcVoltageOverloadWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24688,6 +25361,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcceptedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -24699,6 +25373,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActiveCurrentPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24710,6 +25385,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActiveCurrentPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24721,6 +25397,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerMaxPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24732,6 +25409,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerMaxPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24743,6 +25421,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerMaxWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24754,6 +25433,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerMinPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24765,6 +25445,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerMinPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24776,6 +25457,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerMinWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24787,6 +25469,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24798,6 +25481,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24809,6 +25493,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeActivePowerWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24820,6 +25505,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeApparentPowerPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24831,6 +25517,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeApparentPowerPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24842,6 +25529,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeApparentPowerWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24853,6 +25541,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAttributeListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -24864,6 +25553,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsOverVoltageCounterPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24875,6 +25565,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsOverVoltageCounterPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24886,6 +25577,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsOverVoltageWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24897,6 +25589,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsUnderVoltageCounterPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24908,6 +25601,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsUnderVoltageCounterPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24919,6 +25613,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsUnderVoltageCounterWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24930,6 +25625,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsUnderVoltageWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24941,6 +25637,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsVoltageMeasurementPeriodPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24952,6 +25649,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsVoltageMeasurementPeriodPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24963,6 +25661,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAverageRmsVoltageMeasurementPeriodWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24974,6 +25673,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeClusterRevisionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24985,6 +25685,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeCurrentOverloadWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -24996,6 +25697,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcCurrentDivisorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25007,6 +25709,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcCurrentMaxWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25018,6 +25721,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcCurrentMinWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25029,6 +25733,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcCurrentMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25040,6 +25745,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25051,6 +25757,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcPowerDivisorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25062,6 +25769,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcPowerMaxWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25073,6 +25781,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcPowerMinWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25084,6 +25793,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcPowerMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25095,6 +25805,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcPowerWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25106,6 +25817,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcVoltageDivisorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25117,6 +25829,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcVoltageMaxWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25128,6 +25841,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcVoltageMinWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25139,6 +25853,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcVoltageMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25150,6 +25865,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeDcVoltageWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25161,6 +25877,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25172,6 +25889,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -25183,6 +25901,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeHarmonicCurrentMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25194,6 +25913,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeInstantaneousActiveCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25205,6 +25925,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeInstantaneousLineCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25216,6 +25937,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeInstantaneousPowerWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25227,6 +25949,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeInstantaneousReactiveCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25238,6 +25961,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeInstantaneousVoltageWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25249,6 +25973,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeLineCurrentPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25260,6 +25985,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeLineCurrentPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25271,6 +25997,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasured11thHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25282,6 +26009,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasured1stHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25293,6 +26021,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasured3rdHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25304,6 +26033,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasured5thHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25315,6 +26045,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasured7thHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25326,6 +26057,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasured9thHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25337,6 +26069,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasuredPhase11thHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25348,6 +26081,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasuredPhase1stHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25359,6 +26093,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasuredPhase3rdHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25370,6 +26105,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasuredPhase5thHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25381,6 +26117,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasuredPhase7thHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25392,6 +26129,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasuredPhase9thHarmonicCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25403,6 +26141,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeMeasurementTypeWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25414,6 +26153,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeNeutralCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25425,6 +26165,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeOverloadAlarmsMaskWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25436,6 +26177,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributePhaseHarmonicCurrentMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25447,6 +26189,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributePowerDivisorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25458,6 +26201,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributePowerFactorPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25469,6 +26213,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributePowerFactorPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25480,6 +26225,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributePowerFactorWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25491,6 +26237,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributePowerMultiplierWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25502,6 +26249,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeReactiveCurrentPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25513,6 +26261,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeReactiveCurrentPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25524,6 +26273,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeReactivePowerPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25535,6 +26285,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeReactivePowerPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25546,6 +26297,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeReactivePowerWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25557,6 +26309,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentMaxPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25568,6 +26321,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentMaxPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25579,6 +26333,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentMaxWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25590,6 +26345,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentMinPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25601,6 +26357,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentMinPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25612,6 +26369,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentMinWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25623,6 +26381,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25634,6 +26393,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25645,6 +26405,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsCurrentWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25656,6 +26417,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsExtremeOverVoltagePeriodPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25667,6 +26429,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsExtremeOverVoltagePeriodPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25678,6 +26441,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsExtremeOverVoltagePeriodWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25689,6 +26453,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsExtremeOverVoltageWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25700,6 +26465,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsExtremeUnderVoltagePeriodPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25711,6 +26477,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsExtremeUnderVoltagePeriodPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25722,6 +26489,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsExtremeUnderVoltagePeriodWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25733,6 +26501,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsExtremeUnderVoltageWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25744,6 +26513,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageMaxPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25755,6 +26525,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageMaxPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25766,6 +26537,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageMaxWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25777,6 +26549,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageMinPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25788,6 +26561,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageMinPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25799,6 +26573,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageMinWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25810,6 +26585,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltagePhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25821,6 +26597,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltagePhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25832,6 +26609,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageSagPeriodPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25843,6 +26621,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageSagPeriodPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25854,6 +26633,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageSagPeriodWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25865,6 +26645,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageSagWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25876,6 +26657,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageSwellPeriodPhaseBWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25887,6 +26669,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageSwellPeriodPhaseCWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25898,6 +26681,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageSwellPeriodWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25909,6 +26693,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageSwellWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25920,6 +26705,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeRmsVoltageWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25931,6 +26717,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeTotalActivePowerWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25942,6 +26729,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeTotalApparentPowerWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25953,6 +26741,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeTotalReactivePowerWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -25964,11 +26753,13 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeVoltageOverloadWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeAcOverloadAlarmsMaskWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -25980,6 +26771,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeAcOverloadAlarmsMaskWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -25991,6 +26783,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeAverageRmsUnderVoltageCounterWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -26002,6 +26795,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeAverageRmsUnderVoltageCounterWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -26013,6 +26807,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeAverageRmsVoltageMeasurementPeriodWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -26024,6 +26819,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeAverageRmsVoltageMeasurementPeriodWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -26035,6 +26831,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeOverloadAlarmsMaskWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -26046,6 +26843,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeOverloadAlarmsMaskWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -26057,6 +26855,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsExtremeOverVoltagePeriodWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -26068,6 +26867,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsExtremeOverVoltagePeriodWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -26079,6 +26879,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsExtremeUnderVoltagePeriodWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -26090,6 +26891,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsExtremeUnderVoltagePeriodWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -26101,6 +26903,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsVoltageSagPeriodWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -26112,6 +26915,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsVoltageSagPeriodWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -26123,6 +26927,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsVoltageSwellPeriodWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -26134,6 +26939,7 @@ declare class MTRBaseClusterElectricalMeasurement extends MTRGenericBaseCluster 
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsVoltageSwellPeriodWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -36560,6 +37366,7 @@ declare class MTRBaseClusterOnOff extends MTRGenericBaseCluster {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseCluster {
 
@@ -36575,6 +37382,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAcceptedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36586,6 +37394,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeAttributeListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36597,6 +37406,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeClusterRevisionWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -36608,6 +37418,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeFeatureMapWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -36619,6 +37430,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeGeneratedCommandListWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36630,6 +37442,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeSwitchActionsWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
@@ -36641,11 +37454,13 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	static readAttributeSwitchTypeWithClusterStateCacheEndpointQueueCompletion(clusterStateCacheContainer: MTRClusterStateCacheContainer, endpoint: number, queue: NSObject & OS_dispatch_queue, completion: (p1: number, p2: NSError) => void): void;
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	constructor(o: { device: MTRBaseDevice; endpointID: number; queue: NSObject & OS_dispatch_queue; });
 
@@ -36657,6 +37472,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	initWithDeviceEndpointIDQueue(device: MTRBaseDevice, endpointID: number, queue: NSObject & OS_dispatch_queue): this;
 
@@ -36668,6 +37484,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAcceptedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36679,6 +37496,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeAttributeListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36690,6 +37508,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeClusterRevisionWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -36701,6 +37520,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeFeatureMapWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -36712,6 +37532,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeGeneratedCommandListWithCompletion(completion: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36723,6 +37544,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeSwitchActionsWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -36734,6 +37556,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	readAttributeSwitchTypeWithCompletion(completion: (p1: number, p2: NSError) => void): void;
 
@@ -36751,6 +37574,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAcceptedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36762,6 +37586,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeAttributeListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36773,6 +37598,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeClusterRevisionWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -36784,6 +37610,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeFeatureMapWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -36795,6 +37622,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeGeneratedCommandListWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
@@ -36806,6 +37634,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeSwitchActionsWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
@@ -36817,11 +37646,13 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	subscribeAttributeSwitchTypeWithParamsSubscriptionEstablishedReportHandler(params: MTRSubscribeParams, subscriptionEstablished: () => void, reportHandler: (p1: number, p2: NSError) => void): void;
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeSwitchActionsWithValueCompletion(value: number, completion: (p1: NSError) => void): void;
 
@@ -36833,6 +37664,7 @@ declare class MTRBaseClusterOnOffSwitchConfiguration extends MTRGenericBaseClust
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	writeAttributeSwitchActionsWithValueParamsCompletion(value: number, params: MTRWriteParams, completion: (p1: NSError) => void): void;
 
@@ -58929,6 +59761,11 @@ declare class MTRCertificateInfo extends NSObject implements NSCopying {
 
 	readonly notBefore: Date;
 
+	/**
+	 * @since 18.2
+	 */
+	readonly publicKeyData: NSData;
+
 	readonly subject: MTRDistinguishedNameInfo;
 
 	constructor(o: { TLVBytes: NSData; });
@@ -60512,6 +61349,7 @@ declare class MTRClusterBallastConfiguration extends MTRGenericCluster {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRClusterBarrierControl extends MTRGenericCluster {
 
@@ -60521,6 +61359,7 @@ declare class MTRClusterBarrierControl extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	constructor(o: { device: MTRDevice; endpointID: number; queue: NSObject & OS_dispatch_queue; });
 
@@ -60532,6 +61371,7 @@ declare class MTRClusterBarrierControl extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	barrierControlGoToPercentWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRBarrierControlClusterBarrierControlGoToPercentParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
@@ -60543,6 +61383,7 @@ declare class MTRClusterBarrierControl extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	barrierControlStopWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
@@ -60554,6 +61395,7 @@ declare class MTRClusterBarrierControl extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	barrierControlStopWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRBarrierControlClusterBarrierControlStopParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
@@ -60565,6 +61407,7 @@ declare class MTRClusterBarrierControl extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: NSObject & OS_dispatch_queue): this;
 
@@ -60576,136 +61419,163 @@ declare class MTRClusterBarrierControl extends MTRGenericCluster {
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcceptedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAttributeListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierCapabilitiesWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierCloseEventsWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierClosePeriodWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierCommandCloseEventsWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierCommandOpenEventsWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierMovingStateWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierOpenEventsWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierOpenPeriodWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierPositionWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeBarrierSafetyStatusWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeClusterRevisionWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCloseEventsWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCloseEventsWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierClosePeriodWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierClosePeriodWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCommandCloseEventsWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCommandCloseEventsWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCommandOpenEventsWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierCommandOpenEventsWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierOpenEventsWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierOpenEventsWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierOpenPeriodWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeBarrierOpenPeriodWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
@@ -60927,6 +61797,7 @@ declare class MTRClusterBasicInformation extends MTRGenericCluster {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRClusterBinaryInputBasic extends MTRGenericCluster {
 
@@ -60936,6 +61807,7 @@ declare class MTRClusterBinaryInputBasic extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	constructor(o: { device: MTRDevice; endpointID: number; queue: NSObject & OS_dispatch_queue; });
 
@@ -60947,6 +61819,7 @@ declare class MTRClusterBinaryInputBasic extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: NSObject & OS_dispatch_queue): this;
 
@@ -60958,131 +61831,157 @@ declare class MTRClusterBinaryInputBasic extends MTRGenericCluster {
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcceptedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActiveTextWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeApplicationTypeWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAttributeListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeClusterRevisionWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDescriptionWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeInactiveTextWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeOutOfServiceWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributePolarityWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributePresentValueWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeReliabilityWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeStatusFlagsWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeActiveTextWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeActiveTextWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeDescriptionWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeDescriptionWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeInactiveTextWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeInactiveTextWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeOutOfServiceWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeOutOfServiceWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributePresentValueWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributePresentValueWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeReliabilityWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeReliabilityWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
@@ -63397,6 +64296,7 @@ declare class MTRClusterElectricalEnergyMeasurement extends MTRGenericCluster {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRClusterElectricalMeasurement extends MTRGenericCluster {
 
@@ -63406,6 +64306,7 @@ declare class MTRClusterElectricalMeasurement extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	constructor(o: { device: MTRDevice; endpointID: number; queue: NSObject & OS_dispatch_queue; });
 
@@ -63417,6 +64318,7 @@ declare class MTRClusterElectricalMeasurement extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	getMeasurementProfileCommandWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRElectricalMeasurementClusterGetMeasurementProfileCommandParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
@@ -63428,6 +64330,7 @@ declare class MTRClusterElectricalMeasurement extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	getProfileInfoCommandWithExpectedValuesExpectedValueIntervalCompletion(expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
@@ -63439,6 +64342,7 @@ declare class MTRClusterElectricalMeasurement extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	getProfileInfoCommandWithParamsExpectedValuesExpectedValueIntervalCompletion(params: MTRElectricalMeasurementClusterGetProfileInfoCommandParams, expectedDataValueDictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueIntervalMs: number, completion: (p1: NSError) => void): void;
 
@@ -63450,6 +64354,7 @@ declare class MTRClusterElectricalMeasurement extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: NSObject & OS_dispatch_queue): this;
 
@@ -63461,746 +64366,895 @@ declare class MTRClusterElectricalMeasurement extends MTRGenericCluster {
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcActivePowerOverloadWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcCurrentDivisorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcCurrentMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcCurrentOverloadWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyDivisorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyMaxWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyMinWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcFrequencyWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcOverloadAlarmsMaskWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcPowerDivisorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcPowerMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcReactivePowerOverloadWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcVoltageDivisorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcVoltageMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcVoltageOverloadWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcceptedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActiveCurrentPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActiveCurrentPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMaxPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMaxPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMaxWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMinPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMinPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerMinWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeActivePowerWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeApparentPowerPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeApparentPowerPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeApparentPowerWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAttributeListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsOverVoltageCounterPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsOverVoltageCounterPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsOverVoltageWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsUnderVoltageCounterPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsUnderVoltageCounterPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsUnderVoltageCounterWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsUnderVoltageWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsVoltageMeasurementPeriodPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsVoltageMeasurementPeriodPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAverageRmsVoltageMeasurementPeriodWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeClusterRevisionWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeCurrentOverloadWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentDivisorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentMaxWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentMinWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerDivisorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerMaxWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerMinWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcPowerWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageDivisorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageMaxWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageMinWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeDcVoltageWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeHarmonicCurrentMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousActiveCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousLineCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousPowerWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousReactiveCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeInstantaneousVoltageWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeLineCurrentPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeLineCurrentPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured11thHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured1stHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured3rdHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured5thHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured7thHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasured9thHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase11thHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase1stHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase3rdHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase5thHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase7thHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasuredPhase9thHarmonicCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeMeasurementTypeWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeNeutralCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeOverloadAlarmsMaskWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributePhaseHarmonicCurrentMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributePowerDivisorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributePowerFactorPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributePowerFactorPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributePowerFactorWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributePowerMultiplierWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeReactiveCurrentPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeReactiveCurrentPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeReactivePowerPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeReactivePowerPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeReactivePowerWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMaxPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMaxPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMaxWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMinPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMinPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentMinWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsCurrentWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeOverVoltagePeriodPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeOverVoltagePeriodPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeOverVoltagePeriodWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeOverVoltageWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeUnderVoltagePeriodPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeUnderVoltagePeriodPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeUnderVoltagePeriodWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsExtremeUnderVoltageWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMaxPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMaxPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMaxWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMinPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMinPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageMinWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltagePhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltagePhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSagPeriodPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSagPeriodPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSagPeriodWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSagWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSwellPeriodPhaseBWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSwellPeriodPhaseCWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSwellPeriodWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageSwellWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeRmsVoltageWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeTotalActivePowerWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeTotalApparentPowerWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeTotalReactivePowerWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeVoltageOverloadWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeAcOverloadAlarmsMaskWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeAcOverloadAlarmsMaskWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeAverageRmsUnderVoltageCounterWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeAverageRmsUnderVoltageCounterWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeAverageRmsVoltageMeasurementPeriodWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeAverageRmsVoltageMeasurementPeriodWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeOverloadAlarmsMaskWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeOverloadAlarmsMaskWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsExtremeOverVoltagePeriodWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsExtremeOverVoltagePeriodWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsExtremeUnderVoltagePeriodWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsExtremeUnderVoltagePeriodWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsVoltageSagPeriodWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsVoltageSagPeriodWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsVoltageSwellPeriodWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeRmsVoltageSwellPeriodWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
@@ -65533,11 +66587,7 @@ declare const enum MTRClusterIDType {
 
 	OnOffID = 6,
 
-	OnOffSwitchConfigurationID = 7,
-
 	LevelControlID = 8,
-
-	BinaryInputBasicID = 15,
 
 	PulseWidthModulationID = 28,
 
@@ -65605,8 +66655,6 @@ declare const enum MTRClusterIDType {
 
 	WindowCoveringID = 258,
 
-	BarrierControlID = 259,
-
 	PumpConfigurationAndControlID = 512,
 
 	ThermostatID = 513,
@@ -65655,9 +66703,11 @@ declare const enum MTRClusterIDType {
 
 	AccountLoginID = 1294,
 
-	ElectricalMeasurementID = 2820,
-
 	TestClusterID = 4294048773,
+
+	IDTypeAppleDeviceInformationID = 323615744,
+
+	IDTypeAppleLockClusterID = 323615747,
 
 	IDTypeIdentifyID = 3,
 
@@ -65665,11 +66715,7 @@ declare const enum MTRClusterIDType {
 
 	IDTypeOnOffID = 6,
 
-	IDTypeOnOffSwitchConfigurationID = 7,
-
 	IDTypeLevelControlID = 8,
-
-	IDTypeBinaryInputBasicID = 15,
 
 	IDTypePulseWidthModulationID = 28,
 
@@ -65811,8 +66857,6 @@ declare const enum MTRClusterIDType {
 
 	IDTypeWindowCoveringID = 258,
 
-	IDTypeBarrierControlID = 259,
-
 	IDTypeServiceAreaID = 336,
 
 	IDTypePumpConfigurationAndControlID = 512,
@@ -65893,13 +66937,39 @@ declare const enum MTRClusterIDType {
 
 	IDTypeContentAppObserverID = 1296,
 
-	IDTypeCommissionerControlID = 1873,
+	IDTypeZoneManagementID = 1360,
 
-	IDTypeElectricalMeasurementID = 2820,
+	IDTypeCameraAVStreamManagementID = 1361,
+
+	IDTypeWebRTCTransportProviderID = 1363,
+
+	IDTypeWebRTCTransportRequestorID = 1364,
+
+	IDTypeChimeID = 1366,
+
+	IDTypeEcosystemInformationID = 1872,
+
+	IDTypeCommissionerControlID = 1873,
 
 	IDTypeUnitTestingID = 4294048773,
 
-	IDTypeSampleMEIID = 4294048800
+	IDTypeSampleMEIID = 4294048800,
+
+	BarrierControlID = 259,
+
+	IDTypeBarrierControlID = 259,
+
+	BinaryInputBasicID = 15,
+
+	IDTypeBinaryInputBasicID = 15,
+
+	ElectricalMeasurementID = 2820,
+
+	IDTypeElectricalMeasurementID = 2820,
+
+	OnOffSwitchConfigurationID = 7,
+
+	IDTypeOnOffSwitchConfigurationID = 7
 }
 
 /**
@@ -68063,6 +69133,7 @@ declare class MTRClusterOnOff extends MTRGenericCluster {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRClusterOnOffSwitchConfiguration extends MTRGenericCluster {
 
@@ -68072,6 +69143,7 @@ declare class MTRClusterOnOffSwitchConfiguration extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	constructor(o: { device: MTRDevice; endpointID: number; queue: NSObject & OS_dispatch_queue; });
 
@@ -68083,6 +69155,7 @@ declare class MTRClusterOnOffSwitchConfiguration extends MTRGenericCluster {
 
 	/**
 	 * @since 16.4
+	 * @deprecated 18.2
 	 */
 	initWithDeviceEndpointIDQueue(device: MTRDevice, endpointID: number, queue: NSObject & OS_dispatch_queue): this;
 
@@ -68094,46 +69167,55 @@ declare class MTRClusterOnOffSwitchConfiguration extends MTRGenericCluster {
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAcceptedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeAttributeListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeClusterRevisionWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeFeatureMapWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeGeneratedCommandListWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeSwitchActionsWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	readAttributeSwitchTypeWithParams(params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeSwitchActionsWithValueExpectedValueInterval(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number): void;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	writeAttributeSwitchActionsWithValueExpectedValueIntervalParams(dataValueDictionary: NSDictionary<string, any>, expectedValueIntervalMs: number, params: MTRWriteParams): void;
 }
@@ -74906,6 +75988,7 @@ declare class MTRColorControlClusterStopMoveStepParams extends NSObject implemen
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare const enum MTRColorControlColorCapabilities {
 
@@ -74918,6 +76001,22 @@ declare const enum MTRColorControlColorCapabilities {
 	XYAttributesSupported = 8,
 
 	ColorTemperatureSupported = 16
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum MTRColorControlColorCapabilitiesBitmap {
+
+	HueSaturation = 1,
+
+	EnhancedHue = 2,
+
+	ColorLoop = 4,
+
+	XY = 8,
+
+	ColorTemperature = 16
 }
 
 /**
@@ -74937,13 +76036,18 @@ declare const enum MTRColorControlColorLoopAction {
  */
 declare const enum MTRColorControlColorLoopDirection {
 
+	Decrement = 0,
+
 	DecrementHue = 0,
+
+	Increment = 1,
 
 	IncrementHue = 1
 }
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare const enum MTRColorControlColorLoopUpdateFlags {
 
@@ -74965,7 +76069,53 @@ declare const enum MTRColorControlColorMode {
 
 	CurrentXAndCurrentY = 1,
 
+	ColorTemperatureMireds = 2,
+
 	ColorTemperature = 2
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum MTRColorControlDirection {
+
+	Shortest = 0,
+
+	Longest = 1,
+
+	Up = 2,
+
+	Down = 3
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum MTRColorControlDriftCompensation {
+
+	None = 0,
+
+	OtherOrUnknown = 1,
+
+	TemperatureMonitoring = 2,
+
+	OpticalLuminanceMonitoringAndFeedback = 3,
+
+	OpticalColorMonitoringAndFeedback = 4
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum MTRColorControlEnhancedColorMode {
+
+	CurrentHueAndCurrentSaturation = 0,
+
+	CurrentXAndCurrentY = 1,
+
+	ColorTemperatureMireds = 2,
+
+	EnhancedCurrentHueAndCurrentSaturation = 3
 }
 
 /**
@@ -74986,6 +76136,7 @@ declare const enum MTRColorControlFeature {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare const enum MTRColorControlHueDirection {
 
@@ -75000,6 +76151,7 @@ declare const enum MTRColorControlHueDirection {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare const enum MTRColorControlHueMoveMode {
 
@@ -75012,6 +76164,7 @@ declare const enum MTRColorControlHueMoveMode {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare const enum MTRColorControlHueStepMode {
 
@@ -75021,7 +76174,28 @@ declare const enum MTRColorControlHueStepMode {
 }
 
 /**
+ * @since 18.2
+ */
+declare const enum MTRColorControlMoveMode {
+
+	Stop = 0,
+
+	Up = 1,
+
+	Down = 3
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum MTRColorControlOptionsBitmap {
+
+	ExecuteIfOff = 1
+}
+
+/**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare const enum MTRColorControlSaturationMoveMode {
 
@@ -75034,12 +76208,37 @@ declare const enum MTRColorControlSaturationMoveMode {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare const enum MTRColorControlSaturationStepMode {
 
 	Up = 1,
 
 	Down = 3
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum MTRColorControlStepMode {
+
+	Up = 1,
+
+	Down = 3
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum MTRColorControlUpdateFlagsBitmap {
+
+	UpdateAction = 1,
+
+	UpdateDirection = 2,
+
+	UpdateTime = 4,
+
+	UpdateStartHue = 8
 }
 
 declare const enum MTRCommandIDType {
@@ -75152,6 +76351,10 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterLevelControlCommandMoveToClosestFrequencyID = 8,
 
+	CommandIDTypeClusterAccessControlCommandReviewFabricRestrictionsID = 0,
+
+	CommandIDTypeClusterAccessControlCommandReviewFabricRestrictionsResponseID = 1,
+
 	ClusterActionsCommandInstantActionID = 0,
 
 	ClusterActionsCommandInstantActionWithTransitionID = 1,
@@ -75250,6 +76453,10 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterGeneralCommissioningCommandCommissioningCompleteResponseID = 5,
 
+	CommandIDTypeClusterGeneralCommissioningCommandSetTCAcknowledgementsID = 6,
+
+	CommandIDTypeClusterGeneralCommissioningCommandSetTCAcknowledgementsResponseID = 7,
+
 	ClusterNetworkCommissioningCommandScanNetworksID = 0,
 
 	ClusterNetworkCommissioningCommandScanNetworksResponseID = 1,
@@ -75341,6 +76548,8 @@ declare const enum MTRCommandIDType {
 	CommandIDTypeClusterTimeSynchronizationCommandSetDSTOffsetID = 4,
 
 	CommandIDTypeClusterTimeSynchronizationCommandSetDefaultNTPID = 5,
+
+	CommandIDTypeClusterBridgedDeviceBasicInformationCommandKeepActiveID = 128,
 
 	ClusterAdministratorCommissioningCommandOpenCommissioningWindowID = 0,
 
@@ -75718,6 +76927,16 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterDoorLockCommandClearAliroReaderConfigID = 41,
 
+	CommandIDTypeClusterDoorLockCommandAppleSetAliroCredentialID = 323551232,
+
+	CommandIDTypeClusterDoorLockCommandAppleGetAliroCredentialStatusID = 323551233,
+
+	CommandIDTypeClusterDoorLockCommandAppleClearAliroCredentialID = 323551234,
+
+	CommandIDTypeClusterDoorLockCommandAppleSetAliroReaderConfigID = 323551235,
+
+	CommandIDTypeClusterDoorLockCommandAppleClearAliroReaderConfigID = 323551236,
+
 	ClusterWindowCoveringCommandUpOrOpenID = 0,
 
 	ClusterWindowCoveringCommandDownOrCloseID = 1,
@@ -75746,21 +76965,13 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterWindowCoveringCommandGoToTiltPercentageID = 8,
 
-	ClusterBarrierControlCommandBarrierControlGoToPercentID = 0,
+	CommandIDTypeClusterServiceAreaCommandSelectAreasID = 0,
 
-	ClusterBarrierControlCommandBarrierControlStopID = 1,
+	CommandIDTypeClusterServiceAreaCommandSelectAreasResponseID = 1,
 
-	CommandIDTypeClusterBarrierControlCommandBarrierControlGoToPercentID = 0,
+	CommandIDTypeClusterServiceAreaCommandSkipAreaID = 2,
 
-	CommandIDTypeClusterBarrierControlCommandBarrierControlStopID = 1,
-
-	CommandIDTypeClusterServiceAreaCommandSelectLocationsID = 0,
-
-	CommandIDTypeClusterServiceAreaCommandSelectLocationsResponseID = 1,
-
-	CommandIDTypeClusterServiceAreaCommandSkipCurrentLocationID = 2,
-
-	CommandIDTypeClusterServiceAreaCommandSkipCurrentLocationResponseID = 3,
+	CommandIDTypeClusterServiceAreaCommandSkipAreaResponseID = 3,
 
 	ClusterThermostatCommandSetpointRaiseLowerID = 0,
 
@@ -75786,15 +76997,9 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterThermostatCommandSetActivePresetRequestID = 6,
 
-	CommandIDTypeClusterThermostatCommandStartPresetsSchedulesEditRequestID = 7,
+	CommandIDTypeClusterThermostatCommandAtomicResponseID = 253,
 
-	CommandIDTypeClusterThermostatCommandCancelPresetsSchedulesEditRequestID = 8,
-
-	CommandIDTypeClusterThermostatCommandCommitPresetsSchedulesRequestID = 9,
-
-	CommandIDTypeClusterThermostatCommandCancelSetActivePresetRequestID = 10,
-
-	CommandIDTypeClusterThermostatCommandSetTemperatureSetpointHoldPolicyID = 11,
+	CommandIDTypeClusterThermostatCommandAtomicRequestID = 254,
 
 	CommandIDTypeClusterFanControlCommandStepID = 0,
 
@@ -76088,27 +77293,81 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterContentAppObserverCommandContentAppMessageResponseID = 1,
 
+	CommandIDTypeClusterZoneManagementCommandCreateTwoDCartesianZoneID = 0,
+
+	CommandIDTypeClusterZoneManagementCommandCreateTwoDCartesianZoneResponseID = 1,
+
+	CommandIDTypeClusterZoneManagementCommandUpdateTwoDCartesianZoneID = 2,
+
+	CommandIDTypeClusterZoneManagementCommandGetTwoDCartesianZoneID = 3,
+
+	CommandIDTypeClusterZoneManagementCommandGetTwoDCartesianZoneResponseID = 4,
+
+	CommandIDTypeClusterZoneManagementCommandRemoveZoneID = 5,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandAudioStreamAllocateID = 0,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandAudioStreamAllocateResponseID = 1,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandAudioStreamDeallocateID = 2,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandVideoStreamAllocateID = 3,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandVideoStreamAllocateResponseID = 4,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandVideoStreamModifyID = 5,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandVideoStreamDeallocateID = 6,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandSnapshotStreamAllocateID = 7,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandSnapshotStreamAllocateResponseID = 8,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandSnapshotStreamDeallocateID = 9,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandSetStreamPrioritiesID = 10,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandCaptureSnapshotID = 11,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandCaptureSnapshotResponseID = 12,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandSetViewportID = 13,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandSetImageRotationID = 14,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandSetImageFlipHorizontalID = 15,
+
+	CommandIDTypeClusterCameraAVStreamManagementCommandSetImageFlipVerticalID = 16,
+
+	CommandIDTypeClusterWebRTCTransportProviderCommandSolicitOfferID = 1,
+
+	CommandIDTypeClusterWebRTCTransportProviderCommandSolicitOfferResponseID = 2,
+
+	CommandIDTypeClusterWebRTCTransportProviderCommandProvideOfferID = 3,
+
+	CommandIDTypeClusterWebRTCTransportProviderCommandProvideOfferResponseID = 4,
+
+	CommandIDTypeClusterWebRTCTransportProviderCommandProvideAnswerID = 5,
+
+	CommandIDTypeClusterWebRTCTransportProviderCommandProvideICECandidateID = 6,
+
+	CommandIDTypeClusterWebRTCTransportProviderCommandEndSessionID = 7,
+
+	CommandIDTypeClusterWebRTCTransportRequestorCommandOfferID = 1,
+
+	CommandIDTypeClusterWebRTCTransportRequestorCommandAnswerID = 2,
+
+	CommandIDTypeClusterWebRTCTransportRequestorCommandICECandidateID = 3,
+
+	CommandIDTypeClusterWebRTCTransportRequestorCommandEndID = 4,
+
+	CommandIDTypeClusterChimeCommandPlayChimeSoundID = 0,
+
 	CommandIDTypeClusterCommissionerControlCommandRequestCommissioningApprovalID = 0,
 
 	CommandIDTypeClusterCommissionerControlCommandCommissionNodeID = 1,
 
 	CommandIDTypeClusterCommissionerControlCommandReverseOpenCommissioningWindowID = 2,
-
-	ClusterElectricalMeasurementCommandGetProfileInfoResponseCommandID = 0,
-
-	ClusterElectricalMeasurementCommandGetProfileInfoCommandID = 0,
-
-	ClusterElectricalMeasurementCommandGetMeasurementProfileResponseCommandID = 1,
-
-	ClusterElectricalMeasurementCommandGetMeasurementProfileCommandID = 1,
-
-	CommandIDTypeClusterElectricalMeasurementCommandGetProfileInfoResponseCommandID = 0,
-
-	CommandIDTypeClusterElectricalMeasurementCommandGetProfileInfoCommandID = 0,
-
-	CommandIDTypeClusterElectricalMeasurementCommandGetMeasurementProfileResponseCommandID = 1,
-
-	CommandIDTypeClusterElectricalMeasurementCommandGetMeasurementProfileCommandID = 1,
 
 	ClusterTestClusterCommandTestID = 0,
 
@@ -76236,6 +77495,8 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterUnitTestingCommandTestEnumsRequestID = 14,
 
+	CommandIDTypeClusterUnitTestingCommandGlobalEchoResponseID = 14,
+
 	CommandIDTypeClusterUnitTestingCommandTestNullableOptionalRequestID = 15,
 
 	CommandIDTypeClusterUnitTestingCommandTestComplexNullableOptionalRequestID = 16,
@@ -76256,6 +77517,8 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterUnitTestingCommandStringEchoRequestID = 24,
 
+	CommandIDTypeClusterUnitTestingCommandGlobalEchoRequestID = 25,
+
 	CommandIDTypeClusterUnitTestingCommandTestDifferentVendorMeiRequestID = 4294049962,
 
 	CommandIDTypeClusterUnitTestingCommandTestDifferentVendorMeiResponseID = 4294049979,
@@ -76264,7 +77527,31 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterSampleMEICommandAddArgumentsResponseID = 1,
 
-	CommandIDTypeClusterSampleMEICommandAddArgumentsID = 2
+	CommandIDTypeClusterSampleMEICommandAddArgumentsID = 2,
+
+	ClusterBarrierControlCommandBarrierControlGoToPercentID = 0,
+
+	ClusterBarrierControlCommandBarrierControlStopID = 1,
+
+	CommandIDTypeClusterBarrierControlCommandBarrierControlGoToPercentID = 0,
+
+	CommandIDTypeClusterBarrierControlCommandBarrierControlStopID = 1,
+
+	ClusterElectricalMeasurementCommandGetProfileInfoResponseCommandID = 0,
+
+	ClusterElectricalMeasurementCommandGetProfileInfoCommandID = 0,
+
+	ClusterElectricalMeasurementCommandGetMeasurementProfileResponseCommandID = 1,
+
+	ClusterElectricalMeasurementCommandGetMeasurementProfileCommandID = 1,
+
+	CommandIDTypeClusterElectricalMeasurementCommandGetProfileInfoResponseCommandID = 0,
+
+	CommandIDTypeClusterElectricalMeasurementCommandGetProfileInfoCommandID = 0,
+
+	CommandIDTypeClusterElectricalMeasurementCommandGetMeasurementProfileResponseCommandID = 1,
+
+	CommandIDTypeClusterElectricalMeasurementCommandGetMeasurementProfileCommandID = 1
 }
 
 /**
@@ -76776,11 +78063,11 @@ declare const enum MTRContentLauncherFeature {
 
 	URLPlayback = 2,
 
-	AdvancedSeek = 3,
+	AdvancedSeek = 4,
 
-	TextTracks = 4,
+	TextTracks = 8,
 
-	AudioTracks = 5
+	AudioTracks = 16
 }
 
 /**
@@ -77074,6 +78361,11 @@ declare class MTRDevice extends NSObject {
 	 */
 	openCommissioningWindowWithSetupPasscodeDiscriminatorDurationQueueCompletion(setupPasscode: number, discriminator: number, duration: number, queue: NSObject & OS_dispatch_queue, completion: (p1: MTRSetupPayload, p2: NSError) => void): void;
 
+	/**
+	 * @since 18.2
+	 */
+	readAttributePaths(attributePaths: NSArray<MTRAttributeRequestPath> | MTRAttributeRequestPath[]): NSArray<NSDictionary<string, any>>;
+
 	readAttributeWithEndpointIDClusterIDAttributeIDParams(endpointID: number, clusterID: number, attributeID: number, params: MTRReadParams): NSDictionary<string, any>;
 
 	/**
@@ -77246,6 +78538,11 @@ declare class MTRDeviceController extends NSObject {
 	readonly running: boolean;
 
 	/**
+	 * @since 18.2
+	 */
+	readonly suspended: boolean;
+
+	/**
 	 * @since 17.6
 	 */
 	readonly uniqueIdentifier: NSUUID;
@@ -77254,6 +78551,11 @@ declare class MTRDeviceController extends NSObject {
 	 * @since 17.6
 	 */
 	constructor(o: { parameters: MTRDeviceControllerAbstractParameters; });
+
+	/**
+	 * @since 18.2
+	 */
+	addDeviceControllerDelegateQueue(delegate: MTRDeviceControllerDelegate, queue: NSObject & OS_dispatch_queue): void;
 
 	/**
 	 * @since 17.6
@@ -77354,6 +78656,11 @@ declare class MTRDeviceController extends NSObject {
 	preWarmCommissioningSession(): void;
 
 	/**
+	 * @since 18.2
+	 */
+	removeDeviceControllerDelegate(delegate: MTRDeviceControllerDelegate): void;
+
+	/**
 	 * @since 17.6
 	 */
 	removeServerEndpoint(endpoint: MTRServerEndpoint): void;
@@ -77362,6 +78669,11 @@ declare class MTRDeviceController extends NSObject {
 	 * @since 17.6
 	 */
 	removeServerEndpointQueueCompletion(endpoint: MTRServerEndpoint, queue: NSObject & OS_dispatch_queue, completion: () => void): void;
+
+	/**
+	 * @since 18.2
+	 */
+	resume(): void;
 
 	/**
 	 * @since 16.4
@@ -77407,6 +78719,11 @@ declare class MTRDeviceController extends NSObject {
 	 * @deprecated 16.4
 	 */
 	stopDevicePairingError(deviceID: number): boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	suspend(): void;
 }
 
 /**
@@ -77417,6 +78734,8 @@ declare class MTRDeviceControllerAbstractParameters extends NSObject {
 	static alloc(): MTRDeviceControllerAbstractParameters; // inherited from NSObject
 
 	static new(): MTRDeviceControllerAbstractParameters; // inherited from NSObject
+
+	startSuspended: boolean;
 }
 
 interface MTRDeviceControllerClientProtocol extends NSObjectProtocol {
@@ -77457,6 +78776,11 @@ interface MTRDeviceControllerDelegate extends NSObjectProtocol {
 	controllerReadCommissioningInfo?(controller: MTRDeviceController, info: MTRProductIdentity): void;
 
 	controllerStatusUpdate?(controller: MTRDeviceController, status: MTRCommissioningStatus): void;
+
+	/**
+	 * @since 18.2
+	 */
+	controllerSuspendedChangedTo?(controller: MTRDeviceController, suspended: boolean): void;
 }
 declare var MTRDeviceControllerDelegate: {
 
@@ -77471,6 +78795,11 @@ declare class MTRDeviceControllerExternalCertificateParameters extends MTRDevice
 	static alloc(): MTRDeviceControllerExternalCertificateParameters; // inherited from NSObject
 
 	static new(): MTRDeviceControllerExternalCertificateParameters; // inherited from NSObject
+
+	/**
+	 * @since 18.2
+	 */
+	readonly rootCertificate: NSData;
 
 	constructor(o: { storageDelegate: MTRDeviceControllerStorageDelegate; storageDelegateQueue: NSObject & OS_dispatch_queue; uniqueIdentifier: NSUUID; ipk: NSData; vendorID: number; operationalKeypair: MTRKeypair; operationalCertificate: NSData; intermediateCertificate: NSData; rootCertificate: NSData; });
 
@@ -77558,6 +78887,21 @@ declare class MTRDeviceControllerParameters extends MTRDeviceControllerAbstractP
 
 	setOperationalCertificateIssuerQueue(operationalCertificateIssuer: MTROperationalCertificateIssuer, queue: NSObject & OS_dispatch_queue): void;
 }
+
+/**
+ * @since 18.2
+ */
+declare var MTRDeviceControllerRegistrationControllerContextKey: string;
+
+/**
+ * @since 18.2
+ */
+declare var MTRDeviceControllerRegistrationNodeIDKey: string;
+
+/**
+ * @since 18.2
+ */
+declare var MTRDeviceControllerRegistrationNodeIDsKey: string;
 
 interface MTRDeviceControllerServerProtocol extends NSObjectProtocol {
 
@@ -77820,6 +79164,162 @@ declare class MTRDeviceStorageBehaviorConfiguration extends NSObject implements 
 	timeBetweenReportsTooShortThreshold: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+/**
+ * @since 18.2
+ */
+declare class MTRDeviceType extends NSObject {
+
+	static alloc(): MTRDeviceType; // inherited from NSObject
+
+	static deviceTypeForID(deviceTypeID: number): MTRDeviceType;
+
+	static new(): MTRDeviceType; // inherited from NSObject
+
+	readonly id: number;
+
+	readonly isUtility: boolean;
+
+	readonly name: string;
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum MTRDeviceTypeIDType {
+
+	DoorLockID = 10,
+
+	DoorLockControllerID = 11,
+
+	AggregatorID = 14,
+
+	GenericSwitchID = 15,
+
+	PowerSourceID = 17,
+
+	OTARequestorID = 18,
+
+	BridgedNodeID = 19,
+
+	OTAProviderID = 20,
+
+	ContactSensorID = 21,
+
+	RootNodeID = 22,
+
+	SecondaryNetworkInterfaceID = 25,
+
+	SpeakerID = 34,
+
+	CastingVideoPlayerID = 35,
+
+	ContentAppID = 36,
+
+	ModeSelectID = 39,
+
+	BasicVideoPlayerID = 40,
+
+	CastingVideoClientID = 41,
+
+	VideoRemoteControlID = 42,
+
+	FanID = 43,
+
+	AirQualitySensorID = 44,
+
+	AirPurifierID = 45,
+
+	WaterFreezeDetectorID = 65,
+
+	WaterValveID = 66,
+
+	WaterLeakDetectorID = 67,
+
+	RainSensorID = 68,
+
+	RefrigeratorID = 112,
+
+	TemperatureControlledCabinetID = 113,
+
+	RoomAirConditionerID = 114,
+
+	LaundryWasherID = 115,
+
+	RoboticVacuumCleanerID = 116,
+
+	DishwasherID = 117,
+
+	SmokeCOAlarmID = 118,
+
+	CookSurfaceID = 119,
+
+	CooktopID = 120,
+
+	MicrowaveOvenID = 121,
+
+	ExtractorHoodID = 122,
+
+	OvenID = 123,
+
+	LaundryDryerID = 124,
+
+	NetworkInfrastructureManagerID = 144,
+
+	ThreadBorderRouterID = 145,
+
+	OnOffLightID = 256,
+
+	DimmableLightID = 257,
+
+	OnOffLightSwitchID = 259,
+
+	DimmerSwitchID = 260,
+
+	ColorDimmerSwitchID = 261,
+
+	LightSensorID = 262,
+
+	OccupancySensorID = 263,
+
+	OnOffPlugInUnitID = 266,
+
+	DimmablePlugInUnitID = 267,
+
+	ColorTemperatureLightID = 268,
+
+	ExtendedColorLightID = 269,
+
+	WindowCoveringID = 514,
+
+	WindowCoveringControllerID = 515,
+
+	HeatingCoolingUnitID = 768,
+
+	ThermostatID = 769,
+
+	TemperatureSensorID = 770,
+
+	PumpID = 771,
+
+	PumpControllerID = 772,
+
+	PressureSensorID = 773,
+
+	FlowSensorID = 774,
+
+	HumiditySensorID = 775,
+
+	EVSEID = 1292,
+
+	DeviceEnergyManagementID = 1293,
+
+	ElectricalSensorID = 1296,
+
+	ControlBridgeID = 2112,
+
+	OnOffSensorID = 2128
 }
 
 /**
@@ -80241,6 +81741,7 @@ declare const enum MTRElectricalEnergyMeasurementFeature {
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRElectricalMeasurementClusterGetMeasurementProfileCommandParams extends NSObject implements NSCopying {
 
@@ -80250,11 +81751,13 @@ declare class MTRElectricalMeasurementClusterGetMeasurementProfileCommandParams 
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	attributeId: number;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	numberOfIntervals: number;
 
@@ -80262,6 +81765,7 @@ declare class MTRElectricalMeasurementClusterGetMeasurementProfileCommandParams 
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	startTime: number;
 
@@ -80272,6 +81776,7 @@ declare class MTRElectricalMeasurementClusterGetMeasurementProfileCommandParams 
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRElectricalMeasurementClusterGetMeasurementProfileResponseCommandParams extends NSObject implements NSCopying {
 
@@ -80281,31 +81786,37 @@ declare class MTRElectricalMeasurementClusterGetMeasurementProfileResponseComman
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	attributeId: number;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	intervals: NSArray<any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	numberOfIntervalsDelivered: number;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	profileIntervalPeriod: number;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	startTime: number;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	status: number;
 
@@ -80317,6 +81828,7 @@ declare class MTRElectricalMeasurementClusterGetMeasurementProfileResponseComman
 
 	/**
 	 * @since 17.0
+	 * @deprecated 18.2
 	 */
 	constructor(o: { responseValue: NSDictionary<string, any>; });
 
@@ -80324,12 +81836,14 @@ declare class MTRElectricalMeasurementClusterGetMeasurementProfileResponseComman
 
 	/**
 	 * @since 17.0
+	 * @deprecated 18.2
 	 */
 	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRElectricalMeasurementClusterGetProfileInfoCommandParams extends NSObject implements NSCopying {
 
@@ -80346,6 +81860,7 @@ declare class MTRElectricalMeasurementClusterGetProfileInfoCommandParams extends
 
 /**
  * @since 16.1
+ * @deprecated 18.2
  */
 declare class MTRElectricalMeasurementClusterGetProfileInfoResponseCommandParams extends NSObject implements NSCopying {
 
@@ -80355,21 +81870,25 @@ declare class MTRElectricalMeasurementClusterGetProfileInfoResponseCommandParams
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	listOfAttributes: NSArray<any>;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	maxNumberOfIntervals: number;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	profileCount: number;
 
 	/**
 	 * @since 16.1
+	 * @deprecated 18.2
 	 */
 	profileIntervalPeriod: number;
 
@@ -80381,6 +81900,7 @@ declare class MTRElectricalMeasurementClusterGetProfileInfoResponseCommandParams
 
 	/**
 	 * @since 17.0
+	 * @deprecated 18.2
 	 */
 	constructor(o: { responseValue: NSDictionary<string, any>; });
 
@@ -80388,6 +81908,7 @@ declare class MTRElectricalMeasurementClusterGetProfileInfoResponseCommandParams
 
 	/**
 	 * @since 17.0
+	 * @deprecated 18.2
 	 */
 	initWithResponseValueError(responseValue: NSDictionary<string, any>): this;
 }
@@ -80785,6 +82306,8 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterAccessControlEventAccessControlExtensionChangedID = 1,
 
+	EventIDTypeClusterAccessControlEventFabricRestrictionReviewUpdateID = 2,
+
 	ClusterActionsEventStateChangedID = 0,
 
 	ClusterActionsEventActionFailedID = 1,
@@ -80893,6 +82416,8 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterBridgedDeviceBasicInformationEventReachableChangedID = 3,
 
+	EventIDTypeClusterBridgedDeviceBasicInformationEventActiveChangedID = 128,
+
 	ClusterSwitchEventSwitchLatchedID = 0,
 
 	ClusterSwitchEventInitialPressID = 1,
@@ -80977,6 +82502,10 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterElectricalEnergyMeasurementEventPeriodicEnergyMeasuredID = 1,
 
+	EventIDTypeClusterWaterHeaterManagementEventBoostStartedID = 0,
+
+	EventIDTypeClusterWaterHeaterManagementEventBoostEndedID = 1,
+
 	EventIDTypeClusterDemandResponseLoadControlEventLoadControlEventStatusChangeID = 0,
 
 	EventIDTypeClusterMessagesEventMessageQueuedID = 0,
@@ -81024,6 +82553,12 @@ declare const enum MTREventIDType {
 	EventIDTypeClusterDoorLockEventLockOperationErrorID = 3,
 
 	EventIDTypeClusterDoorLockEventLockUserChangeID = 4,
+
+	EventIDTypeClusterDoorLockEventAppleAliroLockOperationID = 323551232,
+
+	EventIDTypeClusterDoorLockEventAppleAliroLockOperationErrorID = 323551233,
+
+	EventIDTypeClusterDoorLockEventAppleAliroLockUserChangeID = 323551234,
 
 	ClusterPumpConfigurationAndControlEventSupplyVoltageLowID = 0,
 
@@ -81093,6 +82628,8 @@ declare const enum MTREventIDType {
 
 	EventIDTypeClusterPumpConfigurationAndControlEventTurbineOperationID = 16,
 
+	EventIDTypeClusterOccupancySensingEventOccupancyChangedID = 0,
+
 	EventIDTypeClusterTargetNavigatorEventTargetUpdatedID = 0,
 
 	EventIDTypeClusterMediaPlaybackEventStateChangedID = 0,
@@ -81100,6 +82637,16 @@ declare const enum MTREventIDType {
 	EventIDTypeClusterAccountLoginEventLoggedOutID = 0,
 
 	EventIDTypeClusterContentControlEventRemainingScreenTimeExpiredID = 0,
+
+	EventIDTypeClusterZoneManagementEventZoneTriggeredID = 0,
+
+	EventIDTypeClusterZoneManagementEventZoneStoppedID = 1,
+
+	EventIDTypeClusterCameraAVStreamManagementEventVideoStreamChangedID = 0,
+
+	EventIDTypeClusterCameraAVStreamManagementEventAudioStreamChangedID = 1,
+
+	EventIDTypeClusterCameraAVStreamManagementEventSnapshotStreamChangedID = 2,
 
 	EventIDTypeClusterCommissionerControlEventCommissioningRequestResultID = 0,
 
@@ -81120,6 +82667,11 @@ declare const enum MTREventIDType {
  * @since 17.3
  */
 declare var MTREventIsHistoricalKey: string;
+
+/**
+ * @since 18.2
+ */
+declare function MTREventNameForID(clusterID: MTRClusterIDType, eventID: MTREventIDType): string;
 
 /**
  * @since 16.5
@@ -81225,7 +82777,7 @@ declare class MTREventReport extends NSObject {
 /**
  * @since 17.0
  */
-declare class MTREventRequestPath extends NSObject implements NSCopying {
+declare class MTREventRequestPath extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): MTREventRequestPath; // inherited from NSObject
 
@@ -81251,7 +82803,15 @@ declare class MTREventRequestPath extends NSObject implements NSCopying {
 	 */
 	readonly event: number;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 /**
@@ -81840,7 +83400,13 @@ declare const enum MTRGeneralCommissioningCommissioningError {
 
 	NoFailSafe = 3,
 
-	BusyWithOtherAdmin = 4
+	BusyWithOtherAdmin = 4,
+
+	RequiredTCNotAccepted = 5,
+
+	TCAcknowledgementsNotReceived = 6,
+
+	TCMinVersionNotMet = 7
 }
 
 /**
@@ -88681,13 +90247,33 @@ declare class MTRRVCCleanModeClusterModeTagStruct extends NSObject implements NS
  */
 declare const enum MTRRVCCleanModeFeature {
 
-	NoFeatures = 0
+	DirectModeChange = 65536
 }
 
 /**
  * @since 17.4
  */
 declare const enum MTRRVCCleanModeModeTag {
+
+	Auto = 0,
+
+	Quick = 1,
+
+	Quiet = 2,
+
+	LowNoise = 3,
+
+	LowEnergy = 4,
+
+	Vacation = 5,
+
+	Min = 6,
+
+	Max = 7,
+
+	Night = 8,
+
+	Day = 9,
 
 	DeepClean = 16384,
 
@@ -88861,6 +90447,14 @@ declare class MTRRVCOperationalStateClusterResumeParams extends NSObject impleme
  */
 declare const enum MTRRVCOperationalStateErrorState {
 
+	NoError = 0,
+
+	UnableToStartOrResume = 1,
+
+	UnableToCompleteOperation = 2,
+
+	CommandInvalidInState = 3,
+
 	FailedToFindChargingDock = 64,
 
 	Stuck = 65,
@@ -88882,6 +90476,14 @@ declare const enum MTRRVCOperationalStateErrorState {
  * @since 17.4
  */
 declare const enum MTRRVCOperationalStateOperationalState {
+
+	Stopped = 0,
+
+	Running = 1,
+
+	Paused = 2,
+
+	Error = 3,
 
 	SeekingCharger = 64,
 
@@ -88997,13 +90599,33 @@ declare class MTRRVCRunModeClusterModeTagStruct extends NSObject implements NSCo
  */
 declare const enum MTRRVCRunModeFeature {
 
-	NoFeatures = 0
+	DirectModeChange = 65536
 }
 
 /**
  * @since 17.4
  */
 declare const enum MTRRVCRunModeModeTag {
+
+	Auto = 0,
+
+	Quick = 1,
+
+	Quiet = 2,
+
+	LowNoise = 3,
+
+	LowEnergy = 4,
+
+	Vacation = 5,
+
+	Min = 6,
+
+	Max = 7,
+
+	Night = 8,
+
+	Day = 9,
 
 	Idle = 16384,
 
@@ -89105,7 +90727,7 @@ declare const enum MTRRadonConcentrationMeasurementMeasurementUnit {
 /**
  * @since 16.1
  */
-declare class MTRReadParams extends NSObject implements NSCopying {
+declare class MTRReadParams extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): MTRReadParams; // inherited from NSObject
 
@@ -89132,8 +90754,26 @@ declare class MTRReadParams extends NSObject implements NSCopying {
 	 */
 	minEventNumber: number;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
+
+/**
+ * @since 18.2
+ */
+declare function MTRRequestCommandNameForID(clusterID: MTRClusterIDType, commandID: MTRCommandIDType): string;
+
+/**
+ * @since 18.2
+ */
+declare function MTRResponseCommandNameForID(clusterID: MTRClusterIDType, commandID: MTRCommandIDType): string;
 
 /**
  * @since 17.6
@@ -89801,7 +91441,7 @@ declare var MTRStructureValueType: string;
 /**
  * @since 16.1
  */
-declare class MTRSubscribeParams extends MTRReadParams {
+declare class MTRSubscribeParams extends MTRReadParams implements NSCopying, NSSecureCoding {
 
 	static alloc(): MTRSubscribeParams; // inherited from NSObject
 
@@ -89844,7 +91484,17 @@ declare class MTRSubscribeParams extends MTRReadParams {
 	 */
 	resubscribeAutomatically: boolean;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { minInterval: number; maxInterval: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 
 	initWithMinIntervalMaxInterval(minInterval: number, maxInterval: number): this;
 }
@@ -90991,11 +92641,7 @@ declare const enum MTRThermostatFeature {
 
 	MatterScheduleConfiguration = 128,
 
-	Presets = 256,
-
-	Setpoints = 512,
-
-	QueuedPresetsSupported = 1024
+	Presets = 256
 }
 
 /**
@@ -94163,7 +95809,7 @@ declare const enum MTRWindowCoveringType {
 /**
  * @since 16.1
  */
-declare class MTRWriteParams extends NSObject implements NSCopying {
+declare class MTRWriteParams extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): MTRWriteParams; // inherited from NSObject
 
@@ -94173,5 +95819,147 @@ declare class MTRWriteParams extends NSObject implements NSCopying {
 
 	timedWriteTimeout: number;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
+
+/**
+ * @since 18.2
+ */
+interface MTRXPCClientProtocol extends MTRXPCClientProtocol_MTRDevice, MTRXPCClientProtocol_MTRDeviceController, NSObjectProtocol {
+}
+declare var MTRXPCClientProtocol: {
+
+	prototype: MTRXPCClientProtocol;
+};
+
+/**
+ * @since 18.2
+ */
+interface MTRXPCClientProtocol_MTRDevice extends NSObjectProtocol {
+
+	deviceBecameActive(nodeID: number): void;
+
+	deviceCachePrimed(nodeID: number): void;
+
+	deviceConfigurationChanged(nodeID: number): void;
+
+	deviceInternalStateUpdated(nodeID: number, dictionary: NSDictionary<any, any>): void;
+
+	deviceReceivedAttributeReport(nodeID: number, attributeReport: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): void;
+
+	deviceReceivedEventReport(nodeID: number, eventReport: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): void;
+
+	deviceStateChanged(nodeID: number, state: MTRDeviceState): void;
+}
+declare var MTRXPCClientProtocol_MTRDevice: {
+
+	prototype: MTRXPCClientProtocol_MTRDevice;
+};
+
+/**
+ * @since 18.2
+ */
+interface MTRXPCClientProtocol_MTRDeviceController extends NSObjectProtocol {
+}
+declare var MTRXPCClientProtocol_MTRDeviceController: {
+
+	prototype: MTRXPCClientProtocol_MTRDeviceController;
+};
+
+/**
+ * @since 18.2
+ */
+declare class MTRXPCDeviceControllerParameters extends MTRDeviceControllerAbstractParameters {
+
+	static alloc(): MTRXPCDeviceControllerParameters; // inherited from NSObject
+
+	static new(): MTRXPCDeviceControllerParameters; // inherited from NSObject
+
+	/**
+	 * @since 18.2
+	 */
+	readonly uniqueIdentifier: NSUUID;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly xpcConnectionBlock: () => NSXPCConnection;
+
+	constructor(o: { XPConnectionBlock: () => NSXPCConnection; uniqueIdentifier: NSUUID; });
+
+	initWithXPConnectionBlockUniqueIdentifier(xpcConnectionBlock: () => NSXPCConnection, uniqueIdentifier: NSUUID): this;
+}
+
+/**
+ * @since 18.2
+ */
+interface MTRXPCServerProtocol extends MTRXPCServerProtocol_MTRDevice, MTRXPCServerProtocol_MTRDeviceController, NSObjectProtocol {
+
+	deviceControllerCheckInWithContext?(controller: NSUUID, context: NSDictionary<any, any>): void;
+
+	deviceControllerUpdateControllerConfiguration?(controller: NSUUID, controllerState: NSDictionary<any, any>): void;
+}
+declare var MTRXPCServerProtocol: {
+
+	prototype: MTRXPCServerProtocol;
+};
+
+/**
+ * @since 18.2
+ */
+interface MTRXPCServerProtocol_MTRDevice extends NSObjectProtocol {
+
+	deviceControllerNodeIDDownloadLogOfTypeTimeoutCompletion?(controller: NSUUID, nodeID: number, type: MTRDiagnosticLogType, timeout: number, completion: (p1: NSURL, p2: NSError) => void): void;
+
+	deviceControllerNodeIDGetDeviceCachePrimedWithReply(controller: NSUUID, nodeID: number, reply: (p1: boolean) => void): void;
+
+	deviceControllerNodeIDGetEstimatedStartTimeWithReply(controller: NSUUID, nodeID: number, reply: (p1: Date) => void): void;
+
+	deviceControllerNodeIDGetEstimatedSubscriptionLatencyWithReply(controller: NSUUID, nodeID: number, reply: (p1: number) => void): void;
+
+	deviceControllerNodeIDGetStateWithReply(controller: NSUUID, nodeID: number, reply: (p1: MTRDeviceState) => void): void;
+
+	deviceControllerNodeIDInvokeCommandWithEndpointIDClusterIDCommandIDCommandFieldsExpectedValuesExpectedValueIntervalTimedInvokeTimeoutServerSideProcessingTimeoutCompletion(controller: NSUUID, nodeID: number, endpointID: number, clusterID: number, commandID: number, commandFields: any, expectedValues: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[], expectedValueInterval: number, timeout: number, serverSideProcessingTimeout: number, completion: (p1: NSArray<NSDictionary<string, any>>, p2: NSError) => void): void;
+
+	deviceControllerNodeIDOpenCommissioningWindowWithSetupPasscodeDiscriminatorDurationCompletion(controller: NSUUID, nodeID: number, setupPasscode: number, discriminator: number, duration: number, completion: (p1: MTRSetupPayload, p2: NSError) => void): void;
+
+	deviceControllerNodeIDReadAttributePathsWithReply(controller: NSUUID, nodeID: number, attributePaths: NSArray<MTRAttributeRequestPath> | MTRAttributeRequestPath[], reply: (p1: NSArray<NSDictionary<string, any>>) => void): void;
+
+	deviceControllerNodeIDReadAttributeWithEndpointIDClusterIDAttributeIDParamsWithReply(controller: NSUUID, nodeID: number, endpointID: number, clusterID: number, attributeID: number, params: MTRReadParams, reply: (p1: NSDictionary<string, any>) => void): void;
+
+	deviceControllerNodeIDWriteAttributeWithEndpointIDClusterIDAttributeIDValueExpectedValueIntervalTimedWriteTimeout(controller: NSUUID, nodeID: number, endpointID: number, clusterID: number, attributeID: number, value: any, expectedValueInterval: number, timeout: number): void;
+
+	downloadLogOfTypeNodeIDTimeoutCompletion(type: MTRDiagnosticLogType, nodeID: number, timeout: number, completion: (p1: NSURL, p2: NSError) => void): void;
+}
+declare var MTRXPCServerProtocol_MTRDevice: {
+
+	prototype: MTRXPCServerProtocol_MTRDevice;
+};
+
+/**
+ * @since 18.2
+ */
+interface MTRXPCServerProtocol_MTRDeviceController extends NSObjectProtocol {
+
+	deviceControllerControllerNodeIDWithReply?(controller: NSUUID, reply: (p1: number) => void): void;
+
+	deviceControllerGetIsRunningWithReply?(controller: NSUUID, reply: (p1: boolean) => void): void;
+
+	deviceControllerGetUniqueIdentifierWithReply?(controller: NSUUID, reply: (p1: NSUUID) => void): void;
+
+	deviceControllerRegisterNodeID?(controller: NSUUID, nodeID: number): void;
+
+	deviceControllerUnregisterNodeID?(controller: NSUUID, nodeID: number): void;
+}
+declare var MTRXPCServerProtocol_MTRDeviceController: {
+
+	prototype: MTRXPCServerProtocol_MTRDeviceController;
+};

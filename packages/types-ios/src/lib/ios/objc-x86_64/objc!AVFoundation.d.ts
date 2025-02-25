@@ -4372,6 +4372,11 @@ interface AVCaptureFileOutputRecordingDelegate extends NSObjectProtocol {
 	captureOutputDidResumeRecordingToOutputFileAtURLFromConnections?(output: AVCaptureFileOutput, fileURL: NSURL, connections: NSArray<AVCaptureConnection> | AVCaptureConnection[]): void;
 
 	captureOutputDidStartRecordingToOutputFileAtURLFromConnections?(output: AVCaptureFileOutput, fileURL: NSURL, connections: NSArray<AVCaptureConnection> | AVCaptureConnection[]): void;
+
+	/**
+	 * @since 18.2
+	 */
+	captureOutputDidStartRecordingToOutputFileAtURLStartPTSFromConnections?(output: AVCaptureFileOutput, fileURL: NSURL, startPTS: CMTime, connections: NSArray<AVCaptureConnection> | AVCaptureConnection[]): void;
 }
 declare var AVCaptureFileOutputRecordingDelegate: {
 

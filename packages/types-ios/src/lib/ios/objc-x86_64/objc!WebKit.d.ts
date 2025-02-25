@@ -193,6 +193,16 @@ declare class WKDownload extends NSObject implements NSProgressReporting {
 
 	readonly originalRequest: NSURLRequest;
 
+	/**
+	 * @since 18.2
+	 */
+	readonly originatingFrame: WKFrameInfo;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly userInitiated: boolean;
+
 	readonly webView: WKWebView;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -238,11 +248,26 @@ interface WKDownloadDelegate extends NSObjectProtocol {
 
 	downloadDecideDestinationUsingResponseSuggestedFilenameCompletionHandler(download: WKDownload, response: NSURLResponse, suggestedFilename: string, completionHandler: (p1: NSURL) => void): void;
 
+	/**
+	 * @since 18.2
+	 */
+	downloadDecidePlaceholderPolicy?(download: WKDownload, completionHandler: (p1: WKDownloadPlaceholderPolicy, p2: NSURL) => void): void;
+
 	downloadDidFailWithErrorResumeData?(download: WKDownload, error: NSError, resumeData: NSData): void;
 
 	downloadDidFinish?(download: WKDownload): void;
 
 	downloadDidReceiveAuthenticationChallengeCompletionHandler?(download: WKDownload, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
+
+	/**
+	 * @since 18.2
+	 */
+	downloadDidReceiveFinalURL?(download: WKDownload, url: NSURL): void;
+
+	/**
+	 * @since 18.2
+	 */
+	downloadDidReceivePlaceholderURLCompletionHandler?(download: WKDownload, url: NSURL, completionHandler: () => void): void;
 
 	downloadWillPerformHTTPRedirectionNewRequestDecisionHandler?(download: WKDownload, response: NSHTTPURLResponse, request: NSURLRequest, decisionHandler: (p1: WKDownloadRedirectPolicy) => void): void;
 }
@@ -250,6 +275,16 @@ declare var WKDownloadDelegate: {
 
 	prototype: WKDownloadDelegate;
 };
+
+/**
+ * @since 18.2
+ */
+declare const enum WKDownloadPlaceholderPolicy {
+
+	Disable = 0,
+
+	Enable = 1
+}
 
 /**
  * @since 14.5
@@ -1566,6 +1601,25 @@ declare class WKWebpagePreferences extends NSObject {
 	 * @since 13.0
 	 */
 	preferredContentMode: WKContentMode;
+
+	/**
+	 * @since 18.2
+	 */
+	preferredHTTPSNavigationPolicy: WKWebpagePreferencesUpgradeToHTTPSPolicy;
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum WKWebpagePreferencesUpgradeToHTTPSPolicy {
+
+	KeepAsRequested = 0,
+
+	AutomaticFallbackToHTTP = 1,
+
+	UserMediatedFallbackToHTTP = 2,
+
+	ErrorOnFailure = 3
 }
 
 /**

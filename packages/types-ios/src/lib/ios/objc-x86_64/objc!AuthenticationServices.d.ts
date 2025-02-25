@@ -473,7 +473,11 @@ declare const enum ASAuthorizationError {
 
 	NotInteractive = 1005,
 
-	MatchedExcludedCredential = 1006
+	MatchedExcludedCredential = 1006,
+
+	CredentialImport = 1007,
+
+	CredentialExport = 1008
 }
 
 /**

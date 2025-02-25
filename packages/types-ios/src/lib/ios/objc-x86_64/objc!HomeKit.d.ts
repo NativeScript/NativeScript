@@ -3010,6 +3010,11 @@ declare class HMHome extends NSObject {
 	 */
 	readonly matterControllerXPCConnectBlock: () => NSXPCConnection;
 
+	/**
+	 * @since 18.2
+	 */
+	readonly matterStartupParametersXPCConnectBlock: () => NSXPCConnection;
+
 	readonly name: string;
 
 	readonly primary: boolean;
