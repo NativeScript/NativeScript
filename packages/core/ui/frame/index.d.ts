@@ -7,8 +7,8 @@ import { Transition } from '../transition';
 export * from './frame-interfaces';
 
 export interface NavigationData extends EventData {
-	entry?: NavigationEntry;
-	fromEntry?: NavigationEntry;
+	entry?: BackstackEntry;
+	fromEntry?: BackstackEntry;
 	isBack?: boolean;
 }
 
@@ -200,6 +200,10 @@ export class Frame extends FrameBase {
 	 * @param navigationType
 	 */
 	setCurrent(entry: BackstackEntry, navigationType: NavigationType): void;
+	/**
+	 * @private
+	 */
+	getNavigationQueueContextByEntry(entry: BackstackEntry): NavigationContext;
 	/**
 	 * @private
 	 */

@@ -83,7 +83,7 @@ export type Transformation = {
 /**
  * Defines possible css transformations
  */
-export type TransformationType = 'rotate' | 'rotateX' | 'rotateY' | 'translate' | 'translateX' | 'translateY' | 'scale' | 'scaleX' | 'scaleY';
+export type TransformationType = 'rotate' | 'rotate3d' | 'rotateX' | 'rotateY' | 'translate' | 'translate3d' | 'translateX' | 'translateY' | 'scale' | 'scale3d' | 'scaleX' | 'scaleY';
 
 /**
  * Defines possible css transformation values

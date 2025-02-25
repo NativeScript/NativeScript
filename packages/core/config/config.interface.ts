@@ -12,16 +12,22 @@ interface IConfigPlatform {
 	discardUncaughtJsExceptions?: boolean;
 }
 
-export interface IOSRemoteSPMPackage {
+interface IOSSPMPackageBase {
 	name: string;
 	libs: string[];
+	/**
+	 * Optional: If you have more targets (like widgets for example)
+	 * you can list their names here to include the Swift Package with them
+	 */
+	targets?: string[];
+}
+
+export interface IOSRemoteSPMPackage extends IOSSPMPackageBase {
 	repositoryURL: string;
 	version: string;
 }
 
-export interface IOSLocalSPMPackage {
-	name: string;
-	libs: string[];
+export interface IOSLocalSPMPackage extends IOSSPMPackageBase {
 	path: string;
 }
 
@@ -33,6 +39,20 @@ interface IConfigIOS extends IConfigPlatform {
 	 * List packages to be included in the iOS build.
 	 */
 	SPMPackages?: Array<IOSSPMPackage>;
+	/**
+	 * Include native source code from anywhere
+	 */
+	NativeSource?: Array<{
+		/**
+		 * The folder name which will group these referenced files together in Xcode
+		 */
+		name: string;
+		/**
+		 * The path to the native source code.
+		 * You can also use glob patterns, including directories outside of the project root.
+		 */
+		path: string;
+	}>;
 }
 
 interface IConfigVisionOS extends IConfigIOS {}

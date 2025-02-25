@@ -150,8 +150,15 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 
 	if (isCssCalcExpression(value)) {
-		// WORKAROUND: reduce-css-calc can't handle the dip-unit.
-		return require('reduce-css-calc')(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1'));
+		// Note: reduce-css-calc can't handle certain values
+		let cssValue = value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1');
+		if (cssValue.includes('unset')) {
+			cssValue = cssValue.replace(/unset/g, '0');
+		}
+		if (cssValue.includes('infinity')) {
+			cssValue = cssValue.replace(/infinity/g, '999999');
+		}
+		return require('reduce-css-calc')(cssValue);
 	} else {
 		return value;
 	}
@@ -920,10 +927,10 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 				get: getsComputed
 					? function (this: T) {
 							return this[computedValue];
-					  }
+						}
 					: function (this: T) {
 							return this[symbol];
-					  },
+						},
 				set(this: T, boxedValue: U | string) {
 					const view = this.viewRef.get();
 					if (!view) {
