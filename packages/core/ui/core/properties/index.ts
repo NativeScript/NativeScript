@@ -77,7 +77,7 @@ function isCssUnsetValue(value: any): boolean {
 }
 
 function isResetValue(value: any): boolean {
-	return value === unsetValue || value === '' || value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
+	return value === unsetValue || value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
 }
 
 export function _printUnregisteredProperties(): void {
@@ -672,7 +672,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 				return;
 			}
 
-			const reset = isResetValue(newValue);
+			const reset = isResetValue(newValue) || newValue === '';
 			let value: U;
 
 			if (reset) {
@@ -758,7 +758,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 				return;
 			}
 
-			const reset = isResetValue(newValue);
+			const reset = isResetValue(newValue) || newValue === '';
 			let value: U;
 
 			if (reset) {
@@ -957,16 +957,16 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 					const oldValue = this[computedValue];
 					const oldSource = this[computedSource];
 					const wasSet = oldSource !== ValueSource.Default;
-					const reset = isResetValue(boxedValue);
+					const reset = isResetValue(boxedValue) || boxedValue === '';
 
 					if (reset) {
-						this[symbol] = unsetValue;
+						this[symbol] = boxedValue;
 						if (this[computedSource] === propertySource) {
 							// Fallback to lower value source.
-							if (this[styleValue] !== unsetValue) {
+							if (!isResetValue(this[styleValue])) {
 								this[computedSource] = ValueSource.Local;
 								this[computedValue] = this[styleValue];
-							} else if (this[cssValue] !== unsetValue) {
+							} else if (!isResetValue(this[cssValue])) {
 								this[computedSource] = ValueSource.Css;
 								this[computedValue] = this[cssValue];
 							} else {
@@ -1130,7 +1130,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 					return;
 				}
 
-				const reset = isResetValue(boxedValue);
+				const reset = isResetValue(boxedValue) || boxedValue === '';
 				const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
 				if (reset) {
