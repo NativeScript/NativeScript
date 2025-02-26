@@ -176,6 +176,9 @@ allTests['STYLE'] = styleTests;
 import * as visualStateTests from './ui/styling/visual-state-tests';
 allTests['VISUAL-STATE'] = visualStateTests;
 
+import * as cssKeywordsTests from './ui/styling/css-keywords-tests';
+allTests['CSS-KEYWORDS'] = cssKeywordsTests;
+
 import * as valueSourceTests from './ui/styling/value-source-tests';
 allTests['VALUE-SOURCE'] = valueSourceTests;
 

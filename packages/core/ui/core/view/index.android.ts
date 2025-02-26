@@ -2,12 +2,12 @@
 import type { Point, CustomLayoutView as CustomLayoutViewDefinition, Position } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
-// Types.
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
+import { isCssWideKeyword } from '../properties';
 import { EventData } from '../../../data/observable';
 
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
@@ -16,14 +16,13 @@ import { CoreTypes } from '../../../core-types';
 import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
-import { Device, Screen } from '../../../platform';
+import { Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, Application } from '../../../application';
-import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
-import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from '../../frame/fragment.transitions';
 import { NativeScriptAndroidView } from '../../utils';
 
 export * from './view-common';
@@ -1366,7 +1365,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 				setPercent = options.setPercent || percentNotSupported;
 				options = null;
 			}
-			if (length == 'auto' || length == null) {
+			if (length == 'auto' || length == null || isCssWideKeyword(length)) {
 				// tslint:disable-line
 				setPixels(this.nativeViewProtected, auto);
 			} else if (typeof length === 'number') {

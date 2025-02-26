@@ -1,4 +1,4 @@
-import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
+import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, isCssWideKeyword } from '../core/properties';
 import { Style } from './style';
 
 import { Color } from '../../color';
@@ -25,11 +25,11 @@ interface ShorthandPositioning {
 function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean {
-	if (a == 'auto') {
-		return b == 'auto';
+	if (a == 'auto' || isCssWideKeyword(a)) {
+		return b == 'auto' || isCssWideKeyword(b);
 	}
 
-	if (b == 'auto') {
+	if (b == 'auto' || isCssWideKeyword(b)) {
 		return false;
 	}
 
@@ -53,7 +53,7 @@ function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLength
 }
 
 function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
-	if (length == 'auto') {
+	if (length == 'auto' || isCssWideKeyword(length)) {
 		return 'auto';
 	}
 
@@ -70,7 +70,7 @@ function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentL
 }
 
 function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
-	if (length == 'auto') {
+	if (length == 'auto' || isCssWideKeyword(length)) {
 		return auto;
 	}
 	if (typeof length === 'number') {
