@@ -1,6 +1,6 @@
 import * as helper from '../../ui-helper';
 import * as TKUnit from '../../tk-unit';
-import { Color, Button, StackLayout, unsetValue } from '@nativescript/core';
+import { Color, Button, StackLayout } from '@nativescript/core';
 
 export var test_value_after_initial = function () {
 	let page = helper.getCurrentPage();
