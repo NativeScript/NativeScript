@@ -30,7 +30,7 @@ export var test_value_Inherited_after_initial = function () {
 
 	btn.color = new Color('#0000FF');
 	TKUnit.assertEqual(btn.color.hex, '#0000FF', 'color property');
-	btn.color = 'initial';
+	(btn as any).color = 'initial';
 	TKUnit.assertEqual(btn.color, undefined, 'color property');
 };
 
@@ -62,7 +62,7 @@ export var test_value_Inherited_after_unset = function () {
 
 	btn.color = new Color('#0000FF');
 	TKUnit.assertEqual(btn.color.hex, '#0000FF', 'color property');
-	btn.color = 'unset';
+	(btn as any).color = 'unset';
 	TKUnit.assertEqual(btn.color.hex, '#FF0000', 'color property');
 };
 
@@ -94,7 +94,7 @@ export var test_value_Inherited_after_revert = function () {
 
 	btn.color = new Color('#0000FF');
 	TKUnit.assertEqual(btn.color.hex, '#0000FF', 'color property');
-	btn.color = 'revert';
+	(btn as any).color = 'revert';
 	TKUnit.assertEqual(btn.color.hex, '#FF0000', 'color property');
 };
 
@@ -127,6 +127,6 @@ export var test_value_Inherited_after_inherit = function () {
 
 	btn.color = new Color('#0000FF');
 	TKUnit.assertEqual(btn.color.hex, '#0000FF', 'color property');
-	btn.color = 'inherit';
+	(btn as any).color = 'inherit';
 	TKUnit.assertEqual(btn.color.hex, '#FF0000', 'color property');
 };
