@@ -1,3 +1,65 @@
+## 8.9.0 (2025-02-27)
+
+### 🚀 Features
+
+- **core:** CSS wide keywords ([#10709](https://github.com/NativeScript/NativeScript/pull/10709))
+- Node-API engine support ([#10710](https://github.com/NativeScript/NativeScript/pull/10710))
+- **ios:** added layoutChanged event support to Page ([#10707](https://github.com/NativeScript/NativeScript/pull/10707))
+- **image:** ios system icons styling by font-size and font-weight ([#10706](https://github.com/NativeScript/NativeScript/pull/10706))
+- **css:** allow infinity values within css calc expressions ([#10705](https://github.com/NativeScript/NativeScript/pull/10705))
+- **config:** ability to include native source code from any path ([#10698](https://github.com/NativeScript/NativeScript/pull/10698))
+- **action-bar:** iosLargeTitle and iosShadow attributes ([#10694](https://github.com/NativeScript/NativeScript/pull/10694))
+- **ios:** added activity indicator iosIndicatorViewStyle property ([#10650](https://github.com/NativeScript/NativeScript/pull/10650))
+- **ios:** apple intelligence writing tools ([#10643](https://github.com/NativeScript/NativeScript/pull/10643))
+- **config:** multi target support for swift packages ([#10695](https://github.com/NativeScript/NativeScript/pull/10695))
+- **core:** tailwind v4 support ([#10692](https://github.com/NativeScript/NativeScript/pull/10692))
+- **core:** style properties module improvements and organization ([#10685](https://github.com/NativeScript/NativeScript/pull/10685))
+- **core:** flexibility using multiple RootLayouts ([#10684](https://github.com/NativeScript/NativeScript/pull/10684))
+- **core:** textbase span interaction and styling improvements ([#10682](https://github.com/NativeScript/NativeScript/pull/10682))
+- apple view filtering ([#10681](https://github.com/NativeScript/NativeScript/pull/10681))
+- winter-tc ([#10667](https://github.com/NativeScript/NativeScript/pull/10667))
+- **core:** openUrlAsync utility ([#10637](https://github.com/NativeScript/NativeScript/pull/10637))
+- **core:** support for simultaneous pseudo states ([#10656](https://github.com/NativeScript/NativeScript/pull/10656))
+- **ios:** background-image support for action bar ([#10645](https://github.com/NativeScript/NativeScript/pull/10645))
+
+### 🩹 Fixes
+
+- **ios:** apply text color to HTMLView content ([#10708](https://github.com/NativeScript/NativeScript/pull/10708))
+- **android:** formatted string NoSuchMethodError ([#10704](https://github.com/NativeScript/NativeScript/pull/10704))
+- **core:** corrected background color between Label and nested spans ([#10701](https://github.com/NativeScript/NativeScript/pull/10701))
+- **core:** added missing inheritance support for text css properties ([#10699](https://github.com/NativeScript/NativeScript/pull/10699))
+- **core:** corrected Frame navigation event types ([#10697](https://github.com/NativeScript/NativeScript/pull/10697))
+- **android:** display soft input on search bar focus ([#10696](https://github.com/NativeScript/NativeScript/pull/10696))
+- **core:** ignore inserting child if < 0 ([#10690](https://github.com/NativeScript/NativeScript/pull/10690))
+- **core:** added missing length property equality comparers ([#10689](https://github.com/NativeScript/NativeScript/pull/10689))
+- **ios:** prevent animator from animating colors on shadow layer ([#10686](https://github.com/NativeScript/NativeScript/pull/10686))
+- **core:** safety-checks to prevent potential navigation exceptions ([#10683](https://github.com/NativeScript/NativeScript/pull/10683))
+- **core:** avoid splicing arrays using a negative start index ([#10679](https://github.com/NativeScript/NativeScript/pull/10679))
+- **core:** pseudo-class handlers failing to unsubscribe listeners ([#10680](https://github.com/NativeScript/NativeScript/pull/10680))
+- Corrected font-weight support for span ([045986de8](https://github.com/NativeScript/NativeScript/commit/045986de8))
+- Added asset path fallback null value inside an else clause ([8726d026f](https://github.com/NativeScript/NativeScript/commit/8726d026f))
+- **android:** Span should accept all font weight types ([a21d4f94a](https://github.com/NativeScript/NativeScript/commit/a21d4f94a))
+- **ios:** corrected rotate animation ([#10676](https://github.com/NativeScript/NativeScript/pull/10676))
+- **ios:** invalid transform if set before any layout ([#10675](https://github.com/NativeScript/NativeScript/pull/10675))
+- **ios:** safe area memory leak on iOS 10 and older versions ([#10673](https://github.com/NativeScript/NativeScript/pull/10673))
+- **ios:** frame backstack disposal handling ([#10672](https://github.com/NativeScript/NativeScript/pull/10672))
+- **crypto:** getRandomValues return value ([#10658](https://github.com/NativeScript/NativeScript/pull/10658))
+- **core:** improved types for common utils ([#10628](https://github.com/NativeScript/NativeScript/pull/10628))
+- **ios:** background styles after frame changed by safe area ([#10661](https://github.com/NativeScript/NativeScript/pull/10661))
+- **core:** provided image source can be unintentionally disposed ([#10654](https://github.com/NativeScript/NativeScript/pull/10654))
+- **android:** background image aspect ratio ([#10651](https://github.com/NativeScript/NativeScript/pull/10651))
+
+### 🔥 Performance
+
+- Avoid creating new typeface instances for system fonts ([4902e2781](https://github.com/NativeScript/NativeScript/commit/4902e2781))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Eduardo Speroni @edusperoni
+- farfromrefuge
+- Nathan Walker
+
 ## [8.8.6](https://github.com/NativeScript/NativeScript/compare/8.8.5-core...8.8.6) (2024-11-19)
 
 
