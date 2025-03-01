@@ -241,23 +241,33 @@ export class Frame extends FrameBase {
 			this.backgroundColor = this._originalBackground;
 			this._originalBackground = null;
 		}
-		this._frameCreateTimeout = setTimeout(() => {
-			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
-			// so we manually check on loaded event if the fragment is not recreated and recreate it
-			const currentEntry = this._currentEntry || this._executingContext?.entry;
-			if (currentEntry) {
-				if (!currentEntry.fragment) {
-					const manager = this._getFragmentManager();
-					const transaction = manager.beginTransaction();
-					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
-					_updateTransitions(currentEntry);
-					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
-					transaction.commitAllowingStateLoss();
-				}
-			}
-		}, 0);
 
 		super.onLoaded();
+	}
+
+	public override loadChildren(): void {
+		// Process navigation entry after loading view but before loading children views, otherwise the navigation entries of nested frames will be processed first
+		// and needed fragments won't have been attached yet
+		this._processNextNavigationEntry();
+
+		// TODO: Check if this is still needed since there have been new improvements regarding fragment restoration
+		// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
+		// so we manually check on loaded event if the fragment is not recreated and recreate it
+		this._frameCreateTimeout = setTimeout(() => {
+			const currentEntry = this._currentEntry || this._executingContext?.entry;
+			if (currentEntry && !currentEntry.fragment) {
+				const manager = this._getFragmentManager();
+				const transaction = manager.beginTransaction();
+				currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
+				_updateTransitions(currentEntry);
+				transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
+				transaction.commitAllowingStateLoss();
+			}
+
+			this._frameCreateTimeout = null;
+		}, 0);
+
+		super.loadChildren();
 	}
 
 	onUnloaded() {
@@ -529,11 +539,14 @@ export class Frame extends FrameBase {
 
 	public disposeNativeView() {
 		const listener = getAttachListener();
+
 		this.nativeViewProtected.removeOnAttachStateChangeListener(listener);
 		this.nativeViewProtected[ownerSymbol] = null;
 		this._tearDownPending = !!this._executingContext;
+
 		const current = this._currentEntry;
 		const executingEntry = this._executingContext ? this._executingContext.entry : null;
+
 		this.backStack.forEach((entry) => {
 			// Don't destroy current and executing entries or UI will look blank.
 			// We will do it in setCurrent.
@@ -545,6 +558,9 @@ export class Frame extends FrameBase {
 		if (current && !executingEntry) {
 			this._disposeBackstackEntry(current);
 		}
+
+		// There are cases transition state is still cached even during disposal as setCurrent may not necessarily be called to clean it up
+		this._cachedTransitionState = null;
 
 		this._android.rootViewGroup = null;
 		this._removeFromFrameStack();
