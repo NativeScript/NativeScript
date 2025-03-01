@@ -686,6 +686,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this[name] = WrappedValue.unwrap(value);
 	}
 
+	public loadChildren(): void {
+		this.eachChild((child) => {
+			this.loadView(child);
+
+			return true;
+		});
+	}
+
 	@profile
 	public onLoaded() {
 		this.setFlag(Flags.superOnLoadedCalled, true);
@@ -697,11 +705,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this._cssState.onLoaded();
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
-		this.eachChild((child) => {
-			this.loadView(child);
-
-			return true;
-		});
+		this.loadChildren();
 
 		this._emit('loaded');
 	}
