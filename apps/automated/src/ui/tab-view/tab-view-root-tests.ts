@@ -133,7 +133,7 @@ export function test_offset_zero_should_raise_same_events() {
 
 		waitUntilNavigatedToMaxTimeout([items[0].page], () => Application.resetRootView(entry));
 
-		const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], [], []];
+		const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], [], []];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterTabCreated);
 
@@ -199,14 +199,14 @@ export function test_android_default_offset_should_preload_1_tab_on_each_side() 
 
 		waitUntilNavigatedToMaxTimeout([items[0].page, items[1].page], () => Application.resetRootView(entry));
 
-		const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], ['Tab1 Frame1 loaded', 'Tab1 Frame1 Page1 navigatingTo', 'Tab1 Frame1 Page1 loaded', 'Tab1 Frame1 Page1 navigatedTo'], []];
+		const expectedEventsRaisedAfterTabCreated = [['Tab0 Frame0 Page0 navigatingTo', 'Tab0 Frame0 loaded', 'Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 Page0 navigatedTo'], ['Tab1 Frame1 Page1 navigatingTo', 'Tab1 Frame1 loaded', 'Tab1 Frame1 Page1 loaded', 'Tab1 Frame1 Page1 navigatedTo'], []];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterTabCreated);
 
 		resetActualEventsRaised();
 		waitUntilNavigatedToMaxTimeout([items[2].page], () => (tabView.selectedIndex = 2));
 
-		const expectedEventsRaisedAfterSelectThirdTab = [['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'], [], ['Tab2 Frame2 loaded', 'Tab2 Frame2 Page2 navigatingTo', 'Tab2 Frame2 Page2 loaded', 'Tab2 Frame2 Page2 navigatedTo']];
+		const expectedEventsRaisedAfterSelectThirdTab = [['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'], [], ['Tab2 Frame2 Page2 navigatingTo', 'Tab2 Frame2 loaded', 'Tab2 Frame2 Page2 loaded', 'Tab2 Frame2 Page2 navigatedTo']];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterSelectThirdTab);
 
