@@ -119,13 +119,6 @@ export class FrameBase extends CustomLayoutView {
 		throw new Error(`Frame should not have a view. Use 'defaultPage' property instead.`);
 	}
 
-	@profile
-	public onLoaded() {
-		super.onLoaded();
-
-		this._processNextNavigationEntry();
-	}
-
 	public canGoBack(): boolean {
 		let backstack = this._backStack.length;
 		let previousForwardNotInBackstack = false;
