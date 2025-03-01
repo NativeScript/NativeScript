@@ -245,7 +245,7 @@ export class Frame extends FrameBase {
 		super.onLoaded();
 	}
 
-	public override loadChildren(): void {
+	public override loadSubviews(): void {
 		// Process navigation entry after loading view but before loading children views, otherwise the navigation entries of nested frames will be processed first
 		// and needed fragments won't have been attached yet
 		this._processNextNavigationEntry();
@@ -267,7 +267,7 @@ export class Frame extends FrameBase {
 			this._frameCreateTimeout = null;
 		}, 0);
 
-		super.loadChildren();
+		super.loadSubviews();
 	}
 
 	onUnloaded() {

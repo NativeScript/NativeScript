@@ -686,7 +686,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this[name] = WrappedValue.unwrap(value);
 	}
 
-	public loadChildren(): void {
+	public loadSubviews(): void {
 		this.eachChild((child) => {
 			this.loadView(child);
 
@@ -705,7 +705,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this._cssState.onLoaded();
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
-		this.loadChildren();
+		this.loadSubviews();
 
 		this._emit('loaded');
 	}

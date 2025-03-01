@@ -75,12 +75,12 @@ export class Frame extends FrameBase {
 		return this._ios;
 	}
 
-	public override loadChildren(): void {
+	public override loadSubviews(): void {
 		// Process navigation entry after loading view but before loading children views, otherwise the navigation entries of nested frames will be processed first
 		// and needed fragments won't have been attached yet
 		this._processNextNavigationEntry();
 
-		super.loadChildren();
+		super.loadSubviews();
 	}
 
 	public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
