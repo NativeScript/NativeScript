@@ -245,10 +245,8 @@ export class Frame extends FrameBase {
 		super.onLoaded();
 	}
 
-	public override loadSubviews(): void {
-		// Process navigation entry after loading view but before loading children views, otherwise the navigation entries of nested frames will be processed first
-		// and needed fragments won't have been attached yet
-		this._processNextNavigationEntry();
+	public onFrameLoaded(): void {
+		super.onFrameLoaded();
 
 		// TODO: Check if this is still needed since there have been new improvements regarding fragment restoration
 		// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
@@ -266,12 +264,11 @@ export class Frame extends FrameBase {
 
 			this._frameCreateTimeout = null;
 		}, 0);
-
-		super.loadSubviews();
 	}
 
 	onUnloaded() {
 		super.onUnloaded();
+
 		if (typeof this._frameCreateTimeout === 'number') {
 			clearTimeout(this._frameCreateTimeout);
 			this._frameCreateTimeout = null;

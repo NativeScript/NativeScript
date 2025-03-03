@@ -75,14 +75,6 @@ export class Frame extends FrameBase {
 		return this._ios;
 	}
 
-	public override loadSubviews(): void {
-		// Process navigation entry after loading view but before loading children views, otherwise the navigation entries of nested frames will be processed first
-		// and needed fragments won't have been attached yet
-		this._processNextNavigationEntry();
-
-		super.loadSubviews();
-	}
-
 	public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
 		const current = this._currentEntry;
 		const currentEntryChanged = current !== entry;
@@ -525,7 +517,7 @@ class UINavigationControllerImpl extends UINavigationController {
 		}
 	}
 
-	private animateWithDuration(navigationTransition: NavigationTransition, nativeTransition: UIViewAnimationTransition, transitionType: string, baseCallback: Function): void {
+	private animateWithDuration(navigationTransition: NavigationTransition, nativeTransition: UIViewAnimationTransition, transitionType: string, baseCallback: () => void): void {
 		const duration = navigationTransition.duration ? navigationTransition.duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 		const curve = _getNativeCurve(navigationTransition);
 
