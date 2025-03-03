@@ -335,8 +335,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
-		super.addEventListener(eventNames, callback, thisArg);
+	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean) {
+		super.addEventListener(eventNames, callback, thisArg, once);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
