@@ -122,17 +122,9 @@ export class FrameBase extends CustomLayoutView {
 	@profile
 	public onLoaded() {
 		const parentFrame = this.page?.frame;
-		let pendingFrame: FrameBase;
+		// Pending frame can be the first frame in the view tree or a nested frame
+		const pendingFrame = parentFrame && parentFrame.isLoadingSubviews ? parentFrame : this;
 
-		// This frame is a nested frame as it resides inside the Page view of another frame
-		if (parentFrame && parentFrame.isLoadingSubviews) {
-			pendingFrame = parentFrame;
-		} else {
-			pendingFrame = this;
-		}
-
-		// Process the entry of a nested frame once its parent has been loaded
-		// or wait for it to be loaded in case it's not nested inside another frame
 		pendingFrame.once(FrameBase.loadedEvent, () => {
 			this.onFrameLoaded();
 		});
