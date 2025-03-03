@@ -119,6 +119,31 @@ export class FrameBase extends CustomLayoutView {
 		throw new Error(`Frame should not have a view. Use 'defaultPage' property instead.`);
 	}
 
+	@profile
+	public onLoaded() {
+		const parentFrame = this.page?.frame;
+		let pendingFrame: FrameBase;
+
+		// This frame is a nested frame as it resides inside the Page view of another frame
+		if (parentFrame && parentFrame.isLoadingSubviews) {
+			pendingFrame = parentFrame;
+		} else {
+			pendingFrame = this;
+		}
+
+		// Process the entry of a nested frame once its parent has been loaded
+		// or wait for it to be loaded in case it's not nested inside another frame
+		pendingFrame.once(FrameBase.loadedEvent, () => {
+			this.onFrameLoaded();
+		});
+
+		super.onLoaded();
+	}
+
+	public onFrameLoaded(): void {
+		this._processNextNavigationEntry();
+	}
+
 	public canGoBack(): boolean {
 		let backstack = this._backStack.length;
 		let previousForwardNotInBackstack = false;
