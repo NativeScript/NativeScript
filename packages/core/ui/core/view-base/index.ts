@@ -345,6 +345,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private _androidView: Object;
 	private _style: Style;
 	private _isLoaded: boolean;
+	private _isLoadingSubviews: boolean;
 
 	/**
 	 * @deprecated
@@ -637,6 +638,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		return this._isLoaded;
 	}
 
+	get isLoadingSubviews(): boolean {
+		return this._isLoadingSubviews;
+	}
+
 	get ['class'](): string {
 		return this.className;
 	}
@@ -686,14 +691,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this[name] = WrappedValue.unwrap(value);
 	}
 
-	public loadSubviews(): void {
-		this.eachChild((child) => {
-			this.loadView(child);
-
-			return true;
-		});
-	}
-
 	@profile
 	public onLoaded() {
 		this.setFlag(Flags.superOnLoadedCalled, true);
@@ -705,7 +702,15 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this._cssState.onLoaded();
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
-		this.loadSubviews();
+		this._isLoadingSubviews = true;
+
+		this.eachChild((child) => {
+			this.loadView(child);
+
+			return true;
+		});
+
+		this._isLoadingSubviews = false;
 
 		this._emit('loaded');
 	}
