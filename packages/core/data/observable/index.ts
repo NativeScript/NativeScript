@@ -197,7 +197,7 @@ export class Observable {
 	 * @param eventName Name of the event to attach to.
 	 * @param callback A function to be called when some of the specified event(s) is raised.
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
-	 * @param once An optional parameter which when set will cause the event to fire once.
+	 * @param once An optional parameter which when set will cause the event listener to fire once.
 	 */
 	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		once = once || undefined;
