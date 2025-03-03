@@ -17,10 +17,10 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 
 	private _addedScrollEvent = false;
 
-	public addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		const hasExistingScrollListeners: boolean = this.hasListeners(ScrollViewBase.scrollEvent);
 
-		super.addEventListener(arg, callback, thisArg);
+		super.addEventListener(arg, callback, thisArg, once);
 
 		// This indicates that a scroll listener was added for first time
 		if (!hasExistingScrollListeners && this.hasListeners(ScrollViewBase.scrollEvent)) {
