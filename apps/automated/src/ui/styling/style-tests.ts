@@ -2,6 +2,7 @@ import * as TKUnit from '../../tk-unit';
 import { Application, Button, Label, Page, StackLayout, WrapLayout, TabView, TabViewItem, View, Utils, Color, resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS, unsetValue, knownFolders, Screen } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import { _evaluateCssCalcExpression } from '@nativescript/core/ui/core/properties';
+import { _evaluateCssColorMixExpression } from 'packages/core/ui/core/properties';
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
 	const stack = new StackLayout();
@@ -1824,6 +1825,40 @@ export function test_nested_css_calc() {
 	(stack as any).style = `width: calc(100% * calc(1 / 2))`;
 
 	TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 0.5 }, 'Stack - width === 50%');
+}
+
+export function test_evaluateCssColorMixExpression() {
+	TKUnit.assertEqual(_evaluateCssColorMixExpression('color-mix(in oklab, var(--color-black) 50%, transparent)'), '2px', 'Single percentage');
+	TKUnit.assertEqual(_evaluateCssColorMixExpression('color-mix(in lab, plum 60%, #f00 50%)'), '60px', 'Double percentage');
+}
+
+export function test_nested_css_color_mix() {
+	const page = helper.getClearCurrentPage();
+
+	const stack = new StackLayout();
+	stack.css = `
+    StackLayout.gray {
+        background-color: color-mix(in oklab, var(--color-black) 50%, transparent);
+    }
+
+    StackLayout.coral {
+        background-color: color-mix(in hsl, hsl(200 50 80), coral 80%);
+    }
+    `;
+
+	const label = new Label();
+	page.content = stack;
+	stack.addChild(label);
+
+	stack.className = 'gray';
+	TKUnit.assertEqual(stack.backgroundColor, 'rgba(0, 0, 0, 0.5)', 'Stack - backgroundColor === rgba(0, 0, 0, 0.5)');
+
+	stack.className = 'coral';
+	TKUnit.assertEqual(stack.backgroundColor, 'rgba(0, 0, 0, 0.5)', 'Stack - backgroundColor === rgba(0, 0, 0, 0.5)');
+
+	(stack as any).style = `background-color: calc(100% * calc(1 / 2))`;
+
+	TKUnit.assertDeepEqual(stack.backgroundColor, 'rgba(0, 0, 0, 0.5)', 'Stack - backgroundColor === rgba(0, 0, 0, 0.5)');
 }
 
 export function test_css_variables() {

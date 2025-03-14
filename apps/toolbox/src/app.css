@@ -8,6 +8,25 @@ components that have the btn class name.
 Button {
     text-transform: none;
 }
+* {
+    --x: red;
+    --color-black: black;
+}
+
+.calc-padding {
+    padding: calc(4 * 6)
+
+}
+
+.colormix {
+    background-color: color-mix(in oklab, var(--color-black) 50%, transparent);
+}
+
+/* TODO: test these */
+.x {color: var(--x) }
+.x.y { --x: red }
+.x.z { --x: yellow }
+
 .btn-view-demo {
   /* background-color: #65ADF1; */
   border-radius: 8;
