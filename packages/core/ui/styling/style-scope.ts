@@ -1,6 +1,6 @@
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression, _evaluateCssColorMixExpression } from '../core/properties';
+import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import * as ReworkCSS from '../../css';
 
 import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR, matchMediaQueryString } from './css-selector';
@@ -77,14 +77,6 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 		value = _evaluateCssCalcExpression(value);
 	} catch (e) {
 		Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
-
-		return unsetValue;
-	}
-
-	try {
-		value = _evaluateCssColorMixExpression(value);
-	} catch (e) {
-		Trace.write(`Failed to evaluate color-mix for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
 
 		return unsetValue;
 	}

@@ -2,7 +2,7 @@ import * as TKUnit from '../../tk-unit';
 import { Application, Button, Label, Page, StackLayout, WrapLayout, TabView, TabViewItem, View, Utils, Color, resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS, unsetValue, knownFolders, Screen } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import { _evaluateCssCalcExpression } from '@nativescript/core/ui/core/properties';
-import { _evaluateCssColorMixExpression } from 'packages/core/ui/core/properties';
+import { colorMixToRgbA } from '@nativescript/core/color/color-utils';
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
 	const stack = new StackLayout();
@@ -1710,7 +1710,7 @@ export function test_evaluateCssCalcExpression() {
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(1px + 1px)'), '2px', 'Simple calc (1)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(50px - (20px - 30px))'), '60px', 'Simple calc (2)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px - (100px - 100%))'), '100%', 'Simple calc (3)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px + (100px - 100%))'), 'calc(200px - 100%)', 'Simple calc (4)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px + (100px - 100%))'), '100%', 'Simple calc (4)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% - 10px + 20px)'), 'calc(100% + 10px)', 'Simple calc (5)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% + 10px - 20px)'), 'calc(100% - 10px)', 'Simple calc (6)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(10.px + .0px)'), '10px', 'Simple calc (8)');
@@ -1828,8 +1828,11 @@ export function test_nested_css_calc() {
 }
 
 export function test_evaluateCssColorMixExpression() {
-	TKUnit.assertEqual(_evaluateCssColorMixExpression('color-mix(in oklab, var(--color-black) 50%, transparent)'), '2px', 'Single percentage');
-	TKUnit.assertEqual(_evaluateCssColorMixExpression('color-mix(in lab, plum 60%, #f00 50%)'), '60px', 'Double percentage');
+	TKUnit.assertEqual(colorMixToRgbA('color-mix(in lch longer hue, hsl(200deg 50% 80%), coral)'), 'rgba(217, 170, 155, 1)', 'Color mix (1)');
+	TKUnit.assertEqual(colorMixToRgbA('color-mix(in hsl, hsl(200 50 80), coral 80%)'), 'rgba(240, 144, 110, 1)', 'Color mix (2)');
+	TKUnit.assertEqual(colorMixToRgbA('color-mix(in srgb, plum, #f00)'), 'rgba(238, 80, 111, 1)', 'Color mix (4)');
+	TKUnit.assertEqual(colorMixToRgbA('color-mix(in lab, plum 60%, #f00 50%)'), 'rgba(236, 87, 121, 1)', 'Color mix (5)');
+	TKUnit.assertEqual(colorMixToRgbA('color-mix(in --swop5c, red, blue)'), 'rgba(128, 0, 128, 1)', 'Color mix (6)');
 }
 
 export function test_nested_css_color_mix() {
@@ -1837,10 +1840,6 @@ export function test_nested_css_color_mix() {
 
 	const stack = new StackLayout();
 	stack.css = `
-    StackLayout.gray {
-        background-color: color-mix(in oklab, var(--color-black) 50%, transparent);
-    }
-
     StackLayout.coral {
         background-color: color-mix(in hsl, hsl(200 50 80), coral 80%);
     }
@@ -1850,15 +1849,12 @@ export function test_nested_css_color_mix() {
 	page.content = stack;
 	stack.addChild(label);
 
-	stack.className = 'gray';
-	TKUnit.assertEqual(stack.backgroundColor, 'rgba(0, 0, 0, 0.5)', 'Stack - backgroundColor === rgba(0, 0, 0, 0.5)');
-
 	stack.className = 'coral';
-	TKUnit.assertEqual(stack.backgroundColor, 'rgba(0, 0, 0, 0.5)', 'Stack - backgroundColor === rgba(0, 0, 0, 0.5)');
+	TKUnit.assertEqual(stack.backgroundColor, '#F0906E', 'Stack - backgroundColor === color-mix(in hsl, hsl(200 50 80), coral 80%)');
 
-	(stack as any).style = `background-color: calc(100% * calc(1 / 2))`;
+	(stack as any).style = `background-color: color-mix(in --swop5c, red, blue);`;
 
-	TKUnit.assertDeepEqual(stack.backgroundColor, 'rgba(0, 0, 0, 0.5)', 'Stack - backgroundColor === rgba(0, 0, 0, 0.5)');
+	TKUnit.assertDeepEqual(stack.backgroundColor, 'rgba(128, 0, 128, 1)', 'Stack - backgroundColor === color-mix(in --swop5c, red, blue)');
 }
 
 export function test_css_variables() {

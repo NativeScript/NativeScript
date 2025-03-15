@@ -1,5 +1,4 @@
 import { ViewBase } from '../view-base';
-import * as knownColors from '../../../color/known-colors';
 import { PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Trace } from '../../../trace';
 
@@ -100,10 +99,6 @@ export function isCssCalcExpression(value: string) {
 	return value.includes('calc(');
 }
 
-export function isCssColorMixExpression(value: string) {
-	return value.includes('color-mix(');
-}
-
 export function isCssVariableExpression(value: string) {
 	return value.includes('var(--');
 }
@@ -158,115 +153,6 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 	}
 
 	return output;
-}
-
-export function _evaluateCssColorMixExpression(value: string) {
-	if (typeof value !== 'string') {
-		return value;
-	}
-
-	if (isCssColorMixExpression(value)) {
-		return _replaceKeywordsWithValues(_convertColorMix(value));
-	} else {
-		return value;
-	}
-}
-
-const colorMixRegExp = new RegExp('^color-mix\\(\\s*in\\s+([\\w-]+)\\s*,\\s*' + '([^,]+?)(?:\\s+(\\d+(?:\\.\\d+)?%)?)?' + '\\s*,\\s*' + '([^,]+?)(?:\\s+(\\d+(?:\\.\\d+)?%)?)?' + '\\s*\\)$', 'i');
-
-export function _convertColorMix(value: string, variableMap = {}) {
-	const match = value.trim().match(colorMixRegExp);
-	if (!match) {
-		return value;
-	}
-
-	const [, colorSpace, color1, pctStr1, color2, pctStr2] = match;
-
-	// optional percentages
-	// - If one is provided, the other is 100 - that.
-	// - If none is provided, default 50/50.
-	let p1 = pctStr1 ? parseFloat(pctStr1) : NaN;
-	let p2 = pctStr2 ? parseFloat(pctStr2) : NaN;
-
-	const bothMissing = Number.isNaN(p1) && Number.isNaN(p2);
-	const onlyOneMissing = (!Number.isNaN(p1) && Number.isNaN(p2)) || (Number.isNaN(p1) && !Number.isNaN(p2));
-
-	if (bothMissing) {
-		p1 = 50;
-		p2 = 50;
-	} else if (onlyOneMissing) {
-		// e.g., color-mix(in oklab, black 20%, transparent)
-		// or color-mix(in oklab, black, transparent 80%)
-		if (!Number.isNaN(p1)) {
-			p2 = 100 - p1;
-		} else {
-			p1 = 100 - p2;
-		}
-	}
-
-	let rgba1: { r: number; b: number; g: number; a: number };
-	let rgba2: { r: number; b: number; g: number; a: number };
-	if (knownColors.isKnownName(color1)) {
-		rgba1 = fromArgbToRgba(knownColors.getKnownColor(color1));
-	} else {
-		rgba1 = parseColorValue(color1, value);
-	}
-	if (knownColors.isKnownName(color2)) {
-		rgba2 = fromArgbToRgba(knownColors.getKnownColor(color2));
-	} else {
-		rgba2 = parseColorValue(color2, value);
-	}
-
-	const total = p1 + p2;
-	const w1 = p1 / total;
-	const w2 = p2 / total;
-
-	const mixedRgba = {
-		r: rgba1.r * w1 + rgba2.r * w2,
-		g: rgba1.g * w1 + rgba2.g * w2,
-		b: rgba1.b * w1 + rgba2.b * w2,
-		a: rgba1.a * w1 + rgba2.a * w2,
-	};
-
-	return `rgba(${Math.round(mixedRgba.r)}, ${Math.round(mixedRgba.g)}, ${Math.round(mixedRgba.b)}, ${mixedRgba.a / 255})`;
-}
-
-function parseColorValue(value: string, expression: string) {
-	try {
-		const { color: parseColor } = require('@csstools/css-color-parser');
-		const { parseComponentValue } = require('@csstools/css-parser-algorithms');
-		const { tokenize } = require('@csstools/css-tokenizer');
-		// Interpolate in RGBA (not truly OKLab).
-		// Note: could implement on ios for example: https://github.com/importRyan/Oklab
-		const hwbComponentValue = parseComponentValue(tokenize({ css: value }));
-		const colorData = parseColor(hwbComponentValue);
-		return toRgba(colorData);
-	} catch (e) {
-		Trace.write(`Failed to evaluate color-mix containing ${value} for expression [${expression}]. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
-		return {
-			r: 0,
-			g: 0,
-			b: 0,
-			a: 1,
-		};
-	}
-}
-
-function fromArgbToRgba(argb: number): { a: number; r: number; g: number; b: number } {
-	return {
-		a: (argb >> 24) & 0xff,
-		r: (argb >> 16) & 0xff,
-		g: (argb >> 8) & 0xff,
-		b: argb & 0xff,
-	};
-}
-
-function toRgba(parsed) {
-	// If it's already RGB or a recognized type, we can read its values/alpha.
-	// If the parser recognized a named color or hsl, it still normalizes to this shape.
-	const [r, g, b] = parsed.values;
-	const a = parsed.alpha;
-	return { r, g, b, a };
 }
 
 export function _evaluateCssCalcExpression(value: string) {
