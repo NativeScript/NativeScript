@@ -53,12 +53,15 @@
     "preuninstall": "node cli-hooks/preuninstall.js"
   },
   "dependencies": {
+    "@csstools/css-calc": "~2.1.2",
+    "@csstools/css-color-parser": "^3.0.8",
+    "@csstools/css-parser-algorithms": "^3.0.4",
+    "@csstools/css-tokenizer": "^3.0.3",
     "@nativescript/hook": "~2.0.0",
     "acorn": "^8.7.0",
     "css-tree": "^1.1.2",
     "css-what": "^6.1.0",
     "emoji-regex": "^10.2.1",
-    "reduce-css-calc": "^2.1.7",
     "tslib": "^2.0.0"
   },
   "nativescript": {

@@ -5,6 +5,7 @@
   </Page.actionBar>
   <StackLayout>
     <ScrollView class="h-full">
+      <!-- experiment with calc and colormix with classes: calc-padding colormix -->
       <StackLayout class="p-20" paddingBottom="40" iosOverflowSafeArea="false">
         <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />

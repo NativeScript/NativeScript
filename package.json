@@ -20,6 +20,10 @@
 		"nativescript-theme-core": "^1.0.4"
 	},
 	"devDependencies": {
+		"@csstools/css-calc": "~2.1.2",
+		"@csstools/css-color-parser": "^3.0.8",
+		"@csstools/css-parser-algorithms": "^3.0.4",
+		"@csstools/css-tokenizer": "^3.0.3",
 		"@nativescript/hook": "^2.0.0",
 		"@nativescript/nx": "^20.0.0",
 		"@nstudio/focus": "^20.0.2",
@@ -66,7 +70,6 @@
 		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
 		"parserlib": "^1.1.1",
 		"prettier": "^3.2.5",
-		"reduce-css-calc": "~2.1.7",
 		"sass": "^1.72.0",
 		"shady-css-parser": "^0.1.0",
 		"tree-kill": "^1.2.2",

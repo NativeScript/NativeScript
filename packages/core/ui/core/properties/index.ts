@@ -1,6 +1,4 @@
 import { ViewBase } from '../view-base';
-
-// Types.
 import { PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Trace } from '../../../trace';
 
@@ -163,18 +161,25 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 
 	if (isCssCalcExpression(value)) {
-		// Note: reduce-css-calc can't handle certain values
-		let cssValue = value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1');
-		if (cssValue.includes('unset')) {
-			cssValue = cssValue.replace(/unset/g, '0');
-		}
-		if (cssValue.includes('infinity')) {
-			cssValue = cssValue.replace(/infinity/g, '999999');
-		}
-		return require('reduce-css-calc')(cssValue);
+		return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
 	} else {
 		return value;
 	}
+}
+
+function _replaceDip(value: string) {
+	return value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1');
+}
+
+function _replaceKeywordsWithValues(value: string) {
+	let cssValue = value;
+	if (cssValue.includes('unset')) {
+		cssValue = cssValue.replace(/unset/g, '0');
+	}
+	if (cssValue.includes('infinity')) {
+		cssValue = cssValue.replace(/infinity/g, '999999');
+	}
+	return cssValue;
 }
 
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
