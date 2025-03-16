@@ -2,7 +2,7 @@ import * as definition from '.';
 import * as types from '../utils/types';
 import * as knownColors from './known-colors';
 import { Color } from '.';
-import { HEX_REGEX, colorMixToRgbA, argbFromHslOrHsla, argbFromHsvOrHsva, argbFromRgbOrRgba, hslToRgb, hsvToRgb, isCssColorMixExpression, isHslOrHsla, isHsvOrHsva, isRgbOrRgba, rgbToHsl, rgbToHsv, argbFromString } from './color-utils';
+import { HEX_REGEX, argbFromColorMix, argbFromHslOrHsla, argbFromHsvOrHsva, argbFromRgbOrRgba, hslToRgb, hsvToRgb, isCssColorMixExpression, isHslOrHsla, isHsvOrHsva, isRgbOrRgba, rgbToHsl, rgbToHsv, argbFromString } from './color-utils';
 
 export class ColorBase implements definition.Color {
 	private _argb: number;
@@ -28,7 +28,7 @@ export class ColorBase implements definition.Color {
 					this._name = arg;
 					this._argb = argb;
 				} else if (isCssColorMixExpression(lowered)) {
-					this._argb = argbFromRgbOrRgba(colorMixToRgbA(lowered));
+					this._argb = argbFromColorMix(lowered);
 				} else if (arg[0].charAt(0) === '#' && (arg.length === 4 || arg.length === 5 || arg.length === 7 || arg.length === 9)) {
 					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
 					// strange that it would not be. And if it is not a thrown error seems best

@@ -8,12 +8,8 @@ export function isCssColorMixExpression(value: string) {
 
 const colorMixRegExp = new RegExp('^color-mix\\(\\s*in\\s+([\\w-]+(?:\\s+[\\w-]+)*)\\s*,\\s*' + '([^,]+?)(?:\\s+(\\d+(?:\\.\\d+)?%)?)?' + '\\s*,\\s*' + '([^,]+?)(?:\\s+(\\d+(?:\\.\\d+)?%)?)?' + '\\s*\\)$', 'i');
 
-export function colorMixToRgbA(value: string) {
+export function argbFromColorMix(value: string): number {
 	const match = value.trim().match(colorMixRegExp);
-	if (!match) {
-		return value;
-	}
-
 	const [, colorSpace, color1, pctStr1, color2, pctStr2] = match;
 
 	// optional percentages
@@ -52,7 +48,7 @@ export function colorMixToRgbA(value: string) {
 		a: rgba1.a * w1 + rgba2.a * w2,
 	};
 
-	return `rgba(${Math.round(mixedRgba.r)}, ${Math.round(mixedRgba.g)}, ${Math.round(mixedRgba.b)}, ${mixedRgba.a / 255})`;
+	return (mixedRgba.a & 0xff) * 0x01000000 + (mixedRgba.r & 0xff) * 0x00010000 + (mixedRgba.g & 0xff) * 0x00000100 + (mixedRgba.b & 0xff);
 }
 
 export function fromArgbToRgba(argb: number): { a: number; r: number; g: number; b: number } {
