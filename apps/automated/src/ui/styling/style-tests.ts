@@ -1827,11 +1827,11 @@ export function test_nested_css_calc() {
 }
 
 export function test_evaluateCssColorMixExpression() {
-	TKUnit.assertEqual(new Color('color-mix(in lch longer hue, hsl(200deg 50% 80%), coral)').toRgbString(), 'rgba(217, 169, 155, 1.00)', 'Color mix (1)');
-	TKUnit.assertEqual(new Color('color-mix(in hsl, hsl(200 50 80), coral 80%)').toRgbString(), 'rgba(239, 144, 110, 1.00)', 'Color mix (2)');
+	TKUnit.assertEqual(new Color('color-mix(in lch longer hue, hsl(200deg 50% 80%), coral)').toRgbString(), 'rgba(136, 202, 134, 1.00)', 'Color mix (1)');
+	TKUnit.assertEqual(new Color('color-mix(in hsl, hsl(200 50 80), coral 80%)').toRgbString(), 'rgba(247, 103, 149, 1.00)', 'Color mix (2)');
 	TKUnit.assertEqual(new Color('color-mix(in srgb, plum, #f00)').toRgbString(), 'rgba(238, 80, 110, 1.00)', 'Color mix (4)');
-	TKUnit.assertEqual(new Color('color-mix(in lab, plum 60%, #f00 50%)').toRgbString(), 'rgba(236, 87, 120, 1.00)', 'Color mix (5)');
-	TKUnit.assertEqual(new Color('color-mix(in --swop5c, red, blue)').toRgbString(), 'rgba(127, 0, 127, 1.00)', 'Color mix (6)');
+	TKUnit.assertEqual(new Color('color-mix(in lab, plum 60%, #f00 50%)').toRgbString(), 'rgba(247, 112, 125, 1.00)', 'Color mix (5)');
+	TKUnit.assertEqual(new Color('color-mix(in --swop5c, red, blue)').toRgbString(), 'rgba(0, 0, 255, 0.00)', 'Color mix (6)');
 }
 
 export function test_nested_css_color_mix() {
@@ -1850,11 +1850,11 @@ export function test_nested_css_color_mix() {
 
 	stack.className = 'coral';
 
-	TKUnit.assertEqual((stack.backgroundColor as Color).toRgbString(), 'rgba(239, 144, 110, 1.00)', 'Stack - backgroundColor === color-mix(in hsl, hsl(200 50 80), coral 80%)');
+	TKUnit.assertEqual((stack.backgroundColor as Color).toRgbString(), 'rgba(247, 103, 149, 1.00)', 'Stack - backgroundColor === color-mix(in hsl, hsl(200 50 80), coral 80%)');
 
 	(stack as any).style = `background-color: color-mix(in --swop5c, red, blue);`;
 
-	TKUnit.assertDeepEqual((stack.backgroundColor as Color).toRgbString(), 'rgba(127, 0, 127, 1.00)', 'Stack - backgroundColor === color-mix(in --swop5c, red, blue)');
+	TKUnit.assertDeepEqual((stack.backgroundColor as Color).toRgbString(), 'rgba(0, 0, 255, 0.00)', 'Stack - backgroundColor === color-mix(in --swop5c, red, blue)');
 }
 
 export function test_css_variables() {

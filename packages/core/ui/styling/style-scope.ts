@@ -63,7 +63,7 @@ const kebabCasePattern = /-([a-z])/g;
 const pattern = /('|")(.*?)\1/;
 
 /**
- * Evaluate css-variable, css-calc, color-mix expressions
+ * Evaluate css-variable and css-calc expressions
  */
 function evaluateCssExpressions(view: ViewBase, property: string, value: string) {
 	const newValue = _evaluateCssVariableExpression(view, property, value);

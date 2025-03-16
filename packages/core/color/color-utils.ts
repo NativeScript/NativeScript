@@ -1,4 +1,7 @@
-import { Color } from '.';
+import { color } from '@csstools/css-color-parser';
+import { parseComponentValue } from '@csstools/css-parser-algorithms';
+import { serializeRGB } from '@csstools/css-color-parser';
+import { tokenize } from '@csstools/css-tokenizer';
 
 export const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)|(^#[0-9A-F]{4}$)/i;
 
@@ -6,49 +9,20 @@ export function isCssColorMixExpression(value: string) {
 	return value.includes('color-mix(');
 }
 
-const colorMixRegExp = new RegExp('^color-mix\\(\\s*in\\s+([\\w-]+(?:\\s+[\\w-]+)*)\\s*,\\s*' + '([^,]+?)(?:\\s+(\\d+(?:\\.\\d+)?%)?)?' + '\\s*,\\s*' + '([^,]+?)(?:\\s+(\\d+(?:\\.\\d+)?%)?)?' + '\\s*\\)$', 'i');
-
 export function argbFromColorMix(value: string): number {
-	const match = value.trim().match(colorMixRegExp);
-	const [, colorSpace, color1, pctStr1, color2, pctStr2] = match;
+	const astComponentValue = parseComponentValue(tokenize({ css: value }));
+	const colorData = color(astComponentValue);
 
-	// optional percentages
-	// - If one is provided, the other is 100 - that.
-	// - If none is provided, default 50/50.
-	let p1 = pctStr1 ? parseFloat(pctStr1) : NaN;
-	let p2 = pctStr2 ? parseFloat(pctStr2) : NaN;
+	let argb: number;
 
-	const bothMissing = Number.isNaN(p1) && Number.isNaN(p2);
-	const onlyOneMissing = (!Number.isNaN(p1) && Number.isNaN(p2)) || (Number.isNaN(p1) && !Number.isNaN(p2));
-
-	if (bothMissing) {
-		p1 = 50;
-		p2 = 50;
-	} else if (onlyOneMissing) {
-		// e.g., color-mix(in oklab, black 20%, transparent)
-		// or color-mix(in oklab, black, transparent 80%)
-		if (!Number.isNaN(p1)) {
-			p2 = 100 - p1;
-		} else {
-			p1 = 100 - p2;
-		}
+	if (colorData) {
+		const serialized = serializeRGB(colorData);
+		argb = argbFromRgbOrRgba(serialized.toString());
+	} else {
+		argb = -1;
 	}
 
-	const rgba1 = new Color(color1);
-	const rgba2 = new Color(color2);
-
-	const total = p1 + p2;
-	const w1 = p1 / total;
-	const w2 = p2 / total;
-
-	const mixedRgba = {
-		r: rgba1.r * w1 + rgba2.r * w2,
-		g: rgba1.g * w1 + rgba2.g * w2,
-		b: rgba1.b * w1 + rgba2.b * w2,
-		a: rgba1.a * w1 + rgba2.a * w2,
-	};
-
-	return (mixedRgba.a & 0xff) * 0x01000000 + (mixedRgba.r & 0xff) * 0x00010000 + (mixedRgba.g & 0xff) * 0x00000100 + (mixedRgba.b & 0xff);
+	return argb;
 }
 
 export function fromArgbToRgba(argb: number): { a: number; r: number; g: number; b: number } {
