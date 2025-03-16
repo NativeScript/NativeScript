@@ -21,6 +21,9 @@
 	},
 	"devDependencies": {
 		"@csstools/css-calc": "~2.1.2",
+		"@csstools/css-color-parser": "^3.0.8",
+		"@csstools/css-parser-algorithms": "^3.0.4",
+		"@csstools/css-tokenizer": "^3.0.3",
 		"@nativescript/hook": "^2.0.0",
 		"@nativescript/nx": "^20.0.0",
 		"@nstudio/focus": "^20.0.2",
