@@ -1,3 +1,18 @@
+## 8.9.1 (2025-03-16)
+
+### 🚀 Features
+
+- **css:** color-mix ([#10719](https://github.com/NativeScript/NativeScript/pull/10719))
+
+### 🩹 Fixes
+
+- **core:** missing parameter for once event listeners ([#10715](https://github.com/NativeScript/NativeScript/pull/10715))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Nathan Walker
+
 ## 8.9.0 (2025-02-27)
 
 ### 🚀 Features
