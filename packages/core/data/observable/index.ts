@@ -1,4 +1,4 @@
-import { Optional } from '../../utils/typescript-utils';
+import { Optional, EndsWith } from '../../utils/typescript-utils';
 
 /**
  * Base event data.
@@ -160,7 +160,7 @@ export class Observable {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	public on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public on<S extends string>(eventName: S, callback: (data: EndsWith<S, 'Change', PropertyChangeData, EventData>) => void, thisArg?: any): void {
 		this.addEventListener(eventName, callback, thisArg);
 	}
 
@@ -175,7 +175,7 @@ export class Observable {
 	 * `this` context when the callback is called. Falsy values will be not be
 	 * bound.
 	 */
-	public once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public once<S extends string>(eventName: S, callback: (data: EndsWith<S, 'Change', PropertyChangeData, EventData>) => void, thisArg?: any): void {
 		this.addEventListener(eventName, callback, thisArg, true);
 	}
 
@@ -188,7 +188,7 @@ export class Observable {
 	 * @param thisArg An optional parameter which, when set, will be used to
 	 * refine search of the correct event listener to be removed.
 	 */
-	public off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public off<S extends string>(eventName: S, callback?: (data: EndsWith<S, 'Change', PropertyChangeData, EventData>) => void, thisArg?: any): void {
 		this.removeEventListener(eventName, callback, thisArg);
 	}
 
