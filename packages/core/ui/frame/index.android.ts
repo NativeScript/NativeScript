@@ -628,9 +628,12 @@ function cloneExpandedTransitionListener(expandedTransitionListener: any) {
 
 function getTransitionState(entry: BackstackEntry): TransitionState {
 	const expandedEntry = <any>entry;
-	const transitionState = <TransitionState>{};
+
+	let transitionState: TransitionState;
 
 	if (expandedEntry.enterTransitionListener && expandedEntry.exitTransitionListener) {
+		transitionState = <TransitionState>{};
+
 		transitionState.enterTransitionListener = cloneExpandedTransitionListener(expandedEntry.enterTransitionListener);
 		transitionState.exitTransitionListener = cloneExpandedTransitionListener(expandedEntry.exitTransitionListener);
 		transitionState.reenterTransitionListener = cloneExpandedTransitionListener(expandedEntry.reenterTransitionListener);
@@ -638,7 +641,7 @@ function getTransitionState(entry: BackstackEntry): TransitionState {
 		transitionState.transitionName = expandedEntry.transitionName;
 		transitionState.entry = entry;
 	} else {
-		return null;
+		transitionState = null;
 	}
 
 	return transitionState;
