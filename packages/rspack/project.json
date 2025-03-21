@@ -1,0 +1,22 @@
+{
+	"name": "rspack",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "packages/rspack",
+	"projectType": "library",
+	"generators": {},
+	"targets": {
+		"lint": {
+			"executor": "@nx/eslint:lint",
+			"options": {
+				"lintFilePatterns": []
+			}
+		},
+		"build": {
+			"executor": "nx:run-commands",
+			"outputs": ["{workspaceRoot}/dist/packages"],
+			"options": {
+				"command": "npx zx ./tools/scripts/pack-rspack.mjs"
+			}
+		}
+	}
+}

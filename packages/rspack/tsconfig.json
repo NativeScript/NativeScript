@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"rootDir": ".",
+		"baseUrl": ".",
+		"target": "es2018",
+		"module": "commonjs",
+		"outDir": "./dist",
+		"declaration": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"lib": ["es2018"],
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"skipDefaultLibCheck": true,
+		"diagnostics": true,
+		"paths": {
+			"@nativescript/rspack": ["src"]
+		},
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"stripInternal": true
+	},
+	"include": ["src", "scripts", "__tests__"],
+	"exclude": ["node_modules"]
+}
