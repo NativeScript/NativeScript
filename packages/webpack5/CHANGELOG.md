@@ -1,3 +1,9 @@
+## 5.0.24 (2025-03-23)
+
+### 🚀 Features
+
+- **webpack:** support @nativescript-community/svelte-native ([41ac6d970](https://github.com/NativeScript/NativeScript/commit/41ac6d970))
+
 ## 5.0.23 (2025-02-26)
 
 ### 🚀 Features
