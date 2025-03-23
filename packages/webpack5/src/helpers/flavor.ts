@@ -21,7 +21,10 @@ export function determineProjectFlavor(): keyof typeof defaultConfigs | false {
 		return 'react';
 	}
 
-	if (dependencies.includes('svelte-native')) {
+	if (
+		dependencies.includes('svelte-native') ||
+		dependencies.includes('@nativescript-community/svelte-native')
+	) {
 		return 'svelte';
 	}
 
