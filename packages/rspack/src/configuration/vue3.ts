@@ -15,6 +15,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// we need to patch VueLoader if we want to enable hmr
 	if (env.hmr) {
 		patchVueLoaderForHMR();
+
+		// TODO: fix hmr in child components
+		// https://github.com/web-infra-dev/rsbuild/issues/3217#issuecomment-2290946740
+		// config.devtool(false);
 	}
 
 	// resolve .vue files
