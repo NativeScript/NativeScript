@@ -1,4 +1,4 @@
-import postcss, { Root, Rule, Declaration, AtRule } from 'postcss';
+import { parse, Import, Stylesheet } from 'css';
 import { urlToRequest } from 'loader-utils';
 import { dedent } from 'ts-dedent';
 
@@ -11,22 +11,21 @@ export default function loader(content: string, map: any) {
 	const inline = !!options.useForImports;
 	const requirePrefix = inline ? inlineLoader : '';
 
-	const ast = postcss.parse(content);
+	const ast = parse(content);
 
 	// todo: revise if this is necessary
 	// todo: perhaps use postCSS and just build imports into a single file?
 	let dependencies = [];
-
 	getAndRemoveImportRules(ast)
 		.map(extractUrlFromRule)
 		.map(createRequireUri)
-		.forEach(({ requireURI }) => {
+		.forEach(({ uri, requireURI }) => {
 			dependencies.push(`require("${requirePrefix}${requireURI}")`);
 		});
 
-	const cssCompatibleAST = transformPostcssASTtoCSS(ast);
+	const str = JSON.stringify(ast, (k, v) => (k === 'position' ? undefined : v));
 
-	const str = JSON.stringify(cssCompatibleAST);
+	// map.mappings = map.mappings.replace(/;{2,}/, '')
 
 	const code = dedent`
 	/* CSS2JSON */
@@ -34,29 +33,41 @@ export default function loader(content: string, map: any) {
 	const ___CSS2JSON_LOADER_EXPORT___ = ${str}
 	export default ___CSS2JSON_LOADER_EXPORT___
 	`;
-
-	this.callback(null, code, map);
+	this.callback(
+		null,
+		code, //`${dependencies.join('\n')}module.exports = ${str};`,
+		map,
+	);
 }
 
-/**
- * Extract @import and remove them from the AST
- */
-function getAndRemoveImportRules(ast: Root): AtRule[] {
-	const imports = ast.nodes.filter(
-		(node) => node.type === 'atrule' && node.name === 'import',
-	) as AtRule[];
-	imports.forEach((rule) => rule.remove());
+function getImportRules(ast: Stylesheet): Import[] {
+	if (!ast || (<any>ast).type !== 'stylesheet' || !ast.stylesheet) {
+		return [];
+	}
+	return <Import[]>(
+		ast.stylesheet.rules.filter(
+			(rule) => rule.type === 'import' && (<any>rule).import,
+		)
+	);
+}
+
+function getAndRemoveImportRules(ast: Stylesheet): Import[] {
+	const imports = getImportRules(ast);
+	ast.stylesheet.rules = ast.stylesheet.rules.filter(
+		(rule) => rule.type !== 'import',
+	);
+
 	return imports;
 }
 
 /**
  * Extracts the url from import rule (ex. `url("./platform.css")`)
  */
-function extractUrlFromRule(importRule: AtRule): string {
-	const params = importRule.params;
+function extractUrlFromRule(importRule: Import): string {
+	const urlValue = importRule.import;
 
-	const unpackedUrlMatch = params.match(unpackUrlPattern);
-	const unpackedValue = unpackedUrlMatch ? unpackedUrlMatch[1] : params;
+	const unpackedUrlMatch = urlValue.match(unpackUrlPattern);
+	const unpackedValue = unpackedUrlMatch ? unpackedUrlMatch[1] : urlValue;
 
 	const quotesMatch = unpackedValue.match(betweenQuotesPattern);
 	return quotesMatch ? quotesMatch[2] : unpackedValue;
@@ -64,40 +75,7 @@ function extractUrlFromRule(importRule: AtRule): string {
 
 function createRequireUri(uri): { uri: string; requireURI: string } {
 	return {
-		uri,
+		uri: uri,
 		requireURI: urlToRequest(uri),
-	};
-}
-
-/**
- * TRANSFORMING THE POSTCSS AST TO THE ORIGINAL CSS AST
- */
-function transformPostcssASTtoCSS(ast: Root) {
-	return {
-		type: 'stylesheet',
-		stylesheet: {
-			rules: ast.nodes
-				.filter((node) => node.type === 'rule') // Solo reglas CSS, no comentarios ni otros
-				.map(transformRule),
-			parsingErrors: [],
-		},
-	};
-}
-
-function transformRule(rule: Rule) {
-	return {
-		type: 'rule',
-		selectors: rule.selectors,
-		declarations: rule.nodes
-			.filter((node) => node.type === 'decl')
-			.map(transformDeclaration),
-	};
-}
-
-function transformDeclaration(decl: Declaration) {
-	return {
-		type: 'declaration',
-		property: decl.prop,
-		value: decl.value,
 	};
 }
