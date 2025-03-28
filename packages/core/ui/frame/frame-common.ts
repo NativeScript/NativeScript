@@ -121,9 +121,25 @@ export class FrameBase extends CustomLayoutView {
 
 	@profile
 	public onLoaded() {
+		const parentFrame = this.page?.frame;
+
 		super.onLoaded();
 
+		if (parentFrame && parentFrame.isLoadingSubviews) {
+			parentFrame.once('frameEntryLoaded', () => {
+				this.onFrameLoaded();
+			});
+		} else {
+			this.onFrameLoaded();
+		}
+	}
+
+	public onFrameLoaded(): void {
 		this._processNextNavigationEntry();
+		this.notify({
+			eventName: 'frameEntryLoaded',
+			object: this,
+		});
 	}
 
 	public canGoBack(): boolean {
