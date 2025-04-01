@@ -556,7 +556,7 @@ export class Frame extends FrameBase {
 			this._disposeBackstackEntry(current);
 		}
 
-		// There are cases transition state is still cached even during disposal as setCurrent may not necessarily be called to clean it up
+		// Dispose cached transition and store it again if view ever gets re-used
 		this._cachedTransitionState = null;
 
 		this._android.rootViewGroup = null;
