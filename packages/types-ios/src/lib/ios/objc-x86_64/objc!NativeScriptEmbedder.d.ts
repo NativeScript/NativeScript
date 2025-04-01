@@ -31,6 +31,7 @@ declare var NativeScriptEmbedderDelegate: {
 
 declare class NativeScriptViewFactory extends NSObject {
 	static getKeyWindow(): UIWindow;
+	static initShared(): void;
 	static shared: NativeScriptViewFactory;
 	views: NSMutableDictionary<string, any>;
 	viewCreator: (id: string, ctrl: UIViewController) => void;
