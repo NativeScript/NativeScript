@@ -19,7 +19,7 @@ const osVersion = currentDevice.systemVersion;
 const GET = 'GET';
 const USER_AGENT_HEADER = 'User-Agent';
 const USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace('.', '_')} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
-const sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration;
+const sessionConfig = NSURLSessionConfiguration.ephemeralSessionConfiguration;
 const queue = NSOperationQueue.mainQueue;
 
 function parseJSON(source: string): any {
