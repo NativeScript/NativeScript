@@ -79,6 +79,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	private _window: UIWindow;
 	private _notificationObservers: NotificationObserver[] = [];
 	private _rootView: View;
+	private launchEventCalled = false;
 
 	displayedOnce = false;
 	displayedLinkTarget: CADisplayLinkTarget;
@@ -363,6 +364,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	private notifyAppStarted(notification?: NSNotification) {
+		this.launchEventCalled = true;
 		const root = this.notifyLaunch({
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
@@ -441,11 +443,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			this.window.backgroundColor = Utils.SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		}
 
-		this.notifyAppStarted(notification);
+		this.launchEventCalled = false;
 	}
 
 	@profile
 	private didBecomeActive(notification: NSNotification) {
+		if (!this.launchEventCalled) {
+			this.notifyAppStarted(notification);
+		}
 		const additionalData = {
 			ios: UIApplication.sharedApplication,
 		};
