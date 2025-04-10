@@ -1,7 +1,7 @@
 {
 	"migrations": [
-		{ "version": "20.0.0-beta.7", "description": "Migration for v20.0.0-beta.7", "implementation": "./src/migrations/update-20-0-0/move-use-daemon-process", "package": "nx", "name": "move-use-daemon-process" },
-		{ "version": "20.0.1", "description": "Set `useLegacyCache` to true for migrating workspaces", "implementation": "./src/migrations/update-20-0-1/use-legacy-cache", "x-repair-skip": true, "package": "nx", "name": "use-legacy-cache" },
-		{ "cli": "nx", "version": "20.0.0-beta.5", "description": "replace getJestProjects with getJestProjectsAsync", "implementation": "./src/migrations/update-20-0-0/replace-getJestProjects-with-getJestProjectsAsync", "package": "@nx/jest", "name": "replace-getJestProjects-with-getJestProjectsAsync" }
+		{ "version": "20.5.0-beta.2", "description": "Install jiti as a devDependency to allow vite to parse TS postcss files.", "implementation": "./src/migrations/update-20-5-0/install-jiti", "package": "@nx/vite", "name": "update-20-5-0-install-jiti" },
+		{ "version": "20.5.0-beta.3", "description": "Update resolve.conditions to include defaults that are no longer provided by Vite.", "implementation": "./src/migrations/update-20-5-0/update-resolve-conditions", "package": "@nx/vite", "name": "update-20-5-0-update-resolve-conditions" },
+		{ "version": "20.5.0-beta.3", "description": "Add vite config temporary files to the ESLint configuration ignore patterns if ESLint is used.", "implementation": "./src/migrations/update-20-5-0/eslint-ignore-vite-temp-files", "package": "@nx/vite", "name": "eslint-ignore-vite-temp-files" }
 	]
 }
