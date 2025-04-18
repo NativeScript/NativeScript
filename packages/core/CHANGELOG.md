@@ -1,3 +1,9 @@
+## 8.9.2 (2025-04-18)
+
+### 🩹 Fixes
+
+- **ios:** 18.4 simulator networking case ([#10732](https://github.com/NativeScript/NativeScript/pull/10732))
+
 ## 8.9.1 (2025-03-16)
 
 ### 🚀 Features

@@ -1,81 +1,81 @@
 {
-  "name": "@nativescript/core",
-  "version": "8.9.2",
-  "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
-  "main": "index",
-  "types": "index.d.ts",
-  "sideEffects": [
-    "bundle-entry-points.js",
-    "./globals/index.js",
-    "./globals"
-  ],
-  "files": [
-    "**/*.d.ts",
-    "**/*.js",
-    "**/*.map",
-    "**/platforms/ios/**",
-    "platforms/android/**",
-    "!platforms/android/core.aar",
-    "**/package.json"
-  ],
-  "keywords": [
-    "NativeScript",
-    "JavaScript",
-    "Android",
-    "iOS",
-    "TypeScript"
-  ],
-  "funding": [
-    {
-      "type": "opencollective",
-      "url": "https://opencollective.com/NativeScript"
-    },
-    {
-      "type": "github",
-      "url": "https://github.com/sponsors/NativeScript"
-    }
-  ],
-  "homepage": "https://nativescript.org",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/NativeScript/NativeScript"
-  },
-  "author": {
-    "name": "NativeScript",
-    "email": "oss@nativescript.org"
-  },
-  "bugs": {
-    "url": "https://github.com/NativeScript/NativeScript/issues"
-  },
-  "license": "Apache-2.0",
-  "scripts": {
-    "postinstall": "node cli-hooks/postinstall.js",
-    "preuninstall": "node cli-hooks/preuninstall.js"
-  },
-  "dependencies": {
-    "@csstools/css-calc": "~2.1.2",
-    "@csstools/css-color-parser": "^3.0.8",
-    "@csstools/css-parser-algorithms": "^3.0.4",
-    "@csstools/css-tokenizer": "^3.0.3",
-    "@nativescript/hook": "~2.0.0",
-    "acorn": "^8.7.0",
-    "css-tree": "^1.1.2",
-    "css-what": "^6.1.0",
-    "emoji-regex": "^10.2.1",
-    "tslib": "^2.0.0"
-  },
-  "nativescript": {
-    "platforms": {
-      "ios": "6.0.0",
-      "android": "6.0.0"
-    },
-    "hooks": [
-      {
-        "name": "nativescript-core",
-        "type": "before-checkForChanges",
-        "script": "cli-hooks/before-checkForChanges.js",
-        "inject": true
-      }
-    ]
-  }
+	"name": "@nativescript/core",
+	"version": "8.9.2",
+	"description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
+	"main": "index",
+	"types": "index.d.ts",
+	"sideEffects": [
+		"bundle-entry-points.js",
+		"./globals/index.js",
+		"./globals"
+	],
+	"files": [
+		"**/*.d.ts",
+		"**/*.js",
+		"**/*.map",
+		"**/platforms/ios/**",
+		"platforms/android/**",
+		"!platforms/android/core.aar",
+		"**/package.json"
+	],
+	"keywords": [
+		"NativeScript",
+		"JavaScript",
+		"Android",
+		"iOS",
+		"TypeScript"
+	],
+	"funding": [
+		{
+			"type": "opencollective",
+			"url": "https://opencollective.com/NativeScript"
+		},
+		{
+			"type": "github",
+			"url": "https://github.com/sponsors/NativeScript"
+		}
+	],
+	"homepage": "https://nativescript.org",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/NativeScript/NativeScript"
+	},
+	"author": {
+		"name": "NativeScript",
+		"email": "oss@nativescript.org"
+	},
+	"bugs": {
+		"url": "https://github.com/NativeScript/NativeScript/issues"
+	},
+	"license": "Apache-2.0",
+	"scripts": {
+		"postinstall": "node cli-hooks/postinstall.js",
+		"preuninstall": "node cli-hooks/preuninstall.js"
+	},
+	"dependencies": {
+		"@csstools/css-calc": "~2.1.2",
+		"@csstools/css-color-parser": "^3.0.8",
+		"@csstools/css-parser-algorithms": "^3.0.4",
+		"@csstools/css-tokenizer": "^3.0.3",
+		"@nativescript/hook": "~2.0.0",
+		"acorn": "^8.7.0",
+		"css-tree": "^1.1.2",
+		"css-what": "^6.1.0",
+		"emoji-regex": "^10.2.1",
+		"tslib": "^2.0.0"
+	},
+	"nativescript": {
+		"platforms": {
+			"ios": "6.0.0",
+			"android": "6.0.0"
+		},
+		"hooks": [
+			{
+				"name": "nativescript-core",
+				"type": "before-checkForChanges",
+				"script": "cli-hooks/before-checkForChanges.js",
+				"inject": true
+			}
+		]
+	}
 }
