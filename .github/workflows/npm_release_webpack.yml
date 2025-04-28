@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Setup
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       - name: Generate Version
         working-directory: packages/webpack
@@ -32,10 +32,10 @@ jobs:
         run: npx nx run webpack:build
 
       - name: Publish @nativescript/webpack
-        working-directory: dist/packages
+        working-directory: dist/packages/webpack5
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../../.npmrc
           echo "Publishing @nativescript/webpack@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          npm publish nativescript-webpack.tgz --tag $NPM_TAG --dry-run
+          npm publish --tag $NPM_TAG --dry-run

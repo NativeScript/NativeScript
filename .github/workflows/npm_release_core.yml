@@ -21,6 +21,11 @@ jobs:
       - name: Setup
         run: npm run setup
 
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: 'main'
+
       - name: Generate Version
         working-directory: packages/core
         run: |

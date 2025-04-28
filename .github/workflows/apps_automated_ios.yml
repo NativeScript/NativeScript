@@ -30,9 +30,14 @@ jobs:
         with:
           node-version: 23.5.0
 
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: 'main'
+
       - name: Install NativeScript
         run: |
-          npm i -g nativescript --ignore-scripts --legacy-peer-deps
+          npm i -g nativescript --ignore-scripts
           ns usage-reporting disable
           ns error-reporting disable
           # ns doctor
