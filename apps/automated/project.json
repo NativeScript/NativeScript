@@ -11,6 +11,7 @@
 	"targets": {
 		"build": {
 			"executor": "@nativescript/nx:build",
+			"inputs": ["default", "^production"],
 			"options": {
 				"noHmr": true,
 				"production": true,
@@ -23,6 +24,7 @@
 		},
 		"debug": {
 			"executor": "@nativescript/nx:debug",
+			"inputs": ["default", "^production"],
 			"options": {
 				"noHmr": true,
 				"debug": false,
@@ -36,6 +38,7 @@
 		},
 		"prepare": {
 			"executor": "@nativescript/nx:prepare",
+			"inputs": ["default", "^production"],
 			"options": {
 				"noHmr": true,
 				"production": true,
