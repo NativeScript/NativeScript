@@ -50,6 +50,18 @@
 			"configurations": {},
 			"dependsOn": ["^build"]
 		},
+		"test": {
+			"executor": "nx:run-commands",
+			"defaultConfiguration": "ios",
+			"configurations": {
+				"ios": {
+					"commands": ["node tools/scripts/run-automated.js ios"]
+				},
+				"android": {
+					"commands": ["node tools/scripts/run-automated.js android"]
+				}
+			}
+		},
 		"clean": {
 			"executor": "@nativescript/nx:clean",
 			"options": {}

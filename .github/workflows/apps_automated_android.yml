@@ -66,4 +66,4 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          script: node tools/scripts/run-automated.js android
+          script: npx nx test apps-automated -c=android

@@ -55,4 +55,4 @@ jobs:
           os_version: '17.5'
 
       - name: Run tests on iOS Simulator
-        run: node tools/scripts/run-automated.js ios
+        run: npx nx test apps-automated -c=ios
