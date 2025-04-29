@@ -60,7 +60,8 @@
 				"android": {
 					"commands": ["node tools/scripts/run-automated.js android"]
 				}
-			}
+			},
+			"dependsOn": ["^build"]
 		},
 		"clean": {
 			"executor": "@nativescript/nx:clean",
