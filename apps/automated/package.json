@@ -14,7 +14,7 @@
     "@nativescript/android": "~8.8.0",
     "@nativescript/ios": "~8.8.0",
     "@nativescript/visionos": "~8.8.0",
-    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
+    "@nativescript/webpack": "file:../../dist/packages/webpack5",
     "circular-dependency-plugin": "^5.2.2",
     "typescript": "~5.6.0"
   },

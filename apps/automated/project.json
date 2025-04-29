@@ -11,6 +11,7 @@
 	"targets": {
 		"build": {
 			"executor": "@nativescript/nx:build",
+			"inputs": ["default", "^production"],
 			"options": {
 				"noHmr": true,
 				"production": true,
@@ -18,10 +19,12 @@
 				"release": true,
 				"forDevice": true
 			},
-			"configurations": {}
+			"configurations": {},
+			"dependsOn": ["^build"]
 		},
 		"debug": {
 			"executor": "@nativescript/nx:debug",
+			"inputs": ["default", "^production"],
 			"options": {
 				"noHmr": true,
 				"debug": false,
@@ -30,10 +33,12 @@
 				"forDevice": false,
 				"prepare": false
 			},
-			"configurations": {}
+			"configurations": {},
+			"dependsOn": ["^build"]
 		},
 		"prepare": {
 			"executor": "@nativescript/nx:prepare",
+			"inputs": ["default", "^production"],
 			"options": {
 				"noHmr": true,
 				"production": true,
@@ -42,7 +47,21 @@
 				"forDevice": true,
 				"prepare": true
 			},
-			"configurations": {}
+			"configurations": {},
+			"dependsOn": ["^build"]
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"defaultConfiguration": "ios",
+			"configurations": {
+				"ios": {
+					"commands": ["node tools/scripts/run-automated.js ios"]
+				},
+				"android": {
+					"commands": ["node tools/scripts/run-automated.js android"]
+				}
+			},
+			"dependsOn": ["^build"]
 		},
 		"clean": {
 			"executor": "@nativescript/nx:clean",
@@ -54,5 +73,6 @@
 				"lintFilePatterns": ["apps/automated/**/*.ts", "apps/automated/src/**/*.html"]
 			}
 		}
-	}
+	},
+	"implicitDependencies": ["webpack5"]
 }

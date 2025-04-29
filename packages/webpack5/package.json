@@ -11,7 +11,6 @@
 	},
 	"license": "Apache-2.0",
 	"scripts": {
-		"build": "tsc --project tsconfig.build.json",
 		"test": "jest",
 		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs",
 		"prepack": "npm run test && npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"

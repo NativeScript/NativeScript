@@ -9,21 +9,20 @@ const kill = require('tree-kill');
 const path = require('path');
 
 const TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes (is Github CI this slow to boot AVDs?)
-const workspaceDir = path.resolve(__dirname, '../..');
+const automatedAppPath = path.resolve(__dirname, '../../apps/automated');
 const platform = process.argv[2];
 const spawned_process = spawn(
-	"npx",
+	"ns",
 	[
-		"nx",
 		"debug",
-		"apps-automated",
 		platform,
+		"--no-hmr",
 		// "--log=trace",
 		// `--flags="--log=trace"`,
 		`--timeout=${TIMEOUT_MS}`
 	],
 	{
-		cwd: workspaceDir,
+		cwd: automatedAppPath,
 		stdio: ["inherit", "pipe", "pipe"],
 	}
 );

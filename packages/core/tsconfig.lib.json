@@ -12,11 +12,10 @@
 		"sourceMap": true,
 		"inlineSourceMap": false,
 		"baseUrl": ".",
-		"outDir": "../../dist",
 		"types": ["node"],
 		"plugins": [
 			{
-				"transform": "../webpack5/src/transformers/NativeClass/index.ts",
+				"transform": "./packages/webpack5/src/transformers/NativeClass/index.ts",
 				"type": "raw"
 			}
 		]

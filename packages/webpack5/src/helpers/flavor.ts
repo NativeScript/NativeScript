@@ -1,4 +1,4 @@
-import { defaultConfigs } from '@nativescript/webpack';
+import { defaultConfigs } from '..';
 import { getAllDependencies } from './dependencies';
 import { error } from './log';
 
