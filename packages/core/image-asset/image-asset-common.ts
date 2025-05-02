@@ -1,6 +1,7 @@
 import { ImageAsset as ImageAssetDefinition, ImageAssetOptions } from '.';
 import { Observable } from '../data/observable';
 import { Screen } from '../platform';
+import { Trace } from '../trace/index';
 
 export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 	private _options: ImageAssetOptions;
@@ -54,7 +55,7 @@ export function getRequestedImageSize(src: { width: number; height: number }, op
 		if (!isNaN(parsedWidth)) {
 			optionsCopy.width = parsedWidth;
 		} else {
-			console.warn('Invalid width value provided: ', optionsCopy.width);
+			Trace.write('Invalid width value provided: ' + optionsCopy.width, Trace.categories.Debug, Trace.messageType.warn);
 			delete optionsCopy.width;
 		}
 	}
@@ -64,7 +65,7 @@ export function getRequestedImageSize(src: { width: number; height: number }, op
 		if (!isNaN(parsedHeight)) {
 			optionsCopy.height = parsedHeight;
 		} else {
-			console.warn('Invalid height value provided: ', options.height);
+			Trace.write('Invalid height value provided: ' + optionsCopy.height, Trace.categories.Debug, Trace.messageType.warn);
 			delete optionsCopy.height;
 		}
 	}
