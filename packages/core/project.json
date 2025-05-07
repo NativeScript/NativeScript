@@ -62,6 +62,19 @@
 			},
 			"dependsOn": ["^build"]
 		},
+		"build.npm": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": ["node tools/scripts/build-finish.ts core"],
+				"parallel": false
+			},
+			"outputs": ["{workspaceRoot}/dist/packages/core"],
+			"dependsOn": [
+				{
+					"target": "build"
+				}
+			]
+		},
 		"test": {
 			"executor": "@nx/vite:test",
 			"outputs": ["{options.reportsDirectory}"],
