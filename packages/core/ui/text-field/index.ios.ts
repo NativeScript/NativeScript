@@ -343,6 +343,10 @@ export class TextField extends TextFieldBase {
 						break;
 				}
 				break;
+			case 'wrap':
+				paragraphStyle = NSMutableParagraphStyle.new();
+				paragraphStyle.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+				break;
 		}
 
 		if (paragraphStyle) {
