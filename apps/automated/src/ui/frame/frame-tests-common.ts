@@ -5,6 +5,7 @@ import { Frame, NavigationEntry } from '@nativescript/core/ui/frame';
 import { Label } from '@nativescript/core/ui/label';
 import { Page } from '@nativescript/core/ui/page';
 import * as TKUnit from '../../tk-unit';
+import { StackLayout } from '@nativescript/core';
 
 const NAV_WAIT = 15;
 function emptyNavigationQueue(frame: Frame) {
@@ -266,4 +267,52 @@ export function test_frame_retrieval_API_when_navigating() {
 	// clean up the frame stack
 	initialFrame._removeFromFrameStack();
 	newFrame._removeFromFrameStack();
+}
+
+export function test_frame_entry_loaded_order() {
+	const loadedFrames: Frame[] = [];
+	const rootFrame = Frame.topmost();
+
+	const rootPage = new Page();
+	const rootPageContent = new StackLayout();
+
+	const nestedFrame = new Frame();
+	nestedFrame.navigate(() => new Page());
+
+	rootPageContent.addChild(nestedFrame);
+	rootPage.content = rootPageContent;
+
+	rootFrame.navigate(() => rootPage);
+
+	emptyNavigationQueue(rootFrame);
+
+	rootFrame.callUnloaded();
+
+	const onRootFrameLoaded = rootFrame.onFrameLoaded;
+	const onNestedFrameLoaded = nestedFrame.onFrameLoaded;
+
+	rootFrame.onFrameLoaded = function () {
+		loadedFrames.push(this);
+		onRootFrameLoaded.call(this);
+	};
+
+	nestedFrame.onFrameLoaded = function () {
+		loadedFrames.push(this);
+		onNestedFrameLoaded.call(this);
+	};
+
+	rootFrame.callLoaded();
+
+	TKUnit.assertEqual(rootFrame, loadedFrames[0]);
+	TKUnit.assertEqual(nestedFrame, loadedFrames[1]);
+
+	rootFrame.goBack();
+
+	emptyNavigationQueue(rootFrame);
+
+	rootFrame.onFrameLoaded = onRootFrameLoaded;
+	nestedFrame.onFrameLoaded = onNestedFrameLoaded;
+
+	// clean up the frame stack
+	nestedFrame._removeFromFrameStack();
 }
