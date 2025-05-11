@@ -517,7 +517,7 @@ class UINavigationControllerImpl extends UINavigationController {
 		}
 	}
 
-	private animateWithDuration(navigationTransition: NavigationTransition, nativeTransition: UIViewAnimationTransition, transitionType: string, baseCallback: Function): void {
+	private animateWithDuration(navigationTransition: NavigationTransition, nativeTransition: UIViewAnimationTransition, transitionType: string, baseCallback: () => void): void {
 		const duration = navigationTransition.duration ? navigationTransition.duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 		const curve = _getNativeCurve(navigationTransition);
 
