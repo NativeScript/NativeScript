@@ -306,6 +306,8 @@ export function test_frame_entry_loaded_order() {
 	TKUnit.assertEqual(rootFrame, loadedFrames[0]);
 	TKUnit.assertEqual(nestedFrame, loadedFrames[1]);
 
+	// Remove nested frame before going back as it triggers problems during onResume
+	rootPageContent.removeChild(nestedFrame);
 	rootFrame.goBack();
 
 	emptyNavigationQueue(rootFrame);
