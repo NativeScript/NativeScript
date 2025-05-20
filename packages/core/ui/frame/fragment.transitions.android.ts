@@ -1,5 +1,5 @@
 // Definitions.
-import { NavigationType } from './frame-common';
+import { NavigationType, TransitionState } from './frame-common';
 import { NavigationTransition, BackstackEntry } from '.';
 
 // Types.
@@ -428,6 +428,16 @@ function addToWaitingQueue(entry: ExpandedEntry): void {
 	entries.add(entry);
 }
 
+function cloneExpandedTransitionListener(expandedTransitionListener: ExpandedTransitionListener) {
+	if (!expandedTransitionListener) {
+		return null;
+	}
+
+	const cloneTransition = expandedTransitionListener.transition.clone();
+
+	return addNativeTransitionListener(expandedTransitionListener.entry, cloneTransition);
+}
+
 function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: boolean): void {
 	const fragment: androidx.fragment.app.Fragment = entry.fragment;
 	const exitListener = entry.exitTransitionListener;
@@ -469,15 +479,69 @@ function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: bo
 	}
 }
 
+export function _getTransitionState(entry: ExpandedEntry): TransitionState {
+	let transitionState: TransitionState;
+
+	if (entry.enterTransitionListener && entry.exitTransitionListener) {
+		transitionState = {
+			enterTransitionListener: cloneExpandedTransitionListener(entry.enterTransitionListener),
+			exitTransitionListener: cloneExpandedTransitionListener(entry.exitTransitionListener),
+			reenterTransitionListener: cloneExpandedTransitionListener(entry.reenterTransitionListener),
+			returnTransitionListener: cloneExpandedTransitionListener(entry.returnTransitionListener),
+			transitionName: entry.transitionName,
+			entry,
+		};
+	} else {
+		transitionState = null;
+	}
+
+	return transitionState;
+}
+
+export function _restoreTransitionState(entry: ExpandedEntry, snapshot: TransitionState): void {
+	if (snapshot.enterTransitionListener) {
+		entry.enterTransitionListener = snapshot.enterTransitionListener;
+	}
+
+	if (snapshot.exitTransitionListener) {
+		entry.exitTransitionListener = snapshot.exitTransitionListener;
+	}
+
+	if (snapshot.reenterTransitionListener) {
+		entry.reenterTransitionListener = snapshot.reenterTransitionListener;
+	}
+
+	if (snapshot.returnTransitionListener) {
+		entry.returnTransitionListener = snapshot.returnTransitionListener;
+	}
+
+	entry.transitionName = snapshot.transitionName;
+}
+
+export function _unsetTransitionProperties(entry: ExpandedEntry): void {
+	entry.enterTransitionListener = null;
+	entry.exitTransitionListener = null;
+	entry.reenterTransitionListener = null;
+	entry.returnTransitionListener = null;
+	entry.enterAnimator = null;
+	entry.exitAnimator = null;
+	entry.popEnterAnimator = null;
+	entry.popExitAnimator = null;
+	entry.transition = null;
+	entry.transitionName = null;
+	entry.isNestedDefaultTransition = false;
+	entry.isAnimationRunning = false;
+}
+
 export function _clearFragment(entry: ExpandedEntry): void {
-	clearEntry(entry, false);
+	clearTransitions(entry, false);
 }
 
 export function _clearEntry(entry: ExpandedEntry): void {
-	clearEntry(entry, true);
+	clearTransitions(entry, true);
 }
 
-function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
+function clearTransitions(entry: ExpandedEntry, removeListener: boolean): void {
 	clearExitAndReenterTransitions(entry, removeListener);
 
 	const fragment: androidx.fragment.app.Fragment = entry.fragment;

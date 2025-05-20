@@ -88,7 +88,7 @@ export class Frame extends FrameBase {
 	// !!! THIS PROFILE DECORATOR CREATES A CIRCULAR DEPENDENCY
 	// !!! BECAUSE THE PARAMETER TYPE IS EVALUATED WITH TYPEOF
 	@profile
-	public _navigateCore(backstackEntry: any) {
+	public _navigateCore(backstackEntry: BackstackEntry) {
 		super._navigateCore(backstackEntry);
 
 		const viewController: UIViewController = backstackEntry.resolvedPage.ios;
