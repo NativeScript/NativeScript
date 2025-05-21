@@ -26,10 +26,25 @@ export class ImageAsset extends ImageAssetBase {
 	}
 
 	public getImageAsync(callback: (image, error) => void) {
+		if (!this._android && !this.nativeImage) {
+			callback(null, 'Asset cannot be found.');
+			return;
+		}
+
+		const srcWidth = this.nativeImage ? this.nativeImage.size.width : Screen.mainScreen.widthPixels;
+		const srcHeight = this.nativeImage ? this.nativeImage.size.height : Screen.mainScreen.heightPixels;
+		const requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
+
+		const optionsCopy = {
+			...this.options,
+			width: requestedSize.width,
+			height: requestedSize.height,
+		};
+
 		org.nativescript.widgets.Utils.loadImageAsync(
 			ad.getApplicationContext(),
 			this.android,
-			JSON.stringify(this.options || {}),
+			JSON.stringify(optionsCopy),
 			Screen.mainScreen.widthPixels,
 			Screen.mainScreen.heightPixels,
 			new org.nativescript.widgets.Utils.AsyncImageCallback({
@@ -39,7 +54,7 @@ export class ImageAsset extends ImageAssetBase {
 				onError(ex) {
 					callback(null, ex);
 				},
-			})
+			}),
 		);
 	}
 }

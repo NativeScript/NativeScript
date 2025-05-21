@@ -1,6 +1,7 @@
 import { ImageAsset as ImageAssetDefinition, ImageAssetOptions } from '.';
 import { Observable } from '../data/observable';
 import { Screen } from '../platform';
+import { Trace } from '../trace/index';
 
 export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 	private _options: ImageAssetOptions;
@@ -47,8 +48,30 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 }
 
 export function getRequestedImageSize(src: { width: number; height: number }, options: ImageAssetOptions): { width: number; height: number } {
-	let reqWidth = options.width || Math.min(src.width, Screen.mainScreen.widthPixels);
-	let reqHeight = options.height || Math.min(src.height, Screen.mainScreen.heightPixels);
+	const optionsCopy = { ...(this.options || {}) };
+
+	if (typeof optionsCopy.width === 'string') {
+		const parsedWidth = parseInt(optionsCopy.width, 10);
+		if (!isNaN(parsedWidth)) {
+			optionsCopy.width = parsedWidth;
+		} else {
+			Trace.write('Invalid width value provided: ' + optionsCopy.width, Trace.categories.Debug, Trace.messageType.warn);
+			delete optionsCopy.width;
+		}
+	}
+
+	if (typeof optionsCopy.height === 'string') {
+		const parsedHeight = parseInt(optionsCopy.height, 10);
+		if (!isNaN(parsedHeight)) {
+			optionsCopy.height = parsedHeight;
+		} else {
+			Trace.write('Invalid height value provided: ' + optionsCopy.height, Trace.categories.Debug, Trace.messageType.warn);
+			delete optionsCopy.height;
+		}
+	}
+
+	let reqWidth = optionsCopy.width || Math.min(src.width, Screen.mainScreen.widthPixels);
+	let reqHeight = optionsCopy.height || Math.min(src.height, Screen.mainScreen.heightPixels);
 
 	if (options && options.keepAspectRatio) {
 		const safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
