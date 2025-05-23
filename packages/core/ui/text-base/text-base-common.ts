@@ -318,7 +318,7 @@ export const textStrokeProperty = new InheritedCssProperty<Style, string | Strok
 });
 textStrokeProperty.register(Style);
 
-const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('normal', 'nowrap'));
+const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('normal', 'nowrap', 'wrap'));
 export const whiteSpaceProperty = new InheritedCssProperty<Style, CoreTypes.WhiteSpaceType>({
 	name: 'whiteSpace',
 	cssName: 'white-space',
