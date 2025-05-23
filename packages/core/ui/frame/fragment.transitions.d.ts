@@ -1,4 +1,4 @@
-﻿import { NavigationTransition, BackstackEntry } from '.';
+﻿import { NavigationTransition, BackstackEntry, TransitionState } from '.';
 
 /**
  * @private
@@ -20,6 +20,21 @@ export function _updateTransitions(entry: BackstackEntry): void;
  * Reverse transitions from entry to fragment if any.
  */
 export function _reverseTransitions(previousEntry: BackstackEntry, currentEntry: BackstackEntry): boolean;
+/**
+ * @private
+ */
+export function _getTransitionState(entry: BackstackEntry): TransitionState;
+/**
+ * @private
+ */
+export function _restoreTransitionState(entry: BackstackEntry, snapshot: TransitionState): void;
+/**
+ * @private
+ * Called when entry is removed from backstack (either back navigation or
+ * navigate with clear history). Removes all animations and transitions from entry
+ * and clears all listeners in order to prevent memory leaks.
+ */
+export function _unsetTransitionProperties(entry: BackstackEntry): void;
 /**
  * @private
  * Called when entry is removed from backstack (either back navigation or

@@ -11,7 +11,7 @@ import { Trace } from '../../trace';
 import { View } from '../core/view';
 import { _stack, FrameBase, NavigationType } from './frame-common';
 
-import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
+import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _unsetTransitionProperties, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
@@ -194,7 +194,7 @@ export class Frame extends FrameBase {
 			// simulated navigation (NoTransition, zero duration animator) and thus the fragment immediately disappears;
 			// the user only sees the animation of the entering fragment as per its specific enter animation settings.
 			// NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
-			const cachedTransitionState = getTransitionState(this._currentEntry);
+			const cachedTransitionState = _getTransitionState(this._currentEntry);
 
 			if (cachedTransitionState) {
 				this._cachedTransitionState = cachedTransitionState;
@@ -241,27 +241,34 @@ export class Frame extends FrameBase {
 			this.backgroundColor = this._originalBackground;
 			this._originalBackground = null;
 		}
-		this._frameCreateTimeout = setTimeout(() => {
-			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
-			// so we manually check on loaded event if the fragment is not recreated and recreate it
-			const currentEntry = this._currentEntry || this._executingContext?.entry;
-			if (currentEntry) {
-				if (!currentEntry.fragment) {
-					const manager = this._getFragmentManager();
-					const transaction = manager.beginTransaction();
-					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
-					_updateTransitions(currentEntry);
-					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
-					transaction.commitAllowingStateLoss();
-				}
-			}
-		}, 0);
 
 		super.onLoaded();
 	}
 
+	public onFrameLoaded(): void {
+		super.onFrameLoaded();
+
+		// TODO: Check if this is still needed since there have been new improvements regarding fragment restoration
+		// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
+		// so we manually check on loaded event if the fragment is not recreated and recreate it
+		this._frameCreateTimeout = setTimeout(() => {
+			const currentEntry = this._currentEntry || this._executingContext?.entry;
+			if (currentEntry && !currentEntry.fragment) {
+				const manager = this._getFragmentManager();
+				const transaction = manager.beginTransaction();
+				currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
+				_updateTransitions(currentEntry);
+				transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
+				transaction.commitAllowingStateLoss();
+			}
+
+			this._frameCreateTimeout = null;
+		}, 0);
+	}
+
 	onUnloaded() {
 		super.onUnloaded();
+
 		if (typeof this._frameCreateTimeout === 'number') {
 			clearTimeout(this._frameCreateTimeout);
 			this._frameCreateTimeout = null;
@@ -352,7 +359,7 @@ export class Frame extends FrameBase {
 
 		// restore cached animation settings if we just completed simulated first navigation (no animation)
 		if (this._cachedTransitionState) {
-			restoreTransitionState(this._currentEntry, this._cachedTransitionState);
+			_restoreTransitionState(this._currentEntry, this._cachedTransitionState);
 			this._cachedTransitionState = null;
 		}
 
@@ -391,7 +398,7 @@ export class Frame extends FrameBase {
 	// HACK: This @profile decorator creates a circular dependency
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
-	public _navigateCore(newEntry: any) {
+	public _navigateCore(newEntry: BackstackEntry) {
 		// should be (newEntry: BackstackEntry)
 		super._navigateCore(newEntry);
 
@@ -488,6 +495,7 @@ export class Frame extends FrameBase {
 		if (removed.fragment) {
 			_clearEntry(removed);
 		}
+		_unsetTransitionProperties(removed);
 
 		removed.fragment = null;
 		removed.viewSavedState = null;
@@ -497,6 +505,7 @@ export class Frame extends FrameBase {
 		if (entry.fragment) {
 			_clearFragment(entry);
 		}
+		_unsetTransitionProperties(entry);
 
 		entry.recreated = false;
 		entry.fragment = null;
@@ -529,11 +538,14 @@ export class Frame extends FrameBase {
 
 	public disposeNativeView() {
 		const listener = getAttachListener();
+
 		this.nativeViewProtected.removeOnAttachStateChangeListener(listener);
 		this.nativeViewProtected[ownerSymbol] = null;
 		this._tearDownPending = !!this._executingContext;
+
 		const current = this._currentEntry;
 		const executingEntry = this._executingContext ? this._executingContext.entry : null;
+
 		this.backStack.forEach((entry) => {
 			// Don't destroy current and executing entries or UI will look blank.
 			// We will do it in setCurrent.
@@ -545,6 +557,9 @@ export class Frame extends FrameBase {
 		if (current && !executingEntry) {
 			this._disposeBackstackEntry(current);
 		}
+
+		// Dispose cached transition and store it again if view ever gets re-used
+		this._cachedTransitionState = null;
 
 		this._android.rootViewGroup = null;
 		this._removeFromFrameStack();
@@ -602,55 +617,6 @@ export function reloadPage(context?: ModuleContext): void {
 
 // attach on global, so it can be overwritten in NativeScript Angular
 global.__onLiveSyncCore = Frame.reloadPage;
-
-function cloneExpandedTransitionListener(expandedTransitionListener: any) {
-	if (!expandedTransitionListener) {
-		return null;
-	}
-
-	const cloneTransition = expandedTransitionListener.transition.clone();
-
-	return addNativeTransitionListener(expandedTransitionListener.entry, cloneTransition);
-}
-
-function getTransitionState(entry: BackstackEntry): TransitionState {
-	const expandedEntry = <any>entry;
-	const transitionState = <TransitionState>{};
-
-	if (expandedEntry.enterTransitionListener && expandedEntry.exitTransitionListener) {
-		transitionState.enterTransitionListener = cloneExpandedTransitionListener(expandedEntry.enterTransitionListener);
-		transitionState.exitTransitionListener = cloneExpandedTransitionListener(expandedEntry.exitTransitionListener);
-		transitionState.reenterTransitionListener = cloneExpandedTransitionListener(expandedEntry.reenterTransitionListener);
-		transitionState.returnTransitionListener = cloneExpandedTransitionListener(expandedEntry.returnTransitionListener);
-		transitionState.transitionName = expandedEntry.transitionName;
-		transitionState.entry = entry;
-	} else {
-		return null;
-	}
-
-	return transitionState;
-}
-
-function restoreTransitionState(entry: BackstackEntry, snapshot: TransitionState): void {
-	const expandedEntry = <any>entry;
-	if (snapshot.enterTransitionListener) {
-		expandedEntry.enterTransitionListener = snapshot.enterTransitionListener;
-	}
-
-	if (snapshot.exitTransitionListener) {
-		expandedEntry.exitTransitionListener = snapshot.exitTransitionListener;
-	}
-
-	if (snapshot.reenterTransitionListener) {
-		expandedEntry.reenterTransitionListener = snapshot.reenterTransitionListener;
-	}
-
-	if (snapshot.returnTransitionListener) {
-		expandedEntry.returnTransitionListener = snapshot.returnTransitionListener;
-	}
-
-	expandedEntry.transitionName = snapshot.transitionName;
-}
 
 let framesCounter = 0;
 const framesCache = new Array<WeakRef<AndroidFrame>>();
