@@ -27,7 +27,7 @@ export function _getTransitionState(entry: BackstackEntry): TransitionState;
 /**
  * @private
  */
-export function _restoreTransitionState(entry: BackstackEntry, snapshot: TransitionState): void;
+export function _restoreTransitionState(snapshot: TransitionState): void;
 /**
  * @private
  * Called when entry is removed from backstack (either back navigation or

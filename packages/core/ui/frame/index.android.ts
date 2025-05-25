@@ -359,7 +359,7 @@ export class Frame extends FrameBase {
 
 		// restore cached animation settings if we just completed simulated first navigation (no animation)
 		if (this._cachedTransitionState) {
-			_restoreTransitionState(this._currentEntry, this._cachedTransitionState);
+			_restoreTransitionState(this._cachedTransitionState);
 			this._cachedTransitionState = null;
 		}
 

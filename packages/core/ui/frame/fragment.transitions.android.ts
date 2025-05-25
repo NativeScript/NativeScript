@@ -503,7 +503,9 @@ export function _getTransitionState(entry: ExpandedEntry): TransitionState {
 	return transitionState;
 }
 
-export function _restoreTransitionState(entry: ExpandedEntry, snapshot: TransitionState): void {
+export function _restoreTransitionState(snapshot: TransitionState): void {
+	const entry = snapshot.entry as ExpandedEntry;
+
 	if (snapshot.enterTransitionListener) {
 		entry.enterTransitionListener = snapshot.enterTransitionListener;
 	}
