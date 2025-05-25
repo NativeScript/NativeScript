@@ -11,7 +11,7 @@ import { Trace } from '../../trace';
 import { View } from '../core/view';
 import { _stack, FrameBase, NavigationType } from './frame-common';
 
-import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _unsetTransitionProperties, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
+import { _clearEntry, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _disposeTransitionReferences, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
@@ -492,20 +492,26 @@ export class Frame extends FrameBase {
 	public _removeEntry(removed: BackstackEntry): void {
 		super._removeEntry(removed);
 
+		// There is the case of this condition being false due to fragment callbacks onDestroy() call which unsets entry fragment.
+		// This results in entry keeping unwanted references so _unsetTransitionProperties comes into play and cleans everything up
 		if (removed.fragment) {
 			_clearEntry(removed);
 		}
-		_unsetTransitionProperties(removed);
+
+		_disposeTransitionReferences(removed);
 
 		removed.fragment = null;
 		removed.viewSavedState = null;
 	}
 
 	protected _disposeBackstackEntry(entry: BackstackEntry): void {
+		// There is the case of this condition being false due to fragment callbacks onDestroy() call which unsets entry fragment.
+		// This results in entry keeping unwanted references so _unsetTransitionProperties comes into play and cleans everything up
 		if (entry.fragment) {
-			_clearFragment(entry);
+			_clearEntry(entry);
 		}
-		_unsetTransitionProperties(entry);
+
+		_disposeTransitionReferences(entry);
 
 		entry.recreated = false;
 		entry.fragment = null;

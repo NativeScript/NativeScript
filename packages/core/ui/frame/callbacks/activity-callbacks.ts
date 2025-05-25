@@ -5,8 +5,6 @@ import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData,
 import { Trace } from '../../../trace';
 import { View } from '../../core/view';
 
-import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions } from '../fragment.transitions';
-
 import { profile } from '../../../profiling';
 import { isEmbedded, setEmbeddedView } from '../../embedding';
 
