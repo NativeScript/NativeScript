@@ -32,13 +32,6 @@ export function _restoreTransitionState(snapshot: TransitionState): void;
  * @private
  * Called when entry is removed from backstack (either back navigation or
  * navigate with clear history). Removes all animations and transitions from entry
- * and clears all listeners in order to prevent memory leaks.
- */
-export function _disposeTransitionReferences(entry: BackstackEntry): void;
-/**
- * @private
- * Called when entry is removed from backstack (either back navigation or
- * navigate with clear history). Removes all animations and transitions from entry
  * and fragment and clears all listeners in order to prevent memory leaks.
  */
 export function _clearEntry(entry: BackstackEntry): void;

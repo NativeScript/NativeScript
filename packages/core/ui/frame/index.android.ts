@@ -11,7 +11,7 @@ import { Trace } from '../../trace';
 import { View } from '../core/view';
 import { _stack, FrameBase, NavigationType } from './frame-common';
 
-import { _clearEntry, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _disposeTransitionReferences, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
+import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
@@ -245,25 +245,27 @@ export class Frame extends FrameBase {
 		super.onLoaded();
 	}
 
-	public onFrameLoaded(): void {
-		super.onFrameLoaded();
+	protected override _notifyFrameEntryLoaded(): void {
+		const currentEntry = this._currentEntry || this._executingContext?.entry;
 
-		// TODO: Check if this is still needed since there have been new improvements regarding fragment restoration
-		// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
+		// Note: This is kept as a precaution and must execute before emitting the frame entry event.
+		// There's a bug with nested frames where sometimes the nested fragment is not recreated at all
 		// so we manually check on loaded event if the fragment is not recreated and recreate it
-		this._frameCreateTimeout = setTimeout(() => {
-			const currentEntry = this._currentEntry || this._executingContext?.entry;
-			if (currentEntry && !currentEntry.fragment) {
+		if (currentEntry && !currentEntry.fragment) {
+			this._frameCreateTimeout = setTimeout(() => {
 				const manager = this._getFragmentManager();
 				const transaction = manager.beginTransaction();
+
 				currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
 				_updateTransitions(currentEntry);
 				transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
 				transaction.commitAllowingStateLoss();
-			}
 
-			this._frameCreateTimeout = null;
-		}, 0);
+				this._frameCreateTimeout = null;
+			}, 0);
+		}
+
+		super._notifyFrameEntryLoaded();
 	}
 
 	onUnloaded() {
@@ -492,26 +494,18 @@ export class Frame extends FrameBase {
 	public _removeEntry(removed: BackstackEntry): void {
 		super._removeEntry(removed);
 
-		// There is the case of this condition being false due to fragment callbacks onDestroy() call which unsets entry fragment.
-		// This results in entry keeping unwanted references so _unsetTransitionProperties comes into play and cleans everything up
 		if (removed.fragment) {
 			_clearEntry(removed);
 		}
-
-		_disposeTransitionReferences(removed);
 
 		removed.fragment = null;
 		removed.viewSavedState = null;
 	}
 
 	protected _disposeBackstackEntry(entry: BackstackEntry): void {
-		// There is the case of this condition being false due to fragment callbacks onDestroy() call which unsets entry fragment.
-		// This results in entry keeping unwanted references so _unsetTransitionProperties comes into play and cleans everything up
 		if (entry.fragment) {
-			_clearEntry(entry);
+			_clearFragment(entry);
 		}
-
-		_disposeTransitionReferences(entry);
 
 		entry.recreated = false;
 		entry.fragment = null;

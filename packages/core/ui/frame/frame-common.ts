@@ -136,10 +136,7 @@ export class FrameBase extends CustomLayoutView {
 
 	public onFrameLoaded(): void {
 		this._processNextNavigationEntry();
-		this.notify({
-			eventName: 'frameEntryLoaded',
-			object: this,
-		});
+		this._notifyFrameEntryLoaded();
 	}
 
 	public canGoBack(): boolean {
@@ -336,6 +333,13 @@ export class FrameBase extends CustomLayoutView {
 		if (current && this._backStack.indexOf(current) < 0) {
 			this._removeEntry(current);
 		}
+	}
+
+	protected _notifyFrameEntryLoaded(): void {
+		this.notify({
+			eventName: 'frameEntryLoaded',
+			object: this,
+		});
 	}
 
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {

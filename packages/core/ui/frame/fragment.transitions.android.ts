@@ -525,21 +525,6 @@ export function _restoreTransitionState(snapshot: TransitionState): void {
 	entry.transitionName = snapshot.transitionName;
 }
 
-export function _disposeTransitionReferences(entry: ExpandedEntry): void {
-	entry.enterTransitionListener = null;
-	entry.exitTransitionListener = null;
-	entry.reenterTransitionListener = null;
-	entry.returnTransitionListener = null;
-	entry.enterAnimator = null;
-	entry.exitAnimator = null;
-	entry.popEnterAnimator = null;
-	entry.popExitAnimator = null;
-	entry.transition = null;
-	entry.transitionName = '';
-	entry.isNestedDefaultTransition = false;
-	entry.isAnimationRunning = false;
-}
-
 export function _clearFragment(entry: ExpandedEntry): void {
 	clearTransitions(entry, false);
 }
