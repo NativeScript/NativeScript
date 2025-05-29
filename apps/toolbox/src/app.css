@@ -261,3 +261,9 @@ Button {
 .no-shadow {
     box-shadow: none;
 }
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
