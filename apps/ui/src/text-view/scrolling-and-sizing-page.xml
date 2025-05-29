@@ -36,7 +36,7 @@
             <TextView hint="fixed-height gradient" class="fixed-height gradient" />
         </StackLayout>
 
-        <StackLayout class="p-10">
+        <StackLayout class="p-20">
             <TextView hint="fixed-height shadow" class="fixed-height shadow" />
         </StackLayout>
 
