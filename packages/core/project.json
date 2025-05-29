@@ -4,17 +4,9 @@
 	"sourceRoot": "packages/core",
 	"projectType": "library",
 	"generators": {},
-	"namedInputs": {
-		"default": ["{projectRoot}/**/*"],
-		"production": ["!{projectRoot}/**/*.spec.ts"]
-	},
+	"namedInputs": { "default": ["{projectRoot}/**/*"], "production": ["!{projectRoot}/**/*.spec.ts"] },
 	"targets": {
-		"lint": {
-			"executor": "@nx/eslint:lint",
-			"options": {
-				"lintFilePatterns": ["packages/core/**/*.ts", "packages/core/references.d.ts", "packages/core/**/*.spec.ts", "packages/core/**/*.spec.tsx", "packages/core/**/*.spec.js", "packages/core/**/*.spec.jsx", "packages/core/**/*.d.ts"]
-			}
-		},
+		"lint": { "executor": "@nx/eslint:lint", "options": { "lintFilePatterns": ["packages/core/**/*.ts", "packages/core/references.d.ts", "packages/core/**/*.spec.ts", "packages/core/**/*.spec.tsx", "packages/core/**/*.spec.js", "packages/core/**/*.spec.jsx", "packages/core/**/*.d.ts"] } },
 		"build": {
 			"executor": "@nx/js:tsc",
 			"inputs": ["default", "^production"],
@@ -28,59 +20,18 @@
 					"{workspaceRoot}/LICENSE",
 					"{projectRoot}/README.md",
 					"{projectRoot}/global-types.d.ts",
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/js-libs/",
-						"output": "./js-libs/"
-					},
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/cli-hooks/",
-						"output": "./cli-hooks/"
-					},
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/fetch/",
-						"output": "./fetch/"
-					},
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/css/",
-						"output": "./css/"
-					},
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/css-value/",
-						"output": "./css-value/"
-					},
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/platforms/",
-						"output": "./platforms/"
-					}
+					{ "glob": "**/*", "input": "{projectRoot}/js-libs/", "output": "./js-libs/" },
+					{ "glob": "**/*", "input": "{projectRoot}/cli-hooks/", "output": "./cli-hooks/" },
+					{ "glob": "**/*", "input": "{projectRoot}/fetch/", "output": "./fetch/" },
+					{ "glob": "**/*", "input": "{projectRoot}/css/", "output": "./css/" },
+					{ "glob": "**/*", "input": "{projectRoot}/css-value/", "output": "./css-value/" },
+					{ "glob": "**/*", "input": "{projectRoot}/platforms/", "output": "./platforms/" },
+					{ "glob": "**/*.d.ts", "input": "{projectRoot}/", "output": "./" }
 				]
 			},
 			"dependsOn": ["^build"]
 		},
-		"build.npm": {
-			"executor": "nx:run-commands",
-			"options": {
-				"commands": ["node tools/scripts/build-finish.ts core"],
-				"parallel": false
-			},
-			"outputs": ["{workspaceRoot}/dist/packages/core"],
-			"dependsOn": [
-				{
-					"target": "build"
-				}
-			]
-		},
-		"test": {
-			"executor": "@nx/vite:test",
-			"outputs": ["{options.reportsDirectory}"],
-			"options": {
-				"reportsDirectory": "../../coverage/packages/core"
-			}
-		}
+		"build.npm": { "executor": "nx:run-commands", "options": { "commands": ["node tools/scripts/build-finish.ts core"], "parallel": false }, "outputs": ["{workspaceRoot}/dist/packages/core"], "dependsOn": [{ "target": "build" }] },
+		"test": { "executor": "@nx/vite:test", "outputs": ["{options.reportsDirectory}"], "options": { "reportsDirectory": "../../coverage/packages/core" } }
 	}
 }
