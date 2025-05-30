@@ -26,7 +26,7 @@ export class ImageAsset extends ImageAssetBase {
 	}
 
 	public getImageAsync(callback: (image, error) => void) {
-		if (!this._android && !this.nativeImage) {
+		if (!this.android && !this.nativeImage) {
 			callback(null, 'Asset cannot be found.');
 			return;
 		}
