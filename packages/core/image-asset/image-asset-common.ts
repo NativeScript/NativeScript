@@ -55,7 +55,7 @@ export function getRequestedImageSize(src: { width: number; height: number }, op
 			optionsCopy.width = parsedWidth;
 		} else {
 			console.warn('Invalid width value provided: ', optionsCopy.width);
-			delete optionsCopy.width;
+			optionsCopy.width = undefined;
 		}
 	}
 
@@ -65,7 +65,7 @@ export function getRequestedImageSize(src: { width: number; height: number }, op
 			optionsCopy.height = parsedHeight;
 		} else {
 			console.warn('Invalid height value provided: ', optionsCopy.height);
-			delete optionsCopy.height;
+			optionsCopy.height = undefined;
 		}
 	}
 
