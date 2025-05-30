@@ -31,8 +31,14 @@ export class ImageAsset extends ImageAssetBase {
 			return;
 		}
 
-		const srcWidth = this.nativeImage ? this.nativeImage.size.width : Screen.mainScreen.widthPixels;
-		const srcHeight = this.nativeImage ? this.nativeImage.size.height : Screen.mainScreen.heightPixels;
+		const srcWidth = this.nativeImage ? (
+			typeof this.nativeImage.getWidth === 'function' ? this.nativeImage.getWidth() : this.nativeImage.size?.width
+		) : Screen.mainScreen.widthPixels;
+
+		const srcHeight = this.nativeImage ? (
+			typeof this.nativeImage.getHeight === 'function' ? this.nativeImage.getHeight() : this.nativeImage.size?.height
+		) : Screen.mainScreen.widthPixels;
+
 		const requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
 
 		const optionsCopy = {
