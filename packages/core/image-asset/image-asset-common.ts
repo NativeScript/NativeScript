@@ -47,8 +47,30 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 }
 
 export function getRequestedImageSize(src: { width: number; height: number }, options: ImageAssetOptions): { width: number; height: number } {
-	let reqWidth = options.width || Math.min(src.width, Screen.mainScreen.widthPixels);
-	let reqHeight = options.height || Math.min(src.height, Screen.mainScreen.heightPixels);
+	const optionsCopy = { ...(options || {}) };
+
+	if (typeof optionsCopy.width === 'string') {
+		const parsedWidth = parseInt(optionsCopy.width, 10);
+		if (!isNaN(parsedWidth)) {
+			optionsCopy.width = parsedWidth;
+		} else {
+			console.warn('Invalid width value provided: ', optionsCopy.width);
+			optionsCopy.width = undefined;
+		}
+	}
+
+	if (typeof optionsCopy.height === 'string') {
+		const parsedHeight = parseInt(optionsCopy.height, 10);
+		if (!isNaN(parsedHeight)) {
+			optionsCopy.height = parsedHeight;
+		} else {
+			console.warn('Invalid height value provided: ', optionsCopy.height);
+			optionsCopy.height = undefined;
+		}
+	}
+
+	let reqWidth = (optionsCopy.width as number) || Math.min(src.width, Screen.mainScreen.widthPixels);
+	let reqHeight = (optionsCopy.height as number) || Math.min(src.height, Screen.mainScreen.heightPixels);
 
 	if (options && options.keepAspectRatio) {
 		const safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
