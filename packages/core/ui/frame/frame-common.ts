@@ -121,6 +121,7 @@ export class FrameBase extends CustomLayoutView {
 
 	@profile
 	public onLoaded() {
+		// Property page refers to the page this frame is nested into
 		const parentFrame = this.page?.frame;
 
 		super.onLoaded();
