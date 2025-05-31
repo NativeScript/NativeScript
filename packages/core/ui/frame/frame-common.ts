@@ -17,6 +17,8 @@ import { NavigationData } from '.';
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
 
+const FRAME_ENTRY_LOADED_EVENT = '_frameEntryLoaded';
+
 function buildEntryFromArgs(arg: any): NavigationEntry {
 	let entry: NavigationEntry;
 	if (typeof arg === 'string') {
@@ -76,13 +78,13 @@ export class FrameBase extends CustomLayoutView {
 			return true;
 		} else if (top) {
 			let parentFrameCanGoBack = false;
-			let parentFrame = <FrameBase>getAncestor(top, 'Frame');
+			let parentFrame = getAncestor(top, 'Frame');
 
 			while (parentFrame && !parentFrameCanGoBack) {
 				if (parentFrame && parentFrame.canGoBack()) {
 					parentFrameCanGoBack = true;
 				} else {
-					parentFrame = <FrameBase>getAncestor(parentFrame, 'Frame');
+					parentFrame = getAncestor(parentFrame, 'Frame');
 				}
 			}
 
@@ -121,9 +123,41 @@ export class FrameBase extends CustomLayoutView {
 
 	@profile
 	public onLoaded() {
+		// Property page refers to the page this frame is nested into
+		const parentFrame = this.page?.frame;
+
 		super.onLoaded();
 
+		if (parentFrame?.isLoadingSubviews) {
+			const frameRef = new WeakRef(this);
+
+			parentFrame.once(FRAME_ENTRY_LOADED_EVENT, () => {
+				const frame = frameRef.deref();
+				if (frame) {
+					frame.onFrameLoaded();
+				}
+			});
+		} else {
+			this.onFrameLoaded();
+		}
+	}
+
+	@profile
+	public onUnloaded() {
+		// Property page refers to the page this frame is nested into
+		const parentFrame = this.page?.frame;
+
+		super.onUnloaded();
+
+		// This is a precaution in case the method is called asynchronously during the loading procedure
+		if (parentFrame && parentFrame.hasListeners(FRAME_ENTRY_LOADED_EVENT)) {
+			parentFrame.off(FRAME_ENTRY_LOADED_EVENT);
+		}
+	}
+
+	public onFrameLoaded(): void {
 		this._processNextNavigationEntry();
+		this._notifyFrameEntryLoaded();
 	}
 
 	public canGoBack(): boolean {
@@ -322,10 +356,18 @@ export class FrameBase extends CustomLayoutView {
 		}
 	}
 
+	protected _notifyFrameEntryLoaded(): void {
+		this.notify({
+			eventName: FRAME_ENTRY_LOADED_EVENT,
+			object: this,
+		});
+	}
+
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
-		let frameAncestor: FrameBase = this;
+		let frameAncestor = this as FrameBase;
+
 		while (frameAncestor) {
-			frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);
+			frameAncestor = getAncestor(frameAncestor, FrameBase);
 			if (frameAncestor === parentFrameCandidate) {
 				return true;
 			}
