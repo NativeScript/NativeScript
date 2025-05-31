@@ -125,7 +125,7 @@ export class FrameBase extends CustomLayoutView {
 
 		super.onLoaded();
 
-		if (parentFrame && parentFrame.isLoadingSubviews) {
+		if (parentFrame?.isLoadingSubviews) {
 			parentFrame.once('frameEntryLoaded', () => {
 				this.onFrameLoaded();
 			});
