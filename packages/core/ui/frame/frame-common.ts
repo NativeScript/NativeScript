@@ -144,11 +144,14 @@ export class FrameBase extends CustomLayoutView {
 
 	@profile
 	public onUnloaded() {
+		// Property page refers to the page this frame is nested into
+		const parentFrame = this.page?.frame;
+
 		super.onUnloaded();
 
 		// This is a precaution in case the method is called asynchronously during the loading procedure
-		if (this.hasListeners(FRAME_ENTRY_LOADED_EVENT)) {
-			this.off(FRAME_ENTRY_LOADED_EVENT);
+		if (parentFrame && parentFrame.hasListeners(FRAME_ENTRY_LOADED_EVENT)) {
+			parentFrame.off(FRAME_ENTRY_LOADED_EVENT);
 		}
 	}
 
