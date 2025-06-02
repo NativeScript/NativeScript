@@ -117,12 +117,13 @@ export interface ShowModalOptions {
  * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getAncestor(view: ViewBaseDefinition, criterion: string | { new () }): ViewBaseDefinition {
-	let matcher: (view: ViewBaseDefinition) => boolean = null;
+export function getAncestor<T extends ViewBaseDefinition = ViewBaseDefinition>(view: T, criterion: string | { new () }): T {
+	let matcher: (view: ViewBaseDefinition) => view is T;
+
 	if (typeof criterion === 'string') {
-		matcher = (view: ViewBaseDefinition) => view.typeName === criterion;
+		matcher = (view: ViewBaseDefinition): view is T => view.typeName === criterion;
 	} else {
-		matcher = (view: ViewBaseDefinition) => view instanceof criterion;
+		matcher = (view: ViewBaseDefinition): view is T => view instanceof criterion;
 	}
 
 	for (let parent = view.parent; parent != null; parent = parent.parent) {
@@ -345,6 +346,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private _androidView: Object;
 	private _style: Style;
 	private _isLoaded: boolean;
+	private _isLoadingSubviews: boolean;
 
 	/**
 	 * @deprecated
@@ -637,6 +639,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		return this._isLoaded;
 	}
 
+	get isLoadingSubviews(): boolean {
+		return this._isLoadingSubviews;
+	}
+
 	get ['class'](): string {
 		return this.className;
 	}
@@ -697,11 +703,15 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this._cssState.onLoaded();
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
+		this._isLoadingSubviews = true;
+
 		this.eachChild((child) => {
 			this.loadView(child);
 
 			return true;
 		});
+
+		this._isLoadingSubviews = false;
 
 		this._emit('loaded');
 	}
