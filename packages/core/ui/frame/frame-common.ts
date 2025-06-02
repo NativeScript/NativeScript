@@ -45,6 +45,7 @@ export class FrameBase extends CustomLayoutView {
 	private _transition: NavigationTransition;
 	private _backStack = new Array<BackstackEntry>();
 	private _navigationQueue = new Array<NavigationContext>();
+	private _frameEntryLoadedCallback: () => void;
 
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 	public _currentEntry: BackstackEntry;
@@ -130,13 +131,17 @@ export class FrameBase extends CustomLayoutView {
 
 		if (parentFrame?.isLoadingSubviews) {
 			const frameRef = new WeakRef(this);
-
-			parentFrame.once(FRAME_ENTRY_LOADED_EVENT, () => {
+			const callback = () => {
 				const frame = frameRef.deref();
 				if (frame) {
 					frame.onFrameLoaded();
 				}
-			});
+
+				this._frameEntryLoadedCallback = null;
+			};
+
+			parentFrame.once(FRAME_ENTRY_LOADED_EVENT, callback);
+			this._frameEntryLoadedCallback = callback;
 		} else {
 			this.onFrameLoaded();
 		}
@@ -146,12 +151,14 @@ export class FrameBase extends CustomLayoutView {
 	public onUnloaded() {
 		// Property page refers to the page this frame is nested into
 		const parentFrame = this.page?.frame;
+		const frameEntryLoadedCallback = this._frameEntryLoadedCallback;
 
 		super.onUnloaded();
+		this._frameEntryLoadedCallback = null;
 
 		// This is a precaution in case the method is called asynchronously during the loading procedure
-		if (parentFrame && parentFrame.hasListeners(FRAME_ENTRY_LOADED_EVENT)) {
-			parentFrame.off(FRAME_ENTRY_LOADED_EVENT);
+		if (parentFrame && frameEntryLoadedCallback) {
+			parentFrame.off(FRAME_ENTRY_LOADED_EVENT, frameEntryLoadedCallback);
 		}
 	}
 
