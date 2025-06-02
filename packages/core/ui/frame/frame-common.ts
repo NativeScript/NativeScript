@@ -140,8 +140,8 @@ export class FrameBase extends CustomLayoutView {
 				this._frameEntryLoadedCallback = null;
 			};
 
-			parentFrame.once(FRAME_ENTRY_LOADED_EVENT, callback);
 			this._frameEntryLoadedCallback = callback;
+			parentFrame.once(FRAME_ENTRY_LOADED_EVENT, callback);
 		} else {
 			this.onFrameLoaded();
 		}
