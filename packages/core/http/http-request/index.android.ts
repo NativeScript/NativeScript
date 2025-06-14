@@ -153,8 +153,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 					str = result.responseAsString;
 				}
 
-				// Use safeJsonStringify instead of parseJSON directly
-				return JSON.parse(safeJsonStringify(parseJSON(str)));
+				return parseJSON(str);
 			},
 			toImage: () => {
 				ensureImageSource();
