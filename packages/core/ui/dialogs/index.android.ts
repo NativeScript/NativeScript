@@ -48,7 +48,7 @@ function showDialog(builder: android.app.AlertDialog.Builder) {
 
 	if (color) {
 		const buttons: android.widget.Button[] = [];
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < 4; i++) {
 			const id = dlg
 				.getContext()
 				.getResources()
@@ -82,7 +82,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
 					dialog.cancel();
 					callback(true);
 				},
-			})
+			}),
 		);
 	}
 
@@ -94,7 +94,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
 					dialog.cancel();
 					callback(false);
 				},
-			})
+			}),
 		);
 	}
 
@@ -106,7 +106,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
 					dialog.cancel();
 					callback(undefined);
 				},
-			})
+			}),
 		);
 	}
 	alert.setOnDismissListener(
@@ -114,7 +114,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
 			onDismiss: function () {
 				callback(false);
 			},
-		})
+		}),
 	);
 }
 
@@ -132,14 +132,14 @@ export function alert(arg: any): Promise<void> {
 						dialog.cancel();
 						resolve();
 					},
-				})
+				}),
 			);
 			alert.setOnDismissListener(
 				new android.content.DialogInterface.OnDismissListener({
 					onDismiss: function () {
 						resolve();
 					},
-				})
+				}),
 			);
 
 			showDialog(alert);
@@ -158,7 +158,7 @@ export function confirm(arg: any): Promise<boolean> {
 						okButtonText: DialogStrings.OK,
 						cancelButtonText: DialogStrings.CANCEL,
 						message: arg + '',
-				  }
+					}
 				: arg;
 			const alert = createAlertDialog(options);
 
@@ -345,7 +345,7 @@ export function action(...args): Promise<string> {
 						onClick: function (dialog: android.content.DialogInterface, which: number) {
 							resolve(options.actions[which]);
 						},
-					})
+					}),
 				);
 			}
 
@@ -357,7 +357,7 @@ export function action(...args): Promise<string> {
 							dialog.cancel();
 							resolve(options.cancelButtonText);
 						},
-					})
+					}),
 				);
 			}
 
@@ -370,7 +370,7 @@ export function action(...args): Promise<string> {
 							resolve('');
 						}
 					},
-				})
+				}),
 			);
 
 			showDialog(alert);
