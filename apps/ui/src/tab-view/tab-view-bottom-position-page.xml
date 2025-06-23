@@ -1,17 +1,17 @@
-<Page>
-  <TabView androidTabsPosition="bottom">
+<Page  backgroundColor="black">
+  <TabView androidTabsPosition="bottom" backgroundColor="black" tabBackgroundColor="black">
     <TabView.items>
-      <TabViewItem title="First">
+      <TabViewItem title="First" iconSource="res://add_to_fav">
         <TabViewItem.view>
-          <GridLayout>
-            <Label text="First View" verticalAlignment="center" horizontalAlignment="center"/>
+          <GridLayout backgroundColor="black">
+            <Label text="First Tab" verticalAlignment="center" horizontalAlignment="center" color="white"/>
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>
-      <TabViewItem title="Second">
+      <TabViewItem title="Second" iconSource="res://add_to_fav">
         <TabViewItem.view>
-          <GridLayout>
-            <Label text="Second View" verticalAlignment="center" horizontalAlignment="center"/>
+          <GridLayout backgroundColor="black">
+            <Label text="Second Tab" verticalAlignment="center" horizontalAlignment="center" color="white"/>
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>

@@ -189,7 +189,7 @@ function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarI
 		if (isIconAboveTitle) {
 			tabBarItem.titlePositionAdjustment = {
 				horizontal: 0,
-				vertical: -20,
+				vertical: -8,
 			};
 		} else {
 			tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
@@ -199,9 +199,9 @@ function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarI
 	if (!tabItem.title) {
 		if (isIconAboveTitle) {
 			tabBarItem.imageInsets = new UIEdgeInsets({
-				top: 6,
+				top: 2,
 				left: 0,
-				bottom: -6,
+				bottom: -2,
 				right: 0,
 			});
 		} else {
@@ -552,10 +552,10 @@ export class TabView extends TabViewBase {
 	}
 
 	private _updateAppearance(tabBar: UITabBar, appearance: UITabBarAppearance) {
-		tabBar.standardAppearance = appearance;
-		if (SDK_VERSION >= 15) {
-			tabBar.scrollEdgeAppearance = appearance;
-		}
+		// tabBar.standardAppearance = appearance;
+		// if (SDK_VERSION >= 15) {
+		// 	tabBar.scrollEdgeAppearance = appearance;
+		// }
 	}
 
 	[selectedIndexProperty.setNative](value: number) {

@@ -8,13 +8,13 @@ let iconModes = isIOS ? ['automatic', 'alwaysOriginal', 'alwaysTemplate', undefi
 export const onNavigate = updateButtons;
 
 export function onChangeRenderingMode(args: EventData) {
-	let tabView = (<Button>args.object).page.getViewById<TabView>('tab-view');
-	if (isIOS) {
-		tabView.iosIconRenderingMode = <'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>iconModes[(iconModes.indexOf(tabView.iosIconRenderingMode) + 1) % iconModes.length];
-	} else {
-		tabView.androidIconRenderingMode = <'alwaysOriginal' | 'alwaysTemplate'>iconModes[(iconModes.indexOf(tabView.androidIconRenderingMode) + 1) % iconModes.length];
-	}
-	updateButtons(args);
+	// let tabView = (<Button>args.object).page.getViewById<TabView>('tab-view');
+	// if (isIOS) {
+	// 	tabView.iosIconRenderingMode = <'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>iconModes[(iconModes.indexOf(tabView.iosIconRenderingMode) + 1) % iconModes.length];
+	// } else {
+	// 	tabView.androidIconRenderingMode = <'alwaysOriginal' | 'alwaysTemplate'>iconModes[(iconModes.indexOf(tabView.androidIconRenderingMode) + 1) % iconModes.length];
+	// }
+	// updateButtons(args);
 }
 
 function updateButtons(args) {

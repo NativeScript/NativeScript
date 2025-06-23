@@ -6,7 +6,7 @@
 
     <GridLayout class="switch-demo-page">   
       <ScrollView>
-          <StackLayout ios:padding="20" visionos:padding="40">
+          <StackLayout ios:paddingLeft="20" ios:paddingRight="40" visionos:padding="40">
 
             <GridLayout columns="*, auto" marginTop="24">
                 <Label text="Default + Checked + Enabled" />
