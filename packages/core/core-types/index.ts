@@ -91,7 +91,7 @@ export namespace CoreTypes {
 		export const lowercase = 'lowercase';
 	}
 
-	export type WhiteSpaceType = 'normal' | 'nowrap' | CSSWideKeywords;
+	export type WhiteSpaceType = 'normal' | 'nowrap' | 'wrap' | CSSWideKeywords;
 	export namespace WhiteSpace {
 		export const normal = 'normal';
 		export const nowrap = 'nowrap';
