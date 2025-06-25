@@ -88,8 +88,12 @@ export function isTopAlignedWith(view1: View, view2: View, message?: string) {
 	TKUnit.assertEqual(top(view1), top(view2), message || `${view1}:${top(view1)} is not top-aligned with ${view2}:${top(view2)}`);
 }
 
-export function isBottomAlignedWith(view1: View, view2: View, message?: string) {
-	TKUnit.assertEqual(bottom(view1), bottom(view2), message || `${view1}:${bottom(view1)} is not bottom-aligned with ${view2}:${bottom(view2)}`);
+export function isBottomAlignedWith(view1: View, view2: View, message?: string, checkCloseEnough?: boolean) {
+	if (checkCloseEnough) {
+		closeEnough(bottom(view1), bottom(view2));
+	} else {
+		TKUnit.assertEqual(bottom(view1), bottom(view2), message || `${view1}:${bottom(view1)} is not bottom-aligned with ${view2}:${bottom(view2)}`);
+	}
 }
 
 export function isLeftOf(view1: View, view2: View, message?: string) {

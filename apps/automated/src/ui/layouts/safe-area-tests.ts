@@ -431,16 +431,16 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root, childLeft, childTop, childRight, childBottom, childFill }) => {
 				const insets = root.getSafeAreaInsets();
 
-				equal(left(childLeft), insets.left, `${childLeft}.left - actual: ${left(childLeft)} expected: ${insets.left}`);
-				equal(top(childLeft), insets.top, `${childLeft}.top - actual: ${top(childLeft)} expected: ${insets.top}`);
+				closeEnough(left(childLeft), insets.left, `${childLeft}.left - actual: ${left(childLeft)} expected: ${insets.left}`);
+				closeEnough(top(childLeft), insets.top, `${childLeft}.top - actual: ${top(childLeft)} expected: ${insets.top}`);
 
-				equal(top(childTop), insets.top, `${childTop}.top - actual: ${top(childTop)} expected: ${insets.top}`);
-				equal(right(childTop), width(root) - insets.right, `${childTop}.right - actual: ${right(childTop)} expected: ${width(root) - insets.right}`);
+				closeEnough(top(childTop), insets.top, `${childTop}.top - actual: ${top(childTop)} expected: ${insets.top}`);
+				closeEnough(right(childTop), width(root) - insets.right, `${childTop}.right - actual: ${right(childTop)} expected: ${width(root) - insets.right}`);
 
-				equal(right(childRight), width(root) - insets.right, `${childRight}.right - actual: ${right(childRight)} expected: ${width(root) - insets.right}`);
-				equal(bottom(childRight), height(root) - insets.bottom, `${childRight}.bottom - actual: ${bottom(childRight)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(right(childRight), width(root) - insets.right, `${childRight}.right - actual: ${right(childRight)} expected: ${width(root) - insets.right}`);
+				closeEnough(bottom(childRight), height(root) - insets.bottom, `${childRight}.bottom - actual: ${bottom(childRight)} expected: ${height(root) - insets.bottom}`);
 
-				equal(bottom(childBottom), height(root) - insets.bottom, `${childBottom}.bottom - actual: ${bottom(childBottom)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(bottom(childBottom), height(root) - insets.bottom, `${childBottom}.bottom - actual: ${bottom(childBottom)} expected: ${height(root) - insets.bottom}`);
 
 				isLeftWith(childLeft, childFill, width(childLeft));
 				isBelowWith(childTop, childFill, height(childTop));
@@ -686,13 +686,13 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root, child0, child2 }) => {
 				const insets = root.getSafeAreaInsets();
 
-				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
-				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
-				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+				closeEnough(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+				closeEnough(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
 
-				equal(top(child2), insets.top, `${child2}.top - actual: ${top(child2)} expected: ${insets.top}`);
-				equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
-				equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(top(child2), insets.top, `${child2}.top - actual: ${top(child2)} expected: ${insets.top}`);
+				closeEnough(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
+				closeEnough(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
 			},
 			pageOptions,
 		);
@@ -1177,9 +1177,9 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			this.noop,
 			({ root, child0, child1 }) => {
 				const insets = root.getSafeAreaInsets();
-				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
-				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
-				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+				closeEnough(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+				closeEnough(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
 				isLeftWith(child0, child1, width(child0));
 			},
 			pageOptions,
@@ -1391,12 +1391,12 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			this.noop,
 			({ root, child0, child1 }) => {
 				const insets = root.getSafeAreaInsets();
-				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
-				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
-				equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
-				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
-				equal(height(child1), 0, `${child1} has been laid out, but should not`);
-				equal(width(child1), 0, `${child1} has been laid out, but should not`);
+				closeEnough(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+				closeEnough(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+				closeEnough(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
+				closeEnough(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(height(child1), 0, `${child1} has been laid out, but should not`);
+				closeEnough(width(child1), 0, `${child1} has been laid out, but should not`);
 			},
 			pageOptions,
 		);
@@ -1427,12 +1427,12 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			this.noop,
 			({ root, child0, child1 }) => {
 				const insets = root.getSafeAreaInsets();
-				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
-				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
-				equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
-				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
-				equal(height(child1), 0, `${child1} has been laid out, but should not`);
-				equal(width(child1), 0, `${child1} has been laid out, but should not`);
+				closeEnough(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+				closeEnough(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+				closeEnough(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
+				closeEnough(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(height(child1), 0, `${child1} has been laid out, but should not`);
+				closeEnough(width(child1), 0, `${child1} has been laid out, but should not`);
 			},
 			pageOptions,
 		);

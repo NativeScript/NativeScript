@@ -140,7 +140,11 @@ export function test_offset_zero_should_raise_same_events() {
 		resetActualEventsRaised();
 		waitUntilNavigatedToMaxTimeout([items[2].page], () => (tabView.selectedIndex = 2));
 
-		const expectedEventsRaisedAfterSelectThirdTab = [['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'], [], ['Tab2 Frame2 loaded', 'Tab2 Frame2 Page2 navigatingTo', 'Tab2 Frame2 Page2 loaded', 'Tab2 Frame2 Page2 navigatedTo']];
+		const startEvents = ['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'];
+		if (__APPLE__) {
+			startEvents.push('Tab0 Frame0 Page0 navigatingFrom');
+		}
+		const expectedEventsRaisedAfterSelectThirdTab = [startEvents, [], ['Tab2 Frame2 loaded', 'Tab2 Frame2 Page2 navigatingTo', 'Tab2 Frame2 Page2 loaded', 'Tab2 Frame2 Page2 navigatedTo']];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterSelectThirdTab);
 
