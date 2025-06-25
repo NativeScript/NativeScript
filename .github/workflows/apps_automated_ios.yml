@@ -1,4 +1,7 @@
 name: 'apps/automated/ios'
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   push:
@@ -51,7 +54,7 @@ jobs:
       - name: Start iOS Simulator
         uses: futureware-tech/simulator-action@v4
         with:
-          model: 'iPhone 15'
+          model: 'iPhone 15 Pro'
           os_version: '17.5'
 
       - name: Run tests on iOS Simulator
