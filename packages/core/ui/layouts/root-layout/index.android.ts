@@ -76,10 +76,10 @@ export class RootLayout extends RootLayoutBase {
 		return this._playAnimation(this._getAnimationSet(view, exitState), exitState?.duration);
 	}
 
-	private _getAnimationSet(view: View, shadeCoverAnimation: TransitionAnimation, backgroundColor: string = defaultShadeCoverOptions.color): Array<android.animation.Animator> {
+	private _getAnimationSet(view: View, shadeCoverAnimation: TransitionAnimation, backgroundColor?: string): Array<android.animation.Animator> {
 		const isBackgroundGradient = backgroundColor && backgroundColor.startsWith('linear-gradient');
 
-		const animationSet = Array.create(android.animation.Animator, isBackgroundGradient ? 6 : 7);
+		const animationSet = Array.create(android.animation.Animator, !backgroundColor || isBackgroundGradient ? 6 : 7);
 		animationSet[0] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'translationX', [shadeCoverAnimation.translateX]);
 		animationSet[1] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'translationY', [shadeCoverAnimation.translateY]);
 		animationSet[2] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'scaleX', [shadeCoverAnimation.scaleX]);
@@ -97,7 +97,10 @@ export class RootLayout extends RootLayoutBase {
 			if (view.backgroundImage) {
 				view.backgroundImage = undefined;
 			}
-			animationSet[6] = this._getBackgroundColorAnimator(view, backgroundColor);
+
+			if (backgroundColor) {
+				animationSet[6] = this._getBackgroundColorAnimator(view, backgroundColor);
+			}
 		}
 		return animationSet;
 	}
