@@ -155,7 +155,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 		TKUnit.assertEqual(actualValue, expectedValue, 'selectedIndex should be undefined.');
 	};
 
-	public testSelectedIndexBecomesUndefinedWhenItemsSetToNull = function () {
+	public testSelectedIndexBecomesNegativeOneWhenItemsSetToNull = function () {
 		var tabView = this.testView;
 		tabView.items = this._createItems(10);
 		tabView.selectedIndex = 9;
@@ -164,7 +164,7 @@ export class TabViewTest extends UITest<tabViewModule.TabView> {
 		tabView.items = null;
 		var expectedValue = -1;
 		var actualValue = tabView.selectedIndex;
-		TKUnit.assertEqual(actualValue, expectedValue, 'selectedIndex should be undefined.');
+		TKUnit.assertEqual(actualValue, expectedValue, 'selectedIndex should be -1.');
 	};
 
 	public testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
