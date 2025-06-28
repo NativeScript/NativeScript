@@ -4,6 +4,7 @@ import { RootLayoutBase, defaultShadeCoverOptions } from './root-layout-common';
 import { TransitionAnimation, ShadeCoverOptions } from '.';
 import { parseLinearGradient } from '../../../css/parser';
 import { LinearGradient } from '../../styling/linear-gradient';
+import { layout } from '../../../utils';
 
 export * from './root-layout-common';
 
@@ -38,11 +39,20 @@ export class RootLayout extends RootLayoutBase {
 	}
 
 	protected _initShadeCover(view: View, shadeOptions: ShadeCoverOptions): void {
-		const initialState = <TransitionAnimation>{
+		const options = <TransitionAnimation>{
 			...defaultShadeCoverOptions.animation.enterFrom,
 			...shadeOptions?.animation?.enterFrom,
 		};
-		this._playAnimation(this._getAnimationSet(view, initialState));
+		const nativeView: android.view.View = view?.nativeViewProtected;
+
+		if (nativeView) {
+			nativeView.setAlpha(options.opacity);
+			org.nativescript.widgets.ViewHelper.setScaleX(nativeView, float(options.scaleX));
+			org.nativescript.widgets.ViewHelper.setScaleY(nativeView, float(options.scaleY));
+			org.nativescript.widgets.ViewHelper.setTranslateX(nativeView, layout.toDevicePixels(options.translateX));
+			org.nativescript.widgets.ViewHelper.setTranslateY(nativeView, layout.toDevicePixels(options.translateY));
+			org.nativescript.widgets.ViewHelper.setRotate(nativeView, float(options.rotate));
+		}
 	}
 
 	protected _updateShadeCover(view: View, shadeOptions: ShadeCoverOptions): Promise<void> {
@@ -51,6 +61,7 @@ export class RootLayout extends RootLayoutBase {
 			...shadeOptions,
 		};
 		const duration = options.animation?.enterFrom?.duration || defaultShadeCoverOptions.animation.enterFrom.duration;
+
 		return this._playAnimation(
 			this._getAnimationSet(
 				view,
