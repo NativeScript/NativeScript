@@ -390,7 +390,7 @@ export class TabView extends TabViewBase {
 		}
 
 		// The "< Back" and "< More" navigation bars should not be visible simultaneously.
-		const page = this.page || this._selectedView.page || (<any>this)._selectedView.currentPage;
+		const page = this.page || this._selectedView?.page || (<any>this)._selectedView?.currentPage;
 		if (!page || !page.frame) {
 			return;
 		}

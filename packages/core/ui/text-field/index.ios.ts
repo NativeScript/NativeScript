@@ -1,5 +1,5 @@
 import { TextFieldBase, secureProperty } from './text-field-common';
-import { textProperty } from '../text-base';
+import { textOverflowProperty, textProperty, whiteSpaceProperty } from '../text-base';
 import { hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
@@ -316,5 +316,44 @@ export class TextField extends TextFieldBase {
 	}
 	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
+	}
+
+	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
+		this.adjustLineBreak();
+	}
+
+	[textOverflowProperty.setNative](value: CoreTypes.TextOverflowType) {
+		this.adjustLineBreak();
+	}
+
+	private adjustLineBreak() {
+		let paragraphStyle: NSMutableParagraphStyle;
+
+		switch (this.whiteSpace) {
+			case 'nowrap':
+				switch (this.textOverflow) {
+					case 'clip':
+						paragraphStyle = NSMutableParagraphStyle.new();
+						paragraphStyle.lineBreakMode = NSLineBreakMode.ByClipping;
+						break;
+					default:
+						// ellipsis
+						paragraphStyle = NSMutableParagraphStyle.new();
+						paragraphStyle.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+						break;
+				}
+				break;
+			case 'wrap':
+				paragraphStyle = NSMutableParagraphStyle.new();
+				paragraphStyle.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+				break;
+		}
+
+		if (paragraphStyle) {
+			let attributedString = NSMutableAttributedString.alloc().initWithString(this.nativeViewProtected.text || '');
+			attributedString.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, NSRangeFromString(`{0,${attributedString.length}}`));
+
+			this.nativeViewProtected.attributedText = attributedString;
+		}
 	}
 }
