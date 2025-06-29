@@ -121,6 +121,10 @@ class UIViewControllerImpl extends UIViewController {
 		if (!owner._presentedViewController && newEntry && (!frame || frame.currentPage !== owner)) {
 			const isBack = isBackNavigationTo(owner, newEntry);
 			owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
+
+			if (frame) {
+				frame._onNavigatingToInternal(newEntry, isBack);
+			}
 		}
 
 		if (frame) {
