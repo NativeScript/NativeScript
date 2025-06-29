@@ -155,6 +155,7 @@ export class Frame extends FrameBase {
 		this._attachedToWindow = true;
 		this._isReset = false;
 		this._processNextNavigationEntry();
+		this._ensureEntryFragment();
 	}
 
 	_onDetachedFromWindow(): void {
@@ -252,28 +253,7 @@ export class Frame extends FrameBase {
 			this._originalBackground = null;
 		}
 
-		// Avoid recreating fragment here after view reset/disposal as it can cause errors
-		if (!this._isReset) {
-			// TODO: Check if this fragment precaution is still needed
-			this._frameCreateTimeout = setTimeout(() => {
-				// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
-				// so we manually check on loaded event if the fragment is not recreated and recreate it
-				const currentEntry = this._currentEntry || this._executingContext?.entry;
-				if (currentEntry) {
-					if (!currentEntry.fragment) {
-						const manager = this._getFragmentManager();
-						const transaction = manager.beginTransaction();
-						currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
-						_updateTransitions(currentEntry);
-						transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
-						transaction.commitAllowingStateLoss();
-					}
-				}
-
-				this._frameCreateTimeout = null;
-			}, 0);
-		}
-
+		this._ensureEntryFragment();
 		super.onLoaded();
 	}
 
@@ -284,6 +264,38 @@ export class Frame extends FrameBase {
 			clearTimeout(this._frameCreateTimeout);
 			this._frameCreateTimeout = null;
 		}
+	}
+
+	/**
+	 * TODO: Check if this fragment precaution is still needed
+	 */
+	private _ensureEntryFragment(): void {
+		// in case the activity is "reset" using resetRootView or disposed we must wait for
+		// the attachedToWindow event to make the first navigation or it will crash
+		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
+		// though we should not do it on app "start"
+		// or it will create a "flash" to activity background color
+		if (this._isReset && !this._attachedToWindow) {
+			return;
+		}
+
+		this._frameCreateTimeout = setTimeout(() => {
+			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
+			// so we manually check on loaded event if the fragment is not recreated and recreate it
+			const currentEntry = this._currentEntry || this._executingContext?.entry;
+			if (currentEntry) {
+				if (!currentEntry.fragment) {
+					const manager = this._getFragmentManager();
+					const transaction = manager.beginTransaction();
+					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
+					_updateTransitions(currentEntry);
+					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
+					transaction.commitAllowingStateLoss();
+				}
+			}
+
+			this._frameCreateTimeout = null;
+		}, 0);
 	}
 
 	private disposeCurrentFragment(): void {
