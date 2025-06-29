@@ -242,30 +242,25 @@ export class Frame extends FrameBase {
 			this._originalBackground = null;
 		}
 
+		this._frameCreateTimeout = setTimeout(() => {
+			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
+			// so we manually check on loaded event if the fragment is not recreated and recreate it
+			const currentEntry = this._currentEntry || this._executingContext?.entry;
+			if (currentEntry) {
+				if (!currentEntry.fragment) {
+					const manager = this._getFragmentManager();
+					const transaction = manager.beginTransaction();
+					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
+					_updateTransitions(currentEntry);
+					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
+					transaction.commitAllowingStateLoss();
+				}
+			}
+
+			this._frameCreateTimeout = null;
+		}, 0);
+
 		super.onLoaded();
-	}
-
-	protected override _notifyFrameEntryLoaded(): void {
-		const currentEntry = this._currentEntry || this._executingContext?.entry;
-
-		// Note: This is kept as a precaution and must execute before emitting the frame entry event.
-		// There's a bug with nested frames where sometimes the nested fragment is not recreated at all
-		// so we manually check on loaded event if the fragment is not recreated and recreate it
-		if (currentEntry && !currentEntry.fragment) {
-			this._frameCreateTimeout = setTimeout(() => {
-				const manager = this._getFragmentManager();
-				const transaction = manager.beginTransaction();
-
-				currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
-				_updateTransitions(currentEntry);
-				transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
-				transaction.commitAllowingStateLoss();
-
-				this._frameCreateTimeout = null;
-			}, 0);
-		}
-
-		super._notifyFrameEntryLoaded();
 	}
 
 	onUnloaded() {
