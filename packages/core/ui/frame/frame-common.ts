@@ -476,6 +476,10 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
+		this._onNavigatingToInternal(backstackEntry, isBack);
+	}
+
+	public _onNavigatingToInternal(backstackEntry: BackstackEntry, isBack: boolean) {
 		if (this.currentPage) {
 			this.currentPage.onNavigatingFrom(isBack);
 		}
