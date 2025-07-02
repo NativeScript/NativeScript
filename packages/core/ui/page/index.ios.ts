@@ -254,6 +254,12 @@ class UIViewControllerImpl extends UIViewController {
 			if (!willSelectViewController || willSelectViewController === tab.selectedViewController) {
 				const isBack = isBackNavigationFrom(this, owner);
 				owner.onNavigatingFrom(isBack);
+			} else {
+				// Before iOS 18, certain versions had this method called too early in the tab lifecycle, resulting in not emitting navigatingFrom event.
+				// To maintain implementation for those versions, store a flag and emit the event upon calling viewDidDisappear.
+				if (tab && tab.selectedViewController === this.navigationController) {
+					this['_isPendingNavigatingFrom'] = true;
+				}
 			}
 		}
 		owner.updateWithWillDisappear(animated);
@@ -263,14 +269,24 @@ class UIViewControllerImpl extends UIViewController {
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
 
-		const page = this._owner?.deref();
+		const owner = this._owner?.deref();
+
 		// Exit if no page or page is hiding because it shows another page modally.
-		if (!page || page.modal || page._presentedViewController) {
+		if (!owner || owner.modal || owner._presentedViewController) {
 			return;
 		}
+
 		// Forward navigation does not remove page from frame so we raise unloaded manually.
-		if (page.isLoaded) {
-			page.callUnloaded();
+		if (owner.isLoaded) {
+			owner.callUnloaded();
+		}
+
+		// Emit the navigatingFrom event if it wasn't emitted during viewWillDisappear call
+		if (this['_isPendingNavigatingFrom']) {
+			delete this['_isPendingNavigatingFrom'];
+
+			const isBack = isBackNavigationFrom(this, owner);
+			owner.onNavigatingFrom(isBack);
 		}
 	}
 
