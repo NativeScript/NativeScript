@@ -3,11 +3,9 @@ import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, 
 import { isEnabledProperty } from '../core/view';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty } from '../styling/style-properties';
-import { iOSNativeHelper } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './search-bar-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
@@ -62,7 +60,7 @@ class UISearchBarImpl extends UISearchBar {
 	sizeThatFits(size: CGSize): CGSize {
 		// iOS11 SDK does not support passing sizeThatFits(...) non-finite width value;
 		// iOS layout system will take care to size the element properly when passed 0
-		if (majorVersion >= 11 && size.width === Number.POSITIVE_INFINITY) {
+		if (SDK_VERSION >= 11 && size.width === Number.POSITIVE_INFINITY) {
 			size.width = 0;
 		}
 
@@ -167,6 +165,7 @@ export class SearchBar extends SearchBarBase {
 	[textProperty.getDefault](): string {
 		return '';
 	}
+	// @ts-expect-error
 	[textProperty.setNative](value: string) {
 		const text = value === null || value === undefined ? '' : value.toString();
 		this.ios.text = text;
@@ -175,6 +174,7 @@ export class SearchBar extends SearchBarBase {
 	[hintProperty.getDefault](): string {
 		return '';
 	}
+	// @ts-expect-error
 	[hintProperty.setNative](value: string) {
 		this._updateAttributedPlaceholder();
 	}

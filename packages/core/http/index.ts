@@ -25,7 +25,7 @@ export interface HttpRequestOptions {
 	/**
 	 * Gets or sets the request body.
 	 */
-	content?: string | FormData | ArrayBuffer;
+	content?: string | FormData | ArrayBuffer | Uint8Array<ArrayBufferLike>;
 
 	/**
 	 * Gets or sets the request timeout in milliseconds.
@@ -110,7 +110,7 @@ export function getString(arg: any): Promise<string> {
 					reject(e);
 				}
 			},
-			(e) => reject(e)
+			(e) => reject(e),
 		);
 	});
 }
@@ -126,7 +126,7 @@ export function getJSON<T>(arg: any): Promise<T> {
 					reject(e);
 				}
 			},
-			(e) => reject(e)
+			(e) => reject(e),
 		);
 	});
 }
@@ -143,7 +143,7 @@ export function getImage(arg: any): Promise<ImageSource> {
 			},
 			(err) => {
 				reject(err);
-			}
+			},
 		);
 	});
 }
@@ -159,7 +159,7 @@ export function getFile(arg: any, destinationFilePath?: string): Promise<any> {
 					reject(e);
 				}
 			},
-			(e) => reject(e)
+			(e) => reject(e),
 		);
 	});
 }
@@ -175,7 +175,7 @@ export function getBinary(arg: any): Promise<ArrayBuffer> {
 					reject(e);
 				}
 			},
-			(e) => reject(e)
+			(e) => reject(e),
 		);
 	});
 }

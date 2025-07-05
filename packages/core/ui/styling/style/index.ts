@@ -1,4 +1,3 @@
-import { Style as StyleDefinition } from '.';
 import { Color } from '../../../color';
 import { Font, FontStyleType, FontWeightType, FontVariationSettingsType } from '../font';
 import { Background } from '../background';
@@ -35,7 +34,7 @@ export interface CommonLayoutParams {
 	verticalAlignment: CoreTypes.VerticalAlignmentType;
 }
 
-export class Style extends Observable implements StyleDefinition {
+export class Style extends Observable {
 	private unscopedCssVariables = new Map<string, string>();
 	private scopedCssVariables = new Map<string, string>();
 

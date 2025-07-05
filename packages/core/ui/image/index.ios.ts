@@ -219,6 +219,7 @@ export class Image extends ImageBase {
 		}
 	}
 
+	// @ts-expect-error
 	[iosSymbolScaleProperty.setNative](value: iosSymbolScaleType) {
 		// reset src to configure scale
 		this._setSrc(this.src);

@@ -196,7 +196,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 	public readonly key: symbol;
 
 	public readonly getDefault: symbol;
-	public readonly setNative: symbol;
+	public readonly setNative: any;
 
 	public readonly defaultValueKey: symbol;
 	public readonly defaultValue: U;
@@ -397,7 +397,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 		const propertyName = options.name;
 		const key = this.key;
 		const getDefault: symbol = this.getDefault;
-		const setNative: symbol = this.setNative;
+		const setNative: any = this.setNative;
 		const defaultValueKey = this.defaultValueKey;
 		const defaultValue: U = this.defaultValue;
 
@@ -598,7 +598,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 	}
 }
 
-export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
+export class CssProperty<T extends Style, U> {
 	private registered: boolean;
 
 	public readonly name: string;
@@ -612,7 +612,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 
 	public readonly key: symbol;
 	public readonly getDefault: symbol;
-	public readonly setNative: symbol;
+	public readonly setNative: any;
 	public readonly sourceKey: symbol;
 	public readonly defaultValueKey: symbol;
 	public readonly defaultValue: U;
@@ -879,7 +879,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 	public readonly cssLocalName: string;
 
 	public readonly getDefault: symbol;
-	public readonly setNative: symbol;
+	public readonly setNative: any;
 
 	public readonly register: (cls: { prototype }) => void;
 

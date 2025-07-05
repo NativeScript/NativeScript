@@ -833,6 +833,7 @@ export class View extends ViewCommon {
 		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
+	// @ts-expect-error
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value;
 		updateAccessibilityProperties(this);
@@ -865,6 +866,7 @@ export class View extends ViewCommon {
 		}
 	}
 
+	// @ts-expect-error
 	[accessibilityLiveRegionProperty.setNative](value: AccessibilityLiveRegion): void {
 		switch (value) {
 			case AccessibilityLiveRegion.Assertive: {
@@ -882,6 +884,7 @@ export class View extends ViewCommon {
 		}
 	}
 
+	// @ts-expect-error
 	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
 		this.accessibilityState = value;
 		updateAccessibilityProperties(this);
@@ -974,6 +977,7 @@ export class View extends ViewCommon {
 	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
 		return <CoreTypes.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
 	}
+	// @ts-expect-error
 	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
@@ -1014,6 +1018,7 @@ export class View extends ViewCommon {
 	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
 		return <CoreTypes.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
 	}
+	// @ts-expect-error
 	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();

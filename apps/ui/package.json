@@ -11,11 +11,11 @@
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
   },
   "devDependencies": {
-    "@nativescript/android": "~8.8.0",
-    "@nativescript/ios": "~8.8.0",
-    "@nativescript/visionos": "~8.8.0",
+    "@nativescript/android": "~8.9.0",
+    "@nativescript/ios": "~8.9.0",
+    "@nativescript/visionos": "~8.9.0",
     "@nativescript/webpack": "file:../../dist/packages/webpack5",
-    "typescript": "~5.6.0"
+    "typescript": "~5.8.0"
   },
   "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
   "readme": "NativeScript Application",
