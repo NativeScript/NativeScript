@@ -42,6 +42,7 @@ export interface NavigationContext {
 	 * @deprecated Use navigationType instead.
 	 */
 	isBackNavigation: boolean;
+	isUserInitiated: boolean;
 	navigationType: NavigationType;
 }
 

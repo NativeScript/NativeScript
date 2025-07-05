@@ -18,21 +18,6 @@ const DELEGATE = '_delegate';
 const TRANSITION = '_transition';
 const NON_ANIMATED_TRANSITION = 'non-animated';
 
-function isBackNavigationTo(controller: UIViewControllerImpl, page: Page): boolean {
-	const frame = page.frame;
-
-	if (!frame) {
-		return false;
-	}
-
-	if (!frame._executingContext) {
-		return false;
-	}
-
-	// Make sure we are navigating to a controller that is already in the navigation stack
-	return !controller.movingToParentViewController;
-}
-
 function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boolean {
 	if (!page.frame) {
 		return false;
@@ -43,11 +28,7 @@ function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boo
 		return false;
 	}
 
-	if (controller.navigationController && controller.navigationController.viewControllers.containsObject(controller)) {
-		return false;
-	}
-
-	return true;
+	return controller.movingFromParentViewController;
 }
 
 @NativeClass
@@ -110,10 +91,10 @@ class UIViewControllerImpl extends UIViewController {
 		const newEntry: BackstackEntry = this[ENTRY];
 
 		// Don't raise event if currentPage was showing modal page.
-		if (!owner._presentedViewController && newEntry && (!frame || (frame.currentPage !== owner && (!frame._executingContext || frame._executingContext.navigationType === NavigationType.user)))) {
-			const isBack = isBackNavigationTo(this, owner);
-			owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
+		if (!owner._presentedViewController && newEntry && (!frame || (frame.currentPage !== owner && (!frame._executingContext || frame._executingContext.isUserInitiated)))) {
+			const isBack = frame._executingContext && frame._executingContext.navigationType === NavigationType.back;
 
+			owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
 			if (frame) {
 				frame._notifyFrameNavigatingTo(newEntry, isBack);
 			}
@@ -242,14 +223,16 @@ class UIViewControllerImpl extends UIViewController {
 
 		const frame = owner.frame;
 		// Skip navigation events if we are hiding because we are about to show a modal page,
+		// or because we are not navigating back
 		// or because we are closing a modal page.
 		if (owner.onNavigatingFrom && this.movingFromParentViewController && !owner._presentedViewController && frame && !frame._executingContext && (!this.presentingViewController || frame.backStack.length > 0) && frame.currentPage === owner) {
 			const isBack = isBackNavigationFrom(this, owner);
 
-			// Create an executing context as frame avoids some actions when it's defined
+			// Create an executing context will also make navigation more secure as frame avoids some actions when it's defined
 			frame._executingContext = {
-				isBackNavigation: true, // This property is no longer used so it doesn't really matter what it's set to
-				navigationType: NavigationType.user,
+				isBackNavigation: isBack,
+				isUserInitiated: true,
+				navigationType: isBack ? NavigationType.back : NavigationType.forward,
 			};
 			owner.onNavigatingFrom(isBack);
 		}
