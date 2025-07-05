@@ -234,6 +234,7 @@ export class SearchBar extends SearchBarBase {
 	[textProperty.getDefault](): string {
 		return '';
 	}
+	// @ts-expect-error
 	[textProperty.setNative](value: string) {
 		const text = value === null || value === undefined ? '' : value.toString();
 		this.nativeViewProtected.setQuery(text, false);
@@ -241,6 +242,7 @@ export class SearchBar extends SearchBarBase {
 	[hintProperty.getDefault](): string {
 		return null;
 	}
+	// @ts-expect-error
 	[hintProperty.setNative](value: string) {
 		if (value === null || value === undefined) {
 			this.nativeViewProtected.setQueryHint(null);
