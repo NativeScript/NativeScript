@@ -1,5 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { Application, EventData, Frame, NavigationEntry, Page, TabView, TabViewItem, isAndroid } from '@nativescript/core';
+import { Application, Frame, NavigationEntry, Page, TabView, TabViewItem, isAndroid } from '@nativescript/core';
 
 function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
 	const maxTimeout = 8;

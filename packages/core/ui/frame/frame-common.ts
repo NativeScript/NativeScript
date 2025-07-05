@@ -192,6 +192,7 @@ export class FrameBase extends CustomLayoutView {
 
 		const navigationContext: NavigationContext = {
 			entry: backstackEntry,
+			isBackNavigation: true,
 			navigationType: NavigationType.back,
 		};
 
@@ -243,6 +244,7 @@ export class FrameBase extends CustomLayoutView {
 
 		const navigationContext: NavigationContext = {
 			entry: backstackEntry,
+			isBackNavigation: true,
 			navigationType: NavigationType.forward,
 		};
 
@@ -762,6 +764,7 @@ export class FrameBase extends CustomLayoutView {
 
 		const navigationContext: NavigationContext = {
 			entry: newBackstackEntry,
+			isBackNavigation: false,
 			navigationType: NavigationType.replace,
 		};
 

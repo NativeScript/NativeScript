@@ -38,6 +38,10 @@ export interface NavigationEntry extends ViewEntry {
 
 export interface NavigationContext {
 	entry?: BackstackEntry;
+	/**
+	 * @deprecated Use navigationType instead.
+	 */
+	isBackNavigation: boolean;
 	navigationType: NavigationType;
 }
 

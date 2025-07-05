@@ -246,8 +246,9 @@ class UIViewControllerImpl extends UIViewController {
 		if (owner.onNavigatingFrom && this.movingFromParentViewController && !owner._presentedViewController && frame && !frame._executingContext && (!this.presentingViewController || frame.backStack.length > 0) && frame.currentPage === owner) {
 			const isBack = isBackNavigationFrom(this, owner);
 
-			// Assign a truthy value to executing context since it's used in certain conditions
+			// Create an executing context as frame avoids some actions when it's defined
 			frame._executingContext = {
+				isBackNavigation: true, // This property is no longer used so it doesn't really matter what it's set to
 				navigationType: NavigationType.user,
 			};
 			owner.onNavigatingFrom(isBack);
