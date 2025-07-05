@@ -193,6 +193,7 @@ export class FrameBase extends CustomLayoutView {
 		const navigationContext: NavigationContext = {
 			entry: backstackEntry,
 			isBackNavigation: true,
+			isUserInitiated: false,
 			navigationType: NavigationType.back,
 		};
 
@@ -245,6 +246,7 @@ export class FrameBase extends CustomLayoutView {
 		const navigationContext: NavigationContext = {
 			entry: backstackEntry,
 			isBackNavigation: false,
+			isUserInitiated: false,
 			navigationType: NavigationType.forward,
 		};
 
@@ -481,6 +483,10 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
+		this._notifyFrameNavigatingTo(backstackEntry, isBack);
+	}
+
+	public _notifyFrameNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean): void {
 		this.notify<NavigationData>({
 			eventName: FrameBase.navigatingToEvent,
 			object: this,
@@ -761,6 +767,7 @@ export class FrameBase extends CustomLayoutView {
 		const navigationContext: NavigationContext = {
 			entry: newBackstackEntry,
 			isBackNavigation: false,
+			isUserInitiated: false,
 			navigationType: NavigationType.replace,
 		};
 

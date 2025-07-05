@@ -111,11 +111,9 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 		}
 
-		if ((<any>tabBarController).selectedViewController === viewController) {
+		if (tabBarController.selectedViewController === viewController) {
 			return false;
 		}
-
-		(<any>tabBarController)._willSelectViewController = viewController;
 
 		return true;
 	}
@@ -129,8 +127,6 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 		if (owner) {
 			owner._onViewControllerShown(viewController);
 		}
-
-		(<any>tabBarController)._willSelectViewController = undefined;
 	}
 }
 
@@ -535,7 +531,7 @@ export class TabView extends TabViewBase {
 	private updateBarItemAppearance(tabBar: UITabBar, states: TabStates) {
 		const appearance = this._getAppearance(tabBar);
 		const itemAppearances = ['stackedLayoutAppearance', 'inlineLayoutAppearance', 'compactInlineLayoutAppearance'];
-		for (let itemAppearance of itemAppearances) {
+		for (const itemAppearance of itemAppearances) {
 			appearance[itemAppearance].normal.titleTextAttributes = states.normalState;
 			appearance[itemAppearance].selected.titleTextAttributes = states.selectedState;
 		}
@@ -564,7 +560,6 @@ export class TabView extends TabViewBase {
 		}
 
 		if (value > -1) {
-			(<any>this._ios)._willSelectViewController = this._ios.viewControllers[value];
 			this._ios.selectedIndex = value;
 		}
 	}
