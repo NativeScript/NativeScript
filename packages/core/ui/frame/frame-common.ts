@@ -244,7 +244,7 @@ export class FrameBase extends CustomLayoutView {
 
 		const navigationContext: NavigationContext = {
 			entry: backstackEntry,
-			isBackNavigation: true,
+			isBackNavigation: false,
 			navigationType: NavigationType.forward,
 		};
 
