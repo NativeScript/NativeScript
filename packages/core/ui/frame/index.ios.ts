@@ -347,18 +347,18 @@ export class Frame extends FrameBase {
 		//
 	}
 
-	public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
-		// for now to not break iOS events chain (calling navigation events from controller delegates)
-		// we dont call super(which would also trigger events) but only notify the frame of the navigation
-		// though it means events are not triggered at the same time (lifecycle) on iOS / Android
-		this.notify({
-			eventName: Page.navigatingToEvent,
-			object: this,
-			isBack,
-			entry: backstackEntry,
-			fromEntry: this._currentEntry,
-		});
-	}
+	// public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
+	// 	// for now to not break iOS events chain (calling navigation events from controller delegates)
+	// 	// we dont call super(which would also trigger events) but only notify the frame of the navigation
+	// 	// though it means events are not triggered at the same time (lifecycle) on iOS / Android
+	// 	this.notify({
+	// 		eventName: Page.navigatingToEvent,
+	// 		object: this,
+	// 		isBack,
+	// 		entry: backstackEntry,
+	// 		fromEntry: this._currentEntry,
+	// 	});
+	// }
 }
 
 const transitionDelegates = new Array<TransitionDelegate>();

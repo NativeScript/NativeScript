@@ -404,8 +404,7 @@ export interface NavigationEntry extends ViewEntry {
  * Represents a context passed to navigation methods.
  */
 export interface NavigationContext {
-	entry: BackstackEntry;
-	isBackNavigation: boolean;
+	entry?: BackstackEntry;
 	navigationType: NavigationType;
 }
 

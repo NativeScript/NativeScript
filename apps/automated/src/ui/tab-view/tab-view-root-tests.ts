@@ -140,22 +140,14 @@ export function test_offset_zero_should_raise_same_events() {
 		resetActualEventsRaised();
 		waitUntilNavigatedToMaxTimeout([items[2].page], () => (tabView.selectedIndex = 2));
 
-		const expectedEventsRaisedAfterSelectThirdTab = [['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded', 'Tab0 Frame0 Page0 navigatingFrom'], [], ['Tab2 Frame2 loaded', 'Tab2 Frame2 Page2 navigatingTo', 'Tab2 Frame2 Page2 loaded', 'Tab2 Frame2 Page2 navigatedTo']];
-		let isNavigatingFromPage2 = false;
-		const page2NavigatingFrom = (args: EventData) => {
-			args.object.off('navigatingFrom', page2NavigatingFrom);
-			isNavigatingFromPage2 = true;
-		};
+		const expectedEventsRaisedAfterSelectThirdTab = [['Tab0 Frame0 Page0 unloaded', 'Tab0 Frame0 unloaded'], [], ['Tab2 Frame2 loaded', 'Tab2 Frame2 Page2 navigatingTo', 'Tab2 Frame2 Page2 loaded', 'Tab2 Frame2 Page2 navigatedTo']];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterSelectThirdTab);
 
 		resetActualEventsRaised();
-
-		items[2].page.on('navigatingFrom', page2NavigatingFrom);
 		waitUntilTabViewReady(items[0].page, () => (tabView.selectedIndex = 0));
-		TKUnit.waitUntilReady(() => isNavigatingFromPage2);
 
-		const expectedEventsRaisedAfterReturnToFirstTab = [['Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 loaded'], [], ['Tab2 Frame2 Page2 unloaded', 'Tab2 Frame2 unloaded', 'Tab2 Frame2 Page2 navigatingFrom']];
+		const expectedEventsRaisedAfterReturnToFirstTab = [['Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 loaded'], [], ['Tab2 Frame2 Page2 unloaded', 'Tab2 Frame2 unloaded']];
 
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterReturnToFirstTab);
 	}

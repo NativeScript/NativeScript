@@ -8,6 +8,7 @@ export enum NavigationType {
 	back,
 	forward,
 	replace,
+	user,
 }
 
 export interface TransitionState {
@@ -36,9 +37,7 @@ export interface NavigationEntry extends ViewEntry {
 }
 
 export interface NavigationContext {
-	entry: BackstackEntry;
-	// TODO: remove isBackNavigation for NativeScript 7.0
-	isBackNavigation: boolean;
+	entry?: BackstackEntry;
 	navigationType: NavigationType;
 }
 

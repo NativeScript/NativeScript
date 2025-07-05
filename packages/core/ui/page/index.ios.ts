@@ -18,27 +18,19 @@ const DELEGATE = '_delegate';
 const TRANSITION = '_transition';
 const NON_ANIMATED_TRANSITION = 'non-animated';
 
-function isBackNavigationTo(page: Page, entry: BackstackEntry): boolean {
+function isBackNavigationTo(controller: UIViewControllerImpl, page: Page): boolean {
 	const frame = page.frame;
+
 	if (!frame) {
 		return false;
 	}
 
-	// if executing context is null here this most probably means back navigation through iOS back button
-	const navigationContext = frame._executingContext || {
-		navigationType: NavigationType.back,
-	};
-	const isReplace = navigationContext.navigationType === NavigationType.replace;
-	if (isReplace) {
+	if (!frame._executingContext) {
 		return false;
 	}
 
-	if (frame.navigationQueueIsEmpty()) {
-		return true;
-	}
-
-	const queueContext = frame.getNavigationQueueContextByEntry(entry);
-	return queueContext && queueContext.navigationType === NavigationType.back;
+	// Make sure we are navigating to a controller that is already in the navigation stack
+	return !controller.movingToParentViewController;
 }
 
 function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boolean {
@@ -118,9 +110,13 @@ class UIViewControllerImpl extends UIViewController {
 		const newEntry: BackstackEntry = this[ENTRY];
 
 		// Don't raise event if currentPage was showing modal page.
-		if (!owner._presentedViewController && newEntry && (!frame || frame.currentPage !== owner)) {
-			const isBack = isBackNavigationTo(owner, newEntry);
+		if (!owner._presentedViewController && newEntry && (!frame || (frame.currentPage !== owner && (!frame._executingContext || frame._executingContext.navigationType === NavigationType.user)))) {
+			const isBack = isBackNavigationTo(this, owner);
 			owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
+
+			if (frame) {
+				frame._notifyFrameNavigatingTo(newEntry, isBack);
+			}
 		}
 
 		if (frame) {
@@ -131,7 +127,7 @@ class UIViewControllerImpl extends UIViewController {
 			} else {
 				if (!owner.parent) {
 					if (!frame._styleScope) {
-						// Make sure page will have styleScope even if frame don't.
+						// Make sure page will have styleScope even if frame doesn't.
 						owner._updateStyleScope();
 					}
 
@@ -246,21 +242,15 @@ class UIViewControllerImpl extends UIViewController {
 
 		const frame = owner.frame;
 		// Skip navigation events if we are hiding because we are about to show a modal page,
-		// or because we are closing a modal page,
-		// or because we are in tab and another controller is selected.
-		const tab = this.tabBarController;
-		if (owner.onNavigatingFrom && !owner._presentedViewController && frame && (!this.presentingViewController || frame.backStack.length > 0) && frame.currentPage === owner) {
-			const willSelectViewController = tab && (<any>tab)._willSelectViewController;
-			if (!willSelectViewController || willSelectViewController === tab.selectedViewController) {
-				const isBack = isBackNavigationFrom(this, owner);
-				owner.onNavigatingFrom(isBack);
-			} else {
-				// Before iOS 18, certain versions had this method called too early in the tab lifecycle, resulting in not emitting navigatingFrom event.
-				// To maintain implementation for those versions, store a flag and emit the event upon calling viewDidDisappear.
-				if (tab && tab.selectedViewController === this.navigationController) {
-					this['_isPendingNavigatingFrom'] = true;
-				}
-			}
+		// or because we are closing a modal page.
+		if (owner.onNavigatingFrom && this.movingFromParentViewController && !owner._presentedViewController && frame && !frame._executingContext && (!this.presentingViewController || frame.backStack.length > 0) && frame.currentPage === owner) {
+			const isBack = isBackNavigationFrom(this, owner);
+
+			// Assign a truthy value to executing context since it's used in certain conditions
+			frame._executingContext = {
+				navigationType: NavigationType.user,
+			};
+			owner.onNavigatingFrom(isBack);
 		}
 		owner.updateWithWillDisappear(animated);
 	}
@@ -279,14 +269,6 @@ class UIViewControllerImpl extends UIViewController {
 		// Forward navigation does not remove page from frame so we raise unloaded manually.
 		if (owner.isLoaded) {
 			owner.callUnloaded();
-		}
-
-		// Emit the navigatingFrom event if it wasn't emitted during viewWillDisappear call
-		if (this['_isPendingNavigatingFrom']) {
-			delete this['_isPendingNavigatingFrom'];
-
-			const isBack = isBackNavigationFrom(this, owner);
-			owner.onNavigatingFrom(isBack);
 		}
 	}
 
