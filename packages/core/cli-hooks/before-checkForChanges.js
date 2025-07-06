@@ -1,15 +1,15 @@
-const semver = require("semver");
+import semver from 'semver';
 
 const webpackPackageName = "@nativescript/webpack";
 
-module.exports = function ($staticConfig, hookArgs) {
+export default function ($staticConfig, hookArgs) {
     const cliVersion = semver.parse($staticConfig.version);
-    const platfrom = hookArgs.prepareData.platform;
+    const platform = hookArgs.prepareData.platform;
     const projectData = hookArgs.projectData;
 
     // Required CLI version for building IOS: 6.2.0
-    if (platfrom.toLowerCase() === "ios" &&
-        !satisfiesRequriredVersion(cliVersion, 6, 2)) {
+    if (platform.toLowerCase() === "ios" &&
+        !satisfiesRequiredVersion(cliVersion, 6, 2)) {
         throw new Error(`Building @nativescript/core for iOS requires NativeScript CLI with version at least 6.2.0. Please upgrade your NativeScript CLI version (npm i -g nativescript).`);
     }
 
@@ -26,7 +26,7 @@ module.exports = function ($staticConfig, hookArgs) {
 /**
  * Checks if semver object satisifies a major/minor requirement. Pre-release versions are OK too!
  */
-function satisfiesRequriredVersion(actualVersion, requiredMajor, requiredMinor) {
+function satisfiesRequiredVersion(actualVersion, requiredMajor, requiredMinor) {
     // Return true for null version to handle tags (ex. "next", "rc")
     if (!actualVersion) {
         return true;
