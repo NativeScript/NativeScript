@@ -381,6 +381,27 @@ function isTestingEnv() {
 	return typeof jest !== 'undefined' || global.__UNIT_TEST__;
 }
 
+if (typeof global.__metadata === 'undefined') {
+	/**
+	 * TS decorator metadata helper.
+	 * @param metadataKey   the metadata key (e.g. "design:type")
+	 * @param metadataValue the metadata value (e.g. the constructor function)
+	 * @returns a decorator function, or undefined if Reflect.metadata isn’t available
+	 */
+	global.__metadata = (metadataKey, metadataValue) => {
+		if (
+			typeof Reflect === 'object' &&
+			// @ts-expect-error
+			typeof Reflect.metadata === 'function'
+		) {
+			// Delegate to the reflect-metadata shim
+			// @ts-expect-error
+			return Reflect.metadata(metadataKey, metadataValue);
+		}
+		// no-op if no Reflect.metadata
+	};
+}
+
 if (!global.NativeScriptHasInitGlobal && !isTestingEnv()) {
 	initGlobal();
 }
