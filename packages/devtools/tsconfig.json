@@ -4,7 +4,7 @@
 		"baseUrl": ".",
 		"target": "ES2020",
 		"module": "esnext",
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 		"outDir": "./dist",
 		"declaration": true,
 		"emitDecoratorMetadata": true,

@@ -6,7 +6,7 @@
 		"module": "esnext",
 		"sourceMap": true,
 		"declaration": true,
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"noEmitOnError": true,
