@@ -4,7 +4,7 @@
 
 // imported for definition purposes only
 import { makeValidator, makeParser } from '../ui/core/properties';
-import { CubicBezierAnimationCurve } from '../ui/animation/animation-interfaces';
+import { CubicBezierAnimationCurve } from './animation-types';
 
 export namespace CoreTypes {
 	export type CSSWideKeywords = 'initial' | 'inherit' | 'unset' | 'revert';

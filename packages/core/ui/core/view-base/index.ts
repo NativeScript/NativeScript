@@ -4,7 +4,8 @@ import { CoreTypes } from '../../../core-types';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
-import { Binding, BindingOptions } from '../bindable';
+import { Binding } from '../bindable';
+import { BindingOptions } from '../bindable/bindable-types';
 import { Trace } from '../../../trace';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
@@ -16,24 +17,9 @@ import { getClass } from '../../../utils/types';
 
 import { profile } from '../../../profiling';
 
-import * as dnm from '../../../debugger/dom-node';
-import * as ssm from '../../styling/style-scope';
+import { DOMNode } from '../../../debugger/dom-types';
+import { applyInlineStyle, CssState, StyleScope } from '../../styling/style-scope';
 import { ViewBase as ViewBaseDefinition } from '.';
-
-let domNodeModule: typeof dnm;
-
-function ensuredomNodeModule(): void {
-	if (!domNodeModule) {
-		domNodeModule = require('../../../debugger/dom-node');
-	}
-}
-
-let styleScopeModule: typeof ssm;
-function ensureStyleScopeModule() {
-	if (!styleScopeModule) {
-		styleScopeModule = require('../../styling/style-scope');
-	}
-}
 
 const defaultBindingSource = {};
 
@@ -355,7 +341,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private __nativeView: any;
 	// private _disableNativeViewRecycling: boolean;
 
-	public domNode: dnm.DOMNode;
+	public domNode: DOMNode;
 
 	public recycleNativeView: 'always' | 'never' | 'auto';
 	/**
@@ -422,8 +408,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _domId: number;
 	public _context: any /* android.content.Context */;
 	public _isAddedToNativeVisualTree: boolean;
-	/* "ui/styling/style-scope" */ public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
-	public _styleScope: ssm.StyleScope;
+	/* "ui/styling/style-scope" */ public _cssState: CssState = new CssState(new WeakRef(this));
+	public _styleScope: StyleScope;
 	/**
 	 * A property bag holding suspended native updates.
 	 * Native setters that had to execute while there was no native view,
@@ -675,8 +661,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public ensureDomNode() {
 		if (!this.domNode) {
-			ensuredomNodeModule();
-			this.domNode = new domNodeModule.DOMNode(this);
+			this.domNode = new DOMNode(this);
 		}
 	}
 
@@ -1406,8 +1391,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			throw new Error('Parameter should be valid CSS string!');
 		}
 
-		ensureStyleScopeModule();
-		styleScopeModule.applyInlineStyle(this, style, undefined);
+		applyInlineStyle(this, style, undefined);
 	}
 
 	public _parentChanged(oldParent: ViewBase): void {
@@ -1459,7 +1443,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 	}
 
-	_inheritStyleScope(styleScope: ssm.StyleScope): void {
+	_inheritStyleScope(styleScope: StyleScope): void {
 		// If we are styleScope don't inherit parent stylescope.
 		// TODO: Consider adding parent scope and merge selectors.
 		if (this._isStyleScopeHost) {

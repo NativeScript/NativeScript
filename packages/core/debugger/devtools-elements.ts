@@ -3,7 +3,8 @@ import { InspectorEvents, InspectorCommands } from './devtools-elements-interfac
 
 // Requires
 import { getDocument, getComputedStylesForNode, removeNode, setAttributeAsText } from './devtools-elements.common';
-import { registerInspectorEvents, DOMNode } from './dom-node';
+import { registerInspectorEvents } from './dom-types';
+import { DOMNode } from './dom-types';
 
 export * from './devtools-elements-interfaces';
 

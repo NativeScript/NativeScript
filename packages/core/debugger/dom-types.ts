@@ -1,28 +1,29 @@
-import { CSSComputedStyleProperty } from './css-agent';
 import { InspectorEvents } from './devtools-elements-interfaces';
-
-// Needed for typings only
+import { CSSComputedStyleProperty } from './css-agent';
 import { ViewBase } from '../ui/core/view-base';
 
-const registeredDomNodes = {};
 const ELEMENT_NODE_TYPE = 1;
 const ROOT_NODE_TYPE = 9;
 const propertyBlacklist = ['effectivePaddingLeft', 'effectivePaddingBottom', 'effectivePaddingRight', 'effectivePaddingTop', 'effectiveBorderTopWidth', 'effectiveBorderRightWidth', 'effectiveBorderBottomWidth', 'effectiveBorderLeftWidth', 'effectiveMinWidth', 'effectiveMinHeight', 'effectiveWidth', 'effectiveHeight', 'effectiveMarginLeft', 'effectiveMarginTop', 'effectiveMarginRight', 'effectiveMarginBottom', 'nodeName', 'nodeType', 'decodeWidth', 'decodeHeight', 'ng-reflect-items', 'domNode', 'touchListenerIsSet', 'bindingContext', 'nativeView'];
 
 function lazy<T>(action: () => T): () => T {
 	let _value: T;
-
 	return () => _value || (_value = action());
 }
 const percentLengthToStringLazy = lazy<(length) => string>(() => require('../ui/styling/style-properties').PercentLength.convertToString);
 const getSetPropertiesLazy = lazy<(view: ViewBase) => [string, any][]>(() => require('../ui/core/properties').getSetProperties);
 const getComputedCssValuesLazy = lazy<(view: ViewBase) => [string, any][]>(() => require('../ui/core/properties').getComputedCssValues);
+const registeredDomNodes = {};
 
+export function getNodeById(id: number): DOMNode {
+	return registeredDomNodes[id];
+}
+
+let inspectorFrontendInstance: any;
 export function registerInspectorEvents(inspector: InspectorEvents) {
 	inspectorFrontendInstance = inspector;
 }
 
-let inspectorFrontendInstance: any;
 function notifyInspector(callback: (inspector: InspectorEvents) => void) {
 	if (inspectorFrontendInstance) {
 		callback(inspectorFrontendInstance);
@@ -61,10 +62,6 @@ function registerNode(domNode: DOMNode) {
 
 function unregisterNode(domNode: DOMNode) {
 	delete registeredDomNodes[domNode.nodeId];
-}
-
-export function getNodeById(id: number): DOMNode {
-	return registeredDomNodes[id];
 }
 
 export class DOMNode {

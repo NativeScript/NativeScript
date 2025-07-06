@@ -2,7 +2,7 @@
 import { ViewBase } from '../ui/core/view-base';
 
 //Requires
-import { getNodeById } from './dom-node';
+import { getNodeById } from './dom-types';
 import { mainThreadify } from '../utils';
 
 // Use lazy requires for core modules

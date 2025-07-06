@@ -9,7 +9,7 @@ export { sanitizeModuleName } from '../utils/common';
 export { Button } from './button';
 export { ContentView } from './content-view';
 export { Binding } from './core/bindable';
-export type { BindingOptions } from './core/bindable';
+export type { BindingOptions } from './core/bindable/bindable-types';
 export { ControlStateChangeListener } from './core/control-state-change';
 export { ViewBase, eachDescendant, getAncestor, getViewById, booleanConverter, querySelectorAll } from './core/view-base';
 export type { ShowModalOptions } from './core/view-base';

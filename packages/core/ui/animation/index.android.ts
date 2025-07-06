@@ -1,6 +1,6 @@
 import { AnimationDefinitionInternal, AnimationPromise, PropertyAnimation, AnimationBase, Properties } from './animation-common';
 import { View } from '../core/view';
-import { CubicBezierAnimationCurve } from './animation-interfaces';
+import { CubicBezierAnimationCurve } from '../../core-types/animation-types';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
