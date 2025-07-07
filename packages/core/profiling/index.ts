@@ -110,8 +110,7 @@ function countersProfileFunctionFactory<F extends Function>(fn: F, name: string,
 }
 
 function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
-	return type === MemberType.Instance
-		? <any>function () {
+	return type === MemberType.Instance ? <any>function () {
 				const start = time();
 				try {
 					return fn.apply(this, arguments);
@@ -119,8 +118,7 @@ function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string,
 					const end = time();
 					console.log(`Timeline: Modules: ${name} ${this}  (${start}ms. - ${end}ms.)`);
 				}
-			}
-		: function () {
+			} : <any>function () {
 				const start = time();
 				try {
 					return fn.apply(this, arguments);
