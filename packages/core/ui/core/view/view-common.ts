@@ -16,7 +16,8 @@ import { setupAccessibleView } from '../../../accessibility';
 
 import { PercentLength } from '../../styling/style-properties';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, toString as gestureToString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, fromString as gestureFromString, toString as gestureToString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
+import type { GestureEventData } from '../../gestures/gestures-types';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';

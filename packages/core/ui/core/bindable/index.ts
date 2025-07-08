@@ -1,11 +1,7 @@
-// Types
-import { ViewBase } from '../view-base';
-import { BindingOptions, ValueConverter } from './bindable-types';
-
-// Requires
+import type { ViewBase } from '../view-base';
+import type { BindingOptions } from './bindable-types';
 import { unsetValue } from '../properties';
 import { Observable, PropertyChangeData } from '../../../data/observable';
-import { fromString as gestureFromString } from '../../../ui/gestures/gestures-common';
 import { addWeakEventListener, removeWeakEventListener } from '../weak-event-listener';
 import { bindingConstants, parentsRegex } from '../../builder/binding-builder';
 import { escapeRegexSymbols } from '../../../utils';

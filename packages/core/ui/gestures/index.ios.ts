@@ -1,14 +1,7 @@
-// Definitions.
-
-import { GestureEventData, TapGestureEventData, GestureEventDataWithState, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from '.';
+import type { GestureEventData, TapGestureEventData, GestureEventDataWithState, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from './gestures-types';
 import type { View } from '../core/view';
 import { EventData } from '../../data/observable';
-
-// Types.
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, GestureEvents } from './gestures-common';
-
-// Import layout from utils directly to avoid circular references
-import { layout } from '../../utils';
 
 export * from './gestures-common';
 export * from './gestures-types';
@@ -541,7 +534,7 @@ class TouchGestureRecognizer extends UIGestureRecognizer {
 	}
 }
 
-class Pointer implements Pointer {
+class Pointer {
 	public android: any = undefined;
 	public ios: UITouch = undefined;
 
@@ -571,7 +564,7 @@ class Pointer implements Pointer {
 	}
 }
 
-class TouchGestureEventData implements TouchGestureEventData {
+export class TouchGestureEventData {
 	eventName: string = toString(GestureTypes.touch);
 	type: GestureTypes = GestureTypes.touch;
 	android: any = undefined;

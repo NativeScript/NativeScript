@@ -1,4 +1,9 @@
-var g = global;
+var g =
+  (typeof globalThis !== 'undefined' && globalThis) ||
+  (typeof self !== 'undefined' && self) ||
+  // eslint-disable-next-line no-undef
+  (typeof global !== 'undefined' && global) ||
+  {}
 
 var support = {
   searchParams: 'URLSearchParams' in g,

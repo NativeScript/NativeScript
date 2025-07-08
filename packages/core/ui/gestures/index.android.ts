@@ -691,7 +691,7 @@ class CustomRotateGestureDetector {
 	}
 }
 
-class Pointer implements Pointer {
+class Pointer {
 	public android: number;
 	public ios: any = undefined;
 
@@ -711,7 +711,7 @@ class Pointer implements Pointer {
 	}
 }
 
-class TouchGestureEventData implements TouchGestureEventData {
+export class TouchGestureEventData {
 	eventName: string = toString(GestureTypes.touch);
 	type: GestureTypes = GestureTypes.touch;
 	ios: any = undefined;

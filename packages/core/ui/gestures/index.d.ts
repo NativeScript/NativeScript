@@ -1,8 +1,9 @@
 import type { View } from '../core/view';
+import { GestureEventData, GestureTypes } from './gestures-types';
 
 export * from './gestures-common';
 export * from './touch-manager';
-export type { GesturesObserverDefinition } from './gestures-types';
+export * from './gestures-types';
 
 /**
  * Provides options for the GesturesObserver.
@@ -48,6 +49,39 @@ export class GesturesObserver {
 	 * An internal Android specific method used to pass the motion event to the correct gesture observer.
 	 */
 	androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
+}
+
+class Pointer {
+	android: any;
+	ios: UITouch;
+
+	get location();
+
+	getX(): number;
+
+	getY(): number;
+}
+
+export class TouchGestureEventData {
+	eventName: string;
+	type: GestureTypes;
+	ios: any;
+	action: string;
+	view: View;
+	android: android.view.MotionEvent;
+	object: any;
+
+	prepare(view: View, e: any): void;
+
+	getPointerCount(): number;
+
+	getActivePointers(): Array<Pointer>;
+
+	getAllPointers(): Array<Pointer>;
+
+	getX(): number;
+
+	getY(): number;
 }
 
 /**
