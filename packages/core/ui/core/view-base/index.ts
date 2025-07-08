@@ -20,6 +20,9 @@ import { profile } from '../../../profiling';
 import { DOMNode } from '../../../debugger/dom-types';
 import { applyInlineStyle, CssState, StyleScope } from '../../styling/style-scope';
 import { ViewBase as ViewBaseDefinition } from '.';
+import { booleanConverter } from './utils';
+
+export { booleanConverter } from './utils';
 
 const defaultBindingSource = {};
 
@@ -1613,14 +1616,3 @@ export const defaultVisualStateProperty = new Property<ViewBase, string>({
 	},
 });
 defaultVisualStateProperty.register(ViewBase);
-
-export function booleanConverter(v: string | boolean): boolean {
-	const lowercase = (v + '').toLowerCase();
-	if (lowercase === 'true') {
-		return true;
-	} else if (lowercase === 'false') {
-		return false;
-	}
-
-	throw new Error(`Invalid boolean: ${v}`);
-}

@@ -1,4 +1,4 @@
-import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
+import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-init';
 import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
