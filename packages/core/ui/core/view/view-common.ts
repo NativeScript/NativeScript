@@ -871,6 +871,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.translateY = value;
 	}
 
+	get originX(): number {
+		return this.style.originX;
+	}
+	set originX(value: number) {
+		this.style.originX = value;
+	}
+
+	get originY(): number {
+		return this.style.originY;
+	}
+	set originY(value: number) {
+		this.style.originY = value;
+	}
+
 	get scaleX(): number {
 		return this.style.scaleX;
 	}

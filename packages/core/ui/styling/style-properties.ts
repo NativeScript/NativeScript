@@ -639,6 +639,22 @@ export const perspectiveProperty = new CssAnimationProperty<Style, number>({
 });
 perspectiveProperty.register(Style);
 
+export const originXProperty = new CssProperty<Style, number>({
+	name: 'originX',
+	cssName: 'origin-x',
+	defaultValue: 0.5,
+	valueConverter: parseFloat,
+});
+originXProperty.register(Style);
+
+export const originYProperty = new CssProperty<Style, number>({
+	name: 'originY',
+	cssName: 'origin-y',
+	defaultValue: 0.5,
+	valueConverter: parseFloat,
+});
+originYProperty.register(Style);
+
 export const scaleXProperty = new CssAnimationProperty<Style, number>({
 	name: 'scaleX',
 	cssName: 'scaleX',
