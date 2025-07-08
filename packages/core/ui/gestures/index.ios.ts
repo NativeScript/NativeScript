@@ -11,6 +11,8 @@ import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, Gesture
 import { layout } from '../../utils';
 
 export * from './gestures-common';
+export * from './gestures-types';
+export * from './touch-manager';
 
 export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
 	const observer = new GesturesObserver(target, callback, context);

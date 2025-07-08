@@ -1,11 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View } from '@nativescript/core/ui/core/view';
-import { Page } from '@nativescript/core/ui/page';
-import { BindingOptions } from '@nativescript/core/ui/core/bindable';
-import { Observable, EventData, PropertyChangeData } from '@nativescript/core';
-import { Color } from '@nativescript/core/color';
-import { isIOS } from '@nativescript/core/platform';
+import { BindingOptions, View, Page, Observable, EventData, PropertyChangeData, Color } from '@nativescript/core';
 
 // >> article-require-slider
 import { Slider } from '@nativescript/core/ui/slider';
@@ -101,7 +96,7 @@ export function test_set_native_value_triggers_propertyChanged() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (isIOS) {
+if (__APPLE__) {
 	exports.test_set_color = function () {
 		const slider = new Slider();
 		slider.color = new Color('red');
@@ -157,16 +152,16 @@ export function test_values_change_native_values() {
 		TKUnit.assertEqual(getNativeMaxValue(slider), 10, '2: Wrong native slider.maxValue');
 
 		slider.minValue = 10;
-		TKUnit.assertEqual(getNativeValue(slider), isIOS ? 10 : 0, '3: wrong native slider.value');
-		TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 10 : 0, '3: Wrong native slider.maxValue');
+		TKUnit.assertEqual(getNativeValue(slider), __APPLE__ ? 10 : 0, '3: wrong native slider.value');
+		TKUnit.assertEqual(getNativeMaxValue(slider), __APPLE__ ? 10 : 0, '3: Wrong native slider.maxValue');
 
 		slider.maxValue = 20;
-		TKUnit.assertEqual(getNativeValue(slider), isIOS ? 10 : 0, '4: wrong native slider.value');
-		TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, '4: Wrong native slider.maxValue');
+		TKUnit.assertEqual(getNativeValue(slider), __APPLE__ ? 10 : 0, '4: wrong native slider.value');
+		TKUnit.assertEqual(getNativeMaxValue(slider), __APPLE__ ? 20 : 10, '4: Wrong native slider.maxValue');
 
 		slider.value = 15;
-		TKUnit.assertEqual(getNativeValue(slider), isIOS ? 15 : 5, '5: wrong native slider.value');
-		TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, '5: Wrong native slider.maxValue');
+		TKUnit.assertEqual(getNativeValue(slider), __APPLE__ ? 15 : 5, '5: wrong native slider.value');
+		TKUnit.assertEqual(getNativeMaxValue(slider), __APPLE__ ? 20 : 10, '5: Wrong native slider.maxValue');
 	}
 
 	helper.buildUIAndRunTest(slider, testAction);

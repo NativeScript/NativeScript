@@ -2,12 +2,12 @@
  * Provides various helpers for adding easy touch handling animations.
  * Use when needing to implement more interactivity with your UI regarding touch down/up behavior.
  */
-import { GestureEventData, GestureEventDataWithState, TouchGestureEventData } from '.';
+import type { GestureEventData, GestureEventDataWithState, TouchGestureEventData } from './gestures-types';
+import { GestureEvents, GestureStateTypes, GestureTypes } from './gestures-types';
 import { Animation } from '../animation';
 import { AnimationDefinition } from '../animation/animation-interfaces';
 import type { View } from '../core/view';
 import { isObject, isFunction } from '../../utils/types';
-import { GestureEvents, GestureStateTypes, GestureTypes } from './gestures-common';
 
 export type TouchAnimationFn = (view: View) => void;
 export type TouchAnimationOptions = {

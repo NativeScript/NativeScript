@@ -12,7 +12,6 @@ import { ios as iosHelper } from '../../utils/native-helper';
 import { Screen } from '../../platform';
 
 export * from './animation-common';
-export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
 
 const _transform = '_transform';
 const _skip = '_skip';

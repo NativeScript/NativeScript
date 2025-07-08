@@ -6,6 +6,7 @@ import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
 import { CoreTypes } from '../../enums';
+import { makeValidator, makeParser } from '../../../core-types/validators';
 
 /**
  * Value specifying that Property should be set to its initial value.
@@ -1348,6 +1349,8 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 	}
 }
 
+export { makeValidator, makeParser } from '../../../core-types/validators';
+
 function inheritablePropertyValuesOn(view: ViewBase): Array<{ property: InheritedProperty<any, any>; value: any }> {
 	const array = new Array<{
 		property: InheritedProperty<any, any>;
@@ -1562,29 +1565,6 @@ export function propagateInheritableCssProperties(parentStyle: Style, childStyle
 			prop.setInheritedValue.call(childStyle, pair.value, ValueSource.Inherited);
 		}
 	}
-}
-
-export function makeValidator<T>(...values: T[]): (value: any) => value is T {
-	const set = new Set(values);
-
-	return (value: any): value is T => set.has(value);
-}
-
-export function makeParser<T>(isValid: (value: any) => boolean, allowNumbers = false): (value: any) => T {
-	return (value) => {
-		const lower = value && value.toLowerCase();
-		if (isValid(lower)) {
-			return lower;
-		} else {
-			if (allowNumbers) {
-				const convNumber = +value;
-				if (!isNaN(convNumber)) {
-					return value;
-				}
-			}
-			throw new Error('Invalid value: ' + value);
-		}
-	};
 }
 
 export function getSetProperties(view: ViewBase): [string, any][] {

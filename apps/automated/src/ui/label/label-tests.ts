@@ -1,51 +1,34 @@
 import * as TKUnit from '../../tk-unit';
 import * as testModule from '../../ui-test';
-
-//>> label-require
-import * as LabelModule from '@nativescript/core/ui/label';
-// << label-require
-
-import * as types from '@nativescript/core/utils/types';
-import * as colorModule from '@nativescript/core/color';
-import * as utils from '@nativescript/core/utils';
-import * as observableModule from '@nativescript/core/data/observable';
-import * as bindable from '@nativescript/core/ui/core/bindable';
-import { CoreTypes, Span, FormattedString, Utils } from '@nativescript/core';
+import { Label, GridLayout, LayoutBase, StackLayout, BindingOptions, CoreTypes, Span, FormattedString, Utils, Color, Observable, path } from '@nativescript/core';
 import * as labelTestsNative from './label-tests-native';
-import * as fs from '@nativescript/core/file-system';
-
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
-import { isIOS, isAndroid, isApple } from '@nativescript/core/platform';
-import { Label } from '@nativescript/core/ui/label';
-import { LayoutBase } from '@nativescript/core/ui/layouts/layout-base';
 import * as helper from '../../ui-helper';
 
 const testDir = 'ui/label';
 
 const expectLayoutRequest = __APPLE__ && Utils.SDK_VERSION >= 18;
 
-export class LabelTest extends testModule.UITest<LabelModule.Label> {
-	public create(): LabelModule.Label {
-		const label = new LabelModule.Label();
+export class LabelTest extends testModule.UITest<Label> {
+	public create(): Label {
+		const label = new Label();
 		label.text = 'Label';
 
 		return label;
 	}
 
 	public test_recycling() {
-		helper.nativeView_recycling_test(() => new LabelModule.Label());
+		helper.nativeView_recycling_test(() => new Label());
 	}
 
 	public test_Label_Members() {
-		const label = new LabelModule.Label();
-		TKUnit.assert(types.isDefined(label.text), 'Label.text is not defined');
-		TKUnit.assert(types.isDefined(label.textWrap), 'Label.textWrap is not defined');
+		const label = new Label();
+		TKUnit.assert(Utils.isDefined(label.text), 'Label.text is not defined');
+		TKUnit.assert(Utils.isDefined(label.textWrap), 'Label.textWrap is not defined');
 	}
 
 	public snippet_Set_Text_TNS() {
 		// >> label-settext
-		const label = new LabelModule.Label();
+		const label = new Label();
 		const expectedValue = 'Expected Value';
 		label.text = expectedValue;
 		// << label-settext
@@ -53,7 +36,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 	public snippet_Set_TextWrap_TNS() {
 		// >> label-textwrap
-		const label = new LabelModule.Label();
+		const label = new Label();
 		label.textWrap = true;
 		// << label-textwrap
 	}
@@ -115,7 +98,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 	public test_Set_BackgroundColor_TNS() {
 		const label = this.testView;
-		const expectedValue = new colorModule.Color('Red');
+		const expectedValue = new Color('Red');
 		label.backgroundColor = expectedValue;
 
 		const actual = label.style.backgroundColor;
@@ -124,7 +107,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 	public test_Set_BackgroundColor_Native() {
 		const testLabel = this.testView;
-		const expectedValue = new colorModule.Color('Red');
+		const expectedValue = new Color('Red');
 
 		testLabel.backgroundColor = expectedValue;
 
@@ -245,7 +228,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 			let expectedValue = NSString.stringWithString('i').sizeWithAttributes(<any>{
 				[NSFontAttributeName]: UIFont.systemFontOfSize(9),
 			}).width;
-			expectedValue = Math.ceil(utils.layout.toDevicePixels(expectedValue));
+			expectedValue = Math.ceil(Utils.layout.toDevicePixels(expectedValue));
 			const measuredWidth = label.getMeasuredWidth();
 			TKUnit.assertEqual(measuredWidth, expectedValue, 'measuredWidth should not be rounded down.');
 		}
@@ -264,7 +247,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 			TKUnit.assertFalse(actualHorizontalScrolling, 'HorizontalScrolling');
 			TKUnit.assertNull(testLabel.android.getTransformationMethod(), 'TransformationMethod');
 		}
-		if (isIOS) {
+		if (__APPLE__) {
 			TKUnit.assertEqual(testLabel.ios.lineBreakMode, NSLineBreakMode.ByWordWrapping, 'LineBreakMode');
 			TKUnit.assertEqual(testLabel.ios.numberOfLines, 0, 'LinesNumber');
 		}
@@ -286,7 +269,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 			TKUnit.assert(('' + testLabel.android.getTransformationMethod()).indexOf('SingleLineTransformationMethod') > -1, 'Expected: SingleLineTransformationMethod, Actual: ' + testLabel.android.getTransformationMethod());
 			TKUnit.assertEqual(testLabel.android.getLineCount(), 1, 'LinesNumber');
 		}
-		if (isIOS) {
+		if (__APPLE__) {
 			TKUnit.assertEqual(testLabel.ios.lineBreakMode, NSLineBreakMode.ByTruncatingTail, 'LineBreakMode');
 			TKUnit.assertEqual(testLabel.ios.numberOfLines, 1, 'LinesNumber');
 		}
@@ -322,7 +305,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 		if (testLabel.android) {
 			actualTextSize = testLabel.android.getTextSize();
-			const density = utils.layout.getDisplayDensity();
+			const density = Utils.layout.getDisplayDensity();
 			expSize = fontSize * density;
 			TKUnit.assertAreClose(actualTextSize, expSize, 0.1, 'Wrong native FontSize');
 
@@ -345,13 +328,13 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 			TKUnit.assertEqual(actualTextSize, fontSize, 'Wrong native FontSize');
 
 			normalColor = helper.getColor(testLabel.ios.textColor);
-			expColor = new colorModule.Color(color);
+			expColor = new Color(color);
 			TKUnit.assertEqual(normalColor.hex, expColor.hex);
 
 			const cgColor = (<UILabel>testLabel.ios).layer.backgroundColor;
 			const uiColor = UIColor.colorWithCGColor(cgColor);
 			actualBackgroundColor = helper.getColor(uiColor);
-			expBackgroundColor = new colorModule.Color(backgroundColor);
+			expBackgroundColor = new Color(backgroundColor);
 			TKUnit.assertEqual(actualBackgroundColor.hex, expBackgroundColor.hex);
 		}
 	}
@@ -372,11 +355,11 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		// testLabel.parentPage.css = "label {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
 		// all labels within the parent page will be styled according to css values
 		// << label-cssclass-type
-		const expectedBackgroundColor = new colorModule.Color(backgroundColor);
+		const expectedBackgroundColor = new Color(backgroundColor);
 		const actualBackgroundColor = label.style.backgroundColor;
 		TKUnit.assertEqual(expectedBackgroundColor.hex, actualBackgroundColor.hex);
 
-		const expectedColor = new colorModule.Color(color);
+		const expectedColor = new Color(color);
 		const actualColor = label.style.color;
 		TKUnit.assertEqual(expectedColor.hex, actualColor.hex);
 
@@ -401,11 +384,11 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		// label.parentPage.css = "#testLabel {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
 		// << label-css-identifier
 
-		const expectedBackgroundColor = new colorModule.Color(backgroundColor);
+		const expectedBackgroundColor = new Color(backgroundColor);
 		const actualBackgroundColor = label.style.backgroundColor;
 		TKUnit.assertEqual(expectedBackgroundColor.hex, actualBackgroundColor.hex);
 
-		const expectedColor = new colorModule.Color(color);
+		const expectedColor = new Color(color);
 		const actualColor = label.style.color;
 		TKUnit.assertEqual(expectedColor.hex, actualColor.hex);
 
@@ -415,10 +398,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 	public test_BindingToText() {
 		// >> label-observable
-		const label = new LabelModule.Label();
+		const label = new Label();
 		const expValue = 'Expected Value';
-		const sourceModel = new observableModule.Observable();
-		const bindingOptions: bindable.BindingOptions = {
+		const sourceModel = new Observable();
+		const bindingOptions: BindingOptions = {
 			sourceProperty: 'sourceProperty',
 			targetProperty: 'text',
 		};
@@ -435,8 +418,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		this.waitUntilTestElementIsLoaded();
 
 		const expValue = 'Expected Value';
-		const sourceModel = new observableModule.Observable();
-		const bindingOptions: bindable.BindingOptions = {
+		const sourceModel = new Observable();
+		const bindingOptions: BindingOptions = {
 			sourceProperty: 'sourceProperty',
 			targetProperty: 'text',
 		};
@@ -458,19 +441,19 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		this.waitUntilTestElementIsLoaded();
 
 		const firstExpValue = 'Expected Value';
-		const bindingOptions: bindable.BindingOptions = {
+		const bindingOptions: BindingOptions = {
 			sourceProperty: 'sourceProperty',
 			targetProperty: 'text',
 		};
 		label.bind(bindingOptions);
-		const firstSourceObject = new observableModule.Observable();
+		const firstSourceObject = new Observable();
 		firstSourceObject.set('sourceProperty', firstExpValue);
 
 		this.testPage.bindingContext = firstSourceObject;
 		TKUnit.assertEqual(label.text, firstExpValue);
 
 		const secondExpValue = 'Second value';
-		const secondSourceObject = new observableModule.Observable();
+		const secondSourceObject = new Observable();
 		secondSourceObject.set('sourceProperty', secondExpValue);
 		this.testPage.bindingContext = secondSourceObject;
 
@@ -519,7 +502,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 		view.id = 'testLabel';
 		page.addCss('#testLabel { text-align: ' + this.expectedTextAlignment + '; }');
-		page.addCssFile(fs.path.join(testDir, 'label-tests-page.css'));
+		page.addCssFile(path.join(testDir, 'label-tests-page.css'));
 
 		const actualResult = view.style.textAlignment;
 		// actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
@@ -608,7 +591,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 	}
 
 	private requestLayoutFixture(expectRequestLayout: boolean, initialValue: string, setup: (label: Label) => LayoutBase): void {
-		if (!isApple) {
+		if (!__APPLE__) {
 			return;
 		}
 
@@ -740,7 +723,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 	public test_FormattedText_ShouldNotCrash_WheRemovedFromSpan() {
 		const label = this.testView;
-		label.color = new colorModule.Color('red');
+		label.color = new Color('red');
 		this.waitUntilTestElementIsLoaded();
 
 		const span = new Span();

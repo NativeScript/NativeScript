@@ -65,7 +65,7 @@ function runImageTestSync(image: ImageModule.Image, src: string) {
 
 	image.src = src;
 
-	let imageSourceAvailable = global.isIOS ? !!image.imageSource : true;
+	let imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
 	TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 	TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 }
@@ -78,7 +78,7 @@ function runImageTestAsync(image: ImageModule.Image, src: string, done: (e: any)
 		image.off(IMAGE_LOADED_EVENT, handler);
 
 		try {
-			let imageSourceAvailable = global.isIOS ? !!image.imageSource : true;
+			let imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
 			TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 			TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 			done(null);
@@ -255,7 +255,7 @@ export const test_SettingStretch_none = function () {
 };
 
 function ios<T>(func: T): T {
-	return global.isIOS ? func : undefined;
+	return __APPLE__ ? func : undefined;
 }
 
 export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(() => {

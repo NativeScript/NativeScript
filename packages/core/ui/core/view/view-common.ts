@@ -23,7 +23,8 @@ import { Builder } from '../../builder';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
-import * as am from '../../animation';
+import { Animation } from '../../animation';
+import type { AnimationPromise } from '../../animation/animation-types';
 import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
@@ -33,13 +34,6 @@ import { Flex, FlexFlow } from '../../layouts/flexbox-layout';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
-
-let animationModule: typeof am;
-function ensureAnimationModule() {
-	if (!animationModule) {
-		animationModule = require('../../animation');
-	}
-}
 
 export function CSSType(type: string): ClassDecorator {
 	return (cls) => {
@@ -122,7 +116,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	protected _isLayoutValid: boolean;
 	private _cssType: string;
 
-	private _localAnimations: Set<am.Animation>;
+	private _localAnimations: Set<Animation>;
 
 	_currentWidthMeasureSpec: number;
 	_currentHeightMeasureSpec: number;
@@ -1138,23 +1132,25 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		};
 	}
 
-	public animate(animation: any): am.AnimationPromise {
-		return this.createAnimation(animation).play();
+	public animate(animation: any): AnimationPromise {
+		const animationInstance = this.createAnimation(animation);
+		const promise = animationInstance.play();
+		(promise as AnimationPromise).cancel = () => animationInstance.cancel();
+		return promise as AnimationPromise;
 	}
 
-	public createAnimation(animation: any): am.Animation {
-		ensureAnimationModule();
+	public createAnimation(animation: any): Animation {
 		if (!this._localAnimations) {
 			this._localAnimations = new Set();
 		}
 		animation.target = this;
-		const anim = new animationModule.Animation([animation]);
+		const anim = new Animation([animation]);
 		this._localAnimations.add(anim);
 
 		return anim;
 	}
 
-	public _removeAnimation(animation: am.Animation): boolean {
+	public _removeAnimation(animation: Animation): boolean {
 		const localAnimations = this._localAnimations;
 		if (localAnimations && localAnimations.has(animation)) {
 			localAnimations.delete(animation);

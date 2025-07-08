@@ -7,7 +7,7 @@ import { Trace } from '../../trace';
 
 // Types.
 import { unsetValue } from '../core/properties';
-import { Animation } from '.';
+import { Animation } from './index';
 import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty, widthProperty, heightProperty } from '../styling/style-properties';
 
 export interface Keyframes {

@@ -2,6 +2,7 @@ import type { View } from '../core/view';
 
 export * from './gestures-common';
 export * from './touch-manager';
+export type { GesturesObserverDefinition } from './gestures-types';
 
 /**
  * Provides options for the GesturesObserver.

@@ -1,17 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, isIOS, StackLayout, Page, Color, Span, FormattedString } from '@nativescript/core';
+import { View, isIOS, StackLayout, Page, Color, Span, FormattedString, BindingOptions, Observable, TextField } from '@nativescript/core';
 import { getNativeText, getNativeHint, typeTextNatively, typeTextNativelyWithReturn, getNativeSecure, getNativeFontSize, getNativeColor, getNativeBackgroundColor, getNativeTextAlignment, getNativePlaceholderColor, getNativeFocus } from './text-field-tests-native';
-
-// >> require-textfield
-import { TextField } from '@nativescript/core/ui/text-field';
-// << require-textfield
-// Other frequently used modules when working with buttons include:
-// >> require-observable-binding-options-textfield
-import { BindingOptions } from '@nativescript/core/ui/core/bindable';
-
-import { Observable } from '@nativescript/core/data/observable';
-// << require-observable-binding-options-textfield
 
 // ### Binding two TextFields text property to observable view-model property.
 // >> binding-text-property-textfield

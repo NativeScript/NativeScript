@@ -1,5 +1,5 @@
 // Types.
-import { Animation as AnimationBaseDefinition, Point3D } from '.';
+import { Point3D } from './animation-types';
 import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
 
 // Requires.
@@ -19,7 +19,7 @@ export namespace Properties {
 	export const width = 'width';
 }
 
-export abstract class AnimationBase implements AnimationBaseDefinition {
+export abstract class AnimationBase {
 	public _propertyAnimations: Array<PropertyAnimation>;
 	public _playSequentially: boolean;
 	private _isPlaying: boolean;

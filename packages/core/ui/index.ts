@@ -1,7 +1,8 @@
 export { ActionBar, ActionItem, ActionItems, NavigationButton } from './action-bar';
 export { ActivityIndicator } from './activity-indicator';
-export { Animation, KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation';
-export type { AnimationDefinition } from './animation';
+export { Animation, _resolveAnimationCurve } from './animation';
+export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation/keyframe-animation';
+export type { AnimationDefinition, Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo, Point3D, AnimationPromise, Cancelable } from './animation/animation-types';
 export { Builder } from './builder';
 export type { LoadOptions } from './builder';
 export type { ComponentModule } from './builder/component-builder';

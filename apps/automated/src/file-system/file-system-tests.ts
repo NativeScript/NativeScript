@@ -746,7 +746,7 @@ export function testAndroidCreate() {
 
 export function test_FileAppend(done) {
 	const content = 'Hello World';
-	const hello_world = global.isIOS ? NSString.stringWithString(content).dataUsingEncoding(NSUTF8StringEncoding) : new java.lang.String(content).getBytes('UTF-8');
+	const hello_world = __APPLE__ ? NSString.stringWithString(content).dataUsingEncoding(NSUTF8StringEncoding) : new java.lang.String(content).getBytes('UTF-8');
 	const file = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-app.txt`));
 	file
 		.appendText('Hello')

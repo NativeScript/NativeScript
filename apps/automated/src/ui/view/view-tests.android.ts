@@ -1,12 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, unsetValue } from '@nativescript/core/ui/core/view';
-import { Button } from '@nativescript/core/ui/button';
-import * as types from '@nativescript/core/utils/types';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { Label } from '@nativescript/core/ui/label';
-import { Trace, isIOS } from '@nativescript/core';
-import { Color } from '@nativescript/core/color';
+import { View, unsetValue, Button, StackLayout, Label, Color, isIOS, Trace, Utils } from '@nativescript/core';
 
 // enable the trace, it is disabled by default
 Trace.enable();
@@ -301,5 +295,5 @@ export function checkNativeBackgroundColor(v: View): boolean {
 export function checkNativeBackgroundImage(v: View): boolean {
 	const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
 
-	return bkg && !types.isNullOrUndefined(bkg.getBackgroundImage());
+	return bkg && !Utils.isNullOrUndefined(bkg.getBackgroundImage());
 }

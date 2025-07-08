@@ -1,5 +1,5 @@
 // Definitions.
-import { GestureEventData, TapGestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, GestureEventDataWithState } from '.';
+import type { GestureEventData, TapGestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, GestureEventDataWithState } from './gestures-types';
 import type { View } from '../core/view';
 import { EventData } from '../../data/observable';
 
@@ -12,6 +12,8 @@ import { layout } from '../../utils';
 import * as timer from '../../timer';
 
 export * from './gestures-common';
+export * from './gestures-types';
+export * from './touch-manager';
 
 interface TapAndDoubleTapGestureListener {
 	new (observer: GesturesObserver, target: View, type: number): android.view.GestureDetector.SimpleOnGestureListener;
