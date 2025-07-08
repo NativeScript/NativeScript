@@ -1,5 +1,5 @@
 import { Trace } from '../trace';
-import { ios as iOSUtils } from './native-helper';
+import { ios as iOSUtils, isRealDevice } from './native-helper';
 
 export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
 export * from './common';
@@ -10,11 +10,12 @@ export * from './macrotask-scheduler';
 export * from './mainthread-helper';
 export * from './native-helper';
 export * from './types';
+export * from './native-helper';
 
 export function openFile(filePath: string): boolean {
 	try {
 		const appPath = iOSUtils.getCurrentAppPath();
-		const path = iOSUtils.isRealDevice() ? filePath.replace('~', appPath) : filePath;
+		const path = isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
 		controller.delegate = iOSUtils.createUIDocumentInteractionControllerDelegate();
@@ -67,10 +68,6 @@ export function openUrlAsync(location: string): Promise<boolean> {
 			reject(e);
 		}
 	});
-}
-
-export function isRealDevice(): boolean {
-	return iOSUtils.isRealDevice();
 }
 
 export const ad = 0;

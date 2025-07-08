@@ -9,6 +9,11 @@ export function dataSerialize(data?: any, wrapPrimitives?: boolean): any;
  */
 export function dataDeserialize(nativeData?: any): any;
 
+/**
+ * Checks whether the application is running on real device and not on emulator.
+ */
+export function isRealDevice(): boolean;
+
 // /**
 //  * Module with android specific utilities.
 //  */
@@ -94,24 +99,8 @@ export function dataDeserialize(nativeData?: any): any;
 // 		 * @param type - (Optional) type
 // 		 */
 // 		export function getResource(name: string, type?: string): number;
-
-// 		/**
-// 		 * [Obsolete - please use getPaletteColor] Gets a color from current theme.
-// 		 * @param name - Name of the color
-// 		 */
-// 		export function getPalleteColor();
-
-// 		/**
-// 		 * Gets a color from the current theme.
-// 		 * @param name - Name of the color resource.
-// 		 */
-// 		export function getPaletteColor(name: string, context: any /* android.content.Context */): number;
 // 	}
 
-// 	/**
-// 	 * Checks whether the application is running on real device and not on emulator.
-// 	 */
-// 	export function isRealDevice(): boolean;
 // }
 
 // /**
@@ -188,38 +177,11 @@ export function dataDeserialize(nativeData?: any): any;
 // 	export function openFile(filePath: string): boolean;
 
 // 	/**
-// 	 * Joins an array of file paths.
-// 	 * @param paths An array of paths.
-// 	 * Returns the joined path.
-// 	 */
-// 	export function joinPaths(...paths: string[]): string;
-
-// 	/**
-// 	 * Gets the root folder for the current application. This Folder is private for the application and not accessible from Users/External apps.
-// 	 * iOS - this folder is read-only and contains the app and all its resources.
-// 	 */
-// 	export function getCurrentAppPath(): string;
-
-// 	/**
 // 	 * Gets the currently visible(topmost) UIViewController.
 // 	 * @param rootViewController The root UIViewController instance to start searching from (normally window.rootViewController).
 // 	 * Returns the visible UIViewController.
 // 	 */
 // 	export function getVisibleViewController(rootViewController: any /* UIViewController*/): any; /* UIViewController*/
-
-// 	/**
-// 	 *
-// 	 * @param transform Applies a rotation transform over X,Y and Z axis
-// 	 * @param x Rotation over X axis in degrees
-// 	 * @param y Rotation over Y axis in degrees
-// 	 * @param z Rotation over Z axis in degrees
-// 	 */
-// 	export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any; /* CATransform3D*/
-
-// 	/**
-// 	 * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
-// 	 */
-// 	export function createUIDocumentInteractionControllerDelegate(): any;
 
 // 	/**
 // 	 * Checks whether the application is running on real device and not on simulator.
@@ -248,33 +210,93 @@ export function dataDeserialize(nativeData?: any): any;
 // 	 */
 // 	export function copyLayerProperties(view: UIView, toView: UIView, customProperties?: { view?: Array<string> /* Array<keyof UIView> */; layer?: Array<string> /* Array<keyof CALayer> */ }): void;
 
-// 	/**
-// 	 * Animate views with a configurable spring effect
-// 	 * @param options various animation settings for the spring
-// 	 * - tension: number
-// 	 * - friction: number
-// 	 * - mass: number
-// 	 * - delay: number
-// 	 * - velocity: number
-// 	 * - animateOptions: UIViewAnimationOptions
-// 	 * - animations: () => void, Callback containing the property changes you want animated
-// 	 * - completion: (finished: boolean) => void, Callback when animation is finished
-// 	 */
-// 	export function animateWithSpring(options?: { tension?: number; friction?: number; mass?: number; delay?: number; velocity?: number; animateOptions?: UIViewAnimationOptions; animations?: () => void; completion?: (finished?: boolean) => void });
 // }
 
-import * as AndroidUtils from './android';
-export import android = AndroidUtils;
+export const android: {
+	resources: {
+		getDrawableId: (name) => number;
+		getStringId: (name) => number;
+		getId: (name: string) => number;
+		getResource: (name: string, type?: string) => number;
+		/**
+		 * Gets a color from the current theme.
+		 * @param name - Name of the color resource.
+		 * @param context - Context to resolve the color.
+		 */
+		getPaletteColor: (name: string, context: android.content.Context) => number;
+	};
+	getApplication: () => android.app.Application;
+	getCurrentActivity: () => androidx.appcompat.app.AppCompatActivity | android.app.Activity | null;
+	getApplicationContext: () => android.content.Context;
+	getResources: () => android.content.res.Resources;
+	getPackageName: () => string;
+	getInputMethodManager: () => android.view.inputmethod.InputMethodManager;
+	showSoftInput: (nativeView: android.view.View) => void;
+	dismissSoftInput: (nativeView?: android.view.View) => void;
+};
 
 /**
  * @deprecated use Utils.android instead.
  */
-export import ad = AndroidUtils;
+export const ad = android;
 
-import * as iOSUtils from './ios';
-export import ios = iOSUtils;
+export const ios: {
+	collections: {
+		jsArrayToNSArray<T>(str: T[]): NSArray<T>;
+		nsArrayToJSArray<T>(a: NSArray<T>): Array<T>;
+	};
+	/**
+	 * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
+	 */
+	createUIDocumentInteractionControllerDelegate: () => NSObject;
+	/**
+	 * Gets the root folder for the current application. This Folder is private for the application and not accessible from Users/External apps.
+	 * iOS - this folder is read-only and contains the app and all its resources.
+	 */
+	getCurrentAppPath: () => string;
+	getRootViewController: () => UIViewController;
+	getVisibleViewController: (rootViewController: UIViewController) => UIViewController;
+	getWindow: () => UIWindow;
+	getMainScreen: () => UIScreen;
+	setWindowBackgroundColor: (value: string) => void;
+	isLandscape: () => boolean;
+	snapshotView: (view: UIView, scale: number) => UIImage;
+	/**
+	 * Applies a rotation transform over X,Y and Z axis
+	 * @param transform Applies a rotation transform over X,Y and Z axis
+	 * @param x Rotation over X axis in degrees
+	 * @param y Rotation over Y axis in degrees
+	 * @param z Rotation over Z axis in degrees
+	 */
+	applyRotateTransform: (transform: CATransform3D, x: number, y: number, z: number) => CATransform3D;
+	printCGRect: (rect: CGRect) => void;
+	copyLayerProperties: (view: UIView, toView: UIView, customProperties?: { view?: Array<keyof UIView>; layer?: Array<keyof CALayer> }) => void;
+	/**
+	 * Animate views with a configurable spring effect
+	 * @param options various animation settings for the spring
+	 * - tension: number
+	 * - friction: number
+	 * - mass: number
+	 * - delay: number
+	 * - velocity: number
+	 * - animateOptions: UIViewAnimationOptions
+	 * - animations: () => void, Callback containing the property changes you want animated
+	 * - completion: (finished: boolean) => void, Callback when animation is finished
+	 */
+	animateWithSpring: (options?: { tension?: number; friction?: number; mass?: number; delay?: number; velocity?: number; animateOptions?: UIViewAnimationOptions; animations?: () => void; completion?: (finished?: boolean) => void }) => void;
+	/**
+	 * Joins an array of file paths.
+	 * @param paths An array of paths.
+	 * Returns the joined path.
+	 */
+	joinPaths: (...paths: string[]) => string;
+	/**
+	 * @deprecated use Utils.SDK_VERSION instead which is a float of the {major}.{minor} verison
+	 */
+	MajorVersion: number;
+};
 
 /**
  * @deprecated use Utils.ios instead.
  */
-export import iOSNativeHelper = iOSUtils;
+export const iOSNativeHelper = ios;

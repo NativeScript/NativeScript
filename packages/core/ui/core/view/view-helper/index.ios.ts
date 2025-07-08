@@ -41,7 +41,7 @@ class UILayoutViewController extends UIViewController {
 		super.viewDidLayoutSubviews();
 		const owner = this.owner?.deref();
 		if (owner) {
-			if (iOSUtils.MajorVersion >= 11) {
+			if (SDK_VERSION >= 11) {
 				// Handle nested UILayoutViewController safe area application.
 				// Currently, UILayoutViewController can be nested only in a TabView.
 				// The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
@@ -116,7 +116,7 @@ class UILayoutViewController extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (iOSUtils.MajorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			const owner = this.owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({

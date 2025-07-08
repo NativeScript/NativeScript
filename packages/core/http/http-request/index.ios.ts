@@ -4,7 +4,7 @@ import * as imageSourceModule from '../../image-source';
 import * as fsModule from '../../file-system';
 
 import { SDK_VERSION } from '../../utils/constants';
-import { isRealDevice } from '../../utils/ios';
+import { isRealDevice } from '../../utils';
 import * as types from '../../utils/types';
 import * as domainDebugger from '../../debugger';
 import { getFilenameFromUrl } from './http-request-common';

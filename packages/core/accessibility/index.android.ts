@@ -1,7 +1,7 @@
 import { Application, ApplicationEventData } from '../application';
 import { Trace } from '../trace';
 import { SDK_VERSION } from '../utils/constants';
-import { resources } from '../utils/android';
+import { android as androidUtils } from '../utils';
 import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';
@@ -168,7 +168,7 @@ function ensureNativeClasses() {
 			}
 
 			// Set resource id that can be used with test frameworks without polluting the content description.
-			const id = host.getTag(resources.getId(`:id/nativescript_accessibility_id`));
+			const id = host.getTag(androidUtils.resources.getId(`:id/nativescript_accessibility_id`));
 			if (id != null) {
 				info.setViewIdResourceName(id);
 			}

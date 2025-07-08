@@ -185,10 +185,6 @@ Please ensure you have your manifest correctly configured with the FileProvider.
 	}
 }
 
-export function isRealDevice(): boolean {
-	return AndroidUtils.isRealDevice();
-}
-
 export function dismissSoftInput(nativeView?: any): void {
 	AndroidUtils.dismissSoftInput(nativeView);
 }

@@ -7,13 +7,12 @@ import { LinearGradient } from '../styling/linear-gradient';
 import { colorProperty, backgroundInternalProperty, backgroundColorProperty, backgroundImageProperty } from '../styling/style-properties';
 import { ios as iosViewUtils } from '../utils';
 import { ImageSource } from '../../image-source';
-import { layout, iOSNativeHelper, isFontIconURI } from '../../utils';
+import { layout, isFontIconURI } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityValueProperty } from '../../accessibility/accessibility-properties';
 
 export * from './action-bar-common';
 
-const majorVersion = iOSNativeHelper.MajorVersion;
 const UNSPECIFIED = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
 interface NSUINavigationBar extends UINavigationBar {
@@ -271,7 +270,7 @@ export class ActionBar extends ActionBarBase {
 		// show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
 		// Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
 		const image = img ? img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal) : null;
-		if (majorVersion >= 15) {
+		if (SDK_VERSION >= 15) {
 			const appearance = this._getAppearance(navigationBar);
 			appearance.setBackIndicatorImageTransitionMaskImage(image, image);
 			this._updateAppearance(navigationBar, appearance);
@@ -378,7 +377,7 @@ export class ActionBar extends ActionBarBase {
 		}
 		if (color) {
 			const titleTextColor = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
-			if (majorVersion >= 15) {
+			if (SDK_VERSION >= 15) {
 				const appearance = this._getAppearance(navBar);
 				appearance.titleTextAttributes = titleTextColor;
 			}
@@ -398,7 +397,7 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		const nativeColor = color instanceof Color ? color.ios : color;
-		if (__VISIONOS__ || majorVersion >= 15) {
+		if (__VISIONOS__ || SDK_VERSION >= 15) {
 			const appearance = this._getAppearance(navBar);
 			// appearance.configureWithOpaqueBackground();
 			appearance.backgroundColor = nativeColor;
@@ -416,7 +415,7 @@ export class ActionBar extends ActionBarBase {
 
 		let color: UIColor;
 
-		if (__VISIONOS__ || majorVersion >= 15) {
+		if (__VISIONOS__ || SDK_VERSION >= 15) {
 			const appearance = this._getAppearance(navBar);
 			color = appearance.backgroundColor;
 		} else {
@@ -432,7 +431,7 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 
-		if (__VISIONOS__ || majorVersion >= 15) {
+		if (__VISIONOS__ || SDK_VERSION >= 15) {
 			const appearance = this._getAppearance(navBar);
 			// appearance.configureWithOpaqueBackground();
 			appearance.backgroundImage = image;
@@ -456,7 +455,7 @@ export class ActionBar extends ActionBarBase {
 
 		let image: UIImage;
 
-		if (__VISIONOS__ || majorVersion >= 15) {
+		if (__VISIONOS__ || SDK_VERSION >= 15) {
 			const appearance = this._getAppearance(navBar);
 			image = appearance.backgroundImage;
 		} else {
@@ -517,7 +516,7 @@ export class ActionBar extends ActionBarBase {
 
 	private updateFlatness(navBar: UINavigationBar) {
 		if (this.flat) {
-			if (majorVersion >= 15) {
+			if (SDK_VERSION >= 15) {
 				const appearance = this._getAppearance(navBar);
 				appearance.shadowColor = UIColor.clearColor;
 				this._updateAppearance(navBar, appearance);
@@ -530,7 +529,7 @@ export class ActionBar extends ActionBarBase {
 				navBar.translucent = false;
 			}
 		} else {
-			if (majorVersion >= 15) {
+			if (SDK_VERSION >= 15) {
 				if (navBar.standardAppearance) {
 					// Not flat and never been set do nothing.
 					const appearance = navBar.standardAppearance;
@@ -581,7 +580,7 @@ export class ActionBar extends ActionBarBase {
 	public onLayout(left: number, top: number, right: number, bottom: number) {
 		const titleView = this.titleView;
 		if (titleView) {
-			if (majorVersion > 10) {
+			if (SDK_VERSION > 10) {
 				// On iOS 11 titleView is wrapped in another view that is centered with constraints.
 				View.layoutChild(this, titleView, 0, 0, titleView.getMeasuredWidth(), titleView.getMeasuredHeight());
 			} else {
