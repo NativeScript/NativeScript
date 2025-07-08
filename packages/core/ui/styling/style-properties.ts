@@ -201,10 +201,11 @@ function isNonNegativeFiniteNumber(value: number): boolean {
 }
 
 function parseClipPath(value: string): string | ClipPathFunction {
-	const functionStartIndex = value.indexOf('(');
+	const funcStartIndex = value.indexOf('(');
+	const funcEndIndex = value.lastIndexOf(')');
 
-	if (functionStartIndex > -1) {
-		const functionName = value.substring(0, functionStartIndex).trim();
+	if (funcStartIndex > -1 && funcEndIndex > -1) {
+		const functionName = value.substring(0, funcStartIndex).trim();
 
 		switch (functionName) {
 			case 'rect':
@@ -212,8 +213,7 @@ function parseClipPath(value: string): string | ClipPathFunction {
 			case 'ellipse':
 			case 'polygon':
 			case 'inset': {
-				const rule: string = value.replace(`${functionName}(`, '').replace(')', '');
-				return new ClipPathFunction(functionName, rule);
+				return new ClipPathFunction(functionName, value.substring(funcStartIndex + 1, funcEndIndex));
 			}
 			default:
 				throw new Error(`Clip-path function ${functionName} is not valid.`);
