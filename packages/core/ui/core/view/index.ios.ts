@@ -1,7 +1,4 @@
-// Types.
-import { Point, Position, View as ViewDefinition } from '.';
-
-// Requires
+import type { Point, Position, View as ViewDefinition } from '.';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
@@ -18,7 +15,6 @@ import { SharedTransition } from '../../transition/shared-transition';
 import { NativeScriptUIView } from '../../utils';
 
 export * from './view-common';
-// helpers (these are okay re-exported here)
 export * from './view-helper';
 // This one can eventually be cleaned up but causes issues with a lot of ui-suite plugins in particular if not exported here
 export * from '../properties';
