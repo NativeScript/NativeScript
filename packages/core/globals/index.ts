@@ -1,7 +1,37 @@
-import type * as tslibType from 'tslib';
-const tslib: typeof tslibType = require('tslib');
+import tslib from 'tslib';
 import { Observable } from '../data/observable';
 import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
+import * as timer from '../timer';
+import * as animationFrame from '../animation-frame';
+import * as mediaQueryList from '../media-query-list';
+import * as uiDialogs from '../ui/dialogs';
+import * as text from '../text';
+import * as xhrImpl from '../xhr';
+import '../fetch';
+import * as wgc from '../wgc';
+import * as cryptoImpl from '../wgc/crypto';
+import * as subtleCryptoImpl from '../wgc/crypto/SubtleCrypto';
+
+if (typeof global.__metadata === 'undefined') {
+	/**
+	 * TS decorator metadata helper.
+	 * @param metadataKey   the metadata key (e.g. "design:type")
+	 * @param metadataValue the metadata value (e.g. the constructor function)
+	 * @returns a decorator function, or undefined if Reflect.metadata isn’t available
+	 */
+	global.__metadata = (metadataKey, metadataValue) => {
+		if (
+			typeof Reflect === 'object' &&
+			// @ts-expect-error
+			typeof Reflect.metadata === 'function'
+		) {
+			// Delegate to the reflect-metadata shim
+			// @ts-expect-error
+			return Reflect.metadata(metadataKey, metadataValue);
+		}
+		// no-op if no Reflect.metadata
+	};
+}
 
 type ModuleLoader = (name?: string) => any;
 
@@ -301,34 +331,34 @@ export function initGlobal() {
 		};
 
 		// DOM api polyfills
-		global.registerModule('timer', () => require('../timer'));
+		global.registerModule('timer', () => timer);
 		installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
 
-		global.registerModule('animation', () => require('../animation-frame'));
+		global.registerModule('animation', () => animationFrame);
 		installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
 
-		global.registerModule('media-query-list', () => require('../media-query-list'));
+		global.registerModule('media-query-list', () => mediaQueryList);
 		installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
 
-		global.registerModule('ui-dialogs', () => require('../ui/dialogs'));
+		global.registerModule('ui-dialogs', () => uiDialogs);
 		installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
 
-		global.registerModule('text', () => require('../text'));
+		global.registerModule('text', () => text);
 		installPolyfills('text', ['TextDecoder', 'TextEncoder']);
 
-		global.registerModule('xhr', () => require('../xhr'));
+		global.registerModule('xhr', () => xhrImpl);
 		installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
 
-		global.registerModule('fetch', () => require('../fetch'));
-		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+		// global.registerModule('fetch', () => require('../fetch'));
+		// installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
 
-		global.registerModule('wgc', () => require('../wgc'));
+		global.registerModule('wgc', () => wgc);
 		installPolyfills('wgc', ['atob', 'btoa']);
 
-		global.registerModule('crypto', () => require('../wgc/crypto'));
+		global.registerModule('crypto', () => cryptoImpl);
 		installPolyfills('crypto', ['Crypto']);
 
-		global.registerModule('subtle', () => require('../wgc/crypto/SubtleCrypto'));
+		global.registerModule('subtle', () => subtleCryptoImpl);
 		installPolyfills('subtle-crypto', ['Subtle']);
 
 		global.crypto = new global.Crypto();

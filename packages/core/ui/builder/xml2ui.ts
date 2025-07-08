@@ -8,6 +8,28 @@ import { Device } from '../../platform';
 import { profile } from '../../profiling';
 import { android, ios, visionos, apple, loadCustomComponent, defaultNameSpaceMatcher, getExports, Builder } from './index';
 
+// Note: after all circulars are resolve, try importing this from single place or see if globals/index.ts properly handles it
+if (typeof global.__metadata === 'undefined') {
+	/**
+	 * TS decorator metadata helper.
+	 * @param metadataKey   the metadata key (e.g. "design:type")
+	 * @param metadataValue the metadata value (e.g. the constructor function)
+	 * @returns a decorator function, or undefined if Reflect.metadata isn’t available
+	 */
+	global.__metadata = (metadataKey, metadataValue) => {
+		if (
+			typeof Reflect === 'object' &&
+			// @ts-expect-error
+			typeof Reflect.metadata === 'function'
+		) {
+			// Delegate to the reflect-metadata shim
+			// @ts-expect-error
+			return Reflect.metadata(metadataKey, metadataValue);
+		}
+		// no-op if no Reflect.metadata
+	};
+}
+
 export namespace xml2ui {
 	/**
 	 * Pipes and filters:
