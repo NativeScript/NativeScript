@@ -1,5 +1,5 @@
 import { assert, assertEqual } from '../tk-unit';
-import { DOMNode } from '@nativescript/core/debugger/dom-node';
+import { DOMNode } from '@nativescript/core/debugger/dom-types';
 import { attachDOMInspectorCommandCallbacks, attachCSSInspectorCommandCallbacks, attachDOMInspectorEventCallbacks } from '@nativescript/core/debugger/devtools-elements';
 import { InspectorCommands, InspectorEvents } from '@nativescript/core/debugger/devtools-elements';
 import { unsetValue } from '@nativescript/core/ui/core/properties';
