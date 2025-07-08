@@ -51,15 +51,15 @@
 	},
 	"license": "Apache-2.0",
 	"scripts": {
-		"postinstall": "node cli-hooks/postinstall.js",
-		"preuninstall": "node cli-hooks/preuninstall.js"
+		"postinstall": "node cli-hooks/postinstall.mjs",
+		"preuninstall": "node cli-hooks/preuninstall.mjs"
 	},
 	"dependencies": {
 		"@csstools/css-calc": "~2.1.2",
 		"@csstools/css-color-parser": "^3.0.8",
 		"@csstools/css-parser-algorithms": "^3.0.4",
 		"@csstools/css-tokenizer": "^3.0.3",
-		"@nativescript/hook": "~3.0.0",
+		"@nativescript/hook": "~3.0.1",
 		"acorn": "^8.7.0",
 		"css-tree": "^1.1.2",
 		"css-what": "^6.1.0",
@@ -75,7 +75,7 @@
 			{
 				"name": "nativescript-core",
 				"type": "before-checkForChanges",
-				"script": "cli-hooks/before-checkForChanges.js",
+				"script": "cli-hooks/before-checkForChanges.mjs",
 				"inject": true
 			}
 		]
