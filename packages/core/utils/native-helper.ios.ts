@@ -4,6 +4,7 @@ import { Color } from '../color';
 import { Trace } from '../trace';
 import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from './common';
 import { SDK_VERSION } from './constants';
+import { getFileExtension } from './utils-shared';
 
 export function dataDeserialize(nativeData?: any) {
 	if (isNullOrUndefined(nativeData)) {

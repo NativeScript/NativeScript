@@ -1,12 +1,11 @@
 import { AlignSelf, Flex, FlexFlow, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
 import { Page } from '../../page';
-import { CoreTypes } from '../../../core-types';
+import { CoreTypes, Trace } from '../../styling/styling-shared';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug-source';
 import { Binding } from '../bindable';
 import { BindingOptions } from '../bindable/bindable-types';
-import { Trace } from '../../../trace';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';

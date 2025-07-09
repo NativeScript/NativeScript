@@ -8,8 +8,6 @@ import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
-import { Trace } from '../../../trace';
-import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
 import { setupAccessibleView } from '../../../application';
 
@@ -31,6 +29,7 @@ import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFo
 import { ShadowCSSValues } from '../../styling/css-shadow';
 import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
 import { Flex, FlexFlow } from '../../layouts/flexbox-layout';
+import { CoreTypes, Trace } from '../../styling/styling-shared';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';

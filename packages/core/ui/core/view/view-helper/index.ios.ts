@@ -5,8 +5,8 @@ import type { View } from '..';
 // Requires
 import { ViewHelper } from './view-helper-common';
 import { SDK_VERSION } from '../../../../utils/constants';
-import { ios as iOSUtils, layout } from '../../../../utils';
-import { Trace } from '../../../../trace';
+import { layout, Trace } from './view-helper-shared';
+import { ios as iOSUtils } from '../../../../utils';
 
 export * from './view-helper-common';
 export const AndroidHelper = 0;

@@ -4,10 +4,10 @@ import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression,
 import * as ReworkCSS from '../../css';
 
 import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR, matchMediaQueryString } from './css-selector';
-import { Trace } from '../../trace';
+import { Trace, CoreTypes } from './styling-shared';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
-import { profile } from '../../profiling';
+import { profile } from './styling-profile';
 
 import * as kam from '../animation/keyframe-animation';
 let keyframeAnimationModule: typeof kam;

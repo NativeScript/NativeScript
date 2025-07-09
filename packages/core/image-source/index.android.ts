@@ -1,7 +1,7 @@
 // Definitions.
 import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
-import * as httpModule from '../http';
+import * as http from '../http';
 
 // Types.
 import { path as fsPath, knownFolders } from '../file-system';
@@ -13,13 +13,6 @@ import { Color } from '../color';
 import { getScaledDimensions } from './image-source-common';
 
 export { isFileOrResourcePath };
-
-let http: typeof httpModule;
-function ensureHttp() {
-	if (!http) {
-		http = require('../http');
-	}
-}
 
 let application: android.app.Application;
 let resources: android.content.res.Resources;
@@ -87,10 +80,8 @@ export class ImageSource implements ImageSourceDefinition {
 		});
 	}
 
-	static fromUrl(url: string): Promise<ImageSourceDefinition> {
-		ensureHttp();
-
-		return http.getImage(url);
+	static fromUrl(url: string): Promise<ImageSource> {
+		return http.getImage(url) as Promise<ImageSource>;
 	}
 
 	static fromResourceSync(name: string): ImageSource {

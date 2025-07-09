@@ -1,4 +1,4 @@
-import { ImageSource } from '../image-source';
+import type { ImageSourceLike } from './http-shared';
 import { File } from '../file-system';
 import * as httpRequest from './http-request';
 export * from './http-request';
@@ -91,7 +91,7 @@ export interface HttpContent {
 	/**
 	 * Gets the response body as ImageSource.
 	 */
-	toImage: () => Promise<ImageSource>;
+	toImage: () => Promise<ImageSourceLike>;
 
 	/**
 	 * Gets the response body as file.
@@ -131,7 +131,7 @@ export function getJSON<T>(arg: any): Promise<T> {
 	});
 }
 
-export function getImage(arg: any): Promise<ImageSource> {
+export function getImage(arg: any): Promise<ImageSourceLike> {
 	return new Promise<any>((resolve, reject) => {
 		httpRequest.request(typeof arg === 'string' ? { url: arg, method: 'GET' } : arg).then(
 			(r) => {

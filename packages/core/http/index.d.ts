@@ -1,4 +1,5 @@
-﻿import { ImageSource } from '../image-source';
+﻿// import { ImageSource } from '../image-source';
+import type { ImageSourceLike } from './http-shared';
 import { File } from '../file-system';
 
 /**
@@ -29,13 +30,13 @@ export function getJSON<T>(options: HttpRequestOptions): Promise<T>;
  * Downloads the content from the specified URL and attempts to decode it as an image.
  * @param url The URL to request from.
  */
-export function getImage(url: string): Promise<ImageSource>;
+export function getImage(url: string): Promise<ImageSourceLike>;
 
 /**
  * Downloads the content from the specified URL and attempts to decode it as an image.
  * @param options An object that specifies various request options.
  */
-export function getImage(options: HttpRequestOptions): Promise<ImageSource>;
+export function getImage(options: HttpRequestOptions): Promise<ImageSourceLike>;
 
 /**
  * Downloads the content from the specified URL and attempts to save it as file.
@@ -157,7 +158,7 @@ export interface HttpContent {
 	/**
 	 * Gets the response body as ImageSource.
 	 */
-	toImage: () => Promise<ImageSource>;
+	toImage: () => Promise<ImageSourceLike>;
 
 	/**
 	 * Gets the response body as file.
