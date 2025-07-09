@@ -1,6 +1,7 @@
 import { Page as PageDefinition } from '.';
 import { ContentView } from '../content-view';
-import { View, CSSType, ShownModallyData } from '../core/view';
+import { View, CSSType } from '../core/view';
+import { ShownModallyData } from '../core/view/view-interfaces';
 import { booleanConverter } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
 import { Style } from '../styling/style';

@@ -1,14 +1,12 @@
-// Definitions.
+import { isAccessibilityServiceEnabled } from '../../application';
 import { Frame, BackstackEntry, NavigationType } from '../frame';
-
-// Types.
 import { View, IOSHelper } from '../core/view';
 import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './page-common';
 
 import { profile } from '../../profiling';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
-import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
+import { getLastFocusedViewOnPage } from '../../accessibility';
 import { SharedTransition } from '../transition/shared-transition';
 
 export * from './page-common';

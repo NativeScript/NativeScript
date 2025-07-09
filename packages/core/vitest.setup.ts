@@ -19,6 +19,7 @@ global.NSObject = class NSObject {
 		return new NSObject();
 	}
 };
+global.NSNumber = {};
 global.NSString = {
 	stringWithString() {
 		return {
@@ -106,6 +107,15 @@ global.NativeScriptUtils = {
 		return {};
 	},
 };
+global.NSURLSessionConfiguration = {
+	defaultSessionConfiguration: function () {
+		return {};
+	},
+	ephemeralSessionConfiguration: function () {
+		return {};
+	},
+};
+global.NSURLSessionTaskDelegate = function () {};
 global.NSOperationQueue = {
 	mainQueue: {
 		addOperationWithBlock(fn: Function) {
@@ -148,6 +158,15 @@ global.UIResponder = function () {};
 global.UIResponder.extend = function () {};
 global.UIViewController = function () {};
 global.UIViewControllerTransitioningDelegate = function () {};
+global.UINavigationControllerDelegate = function () {};
+global.UINavigationController = function () {};
+global.UIUserInterfaceIdiom = {
+	Phone: 0,
+	Pad: 1,
+	TV: 2,
+	CarPlay: 3,
+	Mac: 4,
+};
 global.UIGestureRecognizer = function () {};
 global.UIGestureRecognizerDelegate = function () {};
 global.UIAdaptivePresentationControllerDelegate = function () {};
@@ -164,6 +183,7 @@ global.UIContentSizeCategoryAccessibilityLarge = 2.5;
 global.UIContentSizeCategoryAccessibilityExtraLarge = 3;
 global.UIContentSizeCategoryAccessibilityExtraExtraLarge = 3.5;
 global.UIContentSizeCategoryAccessibilityExtraExtraExtraLarge = 4;
+global.UIViewControllerAnimatedTransitioning = function () {};
 // global.UIDocumentInteractionController = {
 // 	interactionControllerWithURL(url: any) {
 // 		return null;

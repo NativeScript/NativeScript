@@ -685,7 +685,7 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		// Handle markup/script changes in currentPage
-		if (this.currentPage && viewMatchesModuleContext(this.currentPage, context, ['markup', 'script'])) {
+		if (this.currentPage && viewMatchesModuleContext(this.currentPage as any, context, ['markup', 'script'])) {
 			Trace.write(`Change Handled: Replacing page ${context.path}`, Trace.categories.Livesync);
 
 			// Replace current page with a default fade transition

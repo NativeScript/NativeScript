@@ -1,5 +1,4 @@
-// Definitions.
-import type { Point, CustomLayoutView as CustomLayoutViewDefinition, Position } from '.';
+import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
@@ -17,9 +16,9 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, Application } from '../../../application';
+import { AndroidActivityBackPressedEventData, Application, updateAccessibilityProperties, updateContentDescription } from '../../../application';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
@@ -1276,7 +1275,7 @@ export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
 }
 
-export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
+export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: android.view.ViewGroup;
 
 	public createNativeView() {

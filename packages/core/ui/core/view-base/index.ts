@@ -19,7 +19,6 @@ import { profile } from '../../../profiling';
 
 import { DOMNode } from '../../../debugger/dom-types';
 import { applyInlineStyle, CssState, StyleScope } from '../../styling/style-scope';
-import { ViewBase as ViewBaseDefinition } from '.';
 import { booleanConverter } from './utils';
 
 export { booleanConverter } from './utils';
@@ -106,12 +105,12 @@ export interface ShowModalOptions {
  * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getAncestor(view: ViewBaseDefinition, criterion: string | { new () }): ViewBaseDefinition {
-	let matcher: (view: ViewBaseDefinition) => boolean = null;
+export function getAncestor(view: ViewBase, criterion: string | { new () }): ViewBase {
+	let matcher: (view: ViewBase) => boolean = null;
 	if (typeof criterion === 'string') {
-		matcher = (view: ViewBaseDefinition) => view.typeName === criterion;
+		matcher = (view: ViewBase) => view.typeName === criterion;
 	} else {
-		matcher = (view: ViewBaseDefinition) => view instanceof criterion;
+		matcher = (view: ViewBase) => view instanceof criterion;
 	}
 
 	for (let parent = view.parent; parent != null; parent = parent.parent) {
@@ -129,7 +128,7 @@ export function getAncestor(view: ViewBaseDefinition, criterion: string | { new 
  * @param id - The id of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefinition {
+export function getViewById(view: ViewBase, id: string): ViewBase {
 	if (!view) {
 		return undefined;
 	}
@@ -138,8 +137,8 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
 		return view;
 	}
 
-	let retVal: ViewBaseDefinition;
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	let retVal: ViewBase;
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (child.id === id) {
 			retVal = child;
 
@@ -161,7 +160,7 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
  * @param domId - The id of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBaseDefinition {
+export function getViewByDomId(view: ViewBase, domId: number): ViewBase {
 	if (!view) {
 		return undefined;
 	}
@@ -170,8 +169,8 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
 		return view;
 	}
 
-	let retVal: ViewBaseDefinition;
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	let retVal: ViewBase;
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (view._domId === domId) {
 			retVal = child;
 
@@ -194,17 +193,17 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
  * @param selector - The selector of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function querySelectorAll(view: ViewBaseDefinition, selector: string): Array<ViewBaseDefinition> {
+export function querySelectorAll(view: ViewBase, selector: string): Array<ViewBase> {
 	if (!view) {
 		return [];
 	}
 
-	const retVal: Array<ViewBaseDefinition> = [];
+	const retVal: Array<ViewBase> = [];
 	if (view[selector]) {
 		retVal.push(view);
 	}
 
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (child[selector]) {
 			retVal.push(child);
 		}
@@ -222,13 +221,13 @@ export function querySelectorAll(view: ViewBaseDefinition, selector: string): Ar
  * @param view - Starting view (parent container).
  * @param callback - A function to execute on every child. If function returns false it breaks the iteration.
  */
-export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewBaseDefinition) => boolean) {
+export function eachDescendant(view: ViewBase, callback: (child: ViewBase) => boolean) {
 	if (!callback || !view) {
 		return;
 	}
 
 	let continueIteration: boolean;
-	const localCallback = function (child: ViewBaseDefinition): boolean {
+	const localCallback = function (child: ViewBase): boolean {
 		continueIteration = callback(child);
 		if (continueIteration) {
 			child.eachChild(localCallback);
@@ -302,7 +301,7 @@ const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
  *
  * @nsView ViewBase
  */
-export abstract class ViewBase extends Observable implements ViewBaseDefinition {
+export abstract class ViewBase extends Observable {
 	/**
 	 * String value used when hooking to loaded event.
 	 *
@@ -636,14 +635,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	/**
 	 * Returns the child view with the specified id.
 	 */
-	getViewById<T extends ViewBaseDefinition>(id: string): T {
+	getViewById<T extends ViewBase>(id: string): T {
 		return <T>getViewById(this, id);
 	}
 
 	/**
 	 * Returns the child view with the specified domId.
 	 */
-	getViewByDomId<T extends ViewBaseDefinition>(domId: number): T {
+	getViewByDomId<T extends ViewBase>(domId: number): T {
 		return <T>getViewByDomId(this, domId);
 	}
 

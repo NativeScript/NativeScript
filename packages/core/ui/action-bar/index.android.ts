@@ -1,4 +1,5 @@
 import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from '.';
+import { isAccessibilityServiceEnabled, updateContentDescription } from '../../application';
 import { ActionItemBase, ActionBarBase, isVisible, flatProperty, traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty } from './action-bar-common';
 import { AndroidHelper, View } from '../core/view';
 import { Color } from '../../color';
@@ -6,7 +7,6 @@ import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import { Application } from '../../application';
-import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 import type { Background } from '../styling/background';
 import { SDK_VERSION } from '../../utils/constants';
 import { NativeScriptAndroidView } from '../utils';

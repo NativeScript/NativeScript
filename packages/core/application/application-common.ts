@@ -1,5 +1,3 @@
-import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-init';
-import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
 import { Device, Screen } from '../platform';
@@ -11,8 +9,9 @@ import type { View } from '../ui/core/view';
 import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
-import type { AndroidApplication as IAndroidApplication, iOSApplication as IiOSApplication } from './';
+import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
+import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -371,8 +370,8 @@ export class ApplicationCommon {
 
 	initRootView(rootView: View) {
 		this.setRootViewCSSClasses(rootView);
-		initAccessibilityCssHelper();
-		initAccessibilityFontScale();
+		readyInitAccessibilityCssHelper();
+		readyInitFontScale();
 		this.notify(<InitRootViewEventData>{ eventName: this.initRootViewEvent, rootView });
 	}
 
@@ -614,11 +613,11 @@ export class ApplicationCommon {
 
 	public started = false;
 
-	get android(): IAndroidApplication {
+	get android(): AndroidApplicationType {
 		return undefined;
 	}
 
-	get ios(): IiOSApplication {
+	get ios(): iOSApplicationType {
 		return undefined;
 	}
 

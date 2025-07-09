@@ -1,5 +1,6 @@
 // Types
-import { Position, View } from '..';
+import { Position } from '../view-interfaces';
+import type { View } from '..';
 
 // Requires
 import { ViewHelper } from './view-helper-common';
