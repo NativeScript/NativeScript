@@ -1,13 +1,12 @@
 // Types.
 import { Point3D } from './animation-types';
-import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
-
-// Requires.
+import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair } from './animation-shared';
+import { PropertyAnimation } from './animation-shared';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { PercentLength } from '../styling/style-properties';
+import { PercentLength } from '../styling/length-shared';
 
-export * from './animation-interfaces';
+export * from './animation-shared';
 
 export namespace Properties {
 	export const opacity = 'opacity';

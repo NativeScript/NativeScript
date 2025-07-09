@@ -8,6 +8,7 @@ import { layout } from '../../utils';
 
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
+import { Length, FixedLength, PercentLength } from './length-shared';
 
 import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
@@ -88,112 +89,6 @@ function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number 
 		default:
 			return layout.round(layout.toDevicePixels(length.value));
 	}
-}
-
-export namespace PercentLength {
-	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.PercentLengthType {
-		if (fromValue == 'auto') {
-			return 'auto';
-		}
-
-		if (typeof fromValue === 'string') {
-			let stringValue = fromValue.trim();
-			const percentIndex = stringValue.indexOf('%');
-			if (percentIndex !== -1) {
-				let value: CoreTypes.percent;
-				// if only % or % is not last we treat it as invalid value.
-				if (percentIndex !== stringValue.length - 1 || percentIndex === 0) {
-					value = Number.NaN;
-				} else {
-					// Normalize result to values between -1 and 1
-					value = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
-				}
-
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${fromValue}`);
-				}
-
-				return { unit: '%', value };
-			} else if (stringValue.indexOf('px') !== -1) {
-				stringValue = stringValue.replace('px', '').trim();
-				const value: CoreTypes.px = parseFloat(stringValue);
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${fromValue}`);
-				}
-
-				return { unit: 'px', value };
-			} else {
-				const value: CoreTypes.dip = parseFloat(stringValue);
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${fromValue}`);
-				}
-
-				return value;
-			}
-		} else {
-			return fromValue;
-		}
-	}
-
-	export const equals: {
-		(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
-	} = equalsCommon;
-	export const toDevicePixels: {
-		(length: CoreTypes.PercentLengthType, auto: number, parentAvailableWidth: number): number;
-	} = toDevicePixelsCommon;
-	export const convertToString: {
-		(length: CoreTypes.PercentLengthType): string;
-	} = convertToStringCommon;
-}
-
-export namespace FixedLength {
-	export function parse(fromValue: string | CoreTypes.FixedLengthType): CoreTypes.FixedLengthType {
-		if (typeof fromValue === 'string') {
-			let stringValue = fromValue.trim();
-			if (stringValue.indexOf('px') !== -1) {
-				stringValue = stringValue.replace('px', '').trim();
-				const value: CoreTypes.px = parseFloat(stringValue);
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${stringValue}`);
-				}
-
-				return { unit: 'px', value };
-			} else {
-				const value: CoreTypes.dip = parseFloat(stringValue);
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${stringValue}`);
-				}
-
-				return value;
-			}
-		} else {
-			return fromValue;
-		}
-	}
-	export const equals: { (a: CoreTypes.FixedLengthType, b: CoreTypes.FixedLengthType): boolean } = equalsCommon;
-	export const toDevicePixels: {
-		(length: CoreTypes.FixedLengthType): number;
-	} = toDevicePixelsCommon;
-	export const convertToString: {
-		(length: CoreTypes.FixedLengthType): string;
-	} = convertToStringCommon;
-}
-
-export namespace Length {
-	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.LengthType {
-		if (fromValue == 'auto') {
-			return 'auto';
-		}
-
-		return FixedLength.parse(fromValue);
-	}
-	export const equals: { (a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean } = equalsCommon;
-	export const toDevicePixels: {
-		(length: CoreTypes.LengthType, auto?: number): number;
-	} = toDevicePixelsCommon;
-	export const convertToString: {
-		(length: CoreTypes.LengthType): string;
-	} = convertToStringCommon;
 }
 
 function isNonNegativeFiniteNumber(value: number): boolean {

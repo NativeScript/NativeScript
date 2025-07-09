@@ -68,6 +68,7 @@ export { Font, FontStyle, FontWeight, FontVariationSettings } from './styling/fo
 export { Style } from './styling/style';
 export type { CommonLayoutParams } from './styling/style';
 export * from './styling/style-properties';
+export * from './styling/length-shared';
 export { CssAnimationParser, parseKeyframeDeclarations } from './styling/css-animation-parser';
 export { CSSHelper } from './styling/css-selector';
 

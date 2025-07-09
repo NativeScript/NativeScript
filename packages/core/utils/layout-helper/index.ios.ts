@@ -29,7 +29,7 @@ export namespace layout {
 	}
 
 	export function makeMeasureSpec(size: number, mode: number): number {
-		return (Math.round(Math.max(0, size)) & ~layoutCommon.MODE_MASK) | (mode & layoutCommon.MODE_MASK);
+		return (Math.round(Math.max(0, size)) & ~MODE_MASK) | (mode & MODE_MASK);
 	}
 
 	export function getDisplayDensity(): number {

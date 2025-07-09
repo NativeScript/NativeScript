@@ -1,6 +1,7 @@
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { parseCSSShorthand } from './css-utils';
+import { Length } from './length-shared';
 
 export interface StrokeCSSValues {
 	width: CoreTypes.LengthType;

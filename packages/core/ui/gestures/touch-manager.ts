@@ -4,7 +4,7 @@
  */
 import { GestureEventData, GestureEventDataWithState, TouchGestureEventData } from './gestures-types';
 import { Animation } from '../animation';
-import { AnimationDefinition } from '../animation/animation-interfaces';
+import { AnimationDefinition } from '../animation/animation-shared';
 import type { View } from '../core/view';
 import { isObject, isFunction } from '../../utils/types';
 import { GestureEvents, GestureStateTypes, GestureTypes } from './gestures-common';

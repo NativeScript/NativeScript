@@ -1,5 +1,5 @@
 ﻿import { LayoutBase } from '../layout-base';
-import { Length } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 import { Property } from '../../core/properties';
 import { CoreTypes } from '../../../core-types';
 

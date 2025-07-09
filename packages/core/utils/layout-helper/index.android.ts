@@ -46,7 +46,7 @@ export namespace layout {
 			return size + mode;
 		}
 
-		return (size & ~layoutCommon.MODE_MASK) | (mode & layoutCommon.MODE_MASK);
+		return (size & ~MODE_MASK) | (mode & MODE_MASK);
 	}
 
 	export function getDisplayDensity(): number {

@@ -11,7 +11,7 @@ import { EventData } from '../../../data/observable';
 import { ViewHelper } from './view-helper';
 import { setupAccessibleView } from '../../../application';
 
-import { PercentLength } from '../../styling/style-properties';
+import { PercentLength } from '../../styling/length-shared';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, fromString as gestureFromString, toString as gestureToString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
 import type { GestureEventData } from '../../gestures/gestures-types';
