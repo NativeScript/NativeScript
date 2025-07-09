@@ -173,7 +173,7 @@ function getRootViewController(): UIViewController {
 	return vc;
 }
 
-function getWindow(): UIWindow {
+export function getWindow(): UIWindow {
 	let window: UIWindow;
 	if (SDK_VERSION >= 15 && typeof NativeScriptViewFactory !== 'undefined') {
 		// UIWindowScene.keyWindow is only available 15+

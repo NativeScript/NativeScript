@@ -3,7 +3,7 @@ import { Page } from '../../page';
 import { CoreTypes } from '../../../core-types';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
 import { CSSUtils } from '../../../css/system-classes';
-import { Source } from '../../../utils/debug';
+import { Source } from '../../../utils/debug-source';
 import { Binding } from '../bindable';
 import { BindingOptions } from '../bindable/bindable-types';
 import { Trace } from '../../../trace';

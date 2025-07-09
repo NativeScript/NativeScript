@@ -8,7 +8,7 @@ export * from './debug';
 export * from './layout-helper';
 export * from './macrotask-scheduler';
 export * from './mainthread-helper';
-export * from './native-helper';
+export * from './native-helper'; // do not re-export getWindow here, use ios-helper.ts for that
 export * from './types';
 export * from './native-helper';
 

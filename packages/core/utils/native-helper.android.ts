@@ -191,6 +191,10 @@ function getInputMethodManager(): android.view.inputmethod.InputMethodManager {
 	return inputMethodManager;
 }
 
+export function getWindow() {
+	return getCurrentActivity()?.getWindow();
+}
+
 function showSoftInput(nativeView: android.view.View): void {
 	const inputManager = getInputMethodManager();
 	if (inputManager && nativeView instanceof android.view.View) {
@@ -315,6 +319,7 @@ export const androidUtils = {
 	getApplication,
 	getCurrentActivity,
 	getApplicationContext,
+	getWindow,
 	getResources,
 	getPackageName,
 	getInputMethodManager,

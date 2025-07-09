@@ -1,6 +1,6 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
-import { SDK_VERSION } from '../utils';
-import { Application } from '../application';
+import { SDK_VERSION } from '../utils/constants';
+import { android as androidUtils } from '../utils';
 
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: IFileSystemAccess;
@@ -182,15 +182,6 @@ export class FileSystemEntity {
 	}
 }
 
-let applicationContext;
-function getApplicationContext() {
-	if (!applicationContext) {
-		applicationContext = Application.android.getNativeApplication().getApplicationContext();
-	}
-
-	return applicationContext;
-}
-
 export enum AndroidDirectory {
 	ALARMS = 'alarms',
 	AUDIOBOOKS = 'audiobooks',
@@ -279,7 +270,7 @@ class Android {
 			throw new Error(`createFile is available on Android only!`);
 		}
 
-		const context = getApplicationContext() as android.content.Context;
+		const context = androidUtils.getApplicationContext() as android.content.Context;
 
 		const meta = new android.content.ContentValues();
 		meta.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, options.name);
@@ -332,7 +323,7 @@ export class File extends FileSystemEntity {
 				// falls back to creating a temp file without a known extension.
 				if (!fileInfo) {
 					const tempFile = `${knownFolders.temp().path}/${java.util.UUID.randomUUID().toString()}`;
-					org.nativescript.widgets.Async.File.copySync(path, tempFile, getApplicationContext());
+					org.nativescript.widgets.Async.File.copySync(path, tempFile, androidUtils.getApplicationContext());
 					path = tempFile;
 				} else {
 					const ext = fileInfo.extension;

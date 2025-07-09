@@ -14,6 +14,8 @@ export function dataDeserialize(nativeData?: any): any;
  */
 export function isRealDevice(): boolean;
 
+export function getWindow(): UIWindow | android.view.Window;
+
 // /**
 //  * Module with android specific utilities.
 //  */
@@ -228,6 +230,7 @@ export const android: {
 	getApplication: () => android.app.Application;
 	getCurrentActivity: () => androidx.appcompat.app.AppCompatActivity | android.app.Activity | null;
 	getApplicationContext: () => android.content.Context;
+	getWindow: () => android.view.Window;
 	getResources: () => android.content.res.Resources;
 	getPackageName: () => string;
 	getInputMethodManager: () => android.view.inputmethod.InputMethodManager;

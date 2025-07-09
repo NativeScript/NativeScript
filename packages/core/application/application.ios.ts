@@ -3,6 +3,7 @@ import type { View } from '../ui/core/view';
 import { isEmbedded } from '../ui/embedding';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
+import { getWindow } from '../utils/ios-helper';
 import * as Utils from '../utils';
 import { ApplicationCommon } from './application-common';
 import { ApplicationEventData } from './application-interfaces';
@@ -167,7 +168,7 @@ export class iOSApplication extends ApplicationCommon {
 		}
 		this._rootView = rootView;
 		// Attach to the existing iOS app
-		const window = Utils.ios.getWindow();
+		const window = getWindow() as UIWindow;
 
 		if (!window) {
 			return;
@@ -282,7 +283,7 @@ export class iOSApplication extends ApplicationCommon {
 		// particularly with SwiftUI app lifecycle based apps
 		if (!this._window) {
 			// Note: NativeScriptViewFactory.getKeyWindow will always be used in SwiftUI app lifecycle based apps
-			this._window = Utils.ios.getWindow();
+			this._window = getWindow() as UIWindow;
 		}
 
 		return this._window;
