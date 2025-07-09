@@ -4,7 +4,7 @@ import { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';
-import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from './frame-stack';
+import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack, _isFrameStackEmpty } from './frame-stack';
 import { viewMatchesModuleContext } from '../core/view/view-common';
 import { getAncestor } from '../core/view-base';
 import { Builder } from '../builder';
@@ -193,7 +193,6 @@ export class FrameBase extends CustomLayoutView {
 		const navigationContext: NavigationContext = {
 			entry: backstackEntry,
 			isBackNavigation: true,
-			isUserInitiated: false,
 			navigationType: NavigationType.back,
 		};
 
@@ -246,7 +245,6 @@ export class FrameBase extends CustomLayoutView {
 		const navigationContext: NavigationContext = {
 			entry: backstackEntry,
 			isBackNavigation: false,
-			isUserInitiated: false,
 			navigationType: NavigationType.forward,
 		};
 
@@ -483,10 +481,6 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
-		this._notifyFrameNavigatingTo(backstackEntry, isBack);
-	}
-
-	public _notifyFrameNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean): void {
 		this.notify<NavigationData>({
 			eventName: FrameBase.navigatingToEvent,
 			object: this,
@@ -546,6 +540,10 @@ export class FrameBase extends CustomLayoutView {
 		for (const frame of framesToPush) {
 			frame._pushInFrameStack();
 		}
+	}
+
+	public _isFrameStackEmpty() {
+		return _isFrameStackEmpty();
 	}
 
 	public _pushInFrameStack() {
@@ -767,7 +765,6 @@ export class FrameBase extends CustomLayoutView {
 		const navigationContext: NavigationContext = {
 			entry: newBackstackEntry,
 			isBackNavigation: false,
-			isUserInitiated: false,
 			navigationType: NavigationType.replace,
 		};
 

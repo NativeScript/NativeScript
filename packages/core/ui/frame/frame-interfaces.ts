@@ -8,7 +8,6 @@ export enum NavigationType {
 	back,
 	forward,
 	replace,
-	user,
 }
 
 export interface TransitionState {
@@ -42,7 +41,6 @@ export interface NavigationContext {
 	 * @deprecated Use navigationType instead.
 	 */
 	isBackNavigation: boolean;
-	isUserInitiated: boolean;
 	navigationType: NavigationType;
 }
 
