@@ -993,8 +993,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	//END Style property shortcuts
 
-	public originX: number;
-	public originY: number;
 	public isEnabled: boolean;
 	public isUserInteractionEnabled: boolean;
 	public iosOverflowSafeArea: boolean;
