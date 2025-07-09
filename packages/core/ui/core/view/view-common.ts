@@ -1268,20 +1268,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 }
 
-export const originXProperty = new Property<ViewCommon, number>({
-	name: 'originX',
-	defaultValue: 0.5,
-	valueConverter: (v) => parseFloat(v),
-});
-originXProperty.register(ViewCommon);
-
-export const originYProperty = new Property<ViewCommon, number>({
-	name: 'originY',
-	defaultValue: 0.5,
-	valueConverter: (v) => parseFloat(v),
-});
-originYProperty.register(ViewCommon);
-
 export const isEnabledProperty = new Property<ViewCommon, boolean>({
 	name: 'isEnabled',
 	defaultValue: true,
