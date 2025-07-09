@@ -689,6 +689,25 @@ export const translateYProperty = new CssAnimationProperty<Style, CoreTypes.Fixe
 });
 translateYProperty.register(Style);
 
+const transformOriginProperty = new ShorthandProperty<Style, string>({
+	name: 'transformOrigin',
+	cssName: 'transform-origin',
+
+	getter(this: Style) {
+		return `${this.originX} ${this.originY}`;
+	},
+
+	converter(value: string) {
+		const [x, y] = value.trim().split(/\s+/).map(parseFloat);
+		return [
+			[originXProperty, isNaN(x) ? 0.5 : x],
+			[originYProperty, isNaN(y) ? 0.5 : y],
+		];
+	},
+});
+
+transformOriginProperty.register(Style);
+
 const transformProperty = new ShorthandProperty<Style, string>({
 	name: 'transform',
 	cssName: 'transform',
