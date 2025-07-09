@@ -13,6 +13,7 @@ import type { ModalTransition } from '../../transition/modal-transition';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
+import { unsetValue } from '../properties/property-shared';
 
 import { profile } from '../../../profiling';
 

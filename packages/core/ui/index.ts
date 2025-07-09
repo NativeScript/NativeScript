@@ -3,6 +3,7 @@ export { ActivityIndicator } from './activity-indicator';
 export { Animation, _resolveAnimationCurve } from './animation';
 export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation/keyframe-animation';
 export type { AnimationDefinition, Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo, Point3D, AnimationPromise, Cancelable } from './animation/animation-types';
+export * from './animation/animation-shared';
 export { Builder } from './builder';
 export type { LoadOptions } from './builder';
 export type { ComponentModule } from './builder/component-builder';
@@ -17,7 +18,8 @@ export type { ShowModalOptions } from './core/view-base';
 export { View, CSSType, ContainerView, ViewHelper, AndroidHelper, IOSHelper, isUserInteractionEnabledProperty, PseudoClassHandler, CustomLayoutView } from './core/view';
 export type { Template, KeyedTemplate, AddArrayFromBuilder, AddChildFromBuilder } from './core/view';
 export type { ShownModallyData, Size } from './core/view/view-interfaces';
-export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue, makeParser, makeValidator } from './core/properties';
+export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, makeParser, makeValidator } from './core/properties';
+export { unsetValue } from './core/properties/property-shared';
 export { addWeakEventListener, removeWeakEventListener } from './core/weak-event-listener';
 export { DatePicker } from './date-picker';
 

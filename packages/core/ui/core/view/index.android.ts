@@ -7,7 +7,7 @@ import { Length } from '../../styling/length-shared';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
-import { isCssWideKeyword } from '../properties';
+import { isCssWideKeyword } from '../properties/property-shared';
 import { EventData } from '../../../data/observable';
 
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
@@ -1375,15 +1375,15 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 				setPixels(this.nativeViewProtected, auto);
 			} else if (typeof length === 'number') {
 				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length)));
-			} else if (length.unit == 'dip') {
+			} else if ((length as CoreTypes.LengthDipUnit).unit == 'dip') {
 				// tslint:disable-line
-				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length.value)));
-			} else if (length.unit == 'px') {
+				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels((length as CoreTypes.LengthDipUnit).value)));
+			} else if ((length as CoreTypes.LengthPxUnit).unit == 'px') {
 				// tslint:disable-line
-				setPixels(this.nativeViewProtected, layout.round(length.value));
-			} else if (length.unit == '%') {
+				setPixels(this.nativeViewProtected, layout.round((length as CoreTypes.LengthPxUnit).value));
+			} else if ((length as CoreTypes.LengthPercentUnit).unit == '%') {
 				// tslint:disable-line
-				setPercent(this.nativeViewProtected, length.value);
+				setPercent(this.nativeViewProtected, (length as CoreTypes.LengthPercentUnit).value);
 			} else {
 				throw new Error(`Unsupported PercentLength ${length}`);
 			}

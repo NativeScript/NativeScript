@@ -7,44 +7,7 @@ import { Style } from '../../styling/style';
 import { profile } from '../../../profiling';
 import { CoreTypes } from '../../enums';
 import { makeValidator, makeParser } from '../../../core-types/validators';
-
-/**
- * Value specifying that Property should be set to its initial value.
- */
-export const unsetValue: any = new Object();
-
-export interface PropertyOptions<T, U> {
-	readonly name: string;
-	readonly defaultValue?: U;
-	readonly affectsLayout?: boolean;
-	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
-	readonly valueConverter?: (value: string) => U;
-}
-
-export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
-	readonly coerceValue: (t: T, u: U) => U;
-}
-
-export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
-	readonly cssName: string;
-}
-
-export interface ShorthandPropertyOptions<P> {
-	readonly name: string;
-	readonly cssName: string;
-	readonly converter: (value: string | P) => [CssProperty<any, any> | CssAnimationProperty<any, any>, any][];
-	readonly getter: (this: Style) => string | P;
-}
-
-export interface CssAnimationPropertyOptions<T, U> {
-	readonly name: string;
-	readonly cssName?: string;
-	readonly defaultValue?: U;
-	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
-	readonly valueConverter?: (value: string) => U;
-}
+import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
 const symbolPropertyMap = {};
@@ -71,14 +34,6 @@ function print(map) {
 	}
 }
 
-function isCssUnsetValue(value: any): boolean {
-	return value === 'unset' || value === 'revert';
-}
-
-function isResetValue(value: any): boolean {
-	return value === unsetValue || value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
-}
-
 export function _printUnregisteredProperties(): void {
 	print(symbolPropertyMap);
 	print(cssSymbolPropertyMap);
@@ -102,10 +57,6 @@ export function isCssCalcExpression(value: string) {
 
 export function isCssVariableExpression(value: string) {
 	return value.includes('var(--');
-}
-
-export function isCssWideKeyword(value: any): value is CoreTypes.CSSWideKeywords {
-	return value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
 }
 
 export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {

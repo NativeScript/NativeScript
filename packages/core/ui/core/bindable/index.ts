@@ -1,6 +1,6 @@
 import type { ViewBase } from '../view-base';
 import type { BindingOptions } from './bindable-types';
-import { unsetValue } from '../properties';
+import { unsetValue } from '../properties/property-shared';
 import { Observable, PropertyChangeData } from '../../../data/observable';
 import { addWeakEventListener, removeWeakEventListener } from '../weak-event-listener';
 import { bindingConstants, parentsRegex } from '../../builder/binding-builder';
