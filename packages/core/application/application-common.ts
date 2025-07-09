@@ -3,6 +3,7 @@ import { CSSUtils } from '../css/system-classes';
 import { Device, Screen } from '../platform';
 import { profile } from '../profiling';
 import { Trace } from '../trace';
+import { clearResolverCache, prepareAppForModuleResolver, _setResolver } from '../module-name-resolver/helpers';
 import { Builder } from '../ui/builder';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
 import type { View } from '../ui/core/view';
@@ -629,3 +630,10 @@ export class ApplicationCommon {
 		return this.ios;
 	}
 }
+
+prepareAppForModuleResolver(() => {
+	ApplicationCommon.on('livesync', (args) => clearResolverCache());
+	ApplicationCommon.on('orientationChanged', (args) => {
+		_setResolver(undefined);
+	});
+});

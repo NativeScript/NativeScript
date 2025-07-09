@@ -31,8 +31,10 @@ export * as Http from './http';
 export { ImageAsset } from './image-asset';
 export type { ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
-export { ModuleNameResolver, _setResolver } from './module-name-resolver';
-export type { ModuleListProvider, PlatformContext } from './module-name-resolver';
+export { ModuleNameResolver } from './module-name-resolver';
+export { _setResolver } from './module-name-resolver/helpers';
+export type { PlatformContext } from './module-name-resolver';
+export type { ModuleListProvider } from './module-name-resolver/helpers';
 export { isAndroid, isIOS, isVisionOS, isApple, Screen, Device, platformNames } from './platform';
 export type { IDevice } from './platform';
 
