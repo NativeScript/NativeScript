@@ -240,7 +240,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		testLabel.textWrap = true;
 		this.waitUntilTestElementLayoutIsValid();
 
-		if (isAndroid) {
+		if (__ANDROID__) {
 			TKUnit.assertNull(testLabel.android.getEllipsize());
 			TKUnit.assertTrue(testLabel.android.getLineCount() > 1, 'LinesNumber');
 			const actualHorizontalScrolling = testLabel.android.canScrollHorizontally(-1) || testLabel.android.canScrollHorizontally(1);
@@ -262,7 +262,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		testLabel.textWrap = false;
 		this.waitUntilTestElementLayoutIsValid();
 
-		if (isAndroid) {
+		if (__ANDROID__) {
 			TKUnit.assertEqual(testLabel.android.getEllipsize(), android.text.TextUtils.TruncateAt.END, 'Ellipsize');
 			const actualHorizontalScrolling = testLabel.android.canScrollHorizontally(-1) || testLabel.android.canScrollHorizontally(1);
 			TKUnit.assertEqual(actualHorizontalScrolling, false, 'HorizontalScrolling');

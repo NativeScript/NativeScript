@@ -1,4 +1,3 @@
-import { Application } from '../application';
 import * as fs from '../file-system';
 import { Trace } from '../trace';
 
@@ -136,7 +135,7 @@ export function registerModulesFromFileSystem(moduleName: string) {
 
 function initialize() {
 	if (!initialized) {
-		Application.on('livesync', (args) => cache.clear());
+		// Application.on('livesync', (args) => cache.clear());
 		initialized = true;
 	}
 }

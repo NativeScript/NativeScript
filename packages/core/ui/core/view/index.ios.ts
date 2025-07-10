@@ -1,6 +1,7 @@
 import type { Point, Position } from './view-interfaces';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
-import { isAccessibilityServiceEnabled, updateAccessibilityProperties } from '../../../application';
+import { isAccessibilityServiceEnabled } from '../../../application';
+import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, ios as iosUtils, SDK_VERSION } from '../../../utils';
@@ -690,7 +691,7 @@ export class View extends ViewCommon {
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.isAccessibilityElement = !!value;
 
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityIdentifierProperty.getDefault](): string {
@@ -703,7 +704,7 @@ export class View extends ViewCommon {
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityValueProperty.setNative](value: string): void {
@@ -738,20 +739,20 @@ export class View extends ViewCommon {
 	[accessibilityHiddenProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.accessibilityElementsHidden = !!value;
 
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityLiveRegionProperty.setNative](): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
 		this.accessibilityState = value;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityMediaSessionProperty.setNative](): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[isUserInteractionEnabledProperty.getDefault](): boolean {

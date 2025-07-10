@@ -43,6 +43,8 @@ import {
 	isA11yEnabled,
 	setA11yEnabled,
 } from '../accessibility/accessibility-common';
+import { androidGetForegroundActivity, androidGetStartActivity, androidPendingReceiverRegistrations, androidRegisterBroadcastReceiver, androidRegisteredReceivers, androidSetForegroundActivity, androidSetStartActivity, androidUnregisterBroadcastReceiver, applyContentDescription } from './helpers';
+import { getRootView, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 declare namespace com {
 	namespace tns {
@@ -56,38 +58,6 @@ declare namespace com {
 			}
 		}
 	}
-}
-
-declare class BroadcastReceiver extends android.content.BroadcastReceiver {
-	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void);
-}
-
-let BroadcastReceiver_: typeof BroadcastReceiver;
-function initBroadcastReceiver() {
-	if (BroadcastReceiver_) {
-		return BroadcastReceiver_;
-	}
-
-	@NativeClass
-	class BroadcastReceiverImpl extends android.content.BroadcastReceiver {
-		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
-
-		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-			super();
-			this._onReceiveCallback = onReceiveCallback;
-
-			return global.__native(this);
-		}
-
-		public onReceive(context: android.content.Context, intent: android.content.Intent) {
-			if (this._onReceiveCallback) {
-				this._onReceiveCallback(context, intent);
-			}
-		}
-	}
-
-	BroadcastReceiver_ = BroadcastReceiverImpl;
-	return BroadcastReceiver_;
 }
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
@@ -365,6 +335,7 @@ export class AndroidApplication extends ApplicationCommon {
 		}
 
 		this._nativeApp = nativeApp;
+		setNativeApp(nativeApp);
 		this._context = nativeApp.getApplicationContext();
 		this._packageName = nativeApp.getPackageName();
 
@@ -378,11 +349,9 @@ export class AndroidApplication extends ApplicationCommon {
 		this._registerPendingReceivers();
 	}
 
-	private _registeredReceivers = {};
-	private _pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
 	private _registerPendingReceivers() {
-		this._pendingReceiverRegistrations.forEach((func) => func(this.context));
-		this._pendingReceiverRegistrations.length = 0;
+		androidPendingReceiverRegistrations.forEach((func) => func(this.context));
+		androidPendingReceiverRegistrations.length = 0;
 	}
 
 	onConfigurationChanged(configuration: android.content.res.Configuration): void {
@@ -445,23 +414,20 @@ export class AndroidApplication extends ApplicationCommon {
 		}
 	}
 
-	private _startActivity: androidx.appcompat.app.AppCompatActivity;
-	private _foregroundActivity: androidx.appcompat.app.AppCompatActivity;
-
 	get startActivity() {
-		return this._startActivity;
+		return androidGetStartActivity();
 	}
 
 	get foregroundActivity() {
-		return this._foregroundActivity;
+		return androidGetForegroundActivity();
 	}
 
 	setStartActivity(value: androidx.appcompat.app.AppCompatActivity) {
-		this._startActivity = value;
+		androidSetStartActivity(value);
 	}
 
 	setForegroundActivity(value: androidx.appcompat.app.AppCompatActivity) {
-		this._foregroundActivity = value;
+		androidSetForegroundActivity(value);
 	}
 
 	get paused(): boolean {
@@ -485,34 +451,15 @@ export class AndroidApplication extends ApplicationCommon {
 	// RECEIVER_NOT_EXPORTED (4)
 	// RECEIVER_VISIBLE_TO_INSTANT_APPS (1)
 	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void, flags = 2): void {
-		const registerFunc = (context: android.content.Context) => {
-			const receiver: android.content.BroadcastReceiver = new (initBroadcastReceiver())(onReceiveCallback);
-			if (SDK_VERSION >= 26) {
-				context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter), flags);
-			} else {
-				context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
-			}
-			this._registeredReceivers[intentFilter] = receiver;
-		};
-
-		if (this.context) {
-			registerFunc(this.context);
-		} else {
-			this._pendingReceiverRegistrations.push(registerFunc);
-		}
+		androidRegisterBroadcastReceiver(intentFilter, onReceiveCallback, flags);
 	}
 
 	public unregisterBroadcastReceiver(intentFilter: string): void {
-		const receiver = this._registeredReceivers[intentFilter];
-		if (receiver) {
-			this.context.unregisterReceiver(receiver);
-			this._registeredReceivers[intentFilter] = undefined;
-			delete this._registeredReceivers[intentFilter];
-		}
+		androidUnregisterBroadcastReceiver(intentFilter);
 	}
 
 	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
-		return this._registeredReceivers[intentFilter];
+		return androidRegisteredReceivers[intentFilter];
 	}
 
 	getRootView(): View {
@@ -522,7 +469,8 @@ export class AndroidApplication extends ApplicationCommon {
 		}
 		const callbacks: AndroidActivityCallbacks = activity['_callbacks'];
 
-		return callbacks ? callbacks.getRootView() : undefined;
+		setRootView(callbacks ? callbacks.getRootView() : undefined);
+		return getRootView();
 	}
 
 	resetRootView(entry?: NavigationEntry | string): void {
@@ -1298,10 +1246,6 @@ export function isAccessibilityServiceEnabled(): boolean {
 	return accessibilityServiceEnabled;
 }
 
-export function setupAccessibleView(view: View): void {
-	updateAccessibilityProperties(view);
-}
-
 let updateAccessibilityPropertiesMicroTask;
 let pendingViews = new Set<View>();
 export function updateAccessibilityProperties(view: View) {
@@ -1325,6 +1269,7 @@ export function updateAccessibilityProperties(view: View) {
 		_pendingViews = [];
 	});
 }
+setA11yUpdatePropertiesCallback(updateAccessibilityProperties);
 
 export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibilityEvent, text?: string): void {
 	if (!isAccessibilityServiceEnabled()) {
@@ -1405,14 +1350,6 @@ export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibili
 	accessibilityManager.sendAccessibilityEvent(accessibilityEvent);
 }
 
-export function updateContentDescription(view: View, forceUpdate?: boolean): string | null {
-	if (!view.nativeViewProtected) {
-		return;
-	}
-
-	return applyContentDescription(view, forceUpdate);
-}
-
 function setAccessibilityDelegate(view: View): void {
 	if (!view.nativeViewProtected) {
 		return;
@@ -1439,105 +1376,21 @@ function setAccessibilityDelegate(view: View): void {
 	androidView.setAccessibilityDelegate(TNSAccessibilityDelegate);
 }
 
-function applyContentDescription(view: View, forceUpdate?: boolean) {
-	let androidView = view.nativeViewProtected as android.view.View;
-	if (!androidView || (androidView instanceof android.widget.TextView && !view._androidContentDescriptionUpdated)) {
-		return null;
-	}
-
-	if (androidView instanceof androidx.appcompat.widget.Toolbar) {
-		const numChildren = androidView.getChildCount();
-
-		for (let i = 0; i < numChildren; i += 1) {
-			const childAndroidView = androidView.getChildAt(i);
-			if (childAndroidView instanceof androidx.appcompat.widget.AppCompatTextView) {
-				androidView = childAndroidView;
-				break;
-			}
-		}
-	}
-
-	const cls = `applyContentDescription(${view})`;
-
-	const titleValue = view['title'] as string;
-	const textValue = view['text'] as string;
-
-	if (!forceUpdate && view._androidContentDescriptionUpdated === false && textValue === view['_lastText'] && titleValue === view['_lastTitle']) {
-		// prevent updating this too much
-		return androidView.getContentDescription();
-	}
-
-	const contentDescriptionBuilder = new Array<string>();
-
-	// Workaround: TalkBack won't read the checked state for fake Switch.
-	if (view.accessibilityRole === AccessibilityRole.Switch) {
-		const androidSwitch = new android.widget.Switch(Application.android.context);
-		if (view.accessibilityState === AccessibilityState.Checked) {
-			contentDescriptionBuilder.push(androidSwitch.getTextOn());
+const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
+function toggleApplicationEventListeners(toAdd: boolean, callback: (args: ApplicationEventData) => void) {
+	for (const eventName of applicationEvents) {
+		if (toAdd) {
+			Application.on(eventName, callback);
 		} else {
-			contentDescriptionBuilder.push(androidSwitch.getTextOff());
+			Application.off(eventName, callback);
 		}
 	}
-
-	if (view.accessibilityLabel) {
-		if (Trace.isEnabled()) {
-			Trace.write(`${cls} - have accessibilityLabel`, Trace.categories.Accessibility);
-		}
-
-		contentDescriptionBuilder.push(`${view.accessibilityLabel}`);
-	}
-
-	if (view.accessibilityValue) {
-		if (Trace.isEnabled()) {
-			Trace.write(`${cls} - have accessibilityValue`, Trace.categories.Accessibility);
-		}
-
-		contentDescriptionBuilder.push(`${view.accessibilityValue}`);
-	} else if (textValue) {
-		if (textValue !== view.accessibilityLabel) {
-			if (Trace.isEnabled()) {
-				Trace.write(`${cls} - don't have accessibilityValue - use 'text' value`, Trace.categories.Accessibility);
-			}
-
-			contentDescriptionBuilder.push(`${textValue}`);
-		}
-	} else if (titleValue) {
-		if (titleValue !== view.accessibilityLabel) {
-			if (Trace.isEnabled()) {
-				Trace.write(`${cls} - don't have accessibilityValue - use 'title' value`, Trace.categories.Accessibility);
-			}
-
-			contentDescriptionBuilder.push(`${titleValue}`);
-		}
-	}
-
-	if (view.accessibilityHint) {
-		if (Trace.isEnabled()) {
-			Trace.write(`${cls} - have accessibilityHint`, Trace.categories.Accessibility);
-		}
-
-		contentDescriptionBuilder.push(`${view.accessibilityHint}`);
-	}
-
-	const contentDescription = contentDescriptionBuilder.join('. ').trim().replace(/^\.$/, '');
-
-	if (contentDescription) {
-		if (Trace.isEnabled()) {
-			Trace.write(`${cls} - set to "${contentDescription}"`, Trace.categories.Accessibility);
-		}
-
-		androidView.setContentDescription(contentDescription);
-	} else {
-		if (Trace.isEnabled()) {
-			Trace.write(`${cls} - remove value`, Trace.categories.Accessibility);
-		}
-
-		androidView.setContentDescription(null);
-	}
-
-	view['_lastTitle'] = titleValue;
-	view['_lastText'] = textValue;
-	view._androidContentDescriptionUpdated = false;
-
-	return contentDescription;
 }
+setToggleApplicationEventListenersCallback(toggleApplicationEventListeners);
+
+setApplicationPropertiesCallback(() => {
+	return {
+		orientation: Application.orientation(),
+		systemAppearance: Application.systemAppearance(),
+	};
+});

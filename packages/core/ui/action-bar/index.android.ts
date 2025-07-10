@@ -1,15 +1,14 @@
 import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from '.';
-import { isAccessibilityServiceEnabled, updateContentDescription } from '../../application';
+import { isAccessibilityServiceEnabled } from '../../application';
+import { updateContentDescription } from '../../application/helpers';
 import { ActionItemBase, ActionBarBase, isVisible, flatProperty, traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty } from './action-bar-common';
 import { AndroidHelper, View } from '../core/view';
 import { Color } from '../../color';
 import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
-import { Application } from '../../application';
-import type { Background } from '../styling/background';
+import { getNativeApp } from '../../application/helpers-common';
 import { SDK_VERSION } from '../../utils/constants';
-import { NativeScriptAndroidView } from '../utils';
 
 export * from './action-bar-common';
 
@@ -81,7 +80,7 @@ function initializeMenuItemClickListener(): void {
 	}
 
 	MenuItemClickListener = MenuItemClickListenerImpl;
-	appResources = Application.android.context.getResources();
+	appResources = (getNativeApp() as android.app.Application).getApplicationContext().getResources();
 }
 
 export class ActionItem extends ActionItemBase {
@@ -296,7 +295,7 @@ export class ActionBar extends ActionBarBase {
 					traceMissingIcon(icon);
 				}
 			} else {
-				const defaultIcon = Application.android.nativeApp.getApplicationInfo().icon;
+				const defaultIcon = (getNativeApp() as android.app.Application).getApplicationInfo().icon;
 				this.nativeViewProtected.setLogo(defaultIcon);
 			}
 		} else {
@@ -311,7 +310,7 @@ export class ActionBar extends ActionBarBase {
 			if (title !== undefined) {
 				this.nativeViewProtected.setTitle(title);
 			} else {
-				const appContext = Application.android.context;
+				const appContext = (getNativeApp() as android.app.Application).getApplicationContext();
 				const appInfo = appContext.getApplicationInfo();
 				const appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
 				if (appLabel) {
@@ -548,7 +547,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
 	let result = null;
 	if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', Application.android.packageName);
+		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', (getNativeApp() as android.app.Application).getApplicationContext().getPackageName());
 		if (resourceId > 0) {
 			result = resourceId;
 		}

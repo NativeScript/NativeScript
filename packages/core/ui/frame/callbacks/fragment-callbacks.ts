@@ -1,7 +1,7 @@
 import { profile } from '../../../profiling';
 import { AndroidFragmentCallbacks, BackstackEntry, Frame, getFrameByNumberId } from '..';
 import { Trace } from '../../../trace';
-import { Application } from '../../../application';
+import { getNativeApp } from '../../../application/helpers-common';
 import { Color } from '../../../color';
 import { _updateTransitions } from '../fragment.transitions';
 import { Page } from '../../page';
@@ -159,7 +159,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 			if (hasRemovingParent) {
 				const nativeFrameView = this.frame.nativeViewProtected;
 				if (nativeFrameView) {
-					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(Application.android.context.getResources(), this.backgroundBitmap);
+					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable((getNativeApp() as android.app.Application).getApplicationContext().getResources(), this.backgroundBitmap);
 					this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
 					nativeFrameView.setBackgroundDrawable(bitmapDrawable);
 					this.backgroundBitmap = null;

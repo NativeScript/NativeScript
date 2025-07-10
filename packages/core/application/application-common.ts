@@ -13,6 +13,7 @@ import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
+import { isAppInBackground, setAppInBackground } from './helpers-common';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -575,14 +576,12 @@ export class ApplicationCommon {
 		rootView._onCssStateChange();
 	}
 
-	private _inBackground: boolean = false;
-
 	get inBackground() {
-		return this._inBackground;
+		return isAppInBackground();
 	}
 
 	setInBackground(value: boolean, additonalData?: any) {
-		this._inBackground = value;
+		setAppInBackground(value);
 
 		this.notify(<ApplicationEventData>{
 			eventName: value ? this.backgroundEvent : this.foregroundEvent,

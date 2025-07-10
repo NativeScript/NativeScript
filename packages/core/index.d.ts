@@ -8,6 +8,8 @@
 export type { NativeScriptConfig } from './config';
 
 export * from './application';
+export { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver, androidRegisteredReceivers, iosAddNotificationObserver, iosRemoveNotificationObserver, iosNotificationObservers } from './application/helpers';
+export { getNativeApp, setNativeApp } from './application/helpers-common';
 export * as ApplicationSettings from './application-settings';
 import * as Accessibility from './accessibility';
 export namespace AccessibilityEvents {

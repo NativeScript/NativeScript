@@ -4,7 +4,6 @@ import { trace as profilingTrace, time, uptime, level as profilingLevel } from '
 import * as timer from '../timer';
 import * as animationFrame from '../animation-frame';
 import * as mediaQueryList from '../media-query-list';
-import * as uiDialogs from '../ui/dialogs';
 import * as text from '../text';
 import * as xhrImpl from '../xhr';
 import '../fetch';
@@ -340,9 +339,6 @@ export function initGlobal() {
 		global.registerModule('media-query-list', () => mediaQueryList);
 		installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
 
-		global.registerModule('ui-dialogs', () => uiDialogs);
-		installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
-
 		global.registerModule('text', () => text);
 		installPolyfills('text', ['TextDecoder', 'TextEncoder']);
 
@@ -436,7 +432,9 @@ if (!global.NativeScriptHasInitGlobal && !isTestingEnv()) {
 	initGlobal();
 }
 
-if (!isTestingEnv()) {
-	// ensure the Application instance is initialized before any other module imports it.
-	require('@nativescript/core/application');
-}
+// if (!isTestingEnv()) {
+// 	// ensure the Application instance is initialized before any other module imports it.
+// 	require('@nativescript/core/application');
+// }
+// ensure the Application instance is initialized before any other module imports it.
+import '@nativescript/core/application';

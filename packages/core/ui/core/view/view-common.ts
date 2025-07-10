@@ -9,7 +9,7 @@ import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { ViewHelper } from './view-helper';
-import { setupAccessibleView } from '../../../application';
+import { setupAccessibleView } from '../../../application/helpers';
 
 import { PercentLength } from '../../styling/length-shared';
 

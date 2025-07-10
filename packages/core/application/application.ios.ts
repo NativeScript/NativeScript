@@ -45,6 +45,8 @@ import {
 	setA11yEnabled,
 	enforceArray,
 } from '../accessibility/accessibility-common';
+import { iosAddNotificationObserver, iosRemoveNotificationObserver } from './helpers';
+import { getiOSWindow, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setiOSWindow, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 @NativeClass
 class CADisplayLinkTarget extends NSObject {
@@ -79,26 +81,6 @@ class CADisplayLinkTarget extends NSObject {
 }
 
 @NativeClass
-class NotificationObserver extends NSObject {
-	private _onReceiveCallback: (notification: NSNotification) => void;
-
-	public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
-		const observer = <NotificationObserver>super.new();
-		observer._onReceiveCallback = onReceiveCallback;
-
-		return observer;
-	}
-
-	public onReceive(notification: NSNotification): void {
-		this._onReceiveCallback(notification);
-	}
-
-	public static ObjCExposedMethods = {
-		onReceive: { returns: interop.types.void, params: [NSNotification] },
-	};
-}
-
-@NativeClass
 class Responder extends UIResponder implements UIApplicationDelegate {
 	get window(): UIWindow {
 		return Application.ios.window;
@@ -114,8 +96,6 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 export class iOSApplication extends ApplicationCommon {
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
-	private _window: UIWindow;
-	private _notificationObservers: NotificationObserver[] = [];
 	private _rootView: View;
 
 	displayedOnce = false;
@@ -167,6 +147,7 @@ export class iOSApplication extends ApplicationCommon {
 			return;
 		}
 		this._rootView = rootView;
+		setRootView(rootView);
 		// Attach to the existing iOS app
 		const window = getWindow() as UIWindow;
 
@@ -281,12 +262,12 @@ export class iOSApplication extends ApplicationCommon {
 		// TODO: consideration
 		// may not want to cache this value given the potential of multiple scenes
 		// particularly with SwiftUI app lifecycle based apps
-		if (!this._window) {
+		if (!getiOSWindow()) {
 			// Note: NativeScriptViewFactory.getKeyWindow will always be used in SwiftUI app lifecycle based apps
-			this._window = getWindow() as UIWindow;
+			setiOSWindow(getWindow() as UIWindow);
 		}
 
-		return this._window;
+		return getiOSWindow();
 	}
 
 	get delegate(): UIApplicationDelegate & { prototype: UIApplicationDelegate } {
@@ -342,19 +323,11 @@ export class iOSApplication extends ApplicationCommon {
 	}
 
 	addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
-		const observer = NotificationObserver.initWithCallback(onReceiveCallback);
-		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, 'onReceive', notificationName, null);
-		this._notificationObservers.push(observer);
-
-		return observer;
+		return iosAddNotificationObserver(notificationName, onReceiveCallback);
 	}
 
-	removeNotificationObserver(observer: any, notificationName: string) {
-		const index = this._notificationObservers.indexOf(observer);
-		if (index >= 0) {
-			this._notificationObservers.splice(index, 1);
-			NSNotificationCenter.defaultCenter.removeObserverNameObject(observer, notificationName, null);
-		}
+	removeNotificationObserver(observer: any /* NotificationObserver */, notificationName: string) {
+		iosRemoveNotificationObserver(observer, notificationName);
 	}
 
 	protected getSystemAppearance(): 'light' | 'dark' {
@@ -405,12 +378,12 @@ export class iOSApplication extends ApplicationCommon {
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
 
-		if (this._window) {
+		if (getiOSWindow()) {
 			if (root !== null && !isEmbedded()) {
 				this.setWindowContent(root);
 			}
 		} else {
-			this._window = this.window; // UIApplication.sharedApplication.keyWindow;
+			setiOSWindow(this.window);
 		}
 	}
 
@@ -438,6 +411,7 @@ export class iOSApplication extends ApplicationCommon {
 		const controller = this.getViewController(rootView);
 
 		this._rootView = rootView;
+		setRootView(rootView);
 
 		// setup view as styleScopeHost
 		rootView._setupAsRootView({});
@@ -468,11 +442,11 @@ export class iOSApplication extends ApplicationCommon {
 	private didFinishLaunchingWithOptions(notification: NSNotification) {
 		this.setMaxRefreshRate();
 		// ensures window is assigned to proper window scene
-		this._window = this.window;
+		setiOSWindow(this.window);
 
-		if (!this._window) {
+		if (!getiOSWindow()) {
 			// if still no window, create one
-			this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+			setiOSWindow(UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds));
 		}
 
 		if (!__VISIONOS__) {
@@ -746,21 +720,6 @@ function ensureNativeClasses() {
 	});
 }
 
-export function setupAccessibleView(view: View): void {
-	const uiView = view.nativeViewProtected as UIView;
-	if (!uiView) {
-		return;
-	}
-
-	/**
-	 * We need to map back from the UIView to the NativeScript View.
-	 *
-	 * We do that by setting the uiView's tag to the View's domId.
-	 * This way we can do reverse lookup.
-	 */
-	uiView.tag = view._domId;
-}
-
 export function updateAccessibilityProperties(view: View): void {
 	const uiView = view.nativeViewProtected as UIView;
 	if (!uiView) {
@@ -847,9 +806,9 @@ export function updateAccessibilityProperties(view: View): void {
 
 	uiView.accessibilityTraits = a11yTraits;
 }
+setA11yUpdatePropertiesCallback(updateAccessibilityProperties);
 
 export const sendAccessibilityEvent = (): void => {};
-export const updateContentDescription = (): string | null => null;
 
 export function isAccessibilityServiceEnabled(): boolean {
 	const accessibilityServiceEnabled = isA11yEnabled();
@@ -1065,3 +1024,22 @@ export function initAccessibilityCssHelper(): void {
 	accessibilityServiceObservable.on(AccessibilityServiceEnabledObservable.propertyChangeEvent, () => updateCurrentHelperClasses(applyRootCssClass));
 }
 setInitAccessibilityCssHelper(initAccessibilityCssHelper);
+
+const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
+function toggleApplicationEventListeners(toAdd: boolean, callback: (args: ApplicationEventData) => void) {
+	for (const eventName of applicationEvents) {
+		if (toAdd) {
+			Application.on(eventName, callback);
+		} else {
+			Application.off(eventName, callback);
+		}
+	}
+}
+setToggleApplicationEventListenersCallback(toggleApplicationEventListeners);
+
+setApplicationPropertiesCallback(() => {
+	return {
+		orientation: Application.orientation(),
+		systemAppearance: Application.systemAppearance(),
+	};
+});

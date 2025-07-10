@@ -1,6 +1,7 @@
 import { platformCheck } from './platform-check';
 import { numberHasDecimals, numberIs64Bit } from './types';
-import { Application } from '../application';
+import { getNativeApp } from '../application/helpers-common';
+import { androidGetCurrentActivity } from '../application/helpers';
 import { Trace } from '../trace';
 import { topmost } from '../ui/frame/frame-stack';
 
@@ -142,38 +143,19 @@ export function dataSerialize(data?: any, wrapPrimitives?: boolean) {
 	}
 }
 
-let application: android.app.Application;
-let applicationContext: android.content.Context;
-let contextResources: android.content.res.Resources;
-let packageName: string;
-
 function getApplicationContext() {
-	if (!applicationContext) {
-		applicationContext = getApplication().getApplicationContext();
-	}
-
-	return applicationContext;
+	return getApplication().getApplicationContext();
 }
 function getCurrentActivity() {
-	if (!Application) {
-		return null;
-	}
-	return Application.android.foregroundActivity || Application.android.startActivity;
+	return androidGetCurrentActivity();
 }
 function getApplication() {
-	if (!application) {
-		application = Application.android.getNativeApplication();
-	}
-
-	return application;
+	return getNativeApp() as android.app.Application;
 }
 function getResources() {
-	if (!contextResources) {
-		contextResources = getApplication().getResources();
-	}
-
-	return contextResources;
+	return getApplication().getResources();
 }
+let packageName: string;
 function getPackageName() {
 	if (!packageName) {
 		packageName = getApplicationContext().getPackageName();

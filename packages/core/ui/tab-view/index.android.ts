@@ -10,7 +10,7 @@ import { Color } from '../../color';
 import { fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
 import { RESOURCE_PREFIX, android as androidUtils, layout } from '../../utils';
 import { Frame } from '../frame';
-import { Application } from '../../application';
+import { getNativeApp } from '../../application/helpers-common';
 import { AndroidHelper } from '../core/view';
 
 export * from './tab-view-common';
@@ -284,7 +284,7 @@ function initializeNativeClasses() {
 	}
 
 	PagerAdapter = FragmentPagerAdapter;
-	appResources = Application.android.context.getResources();
+	appResources = (getNativeApp() as android.app.Application).getApplicationContext().getResources();
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {

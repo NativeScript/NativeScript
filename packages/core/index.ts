@@ -3,6 +3,8 @@
 // Init globals first (use import to ensure it's always at the top)
 import './globals';
 export * from './application';
+export { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver, androidRegisteredReceivers, iosAddNotificationObserver, iosRemoveNotificationObserver, iosNotificationObservers } from './application/helpers';
+export { getNativeApp, setNativeApp } from './application/helpers-common';
 export * as ApplicationSettings from './application-settings';
 import * as Accessibility from './accessibility';
 export namespace AccessibilityEvents {
@@ -24,8 +26,6 @@ export type { PropertyChangeData, EventData } from './data/observable';
 export { VirtualArray } from './data/virtual-array';
 export type { ItemsLoading } from './data/virtual-array';
 export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess, AndroidDirectory } from './file-system';
-
-// Export all interfaces from "http" module
 export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
 export * as Http from './http';
 export { ImageAsset } from './image-asset';
@@ -37,12 +37,10 @@ export type { PlatformContext } from './module-name-resolver';
 export type { ModuleListProvider } from './module-name-resolver/helpers';
 export { isAndroid, isIOS, isVisionOS, isApple, Screen, Device, platformNames } from './platform';
 export type { IDevice } from './platform';
-
-// Profiling
 export { profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
 export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
-export * from './ui';
 export * as Utils from './utils';
 export { XmlParser, ParserEventType, ParserEvent } from './xml';
+export * from './ui';

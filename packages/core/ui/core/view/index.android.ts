@@ -17,7 +17,9 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, Application, updateAccessibilityProperties, updateContentDescription } from '../../../application';
+import { AndroidActivityBackPressedEventData } from '../../../application/application-interfaces';
+import { isAppInBackground, updateA11yPropertiesCallback } from '../../../application/helpers-common';
+import { updateContentDescription } from '../../../application/helpers';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
@@ -141,7 +143,7 @@ function initializeDialogFragment() {
 			};
 
 			// Fist fire application.android global event
-			Application.android.notify(args);
+			global.NativeScriptGlobals.events.notify(args);
 			if (args.cancel) {
 				return;
 			}
@@ -681,7 +683,7 @@ export class View extends ViewCommon {
 		// if the app is in background while triggering _showNativeModalView
 		// then DialogFragment.show will trigger IllegalStateException: Can not perform this action after onSaveInstanceState
 		// so if in background we create an event to call _showNativeModalView when loaded (going back in foreground)
-		if (Application.inBackground && !parent.isLoaded) {
+		if (isAppInBackground() && !parent.isLoaded) {
 			const onLoaded = () => {
 				parent.off('loaded', onLoaded);
 				this._showNativeModalView(parent, options);
@@ -826,7 +828,7 @@ export class View extends ViewCommon {
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
 
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
@@ -836,7 +838,7 @@ export class View extends ViewCommon {
 	// @ts-expect-error
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 
 		if (SDK_VERSION >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
@@ -887,11 +889,11 @@ export class View extends ViewCommon {
 	// @ts-expect-error
 	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
 		this.accessibilityState = value;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityMediaSessionProperty.setNative](): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[androidElevationProperty.getDefault](): number {
