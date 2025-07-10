@@ -5,9 +5,8 @@ import { Trace } from '../../../trace';
 import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
-import { CoreTypes } from '../../enums';
-import { makeValidator, makeParser } from '../../../core-types/validators';
 import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
+import { calc } from '@csstools/css-calc';
 
 const cssPropertyNames: string[] = [];
 const symbolPropertyMap = {};
@@ -113,7 +112,7 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 
 	if (isCssCalcExpression(value)) {
-		return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
+		return calc(_replaceKeywordsWithValues(_replaceDip(value)));
 	} else {
 		return value;
 	}

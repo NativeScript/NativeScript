@@ -1,6 +1,6 @@
 import type { BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition } from './frame-interfaces';
 import { NavigationType } from './frame-interfaces';
-import { Page } from '../page';
+import type { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';

@@ -13,7 +13,7 @@ import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
-import { isAppInBackground, setAppInBackground } from './helpers-common';
+import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -310,13 +310,11 @@ export class ApplicationCommon {
 		// implement in platform specific files (iOS only for now)
 	}
 
-	protected mainEntry: NavigationEntry;
-
 	/**
 	 * @returns The main entry of the application
 	 */
 	getMainEntry() {
-		return this.mainEntry;
+		return getAppMainEntry();
 	}
 
 	@profile
@@ -350,11 +348,11 @@ export class ApplicationCommon {
 
 			if (!rootView) {
 				// try to navigate to the mainEntry (if specified)
-				if (!this.mainEntry) {
+				if (!getAppMainEntry()) {
 					throw new Error('Main entry is missing. App cannot be started. Verify app bootstrap.');
 				}
 
-				rootView = Builder.createViewFromEntry(this.mainEntry);
+				rootView = Builder.createViewFromEntry(getAppMainEntry());
 			}
 		}
 
@@ -366,7 +364,7 @@ export class ApplicationCommon {
 	}
 
 	resetRootView(entry?: NavigationEntry | string) {
-		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
 		// rest of implementation is platform specific
 	}
 

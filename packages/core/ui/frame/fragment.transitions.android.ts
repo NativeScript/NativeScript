@@ -8,7 +8,7 @@ import { FlipTransition } from '../transition/flip-transition';
 import { _resolveAnimationCurve } from '../animation';
 import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
-import { SharedTransition, SharedTransitionEventData, SharedTransitionAnimationType } from '../transition/shared-transition';
+import { SharedTransition, SharedTransitionAnimationType } from '../transition/shared-transition';
 
 interface TransitionListener {
 	new (entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;

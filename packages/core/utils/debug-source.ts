@@ -1,11 +1,31 @@
-// This file exists to break cycles between debug.ts and file-system.
-// Only put logic here that depends on file-system (e.g., knownFolders).
-import { knownFolders } from '../file-system';
+import { getNativeApp } from '../application/helpers-common';
+
+console.log('__dirname:', global.__dirname);
+
+function getCurrentAppPath(): string {
+	if (__APPLE__) {
+		const currentDir = global.__dirname;
+		const tnsModulesIndex = currentDir.indexOf('/tns_modules');
+
+		// Module not hosted in ~/tns_modules when bundled. Use current dir.
+		let appPath = currentDir;
+		if (tnsModulesIndex !== -1) {
+			// Strip part after tns_modules to obtain app root
+			appPath = currentDir.substring(0, tnsModulesIndex);
+		}
+
+		return appPath;
+	} else {
+		const dir = (getNativeApp() as android.app.Application).getApplicationContext().getFilesDir();
+
+		return `${dir.getCanonicalPath()}/app`;
+	}
+}
 
 let applicationRootPath: string;
 function ensureAppRootPath() {
 	if (!applicationRootPath) {
-		applicationRootPath = knownFolders.currentApp().path;
+		applicationRootPath = getCurrentAppPath();
 		applicationRootPath = applicationRootPath.substring(0, applicationRootPath.length - 'app/'.length);
 	}
 }

@@ -70,7 +70,8 @@ export function ensureFragmentClass() {
 	}
 
 	// this require will apply the FragmentClass implementation
-	require('./fragment');
+	// TODO: circular dependency issue with fragment require - check back on this when testing
+	// require('./fragment');
 
 	if (!fragmentClass) {
 		throw new Error('Failed to initialize the extended androidx.fragment.app.Fragment class');

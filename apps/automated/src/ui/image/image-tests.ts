@@ -15,7 +15,7 @@ import { ImageSource } from '@nativescript/core/image-source';
 import * as ViewModule from '@nativescript/core/ui/core/view';
 import * as helper from '../../ui-helper';
 import * as color from '@nativescript/core/color';
-import * as backgroundModule from '@nativescript/core/ui/styling/background';
+import * as appHelpers from '@nativescript/core/application/helpers-common';
 import { Application } from '@nativescript/core';
 const imagePath = '~/assets/logo.png';
 
@@ -23,8 +23,8 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(() => new Image());
 }
 
-if (global.isAndroid) {
-	(<any>backgroundModule).initImageCache(Application.android.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
+if (__ANDROID__) {
+	appHelpers.initImageCache(Application.android.startActivity, appHelpers.CacheMode.memory); // use memory cache only.
 }
 
 const expectLayoutRequest = __APPLE__ && Utils.SDK_VERSION >= 18;

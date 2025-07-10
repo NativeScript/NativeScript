@@ -1,6 +1,6 @@
 import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
-import * as http from '../http';
+import { getImageRequest } from '../http/http-shared';
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
 import { getNativeApp } from '../application/helpers-common';
@@ -63,7 +63,7 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromUrl(url: string): Promise<ImageSource> {
-		return http.getImage(url) as Promise<ImageSource>;
+		return getImageRequest(url) as Promise<ImageSource>;
 	}
 
 	static fromResourceSync(name: string): ImageSource {

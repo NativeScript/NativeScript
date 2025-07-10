@@ -6,7 +6,7 @@ import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
 import { SDK_VERSION } from '../../utils/constants';
 import { profile } from '../../profiling';
-import { AndroidAccessibilityEvent, getLastFocusedViewOnPage } from '../../accessibility';
+import { AndroidAccessibilityEvent, getLastFocusedViewOnPage } from '../../accessibility/accessibility-common';
 
 export * from './page-common';
 

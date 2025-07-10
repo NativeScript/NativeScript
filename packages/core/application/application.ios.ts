@@ -2,9 +2,10 @@ import { profile } from '../profiling';
 import type { View } from '../ui/core/view';
 import { isEmbedded } from '../ui/embedding';
 import { IOSHelper } from '../ui/core/view/view-helper';
-import { NavigationEntry } from '../ui/frame/frame-interfaces';
-import { getWindow } from '../utils/ios-helper';
-import * as Utils from '../utils';
+import type { NavigationEntry } from '../ui/frame/frame-interfaces';
+import { getWindow } from '../utils/native-helper';
+import { SDK_VERSION } from '../utils/constants';
+import { ios as iosUtils } from '../utils/native-helper';
 import { ApplicationCommon } from './application-common';
 import { ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
@@ -46,7 +47,7 @@ import {
 	enforceArray,
 } from '../accessibility/accessibility-common';
 import { iosAddNotificationObserver, iosRemoveNotificationObserver } from './helpers';
-import { getiOSWindow, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setiOSWindow, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
+import { getiOSWindow, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setiOSWindow, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 @NativeClass
 class CADisplayLinkTarget extends NSObject {
@@ -126,7 +127,7 @@ export class iOSApplication extends ApplicationCommon {
 	}
 
 	run(entry?: string | NavigationEntry): void {
-		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
 		this.started = true;
 
 		if (this.nativeApp) {
@@ -174,7 +175,7 @@ export class iOSApplication extends ApplicationCommon {
 			this.setViewControllerView(rootView);
 			embedderDelegate.presentNativeScriptApp(controller);
 		} else {
-			const visibleVC = Utils.ios.getVisibleViewController(rootController);
+			const visibleVC = iosUtils.getVisibleViewController(rootController);
 			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
 		}
 
@@ -217,7 +218,7 @@ export class iOSApplication extends ApplicationCommon {
 
 			if (minFrameRateDisabled) {
 				let max = 120;
-				const deviceMaxFrames = Utils.ios.getMainScreen().maximumFramesPerSecond;
+				const deviceMaxFrames = iosUtils.getMainScreen().maximumFramesPerSecond;
 				if (options?.max) {
 					if (deviceMaxFrames) {
 						// iOS 10.3
@@ -228,7 +229,7 @@ export class iOSApplication extends ApplicationCommon {
 					}
 				}
 
-				if (Utils.SDK_VERSION >= 15 || __VISIONOS__) {
+				if (SDK_VERSION >= 15 || __VISIONOS__) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
 					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
@@ -332,7 +333,7 @@ export class iOSApplication extends ApplicationCommon {
 
 	protected getSystemAppearance(): 'light' | 'dark' {
 		// userInterfaceStyle is available on UITraitCollection since iOS 12.
-		if ((!__VISIONOS__ && Utils.SDK_VERSION <= 11) || !this.rootController) {
+		if ((!__VISIONOS__ && SDK_VERSION <= 11) || !this.rootController) {
 			return null;
 		}
 
@@ -450,7 +451,7 @@ export class iOSApplication extends ApplicationCommon {
 		}
 
 		if (!__VISIONOS__) {
-			this.window.backgroundColor = Utils.SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+			this.window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		}
 
 		this.notifyAppStarted(notification);

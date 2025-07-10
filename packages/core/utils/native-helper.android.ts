@@ -150,7 +150,7 @@ function getCurrentActivity() {
 	return androidGetCurrentActivity();
 }
 function getApplication() {
-	return getNativeApp() as android.app.Application;
+	return getNativeApp() as globalAndroid.app.Application;
 }
 function getResources() {
 	return getApplication().getResources();
@@ -164,10 +164,10 @@ function getPackageName() {
 	return packageName;
 }
 
-let inputMethodManager: android.view.inputmethod.InputMethodManager;
-function getInputMethodManager(): android.view.inputmethod.InputMethodManager {
+let inputMethodManager: globalAndroid.view.inputmethod.InputMethodManager;
+function getInputMethodManager(): globalAndroid.view.inputmethod.InputMethodManager {
 	if (!inputMethodManager) {
-		inputMethodManager = <android.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+		inputMethodManager = <globalAndroid.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(globalAndroid.content.Context.INPUT_METHOD_SERVICE);
 	}
 
 	return inputMethodManager;
@@ -177,18 +177,18 @@ export function getWindow() {
 	return getCurrentActivity()?.getWindow();
 }
 
-function showSoftInput(nativeView: android.view.View): void {
+function showSoftInput(nativeView: globalAndroid.view.View): void {
 	const inputManager = getInputMethodManager();
-	if (inputManager && nativeView instanceof android.view.View) {
-		inputManager.showSoftInput(nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+	if (inputManager && nativeView instanceof globalAndroid.view.View) {
+		inputManager.showSoftInput(nativeView, globalAndroid.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
 	}
 }
 
-function dismissSoftInput(nativeView?: android.view.View): void {
+function dismissSoftInput(nativeView?: globalAndroid.view.View): void {
 	const inputManager = getInputMethodManager();
-	let windowToken: android.os.IBinder;
+	let windowToken: globalAndroid.os.IBinder;
 
-	if (nativeView instanceof android.view.View) {
+	if (nativeView instanceof globalAndroid.view.View) {
 		if (!nativeView.hasFocus()) {
 			return;
 		}
@@ -258,7 +258,7 @@ namespace resources {
 	export function getResource(name: string, type?: string): number {
 		return getResources().getIdentifier(name, type, getPackageName());
 	}
-	export function getPaletteColor(name: string, context: android.content.Context): number {
+	export function getPaletteColor(name: string, context: globalAndroid.content.Context): number {
 		if (attrCache.has(name)) {
 			return attrCache.get(name);
 		}
@@ -276,7 +276,7 @@ namespace resources {
 			}
 
 			if (colorID) {
-				const typedValue = new android.util.TypedValue();
+				const typedValue = new globalAndroid.util.TypedValue();
 				context.getTheme().resolveAttribute(colorID, typedValue, true);
 				result = typedValue.data;
 			}
@@ -291,12 +291,12 @@ namespace resources {
 }
 
 export function isRealDevice(): boolean {
-	const fingerprint = android.os.Build.FINGERPRINT;
+	const fingerprint = globalAndroid.os.Build.FINGERPRINT;
 
 	return fingerprint != null && (fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1);
 }
 
-export const androidUtils = {
+export const android = {
 	resources,
 	getApplication,
 	getCurrentActivity,
@@ -312,7 +312,7 @@ export const androidUtils = {
 /**
  * @deprecated Use `Utils.android` instead.
  */
-export const ad = androidUtils;
+export const ad = android;
 
 // these don't exist on Android.Stub them to empty functions.
 export const iOSNativeHelper = platformCheck('Utils.iOSNativeHelper');

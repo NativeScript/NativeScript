@@ -44,7 +44,7 @@ import {
 	setA11yEnabled,
 } from '../accessibility/accessibility-common';
 import { androidGetForegroundActivity, androidGetStartActivity, androidPendingReceiverRegistrations, androidRegisterBroadcastReceiver, androidRegisteredReceivers, androidSetForegroundActivity, androidSetStartActivity, androidUnregisterBroadcastReceiver, applyContentDescription } from './helpers';
-import { getRootView, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
+import { getImageFetcher, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 declare namespace com {
 	namespace tns {
@@ -406,7 +406,7 @@ export class AndroidApplication extends ApplicationCommon {
 		}
 
 		this.started = true;
-		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
 
 		if (!this.nativeApp) {
 			const nativeApp = this.getNativeApplication();
@@ -1393,4 +1393,30 @@ setApplicationPropertiesCallback(() => {
 		orientation: Application.orientation(),
 		systemAppearance: Application.systemAppearance(),
 	};
+});
+
+function onLiveSync(args): void {
+	if (getImageFetcher()) {
+		getImageFetcher().clearCache();
+	}
+}
+
+global.NativeScriptGlobals.events.on('livesync', onLiveSync);
+
+global.NativeScriptGlobals.addEventWiring(() => {
+	Application.android.on('activityStarted', (args: any) => {
+		if (!getImageFetcher()) {
+			initImageCache(args.activity);
+		} else {
+			getImageFetcher().initCache();
+		}
+	});
+});
+
+global.NativeScriptGlobals.addEventWiring(() => {
+	Application.android.on('activityStopped', (args) => {
+		if (getImageFetcher()) {
+			getImageFetcher().closeCache();
+		}
+	});
 });

@@ -1,8 +1,7 @@
-// Types
-import { View } from '../core/view';
-import { Page } from '../page';
-import { Transition } from '../transition';
-import { Observable } from '../../data/observable';
+import type { View } from '../core/view';
+import type { Page } from '../page';
+import type { Transition } from '../transition';
+import type { Observable } from '../../data/observable';
 
 export enum NavigationType {
 	back,

@@ -1,14 +1,17 @@
 import { Trace } from '../trace';
 import { ios as iOSUtils, isRealDevice } from './native-helper';
+import { debounce, throttle } from './shared';
 
 export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
+export * from './animation-helpers';
 export * from './common';
 export * from './constants';
 export * from './debug';
 export * from './layout-helper';
 export * from './macrotask-scheduler';
 export * from './mainthread-helper';
-export * from './native-helper'; // do not re-export getWindow here, use ios-helper.ts for that
+export * from './native-helper';
+export * from './shared';
 export * from './types';
 export * from './native-helper';
 
@@ -30,6 +33,39 @@ export function openFile(filePath: string): boolean {
 
 export function GC() {
 	__collect();
+}
+
+let throttledGC: Map<number, () => void>;
+let debouncedGC: Map<number, () => void>;
+
+export function queueGC(delay = 900, useThrottle?: boolean) {
+	/**
+	 * developers can use different queueGC settings to optimize their own apps
+	 * each setting is stored in a Map to reuse each time app calls it
+	 */
+	if (useThrottle) {
+		if (!throttledGC) {
+			throttledGC = new Map();
+		}
+		if (!throttledGC.get(delay)) {
+			throttledGC.set(
+				delay,
+				throttle(() => GC(), delay),
+			);
+		}
+		throttledGC.get(delay)();
+	} else {
+		if (!debouncedGC) {
+			debouncedGC = new Map();
+		}
+		if (!debouncedGC.get(delay)) {
+			debouncedGC.set(
+				delay,
+				debounce(() => GC(), delay),
+			);
+		}
+		debouncedGC.get(delay)();
+	}
 }
 
 export function releaseNativeObject(object: NSObject) {

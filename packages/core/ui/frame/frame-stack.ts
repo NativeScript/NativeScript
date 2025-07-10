@@ -1,4 +1,3 @@
-// Types.
 import { FrameBase } from './frame-common';
 
 export const frameStack: Array<FrameBase> = [];

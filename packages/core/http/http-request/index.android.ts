@@ -1,16 +1,11 @@
 // imported for definition purposes only
 import * as httpModule from '../../http';
-import * as imageSourceModule from '../../image-source';
+import { ImageSource } from '../../image-source';
 import { Screen } from '../../platform';
-import * as fsModule from '../../file-system';
-
+import { File } from '../../file-system';
+import { HttpResponseEncoding } from '../http-interfaces';
 import { getFilenameFromUrl } from './http-request-common';
 import * as domainDebugger from '../../debugger';
-
-export enum HttpResponseEncoding {
-	UTF8,
-	GBK,
-}
 
 function parseJSON(source: string): any {
 	const src = source.trim();
@@ -24,19 +19,6 @@ function parseJSON(source: string): any {
 let requestIdCounter = 0;
 const pendingRequests = {};
 
-let imageSource: typeof imageSourceModule;
-function ensureImageSource() {
-	if (!imageSource) {
-		imageSource = require('../../image-source');
-	}
-}
-
-let fs: typeof fsModule;
-function ensureFileSystem() {
-	if (!fs) {
-		fs = require('../../file-system');
-	}
-}
 let debugRequests: Map<number, { debugRequest: domainDebugger.domains.network.NetworkRequest; timestamp: number }>;
 if (__DEV__) {
 	debugRequests = new Map();
@@ -151,26 +133,22 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 				return parseJSON(str);
 			},
 			toImage: () => {
-				ensureImageSource();
-
 				return new Promise<any>((resolveImage, rejectImage) => {
 					if (result.responseAsImage != null) {
-						resolveImage(new imageSource.ImageSource(result.responseAsImage));
+						resolveImage(new ImageSource(result.responseAsImage));
 					} else {
 						rejectImage(new Error('Response content may not be converted to an Image'));
 					}
 				});
 			},
 			toFile: (destinationFilePath: string) => {
-				ensureFileSystem();
-
 				if (!destinationFilePath) {
 					destinationFilePath = getFilenameFromUrl(callbacks.url);
 				}
 				let stream: java.io.FileOutputStream;
 				try {
 					// ensure destination path exists by creating any missing parent directories
-					const file = fs.File.fromPath(destinationFilePath);
+					const file = File.fromPath(destinationFilePath);
 
 					const javaFile = new java.io.File(destinationFilePath);
 					stream = new java.io.FileOutputStream(javaFile);

@@ -1,4 +1,4 @@
-import { getWindow } from '../../utils/ios-helper';
+import { getWindow } from '../../utils/native-helper';
 
 class MainScreen {
 	private _screen: UIScreen;

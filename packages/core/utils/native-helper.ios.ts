@@ -2,7 +2,7 @@ import { platformCheck } from './platform-check';
 import { getClass, isNullOrUndefined, numberHasDecimals, numberIs64Bit } from './types';
 import { Color } from '../color';
 import { Trace } from '../trace';
-import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from './common';
+import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from './animation-helpers';
 import { SDK_VERSION } from './constants';
 
 export function dataDeserialize(nativeData?: any) {
@@ -92,7 +92,7 @@ export function dataSerialize(data: any, wrapPrimitives: boolean = false) {
 }
 
 function getCurrentAppPath(): string {
-	const currentDir = __dirname;
+	const currentDir = import.meta.dirname;
 	const tnsModulesIndex = currentDir.indexOf('/tns_modules');
 
 	// Module not hosted in ~/tns_modules when bundled. Use current dir.

@@ -1,8 +1,7 @@
 /**
- * Keep this helper file slim to avoid circular dependencies.
+ * Do not import other files here to avoid circular dependencies.
  * Used to define helper functions and variables that are shared between Android and iOS
  * without introducing platform-specific code directly.
- * It should not import platform-specific modules directly.
  */
 let nativeApp: UIApplication | android.app.Application;
 
@@ -51,6 +50,15 @@ export function setiOSWindow(value: UIWindow) {
 	_iosWindow = value;
 }
 
+let _appMainEntry: any /* NavigationEntry */;
+
+export function getAppMainEntry(): any /* NavigationEntry */ {
+	return _appMainEntry;
+}
+export function setAppMainEntry(entry: any /* NavigationEntry */) {
+	_appMainEntry = entry;
+}
+
 // Aids avoiding circular dependencies by allowing the application event listeners to be toggled
 let _toggleApplicationEventListenersHandler: (toAdd: boolean, callback: (args: any) => void) => void;
 export function toggleApplicationEventListeners(toAdd: boolean, callback: (args: any) => void) {
@@ -83,4 +91,45 @@ export function updateA11yPropertiesCallback(view: any /* View */) {
 	if (_a11yUpdatePropertiesCallback) {
 		_a11yUpdatePropertiesCallback(view);
 	}
+}
+
+/**
+ * Internal Android app helpers
+ */
+// Circular dependency avoidance for image fetching on android
+let _imageFetcher: org.nativescript.widgets.image.Fetcher;
+export function getImageFetcher(): org.nativescript.widgets.image.Fetcher {
+	return _imageFetcher;
+}
+export function setImageFetcher(fetcher: org.nativescript.widgets.image.Fetcher) {
+	_imageFetcher = fetcher;
+}
+export enum CacheMode {
+	none,
+	memory,
+	diskAndMemory,
+}
+
+let _currentCacheMode: CacheMode;
+
+export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
+	if (_currentCacheMode === mode) {
+		return;
+	}
+
+	_currentCacheMode = mode;
+	if (!getImageFetcher()) {
+		setImageFetcher(org.nativescript.widgets.image.Fetcher.getInstance(context));
+	} else {
+		getImageFetcher().clearCache();
+	}
+
+	const params = new org.nativescript.widgets.image.Cache.CacheParams();
+	params.memoryCacheEnabled = mode !== CacheMode.none;
+	params.setMemCacheSizePercent(memoryCacheSize); // Set memory cache to % of app memory
+	params.diskCacheEnabled = mode === CacheMode.diskAndMemory;
+	params.diskCacheSize = diskCacheSize;
+	const imageCache = org.nativescript.widgets.image.Cache.getInstance(params);
+	getImageFetcher().addImageCache(imageCache);
+	getImageFetcher().initCache();
 }

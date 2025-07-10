@@ -1,11 +1,13 @@
 //Types
 import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from '.';
 import { FrameBase, NavigationType } from './frame-common';
-import { Page } from '../page';
+import type { Page } from '../page';
+import { PageEvents } from '../page/events';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
-import { CORE_ANIMATION_DEFAULTS, layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 import { SDK_VERSION } from '../../utils/constants';
 import { Trace } from '../../trace';
 import type { PageTransition } from '../transition/page-transition';
@@ -351,7 +353,7 @@ export class Frame extends FrameBase {
 		// we dont call super(which would also trigger events) but only notify the frame of the navigation
 		// though it means events are not triggered at the same time (lifecycle) on iOS / Android
 		this.notify({
-			eventName: Page.navigatingToEvent,
+			eventName: PageEvents.navigatingToEvent,
 			object: this,
 			isBack,
 			entry: backstackEntry,

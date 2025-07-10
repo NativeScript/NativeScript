@@ -1,17 +1,13 @@
-// Definitions.
 import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
 import type { ImageBase } from '../ui/image/image-common';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 import { Trace } from '../trace';
-
-// Types.
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject, SYSTEM_PREFIX } from '../utils';
-
 import { getScaledDimensions } from './image-source-common';
-import * as http from '../http';
+import { getImageRequest } from '../http/http-shared';
 
 export { isFileOrResourcePath };
 
@@ -62,7 +58,7 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromUrl(url: string): Promise<ImageSource> {
-		return http.getImage(url) as Promise<ImageSource>;
+		return getImageRequest(url) as Promise<ImageSource>;
 	}
 
 	static iosSystemScaleFor(scale: iosSymbolScaleType) {

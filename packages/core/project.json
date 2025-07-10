@@ -16,18 +16,7 @@
 				"outputPath": "{workspaceRoot}/dist/packages/core",
 				"rootDir": "{projectRoot}",
 				"main": "{projectRoot}/index.ts",
-				"assets": [
-					"{workspaceRoot}/LICENSE",
-					"{projectRoot}/README.md",
-					"{projectRoot}/global-types.d.ts",
-					"{projectRoot}/fetch/LICENSE",
-					{ "glob": "**/*", "input": "{projectRoot}/js-libs/", "output": "./js-libs/" },
-					{ "glob": "**/*", "input": "{projectRoot}/cli-hooks/", "output": "./cli-hooks/" },
-					{ "glob": "**/*", "input": "{projectRoot}/css/", "output": "./css/" },
-					{ "glob": "**/*", "input": "{projectRoot}/css-value/", "output": "./css-value/" },
-					{ "glob": "**/*", "input": "{projectRoot}/platforms/", "output": "./platforms/" },
-					{ "glob": "**/*.d.ts", "input": "{projectRoot}/", "output": "./" }
-				]
+				"assets": ["{workspaceRoot}/LICENSE", "{projectRoot}/README.md", "{projectRoot}/global-types.d.ts", "{projectRoot}/fetch/LICENSE", { "glob": "**/*", "input": "{projectRoot}/js-libs/", "output": "./js-libs/" }, { "glob": "**/*", "input": "{projectRoot}/cli-hooks/", "output": "./cli-hooks/" }, { "glob": "**/*", "input": "{projectRoot}/platforms/", "output": "./platforms/" }, { "glob": "**/*.d.ts", "input": "{projectRoot}/", "output": "./" }]
 			},
 			"dependsOn": ["^build"]
 		},

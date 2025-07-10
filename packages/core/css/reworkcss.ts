@@ -1,3 +1,7 @@
+// exports.parse = require('./lib/parse');
+
+import { parse } from './lib/parse';
+
 export interface Position {
 	start: { line: number; column: number };
 	end: { line: number; column: number };
@@ -18,6 +22,7 @@ export interface Rule extends Node {
 	declarations: Declaration[];
 }
 
+// @ts-ignore
 export type AtRule = KeyFrames | Media;
 
 export interface Keyframes extends Rule {
@@ -43,5 +48,6 @@ export interface StyleSheet {
 export interface SyntaxTree {
 	stylesheet: StyleSheet;
 }
+// export function parse(css: string, options: any): SyntaxTree;
 
-export function parse(css: string, options: any): SyntaxTree;
+export { parse };

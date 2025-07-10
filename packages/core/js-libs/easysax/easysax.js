@@ -59,11 +59,11 @@
 // << ------------------------------------------------------------------------ >> //
 
 
-if (typeof exports === 'object' /*&& this == exports*/) {
-	module.exports.EasySAXParser = EasySAXParser;
-};
+// if (typeof exports === 'object' /*&& this == exports*/) {
+// 	module.exports.EasySAXParser = EasySAXParser;
+// };
 
-function EasySAXParser() {
+export function EasySAXParser() {
 	'use strict';
 
 	if (!this) return null;

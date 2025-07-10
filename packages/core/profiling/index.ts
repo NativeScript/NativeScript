@@ -158,7 +158,9 @@ export function enable(mode: InstrumentationMode = 'counters') {
 }
 
 try {
-	const appConfig = require('~/package.json');
+	// @ts-ignore
+	const appConfig = await import('~/package.json');
+	console.log('profiling appConfig:', appConfig);
 	if (appConfig && appConfig.profiling) {
 		enable(appConfig.profiling);
 	}

@@ -12,6 +12,7 @@ import { isFrame } from '../frame/frame-helpers';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
+import { PageEvents } from './events';
 
 interface NavigatedData extends EventData {
 	context: any;
@@ -20,10 +21,10 @@ interface NavigatedData extends EventData {
 
 @CSSType('Page')
 export class PageBase extends ContentView {
-	public static navigatingToEvent = 'navigatingTo';
-	public static navigatedToEvent = 'navigatedTo';
-	public static navigatingFromEvent = 'navigatingFrom';
-	public static navigatedFromEvent = 'navigatedFrom';
+	public static navigatingToEvent = PageEvents.navigatingToEvent;
+	public static navigatedToEvent = PageEvents.navigatedToEvent;
+	public static navigatingFromEvent = PageEvents.navigatingFromEvent;
+	public static navigatedFromEvent = PageEvents.navigatedFromEvent;
 
 	private _navigationContext: any;
 	private _actionBar: ActionBar;

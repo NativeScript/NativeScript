@@ -95,8 +95,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 		// Create instance of the component.
 		instance = new instanceType();
 	} catch (ex) {
-		const debug: typeof debugModule = require('../../../utils/debug');
-		throw new debug.ScopeError(ex, "Module '" + (resolvedModuleName || elementName) + "' not found for element '" + (namespace ? namespace + ':' : '') + elementName + "'.");
+		throw new debugModule.ScopeError(ex, "Module '" + (resolvedModuleName || elementName) + "' not found for element '" + (namespace ? namespace + ':' : '') + elementName + "'.");
 	}
 
 	return { instance, instanceModule };
@@ -211,7 +210,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
 				expression: bindOptions[bindingConstants.expression],
 				twoWay: bindOptions[bindingConstants.twoWay],
 			},
-			bindOptions[bindingConstants.source]
+			bindOptions[bindingConstants.source],
 		);
 	} else if (isEventOrGesture(propertyName, instance)) {
 		// Get the event handler from page module exports.

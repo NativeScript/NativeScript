@@ -202,3 +202,8 @@ export function applyContentDescription(view: any /* View */, forceUpdate?: bool
 export function setupAccessibleView(view: any /* any */): void {
 	updateA11yPropertiesCallback(view);
 }
+
+// stubs
+export const iosNotificationObservers: Array<any> = [];
+export function iosAddNotificationObserver(notificationName: string, onReceiveCallback: (notification: any) => void) {}
+export function iosRemoveNotificationObserver(observer: any, notificationName: string) {}

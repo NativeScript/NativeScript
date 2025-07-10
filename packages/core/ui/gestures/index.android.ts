@@ -7,7 +7,7 @@ import { EventData } from '../../data/observable';
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, GestureEvents } from './gestures-common';
 
 // Import layout from utils directly to avoid circular references
-import { layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
 
 import * as timer from '../../timer';
 
