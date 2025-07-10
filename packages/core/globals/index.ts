@@ -7,6 +7,7 @@ import * as mediaQueryList from '../media-query-list';
 import * as text from '../text';
 import * as xhrImpl from '../xhr';
 import '../fetch';
+import * as fetchPolyfill from '../fetch';
 import * as wgc from '../wgc';
 import * as cryptoImpl from '../wgc/crypto';
 import * as subtleCryptoImpl from '../wgc/crypto/SubtleCrypto';
@@ -345,8 +346,8 @@ export function initGlobal() {
 		global.registerModule('xhr', () => xhrImpl);
 		installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
 
-		// global.registerModule('fetch', () => require('../fetch'));
-		// installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+		global.registerModule('fetch', () => fetchPolyfill);
+		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
 
 		global.registerModule('wgc', () => wgc);
 		installPolyfills('wgc', ['atob', 'btoa']);

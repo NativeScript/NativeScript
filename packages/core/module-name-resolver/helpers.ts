@@ -6,7 +6,6 @@ export function prepareAppForModuleResolver(callback: () => void) {
 }
 
 export function initAppForModuleResolver() {
-	console.log('initAppForModuleResolver has callback?', appForModuleResolverCallback);
 	if (appForModuleResolverCallback) {
 		appForModuleResolverCallback();
 		appForModuleResolverCallback = undefined;
