@@ -124,11 +124,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			.add('@nativescript/core/inspector_modules');
 	});
 
+	config.merge({
+		experiments: {
+			// enable ES module syntax (import/exports)
+			outputModule: true,
+		},
+	});
+
 	config.output
 		.path(outputPath)
 		.pathinfo(false)
 		.publicPath('')
-		.libraryTarget('commonjs')
+		.set('module', true)
+		.libraryTarget('module')
 		.globalObject('global')
 		.set('clean', true);
 
