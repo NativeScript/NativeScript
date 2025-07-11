@@ -18,6 +18,7 @@
 	"dependencies": {
 		"@babel/core": "^7.0.0",
 		"@pmmmwh/react-refresh-webpack-plugin": "~0.6.1",
+		"@vue/compiler-sfc": "^3.5.17",
 		"acorn": "^8.0.0",
 		"acorn-stage3": "^4.0.0",
 		"ansi-colors": "^4.1.3",

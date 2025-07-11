@@ -32,7 +32,7 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
 		return false;
 	}
 }
-const recognizerDelegateInstance: UIGestureRecognizerDelegateImpl = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
+const recognizerDelegateInstance = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
 
 @NativeClass
 class UIGestureRecognizerImpl extends NSObject {
