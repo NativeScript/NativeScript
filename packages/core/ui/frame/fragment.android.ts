@@ -1,5 +1,5 @@
 import { isEmbedded, getEmbeddedView } from '../embedding';
-import { setFragmentCallbacks } from '.';
+import { setFragmentCallbacks } from './frame-helper-for-android';
 
 declare const com: any;
 

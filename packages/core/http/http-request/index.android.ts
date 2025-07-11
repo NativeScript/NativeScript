@@ -1,7 +1,7 @@
 // imported for definition purposes only
-import * as httpModule from '../../http';
+import type { Headers, HttpResponse, HttpRequestOptions } from '../../http';
 import { ImageSource } from '../../image-source';
-import { Screen } from '../../platform';
+import { Screen } from '../../platform/screen';
 import { File } from '../../file-system';
 import { HttpResponseEncoding } from '../http-interfaces';
 import { getFilenameFromUrl } from './http-request-common';
@@ -51,7 +51,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 	}
 
 	// read the headers
-	const headers: httpModule.Headers = {};
+	const headers: Headers = {};
 	if (result.headers) {
 		const jHeaders = result.headers;
 		const length = jHeaders.size();
@@ -177,7 +177,7 @@ function onRequestError(error: string, requestId: number) {
 	}
 }
 
-function buildJavaOptions(options: httpModule.HttpRequestOptions) {
+function buildJavaOptions(options: HttpRequestOptions) {
 	if (typeof options.url !== 'string') {
 		throw new Error('Http request must provide a valid url.');
 	}
@@ -224,13 +224,13 @@ function buildJavaOptions(options: httpModule.HttpRequestOptions) {
 	return javaOptions;
 }
 
-export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
+export function request(options: HttpRequestOptions): Promise<HttpResponse> {
 	if (options === undefined || options === null) {
 		// TODO: Shouldn't we throw an error here - defensive programming
 		return;
 	}
 
-	return new Promise<httpModule.HttpResponse>((resolve, reject) => {
+	return new Promise<HttpResponse>((resolve, reject) => {
 		try {
 			// initialize the options
 			const javaOptions = buildJavaOptions(options);
@@ -289,7 +289,7 @@ function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
 	return raw.toString(charsetName);
 }
 
-export function addHeader(headers: httpModule.Headers, key: string, value: string): void {
+export function addHeader(headers: Headers, key: string, value: string): void {
 	if (!headers[key]) {
 		headers[key] = value;
 	} else if (Array.isArray(headers[key])) {

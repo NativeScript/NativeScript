@@ -425,11 +425,11 @@ export var testFileNameExtension = function () {
 	var file = documents.getFile('Test.txt');
 	// Getting the file name "Test.txt".
 	var fileName = file.name;
-	// Getting the file extension ".txt".
+	// Getting the file extension "txt".
 	var fileExtension = file.extension;
 	// >> (hide)
 	TKUnit.assert(fileName === 'Test.txt', 'Wrong file name.');
-	TKUnit.assert(fileExtension === '.txt', 'Wrong extension.');
+	TKUnit.assert(fileExtension === 'txt', 'Wrong extension.');
 	file.remove();
 	// << (hide)
 	// << file-system-extension
@@ -633,7 +633,7 @@ export function test_FSEntity_Properties() {
 	var documents = fs.knownFolders.documents();
 	var file = documents.getFile('Test_File.txt');
 
-	TKUnit.assert(file.extension === '.txt', 'FileEntity.extension not working.');
+	TKUnit.assert(file.extension === 'txt', 'FileEntity.extension not working.');
 	TKUnit.assert(file.isLocked === false, 'FileEntity.isLocked not working.');
 	TKUnit.assert(file.lastModified instanceof Date, 'FileEntity.lastModified not working.');
 	TKUnit.assert(file.size === 0, 'FileEntity.size not working.');

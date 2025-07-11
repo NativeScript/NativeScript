@@ -63,7 +63,7 @@
 // 	module.exports.EasySAXParser = EasySAXParser;
 // };
 
-export function EasySAXParser() {
+function EasySAXParser() {
 	'use strict';
 
 	if (!this) return null;
@@ -780,3 +780,5 @@ EasySAXParser.prototype.parse = function(xml) {
         j += 1;
     };
 };
+
+export { EasySAXParser };

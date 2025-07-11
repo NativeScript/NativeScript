@@ -1,5 +1,5 @@
 import { Trace } from '../trace';
-import { getFileExtension } from './common';
+import { getFileExtension } from './utils-shared';
 import { SDK_VERSION } from './constants';
 import { android as AndroidUtils } from './native-helper';
 import { topmost } from '../ui/frame/frame-stack';

@@ -1,5 +1,5 @@
 import { EventData, Observable } from '../data/observable';
-import { Screen } from '../platform';
+import { Screen } from '../platform/screen';
 import { getApplicationProperties, toggleApplicationEventListeners } from '../application/helpers-common';
 import type { ApplicationEventData } from '../application/application-interfaces';
 import { matchQuery, MediaQueryType } from '../css-mediaquery';

@@ -1,8 +1,8 @@
-import { NavigationType, FrameBase } from './frame-common';
+import type { NavigationType, FrameBase } from './frame-common';
 import type { NavigatedData, Page } from '../page';
-import { Observable, EventData } from '../../data/observable';
-import { Property, View } from '../core/view';
-import { Transition } from '../transition';
+import type { Observable, EventData } from '../../data/observable';
+import type { Property, View } from '../core/view';
+import type { Transition } from '../transition';
 
 export * from './frame-interfaces';
 
@@ -521,6 +521,19 @@ export interface AndroidFrame extends Observable {
 	 * @param page The Page instance to search for.
 	 */
 	fragmentForPage(entry: BackstackEntry): any;
+
+	// common properties
+	_resolvedPage?: Page;
+	_currentEntry?: BackstackEntry;
+	_executingContext?: NavigationContext;
+	_inheritStyles?(page: Page): void;
+	isLoaded?: boolean;
+	_styleScope?: any;
+	_addView?(view: View): void;
+	nativeViewProtected?: any /* android.view.View */;
+	_originalBackground?: any /* android.graphics.drawable.Drawable */;
+	backgroundColor?: any;
+	owner?: any;
 }
 
 export interface AndroidActivityCallbacks {
@@ -537,20 +550,6 @@ export interface AndroidActivityCallbacks {
 	onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<string>, grantResults: Array<number>, superFunc: Function): void;
 	onActivityResult(activity: any, requestCode: number, resultCode: number, data: any, superFunc: Function);
 	onNewIntent(activity: any, intent: any, superSetIntentFunc: Function, superFunc: Function): void;
-}
-
-export interface AndroidFragmentCallbacks {
-	onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
-	onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
-	onCreate(fragment: any, savedInstanceState: any, superFunc: Function): void;
-	onCreateView(fragment: any, inflater: any, container: any, savedInstanceState: any, superFunc: Function): any;
-	onSaveInstanceState(fragment: any, outState: any, superFunc: Function): void;
-	onDestroyView(fragment: any, superFunc: Function): void;
-	onDestroy(fragment: any, superFunc: Function): void;
-	onPause(fragment: any, superFunc: Function): void;
-	onResume(fragment: any, superFunc: Function): void;
-	onStop(fragment: any, superFunc: Function): void;
-	toStringOverride(fragment: any, superFunc: Function): string;
 }
 
 /* tslint:disable */

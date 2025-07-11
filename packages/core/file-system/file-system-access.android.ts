@@ -1,5 +1,6 @@
 import * as textModule from '../text';
-import { getFileExtension, android as androidUtils } from '../utils';
+import { android as androidUtils } from '../utils';
+import { getFileExtension } from '../utils/utils-shared';
 import { SDK_VERSION } from '../utils/constants';
 
 import type { IFileSystemAccess } from './file-system-access';

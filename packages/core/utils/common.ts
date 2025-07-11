@@ -4,6 +4,7 @@ import emojiRegex from 'emoji-regex';
 
 export * from './mainthread-helper';
 export * from './macrotask-scheduler';
+export * from './utils-shared';
 
 export const RESOURCE_PREFIX = 'res://';
 export const SYSTEM_PREFIX = 'sys://';
@@ -164,5 +165,3 @@ export function isEmoji(value: string): boolean {
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes
 	return emojiRegex().test(value);
 }
-
-export { getFileExtension } from './utils-shared';

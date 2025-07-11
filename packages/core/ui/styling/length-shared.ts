@@ -2,7 +2,7 @@
 // Only put platform-agnostic logic here.
 
 import { CoreTypes } from '../../core-types';
-import { layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
 import { isCssWideKeyword } from '../core/properties/property-shared';
 
 function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
