@@ -1,10 +1,7 @@
 // @ts-nocheck
-// vitest.setup.ts
 import { beforeAll, afterAll, vi } from 'vitest';
 
-vi.mock('@nativescript/core/application', () => null);
-
-// Set up global variable
+// Mock out global variables and platform APIs touched while unit testing
 global.__UNIT_TEST__ = true;
 global.__DEV__ = true;
 global.__ANDROID__ = false;
