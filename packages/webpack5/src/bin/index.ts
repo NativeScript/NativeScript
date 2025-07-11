@@ -47,6 +47,7 @@ program
 	.option('--config [path]', 'config path')
 	.option('--watch', 'watch for changes')
 	.allowUnknownOption()
+	.allowExcessArguments()
 	.action((options, command) => {
 		const env = parseEnvFlags(command.args);
 		// add --env <val> into the env object
