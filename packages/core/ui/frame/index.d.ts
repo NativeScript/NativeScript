@@ -261,6 +261,10 @@ export class Frame extends FrameBase {
 	/**
 	 * @private
 	 */
+	_isFrameStackEmpty(): boolean;
+	/**
+	 * @private
+	 */
 	_pushInFrameStack();
 	/**
 	 * @private
@@ -404,7 +408,10 @@ export interface NavigationEntry extends ViewEntry {
  * Represents a context passed to navigation methods.
  */
 export interface NavigationContext {
-	entry: BackstackEntry;
+	entry?: BackstackEntry;
+	/**
+	 * @deprecated Use navigationType instead.
+	 */
 	isBackNavigation: boolean;
 	navigationType: NavigationType;
 }

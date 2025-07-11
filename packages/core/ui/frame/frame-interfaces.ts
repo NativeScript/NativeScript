@@ -36,8 +36,10 @@ export interface NavigationEntry extends ViewEntry {
 }
 
 export interface NavigationContext {
-	entry: BackstackEntry;
-	// TODO: remove isBackNavigation for NativeScript 7.0
+	entry?: BackstackEntry;
+	/**
+	 * @deprecated Use navigationType instead.
+	 */
 	isBackNavigation: boolean;
 	navigationType: NavigationType;
 }

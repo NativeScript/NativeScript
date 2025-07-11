@@ -11,6 +11,10 @@ export function topmost(): FrameBase {
 	return undefined;
 }
 
+export function _isFrameStackEmpty(): boolean {
+	return frameStack.length === 0;
+}
+
 export function _pushInFrameStack(frame: FrameBase): void {
 	if (frame._isInFrameStack && frameStack[frameStack.length - 1] === frame) {
 		return;

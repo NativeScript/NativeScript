@@ -4,7 +4,7 @@ import { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';
-import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from './frame-stack';
+import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack, _isFrameStackEmpty } from './frame-stack';
 import { viewMatchesModuleContext } from '../core/view/view-common';
 import { getAncestor } from '../core/view-base';
 import { Builder } from '../builder';
@@ -540,6 +540,10 @@ export class FrameBase extends CustomLayoutView {
 		for (const frame of framesToPush) {
 			frame._pushInFrameStack();
 		}
+	}
+
+	public _isFrameStackEmpty() {
+		return _isFrameStackEmpty();
 	}
 
 	public _pushInFrameStack() {

@@ -18,46 +18,6 @@ const DELEGATE = '_delegate';
 const TRANSITION = '_transition';
 const NON_ANIMATED_TRANSITION = 'non-animated';
 
-function isBackNavigationTo(page: Page, entry: BackstackEntry): boolean {
-	const frame = page.frame;
-	if (!frame) {
-		return false;
-	}
-
-	// if executing context is null here this most probably means back navigation through iOS back button
-	const navigationContext = frame._executingContext || {
-		navigationType: NavigationType.back,
-	};
-	const isReplace = navigationContext.navigationType === NavigationType.replace;
-	if (isReplace) {
-		return false;
-	}
-
-	if (frame.navigationQueueIsEmpty()) {
-		return true;
-	}
-
-	const queueContext = frame.getNavigationQueueContextByEntry(entry);
-	return queueContext && queueContext.navigationType === NavigationType.back;
-}
-
-function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boolean {
-	if (!page.frame) {
-		return false;
-	}
-
-	// Controller is cleared or backstack skipped
-	if (controller.isBackstackCleared || controller.isBackstackSkipped) {
-		return false;
-	}
-
-	if (controller.navigationController && controller.navigationController.viewControllers.containsObject(controller)) {
-		return false;
-	}
-
-	return true;
-}
-
 @NativeClass
 class UIViewControllerImpl extends UIViewController {
 	// TODO: a11y
@@ -115,15 +75,23 @@ class UIViewControllerImpl extends UIViewController {
 		}
 
 		const frame: Frame = this.navigationController ? (<any>this.navigationController).owner : null;
-		const newEntry: BackstackEntry = this[ENTRY];
-
-		// Don't raise event if currentPage was showing modal page.
-		if (!owner._presentedViewController && newEntry && (!frame || frame.currentPage !== owner)) {
-			const isBack = isBackNavigationTo(owner, newEntry);
-			owner.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
-		}
 
 		if (frame) {
+			const entry: BackstackEntry = this[ENTRY];
+			const currentPage = frame.currentPage;
+
+			// Don't raise event if currentPage was showing modal page.
+			if (!owner._presentedViewController && entry && currentPage !== owner && !frame._executingContext) {
+				const isBack: boolean = frame.backStack.includes(entry);
+
+				frame._executingContext = {
+					entry,
+					isBackNavigation: isBack,
+					navigationType: isBack ? NavigationType.back : NavigationType.forward,
+				};
+				frame._onNavigatingTo(entry, isBack);
+			}
+
 			frame._resolvedPage = owner;
 
 			if (owner.parent === frame) {
@@ -131,7 +99,7 @@ class UIViewControllerImpl extends UIViewController {
 			} else {
 				if (!owner.parent) {
 					if (!frame._styleScope) {
-						// Make sure page will have styleScope even if frame don't.
+						// Make sure page will have styleScope even if frame doesn't.
 						owner._updateStyleScope();
 					}
 
@@ -171,52 +139,59 @@ class UIViewControllerImpl extends UIViewController {
 
 		const navigationController = this.navigationController;
 		const frame: Frame = navigationController ? (<any>navigationController).owner : null;
-		// Skip navigation events if modal page is shown.
-		if (!owner._presentedViewController && frame) {
+
+		if (frame) {
 			const newEntry: BackstackEntry = this[ENTRY];
 
-			// frame.setCurrent(...) will reset executing context so retrieve it here
-			// if executing context is null here this most probably means back navigation through iOS back button
-			const navigationContext = frame._executingContext || {
-				navigationType: NavigationType.back,
-			};
-			const isReplace = navigationContext.navigationType === NavigationType.replace;
+			// There are cases like swipe back navigation that can be cancelled.
+			// When that's the case, stop here and unset executing context.
+			if (frame._executingContext && frame._executingContext.entry !== newEntry) {
+				frame._executingContext = null;
+				return;
+			}
 
-			frame.setCurrent(newEntry, navigationContext.navigationType);
+			// Skip navigation events if modal page is shown.
+			if (!owner._presentedViewController) {
+				// frame.setCurrent(...) will reset executing context so retrieve it here
+				const navigationType = frame._executingContext?.navigationType ?? NavigationType.back;
+				const isReplace = navigationType === NavigationType.replace;
 
-			if (isReplace) {
-				const controller = newEntry.resolvedPage.ios;
-				if (controller) {
-					const animated = frame._getIsAnimatedNavigation(newEntry.entry);
-					if (animated) {
-						controller[TRANSITION] = frame._getNavigationTransition(newEntry.entry);
-					} else {
-						controller[TRANSITION] = {
-							name: NON_ANIMATED_TRANSITION,
-						};
+				frame.setCurrent(newEntry, navigationType);
+
+				if (isReplace) {
+					const controller = newEntry.resolvedPage.ios;
+					if (controller) {
+						const animated = frame._getIsAnimatedNavigation(newEntry.entry);
+						if (animated) {
+							controller[TRANSITION] = frame._getNavigationTransition(newEntry.entry);
+						} else {
+							controller[TRANSITION] = {
+								name: NON_ANIMATED_TRANSITION,
+							};
+						}
 					}
 				}
-			}
 
-			// If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
-			if (frame.ios?.controller) {
-				frame.ios.controller.delegate = this[DELEGATE];
-			}
+				// If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
+				if (frame.ios?.controller) {
+					frame.ios.controller.delegate = this[DELEGATE];
+				}
 
-			frame._processNavigationQueue(owner);
+				frame._processNavigationQueue(owner);
 
-			if (!__VISIONOS__) {
-				// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
-				// Workaround for disabled backswipe on second custom native transition
-				if (frame.canGoBack()) {
-					const transitionState = SharedTransition.getState(owner.transitionId);
-					if (!transitionState?.interactive) {
-						// only consider when interactive transitions are not enabled
-						navigationController.interactivePopGestureRecognizer.delegate = navigationController;
-						navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+				if (!__VISIONOS__) {
+					// _processNavigationQueue will shift navigationQueue. Check canGoBack after that.
+					// Workaround for disabled backswipe on second custom native transition
+					if (frame.canGoBack()) {
+						const transitionState = SharedTransition.getState(owner.transitionId);
+						if (!transitionState?.interactive) {
+							// only consider when interactive transitions are not enabled
+							navigationController.interactivePopGestureRecognizer.delegate = navigationController;
+							navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+						}
+					} else {
+						navigationController.interactivePopGestureRecognizer.enabled = false;
 					}
-				} else {
-					navigationController.interactivePopGestureRecognizer.enabled = false;
 				}
 			}
 		}
@@ -244,18 +219,6 @@ class UIViewControllerImpl extends UIViewController {
 			owner._presentedViewController = this.presentedViewController;
 		}
 
-		const frame = owner.frame;
-		// Skip navigation events if we are hiding because we are about to show a modal page,
-		// or because we are closing a modal page,
-		// or because we are in tab and another controller is selected.
-		const tab = this.tabBarController;
-		if (owner.onNavigatingFrom && !owner._presentedViewController && frame && (!this.presentingViewController || frame.backStack.length > 0) && frame.currentPage === owner) {
-			const willSelectViewController = tab && (<any>tab)._willSelectViewController;
-			if (!willSelectViewController || willSelectViewController === tab.selectedViewController) {
-				const isBack = isBackNavigationFrom(this, owner);
-				owner.onNavigatingFrom(isBack);
-			}
-		}
 		owner.updateWithWillDisappear(animated);
 	}
 
@@ -263,14 +226,16 @@ class UIViewControllerImpl extends UIViewController {
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
 
-		const page = this._owner?.deref();
+		const owner = this._owner?.deref();
+
 		// Exit if no page or page is hiding because it shows another page modally.
-		if (!page || page.modal || page._presentedViewController) {
+		if (!owner || owner.modal || owner._presentedViewController) {
 			return;
 		}
+
 		// Forward navigation does not remove page from frame so we raise unloaded manually.
-		if (page.isLoaded) {
-			page.callUnloaded();
+		if (owner.isLoaded) {
+			owner.callUnloaded();
 		}
 	}
 
