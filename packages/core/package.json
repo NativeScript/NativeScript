@@ -14,6 +14,7 @@
 	"files": [
 		"**/*.d.ts",
 		"**/*.js",
+		"**/*.mjs",
 		"**/*.map",
 		"**/platforms/ios/**",
 		"platforms/android/**",
