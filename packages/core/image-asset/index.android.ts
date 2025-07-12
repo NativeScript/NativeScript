@@ -26,6 +26,15 @@ export class ImageAsset extends ImageAssetBase {
 	}
 
 	public getImageAsync(callback: (image, error) => void) {
+		if (this.options) {
+			if (typeof this.options.width === 'string') {
+				this.options.width = parseInt(this.options.width, 10) || 0;
+			}
+			if (typeof this.options.height === 'string') {
+				this.options.height = parseInt(this.options.height, 10) || 0;
+			}
+		}
+
 		org.nativescript.widgets.Utils.loadImageAsync(
 			ad.getApplicationContext(),
 			this.android,
@@ -42,4 +51,5 @@ export class ImageAsset extends ImageAssetBase {
 			})
 		);
 	}
+
 }
