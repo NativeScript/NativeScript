@@ -2,7 +2,6 @@
 import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from '.';
 import { FrameBase, NavigationType } from './frame-common';
 import type { Page } from '../page';
-import { PageEvents } from '../page/events';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
