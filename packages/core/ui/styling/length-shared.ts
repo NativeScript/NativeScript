@@ -125,6 +125,12 @@ export namespace PercentLength {
 	export const equals: {
 		(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
 	} = equalsCommon;
+	/**
+	 * Converts PercentLengthType unit to device pixels.
+	 * @param length The PercentLengthType to convert.
+	 * @param auto Value to use for conversion of "auto". By default is Math.NaN.
+	 * @param parentAvailableWidth Value to use as base when converting percent unit. By default is Math.NaN.
+	 */
 	export const toDevicePixels: {
 		(length: CoreTypes.PercentLengthType, auto: number, parentAvailableWidth: number): number;
 	} = toDevicePixelsCommon;
@@ -158,6 +164,10 @@ export namespace FixedLength {
 		}
 	}
 	export const equals: { (a: CoreTypes.FixedLengthType, b: CoreTypes.FixedLengthType): boolean } = equalsCommon;
+	/**
+	 * Converts FixedLengthType unit to device pixels.
+	 * @param length The FixedLengthType to convert.
+	 */
 	export const toDevicePixels: {
 		(length: CoreTypes.FixedLengthType): number;
 	} = toDevicePixelsCommon;
@@ -175,6 +185,11 @@ export namespace Length {
 		return FixedLength.parse(fromValue);
 	}
 	export const equals: { (a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean } = equalsCommon;
+	/**
+	 * Converts LengthType unit to device pixels.
+	 * @param length The LengthType to convert.
+	 * @param auto Value to use for conversion of "auto". By default is Math.NaN.
+	 */
 	export const toDevicePixels: {
 		(length: CoreTypes.LengthType, auto?: number): number;
 	} = toDevicePixelsCommon;
