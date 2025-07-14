@@ -12,6 +12,12 @@ import * as wgc from '../wgc';
 import * as cryptoImpl from '../wgc/crypto';
 import * as subtleCryptoImpl from '../wgc/crypto/SubtleCrypto';
 
+console.log('here in globals/index!');
+console.log(`typeof __dirname:`, typeof __dirname);
+// commonjs builds will have __dirname defined, but es6 modules will not
+global.__dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
+console.log('global.__dirname', global.__dirname);
+
 if (typeof global.__metadata === 'undefined') {
 	/**
 	 * TS decorator metadata helper.
@@ -408,34 +414,11 @@ function isTestingEnv() {
 	return typeof jest !== 'undefined' || global.__UNIT_TEST__;
 }
 
-if (typeof global.__metadata === 'undefined') {
-	/**
-	 * TS decorator metadata helper.
-	 * @param metadataKey   the metadata key (e.g. "design:type")
-	 * @param metadataValue the metadata value (e.g. the constructor function)
-	 * @returns a decorator function, or undefined if Reflect.metadata isn’t available
-	 */
-	global.__metadata = (metadataKey, metadataValue) => {
-		if (
-			typeof Reflect === 'object' &&
-			// @ts-expect-error
-			typeof Reflect.metadata === 'function'
-		) {
-			// Delegate to the reflect-metadata shim
-			// @ts-expect-error
-			return Reflect.metadata(metadataKey, metadataValue);
-		}
-		// no-op if no Reflect.metadata
-	};
-}
-
+console.log('global.NativeScriptHasInitGlobal:', global.NativeScriptHasInitGlobal);
+console.log('isTestingEnv():', isTestingEnv());
 if (!global.NativeScriptHasInitGlobal && !isTestingEnv()) {
 	initGlobal();
 }
 
-// if (!isTestingEnv()) {
-// 	// ensure the Application instance is initialized before any other module imports it.
-// 	require('@nativescript/core/application');
-// }
 // ensure the Application instance is initialized before any other module imports it.
-import '@nativescript/core/application';
+import '../application';

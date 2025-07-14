@@ -16,13 +16,25 @@ import { CssAnimationParser } from './css-animation-parser';
 import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
 import { cleanupImportantFlags } from './css-utils';
+import { cssTreeParse } from '../../css/css-tree-parser';
+import { CSS3Parser } from '../../css/CSS3Parser';
+import { CSSNativeScript } from '../../css/CSSNativeScript';
+import { parse as parseCss } from '../../css/lib/parse';
+// @ts-ignore apps resolve this at runtime with path alias in project bundlers
+import appConfig from '~/package.json';
+
+// if (!global.__dirname) {
+// 	global.__dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
+// }
+// const appPackagePath = path.join(global.__dirname, 'package.json');
+console.log('style-scope appConfig:', appConfig);
 
 let parser: 'rework' | 'nativescript' | 'css-tree' = 'css-tree';
 try {
 	console.log('style-scope here??');
 	// @ts-ignore
-	const appConfig = await import('~/package.json');
-	console.log('style-scope appConfig:', appConfig);
+	// const appConfig = require('~/package.json');
+	// console.log('style-scope appConfig:', appConfig);
 	if (appConfig) {
 		if (appConfig.cssParser === 'rework') {
 			parser = 'rework';
@@ -238,17 +250,13 @@ class CSSSource {
 	private async parseCSSAst() {
 		if (this._source) {
 			if (__CSS_PARSER__ === 'css-tree') {
-				const { cssTreeParse } = await import('../../css/css-tree-parser');
 				this._ast = cssTreeParse(this._source, this._file);
 			} else if (__CSS_PARSER__ === 'nativescript') {
-				const { CSS3Parser } = await import('../../css/CSS3Parser');
-				const { CSSNativeScript } = await import('../../css/CSSNativeScript');
 				const cssparser = new CSS3Parser(this._source);
 				const stylesheet = cssparser.parseAStylesheet();
 				const cssNS = new CSSNativeScript();
 				this._ast = cssNS.parseStylesheet(stylesheet);
 			} else if (__CSS_PARSER__ === 'rework') {
-				const { parse: parseCss } = await import('../../css');
 				this._ast = parseCss(this._source, { source: this._file });
 			}
 		}
@@ -558,6 +566,9 @@ export class CssState {
 		}
 	}
 
+	/**
+	 * Checks whether style scope and CSS state selectors are in sync.
+	 */
 	public isSelectorsLatestVersionApplied(): boolean {
 		const view = this.viewRef.get();
 		if (!view) {
@@ -923,6 +934,9 @@ export class StyleScope {
 		return this.getSelectorsVersion();
 	}
 
+	/**
+	 * Increase the application CSS selector version.
+	 */
 	public _increaseApplicationCssSelectorVersion(): void {
 		applicationCssSelectorVersion++;
 	}

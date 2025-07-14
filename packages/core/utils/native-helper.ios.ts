@@ -92,7 +92,13 @@ export function dataSerialize(data: any, wrapPrimitives: boolean = false) {
 }
 
 function getCurrentAppPath(): string {
-	const currentDir = import.meta.dirname;
+	if (!global.__dirname) {
+		global.__dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
+	}
+	console.log('getCurrentAppPath __dirname:', __dirname);
+	const currentDir = global.__dirname;
+	console.log('getCurrentAppPath global.__dirname:', global.__dirname);
+	console.log('getCurrentAppPath currentDir:', currentDir);
 	const tnsModulesIndex = currentDir.indexOf('/tns_modules');
 
 	// Module not hosted in ~/tns_modules when bundled. Use current dir.
