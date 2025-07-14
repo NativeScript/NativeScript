@@ -147,7 +147,6 @@ function getNativeFontWeight(fontWeight: FontWeightType): number {
 
 export namespace ios {
 	export function registerFont(fontFile: string) {
-		console.log('registerFont knownFolders.currentApp().path: ' + knownFolders.currentApp().path);
 		let filePath = path.join(knownFolders.currentApp().path, FONTS_BASE_PATH, fontFile);
 		if (!File.exists(filePath)) {
 			filePath = path.join(knownFolders.currentApp().path, fontFile);
@@ -162,8 +161,6 @@ export namespace ios {
 		if (!font) {
 			throw new Error('Could not load font from: ' + fontFile);
 		}
-
-		console.log('registerFont filePath:', filePath);
 
 		const error = new interop.Reference<NSError>();
 		if (!CTFontManagerRegisterGraphicsFont(font, error)) {
@@ -182,8 +179,6 @@ function registerFontsInFolder(fontsFolderPath) {
 			return true;
 		}
 
-		// @ts-ignore
-		console.log(`registerFontsInFolder, Registering font: ${fileEntity.name}, extension: ${fileEntity.extension}`);
 		if (fileEntity instanceof File && (fileEntity.extension === 'ttf' || fileEntity.extension === 'otf')) {
 			ios.registerFont(fileEntity.name);
 		}
