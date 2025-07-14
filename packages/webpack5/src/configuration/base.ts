@@ -3,6 +3,7 @@ import {
 	ContextExclusionPlugin,
 	DefinePlugin,
 	HotModuleReplacementPlugin,
+	BannerPlugin,
 } from 'webpack';
 import Config from 'webpack-chain';
 import { satisfies } from 'semver';
@@ -98,6 +99,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// appears to be working - but we still have to deal with HMR
 	config.target('node');
 
+	// config.entry('globals').add('@nativescript/core/globals/index').end();
+
 	config
 		.entry('bundle')
 		// ensure we load nativescript globals first
@@ -124,19 +127,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			.add('@nativescript/core/inspector_modules');
 	});
 
-	config.merge({
-		experiments: {
-			// enable ES module syntax (import/exports)
-			outputModule: true,
-		},
-	});
+	// config.merge({
+	// 	experiments: {
+	// 		// enable ES module syntax (import/exports)
+	// 		outputModule: true,
+	// 	},
+	// });
 
 	config.output
 		.path(outputPath)
 		.pathinfo(false)
 		.publicPath('')
-		.set('module', true)
-		.libraryTarget('module')
+		// .set('module', true)
+		// .libraryTarget('module')
+		.libraryTarget('commonjs')
 		.globalObject('global')
 		.set('clean', true);
 
@@ -184,11 +188,24 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.optimization.runtimeChunk('single');
 
 	config.optimization.splitChunks({
+		// chunks: 'all',
 		cacheGroups: {
+			// globals: {
+			// 	test: (module) =>
+			// 		module.resource &&
+			// 		/[\\/]@nativescript[\\/]core[\\/]globals[\\/]index\.(mjs|js|ts)$/.test(
+			// 			module.resource,
+			// 		),
+			// 	name: 'globals',
+			// 	enforce: true, // ignore size/min-chunk thresholds
+			// 	chunks: 'all',
+			// 	priority: 30,
+			// },
 			defaultVendor: {
 				test: /[\\/]node_modules[\\/]/,
 				priority: -10,
 				name: 'vendor',
+				// enforce: true,
 				chunks: 'all',
 			},
 		},
@@ -426,6 +443,17 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// 		}
 	// 	}
 	// ])
+
+	// config.plugin('globals-shim').use(BannerPlugin, [
+	// 	{
+	// 		// commonjs style
+	// 		banner: `require("./globals");`,
+	// 		// ESM style
+	// 		//   banner: `import "./globals";`,
+	// 		raw: true,
+	// 		entryOnly: true,
+	// 	},
+	// ]);
 
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{
