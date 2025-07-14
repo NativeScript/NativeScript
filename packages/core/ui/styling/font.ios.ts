@@ -1,7 +1,7 @@
 import { Font as FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch, FONTS_BASE_PATH } from './font-common';
 import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
-import * as fs from '../../file-system';
+import { File, FileSystemEntity, Folder, knownFolders, path } from '../../file-system';
 export { FontStyle, FontWeight, FontVariationSettings, parseFont } from './font-common';
 
 interface FontDescriptor {
@@ -147,9 +147,10 @@ function getNativeFontWeight(fontWeight: FontWeightType): number {
 
 export namespace ios {
 	export function registerFont(fontFile: string) {
-		let filePath = fs.path.join(fs.knownFolders.currentApp().path, FONTS_BASE_PATH, fontFile);
-		if (!fs.File.exists(filePath)) {
-			filePath = fs.path.join(fs.knownFolders.currentApp().path, fontFile);
+		console.log('registerFont knownFolders.currentApp().path: ' + knownFolders.currentApp().path);
+		let filePath = path.join(knownFolders.currentApp().path, FONTS_BASE_PATH, fontFile);
+		if (!File.exists(filePath)) {
+			filePath = path.join(knownFolders.currentApp().path, fontFile);
 		}
 		const fontData = NSFileManager.defaultManager.contentsAtPath(filePath);
 		if (!fontData) {
@@ -162,6 +163,8 @@ export namespace ios {
 			throw new Error('Could not load font from: ' + fontFile);
 		}
 
+		console.log('registerFont filePath:', filePath);
+
 		const error = new interop.Reference<NSError>();
 		if (!CTFontManagerRegisterGraphicsFont(font, error)) {
 			if (Trace.isEnabled()) {
@@ -172,14 +175,16 @@ export namespace ios {
 }
 
 function registerFontsInFolder(fontsFolderPath) {
-	const fontsFolder = fs.Folder.fromPath(fontsFolderPath);
+	const fontsFolder = Folder.fromPath(fontsFolderPath);
 
-	fontsFolder.eachEntity((fileEntity: fs.FileSystemEntity) => {
-		if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
+	fontsFolder.eachEntity((fileEntity: FileSystemEntity) => {
+		if (Folder.exists(path.join(fontsFolderPath, fileEntity.name))) {
 			return true;
 		}
 
-		if (fileEntity instanceof fs.File && (fileEntity.extension === '.ttf' || fileEntity.extension === '.otf')) {
+		// @ts-ignore
+		console.log(`registerFontsInFolder, Registering font: ${fileEntity.name}, extension: ${fileEntity.extension}`);
+		if (fileEntity instanceof File && (fileEntity.extension === 'ttf' || fileEntity.extension === 'otf')) {
 			ios.registerFont(fileEntity.name);
 		}
 
@@ -188,9 +193,9 @@ function registerFontsInFolder(fontsFolderPath) {
 }
 
 function registerCustomFonts() {
-	const appDir = fs.knownFolders.currentApp().path;
-	const fontsDir = fs.path.join(appDir, FONTS_BASE_PATH);
-	if (fs.Folder.exists(fontsDir)) {
+	const appDir = knownFolders.currentApp().path;
+	const fontsDir = path.join(appDir, FONTS_BASE_PATH);
+	if (Folder.exists(fontsDir)) {
 		registerFontsInFolder(fontsDir);
 	}
 }
