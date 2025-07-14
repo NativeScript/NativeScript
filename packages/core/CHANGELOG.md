@@ -1,3 +1,26 @@
+## 8.9.4 (2025-07-14)
+
+### 🚀 Features
+
+- **TextField:** support css white-space and text-overflow ([#10737](https://github.com/NativeScript/NativeScript/pull/10737))
+
+### 🩹 Fixes
+
+- **android:** allow CSS styling of neutral button in dialogs ([#10745](https://github.com/NativeScript/NativeScript/pull/10745))
+- **ios:** listview measurement ([#10740](https://github.com/NativeScript/NativeScript/pull/10740))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Eduardo Speroni @edusperoni
+- Nathan Walker
+
+## 8.9.3 (2025-06-20)
+
+### Maintenance
+
+- Dependency handling
+
 ## 8.9.2 (2025-04-18)
 
 ### 🩹 Fixes
