@@ -522,6 +522,8 @@ export class Animation extends AnimationBase {
 
 	private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
 		const groupAnimation = CAAnimationGroup.new();
+		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(args.subPropertiesToAnimate.length);
+
 		groupAnimation.duration = args.duration;
 		if (args.repeatCount !== undefined) {
 			groupAnimation.repeatCount = args.repeatCount;
@@ -532,7 +534,6 @@ export class Animation extends AnimationBase {
 		if (animation.curve !== undefined) {
 			groupAnimation.timingFunction = animation.curve;
 		}
-		const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
 
 		args.subPropertiesToAnimate.forEach((property) => {
 			const basicAnimationArgs = { ...args, duration: undefined, repeatCount: undefined, delay: undefined, curve: undefined };
