@@ -335,6 +335,8 @@ export class Animation extends AnimationBase {
 					};
 					fromValue = nativeView.layer.opacity;
 					break;
+				// In the case of rotation, avoid animating affine transform directly as it will animate to the closest result
+				// that is visually the same. For example, 0 -> 360 will leave view as is.
 				case Properties.rotate:
 					animation._originalValue = {
 						x: view.rotateX,
