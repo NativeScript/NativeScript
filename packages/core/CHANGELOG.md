@@ -1,3 +1,9 @@
+## 8.9.5 (2025-07-14)
+
+### 🩹 Fixes
+
+- package format for current hook handling
+  
 ## 8.9.4 (2025-07-14)
 
 ### 🚀 Features
