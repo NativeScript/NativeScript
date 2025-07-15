@@ -1,4 +1,4 @@
-import type { HttpRequestOptions, HttpResponse } from '../http';
+import type { HttpRequestOptions, HttpResponse } from '../http/http-interfaces';
 import { request } from '../http';
 import { isString, isFunction } from '../utils/types';
 import { Trace } from '../trace';

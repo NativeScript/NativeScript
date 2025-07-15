@@ -11,12 +11,11 @@ export * from './application';
 export { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver, androidRegisteredReceivers, iosAddNotificationObserver, iosRemoveNotificationObserver, iosNotificationObservers } from './application/helpers';
 export { getNativeApp, setNativeApp } from './application/helpers-common';
 export * as ApplicationSettings from './application-settings';
-import * as Accessibility from './accessibility';
 export namespace AccessibilityEvents {
-	export const accessibilityBlurEvent = Accessibility.accessibilityBlurEvent;
-	export const accessibilityFocusEvent = Accessibility.accessibilityFocusEvent;
-	export const accessibilityFocusChangedEvent = Accessibility.accessibilityFocusChangedEvent;
-	export const accessibilityPerformEscapeEvent = Accessibility.accessibilityPerformEscapeEvent;
+	export const accessibilityBlurEvent: 'accessibilityBlur';
+	export const accessibilityFocusEvent: 'accessibilityFocus';
+	export const accessibilityFocusChangedEvent: 'accessibilityFocusChanged';
+	export const accessibilityPerformEscapeEvent: 'accessibilityPerformEscape';
 }
 export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
 export { Color } from './color';
@@ -37,7 +36,8 @@ export type { PropertyChangeData, EventData, EventDataValue } from './data/obser
 export { VirtualArray } from './data/virtual-array';
 export type { ItemsLoading } from './data/virtual-array';
 export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess, AndroidDirectory } from './file-system';
-export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
+export type { HttpRequestOptions, HttpResponse, Headers, HttpContent } from './http/http-interfaces';
+export { HttpResponseEncoding } from './http/http-interfaces';
 export * as Http from './http';
 export { ImageAsset } from './image-asset';
 export type { ImageAssetOptions } from './image-asset';

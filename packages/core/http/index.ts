@@ -1,6 +1,6 @@
 import { setGetImageRequest, type ImageSourceLike } from './http-shared';
 import { request } from './http-request';
-export * from './http-request';
+export { request } from './http-request';
 export * from './http-interfaces';
 
 export function getString(arg: any): Promise<string> {
