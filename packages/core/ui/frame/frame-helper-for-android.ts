@@ -207,7 +207,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 			if (hasRemovingParent) {
 				const nativeFrameView = this.frame.nativeViewProtected;
 				if (nativeFrameView) {
-					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable((getNativeApp() as android.app.Application).getApplicationContext().getResources(), this.backgroundBitmap);
+					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(getNativeApp<android.app.Application>().getApplicationContext().getResources(), this.backgroundBitmap);
 					this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
 					nativeFrameView.setBackgroundDrawable(bitmapDrawable);
 					this.backgroundBitmap = null;

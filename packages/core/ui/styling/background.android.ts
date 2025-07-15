@@ -2,7 +2,7 @@ import { View } from '../core/view';
 import { LinearGradient } from './linear-gradient';
 import { ClipPathFunction } from './clip-path-function';
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, FILE_PREFIX } from '../../utils';
-import { CSSValue, parse } from '../../css-value';
+import { CSSValue, parse } from '../../css-value/reworkcss-value';
 import { path, knownFolders } from '../../file-system';
 export * from './background-common';
 

@@ -284,7 +284,7 @@ function initializeNativeClasses() {
 	}
 
 	PagerAdapter = FragmentPagerAdapter;
-	appResources = (getNativeApp() as android.app.Application).getApplicationContext().getResources();
+	appResources = getNativeApp<android.app.Application>().getApplicationContext().getResources();
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {

@@ -8,6 +8,9 @@ import { profile } from '../../../profiling';
 import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
 import { calc } from '@csstools/css-calc';
 
+// Backwards compatibility
+export { unsetValue } from './property-shared';
+
 const cssPropertyNames: string[] = [];
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};

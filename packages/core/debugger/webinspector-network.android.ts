@@ -225,7 +225,7 @@ export class NetworkDomainDebugger implements inspectorCommands.NetworkDomain.Ne
 	 * Loads a resource in the context of a frame on the inspected page without cross origin checks.
 	 */
 	loadResource(params: inspectorCommands.NetworkDomain.LoadResourceMethodArguments): { content: string; mimeType: string; status: number } {
-		const appPath = (getNativeApp() as android.app.Application).getApplicationContext().getFilesDir().getCanonicalPath() + '/app';
+		const appPath = getNativeApp<android.app.Application>().getApplicationContext().getFilesDir().getCanonicalPath() + '/app';
 		const pathUrl = params.url.replace('file://', appPath);
 		const file = new java.io.File(pathUrl);
 		const is = file.exists() ? new java.io.FileInputStream(file) : undefined;

@@ -4,7 +4,7 @@ import { getNativeApp } from '../application/helpers-common';
 let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
 	if (!sharedPreferences) {
-		sharedPreferences = (getNativeApp() as android.app.Application).getApplicationContext().getSharedPreferences('prefs.db', 0);
+		sharedPreferences = getNativeApp<android.app.Application>().getApplicationContext().getSharedPreferences('prefs.db', 0);
 	}
 }
 

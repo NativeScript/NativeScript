@@ -1,7 +1,5 @@
 import { profile } from '../profiling';
 import type { View } from '../ui/core/view';
-import { isEmbedded } from '../ui/embedding';
-import { GestureTypes } from '../ui/gestures';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
 import { SDK_VERSION } from '../utils/constants';
 import { android as androidUtils } from '../utils';
@@ -9,7 +7,6 @@ import { ApplicationCommon } from './application-common';
 import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
-import * as Utils from '../utils';
 import {
 	CommonA11YServiceEnabledObservable,
 	SharedA11YObservable,
@@ -44,21 +41,7 @@ import {
 	setA11yEnabled,
 } from '../accessibility/accessibility-common';
 import { androidGetForegroundActivity, androidGetStartActivity, androidPendingReceiverRegistrations, androidRegisterBroadcastReceiver, androidRegisteredReceivers, androidSetForegroundActivity, androidSetStartActivity, androidUnregisterBroadcastReceiver, applyContentDescription } from './helpers';
-import { getImageFetcher, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
-
-declare namespace com {
-	namespace tns {
-		class NativeScriptApplication extends android.app.Application {
-			static getInstance(): NativeScriptApplication;
-		}
-
-		namespace embedding {
-			class ApplicationHolder {
-				static getInstance(): android.app.Application;
-			}
-		}
-	}
-}
+import { getImageFetcher, getNativeApp, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
 
@@ -366,27 +349,7 @@ export class AndroidApplication extends ApplicationCommon {
 			return nativeApp;
 		}
 
-		// Try getting it from module - check whether application.android.init has been explicitly called
-		// check whether the com.tns.NativeScriptApplication type exists
-		if (com.tns.NativeScriptApplication) {
-			nativeApp = com.tns.NativeScriptApplication.getInstance();
-		}
-
-		if (!nativeApp && isEmbedded()) {
-			nativeApp = com.tns.embedding.ApplicationHolder.getInstance();
-		}
-
-		// the getInstance might return null if com.tns.NativeScriptApplication exists but is not the starting app type
-		if (!nativeApp) {
-			// TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module?
-			const clazz = java.lang.Class.forName('android.app.ActivityThread');
-			if (clazz) {
-				const method = clazz.getMethod('currentApplication', null);
-				if (method) {
-					nativeApp = method.invoke(null, null);
-				}
-			}
-		}
+		nativeApp = getNativeApp<android.app.Application>();
 
 		// we cannot work without having the app instance
 		if (!nativeApp) {
@@ -621,7 +584,7 @@ function applyFontScaleToRootViews(): void {
 }
 
 export function getAndroidAccessibilityManager(): android.view.accessibility.AccessibilityManager | null {
-	const context = Utils.ad.getApplicationContext() as android.content.Context;
+	const context = getNativeApp<android.app.Application>().getApplicationContext() as android.content.Context;
 	if (!context) {
 		return null;
 	}
@@ -860,13 +823,13 @@ function accessibilityEventHelper(view: View, eventType: number) {
 			 */
 			if (SDK_VERSION >= 26) {
 				// Find all tap gestures and trigger them.
-				for (const tapGesture of view.getGestureObservers(GestureTypes.tap) ?? []) {
+				for (const tapGesture of view.getGestureObservers(1) ?? []) {
 					tapGesture.callback({
 						android: view.android,
 						eventName: 'tap',
 						ios: null,
 						object: view,
-						type: GestureTypes.tap,
+						type: 1,
 						view: view,
 					});
 				}

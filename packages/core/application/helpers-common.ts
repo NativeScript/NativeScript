@@ -1,16 +1,73 @@
 /**
  * Do not import other files here to avoid circular dependencies.
- * Used to define helper functions and variables that are shared between Android and iOS
- * without introducing platform-specific code directly.
+ * Used to define helper functions and variables that are shared between Android and iOS.
+ * This file can declare cross platform types and use bundler platform checks.
+ * For example, use `__ANDROID__` or `__APPLE__` to check the platform.
  */
-let nativeApp: UIApplication | android.app.Application;
+
+/**
+ * Application type. UIApplication on iOS or android.app.Application on Android.
+ */
+type NativeApp = UIApplication | android.app.Application;
+
+let nativeApp: NativeApp;
+
+declare namespace com {
+	namespace tns {
+		class NativeScriptApplication extends android.app.Application {
+			static getInstance(): NativeScriptApplication;
+		}
+
+		namespace embedding {
+			class ApplicationHolder {
+				static getInstance(): android.app.Application;
+			}
+		}
+	}
+}
+
+function isEmbedded(): boolean {
+	if (__APPLE__) {
+		return !!NativeScriptEmbedder.sharedInstance().delegate;
+	} else {
+		// @ts-ignore
+		// Check if the Bootstrap class exists and has the isEmbeddedNativeScript property
+		// This is a way to determine if the app is embedded in a host project.
+		return org.nativescript?.Bootstrap?.isEmbeddedNativeScript;
+	}
+}
 
 /**
  * Get the current application instance.
  * @returns current application instance, UIApplication on iOS or android.app.Application on Android.
  */
-export function getNativeApp() {
-	return nativeApp;
+export function getNativeApp<T extends NativeApp>(): T {
+	if (__ANDROID__) {
+		if (!nativeApp) {
+			// Try getting it from module - check whether application.android.init has been explicitly called
+			// check whether the com.tns.NativeScriptApplication type exists
+			if (com.tns.NativeScriptApplication) {
+				nativeApp = com.tns.NativeScriptApplication.getInstance();
+			}
+
+			if (!nativeApp && isEmbedded()) {
+				nativeApp = com.tns.embedding.ApplicationHolder.getInstance();
+			}
+
+			// the getInstance might return null if com.tns.NativeScriptApplication exists but is not the starting app type
+			if (!nativeApp) {
+				// TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module?
+				const clazz = java.lang.Class.forName('android.app.ActivityThread');
+				if (clazz) {
+					const method = clazz.getMethod('currentApplication', null);
+					if (method) {
+						nativeApp = method.invoke(null, null);
+					}
+				}
+			}
+		}
+	}
+	return nativeApp! as T;
 }
 
 /**
@@ -20,7 +77,7 @@ export function getNativeApp() {
  * @param app The native application instance to set.
  * This should be called once during application startup to set the native app instance.
  */
-export function setNativeApp(app: UIApplication | android.app.Application) {
+export function setNativeApp(app: NativeApp) {
 	nativeApp = app;
 }
 
@@ -96,7 +153,6 @@ export function updateA11yPropertiesCallback(view: any /* View */) {
 /**
  * Internal Android app helpers
  */
-// Circular dependency avoidance for image fetching on android
 let _imageFetcher: org.nativescript.widgets.image.Fetcher;
 export function getImageFetcher(): org.nativescript.widgets.image.Fetcher {
 	return _imageFetcher;

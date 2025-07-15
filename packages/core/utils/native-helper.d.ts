@@ -14,211 +14,42 @@ export function dataDeserialize(nativeData?: any): any;
  */
 export function isRealDevice(): boolean;
 
-export function getWindow(): UIWindow | android.view.Window;
+type NativeWindow = android.view.Window | UIWindow;
+/**
+ * Get the UIWindow or android.view.Window of the app
+ */
+export function getWindow<T extends NativeWindow>(): T;
 
-// /**
-//  * Module with android specific utilities.
-//  */
-// declare namespace AndroidUtils {
-// 	/**
-// 	 * Gets the native Android application instance.
-// 	 */
-// 	export function getApplication(): any; /* android.app.Application */
-
-// 	/**
-// 	 * Get the current native Android activity.
-// 	 */
-// 	export function getCurrentActivity(): any; /* android.app.Activity */
-// 	/**
-// 	 * Gets the native Android application resources.
-// 	 */
-// 	export function getResources(): any; /* android.content.res.Resources */
-
-// 	/**
-// 	 * Gets the Android application context.
-// 	 */
-// 	export function getApplicationContext(): any; /* android.content.Context */
-
-// 	/**
-// 	 * Gets the native Android input method manager.
-// 	 */
-// 	export function getInputMethodManager(): any; /* android.view.inputmethod.InputMethodManager */
-
-// 	/**
-// 	 * Hides the soft input method, usually a soft keyboard.
-// 	 */
-// 	export function dismissSoftInput(nativeView?: any /* android.view.View */): void;
-
-// 	/**
-// 	 * Shows the soft input method, usually a soft keyboard.
-// 	 */
-// 	export function showSoftInput(nativeView: any /* android.view.View */): void;
-
-// 	/**
-// 	 * Utility module dealing with some android collections.
-// 	 */
-// 	namespace collections {
-// 		/**
-// 		 * Converts string array into a String [hash set](http://developer.android.com/reference/java/util/HashSet.html).
-// 		 * @param str - An array of strings to convert.
-// 		 */
-// 		export function stringArrayToStringSet(str: string[]): any;
-
-// 		/**
-// 		 * Converts string hash set into array of strings.
-// 		 * @param stringSet - A string hash set to convert.
-// 		 */
-// 		export function stringSetToStringArray(stringSet: any): string[];
-// 	}
-
-// 	/**
-// 	 * Utility module related to android resources.
-// 	 */
-// 	export namespace resources {
-// 		/**
-// 		 * Gets the drawable id from a given name.
-// 		 * @param name - Name of the resource.
-// 		 */
-// 		export function getDrawableId(name);
-
-// 		/**
-// 		 * Gets the string id from a given name.
-// 		 * @param name - Name of the resource.
-// 		 */
-// 		export function getStringId(name);
-
-// 		/**
-// 		 * Gets the id from a given name.
-// 		 * @param name - Name of the resource.
-// 		 */
-// 		export function getId(name: string): number;
-
-// 		/**
-// 		 * Gets the id from a given name with optional type.
-// 		 * This sets an explicit package name.
-// 		 * https://developer.android.com/reference/android/content/res/Resources#getIdentifier(java.lang.String,%20java.lang.String,%20java.lang.String)
-// 		 * @param name - Name of the resource.
-// 		 * @param type - (Optional) type
-// 		 */
-// 		export function getResource(name: string, type?: string): number;
-// 	}
-
-// }
-
-// /**
-//  * Module with ios specific utilities.
-//  */
-// declare namespace iOSUtils {
-// 	// Common properties between UILabel, UITextView and UITextField
-// 	export interface TextUIView {
-// 		font: any;
-// 		textAlignment: number;
-// 		textColor: any;
-// 		text: string;
-// 		attributedText: any;
-// 		lineBreakMode: number;
-// 		numberOfLines: number;
-// 	}
-
-// 	/**
-// 	 * Utility module dealing with some iOS collections.
-// 	 */
-// 	export namespace collections {
-// 		/**
-// 		 * Converts JavaScript array to [NSArray](https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSArray_Class/).
-// 		 * @param str - JavaScript string array to convert.
-// 		 */
-// 		export function jsArrayToNSArray<T>(str: T[]): NSArray<T>;
-
-// 		/**
-// 		 * Converts NSArray to JavaScript array.
-// 		 * @param a - NSArray to convert.
-// 		 */
-// 		export function nsArrayToJSArray<T>(a: NSArray<T>): T[];
-// 	}
-
-// 	/**
-// 	 * Get the root UIViewController of the app
-// 	 */
-// 	export function getRootViewController(): any; /* UIViewController */
-
-// 	/**
-// 	 * Get the UIWindow of the app
-// 	 */
-// 	export function getWindow(): any; /* UIWindow */
-
-// 	/**
-// 	 * Set the window background color of base view of the app.
-// 	 * Often this is shown when opening a modal as the view underneath scales down revealing the window color.
-// 	 * @param value color (hex, rgb, rgba, etc.)
-// 	 */
-// 	export function setWindowBackgroundColor(value: string): void;
-
-// 	/**
-// 	 * Data serialize and deserialize helpers
-// 	 */
-// 	export function dataSerialize(data?: any): any;
-// 	export function dataDeserialize(nativeData?: any): any;
-
-// 	/**
-// 	 * @deprecated use application.orientation instead
-// 	 *
-// 	 * Gets an information about if current mode is Landscape.
-// 	 */
-// 	export function isLandscape(): boolean;
-
-// 	/**
-// 	 * Gets the iOS device major version (for 8.1 will return 8).
-// 	 */
-// 	export const MajorVersion: number;
-
-// 	/**
-// 	 * Opens file with associated application.
-// 	 * @param filePath The file path.
-// 	 */
-// 	export function openFile(filePath: string): boolean;
-
-// 	/**
-// 	 * Gets the currently visible(topmost) UIViewController.
-// 	 * @param rootViewController The root UIViewController instance to start searching from (normally window.rootViewController).
-// 	 * Returns the visible UIViewController.
-// 	 */
-// 	export function getVisibleViewController(rootViewController: any /* UIViewController*/): any; /* UIViewController*/
-
-// 	/**
-// 	 * Checks whether the application is running on real device and not on simulator.
-// 	 */
-// 	export function isRealDevice(): boolean;
-
-// 	/**
-// 	 * Debug utility to insert CGRect values into logging output.
-// 	 * Note: when printing a CGRect directly it will print blank so this helps show the values.
-// 	 * @param rect CGRect
-// 	 */
-// 	export function printCGRect(rect: CGRect): void;
-
-// 	/**
-// 	 * Take a snapshot of a View on screen.
-// 	 * @param view view to snapshot
-// 	 * @param scale screen scale
-// 	 */
-// 	export function snapshotView(view: UIView, scale: number): UIImage;
-
-// 	/**
-// 	 * Copy layer properties from one view to another.
-// 	 * @param view a view to copy layer properties to
-// 	 * @param toView a view to copy later properties from
-// 	 * @param (optional) custom properties to copy between both views
-// 	 */
-// 	export function copyLayerProperties(view: UIView, toView: UIView, customProperties?: { view?: Array<string> /* Array<keyof UIView> */; layer?: Array<string> /* Array<keyof CALayer> */ }): void;
-
-// }
-
+/**
+ * Utilities related to Android.
+ */
 export const android: {
+	/**
+	 * Utilities related to Android resources.
+	 */
 	resources: {
+		/**
+		 * Gets the drawable id from a given name.
+		 * @param name - Name of the resource.
+		 */
 		getDrawableId: (name) => number;
+		/**
+		 * Gets the string id from a given name.
+		 * @param name - Name of the resource.
+		 */
 		getStringId: (name) => number;
+		/**
+		 * Gets the id from a given name.
+		 * @param name - Name of the resource.
+		 */
 		getId: (name: string) => number;
+		/**
+		 * Gets the id from a given name with optional type.
+		 * This sets an explicit package name.
+		 * https://developer.android.com/reference/android/content/res/Resources#getIdentifier(java.lang.String,%20java.lang.String,%20java.lang.String)
+		 * @param name - Name of the resource.
+		 * @param type - (Optional) type
+		 */
 		getResource: (name: string, type?: string) => number;
 		/**
 		 * Gets a color from the current theme.
@@ -227,14 +58,54 @@ export const android: {
 		 */
 		getPaletteColor: (name: string, context: android.content.Context) => number;
 	};
-	getApplication: () => android.app.Application;
-	getCurrentActivity: () => androidx.appcompat.app.AppCompatActivity | android.app.Activity | null;
-	getApplicationContext: () => android.content.Context;
+	/**
+	 * Utilities related to Android collections.
+	 */
+	collections: {
+		/**
+		 * Converts string array into a String [hash set](http://developer.android.com/reference/java/util/HashSet.html).
+		 * @param str - An array of strings to convert.
+		 */
+		stringArrayToStringSet(str: string[]): java.util.HashSet<string>;
+		/**
+		 * Converts string hash set into array of strings.
+		 * @param stringSet - A string hash set to convert.
+		 */
+		stringSetToStringArray(stringSet: any): string[];
+	};
+	/**
+	 * @deprecated Use `Utils.getWindow<android.view.Window>()` instead.
+	 * @returns application window.
+	 */
 	getWindow: () => android.view.Window;
+	/**
+	 * Gets the native Android application instance.
+	 */
+	getApplication: () => android.app.Application;
+	/**
+	 * Get the current native Android activity.
+	 */
+	getCurrentActivity: () => androidx.appcompat.app.AppCompatActivity | android.app.Activity | null;
+	/**
+	 * Gets the Android application context.
+	 */
+	getApplicationContext: () => android.content.Context;
+	/**
+	 * Gets the native Android application resources.
+	 */
 	getResources: () => android.content.res.Resources;
 	getPackageName: () => string;
+	/**
+	 * Gets the native Android input method manager.
+	 */
 	getInputMethodManager: () => android.view.inputmethod.InputMethodManager;
+	/**
+	 * Shows the soft input method, usually a soft keyboard.
+	 */
 	showSoftInput: (nativeView: android.view.View) => void;
+	/**
+	 * Hides the soft input method, usually a soft keyboard.
+	 */
 	dismissSoftInput: (nativeView?: android.view.View) => void;
 };
 
@@ -243,9 +114,23 @@ export const android: {
  */
 export const ad = android;
 
+/**
+ * Utilities related to iOS.
+ */
 export const ios: {
+	/**
+	 * Utilities related to iOS collections.
+	 */
 	collections: {
+		/**
+		 * Converts JavaScript array to [NSArray](https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSArray_Class/).
+		 * @param str - JavaScript string array to convert.
+		 */
 		jsArrayToNSArray<T>(str: T[]): NSArray<T>;
+		/**
+		 * Converts NSArray to JavaScript array.
+		 * @param a - NSArray to convert.
+		 */
 		nsArrayToJSArray<T>(a: NSArray<T>): Array<T>;
 	};
 	/**
@@ -253,16 +138,43 @@ export const ios: {
 	 */
 	createUIDocumentInteractionControllerDelegate: () => NSObject;
 	/**
+	 * @deprecated Use `Utils.getWindow<UIWindow>()` instead.
+	 * @returns application window.
+	 */
+	getWindow: () => UIWindow;
+	/**
 	 * Gets the root folder for the current application. This Folder is private for the application and not accessible from Users/External apps.
 	 * iOS - this folder is read-only and contains the app and all its resources.
 	 */
 	getCurrentAppPath: () => string;
+	/**
+	 * Get the root UIViewController of the app
+	 */
 	getRootViewController: () => UIViewController;
+	/**
+	 * Gets the currently visible(topmost) UIViewController.
+	 * @param rootViewController The root UIViewController instance to start searching from (normally window.rootViewController).
+	 * Returns the visible UIViewController.
+	 */
 	getVisibleViewController: (rootViewController: UIViewController) => UIViewController;
-	getWindow: () => UIWindow;
 	getMainScreen: () => UIScreen;
+	/**
+	 * Set the window background color of base view of the app.
+	 * Often this is the view shown behind opening a modal, eg: a modal scales down revealing the window color.
+	 * @param value color (hex, rgb, rgba, etc.)
+	 */
 	setWindowBackgroundColor: (value: string) => void;
+	/**
+	 * @deprecated use Application.orientation instead
+	 *
+	 * Gets an information about if current mode is Landscape.
+	 */
 	isLandscape: () => boolean;
+	/**
+	 * Take a snapshot of a View on screen.
+	 * @param view view to snapshot
+	 * @param scale screen scale
+	 */
 	snapshotView: (view: UIView, scale: number) => UIImage;
 	/**
 	 * Applies a rotation transform over X,Y and Z axis
@@ -272,7 +184,18 @@ export const ios: {
 	 * @param z Rotation over Z axis in degrees
 	 */
 	applyRotateTransform: (transform: CATransform3D, x: number, y: number, z: number) => CATransform3D;
+	/**
+	 * Debug utility to insert CGRect values into logging output.
+	 * Note: when printing a CGRect directly it will print blank so this helps show the values.
+	 * @param rect CGRect
+	 */
 	printCGRect: (rect: CGRect) => void;
+	/**
+	 * Copy layer properties from one view to another.
+	 * @param view a view to copy layer properties to
+	 * @param toView a view to copy later properties from
+	 * @param (optional) custom properties to copy between both views
+	 */
 	copyLayerProperties: (view: UIView, toView: UIView, customProperties?: { view?: Array<keyof UIView>; layer?: Array<keyof CALayer> }) => void;
 	/**
 	 * Animate views with a configurable spring effect

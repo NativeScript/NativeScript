@@ -270,7 +270,7 @@ class Android {
 			throw new Error(`createFile is available on Android only!`);
 		}
 
-		const context = (getNativeApp() as android.app.Application).getApplicationContext() as android.content.Context;
+		const context = getNativeApp<android.app.Application>().getApplicationContext() as android.content.Context;
 
 		const meta = new android.content.ContentValues();
 		meta.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, options.name);
@@ -323,7 +323,7 @@ export class File extends FileSystemEntity {
 				// falls back to creating a temp file without a known extension.
 				if (!fileInfo) {
 					const tempFile = `${knownFolders.temp().path}/${java.util.UUID.randomUUID().toString()}`;
-					org.nativescript.widgets.Async.File.copySync(path, tempFile, (getNativeApp() as android.app.Application).getApplicationContext());
+					org.nativescript.widgets.Async.File.copySync(path, tempFile, getNativeApp<android.app.Application>().getApplicationContext());
 					path = tempFile;
 				} else {
 					const ext = fileInfo.extension;

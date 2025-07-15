@@ -80,7 +80,7 @@ function initializeMenuItemClickListener(): void {
 	}
 
 	MenuItemClickListener = MenuItemClickListenerImpl;
-	appResources = (getNativeApp() as android.app.Application).getApplicationContext().getResources();
+	appResources = getNativeApp<android.app.Application>().getApplicationContext().getResources();
 }
 
 export class ActionItem extends ActionItemBase {
@@ -310,7 +310,7 @@ export class ActionBar extends ActionBarBase {
 			if (title !== undefined) {
 				this.nativeViewProtected.setTitle(title);
 			} else {
-				const appContext = (getNativeApp() as android.app.Application).getApplicationContext();
+				const appContext = getNativeApp<android.app.Application>().getApplicationContext();
 				const appInfo = appContext.getApplicationInfo();
 				const appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
 				if (appLabel) {
@@ -547,7 +547,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
 	let result = null;
 	if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', (getNativeApp() as android.app.Application).getApplicationContext().getPackageName());
+		const resourceId: number = resources.getIdentifier(icon.substring(RESOURCE_PREFIX.length), 'drawable', getNativeApp<android.app.Application>().getApplicationContext().getPackageName());
 		if (resourceId > 0) {
 			result = resourceId;
 		}

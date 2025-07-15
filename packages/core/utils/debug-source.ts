@@ -16,7 +16,7 @@ function getCurrentAppPath(): string {
 
 		return appPath;
 	} else {
-		const dir = (getNativeApp() as android.app.Application).getApplicationContext().getFilesDir();
+		const dir = getNativeApp<android.app.Application>().getApplicationContext().getFilesDir();
 
 		return `${dir.getCanonicalPath()}/app`;
 	}

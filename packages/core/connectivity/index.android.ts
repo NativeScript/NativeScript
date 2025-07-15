@@ -19,7 +19,7 @@ const vpn = 'vpn';
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
-	return (getNativeApp() as android.app.Application).getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+	return getNativeApp<android.app.Application>().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {

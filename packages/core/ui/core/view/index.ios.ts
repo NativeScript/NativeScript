@@ -4,7 +4,7 @@ import { isAccessibilityServiceEnabled } from '../../../application';
 import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
-import { layout, ios as iosUtils, SDK_VERSION } from '../../../utils';
+import { layout, ios as iosUtils, SDK_VERSION, getWindow } from '../../../utils';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
@@ -1082,7 +1082,7 @@ export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: UIView;
 
 	createNativeView() {
-		const window = iosUtils.getWindow();
+		const window = getWindow<UIWindow>();
 		return UIView.alloc().initWithFrame(window ? window.screen.bounds : UIScreen.mainScreen.bounds);
 	}
 

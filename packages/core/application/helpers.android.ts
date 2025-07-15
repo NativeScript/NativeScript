@@ -23,7 +23,7 @@ export function androidSetStartActivity(activity: androidx.appcompat.app.AppComp
 }
 
 function getApplicationContext(): android.content.Context {
-	return (getNativeApp() as android.app.Application).getApplicationContext();
+	return getNativeApp<android.app.Application>().getApplicationContext();
 }
 
 export const androidRegisteredReceivers: { [key: string]: android.content.BroadcastReceiver } = {};
