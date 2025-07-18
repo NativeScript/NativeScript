@@ -70,6 +70,9 @@ public class FlexLine {
 	 */
 	int mItemCount;
 
+	/** Holds the count of the views whose visibilities are gone */
+	int mGoneItemCount;
+
 	/**
 	 * @see {@link #getTotalFlexGrow()}
 	 */
@@ -97,6 +100,9 @@ public class FlexLine {
 	 * not the relative indices in this flex line.
 	 */
 	List<Integer> mIndicesAlignSelfStretch = new ArrayList<>();
+
+	int mFirstIndex;
+	int mLastIndex;
 
 	/**
 	 * @return the distance in pixels from the top edge of this view's parent
@@ -149,6 +155,13 @@ public class FlexLine {
 	 */
 	public int getItemCount() {
 		return mItemCount;
+	}
+
+	/**
+	 * @return the count of the views whose visibilities are not gone in this flex line.
+	 */
+	public int getLayoutVisibleItemCount() {
+			return mItemCount - mGoneItemCount;
 	}
 
 	/**

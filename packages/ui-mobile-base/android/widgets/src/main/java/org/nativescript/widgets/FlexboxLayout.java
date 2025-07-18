@@ -583,6 +583,7 @@ public class FlexboxLayout extends LayoutBase {
 					continue;
 				} else if (child.getVisibility() == View.GONE) {
 					flexLine.mItemCount++;
+					flexLine.mGoneItemCount++;
 					addFlexLineIfLastFlexItem(i, childCount, flexLine);
 					continue;
 				}
@@ -627,7 +628,7 @@ public class FlexboxLayout extends LayoutBase {
 				if (isWrapRequired(widthMode, widthSize, flexLine.mMainSize,
 					child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin, lp,
 					i, indexInFlexLine)) {
-					if (flexLine.mItemCount > 0) {
+					if (flexLine.getLayoutVisibleItemCount() > 0) {
 						addFlexLine(flexLine);
 					}
 
@@ -681,17 +682,18 @@ public class FlexboxLayout extends LayoutBase {
 				for (int i = viewIndex; i < viewIndex + flexLine.mItemCount; i++) {
 					View child = getReorderedChildAt(i);
 					LayoutParams lp = (LayoutParams) child.getLayoutParams();
+					
 					if (mFlexWrap != FLEX_WRAP_WRAP_REVERSE) {
 						int marginTop = flexLine.mMaxBaseline - child.getBaseline();
 						marginTop = Math.max(marginTop, lp.topMargin);
 						largestHeightInLine = Math.max(largestHeightInLine,
-							child.getHeight() + marginTop + lp.bottomMargin);
+							child.getMeasuredHeight() + marginTop + lp.bottomMargin);
 					} else {
 						int marginBottom = flexLine.mMaxBaseline - child.getMeasuredHeight() +
 							child.getBaseline();
 						marginBottom = Math.max(marginBottom, lp.bottomMargin);
 						largestHeightInLine = Math.max(largestHeightInLine,
-							child.getHeight() + lp.topMargin + marginBottom);
+							child.getMeasuredHeight() + lp.topMargin + marginBottom);
 					}
 				}
 				flexLine.mCrossSize = largestHeightInLine;
@@ -745,6 +747,7 @@ public class FlexboxLayout extends LayoutBase {
 				continue;
 			} else if (child.getVisibility() == View.GONE) {
 				flexLine.mItemCount++;
+				flexLine.mGoneItemCount++;
 				addFlexLineIfLastFlexItem(i, childCount, flexLine);
 				continue;
 			}
@@ -790,7 +793,7 @@ public class FlexboxLayout extends LayoutBase {
 			if (isWrapRequired(heightMode, heightSize, flexLine.mMainSize,
 				child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin, lp,
 				i, indexInFlexLine)) {
-				if (flexLine.mItemCount > 0) {
+				if (flexLine.getLayoutVisibleItemCount() > 0) {
 					addFlexLine(flexLine);
 				}
 
@@ -862,7 +865,7 @@ public class FlexboxLayout extends LayoutBase {
 	}
 
 	private void addFlexLineIfLastFlexItem(int childIndex, int childCount, FlexLine flexLine) {
-		if (childIndex == childCount - 1 && flexLine.mItemCount != 0) {
+		if (childIndex == childCount - 1 && flexLine.getLayoutVisibleItemCount() != 0) {
 			// Add the flex line if this item is the last item
 			addFlexLine(flexLine);
 		}
@@ -1661,20 +1664,25 @@ public class FlexboxLayout extends LayoutBase {
 					childLeft = paddingLeft + (width - flexLine.mMainSize) / 2f;
 					childRight = width - paddingRight - (width - flexLine.mMainSize) / 2f;
 					break;
-				case JUSTIFY_CONTENT_SPACE_AROUND:
-					if (flexLine.mItemCount != 0) {
+				case JUSTIFY_CONTENT_SPACE_AROUND: {
+					int visibleCount = flexLine.getLayoutVisibleItemCount();
+					if (visibleCount != 0) {
 						spaceBetweenItem = (width - flexLine.mMainSize)
-							/ (float) flexLine.mItemCount;
+							/ (float) visibleCount;
 					}
 					childLeft = paddingLeft + spaceBetweenItem / 2f;
 					childRight = width - paddingRight - spaceBetweenItem / 2f;
 					break;
-				case JUSTIFY_CONTENT_SPACE_BETWEEN:
+				}
+				case JUSTIFY_CONTENT_SPACE_BETWEEN: {
+					int visibleCount = flexLine.getLayoutVisibleItemCount();
+					float denominator = visibleCount != 1 ? visibleCount - 1 : 1f;
+
 					childLeft = paddingLeft;
-					float denominator = flexLine.mItemCount != 1 ? flexLine.mItemCount - 1 : 1f;
 					spaceBetweenItem = (width - flexLine.mMainSize) / denominator;
 					childRight = width - paddingRight;
 					break;
+				}
 				default:
 					throw new IllegalStateException(
 						"Invalid justifyContent is set: " + mJustifyContent);
@@ -1878,20 +1886,25 @@ public class FlexboxLayout extends LayoutBase {
 					childTop = paddingTop + (height - flexLine.mMainSize) / 2f;
 					childBottom = height - paddingBottom - (height - flexLine.mMainSize) / 2f;
 					break;
-				case JUSTIFY_CONTENT_SPACE_AROUND:
-					if (flexLine.mItemCount != 0) {
+				case JUSTIFY_CONTENT_SPACE_AROUND: {
+					int visibleCount = flexLine.getLayoutVisibleItemCount();
+					if (visibleCount != 0) {
 						spaceBetweenItem = (height - flexLine.mMainSize)
-							/ (float) flexLine.mItemCount;
+							/ (float) visibleCount;
 					}
 					childTop = paddingTop + spaceBetweenItem / 2f;
 					childBottom = height - paddingBottom - spaceBetweenItem / 2f;
 					break;
-				case JUSTIFY_CONTENT_SPACE_BETWEEN:
+				}
+				case JUSTIFY_CONTENT_SPACE_BETWEEN: {
+					int visibleCount = flexLine.getLayoutVisibleItemCount();
+					float denominator = visibleCount != 1 ? visibleCount - 1 : 1f;
+
 					childTop = paddingTop;
-					float denominator = flexLine.mItemCount != 1 ? flexLine.mItemCount - 1 : 1f;
 					spaceBetweenItem = (height - flexLine.mMainSize) / denominator;
 					childBottom = height - paddingBottom;
 					break;
+				}
 				default:
 					throw new IllegalStateException(
 						"Invalid justifyContent is set: " + mJustifyContent);
@@ -2085,6 +2098,11 @@ public class FlexboxLayout extends LayoutBase {
 			FlexLine flexLine = mFlexLines.get(i);
 			for (int j = 0; j < flexLine.mItemCount; j++) {
 				View view = getReorderedChildAt(currentViewIndex);
+
+				if (view == null || view.getVisibility() == View.GONE) {
+					continue;
+				}
+
 				LayoutParams lp = (LayoutParams) view.getLayoutParams();
 
 				// Judge if the beginning or middle divider is needed
@@ -2165,6 +2183,11 @@ public class FlexboxLayout extends LayoutBase {
 			// Draw horizontal dividers if needed
 			for (int j = 0; j < flexLine.mItemCount; j++) {
 				View view = getReorderedChildAt(currentViewIndex);
+
+				if (view == null || view.getVisibility() == View.GONE) {
+					continue;
+				}
+
 				LayoutParams lp = (LayoutParams) view.getLayoutParams();
 
 				// Judge if the beginning or middle divider is needed
@@ -2332,11 +2355,20 @@ public class FlexboxLayout extends LayoutBase {
 	}
 
 	/**
-	 * @return the flex lines composing this flex container. This method returns an unmodifiable
-	 * list. Thus any changes of the returned list are not supported.
+	 * @return the flex lines composing this flex container. This method returns a copy of the
+	 * original list excluding a dummy flex line (flex line that doesn't have any flex items in it
+	 * but used for the alignment along the cross axis).
+	 * Thus any changes of the returned list are not reflected to the original list.
 	 */
 	public List<FlexLine> getFlexLines() {
-		return Collections.unmodifiableList(mFlexLines);
+		List<FlexLine> result = new ArrayList<>(mFlexLines.size());
+		for (FlexLine flexLine : mFlexLines) {
+			if (flexLine.getLayoutVisibleItemCount() == 0) {
+				continue;
+			}
+			result.add(flexLine);
+		}
+		return result;
 	}
 
 	/**
@@ -2535,7 +2567,7 @@ public class FlexboxLayout extends LayoutBase {
 
 	private boolean allFlexLinesAreDummyBefore(int flexLineIndex) {
 		for (int i = 0; i < flexLineIndex; i++) {
-			if (mFlexLines.get(i).mItemCount > 0) {
+			if (mFlexLines.get(i).getLayoutVisibleItemCount() > 0) {
 				return false;
 			}
 		}
@@ -2554,7 +2586,7 @@ public class FlexboxLayout extends LayoutBase {
 		}
 
 		for (int i = flexLineIndex + 1; i < mFlexLines.size(); i++) {
-			if (mFlexLines.get(i).mItemCount > 0) {
+			if (mFlexLines.get(i).getLayoutVisibleItemCount() > 0) {
 				return false;
 			}
 		}

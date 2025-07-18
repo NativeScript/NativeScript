@@ -67,6 +67,7 @@ class FlexLine {
 	_dividerLengthInMainSize = 0;
 	_crossSize = 0;
 	_itemCount = 0;
+	_goneItemCount = 0;
 	_totalFlexGrow = 0;
 	_totalFlexShrink = 0;
 	_maxBaseline = 0;
@@ -94,6 +95,9 @@ class FlexLine {
 	}
 	get itemCount(): number {
 		return this._itemCount;
+	}
+	get layoutVisibleItemCount(): number {
+		return this._itemCount - this._goneItemCount;
 	}
 	get totalFlexGrow(): number {
 		return this._totalFlexGrow;
@@ -249,6 +253,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					continue;
 				} else if (child.isCollapsed) {
 					flexLine._itemCount++;
+					flexLine._goneItemCount++;
 					this._addFlexLineIfLastFlexItem(i, childCount, flexLine);
 					continue;
 				}
@@ -276,7 +281,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				largestHeightInRow = Math.max(largestHeightInRow, child.getMeasuredHeight() + lp.effectiveMarginTop + lp.effectiveMarginBottom);
 
 				if (this._isWrapRequired(child, widthMode, widthSize, flexLine._mainSize, child.getMeasuredWidth() + lp.effectiveMarginLeft + lp.effectiveMarginRight, i, indexInFlexLine)) {
-					if (flexLine.itemCount > 0) {
+					if (flexLine.layoutVisibleItemCount > 0) {
 						this._addFlexLine(flexLine);
 					}
 
@@ -359,6 +364,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				continue;
 			} else if (child.isCollapsed) {
 				flexLine._itemCount++;
+				flexLine._goneItemCount++;
 				this._addFlexLineIfLastFlexItem(i, childCount, flexLine);
 				continue;
 			}
@@ -385,7 +391,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 			largestWidthInColumn = Math.max(largestWidthInColumn, child.getMeasuredWidth() + lp.effectiveMarginLeft + lp.effectiveMarginRight);
 
 			if (this._isWrapRequired(child, heightMode, heightSize, flexLine.mainSize, child.getMeasuredHeight() + lp.effectiveMarginTop + lp.effectiveMarginBottom, i, indexInFlexLine)) {
-				if (flexLine._itemCount > 0) {
+				if (flexLine.layoutVisibleItemCount > 0) {
 					this._addFlexLine(flexLine);
 				}
 
@@ -447,7 +453,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 
 	private _addFlexLineIfLastFlexItem(childIndex: number, childCount: number, flexLine: FlexLine) {
-		if (childIndex === childCount - 1 && flexLine.itemCount !== 0) {
+		if (childIndex === childCount - 1 && flexLine.layoutVisibleItemCount !== 0) {
 			this._addFlexLine(flexLine);
 		}
 	}
@@ -1012,16 +1018,20 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					childLeft = paddingLeft + (width - insets.left - insets.right - flexLine._mainSize) / 2.0;
 					childRight = width - paddingRight - (width - insets.left - insets.right - flexLine._mainSize) / 2.0;
 					break;
-				case JustifyContent.SPACE_AROUND:
-					if (flexLine._itemCount !== 0) {
-						spaceBetweenItem = (width - insets.left - insets.right - flexLine.mainSize) / flexLine._itemCount;
+				case JustifyContent.SPACE_AROUND: {
+					const visibleCount = flexLine.layoutVisibleItemCount;
+					if (visibleCount !== 0) {
+						spaceBetweenItem = (width - insets.left - insets.right - flexLine.mainSize) / visibleCount;
 					}
 					childLeft = paddingLeft + spaceBetweenItem / 2.0;
 					childRight = width - paddingRight - spaceBetweenItem / 2.0;
 					break;
+				}
 				case JustifyContent.SPACE_BETWEEN: {
+					const visibleCount = flexLine.layoutVisibleItemCount;
+					const denominator = visibleCount !== 1 ? visibleCount - 1 : 1.0;
+
 					childLeft = paddingLeft;
-					const denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
 					spaceBetweenItem = (width - insets.left - insets.right - flexLine.mainSize) / denominator;
 					childRight = width - paddingRight;
 					break;
@@ -1156,16 +1166,20 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					childTop = paddingTop + (height - insets.top - insets.bottom - flexLine._mainSize) / 2.0;
 					childBottom = height - paddingBottom - (height - insets.top - insets.bottom - flexLine._mainSize) / 2.0;
 					break;
-				case JustifyContent.SPACE_AROUND:
-					if (flexLine._itemCount !== 0) {
-						spaceBetweenItem = (height - insets.top - insets.bottom - flexLine._mainSize) / flexLine.itemCount;
+				case JustifyContent.SPACE_AROUND: {
+					const visibleCount = flexLine.layoutVisibleItemCount;
+					if (visibleCount !== 0) {
+						spaceBetweenItem = (height - insets.top - insets.bottom - flexLine._mainSize) / visibleCount;
 					}
 					childTop = paddingTop + spaceBetweenItem / 2.0;
 					childBottom = height - paddingBottom - spaceBetweenItem / 2.0;
 					break;
+				}
 				case JustifyContent.SPACE_BETWEEN: {
+					const visibleCount = flexLine.layoutVisibleItemCount;
+					const denominator = visibleCount !== 1 ? visibleCount - 1 : 1.0;
+
 					childTop = paddingTop;
-					const denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
 					spaceBetweenItem = (height - insets.top - insets.bottom - flexLine.mainSize) / denominator;
 					childBottom = height - paddingBottom;
 					break;
