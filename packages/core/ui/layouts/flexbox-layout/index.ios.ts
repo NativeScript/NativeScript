@@ -323,11 +323,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					if (this.flexWrap !== FlexWrap.WRAP_REVERSE) {
 						let marginTop = flexLine._maxBaseline - FlexboxLayout.getBaseline(child);
 						marginTop = Math.max(marginTop, lp.effectiveMarginTop);
-						largestHeightInLine = Math.max(largestHeightInLine, child.getActualSize().height + marginTop + lp.effectiveMarginBottom);
+						largestHeightInLine = Math.max(largestHeightInLine, child.getMeasuredHeight() + marginTop + lp.effectiveMarginBottom);
 					} else {
 						let marginBottom = flexLine._maxBaseline - child.getMeasuredHeight() + FlexboxLayout.getBaseline(child);
 						marginBottom = Math.max(marginBottom, lp.effectiveMarginBottom);
-						largestHeightInLine = Math.max(largestHeightInLine, child.getActualSize().height + lp.effectiveMarginTop + marginBottom);
+						largestHeightInLine = Math.max(largestHeightInLine, child.getMeasuredHeight() + lp.effectiveMarginTop + marginBottom);
 					}
 				}
 				flexLine._crossSize = largestHeightInLine;
