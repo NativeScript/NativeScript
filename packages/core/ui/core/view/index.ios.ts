@@ -106,14 +106,13 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	@profile
 	public layout(left: number, top: number, right: number, bottom: number, setFrame = true): void {
-		const result = this._setCurrentLayoutBounds(left, top, right, bottom);
-		let { sizeChanged } = result;
+		const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
 
 		if (setFrame) {
 			this.layoutNativeView(left, top, right, bottom);
 		}
 
-		const needsLayout = result.boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
+		const needsLayout = boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
 		if (needsLayout) {
 			let position: Position;
 
@@ -122,11 +121,11 @@ export class View extends ViewCommon implements ViewDefinition {
 				// get the frame and adjust the position, so that onLayout works correctly
 				position = IOSHelper.getPositionFromFrame(this.nativeViewProtected.frame);
 
-				if (!sizeChanged) {
-					// If frame has actually changed, there is the need to update view background and border styles as they depend on native view bounds
-					// To trigger the needed visual update, mark size as changed
+				if (this._nativeBackgroundState !== 'invalid') {
+					// If frame position was updated due to safe area, there is the need to update view background and border styles as they depend on native view bounds
+					// To trigger the needed visual update, invalidate the background state
 					if (position.left !== left || position.top !== top || position.right !== right || position.bottom !== bottom) {
-						sizeChanged = true;
+						this._nativeBackgroundState = 'invalid';
 					}
 				}
 			} else {

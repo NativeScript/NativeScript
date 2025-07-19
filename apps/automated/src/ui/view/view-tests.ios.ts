@@ -77,7 +77,7 @@ export function testBackgroundInternalChangedOnceOnResize() {
 
 	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is laid-out on 0 0 200 200.');
 
-	// Ignore safe area as it may result in re-calculating view frame, thus trigger a size change regardless
+	// Ignore safe area as it may result in re-calculating view position, invalidating background
 	layout.iosIgnoreSafeArea = true;
 
 	layout.requestLayout();
