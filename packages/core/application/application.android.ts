@@ -42,6 +42,7 @@ import {
 } from '../accessibility/accessibility-common';
 import { androidGetForegroundActivity, androidGetStartActivity, androidPendingReceiverRegistrations, androidRegisterBroadcastReceiver, androidRegisteredReceivers, androidSetForegroundActivity, androidSetStartActivity, androidUnregisterBroadcastReceiver, applyContentDescription } from './helpers';
 import { getImageFetcher, getNativeApp, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
+import { getNativeScriptGlobals } from '../globals/global-utils';
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
 
@@ -1364,9 +1365,9 @@ function onLiveSync(args): void {
 	}
 }
 
-global.NativeScriptGlobals.events.on('livesync', onLiveSync);
+getNativeScriptGlobals().events.on('livesync', onLiveSync);
 
-global.NativeScriptGlobals.addEventWiring(() => {
+getNativeScriptGlobals().addEventWiring(() => {
 	Application.android.on('activityStarted', (args: any) => {
 		if (!getImageFetcher()) {
 			initImageCache(args.activity);
@@ -1376,7 +1377,7 @@ global.NativeScriptGlobals.addEventWiring(() => {
 	});
 });
 
-global.NativeScriptGlobals.addEventWiring(() => {
+getNativeScriptGlobals().addEventWiring(() => {
 	Application.android.on('activityStopped', (args) => {
 		if (getImageFetcher()) {
 			getImageFetcher().closeCache();

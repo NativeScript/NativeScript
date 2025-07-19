@@ -1,3 +1,4 @@
+import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
@@ -23,18 +24,8 @@ import { parse as parseCss } from '../../css/lib/parse';
 // @ts-ignore apps resolve this at runtime with path alias in project bundlers
 import appConfig from '~/package.json';
 
-// if (!global.__dirname) {
-// 	global.__dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
-// }
-// const appPackagePath = path.join(global.__dirname, 'package.json');
-console.log('style-scope appConfig:', appConfig);
-
 let parser: 'rework' | 'nativescript' | 'css-tree' = 'css-tree';
 try {
-	console.log('style-scope here??');
-	// @ts-ignore
-	// const appConfig = require('~/package.json');
-	// console.log('style-scope appConfig:', appConfig);
 	if (appConfig) {
 		if (appConfig.cssParser === 'rework') {
 			parser = 'rework';
@@ -497,8 +488,8 @@ const loadCss = profile(`"style-scope".loadCss`, (cssModule: string): void => {
 	}
 });
 
-global.NativeScriptGlobals.events.on('cssChanged', <any>onCssChanged);
-global.NativeScriptGlobals.events.on('livesync', onLiveSync);
+getNativeScriptGlobals().events.on('cssChanged', <any>onCssChanged);
+getNativeScriptGlobals().events.on('livesync', onLiveSync);
 
 // Call to this method is injected in the application in:
 //  - no-snapshot - code injected in app.ts by [bundle-config-loader](https://github.com/NativeScript/nativescript-dev-webpack/blob/9b1e34d8ef838006c9b575285c42d2304f5f02b5/bundle-config-loader.ts#L85-L92)
@@ -507,7 +498,7 @@ global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 // when the snapshot is created - there is no way to use file qualifiers or change the name of on app.css
 export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: LoadAppCSSEventData) => {
 	loadCss(args.cssFile, null, null);
-	global.NativeScriptGlobals.events.off('loadAppCss', loadAppCSS);
+	getNativeScriptGlobals().events.off('loadAppCss', loadAppCSS);
 });
 
 if (Application.hasLaunched()) {
@@ -521,7 +512,7 @@ if (Application.hasLaunched()) {
 		null,
 	);
 } else {
-	global.NativeScriptGlobals.events.on('loadAppCss', loadAppCSS);
+	getNativeScriptGlobals().events.on('loadAppCss', loadAppCSS);
 }
 
 export class CssState {

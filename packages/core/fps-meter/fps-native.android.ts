@@ -1,7 +1,6 @@
-import * as definition from './fps-native';
 import { SDK_VERSION } from '../utils/constants';
 
-export class FPSCallback implements definition.FPSCallback {
+export class FPSCallback {
 	private impl: android.view.Choreographer.FrameCallback | ((nanos: number) => void);
 	private onFrame: (currentTimeMillis: number) => void;
 

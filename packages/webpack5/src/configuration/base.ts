@@ -127,25 +127,38 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			.add('@nativescript/core/inspector_modules');
 	});
 
-	// config.merge({
-	// 	experiments: {
-	// 		// enable ES module syntax (import/exports)
-	// 		outputModule: true,
-	// 	},
-	// });
+	if (env.commonjs) {
+		// CommonJS output
+		config.output
+			.path(outputPath)
+			.pathinfo(false)
+			.publicPath('')
+			.libraryTarget('commonjs')
+			.globalObject('global')
+			.set('clean', true);
+		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
+			config.output.filename(`[name].${env.uniqueBundle}.js`);
+		}
+	} else {
+		// ESM output
+		config.merge({
+			experiments: {
+				// enable ES module syntax (import/exports)
+				outputModule: true,
+			},
+		});
 
-	config.output
-		.path(outputPath)
-		.pathinfo(false)
-		.publicPath('')
-		// .set('module', true)
-		// .libraryTarget('module')
-		.libraryTarget('commonjs')
-		.globalObject('global')
-		.set('clean', true);
-
-	if (env?.uniqueBundle) {
-		config.output.filename(`[name].${env.uniqueBundle}.js`);
+		config.output
+			.path(outputPath)
+			.pathinfo(false)
+			.publicPath('file:///app/')
+			.set('module', true)
+			.libraryTarget('module')
+			.globalObject('global')
+			.set('clean', true);
+		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
+			config.output.filename(`[name].${env.uniqueBundle}.mjs`);
+		}
 	}
 
 	config.watchOptions({
@@ -187,29 +200,47 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.optimization.runtimeChunk('single');
 
-	config.optimization.splitChunks({
-		// chunks: 'all',
-		cacheGroups: {
-			// globals: {
-			// 	test: (module) =>
-			// 		module.resource &&
-			// 		/[\\/]@nativescript[\\/]core[\\/]globals[\\/]index\.(mjs|js|ts)$/.test(
-			// 			module.resource,
-			// 		),
-			// 	name: 'globals',
-			// 	enforce: true, // ignore size/min-chunk thresholds
-			// 	chunks: 'all',
-			// 	priority: 30,
-			// },
-			defaultVendor: {
-				test: /[\\/]node_modules[\\/]/,
-				priority: -10,
-				name: 'vendor',
-				// enforce: true,
-				chunks: 'all',
+	if (env.commonjs) {
+		// Set up CommonJS output
+		config.optimization.splitChunks({
+			cacheGroups: {
+				defaultVendor: {
+					test: /[\\/]node_modules[\\/]/,
+					priority: -10,
+					name: 'vendor',
+					chunks: 'all',
+				},
 			},
-		},
-	});
+		});
+	} else {
+		// Set up ESM output
+		// NOTE: this fixes all worker bundling issues
+		// however it causes issues with angular lazy loading.
+		// TODO: still need to investigate the right combination of webpack settings there
+		// TODO: test if standalone lazy loaded routes work, maybe it's just with loadChildren modules?
+		config.output.chunkFilename('[name].mjs');
+
+		// now re‑add exactly what you want:
+		config.optimization.splitChunks({
+			// only split out vendor from the main bundle…
+			chunks: 'initial',
+			cacheGroups: {
+				// no “default” group
+				default: false,
+
+				// only pull node_modules into vendor.js from the *initial* chunk
+				vendor: {
+					test: /[\\/]node_modules[\\/]/,
+					name: 'vendor',
+					chunks: 'initial',
+					priority: -10,
+					reuseExistingChunk: true,
+				},
+			},
+		});
+
+		config.optimization.set('moduleIds', 'named').set('chunkIds', 'named');
+	}
 
 	// look for loaders in
 	//  - node_modules/@nativescript/webpack/dist/loaders
@@ -443,17 +474,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// 		}
 	// 	}
 	// ])
-
-	// config.plugin('globals-shim').use(BannerPlugin, [
-	// 	{
-	// 		// commonjs style
-	// 		banner: `require("./globals");`,
-	// 		// ESM style
-	// 		//   banner: `import "./globals";`,
-	// 		raw: true,
-	// 		entryOnly: true,
-	// 	},
-	// ]);
 
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{

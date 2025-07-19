@@ -1,6 +1,6 @@
 import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
-
+import { getNativeScriptGlobals } from '../../../globals/global-utils';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
 import { Length } from '../../styling/length-shared';
@@ -143,7 +143,7 @@ function initializeDialogFragment() {
 			};
 
 			// Fist fire application.android global event
-			global.NativeScriptGlobals.events.notify(args);
+			getNativeScriptGlobals().events.notify(args);
 			if (args.cancel) {
 				return;
 			}

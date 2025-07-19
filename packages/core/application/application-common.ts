@@ -14,6 +14,7 @@ import type { AndroidApplication as AndroidApplicationType, iOSApplication as iO
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
+import { getNativeScriptGlobals } from '../globals/global-utils';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -28,7 +29,7 @@ const SYSTEM_APPEARANCE_CSS_CLASSES = [
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`,
 ];
 
-const globalEvents = global.NativeScriptGlobals.events;
+const globalEvents = getNativeScriptGlobals().events;
 
 // helper interface to correctly type Application event handlers
 interface ApplicationEvents {
@@ -161,7 +162,7 @@ export class ApplicationCommon {
 	 * @internal - should not be constructed by the user.
 	 */
 	constructor() {
-		global.NativeScriptGlobals.appInstanceReady = true;
+		getNativeScriptGlobals().appInstanceReady = true;
 
 		global.__onUncaughtError = (error: NativeScriptError) => {
 			this.notify({
@@ -507,7 +508,7 @@ export class ApplicationCommon {
 	}
 
 	hasLaunched(): boolean {
-		return global.NativeScriptGlobals && global.NativeScriptGlobals.launched;
+		return getNativeScriptGlobals().launched;
 	}
 
 	private _systemAppearance: 'dark' | 'light' | null;

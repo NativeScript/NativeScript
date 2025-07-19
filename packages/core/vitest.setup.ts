@@ -1,6 +1,11 @@
 // @ts-nocheck
 import { beforeAll, afterAll, vi } from 'vitest';
 
+// mock to allow tests to pass while globals attempt to polyfill crypto
+vi.stubGlobal('crypto', {
+	randomUUID: vi.fn(() => 'mock-uuid'),
+	// Add other necessary crypto methods as mocks
+});
 // Mock out global variables and platform APIs touched while unit testing
 global.__UNIT_TEST__ = true;
 global.__DEV__ = true;
