@@ -9,7 +9,6 @@ import { ImageSource } from '../../image-source';
 import type { CSSValue } from '../../css-value/reworkcss-value';
 import { parse as cssParse } from '../../css-value/reworkcss-value.js';
 import { BoxShadow } from './box-shadow';
-import { Length } from './style-properties';
 import { BackgroundClearFlags } from './background-common';
 import { ClipPathFunction } from './clip-path-function';
 

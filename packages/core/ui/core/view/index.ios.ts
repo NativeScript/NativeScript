@@ -120,14 +120,6 @@ export class View extends ViewCommon implements ViewDefinition {
 				// on iOS 11+ it is possible to have a changed layout frame due to safe area insets
 				// get the frame and adjust the position, so that onLayout works correctly
 				position = IOSHelper.getPositionFromFrame(this.nativeViewProtected.frame);
-
-				if (this._nativeBackgroundState !== 'invalid') {
-					// If frame position was updated due to safe area, there is the need to update view background and border styles as they depend on native view bounds
-					// To trigger the needed visual update, invalidate the background state
-					if (position.left !== left || position.top !== top || position.right !== right || position.bottom !== bottom) {
-						this._nativeBackgroundState = 'invalid';
-					}
-				}
 			} else {
 				position = { left, top, right, bottom };
 			}
