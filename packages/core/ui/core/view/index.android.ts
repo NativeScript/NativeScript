@@ -807,6 +807,117 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setAlpha(float(value));
 	}
 
+	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
+		this.accessibilityRole = value as AccessibilityRole;
+		updateAccessibilityProperties(this);
+
+		if (SDK_VERSION >= 28) {
+			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
+		}
+	}
+
+	[accessibilityLiveRegionProperty.setNative](value: AccessibilityLiveRegion): void {
+		switch (value as AccessibilityLiveRegion) {
+			case AccessibilityLiveRegion.Assertive: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE);
+				break;
+			}
+			case AccessibilityLiveRegion.Polite: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);
+				break;
+			}
+			default: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_NONE);
+				break;
+			}
+		}
+	}
+
+	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
+		this.accessibilityState = value as AccessibilityState;
+		updateAccessibilityProperties(this);
+	}
+
+	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
+		return <CoreTypes.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
+	}
+	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
+		const nativeView = this.nativeViewProtected;
+		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+		const gravity = lp.gravity;
+		const weight = lp.weight;
+		// Set only if params gravity exists.
+		if (gravity !== undefined) {
+			switch (value) {
+				case 'left':
+					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
+				case 'center':
+					lp.gravity = GRAVITY_CENTER_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
+				case 'right':
+					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
+				case 'stretch':
+					lp.gravity = GRAVITY_FILL_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -1;
+					}
+					break;
+			}
+			nativeView.setLayoutParams(lp);
+		}
+	}
+
+	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
+		return <CoreTypes.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
+	}
+	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
+		const nativeView = this.nativeViewProtected;
+		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+		const gravity = lp.gravity;
+		const height = lp.height;
+		// Set only if params gravity exists.
+		if (gravity !== undefined) {
+			switch (value) {
+				case 'top':
+					lp.gravity = GRAVITY_TOP | (gravity & HORIZONTAL_GRAVITY_MASK);
+					if (height < 0) {
+						lp.height = -2;
+					}
+					break;
+				case 'middle':
+					lp.gravity = GRAVITY_CENTER_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
+					if (height < 0) {
+						lp.height = -2;
+					}
+					break;
+				case 'bottom':
+					lp.gravity = GRAVITY_BOTTOM | (gravity & HORIZONTAL_GRAVITY_MASK);
+					if (height < 0) {
+						lp.height = -2;
+					}
+					break;
+				case 'stretch':
+					lp.gravity = GRAVITY_FILL_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
+					if (height < 0) {
+						lp.height = -1;
+					}
+					break;
+			}
+			nativeView.setLayoutParams(lp);
+		}
+	}
+
 	[testIDProperty.setNative](value: string) {
 		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
@@ -833,15 +944,6 @@ export class View extends ViewCommon {
 		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
-	[accessibilityRoleProperty.setNative](value: string): void {
-		this.accessibilityRole = value as AccessibilityRole;
-		updateAccessibilityProperties(this);
-
-		if (SDK_VERSION >= 28) {
-			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
-		}
-	}
-
 	[accessibilityValueProperty.setNative](value: string): void {
 		this._androidContentDescriptionUpdated = true;
 		updateContentDescription(this);
@@ -863,28 +965,6 @@ export class View extends ViewCommon {
 		} else {
 			this.nativeViewProtected.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
 		}
-	}
-
-	[accessibilityLiveRegionProperty.setNative](value: string): void {
-		switch (value as AccessibilityLiveRegion) {
-			case AccessibilityLiveRegion.Assertive: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE);
-				break;
-			}
-			case AccessibilityLiveRegion.Polite: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);
-				break;
-			}
-			default: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_NONE);
-				break;
-			}
-		}
-	}
-
-	[accessibilityStateProperty.setNative](value: string): void {
-		this.accessibilityState = value as AccessibilityState;
-		updateAccessibilityProperties(this);
 	}
 
 	[accessibilityMediaSessionProperty.setNative](value: string): void {
@@ -969,86 +1049,6 @@ export class View extends ViewCommon {
 			currentAnimator.jumpToCurrentState();
 		}
 		nativeView.setStateListAnimator(stateListAnimator);
-	}
-
-	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
-		return <CoreTypes.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
-	}
-	[horizontalAlignmentProperty.setNative](value: string) {
-		const nativeView = this.nativeViewProtected;
-		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-		const gravity = lp.gravity;
-		const weight = lp.weight;
-		// Set only if params gravity exists.
-		if (gravity !== undefined) {
-			switch (value as CoreTypes.HorizontalAlignmentType) {
-				case 'left':
-					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'center':
-					lp.gravity = GRAVITY_CENTER_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'right':
-					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'stretch':
-					lp.gravity = GRAVITY_FILL_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -1;
-					}
-					break;
-			}
-			nativeView.setLayoutParams(lp);
-		}
-	}
-
-	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
-		return <CoreTypes.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
-	}
-	[verticalAlignmentProperty.setNative](value: string) {
-		const nativeView = this.nativeViewProtected;
-		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-		const gravity = lp.gravity;
-		const height = lp.height;
-		// Set only if params gravity exists.
-		if (gravity !== undefined) {
-			switch (value as CoreTypes.VerticalAlignmentType) {
-				case 'top':
-					lp.gravity = GRAVITY_TOP | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'middle':
-					lp.gravity = GRAVITY_CENTER_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'bottom':
-					lp.gravity = GRAVITY_BOTTOM | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'stretch':
-					lp.gravity = GRAVITY_FILL_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -1;
-					}
-					break;
-			}
-			nativeView.setLayoutParams(lp);
-		}
 	}
 
 	[rotateProperty.setNative](value: number) {
