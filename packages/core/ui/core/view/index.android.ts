@@ -833,9 +833,8 @@ export class View extends ViewCommon {
 		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
-	// @ts-expect-error
-	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
-		this.accessibilityRole = value;
+	[accessibilityRoleProperty.setNative](value: string): void {
+		this.accessibilityRole = value as AccessibilityRole;
 		updateAccessibilityProperties(this);
 
 		if (SDK_VERSION >= 28) {
@@ -843,17 +842,17 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[accessibilityValueProperty.setNative](): void {
+	[accessibilityValueProperty.setNative](value: string): void {
 		this._androidContentDescriptionUpdated = true;
 		updateContentDescription(this);
 	}
 
-	[accessibilityLabelProperty.setNative](): void {
+	[accessibilityLabelProperty.setNative](value: string): void {
 		this._androidContentDescriptionUpdated = true;
 		updateContentDescription(this);
 	}
 
-	[accessibilityHintProperty.setNative](): void {
+	[accessibilityHintProperty.setNative](value: string): void {
 		this._androidContentDescriptionUpdated = true;
 		updateContentDescription(this);
 	}
@@ -866,9 +865,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	// @ts-expect-error
-	[accessibilityLiveRegionProperty.setNative](value: AccessibilityLiveRegion): void {
-		switch (value) {
+	[accessibilityLiveRegionProperty.setNative](value: string): void {
+		switch (value as AccessibilityLiveRegion) {
 			case AccessibilityLiveRegion.Assertive: {
 				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE);
 				break;
@@ -884,13 +882,12 @@ export class View extends ViewCommon {
 		}
 	}
 
-	// @ts-expect-error
-	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
-		this.accessibilityState = value;
+	[accessibilityStateProperty.setNative](value: string): void {
+		this.accessibilityState = value as AccessibilityState;
 		updateAccessibilityProperties(this);
 	}
 
-	[accessibilityMediaSessionProperty.setNative](): void {
+	[accessibilityMediaSessionProperty.setNative](value: string): void {
 		updateAccessibilityProperties(this);
 	}
 
@@ -977,15 +974,14 @@ export class View extends ViewCommon {
 	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
 		return <CoreTypes.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
 	}
-	// @ts-expect-error
-	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
+	[horizontalAlignmentProperty.setNative](value: string) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		const gravity = lp.gravity;
 		const weight = lp.weight;
 		// Set only if params gravity exists.
 		if (gravity !== undefined) {
-			switch (value) {
+			switch (value as CoreTypes.HorizontalAlignmentType) {
 				case 'left':
 					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
@@ -1018,15 +1014,14 @@ export class View extends ViewCommon {
 	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
 		return <CoreTypes.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
 	}
-	// @ts-expect-error
-	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
+	[verticalAlignmentProperty.setNative](value: string) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		const gravity = lp.gravity;
 		const height = lp.height;
 		// Set only if params gravity exists.
 		if (gravity !== undefined) {
-			switch (value) {
+			switch (value as CoreTypes.VerticalAlignmentType) {
 				case 'top':
 					lp.gravity = GRAVITY_TOP | (gravity & HORIZONTAL_GRAVITY_MASK);
 					if (height < 0) {

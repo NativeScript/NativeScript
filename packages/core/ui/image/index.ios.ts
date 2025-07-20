@@ -157,7 +157,7 @@ export class Image extends ImageBase {
 		return { width: scaleW, height: scaleH };
 	}
 
-	[stretchProperty.setNative](value: 'none' | 'aspectFill' | 'aspectFit' | 'fill') {
+	[stretchProperty.setNative](value: string) {
 		if (this.nativeViewProtected) {
 			switch (value) {
 				case 'aspectFit':
@@ -219,7 +219,6 @@ export class Image extends ImageBase {
 		}
 	}
 
-	// @ts-expect-error
 	[iosSymbolScaleProperty.setNative](value: iosSymbolScaleType) {
 		// reset src to configure scale
 		this._setSrc(this.src);
