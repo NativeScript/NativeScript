@@ -350,7 +350,7 @@ export class TextField extends TextFieldBase {
 		}
 
 		if (paragraphStyle) {
-			let attributedString = NSMutableAttributedString.alloc().initWithString(this.nativeViewProtected.text || '');
+			const attributedString = NSMutableAttributedString.alloc().initWithString(this.nativeViewProtected.text || '');
 			attributedString.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, NSRangeFromString(`{0,${attributedString.length}}`));
 
 			this.nativeViewProtected.attributedText = attributedString;
