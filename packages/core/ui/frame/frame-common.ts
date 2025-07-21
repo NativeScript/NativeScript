@@ -76,13 +76,13 @@ export class FrameBase extends CustomLayoutView {
 			return true;
 		} else if (top) {
 			let parentFrameCanGoBack = false;
-			let parentFrame = <FrameBase>getAncestor(top, 'Frame');
+			let parentFrame = getAncestor(top, 'Frame');
 
 			while (parentFrame && !parentFrameCanGoBack) {
 				if (parentFrame && parentFrame.canGoBack()) {
 					parentFrameCanGoBack = true;
 				} else {
-					parentFrame = <FrameBase>getAncestor(parentFrame, 'Frame');
+					parentFrame = getAncestor(parentFrame, 'Frame');
 				}
 			}
 
@@ -122,7 +122,6 @@ export class FrameBase extends CustomLayoutView {
 	@profile
 	public onLoaded() {
 		super.onLoaded();
-
 		this._processNextNavigationEntry();
 	}
 
@@ -323,9 +322,10 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
-		let frameAncestor: FrameBase = this;
+		let frameAncestor = this as FrameBase;
+
 		while (frameAncestor) {
-			frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);
+			frameAncestor = getAncestor(frameAncestor, FrameBase);
 			if (frameAncestor === parentFrameCandidate) {
 				return true;
 			}
