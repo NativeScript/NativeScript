@@ -103,10 +103,6 @@ global._unregisterModule = function _unregisterModule(name: string): void {
 	modules.delete(name);
 };
 
-global._isModuleLoadedForUI = function _isModuleLoadedForUI(moduleName: string): boolean {
-	return modulesLoadedForUI.has(moduleName);
-};
-
 global.registerWebpackModules = function registerWebpackModules(context: Context, extensionMap: ExtensionMap = {}) {
 	context.keys().forEach((moduleId) => {
 		const extDotIndex = moduleId.lastIndexOf('.');
@@ -245,15 +241,16 @@ global.Experimental = function (target: Object, key?: string | symbol, descripto
 	}
 };
 const modules: Map<string, { moduleId: string; loader: ModuleLoader }> = new Map<string, { moduleId: string; loader: ModuleLoader }>();
-const modulesLoadedForUI = new Set<string>();
 
-global.loadModule = function loadModule(name: string, isUIModule = false): any {
+async function dynamicResolveModule(name: string) {
+	const result = await import(name);
+	return result.default || result;
+}
+
+global.loadModule = function loadModule(name: string): any {
+	console.log(`@@@ loadModule: ${name}, __COMMONJS__:`, __COMMONJS__);
 	const moduleInfo = modules.get(name);
 	if (moduleInfo) {
-		if (isUIModule) {
-			modulesLoadedForUI.add(moduleInfo.moduleId);
-		}
-
 		const result = moduleInfo.loader(name);
 
 		if (result.enableAutoAccept) {
@@ -305,34 +302,100 @@ if (!global.NativeScriptHasPolyfilled) {
 	global.NativeScriptHasPolyfilled = true;
 	console.log('Installing polyfills...');
 	// DOM api polyfills
-	global.registerModule('timer', () => timer);
-	installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
+	if (__COMMONJS__) {
+		global.registerModule('timer', () => timer);
+		installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
 
-	global.registerModule('animation', () => animationFrame);
-	installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
+		global.registerModule('animation', () => animationFrame);
+		installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
 
-	global.registerModule('media-query-list', () => mediaQueryList);
-	installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
+		global.registerModule('media-query-list', () => mediaQueryList);
+		installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
 
-	global.registerModule('text', () => text);
-	installPolyfills('text', ['TextDecoder', 'TextEncoder']);
+		global.registerModule('text', () => text);
+		installPolyfills('text', ['TextDecoder', 'TextEncoder']);
 
-	global.registerModule('xhr', () => xhrImpl);
-	installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
+		global.registerModule('xhr', () => xhrImpl);
+		installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
 
-	global.registerModule('fetch', () => fetchPolyfill);
-	installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+		global.registerModule('fetch', () => fetchPolyfill);
+		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
 
-	global.registerModule('wgc', () => wgc);
-	installPolyfills('wgc', ['atob', 'btoa']);
+		global.registerModule('wgc', () => wgc);
+		installPolyfills('wgc', ['atob', 'btoa']);
 
-	global.registerModule('crypto', () => cryptoImpl);
-	installPolyfills('crypto', ['Crypto']);
+		global.registerModule('crypto', () => cryptoImpl);
+		installPolyfills('crypto', ['Crypto']);
 
-	global.registerModule('subtle', () => subtleCryptoImpl);
-	installPolyfills('subtle-crypto', ['Subtle']);
+		global.registerModule('subtle', () => subtleCryptoImpl);
+		installPolyfills('subtle-crypto', ['Subtle']);
+	} else {
+		// @ts-expect-error
+		global.setTimeout = timer.setTimeout;
+		global.clearTimeout = timer.clearTimeout;
+		// @ts-expect-error
+		global.setInterval = timer.setInterval;
+		global.clearInterval = timer.clearInterval;
+		// global.registerModule('timer', () => timer);
+		// installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
 
-	global.crypto = new global.Crypto();
+		// global.registerModule('animation', () => animationFrame);
+		// installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
+		global.requestAnimationFrame = animationFrame.requestAnimationFrame;
+		global.cancelAnimationFrame = animationFrame.cancelAnimationFrame;
+
+		// global.registerModule('media-query-list', () => mediaQueryList);
+		// installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
+		// @ts-expect-error
+		global.matchMedia = mediaQueryList.matchMedia;
+		// @ts-expect-error
+		global.MediaQueryList = mediaQueryList.MediaQueryList;
+
+		// global.registerModule('text', () => text);
+		// installPolyfills('text', ['TextDecoder', 'TextEncoder']);
+		// @ts-expect-error
+		global.TextDecoder = text.TextDecoder;
+		// @ts-expect-error
+		global.TextEncoder = text.TextEncoder;
+
+		// global.registerModule('xhr', () => xhrImpl);
+		// installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
+		// @ts-expect-error
+		global.XMLHttpRequest = xhrImpl.XMLHttpRequest;
+		// @ts-expect-error
+		global.FormData = xhrImpl.FormData;
+		// @ts-expect-error
+		global.Blob = xhrImpl.Blob;
+		// @ts-expect-error
+		global.File = xhrImpl.File;
+
+		// global.registerModule('fetch', () => fetchPolyfill);
+		// installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+		// @ts-expect-error
+		global.fetch = fetchPolyfill.fetch;
+		// @ts-expect-error
+		global.Headers = fetchPolyfill.Headers;
+		// @ts-expect-error
+		global.Request = fetchPolyfill.Request;
+		// @ts-expect-error
+		global.Response = fetchPolyfill.Response;
+
+		// global.registerModule('wgc', () => wgc);
+		// installPolyfills('wgc', ['atob', 'btoa']);
+		global.atob = wgc.atob;
+		global.btoa = wgc.btoa;
+
+		// global.registerModule('crypto', () => cryptoImpl);
+		// installPolyfills('crypto', ['Crypto']);
+
+		// global.registerModule('subtle', () => subtleCryptoImpl);
+		// installPolyfills('subtle-crypto', ['Subtle']);
+		// @ts-expect-error
+		global.SubtleCrypto = subtleCryptoImpl.SubtleCrypto;
+	}
+
+	// @ts-expect-error
+	global.crypto = new cryptoImpl.Crypto();
 
 	// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 	// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
