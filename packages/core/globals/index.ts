@@ -92,8 +92,34 @@ const defaultExtensionMap: ExtensionMap = {
 	'.xml': '.xml',
 };
 
+// ESM-compatible module resolver
+function esmModuleResolver(name: string): any {
+	// First try to resolve from registered modules
+	if (modules.has(name)) {
+		return modules.get(name).loader(name);
+	}
+
+	// For ESM builds, we can't use require() synchronously for dynamic imports
+	// Instead, we need to rely on pre-registered modules or throw an error
+	// indicating the module needs to be pre-registered
+	if (!__COMMONJS__) {
+		console.warn(`Module '${name}' not found in registered modules. In ESM builds, modules must be pre-registered as follows:`);
+		console.warn(`import * as myModule from '${name}';`);
+		console.warn(`global.registerModule('${name}', () => myModule);`);
+		return null;
+	}
+
+	// Fallback to require for CommonJS builds
+	try {
+		return global.require ? global.require(name) : null;
+	} catch (e) {
+		console.warn(`Failed to require module '${name}':`, e);
+		return null;
+	}
+}
+
 // Cast to <any> because moduleResolvers is read-only in definitions
-global.moduleResolvers = [global.require];
+global.moduleResolvers = [esmModuleResolver];
 
 global.registerModule = function (name: string, loader: ModuleLoader): void {
 	modules.set(name, { loader, moduleId: name });
@@ -195,7 +221,16 @@ global.System = {
 	import(path) {
 		return new Promise((resolve, reject) => {
 			try {
-				resolve(global.require(path));
+				if (__COMMONJS__ && global.require) {
+					resolve(global.require(path));
+				} else {
+					// Use dynamic import for ESM
+					import(path)
+						.then((module) => {
+							resolve(module.default || module);
+						})
+						.catch(reject);
+				}
 			} catch (e) {
 				reject(e);
 			}
@@ -252,8 +287,8 @@ global.loadModule = function loadModule(name: string): any {
 	const moduleInfo = modules.get(name);
 	if (moduleInfo) {
 		const result = moduleInfo.loader(name);
-
-		if (result.enableAutoAccept) {
+		console.log(`@@@ loadModule resolved to`, result);
+		if (result?.enableAutoAccept) {
 			result.enableAutoAccept();
 		}
 
@@ -263,11 +298,16 @@ global.loadModule = function loadModule(name: string): any {
 	for (const resolver of global.moduleResolvers) {
 		const result = resolver(name);
 		if (result) {
+			console.log(`@@@ loadModule SET SET resolver: ${name} resolved to`, result);
 			modules.set(name, { moduleId: name, loader: () => result });
 
 			return result;
 		}
 	}
+
+	// If no resolver found the module, return null
+	console.warn(`Module '${name}' could not be loaded by any resolver.`);
+	return null;
 };
 function registerOnGlobalContext(moduleName: string, exportName: string): void {
 	Object.defineProperty(global, exportName, {
@@ -301,6 +341,7 @@ export function installPolyfills(moduleName: string, exportNames: string[]) {
 if (!global.NativeScriptHasPolyfilled) {
 	global.NativeScriptHasPolyfilled = true;
 	console.log('Installing polyfills...');
+
 	// DOM api polyfills
 	if (__COMMONJS__) {
 		global.registerModule('timer', () => timer);

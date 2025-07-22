@@ -52,11 +52,17 @@ export interface LoadOptions {
 }
 
 export class Builder {
-	// ui plugin developers can add to these to define their own custom types if needed
+	/**
+	 * UI plugin developers can add to these to define their own custom types if needed
+	 */
 	static knownTemplates: Set<string> = new Set(['itemTemplate']);
 	static knownMultiTemplates: Set<string> = new Set(['itemTemplates']);
 	static knownCollections: Set<string> = new Set(['items', 'spans', 'actionItems']);
 
+	/**
+	 * Creates view from navigation entry
+	 * @param entry NavigationEntry
+	 */
 	static createViewFromEntry(entry: ViewEntry): View {
 		if (entry.create) {
 			const view = entry.create();
@@ -68,8 +74,8 @@ export class Builder {
 		} else if (entry.moduleName) {
 			const moduleName = sanitizeModuleName(entry.moduleName);
 			const resolvedCodeModuleName = resolveModuleName(moduleName, ''); //`${moduleName}.xml`;
-			const moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName, true) : null;
-
+			const moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName) : null;
+			console.log('Resolved code module name:', resolvedCodeModuleName, ' exports:', moduleExports);
 			if (moduleExports && moduleExports.createPage) {
 				// Exports has a createPage() method
 				const view = moduleExports.createPage();
@@ -86,7 +92,7 @@ export class Builder {
 					componentView = componentModule && componentModule.component;
 				} else {
 					const resolvedXmlModuleName = resolveModuleName(moduleName, 'xml');
-					const componentModule = resolvedXmlModuleName ? global.loadModule(resolvedXmlModuleName, true) : null;
+					const componentModule = resolvedXmlModuleName ? global.loadModule(resolvedXmlModuleName) : null;
 					if (componentModule?.default) {
 						componentView = new componentModule.default();
 					} else {
@@ -111,9 +117,13 @@ export class Builder {
 		}
 	}
 
+	/**
+	 * Loads component from module with context
+	 * @param moduleName the module name
+	 * @param exports the context of the component to be loaded
+	 */
 	static load(pathOrOptions: string | LoadOptions, context?: any): View {
 		let componentModule: ComponentModule;
-
 		if (typeof pathOrOptions === 'string') {
 			const moduleName = sanitizeModuleName(pathOrOptions);
 			componentModule = loadInternal(moduleName, context);
@@ -124,6 +134,11 @@ export class Builder {
 		return componentModule && componentModule.component;
 	}
 
+	/**
+	 * Creates an array of KeyedTemplates from string
+	 * @param value The xml of the template to be parsed
+	 * @param exports Current context of the template
+	 */
 	static parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
 		const dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
 
@@ -131,24 +146,36 @@ export class Builder {
 	}
 }
 
+/**
+ * @deprecated Use Builder.parse() instead.
+ */
 export function parse(value: string | Template, context?: any): View {
 	console.log('parse() is deprecated. Use Builder.parse() instead.');
 
 	return Builder.parse(value, context);
 }
 
+/**
+ * @deprecated Use Builder.parseMultipleTemplates() instead.
+ */
 export function parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
 	console.log('parseMultipleTemplates() is deprecated. Use Builder.parseMultipleTemplates() instead.');
 
 	return Builder.parseMultipleTemplates(value, context);
 }
 
-export function load(pathOrOptions: string | LoadOptions, context?: any): View {
+/**
+ * @deprecated Use Builder.load() instead.
+ */
+export async function load(pathOrOptions: string | LoadOptions, context?: any): Promise<View> {
 	console.log('load() is deprecated. Use Builder.load() instead.');
 
-	return Builder.load(pathOrOptions, context);
+	return await Builder.load(pathOrOptions, context);
 }
 
+/**
+ * @deprecated Use Builder.createViewFromEntry() instead.
+ */
 export function createViewFromEntry(entry: ViewEntry): View {
 	console.log('createViewFromEntry() is deprecated. Use Builder.createViewFromEntry() instead.');
 
@@ -157,11 +184,11 @@ export function createViewFromEntry(entry: ViewEntry): View {
 
 function loadInternal(moduleName: string, moduleExports: any): ComponentModule {
 	let componentModule: ComponentModule;
-
+	console.log('loadInternal called for moduleName:', moduleName, 'with moduleExports:', moduleExports);
 	const resolvedXmlModule = resolveModuleName(moduleName, 'xml');
 
 	if (resolvedXmlModule) {
-		const text = global.loadModule(resolvedXmlModule, true);
+		const text = global.loadModule(resolvedXmlModule);
 		componentModule = parseInternal(text, moduleExports, resolvedXmlModule, moduleName);
 	}
 
@@ -202,7 +229,7 @@ export function loadCustomComponent(componentNamespace: string, componentName?: 
 		let subExports = context;
 		if (resolvedCodeModuleName) {
 			// Component has registered code module.
-			subExports = global.loadModule(resolvedCodeModuleName, true);
+			subExports = global.loadModule(resolvedCodeModuleName);
 		}
 
 		// Pass the parent page down the chain in case of custom components nested on many levels. Use the context for piggybacking.
@@ -258,6 +285,7 @@ export function getExports(instance: ViewBase): any {
 }
 
 function parseInternal(value: string, context: any, xmlModule?: string, moduleName?: string): ComponentModule {
+	console.log('parseInternal called with value:', value, 'context:', context, 'xmlModule:', xmlModule, 'moduleName:', moduleName);
 	if (__UI_USE_XML_PARSER__) {
 		let start: xml2ui.XmlStringParser;
 		let ui: xml2ui.ComponentParser;
@@ -483,7 +511,6 @@ export namespace xml2ui {
 
 		constructor(parent: XmlStateConsumer, templateProperty: TemplateProperty, setTemplateProperty = true) {
 			this.parent = parent;
-
 			this._context = templateProperty.context;
 			this._recordedXmlStream = new Array<xml.ParserEvent>();
 			this._templateProperty = templateProperty;
@@ -641,6 +668,7 @@ export namespace xml2ui {
 
 		@profile
 		private buildComponent(args: xml.ParserEvent): ComponentModule {
+			console.log('ComponentParser.buildComponent called for element:', args.elementName, 'with namespace:', args.namespace, 'and attributes:', args.attributes, 'context:', this.context);
 			if (args.prefix && args.namespace) {
 				// Custom components
 				return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView, !this.currentRootView, this.moduleName);

@@ -526,6 +526,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
 			__UI_USE_XML_PARSER__: true,
 			__UI_USE_EXTERNAL_RENDERER__: false,
+			__COMMONJS__: !!env.commonjs,
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
 			__VISIONOS__: platform === 'visionos',

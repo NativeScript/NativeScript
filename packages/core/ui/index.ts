@@ -23,11 +23,18 @@ export { unsetValue } from './core/properties/property-shared';
 export { addWeakEventListener, removeWeakEventListener } from './core/weak-event-listener';
 export { DatePicker } from './date-picker';
 
-import { installPolyfills } from '../globals';
+// import { installPolyfills } from '../globals';
 // No need to export dialogs, they are already export exported globally
 import * as uiDialogs from '../ui/dialogs';
-global.registerModule('ui-dialogs', () => uiDialogs);
-installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
+global.alert = uiDialogs.alert;
+// @ts-ignore
+global.confirm = uiDialogs.confirm;
+// @ts-ignore
+global.prompt = uiDialogs.prompt;
+global.login = uiDialogs.login;
+global.action = uiDialogs.action;
+// global.registerModule('ui-dialogs', () => uiDialogs);
+// installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
 export { DialogStrings, action, alert, confirm, login, prompt, getCurrentPage, Dialogs, inputType, capitalizationType } from './dialogs';
 export type { DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions } from './dialogs';
 

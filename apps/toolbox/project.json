@@ -30,7 +30,12 @@
 				"forDevice": false,
 				"prepare": false
 			},
-			"configurations": {},
+			"defaultConfiguration": "main",
+			"configurations": {
+				"main": {
+					"flags": "--env.env=main --env.target=main --no-hmr --env.commonjs"
+				}
+			},
 			"dependsOn": ["^build"]
 		},
 		"prepare": {

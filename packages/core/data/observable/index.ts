@@ -410,6 +410,7 @@ export class Observable {
 		this._globalNotify(eventClass, 'First', dataWithObject);
 
 		const observers = this._observers[data.eventName];
+		console.log('notify called for event:', data.eventName, 'with observers:', observers);
 		if (observers) {
 			Observable._handleEvent(observers, dataWithObject);
 		}

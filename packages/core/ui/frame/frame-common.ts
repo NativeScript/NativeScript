@@ -226,6 +226,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	public navigate(param: any) {
+		console.log('framebase navigate() called with:', param);
 		if (Trace.isEnabled()) {
 			Trace.write(`NAVIGATE`, Trace.categories.Navigation);
 		}

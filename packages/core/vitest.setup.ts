@@ -13,6 +13,7 @@ global.__ANDROID__ = false;
 global.__IOS__ = true;
 global.__VISIONOS__ = false;
 global.__APPLE__ = true;
+global.__COMMONJS__ = false;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
 global.NSTimer = class NSTimer {};
@@ -98,6 +99,8 @@ global.UIColor = {
 	},
 	clearColor: cgColors,
 };
+global.UITextField = function () {};
+global.UITextFieldDelegate = function () {};
 global.NSSearchPathDirectory = {
 	LibraryDirectory: '',
 	DeveloperDirectory: '',
