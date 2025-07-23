@@ -73,9 +73,11 @@ export class Builder {
 			return view;
 		} else if (entry.moduleName) {
 			const moduleName = sanitizeModuleName(entry.moduleName);
+			console.log('.');
+			console.log('moduleName:', moduleName);
 			const resolvedCodeModuleName = resolveModuleName(moduleName, ''); //`${moduleName}.xml`;
 			const moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName) : null;
-			console.log('Resolved code module name:', resolvedCodeModuleName, ' exports:', moduleExports);
+			console.log('createViewFromEntry called with entry:', entry, 'moduleName:', entry.moduleName, 'resolvedCodeModuleName:', resolvedCodeModuleName, 'moduleExports:', moduleExports);
 			if (moduleExports && moduleExports.createPage) {
 				// Exports has a createPage() method
 				const view = moduleExports.createPage();
@@ -141,7 +143,7 @@ export class Builder {
 	 */
 	static parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
 		const dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
-
+		console.log('parseMultipleTemplates called with value:', value, 'context:', context);
 		return parseInternal(dummyComponent, context).component['itemTemplates'];
 	}
 }
@@ -184,7 +186,6 @@ export function createViewFromEntry(entry: ViewEntry): View {
 
 function loadInternal(moduleName: string, moduleExports: any): ComponentModule {
 	let componentModule: ComponentModule;
-	console.log('loadInternal called for moduleName:', moduleName, 'with moduleExports:', moduleExports);
 	const resolvedXmlModule = resolveModuleName(moduleName, 'xml');
 
 	if (resolvedXmlModule) {
@@ -285,7 +286,6 @@ export function getExports(instance: ViewBase): any {
 }
 
 function parseInternal(value: string, context: any, xmlModule?: string, moduleName?: string): ComponentModule {
-	console.log('parseInternal called with value:', value, 'context:', context, 'xmlModule:', xmlModule, 'moduleName:', moduleName);
 	if (__UI_USE_XML_PARSER__) {
 		let start: xml2ui.XmlStringParser;
 		let ui: xml2ui.ComponentParser;
@@ -668,7 +668,6 @@ export namespace xml2ui {
 
 		@profile
 		private buildComponent(args: xml.ParserEvent): ComponentModule {
-			console.log('ComponentParser.buildComponent called for element:', args.elementName, 'with namespace:', args.namespace, 'and attributes:', args.attributes, 'context:', this.context);
 			if (args.prefix && args.namespace) {
 				// Custom components
 				return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView, !this.currentRootView, this.moduleName);

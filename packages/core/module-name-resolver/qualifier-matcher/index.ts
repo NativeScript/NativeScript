@@ -27,7 +27,7 @@ const minWidthHeightQualifier: QualifierSpec = {
 		return path.match(new RegExp(`.${MIN_WH}\\d+`, 'g'));
 	},
 	getMatchValue(value: string, context: PlatformContext): number {
-		const numVal = parseInt(value.substr(MIN_WH.length + 1));
+		const numVal = parseInt(value.substring(MIN_WH.length + 1));
 		if (isNaN(numVal)) {
 			return -1;
 		}
@@ -49,7 +49,7 @@ const minWidthQualifier: QualifierSpec = {
 		return path.match(new RegExp(`.${MIN_W}\\d+`, 'g'));
 	},
 	getMatchValue(value: string, context: PlatformContext): number {
-		const numVal = parseInt(value.substr(MIN_W.length + 1));
+		const numVal = parseInt(value.substring(MIN_W.length + 1));
 		if (isNaN(numVal)) {
 			return -1;
 		}
@@ -71,7 +71,7 @@ const minHeightQualifier: QualifierSpec = {
 		return path.match(new RegExp(`.${MIN_H}\\d+`, 'g'));
 	},
 	getMatchValue(value: string, context: PlatformContext): number {
-		const numVal = parseInt(value.substr(MIN_H.length + 1));
+		const numVal = parseInt(value.substring(MIN_H.length + 1));
 		if (isNaN(numVal)) {
 			return -1;
 		}
@@ -93,7 +93,7 @@ const platformQualifier: QualifierSpec = {
 		return path.match(new RegExp('\\.android|\\.ios', 'g'));
 	},
 	getMatchValue(value: string, context: PlatformContext): number {
-		const val = value.substr(1);
+		const val = value.substring(1);
 
 		return val === context.os.toLowerCase() ? 1 : -1;
 	},
@@ -107,7 +107,7 @@ const orientationQualifier: QualifierSpec = {
 		return path.match(new RegExp('\\.land|\\.port', 'g'));
 	},
 	getMatchValue(value: string, context: PlatformContext): number {
-		const val = value.substr(1);
+		const val = value.substring(1);
 		const isLandscape: number = context.width > context.height ? 1 : -1;
 
 		return val === 'land' ? isLandscape : -isLandscape;
@@ -176,6 +176,8 @@ export function findMatch(path: string, ext: string, candidates: Array<string>, 
 			result = candidates[i];
 		}
 	}
+	console.log(' > findMatch called with path:', path, 'and ext:', ext, 'candidates:', candidates, 'context:', context, '--- MATCH? result:', result);
+	console.log('. ');
 
 	return result;
 }

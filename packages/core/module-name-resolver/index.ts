@@ -20,6 +20,7 @@ export class ModuleNameResolver implements ModuleNameResolverType {
 		let result: string = this._cache[key];
 		if (result === undefined) {
 			result = this.resolveModuleNameImpl(path, ext);
+			console.log('resolveModuleName result:', result);
 			this._cache[key] = result;
 		}
 
@@ -43,13 +44,11 @@ export class ModuleNameResolver implements ModuleNameResolverType {
 
 		const candidates = this.getCandidates(path, ext);
 		result = findMatch(path, ext, candidates, this.context);
-
 		return result;
 	}
 
 	private getCandidates(path: string, ext: string): Array<string> {
 		const candidates = this.moduleListProvider().filter((moduleName) => moduleName.startsWith(path) && (!ext || moduleName.endsWith(ext)));
-
 		return candidates;
 	}
 }

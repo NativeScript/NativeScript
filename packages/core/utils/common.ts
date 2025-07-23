@@ -59,7 +59,7 @@ export function sanitizeModuleName(moduleName: string, removeExtension = true): 
 	}
 
 	if (removeExtension) {
-		const extToRemove = ['js', 'ts', 'xml', 'html', 'css', 'scss'];
+		const extToRemove = ['js', 'mjs', 'ts', 'xml', 'html', 'css', 'scss'];
 		const extensionRegEx = new RegExp(`(.*)\\.(?:${extToRemove.join('|')})`, 'i');
 		moduleName = moduleName.replace(extensionRegEx, '$1');
 	}

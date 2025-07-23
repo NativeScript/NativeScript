@@ -53,11 +53,11 @@ declare module globalThis {
 
 	function registerModule(name: string, loader: (name: string) => any): void;
 	/**
-	 * Register all modules from a webpack context.
-	 * The context is one created using the following webpack utility:
+	 * Register all modules from a bundler context.
+	 * For example, the context could be one created using the following webpack utility:
 	 * https://webpack.js.org/guides/dependency-management/#requirecontext
 	 *
-	 * The extension map is optional, modules in the webpack context will have their original file extension (e.g. may be ".ts" or ".scss" etc.),
+	 * The extension map is optional, modules in the bundler context will have their original file extension (e.g. may be ".ts" or ".scss" etc.),
 	 * while the built-in module builders in {N} will look for ".js", ".css" or ".xml" files. Adding a map such as:
 	 * ```
 	 * { ".ts": ".js" }
@@ -65,7 +65,7 @@ declare module globalThis {
 	 * Will resolve lookups for .js to the .ts file.
 	 * By default scss and ts files are mapped.
 	 */
-	function registerWebpackModules(context: { keys(): string[]; (key: string): any }, extensionMap?: { [originalFileExtension: string]: string });
+	function registerBundlerModules(context: { keys(): string[]; (key: string): any }, extensionMap?: { [originalFileExtension: string]: string });
 
 	/**
 	 * The NativeScript XML builder, style-scope, application modules use various resources such as:
@@ -91,7 +91,7 @@ declare module globalThis {
 	function loadModule(name: string, loadForUI?: boolean): any;
 
 	/**
-	 * Checks if the module has been registered with `registerModule` or in `registerWebpackModules`
+	 * Checks if the module has been registered with `registerModule` or in `registerBundlerModules`
 	 * @param name Name of the module
 	 */
 	function moduleExists(name: string): boolean;

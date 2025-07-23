@@ -155,10 +155,6 @@ const applyComponentAttributes = profile('applyComponentAttributes', (instance: 
 				}
 			}
 
-			console.log('applyComponentAttributes called for attr:', attr, 'with value:', attrValue);
-			if (attr === 'navigatingTo') {
-				console.log('@@@ navigatingTo moduleExports:', moduleExports);
-			}
 			if (attr.indexOf('.') !== -1) {
 				let subObj = instance;
 				const properties = attr.split('.');
@@ -189,9 +185,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
 	const { instance, instanceModule } = createComponentInstance(elementName, namespace, null);
 	moduleExports = getComponentModuleExports(instance, <any>moduleExports, attributes);
-	console.log('getComponentModule called for element:', elementName, 'with namespace:', namespace, 'and attributes:', attributes);
-	console.log('moduleExports ---');
-	console.log(moduleExports);
 	if (isRootComponent) {
 		applyComponentCss(instance, moduleNamePath, attributes);
 	}
@@ -209,7 +202,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
 export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
 	// Note: instanceModule can be null if we are loading custom component with no code-behind.
 	if (isBinding(propertyValue) && instance.bind) {
-		console.log('1 setPropertyValue, Binding detected for property:', propertyName, 'with value:', propertyValue);
 		const bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
 		instance.bind(
 			{
@@ -221,8 +213,6 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
 			bindOptions[bindingConstants.source],
 		);
 	} else if (isEventOrGesture(propertyName, instance)) {
-		console.log('2 setPropertyValue, Binding detected for property:', propertyName, 'with value:', propertyValue);
-		console.log('setPropertyValue, exports:', exports);
 		// Get the event handler from page module exports.
 		const handler = exports && exports[propertyValue];
 
@@ -231,10 +221,8 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
 			instance.on(propertyName, handler);
 		}
 	} else if (isKnownFunction(propertyName, instance) && exports && typeof exports[propertyValue] === 'function') {
-		console.log('3 setPropertyValue, Binding detected for property:', propertyName, 'with value:', propertyValue);
 		instance[propertyName] = exports[propertyValue];
 	} else {
-		console.log('4 setPropertyValue, Binding detected for property:', propertyName, 'with value:', propertyValue);
 		instance[propertyName] = propertyValue;
 	}
 }
@@ -249,7 +237,6 @@ function isBinding(value: any): boolean {
 		const str = value.trim();
 		isBinding = str.indexOf('{{') === 0 && str.lastIndexOf('}}') === str.length - 2;
 	}
-	console.log('isBinding called with value:', value, ' isBinding:', isBinding);
 
 	return isBinding;
 }

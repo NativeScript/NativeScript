@@ -92,34 +92,7 @@ const defaultExtensionMap: ExtensionMap = {
 	'.xml': '.xml',
 };
 
-// ESM-compatible module resolver
-function esmModuleResolver(name: string): any {
-	// First try to resolve from registered modules
-	if (modules.has(name)) {
-		return modules.get(name).loader(name);
-	}
-
-	// For ESM builds, we can't use require() synchronously for dynamic imports
-	// Instead, we need to rely on pre-registered modules or throw an error
-	// indicating the module needs to be pre-registered
-	if (!__COMMONJS__) {
-		console.warn(`Module '${name}' not found in registered modules. In ESM builds, modules must be pre-registered as follows:`);
-		console.warn(`import * as myModule from '${name}';`);
-		console.warn(`global.registerModule('${name}', () => myModule);`);
-		return null;
-	}
-
-	// Fallback to require for CommonJS builds
-	try {
-		return global.require ? global.require(name) : null;
-	} catch (e) {
-		console.warn(`Failed to require module '${name}':`, e);
-		return null;
-	}
-}
-
-// Cast to <any> because moduleResolvers is read-only in definitions
-global.moduleResolvers = [esmModuleResolver];
+global.moduleResolvers = [global.require];
 
 global.registerModule = function (name: string, loader: ModuleLoader): void {
 	modules.set(name, { loader, moduleId: name });
@@ -129,8 +102,19 @@ global._unregisterModule = function _unregisterModule(name: string): void {
 	modules.delete(name);
 };
 
-global.registerWebpackModules = function registerWebpackModules(context: Context, extensionMap: ExtensionMap = {}) {
-	context.keys().forEach((moduleId) => {
+global.registerBundlerModules = function registerBundlerModules(context: Context, extensionMap: ExtensionMap = {}) {
+	const registerWithName = (nickName: string, moduleId: string) => {
+		console.log(`Registering module '${nickName}' with id '${moduleId}'`);
+		modules.set(nickName, {
+			moduleId,
+			loader: () => {
+				return context(moduleId);
+			},
+		});
+	};
+
+	const registerModuleById = (moduleId: string) => {
+		console.log(`registerModuleById: ${moduleId}`);
 		const extDotIndex = moduleId.lastIndexOf('.');
 		const base = moduleId.substring(0, extDotIndex);
 		const originalExt = moduleId.substring(extDotIndex);
@@ -141,15 +125,6 @@ global.registerWebpackModules = function registerWebpackModules(context: Context
 		// so we register the .ts with higher priority, similar is the case with us preferring the .scss to .css
 		const isSourceFile = originalExt !== registerExt;
 		const registerName = base + registerExt;
-
-		const registerWithName = (nickName: string) => {
-			modules.set(nickName, {
-				moduleId,
-				loader: () => {
-					return context(moduleId);
-				},
-			});
-		};
 
 		if (registerName.startsWith('./') && registerName.endsWith('.js')) {
 			const jsNickNames = [
@@ -163,7 +138,7 @@ global.registerWebpackModules = function registerWebpackModules(context: Context
 
 			jsNickNames.forEach((jsNickName) => {
 				if (isSourceFile || !global.moduleExists(jsNickName)) {
-					registerWithName(jsNickName);
+					registerWithName(jsNickName, moduleId);
 				}
 			});
 		} else if (registerName.startsWith('./')) {
@@ -174,15 +149,17 @@ global.registerWebpackModules = function registerWebpackModules(context: Context
 
 			moduleNickNames.forEach((moduleNickName) => {
 				if (!global.moduleExists(moduleNickName)) {
-					registerWithName(moduleNickName);
+					registerWithName(moduleNickName, moduleId);
 				}
 			});
 		}
 
 		if (isSourceFile || !global.moduleExists(registerName)) {
-			registerWithName(registerName);
+			registerWithName(registerName, moduleId);
 		}
-	});
+	};
+
+	context.keys().forEach(registerModuleById);
 };
 
 global.moduleExists = function moduleExists(name: string): boolean {
@@ -282,12 +259,11 @@ async function dynamicResolveModule(name: string) {
 	return result.default || result;
 }
 
+console.log(`globals/index, __COMMONJS__:`, __COMMONJS__);
 global.loadModule = function loadModule(name: string): any {
-	console.log(`@@@ loadModule: ${name}, __COMMONJS__:`, __COMMONJS__);
 	const moduleInfo = modules.get(name);
 	if (moduleInfo) {
 		const result = moduleInfo.loader(name);
-		console.log(`@@@ loadModule resolved to`, result);
 		if (result?.enableAutoAccept) {
 			result.enableAutoAccept();
 		}
@@ -295,13 +271,14 @@ global.loadModule = function loadModule(name: string): any {
 		return result;
 	}
 
-	for (const resolver of global.moduleResolvers) {
-		const result = resolver(name);
-		if (result) {
-			console.log(`@@@ loadModule SET SET resolver: ${name} resolved to`, result);
-			modules.set(name, { moduleId: name, loader: () => result });
+	if (__COMMONJS__) {
+		for (const resolver of global.moduleResolvers) {
+			const result = resolver(name);
+			if (result) {
+				modules.set(name, { moduleId: name, loader: () => result });
 
-			return result;
+				return result;
+			}
 		}
 	}
 
@@ -343,6 +320,7 @@ if (!global.NativeScriptHasPolyfilled) {
 	console.log('Installing polyfills...');
 
 	// DOM api polyfills
+	const glb = global as any;
 	if (__COMMONJS__) {
 		global.registerModule('timer', () => timer);
 		installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
@@ -371,72 +349,45 @@ if (!global.NativeScriptHasPolyfilled) {
 		global.registerModule('subtle', () => subtleCryptoImpl);
 		installPolyfills('subtle-crypto', ['Subtle']);
 	} else {
-		// @ts-expect-error
-		global.setTimeout = timer.setTimeout;
-		global.clearTimeout = timer.clearTimeout;
-		// @ts-expect-error
-		global.setInterval = timer.setInterval;
-		global.clearInterval = timer.clearInterval;
-		// global.registerModule('timer', () => timer);
-		// installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
+		// timers
+		glb.setTimeout = timer.setTimeout;
+		glb.clearTimeout = timer.clearTimeout;
+		glb.setInterval = timer.setInterval;
+		glb.clearInterval = timer.clearInterval;
 
-		// global.registerModule('animation', () => animationFrame);
-		// installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
-		global.requestAnimationFrame = animationFrame.requestAnimationFrame;
-		global.cancelAnimationFrame = animationFrame.cancelAnimationFrame;
+		// animation frame
+		glb.requestAnimationFrame = animationFrame.requestAnimationFrame;
+		glb.cancelAnimationFrame = animationFrame.cancelAnimationFrame;
 
-		// global.registerModule('media-query-list', () => mediaQueryList);
-		// installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
-		// @ts-expect-error
-		global.matchMedia = mediaQueryList.matchMedia;
-		// @ts-expect-error
-		global.MediaQueryList = mediaQueryList.MediaQueryList;
+		// media query list
+		glb.matchMedia = mediaQueryList.matchMedia;
+		glb.MediaQueryList = mediaQueryList.MediaQueryList;
 
-		// global.registerModule('text', () => text);
-		// installPolyfills('text', ['TextDecoder', 'TextEncoder']);
-		// @ts-expect-error
-		global.TextDecoder = text.TextDecoder;
-		// @ts-expect-error
-		global.TextEncoder = text.TextEncoder;
+		// text
+		glb.TextDecoder = text.TextDecoder;
+		glb.TextEncoder = text.TextEncoder;
 
-		// global.registerModule('xhr', () => xhrImpl);
-		// installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
-		// @ts-expect-error
-		global.XMLHttpRequest = xhrImpl.XMLHttpRequest;
-		// @ts-expect-error
-		global.FormData = xhrImpl.FormData;
-		// @ts-expect-error
-		global.Blob = xhrImpl.Blob;
-		// @ts-expect-error
-		global.File = xhrImpl.File;
+		// xhr
+		glb.XMLHttpRequest = xhrImpl.XMLHttpRequest;
+		glb.FormData = xhrImpl.FormData;
+		glb.Blob = xhrImpl.Blob;
+		glb.File = xhrImpl.File;
 
-		// global.registerModule('fetch', () => fetchPolyfill);
-		// installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
-		// @ts-expect-error
-		global.fetch = fetchPolyfill.fetch;
-		// @ts-expect-error
-		global.Headers = fetchPolyfill.Headers;
-		// @ts-expect-error
-		global.Request = fetchPolyfill.Request;
-		// @ts-expect-error
-		global.Response = fetchPolyfill.Response;
+		// fetch
+		glb.fetch = fetchPolyfill.fetch;
+		glb.Headers = fetchPolyfill.Headers;
+		glb.Request = fetchPolyfill.Request;
+		glb.Response = fetchPolyfill.Response;
 
-		// global.registerModule('wgc', () => wgc);
-		// installPolyfills('wgc', ['atob', 'btoa']);
-		global.atob = wgc.atob;
-		global.btoa = wgc.btoa;
+		// wgc
+		glb.atob = wgc.atob;
+		glb.btoa = wgc.btoa;
 
-		// global.registerModule('crypto', () => cryptoImpl);
-		// installPolyfills('crypto', ['Crypto']);
-
-		// global.registerModule('subtle', () => subtleCryptoImpl);
-		// installPolyfills('subtle-crypto', ['Subtle']);
-		// @ts-expect-error
-		global.SubtleCrypto = subtleCryptoImpl.SubtleCrypto;
+		// wgc
+		glb.SubtleCrypto = subtleCryptoImpl.SubtleCrypto;
 	}
 
-	// @ts-expect-error
-	global.crypto = new cryptoImpl.Crypto();
+	glb.crypto = new cryptoImpl.Crypto();
 
 	// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 	// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
