@@ -12,7 +12,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const virtualEntryPath = path.resolve(
 		__dirname,
-		`../stubs/virtual-entry-typescript.${env.commonjs ? 'js' : 'mjs'}`,
+		// Note: not sure we'll need this but just an idea if we do.
+		// `../stubs/virtual-entry-typescript.${env.commonjs ? 'js' : 'mjs'}`,
+		`../stubs/virtual-entry-typescript.js`,
 	);
 
 	// exclude files starting with _ from require.context
