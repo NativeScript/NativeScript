@@ -20,7 +20,6 @@ export class ModuleNameResolver implements ModuleNameResolverType {
 		let result: string = this._cache[key];
 		if (result === undefined) {
 			result = this.resolveModuleNameImpl(path, ext);
-			console.log('resolveModuleName result:', result);
 			this._cache[key] = result;
 		}
 

@@ -359,7 +359,6 @@ export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 5, s
 			const currentRunLoop = NSRunLoop.currentRunLoop;
 			currentRunLoop.limitDateForMode(currentRunLoop.currentMode);
 			if (isReady()) {
-				console.log('waitUntilReady: isReady() returned true');
 				break;
 			}
 

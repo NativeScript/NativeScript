@@ -73,11 +73,8 @@ export class Builder {
 			return view;
 		} else if (entry.moduleName) {
 			const moduleName = sanitizeModuleName(entry.moduleName);
-			console.log('.');
-			console.log('moduleName:', moduleName);
 			const resolvedCodeModuleName = resolveModuleName(moduleName, ''); //`${moduleName}.xml`;
 			const moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName) : null;
-			console.log('createViewFromEntry called with entry:', entry, 'moduleName:', entry.moduleName, 'resolvedCodeModuleName:', resolvedCodeModuleName, 'moduleExports:', moduleExports);
 			if (moduleExports && moduleExports.createPage) {
 				// Exports has a createPage() method
 				const view = moduleExports.createPage();
@@ -143,7 +140,6 @@ export class Builder {
 	 */
 	static parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
 		const dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
-		console.log('parseMultipleTemplates called with value:', value, 'context:', context);
 		return parseInternal(dummyComponent, context).component['itemTemplates'];
 	}
 }

@@ -176,8 +176,6 @@ export function findMatch(path: string, ext: string, candidates: Array<string>, 
 			result = candidates[i];
 		}
 	}
-	console.log(' > findMatch called with path:', path, 'and ext:', ext, 'candidates:', candidates, 'context:', context, '--- MATCH? result:', result);
-	console.log('. ');
 
 	return result;
 }

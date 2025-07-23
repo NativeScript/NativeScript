@@ -23,7 +23,6 @@ function runTests() {
 
 export function onNavigatedTo(args) {
 	args.object.off(Page.loadedEvent, onNavigatedTo);
-	console.log('onNavigatedTo called', executeTests);
 	if (executeTests) {
 		executeTests = false;
 		runTests();

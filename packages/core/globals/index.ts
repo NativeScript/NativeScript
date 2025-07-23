@@ -104,7 +104,6 @@ global._unregisterModule = function _unregisterModule(name: string): void {
 
 global.registerBundlerModules = function registerBundlerModules(context: Context, extensionMap: ExtensionMap = {}) {
 	const registerWithName = (nickName: string, moduleId: string) => {
-		console.log(`Registering module '${nickName}' with id '${moduleId}'`);
 		modules.set(nickName, {
 			moduleId,
 			loader: () => {
@@ -114,7 +113,6 @@ global.registerBundlerModules = function registerBundlerModules(context: Context
 	};
 
 	const registerModuleById = (moduleId: string) => {
-		console.log(`registerModuleById: ${moduleId}`);
 		const extDotIndex = moduleId.lastIndexOf('.');
 		const base = moduleId.substring(0, extDotIndex);
 		const originalExt = moduleId.substring(extDotIndex);
@@ -129,7 +127,7 @@ global.registerBundlerModules = function registerBundlerModules(context: Context
 		if (registerName.startsWith('./') && registerName.endsWith('.js')) {
 			const jsNickNames = [
 				// This is extremely short version like "main-page" that was promoted to be used with global.registerModule("module-name", loaderFunc);
-				registerName.substring(2, registerName.length - 5),
+				registerName.substring(2, registerName.length - 3),
 				// This is for supporting module names like "./main/main-page"
 				registerName.substring(0, registerName.length - 3),
 				// This is for supporting module names like "main/main-page.js"
@@ -397,8 +395,6 @@ declare const jest: any;
 function isTestingEnv() {
 	return typeof jest !== 'undefined' || global.__UNIT_TEST__;
 }
-
-console.log('isTestingEnv():', isTestingEnv());
 
 // ensure the Application instance is initialized before any other module imports it.
 import '../application';

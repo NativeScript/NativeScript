@@ -455,7 +455,6 @@ function getAllProperties(obj: any) {
 let testsSelector: string;
 export function runAll(testSelector?: string) {
 	testsSelector = testSelector;
-	console.log('runAll called with:', testSelector);
 	if (running) {
 		// TODO: We may schedule pending run requests
 		return;

@@ -135,7 +135,6 @@ export class PageBase extends ContentView {
 
 	@profile
 	public onNavigatedTo(isBackNavigation: boolean): void {
-		console.log('onNavigatedTo called with isBackNavigation:', isBackNavigation);
 		this.notify(this.createNavigatedData(PageBase.navigatedToEvent, isBackNavigation));
 
 		if (this.accessibilityAnnouncePageEnabled) {
