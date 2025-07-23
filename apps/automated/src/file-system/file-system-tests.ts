@@ -186,15 +186,15 @@ export var testFileRead = function () {
 	// << file-system-example-text
 };
 
-export var testFileReadWriteBinary = function () {
+export function testFileReadWriteBinary() {
 	// >> file-system-read-binary
-	var fileName = 'logo.png';
-	var error;
+	const fileName = 'logo.png';
+	let error;
+	const appFolder = fs.knownFolders.currentApp().path;
+	const sourceFile = fs.File.fromPath(appFolder + '/assets/' + fileName);
+	const destinationFile = fs.knownFolders.documents().getFile(fileName);
 
-	var sourceFile = fs.File.fromPath(__dirname + '/assets/' + fileName);
-	var destinationFile = fs.knownFolders.documents().getFile(fileName);
-
-	var source = sourceFile.readSync((e) => {
+	const source = sourceFile.readSync((e) => {
 		error = e;
 	});
 
@@ -203,7 +203,7 @@ export var testFileReadWriteBinary = function () {
 	});
 
 	// >> (hide)
-	var destination = destinationFile.readSync((e) => {
+	const destination = destinationFile.readSync((e) => {
 		error = e;
 	});
 	TKUnit.assertNull(error);
@@ -216,14 +216,14 @@ export var testFileReadWriteBinary = function () {
 	destinationFile.removeSync();
 	// << (hide)
 	// << file-system-read-binary
-};
+}
 
-export var testFileReadWriteBinaryAsync = function () {
+export function testFileReadWriteBinaryAsync() {
 	// >> file-system-read-binary-async
-	var fileName = 'logo.png';
-
-	var sourceFile = fs.File.fromPath(__dirname + '/assets/' + fileName);
-	var destinationFile = fs.knownFolders.documents().getFile(fileName);
+	const fileName = 'logo.png';
+	const appFolder = fs.knownFolders.currentApp().path;
+	const sourceFile = fs.File.fromPath(appFolder + '/assets/' + fileName);
+	const destinationFile = fs.knownFolders.documents().getFile(fileName);
 
 	// Read the file
 	sourceFile.read().then(
@@ -263,7 +263,7 @@ export var testFileReadWriteBinaryAsync = function () {
 		},
 	);
 	// << file-system-read-binary-async
-};
+}
 
 export var testGetKnownFolders = function () {
 	// >> file-system-known-folders

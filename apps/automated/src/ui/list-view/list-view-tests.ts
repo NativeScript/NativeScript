@@ -5,13 +5,12 @@ import { isAndroid, Page, View, KeyedTemplate, Utils, Observable, EventData, Obs
 import { MyButton, MyStackLayout } from '../layouts/layout-helper';
 
 // >> article-item-tap
-function listViewItemTap(args) {
+export function listViewItemTap(args) {
 	var itemIndex = args.index;
 	// >> (hide)
 	console.log(itemIndex);
 	// << (hide)
 }
-exports.listViewItemTap = listViewItemTap;
 // << article-item-tap
 
 // >> article-load-items
@@ -20,10 +19,9 @@ function listViewLoadMoreItems(args) {
 }
 // << article-load-items
 listViewLoadMoreItems('test');
-// function loaded(args) {
+// export function loaded(args) {
 //   args.object.bindingContext = { items: [1,2,3,4,5] };
 // }
-// exports.loaded = loaded;
 
 var FEW_ITEMS = [0, 1, 2];
 var MANY_ITEMS = new Array<number>(100);

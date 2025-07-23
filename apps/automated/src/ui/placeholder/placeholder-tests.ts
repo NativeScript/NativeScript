@@ -2,7 +2,7 @@ import * as TKUnit from '../../tk-unit';
 import { isIOS, isAndroid, Utils, Placeholder, CreateViewEventData, View } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 
-function creatingView(args) {
+export function creatingView(args) {
 	let nativeView;
 	if (__APPLE__) {
 		nativeView = UITextView.new();
@@ -14,8 +14,6 @@ function creatingView(args) {
 
 	args.view = nativeView;
 }
-
-exports.creatingView = creatingView;
 // << article-creating-view
 
 export function test_placeholder_creatingView() {

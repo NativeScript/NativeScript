@@ -5,13 +5,12 @@ import { getNativeText, getNativeHint, typeTextNatively, typeTextNativelyWithRet
 
 // ### Binding two TextFields text property to observable view-model property.
 // >> binding-text-property-textfield
-function pageLoaded(args) {
+export function pageLoaded(args) {
 	var page = args.object;
 	var obj = new Observable();
 	obj.set('someProperty', 'Please change this text!');
 	page.bindingContext = obj;
 }
-exports.pageLoaded = pageLoaded;
 // << binding-text-property-textfield
 
 export function test_recycling() {
@@ -177,14 +176,14 @@ export var testBindTextDirectlyToModel = function () {
 };
 
 // Supported for ios only.
-if (isIOS) {
-	exports.test_set_color = function () {
+export function test_set_color() {
+	if (__APPLE__) {
 		helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 			var textField = <TextField>views[0];
 			textField.color = new Color('red');
 			TKUnit.assert(textField.color.ios.CGColor.isEqual(textField.ios.textColor.CGColor), 'textField.color');
 		});
-	};
+	}
 }
 
 export var testBindTextToBindingContext = function () {

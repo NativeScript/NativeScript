@@ -9,13 +9,12 @@ import { Slider } from '@nativescript/core/ui/slider';
 // ### Binding the Progress and Slider value properties to a observable view-model property.
 
 // >> article-binding-slider-properties
-// function pageLoaded(args) {
+// export function pageLoaded(args) {
 //   var page = args.object;
 //   var obj = new Observable();
 //   obj.set("someProperty", 42);
 //   page.bindingContext = obj;
 // }
-// exports.pageLoaded = pageLoaded;
 // << article-binding-slider-properties
 
 interface SliderValues {
@@ -96,8 +95,8 @@ export function test_set_native_value_triggers_propertyChanged() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (__APPLE__) {
-	exports.test_set_color = function () {
+export function test_set_color() {
+	if (__APPLE__) {
 		const slider = new Slider();
 		slider.color = new Color('red');
 
@@ -106,9 +105,11 @@ if (__APPLE__) {
 		}
 
 		helper.buildUIAndRunTest(slider, testAction);
-	};
+	}
+}
 
-	exports.test_set_backgroundColor = function () {
+export function test_set_backgroundColor() {
+	if (__APPLE__) {
 		const slider = new Slider();
 		slider.backgroundColor = new Color('red');
 
@@ -117,7 +118,7 @@ if (__APPLE__) {
 		}
 
 		helper.buildUIAndRunTest(slider, testAction);
-	};
+	}
 }
 
 export function test_default_TNS_values() {

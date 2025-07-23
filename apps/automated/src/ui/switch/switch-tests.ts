@@ -5,13 +5,12 @@ import { Switch, Color, Observable, PropertyChangeData, EventData, View, Binding
 // ### Binding the Switch checked property and Button isEanbled property to a observable view-model property.
 
 // >> article-binding-switch-property
-function pageLoaded(args) {
+export function pageLoaded(args) {
 	var page = args.object;
 	var obj = new Observable();
 	obj.set('someProperty', false);
 	page.bindingContext = obj;
 }
-exports.pageLoaded = pageLoaded;
 // << article-binding-switch-property
 
 export function test_recycling() {
@@ -36,8 +35,9 @@ export function test_default_native_values() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (__APPLE__) {
-	exports.test_set_color = function () {
+
+export function test_set_color() {
+	if (__APPLE__) {
 		var mySwitch = new Switch();
 		mySwitch.color = new Color('red');
 
@@ -46,9 +46,11 @@ if (__APPLE__) {
 		}
 
 		helper.buildUIAndRunTest(mySwitch, testAction);
-	};
+	}
+}
 
-	exports.test_set_backgroundColor = function () {
+export function test_set_backgroundColor() {
+	if (__APPLE__) {
 		var mySwitch = new Switch();
 		mySwitch.backgroundColor = new Color('red');
 
@@ -57,7 +59,7 @@ if (__APPLE__) {
 		}
 
 		helper.buildUIAndRunTest(mySwitch, testAction);
-	};
+	}
 }
 
 export function test_set_TNS_checked_updates_native_checked() {

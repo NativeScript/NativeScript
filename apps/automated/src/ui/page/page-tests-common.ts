@@ -1,11 +1,10 @@
 import { Page, ShownModallyData, NavigatedData, View, PercentLength, unsetValue, EventData, Frame, NavigationEntry, TabView, TabViewItem, Button, Color, Label, StackLayout, Application, Utils, Builder } from '@nativescript/core';
 
 // >> article-set-bindingcontext
-function pageLoaded(args) {
+export function pageLoaded(args) {
 	const page = args.object;
 	page.bindingContext = { name: 'Some name' };
 }
-exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';

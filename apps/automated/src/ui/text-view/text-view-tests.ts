@@ -18,7 +18,6 @@ export function pageLoaded(args) {
 	obj.set('someProperty', 'Please change this text!');
 	page.bindingContext = obj;
 }
-exports.pageLoaded = pageLoaded;
 // << observable-declare
 
 export function test_recycling() {
@@ -73,14 +72,15 @@ export var testSetTextUndefined = function () {
 };
 
 // Supported for ios only.
-if (__APPLE__) {
-	exports.test_set_color = function () {
+
+export function test_set_color() {
+	if (__APPLE__) {
 		helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
 			var textView = <TextView>views[0];
 			textView.color = new Color('red');
 			TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.textColor.CGColor, 'textView.color');
 		});
-	};
+	}
 }
 
 export var testBindTextDirectlyToModel = function () {
