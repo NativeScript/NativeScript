@@ -252,11 +252,6 @@ global.Experimental = function (target: Object, key?: string | symbol, descripto
 };
 const modules: Map<string, { moduleId: string; loader: ModuleLoader }> = new Map<string, { moduleId: string; loader: ModuleLoader }>();
 
-async function dynamicResolveModule(name: string) {
-	const result = await import(name);
-	return result.default || result;
-}
-
 console.log(`globals/index, __COMMONJS__:`, __COMMONJS__);
 global.loadModule = function loadModule(name: string): any {
 	const moduleInfo = modules.get(name);
@@ -389,11 +384,6 @@ if (!global.NativeScriptHasPolyfilled) {
 
 	// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 	// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
-}
-
-declare const jest: any;
-function isTestingEnv() {
-	return typeof jest !== 'undefined' || global.__UNIT_TEST__;
 }
 
 // ensure the Application instance is initialized before any other module imports it.
