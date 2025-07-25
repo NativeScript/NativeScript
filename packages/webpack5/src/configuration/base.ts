@@ -14,7 +14,11 @@ import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
 import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
-import { getDependencyVersion, hasDependency } from '../helpers/dependencies';
+import {
+	getAllDependencies,
+	getDependencyVersion,
+	hasDependency,
+} from '../helpers/dependencies';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
@@ -39,6 +43,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// set mode
 	config.mode(mode);
+
+	// determine target output by @nativescript/core version
+	// v9+ supports ESM output, anything below uses CommonJS
+	if (hasDependency('@nativescript/core')) {
+		const coreVersion = getDependencyVersion('@nativescript/core');
+		if (coreVersion && !satisfies(coreVersion, '>=9.0.0')) {
+			// @nativescript/core < 9.0.0 uses CommonJS output
+			env.commonjs = true;
+		}
+	}
 
 	// config.stats({
 	// 	logging: 'verbose'
