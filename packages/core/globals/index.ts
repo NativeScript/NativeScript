@@ -12,7 +12,7 @@ import * as subtleCryptoImpl from '../wgc/crypto/SubtleCrypto';
 
 console.log('here in globals/index!');
 console.log(`typeof __dirname:`, typeof __dirname);
-// commonjs builds will have __dirname defined, but es6 modules will not
+// commonjs builds will have __dirname defined, but esm builds will not
 global.__dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
 console.log('global.__dirname', global.__dirname);
 
@@ -196,16 +196,7 @@ global.System = {
 	import(path) {
 		return new Promise((resolve, reject) => {
 			try {
-				if (__COMMONJS__ && global.require) {
-					resolve(global.require(path));
-				} else {
-					// Use dynamic import for ESM
-					import(path)
-						.then((module) => {
-							resolve(module.default || module);
-						})
-						.catch(reject);
-				}
+				resolve(global.require(path));
 			} catch (e) {
 				reject(e);
 			}

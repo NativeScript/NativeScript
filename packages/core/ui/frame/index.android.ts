@@ -1,4 +1,5 @@
-import type { AndroidActivityCallbacks, AndroidFrame as AndroidFrameDefinition, BackstackEntry, NavigationTransition, AndroidFragmentCallbacks } from '.';
+import type { AndroidActivityCallbacks, AndroidFrame as AndroidFrameDefinition, NavigationTransition, AndroidFragmentCallbacks } from '.';
+import type { BackstackEntry } from './frame-interfaces';
 import type { Page } from '../page';
 import { TransitionState } from './frame-common';
 import { Observable } from '../../data/observable';

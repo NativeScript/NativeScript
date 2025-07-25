@@ -1,6 +1,7 @@
 //Types
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from '.';
+import { iOSFrame as iOSFrameDefinition, NavigationTransition } from '.';
 import { FrameBase, NavigationType } from './frame-common';
+import type { BackstackEntry } from './frame-interfaces';
 import type { Page } from '../page';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';

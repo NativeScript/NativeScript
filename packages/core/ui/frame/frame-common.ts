@@ -15,7 +15,7 @@ import { SharedTransition } from '../transition/shared-transition';
 import { NavigationData } from '.';
 
 export { NavigationType } from './frame-interfaces';
-export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
+export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame, NavigationData } from './frame-interfaces';
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
 	let entry: NavigationEntry;

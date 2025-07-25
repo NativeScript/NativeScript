@@ -3,14 +3,9 @@ import type { NavigatedData, Page } from '../page';
 import type { Observable, EventData } from '../../data/observable';
 import type { Property, View } from '../core/view';
 import type { Transition } from '../transition';
+import type { BackstackEntry } from './frame-interfaces';
 
 export * from './frame-interfaces';
-
-export interface NavigationData extends EventData {
-	entry?: BackstackEntry;
-	fromEntry?: BackstackEntry;
-	isBack?: boolean;
-}
 
 /**
  * Represents the logical View unit that is responsible for navigation within an application.
@@ -453,41 +448,6 @@ export interface NavigationTransition {
 	 * Alternatively, you can pass an instance of type UIViewAnimationCurve for iOS or android.animation.TimeInterpolator for Android.
 	 */
 	curve?: any;
-}
-
-/**
- * Represents an entry in the back stack of a Frame object.
- */
-export interface BackstackEntry {
-	entry: NavigationEntry;
-	resolvedPage: Page;
-
-	//@private
-	/**
-	 * @private
-	 */
-	navDepth: number;
-	/**
-	 * @private
-	 */
-	fragmentTag: string;
-	/**
-	 * @private
-	 */
-	fragment?: any;
-	/**
-	 * @private
-	 */
-	viewSavedState?: any;
-	/**
-	 * @private
-	 */
-	frameId?: number;
-	/**
-	 * @private
-	 */
-	recreated?: boolean;
-	//@endprivate
 }
 
 /**
