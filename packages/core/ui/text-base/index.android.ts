@@ -386,13 +386,6 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[lineHeightProperty.getDefault](): number {
-		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
-	}
-	[lineHeightProperty.setNative](value: number) {
-		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
-	}
-
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
 		return this.nativeTextViewProtected.getTypeface();
 	}
@@ -446,17 +439,9 @@ export class TextBase extends TextBaseCommon {
 		);
 	}
 
-	[letterSpacingProperty.getDefault](): number {
-		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
-	}
-	[letterSpacingProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
-	}
-
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingTop, unit: 'px' };
 	}
-	// @ts-expect-error
 	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
 	}
@@ -464,7 +449,6 @@ export class TextBase extends TextBaseCommon {
 	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingRight, unit: 'px' };
 	}
-	// @ts-expect-error
 	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
 	}
@@ -472,7 +456,6 @@ export class TextBase extends TextBaseCommon {
 	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingBottom, unit: 'px' };
 	}
-	// @ts-expect-error
 	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
 	}
@@ -480,9 +463,22 @@ export class TextBase extends TextBaseCommon {
 	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingLeft, unit: 'px' };
 	}
-	// @ts-expect-error
 	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
+	}
+
+	[lineHeightProperty.getDefault](): number {
+		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
+	}
+	[lineHeightProperty.setNative](value: number) {
+		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
+	}
+
+	[letterSpacingProperty.getDefault](): number {
+		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
+	}
+	[letterSpacingProperty.setNative](value: number) {
+		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
 	}
 
 	[testIDProperty.setNative](value: string): void {
@@ -493,7 +489,7 @@ export class TextBase extends TextBaseCommon {
 		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
 
-	[maxLinesProperty.setNative](value: number) {
+	[maxLinesProperty.setNative](value: CoreTypes.MaxLinesType) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
 		if (value <= 0) {
 			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);

@@ -159,8 +159,8 @@ export function test_ChainingAnimations(done) {
 		.then(() => label.animate({ translate: { x: 0, y: 0 }, duration: duration }))
 		.then(() => label.animate({ scale: { x: 5, y: 5 }, duration: duration }))
 		.then(() => label.animate({ scale: { x: 1, y: 1 }, duration: duration }))
-		.then(() => label.animate({ rotate: { x: 90, y: 0, z: 180 }, duration: duration }))
-		.then(() => label.animate({ rotate: { x: 0, y: 0, z: 0 }, duration: duration }))
+		.then(() => label.animate({ rotate: 180, duration: duration }))
+		.then(() => label.animate({ rotate: 0, duration: duration }))
 		.then(() => {
 			//console.log("Animation finished");
 			// >> (hide)

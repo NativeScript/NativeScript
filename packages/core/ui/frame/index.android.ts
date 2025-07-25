@@ -5,7 +5,7 @@ import { Observable } from '../../data/observable';
 import { Trace } from '../../trace';
 import { View } from '../core/view';
 import { _stack, FrameBase, NavigationType } from './frame-common';
-import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
+import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
@@ -23,6 +23,7 @@ export { setFragmentClass } from './fragment';
 const INTENT_EXTRA = 'com.tns.activity';
 
 const ownerSymbol = Symbol('_owner');
+const isPendingDetachSymbol = Symbol('_isPendingDetach');
 
 let navDepth = -1;
 let fragmentId = -1;
@@ -51,6 +52,12 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 				if (owner) {
 					owner._onDetachedFromWindow();
 				}
+
+				if (view[isPendingDetachSymbol]) {
+					delete view[isPendingDetachSymbol];
+					view.removeOnAttachStateChangeListener(this);
+					view[ownerSymbol] = null;
+				}
 			},
 		});
 
@@ -66,7 +73,10 @@ export class Frame extends FrameBase {
 	private _containerViewId = -1;
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
-	private _wasReset = false;
+	/**
+	 * This property indicates that the view is to be reused as a root view or has been previously disposed.
+	 */
+	private _isReset = false;
 	private _cachedTransitionState: TransitionState;
 	private _frameCreateTimeout: NodeJS.Timeout;
 
@@ -136,8 +146,9 @@ export class Frame extends FrameBase {
 		}
 
 		this._attachedToWindow = true;
-		this._wasReset = false;
+		this._isReset = false;
 		this._processNextNavigationEntry();
+		this._ensureEntryFragment();
 	}
 
 	_onDetachedFromWindow(): void {
@@ -155,12 +166,12 @@ export class Frame extends FrameBase {
 			return;
 		}
 
-		// in case the activity is "reset" using resetRootView we must wait for
+		// in case the activity is "reset" using resetRootView or disposed we must wait for
 		// the attachedToWindow event to make the first navigation or it will crash
 		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
 		// though we should not do it on app "start"
 		// or it will create a "flash" to activity background color
-		if (this._wasReset && !this._attachedToWindow) {
+		if (this._isReset && !this._attachedToWindow) {
 			return;
 		}
 
@@ -187,7 +198,7 @@ export class Frame extends FrameBase {
 			// simulated navigation (NoTransition, zero duration animator) and thus the fragment immediately disappears;
 			// the user only sees the animation of the entering fragment as per its specific enter animation settings.
 			// NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
-			const cachedTransitionState = getTransitionState(this._currentEntry);
+			const cachedTransitionState = _getTransitionState(this._currentEntry);
 
 			if (cachedTransitionState) {
 				this._cachedTransitionState = cachedTransitionState;
@@ -221,7 +232,7 @@ export class Frame extends FrameBase {
 	public _onRootViewReset(): void {
 		super._onRootViewReset();
 		// used to handle the "first" navigate differently on first run and on reset
-		this._wasReset = true;
+		this._isReset = true;
 		// call this AFTER the super call to ensure descendants apply their rootview-reset logic first
 		// i.e. in a scenario with nested frames / frame with tabview let the descendandt cleanup the inner
 		// fragments first, and then cleanup the parent fragments
@@ -234,6 +245,33 @@ export class Frame extends FrameBase {
 			this.backgroundColor = this._originalBackground;
 			this._originalBackground = null;
 		}
+
+		this._ensureEntryFragment();
+		super.onLoaded();
+	}
+
+	onUnloaded() {
+		super.onUnloaded();
+
+		if (typeof this._frameCreateTimeout === 'number') {
+			clearTimeout(this._frameCreateTimeout);
+			this._frameCreateTimeout = null;
+		}
+	}
+
+	/**
+	 * TODO: Check if this fragment precaution is still needed
+	 */
+	private _ensureEntryFragment(): void {
+		// in case the activity is "reset" using resetRootView or disposed we must wait for
+		// the attachedToWindow event to make the first navigation or it will crash
+		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
+		// though we should not do it on app "start"
+		// or it will create a "flash" to activity background color
+		if (this._isReset && !this._attachedToWindow) {
+			return;
+		}
+
 		this._frameCreateTimeout = setTimeout(() => {
 			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
 			// so we manually check on loaded event if the fragment is not recreated and recreate it
@@ -248,17 +286,9 @@ export class Frame extends FrameBase {
 					transaction.commitAllowingStateLoss();
 				}
 			}
-		}, 0);
 
-		super.onLoaded();
-	}
-
-	onUnloaded() {
-		super.onUnloaded();
-		if (typeof this._frameCreateTimeout === 'number') {
-			clearTimeout(this._frameCreateTimeout);
 			this._frameCreateTimeout = null;
-		}
+		}, 0);
 	}
 
 	private disposeCurrentFragment(): void {
@@ -345,7 +375,7 @@ export class Frame extends FrameBase {
 
 		// restore cached animation settings if we just completed simulated first navigation (no animation)
 		if (this._cachedTransitionState) {
-			restoreTransitionState(this._currentEntry, this._cachedTransitionState);
+			_restoreTransitionState(this._cachedTransitionState);
 			this._cachedTransitionState = null;
 		}
 
@@ -384,7 +414,7 @@ export class Frame extends FrameBase {
 	// HACK: This @profile decorator creates a circular dependency
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
-	public _navigateCore(newEntry: any) {
+	public _navigateCore(newEntry: BackstackEntry) {
 		// should be (newEntry: BackstackEntry)
 		super._navigateCore(newEntry);
 
@@ -480,19 +510,19 @@ export class Frame extends FrameBase {
 
 		if (removed.fragment) {
 			_clearEntry(removed);
+			removed.fragment = null;
 		}
 
-		removed.fragment = null;
 		removed.viewSavedState = null;
 	}
 
 	protected _disposeBackstackEntry(entry: BackstackEntry): void {
 		if (entry.fragment) {
 			_clearFragment(entry);
+			entry.fragment = null;
 		}
 
 		entry.recreated = false;
-		entry.fragment = null;
 
 		super._disposeBackstackEntry(entry);
 	}
@@ -511,9 +541,12 @@ export class Frame extends FrameBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		const listener = getAttachListener();
-		this.nativeViewProtected.addOnAttachStateChangeListener(listener);
-		this.nativeViewProtected[ownerSymbol] = this;
-		this._android.rootViewGroup = this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
+
+		nativeView.addOnAttachStateChangeListener(listener);
+		nativeView[ownerSymbol] = this;
+
+		this._android.rootViewGroup = nativeView;
 		if (this._containerViewId < 0) {
 			this._containerViewId = android.view.View.generateViewId();
 		}
@@ -521,12 +554,23 @@ export class Frame extends FrameBase {
 	}
 
 	public disposeNativeView() {
+		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
 		const listener = getAttachListener();
-		this.nativeViewProtected.removeOnAttachStateChangeListener(listener);
-		this.nativeViewProtected[ownerSymbol] = null;
+
+		// There are cases like root view when detach listener is not called upon removing view from view-tree
+		// so mark those views as pending and remove listener once the view is detached
+		if (nativeView.isAttachedToWindow()) {
+			nativeView[isPendingDetachSymbol] = true;
+		} else {
+			nativeView.removeOnAttachStateChangeListener(listener);
+			nativeView[ownerSymbol] = null;
+		}
+
 		this._tearDownPending = !!this._executingContext;
+
 		const current = this._currentEntry;
 		const executingEntry = this._executingContext ? this._executingContext.entry : null;
+
 		this.backStack.forEach((entry) => {
 			// Don't destroy current and executing entries or UI will look blank.
 			// We will do it in setCurrent.
@@ -538,6 +582,12 @@ export class Frame extends FrameBase {
 		if (current && !executingEntry) {
 			this._disposeBackstackEntry(current);
 		}
+
+		// Dispose cached transition and store it again if view ever gets re-used
+		this._cachedTransitionState = null;
+
+		// Mark as reset in order to properly re-initialize fragments if view ever gets re-used
+		this._isReset = true;
 
 		this._android.rootViewGroup = null;
 		this._removeFromFrameStack();
@@ -595,55 +645,6 @@ export function reloadPage(context?: ModuleContext): void {
 
 // attach on global, so it can be overwritten in NativeScript Angular
 global.__onLiveSyncCore = Frame.reloadPage;
-
-function cloneExpandedTransitionListener(expandedTransitionListener: any) {
-	if (!expandedTransitionListener) {
-		return null;
-	}
-
-	const cloneTransition = expandedTransitionListener.transition.clone();
-
-	return addNativeTransitionListener(expandedTransitionListener.entry, cloneTransition);
-}
-
-function getTransitionState(entry: BackstackEntry): TransitionState {
-	const expandedEntry = <any>entry;
-	const transitionState = <TransitionState>{};
-
-	if (expandedEntry.enterTransitionListener && expandedEntry.exitTransitionListener) {
-		transitionState.enterTransitionListener = cloneExpandedTransitionListener(expandedEntry.enterTransitionListener);
-		transitionState.exitTransitionListener = cloneExpandedTransitionListener(expandedEntry.exitTransitionListener);
-		transitionState.reenterTransitionListener = cloneExpandedTransitionListener(expandedEntry.reenterTransitionListener);
-		transitionState.returnTransitionListener = cloneExpandedTransitionListener(expandedEntry.returnTransitionListener);
-		transitionState.transitionName = expandedEntry.transitionName;
-		transitionState.entry = entry;
-	} else {
-		return null;
-	}
-
-	return transitionState;
-}
-
-function restoreTransitionState(entry: BackstackEntry, snapshot: TransitionState): void {
-	const expandedEntry = <any>entry;
-	if (snapshot.enterTransitionListener) {
-		expandedEntry.enterTransitionListener = snapshot.enterTransitionListener;
-	}
-
-	if (snapshot.exitTransitionListener) {
-		expandedEntry.exitTransitionListener = snapshot.exitTransitionListener;
-	}
-
-	if (snapshot.reenterTransitionListener) {
-		expandedEntry.reenterTransitionListener = snapshot.reenterTransitionListener;
-	}
-
-	if (snapshot.returnTransitionListener) {
-		expandedEntry.returnTransitionListener = snapshot.returnTransitionListener;
-	}
-
-	expandedEntry.transitionName = snapshot.transitionName;
-}
 
 let framesCounter = 0;
 

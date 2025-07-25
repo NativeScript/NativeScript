@@ -158,14 +158,13 @@ export class SearchBar extends SearchBarBase {
 	[backgroundInternalProperty.getDefault](): any {
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: any) {
+	[backgroundInternalProperty.setNative](value: UIColor) {
 		//
 	}
 
 	[textProperty.getDefault](): string {
 		return '';
 	}
-	// @ts-expect-error
 	[textProperty.setNative](value: string) {
 		const text = value === null || value === undefined ? '' : value.toString();
 		this.ios.text = text;
@@ -174,7 +173,6 @@ export class SearchBar extends SearchBarBase {
 	[hintProperty.getDefault](): string {
 		return '';
 	}
-	// @ts-expect-error
 	[hintProperty.setNative](value: string) {
 		this._updateAttributedPlaceholder();
 	}

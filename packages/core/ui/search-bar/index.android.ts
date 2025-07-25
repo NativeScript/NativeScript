@@ -4,6 +4,7 @@ import { isUserInteractionEnabledProperty, isEnabledProperty } from '../core/vie
 import { ad } from '../../utils';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
+import { Background } from '../styling/background';
 
 export * from './search-bar-common';
 
@@ -227,14 +228,13 @@ export class SearchBar extends SearchBarBase {
 	[backgroundInternalProperty.getDefault](): any {
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: any) {
+	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
 		//
 	}
 
 	[textProperty.getDefault](): string {
 		return '';
 	}
-	// @ts-expect-error
 	[textProperty.setNative](value: string) {
 		const text = value === null || value === undefined ? '' : value.toString();
 		this.nativeViewProtected.setQuery(text, false);
@@ -242,7 +242,6 @@ export class SearchBar extends SearchBarBase {
 	[hintProperty.getDefault](): string {
 		return null;
 	}
-	// @ts-expect-error
 	[hintProperty.setNative](value: string) {
 		if (value === null || value === undefined) {
 			this.nativeViewProtected.setQueryHint(null);
