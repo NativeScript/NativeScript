@@ -1,3 +1,25 @@
+## 8.9.7 (2025-07-26)
+
+### 🩹 Fixes
+
+- **core:** pin source-map due to minor bump using url ([44c3d3fe5](https://github.com/NativeScript/NativeScript/commit/44c3d3fe5))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 8.9.6 (2025-07-26)
+
+### 🩹 Fixes
+
+- Transient dependency fix on source-map
+
+## 8.9.5 (2025-07-14)
+
+### 🩹 Fixes
+
+- package format for current hook handling
+  
 ## 8.9.4 (2025-07-14)
 
 ### 🚀 Features
