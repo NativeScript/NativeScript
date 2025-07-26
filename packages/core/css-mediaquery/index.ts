@@ -7,7 +7,7 @@ See the accompanying LICENSE file for terms.
 // https://github.com/ericf/css-mediaquery
 
 import { Trace } from '../trace';
-import { Length } from '../ui/styling/style-properties';
+import { Length } from '../ui/styling/length-shared';
 
 // -----------------------------------------------------------------------------
 

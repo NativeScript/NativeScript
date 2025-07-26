@@ -1,4 +1,4 @@
-﻿import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
+﻿import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 import type { Transition as TransitionType } from '.';
 
 let transitionId = 0;

@@ -2,7 +2,7 @@
 import { CssProperty, Property } from '../core/properties';
 import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
-import { Frame } from '../frame';
+import type { Frame } from '../frame';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { Color } from '../../color';

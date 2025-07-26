@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@nativescript/android": "~8.9.0",
-    "@nativescript/ios": "~8.9.0",
+    "@nativescript/ios": "esm",
     "@nativescript/visionos": "~8.9.0",
     "@nativescript/webpack": "file:../../dist/packages/webpack5",
     "circular-dependency-plugin": "^5.2.2",

@@ -1,18 +1,12 @@
-// imported for definition purposes only
-import * as httpModule from '../../http';
-import * as imageSourceModule from '../../image-source';
-import * as fsModule from '../../file-system';
-
 import { SDK_VERSION } from '../../utils/constants';
-import { isRealDevice } from '../../utils/ios';
+import { isRealDevice } from '../../utils/native-helper';
 import * as types from '../../utils/types';
 import * as domainDebugger from '../../debugger';
 import { getFilenameFromUrl } from './http-request-common';
-
-export enum HttpResponseEncoding {
-	UTF8,
-	GBK,
-}
+import { ImageSource } from '../../image-source';
+import { File } from '../../file-system';
+import type { HttpRequestOptions, HttpResponse, Headers } from '../http-interfaces';
+import { HttpResponseEncoding } from '../http-interfaces';
 
 const currentDevice = UIDevice.currentDevice;
 const device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? 'Phone' : 'Pad';
@@ -58,22 +52,8 @@ function ensureSessionNotFollowingRedirects() {
 	}
 }
 
-let imageSource: typeof imageSourceModule;
-function ensureImageSource() {
-	if (!imageSource) {
-		imageSource = require('../../image-source');
-	}
-}
-
-let fs: typeof fsModule;
-function ensureFileSystem() {
-	if (!fs) {
-		fs = require('../../file-system');
-	}
-}
-
-export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
-	return new Promise<httpModule.HttpResponse>((resolve, reject) => {
+export function request(options: HttpRequestOptions): Promise<HttpResponse> {
+	return new Promise<HttpResponse>((resolve, reject) => {
 		if (!options.url) {
 			reject(new Error('Request url was empty.'));
 
@@ -121,7 +101,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 				if (error) {
 					reject(new Error(error.localizedDescription));
 				} else {
-					const headers: httpModule.Headers = {};
+					const headers: Headers = {};
 					if (response && response.allHeaderFields) {
 						const headerFields = response.allHeaderFields;
 
@@ -177,12 +157,10 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 							},
 							toJSON: (encoding?: any) => parseJSON(NSDataToString(data, encoding)),
 							toImage: () => {
-								ensureImageSource();
-
 								return new Promise((resolve, reject) => {
 									(<any>UIImage).tns_decodeImageWithDataCompletion(data, (image) => {
 										if (image) {
-											resolve(new imageSource.ImageSource(image));
+											resolve(new ImageSource(image));
 										} else {
 											reject(new Error('Response content may not be converted to an Image'));
 										}
@@ -190,14 +168,12 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 								});
 							},
 							toFile: (destinationFilePath?: string) => {
-								ensureFileSystem();
-
 								if (!destinationFilePath) {
 									destinationFilePath = getFilenameFromUrl(options.url);
 								}
 								if (data instanceof NSData) {
 									// ensure destination path exists by creating any missing parent directories
-									const file = fs.File.fromPath(destinationFilePath);
+									const file = File.fromPath(destinationFilePath);
 
 									data.writeToFileAtomically(destinationFilePath, true);
 
@@ -250,7 +226,7 @@ function NSDataToString(data: any, encoding?: HttpResponseEncoding): string {
 	return encodedString.toString();
 }
 
-export function addHeader(headers: httpModule.Headers, key: string, value: string): void {
+export function addHeader(headers: Headers, key: string, value: string): void {
 	if (!headers[key]) {
 		headers[key] = value;
 	} else if (Array.isArray(headers[key])) {

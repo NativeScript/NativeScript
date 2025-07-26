@@ -1,5 +1,6 @@
 import { LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty } from './layout-base-common';
-import { Length, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { CoreTypes } from '../../core-types';
 
 export * from './layout-base-common';

@@ -1,11 +1,10 @@
-import { Page, ShownModallyData, NavigatedData, View, PercentLength, unsetValue, EventData, isIOS, Frame, NavigationEntry, TabView, TabViewItem, Button, Color, Label, StackLayout, Application, Utils, Builder } from '@nativescript/core';
+import { Page, ShownModallyData, NavigatedData, View, PercentLength, unsetValue, EventData, Frame, NavigationEntry, TabView, TabViewItem, Button, Color, Label, StackLayout, Application, Utils, Builder } from '@nativescript/core';
 
 // >> article-set-bindingcontext
-function pageLoaded(args) {
+export function pageLoaded(args) {
 	const page = args.object;
 	page.bindingContext = { name: 'Some name' };
 }
-exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
@@ -369,8 +368,8 @@ export function test_page_backgroundColor() {
 	const factory = () => page;
 	helper.navigate(factory);
 
-	if (isIOS) {
-		const backgroundColor = (!__VISIONOS__ && Utils.ios.MajorVersion <= 12) || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+	if (__APPLE__) {
+		const backgroundColor = (!__VISIONOS__ && Utils.SDK_VERSION <= 12) || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		TKUnit.assertEqual(page.nativeView.backgroundColor, backgroundColor, 'page backgroundColor is wrong');
 	} else {
 		const whiteColor = new Color('white');

@@ -1,7 +1,7 @@
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, FlexboxLayoutBase, orderProperty, Order, flexGrowProperty, FlexGrow, flexShrinkProperty, FlexShrink, flexWrapBeforeProperty, FlexWrapBefore, alignSelfProperty, AlignSelf, flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty } from './flexbox-layout-common';
 import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
-import { Length } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 
 export * from './flexbox-layout-common';
 

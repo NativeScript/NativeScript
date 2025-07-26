@@ -1,13 +1,12 @@
 // Types.
-import { Animation as AnimationBaseDefinition, Point3D } from '.';
-import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
-
-// Requires.
+import { Point3D } from './animation-types';
+import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair } from './animation-shared';
+import { PropertyAnimation } from './animation-shared';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { PercentLength } from '../styling/style-properties';
+import { PercentLength } from '../styling/length-shared';
 
-export * from './animation-interfaces';
+export * from './animation-shared';
 
 export namespace Properties {
 	export const opacity = 'opacity';
@@ -19,7 +18,7 @@ export namespace Properties {
 	export const width = 'width';
 }
 
-export abstract class AnimationBase implements AnimationBaseDefinition {
+export abstract class AnimationBase {
 	public _propertyAnimations: Array<PropertyAnimation>;
 	public _playSequentially: boolean;
 	private _isPlaying: boolean;

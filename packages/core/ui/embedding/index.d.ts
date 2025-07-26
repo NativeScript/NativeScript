@@ -1,4 +1,4 @@
-import type { View } from '../../ui/core/view';
+import type { View } from '../core/view';
 
 /**
  * Whether the app is embedded into a host project or standalone project

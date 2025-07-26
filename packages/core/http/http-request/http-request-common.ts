@@ -1,7 +1,6 @@
-import * as fsModule from '../../file-system';
+import { knownFolders, path } from '../../file-system';
 
 export function getFilenameFromUrl(url: string) {
-	const fs: typeof fsModule = require('../../file-system');
 	const slashPos = url.lastIndexOf('/') + 1;
 	const questionMarkPos = url.lastIndexOf('?');
 
@@ -12,7 +11,7 @@ export function getFilenameFromUrl(url: string) {
 		actualFileName = url.substring(slashPos);
 	}
 
-	const result = fs.path.join(fs.knownFolders.documents().path, actualFileName);
+	const result = path.join(knownFolders.documents().path, actualFileName);
 
 	return result;
 }

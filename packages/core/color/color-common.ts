@@ -1,10 +1,9 @@
-import * as definition from '.';
+import type { IColor } from './color-types';
 import * as types from '../utils/types';
 import * as knownColors from './known-colors';
-import { Color } from '.';
 import { HEX_REGEX, argbFromColorMix, argbFromHslOrHsla, argbFromHsvOrHsva, argbFromRgbOrRgba, hslToRgb, hsvToRgb, isCssColorMixExpression, isHslOrHsla, isHsvOrHsva, isRgbOrRgba, rgbToHsl, rgbToHsv, argbFromString } from './color-utils';
 
-export class ColorBase implements definition.Color {
+export class ColorBase implements IColor {
 	private _argb: number;
 	private _name: string;
 
@@ -112,11 +111,11 @@ export class ColorBase implements definition.Color {
 		return argbFromString(hex);
 	}
 
-	public equals(value: definition.Color): boolean {
+	public equals(value: IColor): boolean {
 		return value && this.argb === value.argb;
 	}
 
-	public static equals(value1: definition.Color, value2: definition.Color): boolean {
+	public static equals(value1: IColor, value2: IColor): boolean {
 		// both values are falsy
 		if (!value1 && !value2) {
 			return true;
@@ -131,7 +130,7 @@ export class ColorBase implements definition.Color {
 	}
 
 	public static isValid(value: any): boolean {
-		if (value instanceof Color) {
+		if (value instanceof ColorBase) {
 			return true;
 		}
 
@@ -147,10 +146,10 @@ export class ColorBase implements definition.Color {
 		return HEX_REGEX.test(value) || isRgbOrRgba(lowered) || isHslOrHsla(lowered);
 	}
 	public static fromHSL(a, h, s, l) {
-		return new Color(a, h, s, l, 'hsl');
+		return new ColorBase(a, h, s, l, 'hsl');
 	}
 	public static fromHSV(a, h, s, l) {
-		return new Color(a, h, s, l, 'hsv');
+		return new ColorBase(a, h, s, l, 'hsv');
 	}
 
 	public toString(): string {
@@ -160,7 +159,7 @@ export class ColorBase implements definition.Color {
 	/**
 	 * @param {UIColor} value
 	 */
-	public static fromIosColor(value: any): Color {
+	public static fromIosColor(value: any): ColorBase {
 		return undefined;
 	}
 
@@ -222,7 +221,7 @@ export class ColorBase implements definition.Color {
 	 * @param alpha (between 0 and 255)
 	 */
 	public setAlpha(a: number) {
-		return new Color(a, this.r, this.g, this.b);
+		return new ColorBase(a, this.r, this.g, this.b);
 	}
 
 	/**
@@ -234,7 +233,7 @@ export class ColorBase implements definition.Color {
 	}
 
 	/**
-	 * return the [CSS hsv](https://www.w3schools.com/Css/css_colors_hsl.asp) representation of the color
+	 * return the [CSS hsl](https://www.w3schools.com/Css/css_colors_hsl.asp) representation of the color
 	 *
 	 */
 	public toHslString() {
@@ -284,7 +283,7 @@ export class ColorBase implements definition.Color {
 	public desaturate(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r, this.g, this.b);
-		return Color.fromHSL(this.a, hsl.h, Math.min(100, Math.max(0, hsl.s - amount)), hsl.l);
+		return ColorBase.fromHSL(this.a, hsl.h, Math.min(100, Math.max(0, hsl.s - amount)), hsl.l);
 	}
 
 	/**
@@ -295,7 +294,7 @@ export class ColorBase implements definition.Color {
 	public saturate(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r, this.g, this.b);
-		return Color.fromHSL(this.a, hsl.h, Math.min(100, Math.max(0, hsl.s + amount)), hsl.l);
+		return ColorBase.fromHSL(this.a, hsl.h, Math.min(100, Math.max(0, hsl.s + amount)), hsl.l);
 	}
 
 	/**
@@ -314,7 +313,7 @@ export class ColorBase implements definition.Color {
 	public lighten(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r, this.g, this.b);
-		return Color.fromHSL(this.a, hsl.h, hsl.s, Math.min(100, Math.max(0, hsl.l + amount)));
+		return ColorBase.fromHSL(this.a, hsl.h, hsl.s, Math.min(100, Math.max(0, hsl.l + amount)));
 	}
 
 	/**
@@ -327,7 +326,7 @@ export class ColorBase implements definition.Color {
 		const r = Math.max(0, Math.min(255, this.r - Math.round(255 * -(amount / 100))));
 		const g = Math.max(0, Math.min(255, this.g - Math.round(255 * -(amount / 100))));
 		const b = Math.max(0, Math.min(255, this.b - Math.round(255 * -(amount / 100))));
-		return new Color(this.a, r, g, b);
+		return new ColorBase(this.a, r, g, b);
 	}
 
 	/**
@@ -338,7 +337,7 @@ export class ColorBase implements definition.Color {
 	public darken(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r, this.g, this.b);
-		return Color.fromHSL(this.a, hsl.h, hsl.s, Math.min(100, Math.max(0, hsl.l - amount)));
+		return ColorBase.fromHSL(this.a, hsl.h, hsl.s, Math.min(100, Math.max(0, hsl.l - amount)));
 	}
 
 	/**
@@ -350,7 +349,7 @@ export class ColorBase implements definition.Color {
 		const hsl = this.toHsl();
 		const hue = (hsl.h + amount) % 360;
 		hsl.h = hue < 0 ? 360 + hue : hue;
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		return ColorBase.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
 
 	/**
@@ -360,10 +359,10 @@ export class ColorBase implements definition.Color {
 	public complement() {
 		const hsl = this.toHsl();
 		hsl.h = (hsl.h + 180) % 360;
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		return ColorBase.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
 
-	static mix(color1: Color, color2: Color, amount = 50) {
+	static mix(color1: ColorBase, color2: ColorBase, amount = 50) {
 		const p = amount / 100;
 
 		const rgba = {
@@ -373,6 +372,6 @@ export class ColorBase implements definition.Color {
 			a: (color2.a - color1.a) * p + color1.a,
 		};
 
-		return new Color(rgba.a, rgba.r, rgba.g, rgba.b);
+		return new ColorBase(rgba.a, rgba.r, rgba.g, rgba.b);
 	}
 }
