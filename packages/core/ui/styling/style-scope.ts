@@ -63,22 +63,29 @@ const kebabCasePattern = /-([a-z])/g;
 const pattern = /('|")(.*?)\1/;
 
 /**
- * Evaluate css-variable and css-calc expressions
+ * Evaluate css-variable and css-calc expressions.
  */
-function evaluateCssExpressions(view: ViewBase, property: string, value: string) {
-	const newValue = _evaluateCssVariableExpression(view, property, value);
-	if (newValue === 'unset') {
-		return unsetValue;
+function evaluateCssExpressions(view: ViewBase, property: string, value: string, onCssVarExpressionParse?: (cssVarName: string) => void) {
+	if (typeof value !== 'string') {
+		return value;
 	}
 
-	value = newValue;
+	if (isCssVariableExpression(value)) {
+		const newValue = _evaluateCssVariableExpression(view, value, onCssVarExpressionParse);
+		if (newValue === undefined) {
+			return unsetValue;
+		}
 
-	try {
-		value = _evaluateCssCalcExpression(value);
-	} catch (e) {
-		Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+		value = newValue;
+	}
 
-		return unsetValue;
+	if (isCssCalcExpression(value)) {
+		try {
+			value = _evaluateCssCalcExpression(value);
+		} catch (e) {
+			Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+			return unsetValue;
+		}
 	}
 
 	return value;
@@ -710,22 +717,46 @@ export class CssState {
 		const valuesToApply = {};
 		const cssExpsProperties = {};
 		const replacementFunc = (g) => g[1].toUpperCase();
+		const onCssVarExpressionParse = (cssVarName: string) => {
+			// If variable name is still in the property bag, parse its value and apply it to the view
+			if (cssVarName in cssExpsProperties) {
+				cssExpsPropsCallback(cssVarName);
+			}
+		};
+		// This callback is also used for handling nested css variable expressions
+		const cssExpsPropsCallback = (property: string) => {
+			let value = cssExpsProperties[property];
+
+			// Remove the property first to avoid recalculating it in a later step using lazy loading
+			delete cssExpsProperties[property];
+
+			value = evaluateCssExpressions(view, property, value, onCssVarExpressionParse);
+
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+			}
+
+			if (isCssVariable(property)) {
+				view.style.setScopedCssVariable(property, value);
+				delete newPropertyValues[property];
+			}
+
+			valuesToApply[property] = value;
+		};
 
 		for (const property in newPropertyValues) {
 			const value = cleanupImportantFlags(newPropertyValues[property], property);
-
 			const isCssExp = isCssVariableExpression(value) || isCssCalcExpression(value);
 
+			// We can skip the unset part of old values since they will be overwritten by new values
+			delete oldProperties[property];
+
 			if (isCssExp) {
-				// we handle css exp separately because css vars must be evaluated first
+				// We handle css exp separately because css vars must be evaluated first
 				cssExpsProperties[property] = value;
 				continue;
 			}
-			delete oldProperties[property];
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
-			}
+
 			if (isCssVariable(property)) {
 				view.style.setScopedCssVariable(property, value);
 				delete newPropertyValues[property];
@@ -733,23 +764,14 @@ export class CssState {
 			}
 			valuesToApply[property] = value;
 		}
-		//we need to parse CSS vars first before evaluating css expressions
-		for (const property in cssExpsProperties) {
-			delete oldProperties[property];
-			const value = evaluateCssExpressions(view, property, cssExpsProperties[property]);
-			if (property in oldProperties && oldProperties[property] === value) {
-				// Skip unchanged values
-				continue;
-			}
-			if (value === unsetValue) {
-				delete newPropertyValues[property];
-			}
-			if (isCssVariable(property)) {
-				view.style.setScopedCssVariable(property, value);
-				delete newPropertyValues[property];
-			}
 
-			valuesToApply[property] = value;
+		const cssExpsPropKeys = Object.keys(cssExpsProperties);
+
+		// We need to parse CSS vars first before evaluating css expressions
+		for (const property of cssExpsPropKeys) {
+			if (property in cssExpsProperties) {
+				cssExpsPropsCallback(property);
+			}
 		}
 
 		// Unset removed values

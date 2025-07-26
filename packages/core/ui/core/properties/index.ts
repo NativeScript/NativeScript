@@ -48,6 +48,7 @@ export interface CssAnimationPropertyOptions<T, U> {
 const cssPropertyNames: string[] = [];
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
+const cssErrorVarPlaceHolder = '&error_var';
 
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
 const inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
@@ -107,20 +108,12 @@ export function isCssWideKeyword(value: any): value is CoreTypes.CSSWideKeywords
 	return value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
 }
 
-export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
-	if (typeof value !== 'string') {
-		return value;
-	}
-
-	if (!isCssVariableExpression(value)) {
-		// Value is not using css-variable(s)
-		return value;
-	}
-
+export function _evaluateCssVariableExpression(view: ViewBase, value: string, onCssVarExpressionParse?: (cssVarName: string) => void): string {
 	let output = value.trim();
 
-	// Evaluate every (and nested) css-variables in the value.
+	// Evaluate every (and nested) css-variables in the value
 	let lastValue: string;
+
 	while (lastValue !== output) {
 		lastValue = output;
 
@@ -140,31 +133,35 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 			.map((v) => v.trim())
 			.filter((v) => !!v);
 		const cssVariableName = matched.shift();
+
+		// Execute the callback early to allow operations like preloading missing variables
+		if (onCssVarExpressionParse) {
+			onCssVarExpressionParse(cssVariableName);
+		}
+
 		let cssVariableValue = view.style.getCssVariable(cssVariableName);
-		if (cssVariableValue === null && matched.length) {
-			cssVariableValue = _evaluateCssVariableExpression(view, cssName, matched.join(', ')).split(',')[0];
+		if (cssVariableValue == null && matched.length) {
+			for (const cssVal of matched) {
+				if (cssVal && !cssVal.includes(cssErrorVarPlaceHolder)) {
+					cssVariableValue = cssVal;
+					break;
+				}
+			}
 		}
 
 		if (!cssVariableValue) {
-			cssVariableValue = 'unset';
+			cssVariableValue = cssErrorVarPlaceHolder;
 		}
 
 		output = `${output.substring(0, idx)}${cssVariableValue}${output.substring(endIdx + 1)}`;
 	}
 
-	return output;
+	// If at least one variable failed to resolve, discard the whole expression
+	return output.includes(cssErrorVarPlaceHolder) ? undefined : output;
 }
 
 export function _evaluateCssCalcExpression(value: string) {
-	if (typeof value !== 'string') {
-		return value;
-	}
-
-	if (isCssCalcExpression(value)) {
-		return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
-	} else {
-		return value;
-	}
+	return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
 }
 
 function _replaceDip(value: string) {
