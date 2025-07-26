@@ -65,6 +65,7 @@
 		"css-tree": "^1.1.2",
 		"css-what": "^6.1.0",
 		"emoji-regex": "^10.2.1",
+		"source-map": "0.6.1",
 		"tslib": "^2.0.0"
 	},
 	"nativescript": {
