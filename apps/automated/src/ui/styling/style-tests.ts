@@ -1975,7 +1975,7 @@ export function test_css_variable_that_resolves_to_another_css_variable_order_de
 	stack.className = 'var';
 	page.content = stack;
 
-	TKUnit.assertEqual(stack.style.backgroundColor.hex, greenColor, 'Failed to resolve css variable of css variable');
+	TKUnit.assertEqual(stack.style.backgroundColor?.hex, greenColor, 'Failed to resolve css variable of css variable');
 }
 
 export function test_css_calc_and_variables() {
