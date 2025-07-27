@@ -48,9 +48,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// v9+ supports ESM output, anything below uses CommonJS
 	if (hasDependency('@nativescript/core')) {
 		const coreVersion = getDependencyVersion('@nativescript/core');
-		if (coreVersion && !satisfies(coreVersion, '>=9.0.0')) {
-			// @nativescript/core < 9.0.0 uses CommonJS output
-			env.commonjs = true;
+		// ensure alpha/beta/rc versions are considered as well
+		if (coreVersion && !coreVersion.includes('9.0.0')) {
+			if (!satisfies(coreVersion, '>=9.0.0')) {
+				// @nativescript/core < 9.0.0 uses CommonJS output
+				env.commonjs = true;
+			}
 		}
 	}
 
