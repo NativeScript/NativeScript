@@ -8,11 +8,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+
 /**
  * @author hhristov
  */
 public abstract class LayoutBase extends ViewGroup {
 	private boolean passThroughParent;
+	boolean applyingEdges;
+
+	public static final int OverflowEdgeNone = 0;
+	public static final int OverflowEdgeLeft = 1;
+	public static final int OverflowEdgeTop = 2;
+	public static final int OverflowEdgeRight = 3;
+	public static final int OverflowEdgeBottom = 4;
+	public static final int OverflowEdgeDontApply = 5;
+
+	Insets edgeInsets = Insets.NONE;
+
+	int overflowEdge = OverflowEdgeNone;
 
 	public LayoutBase(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
@@ -20,6 +35,10 @@ public abstract class LayoutBase extends ViewGroup {
 
 	public LayoutBase(Context context) {
 		super(context);
+	}
+
+	public Insets getEdgeInsets() {
+		return edgeInsets;
 	}
 
 	@Override
@@ -94,5 +113,40 @@ public abstract class LayoutBase extends ViewGroup {
 
 	public void setPassThroughParent(boolean value) {
 		this.passThroughParent = value;
+	}
+
+	int mPaddingLeft = 0;
+	int mPaddingTop = 0;
+	int mPaddingRight = 0;
+	int mPaddingBottom = 0;
+
+	@Override
+	public void setPadding(int left, int top, int right, int bottom) {
+		if (!applyingEdges) {
+			mPaddingLeft = left;
+			mPaddingTop = top;
+			mPaddingRight = right;
+			mPaddingBottom = bottom;
+		}
+
+		if (!applyingEdges) {
+			Utils.LayoutBaseInset data = Utils.edgeToEdgeMap.get((AppCompatActivity) getContext());
+			if (data != null) {
+				Insets inset = Utils.getFinalInset(data.insets, this, overflowEdge);
+				super.setPadding(inset.left, inset.top, inset.right, inset.bottom);
+				return;
+			}
+		}
+
+		super.setPadding(left, top, right, bottom);
+	}
+
+	public void setOverflowEdge(int value) {
+		overflowEdge = value;
+		Utils.setEdgeToEdgeForView(this, value);
+	}
+
+	public int getOverflowEdge() {
+		return overflowEdge;
 	}
 }
