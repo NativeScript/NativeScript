@@ -23,8 +23,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.activity.ComponentActivity;
+import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.exifinterface.media.ExifInterface;
 
 import org.json.JSONException;
@@ -35,10 +39,160 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class Utils {
+
+	static class LayoutBaseInset {
+		Insets insets;
+		final ArrayList<LayoutBase> views;
+
+		LayoutBaseInset(Insets insets, ArrayList<LayoutBase> views) {
+			this.insets = insets;
+			this.views = views;
+		}
+	}
+
+	static WeakHashMap<ComponentActivity, LayoutBaseInset> edgeToEdgeMap = new WeakHashMap<>();
+
+	static void setEdgeToEdgeForView(LayoutBase base, int overflowEdge) {
+		if (base.applyingEdges) {
+			return;
+		}
+		ComponentActivity activity = (ComponentActivity) base.getContext();
+		if (activity != null) {
+			LayoutBaseInset data = edgeToEdgeMap.get(activity);
+			if (data != null) {
+				if (!data.views.contains(base)) {
+					data.views.add(base);
+				}
+
+				applyEdges(data.insets, base, overflowEdge);
+			}
+		}
+	}
+
+	private static void applyEdgeToEdge(Insets insets, ArrayList<LayoutBase> views) {
+		for (LayoutBase base : views) {
+			applyEdges(insets, base, base.overflowEdge);
+		}
+	}
+
+	private static void applyEdges(Insets insets, LayoutBase view, int overflowEdge) {
+		int left = view.mPaddingLeft;
+		int top = view.mPaddingTop;
+		int right = view.mPaddingRight;
+		int bottom = view.mPaddingBottom;
+		switch (overflowEdge) {
+			case LayoutBase.OverflowEdgeNone:
+				left = left + insets.left;
+				top = top + insets.top;
+				right = right + insets.right;
+				bottom = bottom + insets.bottom;
+				break;
+			case LayoutBase.OverflowEdgeDontApply:
+				view.edgeInsets = insets;
+				break;
+			default:
+				boolean consumeLeft = (view.overflowEdge & LayoutBase.OverflowEdgeLeft) == LayoutBase.OverflowEdgeLeft;
+				boolean consumeTop = (view.overflowEdge & LayoutBase.OverflowEdgeTop) == LayoutBase.OverflowEdgeTop;
+				boolean consumeRight = (view.overflowEdge & LayoutBase.OverflowEdgeRight) == LayoutBase.OverflowEdgeRight;
+				boolean consumeBottom = (view.overflowEdge & LayoutBase.OverflowEdgeBottom) == LayoutBase.OverflowEdgeBottom;
+
+				if (consumeLeft) {
+					left = left + insets.left;
+				}
+
+				if (consumeTop) {
+					top = top + insets.top;
+				}
+
+				if (consumeRight) {
+					right = right + insets.right;
+				}
+
+				if (consumeBottom) {
+					bottom = bottom + insets.bottom;
+				}
+				break;
+		}
+		view.applyingEdges = true;
+		view.setPadding(left, top, right, bottom);
+		view.applyingEdges = false;
+	}
+
+	static Insets getFinalInset(Insets insets, LayoutBase view, int overflowEdge) {
+		int left = view.mPaddingLeft;
+		int top = view.mPaddingTop;
+		int right = view.mPaddingRight;
+		int bottom = view.mPaddingBottom;
+		switch (overflowEdge) {
+			case LayoutBase.OverflowEdgeNone:
+				left = left + insets.left;
+				top = top + insets.top;
+				right = right + insets.right;
+				bottom = bottom + insets.bottom;
+				break;
+			case LayoutBase.OverflowEdgeDontApply:
+				view.edgeInsets = insets;
+				break;
+			default:
+				boolean consumeLeft = (view.overflowEdge & LayoutBase.OverflowEdgeLeft) == LayoutBase.OverflowEdgeLeft;
+				boolean consumeTop = (view.overflowEdge & LayoutBase.OverflowEdgeTop) == LayoutBase.OverflowEdgeTop;
+				boolean consumeRight = (view.overflowEdge & LayoutBase.OverflowEdgeRight) == LayoutBase.OverflowEdgeRight;
+				boolean consumeBottom = (view.overflowEdge & LayoutBase.OverflowEdgeBottom) == LayoutBase.OverflowEdgeBottom;
+
+				if (consumeLeft) {
+					left = left + insets.left;
+				}
+
+				if (consumeTop) {
+					top = top + insets.top;
+				}
+
+				if (consumeRight) {
+					right = right + insets.right;
+				}
+
+				if (consumeBottom) {
+					bottom = bottom + insets.bottom;
+				}
+				break;
+		}
+		return Insets.of(left, top, right, bottom);
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity) {
+		androidx.activity.EdgeToEdge.enable(activity);
+		if (!Utils.edgeToEdgeMap.containsKey(activity)) {
+			Utils.edgeToEdgeMap.put(activity, new Utils.LayoutBaseInset(Insets.NONE, new ArrayList<>()));
+		}
+		View view = activity.findViewById(android.R.id.content);
+		if (view != null) {
+			androidx.core.view.OnApplyWindowInsetsListener listener = new androidx.core.view.OnApplyWindowInsetsListener() {
+				@Override
+				public @NonNull WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
+					Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+					if (Utils.edgeToEdgeMap.containsKey(activity)) {
+						LayoutBaseInset data = Utils.edgeToEdgeMap.get(activity);
+						if (data != null) {
+							data.insets = systemBars;
+							Utils.applyEdgeToEdge(systemBars, data.views);
+						} else {
+							Utils.edgeToEdgeMap.put(activity, new LayoutBaseInset(systemBars, new ArrayList<>()));
+						}
+					} else {
+						Utils.edgeToEdgeMap.put(activity, new LayoutBaseInset(systemBars, new ArrayList<>()));
+					}
+					return insets;
+				}
+			};
+			ViewCompat.setOnApplyWindowInsetsListener(view, listener);
+		}
+	}
 
 	public static Drawable getDrawable(String uri, Context context) {
 		int resId = 0;
@@ -426,10 +580,7 @@ public class Utils {
 
 					Bitmap.CompressFormat targetFormat = getTargetFormat(format);
 
-					try (
-						ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-						Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)
-					) {
+					try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)) {
 						bitmap.compress(targetFormat, quality, base64Stream);
 						result = outputStream.toString();
 					} catch (Exception e) {
@@ -460,9 +611,7 @@ public class Utils {
 				return new Pair<>((int) width, (int) height);
 			}
 
-			return new Pair<>(
-				Math.round((maxSize * width) / height)
-				, (int) maxSize);
+			return new Pair<>(Math.round((maxSize * width) / height), (int) maxSize);
 		}
 
 		if (width <= maxSize) {
