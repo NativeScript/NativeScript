@@ -3,7 +3,7 @@ import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from 
 import { Color } from '../../color';
 import { ImageSource } from '../../image-source';
 import { ImageAsset } from '../../image-asset';
-import { Length } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { knownFolders } from '../../file-system';
 
 import { Screen } from '../../platform';

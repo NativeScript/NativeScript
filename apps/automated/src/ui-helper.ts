@@ -1,4 +1,4 @@
-import { Color, Button, FormattedString, Span, ActionBar, Builder, isIOS, unsetValue, View, ViewBase, Frame, NavigationEntry, LayoutBase, StackLayout, Page, TabView, TabViewItem, Utils } from '@nativescript/core';
+import { Color, Button, FormattedString, Span, ActionBar, Builder, unsetValue, View, ViewBase, Frame, NavigationEntry, LayoutBase, StackLayout, Page, TabView, TabViewItem, Utils } from '@nativescript/core';
 
 import * as TKUnit from './tk-unit';
 
@@ -255,7 +255,7 @@ export function assertTabSelectedTabTextColor(testView: ViewBase, hexColor: stri
 }
 
 export function forceGC() {
-	if (isIOS) {
+	if (__APPLE__) {
 		/* tslint:disable:no-unused-expression */
 		// Could cause GC on the next call.
 		new ArrayBuffer(4 * 1024 * 1024);
@@ -295,7 +295,7 @@ export function _generateFormattedString(): FormattedString {
 export function nativeView_recycling_test(createNew: () => View, createLayout?: () => LayoutBase, nativeGetters?: Map<string, (view) => any>, customSetters?: Map<string, any>) {
 	return;
 
-	// if (isIOS) {
+	// if (__APPLE__) {
 	//     // recycling not implemented yet.
 	//     return;
 	// }

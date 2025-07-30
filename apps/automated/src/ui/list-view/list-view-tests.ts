@@ -1,17 +1,16 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
 import { UITest } from '../../ui-test';
-import { isAndroid, isIOS, Page, View, KeyedTemplate, Utils, Observable, EventData, ObservableArray, Label, Application, ListView, ItemEventData } from '@nativescript/core';
+import { isAndroid, Page, View, KeyedTemplate, Utils, Observable, EventData, ObservableArray, Label, Application, ListView, ItemEventData } from '@nativescript/core';
 import { MyButton, MyStackLayout } from '../layouts/layout-helper';
 
 // >> article-item-tap
-function listViewItemTap(args) {
+export function listViewItemTap(args) {
 	var itemIndex = args.index;
 	// >> (hide)
 	console.log(itemIndex);
 	// << (hide)
 }
-exports.listViewItemTap = listViewItemTap;
 // << article-item-tap
 
 // >> article-load-items
@@ -20,10 +19,9 @@ function listViewLoadMoreItems(args) {
 }
 // << article-load-items
 listViewLoadMoreItems('test');
-// function loaded(args) {
+// export function loaded(args) {
 //   args.object.bindingContext = { items: [1,2,3,4,5] };
 // }
-// exports.loaded = loaded;
 
 var FEW_ITEMS = [0, 1, 2];
 var MANY_ITEMS = new Array<number>(100);
@@ -68,7 +66,7 @@ export class ListViewTest extends UITest<ListView> {
 				try {
 					if (isAndroid) {
 						TKUnit.assert(listView.android instanceof android.widget.ListView, 'android property is android.widget.ListView');
-					} else if (isIOS) {
+					} else if (__APPLE__) {
 						TKUnit.assert(listView.ios instanceof UITableView, 'ios property is UITableView');
 					}
 
@@ -136,13 +134,13 @@ export class ListViewTest extends UITest<ListView> {
 		const indexes = [];
 		const colors = ['red', 'green', 'blue'];
 		listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
-			indexes[args.index] = isIOS ? args.ios : args.android;
+			indexes[args.index] = __APPLE__ ? args.ios : args.android;
 		});
 		listView.items = colors;
 		TKUnit.waitUntilReady(() => indexes.length === 3);
 
 		for (var item in indexes) {
-			if (isIOS) {
+			if (__APPLE__) {
 				TKUnit.assertTrue(indexes[item] instanceof UITableViewCell, 'itemLoading not called for index ' + item);
 			} else if (isAndroid) {
 				TKUnit.assertTrue(indexes[item] instanceof android.view.ViewGroup, 'itemLoading not called for index ' + item);
@@ -151,13 +149,13 @@ export class ListViewTest extends UITest<ListView> {
 	}
 
 	public test_cell_selection_ios() {
-		if (isIOS) {
+		if (__APPLE__) {
 			const listView = this.testView;
 
 			const indexes = [];
 			const colors = ['red', 'green', 'blue'];
 			listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
-				indexes[args.index] = isIOS ? args.ios : args.android;
+				indexes[args.index] = __APPLE__ ? args.ios : args.android;
 			});
 			listView.items = colors;
 			TKUnit.waitUntilReady(() => indexes.length === 3);
@@ -390,7 +388,7 @@ export class ListViewTest extends UITest<ListView> {
 	}
 
 	public test_loadMoreItems_not_raised_when_showing_many_items() {
-		if (isIOS) {
+		if (__APPLE__) {
 			return;
 		}
 		var listView = this.testView;
@@ -719,7 +717,7 @@ export class ListViewTest extends UITest<ListView> {
 		this.testView.items = [1];
 		this.waitUntilListViewReady();
 
-		if (isIOS) {
+		if (__APPLE__) {
 			//Could cause GC on the next call.
 			//    NOTE: Don't replace this with forceGC();
 			let array = new ArrayBuffer(4 * 1024 * 1024);
@@ -764,7 +762,7 @@ export class ListViewTest extends UITest<ListView> {
 		// which does not guarantee releases after a GC pass.
 		//
 		// TKUnit.waitUntilReady(() => {
-		// 	if (isIOS) {
+		// 	if (__APPLE__) {
 		// 		/* tslint:disable:no-unused-expression */
 		// 		// Could cause GC on the next call.
 		// 		// NOTE: Don't replace this with forceGC();

@@ -1,4 +1,4 @@
-import { ShownModallyData, Frame, isIOS, TabView } from '@nativescript/core';
+import { ShownModallyData, Frame, TabView } from '@nativescript/core';
 import * as TKUnit from '../../tk-unit';
 
 export function onShownModally(args: ShownModallyData) {

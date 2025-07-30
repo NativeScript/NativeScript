@@ -1,12 +1,10 @@
 import { ActivityIndicatorBase, busyProperty, iosIndicatorViewStyleProperty } from './activity-indicator-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { iOSNativeHelper } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { IOSIndicatorViewStyle } from '.';
 
 export * from './activity-indicator-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 export class ActivityIndicator extends ActivityIndicatorBase {
 	nativeViewProtected: UIActivityIndicatorView;
@@ -29,10 +27,10 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 
 		switch (value) {
 			case 'large':
-				viewStyle = majorVersion > 12 ? UIActivityIndicatorViewStyle.Large : UIActivityIndicatorViewStyle.WhiteLarge;
+				viewStyle = SDK_VERSION > 12 ? UIActivityIndicatorViewStyle.Large : UIActivityIndicatorViewStyle.WhiteLarge;
 				break;
 			default:
-				viewStyle = majorVersion > 12 ? UIActivityIndicatorViewStyle.Medium : UIActivityIndicatorViewStyle.Gray;
+				viewStyle = SDK_VERSION > 12 ? UIActivityIndicatorViewStyle.Medium : UIActivityIndicatorViewStyle.Gray;
 				break;
 		}
 

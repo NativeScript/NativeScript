@@ -10,6 +10,7 @@ import { isIOS, Device } from '@nativescript/core/platform';
 import lazy from '@nativescript/core/utils/lazy';
 
 const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
+const appFolder = fs.knownFolders.currentApp().path;
 
 export var test_XmlParser_IsDefined = function () {
 	TKUnit.assertNotEqual(xmlModule.XmlParser, undefined, 'Class XmlParser should be defined!');
@@ -92,7 +93,7 @@ export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
 		},
 		function (error: Error) {
 			e = error;
-		}
+		},
 	);
 	xmlParser.parse('<element></otherElement>');
 	TKUnit.assert(e !== undefined, 'Expected result: error; Actual result: ' + e + ';');
@@ -103,8 +104,8 @@ export var test_XmlParser_IntegrationTest = function () {
 		return;
 	}
 
-	var actualResult = '';
-	var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
+	let actualResult = '';
+	const xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
 		if (event.eventType === xmlModule.ParserEventType.Text && event.data.trim() === '') {
 			// Ignore ignorable whitespace.
 			return;
@@ -113,20 +114,20 @@ export var test_XmlParser_IntegrationTest = function () {
 		actualResult += event.toString();
 	});
 
-	var file = fs.File.fromPath(fs.path.join(__dirname, 'xml.xml'));
-	var xmlString = file.readTextSync();
+	let file = fs.File.fromPath(appFolder + '/assets/xml.xml');
+	let xmlString = file.readTextSync();
 	xmlString = xmlString.replace(/(\r\n|\n|\r)/gm, '\n');
 	xmlParser.parse(xmlString);
 
-	var expectedResult: string;
-	file = fs.File.fromPath(fs.path.join(__dirname, 'xml.expected'));
+	let expectedResult: string;
+	file = fs.File.fromPath(appFolder + '/assets/xml.expected');
 	expectedResult = file.readTextSync();
 
-	var i;
-	var maxLength = Math.max(actualResult.length, expectedResult.length);
+	let i;
+	const maxLength = Math.max(actualResult.length, expectedResult.length);
 	for (i = 0; i < maxLength; i++) {
-		var actualChar;
-		var actualCharCode;
+		let actualChar;
+		let actualCharCode;
 		if (i <= actualResult.length) {
 			actualChar = actualResult.charAt(i);
 			actualCharCode = actualResult.charCodeAt(i);
@@ -213,10 +214,10 @@ export var test_XmlParser_NamespacesTest = function () {
 			TKUnit.assert(actualResult === expectedResult, 'Actual: ' + actualResult + '; Expected: ' + expectedResult);
 		},
 		undefined,
-		true
+		true,
 	);
 
-	var file = fs.File.fromPath(fs.path.join(__dirname, 'xml-with-namespaces.xml'));
+	var file = fs.File.fromPath(appFolder + '/assets/xml-with-namespaces.xml');
 	var xmlString = file.readTextSync();
 	xmlParser.parse(xmlString);
 };

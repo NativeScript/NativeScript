@@ -1,6 +1,6 @@
 import { parseCSSShadow } from './css-shadow';
 import { CoreTypes } from '../../core-types';
-import { Length } from './style-properties';
+import { Length } from './length-shared';
 import { Color } from '../../color';
 
 describe('css-shadow', () => {

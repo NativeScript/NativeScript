@@ -3,6 +3,7 @@ import {
 	ContextExclusionPlugin,
 	DefinePlugin,
 	HotModuleReplacementPlugin,
+	BannerPlugin,
 } from 'webpack';
 import Config from 'webpack-chain';
 import { satisfies } from 'semver';
@@ -13,7 +14,11 @@ import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
 import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
-import { getDependencyVersion, hasDependency } from '../helpers/dependencies';
+import {
+	getAllDependencies,
+	getDependencyVersion,
+	hasDependency,
+} from '../helpers/dependencies';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
@@ -38,6 +43,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// set mode
 	config.mode(mode);
+
+	// determine target output by @nativescript/core version
+	// v9+ supports ESM output, anything below uses CommonJS
+	if (hasDependency('@nativescript/core')) {
+		const coreVersion = getDependencyVersion('@nativescript/core');
+		// ensure alpha/beta/rc versions are considered as well
+		if (coreVersion && !coreVersion.includes('9.0.0')) {
+			if (!satisfies(coreVersion, '>=9.0.0')) {
+				// @nativescript/core < 9.0.0 uses CommonJS output
+				env.commonjs = true;
+			}
+		}
+	}
 
 	// config.stats({
 	// 	logging: 'verbose'
@@ -98,6 +116,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// appears to be working - but we still have to deal with HMR
 	config.target('node');
 
+	// config.entry('globals').add('@nativescript/core/globals/index').end();
+
 	config
 		.entry('bundle')
 		// ensure we load nativescript globals first
@@ -124,16 +144,38 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			.add('@nativescript/core/inspector_modules');
 	});
 
-	config.output
-		.path(outputPath)
-		.pathinfo(false)
-		.publicPath('')
-		.libraryTarget('commonjs')
-		.globalObject('global')
-		.set('clean', true);
+	if (env.commonjs) {
+		// CommonJS output
+		config.output
+			.path(outputPath)
+			.pathinfo(false)
+			.publicPath('')
+			.libraryTarget('commonjs')
+			.globalObject('global')
+			.set('clean', true);
+		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
+			config.output.filename(`[name].${env.uniqueBundle}.js`);
+		}
+	} else {
+		// ESM output
+		config.merge({
+			experiments: {
+				// enable ES module syntax (import/exports)
+				outputModule: true,
+			},
+		});
 
-	if (env?.uniqueBundle) {
-		config.output.filename(`[name].${env.uniqueBundle}.js`);
+		config.output
+			.path(outputPath)
+			.pathinfo(false)
+			.publicPath('file:///app/')
+			.set('module', true)
+			.libraryTarget('module')
+			.globalObject('global')
+			.set('clean', true);
+		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
+			config.output.filename(`[name].${env.uniqueBundle}.mjs`);
+		}
 	}
 
 	config.watchOptions({
@@ -175,16 +217,47 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.optimization.runtimeChunk('single');
 
-	config.optimization.splitChunks({
-		cacheGroups: {
-			defaultVendor: {
-				test: /[\\/]node_modules[\\/]/,
-				priority: -10,
-				name: 'vendor',
-				chunks: 'all',
+	if (env.commonjs) {
+		// Set up CommonJS output
+		config.optimization.splitChunks({
+			cacheGroups: {
+				defaultVendor: {
+					test: /[\\/]node_modules[\\/]/,
+					priority: -10,
+					name: 'vendor',
+					chunks: 'all',
+				},
 			},
-		},
-	});
+		});
+	} else {
+		// Set up ESM output
+		// NOTE: this fixes all worker bundling issues
+		// however it causes issues with angular lazy loading.
+		// TODO: still need to investigate the right combination of webpack settings there
+		// TODO: test if standalone lazy loaded routes work, maybe it's just with loadChildren modules?
+		config.output.chunkFilename('[name].mjs');
+
+		// now re‑add exactly what you want:
+		config.optimization.splitChunks({
+			// only split out vendor from the main bundle…
+			chunks: 'initial',
+			cacheGroups: {
+				// no “default” group
+				default: false,
+
+				// only pull node_modules into vendor.js from the *initial* chunk
+				vendor: {
+					test: /[\\/]node_modules[\\/]/,
+					name: 'vendor',
+					chunks: 'initial',
+					priority: -10,
+					reuseExistingChunk: true,
+				},
+			},
+		});
+
+		config.optimization.set('moduleIds', 'named').set('chunkIds', 'named');
+	}
 
 	// look for loaders in
 	//  - node_modules/@nativescript/webpack/dist/loaders
@@ -470,6 +543,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
 			__UI_USE_XML_PARSER__: true,
 			__UI_USE_EXTERNAL_RENDERER__: false,
+			__COMMONJS__: !!env.commonjs,
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
 			__VISIONOS__: platform === 'visionos',

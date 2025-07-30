@@ -8,7 +8,7 @@ import { Trace } from '@nativescript/core';
 import * as gridModule from '@nativescript/core/ui/layouts/grid-layout';
 import * as sliders from '@nativescript/core/ui/slider';
 import * as switches from '@nativescript/core/ui/switch';
-import * as bindable from '@nativescript/core/ui/core/bindable';
+import type { BindingOptions } from '@nativescript/core/ui/core/bindable/bindable-types';
 
 Trace.enable();
 //Trace.setCategories(Trace.categories.Style + " ," + Trace.categories.Binding);
@@ -64,7 +64,7 @@ export function createPage() {
 		slider.value = desc.value;
 		stack.addChild(slider);
 
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'value',
 			targetProperty: desc.name,
 		};
@@ -82,7 +82,7 @@ export function createPage() {
 		sw.horizontalAlignment = 'left';
 		stack.addChild(sw);
 
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'checked',
 			targetProperty: desc.name,
 		};
@@ -99,7 +99,7 @@ export function createPage() {
 		txt.text = desc.value;
 		stack.addChild(txt);
 
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'text',
 			targetProperty: desc.name,
 		};

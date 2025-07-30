@@ -1,10 +1,6 @@
 // Types
 import { View as ViewDefinition } from '..';
-import { CoreTypes } from '../../../../core-types';
-
-// Requires
-import { layout } from '../../../../utils';
-import { Trace } from '../../../../trace';
+import { CoreTypes, layout, Trace } from './view-helper-shared';
 
 export class ViewHelper {
 	public static measureChild(parent: ViewDefinition, child: ViewDefinition, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
