@@ -1,18 +1,18 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="false">
-     <Page.actionBar>
+    <Page.actionBar>
         <ActionBar>
             <Label text="Components" class="header"/>
         </ActionBar>
     </Page.actionBar>
 
-    <ListView class="list-group" items="{{ components }}" itemTap="{{ componentsItemTap }} " separatorColor="#00000000"
-        itemTemplateSelector="{{ selectItemTemplate }}">
+<GridLayout backgroundColor="#efefef">
+    <ListView class="list-group" items="{{ components }}" itemTap="{{ componentsItemTap }} " separatorColor="#00000000" itemTemplateSelector="{{ selectItemTemplate }}" stickyHeader="true" sectioned="true" stickyHeaderTopPadding="false" stickyHeaderTemplate="<GridLayout><Label text='{{ title }}' fontSize='18' fontWeight='bold' color='#009bff' padding='2 0 2 12' borderBottomWidth='1' borderBottomColor='#ccc' borderTopWidth='1' borderTopColor='#ccc' backgroundColor='#fff' /></GridLayout>" stickyHeaderHeight="45" itemLoading="{{ itemLoading }}">
         <ListView.itemTemplates>
             <template key="not-last">
-                <StackLayout class="list-row-item">
-                    <GridLayout>
-                        <FlexboxLayout flexDirection="row" class="list-view-row" verticalAlignment="center">
-                            <visionos>
+                <!-- <StackLayout class="list-row-item"> -->
+                    <GridLayout columns="auto,auto,*" padding="12" margin="4 6 4 6" borderRadius="4" backgroundColor="#fff">
+                        <!-- <FlexboxLayout flexDirection="row" class="list-view-row" verticalAlignment="center"> -->
+                            <!-- <visionos>
                                 <Label text="{{ iconText }}" class="icon-around icon-label"/>
                             </visionos>
                             <ios>
@@ -22,21 +22,23 @@
                                 <StackLayout class="icon-around">
                                     <Label text="{{ iconText }}" class="icon-label"/>
                                 </StackLayout>
-                            </android>
-                            <StackLayout class="va-middle">
-                                <Label text="{{ name }}" class="component-label"></Label>
-                            </StackLayout>
-                        </FlexboxLayout>
-                        <Label text="J" class="component-select component-select-fix"></Label>
+                            </android> -->
+                            <!-- <StackLayout class="va-middle"> -->
+                            <Label class="component-select component-select-fix" text="{{ flag }}" marginLeft="4"></Label>
+                                <Label col="1" text="{{ name }}" marginLeft="6"></Label>
+                                <Label col="2" text="{{ code }}" marginLeft="4" color="#999"></Label>
+                            <!-- </StackLayout> -->
+                        <!-- </FlexboxLayout> -->
+                        
                     </GridLayout>
-                    <StackLayout class="listview-separator"/>
-                </StackLayout>
+                    <!-- <StackLayout class="listview-separator"/> -->
+                <!-- </StackLayout> -->
             </template>
             <template key="last">
-                <StackLayout class="list-row-item">
-                    <GridLayout>
-                        <FlexboxLayout flexDirection="row" class="list-view-row" verticalAlignment="center">
-                            <visionos>
+                <!-- <StackLayout class="list-row-item"> -->
+                    <GridLayout columns="auto,auto,*" padding="12" margin="4 6 4 6" borderRadius="4" backgroundColor="#fff">
+                        <!-- <FlexboxLayout flexDirection="row" class="list-view-row" verticalAlignment="center"> -->
+                            <!-- <visionos>
                                 <Label text="{{ iconText }}" class="icon-around icon-label"/>
                             </visionos>
                             <ios>
@@ -46,16 +48,20 @@
                                 <StackLayout class="icon-around">
                                     <Label text="{{ iconText }}" class="icon-label"/>
                                 </StackLayout>
-                            </android>
-                            <StackLayout class="va-middle">
-                                <Label text="{{ name }}" class="component-label"></Label>
-                            </StackLayout>
-                        </FlexboxLayout>
-                        <Label text="J" class="component-select component-select-fix"></Label>
+                            </android> -->
+                            <!-- <StackLayout class="va-middle"> -->
+                                <Label class="component-select component-select-fix" text="{{ flag }}" marginLeft="4"></Label>
+                                <Label col="1" text="{{ name }}" marginLeft="6"></Label>
+                                <Label col="2" text="{{ code }}" marginLeft="4" color="#999"></Label>
+                            <!-- </StackLayout>
+                        </FlexboxLayout> -->
+
                     </GridLayout>
-                </StackLayout>
+                <!-- </StackLayout> -->
             </template>
         </ListView.itemTemplates>
     </ListView>
+
+</GridLayout>
 
 </Page>

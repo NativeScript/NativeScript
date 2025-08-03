@@ -100,6 +100,46 @@ export class ListView extends View {
 	iosEstimatedRowHeight: CoreTypes.LengthType;
 
 	/**
+	 * Gets or sets a value indicating whether the ListView should display sticky headers.
+	 * When enabled, headers will remain visible at the top while scrolling through sections.
+	 *
+	 * @nsProperty
+	 */
+	stickyHeader: boolean;
+
+	/**
+	 * Gets or sets the template for sticky headers.
+	 *
+	 * @nsProperty
+	 */
+	stickyHeaderTemplate: string | Template;
+
+	/**
+	 * Gets or sets the height of sticky headers.
+	 *
+	 * @nsProperty
+	 */
+	stickyHeaderHeight: CoreTypes.LengthType;
+
+	/**
+	 * Gets or sets a value indicating whether the ListView should show default top padding above section headers.
+	 * When set to false (default), removes iOS default spacing for a tighter layout.
+	 * When set to true, preserves iOS default ~4-5px spacing above section headers.
+	 *
+	 * @nsProperty
+	 */
+	stickyHeaderTopPadding: boolean;
+
+	/**
+	 * Gets or sets a value indicating whether the ListView should treat items as sectioned data.
+	 * When enabled, items array should contain objects with 'items' property for section content.
+	 * Each section will have its own sticky header.
+	 *
+	 * @nsProperty
+	 */
+	sectioned: boolean;
+
+	/**
 	 * Forces the ListView to reload all its items.
 	 */
 	refresh();
@@ -230,3 +270,28 @@ export const iosEstimatedRowHeightProperty: Property<ListView, CoreTypes.LengthT
  * Backing property for separator color property.
  */
 export const separatorColorProperty: CssProperty<Style, Color>;
+
+/**
+ * Represents the observable property backing the stickyHeader property of each ListView instance.
+ */
+export const stickyHeaderProperty: Property<ListView, boolean>;
+
+/**
+ * Represents the sticky header template property of each ListView instance.
+ */
+export const stickyHeaderTemplateProperty: Property<ListView, string | Template>;
+
+/**
+ * Represents the observable property backing the stickyHeaderHeight property of each ListView instance.
+ */
+export const stickyHeaderHeightProperty: Property<ListView, CoreTypes.LengthType>;
+
+/**
+ * Represents the observable property backing the stickyHeaderTopPadding property of each ListView instance.
+ */
+export const stickyHeaderTopPaddingProperty: Property<ListView, boolean>;
+
+/**
+ * Represents the observable property backing the sectioned property of each ListView instance.
+ */
+export const sectionedProperty: Property<ListView, boolean>;
