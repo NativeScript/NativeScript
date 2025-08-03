@@ -30,6 +30,12 @@ export class ListView extends View {
 	 * @nsEvent itemLoading
 	 */
 	public static loadMoreItemsEvent: string;
+	/**
+	 * String value used when hooking to searchChange event.
+	 *
+	 * @nsEvent {SearchEventData} searchChange
+	 */
+	public static searchChangeEvent: string;
 
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
@@ -140,6 +146,14 @@ export class ListView extends View {
 	sectioned: boolean;
 
 	/**
+	 * Gets or sets a value indicating whether the ListView should show a search bar.
+	 * When enabled on iOS, uses native UISearchController for optimal performance.
+	 *
+	 * @nsProperty
+	 */
+	showSearch: boolean;
+
+	/**
 	 * Forces the ListView to reload all its items.
 	 */
 	refresh();
@@ -195,6 +209,11 @@ export class ListView extends View {
 	 * Raised when the ListView is scrolled so that its last item is visible.
 	 */
 	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any): void;
+
+	/**
+	 * Raised when the search text in the search bar changes.
+	 */
+	on(event: 'searchChange', callback: (args: SearchEventData) => void, thisArg?: any): void;
 }
 
 /**
@@ -220,6 +239,26 @@ export interface ItemEventData extends EventData {
 	 * Gets the native [android widget](http://developer.android.com/reference/android/view/ViewGroup.html) that represents the user interface where the view is hosted. Valid only when running on Android OS.
 	 */
 	android: any /* android.view.ViewGroup */;
+}
+
+/**
+ * Event data containing information for the search text change event.
+ */
+export interface SearchEventData extends EventData {
+	/**
+	 * The current search text value.
+	 */
+	text: string;
+
+	/**
+	 * Gets the native [iOS UISearchController](https://developer.apple.com/documentation/uikit/uisearchcontroller) that represents the search controller. Valid only when running on iOS.
+	 */
+	ios?: any /* UISearchController */;
+
+	/**
+	 * Gets the native Android search view. Valid only when running on Android OS.
+	 */
+	android?: any;
 }
 
 export interface ItemsSource {
@@ -295,3 +334,8 @@ export const stickyHeaderTopPaddingProperty: Property<ListView, boolean>;
  * Represents the observable property backing the sectioned property of each ListView instance.
  */
 export const sectionedProperty: Property<ListView, boolean>;
+
+/**
+ * Represents the observable property backing the showSearch property of each ListView instance.
+ */
+export const showSearchProperty: Property<ListView, boolean>;

@@ -1,11 +1,12 @@
-import { ItemEventData } from '.';
-import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty } from './list-view-common';
+import { ItemEventData, SearchEventData, ItemsSource } from '.';
+import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty } from './list-view-common';
 import { CoreTypes } from '../../core-types';
 import { View, KeyedTemplate, Template } from '../core/view';
 import { Length } from '../styling/length-shared';
 import { Observable, EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { StackLayout } from '../layouts/stack-layout';
 import { ProxyViewContainer } from '../proxy-view-container';
 import { profile } from '../../profiling';
@@ -393,6 +394,43 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 	}
 }
 
+@NativeClass
+class UISearchResultsUpdatingImpl extends NSObject implements UISearchResultsUpdating {
+	public static ObjCProtocols = [UISearchResultsUpdating];
+
+	private _owner: WeakRef<ListView>;
+
+	public static initWithOwner(owner: WeakRef<ListView>): UISearchResultsUpdatingImpl {
+		const handler = <UISearchResultsUpdatingImpl>UISearchResultsUpdatingImpl.new();
+		handler._owner = owner;
+
+		return handler;
+	}
+
+	public updateSearchResultsForSearchController(searchController: UISearchController) {
+		const owner = this._owner ? this._owner.get() : null;
+		if (!owner) {
+			return;
+		}
+
+		const searchText = searchController.searchBar.text || '';
+
+		// Track search state
+		owner._isSearchActive = searchController.active;
+
+		// Create SearchEventData
+		const eventData: SearchEventData = {
+			eventName: ListViewBase.searchChangeEvent,
+			object: owner,
+			text: searchText,
+			ios: searchController,
+		};
+
+		// Fire the searchChange event
+		owner.notify(eventData);
+	}
+}
+
 export class ListView extends ListViewBase {
 	public nativeViewProtected: UITableView;
 	// tslint:disable-next-line
@@ -405,6 +443,9 @@ export class ListView extends ListViewBase {
 	private _headerMap: Map<ListViewHeaderCell, View>;
 	private _preparingHeader: boolean;
 	private _headerTemplateCache: View;
+	private _searchController: UISearchController;
+	private _searchDelegate: UISearchResultsUpdatingImpl;
+	_isSearchActive: boolean = false;
 	widthMeasureSpec = 0;
 
 	constructor() {
@@ -440,9 +481,86 @@ export class ListView extends ListViewBase {
 	}
 
 	disposeNativeView() {
+		this._cleanupSearchController();
 		this._delegate = null;
 		this._dataSource = null;
 		super.disposeNativeView();
+	}
+
+	private _setupSearchController() {
+		if (!this.showSearch || this._searchController) {
+			return; // Already setup or not needed
+		}
+
+		// 1. Create UISearchController with nil (show results in this table)
+		this._searchController = UISearchController.alloc().initWithSearchResultsController(null);
+		this._searchDelegate = UISearchResultsUpdatingImpl.initWithOwner(new WeakRef(this));
+
+		// 2. Tell it who will update results
+		this._searchController.searchResultsUpdater = this._searchDelegate;
+
+		// 3. Don't dim or obscure your table by default
+		this._searchController.obscuresBackgroundDuringPresentation = false;
+
+		// 4. Placeholder text
+		this._searchController.searchBar.placeholder = 'Search';
+		this._searchController.searchBar.searchBarStyle = UISearchBarStyle.Minimal;
+
+		// 5. CRITICAL: Make sure the search bar doesn't remain on screen if the user navigates
+		const viewController = this._getViewController();
+		if (viewController) {
+			viewController.definesPresentationContext = true;
+
+			// 6a. If we're in a UINavigationController...
+			if (SDK_VERSION >= 11.0 && viewController.navigationItem) {
+				viewController.navigationItem.searchController = this._searchController;
+				viewController.navigationItem.hidesSearchBarWhenScrolling = false;
+			} else {
+				// 6b. Or just put it at the top of our table
+				this.nativeViewProtected.tableHeaderView = this._searchController.searchBar;
+			}
+		} else {
+			// Fallback: no view controller found, use table header
+			this.nativeViewProtected.tableHeaderView = this._searchController.searchBar;
+		}
+
+		// Ensure search bar is properly sized
+		this._searchController.searchBar.sizeToFit();
+
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: UISearchController setup complete`, Trace.categories.Debug);
+		}
+	}
+
+	private _cleanupSearchController() {
+		if (!this._searchController) {
+			return;
+		}
+
+		// Remove search controller from navigation item or table header
+		const viewController = this._getViewController();
+		if (viewController && viewController.navigationItem && viewController.navigationItem.searchController === this._searchController) {
+			viewController.navigationItem.searchController = null;
+		} else if (this.nativeViewProtected.tableHeaderView === this._searchController.searchBar) {
+			this.nativeViewProtected.tableHeaderView = null;
+		}
+
+		// Cleanup references
+		this._searchController.searchResultsUpdater = null;
+		this._searchController = null;
+		this._searchDelegate = null;
+	}
+
+	private _getViewController(): UIViewController {
+		// Helper to get the current view controller
+		let parent = this.parent;
+		while (parent) {
+			if (parent.viewController) {
+				return parent.viewController;
+			}
+			parent = parent.parent;
+		}
+		return null;
 	}
 
 	_setNativeClipToBounds() {
@@ -460,6 +578,11 @@ export class ListView extends ListViewBase {
 			this.refresh();
 		}
 		this.nativeViewProtected.delegate = this._delegate;
+
+		// Setup search controller if enabled
+		if (this.showSearch) {
+			this._setupSearchController();
+		}
 	}
 
 	// @ts-ignore
@@ -947,6 +1070,21 @@ export class ListView extends ListViewBase {
 		// Immediately refresh to apply changes
 		if (this.isLoaded) {
 			this.refresh();
+		}
+	}
+
+	[showSearchProperty.getDefault](): boolean {
+		return false;
+	}
+	[showSearchProperty.setNative](value: boolean) {
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: showSearch set to ${value}`, Trace.categories.Debug);
+		}
+
+		if (value) {
+			this._setupSearchController();
+		} else {
+			this._cleanupSearchController();
 		}
 	}
 }

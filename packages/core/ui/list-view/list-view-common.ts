@@ -1,4 +1,4 @@
-import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from '.';
+import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView, SearchEventData } from '.';
 import { View, ContainerView, Template, KeyedTemplate, CSSType } from '../core/view';
 import { Property, CoercibleProperty, CssProperty } from '../core/properties';
 import { Length } from '../styling/length-shared';
@@ -21,6 +21,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public static itemLoadingEvent = 'itemLoading';
 	public static itemTapEvent = 'itemTap';
 	public static loadMoreItemsEvent = 'loadMoreItems';
+	public static searchChangeEvent = 'searchChange';
 	// TODO: get rid of such hacks.
 	public static knownFunctions = ['itemTemplateSelector', 'itemIdGenerator']; //See component-builder.ts isKnownFunction
 
@@ -56,6 +57,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public stickyHeaderHeight: CoreTypes.LengthType;
 	public stickyHeaderTopPadding: boolean;
 	public sectioned: boolean;
+	public showSearch: boolean;
 
 	get separatorColor(): Color {
 		return this.style.separatorColor;
@@ -217,6 +219,7 @@ export interface ListViewBase {
 	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any): void;
 	on(event: 'itemTap', callback: (args: ItemEventData) => void, thisArg?: any): void;
 	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any): void;
+	on(event: 'searchChange', callback: (args: SearchEventData) => void, thisArg?: any): void;
 }
 
 /**
@@ -339,3 +342,10 @@ export const sectionedProperty = new Property<ListViewBase, boolean>({
 	valueConverter: (v) => !!v,
 });
 sectionedProperty.register(ListViewBase);
+
+export const showSearchProperty = new Property<ListViewBase, boolean>({
+	name: 'showSearch',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+showSearchProperty.register(ListViewBase);

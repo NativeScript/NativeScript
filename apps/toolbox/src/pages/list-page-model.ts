@@ -1,7 +1,7 @@
-import { Observable, Dialogs, DialogStrings, View, EventData } from '@nativescript/core';
-
+import { Observable, Dialogs, DialogStrings, View, EventData, SearchEventData } from '@nativescript/core';
+type CountryListType = Array<{ title: string; items: Array<{ name: string; code: string; flag: string; isVisible?: boolean }> }>;
 export class ListPageModel extends Observable {
-	components: Array<any> = [
+	countries: CountryListType = [
 		{
 			title: 'A',
 			items: [
@@ -1373,9 +1373,10 @@ export class ListPageModel extends Observable {
 			],
 		},
 	];
+	private _originalCountries: CountryListType;
 
 	selectItemTemplate(item: any, index: number, items: Array<any>) {
-		return index == items.length - 1 ? 'last' : 'not-last';
+		return 'main'; // index == items.length - 1 ? 'last' : 'not-last';
 	}
 
 	componentsItemTap(args): void {
@@ -1388,5 +1389,41 @@ export class ListPageModel extends Observable {
 
 	itemLoading(args: EventData): void {
 		(args.object as View).backgroundColor = 'transparent';
+	}
+
+	onSearchTextChange(evt: SearchEventData): void {
+		if (!this._originalCountries) {
+			this._originalCountries = this.countries;
+		}
+		const searchText = evt.text.toLowerCase();
+		console.log('Search text:', searchText);
+		if (searchText) {
+			this.countries = this.filterCountryGroups(this._originalCountries, searchText);
+		} else {
+			this.countries = this._originalCountries; // reset to original if no search text
+		}
+		this.notifyPropertyChange('countries', this.countries);
+	}
+
+	/**
+	 * Filter a grouped array of countries by search query.
+	 * @param {Array<{ title: string; items: { name: string; code: string; flag: string; }[] }>} groups
+	 * @param {string} query
+	 * @returns Filtered groups with the same shape, omitting any with no matches.
+	 */
+	filterCountryGroups(groups: CountryListType, query: string): CountryListType {
+		const q = query.trim().toLowerCase();
+		if (!q) return groups; // no query → all groups
+
+		return (
+			groups
+				.map((group) => {
+					// keep only items whose name includes the query
+					const items = group.items.filter((item) => item.name.toLowerCase().includes(q));
+					return { ...group, items };
+				})
+				// drop any group that ended up with 0 items
+				.filter((group) => group.items.length > 0)
+		);
 	}
 }
