@@ -1,5 +1,5 @@
 import { ItemEventData, ItemsSource } from '.';
-import { ListViewBase, separatorColorProperty, itemTemplatesProperty } from './list-view-common';
+import { ListViewBase, separatorColorProperty, itemTemplatesProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty } from './list-view-common';
 import { View, KeyedTemplate } from '../core/view';
 import { unsetValue } from '../core/properties/property-shared';
 import { CoreTypes } from '../../core-types';
@@ -9,12 +9,19 @@ import { StackLayout } from '../layouts/stack-layout';
 import { ProxyViewContainer } from '../proxy-view-container';
 import { LayoutBase } from '../layouts/layout-base';
 import { profile } from '../../profiling';
+import { Builder } from '../builder';
+import { Template } from '../core/view';
+import { Label } from '../label';
 
 export * from './list-view-common';
 
 const ITEMLOADING = ListViewBase.itemLoadingEvent;
 const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
+
+// View type constants for sectioned lists
+const ITEM_VIEW_TYPE = 0;
+// HEADER_VIEW_TYPE will be dynamically calculated as the last index
 
 interface ItemClickListener {
 	new (owner: ListView): android.widget.AdapterView.OnItemClickListener;
@@ -293,6 +300,28 @@ export class ListView extends ListViewBase {
 		this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
 		this.refresh();
 	}
+
+	// Sticky header property handlers (for now just trigger refresh)
+	[stickyHeaderProperty.setNative](value: boolean) {
+		// Refresh adapter to handle sectioned vs non-sectioned display
+		if (this.nativeViewProtected && this.nativeViewProtected.getAdapter()) {
+			this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
+		}
+	}
+
+	[stickyHeaderTemplateProperty.setNative](value: string) {
+		// Refresh adapter when template changes
+		if (this.nativeViewProtected && this.nativeViewProtected.getAdapter()) {
+			this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
+		}
+	}
+
+	[sectionedProperty.setNative](value: boolean) {
+		// Refresh adapter to handle sectioned vs non-sectioned data
+		if (this.nativeViewProtected && this.nativeViewProtected.getAdapter()) {
+			this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
+		}
+	}
 }
 
 let ListViewAdapterClass;
@@ -310,17 +339,73 @@ function ensureListViewAdapterClass() {
 		}
 
 		public getCount() {
-			return this.owner && this.owner.items && this.owner.items.length ? this.owner.items.length : 0;
+			if (!this.owner || !this.owner.items) {
+				return 0;
+			}
+
+			if (this.owner.sectioned) {
+				// Count items + section headers
+				let totalCount = 0;
+				const sectionCount = this.owner._getSectionCount();
+				for (let i = 0; i < sectionCount; i++) {
+					totalCount += 1; // Section header
+					totalCount += this.owner._getItemsInSection(i).length; // Items in section
+				}
+				return totalCount;
+			} else {
+				return this.owner.items.length;
+			}
 		}
 
 		public getItem(i: number) {
-			if (this.owner && this.owner.items && i < this.owner.items.length) {
-				const getItem = (<ItemsSource>this.owner.items).getItem;
+			if (!this.owner || !this.owner.items) {
+				return null;
+			}
 
-				return getItem ? getItem.call(this.owner.items, i) : this.owner.items[i];
+			if (this.owner.sectioned) {
+				const positionInfo = this._getPositionInfo(i);
+				if (positionInfo.isHeader) {
+					return this.owner._getSectionData(positionInfo.section);
+				} else {
+					return this.owner._getDataItemInSection(positionInfo.section, positionInfo.itemIndex);
+				}
+			} else {
+				if (i < this.owner.items.length) {
+					const getItem = (<ItemsSource>this.owner.items).getItem;
+					return getItem ? getItem.call(this.owner.items, i) : this.owner.items[i];
+				}
 			}
 
 			return null;
+		}
+
+		// Helper method to determine if position is header and get section/item info
+		private _getPositionInfo(position: number): { isHeader: boolean; section: number; itemIndex: number } {
+			if (!this.owner.sectioned) {
+				return { isHeader: false, section: 0, itemIndex: position };
+			}
+
+			let currentPosition = 0;
+			const sectionCount = this.owner._getSectionCount();
+
+			for (let section = 0; section < sectionCount; section++) {
+				// Check if this position is the section header
+				if (currentPosition === position) {
+					return { isHeader: true, section: section, itemIndex: -1 };
+				}
+				currentPosition++; // Move past header
+
+				// Check if position is within this section's items
+				const itemsInSection = this.owner._getItemsInSection(section).length;
+				if (position < currentPosition + itemsInSection) {
+					const itemIndex = position - currentPosition;
+					return { isHeader: false, section: section, itemIndex: itemIndex };
+				}
+				currentPosition += itemsInSection; // Move past items
+			}
+
+			// Fallback
+			return { isHeader: false, section: 0, itemIndex: 0 };
 		}
 
 		public getItemId(i: number) {
@@ -338,14 +423,31 @@ function ensureListViewAdapterClass() {
 		}
 
 		public getViewTypeCount() {
-			return this.owner._itemTemplatesInternal.length;
+			let count = this.owner._itemTemplatesInternal.length;
+
+			// Add 1 for header view type when sectioned
+			if (this.owner.sectioned && this.owner.stickyHeaderTemplate) {
+				count += 1;
+			}
+
+			return count;
 		}
 
 		public getItemViewType(index: number) {
-			const template = this.owner._getItemTemplate(index);
-			const itemViewType = this.owner._itemTemplatesInternal.indexOf(template);
-
-			return itemViewType;
+			if (this.owner.sectioned) {
+				const positionInfo = this._getPositionInfo(index);
+				if (positionInfo.isHeader) {
+					// Header view type is the last index (after all item template types)
+					return this.owner._itemTemplatesInternal.length;
+				} else {
+					// Get template for the actual item
+					const template = this.owner._getItemTemplate(positionInfo.itemIndex);
+					return this.owner._itemTemplatesInternal.indexOf(template);
+				}
+			} else {
+				const template = this.owner._getItemTemplate(index);
+				return this.owner._itemTemplatesInternal.indexOf(template);
+			}
 		}
 
 		@profile
@@ -356,17 +458,90 @@ function ensureListViewAdapterClass() {
 				return null;
 			}
 
-			const totalItemCount = this.owner.items ? this.owner.items.length : 0;
-			if (index === totalItemCount - 1) {
-				this.owner.notify({
-					eventName: LOADMOREITEMS,
-					object: this.owner,
+			if (this.owner.sectioned) {
+				const positionInfo = this._getPositionInfo(index);
+
+				if (positionInfo.isHeader) {
+					// Create section header view
+					return this._createHeaderView(positionInfo.section, convertView, parent);
+				} else {
+					// Create regular item view with adjusted index
+					return this._createItemView(positionInfo.section, positionInfo.itemIndex, convertView, parent);
+				}
+			} else {
+				// Non-sectioned - use original logic
+				return this._createItemView(0, index, convertView, parent);
+			}
+		}
+
+		private _createHeaderView(section: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
+			let headerView: View = null;
+			const headerViewType = this.owner._itemTemplatesInternal.length; // Same as getItemViewType for headers
+
+			// Try to reuse convertView if it's the right type
+			if (convertView) {
+				const existingData = this.owner._realizedItems.get(convertView);
+				if (existingData && existingData.templateKey === `header_${headerViewType}`) {
+					headerView = existingData.view;
+				}
+			}
+
+			// Create new header view if we can't reuse
+			if (!headerView) {
+				if (this.owner.stickyHeaderTemplate) {
+					if (typeof this.owner.stickyHeaderTemplate === 'string') {
+						try {
+							headerView = Builder.parse(this.owner.stickyHeaderTemplate, this.owner);
+						} catch (error) {
+							// Fallback to simple label
+							headerView = new Label();
+							(headerView as Label).text = 'Header Error';
+						}
+					}
+				}
+
+				if (!headerView) {
+					// Default header
+					headerView = new Label();
+					(headerView as Label).text = `Section ${section}`;
+				}
+
+				// Add to parent and get native view
+				if (!headerView.parent) {
+					if (headerView instanceof LayoutBase && !(headerView instanceof ProxyViewContainer)) {
+						this.owner._addView(headerView);
+						convertView = headerView.nativeViewProtected;
+					} else {
+						const sp = new StackLayout();
+						sp.addChild(headerView);
+						this.owner._addView(sp);
+						convertView = sp.nativeViewProtected;
+					}
+				}
+
+				// Register the header view for recycling
+				this.owner._realizedItems.set(convertView, {
+					view: headerView,
+					templateKey: `header_${headerViewType}`,
 				});
 			}
 
-			// Recycle an existing view or create a new one if needed.
-			const template = this.owner._getItemTemplate(index);
+			// Set binding context to section data (always update, even for recycled views)
+			const sectionData = this.owner._getSectionData(section);
+			if (sectionData) {
+				headerView.bindingContext = sectionData;
+			} else {
+				headerView.bindingContext = { title: `Section ${section}`, section: section };
+			}
+
+			return convertView;
+		}
+
+		private _createItemView(section: number, itemIndex: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
+			// Use existing item creation logic but with sectioned data
+			const template = this.owner._getItemTemplate(itemIndex);
 			let view: View;
+
 			// convertView is of the wrong type
 			if (convertView && this.owner._getKeyFromView(convertView) !== template.key) {
 				this.owner._markViewUnused(convertView); // release this view
@@ -383,7 +558,7 @@ function ensureListViewAdapterClass() {
 			const args: ItemEventData = {
 				eventName: ITEMLOADING,
 				object: this.owner,
-				index: index,
+				index: itemIndex,
 				view: view,
 				android: parent,
 				ios: undefined,
@@ -392,7 +567,7 @@ function ensureListViewAdapterClass() {
 			this.owner.notify(args);
 
 			if (!args.view) {
-				args.view = this.owner._getDefaultItemContent(index);
+				args.view = this.owner._getDefaultItemContent(itemIndex);
 			}
 
 			if (args.view) {
@@ -402,7 +577,13 @@ function ensureListViewAdapterClass() {
 					args.view.height = <CoreTypes.LengthType>unsetValue;
 				}
 
-				this.owner._prepareItem(args.view, index);
+				// Use sectioned item preparation
+				if (this.owner.sectioned) {
+					this.owner._prepareItemInSection(args.view, section, itemIndex);
+				} else {
+					this.owner._prepareItem(args.view, itemIndex);
+				}
+
 				if (!args.view.parent) {
 					// Proxy containers should not get treated as layouts.
 					// Wrap them in a real layout as well.
