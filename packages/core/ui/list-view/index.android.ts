@@ -72,6 +72,12 @@ export class ListView extends ListViewBase {
 	public _availableViews = new Map<string, Set<android.view.View>>();
 	public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
 
+	// Sticky header support
+	private _stickyHeaderView: View;
+	private _stickyHeaderHeight: number = 0;
+	private _scrollListener: android.widget.AbsListView.OnScrollListener;
+	_hiddenHeaderPositions = new Set<number>(); // Track which headers to hide
+
 	private _ensureAvailableViews(templateKey: string) {
 		if (!this._availableViews.has(templateKey)) {
 			this._availableViews.set(templateKey, new Set());
@@ -166,14 +172,42 @@ export class ListView extends ListViewBase {
 		if ((<any>nativeView).adapter) {
 			(<any>nativeView).adapter.owner = null;
 		}
+
+		// Cleanup sticky header
+		this._cleanupStickyHeader();
+
 		this.clearRealizedCells();
 		super.disposeNativeView();
+	}
+
+	private _cleanupStickyHeader() {
+		// Remove scroll listener
+		if (this._scrollListener) {
+			this.nativeViewProtected.setOnScrollListener(null);
+			this._scrollListener = null;
+		}
+
+		// Remove sticky header from parent
+		if (this._stickyHeaderView && this._stickyHeaderView.parent) {
+			this._stickyHeaderView.parent._removeView(this._stickyHeaderView);
+		}
+
+		this._stickyHeaderView = null;
+		this._stickyHeaderHeight = 0;
+
+		// Clear hidden headers
+		this._hiddenHeaderPositions.clear();
 	}
 
 	public onLoaded() {
 		super.onLoaded();
 		// Without this call itemClick won't be fired... :(
 		this.requestLayout();
+
+		// Setup sticky header if enabled
+		if (this.stickyHeader && this.sectioned && this.stickyHeaderTemplate) {
+			this._setupStickyHeader();
+		}
 	}
 
 	public refresh() {
@@ -259,6 +293,196 @@ export class ListView extends ListViewBase {
 		return index >= start && index <= end;
 	}
 
+	// Sticky header methods
+	private _setupStickyHeader() {
+		if (!this.stickyHeader || !this.sectioned || !this.stickyHeaderTemplate) {
+			return;
+		}
+
+		// Create the sticky header view
+		this._createStickyHeaderView();
+
+		// Add it as an overlay to the parent
+		this._addStickyHeaderToParent();
+
+		// Add padding to ListView so content doesn't hide behind sticky header
+		this._addListViewPadding();
+
+		// Setup scroll listener to update header content
+		this._setupScrollListener();
+	}
+
+	private _createStickyHeaderView() {
+		if (this._stickyHeaderView) {
+			return; // Already created
+		}
+
+		// Create header view using the same template as section headers
+		if (typeof this.stickyHeaderTemplate === 'string') {
+			try {
+				this._stickyHeaderView = Builder.parse(this.stickyHeaderTemplate, this);
+			} catch (error) {
+				// Fallback to simple label
+				this._stickyHeaderView = new Label();
+				(this._stickyHeaderView as Label).text = 'Header Error';
+			}
+		}
+
+		if (!this._stickyHeaderView) {
+			// Default header
+			this._stickyHeaderView = new Label();
+			(this._stickyHeaderView as Label).text = 'Section 0';
+		}
+
+		// Set initial binding context (section 0)
+		this._updateStickyHeader(0);
+	}
+
+	private _addStickyHeaderToParent() {
+		if (!this._stickyHeaderView || !this.parent) {
+			return;
+		}
+
+		// Remove from current parent if it has one (likely the ListView from Builder.parse)
+		if (this._stickyHeaderView.parent) {
+			this._stickyHeaderView.parent._removeView(this._stickyHeaderView);
+		}
+
+		// Set proper sizing - don't stretch to fill parent
+		this._stickyHeaderView.width = { unit: '%', value: 100 };
+		this._stickyHeaderView.height = 'auto'; // Let it size to content
+		this._stickyHeaderView.verticalAlignment = 'top';
+		this._stickyHeaderView.horizontalAlignment = 'stretch';
+
+		// Add sticky header to the parent layout
+		// Position it at the top, overlaying the ListView
+		this.parent._addView(this._stickyHeaderView);
+
+		// Make sure it's positioned correctly
+		if (this._stickyHeaderView.nativeViewProtected) {
+			// Bring to front
+			this._stickyHeaderView.nativeViewProtected.setZ(1000);
+		}
+	}
+
+	private _addListViewPadding() {
+		if (!this._stickyHeaderView) {
+			return;
+		}
+
+		// Apply immediate padding with a reasonable default to prevent content hiding
+		const defaultHeaderHeight = 50; // Reasonable default height in dp
+		this.nativeViewProtected.setPadding(0, defaultHeaderHeight, 0, 0);
+		this._stickyHeaderHeight = defaultHeaderHeight;
+
+		// Request layout to ensure proper measurement
+		this._stickyHeaderView.requestLayout();
+
+		// Then measure and adjust padding if needed
+		setTimeout(() => {
+			if (this._stickyHeaderView) {
+				// Get the actual measured height from the native view
+				const nativeView = this._stickyHeaderView.nativeViewProtected;
+				if (nativeView && nativeView.getMeasuredHeight() > 0) {
+					const measuredHeight = nativeView.getMeasuredHeight();
+					const paddingHeight = measuredHeight + 4;
+
+					// Only update if significantly different
+					if (Math.abs(paddingHeight - this._stickyHeaderHeight) > 5) {
+						this._stickyHeaderHeight = paddingHeight;
+						this.nativeViewProtected.setPadding(0, paddingHeight, 0, 0);
+					}
+					this.scrollToIndex(0);
+				}
+			}
+		}, 100); // Slightly longer delay for more reliable measurement
+	}
+
+	private _setupScrollListener() {
+		if (this._scrollListener) {
+			return; // Already setup
+		}
+
+		const owner = this;
+		this._scrollListener = new android.widget.AbsListView.OnScrollListener({
+			onScrollStateChanged(view: android.widget.AbsListView, scrollState: number) {
+				// Not needed for sticky headers
+			},
+
+			onScroll(view: android.widget.AbsListView, firstVisibleItem: number, visibleItemCount: number, totalItemCount: number) {
+				if (owner.sectioned && owner._stickyHeaderView) {
+					const currentSection = owner._getCurrentSection(firstVisibleItem);
+					owner._updateStickyHeader(currentSection);
+
+					// Hide section headers when they would appear right below sticky header
+					owner._updateHiddenHeaders(firstVisibleItem);
+				}
+			},
+		});
+
+		this.nativeViewProtected.setOnScrollListener(this._scrollListener);
+	}
+
+	private _getCurrentSection(firstVisibleItem: number): number {
+		if (!this.sectioned) {
+			return 0;
+		}
+
+		// Convert the first visible list position to section number
+		let currentPosition = 0;
+		const sectionCount = this._getSectionCount();
+
+		for (let section = 0; section < sectionCount; section++) {
+			// Check if firstVisibleItem is in this section (header or items)
+			const itemsInSection = this._getItemsInSection(section).length;
+			const sectionEndPosition = currentPosition + 1 + itemsInSection; // +1 for header
+
+			if (firstVisibleItem < sectionEndPosition) {
+				return section;
+			}
+
+			currentPosition = sectionEndPosition;
+		}
+
+		return Math.max(0, sectionCount - 1); // Fallback to last section
+	}
+
+	private _updateStickyHeader(section: number) {
+		if (!this._stickyHeaderView) {
+			return;
+		}
+
+		// Update binding context to match the current section
+		const sectionData = this._getSectionData(section);
+		if (sectionData) {
+			this._stickyHeaderView.bindingContext = sectionData;
+		} else {
+			this._stickyHeaderView.bindingContext = { title: `Section ${section}`, section: section };
+		}
+	}
+
+	private _updateHiddenHeaders(firstVisibleItem: number) {
+		const previousHiddenHeaders = new Set(this._hiddenHeaderPositions);
+		this._hiddenHeaderPositions.clear();
+
+		// If we're at the very top (first item is position 0, which is the first section header),
+		// hide that section header to avoid duplication with sticky header
+		if (firstVisibleItem === 0) {
+			this._hiddenHeaderPositions.add(0); // Hide the first section header position
+		}
+
+		// If hidden headers changed, refresh the adapter
+		const hiddenHeadersChanged = previousHiddenHeaders.size !== this._hiddenHeaderPositions.size || [...previousHiddenHeaders].some((pos) => !this._hiddenHeaderPositions.has(pos));
+
+		if (hiddenHeadersChanged) {
+			// Refresh adapter to update visibility
+			const adapter = this.nativeViewProtected.getAdapter();
+			if (adapter instanceof android.widget.BaseAdapter) {
+				adapter.notifyDataSetChanged();
+			}
+		}
+	}
+
 	[separatorColorProperty.getDefault](): {
 		dividerHeight: number;
 		divider: android.graphics.drawable.Drawable;
@@ -301,11 +525,18 @@ export class ListView extends ListViewBase {
 		this.refresh();
 	}
 
-	// Sticky header property handlers (for now just trigger refresh)
+	// Sticky header property handlers
 	[stickyHeaderProperty.setNative](value: boolean) {
 		// Refresh adapter to handle sectioned vs non-sectioned display
 		if (this.nativeViewProtected && this.nativeViewProtected.getAdapter()) {
 			this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
+		}
+
+		// Setup or cleanup sticky header
+		if (value && this.sectioned && this.stickyHeaderTemplate && this.isLoaded) {
+			this._setupStickyHeader();
+		} else {
+			this._cleanupStickyHeader();
 		}
 	}
 
@@ -314,12 +545,25 @@ export class ListView extends ListViewBase {
 		if (this.nativeViewProtected && this.nativeViewProtected.getAdapter()) {
 			this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
 		}
+
+		// Recreate sticky header with new template
+		this._cleanupStickyHeader();
+		if (value && this.stickyHeader && this.sectioned && this.isLoaded) {
+			this._setupStickyHeader();
+		}
 	}
 
 	[sectionedProperty.setNative](value: boolean) {
 		// Refresh adapter to handle sectioned vs non-sectioned data
 		if (this.nativeViewProtected && this.nativeViewProtected.getAdapter()) {
 			this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
+		}
+
+		// Setup or cleanup sticky header based on sectioned state
+		if (value && this.stickyHeader && this.stickyHeaderTemplate && this.isLoaded) {
+			this._setupStickyHeader();
+		} else {
+			this._cleanupStickyHeader();
 		}
 	}
 }
@@ -462,8 +706,8 @@ function ensureListViewAdapterClass() {
 				const positionInfo = this._getPositionInfo(index);
 
 				if (positionInfo.isHeader) {
-					// Create section header view
-					return this._createHeaderView(positionInfo.section, convertView, parent);
+					// Create section header view (pass index for hiding logic)
+					return this._createHeaderView(positionInfo.section, convertView, parent, index);
 				} else {
 					// Create regular item view with adjusted index
 					return this._createItemView(positionInfo.section, positionInfo.itemIndex, convertView, parent);
@@ -474,7 +718,19 @@ function ensureListViewAdapterClass() {
 			}
 		}
 
-		private _createHeaderView(section: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
+		private _createHeaderView(section: number, convertView: android.view.View, parent: android.view.ViewGroup, index: number): android.view.View {
+			// Check if this header should be hidden to avoid duplication with sticky header
+			if (this.owner._hiddenHeaderPositions.has(index)) {
+				// Return an empty view with zero height
+				const emptyView = new android.view.View(this.owner._context);
+				const layoutParams = new android.view.ViewGroup.LayoutParams(
+					android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+					0, // Zero height
+				);
+				emptyView.setLayoutParams(layoutParams);
+				return emptyView;
+			}
+
 			let headerView: View = null;
 			const headerViewType = this.owner._itemTemplatesInternal.length; // Same as getItemViewType for headers
 
@@ -585,18 +841,12 @@ function ensureListViewAdapterClass() {
 				}
 
 				if (!args.view.parent) {
-					// Proxy containers should not get treated as layouts.
-					// Wrap them in a real layout as well.
-					if (args.view instanceof LayoutBase && !(args.view instanceof ProxyViewContainer)) {
-						this.owner._addView(args.view);
-						convertView = args.view.nativeViewProtected;
-					} else {
-						const sp = new StackLayout();
-						sp.addChild(args.view);
-						this.owner._addView(sp);
-
-						convertView = sp.nativeViewProtected;
-					}
+					// Android ListView doesn't properly respect margins on direct child views.
+					// Always wrap item views in a StackLayout container to ensure margins work correctly.
+					const container = new StackLayout();
+					container.addChild(args.view);
+					this.owner._addView(container);
+					convertView = container.nativeViewProtected;
 				}
 
 				this.owner._registerViewToTemplate(template.key, convertView, args.view);
