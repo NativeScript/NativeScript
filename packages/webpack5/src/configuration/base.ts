@@ -44,6 +44,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// set mode
 	config.mode(mode);
 
+	// use source map files with v9+
+	function useSourceMapFiles() {
+		if (mode === 'development') {
+			// in development we always use source-map files with v9+ runtimes
+			// they are parsed and mapped to display in-flight app error screens
+			env.sourceMap = 'source-map';
+		}
+	}
 	// determine target output by @nativescript/core version
 	// v9+ supports ESM output, anything below uses CommonJS
 	if (hasDependency('@nativescript/core')) {
@@ -51,9 +59,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		// ensure alpha/beta/rc versions are considered as well
 		if (coreVersion && !coreVersion.includes('9.0.0')) {
 			if (!satisfies(coreVersion, '>=9.0.0')) {
-				// @nativescript/core < 9.0.0 uses CommonJS output
+				// @nativescript/core < 9 uses CommonJS output
 				env.commonjs = true;
+			} else {
+				useSourceMapFiles();
 			}
+		} else {
+			useSourceMapFiles();
 		}
 	}
 
