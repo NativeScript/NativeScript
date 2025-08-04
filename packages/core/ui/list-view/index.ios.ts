@@ -1,5 +1,5 @@
 import { ItemEventData, SearchEventData, ItemsSource } from '.';
-import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty } from './list-view-common';
+import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty } from './list-view-common';
 import { CoreTypes } from '../../core-types';
 import { View, KeyedTemplate, Template } from '../core/view';
 import { Length } from '../styling/length-shared';
@@ -499,24 +499,41 @@ export class ListView extends ListViewBase {
 		// 2. Tell it who will update results
 		this._searchController.searchResultsUpdater = this._searchDelegate;
 
-		// 3. Don't dim or obscure your table by default
+		// 3. Critical: Don't dim or obscure the table, and prevent extra content
 		this._searchController.obscuresBackgroundDuringPresentation = false;
+		this._searchController.dimsBackgroundDuringPresentation = false;
+		this._searchController.hidesNavigationBarDuringPresentation = false;
 
-		// 4. Placeholder text
+		// 4. Placeholder text and styling
 		this._searchController.searchBar.placeholder = 'Search';
 		this._searchController.searchBar.searchBarStyle = UISearchBarStyle.Minimal;
 
-		// 5. CRITICAL: Make sure the search bar doesn't remain on screen if the user navigates
+		// 5. CRITICAL: Proper presentation context setup
 		const viewController = this._getViewController();
 		if (viewController) {
 			viewController.definesPresentationContext = true;
+			viewController.providesPresentationContextTransitionStyle = true;
 
-			// 6a. If we're in a UINavigationController...
+			// 6a. If we're in a UINavigationController (iOS 11+)...
 			if (SDK_VERSION >= 11.0 && viewController.navigationItem) {
 				viewController.navigationItem.searchController = this._searchController;
-				viewController.navigationItem.hidesSearchBarWhenScrolling = false;
+
+				// Set auto-hide behavior based on searchAutoHide property
+				viewController.navigationItem.hidesSearchBarWhenScrolling = this.searchAutoHide;
+
+				// Optional: Enable large titles for better auto-hide effect when searchAutoHide is true
+				// if (this.searchAutoHide && viewController.navigationController && viewController.navigationController.navigationBar) {
+				// 	// Only set large titles if not already configured
+				// 	if (!viewController.navigationController.navigationBar.prefersLargeTitles) {
+				// 		viewController.navigationController.navigationBar.prefersLargeTitles = true;
+				// 	}
+				// 	// Set large title display mode for this specific view controller
+				// 	if (viewController.navigationItem.largeTitleDisplayMode === UINavigationItemLargeTitleDisplayMode.Automatic) {
+				// 		viewController.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Always;
+				// 	}
+				// }
 			} else {
-				// 6b. Or just put it at the top of our table
+				// 6b. Fallback: put it at the top of our table
 				this.nativeViewProtected.tableHeaderView = this._searchController.searchBar;
 			}
 		} else {
@@ -524,11 +541,20 @@ export class ListView extends ListViewBase {
 			this.nativeViewProtected.tableHeaderView = this._searchController.searchBar;
 		}
 
-		// Ensure search bar is properly sized
+		// 7. Ensure search bar is properly sized and prevent content inset issues
 		this._searchController.searchBar.sizeToFit();
 
+		// 8. Disable automatic content inset adjustment that can cause spacing issues
+		if (this.nativeViewProtected.respondsToSelector('setContentInsetAdjustmentBehavior:')) {
+			// iOS 11+ - prevent automatic content inset adjustments
+			this.nativeViewProtected.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+		} else {
+			// iOS 10 and below - disable automatic content inset
+			this.nativeViewProtected.automaticallyAdjustsScrollIndicatorInsets = false;
+		}
+
 		if (Trace.isEnabled()) {
-			Trace.write(`ListView: UISearchController setup complete`, Trace.categories.Debug);
+			Trace.write(`ListView: UISearchController setup complete with searchAutoHide: ${this.searchAutoHide}`, Trace.categories.Debug);
 		}
 	}
 
@@ -543,6 +569,15 @@ export class ListView extends ListViewBase {
 			viewController.navigationItem.searchController = null;
 		} else if (this.nativeViewProtected.tableHeaderView === this._searchController.searchBar) {
 			this.nativeViewProtected.tableHeaderView = null;
+		}
+
+		// Reset content inset adjustment behavior
+		if (this.nativeViewProtected.respondsToSelector('setContentInsetAdjustmentBehavior:')) {
+			// iOS 11+ - restore automatic content inset adjustments
+			this.nativeViewProtected.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+		} else {
+			// iOS 10 and below - restore automatic content inset
+			this.nativeViewProtected.automaticallyAdjustsScrollIndicatorInsets = true;
 		}
 
 		// Cleanup references
@@ -1086,5 +1121,33 @@ export class ListView extends ListViewBase {
 		} else {
 			this._cleanupSearchController();
 		}
+	}
+
+	[searchAutoHideProperty.getDefault](): boolean {
+		return false;
+	}
+	[searchAutoHideProperty.setNative](value: boolean) {
+		if (Trace.isEnabled()) {
+			Trace.write(`ListView: searchAutoHide set to ${value}`, Trace.categories.Debug);
+		}
+
+		// If search is already enabled, update the existing search controller
+		if (this.showSearch && this._searchController) {
+			const viewController = this._getViewController();
+			if (viewController && viewController.navigationItem && SDK_VERSION >= 11.0) {
+				viewController.navigationItem.hidesSearchBarWhenScrolling = value;
+
+				// Enable large titles for better auto-hide effect when searchAutoHide is true
+				// if (value && viewController.navigationController && viewController.navigationController.navigationBar) {
+				// 	if (!viewController.navigationController.navigationBar.prefersLargeTitles) {
+				// 		viewController.navigationController.navigationBar.prefersLargeTitles = true;
+				// 	}
+				// 	if (viewController.navigationItem.largeTitleDisplayMode === UINavigationItemLargeTitleDisplayMode.Automatic) {
+				// 		viewController.navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Always;
+				// 	}
+				// }
+			}
+		}
+		// If search is not enabled yet, the property will be used when _setupSearchController is called
 	}
 }

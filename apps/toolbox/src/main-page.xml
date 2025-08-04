@@ -1,6 +1,6 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
   <Page.actionBar>
-    <ActionBar title="Dev Toolbox" icon="" class="action-bar" iosLargeTitle="true" iosShadow="false">
+    <ActionBar title="Dev Toolbox" icon="" class="action-bar">
     </ActionBar>
   </Page.actionBar>
   <StackLayout>

@@ -8,6 +8,7 @@
 <GridLayout backgroundColor="#efefef">
     <ListView class="list-group" items="{{ countries }}" itemTap="{{ componentsItemTap }} " separatorColor="#00000000" itemTemplateSelector="{{ selectItemTemplate }}" stickyHeader="true" sectioned="true" stickyHeaderTopPadding="false" stickyHeaderTemplate="<GridLayout><Label text='{{ title }}' fontSize='18' fontWeight='bold' color='#009bff' padding='8 0 8 12' borderBottomWidth='1' borderBottomColor='#ccc' borderTopWidth='1' borderTopColor='#ccc' backgroundColor='#fff' /></GridLayout>" stickyHeaderHeight="45" itemLoading="{{ itemLoading }}"
     showSearch="true" 
+    searchAutoHide="true"
           searchChange="{{ onSearchTextChange }}">
         <ListView.itemTemplates>
             <template key="main">

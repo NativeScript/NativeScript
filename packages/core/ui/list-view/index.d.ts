@@ -146,7 +146,7 @@ export class ListView extends View {
 	sectioned: boolean;
 
 	/**
-	 * Gets or sets a value indicating whether the ListView should show a search bar.
+	 * Gets or sets whether search functionality is enabled.
 	 * When enabled on iOS, uses native UISearchController for optimal performance.
 	 *
 	 * @nsProperty
@@ -154,6 +154,14 @@ export class ListView extends View {
 	showSearch: boolean;
 
 	/**
+	 * Gets or sets whether the search bar should auto-hide when scrolling (iOS only).
+	 * When true, the search bar will automatically hide when the user scrolls down
+	 * and reappear when scrolling up, using iOS native behavior.
+	 * Only applies when showSearch is true and running on iOS with navigation controller.
+	 *
+	 * @nsProperty
+	 */
+	searchAutoHide: boolean; /**
 	 * Forces the ListView to reload all its items.
 	 */
 	refresh();
@@ -339,3 +347,8 @@ export const sectionedProperty: Property<ListView, boolean>;
  * Represents the observable property backing the showSearch property of each ListView instance.
  */
 export const showSearchProperty: Property<ListView, boolean>;
+
+/**
+ * Represents the observable property backing the searchAutoHide property of each ListView instance.
+ */
+export const searchAutoHideProperty: Property<ListView, boolean>;

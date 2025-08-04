@@ -58,6 +58,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public stickyHeaderTopPadding: boolean;
 	public sectioned: boolean;
 	public showSearch: boolean;
+	public searchAutoHide: boolean;
 
 	get separatorColor(): Color {
 		return this.style.separatorColor;
@@ -349,3 +350,10 @@ export const showSearchProperty = new Property<ListViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 showSearchProperty.register(ListViewBase);
+
+export const searchAutoHideProperty = new Property<ListViewBase, boolean>({
+	name: 'searchAutoHide',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+searchAutoHideProperty.register(ListViewBase);
