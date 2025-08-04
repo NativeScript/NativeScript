@@ -1,5 +1,5 @@
-import { ItemEventData, ItemsSource } from '.';
-import { ListViewBase, separatorColorProperty, itemTemplatesProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty } from './list-view-common';
+import { ItemEventData, ItemsSource, SearchEventData } from '.';
+import { ListViewBase, separatorColorProperty, itemTemplatesProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty } from './list-view-common';
 import { View, KeyedTemplate } from '../core/view';
 import { unsetValue } from '../core/properties/property-shared';
 import { CoreTypes } from '../../core-types';
@@ -18,6 +18,7 @@ export * from './list-view-common';
 const ITEMLOADING = ListViewBase.itemLoadingEvent;
 const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
+const SEARCHCHANGE = ListViewBase.searchChangeEvent;
 
 // View type constants for sectioned lists
 const ITEM_VIEW_TYPE = 0;
@@ -77,6 +78,14 @@ export class ListView extends ListViewBase {
 	private _stickyHeaderHeight: number = 0;
 	private _scrollListener: android.widget.AbsListView.OnScrollListener;
 	_hiddenHeaderPositions = new Set<number>(); // Track which headers to hide
+
+	// Search functionality
+	private _searchView: android.widget.SearchView;
+	private _searchListener: android.widget.SearchView.OnQueryTextListener;
+
+	public get hasSearchView(): boolean {
+		return !!this._searchView;
+	}
 
 	private _ensureAvailableViews(templateKey: string) {
 		if (!this._availableViews.has(templateKey)) {
@@ -161,6 +170,8 @@ export class ListView extends ListViewBase {
 			this._androidViewId = android.view.View.generateViewId();
 		}
 		nativeView.setId(this._androidViewId);
+
+		// Don't setup search here - wait for onLoaded when context is properly available
 	}
 
 	public disposeNativeView() {
@@ -172,6 +183,9 @@ export class ListView extends ListViewBase {
 		if ((<any>nativeView).adapter) {
 			(<any>nativeView).adapter.owner = null;
 		}
+
+		// Cleanup search
+		this._cleanupSearchView();
 
 		// Cleanup sticky header
 		this._cleanupStickyHeader();
@@ -208,6 +222,11 @@ export class ListView extends ListViewBase {
 		if (this.stickyHeader && this.sectioned && this.stickyHeaderTemplate) {
 			this._setupStickyHeader();
 		}
+
+		// Setup search if enabled and not already set up
+		if (this.showSearch && !this._searchView && this.nativeViewProtected && this.nativeViewProtected.getAdapter()) {
+			this._setupSearchView();
+		}
 	}
 
 	public refresh() {
@@ -223,7 +242,16 @@ export class ListView extends ListViewBase {
 			}
 		});
 
-		(<android.widget.BaseAdapter>nativeView.getAdapter()).notifyDataSetChanged();
+		// Safely refresh the adapter - no HeaderViewListAdapter issues since we don't use headers
+		const adapter = nativeView.getAdapter();
+		if (adapter instanceof android.widget.BaseAdapter) {
+			try {
+				adapter.notifyDataSetChanged();
+			} catch (error) {
+				console.log('Error refreshing adapter, recreating:', error);
+				nativeView.setAdapter(new ListViewAdapterClass(this));
+			}
+		}
 	}
 
 	public scrollToIndex(index: number) {
@@ -355,13 +383,47 @@ export class ListView extends ListViewBase {
 		this._stickyHeaderView.horizontalAlignment = 'stretch';
 
 		// Add sticky header to the parent layout
-		// Position it at the top, overlaying the ListView
-		this.parent._addView(this._stickyHeaderView);
+		// If search view exists, position sticky header after it (index 1), otherwise at top (index 0)
+		const parentLayout = this.parent;
+		const hasSearchView = this.showSearch && this._searchView && (this._searchView as any)._wrapper;
 
-		// Make sure it's positioned correctly
-		if (this._stickyHeaderView.nativeViewProtected) {
-			// Bring to front
-			this._stickyHeaderView.nativeViewProtected.setZ(1000);
+		if (parentLayout instanceof StackLayout) {
+			const insertIndex = hasSearchView ? 1 : 0;
+			parentLayout.insertChild(this._stickyHeaderView, insertIndex);
+		} else {
+			parentLayout._addView(this._stickyHeaderView);
+		}
+
+		// When search is enabled, position sticky header below search view with proper top margin
+		if (this.showSearch && this._searchView) {
+			// Add top margin to push sticky header below search view
+			this._stickyHeaderView.marginTop = 0; // Reset any previous margin
+
+			// Position sticky header with proper offset using native positioning
+			if (this._stickyHeaderView.nativeViewProtected) {
+				this._stickyHeaderView.nativeViewProtected.setZ(1000);
+
+				// Use a timeout to ensure search view is measured first
+				setTimeout(() => {
+					if (this._searchView && (this._searchView as any)._wrapper) {
+						const searchWrapper = (this._searchView as any)._wrapper;
+						if (searchWrapper.nativeViewProtected) {
+							const searchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight() || 50;
+
+							// Position sticky header below search view using translation
+							if (this._stickyHeaderView.nativeViewProtected) {
+								this._stickyHeaderView.nativeViewProtected.setTranslationY(searchHeight);
+							}
+						}
+					}
+				}, 100);
+			}
+		} else {
+			// No search view - position at top
+			if (this._stickyHeaderView.nativeViewProtected) {
+				this._stickyHeaderView.nativeViewProtected.setZ(1000);
+				this._stickyHeaderView.nativeViewProtected.setTranslationY(0);
+			}
 		}
 	}
 
@@ -370,9 +432,21 @@ export class ListView extends ListViewBase {
 			return;
 		}
 
-		// Apply immediate padding with a reasonable default to prevent content hiding
+		// Calculate total top padding: search view height + sticky header height
+		let searchViewHeight = 0;
+		if (this.showSearch && this._searchView && (this._searchView as any)._wrapper) {
+			const searchWrapper = (this._searchView as any)._wrapper;
+			if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
+				searchViewHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
+			} else {
+				searchViewHeight = 50; // Default search view height
+			}
+		}
+
+		// Apply immediate padding with defaults to prevent content hiding
 		const defaultHeaderHeight = 50; // Reasonable default height in dp
-		this.nativeViewProtected.setPadding(0, defaultHeaderHeight, 0, 0);
+		const totalPadding = searchViewHeight + defaultHeaderHeight;
+		this.nativeViewProtected.setPadding(0, totalPadding, 0, 0);
 		this._stickyHeaderHeight = defaultHeaderHeight;
 
 		// Request layout to ensure proper measurement
@@ -384,18 +458,26 @@ export class ListView extends ListViewBase {
 				// Get the actual measured height from the native view
 				const nativeView = this._stickyHeaderView.nativeViewProtected;
 				if (nativeView && nativeView.getMeasuredHeight() > 0) {
-					const measuredHeight = nativeView.getMeasuredHeight();
-					const paddingHeight = measuredHeight + 4;
+					const measuredHeaderHeight = nativeView.getMeasuredHeight();
+					let finalSearchHeight = searchViewHeight;
 
-					// Only update if significantly different
-					if (Math.abs(paddingHeight - this._stickyHeaderHeight) > 5) {
-						this._stickyHeaderHeight = paddingHeight;
-						this.nativeViewProtected.setPadding(0, paddingHeight, 0, 0);
+					// Re-measure search view if needed
+					if (this.showSearch && this._searchView && (this._searchView as any)._wrapper) {
+						const searchWrapper = (this._searchView as any)._wrapper;
+						if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
+							finalSearchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
+						}
 					}
+
+					// Calculate final padding: search height + sticky header height + small buffer
+					const totalPaddingHeight = finalSearchHeight + measuredHeaderHeight + 4;
+					this._stickyHeaderHeight = measuredHeaderHeight;
+					this.nativeViewProtected.setPadding(0, totalPaddingHeight, 0, 0);
+
 					this.scrollToIndex(0);
 				}
 			}
-		}, 100); // Slightly longer delay for more reliable measurement
+		}, 150); // Slightly longer delay for more reliable measurement after positioning
 	}
 
 	private _setupScrollListener() {
@@ -521,8 +603,10 @@ export class ListView extends ListViewBase {
 			this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
 		}
 
-		this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
-		this.refresh();
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.setAdapter(new ListViewAdapterClass(this));
+			this.refresh();
+		}
 	}
 
 	// Sticky header property handlers
@@ -566,6 +650,183 @@ export class ListView extends ListViewBase {
 			this._cleanupStickyHeader();
 		}
 	}
+
+	// Search methods
+	private _setupSearchView() {
+		if (this._searchView || !this.showSearch || !this.nativeViewProtected) {
+			return;
+		}
+
+		// Create SearchView using the ListView's context
+		this._searchView = new android.widget.SearchView(this.nativeViewProtected.getContext());
+		this._searchView.setQueryHint('Search...');
+		this._searchView.setIconifiedByDefault(false);
+		this._searchView.setSubmitButtonEnabled(false);
+
+		// Setup search listener
+		const owner = this;
+		this._searchListener = new android.widget.SearchView.OnQueryTextListener({
+			onQueryTextChange(newText: string): boolean {
+				const args: SearchEventData = {
+					eventName: SEARCHCHANGE,
+					object: owner,
+					text: newText,
+					android: owner._searchView,
+				};
+				owner.notify(args);
+				return true;
+			},
+
+			onQueryTextSubmit(query: string): boolean {
+				const args: SearchEventData = {
+					eventName: SEARCHCHANGE,
+					object: owner,
+					text: query,
+					android: owner._searchView,
+				};
+				owner.notify(args);
+				return true;
+			},
+		});
+
+		this._searchView.setOnQueryTextListener(this._searchListener);
+
+		// Add search view to the parent container above the ListView
+		this._addSearchToParent();
+
+		// Add padding to ListView if no sticky header (otherwise sticky header method handles it)
+		if (!this.stickyHeader || !this._stickyHeaderView) {
+			this._addSearchPadding();
+		}
+	}
+
+	private _addSearchPadding() {
+		if (!this._searchView) {
+			return;
+		}
+
+		// Add basic padding for search view
+		const defaultSearchHeight = 50; // Default search view height
+		this.nativeViewProtected.setPadding(0, defaultSearchHeight, 0, 0);
+
+		// Measure and adjust if needed
+		setTimeout(() => {
+			if (this._searchView && (this._searchView as any)._wrapper) {
+				const searchWrapper = (this._searchView as any)._wrapper;
+				if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
+					const measuredHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
+					this.nativeViewProtected.setPadding(0, measuredHeight + 4, 0, 0);
+				}
+			}
+		}, 100);
+	}
+
+	private _addSearchToParent() {
+		if (!this._searchView || !this.parent) {
+			return;
+		}
+
+		// Get the parent layout
+		const parentLayout = this.parent;
+
+		// Create a simple NativeScript wrapper for the native SearchView
+		const searchView = this._searchView;
+		const searchViewWrapper = new (class extends View {
+			createNativeView() {
+				return searchView;
+			}
+		})();
+
+		// Set layout properties - ensure it's at the top
+		searchViewWrapper.height = 'auto';
+		searchViewWrapper.width = { unit: '%', value: 100 };
+		searchViewWrapper.verticalAlignment = 'top';
+		searchViewWrapper.horizontalAlignment = 'stretch';
+
+		// Always insert at position 0 (top) regardless of ListView position
+		if (parentLayout instanceof StackLayout) {
+			parentLayout.insertChild(searchViewWrapper, 0);
+		} else {
+			// For other layout types, add as first child
+			parentLayout._addView(searchViewWrapper);
+		}
+
+		// Ensure search view appears above everything else
+		if (searchViewWrapper.nativeViewProtected) {
+			searchViewWrapper.nativeViewProtected.setZ(2000); // Higher than sticky header (1000)
+		}
+
+		// Store reference for cleanup
+		(this._searchView as any)._wrapper = searchViewWrapper;
+	}
+
+	private _cleanupSearchView() {
+		if (this._searchView) {
+			// Remove search view wrapper from parent
+			const wrapper = (this._searchView as any)._wrapper;
+			if (wrapper && wrapper.parent) {
+				wrapper.parent._removeView(wrapper);
+			}
+
+			// Clear listener
+			if (this._searchListener) {
+				this._searchView.setOnQueryTextListener(null);
+				this._searchListener = null;
+			}
+
+			this._searchView = null;
+
+			// Reset ListView padding if no sticky header
+			if (!this.stickyHeader || !this._stickyHeaderView) {
+				this.nativeViewProtected.setPadding(0, 0, 0, 0);
+			}
+		}
+	}
+
+	[showSearchProperty.setNative](value: boolean) {
+		if (value) {
+			if (this.isLoaded && this.nativeViewProtected && this.nativeViewProtected.getAdapter()) {
+				this._setupSearchView();
+
+				// Reposition sticky header if it exists
+				if (this._stickyHeaderView) {
+					this._repositionStickyHeader();
+				}
+			}
+		} else {
+			this._cleanupSearchView();
+
+			// Reposition sticky header if it exists
+			if (this._stickyHeaderView) {
+				this._repositionStickyHeader();
+			}
+		}
+	}
+
+	private _repositionStickyHeader() {
+		if (!this._stickyHeaderView || !this._stickyHeaderView.nativeViewProtected) {
+			return;
+		}
+
+		// Reset positioning
+		this._stickyHeaderView.nativeViewProtected.setTranslationY(0);
+
+		// If search is enabled, position below search view
+		if (this.showSearch && this._searchView && (this._searchView as any)._wrapper) {
+			setTimeout(() => {
+				const searchWrapper = (this._searchView as any)._wrapper;
+				if (searchWrapper.nativeViewProtected) {
+					const searchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight() || 50;
+					this._stickyHeaderView.nativeViewProtected.setTranslationY(searchHeight);
+				}
+			}, 100);
+		}
+
+		// Update ListView padding
+		if (this.stickyHeader && this._stickyHeaderView) {
+			this._addListViewPadding();
+		}
+	}
 }
 
 let ListViewAdapterClass;
@@ -587,22 +848,36 @@ function ensureListViewAdapterClass() {
 				return 0;
 			}
 
+			// Ensure we always have at least the items array length, even if empty
+			let count = 0;
+
 			if (this.owner.sectioned) {
 				// Count items + section headers
-				let totalCount = 0;
 				const sectionCount = this.owner._getSectionCount();
 				for (let i = 0; i < sectionCount; i++) {
-					totalCount += 1; // Section header
-					totalCount += this.owner._getItemsInSection(i).length; // Items in section
+					const itemsInSection = this.owner._getItemsInSection(i);
+					// Only add header if section has items or we want to show empty sections
+					if (itemsInSection.length > 0) {
+						count += 1; // Section header
+						count += itemsInSection.length; // Items in section
+					}
 				}
-				return totalCount;
 			} else {
-				return this.owner.items.length;
+				count = this.owner.items.length;
 			}
+
+			// Return the count, ensuring it's never negative
+			return Math.max(0, count);
 		}
 
 		public getItem(i: number) {
 			if (!this.owner || !this.owner.items) {
+				return null;
+			}
+
+			// Safety check for index bounds
+			const totalCount = this.getCount();
+			if (i < 0 || i >= totalCount) {
 				return null;
 			}
 
@@ -633,6 +908,13 @@ function ensureListViewAdapterClass() {
 			const sectionCount = this.owner._getSectionCount();
 
 			for (let section = 0; section < sectionCount; section++) {
+				const itemsInSection = this.owner._getItemsInSection(section);
+
+				// Skip sections with no items (they won't have headers in our count)
+				if (itemsInSection.length === 0) {
+					continue;
+				}
+
 				// Check if this position is the section header
 				if (currentPosition === position) {
 					return { isHeader: true, section: section, itemIndex: -1 };
@@ -640,15 +922,14 @@ function ensureListViewAdapterClass() {
 				currentPosition++; // Move past header
 
 				// Check if position is within this section's items
-				const itemsInSection = this.owner._getItemsInSection(section).length;
-				if (position < currentPosition + itemsInSection) {
+				if (position < currentPosition + itemsInSection.length) {
 					const itemIndex = position - currentPosition;
 					return { isHeader: false, section: section, itemIndex: itemIndex };
 				}
-				currentPosition += itemsInSection; // Move past items
+				currentPosition += itemsInSection.length; // Move past items
 			}
 
-			// Fallback
+			// Fallback - should not reach here with proper bounds checking
 			return { isHeader: false, section: 0, itemIndex: 0 };
 		}
 
@@ -663,6 +944,23 @@ function ensureListViewAdapterClass() {
 		}
 
 		public hasStableIds(): boolean {
+			return true;
+		}
+
+		public isEnabled(position: number): boolean {
+			// Safety check to prevent crashes when adapter is empty
+			const totalCount = this.getCount();
+			if (totalCount === 0 || position < 0 || position >= totalCount) {
+				return false;
+			}
+
+			// For sectioned lists, check if this is a header position
+			if (this.owner.sectioned) {
+				const positionInfo = this._getPositionInfo(position);
+				// Headers are typically not clickable, items are
+				return !positionInfo.isHeader;
+			}
+
 			return true;
 		}
 
@@ -700,6 +998,16 @@ function ensureListViewAdapterClass() {
 
 			if (!this.owner) {
 				return null;
+			}
+
+			// Safety check for empty adapter
+			const totalCount = this.getCount();
+			if (index < 0 || index >= totalCount) {
+				// Return a minimal empty view to prevent crashes
+				const emptyView = new android.view.View(this.owner._context);
+				const layoutParams = new android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
+				emptyView.setLayoutParams(layoutParams);
+				return emptyView;
 			}
 
 			if (this.owner.sectioned) {
