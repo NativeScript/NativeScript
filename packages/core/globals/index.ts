@@ -10,11 +10,11 @@ import * as wgc from '../wgc';
 import * as cryptoImpl from '../wgc/crypto';
 import * as subtleCryptoImpl from '../wgc/crypto/SubtleCrypto';
 
-console.log('here in globals/index!');
-console.log(`typeof __dirname:`, typeof __dirname);
+// console.log('here in globals/index!');
+// console.log(`typeof __dirname:`, typeof __dirname);
 // commonjs builds will have __dirname defined, but esm builds will not
 global.__dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
-console.log('global.__dirname', global.__dirname);
+// console.log('global.__dirname', global.__dirname);
 
 if (typeof global.__metadata === 'undefined') {
 	/**
@@ -243,7 +243,7 @@ global.Experimental = function (target: Object, key?: string | symbol, descripto
 };
 const modules: Map<string, { moduleId: string; loader: ModuleLoader }> = new Map<string, { moduleId: string; loader: ModuleLoader }>();
 
-console.log(`globals/index, __COMMONJS__:`, __COMMONJS__);
+// console.log(`globals/index, __COMMONJS__:`, __COMMONJS__);
 global.loadModule = function loadModule(name: string): any {
 	const moduleInfo = modules.get(name);
 	if (moduleInfo) {
@@ -301,7 +301,7 @@ export function installPolyfills(moduleName: string, exportNames: string[]) {
 
 if (!global.NativeScriptHasPolyfilled) {
 	global.NativeScriptHasPolyfilled = true;
-	console.log('Installing polyfills...');
+	// console.log('Installing polyfills...');
 
 	// DOM api polyfills
 	const glb = global as any;
