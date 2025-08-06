@@ -496,6 +496,11 @@ declare class CPGridButton extends NSObject implements NSSecureCoding {
 
 	readonly image: UIImage;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly messageConfiguration: CPMessageGridItemConfiguration;
+
 	readonly titleVariants: NSArray<string>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -504,11 +509,31 @@ declare class CPGridButton extends NSObject implements NSSecureCoding {
 
 	constructor(o: { titleVariants: NSArray<string> | string[]; image: UIImage; handler: (p1: CPGridButton) => void; });
 
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { titleVariants: NSArray<string> | string[]; image: UIImage; messageConfiguration: CPMessageGridItemConfiguration; handler: (p1: CPGridButton) => void; });
+
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
 	initWithTitleVariantsImageHandler(titleVariants: NSArray<string> | string[], image: UIImage, handler: (p1: CPGridButton) => void): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithTitleVariantsImageMessageConfigurationHandler(titleVariants: NSArray<string> | string[], image: UIImage, messageConfiguration: CPMessageGridItemConfiguration, handler: (p1: CPGridButton) => void): this;
+
+	/**
+	 * @since 26.0
+	 */
+	updateImage(image: UIImage): void;
+
+	/**
+	 * @since 26.0
+	 */
+	updateTitleVariants(titleVariants: NSArray<string> | string[]): void;
 }
 
 /**
@@ -523,6 +548,11 @@ declare class CPGridTemplate extends CPTemplate implements CPBarButtonProviding 
 	readonly gridButtons: NSArray<CPGridButton>;
 
 	readonly title: string;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly maximumGridButtonImageSize: CGSize;
 
 	backButton: CPBarButton; // inherited from CPBarButtonProviding
 
@@ -1053,17 +1083,36 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	static new(): CPListImageRowItem; // inherited from NSObject
 
+	/**
+	 * @since 26.0
+	 */
+	readonly allowsMultipleLines: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	elements: NSArray<CPListImageRowItemElement>;
+
+	/**
+	 * @since 14.0
+	 * @deprecated 26.0
+	 */
 	readonly gridImages: NSArray<UIImage>;
 
 	/**
 	 * @since 17.4
+	 * @deprecated 26.0
 	 */
-	imageTitles: NSArray<string>;
+	readonly imageTitles: NSArray<string>;
 
 	listImageRowHandler: (p1: CPListImageRowItem, p2: number, p3: () => void) => void;
 
 	text: string;
 
+	/**
+	 * @since 14.0
+	 * @deprecated 26.0
+	 */
 	static readonly maximumImageSize: CGSize;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -1087,10 +1136,40 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	readonly  // inherited from NSObjectProtocol
 
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { text: string; cardElements: NSArray<CPListImageRowItemCardElement> | CPListImageRowItemCardElement[]; allowsMultipleLines: boolean; });
+
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { text: string; condensedElements: NSArray<CPListImageRowItemCondensedElement> | CPListImageRowItemCondensedElement[]; allowsMultipleLines: boolean; });
+
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { text: string; elements: NSArray<CPListImageRowItemRowElement> | CPListImageRowItemRowElement[]; allowsMultipleLines: boolean; });
+
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { text: string; gridElements: NSArray<CPListImageRowItemGridElement> | CPListImageRowItemGridElement[]; allowsMultipleLines: boolean; });
+
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { text: string; imageGridElements: NSArray<CPListImageRowItemImageGridElement> | CPListImageRowItemImageGridElement[]; allowsMultipleLines: boolean; });
+
+	/**
+	 * @since 14.0
+	 * @deprecated 26.0
+	 */
 	constructor(o: { text: string; images: NSArray<UIImage> | UIImage[]; });
 
 	/**
 	 * @since 17.4
+	 * @deprecated 26.0
 	 */
 	constructor(o: { text: string; images: NSArray<UIImage> | UIImage[]; imageTitles: NSArray<string> | string[]; });
 
@@ -1098,10 +1177,40 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	/**
+	 * @since 26.0
+	 */
+	initWithTextCardElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemCardElement> | CPListImageRowItemCardElement[], allowsMultipleLines: boolean): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithTextCondensedElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemCondensedElement> | CPListImageRowItemCondensedElement[], allowsMultipleLines: boolean): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithTextElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemRowElement> | CPListImageRowItemRowElement[], allowsMultipleLines: boolean): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithTextGridElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemGridElement> | CPListImageRowItemGridElement[], allowsMultipleLines: boolean): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithTextImageGridElementsAllowsMultipleLines(text: string, elements: NSArray<CPListImageRowItemImageGridElement> | CPListImageRowItemImageGridElement[], allowsMultipleLines: boolean): this;
+
+	/**
+	 * @since 14.0
+	 * @deprecated 26.0
+	 */
 	initWithTextImages(text: string, images: NSArray<UIImage> | UIImage[]): this;
 
 	/**
 	 * @since 17.4
+	 * @deprecated 26.0
 	 */
 	initWithTextImagesImageTitles(text: string, images: NSArray<UIImage> | UIImage[], imageTitles: NSArray<string> | string[]): this;
 
@@ -1123,7 +1232,139 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	self(): this;
 
+	/**
+	 * @since 14.0
+	 * @deprecated 26.0
+	 */
 	updateImages(gridImages: NSArray<UIImage> | UIImage[]): void;
+}
+
+/**
+ * @since 26.0
+ */
+declare class CPListImageRowItemCardElement extends CPListImageRowItemElement {
+
+	static alloc(): CPListImageRowItemCardElement; // inherited from NSObject
+
+	static new(): CPListImageRowItemCardElement; // inherited from NSObject
+
+	readonly showsImageFullHeight: boolean;
+
+	subtitle: string;
+
+	tintColor: UIColor;
+
+	title: string;
+
+	static readonly maximumFullHeightImageSize: CGSize;
+
+	constructor(o: { image: UIImage; showsImageFullHeight: boolean; title: string; subtitle: string; tintColor: UIColor; });
+
+	initWithImageShowsImageFullHeightTitleSubtitleTintColor(image: UIImage, showsImageFullHeight: boolean, title: string, subtitle: string, tintColor: UIColor): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class CPListImageRowItemCondensedElement extends CPListImageRowItemElement {
+
+	static alloc(): CPListImageRowItemCondensedElement; // inherited from NSObject
+
+	static new(): CPListImageRowItemCondensedElement; // inherited from NSObject
+
+	accessorySymbolName: string;
+
+	readonly imageShape: CPListImageRowItemCondensedElementShape;
+
+	subtitle: string;
+
+	title: string;
+
+	constructor(o: { image: UIImage; imageShape: CPListImageRowItemCondensedElementShape; title: string; subtitle: string; accessorySymbolName: string; });
+
+	initWithImageImageShapeTitleSubtitleAccessorySymbolName(image: UIImage, imageShape: CPListImageRowItemCondensedElementShape, title: string, subtitle: string, accessorySymbolName: string): this;
+}
+
+declare const enum CPListImageRowItemCondensedElementShape {
+
+	Circular = 0,
+
+	RoundedRectangle = 1
+}
+
+/**
+ * @since 26.0
+ */
+declare class CPListImageRowItemElement extends NSObject {
+
+	static alloc(): CPListImageRowItemElement; // inherited from NSObject
+
+	static new(): CPListImageRowItemElement; // inherited from NSObject
+
+	enabled: boolean;
+
+	image: UIImage;
+
+	static readonly maximumImageSize: CGSize;
+}
+
+/**
+ * @since 26.0
+ */
+declare class CPListImageRowItemGridElement extends CPListImageRowItemElement {
+
+	static alloc(): CPListImageRowItemGridElement; // inherited from NSObject
+
+	static new(): CPListImageRowItemGridElement; // inherited from NSObject
+
+	constructor(o: { image: UIImage; });
+
+	initWithImage(image: UIImage): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class CPListImageRowItemImageGridElement extends CPListImageRowItemElement {
+
+	static alloc(): CPListImageRowItemImageGridElement; // inherited from NSObject
+
+	static new(): CPListImageRowItemImageGridElement; // inherited from NSObject
+
+	accessorySymbolName: string;
+
+	readonly imageShape: CPListImageRowItemImageGridElementShape;
+
+	title: string;
+
+	constructor(o: { image: UIImage; imageShape: CPListImageRowItemImageGridElementShape; title: string; accessorySymbolName: string; });
+
+	initWithImageImageShapeTitleAccessorySymbolName(image: UIImage, imageShape: CPListImageRowItemImageGridElementShape, title: string, accessorySymbolName: string): this;
+}
+
+declare const enum CPListImageRowItemImageGridElementShape {
+
+	Circular = 0,
+
+	RoundedRectangle = 1
+}
+
+/**
+ * @since 26.0
+ */
+declare class CPListImageRowItemRowElement extends CPListImageRowItemElement {
+
+	static alloc(): CPListImageRowItemRowElement; // inherited from NSObject
+
+	static new(): CPListImageRowItemRowElement; // inherited from NSObject
+
+	subtitle: string;
+
+	title: string;
+
+	constructor(o: { image: UIImage; title: string; subtitle: string; });
+
+	initWithImageTitleSubtitle(image: UIImage, title: string, subtitle: string): this;
 }
 
 /**
@@ -1387,6 +1628,11 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	emptyViewTitleVariants: NSArray<string>;
 
 	/**
+	 * @since 26.0
+	 */
+	headerGridButtons: NSArray<CPGridButton>;
+
+	/**
 	 * @since 14.0
 	 */
 	readonly itemCount: number;
@@ -1398,7 +1644,22 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 
 	readonly sections: NSArray<CPListSection>;
 
+	/**
+	 * @since 18.4
+	 */
+	showsSpinnerWhileEmpty: boolean;
+
 	readonly title: string;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly maximumGridButtonImageSize: CGSize;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly maximumHeaderGridButtonCount: number;
 
 	/**
 	 * @since 14.0
@@ -1435,6 +1696,11 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	 */
 	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration; });
 
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration; headerGridButtons: NSArray<CPGridButton> | CPGridButton[]; });
+
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
@@ -1450,6 +1716,11 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	 * @since 15.0
 	 */
 	initWithTitleSectionsAssistantCellConfiguration(title: string, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithTitleSectionsAssistantCellConfigurationHeaderGridButtons(title: string, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration, headerGridButtons: NSArray<CPGridButton> | CPGridButton[]): this;
 
 	isEqual(object: any): boolean;
 
@@ -1898,6 +2169,21 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 
 	mapTemplateDidBeginPanGesture?(mapTemplate: CPMapTemplate): void;
 
+	/**
+	 * @since 26.0
+	 */
+	mapTemplateDidBeginPitchGesture?(mapTemplate: CPMapTemplate): void;
+
+	/**
+	 * @since 26.0
+	 */
+	mapTemplateDidBeginRotationGesture?(mapTemplate: CPMapTemplate): void;
+
+	/**
+	 * @since 26.0
+	 */
+	mapTemplateDidBeginZoomGesture?(mapTemplate: CPMapTemplate): void;
+
 	mapTemplateDidCancelNavigation?(mapTemplate: CPMapTemplate): void;
 
 	mapTemplateDidDismissNavigationAlertDismissalContext?(mapTemplate: CPMapTemplate, navigationAlert: CPNavigationAlert, dismissalContext: CPNavigationAlertDismissalContext): void;
@@ -1906,11 +2192,26 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 
 	mapTemplateDidEndPanGestureWithVelocity?(mapTemplate: CPMapTemplate, velocity: CGPoint): void;
 
+	/**
+	 * @since 26.0
+	 */
+	mapTemplateDidEndZoomGestureWithVelocity?(mapTemplate: CPMapTemplate, velocity: number): void;
+
+	/**
+	 * @since 26.0
+	 */
+	mapTemplateDidRotateWithCenterRotationVelocity?(mapTemplate: CPMapTemplate, center: CGPoint, rotation: number, velocity: number): void;
+
 	mapTemplateDidShowNavigationAlert?(mapTemplate: CPMapTemplate, navigationAlert: CPNavigationAlert): void;
 
 	mapTemplateDidShowPanningInterface?(mapTemplate: CPMapTemplate): void;
 
 	mapTemplateDidUpdatePanGestureWithTranslationVelocity?(mapTemplate: CPMapTemplate, translation: CGPoint, velocity: CGPoint): void;
+
+	/**
+	 * @since 26.0
+	 */
+	mapTemplateDidUpdateZoomGestureWithCenterScaleVelocity?(mapTemplate: CPMapTemplate, center: CGPoint, scale: number, velocity: number): void;
 
 	mapTemplateDisplayStyleForManeuver?(mapTemplate: CPMapTemplate, maneuver: CPManeuver): CPManeuverDisplayStyle;
 
@@ -1920,8 +2221,26 @@ interface CPMapTemplateDelegate extends NSObjectProtocol {
 
 	mapTemplatePanWithDirection?(mapTemplate: CPMapTemplate, direction: CPPanDirection): void;
 
+	/**
+	 * @since 26.0
+	 */
+	mapTemplatePitchEndedWithCenter?(mapTemplate: CPMapTemplate, center: CGPoint): void;
+
+	/**
+	 * @since 26.0
+	 */
+	mapTemplatePitchWithCenter?(mapTemplate: CPMapTemplate, center: CGPoint): void;
+
+	/**
+	 * @since 26.0
+	 */
+	mapTemplateRotationDidEndWithVelocity?(mapTemplate: CPMapTemplate, velocity: number): void;
+
 	mapTemplateSelectedPreviewForTripUsingRouteChoice?(mapTemplate: CPMapTemplate, trip: CPTrip, routeChoice: CPRouteChoice): void;
 
+	/**
+	 * @since 17.4
+	 */
 	mapTemplateShouldProvideNavigationMetadata?(mapTemplate: CPMapTemplate): boolean;
 
 	mapTemplateShouldShowNotificationForManeuver?(mapTemplate: CPMapTemplate, maneuver: CPManeuver): boolean;
@@ -1947,6 +2266,8 @@ declare var CPMaximumListSectionImageSize: CGSize;
 
 declare var CPMaximumMessageItemImageSize: CGSize;
 
+declare var CPMaximumMessageItemLeadingDetailTextImageSize: CGSize;
+
 declare var CPMaximumNumberOfGridImages: number;
 
 /**
@@ -1961,6 +2282,24 @@ declare class CPMessageComposeBarButton extends CPBarButton {
 	constructor(o: { image: UIImage; });
 
 	initWithImage(image: UIImage): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class CPMessageGridItemConfiguration extends NSObject {
+
+	static alloc(): CPMessageGridItemConfiguration; // inherited from NSObject
+
+	static new(): CPMessageGridItemConfiguration; // inherited from NSObject
+
+	readonly conversationIdentifier: string;
+
+	unread: boolean;
+
+	constructor(o: { conversationIdentifier: string; unread: boolean; });
+
+	initWithConversationIdentifierUnread(conversationIdentifier: string, unread: boolean): this;
 }
 
 declare const enum CPMessageLeadingItem {
@@ -1986,6 +2325,11 @@ declare class CPMessageListItem extends NSObject implements CPListTemplateItem {
 	detailText: string;
 
 	leadingConfiguration: CPMessageListItemLeadingConfiguration;
+
+	/**
+	 * @since 26.0
+	 */
+	leadingDetailTextImage: UIImage;
 
 	phoneOrEmailAddress: string;
 
@@ -2163,18 +2507,33 @@ declare class CPNavigationSession extends NSObject {
 
 	static new(): CPNavigationSession; // inherited from NSObject
 
+	/**
+	 * @since 17.4
+	 */
 	currentLaneGuidance: CPLaneGuidance;
 
+	/**
+	 * @since 17.4
+	 */
 	currentRoadNameVariants: NSArray<string>;
 
+	/**
+	 * @since 17.4
+	 */
 	maneuverState: CPManeuverState;
 
 	readonly trip: CPTrip;
 
 	upcomingManeuvers: NSArray<CPManeuver>;
 
+	/**
+	 * @since 17.4
+	 */
 	addLaneGuidances(laneGuidances: NSArray<CPLaneGuidance> | CPLaneGuidance[]): void;
 
+	/**
+	 * @since 17.4
+	 */
 	addManeuvers(maneuvers: NSArray<CPManeuver> | CPManeuver[]): void;
 
 	cancelTrip(): void;
@@ -2251,6 +2610,56 @@ declare class CPNowPlayingImageButton extends CPNowPlayingButton {
 }
 
 /**
+ * @since 18.4
+ */
+declare class CPNowPlayingMode extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPNowPlayingMode; // inherited from NSObject
+
+	static new(): CPNowPlayingMode; // inherited from NSObject
+
+	static readonly defaultNowPlayingMode: CPNowPlayingMode;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.4
+ */
+declare class CPNowPlayingModeSports extends CPNowPlayingMode implements NSSecureCoding {
+
+	static alloc(): CPNowPlayingModeSports; // inherited from NSObject
+
+	static new(): CPNowPlayingModeSports; // inherited from NSObject
+
+	readonly backgroundArtwork: UIImage;
+
+	readonly eventStatus: CPNowPlayingSportsEventStatus;
+
+	readonly leftTeam: CPNowPlayingSportsTeam;
+
+	readonly rightTeam: CPNowPlayingSportsTeam;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { leftTeam: CPNowPlayingSportsTeam; rightTeam: CPNowPlayingSportsTeam; eventStatus: CPNowPlayingSportsEventStatus; backgroundArtwork: UIImage; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithLeftTeamRightTeamEventStatusBackgroundArtwork(leftTeam: CPNowPlayingSportsTeam, rightTeam: CPNowPlayingSportsTeam, eventStatus: CPNowPlayingSportsEventStatus, backgroundArtwork: UIImage): this;
+}
+
+/**
  * @since 14.0
  */
 declare class CPNowPlayingMoreButton extends CPNowPlayingButton {
@@ -2291,6 +2700,130 @@ declare class CPNowPlayingShuffleButton extends CPNowPlayingButton {
 }
 
 /**
+ * @since 18.4
+ */
+declare class CPNowPlayingSportsClock extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPNowPlayingSportsClock; // inherited from NSObject
+
+	static new(): CPNowPlayingSportsClock; // inherited from NSObject
+
+	readonly countsUp: boolean;
+
+	readonly paused: boolean;
+
+	readonly timeValue: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { elapsedTime: number; paused: boolean; });
+
+	constructor(o: { timeRemaining: number; paused: boolean; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithElapsedTimePaused(elapsedTime: number, paused: boolean): this;
+
+	initWithTimeRemainingPaused(timeRemaining: number, paused: boolean): this;
+}
+
+/**
+ * @since 18.4
+ */
+declare class CPNowPlayingSportsEventStatus extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPNowPlayingSportsEventStatus; // inherited from NSObject
+
+	static new(): CPNowPlayingSportsEventStatus; // inherited from NSObject
+
+	readonly eventClock: CPNowPlayingSportsClock;
+
+	readonly eventStatusImage: UIImage;
+
+	readonly eventStatusText: NSArray<string>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { eventStatusText: NSArray<string> | string[]; eventStatusImage: UIImage; eventClock: CPNowPlayingSportsClock; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithEventStatusTextEventStatusImageEventClock(eventStatusText: NSArray<string> | string[], eventStatusImage: UIImage, eventClock: CPNowPlayingSportsClock): this;
+}
+
+/**
+ * @since 18.4
+ */
+declare class CPNowPlayingSportsTeam extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPNowPlayingSportsTeam; // inherited from NSObject
+
+	static new(): CPNowPlayingSportsTeam; // inherited from NSObject
+
+	readonly eventScore: string;
+
+	readonly favorite: boolean;
+
+	readonly logo: CPNowPlayingSportsTeamLogo;
+
+	readonly name: string;
+
+	readonly possessionIndicator: UIImage;
+
+	readonly teamStandings: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { name: string; logo: CPNowPlayingSportsTeamLogo; teamStandings: string; eventScore: string; possessionIndicator: UIImage; favorite: boolean; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithNameLogoTeamStandingsEventScorePossessionIndicatorFavorite(name: string, logo: CPNowPlayingSportsTeamLogo, teamStandings: string, eventScore: string, possessionIndicator: UIImage, favorite: boolean): this;
+}
+
+/**
+ * @since 18.4
+ */
+declare class CPNowPlayingSportsTeamLogo extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPNowPlayingSportsTeamLogo; // inherited from NSObject
+
+	static new(): CPNowPlayingSportsTeamLogo; // inherited from NSObject
+
+	readonly initials: string;
+
+	readonly logo: UIImage;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { teamInitials: string; });
+
+	constructor(o: { teamLogo: UIImage; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithTeamInitials(teamInitials: string): this;
+
+	initWithTeamLogo(teamLogo: UIImage): this;
+}
+
+/**
  * @since 14.0
  */
 declare class CPNowPlayingTemplate extends CPTemplate {
@@ -2302,6 +2835,11 @@ declare class CPNowPlayingTemplate extends CPTemplate {
 	albumArtistButtonEnabled: boolean;
 
 	readonly nowPlayingButtons: NSArray<CPNowPlayingButton>;
+
+	/**
+	 * @since 18.4
+	 */
+	nowPlayingMode: CPNowPlayingMode;
 
 	upNextButtonEnabled: boolean;
 
@@ -2931,6 +3469,9 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 
 	readonly distanceRemaining: NSMeasurement<NSUnitLength>;
 
+	/**
+	 * @since 17.4
+	 */
 	readonly distanceRemainingToDisplay: NSMeasurement<NSUnitLength>;
 
 	readonly timeRemaining: number;
@@ -2939,6 +3480,9 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 17.4
+	 */
 	constructor(o: { distanceRemaining: NSMeasurement<NSUnitLength>; distanceRemainingToDisplay: NSMeasurement<NSUnitLength>; timeRemaining: number; });
 
 	constructor(o: { distanceRemaining: NSMeasurement<NSUnitLength>; timeRemaining: number; });
@@ -2947,6 +3491,9 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 17.4
+	 */
 	initWithDistanceRemainingDistanceRemainingToDisplayTimeRemaining(distanceRemaining: NSMeasurement<NSUnitLength>, distanceRemainingToDisplay: NSMeasurement<NSUnitLength>, time: number): this;
 
 	initWithDistanceRemainingTimeRemaining(distance: NSMeasurement<NSUnitLength>, time: number): this;
@@ -2963,6 +3510,9 @@ declare class CPTrip extends NSObject implements NSSecureCoding {
 
 	readonly destination: MKMapItem;
 
+	/**
+	 * @since 17.4
+	 */
 	destinationNameVariants: NSArray<string>;
 
 	readonly origin: MKMapItem;

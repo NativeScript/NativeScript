@@ -52,6 +52,11 @@ declare class MFMailComposeViewController extends UINavigationController {
 
 	addAttachmentDataMimeTypeFileName(attachment: NSData, mimeType: string, filename: string): void;
 
+	/**
+	 * @since 18.4
+	 */
+	insertCollaborationItemProviderCompletionHandler(itemProvider: NSItemProvider, completionHandler: (p1: boolean) => void): void;
+
 	setBccRecipients(bccRecipients: NSArray<string> | string[]): void;
 
 	setCcRecipients(ccRecipients: NSArray<string> | string[]): void;

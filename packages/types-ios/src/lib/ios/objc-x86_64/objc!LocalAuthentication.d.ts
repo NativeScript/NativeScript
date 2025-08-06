@@ -72,7 +72,9 @@ declare const enum LACompanionType {
 
 	Watch = 1,
 
-	Mac = 2
+	Mac = 2,
+
+	Vision = 4
 }
 
 /**
@@ -408,15 +410,15 @@ declare const enum LAPolicy {
 
 	DeviceOwnerAuthentication = 2,
 
-	DeviceOwnerAuthenticationWithWatch = 3,
-
 	DeviceOwnerAuthenticationWithCompanion = 3,
-
-	DeviceOwnerAuthenticationWithBiometricsOrWatch = 4,
 
 	DeviceOwnerAuthenticationWithBiometricsOrCompanion = 4,
 
-	DeviceOwnerAuthenticationWithWristDetection = 5
+	DeviceOwnerAuthenticationWithWristDetection = 5,
+
+	DeviceOwnerAuthenticationWithWatch = 3,
+
+	DeviceOwnerAuthenticationWithBiometricsOrWatch = 4
 }
 
 /**

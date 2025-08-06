@@ -90,6 +90,11 @@ declare class PHAsset extends PHObject {
 	static new(): PHAsset; // inherited from NSObject
 
 	/**
+	 * @since 26.0
+	 */
+	readonly addedDate: Date;
+
+	/**
 	 * @since 15
 	 */
 	readonly adjustmentFormatIdentifier: string;
@@ -103,6 +108,11 @@ declare class PHAsset extends PHObject {
 	 * @since 8
 	 */
 	readonly burstSelectionTypes: PHAssetBurstSelectionType;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly contentType: UTType;
 
 	/**
 	 * @since 8
@@ -489,6 +499,8 @@ declare const enum PHAssetCollectionSubtype {
 
 	SmartAlbumSpatial = 219,
 
+	SmartAlbumScreenRecordings = 220,
+
 	Any = 9223372036854775807
 }
 
@@ -591,6 +603,8 @@ declare const enum PHAssetMediaSubtype {
 
 	VideoTimelapse = 262144,
 
+	VideoScreenRecording = 524288,
+
 	VideoCinematic = 2097152
 }
 
@@ -651,6 +665,11 @@ declare class PHAssetResource extends NSObject {
 	readonly assetLocalIdentifier: string;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly contentType: UTType;
+
+	/**
 	 * @since 9
 	 */
 	readonly originalFilename: string;
@@ -672,6 +691,7 @@ declare class PHAssetResource extends NSObject {
 
 	/**
 	 * @since 9
+	 * @deprecated 100000
 	 */
 	readonly uniformTypeIdentifier: string;
 }
@@ -686,6 +706,11 @@ declare class PHAssetResourceCreationOptions extends NSObject implements NSCopyi
 	static new(): PHAssetResourceCreationOptions; // inherited from NSObject
 
 	/**
+	 * @since 26.0
+	 */
+	contentType: UTType;
+
+	/**
 	 * @since 9
 	 */
 	originalFilename: string;
@@ -697,6 +722,7 @@ declare class PHAssetResourceCreationOptions extends NSObject implements NSCopyi
 
 	/**
 	 * @since 9
+	 * @deprecated 100000
 	 */
 	uniformTypeIdentifier: string;
 
@@ -828,6 +854,7 @@ declare class PHCachingImageManager extends PHImageManager {
 
 	/**
 	 * @since 8
+	 * @deprecated 26.0
 	 */
 	allowsCachingHighQualityImages: boolean;
 
@@ -1195,6 +1222,11 @@ declare class PHContentEditingInput extends NSObject {
 	readonly avAsset: AVAsset;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly contentType: UTType;
+
+	/**
 	 * @since 8
 	 */
 	readonly creationDate: Date;
@@ -1241,6 +1273,7 @@ declare class PHContentEditingInput extends NSObject {
 
 	/**
 	 * @since 8
+	 * @deprecated 100000
 	 */
 	readonly uniformTypeIdentifier: string;
 }

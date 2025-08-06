@@ -86,6 +86,6 @@ declare const enum NSCCryptoRsaHashedKeyGenParamsName {
 	kNSCCryptoRSA_OAEP = 2
 }
 
-declare var NSCWinterCGVersionNumber: number;
+declare var NSCWinterTCVersionNumber: number;
 
-declare var NSCWinterCGVersionString: interop.Reference<number>;
+declare var NSCWinterTCVersionString: interop.Reference<number>;

@@ -78,11 +78,84 @@ declare class NIConfiguration extends NSObject implements NSCopying, NSSecureCod
 }
 
 /**
+ * @since 26.0
+ */
+declare class NIDLTDOAConfiguration extends NIConfiguration {
+
+	static alloc(): NIDLTDOAConfiguration; // inherited from NSObject
+
+	static new(): NIDLTDOAConfiguration; // inherited from NSObject
+
+	networkIdentifier: number;
+
+	constructor(o: { networkIdentifier: number; });
+
+	initWithNetworkIdentifier(networkIdentifier: number): this;
+}
+
+declare const enum NIDLTDOACoordinatesType {
+
+	Geodetic = 0,
+
+	Relative = 1
+}
+
+/**
+ * @since 26.0
+ */
+declare class NIDLTDOAMeasurement extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NIDLTDOAMeasurement; // inherited from NSObject
+
+	static new(): NIDLTDOAMeasurement; // inherited from NSObject
+
+	readonly address: number;
+
+	readonly carrierFrequencyOffset: number;
+
+	readonly coordinates: interop.Reference<number>;
+
+	readonly coordinatesType: NIDLTDOACoordinatesType;
+
+	readonly measurementType: NIDLTDOAMeasurementType;
+
+	readonly receiveTime: number;
+
+	readonly signalStrength: number;
+
+	readonly transmitTime: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum NIDLTDOAMeasurementType {
+
+	Poll = 0,
+
+	Response = 1,
+
+	Final = 2
+}
+
+/**
  * @since 16.0
  */
 interface NIDeviceCapability {
 
 	supportsCameraAssistance: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	supportsDLTDOAMeasurement: boolean;
 
 	supportsDirectionMeasurement: boolean;
 
@@ -352,6 +425,11 @@ interface NISessionDelegate extends NSObjectProtocol {
 	 * @since 16.0
 	 */
 	sessionDidUpdateAlgorithmConvergenceForObject?(session: NISession, convergence: NIAlgorithmConvergence, object: NINearbyObject): void;
+
+	/**
+	 * @since 26.0
+	 */
+	sessionDidUpdateDLTDOAMeasurements?(session: NISession, measurements: NSArray<NIDLTDOAMeasurement> | NIDLTDOAMeasurement[]): void;
 
 	sessionDidUpdateNearbyObjects?(session: NISession, nearbyObjects: NSArray<NINearbyObject> | NINearbyObject[]): void;
 

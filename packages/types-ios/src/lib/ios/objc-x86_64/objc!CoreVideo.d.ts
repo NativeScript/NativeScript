@@ -113,6 +113,11 @@ declare function CVImageBufferGetCleanRect(imageBuffer: any): CGRect;
 /**
  * @since 4.0
  */
+declare function CVImageBufferGetColorSpace(imageBuffer: any): interop.Unmanaged<any>;
+
+/**
+ * @since 4.0
+ */
 declare function CVImageBufferGetDisplaySize(imageBuffer: any): CGSize;
 
 /**
@@ -362,6 +367,11 @@ declare function CVPixelBufferGetWidthOfPlane(pixelBuffer: any, planeIndex: numb
 /**
  * @since 4.0
  */
+declare function CVPixelBufferIsCompatibleWithAttributes(pixelBuffer: any, attributes: NSDictionary<any, any>): boolean;
+
+/**
+ * @since 4.0
+ */
 declare function CVPixelBufferIsPlanar(pixelBuffer: any): boolean;
 
 /**
@@ -450,6 +460,11 @@ declare function CVPixelFormatDescriptionCreateWithPixelFormatType(allocator: an
  * @since 4.0
  */
 declare function CVPixelFormatDescriptionRegisterDescriptionWithPixelFormatType(description: NSDictionary<any, any>, pixelFormat: number): void;
+
+/**
+ * @since 26.0
+ */
+declare function CVPixelFormatTypeCopyFourCharCodeString(pixelFormat: number): string;
 
 interface CVPlanarComponentInfo {
 	offset: number;
@@ -779,6 +794,61 @@ declare var kCVImageBufferDisplayDimensionsKey: string;
  * @since 4.0
  */
 declare var kCVImageBufferDisplayHeightKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangleKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangleStereoLeftKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangleStereoRightKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangle_LeftEdgePointsKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangle_RectangleHeightKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangle_RectangleLeftKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangle_RectangleTopKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangle_RectangleWidthKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangle_ReferenceRasterHeightKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangle_ReferenceRasterWidthKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCVImageBufferDisplayMaskRectangle_RightEdgePointsKey: string;
 
 /**
  * @since 4.0
@@ -1455,6 +1525,8 @@ declare const kCVPixelFormatType_64RGBA_DownscaledProResRAW: number;
 declare const kCVPixelFormatType_8Indexed: number;
 
 declare const kCVPixelFormatType_8IndexedGray_WhiteIsZero: number;
+
+declare const kCVPixelFormatType_96VersatileBayerPacked12: number;
 
 declare const kCVPixelFormatType_ARGB2101010LEPacked: number;
 

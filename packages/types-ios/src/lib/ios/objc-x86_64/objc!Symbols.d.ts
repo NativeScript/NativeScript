@@ -112,6 +112,46 @@ declare class NSSymbolDisappearEffect extends NSSymbolEffect {
 }
 
 /**
+ * @since 26.0
+ */
+declare class NSSymbolDrawOffEffect extends NSSymbolEffect {
+
+	static alloc(): NSSymbolDrawOffEffect; // inherited from NSObject
+
+	static effect(): NSSymbolDrawOffEffect;
+
+	static new(): NSSymbolDrawOffEffect; // inherited from NSObject
+
+	effectWithByLayer(): this;
+
+	effectWithIndividually(): this;
+
+	effectWithNonReversed(): this;
+
+	effectWithReversed(): this;
+
+	effectWithWholeSymbol(): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class NSSymbolDrawOnEffect extends NSSymbolEffect {
+
+	static alloc(): NSSymbolDrawOnEffect; // inherited from NSObject
+
+	static effect(): NSSymbolDrawOnEffect;
+
+	static new(): NSSymbolDrawOnEffect; // inherited from NSObject
+
+	effectWithByLayer(): this;
+
+	effectWithIndividually(): this;
+
+	effectWithWholeSymbol(): this;
+}
+
+/**
  * @since 17.0
  */
 declare class NSSymbolEffect extends NSObject implements NSCopying, NSSecureCoding {

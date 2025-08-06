@@ -198,9 +198,24 @@ declare const enum MSMessagesAppPresentationStyle {
 interface MSMessagesAppTranscriptPresentation {
 
 	/**
+	 * @since 26.0
+	 */
+	messageCornerRadius: number;
+
+	/**
+	 * @since 26.0
+	 */
+	messageTintColor: UIColor;
+
+	/**
 	 * @since 11.0
 	 */
 	contentSizeThatFits(size: CGSize): CGSize;
+
+	/**
+	 * @since 26.0
+	 */
+	invalidateMessageTintColor(): void;
 }
 declare var MSMessagesAppTranscriptPresentation: {
 
@@ -224,6 +239,16 @@ declare class MSMessagesAppViewController extends UIViewController implements MS
 	readonly presentationContext: MSMessagesAppPresentationContext;
 
 	readonly presentationStyle: MSMessagesAppPresentationStyle;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly messageCornerRadius: number; // inherited from MSMessagesAppTranscriptPresentation
+
+	/**
+	 * @since 26.0
+	 */
+	readonly messageTintColor: UIColor; // inherited from MSMessagesAppTranscriptPresentation
 
 	/**
 	 * @since 11.0
@@ -263,6 +288,11 @@ declare class MSMessagesAppViewController extends UIViewController implements MS
 	 * @since 10.0
 	 */
 	dismiss(): void;
+
+	/**
+	 * @since 26.0
+	 */
+	invalidateMessageTintColor(): void;
 
 	requestPresentationStyle(presentationStyle: MSMessagesAppPresentationStyle): void;
 

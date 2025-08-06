@@ -1,5 +1,61 @@
 
 /**
+ * @since 13.0
+ */
+declare class ARQuickLookPreviewItem extends NSObject implements QLPreviewItem {
+
+	static alloc(): ARQuickLookPreviewItem; // inherited from NSObject
+
+	static new(): ARQuickLookPreviewItem; // inherited from NSObject
+
+	allowsContentScaling: boolean;
+
+	canonicalWebPageURL: NSURL;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly previewItemTitle: string; // inherited from QLPreviewItem
+
+	readonly previewItemURL: NSURL; // inherited from QLPreviewItem
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { fileAtURL: NSURL; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithFileAtURL(url: NSURL): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+/**
  * @since 15.0
  */
 declare class QLFilePreviewRequest extends NSObject {

@@ -86,7 +86,9 @@ declare const enum PHASEAssetType {
  */
 declare const enum PHASEAutomaticHeadTrackingFlags {
 
-	Orientation = 1
+	Orientation = 1,
+
+	Position = 2
 }
 
 /**
@@ -384,6 +386,11 @@ declare class PHASEEngine extends NSObject {
 	readonly duckers: NSArray<PHASEDucker>;
 
 	readonly groups: NSDictionary<string, PHASEGroup>;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly lastRenderTime: AVAudioTime;
 
 	outputSpatializationMode: PHASESpatializationMode;
 
@@ -1162,7 +1169,22 @@ declare class PHASESoundEvent extends NSObject {
 
 	resume(): void;
 
+	/**
+	 * @since 26.0
+	 */
+	resumeAtTime(time: AVAudioTime): void;
+
 	seekToTimeCompletion(time: number, handler: (p1: PHASESoundEventSeekHandlerReason) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	seekToTimeResumeAtEngineTimeCompletion(time: number, engineTime: AVAudioTime, handler: (p1: PHASESoundEventSeekHandlerReason) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	startAtTimeCompletion(when: AVAudioTime, handler: (p1: PHASESoundEventStartHandlerReason) => void): void;
 
 	startWithCompletion(handler: (p1: PHASESoundEventStartHandlerReason) => void): void;
 

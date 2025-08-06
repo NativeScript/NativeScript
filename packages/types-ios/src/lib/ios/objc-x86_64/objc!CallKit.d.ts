@@ -378,7 +378,9 @@ declare const enum CXErrorCodeIncomingCallError {
 
 	FilteredDuringRestrictedSharingMode = 5,
 
-	CallIsProtected = 6
+	CallIsProtected = 6,
+
+	FilteredBySensitiveParticipants = 7
 }
 
 /**
@@ -583,6 +585,11 @@ declare class CXProviderConfiguration extends NSObject implements NSCopying {
 
 	supportedHandleTypes: NSSet<number>;
 
+	/**
+	 * @since 26.0
+	 */
+	supportsAudioTranslation: boolean;
+
 	supportsVideo: boolean;
 
 	/**
@@ -626,6 +633,8 @@ interface CXProviderDelegate extends NSObjectProtocol {
 	providerPerformSetHeldCallAction?(provider: CXProvider, action: CXSetHeldCallAction): void;
 
 	providerPerformSetMutedCallAction?(provider: CXProvider, action: CXSetMutedCallAction): void;
+
+	providerPerformSetTranslatingCallAction?(provider: CXProvider, action: CXSetTranslatingCallAction): void;
 
 	providerPerformStartCallAction?(provider: CXProvider, action: CXStartCallAction): void;
 
@@ -685,6 +694,36 @@ declare class CXSetMutedCallAction extends CXCallAction {
 }
 
 /**
+ * @since 26.0
+ */
+declare class CXSetTranslatingCallAction extends CXCallAction implements NSSecureCoding {
+
+	static alloc(): CXSetTranslatingCallAction; // inherited from NSObject
+
+	static new(): CXSetTranslatingCallAction; // inherited from NSObject
+
+	readonly isTranslating: boolean;
+
+	readonly localLocale: NSLocale;
+
+	readonly remoteLocale: NSLocale;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { callUUID: NSUUID; isTranslating: boolean; localLocale: NSLocale; remoteLocale: NSLocale; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	fulfillWithTranslationEngine(translationEngine: CXTranslationEngine): void;
+
+	initWithCallUUIDIsTranslatingLocalLocaleRemoteLocale(uuid: NSUUID, isTranslating: boolean, localLocale: NSLocale, remoteLocale: NSLocale): this;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
  * @since 10.0
  */
 declare class CXStartCallAction extends CXCallAction {
@@ -740,4 +779,11 @@ declare class CXTransaction extends NSObject implements NSCopying, NSSecureCodin
 	initWithActions(actions: NSArray<CXAction> | CXAction[]): this;
 
 	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum CXTranslationEngine {
+
+	Default = 0,
+
+	External = 1
 }
