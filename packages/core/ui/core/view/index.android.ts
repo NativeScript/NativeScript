@@ -314,6 +314,120 @@ function getModalOptions(domId: number): DialogOptions {
 	return modalMap.get(domId);
 }
 
+const INSET_LEFT = 0;
+const INSET_TOP = 4;
+const INSET_RIGHT = 8;
+const INSET_BOTTOM = 12;
+const INSET_LEFT_CONSUMED = 16;
+const INSET_TOP_CONSUMED = 20;
+const INSET_RIGHT_CONSUMED = 24;
+const INSET_BOTTOM_CONSUMED = 28;
+
+const OverflowEdgeNone: number = 0;
+const OverflowEdgeLeft: number = 1;
+const OverflowEdgeTop: number = 1 << 1;
+const OverflowEdgeRight: number = 1 << 2;
+const OverflowEdgeBottom: number = 1 << 3;
+const OverflowEdgeDontApply: number = 1 << 4;
+const OverflowEdgeLeftDontConsume: number = 1 << 5;
+const OverflowEdgeTopDontConsume: number = 1 << 6;
+const OverflowEdgeRightDontConsume: number = 1 << 7;
+const OverflowEdgeBottomDontConsume: number = 1 << 8;
+const OverflowEdgeAllButLeft: number = 1 << 9;
+const OverflowEdgeAllButTop: number = 1 << 10;
+const OverflowEdgeAllButRight: number = 1 << 11;
+const OverflowEdgeAllButBottom: number = 1 << 12;
+
+class Inset {
+	private view: DataView;
+	private data: ArrayBuffer;
+	constructor(data: java.nio.ByteBuffer) {
+		this.data = (<any>ArrayBuffer).from(data);
+		this.view = new DataView(this.data);
+	}
+
+	public get left(): number {
+		return this.view.getInt32(INSET_LEFT, true);
+	}
+
+	public set left(value: number) {
+		this.view.setInt32(INSET_LEFT, value, true);
+	}
+
+	public get top(): number {
+		return this.view.getInt32(INSET_TOP, true);
+	}
+
+	public set top(value: number) {
+		this.view.setInt32(INSET_TOP, value, true);
+	}
+
+	public get right(): number {
+		return this.view.getInt32(INSET_RIGHT, true);
+	}
+
+	public set right(value: number) {
+		this.view.setInt32(INSET_RIGHT, value, true);
+	}
+
+	public get bottom(): number {
+		return this.view.getInt32(INSET_BOTTOM, true);
+	}
+
+	public set bottom(value: number) {
+		this.view.setInt32(INSET_BOTTOM, value, true);
+	}
+
+	public get leftConsumed(): boolean {
+		return this.view.getInt32(INSET_LEFT_CONSUMED, true) > 0;
+	}
+
+	public set leftConsumed(value: boolean) {
+		this.view.setInt32(INSET_LEFT_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get topConsumed(): boolean {
+		return this.view.getInt32(INSET_TOP_CONSUMED, true) > 0;
+	}
+
+	public set topConsumed(value: boolean) {
+		this.view.setInt32(INSET_TOP_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get rightConsumed(): boolean {
+		return this.view.getInt32(INSET_RIGHT_CONSUMED, true) > 0;
+	}
+
+	public set rightConsumed(value: boolean) {
+		this.view.setInt32(INSET_RIGHT_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get bottomConsumed(): boolean {
+		return this.view.getInt32(INSET_BOTTOM_CONSUMED, true) > 0;
+	}
+
+	public set bottomConsumed(value: boolean) {
+		this.view.setInt32(INSET_BOTTOM_CONSUMED, value ? 1 : 0, true);
+	}
+
+	toString() {
+		return `Inset: left=${this.left}, top=${this.top}, right=${this.right}, bottom=${this.bottom}, ` + `leftConsumed=${this.leftConsumed}, topConsumed=${this.topConsumed}, ` + `rightConsumed=${this.rightConsumed}, bottomConsumed=${this.bottomConsumed}`;
+	}
+
+	toJSON() {
+		return {
+			left: this.left,
+			top: this.top,
+			right: this.right,
+			bottom: this.bottom,
+			leftConsumed: this.leftConsumed,
+			topConsumed: this.topConsumed,
+			rightConsumed: this.rightConsumed,
+			bottomConsumed: this.bottomConsumed,
+		};
+	}
+}
+
 export class View extends ViewCommon {
 	public static androidBackPressedEvent = androidBackPressedEvent;
 
@@ -324,6 +438,8 @@ export class View extends ViewCommon {
 	private layoutChangeListenerIsSet: boolean;
 	private layoutChangeListener: android.view.View.OnLayoutChangeListener;
 	private _rootManager: androidx.fragment.app.FragmentManager;
+	private insetListenerIsSet: boolean;
+	private needsInsetListener: boolean;
 
 	nativeViewProtected: android.view.View;
 
@@ -342,6 +458,12 @@ export class View extends ViewCommon {
 		if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
 			this.setOnLayoutChangeListener();
 		}
+
+		const isInsetEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.androidOverflowInsetEvent) !== -1 : false;
+		// only avaiable on LayoutBase
+		if (!this.insetListenerIsSet && isInsetEvent) {
+			this.setInsetListener();
+		}
 	}
 
 	removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
@@ -352,6 +474,43 @@ export class View extends ViewCommon {
 		if (this.isLoaded && this.layoutChangeListenerIsSet && isLayoutEvent && !this.needsOnLayoutChangeListener()) {
 			this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
 			this.layoutChangeListenerIsSet = false;
+		}
+
+		const isInsetEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.androidOverflowInsetEvent) !== -1 : false;
+
+		if (this.insetListenerIsSet && isInsetEvent && this.nativeViewProtected && (this.nativeViewProtected as any).setInsetListener) {
+			(this.nativeViewProtected as any).setInsetListener(null);
+			this.insetListenerIsSet = false;
+		}
+	}
+
+	private setInsetListener() {
+		if (this.nativeViewProtected) {
+			if ((this.nativeViewProtected as any).setInsetListener) {
+				const ref = new WeakRef(this);
+				(this.nativeViewProtected as any).setInsetListener(
+					new org.nativescript.widgets.LayoutBase.WindowInsetListener({
+						onApplyWindowInsets(param0) {
+							const owner = ref.get();
+							if (!owner) {
+								return;
+							}
+
+							const inset = new Inset(param0);
+							const args = {
+								eventName: ViewCommon.androidOverflowInsetEvent,
+								object: this,
+								inset,
+							};
+							owner.notify(args);
+						},
+					}),
+				);
+				this.insetListenerIsSet = true;
+			}
+			this.needsInsetListener = false;
+		} else {
+			this.needsInsetListener = true;
 		}
 	}
 
@@ -413,6 +572,134 @@ export class View extends ViewCommon {
 		return manager;
 	}
 
+	protected _defaultOverflowEdge: number = OverflowEdgeNone;
+	protected _defaultOverflowEdgeValue: string = 'none';
+	// @ts-ignore
+	public set androidOverflowEdge(value: string) {
+		if (typeof value !== 'string') {
+			return;
+		}
+		const nativeView = this.nativeViewProtected as any;
+		if (nativeView && nativeView.setOverflowEdge) {
+			if (value === 'none') {
+				nativeView.setOverflowEdge(OverflowEdgeNone);
+			} else {
+				const newValue = parseEdges(value);
+				if (newValue !== null) {
+					nativeView.setOverflowEdge(newValue);
+				}
+			}
+		} else {
+			const edge = parseEdges(value);
+
+			if (edge === null) {
+				return;
+			}
+			this._defaultOverflowEdgeValue = value;
+			this._defaultOverflowEdge = edge;
+		}
+	}
+
+	public get androidOverflowEdge() {
+		const nativeView = this.nativeViewProtected as any;
+		if (nativeView && nativeView.getOverflowEdge) {
+			const overflowEdge = nativeView.getOverflowEdge();
+			switch (overflowEdge) {
+				case OverflowEdgeNone:
+					return 'none';
+				case OverflowEdgeLeft:
+					return 'left';
+				case OverflowEdgeTop:
+					return 'top';
+				case OverflowEdgeRight:
+					return 'right';
+				case OverflowEdgeBottom:
+					return 'bottom';
+				case OverflowEdgeDontApply:
+					return 'dont-apply';
+				case OverflowEdgeLeftDontConsume:
+					return 'left-dont-consume';
+				case OverflowEdgeTopDontConsume:
+					return 'top-dont-consume';
+				case OverflowEdgeRightDontConsume:
+					return 'right-dont-consume';
+				case OverflowEdgeBottomDontConsume:
+					return 'bottom-dont-consume';
+				case OverflowEdgeAllButLeft:
+					return 'all-but-left';
+				case OverflowEdgeAllButTop:
+					return 'all-but-top';
+				case OverflowEdgeAllButRight:
+					return 'all-but-right';
+				case OverflowEdgeAllButBottom:
+					return 'all-but-bottom';
+				default:
+					{
+						let value = '';
+						const overflowLeftConsume = (overflowEdge & OverflowEdgeLeft) == OverflowEdgeLeft;
+						const overflowTopConsume = (overflowEdge & OverflowEdgeTop) == OverflowEdgeTop;
+						const overflowRightConsume = (overflowEdge & OverflowEdgeRight) == OverflowEdgeRight;
+						const overflowBottomConsume = (overflowEdge & OverflowEdgeBottom) == OverflowEdgeBottom;
+
+						const overflowLeft = (overflowEdge & OverflowEdgeLeftDontConsume) == OverflowEdgeLeftDontConsume;
+						const overflowTop = (overflowEdge & OverflowEdgeTopDontConsume) == OverflowEdgeTopDontConsume;
+						const overflowRight = (overflowEdge & OverflowEdgeRightDontConsume) == OverflowEdgeRightDontConsume;
+						const overflowBottom = (overflowEdge & OverflowEdgeBottomDontConsume) == OverflowEdgeBottomDontConsume;
+
+						if (overflowLeftConsume) {
+							value += 'left';
+						}
+						if (overflowTopConsume) {
+							if (value.length > 0) {
+								value += ',';
+							}
+							value += 'top';
+						}
+						if (overflowRightConsume) {
+							if (value.length > 0) {
+								value += ',';
+							}
+							value += 'right';
+						}
+						if (overflowBottomConsume) {
+							if (value.length > 0) {
+								value += ',';
+							}
+							value += 'bottom';
+						}
+
+						if (overflowLeft) {
+							value += 'left-dont-consume';
+						}
+						if (overflowTop) {
+							if (value.length > 0) {
+								value += ',';
+							}
+							value += 'top-dont-consume';
+						}
+						if (overflowRight) {
+							if (value.length > 0) {
+								value += ',';
+							}
+							value += 'right-dont-consume';
+						}
+						if (overflowBottom) {
+							if (value.length > 0) {
+								value += ',';
+							}
+							value += 'bottom-dont-consume';
+						}
+					}
+					break;
+			}
+		} else {
+			if (this._defaultOverflowEdgeValue) {
+				return this._defaultOverflowEdgeValue;
+			}
+		}
+		return 'none';
+	}
+
 	@profile
 	public onLoaded() {
 		this._manager = null;
@@ -461,6 +748,17 @@ export class View extends ViewCommon {
 
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
+		}
+
+		if (!this.insetListenerIsSet && this.needsInsetListener) {
+			this.setInsetListener();
+		}
+
+		const nativeView = this.nativeViewProtected as any;
+		if (typeof this._defaultOverflowEdge === 'number') {
+			if (nativeView && nativeView.setOverflowEdge) {
+				nativeView.setOverflowEdge(this._defaultOverflowEdge);
+			}
 		}
 	}
 
@@ -1267,8 +1565,119 @@ export class View extends ViewCommon {
 	}
 }
 
+function parseEdges(edges: string): number | null {
+	const values = edges.trim().split(',');
+	let newValue = -1;
+	for (let value of values) {
+		const trimmedValue = value.trim();
+		switch (trimmedValue) {
+			case 'none':
+				if (newValue === -1) {
+					newValue = OverflowEdgeNone;
+				} else {
+					newValue |= OverflowEdgeNone;
+				}
+				break;
+			case 'left':
+				if (newValue === -1) {
+					newValue = OverflowEdgeLeft;
+				} else {
+					newValue |= OverflowEdgeLeft;
+				}
+				break;
+			case 'top':
+				if (newValue === -1) {
+					newValue = OverflowEdgeTop;
+				} else {
+					newValue |= OverflowEdgeTop;
+				}
+				break;
+			case 'right':
+				if (newValue === -1) {
+					newValue = OverflowEdgeRight;
+				} else {
+					newValue |= OverflowEdgeRight;
+				}
+				break;
+			case 'bottom':
+				if (newValue === -1) {
+					newValue = OverflowEdgeBottom;
+				} else {
+					newValue |= OverflowEdgeBottom;
+				}
+				break;
+			case 'dont-apply':
+				newValue = OverflowEdgeDontApply;
+				break;
+			case 'left-dont-consume':
+				if (newValue === -1) {
+					newValue = OverflowEdgeLeftDontConsume;
+				} else {
+					newValue |= OverflowEdgeLeftDontConsume;
+				}
+				break;
+			case 'top-dont-consume':
+				if (newValue === -1) {
+					newValue = OverflowEdgeTopDontConsume;
+				} else {
+					newValue |= OverflowEdgeTopDontConsume;
+				}
+				break;
+			case 'right-dont-consume':
+				if (newValue === -1) {
+					newValue = OverflowEdgeRightDontConsume;
+				} else {
+					newValue |= OverflowEdgeRightDontConsume;
+				}
+				break;
+			case 'bottom-dont-consume':
+				if (newValue === -1) {
+					newValue = OverflowEdgeBottomDontConsume;
+				} else {
+					newValue |= OverflowEdgeBottomDontConsume;
+				}
+			case 'all-but-left':
+				if (newValue === -1) {
+					newValue = OverflowEdgeAllButLeft;
+				} else {
+					newValue |= OverflowEdgeAllButLeft;
+				}
+			case 'all-but-top':
+				if (newValue === -1) {
+					newValue = OverflowEdgeAllButTop;
+				} else {
+					newValue |= OverflowEdgeAllButTop;
+				}
+			case 'all-but-right':
+				if (newValue === -1) {
+					newValue = OverflowEdgeAllButRight;
+				} else {
+					newValue |= OverflowEdgeAllButRight;
+				}
+			case 'all-but-bottom':
+				if (newValue === -1) {
+					newValue = OverflowEdgeAllButBottom;
+				} else {
+					newValue |= OverflowEdgeAllButBottom;
+				}
+				break;
+		}
+	}
+
+	if (newValue === -1) {
+		return null;
+	}
+	return newValue;
+}
+
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
+
+	constructor() {
+		super();
+		this._defaultOverflowEdge = OverflowEdgeDontApply;
+		this._defaultOverflowEdgeValue = 'dont-apply';
+	}
 }
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {

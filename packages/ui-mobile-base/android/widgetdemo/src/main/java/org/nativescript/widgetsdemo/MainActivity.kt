@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
 import org.nativescript.widgets.CommonLayoutParams
+import org.nativescript.widgets.ContentLayout
 import org.nativescript.widgets.GridLayout
 import org.nativescript.widgets.LayoutBase
 import org.nativescript.widgets.StackLayout
@@ -18,10 +19,29 @@ class MainActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 
 		Utils.enableEdgeToEdge(this)
+		val frame = ContentLayout(this)
 		val page = GridLayout(this)
-		page.setBackgroundColor(Color.BLUE)
-		page.overflowEdge = LayoutBase.OverflowEdgeDontApply
 		page.layoutParams = CommonLayoutParams(
+			ViewGroup.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT
+			)
+		)
+		page.setBackgroundColor(Color.MAGENTA)
+		page.overflowEdge = LayoutBase.OverflowEdgeAllButTop
+//		page.setInsetListener {
+//			val insets = it.asIntBuffer()
+//			insets.put(0,0)
+//			insets.put(1,0)
+//			insets.put(2,0)
+//			insets.put(3,0)
+////			insets.put(3,0)
+////			insets.put(5,1)
+//		}
+
+		frame.setBackgroundColor(Color.BLUE)
+		frame.overflowEdge = LayoutBase.OverflowEdgeDontApply
+		frame.layoutParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT
@@ -29,13 +49,23 @@ class MainActivity : AppCompatActivity() {
 		)
 
 		val svp = StackLayout(this)
+//		svp.setBackgroundColor(Color.YELLOW)
 		svp.layoutParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT
 			)
 		)
-		svp.overflowEdge = StackLayout.OverflowEdgeDontApply
+//		svp.setInsetListener {
+//			val insets = it.asIntBuffer()
+//			insets.put(0,0)
+//			insets.put(1,0)
+//			insets.put(2,0)
+//			insets.put(3,0)
+//			// insets.put(7, 1)
+//		}
+
+		svp.overflowEdge = StackLayout.OverflowEdgeAllButBottom
 		val scrollView = NestedScrollView(this)
 		scrollView.layoutParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
@@ -47,6 +77,7 @@ class MainActivity : AppCompatActivity() {
 
 		val container = StackLayout(this)
 		container.setBackgroundColor(Color.RED)
+		container.overflowEdge = StackLayout.OverflowEdgeNone
 
 		val text = TextView(this)
 		text.text = getString(R.string.ipsum)
@@ -68,6 +99,16 @@ class MainActivity : AppCompatActivity() {
 		params.width
 		btn.layoutParams = params
 		btn.setOnClickListener {
+			val new_page = StackLayout(this)
+			new_page.setBackgroundColor(Color.BLUE)
+			new_page.layoutParams = CommonLayoutParams(
+				ViewGroup.LayoutParams(
+					300, 300
+				)
+			)
+			container.addView(new_page)
+
+
 			svp.overflowEdge = when (svp.overflowEdge) {
 				LayoutBase.OverflowEdgeNone -> {
 					LayoutBase.OverflowEdgeDontApply
@@ -89,6 +130,7 @@ class MainActivity : AppCompatActivity() {
 			}
 		}
 		page.addView(btn)
-		setContentView(page)
+		frame.addView(page)
+		setContentView(frame)
 	}
 }

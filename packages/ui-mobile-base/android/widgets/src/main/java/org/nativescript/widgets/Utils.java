@@ -2,6 +2,7 @@ package org.nativescript.widgets;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -24,11 +25,10 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import androidx.activity.ComponentActivity;
-import androidx.annotation.NonNull;
+import androidx.activity.SystemBarStyle;
+import androidx.annotation.ColorInt;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.exifinterface.media.ExifInterface;
 
 import org.json.JSONException;
@@ -39,159 +39,54 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+
 public class Utils {
 
-	static class LayoutBaseInset {
-		Insets insets;
-		final ArrayList<LayoutBase> views;
+	public interface HandleDarkMode {
+		boolean onHandle(int bar, Resources resources);
+	}
 
-		LayoutBaseInset(Insets insets, ArrayList<LayoutBase> views) {
-			this.insets = insets;
-			this.views = views;
+	enum HandleDarkModeBar {
+		status(0),
+		navigation(1);
+
+		private final int mValue;
+
+		HandleDarkModeBar(int i) {
+			this.mValue = i;
+		}
+
+		public int getValue() {
+			return this.mValue;
 		}
 	}
 
-	static WeakHashMap<ComponentActivity, LayoutBaseInset> edgeToEdgeMap = new WeakHashMap<>();
+	// The light scrim color used in the platform API 29+
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/policy/DecorView.java;drc=6ef0f022c333385dba2c294e35b8de544455bf19;l=142
+	static final int DefaultLightScrim = Color.argb(0xe6, 0xFF, 0xFF, 0xFF);
 
-	static void setEdgeToEdgeForView(LayoutBase base, int overflowEdge) {
-		if (base.applyingEdges) {
-			return;
-		}
-		ComponentActivity activity = (ComponentActivity) base.getContext();
-		if (activity != null) {
-			LayoutBaseInset data = edgeToEdgeMap.get(activity);
-			if (data != null) {
-				if (!data.views.contains(base)) {
-					data.views.add(base);
-				}
-
-				applyEdges(data.insets, base, overflowEdge);
-			}
-		}
-	}
-
-	private static void applyEdgeToEdge(Insets insets, ArrayList<LayoutBase> views) {
-		for (LayoutBase base : views) {
-			applyEdges(insets, base, base.overflowEdge);
-		}
-	}
-
-	private static void applyEdges(Insets insets, LayoutBase view, int overflowEdge) {
-		int left = view.mPaddingLeft;
-		int top = view.mPaddingTop;
-		int right = view.mPaddingRight;
-		int bottom = view.mPaddingBottom;
-		switch (overflowEdge) {
-			case LayoutBase.OverflowEdgeNone:
-				left = left + insets.left;
-				top = top + insets.top;
-				right = right + insets.right;
-				bottom = bottom + insets.bottom;
-				break;
-			case LayoutBase.OverflowEdgeDontApply:
-				view.edgeInsets = insets;
-				break;
-			default:
-				boolean consumeLeft = (view.overflowEdge & LayoutBase.OverflowEdgeLeft) == LayoutBase.OverflowEdgeLeft;
-				boolean consumeTop = (view.overflowEdge & LayoutBase.OverflowEdgeTop) == LayoutBase.OverflowEdgeTop;
-				boolean consumeRight = (view.overflowEdge & LayoutBase.OverflowEdgeRight) == LayoutBase.OverflowEdgeRight;
-				boolean consumeBottom = (view.overflowEdge & LayoutBase.OverflowEdgeBottom) == LayoutBase.OverflowEdgeBottom;
-
-				if (consumeLeft) {
-					left = left + insets.left;
-				}
-
-				if (consumeTop) {
-					top = top + insets.top;
-				}
-
-				if (consumeRight) {
-					right = right + insets.right;
-				}
-
-				if (consumeBottom) {
-					bottom = bottom + insets.bottom;
-				}
-				break;
-		}
-		view.applyingEdges = true;
-		view.setPadding(left, top, right, bottom);
-		view.applyingEdges = false;
-	}
-
-	static Insets getFinalInset(Insets insets, LayoutBase view, int overflowEdge) {
-		int left = view.mPaddingLeft;
-		int top = view.mPaddingTop;
-		int right = view.mPaddingRight;
-		int bottom = view.mPaddingBottom;
-		switch (overflowEdge) {
-			case LayoutBase.OverflowEdgeNone:
-				left = left + insets.left;
-				top = top + insets.top;
-				right = right + insets.right;
-				bottom = bottom + insets.bottom;
-				break;
-			case LayoutBase.OverflowEdgeDontApply:
-				view.edgeInsets = insets;
-				break;
-			default:
-				boolean consumeLeft = (view.overflowEdge & LayoutBase.OverflowEdgeLeft) == LayoutBase.OverflowEdgeLeft;
-				boolean consumeTop = (view.overflowEdge & LayoutBase.OverflowEdgeTop) == LayoutBase.OverflowEdgeTop;
-				boolean consumeRight = (view.overflowEdge & LayoutBase.OverflowEdgeRight) == LayoutBase.OverflowEdgeRight;
-				boolean consumeBottom = (view.overflowEdge & LayoutBase.OverflowEdgeBottom) == LayoutBase.OverflowEdgeBottom;
-
-				if (consumeLeft) {
-					left = left + insets.left;
-				}
-
-				if (consumeTop) {
-					top = top + insets.top;
-				}
-
-				if (consumeRight) {
-					right = right + insets.right;
-				}
-
-				if (consumeBottom) {
-					bottom = bottom + insets.bottom;
-				}
-				break;
-		}
-		return Insets.of(left, top, right, bottom);
-	}
+	// The dark scrim color used in the platform.
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/res/res/color/system_bar_background_semi_transparent.xml
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/res/remote_color_resources_res/values/colors.xml;l=67
+	static final int DefaultDarkScrim = Color.argb(0x80, 0x1b, 0x1b, 0x1b);
 
 	public static void enableEdgeToEdge(ComponentActivity activity) {
 		androidx.activity.EdgeToEdge.enable(activity);
-		if (!Utils.edgeToEdgeMap.containsKey(activity)) {
-			Utils.edgeToEdgeMap.put(activity, new Utils.LayoutBaseInset(Insets.NONE, new ArrayList<>()));
-		}
-		View view = activity.findViewById(android.R.id.content);
-		if (view != null) {
-			androidx.core.view.OnApplyWindowInsetsListener listener = new androidx.core.view.OnApplyWindowInsetsListener() {
-				@Override
-				public @NonNull WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
-					Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-					if (Utils.edgeToEdgeMap.containsKey(activity)) {
-						LayoutBaseInset data = Utils.edgeToEdgeMap.get(activity);
-						if (data != null) {
-							data.insets = systemBars;
-							Utils.applyEdgeToEdge(systemBars, data.views);
-						} else {
-							Utils.edgeToEdgeMap.put(activity, new LayoutBaseInset(systemBars, new ArrayList<>()));
-						}
-					} else {
-						Utils.edgeToEdgeMap.put(activity, new LayoutBaseInset(systemBars, new ArrayList<>()));
-					}
-					return insets;
-				}
-			};
-			ViewCompat.setOnApplyWindowInsetsListener(view, listener);
-		}
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, HandleDarkMode handleDarkMode) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)), SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources)));
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(statusBarLight, statusBarDark), SystemBarStyle.auto(navigationBarLight, navigationBarDark));
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(statusBarLight, statusBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)), SystemBarStyle.auto(navigationBarLight, navigationBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources)));
 	}
 
 	public static Drawable getDrawable(String uri, Context context) {

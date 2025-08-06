@@ -19,6 +19,17 @@ export * from '../properties';
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
+export interface Inset {
+	top: number;
+	right: number;
+	bottom: number;
+	left: number;
+	topConsumed: boolean;
+	rightConsumed: boolean;
+	bottomConsumed: boolean;
+	leftConsumed: boolean;
+}
+
 /**
  * Specifies the type name for the instances of this View class,
  * that is used when matching CSS type selectors.
@@ -105,6 +116,16 @@ export interface ShownModallyData extends EventData {
 }
 
 /**
+ * Defines the data for the androidOverflowInset event.
+ */
+export interface AndroidOverflowInsetData extends EventData {
+	/**
+	 * The inset values passed to the view to consume or update.
+	 */
+	inset?: Inset;
+}
+
+/**
  * This class is the base class for all UI components.
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within.
  *
@@ -151,6 +172,13 @@ export abstract class View extends ViewCommon {
 	 * @nsEvent {EventDataValue} accessibilityFocusChanged
 	 */
 	public static accessibilityFocusChangedEvent: string;
+
+	/**
+	 * String value used when hooking to androidOverflowInset event.
+	 *
+	 * @nsEvent {EventDataValue} androidOverflowInset
+	 */
+	public static androidOverflowInsetEvent: string;
 
 	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
@@ -845,6 +873,11 @@ export abstract class View extends ViewCommon {
 	 * Raised after the view is shown as a modal dialog.
 	 */
 	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+
+	/**
+	 * Raised after the view is shown as a modal dialog.
+	 */
+	on(event: 'androidOverflowInset', callback: (args: ShownModallyData) => void, thisArg?: any);
 
 	/**
 	 * Returns the current modal view that this page is showing (is parent of), if any.
