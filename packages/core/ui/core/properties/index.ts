@@ -49,7 +49,6 @@ export interface CssAnimationPropertyOptions<T, U> {
 const cssPropertyNames: string[] = [];
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
-const cssErrorVarPlaceHolder = '&error_var';
 
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
 const inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
