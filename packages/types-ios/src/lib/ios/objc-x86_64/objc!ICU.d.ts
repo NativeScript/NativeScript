@@ -674,7 +674,27 @@ declare const enum UBlockCode {
 
 	LOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_I = 328,
 
-	LOCK_COUNT = 329,
+	LOCK_EGYPTIAN_HIEROGLYPHS_EXTENDED_A = 329,
+
+	LOCK_GARAY = 330,
+
+	LOCK_GURUNG_KHEMA = 331,
+
+	LOCK_KIRAT_RAI = 332,
+
+	LOCK_MYANMAR_EXTENDED_C = 333,
+
+	LOCK_OL_ONAL = 334,
+
+	LOCK_SUNUWAR = 335,
+
+	LOCK_SYMBOLS_FOR_LEGACY_COMPUTING_SUPPLEMENT = 336,
+
+	LOCK_TODHRI = 337,
+
+	LOCK_TULU_TIGALARI = 338,
+
+	LOCK_COUNT = 339,
 
 	LOCK_INVALID_CODE = -1
 }
@@ -1118,7 +1138,31 @@ declare const enum UErrorCode {
 
 	U_NUMBER_SKELETON_SYNTAX_ERROR = 65811,
 
-	U_FMT_PARSE_ERROR_LIMIT = 65812,
+	U_MF_UNRESOLVED_VARIABLE_ERROR = 65812,
+
+	U_MF_SYNTAX_ERROR = 65813,
+
+	U_MF_UNKNOWN_FUNCTION_ERROR = 65814,
+
+	U_MF_VARIANT_KEY_MISMATCH_ERROR = 65815,
+
+	U_MF_FORMATTING_ERROR = 65816,
+
+	U_MF_NONEXHAUSTIVE_PATTERN_ERROR = 65817,
+
+	U_MF_DUPLICATE_OPTION_NAME_ERROR = 65818,
+
+	U_MF_SELECTOR_ERROR = 65819,
+
+	U_MF_MISSING_SELECTOR_ANNOTATION_ERROR = 65820,
+
+	U_MF_DUPLICATE_DECLARATION_ERROR = 65821,
+
+	U_MF_OPERAND_MISMATCH_ERROR = 65822,
+
+	U_MF_DUPLICATE_VARIANT_ERROR = 65823,
+
+	U_FMT_PARSE_ERROR_LIMIT = 65824,
 
 	U_BRK_INTERNAL_ERROR = 66048,
 
@@ -1355,6 +1399,51 @@ declare const UIDNA_USE_STD3_RULES: number;
 
 declare const UITER_UNKNOWN_INDEX: number;
 
+declare const enum UIdentifierStatus {
+
+	U_ID_STATUS_RESTRICTED = 0,
+
+	U_ID_STATUS_ALLOWED = 1
+}
+
+declare const enum UIdentifierType {
+
+	U_ID_TYPE_NOT_CHARACTER = 0,
+
+	U_ID_TYPE_DEPRECATED = 1,
+
+	U_ID_TYPE_DEFAULT_IGNORABLE = 2,
+
+	U_ID_TYPE_NOT_NFKC = 3,
+
+	U_ID_TYPE_NOT_XID = 4,
+
+	U_ID_TYPE_EXCLUSION = 5,
+
+	U_ID_TYPE_OBSOLETE = 6,
+
+	U_ID_TYPE_TECHNICAL = 7,
+
+	U_ID_TYPE_UNCOMMON_USE = 8,
+
+	U_ID_TYPE_LIMITED_USE = 9,
+
+	U_ID_TYPE_INCLUSION = 10,
+
+	U_ID_TYPE_RECOMMENDED = 11
+}
+
+declare const enum UIndicConjunctBreak {
+
+	U_INCB_NONE = 0,
+
+	U_INCB_CONSONANT = 1,
+
+	U_INCB_EXTEND = 2,
+
+	U_INCB_LINKER = 3
+}
+
 declare const enum UIndicPositionalCategory {
 
 	U_INPC_NA = 0,
@@ -1462,7 +1551,9 @@ declare const enum UIndicSyllabicCategory {
 
 	U_INSC_VOWEL_DEPENDENT = 34,
 
-	U_INSC_VOWEL_INDEPENDENT = 35
+	U_INSC_VOWEL_INDEPENDENT = 35,
+
+	U_INSC_REORDERING_KILLER = 36
 }
 
 declare const enum UJoiningGroup {
@@ -1677,7 +1768,9 @@ declare const enum UJoiningGroup {
 
 	U_JG_VERTICAL_TAIL = 103,
 
-	U_JG_COUNT = 104
+	U_JG_KASHMIRI_YEH = 104,
+
+	U_JG_COUNT = 105
 }
 
 declare const enum UJoiningType {
@@ -1975,7 +2068,9 @@ declare const enum UProperty {
 
 	CHAR_ID_COMPAT_MATH_CONTINUE = 74,
 
-	CHAR_BINARY_LIMIT = 75,
+	CHAR_MODIFIER_COMBINING_MARK = 75,
+
+	CHAR_BINARY_LIMIT = 76,
 
 	CHAR_BIDI_CLASS = 4096,
 
@@ -2029,7 +2124,11 @@ declare const enum UProperty {
 
 	CHAR_VERTICAL_ORIENTATION = 4120,
 
-	CHAR_INT_LIMIT = 4121,
+	CHAR_IDENTIFIER_STATUS = 4121,
+
+	CHAR_INDIC_CONJUNCT_BREAK = 4122,
+
+	CHAR_INT_LIMIT = 4123,
 
 	CHAR_GENERAL_CATEGORY_MASK = 8192,
 
@@ -2079,7 +2178,9 @@ declare const enum UProperty {
 
 	CHAR_OTHER_PROPERTY_START = 28672,
 
-	CHAR_OTHER_PROPERTY_LIMIT = 28673,
+	CHAR_IDENTIFIER_TYPE = 28673,
+
+	CHAR_OTHER_PROPERTY_LIMIT = 28674,
 
 	CHAR_INVALID_CODE = -1
 }
@@ -2319,6 +2420,8 @@ declare function u_getDataDirectory(): interop.Pointer | interop.Reference<any>;
 
 declare function u_getFC_NFKC_Closure(c: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 
+declare function u_getIDTypes(c: number, types: interop.Pointer | interop.Reference<UIdentifierType>, capacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
 declare function u_getISOComment(c: number, dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 
 declare function u_getIntPropertyMap(property: UProperty, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
@@ -2346,6 +2449,8 @@ declare function u_getUnicodeVersion(versionArray: interop.Reference<number>): v
 declare function u_getVersion(versionArray: interop.Reference<number>): void;
 
 declare function u_hasBinaryProperty(c: number, which: UProperty): number;
+
+declare function u_hasIDType(c: number, type: UIdentifierType): boolean;
 
 declare function u_isIDIgnorable(c: number): number;
 

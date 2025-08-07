@@ -32,6 +32,8 @@ declare const DYLD_CHAINED_PTR_ARM64E_KERNEL: number;
 
 declare const DYLD_CHAINED_PTR_ARM64E_OFFSET: number;
 
+declare const DYLD_CHAINED_PTR_ARM64E_SEGMENTED: number;
+
 declare const DYLD_CHAINED_PTR_ARM64E_SHARED_CACHE: number;
 
 declare const DYLD_CHAINED_PTR_ARM64E_USERLAND: number;
@@ -576,6 +578,17 @@ interface dyld_chained_ptr_arm64e_auth_rebase {
 }
 declare var dyld_chained_ptr_arm64e_auth_rebase: interop.StructType<dyld_chained_ptr_arm64e_auth_rebase>;
 
+interface dyld_chained_ptr_arm64e_auth_segmented_rebase {
+	targetSegOffset: number;
+	targetSegIndex: number;
+	diversity: number;
+	addrDiv: number;
+	key: number;
+	next: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_auth_segmented_rebase: interop.StructType<dyld_chained_ptr_arm64e_auth_segmented_rebase>;
+
 interface dyld_chained_ptr_arm64e_bind {
 	ordinal: number;
 	zero: number;
@@ -604,6 +617,15 @@ interface dyld_chained_ptr_arm64e_rebase {
 	auth: number;
 }
 declare var dyld_chained_ptr_arm64e_rebase: interop.StructType<dyld_chained_ptr_arm64e_rebase>;
+
+interface dyld_chained_ptr_arm64e_segmented_rebase {
+	targetSegOffset: number;
+	targetSegIndex: number;
+	padding: number;
+	next: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_segmented_rebase: interop.StructType<dyld_chained_ptr_arm64e_segmented_rebase>;
 
 interface dyld_chained_ptr_arm64e_shared_cache_auth_rebase {
 	runtimeOffset: number;

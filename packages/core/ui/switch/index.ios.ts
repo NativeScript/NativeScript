@@ -1,11 +1,9 @@
 import { SwitchBase, checkedProperty, offBackgroundColorProperty } from './switch-common';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { iOSNativeHelper, layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './switch-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class SwitchChangeHandlerImpl extends NSObject {
@@ -30,15 +28,12 @@ class SwitchChangeHandlerImpl extends NSObject {
 	};
 }
 
-const zeroSize = { width: 0, height: 0 };
 export class Switch extends SwitchBase {
 	nativeViewProtected: UISwitch;
 	private _handler: NSObject;
 
 	constructor() {
 		super();
-		this.width = 51;
-		this.height = 31;
 	}
 
 	public createNativeView() {
@@ -75,7 +70,7 @@ export class Switch extends SwitchBase {
 		// only add :checked pseudo handling on supported iOS versions
 		// ios <13 works but causes glitchy animations when toggling
 		// so we decided to keep the old behavior on older versions.
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			super._onCheckedPropertyChanged(newValue);
 
 			if (this.offBackgroundColor) {
@@ -91,17 +86,6 @@ export class Switch extends SwitchBase {
 	// @ts-ignore
 	get ios(): UISwitch {
 		return this.nativeViewProtected;
-	}
-
-	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// It can't be anything different from 51x31
-		const nativeSize = this.nativeViewProtected.sizeThatFits(zeroSize);
-		this.width = nativeSize.width;
-		this.height = nativeSize.height;
-
-		const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), layout.toDevicePixels(51), layout.EXACTLY, 0);
-		const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), layout.toDevicePixels(31), layout.EXACTLY, 0);
-		this.setMeasuredDimension(widthAndState, heightAndState);
 	}
 
 	[checkedProperty.getDefault](): boolean {
@@ -130,7 +114,7 @@ export class Switch extends SwitchBase {
 		return this.nativeViewProtected.onTintColor;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			if (!this.offBackgroundColor || this.checked) {
 				this.setNativeBackgroundColor(value);
 			}
@@ -151,7 +135,7 @@ export class Switch extends SwitchBase {
 		return this.nativeViewProtected.backgroundColor;
 	}
 	[offBackgroundColorProperty.setNative](value: Color | UIColor) {
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			if (!this.checked) {
 				this.setNativeBackgroundColor(value);
 			}

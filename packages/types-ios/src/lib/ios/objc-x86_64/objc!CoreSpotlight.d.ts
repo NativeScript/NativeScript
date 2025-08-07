@@ -178,6 +178,16 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 
 	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string> | string[], acknowledgementHandler: () => void): void;
 
+	/**
+	 * @since 18.4
+	 */
+	searchableItemsDidUpdate(items: NSArray<CSSearchableItem> | CSSearchableItem[]): void;
+
+	/**
+	 * @since 18.4
+	 */
+	searchableItemsForIdentifiersSearchableItemsHandler(identifiers: NSArray<string> | string[], searchableItemsHandler: (p1: NSArray<CSSearchableItem>) => void): void;
+
 	self(): this;
 }
 
@@ -456,6 +466,16 @@ interface CSSearchableIndexDelegate extends NSObjectProtocol {
 	searchableIndexReindexAllSearchableItemsWithAcknowledgementHandler(searchableIndex: CSSearchableIndex, acknowledgementHandler: () => void): void;
 
 	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string> | string[], acknowledgementHandler: () => void): void;
+
+	/**
+	 * @since 18.4
+	 */
+	searchableItemsDidUpdate?(items: NSArray<CSSearchableItem> | CSSearchableItem[]): void;
+
+	/**
+	 * @since 18.4
+	 */
+	searchableItemsForIdentifiersSearchableItemsHandler?(identifiers: NSArray<string> | string[], searchableItemsHandler: (p1: NSArray<CSSearchableItem>) => void): void;
 }
 declare var CSSearchableIndexDelegate: {
 
@@ -483,6 +503,11 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 	isUpdate: boolean;
 
 	uniqueIdentifier: string;
+
+	/**
+	 * @since 18.4
+	 */
+	updateListenerOptions: CSSearchableItemUpdateListenerOptions;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -733,6 +758,11 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	instructions: string;
 
+	/**
+	 * @since 18.4
+	 */
+	readonly isPriority: number;
+
 	keySignature: string;
 
 	keywords: NSArray<string>;
@@ -888,6 +918,11 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	textContent: string;
 
+	/**
+	 * @since 18.4
+	 */
+	readonly textContentSummary: string;
+
 	theme: string;
 
 	thoroughfare: string;
@@ -903,6 +938,11 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	title: string;
 
 	totalBitRate: number;
+
+	/**
+	 * @since 18.4
+	 */
+	transcribedTextContent: string;
 
 	/**
 	 * @since 11.0
@@ -962,9 +1002,23 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	 */
 	initWithItemContentType(itemContentType: string): this;
 
+	moveFrom(sourceAttributeSet: CSSearchableItemAttributeSet): void;
+
 	setValueForCustomKey(value: NSSecureCoding, key: CSCustomAttributeKey): void;
 
 	valueForCustomKey(key: CSCustomAttributeKey): NSSecureCoding;
+}
+
+/**
+ * @since 18.4
+ */
+declare const enum CSSearchableItemUpdateListenerOptions {
+
+	Default = 0,
+
+	Summarization = 2,
+
+	Priority = 4
 }
 
 /**

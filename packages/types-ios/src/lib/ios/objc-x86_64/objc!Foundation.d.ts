@@ -938,6 +938,11 @@ declare class NSBundle extends NSObject {
 
 	localizedStringForKeyValueTable(key: string, value: string, tableName: string): string;
 
+	/**
+	 * @since 18.4
+	 */
+	localizedStringForKeyValueTableLocalizations(key: string, value: string, tableName: string, localizations: NSArray<string> | string[]): string;
+
 	objectForInfoDictionaryKey(key: string): any;
 
 	pathForAuxiliaryExecutable(executableName: string): string;
@@ -1537,6 +1542,11 @@ declare class NSCalendar extends NSObject implements NSCopying, NSSecureCoding {
 declare var NSCalendarDayChangedNotification: string;
 
 /**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierBangla: string;
+
+/**
  * @since 4.0
  */
 declare var NSCalendarIdentifierBuddhist: string;
@@ -1552,6 +1562,11 @@ declare var NSCalendarIdentifierChinese: string;
 declare var NSCalendarIdentifierCoptic: string;
 
 /**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierDangi: string;
+
+/**
  * @since 4.0
  */
 declare var NSCalendarIdentifierEthiopicAmeteAlem: string;
@@ -1565,6 +1580,11 @@ declare var NSCalendarIdentifierEthiopicAmeteMihret: string;
  * @since 4.0
  */
 declare var NSCalendarIdentifierGregorian: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierGujarati: string;
 
 /**
  * @since 4.0
@@ -1607,6 +1627,26 @@ declare var NSCalendarIdentifierIslamicUmmAlQura: string;
 declare var NSCalendarIdentifierJapanese: string;
 
 /**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierKannada: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierMalayalam: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierMarathi: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierOdia: string;
+
+/**
  * @since 4.0
  */
 declare var NSCalendarIdentifierPersian: string;
@@ -1615,6 +1655,26 @@ declare var NSCalendarIdentifierPersian: string;
  * @since 4.0
  */
 declare var NSCalendarIdentifierRepublicOfChina: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierTamil: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierTelugu: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierVietnamese: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierVikram: string;
 
 declare const enum NSCalendarOptions {
 
@@ -1670,6 +1730,10 @@ declare const enum NSCalendarUnit {
 	CalendarUnitCalendar = 1048576,
 
 	CalendarUnitTimeZone = 2097152,
+
+	CalendarUnitIsLeapMonth = 1073741824,
+
+	CalendarUnitIsRepeatedDay = 2147483648,
 
 	EraCalendarUnit = 2,
 
@@ -1880,7 +1944,17 @@ declare class NSCoder extends NSObject {
 
 	decodeBoolForKey(key: string): boolean;
 
+	/**
+	 * @since 18.4
+	 */
+	decodeBytesForKeyMinimumLength(key: string, length: number): interop.Pointer | interop.Reference<any>;
+
 	decodeBytesForKeyReturnedLength(key: string, lengthp: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+
+	/**
+	 * @since 18.4
+	 */
+	decodeBytesWithMinimumLength(length: number): interop.Pointer | interop.Reference<any>;
 
 	decodeBytesWithReturnedLength(lengthp: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
@@ -2878,6 +2952,11 @@ declare class NSDateComponents extends NSObject implements NSCopying, NSSecureCo
 	 */
 	quarter: number;
 
+	/**
+	 * @since 26.0
+	 */
+	repeatedDay: boolean;
+
 	second: number;
 
 	/**
@@ -3727,6 +3806,10 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 	writeToURLError(url: NSURL): boolean;
 }
 
+/**
+ * @since 2.0
+ * @deprecated 26.0
+ */
 declare var NSDidBecomeSingleThreadedNotification: string;
 
 /**
@@ -4865,6 +4948,11 @@ declare class NSFileManager extends NSObject {
 	evictUbiquitousItemAtURLError(url: NSURL): boolean;
 
 	/**
+	 * @since 26.0
+	 */
+	fetchLatestRemoteVersionOfItemAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSFileVersion, p2: NSError) => void): void;
+
+	/**
 	 * @since 2.0
 	 * @deprecated 2.0
 	 */
@@ -4942,6 +5030,11 @@ declare class NSFileManager extends NSObject {
 	pathContentOfSymbolicLinkAtPath(path: string): string;
 
 	/**
+	 * @since 26.0
+	 */
+	pauseSyncForUbiquitousItemAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
+
+	/**
 	 * @since 2.0
 	 */
 	removeItemAtPathError(path: string): boolean;
@@ -4955,6 +5048,11 @@ declare class NSFileManager extends NSObject {
 	 * @since 4.0
 	 */
 	replaceItemAtURLWithItemAtURLBackupItemNameOptionsResultingItemURLError(originalItemURL: NSURL, newItemURL: NSURL, backupItemName: string, options: NSFileManagerItemReplacementOptions, resultingURL: interop.Pointer | interop.Reference<NSURL>): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	resumeSyncForUbiquitousItemAtURLWithBehaviorCompletionHandler(url: NSURL, behavior: NSFileManagerResumeSyncBehavior, completionHandler: (p1: NSError) => void): void;
 
 	/**
 	 * @since 2.0
@@ -4984,6 +5082,11 @@ declare class NSFileManager extends NSObject {
 	 * @since 11.0
 	 */
 	trashItemAtURLResultingItemURLError(url: NSURL, outResultingURL: interop.Pointer | interop.Reference<NSURL>): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	uploadLocalVersionOfUbiquitousItemAtURLWithConflictResolutionPolicyCompletionHandler(url: NSURL, conflictResolutionPolicy: NSFileManagerUploadLocalVersionConflictPolicy, completionHandler: (p1: NSFileVersion, p2: NSError) => void): void;
 }
 
 interface NSFileManagerDelegate extends NSObjectProtocol {
@@ -5057,6 +5160,38 @@ declare const enum NSFileManagerItemReplacementOptions {
 	UsingNewMetadataOnly = 1,
 
 	WithoutDeletingBackupItem = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum NSFileManagerResumeSyncBehavior {
+
+	PreserveLocalChanges = 0,
+
+	AfterUploadWithFailOnConflict = 1,
+
+	DropLocalChanges = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum NSFileManagerSupportedSyncControls {
+
+	PauseSync = 1,
+
+	FailUploadOnConflict = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum NSFileManagerUploadLocalVersionConflictPolicy {
+
+	ConflictPolicyDefault = 0,
+
+	ConflictPolicyFailOnConflict = 1
 }
 
 declare var NSFileModificationDate: string;
@@ -5775,6 +5910,7 @@ declare var NSHTTPCookieExpires: string;
 
 /**
  * @since 2.0
+ * @deprecated 9.0
  */
 declare var NSHTTPCookieManagerAcceptPolicyChangedNotification: string;
 
@@ -7663,6 +7799,11 @@ declare class NSListFormatter extends NSFormatter {
 	stringFromItems(items: NSArray<any> | any[]): string;
 }
 
+/**
+ * @since 26.0
+ */
+declare var NSListItemDelimiterAttributeName: string;
+
 declare var NSLoadedClasses: string;
 
 declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
@@ -9504,6 +9645,7 @@ declare class NSMutableURLRequest extends NSURLRequest {
 
 	/**
 	 * @since 4.0
+	 * @deprecated 18.4
 	 */
 	HTTPShouldUsePipelining: boolean;
 
@@ -14169,6 +14311,10 @@ declare class NSThread extends NSObject {
 	start(): void;
 }
 
+/**
+ * @since 2.0
+ * @deprecated 26.0
+ */
 declare var NSThreadWillExitNotification: string;
 
 /**
@@ -15468,6 +15614,7 @@ declare class NSURLCredentialStorage extends NSObject {
 
 /**
  * @since 2.0
+ * @deprecated 12.0
  */
 declare var NSURLCredentialStorageChangedNotification: string;
 
@@ -15575,6 +15722,7 @@ declare var NSURLErrorFailingURLPeerTrustErrorKey: string;
 
 /**
  * @since 4.0
+ * @deprecated 18.4
  */
 declare var NSURLErrorFailingURLStringErrorKey: string;
 
@@ -15969,11 +16117,13 @@ declare class NSURLProtectionSpace extends NSObject implements NSCopying, NSSecu
 
 /**
  * @since 2.0
+ * @deprecated 18.4
  */
 declare var NSURLProtectionSpaceFTP: string;
 
 /**
  * @since 2.0
+ * @deprecated 18.4
  */
 declare var NSURLProtectionSpaceFTPProxy: string;
 
@@ -16153,6 +16303,7 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 
 	/**
 	 * @since 4.0
+	 * @deprecated 18.4
 	 */
 	readonly HTTPShouldUsePipelining: boolean;
 
@@ -16465,6 +16616,10 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	HTTPShouldSetCookies: boolean;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 18.4
+	 */
 	HTTPShouldUsePipelining: boolean;
 
 	/**
@@ -16512,6 +16667,11 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 	 */
 	discretionary: boolean;
 
+	/**
+	 * @since 26.0
+	 */
+	enablesEarlyData: boolean;
+
 	readonly identifier: string;
 
 	/**
@@ -16544,12 +16704,18 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 18.4
 	 */
 	shouldUseExtendedBackgroundIdleMode: boolean;
 
 	timeoutIntervalForRequest: number;
 
 	timeoutIntervalForResource: number;
+
+	/**
+	 * @since 18.4
+	 */
+	usesClassicLoadingMode: boolean;
 
 	/**
 	 * @since 11.0
@@ -17307,6 +17473,11 @@ declare var NSURLUbiquitousItemIsExcludedFromSyncKey: string;
 declare var NSURLUbiquitousItemIsSharedKey: string;
 
 /**
+ * @since 26.0
+ */
+declare var NSURLUbiquitousItemIsSyncPausedKey: string;
+
+/**
  * @since 5.0
  */
 declare var NSURLUbiquitousItemIsUploadedKey: string;
@@ -17327,6 +17498,11 @@ declare var NSURLUbiquitousItemPercentDownloadedKey: string;
  * @deprecated 6.0
  */
 declare var NSURLUbiquitousItemPercentUploadedKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSURLUbiquitousItemSupportedSyncControlsKey: string;
 
 /**
  * @since 7.0
@@ -17746,16 +17922,19 @@ declare const NSUbiquitousKeyValueStoreServerChange: number;
 
 /**
  * @since 9.3
+ * @deprecated 9.3
  */
 declare var NSUbiquitousUserDefaultsCompletedInitialSyncNotification: string;
 
 /**
  * @since 9.3
+ * @deprecated 9.3
  */
 declare var NSUbiquitousUserDefaultsDidChangeAccountsNotification: string;
 
 /**
  * @since 9.3
+ * @deprecated 9.3
  */
 declare var NSUbiquitousUserDefaultsNoCloudAccountNotification: string;
 
@@ -19434,6 +19613,10 @@ declare const enum NSVolumeEnumerationOptions {
 	ProduceFileReferenceURLs = 4
 }
 
+/**
+ * @since 2.0
+ * @deprecated 26.0
+ */
 declare var NSWillBecomeMultiThreadedNotification: string;
 
 declare const NSWindows95OperatingSystem: number;

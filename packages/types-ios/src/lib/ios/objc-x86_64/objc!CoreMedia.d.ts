@@ -631,7 +631,9 @@ declare const enum CMProjectionType {
 
 	kCMProjectionType_HalfEquirectangular = 1751478645,
 
-	kCMProjectionType_Fisheye = 1718186856
+	kCMProjectionType_Fisheye = 1718186856,
+
+	kCMProjectionType_ParametricImmersive = 1886546285
 }
 
 /**
@@ -1468,6 +1470,11 @@ declare const enum CMTaggedBufferGroupError {
 declare function CMTaggedBufferGroupFormatDescriptionCreateForTaggedBufferGroup(allocator: any, taggedBufferGroup: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 /**
+ * @since 26.0
+ */
+declare function CMTaggedBufferGroupFormatDescriptionCreateForTaggedBufferGroupWithExtensions(allocator: any, taggedBufferGroup: any, extensions: NSDictionary<any, any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+
+/**
  * @since 17.0
  */
 declare function CMTaggedBufferGroupFormatDescriptionMatchesTaggedBufferGroup(desc: any, taggedBufferGroup: any): boolean;
@@ -2226,6 +2233,101 @@ declare const kCMFormatDescriptionBridgeError_InvalidSlice: number;
 declare const kCMFormatDescriptionBridgeError_UnsupportedSampleDescriptionFlavor: number;
 
 /**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibrationExtrinsicOriginSource_StereoCameraSystemBaseline: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibrationLensAlgorithmKind_ParametricLens: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibrationLensDomain_Color: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibrationLensRole_Left: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibrationLensRole_Mono: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibrationLensRole_Right: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_ExtrinsicOrientationQuaternion: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_ExtrinsicOriginSource: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_IntrinsicMatrix: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_IntrinsicMatrixProjectionOffset: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_IntrinsicMatrixReferenceDimensions: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_LensAlgorithmKind: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_LensDistortions: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_LensDomain: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_LensFrameAdjustmentsPolynomialX: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_LensFrameAdjustmentsPolynomialY: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_LensIdentifier: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_LensRole: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionCameraCalibration_RadialAngleLimit: string;
+
+/**
  * @since 9.0
  */
 declare var kCMFormatDescriptionChromaLocation_Bottom: string;
@@ -2342,6 +2444,11 @@ declare var kCMFormatDescriptionExtension_BitsPerComponent: string;
 declare var kCMFormatDescriptionExtension_BytesPerRow: string;
 
 /**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionExtension_CameraCalibrationDataLensCollection: string;
+
+/**
  * @since 9.0
  */
 declare var kCMFormatDescriptionExtension_ChromaLocationBottomField: string;
@@ -2375,6 +2482,11 @@ declare var kCMFormatDescriptionExtension_ContentColorVolume: string;
  * @since 11.0
  */
 declare var kCMFormatDescriptionExtension_ContentLightLevelInfo: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionExtension_ConvertedFromExternalSphericalTags: string;
 
 /**
  * @since 4.0
@@ -2620,6 +2732,26 @@ declare var kCMFormatDescriptionKey_PixelAspectRatioVerticalSpacing: string;
  * @since 17.2
  */
 declare var kCMFormatDescriptionLogTransferFunction_AppleLog: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionProjectionKind_AppleImmersiveVideo: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCMFormatDescriptionProjectionKind_Equirectangular: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCMFormatDescriptionProjectionKind_HalfEquirectangular: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMFormatDescriptionProjectionKind_ParametricImmersive: string;
 
 /**
  * @since 18.0
@@ -2882,6 +3014,11 @@ declare var kCMMetadataBaseDataType_BMP: string;
 declare var kCMMetadataBaseDataType_DimensionsF32: string;
 
 /**
+ * @since 26.0
+ */
+declare var kCMMetadataBaseDataType_ExtendedRasterRectangleValue: string;
+
+/**
  * @since 8.0
  */
 declare var kCMMetadataBaseDataType_Float32: string;
@@ -2930,6 +3067,11 @@ declare var kCMMetadataBaseDataType_PolygonF32: string;
  * @since 9.0
  */
 declare var kCMMetadataBaseDataType_PolylineF32: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMMetadataBaseDataType_RasterRectangleValue: string;
 
 /**
  * @since 8.0
@@ -3130,6 +3272,21 @@ declare const kCMMetadataIdentifierError_RequiredParameterMissing: number;
 declare var kCMMetadataIdentifier_QuickTimeMetadataDirection_Facing: string;
 
 /**
+ * @since 26.0
+ */
+declare var kCMMetadataIdentifier_QuickTimeMetadataDisplayMaskRectangleMono: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMMetadataIdentifier_QuickTimeMetadataDisplayMaskRectangleStereoLeft: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMMetadataIdentifier_QuickTimeMetadataDisplayMaskRectangleStereoRight: string;
+
+/**
  * @since 13.0
  */
 declare var kCMMetadataIdentifier_QuickTimeMetadataLivePhotoStillImageTransform: string;
@@ -3150,6 +3307,11 @@ declare var kCMMetadataIdentifier_QuickTimeMetadataLocation_ISO6709: string;
 declare var kCMMetadataIdentifier_QuickTimeMetadataPreferredAffineTransform: string;
 
 /**
+ * @since 26.0
+ */
+declare var kCMMetadataIdentifier_QuickTimeMetadataPresentationImmersiveMedia: string;
+
+/**
  * @since 18.0
  */
 declare var kCMMetadataIdentifier_QuickTimeMetadataSceneIlluminance: string;
@@ -3158,6 +3320,11 @@ declare var kCMMetadataIdentifier_QuickTimeMetadataSceneIlluminance: string;
  * @since 18.0
  */
 declare var kCMMetadataIdentifier_QuickTimeMetadataSegmentIdentifier: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCMMetadataIdentifier_QuickTimeMetadataSpatialAudioMix: string;
 
 /**
  * @since 9.0
@@ -3668,6 +3835,11 @@ declare var kCMTagProjectionTypeFisheye: CMTag;
  * @since 18.0
  */
 declare var kCMTagProjectionTypeHalfEquirectangular: CMTag;
+
+/**
+ * @since 26.0
+ */
+declare var kCMTagProjectionTypeParametricImmersive: CMTag;
 
 /**
  * @since 17.0

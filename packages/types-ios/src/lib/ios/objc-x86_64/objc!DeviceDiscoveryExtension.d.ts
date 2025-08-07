@@ -54,6 +54,26 @@ declare class DDDevice extends NSObject {
 
 	url: NSURL;
 
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareModelName: string;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareServiceName: string;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareServiceRole: DDDeviceWiFiAwareServiceRole;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareVendorName: string;
+
 	constructor(o: { displayName: string; category: DDDeviceCategory; protocolType: UTType; identifier: string; });
 
 	initWithDisplayNameCategoryProtocolTypeIdentifier(displayName: string, category: DDDeviceCategory, protocolType: UTType, identifier: string): this;
@@ -157,7 +177,16 @@ declare const enum DDDeviceSupports {
 
 	BluetoothPairingLE = 2,
 
-	BluetoothTransportBridging = 4
+	BluetoothTransportBridging = 4,
+
+	BluetoothHID = 8
+}
+
+declare const enum DDDeviceWiFiAwareServiceRole {
+
+	Subscriber = 10,
+
+	Publisher = 20
 }
 
 declare class DDDiscoverySession extends NSObject {

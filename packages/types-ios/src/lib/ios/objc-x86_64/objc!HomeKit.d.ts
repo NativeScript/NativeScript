@@ -2810,7 +2810,9 @@ declare const enum HMErrorCode {
 
 	AccessoryIsSuspended = 103,
 
-	PartialCommunicationFailure = 104
+	PartialCommunicationFailure = 104,
+
+	HomeUpgradeRequired = 105
 }
 
 /**

@@ -19,6 +19,234 @@ declare function SRAbsoluteTimeGetCurrent(): number;
  */
 declare function SRAbsoluteTimeToCFAbsoluteTime(sr: number): number;
 
+/**
+ * @since 26.0
+ */
+declare class SRAcousticSettings extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRAcousticSettings; // inherited from NSObject
+
+	static new(): SRAcousticSettings; // inherited from NSObject
+
+	readonly accessibilitySettings: SRAcousticSettingsAccessibility;
+
+	readonly audioExposureSampleLifetime: SRAcousticSettingsSampleLifetime;
+
+	readonly environmentalSoundMeasurementsEnabled: boolean;
+
+	readonly headphoneSafetyAudioLevel: number;
+
+	readonly musicEQSettings: SRAcousticSettingsMusicEQ;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class SRAcousticSettingsAccessibility extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRAcousticSettingsAccessibility; // inherited from NSObject
+
+	static new(): SRAcousticSettingsAccessibility; // inherited from NSObject
+
+	readonly backgroundSounds: SRAcousticSettingsAccessibilityBackgroundSounds;
+
+	readonly headphoneAccommodations: SRAcousticSettingsAccessibilityHeadphoneAccommodations;
+
+	readonly leftRightBalance: number;
+
+	readonly monoAudioEnabled: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class SRAcousticSettingsAccessibilityBackgroundSounds extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRAcousticSettingsAccessibilityBackgroundSounds; // inherited from NSObject
+
+	static new(): SRAcousticSettingsAccessibilityBackgroundSounds; // inherited from NSObject
+
+	readonly enabled: boolean;
+
+	readonly playWithMediaEnabled: boolean;
+
+	readonly relativeVolume: number;
+
+	readonly relativeVolumeWithMedia: number;
+
+	readonly soundName: SRAcousticSettingsAccessibilityBackgroundSoundsName;
+
+	readonly stopOnLockEnabled: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum SRAcousticSettingsAccessibilityBackgroundSoundsName {
+
+	BalancedNoise = 1,
+
+	BrightNoise = 2,
+
+	DarkNoise = 3,
+
+	Ocean = 4,
+
+	Rain = 5,
+
+	Stream = 6,
+
+	Night = 7,
+
+	Fire = 8,
+
+	Babble = 9,
+
+	Steam = 10,
+
+	Airplane = 11,
+
+	Boat = 12,
+
+	Bus = 13,
+
+	Train = 14,
+
+	RainOnRoof = 15,
+
+	QuietNight = 16
+}
+
+/**
+ * @since 26.0
+ */
+declare class SRAcousticSettingsAccessibilityHeadphoneAccommodations extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRAcousticSettingsAccessibilityHeadphoneAccommodations; // inherited from NSObject
+
+	static new(): SRAcousticSettingsAccessibilityHeadphoneAccommodations; // inherited from NSObject
+
+	readonly enabled: boolean;
+
+	readonly mediaEnhanceApplication: SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication;
+
+	readonly mediaEnhanceBoosting: SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting;
+
+	readonly mediaEnhanceTuning: SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication {
+
+	None = 1,
+
+	Phone = 2,
+
+	Media = 3,
+
+	PhoneAndMedia = 4
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting {
+
+	Slight = 1,
+
+	Moderate = 2,
+
+	Strong = 3
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning {
+
+	BalancedTone = 1,
+
+	VocalRange = 2,
+
+	Brightness = 3
+}
+
+/**
+ * @since 26.0
+ */
+declare class SRAcousticSettingsMusicEQ extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRAcousticSettingsMusicEQ; // inherited from NSObject
+
+	static new(): SRAcousticSettingsMusicEQ; // inherited from NSObject
+
+	readonly lateNightModeEnabled: boolean;
+
+	readonly soundCheckEnabled: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum SRAcousticSettingsSampleLifetime {
+
+	EightDays = 1,
+
+	UntilUserDeletes = 2
+}
+
 interface SRAmbientLightChromaticity {
 	x: number;
 	y: number;
@@ -1141,6 +1369,11 @@ declare var SRPhotoplethysmogramSampleUsageForegroundHeartRate: string;
 declare var SRSensorAccelerometer: string;
 
 /**
+ * @since 26.0
+ */
+declare var SRSensorAcousticSettings: string;
+
+/**
  * @since 14.0
  */
 declare var SRSensorAmbientLightSensor: string;
@@ -1281,6 +1514,11 @@ declare var SRSensorRotationRate: string;
 declare var SRSensorSiriSpeechMetrics: string;
 
 /**
+ * @since 26.0
+ */
+declare var SRSensorSleepSessions: string;
+
+/**
  * @since 15.0
  */
 declare var SRSensorTelephonySpeechMetrics: string;
@@ -1294,6 +1532,32 @@ declare var SRSensorVisits: string;
  * @since 17.0
  */
 declare var SRSensorWristTemperature: string;
+
+/**
+ * @since 26.0
+ */
+declare class SRSleepSession extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SRSleepSession; // inherited from NSObject
+
+	static new(): SRSleepSession; // inherited from NSObject
+
+	readonly duration: number;
+
+	readonly identifier: string;
+
+	readonly startDate: Date;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
 
 /**
  * @since 17.0

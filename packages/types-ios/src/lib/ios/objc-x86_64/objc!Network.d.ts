@@ -279,6 +279,11 @@ declare var kNWErrorDomainPOSIX: string;
 declare var kNWErrorDomainTLS: string;
 
 /**
+ * @since 26.0
+ */
+declare var kNWErrorDomainWiFiAware: string;
+
+/**
  * @since 13.0
  */
 declare function nw_advertise_descriptor_copy_txt_record_object(advertise_descriptor: NSObject & OS_nw_advertise_descriptor): NSObject & OS_nw_txt_record;
@@ -951,7 +956,9 @@ declare const enum nw_error_domain_t {
 
 	nw_error_domain_dns = 2,
 
-	nw_error_domain_tls = 3
+	nw_error_domain_tls = 3,
+
+	nw_error_domain_wifi_aware = 4
 }
 
 /**
@@ -1373,6 +1380,17 @@ declare const enum nw_ip_version_t {
 	nw_ip_version_6 = 6
 }
 
+declare const enum nw_link_quality_t {
+
+	nw_link_quality_unknown = 0,
+
+	nw_link_quality_minimal = 10,
+
+	nw_link_quality_moderate = 20,
+
+	nw_link_quality_good = 30
+}
+
 /**
  * @since 12.0
  */
@@ -1565,6 +1583,11 @@ declare const enum nw_parameters_expired_dns_behavior_t {
 }
 
 /**
+ * @since 26.0
+ */
+declare function nw_parameters_get_allow_ultra_constrained(parameters: NSObject & OS_nw_parameters): boolean;
+
+/**
  * @since 15.0
  */
 declare function nw_parameters_get_attribution(parameters: NSObject & OS_nw_parameters): nw_parameters_attribution_t;
@@ -1653,6 +1676,11 @@ declare function nw_parameters_require_interface(parameters: NSObject & OS_nw_pa
  * @since 16.0
  */
 declare function nw_parameters_requires_dnssec_validation(parameters: NSObject & OS_nw_parameters): boolean;
+
+/**
+ * @since 26.0
+ */
+declare function nw_parameters_set_allow_ultra_constrained(parameters: NSObject & OS_nw_parameters, allow_ultra_constrained: boolean): void;
 
 /**
  * @since 15.0
@@ -1750,6 +1778,11 @@ declare function nw_path_enumerate_gateways(path: NSObject & OS_nw_path, enumera
 declare function nw_path_enumerate_interfaces(path: NSObject & OS_nw_path, enumerate_block: (p1: NSObject & OS_nw_interface) => boolean): void;
 
 /**
+ * @since 26.0
+ */
+declare function nw_path_get_link_quality(path: NSObject & OS_nw_path): nw_link_quality_t;
+
+/**
  * @since 12.0
  */
 declare function nw_path_get_status(path: NSObject & OS_nw_path): nw_path_status_t;
@@ -1788,6 +1821,11 @@ declare function nw_path_is_equal(path: NSObject & OS_nw_path, other_path: NSObj
  * @since 12.0
  */
 declare function nw_path_is_expensive(path: NSObject & OS_nw_path): boolean;
+
+/**
+ * @since 26.0
+ */
+declare function nw_path_is_ultra_constrained(path: NSObject & OS_nw_path): boolean;
 
 /**
  * @since 12.0

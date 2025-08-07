@@ -46,6 +46,36 @@ declare const enum BEAccessibilityPressedState {
 }
 
 /**
+ * @since 26.0
+ */
+declare class BEAccessibilityRemoteElement extends NSObject {
+
+	static alloc(): BEAccessibilityRemoteElement; // inherited from NSObject
+
+	static new(): BEAccessibilityRemoteElement; // inherited from NSObject
+
+	constructor(o: { identifier: string; hostPid: number; });
+
+	initWithIdentifierHostPid(identifier: string, hostPid: number): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class BEAccessibilityRemoteHostElement extends NSObject {
+
+	static alloc(): BEAccessibilityRemoteHostElement; // inherited from NSObject
+
+	static new(): BEAccessibilityRemoteHostElement; // inherited from NSObject
+
+	accessibilityContainer: any;
+
+	constructor(o: { identifier: string; remotePid: number; });
+
+	initWithIdentifierRemotePid(identifier: string, remotePid: number): this;
+}
+
+/**
  * @since 18.0
  */
 declare var BEAccessibilitySelectionChangedNotification: number;
@@ -283,6 +313,20 @@ declare var BEExtendedTextInputTraits: {
 };
 
 /**
+ * @since 26.0
+ */
+interface BEExtensionProcess extends NSObjectProtocol {
+
+	invalidate(): void;
+
+	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+}
+declare var BEExtensionProcess: {
+
+	prototype: BEExtensionProcess;
+};
+
+/**
  * @since 17.4
  */
 declare const enum BEGestureType {
@@ -395,6 +439,11 @@ declare class BELayerHierarchyHandle extends NSObject implements NSSecureCoding 
 
 	static alloc(): BELayerHierarchyHandle; // inherited from NSObject
 
+	/**
+	 * @since 26.0
+	 */
+	static handleWithPortDataError(port: number, data: NSData): BELayerHierarchyHandle;
+
 	static handleWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): BELayerHierarchyHandle;
 
 	static new(): BELayerHierarchyHandle; // inherited from NSObject
@@ -404,6 +453,11 @@ declare class BELayerHierarchyHandle extends NSObject implements NSSecureCoding 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	createXPCRepresentation(): NSObject & OS_xpc_object;
+
+	/**
+	 * @since 26.0
+	 */
+	encodeWithBlock(block: (p1: number, p2: NSData) => void): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -418,6 +472,11 @@ declare class BELayerHierarchyHostingTransactionCoordinator extends NSObject imp
 	static alloc(): BELayerHierarchyHostingTransactionCoordinator; // inherited from NSObject
 
 	static coordinatorWithError(): BELayerHierarchyHostingTransactionCoordinator;
+
+	/**
+	 * @since 26.0
+	 */
+	static coordinatorWithPortDataError(port: number, data: NSData): BELayerHierarchyHostingTransactionCoordinator;
 
 	static coordinatorWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): BELayerHierarchyHostingTransactionCoordinator;
 
@@ -434,6 +493,11 @@ declare class BELayerHierarchyHostingTransactionCoordinator extends NSObject imp
 	commit(): void;
 
 	createXPCRepresentation(): NSObject & OS_xpc_object;
+
+	/**
+	 * @since 26.0
+	 */
+	encodeWithBlock(block: (p1: number, p2: NSData) => void): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -510,7 +574,7 @@ declare class BEMediaEnvironment extends NSObject {
 /**
  * @since 17.4
  */
-declare class BENetworkingProcess extends NSObject {
+declare class BENetworkingProcess extends NSObject implements BEExtensionProcess {
 
 	static alloc(): BENetworkingProcess; // inherited from NSObject
 
@@ -523,13 +587,47 @@ declare class BENetworkingProcess extends NSObject {
 
 	static new(): BENetworkingProcess; // inherited from NSObject
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
 
 	grantCapabilityErrorInvalidationHandler(capability: BEProcessCapability, error: interop.Pointer | interop.Reference<NSError>, invalidationHandler: () => void): BEProcessCapabilityGrant;
 
 	invalidate(): void;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 /**
@@ -569,7 +667,7 @@ declare var BEProcessCapabilityGrant: {
 /**
  * @since 17.4
  */
-declare class BERenderingProcess extends NSObject {
+declare class BERenderingProcess extends NSObject implements BEExtensionProcess {
 
 	static alloc(): BERenderingProcess; // inherited from NSObject
 
@@ -582,6 +680,22 @@ declare class BERenderingProcess extends NSObject {
 
 	static renderingProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BERenderingProcess, p2: NSError) => void): void;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	createVisibilityPropagationInteraction(): UIInteraction;
 
 	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
@@ -590,7 +704,25 @@ declare class BERenderingProcess extends NSObject {
 
 	invalidate(): void;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 /**
@@ -838,6 +970,16 @@ interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNa
 	selectionAtDocumentStart: boolean;
 
 	selectionClipRect: CGRect;
+
+	/**
+	 * @since 26.0
+	 */
+	selectionContainerViewAboveText?: UIView;
+
+	/**
+	 * @since 26.0
+	 */
+	selectionContainerViewBelowText?: UIView;
 
 	textFirstRect: CGRect;
 
@@ -1141,7 +1283,7 @@ declare class BEWebAppManifest extends NSObject {
 /**
  * @since 17.4
  */
-declare class BEWebContentProcess extends NSObject {
+declare class BEWebContentProcess extends NSObject implements BEExtensionProcess {
 
 	static alloc(): BEWebContentProcess; // inherited from NSObject
 
@@ -1154,6 +1296,22 @@ declare class BEWebContentProcess extends NSObject {
 
 	static webContentProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BEWebContentProcess, p2: NSError) => void): void;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	createVisibilityPropagationInteraction(): UIInteraction;
 
 	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
@@ -1162,5 +1320,23 @@ declare class BEWebContentProcess extends NSObject {
 
 	invalidate(): void;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
