@@ -1141,6 +1141,7 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle).selectors;
+	const cssVarResolveCallback = (cssVarName: string) => view.style.getCssVariable(cssVarName);
 
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
@@ -1163,7 +1164,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
 				return;
 			}
 
-			const value = evaluateCssExpressions(view, property, d.value, (cssVarName) => view.style.getCssVariable(cssVarName));
+			const value = evaluateCssExpressions(view, property, d.value, cssVarResolveCallback);
 			if (property in view.style) {
 				view.style[property] = value;
 			} else {
