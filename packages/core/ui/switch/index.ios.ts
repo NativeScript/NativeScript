@@ -37,8 +37,6 @@ export class Switch extends SwitchBase {
 
 	constructor() {
 		super();
-		this.width = 51;
-		this.height = 31;
 	}
 
 	public createNativeView() {
@@ -50,6 +48,11 @@ export class Switch extends SwitchBase {
 		const nativeView = this.nativeViewProtected;
 		this._handler = SwitchChangeHandlerImpl.initWithOwner(new WeakRef(this));
 		nativeView.addTargetActionForControlEvents(this._handler, 'valueChanged', UIControlEvents.ValueChanged);
+
+		// Set proper dimensions based on actual native size (important for iOS 26+ switches)
+		const nativeSize = nativeView.sizeThatFits(zeroSize);
+		this.width = nativeSize.width;
+		this.height = nativeSize.height;
 	}
 
 	public disposeNativeView() {
@@ -94,13 +97,14 @@ export class Switch extends SwitchBase {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// It can't be anything different from 51x31
+		// Get actual native size - iOS 26+ switches have different dimensions than the legacy 51x31
 		const nativeSize = this.nativeViewProtected.sizeThatFits(zeroSize);
 		this.width = nativeSize.width;
 		this.height = nativeSize.height;
 
-		const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), layout.toDevicePixels(51), layout.EXACTLY, 0);
-		const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), layout.toDevicePixels(31), layout.EXACTLY, 0);
+		// Use actual native dimensions instead of hardcoded fallback values
+		const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), layout.toDevicePixels(nativeSize.width), layout.EXACTLY, 0);
+		const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), layout.toDevicePixels(nativeSize.height), layout.EXACTLY, 0);
 		this.setMeasuredDimension(widthAndState, heightAndState);
 	}
 
