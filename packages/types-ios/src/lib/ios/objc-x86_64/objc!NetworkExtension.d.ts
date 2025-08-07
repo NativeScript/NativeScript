@@ -258,6 +258,11 @@ declare class NEAppPushManager extends NSObject {
 	localizedDescription: string;
 
 	/**
+	 * @since 26.0
+	 */
+	matchEthernet: boolean;
+
+	/**
 	 * @since 15.0
 	 */
 	matchPrivateLTENetworks: NSArray<NEPrivateLTENetwork>;
@@ -351,6 +356,11 @@ declare class NEAppPushProvider extends NEProvider {
 	 * @since 14.0
 	 */
 	stopWithReasonCompletionHandler(reason: NEProviderStopReason, completionHandler: () => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	unmatchEthernet(): void;
 }
 
 /**
@@ -593,6 +603,11 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 	static alloc(): NEDNSSettings; // inherited from NSObject
 
 	static new(): NEDNSSettings; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	allowFailover: boolean;
 
 	/**
 	 * @since 14.0
@@ -1837,6 +1852,7 @@ declare class NEHotspotHS20Settings extends NSObject implements NSCopying, NSSec
 
 /**
  * @since 9.0
+ * @deprecated 26.0
  */
 declare class NEHotspotHelper extends NSObject {
 
@@ -1844,6 +1860,7 @@ declare class NEHotspotHelper extends NSObject {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 26.0
 	 */
 	static logoff(network: NEHotspotNetwork): boolean;
 
@@ -1851,11 +1868,13 @@ declare class NEHotspotHelper extends NSObject {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 26.0
 	 */
 	static registerWithOptionsQueueHandler(options: NSDictionary<string, NSObject>, queue: NSObject & OS_dispatch_queue, handler: (p1: NEHotspotHelperCommand) => void): boolean;
 
 	/**
 	 * @since 9.0
+	 * @deprecated 26.0
 	 */
 	static supportedNetworkInterfaces(): NSArray<any>;
 }
@@ -1950,6 +1969,7 @@ declare class NEHotspotHelperResponse extends NSObject {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 26.0
 	 */
 	deliver(): void;
 
@@ -2852,13 +2872,24 @@ declare class NERelayManager extends NSObject {
 
 	static sharedManager(): NERelayManager;
 
+	UIToggleEnabled: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	allowDNSFailover: boolean;
+
 	enabled: boolean;
 
 	excludedDomains: NSArray<string>;
 
+	excludedFQDNs: NSArray<string>;
+
 	localizedDescription: string;
 
 	matchDomains: NSArray<string>;
+
+	matchFQDNs: NSArray<string>;
 
 	onDemandRules: NSArray<NEOnDemandRule>;
 
@@ -3110,6 +3141,30 @@ declare class NETunnelProviderSession extends NEVPNConnection {
 	 * @since 9.0
 	 */
 	stopTunnel(): void;
+}
+
+declare class NEURLFilter extends NSObject {
+
+	static alloc(): NEURLFilter; // inherited from NSObject
+
+	static new(): NEURLFilter; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	static verdictForURLCompletionHandler(url: NSURL, completionHandler: (p1: NEURLFilterVerdict) => void): void;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum NEURLFilterVerdict {
+
+	Unknown = 1,
+
+	Allow = 2,
+
+	Deny = 3
 }
 
 /**
@@ -3381,6 +3436,18 @@ declare class NEVPNIKEv2PPKConfiguration extends NSObject implements NSCopying {
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum NEVPNIKEv2PostQuantumKeyExchangeMethod {
+
+	MethodNone = 0,
+
+	Method36 = 36,
+
+	Method37 = 37
+}
+
+/**
  * @since 8.0
  */
 declare class NEVPNIKEv2SecurityAssociationParameters extends NSObject implements NSCopying, NSSecureCoding {
@@ -3408,6 +3475,11 @@ declare class NEVPNIKEv2SecurityAssociationParameters extends NSObject implement
 	 * @since 8.0
 	 */
 	lifetimeMinutes: number;
+
+	/**
+	 * @since 26.0
+	 */
+	postQuantumKeyExchangeMethods: NSArray<number>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -3608,6 +3680,11 @@ declare class NEVPNProtocolIKEv2 extends NEVPNProtocolIPSec {
 	 * @since 8.0
 	 */
 	readonly IKESecurityAssociationParameters: NEVPNIKEv2SecurityAssociationParameters;
+
+	/**
+	 * @since 26.0
+	 */
+	allowPostQuantumKeyExchangeFallback: boolean;
 
 	/**
 	 * @since 8.3

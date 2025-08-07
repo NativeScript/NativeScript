@@ -333,6 +333,56 @@ declare class AVAudioConnectionPoint extends NSObject {
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum AVAudioContentSource {
+
+	Unspecified = -1,
+
+	Reserved = 0,
+
+	AppleCapture_Traditional = 1,
+
+	AppleCapture_Spatial = 2,
+
+	AppleCapture_Spatial_Enhanced = 3,
+
+	AppleMusic_Traditional = 4,
+
+	AppleMusic_Spatial = 5,
+
+	AppleAV_Traditional_Offline = 6,
+
+	AppleAV_Spatial_Offline = 7,
+
+	AppleAV_Traditional_Live = 8,
+
+	AppleAV_Spatial_Live = 9,
+
+	ApplePassthrough = 10,
+
+	Capture_Traditional = 33,
+
+	Capture_Spatial = 34,
+
+	Capture_Spatial_Enhanced = 35,
+
+	Music_Traditional = 36,
+
+	Music_Spatial = 37,
+
+	AV_Traditional_Offline = 38,
+
+	AV_Spatial_Offline = 39,
+
+	AV_Traditional_Live = 40,
+
+	AV_Spatial_Live = 41,
+
+	Passthrough = 42
+}
+
+/**
  * @since 9.0
  */
 declare class AVAudioConverter extends NSObject {
@@ -427,6 +477,19 @@ declare const enum AVAudioConverterPrimeMethod {
 	Normal = 1,
 
 	None = 2
+}
+
+declare const enum AVAudioDynamicRangeControlConfiguration {
+
+	None = 0,
+
+	Music = 1,
+
+	Speech = 2,
+
+	Movie = 3,
+
+	Capture = 4
 }
 
 /**
@@ -2111,6 +2174,11 @@ declare class AVAudioSession extends NSObject {
 	readonly outputLatency: number;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly outputMuted: boolean;
+
+	/**
 	 * @since 6.0
 	 */
 	readonly outputNumberOfChannels: number;
@@ -2297,6 +2365,11 @@ declare class AVAudioSession extends NSObject {
 	setOutputDataSourceError(dataSource: AVAudioSessionDataSourceDescription): boolean;
 
 	/**
+	 * @since 26.0
+	 */
+	setOutputMutedError(muted: boolean): boolean;
+
+	/**
 	 * @since 3.0
 	 * @deprecated 6.0
 	 */
@@ -2364,6 +2437,25 @@ declare const enum AVAudioSessionActivationOptions {
 }
 
 /**
+ * @since 26.0
+ */
+declare var AVAudioSessionAvailableInputsChangeNotification: string;
+
+/**
+ * @since 26.0
+ */
+declare class AVAudioSessionCapability extends NSObject {
+
+	static alloc(): AVAudioSessionCapability; // inherited from NSObject
+
+	static new(): AVAudioSessionCapability; // inherited from NSObject
+
+	readonly enabled: boolean;
+
+	readonly supported: boolean;
+}
+
+/**
  * @since 3.0
  */
 declare var AVAudioSessionCategoryAmbient: string;
@@ -2387,6 +2479,8 @@ declare const enum AVAudioSessionCategoryOptions {
 
 	AllowBluetooth = 4,
 
+	AllowBluetoothHFP = 4,
+
 	DefaultToSpeaker = 8,
 
 	InterruptSpokenAudioAndMixWithOthers = 17,
@@ -2395,7 +2489,9 @@ declare const enum AVAudioSessionCategoryOptions {
 
 	AllowAirPlay = 64,
 
-	OverrideMutedMicrophoneInterruption = 128
+	OverrideMutedMicrophoneInterruption = 128,
+
+	BluetoothHighQualityRecording = 524288
 }
 
 /**
@@ -2636,6 +2732,11 @@ declare var AVAudioSessionModeMeasurement: string;
 declare var AVAudioSessionModeMoviePlayback: string;
 
 /**
+ * @since 26.0
+ */
+declare var AVAudioSessionModeShortFormVideo: string;
+
+/**
  * @since 9.0
  */
 declare var AVAudioSessionModeSpokenAudio: string;
@@ -2659,6 +2760,11 @@ declare var AVAudioSessionModeVoiceChat: string;
  * @since 12.0
  */
 declare var AVAudioSessionModeVoicePrompt: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVAudioSessionMuteStateKey: string;
 
 /**
  * @since 7.0
@@ -2689,6 +2795,11 @@ declare var AVAudioSessionOrientationRight: string;
  * @since 7.0
  */
 declare var AVAudioSessionOrientationTop: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVAudioSessionOutputMuteStateChangeNotification: string;
 
 /**
  * @since 7.0
@@ -2775,6 +2886,11 @@ declare class AVAudioSessionPortDescription extends NSObject {
 	readonly UID: string;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly bluetoothMicrophoneExtension: AVAudioSessionPortExtensionBluetoothMicrophone;
+
+	/**
 	 * @since 6.0
 	 */
 	readonly channels: NSArray<AVAudioSessionChannelDescription>;
@@ -2824,6 +2940,18 @@ declare class AVAudioSessionPortDescription extends NSObject {
  * @since 14.0
  */
 declare var AVAudioSessionPortDisplayPort: string;
+
+/**
+ * @since 26.0
+ */
+declare class AVAudioSessionPortExtensionBluetoothMicrophone extends NSObject {
+
+	static alloc(): AVAudioSessionPortExtensionBluetoothMicrophone; // inherited from NSObject
+
+	static new(): AVAudioSessionPortExtensionBluetoothMicrophone; // inherited from NSObject
+
+	readonly highQualityRecording: AVAudioSessionCapability;
+}
 
 /**
  * @since 14.0
@@ -3030,6 +3158,11 @@ declare var AVAudioSessionSpatialAudioEnabledKey: string;
  * @since 15.0
  */
 declare var AVAudioSessionSpatialPlaybackCapabilitiesChangedNotification: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVAudioSessionUserIntentToUnmuteOutputNotification: string;
 
 /**
  * @since 13.0
@@ -3887,6 +4020,11 @@ declare var AVBeatRange: interop.StructType<AVBeatRange>;
 declare var AVChannelLayoutKey: string;
 
 /**
+ * @since 26.0
+ */
+declare var AVEncoderASPFrequencyKey: string;
+
+/**
  * @since 7.0
  */
 declare var AVEncoderAudioQualityForVBRKey: string;
@@ -3915,6 +4053,16 @@ declare var AVEncoderBitRatePerChannelKey: string;
  * @since 7.0
  */
 declare var AVEncoderBitRateStrategyKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVEncoderContentSourceKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVEncoderDynamicRangeControlConfigurationKey: string;
 
 /**
  * @since 16.0

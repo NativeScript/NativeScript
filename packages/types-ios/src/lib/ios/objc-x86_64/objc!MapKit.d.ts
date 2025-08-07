@@ -1,5 +1,23 @@
 
 /**
+ * @since 26.0
+ */
+declare class MKAddress extends NSObject {
+
+	static alloc(): MKAddress; // inherited from NSObject
+
+	static new(): MKAddress; // inherited from NSObject
+
+	readonly fullAddress: string;
+
+	readonly shortAddress: string;
+
+	constructor(o: { fullAddress: string; shortAddress: string; });
+
+	initWithFullAddressShortAddress(fullAddress: string, shortAddress: string): this;
+}
+
+/**
  * @since 18.0
  */
 declare class MKAddressFilter extends NSObject implements NSCopying, NSSecureCoding {
@@ -51,6 +69,40 @@ declare const enum MKAddressFilterOption {
 	SubLocality = 16,
 
 	PostalCode = 32
+}
+
+/**
+ * @since 26.0
+ */
+declare class MKAddressRepresentations extends NSObject {
+
+	static alloc(): MKAddressRepresentations; // inherited from NSObject
+
+	static new(): MKAddressRepresentations; // inherited from NSObject
+
+	readonly cityName: string;
+
+	readonly cityWithContext: string;
+
+	readonly regionCode: string;
+
+	readonly regionName: string;
+
+	cityWithContextUsingStyle(style: MKAddressRepresentationsContextStyle): string;
+
+	fullAddressIncludingRegionSingleLine(includingRegion: boolean, singleLine: boolean): string;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum MKAddressRepresentationsContextStyle {
+
+	Automatic = 0,
+
+	Short = 1,
+
+	Full = 2
 }
 
 interface MKAnnotation extends NSObjectProtocol {
@@ -656,6 +708,8 @@ declare const enum MKDirectionsTransportType {
 
 	Transit = 4,
 
+	Cycling = 8,
+
 	Any = 268435455
 }
 
@@ -861,6 +915,34 @@ declare var MKGeoJSONObject: {
 };
 
 /**
+ * @since 26.0
+ */
+declare class MKGeocodingRequest extends NSObject {
+
+	static alloc(): MKGeocodingRequest; // inherited from NSObject
+
+	static new(): MKGeocodingRequest; // inherited from NSObject
+
+	readonly addressString: string;
+
+	readonly cancelled: boolean;
+
+	readonly loading: boolean;
+
+	preferredLocale: NSLocale;
+
+	region: MKCoordinateRegion;
+
+	constructor(o: { addressString: string; });
+
+	cancel(): void;
+
+	getMapItemsWithCompletionHandler(completionHandler: (p1: NSArray<MKMapItem>, p2: NSError) => void): void;
+
+	initWithAddressString(addressString: string): this;
+}
+
+/**
  * @since 7.0
  */
 declare class MKGeodesicPolyline extends MKPolyline {
@@ -940,6 +1022,11 @@ declare class MKImageryMapConfiguration extends MKMapConfiguration {
  * @since 7.1
  */
 declare var MKLaunchOptionsCameraKey: string;
+
+/**
+ * @since 14.0
+ */
+declare var MKLaunchOptionsDirectionsModeCycling: string;
 
 /**
  * @since 10.0
@@ -1659,6 +1746,16 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 	static openMapsWithItemsLaunchOptionsFromSceneCompletionHandler(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any>, scene: UIScene, completion: (p1: boolean) => void): void;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly address: MKAddress;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly addressRepresentations: MKAddressRepresentations;
+
+	/**
 	 * @since 18.0
 	 */
 	readonly alternateIdentifiers: NSSet<MKMapItemIdentifier>;
@@ -1670,10 +1767,19 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	readonly isCurrentLocation: boolean;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly location: CLLocation;
+
 	name: string;
 
 	phoneNumber: string;
 
+	/**
+	 * @since 6.0
+	 * @deprecated 26.0
+	 */
 	readonly placemark: MKPlacemark;
 
 	/**
@@ -1710,6 +1816,15 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { location: CLLocation; address: MKAddress; });
+
+	/**
+	 * @since 6.0
+	 * @deprecated 26.0
+	 */
 	constructor(o: { placemark: MKPlacemark; });
 
 	class(): typeof NSObject;
@@ -1720,6 +1835,15 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 26.0
+	 */
+	initWithLocationAddress(location: CLLocation, address: MKAddress): this;
+
+	/**
+	 * @since 6.0
+	 * @deprecated 26.0
+	 */
 	initWithPlacemark(placemark: MKPlacemark): this;
 
 	isEqual(object: any): boolean;
@@ -3348,6 +3472,7 @@ declare class MKPinAnnotationView extends MKAnnotationView {
 
 /**
  * @since 3.0
+ * @deprecated 26.0
  */
 declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 
@@ -4291,6 +4416,32 @@ declare var MKReverseGeocoderDelegate: {
 };
 
 /**
+ * @since 26.0
+ */
+declare class MKReverseGeocodingRequest extends NSObject {
+
+	static alloc(): MKReverseGeocodingRequest; // inherited from NSObject
+
+	static new(): MKReverseGeocodingRequest; // inherited from NSObject
+
+	readonly cancelled: boolean;
+
+	readonly loading: boolean;
+
+	readonly location: CLLocation;
+
+	preferredLocale: NSLocale;
+
+	constructor(o: { location: CLLocation; });
+
+	cancel(): void;
+
+	getMapItemsWithCompletionHandler(completionHandler: (p1: NSArray<MKMapItem>, p2: NSError) => void): void;
+
+	initWithLocation(location: CLLocation): this;
+}
+
+/**
  * @since 4.0
  */
 declare function MKRoadWidthAtZoomScale(zoomScale: number): number;
@@ -4408,7 +4559,9 @@ declare const enum MKScaleViewAlignment {
 
 	Leading = 0,
 
-	Trailing = 1
+	Trailing = 1,
+
+	Center = 2
 }
 
 /**
@@ -4765,6 +4918,11 @@ declare class MKUserTrackingBarButtonItem extends UIBarButtonItem {
 	 * @since 9.0
 	 */
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKUserTrackingBarButtonItem; // inherited from UIAppearance
+
+	/**
+	 * @since 26.0
+	 */
+	static fixedSpaceItem(): MKUserTrackingBarButtonItem; // inherited from UIBarButtonItem
 
 	/**
 	 * @since 14.0

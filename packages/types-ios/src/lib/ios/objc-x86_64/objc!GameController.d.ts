@@ -44,6 +44,9 @@ declare var GCAxisElement: {
 	prototype: GCAxisElement;
 };
 
+/**
+ * @since 14.0
+ */
 interface GCAxisElementName extends GCPhysicalInputElementName {
 }
 declare var GCAxisElementName: {
@@ -83,6 +86,11 @@ declare var GCAxisInput: {
  */
 interface GCButtonElement extends GCPhysicalInputElement {
 
+	/**
+	 * @since 26.0
+	 */
+	forceInput: GCLinearInput;
+
 	pressedInput: any;
 
 	touchedInput: GCTouchedStateInput;
@@ -92,6 +100,9 @@ declare var GCButtonElement: {
 	prototype: GCButtonElement;
 };
 
+/**
+ * @since 14.0
+ */
 interface GCButtonElementName extends GCPhysicalInputElementName {
 }
 declare var GCButtonElementName: {
@@ -146,14 +157,26 @@ declare class GCController extends NSObject implements GCDevice {
 	 */
 	static controllerWithMicroGamepad(): GCController;
 
+	/**
+	 * @since 7.0
+	 */
 	static controllers(): NSArray<GCController>;
 
 	static new(): GCController; // inherited from NSObject
 
+	/**
+	 * @since 7.0
+	 */
 	static startWirelessControllerDiscoveryWithCompletionHandler(completionHandler: () => void): void;
 
+	/**
+	 * @since 7.0
+	 */
 	static stopWirelessControllerDiscovery(): void;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly attachedToDevice: boolean;
 
 	/**
@@ -167,6 +190,9 @@ declare class GCController extends NSObject implements GCDevice {
 	 */
 	controllerPausedHandler: (p1: GCController) => void;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly extendedGamepad: GCExtendedGamepad;
 
 	/**
@@ -190,6 +216,9 @@ declare class GCController extends NSObject implements GCDevice {
 	 */
 	readonly light: GCDeviceLight;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly microGamepad: GCMicroGamepad;
 
 	/**
@@ -197,6 +226,9 @@ declare class GCController extends NSObject implements GCDevice {
 	 */
 	readonly motion: GCMotion;
 
+	/**
+	 * @since 7.0
+	 */
 	playerIndex: GCControllerPlayerIndex;
 
 	/**
@@ -219,7 +251,7 @@ declare class GCController extends NSObject implements GCDevice {
 	readonly description: string; // inherited from NSObjectProtocol
 
 	/**
-	 * @since 7.0
+	 * @since 9.0
 	 */
 	handlerQueue: NSObject & OS_dispatch_queue; // inherited from GCDevice
 
@@ -566,6 +598,9 @@ declare class GCControllerLiveInput extends GCControllerInputState implements GC
 	self(): this;
 }
 
+/**
+ * @since 7.0
+ */
 declare const enum GCControllerPlayerIndex {
 
 	IndexUnset = -1,
@@ -580,7 +615,7 @@ declare const enum GCControllerPlayerIndex {
 }
 
 /**
- * @since 14.0
+ * @since 13.0
  */
 declare class GCControllerTouchpad extends GCControllerElement {
 
@@ -617,7 +652,7 @@ declare var GCControllerUserCustomizationsDidChangeNotification: string;
 declare var GCCurrentExtendedGamepadSnapshotDataVersion: GCExtendedGamepadSnapshotDataVersion;
 
 /**
- * @since 9.0
+ * @since 13.0
  * @deprecated 13.0
  */
 declare var GCCurrentMicroGamepadSnapshotDataVersion: GCMicroGamepadSnapshotDataVersion;
@@ -628,7 +663,7 @@ declare var GCCurrentMicroGamepadSnapshotDataVersion: GCMicroGamepadSnapshotData
 interface GCDevice extends NSObjectProtocol {
 
 	/**
-	 * @since 7.0
+	 * @since 9.0
 	 */
 	handlerQueue: NSObject & OS_dispatch_queue;
 
@@ -667,6 +702,9 @@ declare class GCDeviceBattery extends NSObject {
 	readonly batteryState: GCDeviceBatteryState;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum GCDeviceBatteryState {
 
 	Unknown = -1,
@@ -739,6 +777,9 @@ declare var GCDevicePhysicalInput: {
 	prototype: GCDevicePhysicalInput;
 };
 
+/**
+ * @since 16.0
+ */
 declare const enum GCDevicePhysicalInputElementChange {
 
 	UnknownChange = -1,
@@ -817,6 +858,9 @@ declare var GCDirectionPadElement: {
 	prototype: GCDirectionPadElement;
 };
 
+/**
+ * @since 14.0
+ */
 interface GCDirectionPadElementName extends GCPhysicalInputElementName {
 }
 declare var GCDirectionPadElementName: {
@@ -983,6 +1027,11 @@ declare class GCEventInteraction extends NSObject implements UIInteraction {
 
 	handledEventTypes: GCUIEventTypes;
 
+	/**
+	 * @since 26.0
+	 */
+	receivesEventsInView: boolean;
+
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
@@ -1129,13 +1178,13 @@ interface GCExtendedGamepadSnapShotDataV100 {
 declare var GCExtendedGamepadSnapShotDataV100: interop.StructType<GCExtendedGamepadSnapShotDataV100>;
 
 /**
- * @since 9.0
+ * @since 7.0
  * @deprecated 13.0
  */
 declare function GCExtendedGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100>, data: NSData): boolean;
 
 /**
- * @since 9.0
+ * @since 7.0
  * @deprecated 13.0
  */
 declare class GCExtendedGamepadSnapshot extends GCExtendedGamepad {
@@ -1179,13 +1228,13 @@ interface GCExtendedGamepadSnapshotData {
 declare var GCExtendedGamepadSnapshotData: interop.StructType<GCExtendedGamepadSnapshotData>;
 
 /**
- * @since 9.0
+ * @since 13.0
  * @deprecated 13.0
  */
 declare function GCExtendedGamepadSnapshotDataFromNSData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapshotData>, data: NSData): boolean;
 
 /**
- * @since 9.0
+ * @since 13.0
  * @deprecated 13.0
  */
 declare const enum GCExtendedGamepadSnapshotDataVersion {
@@ -1432,6 +1481,11 @@ declare var GCInputDualShockTouchpadOne: string;
 declare var GCInputDualShockTouchpadTwo: string;
 
 /**
+ * @since 26.0
+ */
+declare var GCInputGripButton: string;
+
+/**
  * @since 17.4
  */
 declare var GCInputLeftBumper: string;
@@ -1500,6 +1554,21 @@ declare var GCInputRightThumbstickButton: string;
  * @since 14.0
  */
 declare var GCInputRightTrigger: string;
+
+/**
+ * @since 26.0
+ */
+declare var GCInputThumbstick: string;
+
+/**
+ * @since 26.0
+ */
+declare var GCInputThumbstickButton: string;
+
+/**
+ * @since 26.0
+ */
+declare var GCInputTrigger: string;
 
 /**
  * @since 14.0
@@ -2885,7 +2954,7 @@ declare class GCKeyboard extends NSObject implements GCDevice {
 	readonly description: string; // inherited from NSObjectProtocol
 
 	/**
-	 * @since 7.0
+	 * @since 9.0
 	 */
 	handlerQueue: NSObject & OS_dispatch_queue; // inherited from GCDevice
 
@@ -3018,7 +3087,7 @@ declare class GCMicroGamepad extends GCPhysicalInputProfile {
 	valueChangedHandler: (p1: GCMicroGamepad, p2: GCControllerElement) => void;
 
 	/**
-	 * @since 7.0
+	 * @since 9.0
 	 * @deprecated 13.0
 	 */
 	saveSnapshot(): GCMicroGamepadSnapshot;
@@ -3077,13 +3146,13 @@ interface GCMicroGamepadSnapshotData {
 declare var GCMicroGamepadSnapshotData: interop.StructType<GCMicroGamepadSnapshotData>;
 
 /**
- * @since 9.0
+ * @since 13.0
  * @deprecated 13.0
  */
 declare function GCMicroGamepadSnapshotDataFromNSData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData>, data: NSData): boolean;
 
 /**
- * @since 9.0
+ * @since 13.0
  * @deprecated 13.0
  */
 declare const enum GCMicroGamepadSnapshotDataVersion {
@@ -3105,9 +3174,6 @@ declare class GCMotion extends NSObject {
 	 */
 	readonly acceleration: GCAcceleration;
 
-	/**
-	 * @since 11.0
-	 */
 	readonly attitude: GCQuaternion;
 
 	readonly controller: GCController;
@@ -3135,9 +3201,6 @@ declare class GCMotion extends NSObject {
 	 */
 	readonly hasRotationRate: boolean;
 
-	/**
-	 * @since 11.0
-	 */
 	readonly rotationRate: GCRotationRate;
 
 	/**
@@ -3205,7 +3268,7 @@ declare class GCMouse extends NSObject implements GCDevice {
 	readonly description: string; // inherited from NSObjectProtocol
 
 	/**
-	 * @since 7.0
+	 * @since 9.0
 	 */
 	handlerQueue: NSObject & OS_dispatch_queue; // inherited from GCDevice
 
@@ -3333,6 +3396,9 @@ declare class GCPhysicalInputElementCollection<Key, Element> extends NSObject im
 	objectForKeyedSubscript(key: string): GCPhysicalInputElement;
 }
 
+/**
+ * @since 14.0
+ */
 interface GCPhysicalInputElementName {
 }
 declare var GCPhysicalInputElementName: {
@@ -3463,6 +3529,9 @@ declare var GCPhysicalInputSource: {
 	prototype: GCPhysicalInputSource;
 };
 
+/**
+ * @since 17.0
+ */
 declare const enum GCPhysicalInputSourceDirection {
 
 	NotApplicable = 0,
@@ -3476,6 +3545,9 @@ declare const enum GCPhysicalInputSourceDirection {
 	Left = 8
 }
 
+/**
+ * @since 17.4
+ */
 interface GCPoint2 {
 	x: number;
 	y: number;
@@ -3566,6 +3638,11 @@ declare var GCProductCategorySiriRemote1stGen: string;
 declare var GCProductCategorySiriRemote2ndGen: string;
 
 /**
+ * @since 26.0
+ */
+declare var GCProductCategorySpatialController: string;
+
+/**
  * @since 15.0
  */
 declare var GCProductCategoryUniversalElectronicsRemote: string;
@@ -3627,6 +3704,9 @@ declare var GCSwitchElement: {
 	prototype: GCSwitchElement;
 };
 
+/**
+ * @since 14.0
+ */
 interface GCSwitchElementName extends GCPhysicalInputElementName {
 }
 declare var GCSwitchElementName: {
@@ -3663,6 +3743,9 @@ declare var GCSwitchPositionInput: {
 	prototype: GCSwitchPositionInput;
 };
 
+/**
+ * @since 14.0
+ */
 declare const enum GCSystemGestureState {
 
 	Enabled = 0,
@@ -3672,6 +3755,9 @@ declare const enum GCSystemGestureState {
 	Disabled = 2
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum GCTouchState {
 
 	Up = 0,
@@ -3704,6 +3790,9 @@ declare var GCTouchedStateInput: {
 	prototype: GCTouchedStateInput;
 };
 
+/**
+ * @since 18.0
+ */
 declare const enum GCUIEventTypes {
 
 	None = 0,
@@ -3802,13 +3891,13 @@ declare class GCXboxGamepad extends GCExtendedGamepad {
 }
 
 /**
- * @since 9.0
+ * @since 7.0
  * @deprecated 13.0
  */
 declare function NSDataFromGCExtendedGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100>): NSData;
 
 /**
- * @since 9.0
+ * @since 13.0
  * @deprecated 13.0
  */
 declare function NSDataFromGCExtendedGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapshotData>): NSData;
@@ -3826,7 +3915,7 @@ declare function NSDataFromGCGamepadSnapShotDataV100(snapshotData: interop.Point
 declare function NSDataFromGCMicroGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100>): NSData;
 
 /**
- * @since 9.0
+ * @since 13.0
  * @deprecated 13.0
  */
 declare function NSDataFromGCMicroGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData>): NSData;

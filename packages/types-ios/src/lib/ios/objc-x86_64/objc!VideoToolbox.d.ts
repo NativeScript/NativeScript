@@ -106,7 +106,9 @@ declare const enum VTDecodeInfoFlags {
 
 	kVTDecodeInfo_ImageBufferModifiable = 4,
 
-	kVTDecodeInfo_SkippedLeadingFrameDropped = 8
+	kVTDecodeInfo_SkippedLeadingFrameDropped = 8,
+
+	kVTDecodeInfo_FrameInterrupted = 16
 }
 
 /**
@@ -144,6 +146,16 @@ declare function VTDecompressionSessionDecodeFrame(session: any, sampleBuffer: a
 declare function VTDecompressionSessionDecodeFrameWithMultiImageCapableOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, multiImageCapableOutputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: any, p5: CMTime, p6: CMTime) => void): number;
 
 /**
+ * @since 18.0
+ */
+declare function VTDecompressionSessionDecodeFrameWithOptions(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, frameOptions: NSDictionary<any, any>, sourceFrameRefCon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>): number;
+
+/**
+ * @since 18.0
+ */
+declare function VTDecompressionSessionDecodeFrameWithOptionsAndOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, frameOptions: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: CMTime, p5: CMTime) => void): number;
+
+/**
  * @since 9.0
  */
 declare function VTDecompressionSessionDecodeFrameWithOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: CMTime, p5: CMTime) => void): number;
@@ -179,6 +191,136 @@ declare const enum VTEncodeInfoFlags {
 
 	kVTEncodeInfo_FrameDropped = 2
 }
+
+/**
+ * @since 26.0
+ */
+declare class VTFrameProcessor extends NSObject {
+
+	static alloc(): VTFrameProcessor; // inherited from NSObject
+
+	static new(): VTFrameProcessor; // inherited from NSObject
+
+	endSession(): void;
+
+	processWithCommandBufferParameters(commandBuffer: MTLCommandBuffer, parameters: VTFrameProcessorParameters): void;
+
+	processWithParametersCompletionHandler(parameters: VTFrameProcessorParameters, completionHandler: (p1: VTFrameProcessorParameters, p2: NSError) => void): void;
+
+	processWithParametersError(parameters: VTFrameProcessorParameters): boolean;
+
+	processWithParametersFrameOutputHandler(parameters: VTFrameProcessorParameters, frameOutputHandler: (p1: VTFrameProcessorParameters, p2: CMTime, p3: boolean, p4: NSError) => void): void;
+
+	startSessionWithConfigurationError(configuration: VTFrameProcessorConfiguration): boolean;
+}
+
+/**
+ * @since 26.0
+ */
+interface VTFrameProcessorConfiguration extends NSObjectProtocol {
+
+	destinationPixelBufferAttributes: NSDictionary<string, any>;
+
+	frameSupportedPixelFormats: NSArray<number>;
+
+	nextFrameCount?: number;
+
+	previousFrameCount?: number;
+
+	sourcePixelBufferAttributes: NSDictionary<string, any>;
+}
+declare var VTFrameProcessorConfiguration: {
+
+	prototype: VTFrameProcessorConfiguration;
+};
+
+declare const enum VTFrameProcessorError {
+
+	UnknownError = -19730,
+
+	UnsupportedResolution = -19731,
+
+	SessionNotStarted = -19732,
+
+	SessionAlreadyActive = -19733,
+
+	FatalError = -19734,
+
+	SessionLevelError = -19735,
+
+	InitializationFailed = -19736,
+
+	UnsupportedInput = -19737,
+
+	MemoryAllocationFailure = -19738,
+
+	RevisionNotSupported = -19739,
+
+	ProcessingError = -19740,
+
+	InvalidParameterError = -19741,
+
+	InvalidFrameTiming = -19742,
+
+	AssetDownloadFailed = -19743
+}
+
+/**
+ * @since 26.0
+ */
+declare var VTFrameProcessorErrorDomain: string;
+
+/**
+ * @since 26.0
+ */
+declare class VTFrameProcessorFrame extends NSObject {
+
+	static alloc(): VTFrameProcessorFrame; // inherited from NSObject
+
+	static new(): VTFrameProcessorFrame; // inherited from NSObject
+
+	readonly buffer: any;
+
+	readonly presentationTimeStamp: CMTime;
+
+	constructor(o: { buffer: any; presentationTimeStamp: CMTime; });
+
+	initWithBufferPresentationTimeStamp(buffer: any, presentationTimeStamp: CMTime): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class VTFrameProcessorOpticalFlow extends NSObject {
+
+	static alloc(): VTFrameProcessorOpticalFlow; // inherited from NSObject
+
+	static new(): VTFrameProcessorOpticalFlow; // inherited from NSObject
+
+	readonly backwardFlow: any;
+
+	readonly forwardFlow: any;
+
+	constructor(o: { forwardFlow: any; backwardFlow: any; });
+
+	initWithForwardFlowBackwardFlow(forwardFlow: any, backwardFlow: any): this;
+}
+
+/**
+ * @since 26.0
+ */
+interface VTFrameProcessorParameters extends NSObjectProtocol {
+
+	destinationFrame?: VTFrameProcessorFrame;
+
+	destinationFrames?: NSArray<VTFrameProcessorFrame>;
+
+	sourceFrame: VTFrameProcessorFrame;
+}
+declare var VTFrameProcessorParameters: {
+
+	prototype: VTFrameProcessorParameters;
+};
 
 /**
  * @since 8.0
@@ -256,6 +398,46 @@ declare function VTIsStereoMVHEVCDecodeSupported(): boolean;
  * @since 17.0
  */
 declare function VTIsStereoMVHEVCEncodeSupported(): boolean;
+
+declare const enum VTMotionEstimationFrameFlags {
+
+	kVTMotionEstimationFrameFlags_CurrentBufferWillBeNextReferenceBuffer = 1
+}
+
+declare const enum VTMotionEstimationInfoFlags {
+
+	kVTMotionEstimationInfoFlags_Reserved0 = 1
+}
+
+/**
+ * @since 26.0
+ */
+declare function VTMotionEstimationSessionCompleteFrames(session: any): number;
+
+/**
+ * @since 26.0
+ */
+declare function VTMotionEstimationSessionCopySourcePixelBufferAttributes(motionEstimationSession: any, attributesOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+
+/**
+ * @since 26.0
+ */
+declare function VTMotionEstimationSessionCreate(allocator: any, motionVectorProcessorSelectionOptions: NSDictionary<any, any>, width: number, height: number, motionEstimationSessionOut: interop.Pointer | interop.Reference<any>): number;
+
+/**
+ * @since 26.0
+ */
+declare function VTMotionEstimationSessionEstimateMotionVectors(session: any, referenceImage: any, currentImage: any, motionEstimationFrameFlags: VTMotionEstimationFrameFlags, additionalFrameOptions: NSDictionary<any, any>, outputHandler: (p1: number, p2: VTMotionEstimationInfoFlags, p3: NSDictionary<any, any>, p4: any) => void): number;
+
+/**
+ * @since 26.0
+ */
+declare function VTMotionEstimationSessionGetTypeID(): number;
+
+/**
+ * @since 26.0
+ */
+declare function VTMotionEstimationSessionInvalidate(session: any): void;
 
 /**
  * @since 8.0
@@ -349,11 +531,126 @@ declare var kVTAlphaChannelMode_PremultipliedAlpha: string;
  */
 declare var kVTAlphaChannelMode_StraightAlpha: string;
 
+/**
+ * @since 26.0
+ */
+declare var kVTCameraCalibrationExtrinsicOriginSource_StereoCameraSystemBaseline: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCameraCalibrationLensAlgorithmKind_ParametricLens: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCameraCalibrationLensDomain_Color: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCameraCalibrationLensRole_Left: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCameraCalibrationLensRole_Mono: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCameraCalibrationLensRole_Right: string;
+
 declare const kVTColorCorrectionImageRotationFailedErr: number;
 
 declare const kVTColorCorrectionPixelTransferFailedErr: number;
 
 declare const kVTColorSyncTransformConvertFailedErr: number;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPreset_Balanced: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPreset_HighQuality: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPreset_HighSpeed: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPreset_VideoConferencing: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_ExtrinsicOrientationQuaternion: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_ExtrinsicOriginSource: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_IntrinsicMatrix: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_IntrinsicMatrixProjectionOffset: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_IntrinsicMatrixReferenceDimensions: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_LensAlgorithmKind: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_LensDistortions: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_LensDomain: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_LensFrameAdjustmentsPolynomialX: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_LensFrameAdjustmentsPolynomialY: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_LensIdentifier: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_LensRole: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyCameraCalibrationKey_RadialAngleLimit: string;
 
 /**
  * @since 8.0
@@ -404,6 +701,11 @@ declare var kVTCompressionPropertyKey_BaseLayerFrameRateFraction: string;
  * @since 17.4
  */
 declare var kVTCompressionPropertyKey_CalculateMeanSquaredError: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyKey_CameraCalibrationDataLensCollection: string;
 
 /**
  * @since 8.0
@@ -656,6 +958,16 @@ declare var kVTCompressionPropertyKey_Quality: string;
 declare var kVTCompressionPropertyKey_RealTime: string;
 
 /**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyKey_RecommendedParallelizedSubdivisionMinimumDuration: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyKey_RecommendedParallelizedSubdivisionMinimumFrameCount: string;
+
+/**
  * @since 16.0
  */
 declare var kVTCompressionPropertyKey_ReferenceBufferCount: string;
@@ -669,6 +981,11 @@ declare var kVTCompressionPropertyKey_SourceFrameCount: string;
  * @since 17.0
  */
 declare var kVTCompressionPropertyKey_StereoCameraBaseline: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyKey_SupportedPresetDictionaries: string;
 
 /**
  * @since 15.0
@@ -694,6 +1011,26 @@ declare var kVTCompressionPropertyKey_UsingGPURegistryID: string;
  * @since 17.4
  */
 declare var kVTCompressionPropertyKey_UsingHardwareAcceleratedVideoEncoder: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyKey_VBVBufferDuration: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyKey_VBVInitialDelayPercentage: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyKey_VBVMaxBitRate: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTCompressionPropertyKey_VariableBitRate: string;
 
 /**
  * @since 8.0
@@ -723,6 +1060,16 @@ declare const kVTCouldNotFindVideoDecoderErr: number;
 declare const kVTCouldNotFindVideoEncoderErr: number;
 
 declare const kVTCouldNotOutputTaggedBufferGroupErr: number;
+
+/**
+ * @since 26.0
+ */
+declare var kVTDecodeFrameOptionKey_ContentAnalyzerCropRectangle: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTDecodeFrameOptionKey_ContentAnalyzerRotation: string;
 
 /**
  * @since 18.0
@@ -990,6 +1337,11 @@ declare var kVTHDRMetadataInsertionMode_Auto: string;
 declare var kVTHDRMetadataInsertionMode_None: string;
 
 /**
+ * @since 26.0
+ */
+declare var kVTHDRMetadataInsertionMode_RequestSDRRangePreservation: string;
+
+/**
  * @since 18.0
  */
 declare var kVTHDRPerFrameMetadataGenerationHDRFormatType_DolbyVision: string;
@@ -999,11 +1351,36 @@ declare var kVTHDRPerFrameMetadataGenerationHDRFormatType_DolbyVision: string;
  */
 declare var kVTHDRPerFrameMetadataGenerationOptionsKey_HDRFormats: string;
 
+/**
+ * @since 26.0
+ */
+declare var kVTHeroEye_Left: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTHeroEye_Right: string;
+
 declare const kVTImageRotationNotSupportedErr: number;
 
 declare const kVTInsufficientSourceColorDataErr: number;
 
 declare const kVTInvalidSessionErr: number;
+
+/**
+ * @since 26.0
+ */
+declare var kVTMotionEstimationSessionCreationOption_Label: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTMotionEstimationSessionCreationOption_MotionVectorSize: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTMotionEstimationSessionCreationOption_UseMultiPassSearch: string;
 
 /**
  * @since 8.0
@@ -1358,6 +1735,26 @@ declare var kVTProfileLevel_MP4V_Simple_L2: string;
 declare var kVTProfileLevel_MP4V_Simple_L3: string;
 
 /**
+ * @since 26.0
+ */
+declare var kVTProjectionKind_Equirectangular: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTProjectionKind_HalfEquirectangular: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTProjectionKind_ParametricImmersive: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTProjectionKind_Rectilinear: string;
+
+/**
  * @since 8.0
  */
 declare var kVTPropertyDocumentationKey: string;
@@ -1638,3 +2035,13 @@ declare var kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder:
  * @since 13.0
  */
 declare var kVTVideoEncoderSpecification_RequiredEncoderGPURegistryID: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTViewPackingKind_OverUnder: string;
+
+/**
+ * @since 26.0
+ */
+declare var kVTViewPackingKind_SideBySide: string;

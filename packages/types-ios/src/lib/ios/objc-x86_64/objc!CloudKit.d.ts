@@ -53,6 +53,16 @@ declare class CKAllowedSharingOptions extends NSObject implements NSCopying, NSS
 
 	allowedParticipantPermissionOptions: CKSharingParticipantPermissionOption;
 
+	/**
+	 * @since 26.0
+	 */
+	allowsAccessRequests: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	allowsParticipantsToInviteOthers: boolean;
+
 	static readonly standardOptions: CKAllowedSharingOptions;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -483,7 +493,9 @@ declare const enum CKErrorCode {
 
 	AssetNotAvailable = 35,
 
-	AccountTemporarilyUnavailable = 36
+	AccountTemporarilyUnavailable = 36,
+
+	ParticipantAlreadyInvited = 37
 }
 
 /**
@@ -1285,7 +1297,7 @@ declare class CKOperationConfiguration extends NSObject {
 /**
  * @since 11.0
  */
-declare class CKOperationGroup extends NSObject implements NSSecureCoding {
+declare class CKOperationGroup extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CKOperationGroup; // inherited from NSObject
 
@@ -1306,6 +1318,8 @@ declare class CKOperationGroup extends NSObject implements NSSecureCoding {
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1807,6 +1821,11 @@ declare class CKRecordZone extends NSObject implements NSCopying, NSSecureCoding
 	readonly capabilities: CKRecordZoneCapabilities;
 
 	/**
+	 * @since 26.0
+	 */
+	encryptionScope: CKRecordZoneEncryptionScope;
+
+	/**
 	 * @since 15.0
 	 */
 	readonly share: CKReference;
@@ -1850,6 +1869,13 @@ declare const enum CKRecordZoneCapabilities {
  * @since 8.0
  */
 declare var CKRecordZoneDefaultName: string;
+
+declare const enum CKRecordZoneEncryptionScope {
+
+	PerRecord = 0,
+
+	PerZone = 1
+}
 
 /**
  * @since 8.0
@@ -2045,6 +2071,16 @@ declare class CKShare extends CKRecord implements NSCopying, NSSecureCoding {
 
 	readonly URL: NSURL;
 
+	/**
+	 * @since 26.0
+	 */
+	allowsAccessRequests: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly blockedIdentities: NSArray<CKShareBlockedIdentity>;
+
 	readonly currentUserParticipant: CKShareParticipant;
 
 	readonly owner: CKShareParticipant;
@@ -2052,6 +2088,11 @@ declare class CKShare extends CKRecord implements NSCopying, NSSecureCoding {
 	readonly participants: NSArray<CKShareParticipant>;
 
 	publicPermission: CKShareParticipantPermission;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly requesters: NSArray<CKShareAccessRequester>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2068,7 +2109,17 @@ declare class CKShare extends CKRecord implements NSCopying, NSSecureCoding {
 
 	addParticipant(participant: CKShareParticipant): void;
 
+	/**
+	 * @since 26.0
+	 */
+	blockRequesters(requesters: NSArray<CKShareAccessRequester> | CKShareAccessRequester[]): void;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	/**
+	 * @since 26.0
+	 */
+	denyRequesters(requesters: NSArray<CKShareAccessRequester> | CKShareAccessRequester[]): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2083,7 +2134,67 @@ declare class CKShare extends CKRecord implements NSCopying, NSSecureCoding {
 
 	initWithRootRecordShareID(rootRecord: CKRecord, shareID: CKRecordID): this;
 
+	/**
+	 * @since 18.0
+	 */
+	oneTimeURLForParticipantID(participantID: string): NSURL;
+
 	removeParticipant(participant: CKShareParticipant): void;
+
+	/**
+	 * @since 26.0
+	 */
+	unblockIdentities(blockedIdentities: NSArray<CKShareBlockedIdentity> | CKShareBlockedIdentity[]): void;
+}
+
+/**
+ * @since 26.0
+ */
+declare class CKShareAccessRequester extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CKShareAccessRequester; // inherited from NSObject
+
+	static new(): CKShareAccessRequester; // inherited from NSObject
+
+	readonly contact: CNContact;
+
+	readonly participantLookupInfo: CKUserIdentityLookupInfo;
+
+	readonly userIdentity: CKUserIdentity;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class CKShareBlockedIdentity extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CKShareBlockedIdentity; // inherited from NSObject
+
+	static new(): CKShareBlockedIdentity; // inherited from NSObject
+
+	readonly contact: CNContact;
+
+	readonly userIdentity: CKUserIdentity;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 /**
@@ -2149,7 +2260,22 @@ declare class CKShareParticipant extends NSObject implements NSCopying, NSSecure
 
 	static new(): CKShareParticipant; // inherited from NSObject
 
+	/**
+	 * @since 18.0
+	 */
+	static oneTimeURLParticipant(): CKShareParticipant;
+
 	readonly acceptanceStatus: CKShareParticipantAcceptanceStatus;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly dateAddedToShare: Date;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly isApprovedRequester: boolean;
 
 	/**
 	 * @since 10.0
@@ -2221,7 +2347,9 @@ declare const enum CKShareParticipantRole {
 
 	PrivateUser = 3,
 
-	PublicUser = 4
+	PublicUser = 4,
+
+	Administrator = 2
 }
 
 /**
@@ -2237,6 +2365,26 @@ declare const enum CKShareParticipantType {
 	PrivateUser = 3,
 
 	PublicUser = 4
+}
+
+/**
+ * @since 26.0
+ */
+declare class CKShareRequestAccessOperation extends CKOperation {
+
+	static alloc(): CKShareRequestAccessOperation; // inherited from NSObject
+
+	static new(): CKShareRequestAccessOperation; // inherited from NSObject
+
+	perShareAccessRequestCompletionBlock: (p1: NSURL, p2: NSError) => void;
+
+	shareRequestAccessCompletionBlock: (p1: NSError) => void;
+
+	shareURLs: NSArray<NSURL>;
+
+	constructor(o: { shareURLs: NSArray<NSURL> | NSURL[]; });
+
+	initWithShareURLs(shareURLs: NSArray<NSURL> | NSURL[]): this;
 }
 
 /**

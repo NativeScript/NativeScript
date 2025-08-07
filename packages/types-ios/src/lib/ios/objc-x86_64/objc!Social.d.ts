@@ -130,8 +130,19 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	/**
 	 * @since 16.0
+	 * @deprecated 100000
 	 */
 	textViewEditMenuForTextInRangeSuggestedActions(textView: UITextView, range: NSRange, suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
+	/**
+	 * @since 26.0
+	 */
+	textViewEditMenuForTextInRangesSuggestedActions(textView: UITextView, ranges: NSArray<NSValue> | NSValue[], suggestedActions: NSArray<UIMenuElement> | UIMenuElement[]): UIMenu;
+
+	/**
+	 * @since 18.4
+	 */
+	textViewInsertInputSuggestion(textView: UITextView, inputSuggestion: UIInputSuggestion): void;
 
 	/**
 	 * @since 17.0
@@ -145,7 +156,16 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	textViewShouldBeginEditing(textView: UITextView): boolean;
 
+	/**
+	 * @since 2.0
+	 * @deprecated 100000
+	 */
 	textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, text: string): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	textViewShouldChangeTextInRangesReplacementText(textView: UITextView, ranges: NSArray<NSValue> | NSValue[], text: string): boolean;
 
 	textViewShouldEndEditing(textView: UITextView): boolean;
 

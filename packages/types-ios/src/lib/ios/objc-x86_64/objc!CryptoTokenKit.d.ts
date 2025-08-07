@@ -284,9 +284,35 @@ declare class TKSmartCardSlotManager extends NSObject {
 
 	static readonly defaultManager: TKSmartCardSlotManager;
 
+	/**
+	 * @since 26.0
+	 */
+	createNFCSlotWithMessageCompletion(message: string, completion: (p1: TKSmartCardSlotNFCSession, p2: NSError) => void): void;
+
 	getSlotWithNameReply(name: string, reply: (p1: TKSmartCardSlot) => void): void;
 
+	/**
+	 * @since 26.0
+	 */
+	isNFCSupported(): boolean;
+
 	slotNamed(name: string): TKSmartCardSlot;
+}
+
+/**
+ * @since 26.0
+ */
+declare class TKSmartCardSlotNFCSession extends NSObject {
+
+	static alloc(): TKSmartCardSlotNFCSession; // inherited from NSObject
+
+	static new(): TKSmartCardSlotNFCSession; // inherited from NSObject
+
+	readonly slotName: string;
+
+	endSession(): void;
+
+	updateWithMessageError(message: string): boolean;
 }
 
 declare const enum TKSmartCardSlotState {
@@ -338,6 +364,24 @@ declare var TKSmartCardTokenDriverDelegate: {
 };
 
 /**
+ * @since 26.0
+ */
+declare class TKSmartCardTokenRegistrationManager extends NSObject {
+
+	static alloc(): TKSmartCardTokenRegistrationManager; // inherited from NSObject
+
+	static new(): TKSmartCardTokenRegistrationManager; // inherited from NSObject
+
+	readonly registeredSmartCardTokens: NSArray<string>;
+
+	static readonly defaultManager: TKSmartCardTokenRegistrationManager;
+
+	registerSmartCardWithTokenIDPromptMessageError(tokenID: string, promptMessage: string): boolean;
+
+	unregisterSmartCardWithTokenIDError(tokenID: string): boolean;
+}
+
+/**
  * @since 10.0
  */
 declare class TKSmartCardTokenSession extends TKTokenSession {
@@ -346,7 +390,16 @@ declare class TKSmartCardTokenSession extends TKTokenSession {
 
 	static new(): TKSmartCardTokenSession; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 * @deprecated 26.0
+	 */
 	readonly smartCard: TKSmartCard;
+
+	/**
+	 * @since 26.0
+	 */
+	getSmartCardWithError(): TKSmartCard;
 }
 
 declare class TKSmartCardUserInteraction extends NSObject {

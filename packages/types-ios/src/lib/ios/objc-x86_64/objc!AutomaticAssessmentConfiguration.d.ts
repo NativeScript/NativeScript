@@ -41,6 +41,11 @@ declare class AEAssessmentConfiguration extends NSObject implements NSCopying {
 	allowsAccessibilitySpeech: boolean;
 
 	/**
+	 * @since 26.0
+	 */
+	allowsAccessibilityTypingFeedback: boolean;
+
+	/**
 	 * @since 14.0
 	 */
 	allowsActivityContinuation: boolean;
@@ -111,7 +116,9 @@ declare const enum AEAssessmentErrorCode {
 
 	MultipleParticipantsNotSupported = 3,
 
-	ConfigurationUpdatesNotSupported = 4
+	ConfigurationUpdatesNotSupported = 4,
+
+	RequiredParticipantsNotAvailable = 5
 }
 
 /**
@@ -137,6 +144,11 @@ declare class AEAssessmentParticipantConfiguration extends NSObject implements N
 	 * @since 18.0
 	 */
 	configurationInfo: NSDictionary<string, any>;
+
+	/**
+	 * @since 26.0
+	 */
+	required: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -219,3 +231,13 @@ declare const enum AEAutocorrectMode {
 
 	Punctuation = 2
 }
+
+/**
+ * @since 26.0
+ */
+declare var AENotInstalledParticipantsKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var AERestrictedSystemParticipantsKey: string;

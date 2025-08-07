@@ -287,7 +287,9 @@ declare const enum NSFileProviderErrorCode {
 
 	ProviderDomainNotFound = -2013,
 
-	ApplicationExtensionNotFound = -2014
+	ApplicationExtensionNotFound = -2014,
+
+	LocalVersionConflictingWithServer = -2015
 }
 
 /**
@@ -779,7 +781,11 @@ declare var NSFileProviderMaterializedSetDidChange: string;
  */
 declare const enum NSFileProviderModifyItemOptions {
 
-	MayAlreadyExist = 1
+	MayAlreadyExist = 1,
+
+	FailOnConflict = 2,
+
+	IsImmediateUploadRequestByPresentingApplication = 4
 }
 
 /**
@@ -1106,6 +1112,11 @@ interface NSFileProviderTypeAndCreator {
 	creator: number;
 }
 declare var NSFileProviderTypeAndCreator: interop.StructType<NSFileProviderTypeAndCreator>;
+
+/**
+ * @since 26.0
+ */
+declare var NSFileProviderUserInfoExperimentIDKey: string;
 
 /**
  * @since 11.0

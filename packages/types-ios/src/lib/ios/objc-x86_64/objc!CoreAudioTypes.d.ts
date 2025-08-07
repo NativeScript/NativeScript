@@ -171,6 +171,14 @@ interface AudioStreamBasicDescription {
 }
 declare var AudioStreamBasicDescription: interop.StructType<AudioStreamBasicDescription>;
 
+interface AudioStreamPacketDependencyDescription {
+	mIsIndependentlyDecodable: number;
+	mPreRollCount: number;
+	mFlags: number;
+	mReserved: number;
+}
+declare var AudioStreamPacketDependencyDescription: interop.StructType<AudioStreamPacketDependencyDescription>;
+
 interface AudioStreamPacketDescription {
 	mStartOffset: number;
 	mVariableFramesInPacket: number;

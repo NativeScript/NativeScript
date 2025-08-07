@@ -42,13 +42,43 @@ declare class STWebHistory extends NSObject {
 
 	constructor(o: { bundleIdentifier: string; });
 
+	/**
+	 * @since 18.4
+	 */
+	constructor(o: { bundleIdentifier: string; profileIdentifier: string; });
+
+	/**
+	 * @since 18.4
+	 */
+	constructor(o: { profileIdentifier: string; });
+
 	deleteAllHistory(): void;
 
 	deleteHistoryDuringInterval(interval: NSDateInterval): void;
 
 	deleteHistoryForURL(url: NSURL): void;
 
+	/**
+	 * @since 18.4
+	 */
+	fetchAllHistoryWithCompletionHandler(completionHandler: (p1: NSSet<NSURL>, p2: NSError) => void): void;
+
+	/**
+	 * @since 18.4
+	 */
+	fetchHistoryDuringIntervalCompletionHandler(interval: NSDateInterval, completionHandler: (p1: NSSet<NSURL>, p2: NSError) => void): void;
+
 	initWithBundleIdentifierError(bundleIdentifier: string): this;
+
+	/**
+	 * @since 18.4
+	 */
+	initWithBundleIdentifierProfileIdentifierError(bundleIdentifier: string, profileIdentifier: string): this;
+
+	/**
+	 * @since 18.4
+	 */
+	initWithProfileIdentifier(profileIdentifier: string): this;
 }
 
 /**
@@ -67,6 +97,11 @@ declare class STWebpageController extends UIViewController {
 	URLIsPictureInPicture: boolean;
 
 	URLIsPlayingVideo: boolean;
+
+	/**
+	 * @since 18.4
+	 */
+	profileIdentifier: string;
 
 	suppressUsageRecording: boolean;
 
