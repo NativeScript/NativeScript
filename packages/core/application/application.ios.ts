@@ -6,7 +6,7 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { ios as iosUtils } from '../utils/native-helper';
-import { ApplicationCommon } from './application-common';
+import { ApplicationCommon, initializeSdkVersionClass } from './application-common';
 import { ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
@@ -441,6 +441,20 @@ export class iOSApplication extends ApplicationCommon {
 	// Observers
 	@profile
 	private didFinishLaunchingWithOptions(notification: NSNotification) {
+		if (__DEV__) {
+			/**
+			 * v9+ runtime crash handling
+			 * When crash occurs during boot, we let runtime take over
+			 */
+			if (notification.userInfo) {
+				const isBootCrash = notification.userInfo.objectForKey('NativeScriptBootCrash');
+				if (isBootCrash) {
+					// fatal crash will show in console without app exiting
+					// allowing hot reload fixes to continue
+					return;
+				}
+			}
+		}
 		this.setMaxRefreshRate();
 		// ensures window is assigned to proper window scene
 		setiOSWindow(this.window);
@@ -935,6 +949,9 @@ export function ensureClasses() {
 	setFontScaleCssClasses(new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`])));
 
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
+
+	// Initialize SDK version CSS class once
+	initializeSdkVersionClass(Application.getRootView());
 }
 
 export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: string[], newCssClass: string) => void): void {
