@@ -6,6 +6,7 @@ import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
 import { CoreTypes } from '../../enums';
+import { parseCssVariableExpression } from '../../../css/css-var-func-parser';
 
 /**
  * Value specifying that Property should be set to its initial value.
@@ -108,56 +109,8 @@ export function isCssWideKeyword(value: any): value is CoreTypes.CSSWideKeywords
 	return value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
 }
 
-export function _evaluateCssVariableExpression(view: ViewBase, value: string, onCssVarExpressionParse?: (cssVarName: string) => void): string {
-	let output = value.trim();
-
-	// Evaluate every (and nested) css-variables in the value
-	let lastValue: string;
-
-	while (lastValue !== output) {
-		lastValue = output;
-
-		const idx = output.lastIndexOf('var(');
-		if (idx === -1) {
-			continue;
-		}
-
-		const endIdx = output.indexOf(')', idx);
-		if (endIdx === -1) {
-			continue;
-		}
-
-		const matched = output
-			.substring(idx + 4, endIdx)
-			.split(',')
-			.map((v) => v.trim())
-			.filter((v) => !!v);
-		const cssVariableName = matched.shift();
-
-		// Execute the callback early to allow operations like preloading missing variables
-		if (onCssVarExpressionParse) {
-			onCssVarExpressionParse(cssVariableName);
-		}
-
-		let cssVariableValue = view.style.getCssVariable(cssVariableName);
-		if (cssVariableValue == null && matched.length) {
-			for (const cssVal of matched) {
-				if (cssVal && !cssVal.includes(cssErrorVarPlaceHolder)) {
-					cssVariableValue = cssVal;
-					break;
-				}
-			}
-		}
-
-		if (!cssVariableValue) {
-			cssVariableValue = cssErrorVarPlaceHolder;
-		}
-
-		output = `${output.substring(0, idx)}${cssVariableValue}${output.substring(endIdx + 1)}`;
-	}
-
-	// If at least one variable failed to resolve, discard the whole expression
-	return output.includes(cssErrorVarPlaceHolder) ? undefined : output;
+export function _evaluateCssVariableExpression(value: string, cssVarResolveCallback?: (cssVarName: string) => string): string {
+	return parseCssVariableExpression(value, cssVarResolveCallback);
 }
 
 export function _evaluateCssCalcExpression(value: string) {

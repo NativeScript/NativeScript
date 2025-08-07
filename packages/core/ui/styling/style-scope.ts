@@ -65,25 +65,29 @@ const pattern = /('|")(.*?)\1/;
 /**
  * Evaluate css-variable and css-calc expressions.
  */
-function evaluateCssExpressions(view: ViewBase, property: string, value: string, onCssVarExpressionParse?: (cssVarName: string) => void) {
+function evaluateCssExpressions(view: ViewBase, property: string, value: string, cssVarResolveCallback: (cssVarName: string) => string) {
 	if (typeof value !== 'string') {
 		return value;
 	}
 
 	if (isCssVariableExpression(value)) {
-		const newValue = _evaluateCssVariableExpression(view, value, onCssVarExpressionParse);
-		if (newValue === undefined) {
+		try {
+			value = _evaluateCssVariableExpression(value, cssVarResolveCallback);
+		} catch (e) {
+			if (e instanceof Error) {
+				Trace.write(`Failed to evaluate css-var for property [${property}] for expression [${value}] to ${view}. ${e.message}`, Trace.categories.Style, Trace.messageType.warn);
+			}
 			return unsetValue;
 		}
-
-		value = newValue;
 	}
 
 	if (isCssCalcExpression(value)) {
 		try {
 			value = _evaluateCssCalcExpression(value);
 		} catch (e) {
-			Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
+			if (e instanceof Error) {
+				Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.message}`, Trace.categories.Style, Trace.messageType.error);
+			}
 			return unsetValue;
 		}
 	}
@@ -717,11 +721,12 @@ export class CssState {
 		const valuesToApply = {};
 		const cssExpsProperties = {};
 		const replacementFunc = (g) => g[1].toUpperCase();
-		const onCssVarExpressionParse = (cssVarName: string) => {
+		const cssVarResolveCallback = (cssVarName: string) => {
 			// If variable name is still in the property bag, parse its value and apply it to the view
 			if (cssVarName in cssExpsProperties) {
 				cssExpsPropsCallback(cssVarName);
 			}
+			return view.style.getCssVariable(cssVarName);
 		};
 		// This callback is also used for handling nested css variable expressions
 		const cssExpsPropsCallback = (property: string) => {
@@ -730,7 +735,7 @@ export class CssState {
 			// Remove the property first to avoid recalculating it in a later step using lazy loading
 			delete cssExpsProperties[property];
 
-			value = evaluateCssExpressions(view, property, value, onCssVarExpressionParse);
+			value = evaluateCssExpressions(view, property, value, cssVarResolveCallback);
 
 			if (value === unsetValue) {
 				delete newPropertyValues[property];
@@ -765,9 +770,8 @@ export class CssState {
 			valuesToApply[property] = value;
 		}
 
+		// Keep a copy of css expressions keys and iterate that while removing properties from the bag
 		const cssExpsPropKeys = Object.keys(cssExpsProperties);
-
-		// We need to parse CSS vars first before evaluating css expressions
 		for (const property of cssExpsPropKeys) {
 			if (property in cssExpsProperties) {
 				cssExpsPropsCallback(property);
@@ -1159,7 +1163,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
 				return;
 			}
 
-			const value = evaluateCssExpressions(view, property, d.value);
+			const value = evaluateCssExpressions(view, property, d.value, (cssVarName) => view.style.getCssVariable(cssVarName));
 			if (property in view.style) {
 				view.style[property] = value;
 			} else {
