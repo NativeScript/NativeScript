@@ -2264,6 +2264,16 @@ declare class MPSGraphTensorData extends MPSGraphObject {
 	readonly device: MPSGraphDevice;
 
 	readonly shape: NSArray<number>;
+
+	/**
+	 * @since 19.0
+	 */
+	constructor(o: { MTLTensor: any; });
+
+	/**
+	 * @since 19.0
+	 */
+	initWithMTLTensor(tensor: any): this;
 }
 
 declare const enum MPSGraphTensorNamedDataLayout {

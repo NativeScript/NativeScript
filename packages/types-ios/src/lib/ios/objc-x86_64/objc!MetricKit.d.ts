@@ -8,6 +8,11 @@ declare class MXAnimationMetric extends MXMetric {
 
 	static new(): MXAnimationMetric; // inherited from NSObject
 
+	/**
+	 * @since 26.0
+	 */
+	readonly hitchTimeRatio: NSMeasurement<NSUnit>;
+
 	readonly scrollHitchTimeRatio: NSMeasurement<NSUnit>;
 }
 
@@ -364,6 +369,32 @@ declare class MXDiskIOMetric extends MXMetric {
 }
 
 /**
+ * @since 26.0
+ */
+declare class MXDiskSpaceUsageMetric extends MXMetric {
+
+	static alloc(): MXDiskSpaceUsageMetric; // inherited from NSObject
+
+	static new(): MXDiskSpaceUsageMetric; // inherited from NSObject
+
+	readonly totalBinaryFileCount: number;
+
+	readonly totalBinaryFileSize: NSMeasurement<NSUnitInformationStorage>;
+
+	readonly totalCacheFolderSize: NSMeasurement<NSUnitInformationStorage>;
+
+	readonly totalCloneSize: NSMeasurement<NSUnitInformationStorage>;
+
+	readonly totalDataFileCount: number;
+
+	readonly totalDataFileSize: NSMeasurement<NSUnitInformationStorage>;
+
+	readonly totalDiskSpaceCapacity: NSMeasurement<NSUnitInformationStorage>;
+
+	readonly totalDiskSpaceUsedSize: NSMeasurement<NSUnitInformationStorage>;
+}
+
+/**
  * @since 14.0
  */
 declare class MXDiskWriteExceptionDiagnostic extends MXDiagnostic {
@@ -561,6 +592,11 @@ declare class MXMetaData extends NSObject implements NSSecureCoding {
 
 	readonly applicationBuildVersion: string;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly bundleIdentifier: string;
+
 	readonly deviceType: string;
 
 	/**
@@ -600,7 +636,7 @@ declare class MXMetaData extends NSObject implements NSSecureCoding {
 	JSONRepresentation(): NSData;
 
 	/**
-	 * @since 14.0
+	 * @since 13.0
 	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 
@@ -631,7 +667,7 @@ declare class MXMetric extends NSObject implements NSSecureCoding {
 	JSONRepresentation(): NSData;
 
 	/**
-	 * @since 14.0
+	 * @since 13.0
 	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 
@@ -723,6 +759,11 @@ declare class MXMetricPayload extends NSObject implements NSSecureCoding {
 
 	readonly diskIOMetrics: MXDiskIOMetric;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly diskSpaceUsageMetrics: MXDiskSpaceUsageMetric;
+
 	readonly displayMetrics: MXDisplayMetric;
 
 	readonly gpuMetrics: MXGPUMetric;
@@ -758,7 +799,7 @@ declare class MXMetricPayload extends NSObject implements NSSecureCoding {
 	JSONRepresentation(): NSData;
 
 	/**
-	 * @since 14.0
+	 * @since 13.0
 	 */
 	dictionaryRepresentation(): NSDictionary<any, any>;
 

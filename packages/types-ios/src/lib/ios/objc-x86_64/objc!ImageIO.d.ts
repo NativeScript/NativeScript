@@ -375,6 +375,11 @@ declare function CGImageSourceUpdateDataProvider(isrc: any, provider: any, final
 declare var kCFErrorDomainCGImageMetadata: string;
 
 /**
+ * @since 19.0
+ */
+declare var kCGComputeHDRStats: string;
+
+/**
  * @since 13.0
  */
 declare var kCGImageAnimationDelayTime: string;
@@ -475,9 +480,44 @@ declare var kCGImageDestinationDateTime: string;
 declare var kCGImageDestinationEmbedThumbnail: string;
 
 /**
+ * @since 19.0
+ */
+declare var kCGImageDestinationEncodeAlternateColorSpace: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImageDestinationEncodeBaseColorSpace: string;
+
+/**
  * @since 18.0
  */
 declare var kCGImageDestinationEncodeBaseIsSDR: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImageDestinationEncodeBasePixelFormatRequest: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImageDestinationEncodeGainMapPixelFormatRequest: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImageDestinationEncodeGainMapSubsampleFactor: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImageDestinationEncodeGenerateGainMapWithBaseImage: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImageDestinationEncodeIsBaseImage: string;
 
 /**
  * @since 18.0
@@ -705,6 +745,26 @@ declare var kCGImagePropertyAPNGLoopCount: string;
 declare var kCGImagePropertyAPNGUnclampedDelayTime: string;
 
 /**
+ * @since 10.0
+ */
+declare var kCGImagePropertyASTCBlockSize: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImagePropertyASTCBlockSize4x4: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImagePropertyASTCBlockSize8x8: string;
+
+/**
+ * @since 10.0
+ */
+declare var kCGImagePropertyASTCEncoder: string;
+
+/**
  * @since 16.0
  */
 declare var kCGImagePropertyAVISDictionary: string;
@@ -718,6 +778,16 @@ declare var kCGImagePropertyAuxiliaryData: string;
  * @since 11.0
  */
 declare var kCGImagePropertyAuxiliaryDataType: string;
+
+/**
+ * @since 12.0
+ */
+declare var kCGImagePropertyBCEncoder: string;
+
+/**
+ * @since 12.0
+ */
+declare var kCGImagePropertyBCFormat: string;
 
 /**
  * @since 11.0
@@ -1338,6 +1408,11 @@ declare var kCGImagePropertyDPIWidth: string;
  * @since 4.0
  */
 declare var kCGImagePropertyDepth: string;
+
+/**
+ * @since 10.0
+ */
+declare var kCGImagePropertyEncoder: string;
 
 /**
  * @since 4.0
@@ -3561,6 +3636,11 @@ declare var kCGImagePropertyNamedColorSpace: string;
 declare var kCGImagePropertyOpenEXRAspectRatio: string;
 
 /**
+ * @since 16.1
+ */
+declare var kCGImagePropertyOpenEXRCompression: string;
+
+/**
  * @since 11.3
  */
 declare var kCGImagePropertyOpenEXRDictionary: string;
@@ -3674,6 +3754,11 @@ declare var kCGImagePropertyPNGYPixelsPerMeter: string;
  * @since 4.0
  */
 declare var kCGImagePropertyPNGsRGBIntent: string;
+
+/**
+ * @since 10.0
+ */
+declare var kCGImagePropertyPVREncoder: string;
 
 /**
  * @since 11.0
@@ -3874,6 +3959,16 @@ declare var kCGImagePropertyWebPUnclampedDelayTime: string;
  * @since 11.0
  */
 declare var kCGImagePropertyWidth: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImageProviderPreferredTileHeight: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCGImageProviderPreferredTileWidth: string;
 
 /**
  * @since 4.0

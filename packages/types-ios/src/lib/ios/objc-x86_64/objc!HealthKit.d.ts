@@ -1302,6 +1302,36 @@ declare var HKCharacteristicTypeIdentifierFitzpatrickSkinType: string;
 declare var HKCharacteristicTypeIdentifierWheelchairUse: string;
 
 /**
+ * @since 26.0
+ */
+declare class HKClinicalCoding extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKClinicalCoding; // inherited from NSObject
+
+	static new(): HKClinicalCoding; // inherited from NSObject
+
+	readonly code: string;
+
+	readonly system: string;
+
+	readonly version: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { system: string; version: string; code: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithSystemVersionCode(system: string, version: string, code: string): this;
+}
+
+/**
  * @since 12.0
  */
 declare class HKClinicalRecord extends HKSample implements NSCopying, NSSecureCoding {
@@ -1569,6 +1599,11 @@ declare var HKDataTypeIdentifierHeartbeatSeries: string;
  * @since 18.0
  */
 declare var HKDataTypeIdentifierStateOfMind: string;
+
+/**
+ * @since 26.0
+ */
+declare var HKDataTypeIdentifierUserAnnotatedMedicationConcept: string;
 
 /**
  * @since 9.0
@@ -2212,6 +2247,33 @@ declare class HKGlassesPrescription extends HKVisionPrescription implements NSCo
 }
 
 /**
+ * @since 26.0
+ */
+declare var HKHealthConceptDomainMedication: string;
+
+/**
+ * @since 26.0
+ */
+declare class HKHealthConceptIdentifier extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKHealthConceptIdentifier; // inherited from NSObject
+
+	static new(): HKHealthConceptIdentifier; // inherited from NSObject
+
+	readonly domain: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
  * @since 8.0
  */
 declare class HKHealthStore extends NSObject {
@@ -2309,6 +2371,11 @@ declare class HKHealthStore extends NSObject {
 	 * @since 15.0
 	 */
 	recalibrateEstimatesForSampleTypeAtDateCompletion(sampleType: HKSampleType, date: Date, completion: (p1: boolean, p2: NSError) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	recoverActiveWorkoutSessionWithCompletion(completion: (p1: HKWorkoutSession, p2: NSError) => void): void;
 
 	/**
 	 * @since 18.0
@@ -2472,6 +2539,221 @@ declare class HKLensSpecification extends NSObject {
 
 	readonly sphere: HKQuantity;
 }
+
+/**
+ * @since 26.0
+ */
+declare class HKLiveWorkoutBuilder extends HKWorkoutBuilder {
+
+	static alloc(): HKLiveWorkoutBuilder; // inherited from NSObject
+
+	static new(): HKLiveWorkoutBuilder; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	readonly currentWorkoutActivity: HKWorkoutActivity;
+
+	dataSource: HKLiveWorkoutDataSource;
+
+	delegate: HKLiveWorkoutBuilderDelegate;
+
+	readonly elapsedTime: number;
+
+	shouldCollectWorkoutEvents: boolean;
+
+	readonly workoutSession: HKWorkoutSession;
+}
+
+/**
+ * @since 26.0
+ */
+interface HKLiveWorkoutBuilderDelegate extends NSObjectProtocol {
+
+	/**
+	 * @since 26.0
+	 */
+	workoutBuilderDidBeginActivity?(workoutBuilder: HKLiveWorkoutBuilder, workoutActivity: HKWorkoutActivity): void;
+
+	workoutBuilderDidCollectDataOfTypes(workoutBuilder: HKLiveWorkoutBuilder, collectedTypes: NSSet<HKSampleType>): void;
+
+	workoutBuilderDidCollectEvent(workoutBuilder: HKLiveWorkoutBuilder): void;
+
+	/**
+	 * @since 26.0
+	 */
+	workoutBuilderDidEndActivity?(workoutBuilder: HKLiveWorkoutBuilder, workoutActivity: HKWorkoutActivity): void;
+}
+declare var HKLiveWorkoutBuilderDelegate: {
+
+	prototype: HKLiveWorkoutBuilderDelegate;
+};
+
+/**
+ * @since 26.0
+ */
+declare class HKLiveWorkoutDataSource extends NSObject {
+
+	static alloc(): HKLiveWorkoutDataSource; // inherited from NSObject
+
+	static new(): HKLiveWorkoutDataSource; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	readonly typesToCollect: NSSet<HKQuantityType>;
+
+	constructor(o: { healthStore: HKHealthStore; workoutConfiguration: HKWorkoutConfiguration; });
+
+	disableCollectionForType(quantityType: HKQuantityType): void;
+
+	enableCollectionForTypePredicate(quantityType: HKQuantityType, predicate: NSPredicate): void;
+
+	initWithHealthStoreWorkoutConfiguration(healthStore: HKHealthStore, configuration: HKWorkoutConfiguration): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class HKMedicationConcept extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKMedicationConcept; // inherited from NSObject
+
+	static new(): HKMedicationConcept; // inherited from NSObject
+
+	readonly displayText: string;
+
+	readonly generalForm: string;
+
+	readonly identifier: HKHealthConceptIdentifier;
+
+	readonly relatedCodings: NSSet<HKClinicalCoding>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class HKMedicationDoseEvent extends HKSample implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKMedicationDoseEvent; // inherited from NSObject
+
+	static new(): HKMedicationDoseEvent; // inherited from NSObject
+
+	readonly doseQuantity: number;
+
+	readonly logStatus: HKMedicationDoseEventLogStatus;
+
+	readonly medicationConceptIdentifier: HKHealthConceptIdentifier;
+
+	readonly medicationDoseEventType: HKMedicationDoseEventType;
+
+	readonly scheduleType: HKMedicationDoseEventScheduleType;
+
+	readonly scheduledDate: Date;
+
+	readonly scheduledDoseQuantity: number;
+
+	readonly unit: HKUnit;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum HKMedicationDoseEventLogStatus {
+
+	NotInteracted = 1,
+
+	NotificationNotSent = 2,
+
+	Snoozed = 3,
+
+	Taken = 4,
+
+	Skipped = 5,
+
+	NotLogged = 6
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum HKMedicationDoseEventScheduleType {
+
+	AsNeeded = 1,
+
+	Schedule = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare class HKMedicationDoseEventType extends HKSampleType {
+
+	static alloc(): HKMedicationDoseEventType; // inherited from NSObject
+
+	static new(): HKMedicationDoseEventType; // inherited from NSObject
+}
+
+/**
+ * @since 26.0
+ */
+declare var HKMedicationDoseEventTypeIdentifierMedicationDoseEvent: string;
+
+declare var HKMedicationGeneralFormCapsule: string;
+
+declare var HKMedicationGeneralFormCream: string;
+
+declare var HKMedicationGeneralFormDevice: string;
+
+declare var HKMedicationGeneralFormDrops: string;
+
+declare var HKMedicationGeneralFormFoam: string;
+
+declare var HKMedicationGeneralFormGel: string;
+
+declare var HKMedicationGeneralFormInhaler: string;
+
+declare var HKMedicationGeneralFormInjection: string;
+
+declare var HKMedicationGeneralFormLiquid: string;
+
+declare var HKMedicationGeneralFormLotion: string;
+
+declare var HKMedicationGeneralFormOintment: string;
+
+declare var HKMedicationGeneralFormPatch: string;
+
+declare var HKMedicationGeneralFormPowder: string;
+
+declare var HKMedicationGeneralFormSpray: string;
+
+declare var HKMedicationGeneralFormSuppository: string;
+
+declare var HKMedicationGeneralFormTablet: string;
+
+declare var HKMedicationGeneralFormTopical: string;
+
+declare var HKMedicationGeneralFormUnknown: string;
 
 /**
  * @since 17.0
@@ -2940,6 +3222,11 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 	 */
 	static electrocardiogramType(): HKElectrocardiogramType;
 
+	/**
+	 * @since 26.0
+	 */
+	static medicationDoseEventType(): HKMedicationDoseEventType;
+
 	static new(): HKObjectType; // inherited from NSObject
 
 	static quantityTypeForIdentifier(identifier: string): HKQuantityType;
@@ -2958,6 +3245,11 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 	 * @since 18.0
 	 */
 	static stateOfMindType(): HKStateOfMindType;
+
+	/**
+	 * @since 26.0
+	 */
+	static userAnnotatedMedicationType(): HKUserAnnotatedMedicationType;
 
 	/**
 	 * @since 16.0
@@ -3149,9 +3441,19 @@ declare var HKPredicateKeyPathECGSymptomsStatus: string;
 declare var HKPredicateKeyPathEndDate: string;
 
 /**
+ * @since 26.0
+ */
+declare var HKPredicateKeyPathLogOrigin: string;
+
+/**
  * @since 13.0
  */
 declare var HKPredicateKeyPathMax: string;
+
+/**
+ * @since 26.0
+ */
+declare var HKPredicateKeyPathMedicationConceptIdentifier: string;
 
 /**
  * @since 8.0
@@ -3189,6 +3491,11 @@ declare var HKPredicateKeyPathMostRecentStartDate: string;
 declare var HKPredicateKeyPathQuantity: string;
 
 /**
+ * @since 26.0
+ */
+declare var HKPredicateKeyPathScheduledDate: string;
+
+/**
  * @since 8.0
  */
 declare var HKPredicateKeyPathSource: string;
@@ -3202,6 +3509,11 @@ declare var HKPredicateKeyPathSourceRevision: string;
  * @since 8.0
  */
 declare var HKPredicateKeyPathStartDate: string;
+
+/**
+ * @since 26.0
+ */
+declare var HKPredicateKeyPathStatus: string;
 
 /**
  * @since 12.0
@@ -4152,6 +4464,41 @@ declare class HKQuery extends NSObject {
 	 */
 	static predicateForElectrocardiogramsWithSymptomsStatus(symptomsStatus: HKElectrocardiogramSymptomsStatus): NSPredicate;
 
+	/**
+	 * @since 26.0
+	 */
+	static predicateForMedicationDoseEventWithMedicationConceptIdentifier(medicationConceptIdentifier: HKHealthConceptIdentifier): NSPredicate;
+
+	/**
+	 * @since 26.0
+	 */
+	static predicateForMedicationDoseEventWithMedicationConceptIdentifiers(medicationConceptIdentifiers: NSSet<HKHealthConceptIdentifier>): NSPredicate;
+
+	/**
+	 * @since 26.0
+	 */
+	static predicateForMedicationDoseEventWithScheduledDate(scheduledDate: Date): NSPredicate;
+
+	/**
+	 * @since 26.0
+	 */
+	static predicateForMedicationDoseEventWithScheduledDates(scheduledDates: NSSet<Date>): NSPredicate;
+
+	/**
+	 * @since 26.0
+	 */
+	static predicateForMedicationDoseEventWithScheduledStartDateEndDate(startDate: Date, endDate: Date): NSPredicate;
+
+	/**
+	 * @since 26.0
+	 */
+	static predicateForMedicationDoseEventWithStatus(status: HKMedicationDoseEventLogStatus): NSPredicate;
+
+	/**
+	 * @since 26.0
+	 */
+	static predicateForMedicationDoseEventWithStatuses(statuses: NSSet<number>): NSPredicate;
+
 	static predicateForObjectWithUUID(UUID: NSUUID): NSPredicate;
 
 	/**
@@ -4201,6 +4548,16 @@ declare class HKQuery extends NSObject {
 	static predicateForStatesOfMindWithLabel(label: HKStateOfMindLabel): NSPredicate;
 
 	static predicateForStatesOfMindWithValenceOperatorType(valence: number, operatorType: NSPredicateOperatorType): NSPredicate;
+
+	/**
+	 * @since 26.0
+	 */
+	static predicateForUserAnnotatedMedicationsWithHasSchedule(hasSchedule: boolean): NSPredicate;
+
+	/**
+	 * @since 26.0
+	 */
+	static predicateForUserAnnotatedMedicationsWithIsArchived(isArchived: boolean): NSPredicate;
 
 	/**
 	 * @since 15.0
@@ -5292,6 +5649,68 @@ declare const enum HKUpdateFrequency {
 }
 
 /**
+ * @since 26.0
+ */
+declare class HKUserAnnotatedMedication extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKUserAnnotatedMedication; // inherited from NSObject
+
+	static new(): HKUserAnnotatedMedication; // inherited from NSObject
+
+	readonly hasSchedule: boolean;
+
+	readonly isArchived: boolean;
+
+	readonly medication: HKMedicationConcept;
+
+	readonly nickname: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare var HKUserAnnotatedMedicationPredicateKeyPathHasSchedule: string;
+
+/**
+ * @since 26.0
+ */
+declare var HKUserAnnotatedMedicationPredicateKeyPathIsArchived: string;
+
+/**
+ * @since 26.0
+ */
+declare class HKUserAnnotatedMedicationQuery extends HKQuery {
+
+	static alloc(): HKUserAnnotatedMedicationQuery; // inherited from NSObject
+
+	static new(): HKUserAnnotatedMedicationQuery; // inherited from NSObject
+
+	constructor(o: { predicate: NSPredicate; limit: number; resultsHandler: (p1: HKUserAnnotatedMedicationQuery, p2: HKUserAnnotatedMedication, p3: boolean, p4: NSError) => void; });
+
+	initWithPredicateLimitResultsHandler(predicate: NSPredicate, limit: number, resultsHandler: (p1: HKUserAnnotatedMedicationQuery, p2: HKUserAnnotatedMedication, p3: boolean, p4: NSError) => void): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class HKUserAnnotatedMedicationType extends HKObjectType {
+
+	static alloc(): HKUserAnnotatedMedicationType; // inherited from NSObject
+
+	static new(): HKUserAnnotatedMedicationType; // inherited from NSObject
+}
+
+/**
  * @since 16.0
  */
 declare const enum HKUserMotionContext {
@@ -5317,7 +5736,9 @@ declare const enum HKVO2MaxTestType {
 
 	PredictionSubMaxExercise = 2,
 
-	PredictionNonExercise = 3
+	PredictionNonExercise = 3,
+
+	PredictionStepTest = 4
 }
 
 /**
@@ -6288,6 +6709,16 @@ declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	/**
+	 * @since 26.0
+	 */
+	constructor(o: { healthStore: HKHealthStore; configuration: HKWorkoutConfiguration; });
+
+	/**
+	 * @since 26.0
+	 */
+	associatedWorkoutBuilder(): HKLiveWorkoutBuilder;
+
+	/**
 	 * @since 17.0
 	 */
 	beginNewActivityWithConfigurationDateMetadata(workoutConfiguration: HKWorkoutConfiguration, date: Date, metadata: NSDictionary<string, any>): void;
@@ -6305,6 +6736,11 @@ declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 	endCurrentActivityOnDate(date: Date): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithHealthStoreConfigurationError(healthStore: HKHealthStore, workoutConfiguration: HKWorkoutConfiguration): this;
 
 	/**
 	 * @since 17.0

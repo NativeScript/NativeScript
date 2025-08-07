@@ -972,6 +972,11 @@ declare function BNNSGraphContextSetMessageLogMask(context: bnns_graph_context_t
 declare function BNNSGraphContextSetOutputAllocationCallback(context: bnns_graph_context_t, realloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: number, p5: number) => number>, free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => void>, user_memory_context_size: number, user_memory_context: interop.Pointer | interop.Reference<any>): number;
 
 /**
+ * @since 18.4
+ */
+declare function BNNSGraphContextSetStreamingAdvanceCount(context: bnns_graph_context_t, advance_count: number): number;
+
+/**
  * @since 18.0
  */
 declare function BNNSGraphContextSetWorkspaceAllocationCallback(context: bnns_graph_context_t, realloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: number, p5: number) => number>, free: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => void>, user_memory_context_size: number, user_memory_context: interop.Pointer | interop.Reference<any>): number;
@@ -2069,6 +2074,16 @@ declare const FFT_RADIX5: number;
  */
 declare function SetBLASParamErrorProc(__ErrorProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => void>): void;
 
+interface SparseAttributesComplex_t {
+	transpose: boolean;
+	triangle: SparseTriangle_t;
+	kind: SparseKind_t;
+	conjugate_transpose: boolean;
+	_reserved: number;
+	_allocatedBySparse: boolean;
+}
+declare var SparseAttributesComplex_t: interop.StructType<SparseAttributesComplex_t>;
+
 interface SparseAttributes_t {
 	transpose: boolean;
 	triangle: SparseTriangle_t;
@@ -2100,37 +2115,57 @@ declare function SparseCleanupFunction(Opaque: SparseOpaqueFactorization_Double)
 /**
  * @since 11
  */
+declare function SparseCleanupFunction10(Matrix: SparseMatrix_Float): void;
+
+/**
+ * @since 11
+ */
+declare function SparseCleanupFunction11(Opaque: SparseOpaquePreconditioner_Double): void;
+
+/**
+ * @since 11
+ */
+declare function SparseCleanupFunction12(Opaque: SparseOpaquePreconditioner_Float): void;
+
+/**
+ * @since 11
+ */
 declare function SparseCleanupFunction2(Opaque: SparseOpaqueFactorization_Float): void;
 
 /**
- * @since 11
+ * @since 18.5
  */
-declare function SparseCleanupFunction3(Opaque: SparseOpaqueSubfactor_Double): void;
+declare function SparseCleanupFunction3(Opaque: SparseOpaqueFactorization_Complex_Double): void;
+
+/**
+ * @since 18.5
+ */
+declare function SparseCleanupFunction4(Opaque: SparseOpaqueFactorization_Complex_Float): void;
 
 /**
  * @since 11
  */
-declare function SparseCleanupFunction4(Opaque: SparseOpaqueSubfactor_Float): void;
+declare function SparseCleanupFunction5(Opaque: SparseOpaqueSubfactor_Double): void;
 
 /**
  * @since 11
  */
-declare function SparseCleanupFunction5(Matrix: SparseMatrix_Double): void;
+declare function SparseCleanupFunction6(Opaque: SparseOpaqueSubfactor_Float): void;
+
+/**
+ * @since 18.5
+ */
+declare function SparseCleanupFunction7(Opaque: SparseOpaqueSubfactor_Complex_Double): void;
+
+/**
+ * @since 18.5
+ */
+declare function SparseCleanupFunction8(Opaque: SparseOpaqueSubfactor_Complex_Float): void;
 
 /**
  * @since 11
  */
-declare function SparseCleanupFunction6(Matrix: SparseMatrix_Float): void;
-
-/**
- * @since 11
- */
-declare function SparseCleanupFunction7(Opaque: SparseOpaquePreconditioner_Double): void;
-
-/**
- * @since 11
- */
-declare function SparseCleanupFunction8(Opaque: SparseOpaquePreconditioner_Float): void;
+declare function SparseCleanupFunction9(Matrix: SparseMatrix_Double): void;
 
 declare const enum SparseControl_t {
 
@@ -2188,6 +2223,16 @@ declare function SparseCreateSubfactor(subfactor: SparseSubfactor_t, Factor: Spa
 declare function SparseCreateSubfactorFunction(subfactor: SparseSubfactor_t, Factor: SparseOpaqueFactorization_Float): SparseOpaqueSubfactor_Float;
 
 /**
+ * @since 18.5
+ */
+declare function SparseCreateSubfactorFunction2(subfactor: SparseSubfactor_t, Factor: SparseOpaqueFactorization_Complex_Double): SparseOpaqueSubfactor_Complex_Double;
+
+/**
+ * @since 18.5
+ */
+declare function SparseCreateSubfactorFunction3(subfactor: SparseSubfactor_t, Factor: SparseOpaqueFactorization_Complex_Float): SparseOpaqueSubfactor_Complex_Float;
+
+/**
  * @since 11
  */
 declare function SparseFactor(type: SparseFactorization_t, Matrix: SparseMatrix_Double): SparseOpaqueFactorization_Double;
@@ -2203,9 +2248,19 @@ declare function SparseFactorFunction(type: SparseFactorization_t, Matrix: Spars
 declare function SparseFactorFunction10(type: SparseFactorization_t, Matrix: SparseMatrixStructure): SparseOpaqueSymbolicFactorization;
 
 /**
+ * @since 18.5
+ */
+declare function SparseFactorFunction11(type: SparseFactorization_t, Matrix: SparseMatrixStructureComplex): SparseOpaqueSymbolicFactorization;
+
+/**
  * @since 11
  */
-declare function SparseFactorFunction11(type: SparseFactorization_t, Matrix: SparseMatrixStructure, sfoptions: SparseSymbolicFactorOptions): SparseOpaqueSymbolicFactorization;
+declare function SparseFactorFunction12(type: SparseFactorization_t, Matrix: SparseMatrixStructure, sfoptions: SparseSymbolicFactorOptions): SparseOpaqueSymbolicFactorization;
+
+/**
+ * @since 18.5
+ */
+declare function SparseFactorFunction13(type: SparseFactorization_t, Matrix: SparseMatrixStructureComplex, sfoptions: SparseSymbolicFactorOptions): SparseOpaqueSymbolicFactorization;
 
 /**
  * @since 11
@@ -2261,7 +2316,15 @@ declare const enum SparseFactorization_t {
 
 	QR = 40,
 
-	CholeskyAtA = 41
+	CholeskyAtA = 41,
+
+	LU = 80,
+
+	LUUnpivoted = 81,
+
+	LUSPP = 82,
+
+	LUTPP = 83
 }
 
 interface SparseGMRESOptions {
@@ -2285,6 +2348,26 @@ declare const enum SparseGMRESVariant_t {
 }
 
 /**
+ * @since 18.5
+ */
+declare function SparseGetConjugateTranspose(Factor: SparseOpaqueFactorization_Complex_Double): SparseOpaqueFactorization_Complex_Double;
+
+/**
+ * @since 18.5
+ */
+declare function SparseGetConjugateTransposeFunction(Factor: SparseOpaqueFactorization_Complex_Float): SparseOpaqueFactorization_Complex_Float;
+
+/**
+ * @since 18.5
+ */
+declare function SparseGetConjugateTransposeFunction2(Subfactor: SparseOpaqueSubfactor_Complex_Double): SparseOpaqueSubfactor_Complex_Double;
+
+/**
+ * @since 18.5
+ */
+declare function SparseGetConjugateTransposeFunction3(Subfactor: SparseOpaqueSubfactor_Complex_Float): SparseOpaqueSubfactor_Complex_Float;
+
+/**
  * @since 16.0
  */
 declare function SparseGetInertia(Factored: SparseOpaqueFactorization_Float, num_positive: interop.Pointer | interop.Reference<number>, num_zero: interop.Pointer | interop.Reference<number>, num_negative: interop.Pointer | interop.Reference<number>): number;
@@ -2293,6 +2376,16 @@ declare function SparseGetInertia(Factored: SparseOpaqueFactorization_Float, num
  * @since 16.0
  */
 declare function SparseGetInertiaFunction(Factored: SparseOpaqueFactorization_Double, num_positive: interop.Pointer | interop.Reference<number>, num_zero: interop.Pointer | interop.Reference<number>, num_negative: interop.Pointer | interop.Reference<number>): number;
+
+/**
+ * @since 18.5
+ */
+declare function SparseGetInertiaFunction2(Factored: SparseOpaqueFactorization_Complex_Float, num_positive: interop.Pointer | interop.Reference<number>, num_zero: interop.Pointer | interop.Reference<number>, num_negative: interop.Pointer | interop.Reference<number>): number;
+
+/**
+ * @since 18.5
+ */
+declare function SparseGetInertiaFunction3(Factored: SparseOpaqueFactorization_Complex_Double, num_positive: interop.Pointer | interop.Reference<number>, num_zero: interop.Pointer | interop.Reference<number>, num_negative: interop.Pointer | interop.Reference<number>): number;
 
 /**
  * @since 11
@@ -2315,14 +2408,34 @@ declare function SparseGetTransposeFunction2(Factor: SparseOpaqueFactorization_D
 declare function SparseGetTransposeFunction3(Factor: SparseOpaqueFactorization_Float): SparseOpaqueFactorization_Float;
 
 /**
- * @since 11
+ * @since 18.5
  */
-declare function SparseGetTransposeFunction4(Subfactor: SparseOpaqueSubfactor_Double): SparseOpaqueSubfactor_Double;
+declare function SparseGetTransposeFunction4(Factor: SparseOpaqueFactorization_Complex_Double): SparseOpaqueFactorization_Complex_Double;
+
+/**
+ * @since 18.5
+ */
+declare function SparseGetTransposeFunction5(Factor: SparseOpaqueFactorization_Complex_Float): SparseOpaqueFactorization_Complex_Float;
 
 /**
  * @since 11
  */
-declare function SparseGetTransposeFunction5(Subfactor: SparseOpaqueSubfactor_Float): SparseOpaqueSubfactor_Float;
+declare function SparseGetTransposeFunction6(Subfactor: SparseOpaqueSubfactor_Double): SparseOpaqueSubfactor_Double;
+
+/**
+ * @since 11
+ */
+declare function SparseGetTransposeFunction7(Subfactor: SparseOpaqueSubfactor_Float): SparseOpaqueSubfactor_Float;
+
+/**
+ * @since 18.5
+ */
+declare function SparseGetTransposeFunction8(Subfactor: SparseOpaqueSubfactor_Complex_Double): SparseOpaqueSubfactor_Complex_Double;
+
+/**
+ * @since 18.5
+ */
+declare function SparseGetTransposeFunction9(Subfactor: SparseOpaqueSubfactor_Complex_Float): SparseOpaqueSubfactor_Complex_Float;
 
 declare const enum SparseIterativeStatus_t {
 
@@ -2345,7 +2458,9 @@ declare const enum SparseKind_t {
 
 	UnitTriangular = 2,
 
-	Symmetric = 3
+	Symmetric = 3,
+
+	Hermitian = 7
 }
 
 declare const enum SparseLSMRConvergenceTest_t {
@@ -2378,6 +2493,16 @@ interface SparseMatrixStructure {
 	blockSize: number;
 }
 declare var SparseMatrixStructure: interop.StructType<SparseMatrixStructure>;
+
+interface SparseMatrixStructureComplex {
+	rowCount: number;
+	columnCount: number;
+	columnStarts: interop.Pointer | interop.Reference<number>;
+	rowIndices: interop.Pointer | interop.Reference<number>;
+	attributes: SparseAttributesComplex_t;
+	blockSize: number;
+}
+declare var SparseMatrixStructureComplex: interop.StructType<SparseMatrixStructureComplex>;
 
 interface SparseMatrix_Double {
 	structure: SparseMatrixStructure;
@@ -2560,6 +2685,28 @@ interface SparseNumericFactorOptions {
 }
 declare var SparseNumericFactorOptions: interop.StructType<SparseNumericFactorOptions>;
 
+interface SparseOpaqueFactorization_Complex_Double {
+	status: SparseStatus_t;
+	attributes: SparseAttributesComplex_t;
+	symbolicFactorization: SparseOpaqueSymbolicFactorization;
+	userFactorStorage: boolean;
+	numericFactorization: interop.Pointer | interop.Reference<any>;
+	solveWorkspaceRequiredStatic: number;
+	solveWorkspaceRequiredPerRHS: number;
+}
+declare var SparseOpaqueFactorization_Complex_Double: interop.StructType<SparseOpaqueFactorization_Complex_Double>;
+
+interface SparseOpaqueFactorization_Complex_Float {
+	status: SparseStatus_t;
+	attributes: SparseAttributesComplex_t;
+	symbolicFactorization: SparseOpaqueSymbolicFactorization;
+	userFactorStorage: boolean;
+	numericFactorization: interop.Pointer | interop.Reference<any>;
+	solveWorkspaceRequiredStatic: number;
+	solveWorkspaceRequiredPerRHS: number;
+}
+declare var SparseOpaqueFactorization_Complex_Float: interop.StructType<SparseOpaqueFactorization_Complex_Float>;
+
 interface SparseOpaqueFactorization_Double {
 	status: SparseStatus_t;
 	attributes: SparseAttributes_t;
@@ -2595,6 +2742,24 @@ interface SparseOpaquePreconditioner_Float {
 	apply: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: CBLAS_TRANSPOSE, p3: DenseMatrix_Float, p4: DenseMatrix_Float) => void>;
 }
 declare var SparseOpaquePreconditioner_Float: interop.StructType<SparseOpaquePreconditioner_Float>;
+
+interface SparseOpaqueSubfactor_Complex_Double {
+	attributes: SparseAttributesComplex_t;
+	contents: SparseSubfactor_t;
+	factor: SparseOpaqueFactorization_Complex_Double;
+	workspaceRequiredStatic: number;
+	workspaceRequiredPerRHS: number;
+}
+declare var SparseOpaqueSubfactor_Complex_Double: interop.StructType<SparseOpaqueSubfactor_Complex_Double>;
+
+interface SparseOpaqueSubfactor_Complex_Float {
+	attributes: SparseAttributesComplex_t;
+	contents: SparseSubfactor_t;
+	factor: SparseOpaqueFactorization_Complex_Float;
+	workspaceRequiredStatic: number;
+	workspaceRequiredPerRHS: number;
+}
+declare var SparseOpaqueSubfactor_Complex_Float: interop.StructType<SparseOpaqueSubfactor_Complex_Float>;
 
 interface SparseOpaqueSubfactor_Double {
 	attributes: SparseAttributes_t;
@@ -2639,7 +2804,9 @@ declare const enum SparseOrder_t {
 
 	Metis = 3,
 
-	COLAMD = 4
+	COLAMD = 4,
+
+	MTMetis = 5
 }
 
 declare const enum SparsePreconditioner_t {
@@ -2709,14 +2876,34 @@ declare function SparseRetainFunction(NumericFactor: SparseOpaqueFactorization_D
 declare function SparseRetainFunction2(NumericFactor: SparseOpaqueFactorization_Float): SparseOpaqueFactorization_Float;
 
 /**
- * @since 11
+ * @since 18.5
  */
-declare function SparseRetainFunction3(NumericFactor: SparseOpaqueSubfactor_Double): SparseOpaqueSubfactor_Double;
+declare function SparseRetainFunction3(NumericFactor: SparseOpaqueFactorization_Complex_Double): SparseOpaqueFactorization_Complex_Double;
+
+/**
+ * @since 18.5
+ */
+declare function SparseRetainFunction4(NumericFactor: SparseOpaqueFactorization_Complex_Float): SparseOpaqueFactorization_Complex_Float;
 
 /**
  * @since 11
  */
-declare function SparseRetainFunction4(NumericFactor: SparseOpaqueSubfactor_Float): SparseOpaqueSubfactor_Float;
+declare function SparseRetainFunction5(NumericFactor: SparseOpaqueSubfactor_Double): SparseOpaqueSubfactor_Double;
+
+/**
+ * @since 11
+ */
+declare function SparseRetainFunction6(NumericFactor: SparseOpaqueSubfactor_Float): SparseOpaqueSubfactor_Float;
+
+/**
+ * @since 18.5
+ */
+declare function SparseRetainFunction7(NumericFactor: SparseOpaqueSubfactor_Complex_Double): SparseOpaqueSubfactor_Complex_Double;
+
+/**
+ * @since 18.5
+ */
+declare function SparseRetainFunction8(NumericFactor: SparseOpaqueSubfactor_Complex_Float): SparseOpaqueSubfactor_Complex_Float;
 
 declare const enum SparseScaling_t {
 
@@ -2724,7 +2911,11 @@ declare const enum SparseScaling_t {
 
 	User = 1,
 
-	EquilibriationInf = 2
+	EquilibriationInf = 2,
+
+	HungarianScalingOnly = 3,
+
+	HungarianScalingAndOrdering = 4
 }
 
 /**
@@ -2840,7 +3031,7 @@ declare function SparseSolveFunction28(Subfactor: SparseOpaqueSubfactor_Double, 
 /**
  * @since 11
  */
-declare function SparseSolveFunction29(Subfactor: SparseOpaqueSubfactor_Double, xb: DenseVector_Double, workspace: interop.Pointer | interop.Reference<any>): void;
+declare function SparseSolveFunction29(Subfactor: SparseOpaqueSubfactor_Float, xb: DenseVector_Float, workspace: interop.Pointer | interop.Reference<any>): void;
 
 /**
  * @since 11
@@ -2920,7 +3111,11 @@ declare const enum SparseSubfactor_t {
 
 	R = 7,
 
-	RP = 8
+	RP = 8,
+
+	Sr = 9,
+
+	Sc = 10
 }
 
 interface SparseSymbolicFactorOptions {
@@ -2939,6 +3134,21 @@ declare const enum SparseTriangle_t {
 	UpperTriangle = 0,
 
 	LowerTriangle = 1
+}
+
+/**
+ * @since 18.5
+ */
+declare function SparseUpdateFactor(updateAlgorithm: SparseUpdate_t, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Float>, updateCount: number, updatedIndices: interop.Pointer | interop.Reference<number>, Update: SparseMatrix_Float): void;
+
+/**
+ * @since 18.5
+ */
+declare function SparseUpdateFactorFunction(updateAlgorithm: SparseUpdate_t, Factorization: interop.Pointer | interop.Reference<SparseOpaqueFactorization_Double>, updateCount: number, updatedIndices: interop.Pointer | interop.Reference<number>, Update: SparseMatrix_Double): void;
+
+declare const enum SparseUpdate_t {
+
+	PartialRefactor = 0
 }
 
 interface _SparseIterativeMethodBaseOptions {
@@ -10742,9 +10952,19 @@ declare function sparse_commit(A: interop.Pointer | interop.Reference<any>): spa
 declare function sparse_elementwise_norm_double(A: interop.Pointer | interop.Reference<any>, norm: sparse_norm): number;
 
 /**
+ * @since 18.5
+ */
+declare function sparse_elementwise_norm_double_complex(A: interop.Pointer | interop.Reference<any>, norm: sparse_norm): number;
+
+/**
  * @since 9.0
  */
 declare function sparse_elementwise_norm_float(A: interop.Pointer | interop.Reference<any>, norm: sparse_norm): number;
+
+/**
+ * @since 18.5
+ */
+declare function sparse_elementwise_norm_float_complex(A: interop.Pointer | interop.Reference<any>, norm: sparse_norm): number;
 
 /**
  * @since 9.0
@@ -10902,9 +11122,19 @@ declare function sparse_insert_row_float(A: interop.Pointer | interop.Reference<
 declare function sparse_matrix_block_create_double(Mb: number, Nb: number, k: number, l: number): interop.Pointer | interop.Reference<any>;
 
 /**
+ * @since 18.5
+ */
+declare function sparse_matrix_block_create_double_complex(Mb: number, Nb: number, k: number, l: number): interop.Pointer | interop.Reference<any>;
+
+/**
  * @since 9.0
  */
 declare function sparse_matrix_block_create_float(Mb: number, Nb: number, k: number, l: number): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.5
+ */
+declare function sparse_matrix_block_create_float_complex(Mb: number, Nb: number, k: number, l: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 9.0
@@ -10912,9 +11142,19 @@ declare function sparse_matrix_block_create_float(Mb: number, Nb: number, k: num
 declare function sparse_matrix_create_double(M: number, N: number): interop.Pointer | interop.Reference<any>;
 
 /**
+ * @since 18.5
+ */
+declare function sparse_matrix_create_double_complex(M: number, N: number): interop.Pointer | interop.Reference<any>;
+
+/**
  * @since 9.0
  */
 declare function sparse_matrix_create_float(M: number, N: number): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.5
+ */
+declare function sparse_matrix_create_float_complex(M: number, N: number): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 9.0
@@ -10978,9 +11218,19 @@ declare function sparse_matrix_triangular_solve_dense_float(order: CBLAS_ORDER, 
 declare function sparse_matrix_variable_block_create_double(Mb: number, Nb: number, K: interop.Pointer | interop.Reference<number>, L: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 /**
+ * @since 18.5
+ */
+declare function sparse_matrix_variable_block_create_double_complex(Mb: number, Nb: number, K: interop.Pointer | interop.Reference<number>, L: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+
+/**
  * @since 9.0
  */
 declare function sparse_matrix_variable_block_create_float(Mb: number, Nb: number, K: interop.Pointer | interop.Reference<number>, L: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+
+/**
+ * @since 18.5
+ */
+declare function sparse_matrix_variable_block_create_float_complex(Mb: number, Nb: number, K: interop.Pointer | interop.Reference<number>, L: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 9.0
@@ -11009,9 +11259,19 @@ declare const enum sparse_norm {
 declare function sparse_operator_norm_double(A: interop.Pointer | interop.Reference<any>, norm: sparse_norm): number;
 
 /**
+ * @since 18.5
+ */
+declare function sparse_operator_norm_double_complex(A: interop.Pointer | interop.Reference<any>, norm: sparse_norm): number;
+
+/**
  * @since 9.0
  */
 declare function sparse_operator_norm_float(A: interop.Pointer | interop.Reference<any>, norm: sparse_norm): number;
+
+/**
+ * @since 18.5
+ */
+declare function sparse_operator_norm_float_complex(A: interop.Pointer | interop.Reference<any>, norm: sparse_norm): number;
 
 /**
  * @since 9.0
@@ -11039,9 +11299,19 @@ declare function sparse_pack_vector_float(N: number, nz: number, x: interop.Poin
 declare function sparse_permute_cols_double(A: interop.Pointer | interop.Reference<any>, perm: interop.Pointer | interop.Reference<number>): sparse_status;
 
 /**
+ * @since 18.5
+ */
+declare function sparse_permute_cols_double_complex(A: interop.Pointer | interop.Reference<any>, perm: interop.Pointer | interop.Reference<number>): sparse_status;
+
+/**
  * @since 9.0
  */
 declare function sparse_permute_cols_float(A: interop.Pointer | interop.Reference<any>, perm: interop.Pointer | interop.Reference<number>): sparse_status;
+
+/**
+ * @since 18.5
+ */
+declare function sparse_permute_cols_float_complex(A: interop.Pointer | interop.Reference<any>, perm: interop.Pointer | interop.Reference<number>): sparse_status;
 
 /**
  * @since 9.0
@@ -11049,9 +11319,19 @@ declare function sparse_permute_cols_float(A: interop.Pointer | interop.Referenc
 declare function sparse_permute_rows_double(A: interop.Pointer | interop.Reference<any>, perm: interop.Pointer | interop.Reference<number>): sparse_status;
 
 /**
+ * @since 18.5
+ */
+declare function sparse_permute_rows_double_complex(A: interop.Pointer | interop.Reference<any>, perm: interop.Pointer | interop.Reference<number>): sparse_status;
+
+/**
  * @since 9.0
  */
 declare function sparse_permute_rows_float(A: interop.Pointer | interop.Reference<any>, perm: interop.Pointer | interop.Reference<number>): sparse_status;
+
+/**
+ * @since 18.5
+ */
+declare function sparse_permute_rows_float_complex(A: interop.Pointer | interop.Reference<any>, perm: interop.Pointer | interop.Reference<number>): sparse_status;
 
 /**
  * @since 9.0

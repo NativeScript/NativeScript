@@ -22,7 +22,9 @@ declare const enum CLKWatchFaceLibraryErrorCode {
 
 	PermissionDenied = 3,
 
-	FaceNotAvailable = 4
+	FaceNotAvailable = 4,
+
+	NoURL = 5
 }
 
 /**

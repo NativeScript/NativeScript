@@ -3033,6 +3033,9 @@ declare class MDLURLTexture extends MDLTexture {
 	initWithURLName(URL: NSURL, name: string): this;
 }
 
+/**
+ * @since 18.0
+ */
 declare class MDLUtility extends NSObject {
 
 	static alloc(): MDLUtility; // inherited from NSObject

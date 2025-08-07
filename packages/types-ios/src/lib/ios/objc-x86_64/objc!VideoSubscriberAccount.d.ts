@@ -191,6 +191,52 @@ declare class VSAppleSubscription extends NSObject {
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum VSAutoSignInAuthorization {
+
+	NotDetermined = 0,
+
+	Granted = 1,
+
+	Denied = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare class VSAutoSignInToken extends NSObject implements NSSecureCoding {
+
+	static alloc(): VSAutoSignInToken; // inherited from NSObject
+
+	static new(): VSAutoSignInToken; // inherited from NSObject
+
+	readonly authorization: VSAutoSignInAuthorization;
+
+	readonly value: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class VSAutoSignInTokenUpdateContext extends NSObject {
+
+	static alloc(): VSAutoSignInTokenUpdateContext; // inherited from NSObject
+
+	static new(): VSAutoSignInTokenUpdateContext; // inherited from NSObject
+
+	readonly authorization: VSAutoSignInAuthorization;
+}
+
+/**
  * @since 10.0
  */
 declare var VSCheckAccessOptionPrompt: string;
@@ -361,7 +407,27 @@ declare class VSUserAccountManager extends NSObject {
 
 	static readonly sharedUserAccountManager: VSUserAccountManager;
 
+	/**
+	 * @since 26.0
+	 */
+	deleteAutoSignInTokenWithCompletionHandler(completion: (p1: NSError) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	queryAutoSignInTokenWithCompletionHandler(completion: (p1: VSAutoSignInToken, p2: NSError) => void): void;
+
 	queryUserAccountsWithOptionsCompletion(options: VSUserAccountQueryOptions, completion: (p1: NSArray<VSUserAccount>, p2: NSError) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	requestAutoSignInAuthorizationWithCompletionHandler(completion: (p1: VSAutoSignInTokenUpdateContext, p2: NSError) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	updateAutoSignInTokenUpdateContextCompletionHandler(autoSignInToken: string, context: VSAutoSignInTokenUpdateContext, completion: (p1: NSError) => void): void;
 
 	updateUserAccountCompletion(account: VSUserAccount, completion: (p1: NSError) => void): void;
 }

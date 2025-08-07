@@ -20,6 +20,11 @@ declare const enum MACaptionAppearanceBehavior {
 }
 
 /**
+ * @since 19.0
+ */
+declare function MACaptionAppearanceCopyActiveProfileID(): string;
+
+/**
  * @since 7.0
  */
 declare function MACaptionAppearanceCopyBackgroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
@@ -38,6 +43,16 @@ declare function MACaptionAppearanceCopyForegroundColor(domain: MACaptionAppeara
  * @since 7.0
  */
 declare function MACaptionAppearanceCopyPreferredCaptioningMediaCharacteristics(domain: MACaptionAppearanceDomain): interop.Unmanaged<NSArray<any>>;
+
+/**
+ * @since 19.0
+ */
+declare function MACaptionAppearanceCopyProfileIDs(): NSArray<any>;
+
+/**
+ * @since 19.0
+ */
+declare function MACaptionAppearanceCopyProfileName(profileID: string): string;
 
 /**
  * @since 7.0
@@ -72,6 +87,11 @@ declare const enum MACaptionAppearanceDomain {
 
 	kMACaptionAppearanceDomainUser = 1
 }
+
+/**
+ * @since 19.0
+ */
+declare function MACaptionAppearanceExecuteBlockForProfileID(profileID: string, aBlock: () => void): void;
 
 /**
  * @since 7.0
@@ -134,6 +154,11 @@ declare function MACaptionAppearanceGetWindowRoundedCornerRadius(domain: MACapti
  * @since 18.0
  */
 declare function MACaptionAppearanceIsCustomized(domain: MACaptionAppearanceDomain): boolean;
+
+/**
+ * @since 19.0
+ */
+declare function MACaptionAppearanceSetActiveProfileID(profileID: string): void;
 
 /**
  * @since 7.0
