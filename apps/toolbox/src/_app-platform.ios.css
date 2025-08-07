@@ -93,7 +93,10 @@
 }
 
 .ns-ios-26 .action-bar {
-    /* Note: nativescript-theme-core auto adds background-color to actionbar */
-    /* doing so will cause iOS 26+ to not render titles when large title is enabled */
+    /**
+     * Note: nativescript-theme-core auto adds background-color to actionbar 
+     * doing so will cause iOS 26+ to not render titles when large title is enabled 
+     * We can now scope specific styling behavior for platform sdk versions
+     */
     background-color: transparent;
 }
