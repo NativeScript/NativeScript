@@ -1,14 +1,12 @@
 import { ButtonBase } from './button-common';
-import { AndroidHelper, PseudoClassHandler } from '../core/view';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
+import { PseudoClassHandler } from '../core/view';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { textAlignmentProperty } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
 import { TouchGestureEventData, TouchAction, GestureTypes } from '../gestures';
-import { Device } from '../../platform';
 import { SDK_VERSION } from '../../utils/constants';
-import type { Background } from '../styling/background';
-import { NativeScriptAndroidView } from '../utils';
 
 export * from './button-common';
 

@@ -2,7 +2,7 @@
 import { LayoutBase } from '../layout-base';
 import { CSSType } from '../../core/view';
 import { Property, makeValidator, makeParser } from '../../core/properties';
-import { Length } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 import { CoreTypes } from '../../../core-types';
 
 export * from '../layout-base';

@@ -1,5 +1,4 @@
-import { Application } from '../application';
-import * as fs from '../file-system';
+import { knownFolders, File, path, Folder } from '../file-system';
 import { Trace } from '../trace';
 
 const cache = new Set<string>();
@@ -20,13 +19,13 @@ function register(name: string, loader: (name?: string) => void) {
 	}
 }
 
-function processFile(file: fs.File) {
-	const filePathRelativeToApp = file.path.substr(fs.knownFolders.currentApp().path.length + 1);
+function processFile(file: File) {
+	const filePathRelativeToApp = file.path.substring(knownFolders.currentApp().path.length + 1);
 	const loadContent = () => file.readTextSync();
 
 	switch (file.extension.toLocaleLowerCase()) {
-		case '.js': {
-			const noExtPath = filePathRelativeToApp.substr(0, filePathRelativeToApp.length - '.js'.length);
+		case 'js': {
+			const noExtPath = filePathRelativeToApp.substring(0, filePathRelativeToApp.length - '.js'.length);
 
 			register(filePathRelativeToApp, function () {
 				return global.require(file.path);
@@ -37,11 +36,23 @@ function processFile(file: fs.File) {
 			break;
 		}
 
-		case '.css':
+		case 'mjs': {
+			const noExtPath = filePathRelativeToApp.substring(0, filePathRelativeToApp.length - '.mjs'.length);
+
+			register(filePathRelativeToApp, function () {
+				return global.require(file.path);
+			});
+			register(noExtPath, function () {
+				return global.require(file.path);
+			});
+			break;
+		}
+
+		case 'css':
 			register(filePathRelativeToApp, loadContent);
 			break;
 
-		case '.xml':
+		case 'xml':
 			register(filePathRelativeToApp, loadContent);
 			break;
 	}
@@ -49,8 +60,8 @@ function processFile(file: fs.File) {
 	if (file.name === 'package.json') {
 		const json = global.require(file.path);
 		if (json.main) {
-			const name = filePathRelativeToApp.substr(0, filePathRelativeToApp.length - 'package.json'.length - 1);
-			const requirePath = fs.path.join(file.parent.path, json.main);
+			const name = filePathRelativeToApp.substring(0, filePathRelativeToApp.length - 'package.json'.length - 1);
+			const requirePath = path.join(file.parent.path, json.main);
 
 			register(name, () => global.require(requirePath));
 		}
@@ -73,11 +84,11 @@ function processFolder(path: string): boolean {
 
 	let folderEmpty = true;
 
-	if (fs.Folder.exists(path)) {
-		const folder = fs.Folder.fromPath(path);
+	if (Folder.exists(path)) {
+		const folder = Folder.fromPath(path);
 
 		folder.eachEntity((file) => {
-			if (file instanceof fs.File) {
+			if (file instanceof File) {
 				processFile(file);
 				folderEmpty = false;
 			}
@@ -100,15 +111,15 @@ export function registerModulesFromFileSystem(moduleName: string) {
 	let folderProcessed = false;
 	let parentFolderProcessed = false;
 	// moduleName is a folder with package.json
-	const path = fs.path.join(fs.knownFolders.currentApp().path, moduleName);
-	if (fs.Folder.exists(path)) {
-		folderProcessed = processFolder(path);
+	const filePath = path.join(knownFolders.currentApp().path, moduleName);
+	if (Folder.exists(filePath)) {
+		folderProcessed = processFolder(filePath);
 	}
 
 	// moduleName is file - load all files in its parent folder
-	const parentName = moduleName.substr(0, moduleName.lastIndexOf(fs.path.separator));
-	const parentFolderPath = fs.path.join(fs.knownFolders.currentApp().path, parentName);
-	if (fs.Folder.exists(parentFolderPath)) {
+	const parentName = moduleName.substring(0, moduleName.lastIndexOf(path.separator));
+	const parentFolderPath = path.join(knownFolders.currentApp().path, parentName);
+	if (Folder.exists(parentFolderPath)) {
 		parentFolderProcessed = processFolder(parentFolderPath);
 	}
 
@@ -120,15 +131,15 @@ export function registerModulesFromFileSystem(moduleName: string) {
 	}
 
 	// moduleName is a folder in tns_modules ex. "nativescript-ui-chart"
-	const tnsModulesPath = fs.path.join(fs.knownFolders.currentApp().path, 'tns_modules', moduleName);
-	if (fs.Folder.exists(tnsModulesPath)) {
+	const tnsModulesPath = path.join(knownFolders.currentApp().path, 'tns_modules', moduleName);
+	if (Folder.exists(tnsModulesPath)) {
 		processFolder(tnsModulesPath);
 	}
 
 	// moduleName a file in tns_modules/plugin. Avoid traversing the whole tns_modules folder if parentName is empty
 	if (parentName) {
-		const tnsParentFolderPath = fs.path.join(fs.knownFolders.currentApp().path, 'tns_modules', parentName);
-		if (fs.Folder.exists(tnsParentFolderPath)) {
+		const tnsParentFolderPath = path.join(knownFolders.currentApp().path, 'tns_modules', parentName);
+		if (Folder.exists(tnsParentFolderPath)) {
 			processFolder(tnsParentFolderPath);
 		}
 	}
@@ -136,7 +147,7 @@ export function registerModulesFromFileSystem(moduleName: string) {
 
 function initialize() {
 	if (!initialized) {
-		Application.on('livesync', (args) => cache.clear());
+		// Application.on('livesync', (args) => cache.clear());
 		initialized = true;
 	}
 }

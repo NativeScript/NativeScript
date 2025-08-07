@@ -24,7 +24,7 @@ export function test_loadWithOptionsNoXML() {
 	var v = Builder.load({
 		path: '~/xml-declaration/mymodule',
 		name: 'MyControl',
-		exports: exports,
+		exports: this,
 		page: new Page(),
 	});
 
@@ -36,7 +36,7 @@ export function test_loadWithOptionsNoXML_CSSIsApplied() {
 	newPage.content = Builder.load({
 		path: '~/xml-declaration/mymodule',
 		name: 'MyControl',
-		exports: exports,
+		exports: this,
 		page: newPage,
 	});
 
@@ -65,7 +65,7 @@ export function test_loadWithOptionsWithXML() {
 	var v = Builder.load({
 		path: '~/xml-declaration/mymodulewithxml',
 		name: 'MyControl',
-		exports: exports,
+		exports: this,
 		page: new Page(),
 	});
 	TKUnit.assertTrue(v instanceof View, 'Expected result: View; Actual result: ' + v + ';');
@@ -79,7 +79,7 @@ export function test_loadWithOptionsWithXML_CSSIsApplied() {
 		newPage.content = Builder.load({
 			path: '~/xml-declaration/mymodulewithxml',
 			name: 'MyControl',
-			exports: exports,
+			exports: this,
 			page: newPage,
 		});
 

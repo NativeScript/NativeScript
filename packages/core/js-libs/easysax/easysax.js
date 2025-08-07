@@ -59,9 +59,9 @@
 // << ------------------------------------------------------------------------ >> //
 
 
-if (typeof exports === 'object' /*&& this == exports*/) {
-	module.exports.EasySAXParser = EasySAXParser;
-};
+// if (typeof exports === 'object' /*&& this == exports*/) {
+// 	module.exports.EasySAXParser = EasySAXParser;
+// };
 
 function EasySAXParser() {
 	'use strict';
@@ -780,3 +780,5 @@ EasySAXParser.prototype.parse = function(xml) {
         j += 1;
     };
 };
+
+export { EasySAXParser };

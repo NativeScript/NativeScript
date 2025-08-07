@@ -1,12 +1,10 @@
-// Types
 import { getClosestPropertyValue, maxLinesProperty, textOverflowProperty } from './text-base-common';
 import { ShadowCSSValues } from '../styling/css-shadow';
-
-// Requires
 import { Font } from '../styling/font';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
@@ -15,7 +13,8 @@ import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
-import { isCssWideKeyword, testIDProperty } from '../../ui/core/view';
+import { testIDProperty } from '../core/view';
+import { isCssWideKeyword } from '../core/properties/property-shared';
 
 export * from './text-base-common';
 
@@ -415,7 +414,7 @@ export class TextBase extends TextBaseCommon {
 				if (value === 'none' || isCssWideKeyword(value)) {
 					this.nativeTextViewProtected.setPaintFlags(0);
 				} else {
-					this.nativeTextViewProtected.setPaintFlags(value);
+					this.nativeTextViewProtected.setPaintFlags(value as number);
 				}
 				break;
 		}
