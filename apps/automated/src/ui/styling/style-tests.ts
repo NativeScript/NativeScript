@@ -1948,6 +1948,36 @@ export function test_undefined_css_variable_invalidates_entire_expression() {
 	TKUnit.assertEqual(label.style.boxShadow, undefined, 'the css variable is undefined');
 }
 
+export function test_css_variable_with_another_css_variable_as_value() {
+	const page = helper.getClearCurrentPage();
+	const redColor = '#FF0000';
+	const cssVarName = `--my-background-color-${Date.now()}`;
+	const cssShadowVarName = `--my-shadow-color-${Date.now()}`;
+
+	const stack = new StackLayout();
+	stack.css = `
+		StackLayout {
+			${cssVarName}: ${redColor};
+		}
+
+		Label {
+			${cssShadowVarName}: var(${cssVarName});
+		}
+
+    Label.lab1 {
+			box-shadow: 10 10 5 12 var(${cssShadowVarName});
+      color: black;
+    }`;
+
+	const label = new Label();
+	page.content = stack;
+	stack.addChild(label);
+
+	label.className = 'lab1';
+
+	TKUnit.assertEqual(label.style.boxShadow?.color?.hex, redColor, 'Failed to resolve css expression variable');
+}
+
 export function test_css_variable_that_resolves_to_another_css_variable_order_desc() {
 	const page = helper.getClearCurrentPage();
 
