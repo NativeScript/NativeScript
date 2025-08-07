@@ -1927,6 +1927,87 @@ export function test_css_variables() {
 	TKUnit.assertEqual((<Color>label.backgroundColor).hex, redColor, 'Label - background-color is red');
 }
 
+export function test_undefined_css_variable_invalidates_entire_expression() {
+	const page = helper.getClearCurrentPage();
+
+	const cssVarName = `--my-background-color-${Date.now()}`;
+
+	const stack = new StackLayout();
+	stack.css = `
+    Label.lab1 {
+			box-shadow: 10 10 5 12 var(${cssVarName});
+      color: black;
+    }`;
+
+	const label = new Label();
+	page.content = stack;
+	stack.addChild(label);
+
+	label.className = 'lab1';
+
+	TKUnit.assertEqual(label.style.boxShadow, undefined, 'the css variable is undefined');
+}
+
+export function test_css_variable_with_another_css_variable_as_value() {
+	const page = helper.getClearCurrentPage();
+	const redColor = '#FF0000';
+	const cssVarName = `--my-background-color-${Date.now()}`;
+	const cssShadowVarName = `--my-shadow-color-${Date.now()}`;
+
+	const stack = new StackLayout();
+	stack.css = `
+		StackLayout {
+			${cssVarName}: ${redColor};
+		}
+
+		Label {
+			${cssShadowVarName}: var(${cssVarName});
+		}
+
+    Label.lab1 {
+			box-shadow: 10 10 5 12 var(${cssShadowVarName});
+      color: black;
+    }`;
+
+	const label = new Label();
+	page.content = stack;
+	stack.addChild(label);
+
+	label.className = 'lab1';
+
+	TKUnit.assertEqual(label.style.boxShadow?.color?.hex, redColor, 'Failed to resolve css expression variable');
+}
+
+export function test_css_variable_that_resolves_to_another_css_variable_order_desc() {
+	const page = helper.getClearCurrentPage();
+
+	const cssVarName = `--my-var1-${Date.now()}`;
+	const cssVarName2 = `--my-var2-${Date.now()}`;
+	const cssVarName3 = `--my-var3-${Date.now()}`;
+	const greenColor = '#008000';
+
+	const stack = new StackLayout();
+	stack.css = `
+		StackLayout.var {
+      background-color: var(${cssVarName3});
+    }
+    StackLayout.var {
+      ${cssVarName3}: var(${cssVarName2});
+    }
+		StackLayout.var {
+      ${cssVarName2}: var(${cssVarName});
+    }
+		StackLayout.var {
+      ${cssVarName}: ${greenColor};
+    }
+    `;
+
+	stack.className = 'var';
+	page.content = stack;
+
+	TKUnit.assertEqual(stack.style.backgroundColor?.hex, greenColor, 'Failed to resolve css variable of css variable');
+}
+
 export function test_css_calc_and_variables() {
 	const page = helper.getClearCurrentPage();
 
@@ -1969,6 +2050,7 @@ export function test_css_calc_and_variables() {
 
 export function test_css_variable_fallback() {
 	const redColor = '#FF0000';
+	const greenColor = '#008000';
 	const blueColor = '#0000FF';
 	const limeColor = new Color('lime').hex;
 	const yellowColor = new Color('yellow').hex;
@@ -1996,7 +2078,7 @@ export function test_css_variable_fallback() {
 		},
 		{
 			className: 'undefined-css-variable-with-multiple-fallbacks',
-			expectedColor: limeColor,
+			expectedColor: greenColor,
 		},
 		{
 			className: 'undefined-css-variable-with-missing-fallback-value',
@@ -2036,8 +2118,7 @@ export function test_css_variable_fallback() {
     }
 
     .undefined-css-variable-with-multiple-fallbacks {
-        --my-fallback-var: lime;
-        color: var(--undefined-var, var(--my-fallback-var), yellow); /* resolved as color: lime; */
+        color: var(--undefined-var, var(--my-fallback-var), green); /* resolved as color: green; */
     }
 
     .undefined-css-variable-with-missing-fallback-value {
