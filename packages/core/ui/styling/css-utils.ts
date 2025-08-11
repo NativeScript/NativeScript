@@ -1,5 +1,3 @@
-import { parseCommaSeparatedListOfComponentValues } from '@csstools/css-parser-algorithms';
-import { tokenize } from '@csstools/css-tokenizer';
 import { CoreTypes } from '../../core-types';
 import { Trace } from '../../trace';
 import { Length } from './style-properties';
@@ -20,9 +18,14 @@ export function cleanupImportantFlags(value: unknown, propertyName: string) {
 }
 
 /**
- * Matches whitespace except if the whitespace is contained in parenthesis - ex. rgb(a), hsl color.
+ * Matches whitespace except if the whitespace is contained in parenthesis - e.g. rgb(a), hsl color.
  */
-const PARTS_RE = /\s(?![^(]*\))/;
+const WHITE_SPACE_RE = /\s(?![^(]*\))/;
+
+/**
+ * Matches comma except if the comma is contained in parenthesis - e.g. rgb(a, b, c).
+ */
+const COMMA_RE = /,(?![^(]*\))/;
 
 /**
  * Matches a Length value with or without a unit
@@ -34,26 +37,14 @@ const LENGTH_RE = /^-?[0-9]+[a-zA-Z%]*?$/;
  */
 const isLength = (v) => v === '0' || LENGTH_RE.test(v);
 
-export function parseCSSListOfValues(value: string): string[] {
+export function parseCSSCommaSeparatedListOfValues(value: string): string[] {
 	const values: string[] = [];
 
 	if (!value) {
-		return values;
+		return [];
 	}
 
-	if (!value.includes(',')) {
-		values.push(value);
-		return values;
-	}
-
-	const tokens = tokenize({ css: value });
-	const componentValueSet = parseCommaSeparatedListOfComponentValues(tokens);
-
-	for (const componentValues of componentValueSet) {
-		values.push(componentValues.join(''));
-	}
-
-	return values;
+	return value.split(COMMA_RE);
 }
 
 export function parseCSSShorthand(value: string): {
@@ -61,7 +52,7 @@ export function parseCSSShorthand(value: string): {
 	color: string;
 	inset: boolean;
 } {
-	const parts = value.trim().split(PARTS_RE);
+	const parts = value.trim().split(WHITE_SPACE_RE);
 	const first = parts[0];
 
 	if (['', 'none', 'unset'].includes(first)) {

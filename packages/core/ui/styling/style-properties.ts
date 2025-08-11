@@ -14,7 +14,7 @@ import { LinearGradient } from './linear-gradient';
 import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
-import { parseCSSListOfValues } from './css-utils';
+import { parseCSSCommaSeparatedListOfValues } from './css-utils';
 
 interface ShorthandPositioning {
 	top: string;
@@ -1113,12 +1113,12 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 		);
 	},
 	valueConverter: (value) => {
-		const values = parseCSSListOfValues(value);
+		const values = parseCSSCommaSeparatedListOfValues(value);
 		const result: ShadowCSSValues[] = [];
 
 		// The first layer specified is drawn as if it is closest to the user
 		for (let i = values.length - 1; i >= 0; i--) {
-			const shadowVal = parseCSSShadow(values[i].trim());
+			const shadowVal = parseCSSShadow(values[i]);
 			if (shadowVal) {
 				result.push(shadowVal);
 			}
