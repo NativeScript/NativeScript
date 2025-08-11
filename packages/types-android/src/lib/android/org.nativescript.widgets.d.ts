@@ -1,11 +1,11 @@
 ﻿declare module org {
     module nativescript {
         module widgets {
-						export class BoxShadowDrawable {
-								public constructor(drawable: android.graphics.drawable.Drawable, value: string);
-								public getWrappedDrawable(): android.graphics.drawable.Drawable;
-								public toString(): string;
-						}
+            export class BoxShadowDrawable {
+                public constructor(drawable: android.graphics.drawable.Drawable, values: number[]);
+                public getWrappedDrawable(): android.graphics.drawable.Drawable;
+                public toString(): string;
+            }
 
             export class CustomTransition extends androidx.transition.Visibility {
                 constructor(animatorSet: android.animation.AnimatorSet, transitionName: string);
@@ -725,7 +725,7 @@ declare module org {
                 public static getBitmapFromDrawable(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.Bitmap;
                 public static getBitmapFromView(param0: globalAndroid.view.View): globalAndroid.graphics.Bitmap;
 				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: number, param4: number, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
-				public static drawBoxShadow(param0: globalAndroid.view.View, param1: string): void;
+				public static drawBoxShadow(param0: globalAndroid.view.View, param1: number[]): void;
                 public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static toBase64StringAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: number, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static resizeAsync(param0: globalAndroid.graphics.Bitmap, param1: number, param2: string, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
