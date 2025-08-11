@@ -23,15 +23,14 @@ import java.util.Arrays;
 public class BoxShadowDrawable extends LayerDrawable {
 	// Static parameters
 	protected final static String TAG = "BoxShadowDrawable";
+	// Use this multiplier to imitate CSS shadow blur
+	private final static float SHADOW_BLUR_MULTIPLIER = (float)Math.sqrt(3) / 2;
 
 	private final Drawable _wrappedDrawable;
 	private final int[] _values;
 	private final float[] _cornerRadii;
 	private final Path _clipPath = new Path();
 	private final RectF _clipRect = new RectF();
-
-	// Use this multiplier to imitate CSS shadow blur
-	private final float _shadowBlurMultiplier = (float)Math.sqrt(3) / 2;
 
 	public BoxShadowDrawable(Drawable wrappedDrawable, int[] values) {
 		super(new Drawable[]{});
@@ -132,7 +131,7 @@ public class BoxShadowDrawable extends LayerDrawable {
 				// Apply boxShadow
 				shadowLayer.getPaint().setColor(shadowColor);
 				if (blurRadius > 0) {
-					shadowLayer.getPaint().setMaskFilter(new BlurMaskFilter(blurRadius * _shadowBlurMultiplier, BlurMaskFilter.Blur.NORMAL));
+					shadowLayer.getPaint().setMaskFilter(new BlurMaskFilter(blurRadius * SHADOW_BLUR_MULTIPLIER, BlurMaskFilter.Blur.NORMAL));
 				} else {
 					shadowLayer.getPaint().setStyle(Paint.Style.FILL);
 				}
