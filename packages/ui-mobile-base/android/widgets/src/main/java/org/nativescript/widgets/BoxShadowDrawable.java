@@ -83,8 +83,8 @@ public class BoxShadowDrawable extends LayerDrawable {
 
 		canvas.restore();
 
-		if (_wrappedDrawable != null) {
-			_wrappedDrawable.draw(canvas);
+		if (this._wrappedDrawable != null) {
+			this._wrappedDrawable.draw(canvas);
 		}
 	}
 

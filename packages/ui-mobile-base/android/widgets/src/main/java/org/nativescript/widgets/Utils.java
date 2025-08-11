@@ -127,7 +127,10 @@ public class Utils {
 
 			if (background instanceof BoxShadowDrawable) {
 				wrappedBg = ((BoxShadowDrawable) background).getWrappedDrawable();
-				Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + wrappedBg.getClass().getName());
+
+				if (wrappedBg != null) {
+					Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + wrappedBg.getClass().getName());
+				}
 			} else {
 				wrappedBg = background;
 			}
