@@ -41,7 +41,7 @@ export class Background {
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
 	public clipPath: string | ClipPathFunction;
-	public boxShadow: BoxShadow;
+	public boxShadows: BoxShadow[];
 	public clearFlags: number = BackgroundClearFlags.NONE;
 
 	private clone(): Background {
@@ -65,7 +65,7 @@ export class Background {
 		clone.borderBottomRightRadius = this.borderBottomRightRadius;
 		clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
 		clone.clipPath = this.clipPath;
-		clone.boxShadow = this.boxShadow;
+		clone.boxShadows = this.boxShadows;
 		clone.clearFlags = this.clearFlags;
 
 		return clone;
@@ -200,10 +200,10 @@ export class Background {
 		return clone;
 	}
 
-	public withBoxShadow(value: BoxShadow): Background {
+	public withBoxShadows(value: BoxShadow[]): Background {
 		const clone = this.clone();
-		clone.boxShadow = value;
-		if (!value) {
+		clone.boxShadows = value;
+		if (!value?.length) {
 			clone.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
 		}
 
@@ -318,12 +318,12 @@ export class Background {
 		return 0;
 	}
 
-	public hasBoxShadow(): boolean {
-		return !!this.boxShadow;
+	public hasBoxShadows(): boolean {
+		return this.boxShadows?.length > 0;
 	}
 
-	public getBoxShadow(): BoxShadow {
-		return this.boxShadow;
+	public getBoxShadows(): BoxShadow[] {
+		return this.boxShadows;
 	}
 
 	public toString(): string {
