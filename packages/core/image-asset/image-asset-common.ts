@@ -1,4 +1,4 @@
-import { ImageAsset as ImageAssetDefinition, ImageAssetOptions } from '.';
+import { ImageAsset as ImageAssetDefinition, ImageAssetOptions } from './image-asset-common'; // ✅ direct import
 import { Observable } from '../data/observable';
 import { Screen } from '../platform';
 
@@ -31,7 +31,7 @@ export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 	}
 
 	public getImageAsync(callback: (image: any, error: Error) => void) {
-		//
+		// Implementation goes here
 	}
 }
 
@@ -46,7 +46,10 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 	};
 }
 
-export function getRequestedImageSize(src: { width: number; height: number }, options: ImageAssetOptions): { width: number; height: number } {
+export function getRequestedImageSize(
+	src: { width: number; height: number },
+	options: ImageAssetOptions
+): { width: number; height: number } {
 	let reqWidth = options.width || Math.min(src.width, Screen.mainScreen.widthPixels);
 	let reqHeight = options.height || Math.min(src.height, Screen.mainScreen.heightPixels);
 
