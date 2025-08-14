@@ -87,6 +87,26 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		node: false,
 	});
 
+	// Mock Node.js built-ins that are not available in NativeScript runtime
+	// but are required by some packages like css-tree
+	config.resolve.merge({
+		fallback: {
+			module: require.resolve('../polyfills/module.js'),
+		},
+		alias: {
+			// Mock mdn-data modules that css-tree tries to load
+			'mdn-data/css/properties.json': require.resolve(
+				'../polyfills/mdn-data-properties.js',
+			),
+			'mdn-data/css/syntaxes.json': require.resolve(
+				'../polyfills/mdn-data-syntaxes.js',
+			),
+			'mdn-data/css/at-rules.json': require.resolve(
+				'../polyfills/mdn-data-at-rules.js',
+			),
+		},
+	});
+
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
 		const defaultSourceMap = 'inline-source-map';
 
