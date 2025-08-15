@@ -13,7 +13,9 @@ import './debugger/webinspector-css';
  * NOTE: This likely should not be in core because errors can happen on boot before core is fully loaded. Ideally the runtime should provide this in full but unsure.
  */
 import { File, knownFolders } from './file-system';
-import { SourceMapConsumer } from 'source-map-js';
+// import/destructure style helps commonjs/esm build issues
+import * as sourceMapJs from 'source-map-js';
+const { SourceMapConsumer } = sourceMapJs;
 
 // note: webpack config can by default use 'source-map' files with runtimes v9+
 // helps avoid having to decode the inline base64 source maps
@@ -22,7 +24,7 @@ const usingSourceMapFiles = true;
 let loadedSourceMaps: Map<string, any>;
 let consumerCache: Map<string, any>;
 
-function getConsumer(mapPath: string, sourceMap: any): SourceMapConsumer {
+function getConsumer(mapPath: string, sourceMap: any) {
 	if (!consumerCache) {
 		consumerCache = new Map();
 	}
