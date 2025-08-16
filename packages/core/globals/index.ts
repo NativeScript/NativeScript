@@ -265,9 +265,6 @@ global.loadModule = function loadModule(name: string): any {
 			}
 		}
 	}
-
-	// If no resolver found the module, return null
-	console.warn(`Module '${name}' could not be loaded by any resolver.`);
 	return null;
 };
 function registerOnGlobalContext(moduleName: string, exportName: string): void {
