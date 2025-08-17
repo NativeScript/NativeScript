@@ -2,7 +2,6 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -278,7 +277,7 @@ public abstract class LayoutBase extends ViewGroup {
 						top = mPaddingTop + statusBar.top;
 						right = mPaddingRight + insetRight;
 						edgeInsets = Insets.of(insetLeft, statusBar.top, insetRight, insetBottom);
-						if (overflowBottom) {
+						if (overflowBottomConsume) {
 							ret = WindowInsetsCompat.CONSUMED;
 						}
 					}
