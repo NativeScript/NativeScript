@@ -1194,7 +1194,9 @@ declare const enum MLMultiArrayDataType {
 
 	Float = 65568,
 
-	Int32 = 131104
+	Int32 = 131104,
+
+	Int8 = 131080
 }
 
 /**

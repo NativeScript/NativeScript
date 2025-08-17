@@ -448,6 +448,16 @@ declare const enum SKDownloadState {
 declare var SKDownloadTimeRemainingUnknown: number;
 
 /**
+ * @since 26.0
+ */
+interface SKDownloaderExtension extends BAManagedDownloaderExtension {
+}
+declare var SKDownloaderExtension: {
+
+	prototype: SKDownloaderExtension;
+};
+
+/**
  * @since 3.0
  */
 declare const enum SKErrorCode {

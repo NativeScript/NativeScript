@@ -54,7 +54,9 @@ declare const enum SFSpeechErrorCode {
 
 	MalformedSupplementalModel = 8,
 
-	Timeout = 10
+	Timeout = 12,
+
+	MissingParameter = 13
 }
 
 /**
@@ -71,15 +73,27 @@ declare class SFSpeechLanguageModel extends NSObject {
 
 	static new(): SFSpeechLanguageModel; // inherited from NSObject
 
+	/**
+	 * @since 17
+	 * @deprecated 26.0
+	 */
 	static prepareCustomLanguageModelForUrlClientIdentifierConfigurationCompletion(asset: NSURL, clientIdentifier: string, configuration: SFSpeechLanguageModelConfiguration, completion: (p1: NSError) => void): void;
 
+	/**
+	 * @since 17
+	 * @deprecated 26.0
+	 */
 	static prepareCustomLanguageModelForUrlClientIdentifierConfigurationIgnoresCacheCompletion(asset: NSURL, clientIdentifier: string, configuration: SFSpeechLanguageModelConfiguration, ignoresCache: boolean, completion: (p1: NSError) => void): void;
+
+	static prepareCustomLanguageModelForUrlConfigurationCompletion(asset: NSURL, configuration: SFSpeechLanguageModelConfiguration, completion: (p1: NSError) => void): void;
+
+	static prepareCustomLanguageModelForUrlConfigurationIgnoresCacheCompletion(asset: NSURL, configuration: SFSpeechLanguageModelConfiguration, ignoresCache: boolean, completion: (p1: NSError) => void): void;
 }
 
 /**
  * @since 17
  */
-declare class SFSpeechLanguageModelConfiguration extends NSObject implements NSCopying {
+declare class SFSpeechLanguageModelConfiguration extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SFSpeechLanguageModelConfiguration; // inherited from NSObject
 
@@ -89,15 +103,38 @@ declare class SFSpeechLanguageModelConfiguration extends NSObject implements NSC
 
 	readonly vocabulary: NSURL;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly weight: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { languageModel: NSURL; });
 
 	constructor(o: { languageModel: NSURL; vocabulary: NSURL; });
 
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { languageModel: NSURL; vocabulary: NSURL; weight: number; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 
 	initWithLanguageModel(languageModel: NSURL): this;
 
 	initWithLanguageModelVocabulary(languageModel: NSURL, vocabulary: NSURL): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithLanguageModelVocabularyWeight(languageModel: NSURL, vocabulary: NSURL, weight: number): this;
 }
 
 /**

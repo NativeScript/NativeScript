@@ -1,0 +1,27 @@
+[[IgnoredVulns]]
+id = "GHSA-968p-4wvh-cqc8"
+reason = "@babel/helpers is used in development/testing - it's not used in the final production build"
+
+[[IgnoredVulns]]
+id = "GHSA-jr5f-v2jv-69x6"
+reason = "We only use axios in examples"
+
+[[IgnoredVulns]]
+id = "GHSA-v6h2-p8h4-qcjw"
+reason = "Low risk and determined to not be exploitable in our use case"
+
+[[IgnoredVulns]]
+id = "GHSA-75v8-2h7p-7m2m"
+reason = "Low risk and determined to not be exploitable in our use case"
+
+[[IgnoredVulns]]
+id = "GHSA-7fh5-64p2-3v2j"
+reason = "Already fixed in our codebase, but not yet released in a new version of the package"
+
+[[IgnoredVulns]]
+id = "GHSA-c2qf-rxjj-qqgw"
+reason = "Already fixed in our codebase, but not yet released in a new version of the package"
+
+[[IgnoredVulns]]
+id = "GHSA-76c9-3jph-rj3q"
+reason = "on-headers is used in development/testing - it's not used in the final production build"

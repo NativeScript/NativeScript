@@ -655,6 +655,11 @@ declare function SecIdentityCopyCertificate(identityRef: any, certificateRef: in
 declare function SecIdentityCopyPrivateKey(identityRef: any, privateKeyRef: interop.Pointer | interop.Reference<any>): number;
 
 /**
+ * @since 11.2
+ */
+declare function SecIdentityCreate(allocator: any, certificate: any, privateKey: any): any;
+
+/**
  * @since 2.0
  */
 declare function SecIdentityGetTypeID(): number;
@@ -1933,6 +1938,8 @@ declare const errSecMissingAttributeVersion: number;
 declare const errSecMissingAttributeWrappedKeyFormat: number;
 
 declare const errSecMissingEntitlement: number;
+
+declare const errSecMissingQualifiedCertStatement: number;
 
 declare const errSecMissingRequiredExtension: number;
 
@@ -3389,9 +3396,29 @@ declare var kSecPolicyAppleCodeSigning: string;
 declare var kSecPolicyAppleEAP: string;
 
 /**
+ * @since 18.4
+ */
+declare var kSecPolicyAppleEAPClient: string;
+
+/**
+ * @since 18.4
+ */
+declare var kSecPolicyAppleEAPServer: string;
+
+/**
  * @since 7.0
  */
 declare var kSecPolicyAppleIDValidation: string;
+
+/**
+ * @since 18.4
+ */
+declare var kSecPolicyAppleIPSecClient: string;
+
+/**
+ * @since 18.4
+ */
+declare var kSecPolicyAppleIPSecServer: string;
 
 /**
  * @since 7.0
@@ -3422,6 +3449,16 @@ declare var kSecPolicyAppleSMIME: string;
  * @since 7.0
  */
 declare var kSecPolicyAppleSSL: string;
+
+/**
+ * @since 18.4
+ */
+declare var kSecPolicyAppleSSLClient: string;
+
+/**
+ * @since 18.4
+ */
+declare var kSecPolicyAppleSSLServer: string;
 
 /**
  * @since 7.0
@@ -3550,6 +3587,16 @@ declare var kSecTrustExtendedValidation: string;
  * @since 7.0
  */
 declare var kSecTrustOrganizationName: string;
+
+/**
+ * @since 18.4
+ */
+declare var kSecTrustQCStatements: string;
+
+/**
+ * @since 18.4
+ */
+declare var kSecTrustQWACValidation: string;
 
 /**
  * @since 7.0
@@ -3697,9 +3744,19 @@ declare function sec_protocol_metadata_access_supported_signature_algorithms(met
 declare function sec_protocol_metadata_challenge_parameters_are_equal(metadataA: NSObject & OS_sec_protocol_metadata, metadataB: NSObject & OS_sec_protocol_metadata): boolean;
 
 /**
+ * @since 18.5
+ */
+declare function sec_protocol_metadata_copy_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
+
+/**
  * @since 12.0
  */
 declare function sec_protocol_metadata_copy_peer_public_key(metadata: NSObject & OS_sec_protocol_metadata): NSObject & OS_dispatch_data;
+
+/**
+ * @since 18.5
+ */
+declare function sec_protocol_metadata_copy_server_name(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
 
 /**
  * @since 12.0
@@ -3724,6 +3781,7 @@ declare function sec_protocol_metadata_get_negotiated_ciphersuite(metadata: NSOb
 
 /**
  * @since 12.0
+ * @deprecated 18.5
  */
 declare function sec_protocol_metadata_get_negotiated_protocol(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
 
@@ -3745,6 +3803,7 @@ declare function sec_protocol_metadata_get_negotiated_tls_protocol_version(metad
 
 /**
  * @since 12.0
+ * @deprecated 18.5
  */
 declare function sec_protocol_metadata_get_server_name(metadata: NSObject & OS_sec_protocol_metadata): interop.Pointer | interop.Reference<any>;
 

@@ -697,7 +697,12 @@ declare class NSObject implements NSObjectProtocol {
 	 */
 	prepareForInterfaceBuilder(): void;
 
-	provideImageDataBytesPerRowOriginSizeUserInfo(data: interop.Pointer | interop.Reference<any>, rowbytes: number, x: number, y: number, width: number, height: number, info: any): void;
+	provideImageDataBytesPerRowOriginSizeUserInfo(data: interop.Pointer | interop.Reference<any>, rowbytes: number, originx: number, originy: number, width: number, height: number, info: any): void;
+
+	/**
+	 * @since 19.0
+	 */
+	provideImageToMTLTextureCommandBufferOriginxOriginyWidthHeightUserInfo(texture: MTLTexture, commandBuffer: MTLCommandBuffer, originx: number, originy: number, width: number, height: number, info: any): void;
 
 	removeObserverForKeyPath(observer: NSObject, keyPath: string): void;
 

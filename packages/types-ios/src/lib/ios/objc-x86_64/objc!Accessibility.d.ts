@@ -60,6 +60,90 @@ declare var AXBrailleMapRenderer: {
 };
 
 /**
+ * @since 26.0
+ */
+declare class AXBrailleTable extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): AXBrailleTable; // inherited from NSObject
+
+	static defaultTableForLocale(locale: NSLocale): AXBrailleTable;
+
+	static languageAgnosticTables(): NSSet<AXBrailleTable>;
+
+	static new(): AXBrailleTable; // inherited from NSObject
+
+	static supportedLocales(): NSSet<NSLocale>;
+
+	static tablesForLocale(locale: NSLocale): NSSet<AXBrailleTable>;
+
+	readonly identifier: string;
+
+	readonly isEightDot: boolean;
+
+	readonly language: string;
+
+	readonly locales: NSSet<NSLocale>;
+
+	readonly localizedName: string;
+
+	readonly localizedProviderName: string;
+
+	readonly providerIdentifier: string;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { identifier: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithIdentifier(identifier: string): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class AXBrailleTranslationResult extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): AXBrailleTranslationResult; // inherited from NSObject
+
+	static new(): AXBrailleTranslationResult; // inherited from NSObject
+
+	readonly locationMap: NSArray<number>;
+
+	readonly resultString: string;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class AXBrailleTranslator extends NSObject {
+
+	static alloc(): AXBrailleTranslator; // inherited from NSObject
+
+	static new(): AXBrailleTranslator; // inherited from NSObject
+
+	constructor(o: { brailleTable: AXBrailleTable; });
+
+	backTranslateBraille(braille: string): AXBrailleTranslationResult;
+
+	initWithBrailleTable(brailleTable: AXBrailleTable): this;
+
+	translatePrintText(printText: string): AXBrailleTranslationResult;
+}
+
+/**
  * @since 15.0
  */
 declare class AXCategoricalDataAxisDescriptor extends NSObject implements AXDataAxisDescriptor {
@@ -335,6 +419,11 @@ declare const enum AXFeatureOverrideSessionError {
 
 	OverrideNotFoundForUUID = 3
 }
+
+/**
+ * @since 18.2
+ */
+declare var AXFeatureOverrideSessionErrorDomain: string;
 
 /**
  * @since 18.2
@@ -785,7 +874,13 @@ declare const enum AXSettingsFeature {
 
 	PersonalVoiceAllowAppsToRequestToUse = 1,
 
-	AllowAppsToAddAudioToCalls = 2
+	AllowAppsToAddAudioToCalls = 2,
+
+	AssistiveTouch = 3,
+
+	AssistiveTouchDevices = 4,
+
+	DwellControl = 5
 }
 
 /**

@@ -137,7 +137,11 @@ declare const enum SFErrorCode {
 
 	NoAttachmentFound = 2,
 
-	LoadingInterrupted = 3
+	LoadingInterrupted = 3,
+
+	InternalError = 4,
+
+	MissingEntitlement = 5
 }
 
 /**
@@ -154,6 +158,18 @@ declare var SFExtensionMessageKey: string;
  * @since 17.0
  */
 declare var SFExtensionProfileKey: string;
+
+/**
+ * @since 26.0
+ */
+declare class SFSafariSettings extends NSObject {
+
+	static alloc(): SFSafariSettings; // inherited from NSObject
+
+	static new(): SFSafariSettings; // inherited from NSObject
+
+	static openExportBrowsingDataSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+}
 
 /**
  * @since 9.0
@@ -183,11 +199,13 @@ declare class SFSafariViewController extends UIViewController {
 
 	/**
 	 * @since 10.0
+	 * @deprecated 26.0
 	 */
 	preferredBarTintColor: UIColor;
 
 	/**
 	 * @since 10.0
+	 * @deprecated 26.0
 	 */
 	preferredControlTintColor: UIColor;
 

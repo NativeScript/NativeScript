@@ -10,15 +10,6 @@ export enum NavigationType {
 	replace,
 }
 
-export interface TransitionState {
-	enterTransitionListener: any;
-	exitTransitionListener: any;
-	reenterTransitionListener: any;
-	returnTransitionListener: any;
-	transitionName: string;
-	entry: BackstackEntry;
-}
-
 export interface ViewEntry {
 	moduleName?: string;
 	create?: () => View;
@@ -33,6 +24,17 @@ export interface NavigationEntry extends ViewEntry {
 	transitionAndroid?: NavigationTransition;
 	backstackVisible?: boolean;
 	clearHistory?: boolean;
+}
+
+export interface BackstackEntry {
+	entry: NavigationEntry;
+	resolvedPage: Page;
+	navDepth: number;
+	fragmentTag: string;
+	fragment?: any;
+	viewSavedState?: any;
+	frameId?: number;
+	recreated?: boolean;
 }
 
 export interface NavigationContext {
@@ -51,15 +53,13 @@ export interface NavigationTransition {
 	curve?: any;
 }
 
-export interface BackstackEntry {
-	entry: NavigationEntry;
-	resolvedPage: Page;
-	navDepth: number;
-	fragmentTag: string;
-	fragment?: any;
-	viewSavedState?: any;
-	frameId?: number;
-	recreated?: boolean;
+export interface TransitionState {
+	enterTransitionListener: any;
+	exitTransitionListener: any;
+	reenterTransitionListener: any;
+	returnTransitionListener: any;
+	transitionName: string;
+	entry: BackstackEntry;
 }
 
 export interface AndroidFrame extends Observable {
