@@ -1672,12 +1672,6 @@ function parseEdges(edges: string): number | null {
 
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
-
-	constructor() {
-		super();
-		this._defaultOverflowEdge = OverflowEdgeDontApply;
-		this._defaultOverflowEdgeValue = 'dont-apply';
-	}
 }
 
 export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
