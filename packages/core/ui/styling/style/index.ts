@@ -106,6 +106,7 @@ export class Style extends Observable {
 	}
 
 	public fontInternal: Font;
+	public iconFontFamily: string;
 	/**
 	 * This property ensures inheritance of a11y scale among views.
 	 */

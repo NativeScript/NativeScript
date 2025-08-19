@@ -13,7 +13,7 @@ import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
 import { layout } from '../../utils/layout-helper';
-import { isFontIconURI, isSystemURI, SYSTEM_PREFIX } from '../../utils/common';
+import { FONT_PREFIX, isFontIconURI, isSystemURI, SYSTEM_PREFIX } from '../../utils/common';
 import { SDK_VERSION } from '../../utils/constants';
 import { Device } from '../../platform';
 export * from './tab-view-common';
@@ -504,7 +504,16 @@ export class TabView extends TabViewBase {
 			if (isSystemURI(item.iconSource)) {
 				is = ImageSource.fromSystemImageSync(item.iconSource.slice(SYSTEM_PREFIX.length));
 			} else if (isFontIconURI(item.iconSource)) {
-				is = ImageSource.fromFontIconCodeSync(item.iconSource, item.style.fontInternal, item.style.color);
+				// Allow specifying a separate font family for the icon via style.iconFontFamily.
+				// If provided, construct a Font from the family and (optionally) size from fontInternal.
+				let iconFont = item.style.fontInternal;
+				const iconFontFamily = item.iconFontFamily || item.style.iconFontFamily;
+				if (iconFontFamily) {
+					// Preserve size/style from existing fontInternal if present.
+					const baseFont = item.style.fontInternal || Font.default;
+					iconFont = baseFont.withFontFamily(iconFontFamily);
+				}
+				is = ImageSource.fromFontIconCodeSync(item.iconSource.slice(FONT_PREFIX.length), iconFont, item.style.color);
 			} else {
 				is = ImageSource.fromFileOrResourceSync(item.iconSource);
 			}

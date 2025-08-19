@@ -9,6 +9,7 @@ import { Trace } from '../../trace';
 import { Color } from '../../color';
 import { fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
 import { RESOURCE_PREFIX, ad, layout } from '../../utils';
+import { FONT_PREFIX, isFontIconURI } from '../../utils/common';
 import { Frame } from '../frame';
 import { Application } from '../../application';
 import { AndroidHelper } from '../core/view';
@@ -292,19 +293,31 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
 	result.title = item.title;
 
 	if (item.iconSource) {
-		if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-			result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
-			if (result.iconId === 0) {
-				traceMissingIcon(item.iconSource);
-			}
-		} else {
-			const is = ImageSource.fromFileOrResourceSync(item.iconSource);
+		const addDrawable = (is: ImageSource) => {
 			if (is) {
 				// TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
 				result.iconDrawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
 			} else {
 				traceMissingIcon(item.iconSource);
 			}
+		};
+		if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+			result.iconId = ad.resources.getDrawableId(item.iconSource.slice(RESOURCE_PREFIX.length));
+			if (result.iconId === 0) {
+				traceMissingIcon(item.iconSource);
+			}
+		} else if (isFontIconURI(item.iconSource)) {
+			// Allow specifying a separate font family for the icon via style.iconFontFamily.
+			let iconFont: any = item.style.fontInternal;
+			const iconFontFamily = item.iconFontFamily || item.style.iconFontFamily;
+			if (iconFontFamily) {
+				const baseFont = item.style.fontInternal || Font.default;
+				iconFont = baseFont.withFontFamily(iconFontFamily);
+			}
+			const is = ImageSource.fromFontIconCodeSync(item.iconSource.slice(FONT_PREFIX.length), iconFont, item.style.color);
+			addDrawable(is);
+		} else {
+			addDrawable(ImageSource.fromFileOrResourceSync(item.iconSource));
 		}
 	}
 
@@ -494,7 +507,7 @@ export class TabView extends TabViewBase {
 				JSON.stringify([
 					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
 					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
-				])
+				]),
 			);
 			viewPager.setLayoutParams(lp);
 
@@ -506,7 +519,7 @@ export class TabView extends TabViewBase {
 				JSON.stringify([
 					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
 					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
-				])
+				]),
 			);
 			tabLayout.setLayoutParams(lp);
 			viewPager.setSwipePageEnabled(false);
