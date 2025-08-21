@@ -1,0 +1,27 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Glass Effects" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <GridLayout>
+
+        <Image src="https://cdn.wallpapersafari.com/89/64/c6MnRY.jpg" stretch="aspectFill" iosOverflowSafeArea="true" />
+
+        <GridLayout rows="*,auto,auto,auto,*">
+
+            <GridLayout row="1" width="300" height="150" iosGlassEffect="regular" horizontalAlignment="center" verticalAlignment="middle">
+                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Regular" />
+            </GridLayout>
+
+            <GridLayout row="2" width="300" height="150" iosGlassEffect="clear" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10">
+                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Clear" />
+            </GridLayout>
+
+            <GridLayout row="3" width="300" height="150" iosGlassEffect="{{iosGlassEffectInteractive}}" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10">
+                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Interactive" />
+            </GridLayout>
+        </GridLayout>
+
+    </GridLayout>
+</Page>
