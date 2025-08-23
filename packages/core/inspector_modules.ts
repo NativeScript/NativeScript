@@ -116,7 +116,7 @@ function remapStack(raw: string): string {
  * Allows the runtime to remap stack traces before displaying them in the in-flight error screens.
  */
 (global as any).__ns_remapStack = (rawStack: string) => {
-	console.log('Remapping stack trace...');
+	// console.log('Remapping stack trace...');
 	return remapStack(rawStack);
 };
 /**
