@@ -6,7 +6,7 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { ios as iosUtils } from '../utils/native-helper';
-import { ApplicationCommon, initializeSdkVersionClass } from './application-common';
+import { ApplicationCommon, initializeSdkVersionClass, SceneEvents } from './application-common';
 import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
@@ -178,7 +178,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 
 		// Notify that scene will connect
 		Application.ios.notify({
-			eventName: 'sceneWillConnect',
+			eventName: SceneEvents.sceneWillConnect,
 			object: Application.ios,
 			scene: scene,
 			window: this._window,
@@ -198,7 +198,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	sceneWillResignActive(scene: UIScene): void {
 		// Notify that scene will resign active
 		Application.ios.notify({
-			eventName: 'sceneWillResignActive',
+			eventName: SceneEvents.sceneWillResignActive,
 			object: Application.ios,
 			scene: scene,
 		} as SceneEventData);
@@ -689,7 +689,7 @@ export class iOSApplication extends ApplicationCommon {
 		}
 
 		this.notify({
-			eventName: 'sceneWillConnect',
+			eventName: SceneEvents.sceneWillConnect,
 			object: this,
 			scene: scene,
 			userInfo: notification.userInfo,
@@ -699,7 +699,7 @@ export class iOSApplication extends ApplicationCommon {
 	private sceneDidActivate(notification: NSNotification) {
 		const scene = notification.object as UIScene;
 		this.notify({
-			eventName: 'sceneDidActivate',
+			eventName: SceneEvents.sceneDidActivate,
 			object: this,
 			scene: scene,
 		} as SceneEventData);
@@ -722,7 +722,7 @@ export class iOSApplication extends ApplicationCommon {
 	private sceneWillEnterForeground(notification: NSNotification) {
 		const scene = notification.object as UIScene;
 		this.notify({
-			eventName: 'sceneWillEnterForeground',
+			eventName: SceneEvents.sceneWillEnterForeground,
 			object: this,
 			scene: scene,
 		} as SceneEventData);
@@ -731,7 +731,7 @@ export class iOSApplication extends ApplicationCommon {
 	private sceneDidEnterBackground(notification: NSNotification) {
 		const scene = notification.object as UIScene;
 		this.notify({
-			eventName: 'sceneDidEnterBackground',
+			eventName: SceneEvents.sceneDidEnterBackground,
 			object: this,
 			scene: scene,
 		} as SceneEventData);
@@ -761,7 +761,7 @@ export class iOSApplication extends ApplicationCommon {
 		}
 
 		this.notify({
-			eventName: 'sceneDidDisconnect',
+			eventName: SceneEvents.sceneDidDisconnect,
 			object: this,
 			scene: scene,
 		} as SceneEventData);
@@ -804,6 +804,14 @@ export class iOSApplication extends ApplicationCommon {
 
 			// Set up the window content for the primary scene
 			this.setWindowContent();
+		} else {
+			// For secondary scenes, emit an event to allow developers to set up custom content
+			this.notify({
+				eventName: SceneEvents.sceneContentSetup,
+				object: this,
+				scene: scene,
+				window: window,
+			} as SceneEventData);
 		}
 
 		window.makeKeyAndVisible();
@@ -862,6 +870,23 @@ export class iOSApplication extends ApplicationCommon {
 
 		// Additional scene configuration can be added here
 		// For now, the notification observers are already set up in the constructor
+	}
+
+	/**
+	 * Creates a simple view controller with a NativeScript view for a scene window.
+	 * @param window The UIWindow to set content for
+	 * @param view The NativeScript View to set as root content
+	 */
+	setWindowRootView(window: UIWindow, view: View): void {
+		if (!window || !view) {
+			return;
+		}
+
+		if (view.ios) {
+			window.rootViewController = view.viewController;
+		} else {
+			console.warn('View does not have a native iOS implementation');
+		}
 	}
 
 	get ios() {

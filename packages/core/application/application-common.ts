@@ -88,6 +88,7 @@ export const SceneEvents = {
 	sceneWillEnterForeground: 'sceneWillEnterForeground',
 	sceneDidEnterBackground: 'sceneDidEnterBackground',
 	sceneDidDisconnect: 'sceneDidDisconnect',
+	sceneContentSetup: 'sceneContentSetup',
 } as const;
 
 export type SceneEventName = (typeof SceneEvents)[keyof typeof SceneEvents];

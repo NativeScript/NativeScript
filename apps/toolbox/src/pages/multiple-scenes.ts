@@ -1,4 +1,4 @@
-import { Observable, EventData, Page, Application, Frame, isIOS, Dialogs } from '@nativescript/core';
+import { Observable, EventData, Page, Application, Frame, StackLayout, Label, Button, Dialogs, View, Color, SceneEvents } from '@nativescript/core';
 
 interface SceneEventData {
 	eventName: string;
@@ -54,11 +54,11 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	get canCreateNewScene(): boolean {
-		return this._isMultiSceneSupported && isIOS;
+		return this._isMultiSceneSupported && __APPLE__;
 	}
 
 	get statusText(): string {
-		if (!isIOS) {
+		if (!__APPLE__) {
 			return 'Scene support is only available on iOS';
 		}
 		if (!this._isMultiSceneSupported) {
@@ -84,7 +84,7 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	private checkSceneSupport() {
-		if (isIOS && Application.ios) {
+		if (__APPLE__) {
 			try {
 				// Check if the supportsScenes method exists and call it
 				if (typeof Application.ios.supportsScenes === 'function') {
@@ -112,40 +112,100 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	private setupSceneEventListeners() {
-		if (!isIOS || !Application.ios) return;
+		if (!__APPLE__) return;
 
 		// Listen to all scene lifecycle events
-		Application.on('sceneWillConnect', (args: SceneEventData) => {
+		Application.on(SceneEvents.sceneWillConnect, (args: SceneEventData) => {
 			this.addSceneEvent(`Scene Will Connect: ${this.getSceneDescription(args.scene)}`);
 			this.updateSceneInfo();
 		});
 
-		Application.on('sceneDidActivate', (args: SceneEventData) => {
+		Application.on(SceneEvents.sceneDidActivate, (args: SceneEventData) => {
 			this.addSceneEvent(`Scene Did Activate: ${this.getSceneDescription(args.scene)}`);
 			this.updateSceneInfo();
 		});
 
-		Application.on('sceneWillResignActive', (args: SceneEventData) => {
+		Application.on(SceneEvents.sceneWillResignActive, (args: SceneEventData) => {
 			this.addSceneEvent(`Scene Will Resign Active: ${this.getSceneDescription(args.scene)}`);
 		});
 
-		Application.on('sceneWillEnterForeground', (args: SceneEventData) => {
+		Application.on(SceneEvents.sceneWillEnterForeground, (args: SceneEventData) => {
 			this.addSceneEvent(`Scene Will Enter Foreground: ${this.getSceneDescription(args.scene)}`);
 		});
 
-		Application.on('sceneDidEnterBackground', (args: SceneEventData) => {
+		Application.on(SceneEvents.sceneDidEnterBackground, (args: SceneEventData) => {
 			this.addSceneEvent(`Scene Did Enter Background: ${this.getSceneDescription(args.scene)}`);
 		});
 
-		Application.on('sceneDidDisconnect', (args: SceneEventData) => {
+		Application.on(SceneEvents.sceneDidDisconnect, (args: SceneEventData) => {
 			this.addSceneEvent(`Scene Did Disconnect: ${this.getSceneDescription(args.scene)}`);
 			this.updateSceneInfo();
+		});
+
+		// Listen for scene content setup events to provide content for new scenes
+		Application.on(SceneEvents.sceneContentSetup, (args: SceneEventData) => {
+			this.addSceneEvent(`Setting up content for new scene: ${this.getSceneDescription(args.scene)}`);
+			this.setupSceneContent(args.scene, args.window);
 		});
 	}
 
 	private getSceneDescription(scene: any): string {
 		if (!scene) return 'Unknown';
 		return `Scene ${scene.hash || scene.description || 'Unknown'}`;
+	}
+
+	private setupSceneContent(scene: any, window: any) {
+		if (!scene || !window || !__APPLE__) return;
+
+		try {
+			const page = new Page();
+			page.backgroundColor = new Color('#cdffdb');
+			// Create a simple layout for the new scene
+			const layout = new StackLayout();
+			layout.padding = 32;
+
+			// Set up the layout as a root view (this creates the native iOS view)
+			page._setupAsRootView({});
+			page.content = layout;
+
+			// Add title
+			const title = new Label();
+			title.text = 'New NativeScript Scene';
+			title.fontSize = 35;
+			title.fontWeight = 'bold';
+			title.textAlignment = 'center';
+			title.marginBottom = 30;
+			layout.addChild(title);
+
+			// Add scene info
+			const sceneInfo = new Label();
+			sceneInfo.text = `Scene ID: ${scene.hash || 'Unknown'}\nWindow: ${window.description || 'Unknown'}`;
+			sceneInfo.fontSize = 22;
+			sceneInfo.textAlignment = 'center';
+			sceneInfo.marginBottom = 25;
+			layout.addChild(sceneInfo);
+
+			// Add close button
+			const closeButton = new Button();
+			closeButton.text = 'Close This Scene';
+			closeButton.fontSize = 22;
+			closeButton.fontWeight = 'bold';
+			closeButton.backgroundColor = '#ff4444';
+			closeButton.color = new Color('white');
+			closeButton.borderRadius = 8;
+			closeButton.padding = 16;
+			closeButton.width = 300;
+			closeButton.horizontalAlignment = 'center';
+			closeButton.on('tap', () => {
+				this.closeScene(scene);
+			});
+			layout.addChild(closeButton);
+
+			Application.ios.setWindowRootView(window, page);
+			this.addSceneEvent(`Content successfully set for scene: ${this.getSceneDescription(scene)}`);
+		} catch (error) {
+			this.addSceneEvent(`Error setting up scene content: ${error.message}`);
+		}
 	}
 
 	private getIOSVersion(): string {
@@ -160,7 +220,7 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	private getSceneAPIInfo(): string {
-		if (!isIOS) return 'Not iOS';
+		if (!__APPLE__) return 'Not iOS';
 
 		try {
 			if (typeof UIApplication !== 'undefined') {
@@ -195,7 +255,7 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	private updateSceneInfo() {
-		if (isIOS && Application.ios && this._isMultiSceneSupported) {
+		if (__APPLE__ && this._isMultiSceneSupported) {
 			try {
 				// Check if the methods exist before calling them
 				if (typeof Application.ios.getAllScenes === 'function') {
@@ -417,7 +477,7 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	private checkSceneDelegateRegistration() {
-		if (!isIOS) {
+		if (!__APPLE__) {
 			return;
 		}
 
@@ -485,5 +545,30 @@ export class MultipleScenesModel extends Observable {
 		this.addSceneEvent('• User-initiated actions (split-screen) usually work better');
 		this.addSceneEvent('• Some iOS versions restrict programmatic creation');
 		this.addSceneEvent('✅ Scene delegate is working correctly (initial scene loaded)');
+	}
+
+	private closeScene(scene: any) {
+		if (!scene || !__APPLE__) return;
+
+		try {
+			this.addSceneEvent(`Attempting to close scene: ${this.getSceneDescription(scene)}`);
+
+			// Get the scene session
+			const session = scene.session;
+			if (session) {
+				// Request scene destruction using the correct API
+				UIApplication.sharedApplication.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
+					if (error) {
+						this.addSceneEvent(`Error closing scene: ${error.localizedDescription}`);
+					} else {
+						this.addSceneEvent(`Scene closed successfully`);
+					}
+				});
+			} else {
+				this.addSceneEvent('Error: Could not find scene session to close');
+			}
+		} catch (error) {
+			this.addSceneEvent(`Error closing scene: ${error.message}`);
+		}
 	}
 }
