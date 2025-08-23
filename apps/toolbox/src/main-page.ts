@@ -11,7 +11,9 @@ export function navigatingTo(args: EventData) {
 	// 	Utils.ios.setWindowBackgroundColor('blue');
 	// }
 
-	setupSceneEvents();
+	// Note: can test global scene handling by uncommenting following
+	// Can also view the 'multiple-scenes' demo page in isolation
+	// setupSceneEvents();
 }
 
 function setupSceneEvents() {

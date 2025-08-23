@@ -81,6 +81,31 @@ class CADisplayLinkTarget extends NSObject {
 	};
 }
 
+/**
+ * Detect if the app supports scenes.
+ * When an app configures UIApplicationSceneManifest in Info.plist
+ * it will use scene lifecycle management.
+ */
+let sceneManifest: NSDictionary<any, any>;
+function supportsScenes(): boolean {
+	if (SDK_VERSION < 13) {
+		return false;
+	}
+
+	if (typeof sceneManifest === 'undefined') {
+		// Check if scene manifest exists in Info.plist
+		sceneManifest = NSBundle.mainBundle.objectForInfoDictionaryKey('UIApplicationSceneManifest');
+	}
+	return !!sceneManifest;
+}
+
+function supportsMultipleScenes(): boolean {
+	if (SDK_VERSION < 13) {
+		return false;
+	}
+	return UIApplication.sharedApplication?.supportsMultipleScenes;
+}
+
 @NativeClass
 class Responder extends UIResponder implements UIApplicationDelegate {
 	get window(): UIWindow {
@@ -92,6 +117,28 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 	}
 
 	static ObjCProtocols = [UIApplicationDelegate];
+}
+
+if (supportsScenes()) {
+	/**
+	 * This method is called when a new scene session is being created.
+	 * Important: When this method is implemented, the app assumes scene-based lifecycle management.
+	 * Detected by the Info.plist existence 'UIApplicationSceneManifest'.
+	 * If this method is implemented when there is no manifest defined,
+	 * the app will boot to a white screen.
+	 */
+	(Responder.prototype as UIApplicationDelegate).applicationConfigurationForConnectingSceneSessionOptions = function (application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions): UISceneConfiguration {
+		const config = UISceneConfiguration.configurationWithNameSessionRole('Default Configuration', connectingSceneSession.role);
+		config.sceneClass = UIWindowScene as any;
+		config.delegateClass = SceneDelegate;
+		return config;
+	};
+
+	// scene session destruction handling
+	(Responder.prototype as UIApplicationDelegate).applicationDidDiscardSceneSessions = function (application: UIApplication, sceneSessions: NSSet<UISceneSession>): void {
+		// Note: we could emit an event here if needed
+		// console.log('Scene sessions discarded:', sceneSessions.count);
+	};
 }
 
 @NativeClass
@@ -108,7 +155,12 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	}
 
 	sceneWillConnectToSessionOptions(scene: UIScene, session: UISceneSession, connectionOptions: UISceneConnectionOptions): void {
+		// console.log('SceneDelegate.sceneWillConnectToSessionOptions called');
+		// console.log('Scene type:', scene.constructor.name);
+		// console.log('Session role:', session.role);
+
 		if (!(scene instanceof UIWindowScene)) {
+			// console.log('Scene is not a UIWindowScene, ignoring');
 			return;
 		}
 
@@ -116,6 +168,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 
 		// Create window for this scene
 		this._window = UIWindow.alloc().initWithWindowScene(scene);
+		// console.log('Window created for scene');
 
 		// Store the window scene for this window
 		Application.ios._setWindowForScene(this._window, scene);
@@ -165,6 +218,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 
 	static ObjCProtocols = [UIWindowSceneDelegate];
 }
+// ensure available globally
+global.SceneDelegate = SceneDelegate;
 
 export class iOSApplication extends ApplicationCommon {
 	private _delegate: UIApplicationDelegate;
@@ -191,8 +246,8 @@ export class iOSApplication extends ApplicationCommon {
 		this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
 		this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
 
-		// Add scene lifecycle notification observers
-		if (SDK_VERSION >= 13) {
+		// Add scene lifecycle notification observers only if scenes are supported
+		if (this.supportsScenes()) {
 			this.addNotificationObserver('UISceneWillConnectNotification', this.sceneWillConnect.bind(this));
 			this.addNotificationObserver('UISceneDidActivateNotification', this.sceneDidActivate.bind(this));
 			this.addNotificationObserver('UISceneWillEnterForegroundNotification', this.sceneWillEnterForeground.bind(this));
@@ -564,7 +619,6 @@ export class iOSApplication extends ApplicationCommon {
 			this.notifyAppStarted(notification);
 		} else {
 			// Scene-based app - window creation will happen in scene delegate
-			console.log('Scene-based lifecycle detected - window creation delegated to scene delegate');
 		}
 	}
 
@@ -788,27 +842,11 @@ export class iOSApplication extends ApplicationCommon {
 
 	// Scene lifecycle management
 	supportsScenes(): boolean {
-		if (SDK_VERSION < 13) {
-			return false;
-		}
-
-		// Check if scene manifest exists in Info.plist
-		const sceneManifest = NSBundle.mainBundle.objectForInfoDictionaryKey('UIApplicationSceneManifest');
-		const hasSceneManifest = !!sceneManifest;
-
-		console.log('Scene manifest exists:', hasSceneManifest);
-		if (hasSceneManifest) {
-			console.log('Scene manifest:', sceneManifest);
-		}
-
-		return hasSceneManifest;
+		return supportsScenes();
 	}
 
 	supportsMultipleScenes(): boolean {
-		if (SDK_VERSION < 13) {
-			return false;
-		}
-		return UIApplication.sharedApplication?.supportsMultipleScenes;
+		return supportsMultipleScenes();
 	}
 
 	isUsingSceneLifecycle(): boolean {
