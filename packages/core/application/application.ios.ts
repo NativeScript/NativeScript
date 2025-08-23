@@ -131,8 +131,12 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			window: this._window,
 			connectionOptions: connectionOptions,
 		} as SceneEventData);
-	}
 
+		// If this is the first scene, trigger app startup
+		if (!Application.ios._getPrimaryScene()) {
+			Application.ios._notifySceneAppStarted();
+		}
+	}
 	sceneDidBecomeActive(scene: UIScene): void {
 		// This will be handled by the notification observer in iOSApplication
 		// The notification system will automatically trigger sceneDidActivate
@@ -468,6 +472,11 @@ export class iOSApplication extends ApplicationCommon {
 		}
 	}
 
+	// Public method for scene-based app startup
+	_notifySceneAppStarted() {
+		this.notifyAppStarted();
+	}
+
 	public _onLivesync(context?: ModuleContext): void {
 		// Handle application root module
 		const isAppRootModuleChanged = context && context.path && context.path.includes(this.getMainEntry().moduleName) && context.type !== 'style';
@@ -536,19 +545,27 @@ export class iOSApplication extends ApplicationCommon {
 			}
 		}
 		this.setMaxRefreshRate();
-		// ensures window is assigned to proper window scene
-		setiOSWindow(this.window);
 
-		if (!getiOSWindow()) {
-			// if still no window, create one
-			setiOSWindow(UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds));
+		// Only set up window if NOT using scene-based lifecycle
+		if (!this.supportsScenes()) {
+			// Traditional single-window app setup
+			// ensures window is assigned to proper window scene
+			setiOSWindow(this.window);
+
+			if (!getiOSWindow()) {
+				// if still no window, create one
+				setiOSWindow(UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds));
+			}
+
+			if (!__VISIONOS__) {
+				this.window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+			}
+
+			this.notifyAppStarted(notification);
+		} else {
+			// Scene-based app - window creation will happen in scene delegate
+			console.log('Scene-based lifecycle detected - window creation delegated to scene delegate');
 		}
-
-		if (!__VISIONOS__) {
-			this.window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
-		}
-
-		this.notifyAppStarted(notification);
 	}
 
 	@profile
@@ -771,8 +788,20 @@ export class iOSApplication extends ApplicationCommon {
 
 	// Scene lifecycle management
 	supportsScenes(): boolean {
-		console.log('UIApplication.sharedApplication.supportsMultipleScenes:', UIApplication.sharedApplication.supportsMultipleScenes);
-		return SDK_VERSION >= 13 && UIApplication.sharedApplication.supportsMultipleScenes;
+		if (SDK_VERSION < 13) {
+			return false;
+		}
+
+		// Check if scene manifest exists in Info.plist
+		const sceneManifest = NSBundle.mainBundle.objectForInfoDictionaryKey('UIApplicationSceneManifest');
+		const hasSceneManifest = !!sceneManifest;
+
+		console.log('Scene manifest exists:', hasSceneManifest);
+		if (hasSceneManifest) {
+			console.log('Scene manifest:', sceneManifest);
+		}
+
+		return hasSceneManifest;
 	}
 
 	isUsingSceneLifecycle(): boolean {
