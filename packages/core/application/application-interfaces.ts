@@ -216,3 +216,28 @@ export interface AndroidActivityBackPressedEventData extends AndroidActivityEven
 export interface LoadAppCSSEventData extends ApplicationEventData {
 	cssFile: string;
 }
+
+/**
+ * iOS Event data containing information for scene lifecycle events (iOS 13+).
+ */
+export interface SceneEventData extends ApplicationEventData {
+	/**
+	 * The UIScene instance associated with this event.
+	 */
+	scene?: UIScene;
+
+	/**
+	 * The UIWindow associated with this scene (if applicable).
+	 */
+	window?: UIWindow;
+
+	/**
+	 * Scene connection options (for sceneWillConnect event).
+	 */
+	connectionOptions?: UISceneConnectionOptions;
+
+	/**
+	 * Additional user info from the notification.
+	 */
+	userInfo?: NSDictionary<any, any>;
+}

@@ -7,7 +7,7 @@ import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { ios as iosUtils } from '../utils/native-helper';
 import { ApplicationCommon, initializeSdkVersionClass } from './application-common';
-import { ApplicationEventData } from './application-interfaces';
+import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 import {
@@ -94,10 +94,81 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 	static ObjCProtocols = [UIApplicationDelegate];
 }
 
+@NativeClass
+class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
+	private _window: UIWindow;
+	private _scene: UIWindowScene;
+
+	get window(): UIWindow {
+		return this._window;
+	}
+
+	set window(value: UIWindow) {
+		this._window = value;
+	}
+
+	sceneWillConnectToSessionOptions(scene: UIScene, session: UISceneSession, connectionOptions: UISceneConnectionOptions): void {
+		if (!(scene instanceof UIWindowScene)) {
+			return;
+		}
+
+		this._scene = scene;
+
+		// Create window for this scene
+		this._window = UIWindow.alloc().initWithWindowScene(scene);
+
+		// Store the window scene for this window
+		Application.ios._setWindowForScene(this._window, scene);
+
+		// Set up the window content
+		Application.ios._setupWindowForScene(this._window, scene);
+
+		// Notify that scene will connect
+		Application.ios.notify({
+			eventName: 'sceneWillConnect',
+			object: Application.ios,
+			scene: scene,
+			window: this._window,
+			connectionOptions: connectionOptions,
+		} as SceneEventData);
+	}
+
+	sceneDidBecomeActive(scene: UIScene): void {
+		// This will be handled by the notification observer in iOSApplication
+		// The notification system will automatically trigger sceneDidActivate
+	}
+
+	sceneWillResignActive(scene: UIScene): void {
+		// Notify that scene will resign active
+		Application.ios.notify({
+			eventName: 'sceneWillResignActive',
+			object: Application.ios,
+			scene: scene,
+		} as SceneEventData);
+	}
+
+	sceneWillEnterForeground(scene: UIScene): void {
+		// This will be handled by the notification observer in iOSApplication
+	}
+
+	sceneDidEnterBackground(scene: UIScene): void {
+		// This will be handled by the notification observer in iOSApplication
+	}
+
+	sceneDidDisconnect(scene: UIScene): void {
+		// This will be handled by the notification observer in iOSApplication
+	}
+
+	static ObjCProtocols = [UIWindowSceneDelegate];
+}
+
 export class iOSApplication extends ApplicationCommon {
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
 	private _rootView: View;
+	private _sceneDelegate: UIWindowSceneDelegate;
+	private _windowSceneMap = new Map<UIScene, UIWindow>();
+	private _primaryScene: UIWindowScene;
 
 	displayedOnce = false;
 	displayedLinkTarget: CADisplayLinkTarget;
@@ -115,6 +186,15 @@ export class iOSApplication extends ApplicationCommon {
 		this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
 		this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
 		this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
+
+		// Add scene lifecycle notification observers
+		if (SDK_VERSION >= 13) {
+			this.addNotificationObserver('UISceneWillConnectNotification', this.sceneWillConnect.bind(this));
+			this.addNotificationObserver('UISceneDidActivateNotification', this.sceneDidActivate.bind(this));
+			this.addNotificationObserver('UISceneWillEnterForegroundNotification', this.sceneWillEnterForeground.bind(this));
+			this.addNotificationObserver('UISceneDidEnterBackgroundNotification', this.sceneDidEnterBackground.bind(this));
+			this.addNotificationObserver('UISceneDidDisconnectNotification', this.sceneDidDisconnect.bind(this));
+		}
 	}
 
 	getRootView(): View {
@@ -523,6 +603,191 @@ export class iOSApplication extends ApplicationCommon {
 		const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
 		const newOrientation = this.getOrientationValue(statusBarOrientation);
 		this.setOrientation(newOrientation);
+	}
+
+	// Scene lifecycle notification handlers
+	private sceneWillConnect(notification: NSNotification) {
+		const scene = notification.object as UIWindowScene;
+		if (!scene || !(scene instanceof UIWindowScene)) {
+			return;
+		}
+
+		// Store as primary scene if it's the first one
+		if (!this._primaryScene) {
+			this._primaryScene = scene;
+		}
+
+		this.notify({
+			eventName: 'sceneWillConnect',
+			object: this,
+			scene: scene,
+			userInfo: notification.userInfo,
+		} as SceneEventData);
+	}
+
+	private sceneDidActivate(notification: NSNotification) {
+		const scene = notification.object as UIScene;
+		this.notify({
+			eventName: 'sceneDidActivate',
+			object: this,
+			scene: scene,
+		} as SceneEventData);
+
+		// If this is the primary scene, trigger traditional app lifecycle
+		if (scene === this._primaryScene) {
+			const additionalData = {
+				ios: UIApplication.sharedApplication,
+				scene: scene,
+			};
+			this.setInBackground(false, additionalData);
+			this.setSuspended(false, additionalData);
+
+			if (this._rootView && !this._rootView.isLoaded) {
+				this._rootView.callLoaded();
+			}
+		}
+	}
+
+	private sceneWillEnterForeground(notification: NSNotification) {
+		const scene = notification.object as UIScene;
+		this.notify({
+			eventName: 'sceneWillEnterForeground',
+			object: this,
+			scene: scene,
+		} as SceneEventData);
+	}
+
+	private sceneDidEnterBackground(notification: NSNotification) {
+		const scene = notification.object as UIScene;
+		this.notify({
+			eventName: 'sceneDidEnterBackground',
+			object: this,
+			scene: scene,
+		} as SceneEventData);
+
+		// If this is the primary scene, trigger traditional app lifecycle
+		if (scene === this._primaryScene) {
+			const additionalData = {
+				ios: UIApplication.sharedApplication,
+				scene: scene,
+			};
+			this.setInBackground(true, additionalData);
+			this.setSuspended(true, additionalData);
+
+			if (this._rootView && this._rootView.isLoaded) {
+				this._rootView.callUnloaded();
+			}
+		}
+	}
+
+	private sceneDidDisconnect(notification: NSNotification) {
+		const scene = notification.object as UIScene;
+		this._removeWindowForScene(scene);
+
+		// If primary scene disconnected, clear it
+		if (scene === this._primaryScene) {
+			this._primaryScene = null;
+		}
+
+		this.notify({
+			eventName: 'sceneDidDisconnect',
+			object: this,
+			scene: scene,
+		} as SceneEventData);
+	}
+
+	// Scene management helper methods
+	_setWindowForScene(window: UIWindow, scene: UIScene): void {
+		this._windowSceneMap.set(scene, window);
+	}
+
+	_removeWindowForScene(scene: UIScene): void {
+		this._windowSceneMap.delete(scene);
+	}
+
+	_getWindowForScene(scene: UIScene): UIWindow | undefined {
+		return this._windowSceneMap.get(scene);
+	}
+
+	_getPrimaryScene(): UIWindowScene | null {
+		return this._primaryScene;
+	}
+
+	_setupWindowForScene(window: UIWindow, scene: UIWindowScene): void {
+		if (!window) {
+			return;
+		}
+
+		// Set up window background
+		if (!__VISIONOS__) {
+			window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+		}
+
+		// If this is the primary scene, set up the main application content
+		if (scene === this._primaryScene || !this._primaryScene) {
+			this._primaryScene = scene;
+
+			if (!getiOSWindow()) {
+				setiOSWindow(window);
+			}
+
+			// Set up the window content for the primary scene
+			this.setWindowContent();
+		}
+
+		window.makeKeyAndVisible();
+	}
+
+	get sceneDelegate(): UIWindowSceneDelegate {
+		if (!this._sceneDelegate) {
+			this._sceneDelegate = SceneDelegate.new() as UIWindowSceneDelegate;
+		}
+		return this._sceneDelegate;
+	}
+
+	set sceneDelegate(value: UIWindowSceneDelegate) {
+		this._sceneDelegate = value;
+	}
+
+	// Multi-window support methods
+	getAllWindows(): UIWindow[] {
+		return Array.from(this._windowSceneMap.values());
+	}
+
+	getAllScenes(): UIScene[] {
+		return Array.from(this._windowSceneMap.keys());
+	}
+
+	getWindowScenes(): UIWindowScene[] {
+		return this.getAllScenes().filter((scene) => scene instanceof UIWindowScene) as UIWindowScene[];
+	}
+
+	getPrimaryWindow(): UIWindow {
+		if (this._primaryScene) {
+			return this._getWindowForScene(this._primaryScene) || getiOSWindow();
+		}
+		return getiOSWindow();
+	}
+
+	// Scene lifecycle management
+	supportsScenes(): boolean {
+		console.log('UIApplication.sharedApplication.supportsMultipleScenes:', UIApplication.sharedApplication.supportsMultipleScenes);
+		return SDK_VERSION >= 13 && UIApplication.sharedApplication.supportsMultipleScenes;
+	}
+
+	isUsingSceneLifecycle(): boolean {
+		return this.supportsScenes() && this._windowSceneMap.size > 0;
+	}
+
+	// Call this to set up scene-based configuration
+	configureForScenes(): void {
+		if (!this.supportsScenes()) {
+			console.warn('Scene-based lifecycle is only supported on iOS 13+ iPad or visionOS with multi-scene enabled apps.');
+			return;
+		}
+
+		// Additional scene configuration can be added here
+		// For now, the notification observers are already set up in the constructor
 	}
 
 	get ios() {
