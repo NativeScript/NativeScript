@@ -21,8 +21,7 @@ function setupSceneEvents() {
 	initSceneEvents = true;
 	if (__APPLE__) {
 		if (Application.ios.supportsScenes()) {
-			console.log('Multi-window support available');
-
+			console.log('Supports multiple scenes:', Application.ios.supportsMultipleScenes());
 			// Get all windows and scenes
 			const windows = Application.ios.getAllWindows();
 			const scenes = Application.ios.getWindowScenes();

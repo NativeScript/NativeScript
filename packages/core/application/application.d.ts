@@ -194,9 +194,14 @@ export class iOSApplication extends ApplicationCommon {
 	removeNotificationObserver(observer: any, notificationName: string);
 
 	/**
-	 * Checks if the application supports multiple scenes.
+	 * Checks if the application supports scenes.
 	 */
 	supportsScenes(): boolean;
+
+	/**
+	 * Checks if the application supports multiple scenes.
+	 */
+	supportsMultipleScenes(): boolean;
 
 	/**
 	 * Checks if the application is using the scene lifecycle.

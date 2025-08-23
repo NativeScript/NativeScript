@@ -804,6 +804,13 @@ export class iOSApplication extends ApplicationCommon {
 		return hasSceneManifest;
 	}
 
+	supportsMultipleScenes(): boolean {
+		if (SDK_VERSION < 13) {
+			return false;
+		}
+		return UIApplication.sharedApplication?.supportsMultipleScenes;
+	}
+
 	isUsingSceneLifecycle(): boolean {
 		return this.supportsScenes() && this._windowSceneMap.size > 0;
 	}
