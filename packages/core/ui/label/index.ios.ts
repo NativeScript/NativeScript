@@ -1,6 +1,6 @@
 import { Label as LabelDefinition } from '.';
 import { Background } from '../styling/background';
-import { Length, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
 import { CoreTypes } from '../../core-types';

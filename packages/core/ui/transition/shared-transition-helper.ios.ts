@@ -2,7 +2,7 @@ import type { TransitionInteractiveState, TransitionNavigationType } from '.';
 import { getPageStartDefaultsForType, getRectFromProps, getSpringFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionState } from './shared-transition';
 import { isNumber } from '../../utils/types';
 import { Screen } from '../../platform';
-import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 import { ios as iOSUtils } from '../../utils/native-helper';
 
 interface PlatformTransitionInteractiveState extends TransitionInteractiveState {
@@ -225,7 +225,7 @@ export class SharedTransitionHelper {
 									sharedTransitionTag: s.view.sharedTransitionTag,
 									zIndex: s.zIndex,
 								};
-							})
+							}),
 						);
 					}
 
@@ -338,7 +338,7 @@ export class SharedTransitionHelper {
 							},
 							() => {
 								cleanupPresent();
-							}
+							},
 						);
 					} else {
 						iOSUtils.animateWithSpring({
@@ -371,7 +371,7 @@ export class SharedTransitionHelper {
 						console.log(`  ${type}: Dismiss`);
 						console.log(
 							`1. Dismiss sharedTransitionTags to animate:`,
-							transition.sharedElements.presented.map((p) => p.view.sharedTransitionTag)
+							transition.sharedElements.presented.map((p) => p.view.sharedTransitionTag),
 						);
 
 						console.log(`2. Add back previously stored sharedElements to dismiss:`);
@@ -397,7 +397,7 @@ export class SharedTransitionHelper {
 									sharedTransitionTag: s.view.sharedTransitionTag,
 									zIndex: s.zIndex,
 								};
-							})
+							}),
 						);
 					}
 
@@ -510,7 +510,7 @@ export class SharedTransitionHelper {
 							},
 							() => {
 								cleanupDismiss();
-							}
+							},
 						);
 					} else {
 						iOSUtils.animateWithSpring({

@@ -1,0 +1,34 @@
+{
+  "fill" : {
+    "automatic-gradient" : "gray:0.15949,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "ns-logo-white-front.png",
+          "name" : "ns-logo-white-front"
+        },
+        {
+          "hidden" : false,
+          "image-name" : "ns-log-dark-back.png",
+          "name" : "ns-log-dark-back"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

@@ -33,7 +33,12 @@
 				"forDevice": false,
 				"prepare": false
 			},
-			"configurations": {},
+			"defaultConfiguration": "main",
+			"configurations": {
+				"main": {
+					"flags": "--env.commonjs"
+				}
+			},
 			"dependsOn": ["^build"]
 		},
 		"prepare": {

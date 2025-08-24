@@ -4,7 +4,7 @@ import { CSSType, View } from '../../core/view';
 import { GridLayout } from '../grid-layout';
 import { RootLayout, RootLayoutOptions, ShadeCoverOptions, TransitionAnimation } from '.';
 import { Animation } from '../../animation';
-import { AnimationDefinition } from '../../animation';
+import { AnimationDefinition } from '../../animation/animation-types';
 import { isNumber } from '../../../utils/types';
 import { _findRootLayoutById, _pushIntoRootLayoutStack, _removeFromRootLayoutStack, _geRootLayoutFromStack } from './root-layout-stack';
 

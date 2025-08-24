@@ -57,8 +57,8 @@ export function test_set_value_greater_than_max_should_set_value_to_max() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (__APPLE__) {
-	exports.test_set_color = function () {
+export function test_set_color() {
+	if (__APPLE__) {
 		var progress = new progressModule.Progress();
 		progress.color = new color.Color('red');
 
@@ -67,9 +67,11 @@ if (__APPLE__) {
 		}
 
 		helper.buildUIAndRunTest(progress, testAction);
-	};
+	}
+}
 
-	exports.test_set_backgroundColor = function () {
+export function test_set_backgroundColor() {
+	if (__APPLE__) {
 		var progress = new progressModule.Progress();
 		progress.backgroundColor = new color.Color('red');
 
@@ -78,7 +80,7 @@ if (__APPLE__) {
 		}
 
 		helper.buildUIAndRunTest(progress, testAction);
-	};
+	}
 }
 
 export function test_set_maxValue_should_adjust_value() {

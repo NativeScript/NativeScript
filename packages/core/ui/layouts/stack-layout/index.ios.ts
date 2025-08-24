@@ -1,6 +1,7 @@
 import { StackLayoutBase } from './stack-layout-common';
 import { CoreTypes } from '../../../core-types';
-import { Position, View } from '../../core/view';
+import { View } from '../../core/view';
+import { Position } from '../../core/view/view-interfaces';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 

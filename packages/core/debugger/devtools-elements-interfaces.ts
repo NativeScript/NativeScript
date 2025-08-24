@@ -1,5 +1,5 @@
 //Types
-import { DOMNode } from './dom-node';
+import { DOMNode } from './dom-types';
 
 export interface InspectorCommands {
 	// DevTools -> Application communication. Methods that devtools calls when needed.
