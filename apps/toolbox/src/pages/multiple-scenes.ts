@@ -12,6 +12,7 @@ export function navigatingTo(args: EventData) {
 export class MultipleScenesModel extends Observable {
 	private _sceneCount = 0;
 	private _isMultiSceneSupported = false;
+	private _openedWindows = new Map<string, UIWindowScene>();
 	private _currentScenes: any[] = [];
 	private _currentWindows: any[] = [];
 	private _sceneEvents: string[] = [];
@@ -136,62 +137,27 @@ export class MultipleScenesModel extends Observable {
 		// Listen for scene content setup events to provide content for new scenes
 		Application.on(SceneEvents.sceneContentSetup, (args: SceneEventData) => {
 			this.addSceneEvent(`Setting up content for new scene: ${this.getSceneDescription(args.scene)}`);
+			this._openedWindows.set(this.getSceneId(args.scene), args.scene);
 			this.setupSceneContent(args.scene, args.window);
 		});
 	}
 
-	private getSceneDescription(scene: any): string {
+	private getSceneDescription(scene: UIWindowScene): string {
 		if (!scene) return 'Unknown';
-		return `Scene ${scene.hash || scene.description || 'Unknown'}`;
+		return `Scene ${this.getSceneId(scene)}`;
+	}
+
+	private getSceneId(scene: UIWindowScene): string {
+		return scene?.hash ? `${scene?.hash}` : scene?.description || 'Unknown';
 	}
 
 	private setupSceneContent(scene: UIWindowScene, window: UIWindow) {
 		if (!scene || !window || !__APPLE__) return;
 
 		try {
-			const page = new Page();
-			page.backgroundColor = new Color('#cdffdb');
-			// Create a simple layout for the new scene
-			const layout = new StackLayout();
-			layout.padding = 32;
+			const page = this._createPageForScene(scene, window);
 
-			// Set up the layout as a root view (this creates the native iOS view)
-			page._setupAsRootView({});
-			page.content = layout;
-
-			// Add title
-			const title = new Label();
-			title.text = 'New NativeScript Scene';
-			title.fontSize = 35;
-			title.fontWeight = 'bold';
-			title.textAlignment = 'center';
-			title.marginBottom = 30;
-			layout.addChild(title);
-
-			// Add scene info
-			const sceneInfo = new Label();
-			sceneInfo.text = `Scene ID: ${scene.hash || 'Unknown'}\nWindow: ${window.description || 'Unknown'}`;
-			sceneInfo.fontSize = 22;
-			sceneInfo.textAlignment = 'center';
-			sceneInfo.marginBottom = 25;
-			layout.addChild(sceneInfo);
-
-			// Add close button
-			const closeButton = new Button();
-			closeButton.text = 'Close This Scene';
-			closeButton.fontSize = 22;
-			closeButton.fontWeight = 'bold';
-			closeButton.backgroundColor = '#ff4444';
-			closeButton.color = new Color('white');
-			closeButton.borderRadius = 8;
-			closeButton.padding = 16;
-			closeButton.width = 300;
-			closeButton.horizontalAlignment = 'center';
-			closeButton.on('tap', () => {
-				this.closeScene(scene);
-			});
-			layout.addChild(closeButton);
-
+			console.log('setWindowRootView for:', window);
 			Application.ios.setWindowRootView(window, page);
 			this.addSceneEvent(`Content successfully set for scene: ${this.getSceneDescription(scene)}`);
 		} catch (error) {
@@ -199,15 +165,71 @@ export class MultipleScenesModel extends Observable {
 		}
 	}
 
-	private getIOSVersion(): string {
-		try {
-			if (typeof UIDevice !== 'undefined') {
-				return UIDevice.currentDevice.systemVersion;
-			}
-		} catch (e) {
-			// Ignore
-		}
-		return 'Unknown';
+	/**
+	 * Note: When creating UI's with plain core, buttons will be garbage collected if not referenced.
+	 * Particularly when opening many new scenes.
+	 * If the button is GC'd by the system, the taps will no longer function.
+	 * This is more related to iOS delegates getting GC'd than anything.
+	 * Most flavors circumvent things like that because their components are retained.
+	 * We circumvent the core demo (xml ui) issue but just retaining a map of the created UI buttons.
+	 */
+	private _closeButtons = new Map<string, Button>();
+	private _createPageForScene(scene: UIWindowScene, window: UIWindow): Page {
+		const page = new Page();
+		page.backgroundColor = new Color('#cdffdb');
+		// Create a simple layout for the new scene
+		const layout = new StackLayout();
+		layout.padding = 32;
+
+		page.content = layout;
+
+		// Add title
+		const title = new Label();
+		title.text = 'New NativeScript Scene';
+		title.fontSize = 35;
+		title.fontWeight = 'bold';
+		title.textAlignment = 'center';
+		title.marginBottom = 30;
+		layout.addChild(title);
+
+		// Add scene info
+		const sceneInfo = new Label();
+		sceneInfo.text = `Scene ID: ${scene.hash || 'Unknown'}\nWindow: ${window.description || 'Unknown'}`;
+		sceneInfo.fontSize = 22;
+		sceneInfo.textAlignment = 'center';
+		sceneInfo.marginBottom = 25;
+		layout.addChild(sceneInfo);
+
+		// Add close button
+		const closeButton = new Button();
+		const sceneId = this.getSceneId(scene);
+		closeButton.id = sceneId;
+		console.log('scene assigning id to button:', closeButton.id);
+		closeButton.text = 'Close This Scene';
+		closeButton.fontSize = 22;
+		closeButton.fontWeight = 'bold';
+		closeButton.backgroundColor = '#ff4444';
+		closeButton.color = new Color('white');
+		closeButton.borderRadius = 8;
+		closeButton.padding = 16;
+		closeButton.width = 300;
+		closeButton.horizontalAlignment = 'center';
+		closeButton.on('tap', this._closeScene.bind(this));
+		// retain the close button so we don't lose the tap (iOS delegate binding)
+		this._closeButtons.set(sceneId, closeButton);
+		layout.addChild(closeButton);
+
+		// Set up the layout as a root view (this creates the native iOS view)
+		page._setupAsRootView({});
+		return page;
+	}
+
+	private _closeScene(args: EventData) {
+		const btn = args.object as Button;
+		const sceneId = btn.id;
+		console.log('closing scene id from button:', sceneId);
+		const scene = this._openedWindows.get(sceneId);
+		this.closeScene(scene);
 	}
 
 	private getSceneAPIInfo(): string {
@@ -216,14 +238,13 @@ export class MultipleScenesModel extends Observable {
 		try {
 			if (typeof UIApplication !== 'undefined') {
 				const app = UIApplication.sharedApplication;
-				const iosVersion = this.getIOSVersion();
 
 				if (typeof app.activateSceneSessionForRequestErrorHandler === 'function') {
-					return `iOS ${iosVersion} - Modern API (iOS 17+) available`;
+					return `iOS ${Utils.SDK_VERSION} - Modern API (iOS 17+) available`;
 				} else if (typeof app.requestSceneSessionActivationUserActivityOptionsErrorHandler === 'function') {
-					return `iOS ${iosVersion} - Legacy API (iOS 13-16) available`;
+					return `iOS ${Utils.SDK_VERSION} - Legacy API (iOS 13-16) available`;
 				} else {
-					return `iOS ${iosVersion} - No scene activation API available`;
+					return `iOS ${Utils.SDK_VERSION} - No scene activation API available`;
 				}
 			}
 		} catch (e) {
@@ -235,7 +256,9 @@ export class MultipleScenesModel extends Observable {
 
 	private addSceneEvent(event: string) {
 		const timestamp = new Date().toLocaleTimeString();
-		this._sceneEvents.unshift(`${timestamp}: ${event}`);
+		const evt = `${timestamp}: ${event}`;
+		this._sceneEvents.unshift(evt);
+		console.log(evt);
 
 		// Keep only last 20 events
 		if (this._sceneEvents.length > 20) {
@@ -248,18 +271,9 @@ export class MultipleScenesModel extends Observable {
 	private updateSceneInfo() {
 		if (__APPLE__ && this._isMultiSceneSupported) {
 			try {
-				// Check if the methods exist before calling them
-				if (typeof Application.ios.getAllScenes === 'function') {
-					this._currentScenes = Application.ios.getAllScenes() || [];
-				} else {
-					this._currentScenes = [];
-				}
+				this._currentScenes = Application.ios.getAllScenes() || [];
 
-				if (typeof Application.ios.getAllWindows === 'function') {
-					this._currentWindows = Application.ios.getAllWindows() || [];
-				} else {
-					this._currentWindows = [];
-				}
+				this._currentWindows = Application.ios.getAllWindows() || [];
 
 				this._sceneCount = this._currentScenes.length;
 			} catch (error) {
@@ -544,12 +558,13 @@ export class MultipleScenesModel extends Observable {
 			if (session) {
 				// Check if this is the primary scene (typically can't be closed)
 				const isPrimaryScene = Application.ios.getPrimaryScene() === scene;
+				const sceneId = this.getSceneId(scene);
+				console.log('isPrimaryScene:', isPrimaryScene, 'sceneId:', sceneId);
 
 				if (isPrimaryScene) {
 					this.addSceneEvent(`⚠️  This appears to be the primary scene`);
 					this.addSceneEvent(`💡 Primary scenes typically cannot be closed programmatically`);
 					return;
-					// this.addSceneEvent(`🔄 Attempting closure anyway...`);
 				} else {
 					this.addSceneEvent(`✅ This appears to be a secondary scene - closure should work`);
 				}
@@ -557,12 +572,11 @@ export class MultipleScenesModel extends Observable {
 				// Try the correct iOS API for scene destruction
 				const app = UIApplication.sharedApplication;
 
-				// The correct method signature should be requestSceneSessionDestruction:options:errorHandler:
-				// In NativeScript, this becomes requestSceneSessionDestructionOptionsErrorHandler
 				if (app.requestSceneSessionDestructionOptionsErrorHandler) {
 					this.addSceneEvent(`📞 Calling scene destruction API...`);
 					app.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
 						if (error) {
+							console.log('scene destroy error:', error);
 							this.addSceneEvent(`❌ Scene destruction failed: ${error.localizedDescription}`);
 							this.addSceneEvent(`📋 Error details - Domain: ${error.domain}, Code: ${error.code}`);
 
@@ -579,6 +593,7 @@ export class MultipleScenesModel extends Observable {
 
 							this.addSceneEvent(`🖱️  Alternative: Use system UI to close (app switcher or split-screen controls)`);
 						} else {
+							this._closeButtons.delete(sceneId);
 							this.addSceneEvent(`✅ Scene destruction request accepted`);
 							this.addSceneEvent(`⏳ Scene should close within a few seconds...`);
 						}
