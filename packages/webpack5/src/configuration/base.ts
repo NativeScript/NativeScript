@@ -1,10 +1,5 @@
 import { extname, relative, resolve } from 'path';
-import {
-	ContextExclusionPlugin,
-	DefinePlugin,
-	HotModuleReplacementPlugin,
-	BannerPlugin,
-} from 'webpack';
+import { ContextExclusionPlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
 import { satisfies } from 'semver';
 import { existsSync } from 'fs';
@@ -23,6 +18,7 @@ import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
+import { CompatDefinePlugin } from '../plugins/CompatDefinePlugin';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
@@ -545,7 +541,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config
 		.plugin('ContextExclusionPlugin|Other_Platforms')
 		.use(ContextExclusionPlugin, [
-			new RegExp(`\\.(${otherPlatformsRE})\\.(\\w+)$`),
+			new RegExp(`\.(${otherPlatformsRE})\.(\w+)$`),
 		]);
 
 	// Filter common undesirable warnings
@@ -565,31 +561,31 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	);
 
 	// todo: refine defaults
-	config.plugin('DefinePlugin').use(DefinePlugin, [
-		{
-			__DEV__: mode === 'development',
-			__NS_WEBPACK__: true,
-			__NS_ENV_VERBOSE__: !!env.verbose,
-			__NS_DEV_HOST_IPS__:
-				mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
-			__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
-			__UI_USE_XML_PARSER__: true,
-			__UI_USE_EXTERNAL_RENDERER__: false,
-			__COMMONJS__: !!env.commonjs,
-			__ANDROID__: platform === 'android',
-			__IOS__: platform === 'ios',
-			__VISIONOS__: platform === 'visionos',
-			__APPLE__: platform === 'ios' || platform === 'visionos',
-			/* for compat only */ 'global.isAndroid': platform === 'android',
-			/* for compat only */ 'global.isIOS':
-				platform === 'ios' || platform === 'visionos',
-			/* for compat only */ 'global.isVisionOS': platform === 'visionos',
-			process: 'global.process',
-
-			// todo: ?!?!
-			// profile: '() => {}',
-		},
-	]);
+	config.plugin('DefinePlugin').use(
+		CompatDefinePlugin as any,
+		[
+			{
+				__DEV__: mode === 'development',
+				__NS_WEBPACK__: true,
+				__NS_ENV_VERBOSE__: !!env.verbose,
+				__NS_DEV_HOST_IPS__:
+					mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
+				__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
+				__UI_USE_XML_PARSER__: true,
+				__UI_USE_EXTERNAL_RENDERER__: false,
+				__COMMONJS__: !!env.commonjs,
+				__ANDROID__: platform === 'android',
+				__IOS__: platform === 'ios',
+				__VISIONOS__: platform === 'visionos',
+				__APPLE__: platform === 'ios' || platform === 'visionos',
+				/* for compat only */ 'global.isAndroid': platform === 'android',
+				/* for compat only */ 'global.isIOS':
+					platform === 'ios' || platform === 'visionos',
+				/* for compat only */ 'global.isVisionOS': platform === 'visionos',
+				process: 'global.process',
+			},
+		] as any,
+	);
 
 	// enable DotEnv
 	applyDotEnvPlugin(config);
