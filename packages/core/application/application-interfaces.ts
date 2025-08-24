@@ -222,9 +222,9 @@ export interface LoadAppCSSEventData extends ApplicationEventData {
  */
 export interface SceneEventData extends ApplicationEventData {
 	/**
-	 * The UIScene instance associated with this event.
+	 * The UIWindowScene instance associated with this event.
 	 */
-	scene?: UIScene;
+	scene?: UIWindowScene;
 
 	/**
 	 * The UIWindow associated with this scene (if applicable).

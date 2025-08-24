@@ -186,7 +186,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		} as SceneEventData);
 
 		// If this is the first scene, trigger app startup
-		if (!Application.ios._getPrimaryScene()) {
+		if (!Application.ios.getPrimaryScene()) {
 			Application.ios._notifySceneAppStarted();
 		}
 	}
@@ -780,10 +780,6 @@ export class iOSApplication extends ApplicationCommon {
 		return this._windowSceneMap.get(scene);
 	}
 
-	_getPrimaryScene(): UIWindowScene | null {
-		return this._primaryScene;
-	}
-
 	_setupWindowForScene(window: UIWindow, scene: UIWindowScene): void {
 		if (!window) {
 			return;
@@ -846,6 +842,10 @@ export class iOSApplication extends ApplicationCommon {
 			return this._getWindowForScene(this._primaryScene) || getiOSWindow();
 		}
 		return getiOSWindow();
+	}
+
+	getPrimaryScene(): UIWindowScene | null {
+		return this._primaryScene;
 	}
 
 	// Scene lifecycle management

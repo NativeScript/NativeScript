@@ -1,13 +1,4 @@
-import { Observable, EventData, Page, Application, Frame, StackLayout, Label, Button, Dialogs, View, Color, SceneEvents } from '@nativescript/core';
-
-interface SceneEventData {
-	eventName: string;
-	object: any;
-	scene?: any;
-	window?: any;
-	connectionOptions?: any;
-	userInfo?: any;
-}
+import { Observable, EventData, Page, Application, Frame, StackLayout, Label, Button, Dialogs, View, Color, SceneEvents, SceneEventData, Utils } from '@nativescript/core';
 
 let page: Page;
 let viewModel: MultipleScenesModel;
@@ -154,7 +145,7 @@ export class MultipleScenesModel extends Observable {
 		return `Scene ${scene.hash || scene.description || 'Unknown'}`;
 	}
 
-	private setupSceneContent(scene: any, window: any) {
+	private setupSceneContent(scene: UIWindowScene, window: UIWindow) {
 		if (!scene || !window || !__APPLE__) return;
 
 		try {
@@ -296,19 +287,14 @@ export class MultipleScenesModel extends Observable {
 		}
 
 		try {
-			if (typeof UIApplication === 'undefined') {
-				this.addSceneEvent('UIApplication not available');
-				return;
-			}
-
 			const app = UIApplication.sharedApplication;
 
 			// iOS 17+ - Use the new activateSceneSessionForRequestErrorHandler method
-			if (typeof app.activateSceneSessionForRequestErrorHandler === 'function') {
+			if (Utils.SDK_VERSION >= 17) {
 				this.addSceneEvent('Using iOS 17+ scene activation API');
 
 				// Create a new scene activation request with proper role
-				let request: any;
+				let request: UISceneSessionActivationRequest;
 
 				try {
 					// Use the correct factory method to create request with role
@@ -373,7 +359,7 @@ export class MultipleScenesModel extends Observable {
 				});
 			}
 			// iOS 13-16 - Use the legacy requestSceneSessionActivationUserActivityOptionsErrorHandler method
-			else if (typeof app.requestSceneSessionActivationUserActivityOptionsErrorHandler === 'function') {
+			else if (Utils.SDK_VERSION >= 13 && Utils.SDK_VERSION < 17) {
 				this.addSceneEvent('Using iOS 13-16 scene activation API');
 
 				app.requestSceneSessionActivationUserActivityOptionsErrorHandler(
@@ -547,7 +533,7 @@ export class MultipleScenesModel extends Observable {
 		this.addSceneEvent('✅ Scene delegate is working correctly (initial scene loaded)');
 	}
 
-	private closeScene(scene: any) {
+	private closeScene(scene: UIWindowScene) {
 		if (!scene || !__APPLE__) return;
 
 		try {
@@ -556,19 +542,56 @@ export class MultipleScenesModel extends Observable {
 			// Get the scene session
 			const session = scene.session;
 			if (session) {
-				// Request scene destruction using the correct API
-				UIApplication.sharedApplication.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
-					if (error) {
-						this.addSceneEvent(`Error closing scene: ${error.localizedDescription}`);
-					} else {
-						this.addSceneEvent(`Scene closed successfully`);
-					}
-				});
+				// Check if this is the primary scene (typically can't be closed)
+				const isPrimaryScene = Application.ios.getPrimaryScene() === scene;
+
+				if (isPrimaryScene) {
+					this.addSceneEvent(`⚠️  This appears to be the primary scene`);
+					this.addSceneEvent(`💡 Primary scenes typically cannot be closed programmatically`);
+					return;
+					// this.addSceneEvent(`🔄 Attempting closure anyway...`);
+				} else {
+					this.addSceneEvent(`✅ This appears to be a secondary scene - closure should work`);
+				}
+
+				// Try the correct iOS API for scene destruction
+				const app = UIApplication.sharedApplication;
+
+				// The correct method signature should be requestSceneSessionDestruction:options:errorHandler:
+				// In NativeScript, this becomes requestSceneSessionDestructionOptionsErrorHandler
+				if (app.requestSceneSessionDestructionOptionsErrorHandler) {
+					this.addSceneEvent(`📞 Calling scene destruction API...`);
+					app.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
+						if (error) {
+							this.addSceneEvent(`❌ Scene destruction failed: ${error.localizedDescription}`);
+							this.addSceneEvent(`📋 Error details - Domain: ${error.domain}, Code: ${error.code}`);
+
+							// Provide specific guidance based on error
+							if (error.localizedDescription.includes('primary') || error.code === 1) {
+								this.addSceneEvent(`💡 Cannot close primary scene - this is iOS system behavior`);
+								this.addSceneEvent(`ℹ️  Only secondary scenes can be closed via API`);
+							} else if (error.code === 22 || error.domain.includes('FBSWorkspace')) {
+								this.addSceneEvent(`💡 System declined scene destruction request`);
+								this.addSceneEvent(`🔄 This may be due to system resource management`);
+							} else {
+								this.addSceneEvent(`🔍 Unexpected error - scene destruction may not be fully supported`);
+							}
+
+							this.addSceneEvent(`🖱️  Alternative: Use system UI to close (app switcher or split-screen controls)`);
+						} else {
+							this.addSceneEvent(`✅ Scene destruction request accepted`);
+							this.addSceneEvent(`⏳ Scene should close within a few seconds...`);
+						}
+					});
+				} else {
+					this.addSceneEvent(`❌ Scene destruction API not available`);
+					this.addSceneEvent(`📱 This iOS version/configuration may not support programmatic scene closure`);
+				}
 			} else {
-				this.addSceneEvent('Error: Could not find scene session to close');
+				this.addSceneEvent('❌ Error: Could not find scene session to close');
 			}
 		} catch (error) {
-			this.addSceneEvent(`Error closing scene: ${error.message}`);
+			this.addSceneEvent(`❌ Error closing scene: ${error.message}`);
 		}
 	}
 }

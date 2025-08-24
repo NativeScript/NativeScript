@@ -229,6 +229,11 @@ export class iOSApplication extends ApplicationCommon {
 	getPrimaryWindow(): UIWindow;
 
 	/**
+	 * Gets the primary scene for the application.
+	 */
+	getPrimaryScene(): UIWindowScene;
+
+	/**
 	 * Sets the root view for a specific window.
 	 * @param window The window to set the root view for.
 	 * @param view The view to set as the root view.
