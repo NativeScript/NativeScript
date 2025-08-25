@@ -361,141 +361,11 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	onCreateNewScene() {
-		this.openWindow({ id: 'newSceneBasic' });
+		Application.ios.openWindow({ id: 'newSceneBasic' });
 	}
 
 	onCreateNewSceneAlt() {
-		this.openWindow({ id: 'newSceneAlt' });
-	}
-
-	/**
-	 * TODO: move this into application.ios and make available for user usage.
-	 * Opens a new window with the specified data.
-	 * @param data The data to pass to the new window.
-	 * @returns A promise that resolves when the window is opened.
-	 */
-	openWindow(data: Record<any, any>) {
-		if (!this.canCreateNewScene) {
-			console.log('Cannot create new scene - not supported');
-			return;
-		}
-
-		try {
-			const app = UIApplication.sharedApplication;
-
-			// iOS 17+ - Use the new activateSceneSessionForRequestErrorHandler method
-			if (Utils.SDK_VERSION >= 17) {
-				this.addSceneEvent('Using iOS 17+ scene activation API');
-
-				// Create a new scene activation request with proper role
-				let request: UISceneSessionActivationRequest;
-
-				try {
-					// Use the correct factory method to create request with role
-					// Based on the type definitions, this is the proper way
-					request = UISceneSessionActivationRequest.requestWithRole(UIWindowSceneSessionRoleApplication);
-					this.addSceneEvent('✅ Created request using requestWithRole factory method');
-
-					// Note: may be useful to allow user defined activity type through optional string typed extensible data?
-					const activity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
-					activity.userInfo = Utils.dataSerialize(data);
-					request.userActivity = activity;
-					this.addSceneEvent('Set user activity for scene request');
-
-					// Set proper options with requesting scene
-					const options = UISceneActivationRequestOptions.new();
-
-					// Note: may want to explore secondary windows spawning other windows
-					// and if this context needs to change in that case
-					const mainWindow = Application.ios.getPrimaryWindow();
-					options.requestingScene = mainWindow?.windowScene;
-					this.addSceneEvent('Set requesting scene context');
-
-					/**
-					 * This does not work so far in testing but worth exploring further sometime
-					 * regarding the size/dimensions of opened secondary windows.
-					 * The initial size is ultimately determined by the system
-					 * based on available space and user context.
-					 */
-					// Get the size restrictions from the window scene
-					// const sizeRestrictions = (options.requestingScene as UIWindowScene).sizeRestrictions;
-
-					// // Set your minimum and maximum dimensions
-					// sizeRestrictions.minimumSize = CGSizeMake(320, 400);
-					// sizeRestrictions.maximumSize = CGSizeMake(600, 800);
-
-					request.options = options;
-
-					// Log the final request configuration for debugging
-					try {
-						const requestRole = request.role;
-						this.addSceneEvent(`Final request role: ${requestRole}`);
-					} catch (e) {
-						this.addSceneEvent('Could not read role from request');
-					}
-				} catch (roleError) {
-					console.log('Error creating request:', roleError);
-					this.addSceneEvent(`Error creating request: ${roleError.message}`);
-					return;
-				}
-
-				this.addSceneEvent('Requesting scene activation...');
-				app.activateSceneSessionForRequestErrorHandler(request, (error) => {
-					if (error) {
-						console.log('Error creating new scene (iOS 17+):', error);
-						this.addSceneEvent(`Error creating scene: ${error.localizedDescription}`);
-						this.addSceneEvent(`Error domain: ${error.domain}, code: ${error.code}`);
-
-						// Log additional debugging info
-						if (error.userInfo) {
-							this.addSceneEvent(`Error userInfo: ${error.userInfo.description}`);
-						}
-
-						// Handle specific error types
-						if (error.localizedDescription.includes('role') && error.localizedDescription.includes('nil')) {
-							this.addSceneEvent('❌ Role is nil - this confirms the iOS 17+ API issue');
-							this.addSceneEvent('🔄 Falling back to legacy API which handles roles differently');
-							this.createSceneWithLegacyAPI();
-						} else if (error.domain === 'FBSWorkspaceErrorDomain' && error.code === 2) {
-							this.addSceneEvent('⚠️  System declined scene creation - this may be expected behavior');
-							this.addSceneEvent('💡 Scene creation might require user gesture or specific device state');
-							this.addSceneEvent('🔄 Trying alternative approach...');
-							this.addSceneEvent('ℹ️  Note: Scene creation may be restricted on this device/iOS version');
-							this.explainSceneCreationLimitations();
-							this.createSceneWithLegacyAPI();
-						}
-					} else {
-						this.addSceneEvent('✅ New scene created successfully (iOS 17+)');
-					}
-				});
-			}
-			// iOS 13-16 - Use the legacy requestSceneSessionActivationUserActivityOptionsErrorHandler method
-			else if (Utils.SDK_VERSION >= 13 && Utils.SDK_VERSION < 17) {
-				this.addSceneEvent('Using iOS 13-16 scene activation API');
-
-				app.requestSceneSessionActivationUserActivityOptionsErrorHandler(
-					null, // session
-					null, // userActivity
-					null, // options
-					(error) => {
-						if (error) {
-							console.log('Error creating new scene (legacy):', error);
-							this.addSceneEvent(`Error creating scene: ${error.localizedDescription}`);
-						} else {
-							this.addSceneEvent('New scene creation requested (legacy)');
-						}
-					},
-				);
-			}
-			// Fallback for older iOS versions or unsupported configurations
-			else {
-				this.addSceneEvent('Scene creation API not available on this iOS version');
-				console.log('Neither new nor legacy scene activation methods are available');
-			}
-		} catch (error) {
-			console.log('Error requesting new scene:', error);
-			this.addSceneEvent(`Error: ${error.message || error}`);
-		}
+		Application.ios.openWindow({ id: 'newSceneAlt' });
 	}
 
 	onRefreshSceneInfo() {
@@ -569,10 +439,6 @@ export class MultipleScenesModel extends Observable {
 		}
 	}
 
-	onExplainSceneLimitations() {
-		this.explainSceneCreationLimitations();
-	}
-
 	private checkSceneDelegateRegistration() {
 		if (!__APPLE__) {
 			return;
@@ -593,55 +459,6 @@ export class MultipleScenesModel extends Observable {
 		} else {
 			this.addSceneEvent('❌ UIWindowSceneDelegate protocol not available');
 		}
-	}
-
-	private createSceneWithLegacyAPI() {
-		if (!Application.ios || !Application.ios.delegate) {
-			this.addSceneEvent('Error: No iOS application delegate available');
-			return;
-		}
-
-		this.addSceneEvent('Creating new scene using legacy API as fallback...');
-
-		const mainWindow = UIApplication.sharedApplication.windows.firstObject;
-		const windowScene = mainWindow.windowScene;
-
-		if (!windowScene) {
-			this.addSceneEvent('Error: No window scene available');
-			return;
-		}
-
-		// Create user activity for the new scene
-
-		// Use the legacy API
-		const options = UISceneActivationRequestOptions.new();
-		options.requestingScene = windowScene;
-
-		UIApplication.sharedApplication.requestSceneSessionActivationUserActivityOptionsErrorHandler(
-			null, // session - null for new scene
-			null,
-			options,
-			(error: NSError) => {
-				if (error) {
-					this.addSceneEvent(`Legacy API also failed: ${error.localizedDescription}`);
-					this.addSceneEvent('ℹ️  This is expected behavior on many iOS configurations');
-					this.addSceneEvent('💡 Scene creation often requires specific device support or user gestures');
-					this.addSceneEvent('📱 Try using iPad multitasking gestures or external display');
-				} else {
-					this.addSceneEvent('✅ New scene created successfully using legacy API!');
-				}
-			},
-		);
-	}
-
-	private explainSceneCreationLimitations() {
-		this.addSceneEvent('--- Scene Creation Information ---');
-		this.addSceneEvent('🔍 Programmatic scene creation has system limitations:');
-		this.addSceneEvent('• May require specific device support (iPad, external displays)');
-		this.addSceneEvent('• System reserves right to decline based on resources');
-		this.addSceneEvent('• User-initiated actions (split-screen) usually work better');
-		this.addSceneEvent('• Some iOS versions restrict programmatic creation');
-		this.addSceneEvent('✅ Scene delegate is working correctly (initial scene loaded)');
 	}
 
 	private closeScene(scene: UIWindowScene) {

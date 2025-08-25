@@ -5,7 +5,7 @@ import { IOSHelper } from '../ui/core/view/view-helper';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
-import { ios as iosUtils } from '../utils/native-helper';
+import { ios as iosUtils, dataSerialize } from '../utils/native-helper';
 import { ApplicationCommon, initializeSdkVersionClass, SceneEvents } from './application-common';
 import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
@@ -829,7 +829,132 @@ export class iOSApplication extends ApplicationCommon {
 		this._sceneDelegate = value;
 	}
 
-	// Multi-window support methods
+	/**
+	 * Multi-window support
+	 */
+
+	/**
+	 * Opens a new window with the specified data.
+	 * @param data The data to pass to the new window.
+	 */
+	openWindow(data: Record<any, any>) {
+		if (!supportsMultipleScenes()) {
+			console.log('Cannot create a new scene - not supported on this device.');
+			return;
+		}
+
+		try {
+			const app = UIApplication.sharedApplication;
+
+			// iOS 17+
+			if (SDK_VERSION >= 17) {
+				// Create a new scene activation request with proper role
+				let request: UISceneSessionActivationRequest;
+
+				try {
+					// Use the correct factory method to create request with role
+					// Based on the type definitions, this is the proper way
+					request = UISceneSessionActivationRequest.requestWithRole(UIWindowSceneSessionRoleApplication);
+
+					// Note: may be useful to allow user defined activity type through optional string typed data in future
+					const activity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
+					activity.userInfo = dataSerialize(data);
+					request.userActivity = activity;
+
+					// Set proper options with requesting scene
+					const options = UISceneActivationRequestOptions.new();
+
+					// Note: explore secondary windows spawning other windows
+					// and if this context needs to change in those cases
+					const mainWindow = Application.ios.getPrimaryWindow();
+					options.requestingScene = mainWindow?.windowScene;
+
+					/**
+					 * Note: This does not work in testing but worth exploring further sometime
+					 * regarding the size/dimensions of opened secondary windows.
+					 * The initial size is ultimately determined by the system
+					 * based on available space and user context.
+					 */
+					// Get the size restrictions from the window scene
+					// const sizeRestrictions = (options.requestingScene as UIWindowScene).sizeRestrictions;
+
+					// // Set your minimum and maximum dimensions
+					// sizeRestrictions.minimumSize = CGSizeMake(320, 400);
+					// sizeRestrictions.maximumSize = CGSizeMake(600, 800);
+
+					request.options = options;
+				} catch (roleError) {
+					console.log('Error creating request:', roleError);
+					return;
+				}
+
+				app.activateSceneSessionForRequestErrorHandler(request, (error) => {
+					if (error) {
+						console.log('Error creating new scene (iOS 17+):', error);
+
+						// Log additional debugging info
+						if (error.userInfo) {
+							console.error(`Error userInfo: ${error.userInfo.description}`);
+						}
+
+						// Handle specific error types
+						if (error.localizedDescription.includes('role') && error.localizedDescription.includes('nil')) {
+							this.createSceneWithLegacyAPI(data);
+						} else if (error.domain === 'FBSWorkspaceErrorDomain' && error.code === 2) {
+							this.createSceneWithLegacyAPI(data);
+						}
+					}
+				});
+			}
+			// iOS 13-16 - Use the legacy requestSceneSessionActivationUserActivityOptionsErrorHandler method
+			else if (SDK_VERSION >= 13 && SDK_VERSION < 17) {
+				app.requestSceneSessionActivationUserActivityOptionsErrorHandler(
+					null, // session
+					null, // userActivity
+					null, // options
+					(error) => {
+						if (error) {
+							console.log('Error creating new scene (legacy):', error);
+						}
+					},
+				);
+			}
+			// Fallback for older iOS versions or unsupported configurations
+			else {
+				console.log('Neither new nor legacy scene activation methods are available');
+			}
+		} catch (error) {
+			console.error('Error requesting new scene:', error);
+		}
+	}
+
+	private createSceneWithLegacyAPI(data: Record<any, any>) {
+		const windowScene = this.window?.windowScene;
+
+		if (!windowScene) {
+			return;
+		}
+
+		// Create user activity for the new scene
+		const userActivity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
+		userActivity.userInfo = dataSerialize(data);
+
+		// Use the legacy API
+		const options = UISceneActivationRequestOptions.new();
+		options.requestingScene = windowScene;
+
+		UIApplication.sharedApplication.requestSceneSessionActivationUserActivityOptionsErrorHandler(
+			null, // session - null for new scene
+			userActivity,
+			options,
+			(error: NSError) => {
+				if (error) {
+					console.error(`Legacy scene API failed: ${error.localizedDescription}`);
+				}
+			},
+		);
+	}
+
 	getAllWindows(): UIWindow[] {
 		return Array.from(this._windowSceneMap.values());
 	}

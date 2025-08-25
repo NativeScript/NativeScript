@@ -209,6 +209,12 @@ export class iOSApplication extends ApplicationCommon {
 	isUsingSceneLifecycle(): boolean;
 
 	/**
+	 * Opens a new window with the specified data.
+	 * @param data The data to pass to the new window.
+	 */
+	openWindow(data: Record<any, any>): void;
+
+	/**
 	 * Gets all windows for the application.
 	 */
 	getAllWindows(): UIWindow[];
