@@ -26,9 +26,10 @@
                 <Label text="Create additional windows on iPad (requires scene support enabled in Info.plist)" 
                        class="caption text-center m-b-15" textWrap="true"/>
                 
-                <GridLayout columns="*, *" class="m-t-10">
+                <GridLayout columns="*,*,*" class="m-t-10">
                     <Button col="0" text="New Scene" tap="{{ onCreateNewScene }}" class="btn btn-primary m-r-10"/>
-                    <Button col="1" text="Scene Details" tap="{{ onShowSceneDetails }}" class="btn btn-outline m-l-10"/>
+                    <Button col="1" text="New Alternate Scene" tap="{{ onCreateNewSceneAlt }}" class="btn btn-primary m-r-10"/>
+                    <Button col="2" text="Scene Details" tap="{{ onShowSceneDetails }}" class="btn btn-outline m-l-10"/>
                 </GridLayout>
                 
                 <Button text="Test API Info" tap="{{ onTestSceneAPI }}" class="btn btn-outline m-t-10"/>

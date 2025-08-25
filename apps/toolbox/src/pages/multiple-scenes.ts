@@ -138,7 +138,7 @@ export class MultipleScenesModel extends Observable {
 		Application.on(SceneEvents.sceneContentSetup, (args: SceneEventData) => {
 			this.addSceneEvent(`Setting up content for new scene: ${this.getSceneDescription(args.scene)}`);
 			this._openedWindows.set(this.getSceneId(args.scene), args.scene);
-			this.setupSceneContent(args.scene, args.window);
+			this.setupSceneContent(args);
 		});
 	}
 
@@ -151,15 +151,30 @@ export class MultipleScenesModel extends Observable {
 		return scene?.hash ? `${scene?.hash}` : scene?.description || 'Unknown';
 	}
 
-	private setupSceneContent(scene: UIWindowScene, window: UIWindow) {
-		if (!scene || !window || !__APPLE__) return;
+	private setupSceneContent(args: SceneEventData) {
+		if (!args.scene || !args.window || !__APPLE__) return;
 
 		try {
-			const page = this._createPageForScene(scene, window);
+			let nsViewId: string;
+			if (args.connectionOptions?.userActivities?.count > 0) {
+				const activity = args.connectionOptions.userActivities.allObjects.objectAtIndex(0) as NSUserActivity;
+				nsViewId = Utils.dataDeserialize(activity.userInfo).id;
+			}
+			console.log('--- Open scene for nsViewId:', nsViewId);
+			let page: Page;
+			switch (nsViewId) {
+				case 'newSceneBasic':
+					page = this._createPageForScene(args.scene, args.window);
+					break;
+				case 'newSceneAlt':
+					page = this._createAltPageForScene(args.scene, args.window);
+					break;
+				// Note: can implement any number of other scene views
+			}
 
-			console.log('setWindowRootView for:', window);
-			Application.ios.setWindowRootView(window, page);
-			this.addSceneEvent(`Content successfully set for scene: ${this.getSceneDescription(scene)}`);
+			console.log('setWindowRootView for:', args.window);
+			Application.ios.setWindowRootView(args.window, page);
+			this.addSceneEvent(`Content successfully set for scene: ${this.getSceneDescription(args.scene)}`);
 		} catch (error) {
 			this.addSceneEvent(`Error setting up scene content: ${error.message}`);
 		}
@@ -213,6 +228,57 @@ export class MultipleScenesModel extends Observable {
 		closeButton.borderRadius = 8;
 		closeButton.padding = 16;
 		closeButton.width = 300;
+		closeButton.horizontalAlignment = 'center';
+		closeButton.on('tap', this._closeScene.bind(this));
+		// retain the close button so we don't lose the tap (iOS delegate binding)
+		this._closeButtons.set(sceneId, closeButton);
+		layout.addChild(closeButton);
+
+		// Set up the layout as a root view (this creates the native iOS view)
+		page._setupAsRootView({});
+		return page;
+	}
+
+	private _createAltPageForScene(scene: UIWindowScene, window: UIWindow): Page {
+		const page = new Page();
+		page.backgroundColor = new Color('#65ADF1');
+		// Create a simple layout for the new scene
+		const layout = new StackLayout();
+		layout.padding = 32;
+
+		page.content = layout;
+
+		// Add title
+		const title = new Label();
+		title.text = 'New Alternate NativeScript Scene';
+		title.fontSize = 35;
+		title.color = new Color('blue');
+		title.fontWeight = 'bold';
+		title.textAlignment = 'center';
+		title.marginBottom = 35;
+		layout.addChild(title);
+
+		// Add scene info
+		const sceneInfo = new Label();
+		sceneInfo.text = `Scene ID: ${scene.hash || 'Unknown'}\nWindow: ${window.description || 'Unknown'}`;
+		sceneInfo.fontSize = 24;
+		sceneInfo.textAlignment = 'center';
+		sceneInfo.marginBottom = 32;
+		layout.addChild(sceneInfo);
+
+		// Add close button
+		const closeButton = new Button();
+		const sceneId = this.getSceneId(scene);
+		closeButton.id = sceneId;
+		console.log('scene assigning id to button:', closeButton.id);
+		closeButton.text = 'Close This Scene';
+		closeButton.fontSize = 25;
+		closeButton.fontWeight = 'bold';
+		closeButton.backgroundColor = '#006ead';
+		closeButton.color = new Color('white');
+		closeButton.borderRadius = 8;
+		closeButton.padding = 16;
+		closeButton.width = 350;
 		closeButton.horizontalAlignment = 'center';
 		closeButton.on('tap', this._closeScene.bind(this));
 		// retain the close button so we don't lose the tap (iOS delegate binding)
@@ -295,6 +361,20 @@ export class MultipleScenesModel extends Observable {
 	}
 
 	onCreateNewScene() {
+		this.openWindow({ id: 'newSceneBasic' });
+	}
+
+	onCreateNewSceneAlt() {
+		this.openWindow({ id: 'newSceneAlt' });
+	}
+
+	/**
+	 * TODO: move this into application.ios and make available for user usage.
+	 * Opens a new window with the specified data.
+	 * @param data The data to pass to the new window.
+	 * @returns A promise that resolves when the window is opened.
+	 */
+	openWindow(data: Record<any, any>) {
 		if (!this.canCreateNewScene) {
 			console.log('Cannot create new scene - not supported');
 			return;
@@ -315,17 +395,34 @@ export class MultipleScenesModel extends Observable {
 					// Based on the type definitions, this is the proper way
 					request = UISceneSessionActivationRequest.requestWithRole(UIWindowSceneSessionRoleApplication);
 					this.addSceneEvent('✅ Created request using requestWithRole factory method');
+
+					// Note: may be useful to allow user defined activity type through optional string typed extensible data?
+					const activity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
+					activity.userInfo = Utils.dataSerialize(data);
+					request.userActivity = activity;
 					this.addSceneEvent('Set user activity for scene request');
 
 					// Set proper options with requesting scene
 					const options = UISceneActivationRequestOptions.new();
-					const mainWindow = UIApplication.sharedApplication.windows.firstObject;
-					if (mainWindow && mainWindow.windowScene) {
-						options.requestingScene = mainWindow.windowScene;
-						this.addSceneEvent('Set requesting scene context');
-					} else {
-						this.addSceneEvent('Warning: No requesting scene context available');
-					}
+
+					// Note: may want to explore secondary windows spawning other windows
+					// and if this context needs to change in that case
+					const mainWindow = Application.ios.getPrimaryWindow();
+					options.requestingScene = mainWindow?.windowScene;
+					this.addSceneEvent('Set requesting scene context');
+
+					/**
+					 * This does not work so far in testing but worth exploring further sometime
+					 * regarding the size/dimensions of opened secondary windows.
+					 * The initial size is ultimately determined by the system
+					 * based on available space and user context.
+					 */
+					// Get the size restrictions from the window scene
+					// const sizeRestrictions = (options.requestingScene as UIWindowScene).sizeRestrictions;
+
+					// // Set your minimum and maximum dimensions
+					// sizeRestrictions.minimumSize = CGSizeMake(320, 400);
+					// sizeRestrictions.maximumSize = CGSizeMake(600, 800);
 
 					request.options = options;
 

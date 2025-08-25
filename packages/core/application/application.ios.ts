@@ -185,6 +185,20 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			connectionOptions: connectionOptions,
 		} as SceneEventData);
 
+		if (scene === Application.ios.getPrimaryScene()) {
+			// primary scene, activate right away
+			this._window.makeKeyAndVisible();
+		} else {
+			// For secondary scenes, emit an event to allow developers to set up custom content for the window
+			Application.ios.notify({
+				eventName: SceneEvents.sceneContentSetup,
+				object: Application.ios,
+				scene: scene,
+				window: this._window,
+				connectionOptions: connectionOptions,
+			} as SceneEventData);
+		}
+
 		// If this is the first scene, trigger app startup
 		if (!Application.ios.getPrimaryScene()) {
 			Application.ios._notifySceneAppStarted();
@@ -514,6 +528,7 @@ export class iOSApplication extends ApplicationCommon {
 	}
 
 	private notifyAppStarted(notification?: NSNotification) {
+		console.log('notifyAppStarted!');
 		const root = this.notifyLaunch({
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
@@ -800,17 +815,7 @@ export class iOSApplication extends ApplicationCommon {
 
 			// Set up the window content for the primary scene
 			this.setWindowContent();
-		} else {
-			// For secondary scenes, emit an event to allow developers to set up custom content
-			this.notify({
-				eventName: SceneEvents.sceneContentSetup,
-				object: this,
-				scene: scene,
-				window: window,
-			} as SceneEventData);
 		}
-
-		window.makeKeyAndVisible();
 	}
 
 	get sceneDelegate(): UIWindowSceneDelegate {
@@ -884,6 +889,7 @@ export class iOSApplication extends ApplicationCommon {
 
 		if (view.ios) {
 			window.rootViewController = view.viewController;
+			window.makeKeyAndVisible();
 		} else {
 			console.warn('View does not have a native iOS implementation');
 		}
