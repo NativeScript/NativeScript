@@ -528,7 +528,6 @@ export class iOSApplication extends ApplicationCommon {
 	}
 
 	private notifyAppStarted(notification?: NSNotification) {
-		console.log('notifyAppStarted!');
 		const root = this.notifyLaunch({
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
