@@ -2,6 +2,7 @@ import { extname, relative, resolve } from 'path';
 import { ContextExclusionPlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
 import { satisfies } from 'semver';
+import { isVersionGteConsideringPrerelease } from '../helpers/dependencies';
 import { existsSync } from 'fs';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
@@ -64,7 +65,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				getResolvedDependencyVersionForCheck('@nativescript/ios', '9.0.0') ??
 				iosVersion ??
 				undefined;
-			if (iosResolved && satisfies(iosResolved, '>=9.0.0')) {
+			if (isVersionGteConsideringPrerelease(iosResolved, '9.0.0')) {
 				useSourceMapFiles();
 			} else {
 				env.commonjs = true;
@@ -77,7 +78,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				) ??
 				visionosVersion ??
 				undefined;
-			if (visionosResolved && satisfies(visionosResolved, '>=9.0.0')) {
+			if (isVersionGteConsideringPrerelease(visionosResolved, '9.0.0')) {
 				useSourceMapFiles();
 			} else {
 				env.commonjs = true;
@@ -90,7 +91,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				) ??
 				androidVersion ??
 				undefined;
-			if (androidResolved && satisfies(androidResolved, '>=9.0.0')) {
+			if (isVersionGteConsideringPrerelease(androidResolved, '9.0.0')) {
 				useSourceMapFiles();
 			} else {
 				env.commonjs = true;
