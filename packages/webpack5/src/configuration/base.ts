@@ -134,6 +134,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			'mdn-data/css/at-rules.json': require.resolve(
 				'../polyfills/mdn-data-at-rules.js',
 			),
+			// Ensure imports of the Node 'module' builtin resolve to our polyfill
+			module: require.resolve('../polyfills/module.js'),
 		},
 	});
 
