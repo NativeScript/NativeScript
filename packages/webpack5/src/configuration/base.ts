@@ -10,9 +10,9 @@ import TerserPlugin from 'terser-webpack-plugin';
 
 import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
 import {
-	getAllDependencies,
 	getDependencyVersion,
 	hasDependency,
+	getResolvedDependencyVersionForCheck,
 } from '../helpers/dependencies';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
@@ -40,7 +40,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// set mode
 	config.mode(mode);
 
-	// use source map files with v9+
+	// use source map files by default with v9+
 	function useSourceMapFiles() {
 		if (mode === 'development') {
 			// in development we always use source-map files with v9+ runtimes
@@ -48,20 +48,53 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			env.sourceMap = 'source-map';
 		}
 	}
-	// determine target output by @nativescript/core version
+	// determine target output by @nativescript/* runtime version
 	// v9+ supports ESM output, anything below uses CommonJS
-	if (hasDependency('@nativescript/core')) {
-		const coreVersion = getDependencyVersion('@nativescript/core');
-		// ensure alpha/beta/rc versions are considered as well
-		if (coreVersion && !coreVersion.includes('9.0.0')) {
-			if (!satisfies(coreVersion, '>=9.0.0')) {
-				// @nativescript/core < 9 uses CommonJS output
-				env.commonjs = true;
-			} else {
+	if (
+		hasDependency('@nativescript/ios') ||
+		hasDependency('@nativescript/visionos') ||
+		hasDependency('@nativescript/android')
+	) {
+		const iosVersion = getDependencyVersion('@nativescript/ios');
+		const visionosVersion = getDependencyVersion('@nativescript/visionos');
+		const androidVersion = getDependencyVersion('@nativescript/android');
+
+		if (platform === 'ios') {
+			const iosResolved =
+				getResolvedDependencyVersionForCheck('@nativescript/ios', '9.0.0') ??
+				iosVersion ??
+				undefined;
+			if (iosResolved && satisfies(iosResolved, '>=9.0.0')) {
 				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
 			}
-		} else {
-			useSourceMapFiles();
+		} else if (platform === 'visionos') {
+			const visionosResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/visionos',
+					'9.0.0',
+				) ??
+				visionosVersion ??
+				undefined;
+			if (visionosResolved && satisfies(visionosResolved, '>=9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
+		} else if (platform === 'android') {
+			const androidResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/android',
+					'9.0.0',
+				) ??
+				androidVersion ??
+				undefined;
+			if (androidResolved && satisfies(androidResolved, '>=9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
 		}
 	}
 
