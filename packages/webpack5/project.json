@@ -23,7 +23,7 @@
 				"assets": [
 					{
 						"input": "{projectRoot}/src/stubs",
-						"glob": "*.js",
+						"glob": "*.{js,mjs}",
 						"output": "stubs"
 					},
 					{
