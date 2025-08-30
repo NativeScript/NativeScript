@@ -544,7 +544,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.options(postCSSOptions)
 		.end()
 		.use('sass-loader')
-		.loader('sass-loader');
+		.loader('sass-loader')
+		.options({
+			implementation: require('sass'),
+		});
 
 	// config.plugin('NormalModuleReplacementPlugin').use(NormalModuleReplacementPlugin, [
 	// 	/.*/,
