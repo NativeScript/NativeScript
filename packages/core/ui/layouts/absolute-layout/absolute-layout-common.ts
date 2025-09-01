@@ -3,7 +3,7 @@ import { LayoutBase } from '../layout-base';
 import { CoreTypes } from '../../../core-types';
 import { View, CSSType } from '../../core/view';
 import { Property } from '../../core/properties';
-import { Length } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 
 export * from '../layout-base';
 

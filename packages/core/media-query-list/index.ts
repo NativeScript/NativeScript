@@ -1,24 +1,14 @@
 import { EventData, Observable } from '../data/observable';
-import { Screen } from '../platform';
-import { Application, ApplicationEventData } from '../application';
+import { Screen } from '../platform/screen';
+import { getApplicationProperties, toggleApplicationEventListeners } from '../application/helpers-common';
+import type { ApplicationEventData } from '../application/application-interfaces';
 import { matchQuery, MediaQueryType } from '../css-mediaquery';
 import { Trace } from '../trace';
 
 const mediaQueryLists: MediaQueryListImpl[] = [];
-const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
 
 // In browser, developers cannot create MediaQueryList instances without calling matchMedia
 let isMediaInitializationEnabled: boolean = false;
-
-function toggleApplicationEventListeners(toAdd: boolean) {
-	for (const eventName of applicationEvents) {
-		if (toAdd) {
-			Application.on(eventName, onDeviceChange);
-		} else {
-			Application.off(eventName, onDeviceChange);
-		}
-	}
-}
 
 function onDeviceChange(args: ApplicationEventData) {
 	for (const mql of mediaQueryLists) {
@@ -42,14 +32,15 @@ function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
 	let matches: boolean;
 
 	try {
+		const appProperties = getApplicationProperties();
 		matches = matchQuery(mediaQueryString, {
 			type: MediaQueryType.screen,
 			width: widthPixels,
 			height: heightPixels,
 			'device-width': widthPixels,
 			'device-height': heightPixels,
-			orientation: Application.orientation(),
-			'prefers-color-scheme': Application.systemAppearance(),
+			orientation: appProperties.orientation,
+			'prefers-color-scheme': appProperties.systemAppearance,
 		});
 	} catch (err) {
 		matches = false;
@@ -130,7 +121,7 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 			mediaQueryLists.push(this);
 
 			if (mediaQueryLists.length === 1) {
-				toggleApplicationEventListeners(true);
+				toggleApplicationEventListeners(true, onDeviceChange);
 			}
 		}
 	}
@@ -151,7 +142,7 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 					mediaQueryLists.splice(index, 1);
 
 					if (!mediaQueryLists.length) {
-						toggleApplicationEventListeners(false);
+						toggleApplicationEventListeners(false, onDeviceChange);
 					}
 				}
 			}

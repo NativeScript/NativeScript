@@ -1,9 +1,10 @@
 // Types
 import { AnimationDefinitionInternal, AnimationPromise, IOSView, PropertyAnimation, PropertyAnimationInfo, AnimationBase, Properties } from './animation-common';
 import { View } from '../core/view';
-import { CubicBezierAnimationCurve } from './animation-interfaces';
+import { CubicBezierAnimationCurve } from '../../core-types/animation-types';
 import { Trace } from '../../trace';
-import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
+import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty } from '../styling/style-properties';
+import { PercentLength } from '../styling/length-shared';
 import { ios as iosBackground } from '../styling/background';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 
@@ -12,7 +13,6 @@ import { ios as iosHelper } from '../../utils/native-helper';
 import { Screen } from '../../platform';
 
 export * from './animation-common';
-export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
 
 const _transform = '_transform';
 const _skip = '_skip';

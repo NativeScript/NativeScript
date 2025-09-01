@@ -1,6 +1,6 @@
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
-import { Length } from './style-properties';
+import { Length } from './length-shared';
 
 export function cleanupImportantFlags(value: unknown, propertyName: string) {
 	if (typeof value !== 'string') {

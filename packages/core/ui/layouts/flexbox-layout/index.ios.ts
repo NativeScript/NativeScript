@@ -1,5 +1,6 @@
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, FlexboxLayoutBase, FlexBasisPercent, orderProperty, flexGrowProperty, flexShrinkProperty, flexWrapBeforeProperty, alignSelfProperty } from './flexbox-layout-common';
-import { Position, View } from '../../core/view';
+import { View } from '../../core/view';
+import { Position } from '../../core/view/view-interfaces';
 import { layout } from '../../../utils';
 
 export * from './flexbox-layout-common';

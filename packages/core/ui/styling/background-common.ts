@@ -1,6 +1,5 @@
 import { CoreTypes } from '../../core-types';
 import { LinearGradient } from './linear-gradient';
-// Types.
 import { Color } from '../../color';
 import { BoxShadow } from './box-shadow';
 import { ClipPathFunction } from './clip-path-function';

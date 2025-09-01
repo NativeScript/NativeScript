@@ -1,16 +1,7 @@
-﻿// imported for definition purposes only
-import * as httpRequestModule from '../../http/http-request';
-
+﻿import { request as httpRequest } from '../../http/http-request';
 import * as common from './image-cache-common';
 import { Trace } from '../../trace';
-import * as utils from '../../utils';
-
-let httpRequest: typeof httpRequestModule;
-function ensureHttpRequest() {
-	if (!httpRequest) {
-		httpRequest = require('../../http/http-request');
-	}
-}
+import { GC } from '../../utils';
 
 @NativeClass
 class MemoryWarningHandler extends NSObject {
@@ -44,7 +35,7 @@ class MemoryWarningHandler extends NSObject {
 			Trace.write('[MemoryWarningHandler] Clearing Image Cache.', Trace.categories.Debug);
 		}
 		this._cache.removeAllObjects();
-		utils.GC();
+		GC();
 	}
 
 	public static ObjCExposedMethods = {
@@ -67,9 +58,7 @@ export class Cache extends common.Cache {
 	}
 
 	public _downloadCore(request: common.DownloadRequest) {
-		ensureHttpRequest();
-
-		httpRequest.request({ url: request.url, method: 'GET' }).then(
+		httpRequest({ url: request.url, method: 'GET' }).then(
 			(response) => {
 				try {
 					const image = UIImage.alloc().initWithData(response.content.raw);
@@ -84,7 +73,7 @@ export class Cache extends common.Cache {
 			},
 			(err) => {
 				this._onDownloadError(request.key, err);
-			}
+			},
 		);
 	}
 
@@ -102,6 +91,6 @@ export class Cache extends common.Cache {
 
 	public clear() {
 		this._cache.removeAllObjects();
-		utils.GC();
+		GC();
 	}
 }

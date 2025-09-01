@@ -1,5 +1,5 @@
 import { parseCSSStroke } from './css-stroke';
-import { Length } from './style-properties';
+import { Length } from './length-shared';
 import { Color } from '../../color';
 
 describe('css-text-stroke', () => {

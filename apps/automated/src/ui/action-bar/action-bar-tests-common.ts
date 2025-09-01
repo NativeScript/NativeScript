@@ -1,16 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { Builder } from '@nativescript/core/ui/builder';
-import { Label } from '@nativescript/core/ui/label';
-import { Button } from '@nativescript/core/ui/button';
-import { Page } from '@nativescript/core/ui/page';
-import { View, isIOS } from '@nativescript/core';
-import { fromObject } from '@nativescript/core/data/observable';
-import { Frame } from '@nativescript/core/ui/frame';
-
-// >> actionbar-common-require
-import * as actionBarModule from '@nativescript/core/ui/action-bar';
-// << actionbar-common-require
+import { View, fromObject, Frame, Page, Button, Label, Builder, ActionItem, ActionBar } from '@nativescript/core';
 
 export function test_actionItem_inherit_bindingContext() {
 	let page: Page;
@@ -20,7 +10,7 @@ export function test_actionItem_inherit_bindingContext() {
 	const pageFactory = function (): Page {
 		page = new Page();
 		page.bindingContext = context;
-		const actionItem = new actionBarModule.ActionItem();
+		const actionItem = new ActionItem();
 
 		actionItem.bind({
 			sourceProperty: 'text',
@@ -164,7 +154,7 @@ export function test_Setting_ActionItems_doesnt_thrown() {
 
 	const pageFactory = function (): Page {
 		page = new Page();
-		const actionItem = new actionBarModule.ActionItem();
+		const actionItem = new ActionItem();
 		actionItem.text = 'Item';
 		page.actionBar.actionItems.addItem(actionItem);
 
@@ -286,12 +276,12 @@ export function test_ActionBarVisibility_Never_ShouldNotShowDeclaredActionBar() 
                 </ActionBar.titleView>
             </ActionBar>
         </Page>
-        `
+        `,
 	);
 
 	helper.navigate(() => page);
 	let actionBarHidden = false;
-	if (isIOS) {
+	if (__APPLE__) {
 		actionBarHidden = page.actionBar.nativeView.hidden;
 	} else {
 		actionBarHidden = !page.actionBar.nativeView.isShown();
@@ -314,12 +304,12 @@ export function test_ActionBarVisibility_Always_ShouldShownHiddenActionBar() {
                 </ActionBar.titleView>
             </ActionBar>
         </Page>
-        `
+        `,
 	);
 
 	helper.navigate(() => page);
 	let actionBarHidden = false;
-	if (isIOS) {
+	if (__APPLE__) {
 		actionBarHidden = page.actionBar.nativeView.hidden;
 	} else {
 		actionBarHidden = !page.actionBar.nativeView.isShown();
@@ -342,12 +332,12 @@ export function test_ActionBarVisibility_Auto_ShouldRespectPageActionBarHiddenPr
                 </ActionBar.titleView>
             </ActionBar>
         </Page>
-        `
+        `,
 	);
 
 	helper.navigate(() => page);
 	let actionBarHidden = false;
-	if (isIOS) {
+	if (__APPLE__) {
 		actionBarHidden = page.actionBar.nativeView.hidden;
 	} else {
 		actionBarHidden = !page.actionBar.nativeView.isShown();
@@ -391,5 +381,5 @@ export function createPageAndNavigate() {
 }
 
 export function test_recycling() {
-	helper.nativeView_recycling_test(() => new actionBarModule.ActionBar());
+	helper.nativeView_recycling_test(() => new ActionBar());
 }

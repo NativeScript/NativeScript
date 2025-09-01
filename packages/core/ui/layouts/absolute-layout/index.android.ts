@@ -1,6 +1,6 @@
 import { AbsoluteLayoutBase, leftProperty, topProperty } from './absolute-layout-common';
 import { View } from '../../core/view';
-import { Length } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 
 export * from './absolute-layout-common';
 

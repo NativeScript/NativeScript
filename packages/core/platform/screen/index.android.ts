@@ -1,10 +1,10 @@
-import { Application } from '../../application';
+import { getNativeApp } from '../../application/helpers-common';
 
 class MainScreen {
 	private _metrics: android.util.DisplayMetrics;
 
 	private initMetrics(): void {
-		const nativeApp = Application.android.getNativeApplication();
+		const nativeApp = getNativeApp() as android.app.Application;
 		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
 	}
 

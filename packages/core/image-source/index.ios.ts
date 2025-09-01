@@ -1,26 +1,15 @@
-// Definitions.
 import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
 import type { ImageBase } from '../ui/image/image-common';
-import * as httpModule from '../http';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 import { Trace } from '../trace';
-
-// Types.
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject, SYSTEM_PREFIX } from '../utils';
-
 import { getScaledDimensions } from './image-source-common';
+import { getImageRequest } from '../http/http-shared';
 
 export { isFileOrResourcePath };
-
-let http: typeof httpModule;
-function ensureHttp() {
-	if (!http) {
-		http = require('../http');
-	}
-}
 
 export class ImageSource implements ImageSourceDefinition {
 	public android: android.graphics.Bitmap;
@@ -69,9 +58,7 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromUrl(url: string): Promise<ImageSource> {
-		ensureHttp();
-
-		return http.getImage(url);
+		return getImageRequest(url) as Promise<ImageSource>;
 	}
 
 	static iosSystemScaleFor(scale: iosSymbolScaleType) {

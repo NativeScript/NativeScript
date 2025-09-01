@@ -1,11 +1,10 @@
 import { ScrollEventData } from '.';
 import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty } from './scroll-view-common';
-import { iOSNativeHelper, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { View } from '../core/view';
 
 export * from './scroll-view-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
@@ -174,7 +173,7 @@ export class ScrollView extends ScrollViewBase {
 		let width = right - left - insets.right - insets.left;
 		let height = bottom - top - insets.bottom - insets.top;
 
-		if (majorVersion > 10) {
+		if (SDK_VERSION > 10) {
 			// Disable automatic adjustment of scroll view insets
 			// Consider exposing this as property with all 4 modes
 			// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior

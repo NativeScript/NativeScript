@@ -3,8 +3,8 @@
  */
 
 // imported for definition purposes only
-import { makeValidator, makeParser } from '../ui/core/properties';
-import { CubicBezierAnimationCurve } from '../ui/animation/animation-interfaces';
+import { makeValidator, makeParser } from './validators';
+import { CubicBezierAnimationCurve } from './animation-types';
 
 export namespace CoreTypes {
 	export type CSSWideKeywords = 'initial' | 'inherit' | 'unset' | 'revert';
@@ -147,7 +147,7 @@ export namespace CoreTypes {
 		export const sup = 'sup';
 		export const sub = 'sub';
 		export const baseline = 'baseline';
-		export const isValid = makeValidator<VerticalAlignmentTextType>(top, middle, bottom, stretch, texttop, textbottom, sup, sub, baseline);
+		export const isValid = makeValidator<CoreTypes.VerticalAlignmentTextType>(top, middle, bottom, stretch, texttop, textbottom, sup, sub, baseline);
 		export const parse = (value: string) => (value.toLowerCase() === 'center' ? middle : parseStrict(value));
 		const parseStrict = makeParser<CoreTypes.VerticalAlignmentTextType>(isValid);
 	}

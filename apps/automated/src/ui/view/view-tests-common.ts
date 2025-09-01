@@ -1,7 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style, Frame, Page, Button, Label, Color, StackLayout, AbsoluteLayout, Observable, Utils, BindingOptions, isAndroid, LayoutBase } from '@nativescript/core';
 import * as helper from '../../ui-helper';
-import { checkNativeBackgroundColor, checkNativeBackgroundImage } from './view-tests';
 
 export function test_eachDescendant() {
 	const test = function (views: Array<View>) {
@@ -491,7 +490,7 @@ export function test_NativeSetter_called_only_once_with_cssValue() {
 			TKUnit.assertEqual(testView.cssAnimPropNativeValue, 'testCssAnimValue', 'Native value');
 			TKUnit.assertEqual(testView.viewPropNativeValue, 'testViewValue', 'Native value');
 		},
-		{ pageCss: pageCSS }
+		{ pageCss: pageCSS },
 	);
 }
 
@@ -521,7 +520,7 @@ export function test_NativeSetter_called_only_once_with_cssValue_and_localValue(
 			// View property set from CSS sets local value
 			TKUnit.assertEqual(testView.viewPropNativeValue, 'testViewValueCSS', 'Native value');
 		},
-		{ pageCss: pageCSS }
+		{ pageCss: pageCSS },
 	);
 }
 
@@ -909,7 +908,7 @@ export function test_binding_style_opacity() {
 	property_binding_style_test('opacity', 0.5, 0.6);
 }
 
-function _createLabelWithBorder(): View {
+export function _createLabelWithBorder(): View {
 	const lbl = new Label();
 	lbl.borderRadius = 10;
 	lbl.borderWidth = 2;
@@ -919,7 +918,7 @@ function _createLabelWithBorder(): View {
 	return lbl;
 }
 
-function _createBackgroundColorView(): View {
+export function _createBackgroundColorView(): View {
 	const lbl = new Label();
 	lbl.backgroundColor = new Color('#FFFF00');
 	return lbl;
@@ -952,41 +951,6 @@ export function testSetInlineStyle() {
 	});
 }
 
-export function testBackgroundColor() {
-	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
-		const lbl = views[0];
-		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
-	});
-}
-
-export function testBackgroundBorderColor() {
-	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
-		const lbl = views[0];
-		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
-	});
-}
-export function testSetAndRemoveBackgroundColor() {
-	helper.buildUIAndRunTest(_createBackgroundColorView(), function (views: Array<View>) {
-		const lbl = views[0];
-		helper.waitUntilLayoutReady(lbl);
-		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
-		lbl.backgroundColor = null;
-		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
-	});
-}
-
-export function testBackgroundImage() {
-	const lbl = _createLabelWithBorder();
-	lbl.className = 'myClass';
-	helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
-		const page = <Page>views[1];
-		page.css = ".myClass { background-image: url('~/assets/logo.png') }";
-		TKUnit.assertEqual(checkNativeBackgroundImage(lbl), true, 'Style background-image not loaded correctly.');
-	});
-}
-
 export function testBackgroundShorthand_With_EmptyBorder() {
 	// Related to issue https://github.com/NativeScript/NativeScript/issues/4415
 	const lbl = new Label();
@@ -998,7 +962,7 @@ export function testBackgroundShorthand_With_EmptyBorder() {
 		(views: Array<View>) => {
 			helper.waitUntilLayoutReady(lbl);
 		},
-		{ pageCss: css }
+		{ pageCss: css },
 	);
 }
 
