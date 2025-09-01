@@ -1,6 +1,6 @@
 import { getNativeApp } from '../application/helpers-common';
 
-console.log('__dirname:', global.__dirname);
+// console.log('__dirname:', global.__dirname);
 
 function getCurrentAppPath(): string {
 	if (__APPLE__) {

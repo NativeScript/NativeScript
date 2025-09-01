@@ -109,6 +109,11 @@ declare class SHMatchedMediaItem extends SHMediaItem implements NSSecureCoding {
 
 	static new(): SHMatchedMediaItem; // inherited from NSObject
 
+	/**
+	 * @since 18.4
+	 */
+	readonly confidence: number;
+
 	readonly frequencySkew: number;
 
 	readonly matchOffset: number;
@@ -210,6 +215,11 @@ declare var SHMediaItemArtist: string;
  * @since 15.0
  */
 declare var SHMediaItemArtworkURL: string;
+
+/**
+ * @since 18.4
+ */
+declare var SHMediaItemConfidence: string;
 
 /**
  * @since 17.0

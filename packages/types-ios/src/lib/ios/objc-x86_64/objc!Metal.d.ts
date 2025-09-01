@@ -1,13 +1,14 @@
 
+interface MTL4BufferRange {
+	bufferAddress: number;
+	length: number;
+}
+declare var MTL4BufferRange: interop.StructType<MTL4BufferRange>;
+
 /**
  * @since 14.0
  */
 interface MTLAccelerationStructure extends MTLResource {
-
-	/**
-	 * @since 16.0
-	 */
-	gpuResourceID: MTLResourceID;
 
 	size: number;
 }
@@ -460,7 +461,11 @@ declare const enum MTLAccelerationStructureUsage {
 
 	PreferFastBuild = 2,
 
-	ExtendedLimits = 4
+	ExtendedLimits = 4,
+
+	PreferFastIntersection = 16,
+
+	MinimizeMemory = 32
 }
 
 /**
@@ -1797,6 +1802,11 @@ interface MTLCommandEncoder extends NSObjectProtocol {
 
 	label: string;
 
+	/**
+	 * @since 26.0
+	 */
+	barrierAfterQueueStagesBeforeStages(afterQueueStages: MTLStages, beforeStages: MTLStages): void;
+
 	endEncoding(): void;
 
 	insertDebugSignpost(string: string): void;
@@ -2416,14 +2426,9 @@ declare class MTLComputePipelineReflection extends NSObject {
 /**
  * @since 8.0
  */
-interface MTLComputePipelineState extends NSObjectProtocol {
+interface MTLComputePipelineState extends MTLAllocation, NSObjectProtocol {
 
 	device: MTLDevice;
-
-	/**
-	 * @since 16.0
-	 */
-	gpuResourceID: MTLResourceID;
 
 	/**
 	 * @since 11.0
@@ -2431,6 +2436,11 @@ interface MTLComputePipelineState extends NSObjectProtocol {
 	label: string;
 
 	maxTotalThreadsPerThreadgroup: number;
+
+	/**
+	 * @since 26.0
+	 */
+	reflection: MTLComputePipelineReflection;
 
 	/**
 	 * @since 18.0
@@ -2453,6 +2463,11 @@ interface MTLComputePipelineState extends NSObjectProtocol {
 	 * @since 14.0
 	 */
 	functionHandleWithFunction(_function: MTLFunction): MTLFunctionHandle;
+
+	/**
+	 * @since 26.0
+	 */
+	functionHandleWithName(name: string): MTLFunctionHandle;
 
 	/**
 	 * @since 11.0
@@ -3105,6 +3120,11 @@ interface MTLDevice extends NSObjectProtocol {
 	convertSparseTileRegionsToPixelRegionsWithTileSizeNumRegions?(tileRegions: interop.Reference<MTLRegion>, pixelRegions: interop.Reference<MTLRegion>, tileSize: MTLSize, numRegions: number): void;
 
 	/**
+	 * @since 26.0
+	 */
+	functionHandleWithFunction(_function: MTLFunction): MTLFunctionHandle;
+
+	/**
 	 * @since 11.0
 	 */
 	getDefaultSamplePositionsCount(positions: interop.Pointer | interop.Reference<MTLSamplePosition>, count: number): void;
@@ -3391,6 +3411,12 @@ interface MTLDispatchThreadgroupsIndirectArguments {
 }
 declare var MTLDispatchThreadgroupsIndirectArguments: interop.StructType<MTLDispatchThreadgroupsIndirectArguments>;
 
+interface MTLDispatchThreadsIndirectArguments {
+	threadsPerGrid: interop.Reference<number>;
+	threadsPerThreadgroup: interop.Reference<number>;
+}
+declare var MTLDispatchThreadsIndirectArguments: interop.StructType<MTLDispatchThreadsIndirectArguments>;
+
 /**
  * @since 12.0
  */
@@ -3561,7 +3587,11 @@ declare const enum MTLFeatureSet {
 
 	tvOS_GPUFamily1_v3 = 30002,
 
-	tvOS_GPUFamily1_v4 = 30004
+	tvOS_GPUFamily2_v1 = 30003,
+
+	tvOS_GPUFamily1_v4 = 30004,
+
+	tvOS_GPUFamily2_v2 = 30005
 }
 
 /**
@@ -3772,7 +3802,9 @@ declare const enum MTLFunctionOptions {
 
 	StoreFunctionInMetalScript = 2,
 
-	FailOnBinaryArchiveMiss = 4
+	FailOnBinaryArchiveMiss = 4,
+
+	PipelineIndependent = 8
 }
 
 /**
@@ -4183,30 +4215,10 @@ declare const enum MTLIndexType {
 	UInt32 = 1
 }
 
-interface MTLIndirectAccelerationStructureMotionInstanceDescriptor {
-	options: MTLAccelerationStructureInstanceOptions;
-	mask: number;
-	intersectionFunctionTableOffset: number;
-	userID: number;
-	accelerationStructureID: MTLResourceID;
-	motionTransformsStartIndex: number;
-	motionTransformsCount: number;
-	motionStartBorderMode: MTLMotionBorderMode;
-	motionEndBorderMode: MTLMotionBorderMode;
-	motionStartTime: number;
-	motionEndTime: number;
-}
-declare var MTLIndirectAccelerationStructureMotionInstanceDescriptor: interop.StructType<MTLIndirectAccelerationStructureMotionInstanceDescriptor>;
-
 /**
  * @since 12.0
  */
 interface MTLIndirectCommandBuffer extends MTLResource {
-
-	/**
-	 * @since 16.0
-	 */
-	gpuResourceID: MTLResourceID;
 
 	size: number;
 
@@ -4530,6 +4542,13 @@ declare class MTLInstanceAccelerationStructureDescriptor extends MTLAcceleration
 	motionTransformType: MTLTransformType;
 }
 
+interface MTLIntersectionFunctionBufferArguments {
+	intersectionFunctionBuffer: number;
+	intersectionFunctionBufferSize: number;
+	intersectionFunctionStride: number;
+}
+declare var MTLIntersectionFunctionBufferArguments: interop.StructType<MTLIntersectionFunctionBufferArguments>;
+
 /**
  * @since 14.0
  */
@@ -4563,18 +4582,17 @@ declare const enum MTLIntersectionFunctionSignature {
 
 	MaxLevels = 64,
 
-	CurveData = 128
+	CurveData = 128,
+
+	IntersectionFunctionBuffer = 256,
+
+	UserData = 512
 }
 
 /**
  * @since 14.0
  */
 interface MTLIntersectionFunctionTable extends MTLResource {
-
-	/**
-	 * @since 16.0
-	 */
-	gpuResourceID: MTLResourceID;
 
 	setBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
 
@@ -4642,7 +4660,9 @@ declare const enum MTLLanguageVersion {
 
 	Version3_1 = 196609,
 
-	Version3_2 = 196610
+	Version3_2 = 196610,
+
+	Version4_0 = 262144
 }
 
 /**
@@ -6785,14 +6805,9 @@ declare class MTLRenderPipelineReflection extends NSObject {
 /**
  * @since 8.0
  */
-interface MTLRenderPipelineState extends NSObjectProtocol {
+interface MTLRenderPipelineState extends MTLAllocation, NSObjectProtocol {
 
 	device: MTLDevice;
-
-	/**
-	 * @since 16.0
-	 */
-	gpuResourceID: MTLResourceID;
 
 	/**
 	 * @since 11.0
@@ -6832,6 +6847,11 @@ interface MTLRenderPipelineState extends NSObjectProtocol {
 	objectThreadExecutionWidth: number;
 
 	/**
+	 * @since 26.0
+	 */
+	reflection: MTLRenderPipelineReflection;
+
+	/**
 	 * @since 18.0
 	 */
 	shaderValidation: MTLShaderValidation;
@@ -6850,6 +6870,11 @@ interface MTLRenderPipelineState extends NSObjectProtocol {
 	 * @since 15.0
 	 */
 	functionHandleWithFunctionStage(_function: MTLFunction, stage: MTLRenderStages): MTLFunctionHandle;
+
+	/**
+	 * @since 26.0
+	 */
+	functionHandleWithNameStage(name: string, stage: MTLRenderStages): MTLFunctionHandle;
 
 	/**
 	 * @since 11.0
@@ -7003,11 +7028,6 @@ declare var MTLResource: {
 
 	prototype: MTLResource;
 };
-
-interface MTLResourceID {
-	_impl: number;
-}
-declare var MTLResourceID: interop.StructType<MTLResourceID>;
 
 /**
  * @since 8.0
@@ -7260,11 +7280,6 @@ interface MTLSamplerState extends NSObjectProtocol {
 
 	device: MTLDevice;
 
-	/**
-	 * @since 16.0
-	 */
-	gpuResourceID: MTLResourceID;
-
 	label: string;
 }
 declare var MTLSamplerState: {
@@ -7341,6 +7356,11 @@ declare class MTLSharedEventListener extends NSObject {
 	static alloc(): MTLSharedEventListener; // inherited from NSObject
 
 	static new(): MTLSharedEventListener; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	static sharedListener(): MTLSharedEventListener;
 
 	readonly dispatchQueue: NSObject & OS_dispatch_queue;
 
@@ -7422,6 +7442,34 @@ declare class MTLStageInputOutputDescriptor extends NSObject implements NSCopyin
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	reset(): void;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum MTLStages {
+
+	Vertex = 1,
+
+	Fragment = 2,
+
+	Tile = 4,
+
+	Object = 8,
+
+	Mesh = 16,
+
+	ResourceState = 67108864,
+
+	Dispatch = 134217728,
+
+	Blit = 268435456,
+
+	AccelerationStructure = 536870912,
+
+	MachineLearning = 1073741824,
+
+	All = 9223372036854775807
 }
 
 /**
@@ -7711,11 +7759,6 @@ interface MTLTexture extends MTLResource {
 	firstMipmapInTail: number;
 
 	framebufferOnly: boolean;
-
-	/**
-	 * @since 16.0
-	 */
-	gpuResourceID: MTLResourceID;
 
 	height: number;
 
@@ -8416,11 +8459,6 @@ declare const enum MTLVisibilityResultMode {
  * @since 14.0
  */
 interface MTLVisibleFunctionTable extends MTLResource {
-
-	/**
-	 * @since 16.0
-	 */
-	gpuResourceID: MTLResourceID;
 
 	setFunctionAtIndex(_function: MTLFunctionHandle, index: number): void;
 

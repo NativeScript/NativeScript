@@ -41,6 +41,31 @@ declare class PKAddIdentityDocumentConfiguration extends PKAddSecureElementPassC
 }
 
 /**
+ * @since 26.0
+ */
+declare class PKAddIdentityDocumentMetadata extends PKIdentityDocumentMetadata {
+
+	static alloc(): PKAddIdentityDocumentMetadata; // inherited from NSObject
+
+	static new(): PKAddIdentityDocumentMetadata; // inherited from NSObject
+
+	readonly preview: PKAddPassMetadataPreview;
+
+	constructor(o: { provisioningCredentialIdentifier: string; sharingInstanceIdentifier: string; cardTemplateIdentifier: string; issuingCountryCode: string; documentType: PKAddIdentityDocumentType; preview: PKAddPassMetadataPreview; });
+
+	initWithProvisioningCredentialIdentifierSharingInstanceIdentifierCardTemplateIdentifierIssuingCountryCodeDocumentTypePreview(credentialIdentifier: string, sharingInstanceIdentifier: string, templateIdentifier: string, issuingCountryCode: string, documentType: PKAddIdentityDocumentType, preview: PKAddPassMetadataPreview): this;
+}
+
+declare const enum PKAddIdentityDocumentType {
+
+	IDCard = 0,
+
+	MDL = 1,
+
+	PhotoID = 2
+}
+
+/**
  * @since 9.0
  */
 declare class PKAddPassButton extends UIButton {
@@ -831,6 +856,62 @@ declare var PKEncryptionSchemeECC_V2: string;
 declare var PKEncryptionSchemeRSA_V2: string;
 
 /**
+ * @since 26.0
+ */
+declare class PKIdentityAnyOfDescriptor extends NSObject implements PKIdentityDocumentDescriptor {
+
+	static alloc(): PKIdentityAnyOfDescriptor; // inherited from NSObject
+
+	static new(): PKIdentityAnyOfDescriptor; // inherited from NSObject
+
+	readonly descriptors: NSArray<PKIdentityDocumentDescriptor>;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly elements: NSArray<PKIdentityElement>; // inherited from PKIdentityDocumentDescriptor
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { descriptors: NSArray<PKIdentityDocumentDescriptor> | PKIdentityDocumentDescriptor[]; });
+
+	addElementsWithIntentToStore(elements: NSArray<PKIdentityElement> | PKIdentityElement[], intentToStore: PKIdentityIntentToStore): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithDescriptors(descriptors: NSArray<PKIdentityDocumentDescriptor> | PKIdentityDocumentDescriptor[]): this;
+
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+/**
  * @since 16.0
  */
 declare class PKIdentityAuthorizationController extends NSObject {
@@ -960,6 +1041,16 @@ declare class PKIdentityDocumentMetadata extends NSObject {
 
 	readonly credentialIdentifier: string;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly documentType: PKAddIdentityDocumentType;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly issuingCountryCode: string;
+
 	serverEnvironmentIdentifier: string;
 
 	readonly sharingInstanceIdentifier: string;
@@ -1045,11 +1136,31 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 
 	static readonly drivingPrivilegesElement: PKIdentityElement;
 
+	/**
+	 * @since 26.0
+	 */
+	static readonly eyeColorElement: PKIdentityElement;
+
 	static readonly familyNameElement: PKIdentityElement;
 
 	static readonly givenNameElement: PKIdentityElement;
 
+	/**
+	 * @since 26.0
+	 */
+	static readonly hairColorElement: PKIdentityElement;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly heightElement: PKIdentityElement;
+
 	static readonly issuingAuthorityElement: PKIdentityElement;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly organDonorStatusElement: PKIdentityElement;
 
 	static readonly portraitElement: PKIdentityElement;
 
@@ -1057,6 +1168,16 @@ declare class PKIdentityElement extends NSObject implements NSCopying {
 	 * @since 17.2
 	 */
 	static readonly sexElement: PKIdentityElement;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly veteranStatusElement: PKIdentityElement;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly weightElement: PKIdentityElement;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -1118,6 +1239,56 @@ declare class PKIdentityNationalIDCardDescriptor extends NSObject implements PKI
 	static new(): PKIdentityNationalIDCardDescriptor; // inherited from NSObject
 
 	regionCode: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly elements: NSArray<PKIdentityElement>; // inherited from PKIdentityDocumentDescriptor
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	addElementsWithIntentToStore(elements: NSArray<PKIdentityElement> | PKIdentityElement[], intentToStore: PKIdentityIntentToStore): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	intentToStoreForElement(element: PKIdentityElement): PKIdentityIntentToStore;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class PKIdentityPhotoIDDescriptor extends NSObject implements PKIdentityDocumentDescriptor {
+
+	static alloc(): PKIdentityPhotoIDDescriptor; // inherited from NSObject
+
+	static new(): PKIdentityPhotoIDDescriptor; // inherited from NSObject
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -1300,7 +1471,7 @@ declare class PKJapanIndividualNumberCardMetadata extends PKIdentityDocumentMeta
 
 	constructor(o: { provisioningCredentialIdentifier: string; sharingInstanceIdentifier: string; cardTemplateIdentifier: string; preview: PKAddPassMetadataPreview; });
 
-	initWithProvisioningCredentialIdentifierSharingInstanceIdentifierCardConfigurationIdentifierPreview(credentialIdentifier: string, sharingInstanceIdentifier: string, templateIdentifier: string, preview: PKAddPassMetadataPreview): this;
+	initWithProvisioningCredentialIdentifierSharingInstanceIdentifierCardConfigurationIdentifierPreview(credentialIdentifier: string, sharingInstanceIdentifier: string, cardConfigurationIdentifier: string, preview: PKAddPassMetadataPreview): this;
 
 	initWithProvisioningCredentialIdentifierSharingInstanceIdentifierCardTemplateIdentifierPreview(credentialIdentifier: string, sharingInstanceIdentifier: string, templateIdentifier: string, preview: PKAddPassMetadataPreview): this;
 }
@@ -1392,6 +1563,11 @@ declare class PKPass extends PKObject {
 	 * @deprecated 18.0
 	 */
 	readonly relevantDate: Date;
+
+	/**
+	 * @since 18.0
+	 */
+	readonly relevantDates: NSArray<PKPassRelevantDate>;
 
 	/**
 	 * @since 9.0
@@ -1508,6 +1684,11 @@ declare class PKPassLibrary extends NSObject {
 	addPassesWithCompletionHandler(passes: NSArray<PKPass> | PKPass[], completion: (p1: PKPassLibraryAddPassesStatus) => void): void;
 
 	/**
+	 * @since 26.0
+	 */
+	authorizationStatusForCapability(capability: PKPassLibraryCapability): PKPassLibraryAuthorizationStatus;
+
+	/**
 	 * @since 10.1
 	 */
 	canAddFelicaPass(): boolean;
@@ -1574,6 +1755,11 @@ declare class PKPassLibrary extends NSObject {
 	replacePassWithPass(pass: PKPass): boolean;
 
 	/**
+	 * @since 26.0
+	 */
+	requestAuthorizationForCapabilityCompletion(capability: PKPassLibraryCapability, completion: (p1: PKPassLibraryAuthorizationStatus) => void): void;
+
+	/**
 	 * @since 15.0
 	 */
 	serviceProviderDataForSecureElementPassCompletion(secureElementPass: PKSecureElementPass, completion: (p1: NSData, p2: NSError) => void): void;
@@ -1600,6 +1786,28 @@ declare const enum PKPassLibraryAddPassesStatus {
  * @since 6.0
  */
 declare var PKPassLibraryAddedPassesUserInfoKey: string;
+
+/**
+ * @since 26.0
+ */
+declare const enum PKPassLibraryAuthorizationStatus {
+
+	NotDetermined = -1,
+
+	Denied = 0,
+
+	Authorized = 1,
+
+	Restricted = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum PKPassLibraryCapability {
+
+	BackgroundAddPasses = 0
+}
 
 /**
  * @since 6.0
@@ -1635,6 +1843,17 @@ declare var PKPassLibraryReplacementPassesUserInfoKey: string;
  * @since 6.0
  */
 declare var PKPassLibrarySerialNumberUserInfoKey: string;
+
+declare class PKPassRelevantDate extends NSObject {
+
+	static alloc(): PKPassRelevantDate; // inherited from NSObject
+
+	static new(): PKPassRelevantDate; // inherited from NSObject
+
+	readonly date: Date;
+
+	readonly interval: NSDateInterval;
+}
 
 /**
  * @since 8.0
@@ -2120,6 +2339,11 @@ declare class PKPaymentButton extends UIButton {
 
 	static buttonWithTypeStyle(buttonType: PKPaymentButtonType, buttonStyle: PKPaymentButtonStyle): PKPaymentButton;
 
+	/**
+	 * @since 26.0
+	 */
+	static buttonWithTypeStyleDisableCardArt(buttonType: PKPaymentButtonType, buttonStyle: PKPaymentButtonStyle, disableCardArt: boolean): PKPaymentButton;
+
 	static new(): PKPaymentButton; // inherited from NSObject
 
 	/**
@@ -2143,9 +2367,19 @@ declare class PKPaymentButton extends UIButton {
 	constructor(o: { paymentButtonType: PKPaymentButtonType; paymentButtonStyle: PKPaymentButtonStyle; });
 
 	/**
+	 * @since 26.0
+	 */
+	constructor(o: { paymentButtonType: PKPaymentButtonType; paymentButtonStyle: PKPaymentButtonStyle; disableCardArt: boolean; });
+
+	/**
 	 * @since 9.0
 	 */
 	initWithPaymentButtonTypePaymentButtonStyle(type: PKPaymentButtonType, style: PKPaymentButtonStyle): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithPaymentButtonTypePaymentButtonStyleDisableCardArt(type: PKPaymentButtonType, style: PKPaymentButtonStyle, disableCardArt: boolean): this;
 }
 
 /**
@@ -2401,6 +2635,11 @@ declare var PKPaymentNetworkElo: string;
 declare var PKPaymentNetworkGirocard: string;
 
 /**
+ * @since 18.4
+ */
+declare var PKPaymentNetworkHimyan: string;
+
+/**
  * @since 10.3
  */
 declare var PKPaymentNetworkIDCredit: string;
@@ -2414,6 +2653,11 @@ declare var PKPaymentNetworkInterac: string;
  * @since 10.1
  */
 declare var PKPaymentNetworkJCB: string;
+
+/**
+ * @since 18.4
+ */
+declare var PKPaymentNetworkJaywan: string;
 
 /**
  * @since 12.1.1
@@ -2439,6 +2683,11 @@ declare var PKPaymentNetworkMeeza: string;
  * @since 14.5
  */
 declare var PKPaymentNetworkMir: string;
+
+/**
+ * @since 26.0
+ */
+declare var PKPaymentNetworkMyDebit: string;
 
 /**
  * @since 17.5
@@ -2600,6 +2849,11 @@ declare class PKPaymentRequest extends NSObject {
 	applePayLaterAvailability: PKApplePayLaterAvailability;
 
 	applicationData: NSData;
+
+	/**
+	 * @since 26.0
+	 */
+	attributionIdentifier: string;
 
 	/**
 	 * @since 16.0

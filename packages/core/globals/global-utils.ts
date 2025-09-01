@@ -1,6 +1,6 @@
 import { Observable } from '../data/observable';
 import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
-console.log('here in globals/global-utils!');
+// console.log('here in globals/global-utils!');
 
 /**
  * Manages internal framework global state

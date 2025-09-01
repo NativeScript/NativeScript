@@ -15,6 +15,7 @@ import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
+import { SDK_VERSION } from '../utils/constants';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -28,6 +29,54 @@ const SYSTEM_APPEARANCE_CSS_CLASSES = [
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.light}`,
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`,
 ];
+
+// SDK Version CSS classes
+let sdkVersionClasses: string[] = [];
+
+export function initializeSdkVersionClass(rootView: View): void {
+	const majorVersion = Math.floor(SDK_VERSION);
+	sdkVersionClasses = [];
+
+	let platformPrefix = '';
+	if (__APPLE__) {
+		platformPrefix = __VISIONOS__ ? 'ns-visionos' : 'ns-ios';
+	} else if (__ANDROID__) {
+		platformPrefix = 'ns-android';
+	}
+
+	if (platformPrefix) {
+		// Add exact version class (e.g., .ns-ios-26 or .ns-android-36)
+		// this acts like 'gte' for that major version range
+		// e.g., if user wants iOS 27, they can add .ns-ios-27 specifiers
+		sdkVersionClasses.push(`${platformPrefix}-${majorVersion}`);
+	}
+
+	// Apply the SDK version classes to root views
+	applySdkVersionClass(rootView);
+}
+
+function applySdkVersionClass(rootView: View): void {
+	if (!sdkVersionClasses.length) {
+		return;
+	}
+
+	if (!rootView) {
+		return;
+	}
+
+	// Batch apply all SDK version classes to root view for better performance
+	const classesToAdd = sdkVersionClasses.filter((className) => !rootView.cssClasses.has(className));
+	classesToAdd.forEach((className) => rootView.cssClasses.add(className));
+
+	// Apply to modal views only if there are any
+	const rootModalViews = <Array<View>>rootView._getRootModalViews();
+	if (rootModalViews.length > 0) {
+		rootModalViews.forEach((rootModalView) => {
+			const modalClassesToAdd = sdkVersionClasses.filter((className) => !rootModalView.cssClasses.has(className));
+			modalClassesToAdd.forEach((className) => rootModalView.cssClasses.add(className));
+		});
+	}
+}
 
 const globalEvents = getNativeScriptGlobals().events;
 

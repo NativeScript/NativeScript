@@ -13,6 +13,7 @@
         <Button text="datepicker" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="dialogs" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="forms" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="glass-effects" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="image-async" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="image-handling" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="labels" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />

@@ -1,12 +1,8 @@
 import { extname, relative, resolve } from 'path';
-import {
-	ContextExclusionPlugin,
-	DefinePlugin,
-	HotModuleReplacementPlugin,
-	BannerPlugin,
-} from 'webpack';
+import { ContextExclusionPlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
 import { satisfies } from 'semver';
+import { isVersionGteConsideringPrerelease } from '../helpers/dependencies';
 import { existsSync } from 'fs';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
@@ -15,14 +11,15 @@ import TerserPlugin from 'terser-webpack-plugin';
 
 import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
 import {
-	getAllDependencies,
 	getDependencyVersion,
 	hasDependency,
+	getResolvedDependencyVersionForCheck,
 } from '../helpers/dependencies';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
+import { CompatDefinePlugin } from '../plugins/CompatDefinePlugin';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
@@ -44,7 +41,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// set mode
 	config.mode(mode);
 
-	// use source map files with v9+
+	// use source map files by default with v9+
 	function useSourceMapFiles() {
 		if (mode === 'development') {
 			// in development we always use source-map files with v9+ runtimes
@@ -52,20 +49,53 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			env.sourceMap = 'source-map';
 		}
 	}
-	// determine target output by @nativescript/core version
+	// determine target output by @nativescript/* runtime version
 	// v9+ supports ESM output, anything below uses CommonJS
-	if (hasDependency('@nativescript/core')) {
-		const coreVersion = getDependencyVersion('@nativescript/core');
-		// ensure alpha/beta/rc versions are considered as well
-		if (coreVersion && !coreVersion.includes('9.0.0')) {
-			if (!satisfies(coreVersion, '>=9.0.0')) {
-				// @nativescript/core < 9 uses CommonJS output
-				env.commonjs = true;
-			} else {
+	if (
+		hasDependency('@nativescript/ios') ||
+		hasDependency('@nativescript/visionos') ||
+		hasDependency('@nativescript/android')
+	) {
+		const iosVersion = getDependencyVersion('@nativescript/ios');
+		const visionosVersion = getDependencyVersion('@nativescript/visionos');
+		const androidVersion = getDependencyVersion('@nativescript/android');
+
+		if (platform === 'ios') {
+			const iosResolved =
+				getResolvedDependencyVersionForCheck('@nativescript/ios', '9.0.0') ??
+				iosVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(iosResolved, '9.0.0')) {
 				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
 			}
-		} else {
-			useSourceMapFiles();
+		} else if (platform === 'visionos') {
+			const visionosResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/visionos',
+					'9.0.0',
+				) ??
+				visionosVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(visionosResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
+		} else if (platform === 'android') {
+			const androidResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/android',
+					'9.0.0',
+				) ??
+				androidVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(androidResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
 		}
 	}
 
@@ -85,6 +115,28 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// polyfill the node url module.
 	config.set('externalsPresets', {
 		node: false,
+	});
+
+	// Mock Node.js built-ins that are not available in NativeScript runtime
+	// but are required by some packages like css-tree
+	config.resolve.merge({
+		fallback: {
+			module: require.resolve('../polyfills/module.js'),
+		},
+		alias: {
+			// Mock mdn-data modules that css-tree tries to load
+			'mdn-data/css/properties.json': require.resolve(
+				'../polyfills/mdn-data-properties.js',
+			),
+			'mdn-data/css/syntaxes.json': require.resolve(
+				'../polyfills/mdn-data-syntaxes.js',
+			),
+			'mdn-data/css/at-rules.json': require.resolve(
+				'../polyfills/mdn-data-at-rules.js',
+			),
+			// Ensure imports of the Node 'module' builtin resolve to our polyfill
+			module: require.resolve('../polyfills/module.js'),
+		},
 	});
 
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
@@ -492,7 +544,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.options(postCSSOptions)
 		.end()
 		.use('sass-loader')
-		.loader('sass-loader');
+		.loader('sass-loader')
+		.options({
+			implementation: require('sass'),
+		});
 
 	// config.plugin('NormalModuleReplacementPlugin').use(NormalModuleReplacementPlugin, [
 	// 	/.*/,
@@ -525,7 +580,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config
 		.plugin('ContextExclusionPlugin|Other_Platforms')
 		.use(ContextExclusionPlugin, [
-			new RegExp(`\\.(${otherPlatformsRE})\\.(\\w+)$`),
+			new RegExp(`\.(${otherPlatformsRE})\.(\w+)$`),
 		]);
 
 	// Filter common undesirable warnings
@@ -545,31 +600,31 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	);
 
 	// todo: refine defaults
-	config.plugin('DefinePlugin').use(DefinePlugin, [
-		{
-			__DEV__: mode === 'development',
-			__NS_WEBPACK__: true,
-			__NS_ENV_VERBOSE__: !!env.verbose,
-			__NS_DEV_HOST_IPS__:
-				mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
-			__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
-			__UI_USE_XML_PARSER__: true,
-			__UI_USE_EXTERNAL_RENDERER__: false,
-			__COMMONJS__: !!env.commonjs,
-			__ANDROID__: platform === 'android',
-			__IOS__: platform === 'ios',
-			__VISIONOS__: platform === 'visionos',
-			__APPLE__: platform === 'ios' || platform === 'visionos',
-			/* for compat only */ 'global.isAndroid': platform === 'android',
-			/* for compat only */ 'global.isIOS':
-				platform === 'ios' || platform === 'visionos',
-			/* for compat only */ 'global.isVisionOS': platform === 'visionos',
-			process: 'global.process',
-
-			// todo: ?!?!
-			// profile: '() => {}',
-		},
-	]);
+	config.plugin('DefinePlugin').use(
+		CompatDefinePlugin as any,
+		[
+			{
+				__DEV__: mode === 'development',
+				__NS_WEBPACK__: true,
+				__NS_ENV_VERBOSE__: !!env.verbose,
+				__NS_DEV_HOST_IPS__:
+					mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
+				__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
+				__UI_USE_XML_PARSER__: true,
+				__UI_USE_EXTERNAL_RENDERER__: false,
+				__COMMONJS__: !!env.commonjs,
+				__ANDROID__: platform === 'android',
+				__IOS__: platform === 'ios',
+				__VISIONOS__: platform === 'visionos',
+				__APPLE__: platform === 'ios' || platform === 'visionos',
+				/* for compat only */ 'global.isAndroid': platform === 'android',
+				/* for compat only */ 'global.isIOS':
+					platform === 'ios' || platform === 'visionos',
+				/* for compat only */ 'global.isVisionOS': platform === 'visionos',
+				process: 'global.process',
+			},
+		] as any,
+	);
 
 	// enable DotEnv
 	applyDotEnvPlugin(config);

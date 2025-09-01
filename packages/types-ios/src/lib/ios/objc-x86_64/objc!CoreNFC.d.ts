@@ -874,6 +874,26 @@ declare var NFCNDEFTag: {
 	prototype: NFCNDEFTag;
 };
 
+/**
+ * @since 26.0
+ */
+declare class NFCPaymentTagReaderSession extends NFCTagReaderSession {
+
+	static alloc(): NFCPaymentTagReaderSession; // inherited from NSObject
+
+	static new(): NFCPaymentTagReaderSession; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { delegate: NFCTagReaderSessionDelegate; queue: NSObject & OS_dispatch_queue; });
+
+	/**
+	 * @since 26.0
+	 */
+	initWithDelegateQueue(delegate: NFCTagReaderSessionDelegate, queue: NSObject & OS_dispatch_queue): this;
+}
+
 declare const enum NFCPollingOption {
 
 	ISO14443 = 1,
@@ -898,6 +918,10 @@ declare const enum NFCReaderError {
 	ReaderErrorParameterOutOfBound = 5,
 
 	ReaderErrorRadioDisabled = 6,
+
+	ReaderErrorIneligible = 7,
+
+	ReaderErrorAccessNotAccepted = 8,
 
 	ReaderTransceiveErrorTagConnectionLost = 100,
 

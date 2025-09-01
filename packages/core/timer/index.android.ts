@@ -58,23 +58,35 @@ export function clearTimeout(id: number): void {
 }
 
 export function setInterval(callback: Function, milliseconds = 0, ...args): number {
-	// Cast to Number
 	milliseconds += 0;
 
 	const id = createHandlerAndGetId();
 	const handler = timeoutHandler;
 	const invoke = () => callback(...args);
 	const zoneBound = zonedCallback(invoke);
-	const startOffset = milliseconds > 0 ? Date.now() % milliseconds : 0;
-	function nextCallMs() {
-		return milliseconds > 0 ? milliseconds - ((Date.now() - startOffset) % milliseconds) : milliseconds;
-	}
+	let nextDueTime = Date.now() + milliseconds;
 
 	const runnable = new java.lang.Runnable({
 		run: () => {
+			const executionStart = Date.now();
 			zoneBound();
+
 			if (timeoutCallbacks[id]) {
-				handler.postDelayed(runnable, long(nextCallMs()));
+				const executionTime = Date.now() - executionStart;
+
+				// Update the next due time based on when this callback was supposed to execute
+				nextDueTime += milliseconds;
+
+				// If the callback took longer than the interval, skip ahead to avoid catch-up
+				const now = Date.now();
+				if (nextDueTime <= now) {
+					// Calculate how many intervals we should skip
+					const missedIntervals = Math.floor((now - nextDueTime) / milliseconds);
+					nextDueTime += (missedIntervals + 1) * milliseconds;
+				}
+
+				const delay = Math.max(0, nextDueTime - now);
+				handler.postDelayed(runnable, long(delay));
 			}
 		},
 	});
@@ -84,8 +96,7 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
 		timeoutCallbacksCb[id] = callback;
 	}
 
-	timeoutHandler.postDelayed(runnable, long(nextCallMs()));
-
+	handler.postDelayed(runnable, long(milliseconds));
 	return id;
 }
 

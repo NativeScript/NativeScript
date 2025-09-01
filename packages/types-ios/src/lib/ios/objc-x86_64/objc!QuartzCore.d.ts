@@ -227,6 +227,26 @@ declare class CADisplayLink extends NSObject {
 }
 
 /**
+ * @since 26.0
+ */
+declare var CADynamicRangeAutomatic: string;
+
+/**
+ * @since 26.0
+ */
+declare var CADynamicRangeConstrainedHigh: string;
+
+/**
+ * @since 26.0
+ */
+declare var CADynamicRangeHigh: string;
+
+/**
+ * @since 26.0
+ */
+declare var CADynamicRangeStandard: string;
+
+/**
  * @since 2.0
  * @deprecated 12.0
  */
@@ -545,6 +565,8 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	static layer(): CALayer;
 
+	static layerWithRemoteClientId(client_id: number): CALayer;
+
 	static needsDisplayForKey(key: string): boolean;
 
 	static new(): CALayer; // inherited from NSObject
@@ -587,6 +609,11 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 	contentsFormat: string;
 
 	contentsGravity: string;
+
+	/**
+	 * @since 26.0
+	 */
+	contentsHeadroom: number;
 
 	contentsRect: CGRect;
 
@@ -646,6 +673,11 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	position: CGPoint;
 
+	/**
+	 * @since 26.0
+	 */
+	preferredDynamicRange: string;
+
 	rasterizationScale: number;
 
 	shadowColor: any;
@@ -679,6 +711,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	/**
 	 * @since 17.0
+	 * @deprecated 26.0
 	 */
 	wantsExtendedDynamicRangeContent: boolean;
 
@@ -984,6 +1017,11 @@ declare class CAMetalLayer extends CALayer {
 	readonly preferredDevice: MTLDevice;
 
 	presentsWithTransaction: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly residencySet: MTLResidencySet;
 
 	nextDrawable(): CAMetalDrawable;
 }
@@ -1485,6 +1523,11 @@ declare var kCAAnimationRotateAuto: string;
  * @since 2.0
  */
 declare var kCAAnimationRotateAutoReverse: string;
+
+/**
+ * @since 12.0
+ */
+declare var kCAContentsFormatAutomatic: string;
 
 /**
  * @since 10.0
