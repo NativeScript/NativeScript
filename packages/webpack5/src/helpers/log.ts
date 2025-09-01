@@ -1,4 +1,4 @@
-import { env } from '@akylas/nativescript-webpack';
+import { env } from '..';
 import dedent from 'ts-dedent';
 
 // de-indents strings so multi-line string literals can be used

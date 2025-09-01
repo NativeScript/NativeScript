@@ -171,6 +171,11 @@ declare function CFAttributedStringGetLength(aStr: NSAttributedString): number;
 
 declare function CFAttributedStringGetMutableString(aStr: NSAttributedString): string;
 
+/**
+ * @since 26.0
+ */
+declare function CFAttributedStringGetStatisticalWritingDirections(attributedString: NSAttributedString, range: CFRange, baseDirection: number, bidiLevels: string | interop.Pointer | interop.Reference<any>, baseDirections: string | interop.Pointer | interop.Reference<any>): boolean;
+
 declare function CFAttributedStringGetString(aStr: NSAttributedString): string;
 
 declare function CFAttributedStringGetTypeID(): number;
@@ -347,6 +352,11 @@ declare function CFBundleCopyLocalizationsForPreferences(locArray: NSArray<any> 
 declare function CFBundleCopyLocalizationsForURL(url: NSURL): NSArray<any>;
 
 declare function CFBundleCopyLocalizedString(bundle: any, key: string, value: string, tableName: string): string;
+
+/**
+ * @since 18.4
+ */
+declare function CFBundleCopyLocalizedStringForLocalizations(bundle: any, key: string, value: string, tableName: string, localizations: NSArray<any> | any[]): string;
 
 declare function CFBundleCopyPreferredLocalizationsFromArray(locArray: NSArray<any> | any[]): NSArray<any>;
 
@@ -3201,6 +3211,11 @@ declare var kCFAllocatorSystemDefault: any;
 
 declare var kCFAllocatorUseContext: any;
 
+/**
+ * @since 26.0
+ */
+declare var kCFBanglaCalendar: string;
+
 declare var kCFBooleanFalse: number;
 
 declare var kCFBooleanTrue: number;
@@ -3242,6 +3257,11 @@ declare var kCFCopyStringDictionaryKeyCallBacks: CFDictionaryKeyCallBacks;
 declare var kCFCopyStringSetCallBacks: CFSetCallBacks;
 
 declare var kCFCoreFoundationVersionNumber: number;
+
+/**
+ * @since 26.0
+ */
+declare var kCFDangiCalendar: string;
 
 declare var kCFDateFormatterAMSymbol: string;
 
@@ -3412,6 +3432,11 @@ declare const kCFFileDescriptorWriteCallBack: number;
 
 declare var kCFGregorianCalendar: string;
 
+/**
+ * @since 26.0
+ */
+declare var kCFGujaratiCalendar: string;
+
 declare var kCFHebrewCalendar: string;
 
 /**
@@ -3439,6 +3464,11 @@ declare var kCFIslamicTabularCalendar: string;
 declare var kCFIslamicUmmAlQuraCalendar: string;
 
 declare var kCFJapaneseCalendar: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCFKannadaCalendar: string;
 
 /**
  * @since 4.0
@@ -3499,6 +3529,16 @@ declare var kCFLocaleScriptCode: string;
 declare var kCFLocaleUsesMetricSystem: string;
 
 declare var kCFLocaleVariantCode: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCFMalayalamCalendar: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCFMarathiCalendar: string;
 
 declare const kCFMessagePortBecameInvalidError: number;
 
@@ -3621,6 +3661,11 @@ declare var kCFNumberNaN: number;
 declare var kCFNumberNegativeInfinity: number;
 
 declare var kCFNumberPositiveInfinity: number;
+
+/**
+ * @since 26.0
+ */
+declare var kCFOdiaCalendar: string;
 
 /**
  * @since 4.0
@@ -3841,6 +3886,16 @@ declare var kCFStringTransformToLatin: string;
 declare var kCFStringTransformToUnicodeName: string;
 
 declare var kCFStringTransformToXMLHex: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCFTamilCalendar: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCFTeluguCalendar: string;
 
 /**
  * @since 2.0
@@ -4291,6 +4346,11 @@ declare var kCFURLUbiquitousItemIsDownloadingKey: string;
 declare var kCFURLUbiquitousItemIsExcludedFromSyncKey: string;
 
 /**
+ * @since 26.0
+ */
+declare var kCFURLUbiquitousItemIsSyncPausedKey: string;
+
+/**
  * @since 5.0
  */
 declare var kCFURLUbiquitousItemIsUploadedKey: string;
@@ -4311,6 +4371,11 @@ declare var kCFURLUbiquitousItemPercentDownloadedKey: string;
  * @deprecated 6.0
  */
 declare var kCFURLUbiquitousItemPercentUploadedKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCFURLUbiquitousItemSupportedSyncControlsKey: string;
 
 /**
  * @since 7.0
@@ -4551,3 +4616,13 @@ declare var kCFURLVolumeURLKey: string;
  * @since 5.0
  */
 declare var kCFURLVolumeUUIDStringKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCFVietnameseCalendar: string;
+
+/**
+ * @since 26.0
+ */
+declare var kCFVikramCalendar: string;

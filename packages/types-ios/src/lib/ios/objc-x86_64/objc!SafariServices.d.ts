@@ -11,7 +11,13 @@ interface SFAddToHomeScreenActivityItem extends NSObjectProtocol {
 	title: string;
 
 	/**
+	 * @since 18.2
+	 */
+	getHomeScreenWebAppInfoWithCompletionHandler?(completionHandler: (p1: SFAddToHomeScreenInfo) => void): void;
+
+	/**
 	 * @since 17.5
+	 * @deprecated 100000
 	 */
 	getWebAppManifestWithCompletionHandler?(completionHandler: (p1: BEWebAppManifest) => void): void;
 }
@@ -19,6 +25,26 @@ declare var SFAddToHomeScreenActivityItem: {
 
 	prototype: SFAddToHomeScreenActivityItem;
 };
+
+/**
+ * @since 18.2
+ */
+declare class SFAddToHomeScreenInfo extends NSObject implements NSCopying {
+
+	static alloc(): SFAddToHomeScreenInfo; // inherited from NSObject
+
+	static new(): SFAddToHomeScreenInfo; // inherited from NSObject
+
+	readonly manifest: BEWebAppManifest;
+
+	websiteCookies: NSArray<NSHTTPCookie>;
+
+	constructor(o: { manifest: BEWebAppManifest; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithManifest(manifest: BEWebAppManifest): this;
+}
 
 /**
  * @since 11.0
@@ -111,7 +137,11 @@ declare const enum SFErrorCode {
 
 	NoAttachmentFound = 2,
 
-	LoadingInterrupted = 3
+	LoadingInterrupted = 3,
+
+	InternalError = 4,
+
+	MissingEntitlement = 5
 }
 
 /**
@@ -128,6 +158,18 @@ declare var SFExtensionMessageKey: string;
  * @since 17.0
  */
 declare var SFExtensionProfileKey: string;
+
+/**
+ * @since 26.0
+ */
+declare class SFSafariSettings extends NSObject {
+
+	static alloc(): SFSafariSettings; // inherited from NSObject
+
+	static new(): SFSafariSettings; // inherited from NSObject
+
+	static openExportBrowsingDataSettingsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+}
 
 /**
  * @since 9.0
@@ -157,11 +199,13 @@ declare class SFSafariViewController extends UIViewController {
 
 	/**
 	 * @since 10.0
+	 * @deprecated 26.0
 	 */
 	preferredBarTintColor: UIColor;
 
 	/**
 	 * @since 10.0
+	 * @deprecated 26.0
 	 */
 	preferredControlTintColor: UIColor;
 

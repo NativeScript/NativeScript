@@ -49,6 +49,15 @@ declare var CIAreaAverage: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIAreaAverageMaximumRed extends CIAreaReductionFilter {
+}
+declare var CIAreaAverageMaximumRed: {
+
+	prototype: CIAreaAverageMaximumRed;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIAreaBoundsRed extends CIAreaReductionFilter {
 }
 declare var CIAreaBoundsRed: {
@@ -439,6 +448,25 @@ declare var CIBlurredRectangleGenerator: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIBlurredRoundedRectangleGenerator extends CIFilterProtocol {
+
+	color: CIColor;
+
+	extent: CGRect;
+
+	radius: number;
+
+	sigma: number;
+
+	smoothness: number;
+}
+declare var CIBlurredRoundedRectangleGenerator: {
+
+	prototype: CIBlurredRoundedRectangleGenerator;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIBokehBlur extends CIFilterProtocol {
 
 	inputImage: CIImage;
@@ -641,21 +669,21 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIColor; // inherited from NSObject
 
-	static colorWithCGColor(c: any): CIColor;
+	static colorWithCGColor(color: any): CIColor;
 
-	static colorWithRedGreenBlue(r: number, g: number, b: number): CIColor;
+	static colorWithRedGreenBlue(red: number, green: number, blue: number): CIColor;
 
-	static colorWithRedGreenBlueAlpha(r: number, g: number, b: number, a: number): CIColor;
-
-	/**
-	 * @since 10.0
-	 */
-	static colorWithRedGreenBlueAlphaColorSpace(r: number, g: number, b: number, a: number, colorSpace: any): CIColor;
+	static colorWithRedGreenBlueAlpha(red: number, green: number, blue: number, alpha: number): CIColor;
 
 	/**
 	 * @since 10.0
 	 */
-	static colorWithRedGreenBlueColorSpace(r: number, g: number, b: number, colorSpace: any): CIColor;
+	static colorWithRedGreenBlueAlphaColorSpace(red: number, green: number, blue: number, alpha: number, colorSpace: any): CIColor;
+
+	/**
+	 * @since 10.0
+	 */
+	static colorWithRedGreenBlueColorSpace(red: number, green: number, blue: number, colorSpace: any): CIColor;
 
 	static colorWithString(representation: string): CIColor;
 
@@ -759,7 +787,7 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCGColor(c: any): this;
+	initWithCGColor(color: any): this;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -771,19 +799,19 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 9.0
 	 */
-	initWithRedGreenBlue(r: number, g: number, b: number): this;
+	initWithRedGreenBlue(red: number, green: number, blue: number): this;
 
-	initWithRedGreenBlueAlpha(r: number, g: number, b: number, a: number): this;
-
-	/**
-	 * @since 10.0
-	 */
-	initWithRedGreenBlueAlphaColorSpace(r: number, g: number, b: number, a: number, colorSpace: any): this;
+	initWithRedGreenBlueAlpha(red: number, green: number, blue: number, alpha: number): this;
 
 	/**
 	 * @since 10.0
 	 */
-	initWithRedGreenBlueColorSpace(r: number, g: number, b: number, colorSpace: any): this;
+	initWithRedGreenBlueAlphaColorSpace(red: number, green: number, blue: number, alpha: number, colorSpace: any): this;
+
+	/**
+	 * @since 10.0
+	 */
+	initWithRedGreenBlueColorSpace(red: number, green: number, blue: number, colorSpace: any): this;
 }
 
 interface CIColorAbsoluteDifference extends CIFilterProtocol {
@@ -1212,6 +1240,26 @@ declare class CIContext extends NSObject {
 	TIFFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<string, any>): NSData;
 
 	/**
+	 * @since 19.0
+	 */
+	calculateHDRStatsForCGImage(cgimage: any): any;
+
+	/**
+	 * @since 19.0
+	 */
+	calculateHDRStatsForCVPixelBuffer(buffer: any): void;
+
+	/**
+	 * @since 19.0
+	 */
+	calculateHDRStatsForIOSurface(surface: IOSurface): void;
+
+	/**
+	 * @since 19.0
+	 */
+	calculateHDRStatsForImage(image: CIImage): CIImage;
+
+	/**
 	 * @since 10.0
 	 */
 	clearCaches(): void;
@@ -1224,6 +1272,11 @@ declare class CIContext extends NSObject {
 	 * @since 10.0
 	 */
 	createCGImageFromRectFormatColorSpaceDeferred(image: CIImage, fromRect: CGRect, format: number, colorSpace: any, deferred: boolean): any;
+
+	/**
+	 * @since 19.0
+	 */
+	createCGImageFromRectFormatColorSpaceDeferredCalculateHDRStats(image: CIImage, fromRect: CGRect, format: number, colorSpace: any, deferred: boolean, calculateHDRStats: boolean): any;
 
 	/**
 	 * @since 12.0
@@ -1673,6 +1726,19 @@ declare var CIDissolveTransition: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIDistanceGradientFromRedMask extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	maximumDistance: number;
+}
+declare var CIDistanceGradientFromRedMask: {
+
+	prototype: CIDistanceGradientFromRedMask;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIDither extends CIFilterProtocol {
 
 	inputImage: CIImage;
@@ -1930,6 +1996,11 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static areaAverageFilter(): CIFilter & CIAreaAverage;
 
 	/**
+	 * @since 19.0
+	 */
+	static areaAverageMaximumRedFilter(): CIFilter & CIAreaAverageMaximumRed;
+
+	/**
 	 * @since 18.0
 	 */
 	static areaBoundsRedFilter(): CIFilter & CIAreaBoundsRed;
@@ -1998,6 +2069,11 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	 * @since 17.0
 	 */
 	static blurredRectangleGeneratorFilter(): CIFilter & CIBlurredRectangleGenerator;
+
+	/**
+	 * @since 19.0
+	 */
+	static blurredRoundedRectangleGeneratorFilter(): CIFilter & CIBlurredRoundedRectangleGenerator;
 
 	static bokehBlurFilter(): CIFilter & CIBokehBlur;
 
@@ -2159,6 +2235,11 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static displacementDistortionFilter(): CIFilter & CIDisplacementDistortion;
 
 	static dissolveTransitionFilter(): CIFilter & CIDissolveTransition;
+
+	/**
+	 * @since 19.0
+	 */
+	static distanceGradientFromRedMaskFilter(): CIFilter & CIDistanceGradientFromRedMask;
 
 	static ditherFilter(): CIFilter & CIDither;
 
@@ -2460,6 +2541,11 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static rippleTransitionFilter(): CIFilter & CIRippleTransition;
 
+	/**
+	 * @since 19.0
+	 */
+	static roundedQRCodeGeneratorFilter(): CIFilter & CIRoundedQRCodeGenerator;
+
 	static roundedRectangleGeneratorFilter(): CIFilter & CIRoundedRectangleGenerator;
 
 	/**
@@ -2491,6 +2577,11 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static shadedMaterialFilter(): CIFilter & CIShadedMaterial;
 
 	static sharpenLuminanceFilter(): CIFilter & CISharpenLuminance;
+
+	/**
+	 * @since 19.0
+	 */
+	static signedDistanceGradientFromRedMaskFilter(): CIFilter & CISignedDistanceGradientFromRedMask;
 
 	static sixfoldReflectedTileFilter(): CIFilter & CISixfoldReflectedTile;
 
@@ -2539,6 +2630,11 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static supportedRawCameraModels(): NSArray<string>;
 
 	static swipeTransitionFilter(): CIFilter & CISwipeTransition;
+
+	/**
+	 * @since 19.0
+	 */
+	static systemToneMapFilter(): CIFilter & CISystemToneMap;
 
 	static temperatureAndTintFilter(): CIFilter & CITemperatureAndTint;
 
@@ -3096,7 +3192,7 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 9.0
 	 */
-	static imageWithImageProviderSizeFormatColorSpaceOptions(p: any, width: number, height: number, f: number, cs: any, options: NSDictionary<string, any>): CIImage;
+	static imageWithImageProviderSizeFormatColorSpaceOptions(provider: any, width: number, height: number, format: number, colorSpace: any, options: NSDictionary<string, any>): CIImage;
 
 	/**
 	 * @since 9.0
@@ -3140,6 +3236,11 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 	 * @since 9.0
 	 */
 	readonly colorSpace: any;
+
+	/**
+	 * @since 19.0
+	 */
+	readonly contentAverageLightLevel: number;
 
 	/**
 	 * @since 18.0
@@ -3445,6 +3546,11 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 	imageByInsertingIntermediate(cache: boolean): CIImage;
 
 	/**
+	 * @since 19.0
+	 */
+	imageByInsertingTiledIntermediate(): CIImage;
+
+	/**
 	 * @since 10.0
 	 */
 	imageByPremultiplyingAlpha(): CIImage;
@@ -3463,6 +3569,16 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 	 * @since 10.0
 	 */
 	imageBySettingAlphaOneInExtent(extent: CGRect): CIImage;
+
+	/**
+	 * @since 19.0
+	 */
+	imageBySettingContentAverageLightLevel(average: number): CIImage;
+
+	/**
+	 * @since 19.0
+	 */
+	imageBySettingContentHeadroom(headroom: number): CIImage;
 
 	/**
 	 * @since 10.0
@@ -3560,7 +3676,7 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 9.0
 	 */
-	initWithImageProviderSizeFormatColorSpaceOptions(p: any, width: number, height: number, f: number, cs: any, options: NSDictionary<string, any>): this;
+	initWithImageProviderSizeFormatColorSpaceOptions(provider: any, width: number, height: number, format: number, colorSpace: any, options: NSDictionary<string, any>): this;
 
 	/**
 	 * @since 9.0
@@ -3688,20 +3804,35 @@ declare class CIImageProcessorKernel extends NSObject {
 
 	static alloc(): CIImageProcessorKernel; // inherited from NSObject
 
-	static applyWithExtentInputsArgumentsError(extent: CGRect, inputs: NSArray<CIImage> | CIImage[], args: NSDictionary<string, any>): CIImage;
+	static applyWithExtentInputsArgumentsError(extent: CGRect, inputs: NSArray<CIImage> | CIImage[], _arguments: NSDictionary<string, any>): CIImage;
 
-	static formatForInputAtIndex(input: number): number;
+	/**
+	 * @since 19.0
+	 */
+	static applyWithExtentsInputsArgumentsError(extents: NSArray<CIVector> | CIVector[], inputs: NSArray<CIImage> | CIImage[], _arguments: NSDictionary<string, any>): NSArray<CIImage>;
+
+	static formatForInputAtIndex(inputIndex: number): number;
 
 	static new(): CIImageProcessorKernel; // inherited from NSObject
 
+	/**
+	 * @since 19.0
+	 */
+	static outputFormatAtIndexArguments(outputIndex: number, _arguments: NSDictionary<string, any>): number;
+
 	static processWithInputsArgumentsOutputError(inputs: NSArray<CIImageProcessorInput> | CIImageProcessorInput[], _arguments: NSDictionary<string, any>, output: CIImageProcessorOutput): boolean;
 
-	static roiForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): CGRect;
+	/**
+	 * @since 19.0
+	 */
+	static processWithInputsArgumentsOutputsError(inputs: NSArray<CIImageProcessorInput> | CIImageProcessorInput[], _arguments: NSDictionary<string, any>, outputs: NSArray<CIImageProcessorOutput> | CIImageProcessorOutput[]): boolean;
+
+	static roiForInputArgumentsOutputRect(inputIndex: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): CGRect;
 
 	/**
 	 * @since 17.0
 	 */
-	static roiTileArrayForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): NSArray<CIVector>;
+	static roiTileArrayForInputArgumentsOutputRect(inputIndex: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): NSArray<CIVector>;
 
 	static readonly outputFormat: number;
 
@@ -4669,6 +4800,10 @@ declare var CIRAWDecoderVersion8: string;
 
 declare var CIRAWDecoderVersion8DNG: string;
 
+declare var CIRAWDecoderVersion9: string;
+
+declare var CIRAWDecoderVersion9DNG: string;
+
 declare var CIRAWDecoderVersionNone: string;
 
 /**
@@ -4713,6 +4848,16 @@ declare class CIRAWFilter extends CIFilter {
 	extendedDynamicRangeAmount: number;
 
 	gamutMappingEnabled: boolean;
+
+	/**
+	 * @since 19.0
+	 */
+	highlightRecoveryEnabled: boolean;
+
+	/**
+	 * @since 19.0
+	 */
+	readonly highlightRecoverySupported: boolean;
 
 	lensCorrectionEnabled: boolean;
 
@@ -4834,6 +4979,11 @@ declare class CIRenderDestination extends NSObject {
 
 	blendsInDestinationColorSpace: boolean;
 
+	/**
+	 * @since 19.0
+	 */
+	captureTraceURL: NSURL;
+
 	clamped: boolean;
 
 	colorSpace: any;
@@ -4932,6 +5082,31 @@ declare var CIRippleTransition: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIRoundedQRCodeGenerator extends CIFilterProtocol {
+
+	centerSpaceSize: number;
+
+	color0: CIColor;
+
+	color1: CIColor;
+
+	correctionLevel: string;
+
+	message: NSData;
+
+	roundedData: boolean;
+
+	roundedMarkers: number;
+
+	scale: number;
+}
+declare var CIRoundedQRCodeGenerator: {
+
+	prototype: CIRoundedQRCodeGenerator;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIRoundedRectangleGenerator extends CIFilterProtocol {
 
 	color: CIColor;
@@ -4939,6 +5114,11 @@ interface CIRoundedRectangleGenerator extends CIFilterProtocol {
 	extent: CGRect;
 
 	radius: number;
+
+	/**
+	 * @since 19.0
+	 */
+	smoothness: number;
 }
 declare var CIRoundedRectangleGenerator: {
 
@@ -4954,6 +5134,11 @@ interface CIRoundedRectangleStrokeGenerator extends CIFilterProtocol {
 	extent: CGRect;
 
 	radius: number;
+
+	/**
+	 * @since 19.0
+	 */
+	smoothness: number;
 
 	width: number;
 }
@@ -5064,6 +5249,19 @@ interface CISharpenLuminance extends CIFilterProtocol {
 declare var CISharpenLuminance: {
 
 	prototype: CISharpenLuminance;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CISignedDistanceGradientFromRedMask extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	maximumDistance: number;
+}
+declare var CISignedDistanceGradientFromRedMask: {
+
+	prototype: CISignedDistanceGradientFromRedMask;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -5302,6 +5500,21 @@ declare var CISwipeTransition: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CISystemToneMap extends CIFilterProtocol {
+
+	displayHeadroom: number;
+
+	inputImage: CIImage;
+
+	preferredDynamicRange: string;
+}
+declare var CISystemToneMap: {
+
+	prototype: CISystemToneMap;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CITemperatureAndTint extends CIFilterProtocol {
 
 	inputImage: CIImage;
@@ -5371,6 +5584,11 @@ declare var CIThermal: {
 };
 
 interface CIToneCurve extends CIFilterProtocol {
+
+	/**
+	 * @since 19.0
+	 */
+	extrapolate: boolean;
 
 	inputImage: CIImage;
 
@@ -5626,7 +5844,7 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 	/**
 	 * @since 5.0
 	 */
-	initWithCGAffineTransform(r: CGAffineTransform): this;
+	initWithCGAffineTransform(t: CGAffineTransform): this;
 
 	/**
 	 * @since 5.0
@@ -5945,6 +6163,11 @@ declare var kCICategoryVideo: string;
 declare var kCIContextAllowLowPower: string;
 
 /**
+ * @since 19.0
+ */
+declare var kCIContextCVMetalTextureCache: string;
+
+/**
  * @since 10.0
  */
 declare var kCIContextCacheIntermediates: string;
@@ -5984,6 +6207,21 @@ declare var kCIContextWorkingColorSpace: string;
  * @since 8.0
  */
 declare var kCIContextWorkingFormat: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIDynamicRangeConstrainedHigh: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIDynamicRangeHigh: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIDynamicRangeStandard: string;
 
 /**
  * @since 9.0
@@ -6104,6 +6342,8 @@ declare var kCIFormatRGBAh: number;
  */
 declare var kCIFormatRGBX16: number;
 
+declare var kCIFormatRGBX8: number;
+
 /**
  * @since 17.0
  */
@@ -6133,6 +6373,11 @@ declare var kCIFormatRf: number;
  * @since 9.0
  */
 declare var kCIFormatRh: number;
+
+/**
+ * @since 19.0
+ */
+declare var kCIImageApplyCleanAperture: string;
 
 /**
  * @since 11.0
@@ -6214,6 +6459,11 @@ declare var kCIImageCacheImmediately: string;
 declare var kCIImageColorSpace: string;
 
 /**
+ * @since 19.0
+ */
+declare var kCIImageContentAverageLightLevel: string;
+
+/**
  * @since 18.0
  */
 declare var kCIImageContentHeadroom: string;
@@ -6267,6 +6517,11 @@ declare var kCIImageRepresentationDepthImage: string;
  * @since 11.0
  */
 declare var kCIImageRepresentationDisparityImage: string;
+
+/**
+ * @since 18.0
+ */
+declare var kCIImageRepresentationHDRGainMapAsRGB: string;
 
 /**
  * @since 14.1
@@ -6340,6 +6595,11 @@ declare var kCIInputAspectRatioKey: string;
 declare var kCIInputBackgroundImageKey: string;
 
 /**
+ * @since 19.0
+ */
+declare var kCIInputBacksideImageKey: string;
+
+/**
  * @since 10.0
  * @deprecated 100000
  */
@@ -6349,6 +6609,11 @@ declare var kCIInputBaselineExposureKey: string;
  * @since 9.0
  */
 declare var kCIInputBiasKey: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputBiasVectorKey: string;
 
 /**
  * @since 10.0
@@ -6373,6 +6638,16 @@ declare var kCIInputBrightnessKey: string;
 declare var kCIInputCenterKey: string;
 
 /**
+ * @since 19.0
+ */
+declare var kCIInputColor0Key: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputColor1Key: string;
+
+/**
  * @since 7.0
  */
 declare var kCIInputColorKey: string;
@@ -6384,9 +6659,19 @@ declare var kCIInputColorKey: string;
 declare var kCIInputColorNoiseReductionAmountKey: string;
 
 /**
+ * @since 19.0
+ */
+declare var kCIInputColorSpaceKey: string;
+
+/**
  * @since 7.0
  */
 declare var kCIInputContrastKey: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputCountKey: string;
 
 /**
  * @since 10.0
@@ -6443,6 +6728,11 @@ declare var kCIInputEnableVendorLensCorrectionKey: string;
  * @since 7.0
  */
 declare var kCIInputExtentKey: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputExtrapolateKey: string;
 
 /**
  * @since 9.0
@@ -6560,6 +6850,36 @@ declare var kCIInputNoiseReductionDetailAmountKey: string;
 declare var kCIInputNoiseReductionSharpnessAmountKey: string;
 
 /**
+ * @since 19.0
+ */
+declare var kCIInputPaletteImageKey: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputPerceptualKey: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputPoint0Key: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputPoint1Key: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputRadius0Key: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputRadius1Key: string;
+
+/**
  * @since 7.0
  */
 declare var kCIInputRadiusKey: string;
@@ -6599,6 +6919,11 @@ declare var kCIInputSharpnessKey: string;
  * @since 7.0
  */
 declare var kCIInputTargetImageKey: string;
+
+/**
+ * @since 19.0
+ */
+declare var kCIInputThresholdKey: string;
 
 /**
  * @since 7.0

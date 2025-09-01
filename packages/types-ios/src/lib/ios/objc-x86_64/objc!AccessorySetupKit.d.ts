@@ -19,6 +19,11 @@ declare class ASAccessory extends NSObject {
 	readonly displayName: string;
 
 	readonly state: ASAccessoryState;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly wifiAwarePairedDeviceID: number;
 }
 
 /**
@@ -82,6 +87,11 @@ declare class ASAccessorySession extends NSObject {
 
 	readonly accessories: NSArray<ASAccessory>;
 
+	/**
+	 * @since 26.0
+	 */
+	pickerDisplaySettings: ASPickerDisplaySettings;
+
 	activateWithQueueEventHandler(queue: NSObject & OS_dispatch_queue, eventHandler: (p1: ASAccessoryEvent) => void): void;
 
 	failAuthorizationCompletionHandler(accessory: ASAccessory, completionHandler: (p1: NSError) => void): void;
@@ -97,6 +107,11 @@ declare class ASAccessorySession extends NSObject {
 	showPickerForDisplayItemsCompletionHandler(displayItems: NSArray<ASPickerDisplayItem> | ASPickerDisplayItem[], completionHandler: (p1: NSError) => void): void;
 
 	showPickerWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	updateAuthorizationDescriptorCompletionHandler(accessory: ASAccessory, descriptor: ASDiscoveryDescriptor, completionHandler: (p1: NSError) => void): void;
 }
 
 /**
@@ -128,7 +143,9 @@ declare const enum ASAccessorySupportOptions {
 
 	BluetoothPairingLE = 2,
 
-	BluetoothTransportBridging = 4
+	BluetoothTransportBridging = 4,
+
+	BluetoothHID = 8
 }
 
 /**
@@ -152,6 +169,11 @@ declare class ASDiscoveryDescriptor extends NSObject {
 
 	bluetoothNameSubstring: string;
 
+	/**
+	 * @since 18.2
+	 */
+	bluetoothNameSubstringCompareOptions: NSStringCompareOptions;
+
 	bluetoothRange: ASDiscoveryDescriptorRange;
 
 	bluetoothServiceDataBlob: NSData;
@@ -161,6 +183,26 @@ declare class ASDiscoveryDescriptor extends NSObject {
 	bluetoothServiceUUID: CBUUID;
 
 	supportedOptions: ASAccessorySupportOptions;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareModelNameMatch: ASPropertyCompareString;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareServiceName: string;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareServiceRole: ASDiscoveryDescriptorWiFiAwareServiceRole;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareVendorNameMatch: ASPropertyCompareString;
 }
 
 declare const enum ASDiscoveryDescriptorRange {
@@ -168,6 +210,13 @@ declare const enum ASDiscoveryDescriptorRange {
 	Default = 0,
 
 	Immediate = 10
+}
+
+declare const enum ASDiscoveryDescriptorWiFiAwareServiceRole {
+
+	Subscriber = 10,
+
+	Publisher = 20
 }
 
 /**
@@ -247,4 +296,51 @@ declare const enum ASPickerDisplayItemSetupOptions {
 	ConfirmAuthorization = 2,
 
 	FinishInApp = 4
+}
+
+/**
+ * @since 26.0
+ */
+declare class ASPickerDisplaySettings extends NSObject {
+
+	static alloc(): ASPickerDisplaySettings; // inherited from NSObject
+
+	static new(): ASPickerDisplaySettings; // inherited from NSObject
+
+	discoveryTimeout: number;
+
+	static readonly defaultSettings: ASPickerDisplaySettings;
+}
+
+/**
+ * @since 26.0
+ */
+declare var ASPickerDisplaySettingsDiscoveryTimeoutLong: number;
+
+/**
+ * @since 26.0
+ */
+declare var ASPickerDisplaySettingsDiscoveryTimeoutMedium: number;
+
+/**
+ * @since 26.0
+ */
+declare var ASPickerDisplaySettingsDiscoveryTimeoutShort: number;
+
+/**
+ * @since 26.0
+ */
+declare class ASPropertyCompareString extends NSObject {
+
+	static alloc(): ASPropertyCompareString; // inherited from NSObject
+
+	static new(): ASPropertyCompareString; // inherited from NSObject
+
+	readonly compareOptions: NSStringCompareOptions;
+
+	readonly string: string;
+
+	constructor(o: { string: string; compareOptions: NSStringCompareOptions; });
+
+	initWithStringCompareOptions(string: string, compareOptions: NSStringCompareOptions): this;
 }

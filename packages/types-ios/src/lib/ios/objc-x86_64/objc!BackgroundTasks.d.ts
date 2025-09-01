@@ -24,6 +24,100 @@ declare class BGAppRefreshTaskRequest extends BGTaskRequest {
 }
 
 /**
+ * @since 26.0
+ */
+declare class BGContinuedProcessingTask extends BGTask implements NSProgressReporting {
+
+	static alloc(): BGContinuedProcessingTask; // inherited from NSObject
+
+	static new(): BGContinuedProcessingTask; // inherited from NSObject
+
+	readonly subtitle: string;
+
+	readonly title: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly progress: NSProgress; // inherited from NSProgressReporting
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	updateTitleSubtitle(title: string, subtitle: string): void;
+}
+
+/**
+ * @since 26.0
+ */
+declare class BGContinuedProcessingTaskRequest extends BGTaskRequest {
+
+	static alloc(): BGContinuedProcessingTaskRequest; // inherited from NSObject
+
+	static new(): BGContinuedProcessingTaskRequest; // inherited from NSObject
+
+	requiredResources: BGContinuedProcessingTaskRequestResources;
+
+	strategy: BGContinuedProcessingTaskRequestSubmissionStrategy;
+
+	subtitle: string;
+
+	title: string;
+
+	constructor(o: { identifier: string; title: string; subtitle: string; });
+
+	initWithIdentifierTitleSubtitle(identifier: string, title: string, subtitle: string): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum BGContinuedProcessingTaskRequestResources {
+
+	Default = 0,
+
+	GPU = 1
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum BGContinuedProcessingTaskRequestSubmissionStrategy {
+
+	Fail = 0,
+
+	Queue = 1
+}
+
+/**
  * @since 17.0
  */
 declare class BGHealthResearchTask extends BGProcessingTask {
@@ -116,6 +210,11 @@ declare class BGTaskScheduler extends NSObject {
 
 	static readonly sharedScheduler: BGTaskScheduler;
 
+	/**
+	 * @since 26.0
+	 */
+	static readonly supportedResources: BGContinuedProcessingTaskRequestResources;
+
 	cancelAllTaskRequests(): void;
 
 	cancelTaskRequestWithIdentifier(identifier: string): void;
@@ -136,7 +235,9 @@ declare const enum BGTaskSchedulerErrorCode {
 
 	TooManyPendingTaskRequests = 2,
 
-	NotPermitted = 3
+	NotPermitted = 3,
+
+	ImmediateRunIneligible = 4
 }
 
 /**

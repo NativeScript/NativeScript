@@ -1,5 +1,6 @@
 ﻿import { View } from '../core/view';
 import { Property } from '../core/properties';
+import { Color } from '../../color';
 
 /**
  * Represents a view with html content. Use this component instead WebView when you want to show just static HTML content.
@@ -39,3 +40,5 @@ export class HtmlView extends View {
 }
 
 export const htmlProperty: Property<HtmlView, string>;
+export const selectableProperty: Property<HtmlView, boolean>;
+export const linkColorProperty: Property<HtmlView, Color>;

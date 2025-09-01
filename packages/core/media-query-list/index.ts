@@ -118,13 +118,13 @@ class MediaQueryListImpl extends Observable implements MediaQueryList {
 	}
 
 	// @ts-ignore
-	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
+	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		this._throwInvocationError?.();
 
 		const hasChangeListeners = this.hasListeners(MediaQueryListImpl.changeEvent);
 
 		// Call super method first since it throws in the case of bad parameters
-		super.addEventListener(eventName, callback, thisArg);
+		super.addEventListener(eventName, callback, thisArg, once);
 
 		if (eventName === MediaQueryListImpl.changeEvent && !hasChangeListeners) {
 			mediaQueryLists.push(this);

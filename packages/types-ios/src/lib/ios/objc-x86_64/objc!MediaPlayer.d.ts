@@ -562,6 +562,26 @@ declare class MPMediaItem extends MPMediaEntity {
 }
 
 /**
+ * @since 19.0
+ */
+declare class MPMediaItemAnimatedArtwork extends NSObject {
+
+	static alloc(): MPMediaItemAnimatedArtwork; // inherited from NSObject
+
+	static new(): MPMediaItemAnimatedArtwork; // inherited from NSObject
+
+	/**
+	 * @since 19.0
+	 */
+	constructor(o: { artworkID: string; previewImageRequestHandler: (p1: CGSize, p2: (p1: UIImage) => void) => void; videoAssetFileURLRequestHandler: (p1: CGSize, p2: (p1: NSURL) => void) => void; });
+
+	/**
+	 * @since 19.0
+	 */
+	initWithArtworkIDPreviewImageRequestHandlerVideoAssetFileURLRequestHandler(artworkID: string, previewImageRequestHandler: (p1: CGSize, p2: (p1: UIImage) => void) => void, videoAssetFileURLRequestHandler: (p1: CGSize, p2: (p1: NSURL) => void) => void): this;
+}
+
+/**
  * @since 3.0
  */
 declare class MPMediaItemArtwork extends NSObject {
@@ -2312,6 +2332,11 @@ declare class MPNowPlayingInfoCenter extends NSObject {
 	 * @since 13.0
 	 */
 	playbackState: MPNowPlayingPlaybackState;
+
+	/**
+	 * @since 19.0
+	 */
+	static readonly supportedAnimatedArtworkKeys: NSArray<string>;
 }
 
 /**
@@ -2388,6 +2413,16 @@ declare const enum MPNowPlayingInfoMediaType {
 
 	Video = 2
 }
+
+/**
+ * @since 19.0
+ */
+declare var MPNowPlayingInfoProperty1x1AnimatedArtwork: string;
+
+/**
+ * @since 19.0
+ */
+declare var MPNowPlayingInfoProperty3x4AnimatedArtwork: string;
 
 /**
  * @since 16.0

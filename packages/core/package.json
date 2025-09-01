@@ -1,6 +1,6 @@
 {
   "name": "@akylas/nativescript",
-  "version": "8.8.11",
+  "version": "8.9.4",
   "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
   "main": "index",
   "types": "index.d.ts",

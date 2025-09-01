@@ -7,7 +7,7 @@ import { LinearGradient } from '../styling/linear-gradient';
 import { colorProperty, backgroundInternalProperty, backgroundColorProperty, backgroundImageProperty } from '../styling/style-properties';
 import { ios as iosViewUtils } from '../utils';
 import { ImageSource } from '../../image-source';
-import { layout, iOSNativeHelper, isFontIconURI } from '../../utils';
+import { layout, isFontIconURI } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityValueProperty } from '../../accessibility/accessibility-properties';
 
@@ -303,6 +303,9 @@ export class ActionBar extends ActionBarBase {
 		navigationItem.accessibilityLabel = this.accessibilityLabel;
 		navigationItem.accessibilityLanguage = this.accessibilityLanguage;
 		navigationItem.accessibilityHint = this.accessibilityHint;
+
+		// Configure large title support for this navigation item
+		this.checkLargeTitleSupport(navigationItem);
 	}
 
 	private populateMenuItems(navigationItem: UINavigationItem) {
@@ -506,6 +509,8 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 
+		console.log('ActionBar._onTitlePropertyChanged', this.title);
+
 		if (page.frame) {
 			page.frame._updateActionBar(page);
 		}
@@ -667,6 +672,28 @@ export class ActionBar extends ActionBarBase {
 		}
 		if (SDK_VERSION >= 11) {
 			this.navBar.prefersLargeTitles = value;
+		}
+	}
+
+	private checkLargeTitleSupport(navigationItem: UINavigationItem) {
+		const navBar = this.navBar;
+		if (!navBar) {
+			return;
+		}
+		// Configure large title display mode only when not using a custom titleView
+		if (SDK_VERSION >= 11) {
+			if (this.iosLargeTitle) {
+				// Always show large title for this navigation item when large titles are enabled
+				navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Always;
+			} else {
+				if (SDK_VERSION >= 26) {
+					// Explicitly disable large titles for this navigation item
+					// Due to overlapping title issue in iOS 26
+					navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Never;
+				} else {
+					navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Automatic;
+				}
+			}
 		}
 	}
 }

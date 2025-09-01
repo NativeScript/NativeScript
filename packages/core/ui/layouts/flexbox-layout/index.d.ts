@@ -2,6 +2,7 @@ import { LayoutBase } from '../layout-base';
 import { Style } from '../../styling/style';
 import { CssProperty } from '../../core/properties';
 import { View } from '../../core/view';
+import { CoreTypes } from '../../enums';
 
 export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
 export type FlexWrap = 'nowrap' | 'wrap' | 'wrap-reverse';
@@ -9,7 +10,7 @@ export type JustifyContent = 'flex-start' | 'flex-end' | 'center' | 'space-betwe
 export type AlignItems = 'flex-start' | 'flex-end' | 'center' | 'baseline' | 'stretch';
 export type AlignContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'stretch';
 export type FlexFlow = `${FlexDirection} ${FlexWrap}`;
-export type Flex = number | 'initial' | 'auto' | 'none' | `${FlexGrow} ${FlexShrink}`;
+export type Flex = number | 'auto' | 'none' | `${FlexGrow} ${FlexShrink}` | CoreTypes.CSSWideKeywords;
 
 /**
  * A flex order integer.

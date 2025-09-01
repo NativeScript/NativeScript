@@ -2810,7 +2810,9 @@ declare const enum HMErrorCode {
 
 	AccessoryIsSuspended = 103,
 
-	PartialCommunicationFailure = 104
+	PartialCommunicationFailure = 104,
+
+	HomeUpgradeRequired = 105
 }
 
 /**
@@ -3009,6 +3011,11 @@ declare class HMHome extends NSObject {
 	 * @since 16.1
 	 */
 	readonly matterControllerXPCConnectBlock: () => NSXPCConnection;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly matterStartupParametersXPCConnectBlock: () => NSXPCConnection;
 
 	readonly name: string;
 

@@ -1,8 +1,6 @@
-﻿import { CssProperty } from '../core/properties';
-import { View, CSSType } from '../core/view';
+﻿import { View, CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { Property } from '../core/properties';
-import { Style } from '../styling/style';
 import { colorConverter } from '../styling/style-properties';
 import { Color } from '../../color';
 import { HtmlView as HtmlViewDefinition } from '.';
@@ -31,10 +29,9 @@ export const selectableProperty = new Property<HtmlViewBase, boolean>({
 });
 selectableProperty.register(HtmlViewBase);
 
-export const linkColorProperty = new CssProperty<Style, Color>({
+export const linkColorProperty = new Property<HtmlViewBase, Color>({
 	name: 'linkColor',
-	cssName: 'link-color',
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
-linkColorProperty.register(Style);
+linkColorProperty.register(HtmlViewBase);

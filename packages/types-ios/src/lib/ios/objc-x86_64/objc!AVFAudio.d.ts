@@ -122,6 +122,11 @@ declare class AVAudioApplication extends NSObject {
 	static new(): AVAudioApplication; // inherited from NSObject
 
 	/**
+	 * @since 18.2
+	 */
+	static requestMicrophoneInjectionPermissionWithCompletionHandler(response: (p1: AVAudioApplicationMicrophoneInjectionPermission) => void): void;
+
+	/**
 	 * @since 17.0
 	 */
 	static requestRecordPermissionWithCompletionHandler(response: (p1: boolean) => void): void;
@@ -130,6 +135,11 @@ declare class AVAudioApplication extends NSObject {
 	 * @since 17.0
 	 */
 	readonly inputMuted: boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly microphoneInjectionPermission: AVAudioApplicationMicrophoneInjectionPermission;
 
 	/**
 	 * @since 17.0
@@ -148,6 +158,17 @@ declare class AVAudioApplication extends NSObject {
  * @since 17.0
  */
 declare var AVAudioApplicationInputMuteStateChangeNotification: string;
+
+declare const enum AVAudioApplicationMicrophoneInjectionPermission {
+
+	ServiceDisabled = 1936876659,
+
+	Undetermined = 1970168948,
+
+	Denied = 1684369017,
+
+	Granted = 1735552628
+}
 
 /**
  * @since 17.0
@@ -312,6 +333,56 @@ declare class AVAudioConnectionPoint extends NSObject {
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum AVAudioContentSource {
+
+	Unspecified = -1,
+
+	Reserved = 0,
+
+	AppleCapture_Traditional = 1,
+
+	AppleCapture_Spatial = 2,
+
+	AppleCapture_Spatial_Enhanced = 3,
+
+	AppleMusic_Traditional = 4,
+
+	AppleMusic_Spatial = 5,
+
+	AppleAV_Traditional_Offline = 6,
+
+	AppleAV_Spatial_Offline = 7,
+
+	AppleAV_Traditional_Live = 8,
+
+	AppleAV_Spatial_Live = 9,
+
+	ApplePassthrough = 10,
+
+	Capture_Traditional = 33,
+
+	Capture_Spatial = 34,
+
+	Capture_Spatial_Enhanced = 35,
+
+	Music_Traditional = 36,
+
+	Music_Spatial = 37,
+
+	AV_Traditional_Offline = 38,
+
+	AV_Spatial_Offline = 39,
+
+	AV_Traditional_Live = 40,
+
+	AV_Spatial_Live = 41,
+
+	Passthrough = 42
+}
+
+/**
  * @since 9.0
  */
 declare class AVAudioConverter extends NSObject {
@@ -406,6 +477,19 @@ declare const enum AVAudioConverterPrimeMethod {
 	Normal = 1,
 
 	None = 2
+}
+
+declare const enum AVAudioDynamicRangeControlConfiguration {
+
+	None = 0,
+
+	Music = 1,
+
+	Speech = 2,
+
+	Movie = 3,
+
+	Capture = 4
 }
 
 /**
@@ -2040,6 +2124,21 @@ declare class AVAudioSession extends NSObject {
 	readonly inputOrientation: AVAudioStereoOrientation;
 
 	/**
+	 * @since 18.2
+	 */
+	readonly isEchoCancelledInputAvailable: boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly isEchoCancelledInputEnabled: boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly isMicrophoneInjectionAvailable: boolean;
+
+	/**
 	 * @since 7.0
 	 */
 	readonly maximumInputNumberOfChannels: number;
@@ -2073,6 +2172,11 @@ declare class AVAudioSession extends NSObject {
 	 * @since 6.0
 	 */
 	readonly outputLatency: number;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly outputMuted: boolean;
 
 	/**
 	 * @since 6.0
@@ -2111,6 +2215,11 @@ declare class AVAudioSession extends NSObject {
 	readonly preferredInputOrientation: AVAudioStereoOrientation;
 
 	/**
+	 * @since 18.2
+	 */
+	readonly preferredMicrophoneInjectionMode: AVAudioSessionMicrophoneInjectionMode;
+
+	/**
 	 * @since 7.0
 	 */
 	readonly preferredOutputNumberOfChannels: number;
@@ -2119,6 +2228,11 @@ declare class AVAudioSession extends NSObject {
 	 * @since 6.0
 	 */
 	readonly preferredSampleRate: number;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly prefersEchoCancelledInput: boolean;
 
 	/**
 	 * @since 17.0
@@ -2251,6 +2365,11 @@ declare class AVAudioSession extends NSObject {
 	setOutputDataSourceError(dataSource: AVAudioSessionDataSourceDescription): boolean;
 
 	/**
+	 * @since 26.0
+	 */
+	setOutputMutedError(muted: boolean): boolean;
+
+	/**
 	 * @since 3.0
 	 * @deprecated 6.0
 	 */
@@ -2277,6 +2396,11 @@ declare class AVAudioSession extends NSObject {
 	setPreferredInputOrientationError(orientation: AVAudioStereoOrientation): boolean;
 
 	/**
+	 * @since 18.2
+	 */
+	setPreferredMicrophoneInjectionModeError(inValue: AVAudioSessionMicrophoneInjectionMode): boolean;
+
+	/**
 	 * @since 7.0
 	 */
 	setPreferredOutputNumberOfChannelsError(count: number): boolean;
@@ -2285,6 +2409,11 @@ declare class AVAudioSession extends NSObject {
 	 * @since 6.0
 	 */
 	setPreferredSampleRateError(sampleRate: number): boolean;
+
+	/**
+	 * @since 18.2
+	 */
+	setPrefersEchoCancelledInputError(value: boolean): boolean;
 
 	/**
 	 * @since 17.0
@@ -2305,6 +2434,25 @@ declare class AVAudioSession extends NSObject {
 declare const enum AVAudioSessionActivationOptions {
 
 	None = 0
+}
+
+/**
+ * @since 26.0
+ */
+declare var AVAudioSessionAvailableInputsChangeNotification: string;
+
+/**
+ * @since 26.0
+ */
+declare class AVAudioSessionCapability extends NSObject {
+
+	static alloc(): AVAudioSessionCapability; // inherited from NSObject
+
+	static new(): AVAudioSessionCapability; // inherited from NSObject
+
+	readonly enabled: boolean;
+
+	readonly supported: boolean;
 }
 
 /**
@@ -2331,6 +2479,8 @@ declare const enum AVAudioSessionCategoryOptions {
 
 	AllowBluetooth = 4,
 
+	AllowBluetoothHFP = 4,
+
 	DefaultToSpeaker = 8,
 
 	InterruptSpokenAudioAndMixWithOthers = 17,
@@ -2339,7 +2489,9 @@ declare const enum AVAudioSessionCategoryOptions {
 
 	AllowAirPlay = 64,
 
-	OverrideMutedMicrophoneInterruption = 128
+	OverrideMutedMicrophoneInterruption = 128,
+
+	BluetoothHighQualityRecording = 524288
 }
 
 /**
@@ -2543,6 +2695,23 @@ declare var AVAudioSessionMediaServicesWereLostNotification: string;
 declare var AVAudioSessionMediaServicesWereResetNotification: string;
 
 /**
+ * @since 18.2
+ */
+declare var AVAudioSessionMicrophoneInjectionCapabilitiesChangeNotification: string;
+
+/**
+ * @since 18.2
+ */
+declare var AVAudioSessionMicrophoneInjectionIsAvailableKey: string;
+
+declare const enum AVAudioSessionMicrophoneInjectionMode {
+
+	None = 0,
+
+	SpokenAudio = 1
+}
+
+/**
  * @since 5.0
  */
 declare var AVAudioSessionModeDefault: string;
@@ -2561,6 +2730,11 @@ declare var AVAudioSessionModeMeasurement: string;
  * @since 6.0
  */
 declare var AVAudioSessionModeMoviePlayback: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVAudioSessionModeShortFormVideo: string;
 
 /**
  * @since 9.0
@@ -2586,6 +2760,11 @@ declare var AVAudioSessionModeVoiceChat: string;
  * @since 12.0
  */
 declare var AVAudioSessionModeVoicePrompt: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVAudioSessionMuteStateKey: string;
 
 /**
  * @since 7.0
@@ -2616,6 +2795,11 @@ declare var AVAudioSessionOrientationRight: string;
  * @since 7.0
  */
 declare var AVAudioSessionOrientationTop: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVAudioSessionOutputMuteStateChangeNotification: string;
 
 /**
  * @since 7.0
@@ -2702,6 +2886,11 @@ declare class AVAudioSessionPortDescription extends NSObject {
 	readonly UID: string;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly bluetoothMicrophoneExtension: AVAudioSessionPortExtensionBluetoothMicrophone;
+
+	/**
 	 * @since 6.0
 	 */
 	readonly channels: NSArray<AVAudioSessionChannelDescription>;
@@ -2751,6 +2940,18 @@ declare class AVAudioSessionPortDescription extends NSObject {
  * @since 14.0
  */
 declare var AVAudioSessionPortDisplayPort: string;
+
+/**
+ * @since 26.0
+ */
+declare class AVAudioSessionPortExtensionBluetoothMicrophone extends NSObject {
+
+	static alloc(): AVAudioSessionPortExtensionBluetoothMicrophone; // inherited from NSObject
+
+	static new(): AVAudioSessionPortExtensionBluetoothMicrophone; // inherited from NSObject
+
+	readonly highQualityRecording: AVAudioSessionCapability;
+}
 
 /**
  * @since 14.0
@@ -2957,6 +3158,11 @@ declare var AVAudioSessionSpatialAudioEnabledKey: string;
  * @since 15.0
  */
 declare var AVAudioSessionSpatialPlaybackCapabilitiesChangedNotification: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVAudioSessionUserIntentToUnmuteOutputNotification: string;
 
 /**
  * @since 13.0
@@ -3814,6 +4020,11 @@ declare var AVBeatRange: interop.StructType<AVBeatRange>;
 declare var AVChannelLayoutKey: string;
 
 /**
+ * @since 26.0
+ */
+declare var AVEncoderASPFrequencyKey: string;
+
+/**
  * @since 7.0
  */
 declare var AVEncoderAudioQualityForVBRKey: string;
@@ -3842,6 +4053,16 @@ declare var AVEncoderBitRatePerChannelKey: string;
  * @since 7.0
  */
 declare var AVEncoderBitRateStrategyKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVEncoderContentSourceKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVEncoderDynamicRangeControlConfigurationKey: string;
 
 /**
  * @since 16.0

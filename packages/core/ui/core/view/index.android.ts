@@ -2,12 +2,12 @@
 import type { Point, CustomLayoutView as CustomLayoutViewDefinition, Position } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
-// Types.
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
+import { isCssWideKeyword } from '../properties';
 import { EventData } from '../../../data/observable';
 
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
@@ -16,16 +16,15 @@ import { CoreTypes } from '../../../core-types';
 import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
-import { Device, Screen } from '../../../platform';
+import { Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, AndroidDialogFragmentOnCreateViewEventData, Application } from '../../../application';
-import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
-import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener } from '../../frame/fragment.transitions';
-import { _getStoredClassDefaultPropertyValue } from '../properties';
 import { NativeScriptAndroidView } from '../../utils';
+import { _getStoredClassDefaultPropertyValue } from '../properties';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -372,8 +371,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
-		super.addEventListener(eventNames, callback, thisArg);
+	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean) {
+		super.addEventListener(eventNames, callback, thisArg, once);
 		const isLayoutEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.layoutChangedEvent) !== -1 : false;
 
 		if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
@@ -841,6 +840,51 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setAlpha(float(value));
 	}
 
+	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
+		this.accessibilityRole = value as AccessibilityRole;
+		updateAccessibilityProperties(this);
+
+		if (SDK_VERSION >= 28) {
+			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
+		}
+	}
+
+	[accessibilityLiveRegionProperty.setNative](value: AccessibilityLiveRegion): void {
+		switch (value as AccessibilityLiveRegion) {
+			case AccessibilityLiveRegion.Assertive: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE);
+				break;
+			}
+			case AccessibilityLiveRegion.Polite: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);
+				break;
+			}
+			default: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_NONE);
+				break;
+			}
+		}
+	}
+
+	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
+		this.accessibilityState = value as AccessibilityState;
+		updateAccessibilityProperties(this);
+	}
+
+	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
+		return _getStoredClassDefaultPropertyValue(horizontalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getHorizontalAlignment(this.nativeViewProtected));
+	}
+	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
+		ViewHelper.setHorizontalAlignment(this.nativeViewProtected, value);
+	}
+
+	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
+		return _getStoredClassDefaultPropertyValue(verticalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getVerticalAlignment(this.nativeViewProtected));
+	}
+	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
+		ViewHelper.setVerticalAlignment(this.nativeViewProtected, value);
+	}
+
 	[testIDProperty.setNative](value: string) {
 		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
@@ -871,28 +915,17 @@ export class View extends ViewCommon {
 		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
-	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
-		this.accessibilityRole = value;
-		if (this.accessible) {
-			updateAccessibilityProperties(this);
-		}
-
-		if (SDK_VERSION >= 28) {
-			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
-		}
-	}
-
-	[accessibilityValueProperty.setNative](): void {
+	[accessibilityValueProperty.setNative](value: string): void {
 		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
 
-	[accessibilityLabelProperty.setNative](): void {
+	[accessibilityLabelProperty.setNative](value: string): void {
 		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
 
-	[accessibilityHintProperty.setNative](): void {
+	[accessibilityHintProperty.setNative](value: string): void {
 		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
@@ -905,29 +938,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[accessibilityLiveRegionProperty.setNative](value: AccessibilityLiveRegion): void {
-		switch (value) {
-			case AccessibilityLiveRegion.Assertive: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE);
-				break;
-			}
-			case AccessibilityLiveRegion.Polite: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);
-				break;
-			}
-			default: {
-				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_NONE);
-				break;
-			}
-		}
-	}
-
-	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
-		this.accessibilityState = value;
-		updateAccessibilityProperties(this);
-	}
-
-	[accessibilityMediaSessionProperty.setNative](): void {
+	[accessibilityMediaSessionProperty.setNative](value: string): void {
 		updateAccessibilityProperties(this);
 	}
 
@@ -1009,20 +1020,6 @@ export class View extends ViewCommon {
 			currentAnimator.jumpToCurrentState();
 		}
 		nativeView.setStateListAnimator(stateListAnimator);
-	}
-
-	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
-		return _getStoredClassDefaultPropertyValue(horizontalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getHorizontalAlignment(this.nativeViewProtected));
-	}
-	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
-		ViewHelper.setHorizontalAlignment(this.nativeViewProtected, value);
-	}
-
-	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
-		return _getStoredClassDefaultPropertyValue(verticalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getVerticalAlignment(this.nativeViewProtected));
-	}
-	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
-		ViewHelper.setVerticalAlignment(this.nativeViewProtected, value);
 	}
 
 	[rotateProperty.setNative](value: number) {
@@ -1347,7 +1344,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 				setPercent = options.setPercent || percentNotSupported;
 				options = null;
 			}
-			if (length == 'auto' || length == null) {
+			if (length == 'auto' || length == null || isCssWideKeyword(length)) {
 				// tslint:disable-line
 				setPixels(this.nativeViewProtected, auto);
 			} else if (typeof length === 'number') {

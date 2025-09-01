@@ -21,6 +21,16 @@ declare class AVCaptureEvent extends NSObject {
 	static new(): AVCaptureEvent; // inherited from NSObject
 
 	readonly phase: AVCaptureEventPhase;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly shouldPlaySound: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	playSound(sound: AVCaptureEventSound): boolean;
 }
 
 /**
@@ -33,6 +43,11 @@ declare class AVCaptureEventInteraction extends NSObject implements UIInteractio
 	static new(): AVCaptureEventInteraction; // inherited from NSObject
 
 	enabled: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	static defaultCaptureSoundDisabled: boolean;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -94,6 +109,122 @@ declare const enum AVCaptureEventPhase {
 
 	Cancelled = 2
 }
+
+/**
+ * @since 26.0
+ */
+declare class AVCaptureEventSound extends NSObject {
+
+	static alloc(): AVCaptureEventSound; // inherited from NSObject
+
+	static new(): AVCaptureEventSound; // inherited from NSObject
+
+	static readonly beginVideoRecordingSound: AVCaptureEventSound;
+
+	static readonly cameraShutterSound: AVCaptureEventSound;
+
+	static readonly endVideoRecordingSound: AVCaptureEventSound;
+
+	constructor(o: { URL: NSURL; });
+
+	initWithURLError(url: NSURL): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum AVDisplayDynamicRange {
+
+	Automatic = 0,
+
+	Standard = 1,
+
+	ConstrainedHigh = 2,
+
+	High = 3
+}
+
+/**
+ * @since 26.0
+ */
+declare class AVInputPickerInteraction extends NSObject implements UIInteraction {
+
+	static alloc(): AVInputPickerInteraction; // inherited from NSObject
+
+	static new(): AVInputPickerInteraction; // inherited from NSObject
+
+	audioSession: AVAudioSession;
+
+	delegate: AVInputPickerInteractionDelegate;
+
+	readonly presented: boolean;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly view: UIView; // inherited from UIInteraction
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { audioSession: AVAudioSession; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	didMoveToView(view: UIView): void;
+
+	dismiss(): void;
+
+	initWithAudioSession(audioSession: AVAudioSession): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	present(): void;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	willMoveToView(view: UIView): void;
+}
+
+/**
+ * @since 26.0
+ */
+interface AVInputPickerInteractionDelegate extends NSObjectProtocol {
+
+	inputPickerInteractionDidEndDismissing?(inputPickerInteraction: AVInputPickerInteraction): void;
+
+	inputPickerInteractionDidEndPresenting?(inputPickerInteraction: AVInputPickerInteraction): void;
+
+	inputPickerInteractionWillBeginDismissing?(inputPickerInteraction: AVInputPickerInteraction): void;
+
+	inputPickerInteractionWillBeginPresenting?(inputPickerInteraction: AVInputPickerInteraction): void;
+}
+declare var AVInputPickerInteractionDelegate: {
+
+	prototype: AVInputPickerInteractionDelegate;
+};
 
 /**
  * @since 16.0
@@ -382,6 +513,11 @@ declare class AVPlayerViewController extends UIViewController {
 
 	player: AVPlayer;
 
+	/**
+	 * @since 26.0
+	 */
+	preferredDisplayDynamicRange: AVDisplayDynamicRange;
+
 	readonly readyForDisplay: boolean;
 
 	/**
@@ -424,6 +560,11 @@ declare class AVPlayerViewController extends UIViewController {
 	videoFrameAnalysisTypes: AVVideoFrameAnalysisType;
 
 	videoGravity: string;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly mediaCharacteristicsForSupportedCustomMediaSelectionSchemes: NSArray<string>;
 
 	/**
 	 * @since 16.0

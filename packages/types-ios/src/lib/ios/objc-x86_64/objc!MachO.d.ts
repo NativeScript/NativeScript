@@ -6,6 +6,48 @@ declare const enum DYLD_BOOL {
 	TRUE = 1
 }
 
+declare const DYLD_CHAINED_IMPORT: number;
+
+declare const DYLD_CHAINED_IMPORT_ADDEND: number;
+
+declare const DYLD_CHAINED_IMPORT_ADDEND64: number;
+
+declare const DYLD_CHAINED_PTR_32: number;
+
+declare const DYLD_CHAINED_PTR_32_CACHE: number;
+
+declare const DYLD_CHAINED_PTR_32_FIRMWARE: number;
+
+declare const DYLD_CHAINED_PTR_64: number;
+
+declare const DYLD_CHAINED_PTR_64_KERNEL_CACHE: number;
+
+declare const DYLD_CHAINED_PTR_64_OFFSET: number;
+
+declare const DYLD_CHAINED_PTR_ARM64E: number;
+
+declare const DYLD_CHAINED_PTR_ARM64E_FIRMWARE: number;
+
+declare const DYLD_CHAINED_PTR_ARM64E_KERNEL: number;
+
+declare const DYLD_CHAINED_PTR_ARM64E_OFFSET: number;
+
+declare const DYLD_CHAINED_PTR_ARM64E_SEGMENTED: number;
+
+declare const DYLD_CHAINED_PTR_ARM64E_SHARED_CACHE: number;
+
+declare const DYLD_CHAINED_PTR_ARM64E_USERLAND: number;
+
+declare const DYLD_CHAINED_PTR_ARM64E_USERLAND24: number;
+
+declare const DYLD_CHAINED_PTR_START_LAST: number;
+
+declare const DYLD_CHAINED_PTR_START_MULTI: number;
+
+declare const DYLD_CHAINED_PTR_START_NONE: number;
+
+declare const DYLD_CHAINED_PTR_X86_64_KERNEL_CACHE: number;
+
 interface NSLinkEditErrorHandlers {
 	undefined: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	multiple: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
@@ -354,6 +396,308 @@ interface data_in_code_entry {
 }
 declare var data_in_code_entry: interop.StructType<data_in_code_entry>;
 
+interface dyld_all_image_infos {
+	version: number;
+	infoArrayCount: number;
+	infoArray: interop.Pointer | interop.Reference<dyld_image_info>;
+	notification: interop.FunctionReference<(p1: dyld_image_mode, p2: number, p3: interop.Reference<dyld_image_info>) => void>;
+	processDetachedFromSharedRegion: boolean;
+	libSystemInitialized: boolean;
+	dyldImageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
+	jitInfo: interop.Pointer | interop.Reference<any>;
+	dyldVersion: interop.Pointer | interop.Reference<any>;
+	errorMessage: interop.Pointer | interop.Reference<any>;
+	terminationFlags: number;
+	coreSymbolicationShmPage: interop.Pointer | interop.Reference<any>;
+	systemOrderFlag: number;
+	uuidArrayCount: number;
+	uuidArray: interop.Pointer | interop.Reference<dyld_uuid_info>;
+	dyldAllImageInfosAddress: interop.Pointer | interop.Reference<dyld_all_image_infos>;
+	initialImageCount: number;
+	errorKind: number;
+	errorClientOfDylibPath: interop.Pointer | interop.Reference<any>;
+	errorTargetDylibPath: interop.Pointer | interop.Reference<any>;
+	errorSymbol: interop.Pointer | interop.Reference<any>;
+	sharedCacheSlide: number;
+	sharedCacheUUID: interop.Reference<number>;
+	sharedCacheBaseAddress: number;
+	infoArrayChangeTimestamp: number;
+	dyldPath: interop.Pointer | interop.Reference<any>;
+	notifyPorts: interop.Reference<number>;
+	reserved: interop.Reference<number>;
+	sharedCacheFSID: number;
+	sharedCacheFSObjID: number;
+	compact_dyld_image_info_addr: number;
+	compact_dyld_image_info_size: number;
+	platform: number;
+	aotInfoCount: number;
+	aotInfoArray: interop.Pointer | interop.Reference<dyld_aot_image_info>;
+	aotInfoArrayChangeTimestamp: number;
+	aotSharedCacheBaseAddress: number;
+	aotSharedCacheUUID: interop.Reference<number>;
+}
+declare var dyld_all_image_infos: interop.StructType<dyld_all_image_infos>;
+
+interface dyld_aot_image_info {
+	x86LoadAddress: interop.Pointer | interop.Reference<mach_header>;
+	aotLoadAddress: interop.Pointer | interop.Reference<mach_header>;
+	aotImageSize: number;
+	aotImageKey: interop.Reference<number>;
+}
+declare var dyld_aot_image_info: interop.StructType<dyld_aot_image_info>;
+
+interface dyld_aot_shared_cache_info {
+	cacheBaseAddress: number;
+	cacheUUID: interop.Reference<number>;
+}
+declare var dyld_aot_shared_cache_info: interop.StructType<dyld_aot_shared_cache_info>;
+
+interface dyld_chained_fixups_header {
+	fixups_version: number;
+	starts_offset: number;
+	imports_offset: number;
+	symbols_offset: number;
+	imports_count: number;
+	imports_format: number;
+	symbols_format: number;
+}
+declare var dyld_chained_fixups_header: interop.StructType<dyld_chained_fixups_header>;
+
+interface dyld_chained_import {
+	lib_ordinal: number;
+	weak_import: number;
+	name_offset: number;
+}
+declare var dyld_chained_import: interop.StructType<dyld_chained_import>;
+
+interface dyld_chained_import_addend {
+	lib_ordinal: number;
+	weak_import: number;
+	name_offset: number;
+	addend: number;
+}
+declare var dyld_chained_import_addend: interop.StructType<dyld_chained_import_addend>;
+
+interface dyld_chained_import_addend64 {
+	lib_ordinal: number;
+	weak_import: number;
+	reserved: number;
+	name_offset: number;
+	addend: number;
+}
+declare var dyld_chained_import_addend64: interop.StructType<dyld_chained_import_addend64>;
+
+interface dyld_chained_ptr_32_bind {
+	ordinal: number;
+	addend: number;
+	next: number;
+	bind: number;
+}
+declare var dyld_chained_ptr_32_bind: interop.StructType<dyld_chained_ptr_32_bind>;
+
+interface dyld_chained_ptr_32_cache_rebase {
+	target: number;
+	next: number;
+}
+declare var dyld_chained_ptr_32_cache_rebase: interop.StructType<dyld_chained_ptr_32_cache_rebase>;
+
+interface dyld_chained_ptr_32_firmware_rebase {
+	target: number;
+	next: number;
+}
+declare var dyld_chained_ptr_32_firmware_rebase: interop.StructType<dyld_chained_ptr_32_firmware_rebase>;
+
+interface dyld_chained_ptr_32_rebase {
+	target: number;
+	next: number;
+	bind: number;
+}
+declare var dyld_chained_ptr_32_rebase: interop.StructType<dyld_chained_ptr_32_rebase>;
+
+interface dyld_chained_ptr_64_bind {
+	ordinal: number;
+	addend: number;
+	reserved: number;
+	next: number;
+	bind: number;
+}
+declare var dyld_chained_ptr_64_bind: interop.StructType<dyld_chained_ptr_64_bind>;
+
+interface dyld_chained_ptr_64_kernel_cache_rebase {
+	target: number;
+	cacheLevel: number;
+	diversity: number;
+	addrDiv: number;
+	key: number;
+	next: number;
+	isAuth: number;
+}
+declare var dyld_chained_ptr_64_kernel_cache_rebase: interop.StructType<dyld_chained_ptr_64_kernel_cache_rebase>;
+
+interface dyld_chained_ptr_64_rebase {
+	target: number;
+	high8: number;
+	reserved: number;
+	next: number;
+	bind: number;
+}
+declare var dyld_chained_ptr_64_rebase: interop.StructType<dyld_chained_ptr_64_rebase>;
+
+interface dyld_chained_ptr_arm64e_auth_bind {
+	ordinal: number;
+	zero: number;
+	diversity: number;
+	addrDiv: number;
+	key: number;
+	next: number;
+	bind: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_auth_bind: interop.StructType<dyld_chained_ptr_arm64e_auth_bind>;
+
+interface dyld_chained_ptr_arm64e_auth_bind24 {
+	ordinal: number;
+	zero: number;
+	diversity: number;
+	addrDiv: number;
+	key: number;
+	next: number;
+	bind: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_auth_bind24: interop.StructType<dyld_chained_ptr_arm64e_auth_bind24>;
+
+interface dyld_chained_ptr_arm64e_auth_rebase {
+	target: number;
+	diversity: number;
+	addrDiv: number;
+	key: number;
+	next: number;
+	bind: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_auth_rebase: interop.StructType<dyld_chained_ptr_arm64e_auth_rebase>;
+
+interface dyld_chained_ptr_arm64e_auth_segmented_rebase {
+	targetSegOffset: number;
+	targetSegIndex: number;
+	diversity: number;
+	addrDiv: number;
+	key: number;
+	next: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_auth_segmented_rebase: interop.StructType<dyld_chained_ptr_arm64e_auth_segmented_rebase>;
+
+interface dyld_chained_ptr_arm64e_bind {
+	ordinal: number;
+	zero: number;
+	addend: number;
+	next: number;
+	bind: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_bind: interop.StructType<dyld_chained_ptr_arm64e_bind>;
+
+interface dyld_chained_ptr_arm64e_bind24 {
+	ordinal: number;
+	zero: number;
+	addend: number;
+	next: number;
+	bind: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_bind24: interop.StructType<dyld_chained_ptr_arm64e_bind24>;
+
+interface dyld_chained_ptr_arm64e_rebase {
+	target: number;
+	high8: number;
+	next: number;
+	bind: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_rebase: interop.StructType<dyld_chained_ptr_arm64e_rebase>;
+
+interface dyld_chained_ptr_arm64e_segmented_rebase {
+	targetSegOffset: number;
+	targetSegIndex: number;
+	padding: number;
+	next: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_segmented_rebase: interop.StructType<dyld_chained_ptr_arm64e_segmented_rebase>;
+
+interface dyld_chained_ptr_arm64e_shared_cache_auth_rebase {
+	runtimeOffset: number;
+	diversity: number;
+	addrDiv: number;
+	keyIsData: number;
+	next: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_shared_cache_auth_rebase: interop.StructType<dyld_chained_ptr_arm64e_shared_cache_auth_rebase>;
+
+interface dyld_chained_ptr_arm64e_shared_cache_rebase {
+	runtimeOffset: number;
+	high8: number;
+	unused: number;
+	next: number;
+	auth: number;
+}
+declare var dyld_chained_ptr_arm64e_shared_cache_rebase: interop.StructType<dyld_chained_ptr_arm64e_shared_cache_rebase>;
+
+interface dyld_chained_starts_in_image {
+	seg_count: number;
+	seg_info_offset: interop.Reference<number>;
+}
+declare var dyld_chained_starts_in_image: interop.StructType<dyld_chained_starts_in_image>;
+
+interface dyld_chained_starts_in_segment {
+	size: number;
+	page_size: number;
+	pointer_format: number;
+	segment_offset: number;
+	max_valid_pointer: number;
+	page_count: number;
+	page_start: interop.Reference<number>;
+}
+declare var dyld_chained_starts_in_segment: interop.StructType<dyld_chained_starts_in_segment>;
+
+interface dyld_chained_starts_offsets {
+	pointer_format: number;
+	starts_count: number;
+	chain_starts: interop.Reference<number>;
+}
+declare var dyld_chained_starts_offsets: interop.StructType<dyld_chained_starts_offsets>;
+
+declare const dyld_error_kind_dylib_missing: number;
+
+declare const dyld_error_kind_dylib_version: number;
+
+declare const dyld_error_kind_dylib_wrong_arch: number;
+
+declare const dyld_error_kind_none: number;
+
+declare const dyld_error_kind_symbol_missing: number;
+
+interface dyld_image_info {
+	imageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
+	imageFilePath: interop.Pointer | interop.Reference<any>;
+	imageFileModDate: number;
+}
+declare var dyld_image_info: interop.StructType<dyld_image_info>;
+
+declare const enum dyld_image_mode {
+
+	dyld_image_adding = 0,
+
+	dyld_image_removing = 1,
+
+	dyld_image_info_change = 2,
+
+	dyld_image_dyld_moved = 3
+}
+
 interface dyld_info_command {
 	cmd: number;
 	cmdsize: number;
@@ -369,6 +713,20 @@ interface dyld_info_command {
 	export_size: number;
 }
 declare var dyld_info_command: interop.StructType<dyld_info_command>;
+
+declare var dyld_shared_cache_ranges: dyld_shared_cache_rangesStruct;
+
+interface dyld_shared_cache_rangesStruct {
+	sharedRegionsCount: number;
+	ranges: interop.Reference<{ start: number; length: number; }>;
+}
+declare var dyld_shared_cache_rangesStruct: interop.StructType<dyld_shared_cache_rangesStruct>;
+
+interface dyld_uuid_info {
+	imageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
+	imageUUID: interop.Reference<number>;
+}
+declare var dyld_uuid_info: interop.StructType<dyld_uuid_info>;
 
 interface dylib_module {
 	module_name: number;
@@ -682,6 +1040,56 @@ interface prebind_cksum_command {
 }
 declare var prebind_cksum_command: interop.StructType<prebind_cksum_command>;
 
+declare const enum reloc_type_arm {
+
+	ARM_RELOC_VANILLA = 0,
+
+	ARM_RELOC_PAIR = 1,
+
+	ARM_RELOC_SECTDIFF = 2,
+
+	ARM_RELOC_LOCAL_SECTDIFF = 3,
+
+	ARM_RELOC_PB_LA_PTR = 4,
+
+	ARM_RELOC_BR24 = 5,
+
+	ARM_THUMB_RELOC_BR22 = 6,
+
+	ARM_THUMB_32BIT_BRANCH = 7,
+
+	ARM_RELOC_HALF = 8,
+
+	ARM_RELOC_HALF_SECTDIFF = 9
+}
+
+declare const enum reloc_type_arm64 {
+
+	ARM64_RELOC_UNSIGNED = 0,
+
+	ARM64_RELOC_SUBTRACTOR = 1,
+
+	ARM64_RELOC_BRANCH26 = 2,
+
+	ARM64_RELOC_PAGE21 = 3,
+
+	ARM64_RELOC_PAGEOFF12 = 4,
+
+	ARM64_RELOC_GOT_LOAD_PAGE21 = 5,
+
+	ARM64_RELOC_GOT_LOAD_PAGEOFF12 = 6,
+
+	ARM64_RELOC_POINTER_TO_GOT = 7,
+
+	ARM64_RELOC_TLVP_LOAD_PAGE21 = 8,
+
+	ARM64_RELOC_TLVP_LOAD_PAGEOFF12 = 9,
+
+	ARM64_RELOC_ADDEND = 10,
+
+	ARM64_RELOC_AUTHENTICATED_POINTER = 11
+}
+
 declare const enum reloc_type_generic {
 
 	GENERIC_RELOC_VANILLA = 0,
@@ -695,6 +1103,29 @@ declare const enum reloc_type_generic {
 	GENERIC_RELOC_LOCAL_SECTDIFF = 4,
 
 	GENERIC_RELOC_TLV = 5
+}
+
+declare const enum reloc_type_x86_64 {
+
+	X86_64_RELOC_UNSIGNED = 0,
+
+	X86_64_RELOC_SIGNED = 1,
+
+	X86_64_RELOC_BRANCH = 2,
+
+	X86_64_RELOC_GOT_LOAD = 3,
+
+	X86_64_RELOC_GOT = 4,
+
+	X86_64_RELOC_SUBTRACTOR = 5,
+
+	X86_64_RELOC_SIGNED_1 = 6,
+
+	X86_64_RELOC_SIGNED_2 = 7,
+
+	X86_64_RELOC_SIGNED_4 = 8,
+
+	X86_64_RELOC_TLV = 9
 }
 
 interface relocation_info {

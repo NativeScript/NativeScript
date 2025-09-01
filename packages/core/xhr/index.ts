@@ -410,7 +410,7 @@ export class Blob {
 		}
 	}
 
-	public arrayBuffer(): Promise<ArrayBuffer> {
+	public arrayBuffer() {
 		return Promise.resolve(this._buffer);
 	}
 
@@ -475,7 +475,7 @@ export class FileReader {
 	public onprogress: (...args: any[]) => void;
 
 	private _readyState: number;
-	private _result: string | ArrayBuffer | null;
+	private _result: string | ArrayBuffer | SharedArrayBuffer | null;
 
 	private _listeners: Map<string, Array<Function>> = new Map<string, Array<Function>>();
 
@@ -483,7 +483,7 @@ export class FileReader {
 		return this._readyState;
 	}
 
-	public get result(): string | ArrayBuffer | null {
+	public get result(): string | ArrayBuffer | SharedArrayBuffer | null {
 		return this._result;
 	}
 

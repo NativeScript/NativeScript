@@ -8,18 +8,17 @@ import { SDK_VERSION, layout } from '../../utils';
 export * from './html-view-common';
 
 export class HtmlView extends HtmlViewBase {
-	declare nativeViewProtected: UITextView;
-	private currentHtml: string;
+	nativeViewProtected: UITextView;
 
 	public createNativeView() {
-		const view = UITextView.new();
-		view.scrollEnabled = false;
-		view.editable = false;
-		view.selectable = true;
-		view.userInteractionEnabled = true;
-		view.dataDetectorTypes = UIDataDetectorTypes.All;
+		const nativeView = UITextView.new();
+		nativeView.scrollEnabled = false;
+		nativeView.editable = false;
+		nativeView.selectable = true;
+		nativeView.userInteractionEnabled = true;
+		nativeView.dataDetectorTypes = UIDataDetectorTypes.All;
 
-		return view;
+		return nativeView;
 	}
 
 	public initNativeView(): void {
@@ -58,24 +57,37 @@ export class HtmlView extends HtmlViewBase {
 	}
 
 	private renderWithStyles() {
-		let html = this.currentHtml;
-		const styles = [];
-		if (this.nativeViewProtected.font) {
-			styles.push(`font-family: '${this.nativeViewProtected.font.fontName}';`);
-			styles.push(`font-size: ${this.nativeViewProtected.font.pointSize}px;`);
-		}
-		if (this.nativeViewProtected.textColor) {
-			const textColor = Color.fromIosColor(this.nativeViewProtected.textColor);
-			styles.push(`color: ${textColor.hex};`);
-		}
-		if (styles.length > 0) {
-			html += `<style>body {${styles.join('')}}</style>`;
-		}
-		const htmlString = NSString.stringWithString(html + '');
-		const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
-		this.nativeViewProtected.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
+		const bodyStyles: string[] = [];
 
-		if (SDK_VERSION >= 13 && UIColor.labelColor) {
+		let htmlContent = this.html ?? '';
+
+		htmlContent += '<style>';
+
+		bodyStyles.push(`font-size: ${this.style.fontSize}px;`);
+
+		if (this.style.fontFamily) {
+			bodyStyles.push(`font-family: '${this.style.fontFamily}';`);
+		}
+
+		if (this.style.color) {
+			bodyStyles.push(`color: ${this.style.color.hex};`);
+		}
+
+		htmlContent += `body {${bodyStyles.join('')}}`;
+
+		if (this.linkColor) {
+			htmlContent += `a, a:link, a:visited { color: ${this.linkColor.hex} !important; }`;
+		}
+
+		htmlContent += '</style>';
+
+		const htmlString = NSString.stringWithString(htmlContent);
+		const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
+		const attributes = NSDictionary.dictionaryWithObjectForKey(NSHTMLTextDocumentType, NSDocumentTypeDocumentAttribute);
+
+		this.nativeViewProtected.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, attributes, null);
+
+		if (!this.style.color && SDK_VERSION >= 13 && UIColor.labelColor) {
 			this.nativeViewProtected.textColor = UIColor.labelColor;
 		}
 	}
@@ -84,7 +96,6 @@ export class HtmlView extends HtmlViewBase {
 		return '';
 	}
 	[htmlProperty.setNative](value: string) {
-		this.currentHtml = value;
 		this.renderWithStyles();
 	}
 
@@ -104,14 +115,10 @@ export class HtmlView extends HtmlViewBase {
 		this.renderWithStyles();
 	}
 
-	[linkColorProperty.getDefault](): UIColor {
-		return this.nativeViewProtected.linkTextAttributes[NSForegroundColorAttributeName];
-	}
 	[linkColorProperty.setNative](value: Color | UIColor) {
-		const color = value instanceof Color ? value.ios : value;
-		const linkTextAttributes = NSDictionary.dictionaryWithObjectForKey(color, NSForegroundColorAttributeName);
-		this.nativeViewProtected.linkTextAttributes = linkTextAttributes;
+		this.renderWithStyles();
 	}
+
 	[fontInternalProperty.getDefault](): UIFont {
 		return this.nativeViewProtected.font;
 	}

@@ -392,9 +392,12 @@ export class ListView extends ListViewBase {
 	}
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+		const changed: boolean = this._currentWidthMeasureSpec !== widthMeasureSpec || this._currentHeightMeasureSpec !== heightMeasureSpec;
+
 		this.widthMeasureSpec = widthMeasureSpec;
-		const changed = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
 		super.measure(widthMeasureSpec, heightMeasureSpec);
+
+		// Reload native view cells only in the case of size change
 		if (changed) {
 			this.nativeViewProtected.reloadData();
 		}

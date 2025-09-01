@@ -1096,11 +1096,31 @@ declare class MPSGraph extends MPSGraphObject {
 
 	sinhWithTensorName(tensor: MPSGraphTensor, name: string): MPSGraphTensor;
 
+	/**
+	 * @since 18.2
+	 */
+	sliceGradientTensorFwdInShapeTensorStartTensorEndTensorStrideTensorStartMaskEndMaskSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, startTensor: MPSGraphTensor, endTensor: MPSGraphTensor, strideTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 18.2
+	 */
+	sliceGradientTensorFwdInShapeTensorStartTensorSizeTensorSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, startTensor: MPSGraphTensor, sizeTensor: MPSGraphTensor, squeezeMask: number, name: string): MPSGraphTensor;
+
 	sliceGradientTensorFwdInShapeTensorStartsEndsStridesName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string): MPSGraphTensor;
 
 	sliceGradientTensorFwdInShapeTensorStartsEndsStridesStartMaskEndMaskSqueezeMaskName(inputGradientTensor: MPSGraphTensor, fwdInShapeTensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
 
 	sliceTensorDimensionStartLengthName(tensor: MPSGraphTensor, dimensionIndex: number, start: number, length: number, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 18.2
+	 */
+	sliceTensorStartTensorEndTensorStrideTensorStartMaskEndMaskSqueezeMaskName(tensor: MPSGraphTensor, startTensor: MPSGraphTensor, endTensor: MPSGraphTensor, strideTensor: MPSGraphTensor, startMask: number, endMask: number, squeezeMask: number, name: string): MPSGraphTensor;
+
+	/**
+	 * @since 18.2
+	 */
+	sliceTensorStartTensorSizeTensorSqueezeMaskName(tensor: MPSGraphTensor, startTensor: MPSGraphTensor, sizeTensor: MPSGraphTensor, squeezeMask: number, name: string): MPSGraphTensor;
 
 	sliceTensorStartsEndsStridesName(tensor: MPSGraphTensor, starts: NSArray<number> | number[], ends: NSArray<number> | number[], strides: NSArray<number> | number[], name: string): MPSGraphTensor;
 
@@ -2244,6 +2264,16 @@ declare class MPSGraphTensorData extends MPSGraphObject {
 	readonly device: MPSGraphDevice;
 
 	readonly shape: NSArray<number>;
+
+	/**
+	 * @since 19.0
+	 */
+	constructor(o: { MTLTensor: any; });
+
+	/**
+	 * @since 19.0
+	 */
+	initWithMTLTensor(tensor: any): this;
 }
 
 declare const enum MPSGraphTensorNamedDataLayout {

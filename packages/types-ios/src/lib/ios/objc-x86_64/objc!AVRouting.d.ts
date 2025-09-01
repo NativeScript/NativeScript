@@ -154,3 +154,33 @@ declare class AVCustomRoutingPartialIP extends NSObject {
 	 */
 	initWithAddressMask(address: NSData, mask: NSData): this;
 }
+
+/**
+ * @since 26.0
+ */
+declare class AVRoutingPlaybackArbiter extends NSObject {
+
+	static alloc(): AVRoutingPlaybackArbiter; // inherited from NSObject
+
+	static new(): AVRoutingPlaybackArbiter; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	static sharedRoutingPlaybackArbiter(): AVRoutingPlaybackArbiter;
+
+	/**
+	 * @since 26.0
+	 */
+	preferredParticipantForExternalPlayback: AVRoutingPlaybackParticipant;
+}
+
+/**
+ * @since 26.0
+ */
+interface AVRoutingPlaybackParticipant {
+}
+declare var AVRoutingPlaybackParticipant: {
+
+	prototype: AVRoutingPlaybackParticipant;
+};

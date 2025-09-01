@@ -1,7 +1,7 @@
 import { SwitchBase, checkedProperty, offBackgroundColorProperty } from './switch-common';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { SDK_VERSION, layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './switch-common';
 
@@ -28,15 +28,12 @@ class SwitchChangeHandlerImpl extends NSObject {
 	};
 }
 
-const zeroSize = { width: 0, height: 0 };
 export class Switch extends SwitchBase {
 	declare nativeViewProtected: UISwitch;
 	private _handler: NSObject;
 
 	constructor() {
 		super();
-		this.width = 51;
-		this.height = 31;
 	}
 
 	public createNativeView() {
@@ -89,17 +86,6 @@ export class Switch extends SwitchBase {
 	// @ts-ignore
 	get ios(): UISwitch {
 		return this.nativeViewProtected;
-	}
-
-	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// It can't be anything different from 51x31
-		const nativeSize = this.nativeViewProtected.sizeThatFits(zeroSize);
-		this.width = nativeSize.width;
-		this.height = nativeSize.height;
-
-		const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), layout.toDevicePixels(51), layout.EXACTLY, 0);
-		const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), layout.toDevicePixels(31), layout.EXACTLY, 0);
-		this.setMeasuredDimension(widthAndState, heightAndState);
 	}
 
 	[checkedProperty.getDefault](): boolean {

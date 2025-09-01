@@ -2,6 +2,7 @@ import { Application } from '../application';
 import type { View } from '../ui/core/view';
 import { AccessibilityServiceEnabledObservable } from './accessibility-service';
 import { FontScaleCategory, getCurrentFontScale, getFontScaleCategory, VALID_FONT_SCALES } from './font-scale';
+import { SDK_VERSION } from '../utils/constants';
 
 // CSS-classes
 const fontScaleExtraSmallCategoryClass = `a11y-fontscale-xs`;
@@ -13,6 +14,9 @@ const fontScaleCategoryClasses = [fontScaleExtraSmallCategoryClass, fontScaleMed
 const a11yServiceEnabledClass = `a11y-service-enabled`;
 const a11yServiceDisabledClass = `a11y-service-disabled`;
 const a11yServiceClasses = [a11yServiceEnabledClass, a11yServiceDisabledClass];
+
+// SDK Version CSS classes
+let sdkVersionClasses: string[] = [];
 
 let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
 let fontScaleCssClasses: Map<number, string>;
@@ -29,6 +33,31 @@ function ensureClasses() {
 	fontScaleCssClasses = new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`]));
 
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
+
+	// Initialize SDK version CSS class once
+	initializeSdkVersionClass();
+}
+
+function initializeSdkVersionClass(): void {
+	const majorVersion = Math.floor(SDK_VERSION);
+	sdkVersionClasses = [];
+
+	let platformPrefix = '';
+	if (__APPLE__) {
+		platformPrefix = __VISIONOS__ ? 'ns-visionos' : 'ns-ios';
+	} else if (__ANDROID__) {
+		platformPrefix = 'ns-android';
+	}
+
+	if (platformPrefix) {
+		// Add exact version class (e.g., .ns-ios-26 or .ns-android-36)
+		// this acts like 'gte' for that major version range
+		// e.g., if user wants iOS 27, they can add .ns-ios-27 specifiers
+		sdkVersionClasses.push(`${platformPrefix}-${majorVersion}`);
+	}
+
+	// Apply the SDK version classes to root views
+	applySdkVersionClass();
 }
 
 function applyRootCssClass(cssClasses: string[], newCssClass: string): void {
@@ -41,6 +70,32 @@ function applyRootCssClass(cssClasses: string[], newCssClass: string): void {
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
 	rootModalViews.forEach((rootModalView) => Application.applyCssClass(rootModalView, cssClasses, newCssClass));
+
+	// Note: SDK version classes are applied separately to avoid redundant work
+}
+
+function applySdkVersionClass(): void {
+	if (!sdkVersionClasses.length) {
+		return;
+	}
+
+	const rootView = Application.getRootView();
+	if (!rootView) {
+		return;
+	}
+
+	// Batch apply all SDK version classes to root view for better performance
+	const classesToAdd = sdkVersionClasses.filter((className) => !rootView.cssClasses.has(className));
+	classesToAdd.forEach((className) => rootView.cssClasses.add(className));
+
+	// Apply to modal views only if there are any
+	const rootModalViews = <Array<View>>rootView._getRootModalViews();
+	if (rootModalViews.length > 0) {
+		rootModalViews.forEach((rootModalView) => {
+			const modalClassesToAdd = sdkVersionClasses.filter((className) => !rootModalView.cssClasses.has(className));
+			modalClassesToAdd.forEach((className) => rootModalView.cssClasses.add(className));
+		});
+	}
 }
 
 function applyFontScaleToRootViews(): void {

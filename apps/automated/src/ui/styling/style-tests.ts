@@ -1708,18 +1708,18 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
 export function test_evaluateCssCalcExpression() {
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(1px + 1px)'), '2px', 'Simple calc (1)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(50px - (20px - 30px))'), '60px', 'Simple calc (2)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px - (100px - 100%))'), '100%', 'Simple calc (3)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px + (100px - 100%))'), 'calc(200px - 100%)', 'Simple calc (4)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% - 10px + 20px)'), 'calc(100% + 10px)', 'Simple calc (5)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% + 10px - 20px)'), 'calc(100% - 10px)', 'Simple calc (6)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(10.px + .0px)'), '10px', 'Simple calc (8)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px - (100px - 100%))'), 'calc(100px - (100px - 100%))', 'Simple calc (3)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px + (100px - 100%))'), 'calc(100px + (100px - 100%))', 'Simple calc (4)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% - 10px + 20px)'), 'calc(100% - 10px + 20px)', 'Simple calc (5)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% + 10px - 20px)'), 'calc(100% + 10px - 20px)', 'Simple calc (6)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(10.px + .0px)'), 'calc(10.px + .0px)', 'Simple calc (8)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('a calc(1px + 1px)'), 'a 2px', 'Ignore value surrounding calc function (1)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(1px + 1px) a'), '2px a', 'Ignore value surrounding calc function (2)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('a calc(1px + 1px) b'), 'a 2px b', 'Ignore value surrounding calc function (3)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('a calc(1px + 1px) b calc(1em + 2em) c'), 'a 2px b 3em c', 'Ignore value surrounding calc function (4)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression(`calc(\n1px \n* 2 \n* 1.5)`), '3px', 'Handle new lines');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(1/100)'), '0.01', 'Handle precision correctly (1)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(5/1000000)'), '0.00001', 'Handle precision correctly (2)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(5/1000000)'), '0.000005', 'Handle precision correctly (2)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(5/100000)'), '0.00005', 'Handle precision correctly (3)');
 }
 
@@ -1824,6 +1824,37 @@ export function test_nested_css_calc() {
 	(stack as any).style = `width: calc(100% * calc(1 / 2))`;
 
 	TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 0.5 }, 'Stack - width === 50%');
+}
+
+export function test_evaluateCssColorMixExpression() {
+	TKUnit.assertEqual(new Color('color-mix(in lch longer hue, hsl(200deg 50% 80%), coral)').toRgbString(), 'rgba(136, 202, 134, 1.00)', 'Color mix (1)');
+	TKUnit.assertEqual(new Color('color-mix(in hsl, hsl(200 50 80), coral 80%)').toRgbString(), 'rgba(247, 103, 149, 1.00)', 'Color mix (2)');
+	TKUnit.assertEqual(new Color('color-mix(in srgb, plum, #f00)').toRgbString(), 'rgba(238, 80, 110, 1.00)', 'Color mix (4)');
+	TKUnit.assertEqual(new Color('color-mix(in lab, plum 60%, #f00 50%)').toRgbString(), 'rgba(247, 112, 125, 1.00)', 'Color mix (5)');
+	TKUnit.assertEqual(new Color('color-mix(in --swop5c, red, blue)').toRgbString(), 'rgba(0, 0, 255, 0.00)', 'Color mix (6)');
+}
+
+export function test_nested_css_color_mix() {
+	const page = helper.getClearCurrentPage();
+
+	const stack = new StackLayout();
+	stack.css = `
+    StackLayout.coral {
+        background-color: color-mix(in hsl, hsl(200 50 80), coral 80%);
+    }
+    `;
+
+	const label = new Label();
+	page.content = stack;
+	stack.addChild(label);
+
+	stack.className = 'coral';
+
+	TKUnit.assertEqual((stack.backgroundColor as Color).toRgbString(), 'rgba(247, 103, 149, 1.00)', 'Stack - backgroundColor === color-mix(in hsl, hsl(200 50 80), coral 80%)');
+
+	(stack as any).style = `background-color: color-mix(in --swop5c, red, blue);`;
+
+	TKUnit.assertDeepEqual((stack.backgroundColor as Color).toRgbString(), 'rgba(0, 0, 255, 0.00)', 'Stack - backgroundColor === color-mix(in --swop5c, red, blue)');
 }
 
 export function test_css_variables() {

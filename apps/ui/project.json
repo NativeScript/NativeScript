@@ -18,7 +18,8 @@
 				"release": true,
 				"forDevice": true
 			},
-			"configurations": {}
+			"configurations": {},
+			"dependsOn": ["^build"]
 		},
 		"debug": {
 			"executor": "@nativescript/nx:debug",
@@ -29,7 +30,8 @@
 				"forDevice": false,
 				"prepare": false
 			},
-			"configurations": {}
+			"configurations": {},
+			"dependsOn": ["^build"]
 		},
 		"prepare": {
 			"executor": "@nativescript/nx:prepare",
@@ -41,7 +43,8 @@
 				"forDevice": true,
 				"prepare": true
 			},
-			"configurations": {}
+			"configurations": {},
+			"dependsOn": ["^build"]
 		},
 		"clean": {
 			"executor": "@nativescript/nx:clean",
@@ -53,5 +56,6 @@
 				"lintFilePatterns": ["apps/ui/**/*.ts", "apps/ui/src/**/*.html"]
 			}
 		}
-	}
+	},
+	"implicitDependencies": ["webpack5"]
 }

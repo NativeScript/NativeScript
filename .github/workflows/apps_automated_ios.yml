@@ -1,9 +1,15 @@
 name: 'apps/automated/ios'
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   pull_request:
   workflow_dispatch:
 
+env:
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+  
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -23,9 +29,14 @@ jobs:
         with:
           node-version: 23.5.0
 
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: 'main'
+
       - name: Install NativeScript
         run: |
-          npm i -g nativescript --ignore-scripts --legacy-peer-deps
+          npm i -g nativescript --ignore-scripts
           ns usage-reporting disable
           ns error-reporting disable
           # ns doctor
@@ -39,8 +50,8 @@ jobs:
       - name: Start iOS Simulator
         uses: futureware-tech/simulator-action@v4
         with:
-          model: 'iPhone 15'
-          os_version: '17.5'
+          model: 'iPhone 16 Pro'
+          os_version: '18.4'
 
       - name: Run tests on iOS Simulator
-        run: node tools/scripts/run-automated.js ios
+        run: npx nx test apps-automated -c=ios

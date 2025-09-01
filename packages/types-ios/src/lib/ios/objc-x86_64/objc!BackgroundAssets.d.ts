@@ -24,6 +24,109 @@ declare class BAAppExtensionInfo extends NSObject implements NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 26.0
+ */
+declare class BAAssetPack extends NSObject {
+
+	static alloc(): BAAssetPack; // inherited from NSObject
+
+	static new(): BAAssetPack; // inherited from NSObject
+
+	readonly downloadSize: number;
+
+	readonly identifier: string;
+
+	readonly userInfo: NSData;
+
+	readonly version: number;
+
+	download(): BADownload;
+
+	downloadForContentRequest(contentRequest: BAContentRequest): BADownload;
+}
+
+/**
+ * @since 26.0
+ */
+declare var BAAssetPackIdentifierErrorKey: string;
+
+/**
+ * @since 26.0
+ */
+declare class BAAssetPackManager extends NSObject {
+
+	static alloc(): BAAssetPackManager; // inherited from NSObject
+
+	static new(): BAAssetPackManager; // inherited from NSObject
+
+	delegate: BAManagedAssetPackDownloadDelegate;
+
+	static readonly sharedManager: BAAssetPackManager;
+
+	URLForPathError(path: string): NSURL;
+
+	checkForUpdatesWithCompletionHandler(completionHandler: (p1: NSSet<string>, p2: NSSet<string>, p3: NSError) => void): void;
+
+	contentsAtPathSearchingInAssetPackWithIdentifierOptionsError(path: string, assetPackIdentifier: string, options: NSDataReadingOptions): NSData;
+
+	ensureLocalAvailabilityOfAssetPackCompletionHandler(assetPack: BAAssetPack, completionHandler: (p1: NSError) => void): void;
+
+	fileDescriptorForPathSearchingInAssetPackWithIdentifierError(path: string, assetPackIdentifier: string): number;
+
+	getAllAssetPacksWithCompletionHandler(completionHandler: (p1: NSSet<BAAssetPack>, p2: NSError) => void): void;
+
+	getAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPack, p2: NSError) => void): void;
+
+	getStatusOfAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: BAAssetPackStatus, p2: NSError) => void): void;
+
+	removeAssetPackWithIdentifierCompletionHandler(assetPackIdentifier: string, completionHandler: (p1: NSError) => void): void;
+}
+
+/**
+ * @since 26.0
+ */
+declare class BAAssetPackManifest extends NSObject {
+
+	static alloc(): BAAssetPackManifest; // inherited from NSObject
+
+	static new(): BAAssetPackManifest; // inherited from NSObject
+
+	readonly assetPacks: NSSet<BAAssetPack>;
+
+	constructor(o: { fromData: NSData; applicationGroupIdentifier: string; });
+
+	constructor(o: { contentsOfURL: NSURL; applicationGroupIdentifier: string; });
+
+	allDownloads(): NSSet<BADownload>;
+
+	allDownloadsForContentRequest(contentRequest: BAContentRequest): NSSet<BADownload>;
+
+	initFromDataApplicationGroupIdentifierError(data: NSData, applicationGroupIdentifier: string): this;
+
+	initWithContentsOfURLApplicationGroupIdentifierError(URL: NSURL, applicationGroupIdentifier: string): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum BAAssetPackStatus {
+
+	DownloadAvailable = 1,
+
+	UpdateAvailable = 2,
+
+	UpToDate = 4,
+
+	OutOfDate = 8,
+
+	Obsolete = 16,
+
+	Downloading = 32,
+
+	Downloaded = 64
+}
+
 declare const enum BAContentRequest {
 
 	Install = 1,
@@ -241,6 +344,8 @@ declare const enum BAErrorCode {
 
 	DownloadWouldExceedAllowance = 112,
 
+	DownloadDoesNotExist = 113,
+
 	SessionDownloadDisallowedByDomain = 202,
 
 	SessionDownloadDisallowedByAllowance = 203,
@@ -254,6 +359,53 @@ declare const enum BAErrorCode {
  * @since 17.0
  */
 declare var BAErrorDomain: string;
+
+/**
+ * @since 26.0
+ */
+interface BAManagedAssetPackDownloadDelegate extends NSObjectProtocol {
+
+	downloadOfAssetPackBegan?(assetPack: BAAssetPack): void;
+
+	downloadOfAssetPackFailedWithError?(assetPack: BAAssetPack, error: NSError): void;
+
+	downloadOfAssetPackFinished?(assetPack: BAAssetPack): void;
+
+	downloadOfAssetPackHasProgress?(assetPack: BAAssetPack, progress: NSProgress): void;
+
+	downloadOfAssetPackPaused?(assetPack: BAAssetPack): void;
+}
+declare var BAManagedAssetPackDownloadDelegate: {
+
+	prototype: BAManagedAssetPackDownloadDelegate;
+};
+
+/**
+ * @since 26.0
+ */
+interface BAManagedDownloaderExtension extends BADownloaderExtension {
+
+	shouldDownloadAssetPack?(assetPack: BAAssetPack): boolean;
+}
+declare var BAManagedDownloaderExtension: {
+
+	prototype: BAManagedDownloaderExtension;
+};
+
+/**
+ * @since 26.0
+ */
+declare const enum BAManagedErrorCode {
+
+	AssetPackNotFound = 0,
+
+	FileNotFound = 1
+}
+
+/**
+ * @since 26.0
+ */
+declare var BAManagedErrorDomain: string;
 
 /**
  * @since 16.1

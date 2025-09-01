@@ -4,39 +4,34 @@
 	"sourceRoot": "packages/core",
 	"projectType": "library",
 	"generators": {},
-	"namedInputs": {
-		"default": ["{projectRoot}/**/*"],
-		"production": ["!{projectRoot}/**/*.spec.ts"]
-	},
+	"namedInputs": { "default": ["{projectRoot}/**/*"], "production": ["!{projectRoot}/**/*.spec.ts"] },
 	"targets": {
-		"lint": {
-			"executor": "@nx/eslint:lint",
-			"options": {
-				"lintFilePatterns": ["packages/core/**/*.ts", "packages/core/references.d.ts", "packages/core/**/*.spec.ts", "packages/core/**/*.spec.tsx", "packages/core/**/*.spec.js", "packages/core/**/*.spec.jsx", "packages/core/**/*.d.ts"]
-			}
-		},
+		"lint": { "executor": "@nx/eslint:lint", "options": { "lintFilePatterns": ["packages/core/**/*.ts", "packages/core/references.d.ts", "packages/core/**/*.spec.ts", "packages/core/**/*.spec.tsx", "packages/core/**/*.spec.js", "packages/core/**/*.spec.jsx", "packages/core/**/*.d.ts"] } },
 		"build": {
-			"executor": "nx:run-commands",
+			"executor": "@nx/js:tsc",
 			"inputs": ["default", "^production"],
-			"outputs": ["{workspaceRoot}/dist/packages"],
+			"outputs": ["{workspaceRoot}/dist/packages/core"],
 			"options": {
-				"commands": [
-					"npx rimraf dist/packages/core",
-					"npx tsc -p packages/core/tsconfig.lib.json",
-					"npx copyfiles \"packages/core/**/*.d.ts\" dist && npx copyfiles \"packages/core/js-libs/**/*\" dist && npx copyfiles \"packages/core/cli-hooks/**/*.js\" dist && npx copyfiles \"packages/core/platforms/**/*\" dist && npx copyfiles \"packages/core/fetch/**/*\" dist && npx copyfiles \"packages/core/css/**/*\" dist && npx copyfiles \"packages/core/css-value/**/*\" dist",
-					"npx copyfiles -f \"packages/core/package.json\" \"packages/core/README.md\" \"LICENSE\" dist/packages/core",
-					"cd dist/packages/core && npm pack --pack-destination=.."
-				],
-				"cwd": ".",
-				"parallel": false
-			}
+				"tsConfig": "{projectRoot}/tsconfig.lib.json",
+				"outputPath": "{workspaceRoot}/dist/packages/core",
+				"rootDir": "{projectRoot}",
+				"main": "{projectRoot}/index.ts",
+				"assets": [
+					"{workspaceRoot}/LICENSE",
+					"{projectRoot}/README.md",
+					"{projectRoot}/global-types.d.ts",
+					{ "glob": "**/*", "input": "{projectRoot}/js-libs/", "output": "./js-libs/" },
+					{ "glob": "**/*", "input": "{projectRoot}/cli-hooks/", "output": "./cli-hooks/" },
+					{ "glob": "**/*", "input": "{projectRoot}/fetch/", "output": "./fetch/" },
+					{ "glob": "**/*", "input": "{projectRoot}/css/", "output": "./css/" },
+					{ "glob": "**/*", "input": "{projectRoot}/css-value/", "output": "./css-value/" },
+					{ "glob": "**/*", "input": "{projectRoot}/platforms/", "output": "./platforms/" },
+					{ "glob": "**/*.d.ts", "input": "{projectRoot}/", "output": "./" }
+				]
+			},
+			"dependsOn": ["^build"]
 		},
-		"test": {
-			"executor": "@nx/vite:test",
-			"outputs": ["{options.reportsDirectory}"],
-			"options": {
-				"reportsDirectory": "../../coverage/packages/core"
-			}
-		}
+		"build.npm": { "executor": "nx:run-commands", "options": { "commands": ["node tools/scripts/build-finish.ts core"], "parallel": false }, "outputs": ["{workspaceRoot}/dist/packages/core"], "dependsOn": [{ "target": "build" }] },
+		"test": { "executor": "@nx/vite:test", "outputs": ["{options.reportsDirectory}"], "options": { "reportsDirectory": "../../coverage/packages/core" } }
 	}
 }

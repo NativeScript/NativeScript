@@ -1,6 +1,7 @@
 
 /**
  * @since 4.0
+ * @deprecated 10.0
  */
 declare class CTCall extends NSObject {
 
@@ -139,6 +140,49 @@ declare const enum CTCellularDataRestrictedState {
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum CTCellularPlanCapability {
+
+	DataOnly = 0,
+
+	DataAndVoice = 1
+}
+
+/**
+ * @since 26.0
+ */
+declare class CTCellularPlanProperties extends NSObject implements NSSecureCoding {
+
+	static alloc(): CTCellularPlanProperties; // inherited from NSObject
+
+	static new(): CTCellularPlanProperties; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	associatedIccid: string;
+
+	/**
+	 * @since 26.0
+	 */
+	simCapability: CTCellularPlanCapability;
+
+	/**
+	 * @since 26.0
+	 */
+	supportedRegionCodes: NSArray<string>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
  * @since 12.0
  */
 declare class CTCellularPlanProvisioning extends NSObject {
@@ -158,9 +202,19 @@ declare class CTCellularPlanProvisioning extends NSObject {
 	addPlanWithCompletionHandler(request: CTCellularPlanProvisioningRequest, completionHandler: (p1: CTCellularPlanProvisioningAddPlanResult) => void): void;
 
 	/**
+	 * @since 26.0
+	 */
+	addPlanWithRequestPropertiesCompletionHandler(request: CTCellularPlanProvisioningRequest, properties: CTCellularPlanProperties, completionHandler: (p1: CTCellularPlanProvisioningAddPlanResult) => void): void;
+
+	/**
 	 * @since 12.0
 	 */
 	supportsCellularPlan(): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	updateCellularPlanPropertiesCompletionHandler(properties: CTCellularPlanProperties, completionHandler: (p1: NSError) => void): void;
 }
 
 /**
@@ -223,6 +277,26 @@ declare class CTCellularPlanProvisioningRequest extends NSObject implements NSSe
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 19.0
+ */
+declare class CTCellularPlanStatus extends NSObject {
+
+	static alloc(): CTCellularPlanStatus; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	static checkValidityOfTokenCompletionHandler(token: string, completionHandler: (p1: boolean, p2: NSError) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	static getTokenWithCompletion(completionHandler: (p1: string, p2: NSError) => void): void;
+
+	static new(): CTCellularPlanStatus; // inherited from NSObject
 }
 
 interface CTError {

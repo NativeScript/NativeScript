@@ -145,7 +145,6 @@ export function test_offset_zero_should_raise_same_events() {
 		TKUnit.assertDeepEqual(actualEventsRaised, expectedEventsRaisedAfterSelectThirdTab);
 
 		resetActualEventsRaised();
-
 		waitUntilTabViewReady(items[0].page, () => (tabView.selectedIndex = 0));
 
 		const expectedEventsRaisedAfterReturnToFirstTab = [['Tab0 Frame0 Page0 loaded', 'Tab0 Frame0 loaded'], [], ['Tab2 Frame2 Page2 unloaded', 'Tab2 Frame2 unloaded']];

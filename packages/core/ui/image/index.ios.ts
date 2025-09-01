@@ -1,5 +1,5 @@
 import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, iosSymbolEffectProperty, ImageSymbolEffect, ImageSymbolEffects, iosSymbolScaleProperty } from './image-common';
-import { ImageSource, iosSymbolScaleType } from '../../image-source';
+import { ImageSource } from '../../image-source';
 import { ImageAsset } from '../../image-asset';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
@@ -219,7 +219,7 @@ export class Image extends ImageBase {
 		}
 	}
 
-	[iosSymbolScaleProperty.setNative](value: iosSymbolScaleType) {
+	[iosSymbolScaleProperty.setNative](value: string) {
 		// reset src to configure scale
 		this._setSrc(this.src);
 	}

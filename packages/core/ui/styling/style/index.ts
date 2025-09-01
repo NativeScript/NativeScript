@@ -1,4 +1,3 @@
-import { Style as StyleDefinition } from '.';
 import { Color } from '../../../color';
 import { Font, FontStyleType, FontWeightType, FontVariationSettingsType } from '../font';
 import { Background } from '../background';
@@ -35,7 +34,7 @@ export interface CommonLayoutParams {
 	verticalAlignment: CoreTypes.VerticalAlignmentType;
 }
 
-export class Style extends Observable implements StyleDefinition {
+export class Style extends Observable {
 	private unscopedCssVariables = new Map<string, string>();
 	private scopedCssVariables = new Map<string, string>();
 
@@ -43,7 +42,7 @@ export class Style extends Observable implements StyleDefinition {
 		super();
 
 		// HACK: Could not find better way for cross platform WeakRef type checking.
-		if (ownerView.constructor.toString().indexOf('[native code]') !== -1) {
+		if (ownerView.constructor.toString().indexOf('[native code]') !== -1 || ownerView.toString() == '[object WeakRef]') {
 			this.viewRef = <WeakRef<ViewBase>>ownerView;
 		} else {
 			this.viewRef = new WeakRef(<ViewBase>ownerView);

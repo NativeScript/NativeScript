@@ -1,5 +1,8 @@
 # TODO: modify to build android & ios types first and then merge into types
 name: '@nativescript/types -> npm'
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   push:

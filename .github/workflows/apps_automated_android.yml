@@ -1,8 +1,14 @@
 name: 'apps/automated/android'
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   pull_request:
   workflow_dispatch:
+
+env:
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -15,14 +21,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.10.0
+          node-version: 23.5.0
 
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: 'main'
+          
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Install Python
         uses: actions/setup-python@v5
@@ -32,7 +44,7 @@ jobs:
       - name: Install NativeScript
         run: |
           python3 -m pip install --upgrade pip six
-          npm i -g nativescript --ignore-scripts --legacy-peer-deps
+          npm i -g nativescript --ignore-scripts
           ns usage-reporting disable
           ns error-reporting disable
 
@@ -53,4 +65,4 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          script: node tools/scripts/run-automated.js android
+          script: npx nx test apps-automated -c=android

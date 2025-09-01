@@ -24,6 +24,10 @@
       <TextView hint="Type text..." style.placeholderColor="silver" textChange="{{textChangeArea}}" color="black" width="80%" borderColor="silver" borderWidth="1" height="200" borderRadius="4" fontSize="14">
       </TextView>
 
+      <Label text="TextField white-space + text-overflow" fontWeight="bold" marginTop="12" />
+      <TextField text="https://a.very.long.url.that.needs.to.be.truncated.com/" class="truncate" marginTop="6" backgroundColor="#efefef" padding="8" fontSize="18" height="60">
+      </TextField>
+
     </StackLayout>
   </ScrollView>
 </Page>

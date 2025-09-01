@@ -4,7 +4,7 @@ import { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';
-import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from './frame-stack';
+import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack, _isFrameStackEmpty } from './frame-stack';
 import { viewMatchesModuleContext } from '../core/view/view-common';
 import { getAncestor } from '../core/view-base';
 import { Builder } from '../builder';
@@ -76,13 +76,13 @@ export class FrameBase extends CustomLayoutView {
 			return true;
 		} else if (top) {
 			let parentFrameCanGoBack = false;
-			let parentFrame = <FrameBase>getAncestor(top, 'Frame');
+			let parentFrame = getAncestor(top, 'Frame');
 
 			while (parentFrame && !parentFrameCanGoBack) {
 				if (parentFrame && parentFrame.canGoBack()) {
 					parentFrameCanGoBack = true;
 				} else {
-					parentFrame = <FrameBase>getAncestor(parentFrame, 'Frame');
+					parentFrame = getAncestor(parentFrame, 'Frame');
 				}
 			}
 
@@ -325,9 +325,10 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
-		let frameAncestor: FrameBase = this;
+		let frameAncestor = this as FrameBase;
+
 		while (frameAncestor) {
-			frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);
+			frameAncestor = getAncestor(frameAncestor, FrameBase);
 			if (frameAncestor === parentFrameCandidate) {
 				return true;
 			}
@@ -557,6 +558,10 @@ export class FrameBase extends CustomLayoutView {
 		for (const frame of framesToPush) {
 			frame._pushInFrameStack();
 		}
+	}
+
+	public _isFrameStackEmpty() {
+		return _isFrameStackEmpty();
 	}
 
 	public _pushInFrameStack() {

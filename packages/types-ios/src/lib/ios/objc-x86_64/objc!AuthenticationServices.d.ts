@@ -473,7 +473,15 @@ declare const enum ASAuthorizationError {
 
 	NotInteractive = 1005,
 
-	MatchedExcludedCredential = 1006
+	MatchedExcludedCredential = 1006,
+
+	CredentialImport = 1007,
+
+	CredentialExport = 1008,
+
+	PreferSignInWithApple = 1009,
+
+	DeviceNotConfiguredForPasskeyCreation = 1010
 }
 
 /**
@@ -2437,6 +2445,14 @@ declare class ASCredentialProviderViewController extends UIViewController {
 	 * @since 17.0
 	 */
 	provideCredentialWithoutUserInteractionForRequest(credentialRequest: ASCredentialRequest): void;
+
+	reportAllAcceptedPublicKeyCredentialsForRelyingPartyUserHandleAcceptedCredentialIDs(relyingParty: string, userHandle: NSData, acceptedCredentialIDs: NSArray<NSData> | NSData[]): void;
+
+	reportPublicKeyCredentialUpdateForRelyingPartyUserHandleNewName(relyingParty: string, userHandle: NSData, newName: string): void;
+
+	reportUnknownPublicKeyCredentialForRelyingPartyCredentialID(relyingParty: string, credentialID: NSData): void;
+
+	reportUnusedPasswordCredentialForDomainUserName(domain: string, userName: string): void;
 }
 
 /**

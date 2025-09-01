@@ -7,6 +7,8 @@ import { makeValidator, makeParser } from '../ui/core/properties';
 import { CubicBezierAnimationCurve } from '../ui/animation/animation-interfaces';
 
 export namespace CoreTypes {
+	export type CSSWideKeywords = 'initial' | 'inherit' | 'unset' | 'revert';
+
 	/**
 	 * Denotes a length number that is in device independent pixel units.
 	 */
@@ -29,7 +31,7 @@ export namespace CoreTypes {
 	export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
 	export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
 
-	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit;
+	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit | CSSWideKeywords;
 	export type LengthType = 'auto' | FixedLengthType;
 	export type PercentLengthType = 'auto' | FixedLengthType | LengthPercentUnit;
 
@@ -67,7 +69,7 @@ export namespace CoreTypes {
 		export const send = 'send';
 	}
 
-	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right' | 'justify';
+	export type TextAlignmentType = 'left' | 'center' | 'right' | 'justify' | CSSWideKeywords;
 	export namespace TextAlignment {
 		export const left = 'left';
 		export const center = 'center';
@@ -75,14 +77,14 @@ export namespace CoreTypes {
 		export const justify = 'justify';
 	}
 
-	export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';
+	export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through' | CSSWideKeywords;
 	export namespace TextDecoration {
 		export const none = 'none';
 		export const underline = 'underline';
 		export const lineThrough = 'line-through';
 	}
 
-	export type TextTransformType = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+	export type TextTransformType = 'none' | 'capitalize' | 'uppercase' | 'lowercase' | CSSWideKeywords;
 	export namespace TextTransform {
 		export const none = 'none';
 		export const capitalize = 'capitalize';
@@ -90,18 +92,16 @@ export namespace CoreTypes {
 		export const lowercase = 'lowercase';
 	}
 
-	export type WhiteSpaceType = 'initial' | 'normal' | 'nowrap';
+	export type WhiteSpaceType = 'normal' | 'nowrap' | 'wrap' | CSSWideKeywords;
 	export namespace WhiteSpace {
 		export const normal = 'normal';
 		export const nowrap = 'nowrap';
 	}
 
-	export type TextOverflowType = 'clip' | 'ellipsis' | 'initial' | 'unset';
+	export type TextOverflowType = 'clip' | 'ellipsis' | CSSWideKeywords;
 	export namespace TextOverflow {
 		export const clip = 'clip';
 		export const ellipsis = 'ellipsis';
-		export const initial = 'initial';
-		export const unset = 'unset';
 	}
 
 	export type MaxLinesType = number;
@@ -119,7 +119,7 @@ export namespace CoreTypes {
 		export const unknown = 'unknown';
 	}
 
-	export type HorizontalAlignmentType = 'left' | 'middle' | 'center' | 'right' | 'stretch';
+	export type HorizontalAlignmentType = 'left' | 'middle' | 'center' | 'right' | 'stretch' | CSSWideKeywords;
 	export namespace HorizontalAlignment {
 		export const left = 'left';
 		export const middle = 'middle';
@@ -130,7 +130,7 @@ export namespace CoreTypes {
 		export const parse = makeParser<HorizontalAlignmentType>(isValid);
 	}
 
-	export type VerticalAlignmentType = 'top' | 'middle' | 'center' | 'bottom' | 'stretch';
+	export type VerticalAlignmentType = 'top' | 'middle' | 'center' | 'bottom' | 'stretch' | CSSWideKeywords;
 	export namespace VerticalAlignment {
 		export const top = 'top';
 		export const middle = 'middle';
@@ -164,7 +164,7 @@ export namespace CoreTypes {
 		export const fill: ImageStretchType = 'fill';
 	}
 
-	export type VisibilityType = 'visible' | 'hidden' | 'collapse' | 'collapsed';
+	export type VisibilityType = 'visible' | 'hidden' | 'collapse' | 'collapsed' | CSSWideKeywords;
 	export namespace Visibility {
 		export const visible: VisibilityType = 'visible';
 		export const collapse: VisibilityType = 'collapse';
@@ -259,7 +259,7 @@ export namespace CoreTypes {
 		export const black: string = '900';
 	}
 
-	export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
+	export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat' | CSSWideKeywords;
 	export namespace BackgroundRepeat {
 		export const repeat: BackgroundRepeatType = 'repeat';
 		export const repeatX: BackgroundRepeatType = 'repeat-x';

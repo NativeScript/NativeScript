@@ -1,4 +1,4 @@
-import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
+import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, isCssWideKeyword } from '../core/properties';
 import { Style } from './style';
 
 import { Color } from '../../color';
@@ -25,11 +25,11 @@ interface ShorthandPositioning {
 function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean {
-	if (a == 'auto') {
-		return b == 'auto';
+	if (a == 'auto' || isCssWideKeyword(a)) {
+		return b == 'auto' || isCssWideKeyword(b);
 	}
 
-	if (b == 'auto') {
+	if (b == 'auto' || isCssWideKeyword(b)) {
 		return false;
 	}
 
@@ -53,7 +53,7 @@ function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLength
 }
 
 function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
-	if (length == 'auto' || length === null || length === undefined) {
+	if (length == 'auto' || length === null || length === undefined || isCssWideKeyword(length)) {
 		return 'auto';
 	}
 
@@ -70,7 +70,7 @@ function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentL
 }
 
 function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
-	if (length === 'auto' || length === null || length === undefined) {
+	if (length == 'auto' || length === null || length === undefined || isCssWideKeyword(length)) {
 		return auto;
 	}
 	if (typeof length === 'number') {
@@ -195,10 +195,11 @@ function isNonNegativeFiniteNumber(value: number): boolean {
 }
 
 function parseClipPath(value: string): string | ClipPathFunction {
-	const functionStartIndex = value.indexOf('(');
+	const funcStartIndex = value.indexOf('(');
+	const funcEndIndex = value.lastIndexOf(')');
 
-	if (functionStartIndex > -1) {
-		const functionName = value.substring(0, functionStartIndex).trim();
+	if (funcStartIndex > -1 && funcEndIndex > -1) {
+		const functionName = value.substring(0, funcStartIndex).trim();
 
 		switch (functionName) {
 			case 'rect':
@@ -206,8 +207,7 @@ function parseClipPath(value: string): string | ClipPathFunction {
 			case 'ellipse':
 			case 'polygon':
 			case 'inset': {
-				const rule: string = value.replace(`${functionName}(`, '').replace(')', '');
-				return new ClipPathFunction(functionName, rule);
+				return new ClipPathFunction(functionName, value.substring(funcStartIndex + 1, funcEndIndex));
 			}
 			default:
 				throw new Error(`Clip-path function ${functionName} is not valid.`);

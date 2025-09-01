@@ -59,6 +59,7 @@ if (module.hot) {
 		},
 	};
 
+	// Important: Keep as function and not fat arrow; at the moment hermes does not support them
 	const checkAndApply = async function () {
 		hash = __webpack_require__.h();
 		const modules = await module.hot.check().catch((error) => {

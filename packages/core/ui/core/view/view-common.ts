@@ -306,7 +306,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
+	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean) {
 		thisArg = thisArg || undefined;
 
 		// TODO: Remove this once we fully switch to the new event system
@@ -333,7 +333,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			return;
 		}
 
-		super.addEventListener(normalizedName, callback, thisArg);
+		super.addEventListener(normalizedName, callback, thisArg, once);
 	}
 
 	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {

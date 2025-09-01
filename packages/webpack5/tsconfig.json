@@ -4,7 +4,6 @@
 		"baseUrl": ".",
 		"target": "es2018",
 		"module": "commonjs",
-		"outDir": "./dist",
 		"declaration": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,

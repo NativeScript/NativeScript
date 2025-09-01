@@ -1,6 +1,11 @@
 @import '@nativescript/theme/css/core';
 @import './_app-platform.css';
 
+/** define shared global variables to test in toolbox */
+* {
+    --color-black: black;
+}
+
 /*
 The following CSS rule changes the font size of all UI
 components that have the btn class name.
@@ -8,6 +13,20 @@ components that have the btn class name.
 Button {
     text-transform: none;
 }
+
+.calc-padding {
+    padding: calc(4 * 6);
+}
+
+.colormix {
+    background-color: color-mix(in oklab, var(--color-black) 50%, transparent);
+    /* background-color: color-mix(in lch longer hue, hsl(200deg 50% 80%), coral); */
+    /* background-color: color-mix(in hsl, hsl(200 50 80), coral 80%); */
+    /* background-color: color-mix(in srgb, plum, #f00); */
+    /* background-color: color-mix(in lab, plum 60%, #f00 50%); */
+    /* background-color: color-mix(in --swop5c, red, blue); */
+}
+
 .btn-view-demo {
   /* background-color: #65ADF1; */
   border-radius: 8;
@@ -241,4 +260,10 @@ Button {
 
 .no-shadow {
     box-shadow: none;
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

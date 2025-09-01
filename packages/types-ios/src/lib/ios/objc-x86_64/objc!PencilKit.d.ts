@@ -136,8 +136,6 @@ interface PKCanvasViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 
 	canvasViewDidFinishRendering?(canvasView: PKCanvasView): void;
 
-	canvasViewDidRefineStrokesWithNewStrokes?(canvasView: PKCanvasView, strokes: NSArray<PKStroke> | PKStroke[], newStrokes: NSArray<any> | any[]): void;
-
 	canvasViewDrawingDidChange?(canvasView: PKCanvasView): void;
 }
 declare var PKCanvasViewDelegate: {
@@ -162,7 +160,9 @@ declare const enum PKContentVersion {
 
 	Version3 = 3,
 
-	VersionLatest = 3
+	Version4 = 4,
+
+	VersionLatest = 4
 }
 
 /**
@@ -355,6 +355,11 @@ declare var PKInkTypePen: string;
 declare var PKInkTypePencil: string;
 
 /**
+ * @since 26.0
+ */
+declare var PKInkTypeReed: string;
+
+/**
  * @since 17.0
  */
 declare var PKInkTypeWatercolor: string;
@@ -375,6 +380,11 @@ declare class PKInkingTool extends PKTool {
 	static minimumWidthForInkType(inkType: string): number;
 
 	static new(): PKInkingTool; // inherited from NSObject
+
+	/**
+	 * @since 26.0
+	 */
+	readonly azimuth: number;
 
 	readonly color: UIColor;
 
@@ -397,6 +407,11 @@ declare class PKInkingTool extends PKTool {
 	constructor(o: { inkType: string; color: UIColor; width: number; });
 
 	/**
+	 * @since 26.0
+	 */
+	constructor(o: { inkType: string; color: UIColor; width: number; azimuth: number; });
+
+	/**
 	 * @since 14.0
 	 */
 	constructor(o: { ink: PKInk; width: number; });
@@ -404,6 +419,11 @@ declare class PKInkingTool extends PKTool {
 	initWithInkTypeColor(type: string, color: UIColor): this;
 
 	initWithInkTypeColorWidth(type: string, color: UIColor, width: number): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithInkTypeColorWidthAzimuth(type: string, color: UIColor, width: number, angle: number): this;
 
 	/**
 	 * @since 14.0
@@ -419,6 +439,20 @@ declare class PKLassoTool extends PKTool {
 	static alloc(): PKLassoTool; // inherited from NSObject
 
 	static new(): PKLassoTool; // inherited from NSObject
+}
+
+/**
+ * @since 26.0
+ */
+declare class PKResponderState extends NSObject {
+
+	static alloc(): PKResponderState; // inherited from NSObject
+
+	static new(): PKResponderState; // inherited from NSObject
+
+	activeToolPicker: PKToolPicker;
+
+	toolPickerVisibility: PKToolPickerVisibility;
 }
 
 /**
@@ -534,17 +568,26 @@ declare class PKStrokePoint extends NSObject implements NSCopying {
 
 	readonly size: CGSize;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly threshold: number;
+
 	readonly timeOffset: number;
 
 	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; });
 
 	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; secondaryScale: number; });
 
+	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; secondaryScale: number; threshold: number; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitude(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number): this;
 
 	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitudeSecondaryScale(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number, secondaryScale: number): this;
+
+	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitudeSecondaryScaleThreshold(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number, secondaryScale: number, threshold: number): this;
 }
 
 /**
@@ -578,6 +621,11 @@ declare class PKToolPicker extends NSObject {
 	 * @since 18.0
 	 */
 	accessoryItem: UIBarButtonItem;
+
+	/**
+	 * @since 26.0
+	 */
+	colorMaximumLinearExposure: number;
 
 	colorUserInterfaceStyle: UIUserInterfaceStyle;
 
@@ -627,6 +675,11 @@ declare class PKToolPicker extends NSObject {
 	 * @since 18.0
 	 */
 	readonly toolItems: NSArray<PKToolPickerItem>;
+
+	/**
+	 * @since 26.0
+	 */
+	static readonly defaultToolItems: NSArray<PKToolPickerItem>;
 
 	/**
 	 * @since 18.0
@@ -763,6 +816,11 @@ declare class PKToolPickerInkingItem extends PKToolPickerItem {
 
 	constructor(o: { inkType: string; color: UIColor; width: number; });
 
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { inkType: string; color: UIColor; width: number; azimuth: number; identifier: string; });
+
 	constructor(o: { inkType: string; color: UIColor; width: number; identifier: string; });
 
 	constructor(o: { inkType: string; width: number; });
@@ -772,6 +830,11 @@ declare class PKToolPickerInkingItem extends PKToolPickerItem {
 	initWithInkTypeColor(inkType: string, color: UIColor): this;
 
 	initWithInkTypeColorWidth(inkType: string, color: UIColor, width: number): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithInkTypeColorWidthAzimuthIdentifier(inkType: string, color: UIColor, width: number, azimuth: number, identifier: string): this;
 
 	initWithInkTypeColorWidthIdentifier(inkType: string, color: UIColor, width: number, identifier: string): this;
 
@@ -788,6 +851,11 @@ declare class PKToolPickerItem extends NSObject implements NSCopying {
 	static new(): PKToolPickerItem; // inherited from NSObject
 
 	readonly identifier: string;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly tool: PKTool;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -849,4 +917,15 @@ declare class PKToolPickerScribbleItem extends PKToolPickerItem {
 	static alloc(): PKToolPickerScribbleItem; // inherited from NSObject
 
 	static new(): PKToolPickerScribbleItem; // inherited from NSObject
+}
+
+declare const enum PKToolPickerVisibility {
+
+	Inherited = 0,
+
+	Inactive = 1,
+
+	Hidden = 2,
+
+	Visible = 3
 }

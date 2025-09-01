@@ -3,6 +3,8 @@ import * as httpModule from '../../http';
 import * as imageSourceModule from '../../image-source';
 import * as fsModule from '../../file-system';
 
+import { SDK_VERSION } from '../../utils/constants';
+import { isRealDevice } from '../../utils/ios';
 import * as types from '../../utils/types';
 import * as domainDebugger from '../../debugger';
 import { getFilenameFromUrl } from './http-request-common';
@@ -19,7 +21,9 @@ const osVersion = currentDevice.systemVersion;
 const GET = 'GET';
 const USER_AGENT_HEADER = 'User-Agent';
 const USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace('.', '_')} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
-const sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration;
+// mitigate iOS 18.4 simulator regression
+// https://developer.apple.com/forums/thread/777999
+const sessionConfig = SDK_VERSION === 18.4 && !isRealDevice() ? NSURLSessionConfiguration.ephemeralSessionConfiguration : NSURLSessionConfiguration.defaultSessionConfiguration;
 const queue = NSOperationQueue.mainQueue;
 
 function parseJSON(source: string): any {

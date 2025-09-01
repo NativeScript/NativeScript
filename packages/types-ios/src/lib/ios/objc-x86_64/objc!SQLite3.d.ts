@@ -20,6 +20,10 @@ interface Fts5ExtensionApi {
 	xPhraseNext: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<Fts5PhraseIter>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => void>;
 	xPhraseFirstColumn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<Fts5PhraseIter>, p4: interop.Pointer | interop.Reference<number>) => number>;
 	xPhraseNextColumn: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<Fts5PhraseIter>, p3: interop.Pointer | interop.Reference<number>) => void>;
+	xQueryToken: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<number>) => number>;
+	xInstToken: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<number>) => number>;
+	xColumnLocale: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<number>) => number>;
+	xTokenize_v2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: number, p6: interop.Pointer | interop.Reference<any>, p7: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number, p6: number) => number>) => number>;
 }
 declare var Fts5ExtensionApi: interop.StructType<Fts5ExtensionApi>;
 
@@ -34,6 +38,8 @@ interface fts5_api {
 	xCreateTokenizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<fts5_tokenizer>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => number>;
 	xFindTokenizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<fts5_tokenizer>) => number>;
 	xCreateFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<Fts5ExtensionApi>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => number>;
+	xCreateTokenizer_v2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<fts5_tokenizer_v2>, p5: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>) => number>;
+	xFindTokenizer_v2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<fts5_api>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<fts5_tokenizer_v2>>) => number>;
 }
 declare var fts5_api: interop.StructType<fts5_api>;
 
@@ -43,6 +49,14 @@ interface fts5_tokenizer {
 	xTokenize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: number, p6: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number, p6: number) => number>) => number>;
 }
 declare var fts5_tokenizer: interop.StructType<fts5_tokenizer>;
+
+interface fts5_tokenizer_v2 {
+	iVersion: number;
+	xCreate: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p3: number, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
+	xDelete: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	xTokenize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>, p5: number, p6: interop.Pointer | interop.Reference<any>, p7: number, p8: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: number, p6: number) => number>) => number>;
+}
+declare var fts5_tokenizer_v2: interop.StructType<fts5_tokenizer_v2>;
 
 declare function sqlite3_aggregate_context(p1: interop.Pointer | interop.Reference<any>, nBytes: number): interop.Pointer | interop.Reference<any>;
 
@@ -370,6 +384,11 @@ declare function sqlite3_get_autocommit(p1: interop.Pointer | interop.Reference<
 
 declare function sqlite3_get_auxdata(p1: interop.Pointer | interop.Reference<any>, N: number): interop.Pointer | interop.Reference<any>;
 
+/**
+ * @since 26.0
+ */
+declare function sqlite3_get_clientdata(p1: interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
 declare function sqlite3_get_table(db: interop.Pointer | interop.Reference<any>, zSql: string | interop.Pointer | interop.Reference<any>, pazResult: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>>, pnRow: interop.Pointer | interop.Reference<number>, pnColumn: interop.Pointer | interop.Reference<number>, pzErrmsg: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 /**
@@ -524,6 +543,7 @@ interface sqlite3_module {
 	xRelease: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number) => number>;
 	xRollbackTo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number) => number>;
 	xShadowName: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
+	xIntegrity: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
 }
 declare var sqlite3_module: interop.StructType<sqlite3_module>;
 
@@ -761,7 +781,14 @@ declare function sqlite3_set_authorizer(p1: interop.Pointer | interop.Reference<
 
 declare function sqlite3_set_auxdata(p1: interop.Pointer | interop.Reference<any>, N: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
+/**
+ * @since 26.0
+ */
+declare function sqlite3_set_clientdata(p1: interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
+
 declare function sqlite3_set_last_insert_rowid(p1: interop.Pointer | interop.Reference<any>, p2: number): void;
+
+declare function sqlite3_setlk_timeout(p1: interop.Pointer | interop.Reference<any>, ms: number, flags: number): number;
 
 declare function sqlite3_shutdown(): number;
 

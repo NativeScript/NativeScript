@@ -46,9 +46,117 @@ declare const enum BEAccessibilityPressedState {
 }
 
 /**
+ * @since 26.0
+ */
+declare class BEAccessibilityRemoteElement extends NSObject {
+
+	static alloc(): BEAccessibilityRemoteElement; // inherited from NSObject
+
+	static new(): BEAccessibilityRemoteElement; // inherited from NSObject
+
+	constructor(o: { identifier: string; hostPid: number; });
+
+	initWithIdentifierHostPid(identifier: string, hostPid: number): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class BEAccessibilityRemoteHostElement extends NSObject {
+
+	static alloc(): BEAccessibilityRemoteHostElement; // inherited from NSObject
+
+	static new(): BEAccessibilityRemoteHostElement; // inherited from NSObject
+
+	accessibilityContainer: any;
+
+	constructor(o: { identifier: string; remotePid: number; });
+
+	initWithIdentifierRemotePid(identifier: string, remotePid: number): this;
+}
+
+/**
  * @since 18.0
  */
 declare var BEAccessibilitySelectionChangedNotification: number;
+
+/**
+ * @since 18.2
+ */
+declare class BEAccessibilityTextMarker extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): BEAccessibilityTextMarker; // inherited from NSObject
+
+	static new(): BEAccessibilityTextMarker; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class BEAccessibilityTextMarkerRange extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): BEAccessibilityTextMarkerRange; // inherited from NSObject
+
+	static new(): BEAccessibilityTextMarkerRange; // inherited from NSObject
+
+	endMarker: BEAccessibilityTextMarker;
+
+	startMarker: BEAccessibilityTextMarker;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.2
+ */
+interface BEAccessibilityTextMarkerSupport extends NSObjectProtocol {
+
+	accessibilityBoundsForTextMarkerRange(range: BEAccessibilityTextMarkerRange): CGRect;
+
+	accessibilityContentForTextMarkerRange(range: BEAccessibilityTextMarkerRange): string;
+
+	accessibilityLineEndMarkerForMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+
+	accessibilityLineStartMarkerForMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+
+	accessibilityMarkerForPoint(point: CGPoint): BEAccessibilityTextMarker;
+
+	accessibilityNextTextMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+
+	accessibilityPreviousTextMarker(marker: BEAccessibilityTextMarker): BEAccessibilityTextMarker;
+
+	accessibilityRangeForTextMarkerRange(range: BEAccessibilityTextMarkerRange): NSRange;
+
+	accessibilityTextMarkerForPosition(position: number): BEAccessibilityTextMarker;
+
+	accessibilityTextMarkerRange(): BEAccessibilityTextMarkerRange;
+
+	accessibilityTextMarkerRangeForCurrentSelection(): BEAccessibilityTextMarkerRange;
+
+	accessibilityTextMarkerRangeForRange(range: NSRange): BEAccessibilityTextMarkerRange;
+}
+declare var BEAccessibilityTextMarkerSupport: {
+
+	prototype: BEAccessibilityTextMarkerSupport;
+};
 
 /**
  * @since 18.0
@@ -113,6 +221,48 @@ interface BEDirectionalTextRange {
 declare var BEDirectionalTextRange: interop.StructType<BEDirectionalTextRange>;
 
 /**
+ * @since 18.2
+ */
+declare class BEDownloadMonitor extends NSObject {
+
+	static alloc(): BEDownloadMonitor; // inherited from NSObject
+
+	static createAccessToken(): NSData;
+
+	static new(): BEDownloadMonitor; // inherited from NSObject
+
+	readonly destinationURL: NSURL;
+
+	readonly identifier: NSUUID;
+
+	readonly sourceURL: NSURL;
+
+	constructor(o: { sourceURL: NSURL; destinationURL: NSURL; observedProgress: NSProgress; liveActivityAccessToken: NSData; });
+
+	beginMonitoring(completion: (p1: BEDownloadMonitorLocation, p2: NSError) => void): void;
+
+	initWithSourceURLDestinationURLObservedProgressLiveActivityAccessToken(sourceURL: NSURL, destinationURL: NSURL, observedProgress: NSProgress, liveActivityAccessToken: NSData): this;
+
+	resumeMonitoringCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
+
+	useDownloadsFolderWithPlaceholderTypeFinalFileCreatedHandler(type: UTType, finalFileCreatedHandler: (p1: BEDownloadMonitorLocation) => void): void;
+}
+
+/**
+ * @since 18.2
+ */
+declare class BEDownloadMonitorLocation extends NSObject {
+
+	static alloc(): BEDownloadMonitorLocation; // inherited from NSObject
+
+	static new(): BEDownloadMonitorLocation; // inherited from NSObject
+
+	readonly bookmarkData: NSData;
+
+	readonly url: NSURL;
+}
+
+/**
  * @since 17.4
  */
 declare class BEDragInteraction extends UIDragInteraction {
@@ -160,6 +310,20 @@ interface BEExtendedTextInputTraits extends UITextInputTraits {
 declare var BEExtendedTextInputTraits: {
 
 	prototype: BEExtendedTextInputTraits;
+};
+
+/**
+ * @since 26.0
+ */
+interface BEExtensionProcess extends NSObjectProtocol {
+
+	invalidate(): void;
+
+	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+}
+declare var BEExtensionProcess: {
+
+	prototype: BEExtensionProcess;
 };
 
 /**
@@ -275,6 +439,11 @@ declare class BELayerHierarchyHandle extends NSObject implements NSSecureCoding 
 
 	static alloc(): BELayerHierarchyHandle; // inherited from NSObject
 
+	/**
+	 * @since 26.0
+	 */
+	static handleWithPortDataError(port: number, data: NSData): BELayerHierarchyHandle;
+
 	static handleWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): BELayerHierarchyHandle;
 
 	static new(): BELayerHierarchyHandle; // inherited from NSObject
@@ -284,6 +453,11 @@ declare class BELayerHierarchyHandle extends NSObject implements NSSecureCoding 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	createXPCRepresentation(): NSObject & OS_xpc_object;
+
+	/**
+	 * @since 26.0
+	 */
+	encodeWithBlock(block: (p1: number, p2: NSData) => void): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -298,6 +472,11 @@ declare class BELayerHierarchyHostingTransactionCoordinator extends NSObject imp
 	static alloc(): BELayerHierarchyHostingTransactionCoordinator; // inherited from NSObject
 
 	static coordinatorWithError(): BELayerHierarchyHostingTransactionCoordinator;
+
+	/**
+	 * @since 26.0
+	 */
+	static coordinatorWithPortDataError(port: number, data: NSData): BELayerHierarchyHostingTransactionCoordinator;
 
 	static coordinatorWithXPCRepresentationError(xpcRepresentation: NSObject & OS_xpc_object): BELayerHierarchyHostingTransactionCoordinator;
 
@@ -314,6 +493,11 @@ declare class BELayerHierarchyHostingTransactionCoordinator extends NSObject imp
 	commit(): void;
 
 	createXPCRepresentation(): NSObject & OS_xpc_object;
+
+	/**
+	 * @since 26.0
+	 */
+	encodeWithBlock(block: (p1: number, p2: NSData) => void): void;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -390,13 +574,34 @@ declare class BEMediaEnvironment extends NSObject {
 /**
  * @since 17.4
  */
-declare class BENetworkingProcess extends NSObject {
+declare class BENetworkingProcess extends NSObject implements BEExtensionProcess {
 
 	static alloc(): BENetworkingProcess; // inherited from NSObject
+
+	/**
+	 * @since 18.2
+	 */
+	static networkProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BENetworkingProcess, p2: NSError) => void): void;
 
 	static networkProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BENetworkingProcess, p2: NSError) => void): void;
 
 	static new(): BENetworkingProcess; // inherited from NSObject
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	grantCapabilityError(capability: BEProcessCapability): BEProcessCapabilityGrant;
 
@@ -404,7 +609,25 @@ declare class BENetworkingProcess extends NSObject {
 
 	invalidate(): void;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 /**
@@ -444,13 +667,34 @@ declare var BEProcessCapabilityGrant: {
 /**
  * @since 17.4
  */
-declare class BERenderingProcess extends NSObject {
+declare class BERenderingProcess extends NSObject implements BEExtensionProcess {
 
 	static alloc(): BERenderingProcess; // inherited from NSObject
 
 	static new(): BERenderingProcess; // inherited from NSObject
 
+	/**
+	 * @since 18.2
+	 */
+	static renderingProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BERenderingProcess, p2: NSError) => void): void;
+
 	static renderingProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BERenderingProcess, p2: NSError) => void): void;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	createVisibilityPropagationInteraction(): UIInteraction;
 
@@ -460,7 +704,25 @@ declare class BERenderingProcess extends NSObject {
 
 	invalidate(): void;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 /**
@@ -708,6 +970,16 @@ interface BETextInput extends BEResponderEditActions, BETextSelectionDirectionNa
 	selectionAtDocumentStart: boolean;
 
 	selectionClipRect: CGRect;
+
+	/**
+	 * @since 26.0
+	 */
+	selectionContainerViewAboveText?: UIView;
+
+	/**
+	 * @since 26.0
+	 */
+	selectionContainerViewBelowText?: UIView;
 
 	textFirstRect: CGRect;
 
@@ -1011,13 +1283,34 @@ declare class BEWebAppManifest extends NSObject {
 /**
  * @since 17.4
  */
-declare class BEWebContentProcess extends NSObject {
+declare class BEWebContentProcess extends NSObject implements BEExtensionProcess {
 
 	static alloc(): BEWebContentProcess; // inherited from NSObject
 
 	static new(): BEWebContentProcess; // inherited from NSObject
 
+	/**
+	 * @since 18.2
+	 */
+	static webContentProcessWithBundleIDInterruptionHandlerCompletion(bundleID: string, interruptionHandler: () => void, completion: (p1: BEWebContentProcess, p2: NSError) => void): void;
+
 	static webContentProcessWithInterruptionHandlerCompletion(interruptionHandler: () => void, completion: (p1: BEWebContentProcess, p2: NSError) => void): void;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	createVisibilityPropagationInteraction(): UIInteraction;
 
@@ -1027,5 +1320,23 @@ declare class BEWebContentProcess extends NSObject {
 
 	invalidate(): void;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	makeLibXPCConnectionError(): NSObject & OS_xpc_object;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }

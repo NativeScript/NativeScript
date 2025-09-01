@@ -4,6 +4,7 @@ import { isUserInteractionEnabledProperty, isEnabledProperty } from '../core/vie
 import { ad } from '../../utils';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
+import { Background } from '../styling/background';
 
 export * from './search-bar-common';
 
@@ -227,7 +228,7 @@ export class SearchBar extends SearchBarBase {
 	[backgroundInternalProperty.getDefault](): any {
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: any) {
+	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
 		//
 	}
 

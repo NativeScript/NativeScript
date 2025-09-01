@@ -193,6 +193,16 @@ declare class WKDownload extends NSObject implements NSProgressReporting {
 
 	readonly originalRequest: NSURLRequest;
 
+	/**
+	 * @since 18.2
+	 */
+	readonly originatingFrame: WKFrameInfo;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly userInitiated: boolean;
+
 	readonly webView: WKWebView;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -238,11 +248,26 @@ interface WKDownloadDelegate extends NSObjectProtocol {
 
 	downloadDecideDestinationUsingResponseSuggestedFilenameCompletionHandler(download: WKDownload, response: NSURLResponse, suggestedFilename: string, completionHandler: (p1: NSURL) => void): void;
 
+	/**
+	 * @since 18.2
+	 */
+	downloadDecidePlaceholderPolicy?(download: WKDownload, completionHandler: (p1: WKDownloadPlaceholderPolicy, p2: NSURL) => void): void;
+
 	downloadDidFailWithErrorResumeData?(download: WKDownload, error: NSError, resumeData: NSData): void;
 
 	downloadDidFinish?(download: WKDownload): void;
 
 	downloadDidReceiveAuthenticationChallengeCompletionHandler?(download: WKDownload, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
+
+	/**
+	 * @since 18.2
+	 */
+	downloadDidReceiveFinalURL?(download: WKDownload, url: NSURL): void;
+
+	/**
+	 * @since 18.2
+	 */
+	downloadDidReceivePlaceholderURLCompletionHandler?(download: WKDownload, url: NSURL, completionHandler: () => void): void;
 
 	downloadWillPerformHTTPRedirectionNewRequestDecisionHandler?(download: WKDownload, response: NSHTTPURLResponse, request: NSURLRequest, decisionHandler: (p1: WKDownloadRedirectPolicy) => void): void;
 }
@@ -250,6 +275,16 @@ declare var WKDownloadDelegate: {
 
 	prototype: WKDownloadDelegate;
 };
+
+/**
+ * @since 18.2
+ */
+declare const enum WKDownloadPlaceholderPolicy {
+
+	Disable = 0,
+
+	Enable = 1
+}
 
 /**
  * @since 14.5
@@ -406,6 +441,11 @@ declare class WKHTTPCookieStore extends NSObject {
 	 * @since 17.0
 	 */
 	setCookiePolicyCompletionHandler(policy: WKCookiePolicy, completionHandler: () => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	setCookiesCompletionHandler(cookies: NSArray<NSHTTPCookie> | NSHTTPCookie[], completionHandler: () => void): void;
 }
 
 /**
@@ -494,6 +534,21 @@ declare class WKNavigationAction extends NSObject {
 
 	static new(): WKNavigationAction; // inherited from NSObject
 
+	/**
+	 * @since 18.4
+	 */
+	readonly buttonNumber: UIEventButtonMask;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly isContentRuleListRedirect: boolean;
+
+	/**
+	 * @since 18.4
+	 */
+	readonly modifierFlags: UIKeyModifierFlags;
+
 	readonly navigationType: WKNavigationType;
 
 	readonly request: NSURLRequest;
@@ -561,6 +616,11 @@ interface WKNavigationDelegate extends NSObjectProtocol {
 	webViewNavigationResponseDidBecomeDownload?(webView: WKWebView, navigationResponse: WKNavigationResponse, download: WKDownload): void;
 
 	/**
+	 * @since 26.0
+	 */
+	webViewShouldGoToBackForwardListItemWillUseInstantBackCompletionHandler?(webView: WKWebView, backForwardListItem: WKBackForwardListItem, willUseInstantBack: boolean, completionHandler: (p1: boolean) => void): void;
+
+	/**
 	 * @since 9.0
 	 */
 	webViewWebContentProcessDidTerminate?(webView: WKWebView): void;
@@ -614,6 +674,23 @@ declare const enum WKNavigationType {
 	FormResubmitted = 4,
 
 	Other = -1
+}
+
+/**
+ * @since 18.4
+ */
+declare class WKOpenPanelParameters extends NSObject {
+
+	static alloc(): WKOpenPanelParameters; // inherited from NSObject
+
+	static new(): WKOpenPanelParameters; // inherited from NSObject
+
+	/**
+	 * @since 18.4
+	 */
+	readonly allowsDirectories: boolean;
+
+	readonly allowsMultipleSelection: boolean;
 }
 
 /**
@@ -759,6 +836,7 @@ declare class WKPreviewElementInfo extends NSObject implements NSCopying {
 
 /**
  * @since 8.0
+ * @deprecated 15.0
  */
 declare class WKProcessPool extends NSObject implements NSSecureCoding {
 
@@ -837,6 +915,7 @@ declare class WKSecurityOrigin extends NSObject {
 
 /**
  * @since 8.0
+ * @deprecated 11.0
  */
 declare const enum WKSelectionGranularity {
 
@@ -902,6 +981,11 @@ interface WKUIDelegate extends NSObjectProtocol {
 	webViewDidClose?(webView: WKWebView): void;
 
 	/**
+	 * @since 26.0
+	 */
+	webViewInsertInputSuggestion?(webView: WKWebView, inputSuggestion: UIInputSuggestion): void;
+
+	/**
 	 * @since 10.0
 	 * @deprecated 13.0
 	 */
@@ -924,13 +1008,18 @@ interface WKUIDelegate extends NSObjectProtocol {
 	webViewRunJavaScriptTextInputPanelWithPromptDefaultTextInitiatedByFrameCompletionHandler?(webView: WKWebView, prompt: string, defaultText: string, frame: WKFrameInfo, completionHandler: (p1: string) => void): void;
 
 	/**
+	 * @since 18.4
+	 */
+	webViewRunOpenPanelWithParametersInitiatedByFrameCompletionHandler?(webView: WKWebView, parameters: WKOpenPanelParameters, frame: WKFrameInfo, completionHandler: (p1: NSArray<NSURL>) => void): void;
+
+	/**
 	 * @since 10.0
 	 * @deprecated 13.0
 	 */
 	webViewShouldPreviewElement?(webView: WKWebView, elementInfo: WKPreviewElementInfo): boolean;
 
 	/**
-	 * @since 13.0
+	 * @since 16.0
 	 */
 	webViewShowLockdownModeFirstUseMessageCompletionHandler?(webView: WKWebView, message: string, completionHandler: (p1: WKDialogResult) => void): void;
 
@@ -1094,6 +1183,1007 @@ declare const enum WKUserScriptInjectionTime {
 }
 
 /**
+ * @since 18.4
+ */
+declare class WKWebExtension extends NSObject {
+
+	static alloc(): WKWebExtension; // inherited from NSObject
+
+	static extensionWithAppExtensionBundleCompletionHandler(appExtensionBundle: NSBundle, completionHandler: (p1: WKWebExtension, p2: NSError) => void): void;
+
+	static extensionWithResourceBaseURLCompletionHandler(resourceBaseURL: NSURL, completionHandler: (p1: WKWebExtension, p2: NSError) => void): void;
+
+	static new(): WKWebExtension; // inherited from NSObject
+
+	readonly allRequestedMatchPatterns: NSSet<WKWebExtensionMatchPattern>;
+
+	readonly defaultLocale: NSLocale;
+
+	readonly displayActionLabel: string;
+
+	readonly displayDescription: string;
+
+	readonly displayName: string;
+
+	readonly displayShortName: string;
+
+	readonly displayVersion: string;
+
+	readonly errors: NSArray<NSError>;
+
+	readonly hasBackgroundContent: boolean;
+
+	readonly hasCommands: boolean;
+
+	readonly hasContentModificationRules: boolean;
+
+	readonly hasInjectedContent: boolean;
+
+	readonly hasOptionsPage: boolean;
+
+	readonly hasOverrideNewTabPage: boolean;
+
+	readonly hasPersistentBackgroundContent: boolean;
+
+	readonly manifest: NSDictionary<string, any>;
+
+	readonly manifestVersion: number;
+
+	readonly optionalPermissionMatchPatterns: NSSet<WKWebExtensionMatchPattern>;
+
+	readonly optionalPermissions: NSSet<string>;
+
+	readonly requestedPermissionMatchPatterns: NSSet<WKWebExtensionMatchPattern>;
+
+	readonly requestedPermissions: NSSet<string>;
+
+	readonly version: string;
+
+	actionIconForSize(size: CGSize): UIImage;
+
+	iconForSize(size: CGSize): UIImage;
+
+	supportsManifestVersion(manifestVersion: number): boolean;
+}
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionAction extends NSObject {
+
+	static alloc(): WKWebExtensionAction; // inherited from NSObject
+
+	static new(): WKWebExtensionAction; // inherited from NSObject
+
+	readonly associatedTab: WKWebExtensionTab;
+
+	readonly badgeText: string;
+
+	readonly enabled: boolean;
+
+	hasUnreadBadgeText: boolean;
+
+	inspectionName: string;
+
+	readonly label: string;
+
+	readonly menuItems: NSArray<UIMenuElement>;
+
+	readonly popupViewController: UIViewController;
+
+	readonly popupWebView: WKWebView;
+
+	readonly presentsPopup: boolean;
+
+	readonly webExtensionContext: WKWebExtensionContext;
+
+	closePopup(): void;
+
+	iconForSize(size: CGSize): UIImage;
+}
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionCommand extends NSObject {
+
+	static alloc(): WKWebExtensionCommand; // inherited from NSObject
+
+	static new(): WKWebExtensionCommand; // inherited from NSObject
+
+	activationKey: string;
+
+	readonly identifier: string;
+
+	readonly keyCommand: UIKeyCommand;
+
+	readonly menuItem: UIMenuElement;
+
+	modifierFlags: UIKeyModifierFlags;
+
+	readonly title: string;
+
+	readonly webExtensionContext: WKWebExtensionContext;
+}
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionContext extends NSObject {
+
+	static alloc(): WKWebExtensionContext; // inherited from NSObject
+
+	static contextForExtension(extension: WKWebExtension): WKWebExtensionContext;
+
+	static new(): WKWebExtensionContext; // inherited from NSObject
+
+	baseURL: NSURL;
+
+	readonly commands: NSArray<WKWebExtensionCommand>;
+
+	readonly currentPermissionMatchPatterns: NSSet<WKWebExtensionMatchPattern>;
+
+	readonly currentPermissions: NSSet<string>;
+
+	deniedPermissionMatchPatterns: NSDictionary<WKWebExtensionMatchPattern, Date>;
+
+	deniedPermissions: NSDictionary<string, Date>;
+
+	readonly errors: NSArray<NSError>;
+
+	readonly focusedWindow: WKWebExtensionWindow;
+
+	grantedPermissionMatchPatterns: NSDictionary<WKWebExtensionMatchPattern, Date>;
+
+	grantedPermissions: NSDictionary<string, Date>;
+
+	readonly hasAccessToAllHosts: boolean;
+
+	readonly hasAccessToAllURLs: boolean;
+
+	hasAccessToPrivateData: boolean;
+
+	readonly hasContentModificationRules: boolean;
+
+	readonly hasInjectedContent: boolean;
+
+	hasRequestedOptionalAccessToAllHosts: boolean;
+
+	inspectable: boolean;
+
+	inspectionName: string;
+
+	readonly loaded: boolean;
+
+	readonly openTabs: NSSet<WKWebExtensionTab>;
+
+	readonly openWindows: NSArray<WKWebExtensionWindow>;
+
+	readonly optionsPageURL: NSURL;
+
+	readonly overrideNewTabPageURL: NSURL;
+
+	uniqueIdentifier: string;
+
+	unsupportedAPIs: NSSet<string>;
+
+	readonly webExtension: WKWebExtension;
+
+	readonly webExtensionController: WKWebExtensionController;
+
+	readonly webViewConfiguration: WKWebViewConfiguration;
+
+	constructor(o: { forExtension: WKWebExtension; });
+
+	actionForTab(tab: WKWebExtensionTab): WKWebExtensionAction;
+
+	clearUserGestureInTab(tab: WKWebExtensionTab): void;
+
+	didActivateTabPreviousActiveTab(activatedTab: WKWebExtensionTab, previousTab: WKWebExtensionTab): void;
+
+	didChangeTabPropertiesForTab(properties: WKWebExtensionTabChangedProperties, changedTab: WKWebExtensionTab): void;
+
+	didCloseTabWindowIsClosing(closedTab: WKWebExtensionTab, windowIsClosing: boolean): void;
+
+	didCloseWindow(closedWindow: WKWebExtensionWindow): void;
+
+	didDeselectTabs(deselectedTabs: NSArray<WKWebExtensionTab> | WKWebExtensionTab[]): void;
+
+	didFocusWindow(focusedWindow: WKWebExtensionWindow): void;
+
+	didMoveTabFromIndexInWindow(movedTab: WKWebExtensionTab, index: number, oldWindow: WKWebExtensionWindow): void;
+
+	didOpenTab(newTab: WKWebExtensionTab): void;
+
+	didOpenWindow(newWindow: WKWebExtensionWindow): void;
+
+	didReplaceTabWithTab(oldTab: WKWebExtensionTab, newTab: WKWebExtensionTab): void;
+
+	didSelectTabs(selectedTabs: NSArray<WKWebExtensionTab> | WKWebExtensionTab[]): void;
+
+	hasAccessToURL(url: NSURL): boolean;
+
+	hasAccessToURLInTab(url: NSURL, tab: WKWebExtensionTab): boolean;
+
+	hasActiveUserGestureInTab(tab: WKWebExtensionTab): boolean;
+
+	hasInjectedContentForURL(url: NSURL): boolean;
+
+	hasPermission(permission: string): boolean;
+
+	hasPermissionInTab(permission: string, tab: WKWebExtensionTab): boolean;
+
+	initForExtension(extension: WKWebExtension): this;
+
+	loadBackgroundContentWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	menuItemsForTab(tab: WKWebExtensionTab): NSArray<UIMenuElement>;
+
+	performActionForTab(tab: WKWebExtensionTab): void;
+
+	performCommand(command: WKWebExtensionCommand): void;
+
+	performCommandForKeyCommand(keyCommand: UIKeyCommand): boolean;
+
+	permissionStatusForMatchPattern(pattern: WKWebExtensionMatchPattern): WKWebExtensionContextPermissionStatus;
+
+	permissionStatusForMatchPatternInTab(pattern: WKWebExtensionMatchPattern, tab: WKWebExtensionTab): WKWebExtensionContextPermissionStatus;
+
+	permissionStatusForPermission(permission: string): WKWebExtensionContextPermissionStatus;
+
+	permissionStatusForPermissionInTab(permission: string, tab: WKWebExtensionTab): WKWebExtensionContextPermissionStatus;
+
+	permissionStatusForURL(url: NSURL): WKWebExtensionContextPermissionStatus;
+
+	permissionStatusForURLInTab(url: NSURL, tab: WKWebExtensionTab): WKWebExtensionContextPermissionStatus;
+
+	setPermissionStatusForMatchPattern(status: WKWebExtensionContextPermissionStatus, pattern: WKWebExtensionMatchPattern): void;
+
+	setPermissionStatusForMatchPatternExpirationDate(status: WKWebExtensionContextPermissionStatus, pattern: WKWebExtensionMatchPattern, expirationDate: Date): void;
+
+	setPermissionStatusForPermission(status: WKWebExtensionContextPermissionStatus, permission: string): void;
+
+	setPermissionStatusForPermissionExpirationDate(status: WKWebExtensionContextPermissionStatus, permission: string, expirationDate: Date): void;
+
+	setPermissionStatusForURL(status: WKWebExtensionContextPermissionStatus, url: NSURL): void;
+
+	setPermissionStatusForURLExpirationDate(status: WKWebExtensionContextPermissionStatus, url: NSURL, expirationDate: Date): void;
+
+	userGesturePerformedInTab(tab: WKWebExtensionTab): void;
+}
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextDeniedPermissionMatchPatternsWereRemovedNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextDeniedPermissionsWereRemovedNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionContextError {
+
+	Unknown = 1,
+
+	AlreadyLoaded = 2,
+
+	NotLoaded = 3,
+
+	BaseURLAlreadyInUse = 4,
+
+	NoBackgroundContent = 5,
+
+	BackgroundContentFailedToLoad = 6
+}
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextErrorDomain: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextErrorsDidUpdateNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextGrantedPermissionMatchPatternsWereRemovedNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextGrantedPermissionsWereRemovedNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextNotificationUserInfoKeyMatchPatterns: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextNotificationUserInfoKeyPermissions: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextPermissionMatchPatternsWereDeniedNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextPermissionMatchPatternsWereGrantedNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionContextPermissionStatus {
+
+	DeniedExplicitly = -3,
+
+	DeniedImplicitly = -2,
+
+	RequestedImplicitly = -1,
+
+	Unknown = 0,
+
+	RequestedExplicitly = 1,
+
+	GrantedImplicitly = 2,
+
+	GrantedExplicitly = 3
+}
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextPermissionsWereDeniedNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionContextPermissionsWereGrantedNotification: string;
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionController extends NSObject {
+
+	static alloc(): WKWebExtensionController; // inherited from NSObject
+
+	static new(): WKWebExtensionController; // inherited from NSObject
+
+	readonly configuration: WKWebExtensionControllerConfiguration;
+
+	delegate: WKWebExtensionControllerDelegate;
+
+	readonly extensionContexts: NSSet<WKWebExtensionContext>;
+
+	readonly extensions: NSSet<WKWebExtension>;
+
+	static readonly allExtensionDataTypes: NSSet<string>;
+
+	constructor(o: { configuration: WKWebExtensionControllerConfiguration; });
+
+	didActivateTabPreviousActiveTab(activatedTab: WKWebExtensionTab, previousTab: WKWebExtensionTab): void;
+
+	didChangeTabPropertiesForTab(properties: WKWebExtensionTabChangedProperties, changedTab: WKWebExtensionTab): void;
+
+	didCloseTabWindowIsClosing(closedTab: WKWebExtensionTab, windowIsClosing: boolean): void;
+
+	didCloseWindow(closedWindow: WKWebExtensionWindow): void;
+
+	didDeselectTabs(deselectedTabs: NSArray<WKWebExtensionTab> | WKWebExtensionTab[]): void;
+
+	didFocusWindow(focusedWindow: WKWebExtensionWindow): void;
+
+	didMoveTabFromIndexInWindow(movedTab: WKWebExtensionTab, index: number, oldWindow: WKWebExtensionWindow): void;
+
+	didOpenTab(newTab: WKWebExtensionTab): void;
+
+	didOpenWindow(newWindow: WKWebExtensionWindow): void;
+
+	didReplaceTabWithTab(oldTab: WKWebExtensionTab, newTab: WKWebExtensionTab): void;
+
+	didSelectTabs(selectedTabs: NSArray<WKWebExtensionTab> | WKWebExtensionTab[]): void;
+
+	extensionContextForExtension(extension: WKWebExtension): WKWebExtensionContext;
+
+	extensionContextForURL(URL: NSURL): WKWebExtensionContext;
+
+	fetchDataRecordOfTypesForExtensionContextCompletionHandler(dataTypes: NSSet<string>, extensionContext: WKWebExtensionContext, completionHandler: (p1: WKWebExtensionDataRecord) => void): void;
+
+	fetchDataRecordsOfTypesCompletionHandler(dataTypes: NSSet<string>, completionHandler: (p1: NSArray<WKWebExtensionDataRecord>) => void): void;
+
+	initWithConfiguration(configuration: WKWebExtensionControllerConfiguration): this;
+
+	loadExtensionContextError(extensionContext: WKWebExtensionContext): boolean;
+
+	removeDataOfTypesFromDataRecordsCompletionHandler(dataTypes: NSSet<string>, dataRecords: NSArray<WKWebExtensionDataRecord> | WKWebExtensionDataRecord[], completionHandler: () => void): void;
+
+	unloadExtensionContextError(extensionContext: WKWebExtensionContext): boolean;
+}
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionControllerConfiguration extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): WKWebExtensionControllerConfiguration; // inherited from NSObject
+
+	static configurationWithIdentifier(identifier: NSUUID): WKWebExtensionControllerConfiguration;
+
+	static defaultConfiguration(): WKWebExtensionControllerConfiguration;
+
+	static new(): WKWebExtensionControllerConfiguration; // inherited from NSObject
+
+	static nonPersistentConfiguration(): WKWebExtensionControllerConfiguration;
+
+	defaultWebsiteDataStore: WKWebsiteDataStore;
+
+	readonly identifier: NSUUID;
+
+	readonly persistent: boolean;
+
+	webViewConfiguration: WKWebViewConfiguration;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.4
+ */
+interface WKWebExtensionControllerDelegate extends NSObjectProtocol {
+
+	webExtensionControllerConnectUsingMessagePortForExtensionContextCompletionHandler?(controller: WKWebExtensionController, port: WKWebExtensionMessagePort, extensionContext: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	webExtensionControllerDidUpdateActionForExtensionContext?(controller: WKWebExtensionController, action: WKWebExtensionAction, context: WKWebExtensionContext): void;
+
+	webExtensionControllerFocusedWindowForExtensionContext?(controller: WKWebExtensionController, extensionContext: WKWebExtensionContext): WKWebExtensionWindow;
+
+	webExtensionControllerOpenNewTabUsingConfigurationForExtensionContextCompletionHandler?(controller: WKWebExtensionController, configuration: WKWebExtensionTabConfiguration, extensionContext: WKWebExtensionContext, completionHandler: (p1: WKWebExtensionTab, p2: NSError) => void): void;
+
+	webExtensionControllerOpenNewWindowUsingConfigurationForExtensionContextCompletionHandler?(controller: WKWebExtensionController, configuration: WKWebExtensionWindowConfiguration, extensionContext: WKWebExtensionContext, completionHandler: (p1: WKWebExtensionWindow, p2: NSError) => void): void;
+
+	webExtensionControllerOpenOptionsPageForExtensionContextCompletionHandler?(controller: WKWebExtensionController, extensionContext: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	webExtensionControllerOpenWindowsForExtensionContext?(controller: WKWebExtensionController, extensionContext: WKWebExtensionContext): NSArray<WKWebExtensionWindow>;
+
+	webExtensionControllerPresentPopupForActionForExtensionContextCompletionHandler?(controller: WKWebExtensionController, action: WKWebExtensionAction, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	webExtensionControllerPromptForPermissionMatchPatternsInTabForExtensionContextCompletionHandler?(controller: WKWebExtensionController, matchPatterns: NSSet<WKWebExtensionMatchPattern>, tab: WKWebExtensionTab, extensionContext: WKWebExtensionContext, completionHandler: (p1: NSSet<WKWebExtensionMatchPattern>, p2: Date) => void): void;
+
+	webExtensionControllerPromptForPermissionToAccessURLsInTabForExtensionContextCompletionHandler?(controller: WKWebExtensionController, urls: NSSet<NSURL>, tab: WKWebExtensionTab, extensionContext: WKWebExtensionContext, completionHandler: (p1: NSSet<NSURL>, p2: Date) => void): void;
+
+	webExtensionControllerPromptForPermissionsInTabForExtensionContextCompletionHandler?(controller: WKWebExtensionController, permissions: NSSet<string>, tab: WKWebExtensionTab, extensionContext: WKWebExtensionContext, completionHandler: (p1: NSSet<string>, p2: Date) => void): void;
+
+	webExtensionControllerSendMessageToApplicationWithIdentifierForExtensionContextReplyHandler?(controller: WKWebExtensionController, message: any, applicationIdentifier: string, extensionContext: WKWebExtensionContext, replyHandler: (p1: any, p2: NSError) => void): void;
+}
+declare var WKWebExtensionControllerDelegate: {
+
+	prototype: WKWebExtensionControllerDelegate;
+};
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionDataRecord extends NSObject {
+
+	static alloc(): WKWebExtensionDataRecord; // inherited from NSObject
+
+	static new(): WKWebExtensionDataRecord; // inherited from NSObject
+
+	readonly containedDataTypes: NSSet<string>;
+
+	readonly displayName: string;
+
+	readonly errors: NSArray<NSError>;
+
+	readonly totalSizeInBytes: number;
+
+	readonly uniqueIdentifier: string;
+
+	sizeInBytesOfTypes(dataTypes: NSSet<string>): number;
+}
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionDataRecordError {
+
+	Unknown = 1,
+
+	LocalStorageFailed = 2,
+
+	SessionStorageFailed = 3,
+
+	SynchronizedStorageFailed = 4
+}
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionDataRecordErrorDomain: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionDataTypeLocal: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionDataTypeSession: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionDataTypeSynchronized: string;
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionError {
+
+	Unknown = 1,
+
+	ResourceNotFound = 2,
+
+	InvalidResourceCodeSignature = 3,
+
+	InvalidManifest = 4,
+
+	UnsupportedManifestVersion = 5,
+
+	InvalidManifestEntry = 6,
+
+	InvalidDeclarativeNetRequestEntry = 7,
+
+	InvalidBackgroundPersistence = 8,
+
+	InvalidArchive = 9
+}
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionErrorDomain: string;
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionMatchPattern extends NSObject implements NSCopying, NSSecureCoding {
+
+	static allHostsAndSchemesMatchPattern(): WKWebExtensionMatchPattern;
+
+	static allURLsMatchPattern(): WKWebExtensionMatchPattern;
+
+	static alloc(): WKWebExtensionMatchPattern; // inherited from NSObject
+
+	static matchPatternWithSchemeHostPath(scheme: string, host: string, path: string): WKWebExtensionMatchPattern;
+
+	static matchPatternWithString(string: string): WKWebExtensionMatchPattern;
+
+	static new(): WKWebExtensionMatchPattern; // inherited from NSObject
+
+	static registerCustomURLScheme(urlScheme: string): void;
+
+	readonly host: string;
+
+	readonly matchesAllHosts: boolean;
+
+	readonly matchesAllURLs: boolean;
+
+	readonly path: string;
+
+	readonly scheme: string;
+
+	readonly string: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { scheme: string; host: string; path: string; });
+
+	constructor(o: { string: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithSchemeHostPathError(scheme: string, host: string, path: string): this;
+
+	initWithStringError(string: string): this;
+
+	matchesPattern(pattern: WKWebExtensionMatchPattern): boolean;
+
+	matchesPatternOptions(pattern: WKWebExtensionMatchPattern, options: WKWebExtensionMatchPatternOptions): boolean;
+
+	matchesURL(url: NSURL): boolean;
+
+	matchesURLOptions(url: NSURL, options: WKWebExtensionMatchPatternOptions): boolean;
+}
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionMatchPatternError {
+
+	Unknown = 1,
+
+	InvalidScheme = 2,
+
+	InvalidHost = 3,
+
+	InvalidPath = 4
+}
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionMatchPatternErrorDomain: string;
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionMatchPatternOptions {
+
+	None = 0,
+
+	IgnoreSchemes = 1,
+
+	IgnorePaths = 2,
+
+	MatchBidirectionally = 4
+}
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionMessagePort extends NSObject {
+
+	static alloc(): WKWebExtensionMessagePort; // inherited from NSObject
+
+	static new(): WKWebExtensionMessagePort; // inherited from NSObject
+
+	readonly applicationIdentifier: string;
+
+	disconnectHandler: (p1: NSError) => void;
+
+	readonly disconnected: boolean;
+
+	messageHandler: (p1: any, p2: NSError) => void;
+
+	disconnect(): void;
+
+	disconnectWithError(error: NSError): void;
+
+	sendMessageCompletionHandler(message: any, completionHandler: (p1: NSError) => void): void;
+}
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionMessagePortError {
+
+	Unknown = 1,
+
+	NotConnected = 2,
+
+	MessageInvalid = 3
+}
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionMessagePortErrorDomain: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionActiveTab: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionAlarms: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionClipboardWrite: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionContextMenus: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionCookies: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionDeclarativeNetRequest: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionDeclarativeNetRequestFeedback: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionDeclarativeNetRequestWithHostAccess: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionMenus: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionNativeMessaging: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionScripting: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionStorage: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionTabs: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionUnlimitedStorage: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionWebNavigation: string;
+
+/**
+ * @since 18.4
+ */
+declare var WKWebExtensionPermissionWebRequest: string;
+
+/**
+ * @since 18.4
+ */
+interface WKWebExtensionTab extends NSObjectProtocol {
+
+	activateForWebExtensionContextCompletionHandler?(context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	closeForWebExtensionContextCompletionHandler?(context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	detectWebpageLocaleForWebExtensionContextCompletionHandler?(context: WKWebExtensionContext, completionHandler: (p1: NSLocale, p2: NSError) => void): void;
+
+	duplicateUsingConfigurationForWebExtensionContextCompletionHandler?(configuration: WKWebExtensionTabConfiguration, context: WKWebExtensionContext, completionHandler: (p1: WKWebExtensionTab, p2: NSError) => void): void;
+
+	goBackForWebExtensionContextCompletionHandler?(context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	goForwardForWebExtensionContextCompletionHandler?(context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	indexInWindowForWebExtensionContext?(context: WKWebExtensionContext): number;
+
+	isLoadingCompleteForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	isMutedForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	isPinnedForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	isPlayingAudioForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	isReaderModeActiveForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	isReaderModeAvailableForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	isSelectedForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	loadURLForWebExtensionContextCompletionHandler?(url: NSURL, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	parentTabForWebExtensionContext?(context: WKWebExtensionContext): WKWebExtensionTab;
+
+	pendingURLForWebExtensionContext?(context: WKWebExtensionContext): NSURL;
+
+	reloadFromOriginForWebExtensionContextCompletionHandler?(fromOrigin: boolean, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	setMutedForWebExtensionContextCompletionHandler?(muted: boolean, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	setParentTabForWebExtensionContextCompletionHandler?(parentTab: WKWebExtensionTab, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	setPinnedForWebExtensionContextCompletionHandler?(pinned: boolean, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	setReaderModeActiveForWebExtensionContextCompletionHandler?(active: boolean, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	setSelectedForWebExtensionContextCompletionHandler?(selected: boolean, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	setZoomFactorForWebExtensionContextCompletionHandler?(zoomFactor: number, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	shouldBypassPermissionsForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	shouldGrantPermissionsOnUserGestureForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	sizeForWebExtensionContext?(context: WKWebExtensionContext): CGSize;
+
+	takeSnapshotUsingConfigurationForWebExtensionContextCompletionHandler?(configuration: WKSnapshotConfiguration, context: WKWebExtensionContext, completionHandler: (p1: UIImage, p2: NSError) => void): void;
+
+	titleForWebExtensionContext?(context: WKWebExtensionContext): string;
+
+	urlForWebExtensionContext?(context: WKWebExtensionContext): NSURL;
+
+	webViewForWebExtensionContext?(context: WKWebExtensionContext): WKWebView;
+
+	windowForWebExtensionContext?(context: WKWebExtensionContext): WKWebExtensionWindow;
+
+	zoomFactorForWebExtensionContext?(context: WKWebExtensionContext): number;
+}
+declare var WKWebExtensionTab: {
+
+	prototype: WKWebExtensionTab;
+};
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionTabChangedProperties {
+
+	None = 0,
+
+	Loading = 2,
+
+	Muted = 4,
+
+	Pinned = 8,
+
+	PlayingAudio = 16,
+
+	ReaderMode = 32,
+
+	Size = 64,
+
+	Title = 128,
+
+	URL = 256,
+
+	ZoomFactor = 512
+}
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionTabConfiguration extends NSObject {
+
+	static alloc(): WKWebExtensionTabConfiguration; // inherited from NSObject
+
+	static new(): WKWebExtensionTabConfiguration; // inherited from NSObject
+
+	readonly index: number;
+
+	readonly parentTab: WKWebExtensionTab;
+
+	readonly shouldAddToSelection: boolean;
+
+	readonly shouldBeActive: boolean;
+
+	readonly shouldBeMuted: boolean;
+
+	readonly shouldBePinned: boolean;
+
+	readonly shouldReaderModeBeActive: boolean;
+
+	readonly url: NSURL;
+
+	readonly window: WKWebExtensionWindow;
+}
+
+/**
+ * @since 18.4
+ */
+interface WKWebExtensionWindow extends NSObjectProtocol {
+
+	activeTabForWebExtensionContext?(context: WKWebExtensionContext): WKWebExtensionTab;
+
+	closeForWebExtensionContextCompletionHandler?(context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	focusForWebExtensionContextCompletionHandler?(context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	frameForWebExtensionContext?(context: WKWebExtensionContext): CGRect;
+
+	isPrivateForWebExtensionContext?(context: WKWebExtensionContext): boolean;
+
+	setFrameForWebExtensionContextCompletionHandler?(frame: CGRect, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	setWindowStateForWebExtensionContextCompletionHandler?(state: WKWebExtensionWindowState, context: WKWebExtensionContext, completionHandler: (p1: NSError) => void): void;
+
+	tabsForWebExtensionContext?(context: WKWebExtensionContext): NSArray<WKWebExtensionTab>;
+
+	windowStateForWebExtensionContext?(context: WKWebExtensionContext): WKWebExtensionWindowState;
+
+	windowTypeForWebExtensionContext?(context: WKWebExtensionContext): WKWebExtensionWindowType;
+}
+declare var WKWebExtensionWindow: {
+
+	prototype: WKWebExtensionWindow;
+};
+
+/**
+ * @since 18.4
+ */
+declare class WKWebExtensionWindowConfiguration extends NSObject {
+
+	static alloc(): WKWebExtensionWindowConfiguration; // inherited from NSObject
+
+	static new(): WKWebExtensionWindowConfiguration; // inherited from NSObject
+
+	readonly frame: CGRect;
+
+	readonly shouldBeFocused: boolean;
+
+	readonly shouldBePrivate: boolean;
+
+	readonly tabURLs: NSArray<NSURL>;
+
+	readonly tabs: NSArray<WKWebExtensionTab>;
+
+	readonly windowState: WKWebExtensionWindowState;
+
+	readonly windowType: WKWebExtensionWindowType;
+}
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionWindowState {
+
+	Normal = 0,
+
+	Minimized = 1,
+
+	Maximized = 2,
+
+	Fullscreen = 3
+}
+
+/**
+ * @since 18.4
+ */
+declare const enum WKWebExtensionWindowType {
+
+	Normal = 0,
+
+	Popup = 1
+}
+
+/**
  * @since 8.0
  */
 declare class WKWebView extends UIView {
@@ -1167,6 +2257,11 @@ declare class WKWebView extends UIView {
 	readonly configuration: WKWebViewConfiguration;
 
 	/**
+	 * @since 26.0
+	 */
+	conversationContext: UIConversationContext;
+
+	/**
 	 * @since 9.0
 	 */
 	customUserAgent: string;
@@ -1199,6 +2294,11 @@ declare class WKWebView extends UIView {
 	 * @since 15.0
 	 */
 	interactionState: any;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly isBlockedByScreenTime: boolean;
 
 	readonly loading: boolean;
 
@@ -1289,6 +2389,11 @@ declare class WKWebView extends UIView {
 	evaluateJavaScriptInFrameInContentWorldCompletionHandler(javaScriptString: string, frame: WKFrameInfo, contentWorld: WKContentWorld, completionHandler: (p1: any, p2: NSError) => void): void;
 
 	/**
+	 * @since 26.0
+	 */
+	fetchDataOfTypesCompletionHandler(dataTypes: WKWebViewDataType, completionHandler: (p1: NSData, p2: NSError) => void): void;
+
+	/**
 	 * @since 14.0
 	 */
 	findStringWithConfigurationCompletionHandler(string: string, configuration: WKFindConfiguration, completionHandler: (p1: WKFindResult) => void): void;
@@ -1367,6 +2472,11 @@ declare class WKWebView extends UIView {
 	 * @since 15.0
 	 */
 	requestMediaPlaybackStateWithCompletionHandler(completionHandler: (p1: WKMediaPlaybackState) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	restoreDataCompletionHandler(data: NSData, completionHandler: (p1: NSError) => void): void;
 
 	/**
 	 * @since 14.5
@@ -1488,6 +2598,10 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 
 	preferences: WKPreferences;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 15.0
+	 */
 	processPool: WKProcessPool;
 
 	/**
@@ -1496,7 +2610,16 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 	 */
 	requiresUserActionForMediaPlayback: boolean;
 
+	/**
+	 * @since 8.0
+	 * @deprecated 11.0
+	 */
 	selectionGranularity: WKSelectionGranularity;
+
+	/**
+	 * @since 26.0
+	 */
+	showsSystemScreenTimeBlockingView: boolean;
 
 	/**
 	 * @since 18.0
@@ -1511,6 +2634,11 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 	upgradeKnownHostsToHTTPS: boolean;
 
 	userContentController: WKUserContentController;
+
+	/**
+	 * @since 18.4
+	 */
+	webExtensionController: WKWebExtensionController;
 
 	/**
 	 * @since 9.0
@@ -1544,6 +2672,14 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 }
 
 /**
+ * @since 26.0
+ */
+declare const enum WKWebViewDataType {
+
+	SessionStorage = 1
+}
+
+/**
  * @since 13.0
  */
 declare class WKWebpagePreferences extends NSObject {
@@ -1566,6 +2702,25 @@ declare class WKWebpagePreferences extends NSObject {
 	 * @since 13.0
 	 */
 	preferredContentMode: WKContentMode;
+
+	/**
+	 * @since 18.2
+	 */
+	preferredHTTPSNavigationPolicy: WKWebpagePreferencesUpgradeToHTTPSPolicy;
+}
+
+/**
+ * @since 18.2
+ */
+declare const enum WKWebpagePreferencesUpgradeToHTTPSPolicy {
+
+	KeepAsRequested = 0,
+
+	AutomaticFallbackToHTTP = 1,
+
+	UserMediatedFallbackToHTTP = 2,
+
+	ErrorOnFailure = 3
 }
 
 /**
@@ -1635,6 +2790,11 @@ declare class WKWebsiteDataStore extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	/**
+	 * @since 26.0
+	 */
+	fetchDataOfTypesCompletionHandler(dataTypes: NSSet<string>, completionHandler: (p1: NSData, p2: NSError) => void): void;
+
 	fetchDataRecordsOfTypesCompletionHandler(dataTypes: NSSet<string>, completionHandler: (p1: NSArray<WKWebsiteDataRecord>) => void): void;
 
 	initWithCoder(coder: NSCoder): this;
@@ -1642,6 +2802,11 @@ declare class WKWebsiteDataStore extends NSObject implements NSSecureCoding {
 	removeDataOfTypesForDataRecordsCompletionHandler(dataTypes: NSSet<string>, dataRecords: NSArray<WKWebsiteDataRecord> | WKWebsiteDataRecord[], completionHandler: () => void): void;
 
 	removeDataOfTypesModifiedSinceCompletionHandler(dataTypes: NSSet<string>, date: Date, completionHandler: () => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	restoreDataCompletionHandler(data: NSData, completionHandler: (p1: NSError) => void): void;
 }
 
 /**
@@ -1693,6 +2858,11 @@ declare var WKWebsiteDataTypeMemoryCache: string;
  * @since 9.0
  */
 declare var WKWebsiteDataTypeOfflineWebApplicationCache: string;
+
+/**
+ * @since 26.0
+ */
+declare var WKWebsiteDataTypeScreenTime: string;
 
 /**
  * @since 17.0

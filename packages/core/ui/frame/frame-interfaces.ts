@@ -10,15 +10,6 @@ export enum NavigationType {
 	replace,
 }
 
-export interface TransitionState {
-	enterTransitionListener: any;
-	exitTransitionListener: any;
-	reenterTransitionListener: any;
-	returnTransitionListener: any;
-	transitionName: string;
-	entry: BackstackEntry;
-}
-
 export interface ViewEntry {
 	moduleName?: string;
 	create?: () => View;
@@ -35,20 +26,6 @@ export interface NavigationEntry extends ViewEntry {
 	clearHistory?: boolean;
 }
 
-export interface NavigationContext {
-	entry: BackstackEntry;
-	// TODO: remove isBackNavigation for NativeScript 7.0
-	isBackNavigation: boolean;
-	navigationType: NavigationType;
-}
-
-export interface NavigationTransition {
-	name?: string;
-	instance?: Transition;
-	duration?: number;
-	curve?: any;
-}
-
 export interface BackstackEntry {
 	entry: NavigationEntry;
 	resolvedPage: Page;
@@ -62,6 +39,31 @@ export interface BackstackEntry {
 	transition?: NavigationTransition;
 	transitioniOS?: NavigationTransition;
 	transitionAndroid?: NavigationTransition;
+}
+
+export interface NavigationContext {
+	entry?: BackstackEntry;
+	/**
+	 * @deprecated Use navigationType instead.
+	 */
+	isBackNavigation: boolean;
+	navigationType: NavigationType;
+}
+
+export interface NavigationTransition {
+	name?: string;
+	instance?: Transition;
+	duration?: number;
+	curve?: any;
+}
+
+export interface TransitionState {
+	enterTransitionListener: any;
+	exitTransitionListener: any;
+	reenterTransitionListener: any;
+	returnTransitionListener: any;
+	transitionName: string;
+	entry: BackstackEntry;
 }
 
 export interface AndroidFrame extends Observable {

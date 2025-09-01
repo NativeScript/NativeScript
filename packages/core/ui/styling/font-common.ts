@@ -132,7 +132,7 @@ export namespace FontVariationSettings {
 			return null;
 		}
 
-		const excluded = ['normal', 'inherit', 'initial', 'revert', 'revert-layer', 'unset'];
+		const excluded = ['normal', 'revert-layer'];
 		const variationSettingsValue: string = fontVariationSettings.trim();
 
 		if (excluded.indexOf(variationSettingsValue.toLowerCase()) !== -1) {

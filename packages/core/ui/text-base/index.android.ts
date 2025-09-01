@@ -3,20 +3,20 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 import { getClosestPropertyValue, maxLinesProperty, textOverflowProperty } from './text-base-common';
 
 // Requires
-import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
+import { Font } from '../styling/font';
+import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
-import { testIDProperty } from '../../ui/core/view';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
-import { isString } from '../../utils/types';
 import { _getStoredClassDefaultPropertyValue } from '../core/properties';
 import { StrokeCSSValues } from '../styling/css-stroke';
-import { Font } from '../styling/font';
 import { Length, backgroundColorProperty, colorProperty, fontInternalProperty, fontSizeProperty, paddingBottomProperty, paddingLeftProperty, paddingRightProperty, paddingTopProperty } from '../styling/style-properties';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { TextBaseCommon, formattedTextProperty, isBold, letterSpacingProperty, lineHeightProperty, resetSymbol, textAlignmentProperty, textDecorationProperty, textProperty, textShadowProperty, textStrokeProperty, textTransformProperty, whiteSpaceProperty } from './text-base-common';
+import { isString, isNullOrUndefined } from '../../utils/types';
+import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
+import { isCssWideKeyword, testIDProperty } from '../../ui/core/view';
 
 export * from './text-base-common';
 
@@ -404,13 +404,6 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[lineHeightProperty.getDefault](): number {
-		return _getStoredClassDefaultPropertyValue(lineHeightProperty, this, () => this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity());
-	}
-	[lineHeightProperty.setNative](value: number) {
-		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
-	}
-
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
 		return _getStoredClassDefaultPropertyValue(fontInternalProperty, this, () => this.nativeTextViewProtected.getTypeface());
 	}
@@ -418,7 +411,7 @@ export class TextBase extends TextBaseCommon {
 		if (!this.formattedText || !(value instanceof Font)) {
 			this.nativeTextViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
 			if (SDK_VERSION < 28 && this.lineHeight !== undefined) {
-				this[lineHeightProperty.setNative](this.lineHeight);
+				this[lineHeightProperty.setNative](this.lineHeight as any);
 			}
 		}
 	}
@@ -429,9 +422,6 @@ export class TextBase extends TextBaseCommon {
 
 	[textDecorationProperty.setNative](value: number | CoreTypes.TextDecorationType) {
 		switch (value) {
-			case 'none':
-				this.nativeTextViewProtected.setPaintFlags(0);
-				break;
 			case 'underline':
 				this.nativeTextViewProtected.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG);
 				break;
@@ -442,7 +432,11 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
 				break;
 			default:
-				this.nativeTextViewProtected.setPaintFlags(value);
+				if (value === 'none' || isCssWideKeyword(value)) {
+					this.nativeTextViewProtected.setPaintFlags(0);
+				} else {
+					this.nativeTextViewProtected.setPaintFlags(value);
+				}
 				break;
 		}
 	}
@@ -464,13 +458,6 @@ export class TextBase extends TextBaseCommon {
 			Length.toDevicePixels(value.offsetY, 0),
 			value.color.android
 		);
-	}
-
-	[letterSpacingProperty.getDefault](): number {
-		return _getStoredClassDefaultPropertyValue(letterSpacingProperty, this, () => org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected));
-	}
-	[letterSpacingProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
 	}
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
@@ -501,6 +488,20 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
+	[lineHeightProperty.getDefault](): number {
+		return _getStoredClassDefaultPropertyValue(lineHeightProperty, this, () => this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity());
+	}
+	[lineHeightProperty.setNative](value: number) {
+		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
+	}
+
+	[letterSpacingProperty.getDefault](): number {
+		return _getStoredClassDefaultPropertyValue(letterSpacingProperty, this, () => org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected));
+	}
+	[letterSpacingProperty.setNative](value: number) {
+		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
+	}
+
 	[testIDProperty.setNative](value: string): void {
 		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
@@ -509,7 +510,7 @@ export class TextBase extends TextBaseCommon {
 		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
 
-	[maxLinesProperty.setNative](value: number) {
+	[maxLinesProperty.setNative](value: CoreTypes.MaxLinesType) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
 		if (value <= 0) {
 			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);

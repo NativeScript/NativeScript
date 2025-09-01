@@ -287,7 +287,7 @@ export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: 
 	}
 }
 
-const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('initial', 'left', 'center', 'right', 'justify'));
+const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('left', 'center', 'right', 'justify'));
 export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.TextAlignmentType>({
 	name: 'textAlignment',
 	cssName: 'text-align',
@@ -296,7 +296,7 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.T
 });
 textAlignmentProperty.register(Style);
 
-const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValidator<CoreTypes.TextTransformType>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
+const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValidator<CoreTypes.TextTransformType>('none', 'capitalize', 'uppercase', 'lowercase'));
 export const textTransformProperty = new InheritedCssProperty<Style, CoreTypes.TextTransformType>({
 	name: 'textTransform',
 	cssName: 'text-transform',
@@ -324,7 +324,7 @@ export const textStrokeProperty = new InheritedCssProperty<Style, string | Strok
 });
 textStrokeProperty.register(Style);
 
-const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('initial', 'normal', 'nowrap'));
+const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('normal', 'nowrap', 'wrap'));
 export const whiteSpaceProperty = new InheritedCssProperty<Style, CoreTypes.WhiteSpaceType>({
 	name: 'whiteSpace',
 	cssName: 'white-space',
@@ -334,7 +334,7 @@ export const whiteSpaceProperty = new InheritedCssProperty<Style, CoreTypes.Whit
 });
 whiteSpaceProperty.register(Style);
 
-const textOverflowConverter = makeParser<CoreTypes.TextOverflowType>(makeValidator<CoreTypes.TextOverflowType>('clip', 'ellipsis', 'initial', 'unset'));
+const textOverflowConverter = makeParser<CoreTypes.TextOverflowType>(makeValidator<CoreTypes.TextOverflowType>('clip', 'ellipsis'));
 export const textOverflowProperty = new CssProperty<Style, CoreTypes.TextOverflowType>({
 	name: 'textOverflow',
 	cssName: 'text-overflow',

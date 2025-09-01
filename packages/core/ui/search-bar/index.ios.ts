@@ -3,7 +3,7 @@ import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, 
 import { isEnabledProperty } from '../core/view';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty } from '../styling/style-properties';
-import { SDK_VERSION } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './search-bar-common';
 
@@ -158,7 +158,7 @@ export class SearchBar extends SearchBarBase {
 	[backgroundInternalProperty.getDefault](): any {
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: any) {
+	[backgroundInternalProperty.setNative](value: UIColor) {
 		//
 	}
 
