@@ -261,7 +261,7 @@ exports[`vue configuration for android 1`] = `
   },
   plugins: [
     /* config.plugin('VueLoaderPlugin') */
-    new VueLoaderPlugin(),
+    new Plugin(),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -623,7 +623,7 @@ exports[`vue configuration for ios 1`] = `
   },
   plugins: [
     /* config.plugin('VueLoaderPlugin') */
-    new VueLoaderPlugin(),
+    new Plugin(),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
