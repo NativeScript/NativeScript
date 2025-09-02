@@ -15,6 +15,7 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
 	private _title = '';
 	private _view: View;
 	private _iconSource: string;
+	iconFontFamily: string;
 
 	get textTransform(): CoreTypes.TextTransformType {
 		return this.style.textTransform;
@@ -286,6 +287,12 @@ export const tabTextColorProperty = new CssProperty<Style, Color>({
 	valueConverter: (v) => new Color(v),
 });
 tabTextColorProperty.register(Style);
+
+export const iconFontFamilyProperty = new CssProperty<Style, string>({
+	name: 'iconFontFamily',
+	cssName: 'icon-font-family',
+});
+iconFontFamilyProperty.register(Style);
 
 export const tabBackgroundColorProperty = new CssProperty<Style, Color>({
 	name: 'tabBackgroundColor',

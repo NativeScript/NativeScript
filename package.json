@@ -61,17 +61,18 @@
 		"eslint": "~8.57.0",
 		"eslint-config-prettier": "^10.0.0",
 		"fork-ts-checker-webpack-plugin": "^7.0.0",
-    "form-data": ">=4.0.4",
+		"form-data": ">=4.0.4",
 		"gonzales": "^1.0.7",
 		"husky": "^9.0.0",
 		"jest": "30.0.5",
 		"jest-environment-jsdom": "30.0.5",
+		"jest-util": "30.0.5",
 		"jiti": "2.4.2",
 		"jsdom": "~22.1.0",
 		"lint-staged": "^15.2.0",
 		"loader-utils": "^2.0.0 || ^3.0.0",
 		"module-alias": "^2.2.2",
-		"nativescript": "~8.9.0",
+		"nativescript": "^8.9.3",
 		"nativescript-typedoc-theme": "1.1.0",
 		"nx": "21.3.7",
 		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
@@ -101,12 +102,11 @@
 		"webpack-cli": "^4.0.0",
 		"webpack-merge": "^5.0.0",
 		"webpack-virtual-modules": "^0.4.0",
-		"zx": "^8.3.0",
-		"jest-util": "30.0.5"
+		"zx": "^8.3.0"
 	},
-  "overrides": {
-    "form-data": ">=4.0.4"
-  },
+	"overrides": {
+		"form-data": ">=4.0.4"
+	},
 	"lint-staged": {
 		"**/*.{js,ts,css,scss,json,html}": [
 			"npx prettier --write"
