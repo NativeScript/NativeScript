@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.9.6](https://github.com/NativeScript/NativeScript/compare/@akylas/nativescript@8.9.5...@akylas/nativescript@8.9.6) (2025-09-02)
+
+
+### Bug Fixes
+
+* **core:** bring back defaults for `Font.with...` and `Background.with...` which clone the object ([bb8a954](https://github.com/NativeScript/NativeScript/commit/bb8a9540632cd6b0ed40ccdd5079699047399bc3))
+
 ## 8.9.7 (2025-07-26)
 
 ### 🩹 Fixes
