@@ -15,6 +15,7 @@ on:
         - patch
         - minor
         - major
+        - none
 
 
 jobs:
@@ -72,7 +73,7 @@ jobs:
           npm run core:changelog --
 
       - name: publish
-        if: github.event.inputs.release_type != 'auto'
+        if: github.event.inputs.release_type != 'auto' && github.event.inputs.release_type != 'none'
         run: |
           npm run core:changelog -- --release-as ${{ github.event.inputs.release_type }}
 
