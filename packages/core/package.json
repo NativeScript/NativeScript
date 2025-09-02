@@ -37,17 +37,17 @@
       "url": "https://github.com/sponsors/NativeScript"
     }
   ],
-  "homepage": "https://nativescript.org",
+  "homepage": "https://github.com/Akylas/NativeScript",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NativeScript/NativeScript"
+    "url": "https://github.com/Akylas/NativeScript"
   },
   "author": {
     "name": "NativeScript",
     "email": "oss@nativescript.org"
   },
   "bugs": {
-    "url": "https://github.com/NativeScript/NativeScript/issues"
+    "url": "https://github.com/Akylas/NativeScript/issues"
   },
   "license": "Apache-2.0",
   "scripts": {
