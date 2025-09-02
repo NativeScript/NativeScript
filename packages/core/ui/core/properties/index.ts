@@ -173,7 +173,12 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 
 	if (isCssCalcExpression(value)) {
-		return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
+		if (__CSS_USE_CSS_TOOLS__) {
+			return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
+		} else {
+			Trace.write(`To use css calc() you must define __CSS_USE_CSS_TOOLS__ in webpack Define`, Trace.categories.Accessibility, Trace.messageType.error);
+			return value;
+		}
 	} else {
 		return value;
 	}
