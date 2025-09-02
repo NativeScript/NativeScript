@@ -2,7 +2,7 @@ import '../../globals';
 import { setActivityCallbacks } from '.';
 import { Application } from '../../application';
 import { isEmbedded } from '../embedding';
-import { enableEdgeToEdge } from '../../utils/android';
+import { enableEdgeToEdge } from '../../utils/native-helper-for-android';
 const EMPTY_FN = () => {};
 declare const com: any;
 
