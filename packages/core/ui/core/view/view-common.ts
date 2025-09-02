@@ -79,6 +79,7 @@ export abstract class ViewCommon extends ViewBase {
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
 	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+	public static androidOverflowInsetEvent = 'androidOverflowInset';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
@@ -979,6 +980,7 @@ export abstract class ViewCommon extends ViewBase {
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
 	public iosIgnoreSafeArea: boolean;
+	public androidOverflowEdge: string;
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;

@@ -246,8 +246,36 @@
             }
 
             export class LayoutBase extends android.view.ViewGroup {
+                public static OverflowEdgeNone: number;
+                public static OverflowEdgeLeft: number;
+                public static OverflowEdgeTop: number;
+                public static OverflowEdgeRight: number;
+                public static OverflowEdgeBottom: number;
+                public static OverflowEdgeDontApply: number;
+                public static OverflowEdgeLeftDontConsume: number;
+                public static OverflowEdgeTopDontConsume: number;
+                public static OverflowEdgeRightDontConsume: number;
+                public static OverflowEdgeBottomDontConsume: number;
+                public static OverflowEdgeAllButLeft: number;
+                public static OverflowEdgeAllButTop: number;
+                public static OverflowEdgeAllButRight: number;
+                public static OverflowEdgeAllButBottom: number;
                 constructor(context: android.content.Context);
+                public getOverflowEdge(): number;
+                public setOverflowEdge(value: number): void;
             }
+
+            export module LayoutBase {
+                	export class WindowInsetListener {
+					public constructor(implementation: {
+						onApplyWindowInsets(param0: java.nio.ByteBuffer): void;
+					});
+					public constructor();
+					public onApplyWindowInsets(param0: java.nio.ByteBuffer): void;
+				}
+            }
+
+            
 
             export class AbsoluteLayout extends LayoutBase {
                 constructor(context: android.content.Context);
@@ -729,6 +757,10 @@ declare module org {
                 public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static toBase64StringAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: number, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static resizeAsync(param0: globalAndroid.graphics.Bitmap, param1: number, param2: string, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, statusBarLight: java.lang.Integer, statusBarDark: java.lang.Integer, navigationBarLight: java.lang.Integer, navigationBarDark: java.lang.Integer): void;
+				public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, statusBarLight: java.lang.Integer, statusBarDark: java.lang.Integer, navigationBarLight: java.lang.Integer, navigationBarDark: java.lang.Integer, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
 				public constructor();
 			}
 			export module Utils {
@@ -744,6 +776,25 @@ declare module org {
 					public constructor();
 					public onSuccess(param0: any): void;
 					public onError(param0: java.lang.Exception): void;
+				}
+                export class HandleDarkMode {
+                    public static class: java.lang.Class<org.nativescript.widgets.Utils.HandleDarkMode>;
+                    /**
+                     * Constructs a new instance of the org.nativescript.widgets.Utils$HandleDarkMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: {
+                        onHandle(param0: number, param1: globalAndroid.content.res.Resources): boolean;
+                    });
+                    public constructor();
+                    public onHandle(param0: number, param1: globalAndroid.content.res.Resources): boolean;
+                }
+                export class HandleDarkModeBar {
+					public static class: java.lang.Class<org.nativescript.widgets.Utils.HandleDarkModeBar>;
+					public static status: org.nativescript.widgets.Utils.HandleDarkModeBar;
+					public static navigation: org.nativescript.widgets.Utils.HandleDarkModeBar;
+					public static valueOf(name: string): org.nativescript.widgets.Utils.HandleDarkModeBar;
+					public static values(): androidNative.Array<org.nativescript.widgets.Utils.HandleDarkModeBar>;
+					public getValue(): number;
 				}
 				export class ImageAssetOptions {
 					public static class: java.lang.Class<org.nativescript.widgets.Utils.ImageAssetOptions>;
