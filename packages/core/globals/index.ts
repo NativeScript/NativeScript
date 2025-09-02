@@ -170,15 +170,20 @@ export function initGlobal() {
 			modules.delete(name);
 		};
 
-		global._isModuleLoadedForUI = function _isModuleLoadedForUI(moduleName: string): boolean {
-			return modulesLoadedForUI.has(moduleName);
-		};
+		global.registerBundlerModules = function registerBundlerModules(context: Context, extensionMap: ExtensionMap = {}) {
+			const registerWithName = (nickName: string, moduleId: string) => {
+				modules.set(nickName, {
+					moduleId,
+					loader: () => {
+						return context(moduleId);
+					},
+				});
+			};
 
-		global.registerWebpackModules = function registerWebpackModules(context: Context, extensionMap: ExtensionMap = {}) {
-			context.keys().forEach((moduleId) => {
+			const registerModuleById = (moduleId: string) => {
 				const extDotIndex = moduleId.lastIndexOf('.');
-				const base = moduleId.substr(0, extDotIndex);
-				const originalExt = moduleId.substr(extDotIndex);
+				const base = moduleId.substring(0, extDotIndex);
+				const originalExt = moduleId.substring(extDotIndex);
 				const registerExt = extensionMap[originalExt] || defaultExtensionMap[originalExt] || originalExt;
 
 				// We prefer source files for webpack scenarios before compilation leftovers,
@@ -187,47 +192,40 @@ export function initGlobal() {
 				const isSourceFile = originalExt !== registerExt;
 				const registerName = base + registerExt;
 
-				const registerWithName = (nickName: string) => {
-					modules.set(nickName, {
-						moduleId,
-						loader: () => {
-							return context(moduleId);
-						},
-					});
-				};
-
 				if (registerName.startsWith('./') && registerName.endsWith('.js')) {
 					const jsNickNames = [
 						// This is extremely short version like "main-page" that was promoted to be used with global.registerModule("module-name", loaderFunc);
-						registerName.substr(2, registerName.length - 5),
+						registerName.substring(2, registerName.length - 3),
 						// This is for supporting module names like "./main/main-page"
-						registerName.substr(0, registerName.length - 3),
+						registerName.substring(0, registerName.length - 3),
 						// This is for supporting module names like "main/main-page.js"
-						registerName.substr(2),
+						registerName.substring(2),
 					];
 
 					jsNickNames.forEach((jsNickName) => {
 						if (isSourceFile || !global.moduleExists(jsNickName)) {
-							registerWithName(jsNickName);
+							registerWithName(jsNickName, moduleId);
 						}
 					});
 				} else if (registerName.startsWith('./')) {
 					const moduleNickNames = [
 						// This is for supporting module names like "main/main-page.xml"
-						registerName.substr(2),
+						registerName.substring(2),
 					];
 
 					moduleNickNames.forEach((moduleNickName) => {
 						if (!global.moduleExists(moduleNickName)) {
-							registerWithName(moduleNickName);
+							registerWithName(moduleNickName, moduleId);
 						}
 					});
 				}
 
 				if (isSourceFile || !global.moduleExists(registerName)) {
-					registerWithName(registerName);
+					registerWithName(registerName, moduleId);
 				}
-			});
+			};
+
+			context.keys().forEach(registerModuleById);
 		};
 
 		global.moduleExists = function moduleExists(name: string): boolean {
