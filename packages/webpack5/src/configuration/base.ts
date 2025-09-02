@@ -137,7 +137,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			// Ensure imports of the Node 'module' builtin resolve to our polyfill
 			module: require.resolve('../polyfills/module.js'),
 		},
+		// Allow extension-less ESM imports (fixes "fully specified" errors)
+		// Example: '../timer' -> resolves to index.<platform>.js without requiring explicit extension
+		fullySpecified: false,
 	});
+
+	// As an extra guard, ensure rule-level resolve also allows extension-less imports
+	config.module
+		.rule('esm-extensionless')
+		.test(/\.(mjs|js|ts|tsx)$/)
+		.resolve.set('fullySpecified', false);
 
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
 		const defaultSourceMap = 'inline-source-map';
