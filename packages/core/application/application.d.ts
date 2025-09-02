@@ -192,6 +192,65 @@ export class iOSApplication extends ApplicationCommon {
 	 * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
 	 */
 	removeNotificationObserver(observer: any, notificationName: string);
+
+	/**
+	 * Checks if the application supports scenes.
+	 */
+	supportsScenes(): boolean;
+
+	/**
+	 * Checks if the application supports multiple scenes.
+	 */
+	supportsMultipleScenes(): boolean;
+
+	/**
+	 * Checks if the application is using the scene lifecycle.
+	 */
+	isUsingSceneLifecycle(): boolean;
+
+	/**
+	 * Opens a new window with the specified data.
+	 * @param data The data to pass to the new window.
+	 */
+	openWindow(data: Record<any, any>): void;
+
+	/**
+	 * Gets all windows for the application.
+	 */
+	getAllWindows(): UIWindow[];
+
+	/**
+	 * Gets all scenes for the application.
+	 */
+	getAllScenes(): UIScene[];
+
+	/**
+	 * Gets all window scenes for the application.
+	 */
+	getWindowScenes(): UIWindowScene[];
+
+	/**
+	 * Gets the primary window for the application.
+	 */
+	getPrimaryWindow(): UIWindow;
+
+	/**
+	 * Gets the primary scene for the application.
+	 */
+	getPrimaryScene(): UIWindowScene;
+
+	/**
+	 * Sets the root view for a specific window.
+	 * @param window The window to set the root view for.
+	 * @param view The view to set as the root view.
+	 */
+	setWindowRootView(window: UIWindow, view: View): void;
+
+	/**
+	 * The scene delegate for the application.
+	 * Get the current one or set a custom one.
+	 */
+	sceneDelegate: UIWindowSceneDelegate;
 }
 
 export const VALID_FONT_SCALES: number[];
