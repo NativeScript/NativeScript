@@ -516,7 +516,8 @@ export class ListView extends ListViewBase {
 
 		for (let section = 0; section < sectionCount; section++) {
 			// Check if firstVisibleItem is in this section (header or items)
-			const itemsInSection = this._getItemsInSection(section).length;
+			const sectionItems = this._getItemsInSection(section) || [];
+			const itemsInSection = (sectionItems as any).length || 0;
 			const sectionEndPosition = currentPosition + 1 + itemsInSection; // +1 for header
 
 			if (firstVisibleItem < sectionEndPosition) {
@@ -844,7 +845,7 @@ function ensureListViewAdapterClass() {
 		}
 
 		public getCount() {
-			if (!this.owner || !this.owner.items) {
+			if (!this.owner) {
 				return 0;
 			}
 
@@ -852,18 +853,24 @@ function ensureListViewAdapterClass() {
 			let count = 0;
 
 			if (this.owner.sectioned) {
-				// Count items + section headers
+				// If items are not ready, report 0 to avoid early crashes
 				const sectionCount = this.owner._getSectionCount();
+				if (!this.owner.items || sectionCount <= 0) {
+					return 0;
+				}
+
+				// Count items + section headers
 				for (let i = 0; i < sectionCount; i++) {
-					const itemsInSection = this.owner._getItemsInSection(i);
-					// Only add header if section has items or we want to show empty sections
-					if (itemsInSection.length > 0) {
+					const itemsInSection = this.owner._getItemsInSection(i) || [];
+					// Only add header if section has items
+					if ((itemsInSection as any).length > 0) {
 						count += 1; // Section header
-						count += itemsInSection.length; // Items in section
+						count += (itemsInSection as any).length; // Items in section
 					}
 				}
 			} else {
-				count = this.owner.items.length;
+				const src: any = this.owner.items as any;
+				count = src && typeof src.length === 'number' ? src.length : 0;
 			}
 
 			// Return the count, ensuring it's never negative
@@ -889,9 +896,10 @@ function ensureListViewAdapterClass() {
 					return this.owner._getDataItemInSection(positionInfo.section, positionInfo.itemIndex);
 				}
 			} else {
-				if (i < this.owner.items.length) {
-					const getItem = (<ItemsSource>this.owner.items).getItem;
-					return getItem ? getItem.call(this.owner.items, i) : this.owner.items[i];
+				const src: any = this.owner.items as any;
+				if (src && typeof src.length === 'number' && i < src.length) {
+					const getItem = (<ItemsSource>src).getItem;
+					return getItem ? getItem.call(src, i) : src[i];
 				}
 			}
 
@@ -908,10 +916,10 @@ function ensureListViewAdapterClass() {
 			const sectionCount = this.owner._getSectionCount();
 
 			for (let section = 0; section < sectionCount; section++) {
-				const itemsInSection = this.owner._getItemsInSection(section);
+				const itemsInSection = this.owner._getItemsInSection(section) || [];
 
 				// Skip sections with no items (they won't have headers in our count)
-				if (itemsInSection.length === 0) {
+				if ((itemsInSection as any).length === 0) {
 					continue;
 				}
 
@@ -922,11 +930,11 @@ function ensureListViewAdapterClass() {
 				currentPosition++; // Move past header
 
 				// Check if position is within this section's items
-				if (position < currentPosition + itemsInSection.length) {
+				if (position < currentPosition + (itemsInSection as any).length) {
 					const itemIndex = position - currentPosition;
 					return { isHeader: false, section: section, itemIndex: itemIndex };
 				}
-				currentPosition += itemsInSection.length; // Move past items
+				currentPosition += (itemsInSection as any).length; // Move past items
 			}
 
 			// Fallback - should not reach here with proper bounds checking
@@ -1008,6 +1016,14 @@ function ensureListViewAdapterClass() {
 				const layoutParams = new android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, 0);
 				emptyView.setLayoutParams(layoutParams);
 				return emptyView;
+			}
+
+			// Trigger loadMoreItems when binding the last visible row (matches prior Android behavior)
+			if (index === totalCount - 1) {
+				this.owner.notify({
+					eventName: LOADMOREITEMS,
+					object: this.owner,
+				});
 			}
 
 			if (this.owner.sectioned) {
@@ -1149,12 +1165,16 @@ function ensureListViewAdapterClass() {
 				}
 
 				if (!args.view.parent) {
-					// Android ListView doesn't properly respect margins on direct child views.
-					// Always wrap item views in a StackLayout container to ensure margins work correctly.
-					const container = new StackLayout();
-					container.addChild(args.view);
-					this.owner._addView(container);
-					convertView = container.nativeViewProtected;
+					// Proxy containers should not be treated as layouts. Wrap them in a real layout.
+					if (args.view instanceof LayoutBase && !(args.view instanceof ProxyViewContainer)) {
+						this.owner._addView(args.view);
+						convertView = args.view.nativeViewProtected;
+					} else {
+						const sp = new StackLayout();
+						sp.addChild(args.view);
+						this.owner._addView(sp);
+						convertView = sp.nativeViewProtected;
+					}
 				}
 
 				this.owner._registerViewToTemplate(template.key, convertView, args.view);
