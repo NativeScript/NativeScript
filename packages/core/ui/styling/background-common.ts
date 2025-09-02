@@ -46,9 +46,9 @@ export class Background {
 	public boxShadow: BoxShadow;
 	public clearFlags: number = BackgroundClearFlags.NONE;
 
-	cloneOrDirty() {
+	cloneOrDirty(forceClone: boolean = true) {
 		let clone = <Background>this;
-		if (clone === Background.default) {
+		if (clone === Background.default || forceClone) {
 			clone = new Background();
 			Object.assign(clone, this);
 		} else {
@@ -57,8 +57,8 @@ export class Background {
 		return clone;
 	}
 
-	public withColor(value: Color): Background {
-		const clone = this.cloneOrDirty();
+	public withColor(value: Color, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.color = value;
 		if (!value) {
 			clone.clearFlags |= BackgroundClearFlags.CLEAR_BACKGROUND_COLOR;
@@ -66,127 +66,127 @@ export class Background {
 		return clone;
 	}
 
-	public withImage(value: string | LinearGradient): Background {
-		const clone = this.cloneOrDirty();
+	public withImage(value: string | LinearGradient, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.image = value;
 
 		return clone;
 	}
 
-	public withRepeat(value: CoreTypes.BackgroundRepeatType): Background {
-		const clone = this.cloneOrDirty();
+	public withRepeat(value: CoreTypes.BackgroundRepeatType, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.repeat = value;
 
 		return clone;
 	}
 
-	public withPosition(value: string): Background {
-		const clone = this.cloneOrDirty();
+	public withPosition(value: string, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.position = value;
 
 		return clone;
 	}
 
-	public withSize(value: string): Background {
-		const clone = this.cloneOrDirty();
+	public withSize(value: string, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.size = value;
 
 		return clone;
 	}
 
-	public withBorderTopColor(value: Color): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderTopColor(value: Color, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderTopColor = value;
 
 		return clone;
 	}
 
-	public withBorderRightColor(value: Color): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderRightColor(value: Color, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderRightColor = value;
 
 		return clone;
 	}
 
-	public withBorderBottomColor(value: Color): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderBottomColor(value: Color, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderBottomColor = value;
 
 		return clone;
 	}
 
-	public withBorderLeftColor(value: Color): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderLeftColor(value: Color, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderLeftColor = value;
 
 		return clone;
 	}
 
-	public withBorderTopWidth(value: number): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderTopWidth(value: number, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderTopWidth = value;
 
 		return clone;
 	}
 
-	public withBorderRightWidth(value: number): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderRightWidth(value: number, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderRightWidth = value;
 
 		return clone;
 	}
 
-	public withBorderBottomWidth(value: number): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderBottomWidth(value: number, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderBottomWidth = value;
 
 		return clone;
 	}
 
-	public withBorderLeftWidth(value: number): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderLeftWidth(value: number, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderLeftWidth = value;
 
 		return clone;
 	}
 
-	public withBorderTopLeftRadius(value: number): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderTopLeftRadius(value: number, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderTopLeftRadius = value;
 
 		return clone;
 	}
 
-	public withBorderTopRightRadius(value: number): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderTopRightRadius(value: number, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderTopRightRadius = value;
 
 		return clone;
 	}
 
-	public withBorderBottomRightRadius(value: number): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderBottomRightRadius(value: number, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderBottomRightRadius = value;
 
 		return clone;
 	}
 
-	public withBorderBottomLeftRadius(value: number): Background {
-		const clone = this.cloneOrDirty();
+	public withBorderBottomLeftRadius(value: number, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.borderBottomLeftRadius = value;
 
 		return clone;
 	}
 
-	public withClipPath(value: string | ClipPathFunction): Background {
-		const clone = this.cloneOrDirty();
+	public withClipPath(value: string | ClipPathFunction, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.clipPath = value;
 
 		return clone;
 	}
 
-	public withBoxShadow(value: BoxShadow): Background {
-		const clone = this.cloneOrDirty();
+	public withBoxShadow(value: BoxShadow, forceClone = true): Background {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.boxShadow = value;
 		if (!value) {
 			this.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;

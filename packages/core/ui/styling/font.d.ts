@@ -25,12 +25,12 @@ export declare class Font extends FontBase {
 	public getAndroidTypeface(): any /* android.graphics.Typeface */;
 	public getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
 
-	public withFontFamily(family: string): Font;
-	public withFontStyle(style: FontStyleType): Font;
-	public withFontWeight(weight: FontWeightType): Font;
-	public withFontSize(size: number): Font;
-	public withFontScale(scale: number): Font;
-	public withFontVariationSettings(variationSettings: FontVariationSettings[]): Font;
+	public withFontFamily(family: string, forceClone?: boolean): Font;
+	public withFontStyle(style: FontStyleType, forceClone?: boolean): Font;
+	public withFontWeight(weight: FontWeightType, forceClone?: boolean): Font;
+	public withFontSize(size: number, forceClone?: boolean): Font;
+	public withFontScale(scale: numbe, forceClone?: boolean): Font;
+	public withFontVariationSettings(variationSettings: FontVariationSettings[], forceClone?: boolean): Font;
 
 	public static equals(value1: Font, value2: Font): boolean;
 }

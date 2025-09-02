@@ -13,9 +13,9 @@ export abstract class FontBase implements Font {
 
 	isDirty = false;
 
-	cloneOrDirty() {
+	cloneOrDirty(force = true) {
 		let clone = <Font>this;
-		if (clone === Font.default) {
+		if (clone === Font.default || force) {
 			clone = new Font(undefined, undefined);
 			Object.assign(clone, this);
 		} else {
@@ -50,38 +50,38 @@ export abstract class FontBase implements Font {
 	public abstract getAndroidTypeface(): any; /* android.graphics.Typeface */
 	public abstract getUIFont(defaultFont: any /* UIFont */): any; /* UIFont */
 
-	public withFontFamily(family: string): Font {
-		const clone = this.cloneOrDirty();
+	public withFontFamily(family: string, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.fontFamily = family;
 		return clone;
 	}
 
-	public withFontStyle(style: FontStyleType): Font {
-		const clone = this.cloneOrDirty();
+	public withFontStyle(style: FontStyleType, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.fontStyle = style;
 		return clone;
 	}
 
-	public withFontWeight(weight: FontWeightType): Font {
-		const clone = this.cloneOrDirty();
+	public withFontWeight(weight: FontWeightType, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.fontWeight = weight;
 		return clone;
 	}
 
-	public withFontSize(size: number): Font {
-		const clone = this.cloneOrDirty();
+	public withFontSize(size: number, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.fontSize = size;
 		return clone;
 	}
 
-	public withFontScale(scale: number): Font {
-		const clone = this.cloneOrDirty();
+	public withFontScale(scale: number, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.fontScale = scale;
 		return clone;
 	}
 
-	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
-		const clone = this.cloneOrDirty();
+	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
 		clone.fontVariationSettings = variationSettings;
 		return clone;
 	}

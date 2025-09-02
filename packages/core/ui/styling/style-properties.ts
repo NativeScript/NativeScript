@@ -750,7 +750,7 @@ backgroundImageProperty.register(Style);
 export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 	name: 'backgroundColor',
 	cssName: 'background-color',
-	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withColor(newValue)),
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withColor(newValue, false)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -760,21 +760,21 @@ export const backgroundRepeatProperty = new CssProperty<Style, CoreTypes.Backgro
 	name: 'backgroundRepeat',
 	cssName: 'background-repeat',
 	valueConverter: CoreTypes.BackgroundRepeat.parse,
-	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withRepeat(newValue)),
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withRepeat(newValue, false)),
 });
 backgroundRepeatProperty.register(Style);
 
 export const backgroundSizeProperty = new CssProperty<Style, string>({
 	name: 'backgroundSize',
 	cssName: 'background-size',
-	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withSize(newValue)),
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withSize(newValue, false)),
 });
 backgroundSizeProperty.register(Style);
 
 export const backgroundPositionProperty = new CssProperty<Style, string>({
 	name: 'backgroundPosition',
 	cssName: 'background-position',
-	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withPosition(newValue)),
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withPosition(newValue, false)),
 });
 backgroundPositionProperty.register(Style);
 
@@ -814,7 +814,7 @@ borderColorProperty.register(Style);
 export const borderTopColorProperty = new CssProperty<Style, Color>({
 	name: 'borderTopColor',
 	cssName: 'border-top-color',
-	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderTopColor(newValue)),
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderTopColor(newValue, false)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -823,7 +823,7 @@ borderTopColorProperty.register(Style);
 export const borderRightColorProperty = new CssProperty<Style, Color>({
 	name: 'borderRightColor',
 	cssName: 'border-right-color',
-	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderRightColor(newValue)),
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderRightColor(newValue, false)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -832,7 +832,7 @@ borderRightColorProperty.register(Style);
 export const borderBottomColorProperty = new CssProperty<Style, Color>({
 	name: 'borderBottomColor',
 	cssName: 'border-bottom-color',
-	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderBottomColor(newValue)),
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderBottomColor(newValue, false)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -841,7 +841,7 @@ borderBottomColorProperty.register(Style);
 export const borderLeftColorProperty = new CssProperty<Style, Color>({
 	name: 'borderLeftColor',
 	cssName: 'border-left-color',
-	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderLeftColor(newValue)),
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderLeftColor(newValue, false)),
 	equalityComparer: Color.equals,
 	valueConverter: colorConverter,
 });
@@ -898,7 +898,7 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		return target.backgroundInternal.withBorderTopWidth(value);
+		return target.backgroundInternal.withBorderTopWidth(value, false);
 	}),
 	valueConverter: Length.parse,
 });
@@ -922,7 +922,7 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		return target.backgroundInternal.withBorderRightWidth(value);
+		return target.backgroundInternal.withBorderRightWidth(value, false);
 	}),
 	valueConverter: Length.parse,
 });
@@ -946,7 +946,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		return target.backgroundInternal.withBorderBottomWidth(value);
+		return target.backgroundInternal.withBorderBottomWidth(value, false);
 	}),
 	valueConverter: Length.parse,
 });
@@ -970,7 +970,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		return target.backgroundInternal.withBorderLeftWidth(value);
+		return target.backgroundInternal.withBorderLeftWidth(value, false);
 	}),
 	valueConverter: Length.parse,
 });
@@ -1019,7 +1019,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.Leng
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		return target.backgroundInternal.withBorderTopLeftRadius(value);
+		return target.backgroundInternal.withBorderTopLeftRadius(value, false);
 	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
@@ -1036,7 +1036,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.Len
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		return target.backgroundInternal.withBorderTopRightRadius(value);
+		return target.backgroundInternal.withBorderTopRightRadius(value, false);
 	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
@@ -1053,7 +1053,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		return target.backgroundInternal.withBorderBottomRightRadius(value);
+		return target.backgroundInternal.withBorderBottomRightRadius(value, false);
 	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
@@ -1070,7 +1070,7 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 		if (!isNonNegativeFiniteNumber(value)) {
 			value = 0;
 		}
-		return target.backgroundInternal.withBorderBottomLeftRadius(value);
+		return target.backgroundInternal.withBorderBottomLeftRadius(value, false);
 	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
@@ -1091,7 +1091,7 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
 						spreadRadius: Length.toDevicePixels(newValue.spreadRadius, 0),
 						color: newValue.color,
 					}
-				: null,
+				: null, false
 		);
 	}),
 	valueConverter: (value) => {
@@ -1104,7 +1104,7 @@ export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction
 	name: 'clipPath',
 	cssName: 'clip-path',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue);
+		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue, false);
 	},
 	equalityComparer: (value1, value2) => {
 		if (value1 instanceof ClipPathFunction && value2 instanceof ClipPathFunction) {
@@ -1202,7 +1202,7 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	name: 'fontFamily',
 	cssName: 'font-family',
 	affectsLayout: __IOS__,
-	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontFamily(newValue)),
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontFamily(newValue, false)),
 });
 fontFamilyProperty.register(Style);
 
@@ -1219,7 +1219,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	cssName: 'font-size',
 	affectsLayout: __IOS__,
 	valueChanged: fontInternalSubPropertyValueChanged(
-		(target, oldValue, newValue) => target.fontInternal.withFontSize(newValue),
+		(target, oldValue, newValue) => target.fontInternal.withFontSize(newValue, false),
 		(target) => target.viewRef.get()?.['handleFontSize'] === true,
 	),
 	valueConverter: (v) => parseFloat(v),
@@ -1233,7 +1233,7 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyleType>(
 	defaultValue: FontStyle.NORMAL,
 	valueConverter: FontStyle.parse,
 
-	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontStyle(newValue)),
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontStyle(newValue, false)),
 });
 fontStyleProperty.register(Style);
 
@@ -1243,7 +1243,7 @@ export const fontWeightProperty = new InheritedCssProperty<Style, FontWeightType
 	affectsLayout: __IOS__,
 	defaultValue: FontWeight.NORMAL,
 	valueConverter: FontWeight.parse,
-	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontWeight(newValue)),
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontWeight(newValue, false)),
 });
 fontWeightProperty.register(Style);
 
@@ -1280,7 +1280,7 @@ export const fontVariationSettingsProperty = new InheritedCssProperty<Style, Fon
 	name: 'fontVariationSettings',
 	cssName: 'font-variation-settings',
 	affectsLayout: __IOS__,
-	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontVariationSettings(newValue)),
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontVariationSettings(newValue, false)),
 	valueConverter: (value) => {
 		return FontVariationSettings.parse(value);
 	},
