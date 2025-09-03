@@ -1,5 +1,6 @@
 // imported for definition purposes only
 import * as httpModule from '../../http';
+import { safeJsonStringify } from '../../utils/safe-json-stringify';
 import * as imageSourceModule from '../../image-source';
 import { Screen } from '../../platform';
 import * as fsModule from '../../file-system';
@@ -92,11 +93,15 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 
 			debugRequest.mimeType = mime;
 			debugRequest.data = result.raw;
+
+			// Create a safe version of headers for debugging
+			const safeDebugHeaders = JSON.parse(safeJsonStringify(headers));
+
 			const debugResponse = {
 				url: result.url,
 				status: result.statusCode,
 				statusText: result.statusText,
-				headers: headers,
+				headers: safeDebugHeaders, // Use the safe version
 				mimeType: mime,
 				fromDiskCache: false,
 				timing: {
@@ -272,12 +277,32 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 						debugRequest,
 						timestamp,
 					});
+					const originalRequestHeaders = options.headers;
+					const safeRequestHeaders = JSON.parse(safeJsonStringify(originalRequestHeaders || {})); // Handle undefined headers
+
 					const request = {
 						url: options.url,
-						method: 'GET',
-						headers: options.headers,
+						method: 'GET', // Default, will be overridden
+						headers: safeRequestHeaders, // Use the safe version
 						timestamp,
 					};
+					// If options.method exists, use it, otherwise default to 'GET' for the debug message
+					if (options.method) {
+						request.method = options.method;
+					}
+					// if options.content exists, add it to the debug request postData
+					if (options.content) {
+						if (typeof options.content === 'string') {
+							(request as any).postData = options.content;
+						} else if (options.content instanceof FormData) {
+							// FormData might be complex, stringify safely or send as string
+							(request as any).postData = safeJsonStringify(options.content);
+						} else if (options.content instanceof ArrayBuffer) {
+							// ArrayBuffer is not circular, but might be converted to string by debugger
+							// For now, let debugger handle it or send a placeholder
+							(request as any).postData = '[ArrayBuffer]';
+						}
+					}
 					debugRequest.requestWillBeSent(request);
 				}
 			}
