@@ -6,7 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -110,6 +112,19 @@ public class Utils {
 				drawable.setBounds(previousBounds);
 			}
 			return bitmap;
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private static void clipCanvasOutPathLegacy(Canvas canvas, Path clipPath) {
+		canvas.clipPath(clipPath, Region.Op.DIFFERENCE);
+	}
+
+	public static void clipCanvasOutPath(Canvas canvas, Path clipPath) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			canvas.clipOutPath(clipPath);
+		} else {
+			clipCanvasOutPathLegacy(canvas, clipPath);
 		}
 	}
 

@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
-import android.graphics.Region;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -56,23 +55,19 @@ public class BoxShadowDrawable extends LayerDrawable {
 	public void draw(Canvas canvas) {
 		final int layerCount = this.getNumberOfLayers();
 
-		_clipRect.set(getBounds());
-		_clipPath.reset();
+		this._clipRect.set(this.getBounds());
+		this._clipPath.reset();
 
 		if (this._cornerRadii != null) {
-			_clipPath.addRoundRect(_clipRect, this._cornerRadii, Path.Direction.CW);
+			this._clipPath.addRoundRect(this._clipRect, this._cornerRadii, Path.Direction.CW);
 		} else {
-			_clipPath.addRect(_clipRect, Path.Direction.CW);
+			this._clipPath.addRect(this._clipRect, Path.Direction.CW);
 		}
 
 		canvas.save();
 
 		// Clip inner area to match browser shadows in case background is transparent
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			canvas.clipOutPath(_clipPath);
-		} else {
-			canvas.clipPath(_clipPath, Region.Op.DIFFERENCE);
-		}
+		Utils.clipCanvasOutPath(canvas, this._clipPath);
 
 		for (int i = 0; i < layerCount; i++) {
 			Drawable layerDrawable = this.getDrawable(i);
@@ -115,23 +110,24 @@ public class BoxShadowDrawable extends LayerDrawable {
 	}
 
 	private void _renderShadowLayers(int[] values) {
+		final RectShape shape = this._cornerRadii != null ? new RoundRectShape(this._cornerRadii, null, null) : new RectShape();
+
 		try {
 			for (int i = 0; i < values.length; i += 6) {
 				int shadowColor = values[i];
 				int spreadRadius = values[i + 1];
-				int blurRadius = values[i + 2];
+				float blurRadius = values[i + 2] * SHADOW_BLUR_MULTIPLIER;
 				int offsetX = values[i + 3];
 				int offsetY = values[i + 4];
 				// TODO: Use inset when inner shadows get implemented
 				//boolean inset = values[i + 5] == 1;
 
-				RectShape shape = this._cornerRadii != null ? new RoundRectShape(this._cornerRadii, null, null) : new RectShape();
 				ShapeDrawable shadowLayer = new ShapeDrawable(shape);
 
 				// Apply boxShadow
 				shadowLayer.getPaint().setColor(shadowColor);
 				if (blurRadius > 0) {
-					shadowLayer.getPaint().setMaskFilter(new BlurMaskFilter(blurRadius * SHADOW_BLUR_MULTIPLIER, BlurMaskFilter.Blur.NORMAL));
+					shadowLayer.getPaint().setMaskFilter(new BlurMaskFilter(blurRadius, BlurMaskFilter.Blur.NORMAL));
 				} else {
 					shadowLayer.getPaint().setStyle(Paint.Style.FILL);
 				}
