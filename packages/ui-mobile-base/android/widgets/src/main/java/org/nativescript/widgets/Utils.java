@@ -5,11 +5,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -115,33 +115,51 @@ public class Utils {
 		}
 	}
 
-	public static void drawBoxShadow(View view, String value) {
+	@SuppressWarnings("deprecation")
+	private static void clipCanvasOutPathLegacy(Canvas canvas, Path clipPath) {
+		canvas.clipPath(clipPath, Region.Op.DIFFERENCE);
+	}
+
+	public static void clipCanvasOutPath(Canvas canvas, Path clipPath) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			canvas.clipOutPath(clipPath);
+		} else {
+			clipCanvasOutPathLegacy(canvas, clipPath);
+		}
+	}
+
+	public static void drawBoxShadow(View view, int[] values) {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
 		}
 		Log.d("BoxShadowDrawable", "drawBoxShadow");
 
-		Drawable currentBg = view.getBackground();
+		Drawable background = view.getBackground();
+		Drawable wrappedBg;
 
-		if (currentBg != null) {
-			Log.d("BoxShadowDrawable", "current BG is: " + currentBg.getClass().getName());
-		}
+		if (background != null) {
+			Log.d("BoxShadowDrawable", "current background is: " + background.getClass().getName());
 
-		if (currentBg == null) {
-			Log.d("BoxShadowDrawable", "view had no background!");
-			currentBg = new ColorDrawable(Color.TRANSPARENT);
-		} else if (currentBg instanceof BoxShadowDrawable) {
-			currentBg = ((BoxShadowDrawable) view.getBackground()).getWrappedDrawable();
-			Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + currentBg.getClass().getName());
+			if (background instanceof BoxShadowDrawable) {
+				wrappedBg = ((BoxShadowDrawable) background).getWrappedDrawable();
+
+				if (wrappedBg != null) {
+					Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + wrappedBg.getClass().getName());
+				}
+			} else {
+				wrappedBg = background;
+			}
+		} else {
+			wrappedBg = null;
 		}
 
 		// replace background
 		Log.d("BoxShadowDrawable", "replacing background with new BoxShadowDrawable...");
-		view.setBackground(new BoxShadowDrawable(currentBg, value));
+		view.setBackground(new BoxShadowDrawable(wrappedBg, values));
 
-		Drawable bg = view.getBackground();
-		if (bg != null) {
-			Log.d("BoxShadowDrawable", "new current bg: " + bg.getClass().getName());
+		background = view.getBackground();
+		if (background != null) {
+			Log.d("BoxShadowDrawable", "new background is: " + background.getClass().getName());
 		}
 
 		int count = 0;

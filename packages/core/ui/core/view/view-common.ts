@@ -723,10 +723,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundRepeat = value;
 	}
 
-	get boxShadow(): ShadowCSSValues {
+	get boxShadow(): string | ShadowCSSValues[] {
 		return this.style.boxShadow;
 	}
-	set boxShadow(value: ShadowCSSValues) {
+	set boxShadow(value: string | ShadowCSSValues[]) {
 		this.style.boxShadow = value;
 	}
 
