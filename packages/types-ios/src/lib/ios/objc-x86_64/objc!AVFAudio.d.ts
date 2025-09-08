@@ -303,6 +303,11 @@ declare class AVAudioCompressedBuffer extends AVAudioBuffer {
 
 	packetCount: number;
 
+	/**
+	 * @since 26.0
+	 */
+	readonly packetDependencies: interop.Pointer | interop.Reference<AudioStreamPacketDependencyDescription>;
+
 	readonly packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>;
 
 	constructor(o: { format: AVAudioFormat; packetCapacity: number; });
@@ -395,6 +400,11 @@ declare class AVAudioConverter extends NSObject {
 
 	readonly applicableEncodeSampleRates: NSArray<number>;
 
+	/**
+	 * @since 26.0
+	 */
+	audioSyncPacketFrequency: number;
+
 	readonly availableEncodeBitRates: NSArray<number>;
 
 	readonly availableEncodeChannelLayoutTags: NSArray<number>;
@@ -407,9 +417,19 @@ declare class AVAudioConverter extends NSObject {
 
 	channelMap: NSArray<number>;
 
+	/**
+	 * @since 26.0
+	 */
+	contentSource: AVAudioContentSource;
+
 	dither: boolean;
 
 	downmix: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	dynamicRangeControlConfiguration: AVAudioDynamicRangeControlConfiguration;
 
 	readonly inputFormat: AVAudioFormat;
 

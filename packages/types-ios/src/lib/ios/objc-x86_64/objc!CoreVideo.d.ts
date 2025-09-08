@@ -1116,6 +1116,11 @@ declare var kCVPixelBufferIOSurfaceOpenGLESTextureCompatibilityKey: string;
 declare var kCVPixelBufferIOSurfacePropertiesKey: string;
 
 /**
+ * @since 15.0
+ */
+declare var kCVPixelBufferIOSurfacePurgeableKey: string;
+
+/**
  * @since 4.0
  */
 declare var kCVPixelBufferMemoryAllocatorKey: string;
@@ -1430,6 +1435,8 @@ declare const kCVPixelFormatType_30RGB: number;
 
 declare const kCVPixelFormatType_30RGBLEPackedWideGamut: number;
 
+declare const kCVPixelFormatType_30RGBLE_8A_BiPlanar: number;
+
 declare const kCVPixelFormatType_30RGB_r210: number;
 
 declare const kCVPixelFormatType_32ABGR: number;
@@ -1537,6 +1544,10 @@ declare const kCVPixelFormatType_DepthFloat32: number;
 declare const kCVPixelFormatType_DisparityFloat16: number;
 
 declare const kCVPixelFormatType_DisparityFloat32: number;
+
+declare const kCVPixelFormatType_Lossless_30RGBLEPackedWideGamut: number;
+
+declare const kCVPixelFormatType_Lossless_30RGBLE_8A_BiPlanar: number;
 
 declare const kCVPixelFormatType_Lossless_32BGRA: number;
 
