@@ -6,7 +6,7 @@
   "types": "reworkcss.d.ts",
   "dependencies": {
     "source-map": "^0.1.38",
-    "source-map-resolve": "^0.3.0",
+    "source-map-resolve": "^0.6.0",
     "urix": "^0.1.0",
     "inherits": "^2.0.1"
   },
