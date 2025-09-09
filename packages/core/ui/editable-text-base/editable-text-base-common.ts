@@ -67,7 +67,7 @@ export const placeholderColorProperty = new CssProperty<Style, Color>({
 });
 placeholderColorProperty.register(Style);
 
-const keyboardTypeConverter = makeParser<CoreTypes.KeyboardInputType>(makeValidator<CoreTypes.KeyboardInputType>(CoreTypes.KeyboardType.datetime, CoreTypes.KeyboardType.phone, CoreTypes.KeyboardType.number, CoreTypes.KeyboardType.url, CoreTypes.KeyboardType.email, CoreTypes.KeyboardType.integer), true);
+const keyboardTypeConverter = makeParser<CoreTypes.KeyboardInputType>(makeValidator<CoreTypes.KeyboardInputType>(CoreTypes.KeyboardType.datetime, CoreTypes.KeyboardType.phone, CoreTypes.KeyboardType.number, CoreTypes.KeyboardType.decimal, CoreTypes.KeyboardType.url, CoreTypes.KeyboardType.email, CoreTypes.KeyboardType.integer), true);
 
 export const autofillTypeProperty = new Property<EditableTextBase, CoreTypes.AutofillType>({ name: 'autofillType' });
 autofillTypeProperty.register(EditableTextBase);
