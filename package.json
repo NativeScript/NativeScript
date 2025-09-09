@@ -90,7 +90,7 @@
 		"ts-node": "10.9.2",
 		"ts-patch": "^3.0.0",
 		"tslib": "^2.6.0",
-		"typedoc": "^0.28.6",
+		"typedoc": "^0.28.12",
 		"typescript": "5.8.3",
 		"vite": "6.3.5",
 		"vitest": "^3.2.4",
