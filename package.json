@@ -88,7 +88,7 @@
 		"ts-jest": "29.4.0",
 		"ts-loader": "^9.0.0",
 		"ts-node": "10.9.2",
-		"ts-patch": "^3.0.0",
+		"ts-patch": "^3.3.0",
 		"tslib": "^2.6.0",
 		"typedoc": "^0.28.6",
 		"typescript": "5.8.3",
