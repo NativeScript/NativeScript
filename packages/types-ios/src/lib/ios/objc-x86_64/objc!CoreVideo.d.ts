@@ -906,6 +906,11 @@ declare var kCVImageBufferLogTransferFunctionKey: string;
 declare var kCVImageBufferLogTransferFunction_AppleLog: string;
 
 /**
+ * @since 26.0
+ */
+declare var kCVImageBufferLogTransferFunction_AppleLog2: string;
+
+/**
  * @since 11.0
  */
 declare var kCVImageBufferMasteringDisplayColorVolumeKey: string;

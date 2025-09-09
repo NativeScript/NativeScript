@@ -2970,6 +2970,8 @@ declare class AVAudioSessionPortExtensionBluetoothMicrophone extends NSObject {
 
 	static new(): AVAudioSessionPortExtensionBluetoothMicrophone; // inherited from NSObject
 
+	readonly farFieldCapture: AVAudioSessionCapability;
+
 	readonly highQualityRecording: AVAudioSessionCapability;
 }
 
