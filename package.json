@@ -59,7 +59,7 @@
 		"emoji-regex": "^10.3.0",
 		"enhanced-resolve": "^5.8.3",
 		"eslint": "~8.57.0",
-		"eslint-config-prettier": "^10.0.0",
+		"eslint-config-prettier": "^10.1.8",
 		"fork-ts-checker-webpack-plugin": "^7.0.0",
     "form-data": ">=4.0.4",
 		"gonzales": "^1.0.7",
