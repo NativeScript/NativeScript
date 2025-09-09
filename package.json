@@ -28,7 +28,7 @@
 		"@nativescript/nx": "^21.0.0",
 		"@nstudio/focus": "^20.0.2",
 		"@nstudio/nps-i": "~2.0.0",
-		"@nx/devkit": "21.3.7",
+		"@nx/devkit": "21.5.1",
 		"@nx/eslint-plugin": "21.3.7",
 		"@nx/jest": "21.3.7",
 		"@nx/js": "21.3.7",
