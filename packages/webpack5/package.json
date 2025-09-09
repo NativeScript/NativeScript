@@ -35,7 +35,7 @@
 		"micromatch": "^4.0.0",
 		"postcss": "^8.0.0",
 		"postcss-import": "^16.0.0",
-		"postcss-loader": "^8.0.0",
+		"postcss-loader": "^8.2.0",
 		"raw-loader": "^4.0.0",
 		"react-refresh": "~0.17.0",
 		"sass": "^1.0.0",
