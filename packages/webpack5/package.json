@@ -52,7 +52,7 @@
 		"webpack-chain": "^6.0.0",
 		"webpack-cli": "^6.0.0",
 		"webpack-merge": "^6.0.0",
-		"webpack-virtual-modules": "^0.4.0"
+		"webpack-virtual-modules": "^0.6.2"
 	},
 	"devDependencies": {
 		"@angular/compiler-cli": "^20.0.0",
