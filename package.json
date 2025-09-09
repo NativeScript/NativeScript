@@ -78,7 +78,7 @@
 		"parserlib": "^1.1.1",
 		"postcss": "^8.0.0",
 		"postcss-import": "^16.0.0",
-		"postcss-loader": "^8.0.0",
+		"postcss-loader": "^8.2.0",
 		"prettier": "^3.2.5",
 		"sass": "^1.72.0",
 		"shady-css-parser": "^0.1.0",
