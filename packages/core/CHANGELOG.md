@@ -1,3 +1,30 @@
+## 8.9.9 (2025-09-09)
+
+### 🚀 Features
+
+- **TextField:** decimal keyboardType ([#10789](https://github.com/NativeScript/NativeScript/pull/10789))
+- iOS 26 types with improvements (ActionBar, Switch) + .ns-{platform}-{sdkVersion} css root scoping ([#10775](https://github.com/NativeScript/NativeScript/pull/10775))
+
+### 🩹 Fixes
+
+- **android:** shared element with target name already added to transaction ([#10793](https://github.com/NativeScript/NativeScript/pull/10793))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 8.9.8 (2025-09-09)
+
+### 🩹 Fixes
+
+- transient package update
+
+## 8.9.7 (2025-07-26)
+
+### 🩹 Fixes
+
+- package format
+
 ## 8.9.6 (2025-07-26)
 
 ### 🩹 Fixes
