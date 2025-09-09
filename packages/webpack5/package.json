@@ -45,7 +45,7 @@
 		"source-map": "^0.7.0",
 		"terser-webpack-plugin": "^5.0.0",
 		"ts-dedent": "^2.0.0",
-		"ts-loader": "^9.0.0",
+		"ts-loader": "^9.5.4",
 		"vue-loader": "^17.4.2",
 		"webpack": "^5.30.0 <= 5.50.0 || ^5.51.2",
 		"webpack-bundle-analyzer": "^4.0.0",
