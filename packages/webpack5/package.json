@@ -42,7 +42,7 @@
 		"sass-loader": "^16.0.0",
 		"sax": "^1.0.0",
 		"semver": "^7.0.0 || ^6.0.0",
-		"source-map": "^0.7.0",
+		"source-map": "^0.7.6",
 		"terser-webpack-plugin": "^5.0.0",
 		"ts-dedent": "^2.0.0",
 		"ts-loader": "^9.0.0",
