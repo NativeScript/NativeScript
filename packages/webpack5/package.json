@@ -25,7 +25,7 @@
 		"babel-loader": "^10.0.0",
 		"cli-highlight": "^2.0.0",
 		"commander": "^14.0.0",
-		"copy-webpack-plugin": "^13.0.0",
+		"copy-webpack-plugin": "^13.0.1",
 		"css": "^3.0.0",
 		"css-loader": "^7.0.0",
 		"dotenv-webpack": "^8.0.0",
