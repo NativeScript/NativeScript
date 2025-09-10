@@ -18070,7 +18070,11 @@ declare function UIGuidedAccessRestrictionStateForIdentifier(restrictionIdentifi
 
 declare const enum UIHDRHeadroomUsageLimit {
 
-	Unspecified = -1
+	Unspecified = -1,
+
+	Active = 0,
+
+	Inactive = 1
 }
 
 /**
