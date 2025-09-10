@@ -64,6 +64,7 @@
 /// <reference path="objc-x86_64/objc!CoreVideo.d.ts" />
 /// <reference path="objc-x86_64/objc!CryptoTokenKit.d.ts" />
 /// <reference path="objc-x86_64/objc!Darwin.d.ts" />
+/// <reference path="objc-x86_64/objc!DarwinFoundation.d.ts" />
 /// <reference path="objc-x86_64/objc!DataDetection.d.ts" />
 /// <reference path="objc-x86_64/objc!DeviceCheck.d.ts" />
 /// <reference path="objc-x86_64/objc!DeviceDiscoveryExtension.d.ts" />
