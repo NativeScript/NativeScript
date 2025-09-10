@@ -46,8 +46,15 @@ export interface CssAnimationPropertyOptions<T, U> {
 }
 
 const cssPropertyNames: string[] = [];
+const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
+
+// Hoisted regex/constants for hot paths to avoid re-allocation
+const CSS_VARIABLE_NAME_RE = /^--[^,\s]+?$/;
+const DIP_RE = /([0-9]+(\.[0-9]+)?)dip\b/g;
+const UNSET_RE = /unset/g;
+const INFINITY_RE = /infinity/g;
 
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
 const inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
@@ -92,7 +99,7 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 }
 
 export function isCssVariable(property: string) {
-	return /^--[^,\s]+?$/.test(property);
+	return CSS_VARIABLE_NAME_RE.test(property);
 }
 
 export function isCssCalcExpression(value: string) {
@@ -165,27 +172,31 @@ export function _evaluateCssCalcExpression(value: string) {
 	} else {
 		return value;
 	}
+	return value;
 }
 
 function _replaceDip(value: string) {
-	return value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1');
+	return value.replace(DIP_RE, '$1');
 }
 
 function _replaceKeywordsWithValues(value: string) {
 	let cssValue = value;
 	if (cssValue.includes('unset')) {
-		cssValue = cssValue.replace(/unset/g, '0');
+		cssValue = cssValue.replace(UNSET_RE, '0');
 	}
 	if (cssValue.includes('infinity')) {
-		cssValue = cssValue.replace(/infinity/g, '999999');
+		cssValue = cssValue.replace(INFINITY_RE, '999999');
 	}
 	return cssValue;
 }
 
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
-	const props = [];
-	Object.getOwnPropertySymbols(map).forEach((symbol) => props.push(map[symbol]));
-
+	const symbols = Object.getOwnPropertySymbols(map);
+	const len = symbols.length;
+	const props = new Array(len);
+	for (let i = 0; i < len; i++) {
+		props[i] = map[symbols[i]];
+	}
 	return props;
 }
 
@@ -286,13 +297,11 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 							if (this._suspendedUpdates) {
 								this._suspendedUpdates[propertyName] = property;
 							}
+						} else if (defaultValueKey in this) {
+							this[setNative](this[defaultValueKey]);
+							delete this[defaultValueKey];
 						} else {
-							if (defaultValueKey in this) {
-								this[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								this[setNative](defaultValue);
-							}
+							this[setNative](defaultValue);
 						}
 					}
 				} else {
@@ -470,13 +479,11 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 							if (this._suspendedUpdates) {
 								this._suspendedUpdates[propertyName] = property;
 							}
+						} else if (defaultValueKey in this) {
+							this[setNative](this[defaultValueKey]);
+							delete this[defaultValueKey];
 						} else {
-							if (defaultValueKey in this) {
-								this[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								this[setNative](defaultValue);
-							}
+							this[setNative](defaultValue);
 						}
 					}
 				} else {
@@ -623,7 +630,10 @@ export class CssProperty<T extends Style, U> {
 		const propertyName = options.name;
 		this.name = propertyName;
 
-		cssPropertyNames.push(options.cssName);
+		// Guard against undefined cssName
+		if (options.cssName) {
+			cssPropertyNames.push(options.cssName);
+		}
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = options.cssName;
@@ -703,13 +713,11 @@ export class CssProperty<T extends Style, U> {
 							if (view._suspendedUpdates) {
 								view._suspendedUpdates[propertyName] = property;
 							}
+						} else if (defaultValueKey in this) {
+							view[setNative](this[defaultValueKey]);
+							delete this[defaultValueKey];
 						} else {
-							if (defaultValueKey in this) {
-								view[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								view[setNative](defaultValue);
-							}
+							view[setNative](defaultValue);
 						}
 					}
 				} else {
@@ -789,13 +797,11 @@ export class CssProperty<T extends Style, U> {
 							if (view._suspendedUpdates) {
 								view._suspendedUpdates[propertyName] = property;
 							}
+						} else if (defaultValueKey in this) {
+							view[setNative](this[defaultValueKey]);
+							delete this[defaultValueKey];
 						} else {
-							if (defaultValueKey in this) {
-								view[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								view[setNative](defaultValue);
-							}
+							view[setNative](defaultValue);
 						}
 					}
 				} else {
@@ -902,7 +908,9 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		const propertyName = options.name;
 		this.name = propertyName;
 
-		cssPropertyNames.push(options.cssName);
+		if (options.cssName) {
+			cssPropertyNames.push(options.cssName);
+		}
 
 		CssAnimationProperty.properties[propertyName] = this;
 		if (options.cssName && options.cssName !== propertyName) {
@@ -1189,21 +1197,19 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 							if (view._suspendedUpdates) {
 								view._suspendedUpdates[propertyName] = property;
 							}
-						} else {
-							if (unsetNativeValue) {
-								if (defaultValueKey in this) {
-									view[setNative](this[defaultValueKey]);
-									delete this[defaultValueKey];
-								} else {
-									view[setNative](defaultValue);
-								}
+						} else if (unsetNativeValue) {
+							if (defaultValueKey in this) {
+								view[setNative](this[defaultValueKey]);
+								delete this[defaultValueKey];
 							} else {
-								if (!(defaultValueKey in this)) {
-									this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-								}
-
-								view[setNative](value);
+								view[setNative](defaultValue);
 							}
+						} else {
+							if (!(defaultValueKey in this)) {
+								this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+							}
+
+							view[setNative](value);
 						}
 					}
 
@@ -1400,6 +1406,7 @@ export function applyPendingNativeSetters(view: ViewBase): void {
 	// TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
 	const suspendedUpdates = view._suspendedUpdates;
 	for (const propertyName in suspendedUpdates) {
+		if (!HAS_OWN.call(suspendedUpdates, propertyName)) continue;
 		const property = <PropertyInterface>suspendedUpdates[propertyName];
 		const setNative = property.setNative;
 		if (view[setNative]) {
@@ -1590,9 +1597,11 @@ export function makeParser<T>(isValid: (value: any) => boolean, allowNumbers = f
 export function getSetProperties(view: ViewBase): [string, any][] {
 	const result = [];
 
-	Object.getOwnPropertyNames(view).forEach((prop) => {
+	const ownProps = Object.getOwnPropertyNames(view);
+	for (let i = 0; i < ownProps.length; i++) {
+		const prop = ownProps[i];
 		result.push([prop, view[prop]]);
-	});
+	}
 
 	const symbols = Object.getOwnPropertySymbols(view);
 	for (const symbol of symbols) {
@@ -1612,7 +1621,9 @@ export function getComputedCssValues(view: ViewBase): [string, any][] {
 	const result = [];
 	const style = view.style;
 	for (const prop of cssPropertyNames) {
-		result.push([prop, style[prop]]);
+		if (prop !== undefined && prop !== null) {
+			result.push([prop, style[prop]]);
+		}
 	}
 
 	// Add these to enable box model in chrome-devtools styles tab
