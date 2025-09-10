@@ -906,6 +906,11 @@ declare var kCVImageBufferLogTransferFunctionKey: string;
 declare var kCVImageBufferLogTransferFunction_AppleLog: string;
 
 /**
+ * @since 26.0
+ */
+declare var kCVImageBufferLogTransferFunction_AppleLog2: string;
+
+/**
  * @since 11.0
  */
 declare var kCVImageBufferMasteringDisplayColorVolumeKey: string;
@@ -1114,6 +1119,11 @@ declare var kCVPixelBufferIOSurfaceOpenGLESTextureCompatibilityKey: string;
  * @since 4.0
  */
 declare var kCVPixelBufferIOSurfacePropertiesKey: string;
+
+/**
+ * @since 15.0
+ */
+declare var kCVPixelBufferIOSurfacePurgeableKey: string;
 
 /**
  * @since 4.0
@@ -1430,6 +1440,8 @@ declare const kCVPixelFormatType_30RGB: number;
 
 declare const kCVPixelFormatType_30RGBLEPackedWideGamut: number;
 
+declare const kCVPixelFormatType_30RGBLE_8A_BiPlanar: number;
+
 declare const kCVPixelFormatType_30RGB_r210: number;
 
 declare const kCVPixelFormatType_32ABGR: number;
@@ -1537,6 +1549,10 @@ declare const kCVPixelFormatType_DepthFloat32: number;
 declare const kCVPixelFormatType_DisparityFloat16: number;
 
 declare const kCVPixelFormatType_DisparityFloat32: number;
+
+declare const kCVPixelFormatType_Lossless_30RGBLEPackedWideGamut: number;
+
+declare const kCVPixelFormatType_Lossless_30RGBLE_8A_BiPlanar: number;
 
 declare const kCVPixelFormatType_Lossless_32BGRA: number;
 
