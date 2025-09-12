@@ -6,6 +6,7 @@ import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
 import { CoreTypes } from '../../enums';
+import { parseCssVariableExpression } from '../../../css/css-var-func-parser';
 
 /**
  * Value specifying that Property should be set to its initial value.
@@ -107,64 +108,12 @@ export function isCssWideKeyword(value: any): value is CoreTypes.CSSWideKeywords
 	return value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
 }
 
-export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
-	if (typeof value !== 'string') {
-		return value;
-	}
-
-	if (!isCssVariableExpression(value)) {
-		// Value is not using css-variable(s)
-		return value;
-	}
-
-	let output = value.trim();
-
-	// Evaluate every (and nested) css-variables in the value.
-	let lastValue: string;
-	while (lastValue !== output) {
-		lastValue = output;
-
-		const idx = output.lastIndexOf('var(');
-		if (idx === -1) {
-			continue;
-		}
-
-		const endIdx = output.indexOf(')', idx);
-		if (endIdx === -1) {
-			continue;
-		}
-
-		const matched = output
-			.substring(idx + 4, endIdx)
-			.split(',')
-			.map((v) => v.trim())
-			.filter((v) => !!v);
-		const cssVariableName = matched.shift();
-		let cssVariableValue = view.style.getCssVariable(cssVariableName);
-		if (cssVariableValue === null && matched.length) {
-			cssVariableValue = _evaluateCssVariableExpression(view, cssName, matched.join(', ')).split(',')[0];
-		}
-
-		if (!cssVariableValue) {
-			cssVariableValue = 'unset';
-		}
-
-		output = `${output.substring(0, idx)}${cssVariableValue}${output.substring(endIdx + 1)}`;
-	}
-
-	return output;
+export function _evaluateCssVariableExpression(value: string, cssVarResolveCallback?: (cssVarName: string) => string): string {
+	return parseCssVariableExpression(value, cssVarResolveCallback);
 }
 
 export function _evaluateCssCalcExpression(value: string) {
-	if (typeof value !== 'string') {
-		return value;
-	}
-
-	if (isCssCalcExpression(value)) {
-		return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
-	} else {
-		return value;
-	}
+	return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
 }
 
 function _replaceDip(value: string) {
