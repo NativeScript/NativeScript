@@ -1,10 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as segmentedBarTestsNative from './segmented-bar-tests-native';
 import { buildUIAndRunTest } from '../../ui-helper';
-import { View } from '@nativescript/core/ui/core/view';
-import { BindingOptions } from '@nativescript/core/ui/core/bindable';
-import { Observable } from '@nativescript/core/data/observable';
-import { Color } from '@nativescript/core/color';
+import { Color, Observable, BindingOptions, View } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 
 // >> article-require-segmentedbar-module

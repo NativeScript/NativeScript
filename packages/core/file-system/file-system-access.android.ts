@@ -1,21 +1,12 @@
 import * as textModule from '../text';
-import { Application } from '../application';
-import { getFileExtension } from '../utils';
+import { getNativeApp } from '../application/helpers-common';
+import { getFileExtension } from '../utils/utils-shared';
 import { SDK_VERSION } from '../utils/constants';
 
 import type { IFileSystemAccess } from './file-system-access';
 
-let applicationContext: android.content.Context;
-function getApplicationContext() {
-	if (!applicationContext) {
-		applicationContext = Application.android.getNativeApplication().getApplicationContext();
-	}
-
-	return applicationContext;
-}
-
 function getOrSetHelper(path: string): org.nativescript.widgets.FileHelper {
-	return org.nativescript.widgets.FileHelper.fromString(getApplicationContext(), path);
+	return org.nativescript.widgets.FileHelper.fromString(getNativeApp<android.app.Application>().getApplicationContext(), path);
 }
 
 function isContentUri(path: string): boolean {
@@ -222,30 +213,30 @@ export class FileSystemAccess implements IFileSystemAccess {
 	}
 
 	public getDocumentsFolderPath(): string {
-		const dir = getApplicationContext().getFilesDir();
+		const dir = getNativeApp<android.app.Application>().getApplicationContext().getFilesDir();
 
 		return dir.getAbsolutePath();
 	}
 	public getExternalDocumentsFolderPath(): string {
-		const dirs = getApplicationContext().getExternalFilesDirs(null);
+		const dirs = getNativeApp<android.app.Application>().getApplicationContext().getExternalFilesDirs(null);
 		let dir;
 		if (dirs && dirs.length > 1) {
 			dir = dirs[dirs.length - 1];
 		}
 		if (!dir) {
-			dir = getApplicationContext().getExternalFilesDir(null);
+			dir = getNativeApp<android.app.Application>().getApplicationContext().getExternalFilesDir(null);
 		}
 		return dir.getAbsolutePath();
 	}
 
 	public getLogicalRootPath(): string {
-		const dir = getApplicationContext().getFilesDir();
+		const dir = getNativeApp<android.app.Application>().getApplicationContext().getFilesDir();
 
 		return dir.getCanonicalPath();
 	}
 
 	public getTempFolderPath(): string {
-		const dir = getApplicationContext().getCacheDir();
+		const dir = getNativeApp<android.app.Application>().getApplicationContext().getCacheDir();
 
 		return dir.getAbsolutePath();
 	}
@@ -258,7 +249,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public copySync(src: string, dest: string, onError?: (error: any) => any) {
 		try {
-			return org.nativescript.widgets.Async.File.copySync(src, dest, getApplicationContext());
+			return org.nativescript.widgets.Async.File.copySync(src, dest, getNativeApp<android.app.Application>().getApplicationContext());
 		} catch (error) {
 			if (onError) {
 				onError(error);
@@ -282,7 +273,7 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					getApplicationContext(),
+					getNativeApp<android.app.Application>().getApplicationContext(),
 				);
 			} catch (ex) {
 				reject(ex);
@@ -926,7 +917,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 	}
 	fileExists(path: string): boolean {
 		if (isContentUri(path)) {
-			return org.nativescript.widgets.FileHelper.exists(applicationContext, path);
+			return org.nativescript.widgets.FileHelper.exists(getNativeApp<android.app.Application>().getApplicationContext(), path);
 		}
 		return super.fileExists(path);
 	}
@@ -939,7 +930,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 	deleteFile(path: string, onError?: (error: any) => any) {
 		if (isContentUri(path)) {
 			try {
-				getOrSetHelper(path).delete(applicationContext);
+				getOrSetHelper(path).delete(getNativeApp<android.app.Application>().getApplicationContext());
 			} catch (e) {
 				onError?.(e);
 			}
@@ -968,7 +959,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).renameSync(applicationContext, newPath, callback);
+			getOrSetHelper(path).renameSync(getNativeApp<android.app.Application>().getApplicationContext(), newPath, callback);
 		} else {
 			super.rename(path, newPath, onError);
 		}
@@ -977,7 +968,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 	public renameAsync(path: string, newPath: string): Promise<any> {
 		return new Promise<void>((resolve, reject) => {
 			getOrSetHelper(path).renameSync(
-				applicationContext,
+				getNativeApp<android.app.Application>().getApplicationContext(),
 				newPath,
 				new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {
@@ -1010,7 +1001,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).appendBuffer(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					FileSystemAccess.getBuffer(content),
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
@@ -1037,7 +1028,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).appendSync(applicationContext, FileSystemAccess.getBuffer(content), callback);
+			getOrSetHelper(path).appendSync(getNativeApp<android.app.Application>().getApplicationContext(), FileSystemAccess.getBuffer(content), callback);
 		} else {
 			super.appendSync(path, content, onError);
 		}
@@ -1049,7 +1040,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).append(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					content,
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
@@ -1076,7 +1067,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).appendSync(applicationContext, content, callback);
+			getOrSetHelper(path).appendSync(getNativeApp<android.app.Application>().getApplicationContext(), content, callback);
 		} else {
 			super.appendSync(path, content, onError);
 		}
@@ -1088,7 +1079,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).appendText(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					content,
 					encoding ?? null,
 					new org.nativescript.widgets.FileHelper.Callback({
@@ -1116,7 +1107,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).appendTextSync(applicationContext, content, encoding ?? null, callback);
+			getOrSetHelper(path).appendTextSync(getNativeApp<android.app.Application>().getApplicationContext(), content, encoding ?? null, callback);
 		} else {
 			super.appendTextSync(path, content, onError);
 		}
@@ -1128,7 +1119,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise((resolve, reject) => {
 				getOrSetHelper(path).readText(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					encoding ?? null,
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
@@ -1154,7 +1145,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			return getOrSetHelper(path).readTextSync(applicationContext, encoding ?? null, callback);
+			return getOrSetHelper(path).readTextSync(getNativeApp<android.app.Application>().getApplicationContext(), encoding ?? null, callback);
 		} else {
 			return super.readTextSync(path, onError, encoding);
 		}
@@ -1166,7 +1157,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise((resolve, reject) => {
 				getOrSetHelper(path).readBuffer(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve(result);
@@ -1192,7 +1183,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			const ret = getOrSetHelper(path).readBufferSync(applicationContext, callback);
+			const ret = getOrSetHelper(path).readBufferSync(getNativeApp<android.app.Application>().getApplicationContext(), callback);
 			if (ret) {
 				return null;
 			}
@@ -1207,7 +1198,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise((resolve, reject) => {
 				getOrSetHelper(path).read(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve(result);
@@ -1233,7 +1224,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			return getOrSetHelper(path).readSync(applicationContext, callback);
+			return getOrSetHelper(path).readSync(getNativeApp<android.app.Application>().getApplicationContext(), callback);
 		}
 		return super.readSync(path, onError);
 	}
@@ -1244,7 +1235,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).writeText(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					content,
 					encoding ?? null,
 					new org.nativescript.widgets.FileHelper.Callback({
@@ -1272,7 +1263,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).writeTextSync(applicationContext, content, encoding ?? null, callback);
+			getOrSetHelper(path).writeTextSync(getNativeApp<android.app.Application>().getApplicationContext(), content, encoding ?? null, callback);
 		} else {
 			super.writeTextSync(path, content, onError);
 		}
@@ -1284,7 +1275,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).writeBuffer(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					FileSystemAccess.getBuffer(content),
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
@@ -1311,7 +1302,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).writeSync(applicationContext, FileSystemAccess.getBuffer(content), callback);
+			getOrSetHelper(path).writeSync(getNativeApp<android.app.Application>().getApplicationContext(), FileSystemAccess.getBuffer(content), callback);
 		} else {
 			super.writeSync(path, content, onError);
 		}
@@ -1323,7 +1314,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).write(
-					applicationContext,
+					getNativeApp<android.app.Application>().getApplicationContext(),
 					content,
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
@@ -1350,7 +1341,7 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					},
 				});
 			}
-			getOrSetHelper(path).writeSync(applicationContext, content, callback);
+			getOrSetHelper(path).writeSync(getNativeApp<android.app.Application>().getApplicationContext(), content, callback);
 		} else {
 			super.writeSync(path, content, onError);
 		}

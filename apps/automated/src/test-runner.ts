@@ -2,7 +2,7 @@
 import * as TKUnit from './tk-unit';
 import './ui-test';
 
-import { isIOS, isAndroid, Application, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils, Color } from '@nativescript/core';
+import { isAndroid, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils, Color } from '@nativescript/core';
 Frame.defaultAnimatedNavigation = false;
 
 export function isRunningOnEmulator(): boolean {
@@ -147,7 +147,7 @@ import * as scrollViewSafeAreaTests from './ui/scroll-view/scroll-view-safe-area
 import * as repeaterSafeAreaTests from './ui/repeater/repeater-safe-area-tests';
 import * as webViewSafeAreaTests from './ui/web-view/web-view-safe-area-tests';
 
-if (isIOS && Utils.ios.MajorVersion > 10) {
+if (__APPLE__ && Utils.SDK_VERSION > 10) {
 	allTests['SAFEAREALAYOUT'] = safeAreaLayoutTests;
 	allTests['SAFEAREA-LISTVIEW'] = safeAreaListViewtTests;
 	allTests['SAFEAREA-SCROLL-VIEW'] = scrollViewSafeAreaTests;

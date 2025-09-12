@@ -1,6 +1,7 @@
 import { LayoutBase } from '../layout-base';
 import { View, CSSType } from '../../core/view';
-import { CssProperty, ShorthandProperty, makeParser, makeValidator, unsetValue } from '../../core/properties';
+import { CssProperty, ShorthandProperty, makeParser, makeValidator } from '../../core/properties';
+import { unsetValue } from '../../core/properties/property-shared';
 import { Style } from '../../styling/style';
 
 export type Basis = 'auto' | number;

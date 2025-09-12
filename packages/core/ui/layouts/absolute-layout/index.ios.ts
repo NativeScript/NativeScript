@@ -1,7 +1,6 @@
 ﻿import { AbsoluteLayoutBase } from './absolute-layout-common';
 import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
-import { Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 
 export * from './absolute-layout-common';

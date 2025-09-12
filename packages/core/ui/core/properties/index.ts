@@ -5,45 +5,11 @@ import { Trace } from '../../../trace';
 import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
-import { CoreTypes } from '../../enums';
+import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
+import { calc } from '@csstools/css-calc';
 
-/**
- * Value specifying that Property should be set to its initial value.
- */
-export const unsetValue: any = new Object();
-
-export interface PropertyOptions<T, U> {
-	readonly name: string;
-	readonly defaultValue?: U;
-	readonly affectsLayout?: boolean;
-	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
-	readonly valueConverter?: (value: string) => U;
-}
-
-export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
-	readonly coerceValue: (t: T, u: U) => U;
-}
-
-export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
-	readonly cssName: string;
-}
-
-export interface ShorthandPropertyOptions<P> {
-	readonly name: string;
-	readonly cssName: string;
-	readonly converter: (value: string | P) => [CssProperty<any, any> | CssAnimationProperty<any, any>, any][];
-	readonly getter: (this: Style) => string | P;
-}
-
-export interface CssAnimationPropertyOptions<T, U> {
-	readonly name: string;
-	readonly cssName?: string;
-	readonly defaultValue?: U;
-	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
-	readonly valueConverter?: (value: string) => U;
-}
+// Backwards compatibility
+export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
 const symbolPropertyMap = {};
@@ -70,14 +36,6 @@ function print(map) {
 	}
 }
 
-function isCssUnsetValue(value: any): boolean {
-	return value === 'unset' || value === 'revert';
-}
-
-function isResetValue(value: any): boolean {
-	return value === unsetValue || value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
-}
-
 export function _printUnregisteredProperties(): void {
 	print(symbolPropertyMap);
 	print(cssSymbolPropertyMap);
@@ -101,10 +59,6 @@ export function isCssCalcExpression(value: string) {
 
 export function isCssVariableExpression(value: string) {
 	return value.includes('var(--');
-}
-
-export function isCssWideKeyword(value: any): value is CoreTypes.CSSWideKeywords {
-	return value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
 }
 
 export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
@@ -161,7 +115,7 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 
 	if (isCssCalcExpression(value)) {
-		return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
+		return calc(_replaceKeywordsWithValues(_replaceDip(value)));
 	} else {
 		return value;
 	}
@@ -1348,6 +1302,8 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 	}
 }
 
+export { makeValidator, makeParser } from '../../../core-types/validators';
+
 function inheritablePropertyValuesOn(view: ViewBase): Array<{ property: InheritedProperty<any, any>; value: any }> {
 	const array = new Array<{
 		property: InheritedProperty<any, any>;
@@ -1562,29 +1518,6 @@ export function propagateInheritableCssProperties(parentStyle: Style, childStyle
 			prop.setInheritedValue.call(childStyle, pair.value, ValueSource.Inherited);
 		}
 	}
-}
-
-export function makeValidator<T>(...values: T[]): (value: any) => value is T {
-	const set = new Set(values);
-
-	return (value: any): value is T => set.has(value);
-}
-
-export function makeParser<T>(isValid: (value: any) => boolean, allowNumbers = false): (value: any) => T {
-	return (value) => {
-		const lower = value && value.toLowerCase();
-		if (isValid(lower)) {
-			return lower;
-		} else {
-			if (allowNumbers) {
-				const convNumber = +value;
-				if (!isNaN(convNumber)) {
-					return value;
-				}
-			}
-			throw new Error('Invalid value: ' + value);
-		}
-	};
 }
 
 export function getSetProperties(view: ViewBase): [string, any][] {

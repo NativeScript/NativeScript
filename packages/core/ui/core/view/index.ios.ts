@@ -1,24 +1,24 @@
-// Types.
-import { Point, Position, View as ViewDefinition } from '.';
-
-// Requires
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
+import type { Point, Position } from './view-interfaces';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant } from './view-common';
+import { isAccessibilityServiceEnabled } from '../../../application';
+import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
-import { layout, ios as iosUtils, SDK_VERSION } from '../../../utils';
+import { layout, ios as iosUtils, getWindow } from '../../../utils';
+import { SDK_VERSION, supportsGlass } from '../../../utils/constants';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
 import { NativeScriptUIView } from '../../utils';
+import { Color } from '../../../color';
 
 export * from './view-common';
-// helpers (these are okay re-exported here)
 export * from './view-helper';
 // This one can eventually be cleaned up but causes issues with a lot of ui-suite plugins in particular if not exported here
 export * from '../properties';
@@ -27,7 +27,7 @@ const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
-export class View extends ViewCommon implements ViewDefinition {
+export class View extends ViewCommon {
 	// @ts-ignore
 	nativeViewProtected: UIView;
 	// @ts-ignore
@@ -52,6 +52,12 @@ export class View extends ViewCommon implements ViewDefinition {
 	 *  - `drawn` - the view background has been property drawn, on subsequent layouts it may need to be redrawn if the background depends on the view's size.
 	 */
 	_nativeBackgroundState: 'unset' | 'invalid' | 'drawn';
+
+	/**
+	 * Glass effect configuration
+	 */
+	private _glassEffectView: UIVisualEffectView;
+	private _glassEffectMeasure: NodeJS.Timeout;
 
 	get isLayoutRequired(): boolean {
 		return (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
@@ -366,7 +372,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		};
 	}
 
-	public getLocationRelativeTo(otherView: ViewDefinition): Point {
+	public getLocationRelativeTo(otherView: View): Point {
 		if (!this.nativeViewProtected || !this.nativeViewProtected.window || !otherView.nativeViewProtected || !otherView.nativeViewProtected.window || this.nativeViewProtected.window !== otherView.nativeViewProtected.window) {
 			return undefined;
 		}
@@ -684,7 +690,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.isAccessibilityElement = !!value;
 
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityIdentifierProperty.getDefault](): string {
@@ -697,7 +703,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityValueProperty.setNative](value: string): void {
@@ -732,20 +738,20 @@ export class View extends ViewCommon implements ViewDefinition {
 	[accessibilityHiddenProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.accessibilityElementsHidden = !!value;
 
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityLiveRegionProperty.setNative](): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
 		this.accessibilityState = value;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityMediaSessionProperty.setNative](): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[isUserInteractionEnabledProperty.getDefault](): boolean {
@@ -887,6 +893,60 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (this.isLayoutValid) {
 			this._redrawNativeBackground(value);
 		}
+	}
+
+	[iosGlassEffectProperty.setNative](value: GlassEffectType) {
+		if (!this.nativeViewProtected || !supportsGlass()) {
+			return;
+		}
+		if (this._glassEffectView) {
+			this._glassEffectView.removeFromSuperview();
+			this._glassEffectView = null;
+		}
+		if (!value) {
+			return;
+		}
+		let effect: UIGlassEffect;
+		if (typeof value === 'string') {
+			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(value));
+		} else {
+			if (value.variant === 'identity') {
+				return;
+			}
+			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(value.variant));
+			if (value.interactive) {
+				effect.interactive = true;
+			}
+			if (value.tint) {
+				effect.tintColor = typeof value.tint === 'string' ? new Color(value.tint).ios : value.tint;
+			}
+		}
+		this._glassEffectView = UIVisualEffectView.alloc().initWithEffect(effect);
+		// let touches pass to content
+		this._glassEffectView.userInteractionEnabled = false;
+		this._glassEffectView.clipsToBounds = true;
+		// size & autoresize
+		if (this._glassEffectMeasure) {
+			clearTimeout(this._glassEffectMeasure);
+		}
+		this._glassEffectMeasure = setTimeout(() => {
+			const size = this.nativeViewProtected.bounds.size;
+			this._glassEffectView.frame = CGRectMake(0, 0, size.width, size.height);
+			this._glassEffectView.autoresizingMask = 2;
+			this.nativeViewProtected.insertSubviewAtIndex(this._glassEffectView, 0);
+		});
+	}
+
+	public toUIGlassStyle(value?: GlassEffectVariant) {
+		if (supportsGlass()) {
+			switch (value) {
+				case 'regular':
+					return UIGlassEffectStyle?.Regular ?? 0;
+				case 'clear':
+					return UIGlassEffectStyle?.Clear ?? 1;
+			}
+		}
+		return 1;
 	}
 
 	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
@@ -1075,7 +1135,7 @@ export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: UIView;
 
 	createNativeView() {
-		const window = iosUtils.getWindow();
+		const window = getWindow<UIWindow>();
 		return UIView.alloc().initWithFrame(window ? window.screen.bounds : UIScreen.mainScreen.bounds);
 	}
 
