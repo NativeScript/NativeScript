@@ -61,7 +61,7 @@
 		"eslint": "~8.57.0",
 		"eslint-config-prettier": "^10.0.0",
 		"fork-ts-checker-webpack-plugin": "^7.0.0",
-    "form-data": ">=4.0.4",
+		"form-data": ">=4.0.4",
 		"gonzales": "^1.0.7",
 		"husky": "^9.0.0",
 		"jest": "30.0.5",
