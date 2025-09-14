@@ -1345,6 +1345,11 @@ declare class MPSGraphCompilationDescriptor extends MPSGraphObject implements NS
 	optimizationProfile: MPSGraphOptimizationProfile;
 
 	/**
+	 * @since 26.0
+	 */
+	reducedPrecisionFastMath: MPSGraphReducedPrecisionFastMath;
+
+	/**
 	 * @since 16.0
 	 */
 	waitForCompilationCompletion: boolean;
@@ -2099,6 +2104,20 @@ declare class MPSGraphRandomOpDescriptor extends MPSGraphObject implements NSCop
 	standardDeviation: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum MPSGraphReducedPrecisionFastMath {
+
+	None = 0,
+
+	AllowFP16Conv2DWinogradTransformIntermediate = 2,
+
+	AllowFP16Intermediates = 2,
+
+	Default = 0
 }
 
 declare const enum MPSGraphReductionMode {

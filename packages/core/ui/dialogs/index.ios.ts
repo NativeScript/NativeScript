@@ -17,7 +17,7 @@ function addButtonsToAlertController(alertController: UIAlertController, options
 		alertController.addAction(
 			UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Default, () => {
 				raiseCallback(callback, false);
-			})
+			}),
 		);
 	}
 
@@ -25,16 +25,16 @@ function addButtonsToAlertController(alertController: UIAlertController, options
 		alertController.addAction(
 			UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.Default, () => {
 				raiseCallback(callback, undefined);
-			})
+			}),
 		);
 	}
 
 	if (isString(options.okButtonText)) {
-		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
-				raiseCallback(callback, true);
-			})
-		);
+		const action = UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
+			raiseCallback(callback, true);
+		});
+		alertController.addAction(action);
+		alertController.preferredAction = action; // Allows using keyboard enter/return to confirm the dialog
 	}
 }
 
@@ -91,7 +91,7 @@ export function alert(arg: any): Promise<void> {
 						title: DialogStrings.ALERT,
 						okButtonText: DialogStrings.OK,
 						message: arg + '',
-				  }
+					}
 				: arg;
 			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
@@ -115,7 +115,7 @@ export function confirm(arg: any): Promise<boolean> {
 						okButtonText: DialogStrings.OK,
 						cancelButtonText: DialogStrings.CANCEL,
 						message: arg + '',
-				  }
+					}
 				: arg;
 			const alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
@@ -301,7 +301,7 @@ export function action(...args): Promise<string> {
 						alertController.addAction(
 							UIAlertAction.actionWithTitleStyleHandler(action, dialogType, (arg: UIAlertAction) => {
 								resolve(arg.title);
-							})
+							}),
 						);
 					}
 				}
@@ -311,7 +311,7 @@ export function action(...args): Promise<string> {
 				alertController.addAction(
 					UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Cancel, (arg: UIAlertAction) => {
 						resolve(arg.title);
-					})
+					}),
 				);
 			}
 
