@@ -40,7 +40,9 @@ try {
 		}
 	}
 } catch (e) {
-	//
+	if (Trace.isEnabled()) {
+		Trace.write(`Failed to load CSS parser configuration from package.json: ${e}`, Trace.categories.Style, Trace.messageType.warn);
+	}
 }
 
 type KeyframesMap = Map<string, kam.Keyframes[]>;
