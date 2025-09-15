@@ -6,3 +6,5 @@ export { RootLayout, getRootLayout, getRootLayoutById, RootLayoutOptions, ShadeC
 export { StackLayout } from './stack-layout';
 export { WrapLayout } from './wrap-layout';
 export { LayoutBase } from './layout-base';
+export { LiquidGlass } from './liquid-glass';
+export { LiquidGlassContainer } from './liquid-glass-container';

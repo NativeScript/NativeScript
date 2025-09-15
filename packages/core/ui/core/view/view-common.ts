@@ -105,6 +105,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public visionHoverStyle: string | VisionHoverOptions;
 	public visionIgnoreHoverStyle: boolean;
 
+	/**
+	 * iOS 26+ Glass
+	 */
+	iosGlassEffect: GlassEffectType;
+
 	protected _closeModalCallback: Function;
 	public _manager: any;
 	public _modalParent: ViewCommon;
@@ -1317,8 +1322,16 @@ iosIgnoreSafeAreaProperty.register(ViewCommon);
 /**
  * Glass effects
  */
-export type GlassEffectVariant = 'regular' | 'clear' | 'identity';
-export type GlassEffectConfig = { variant?: GlassEffectVariant; interactive?: boolean; tint: string | Color };
+export type GlassEffectVariant = 'regular' | 'clear' | 'identity' | 'none';
+export type GlassEffectConfig = {
+	variant?: GlassEffectVariant;
+	interactive?: boolean;
+	tint?: string | Color;
+	/**
+	 * Duration in milliseconds to animate effect changes (default is 300ms)
+	 */
+	animateChangeDuration?: number;
+};
 export type GlassEffectType = GlassEffectVariant | GlassEffectConfig;
 export const iosGlassEffectProperty = new Property<ViewCommon, GlassEffectType>({
 	name: 'iosGlassEffect',

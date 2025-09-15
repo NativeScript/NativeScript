@@ -2,10 +2,11 @@ import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
 import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
-import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
+import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty, textProperty } from '../text-base';
+import { resetSymbol } from '../text-base/text-base-common';
 import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
-import { Color } from '../../color';
 
 export * from './button-common';
 
@@ -207,6 +208,34 @@ export class Button extends ButtonBase {
 			right: inset.right,
 		};
 	}
+
+	// [textProperty.setNative](value: string | number | symbol) {
+	// 	if (SDK_VERSION >= 26) {
+	// 		const config = UIButtonConfiguration.plainButtonConfiguration();
+	// 		// const attrs = {};
+	// 		// attrs[NSFontAttributeName] = UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline);
+	// 		// config.attributedTitle = NSAttributedString.alloc().initWithStringAttributes(this.text, {
+	// 		// 	[NSFontAttributeName]: UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline),
+	// 		// } as any);
+	// 		//attributes: AttributeContainer([
+	// 		// 	.font : UIFont.preferredFont(forTextStyle: .headline)
+	// 		// ])
+	// 		this.nativeViewProtected.tintColor = UIColor.labelColor;
+	// 		config.contentInsets = NSDirectionalEdgeInsetsFromString('8,12,8,12');
+	// 		// semantic; flips as needed over glass
+	// 		config.baseForegroundColor = UIColor.labelColor;
+	// 		this.nativeViewProtected.configuration = config;
+	// 		this._requestLayoutOnTextChanged();
+	// 	} else {
+	// 		const reset = value === resetSymbol;
+	// 			if (!reset && this.formattedText) {
+	// 				return;
+	// 			}
+
+	// 			this._setNativeText(reset);
+	// 			this._requestLayoutOnTextChanged();
+	// 	}
+	// }
 
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		switch (value) {

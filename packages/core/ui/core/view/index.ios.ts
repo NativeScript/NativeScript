@@ -2,7 +2,7 @@
 import { Point, Position, View as ViewDefinition } from '.';
 
 // Requires
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant, GlassEffectConfig } from './view-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, ios as iosUtils } from '../../../utils';
@@ -901,42 +901,47 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (!this.nativeViewProtected || !supportsGlass()) {
 			return;
 		}
-		if (this._glassEffectView) {
-			this._glassEffectView.removeFromSuperview();
-			this._glassEffectView = null;
-		}
-		if (!value) {
-			return;
-		}
-		let effect: UIGlassEffect;
-		if (typeof value === 'string') {
-			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(value));
+		let effect: UIGlassEffect | UIVisualEffect;
+		const config: GlassEffectConfig | null = typeof value !== 'string' ? value : null;
+		const variant = config ? config.variant : (value as GlassEffectVariant);
+		const defaultDuration = 0.3;
+		const duration = config ? (config.animateChangeDuration ?? defaultDuration) : defaultDuration;
+
+		if (!value || ['identity', 'none'].includes(variant)) {
+			// empty effect
+			effect = UIVisualEffect.new();
 		} else {
-			if (value.variant === 'identity') {
-				return;
-			}
-			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(value.variant));
-			if (value.interactive) {
-				effect.interactive = true;
-			}
-			if (value.tint) {
-				effect.tintColor = typeof value.tint === 'string' ? new Color(value.tint).ios : value.tint;
+			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(variant));
+			if (config) {
+				(effect as UIGlassEffect).interactive = !!config.interactive;
+				if (config.tint) {
+					(effect as UIGlassEffect).tintColor = typeof config.tint === 'string' ? new Color(config.tint).ios : config.tint;
+				}
 			}
 		}
-		this._glassEffectView = UIVisualEffectView.alloc().initWithEffect(effect);
-		// let touches pass to content
-		this._glassEffectView.userInteractionEnabled = false;
-		this._glassEffectView.clipsToBounds = true;
-		// size & autoresize
-		if (this._glassEffectMeasure) {
-			clearTimeout(this._glassEffectMeasure);
+
+		if (!this._glassEffectView) {
+			this._glassEffectView = UIVisualEffectView.alloc().initWithEffect(effect);
+			// this._glassEffectView.overrideUserInterfaceStyle = UIUserInterfaceStyle.Light;
+			// let touches pass to content
+			this._glassEffectView.userInteractionEnabled = false;
+			this._glassEffectView.clipsToBounds = true;
+			// size & autoresize
+			if (this._glassEffectMeasure) {
+				clearTimeout(this._glassEffectMeasure);
+			}
+			this._glassEffectMeasure = setTimeout(() => {
+				const size = this.nativeViewProtected.bounds.size;
+				this._glassEffectView.frame = CGRectMake(0, 0, size.width, size.height);
+				this._glassEffectView.autoresizingMask = 2;
+				this.nativeViewProtected.insertSubviewAtIndex(this._glassEffectView, 0);
+			});
+		} else {
+			// animate effect changes
+			UIView.animateWithDurationAnimations(duration, () => {
+				this._glassEffectView.effect = effect;
+			});
 		}
-		this._glassEffectMeasure = setTimeout(() => {
-			const size = this.nativeViewProtected.bounds.size;
-			this._glassEffectView.frame = CGRectMake(0, 0, size.width, size.height);
-			this._glassEffectView.autoresizingMask = 2;
-			this.nativeViewProtected.insertSubviewAtIndex(this._glassEffectView, 0);
-		});
 	}
 
 	public toUIGlassStyle(value?: GlassEffectVariant) {
