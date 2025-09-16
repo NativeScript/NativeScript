@@ -1293,6 +1293,7 @@ export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean
 });
 isUserInteractionEnabledProperty.register(ViewCommon);
 
+// Apple only
 export const iosOverflowSafeAreaProperty = new Property<ViewCommon, boolean>({
 	name: 'iosOverflowSafeArea',
 	defaultValue: false,
@@ -1313,6 +1314,17 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
 
+/**
+ * Glass effects
+ */
+export type GlassEffectVariant = 'regular' | 'clear' | 'identity';
+export type GlassEffectConfig = { variant?: GlassEffectVariant; interactive?: boolean; tint: string | Color };
+export type GlassEffectType = GlassEffectVariant | GlassEffectConfig;
+export const iosGlassEffectProperty = new Property<ViewCommon, GlassEffectType>({
+	name: 'iosGlassEffect',
+});
+iosGlassEffectProperty.register(ViewCommon);
+
 export const visionHoverStyleProperty = new Property<ViewCommon, string | VisionHoverOptions>({
 	name: 'visionHoverStyle',
 	valueChanged(view, oldValue, newValue) {
@@ -1329,6 +1341,7 @@ const visionIgnoreHoverStyleProperty = new Property<ViewCommon, boolean>({
 	valueConverter: booleanConverter,
 });
 visionIgnoreHoverStyleProperty.register(ViewCommon);
+// Apple only end
 
 const touchAnimationProperty = new Property<ViewCommon, boolean | TouchAnimationOptions>({
 	name: 'touchAnimation',
