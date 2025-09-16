@@ -75,6 +75,8 @@ export class Button extends ButtonBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		const nativeView = this.nativeViewProtected;
+		// make consistent with iOS, easier on users given css styling
+		nativeView.setAllCaps(false);
 		initializeClickListener();
 		const clickListener = new ClickListener(this);
 		nativeView.setOnClickListener(clickListener);
