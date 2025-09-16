@@ -19,6 +19,34 @@
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FNativeScript%2FNativeScript.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FNativeScript%2FNativeScript?ref=badge_large)
 
+## Quick Start
+
+To get started with NativeScript, follow these steps:
+
+1.  **Install the NativeScript CLI globally:**
+    ```bash
+    npm install -g nativescript
+    ```
+
+2.  **Create a new project:**
+    ```bash
+    ns create my-app
+    ```
+
+3.  **Navigate into your project directory:**
+    ```bash
+    cd my-app
+    ```
+
+4.  **Run your app on an emulator or device:**
+    ```bash
+    ns run android
+    ```
+    or
+    ```bash
+    ns run ios
+    ```
+
 ## Contribute
 
 1. [Setup your local development environment](https://docs.nativescript.org/setup/)
