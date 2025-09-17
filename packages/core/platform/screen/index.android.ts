@@ -5,7 +5,7 @@ class MainScreen {
 
 	private initMetrics(): void {
 		const nativeApp = Application.android.getNativeApplication();
-		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
+		(nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager).getDefaultDisplay().getRealMetrics(this._metrics);
 	}
 
 	private get metrics(): android.util.DisplayMetrics {

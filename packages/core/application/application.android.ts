@@ -372,7 +372,23 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		const diff = configuration.diff(this._prevConfiguration);
 
 		if ((diff & 128) /* ActivityInfo.CONFIG_ORIENTATION */ !== 0) {
-			this.setOrientation(this.getOrientationValue(configuration));
+			const nativeApp = Application.android.getNativeApplication();
+			const screenOrientation = (nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager).getDefaultDisplay().getRotation();
+			let degrees = 0;
+			switch (screenOrientation) {
+				case 1 /* android.view.Surface.ROTATION_90 */:
+					degrees = 90;
+					break;
+				case 2 /* android.view.Surface.ROTATION_180 */:
+					degrees = 180;
+					break;
+				case 3 /* android.view.Surface.ROTATION_270 */:
+					degrees = 270;
+					break;
+				default:
+					break;
+			}
+			this.setOrientation(this.getOrientationValue(configuration), degrees);
 		}
 		if ((diff & 512) /* ActivityInfo.CONFIG_UI_MODE */ !== 0) {
 			this.setSystemAppearance(this.getSystemAppearanceValue(configuration));

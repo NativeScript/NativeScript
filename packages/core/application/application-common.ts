@@ -460,7 +460,7 @@ export class ApplicationCommon {
 		throw new Error('getOrientation() not implemented');
 	}
 
-	protected setOrientation(value: 'portrait' | 'landscape' | 'unknown') {
+	protected setOrientation(value: 'portrait' | 'landscape' | 'unknown', degrees?: number) {
 		if (this._orientation === value) {
 			return;
 		}
@@ -477,6 +477,7 @@ export class ApplicationCommon {
 			android: this.android,
 			ios: this.ios,
 			newValue: value,
+			degrees,
 			object: this,
 		});
 	}

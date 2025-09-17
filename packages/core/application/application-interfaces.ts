@@ -72,6 +72,11 @@ export interface OrientationChangedEventData extends ApplicationEventData {
 	 * New orientation value.
 	 */
 	newValue: 'portrait' | 'landscape' | 'unknown';
+
+	/**
+	 * current device rotation in degrees.
+	 */
+	degrees?: number;
 }
 
 /**

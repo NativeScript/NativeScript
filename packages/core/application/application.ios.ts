@@ -347,20 +347,31 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		} else {
 			statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
 		}
-		return this.getOrientationValue(statusBarOrientation);
+		return this.getOrientationValue(statusBarOrientation)[0];
 	}
 
-	private getOrientationValue(orientation: number): 'portrait' | 'landscape' | 'unknown' {
+	private getOrientationValue(orientation: number): ['portrait' | 'landscape' | 'unknown', number] {
+		let newOrientation: 'portrait' | 'landscape' | 'unknown' = 'unknown';
+		let degrees = 0;
 		switch (orientation) {
 			case UIInterfaceOrientation.LandscapeRight:
+				newOrientation = 'landscape';
+				degrees = 90;
+				break;
 			case UIInterfaceOrientation.LandscapeLeft:
-				return 'landscape';
+				newOrientation = 'landscape';
+				degrees = 270;
+				break;
 			case UIInterfaceOrientation.PortraitUpsideDown:
+				newOrientation =  'portrait';
+				degrees = 180;
+				break;
 			case UIInterfaceOrientation.Portrait:
-				return 'portrait';
-			case UIInterfaceOrientation.Unknown:
-				return 'unknown';
+				newOrientation =  'portrait';
+				degrees = 0;
+				break;
 		}
+		return [newOrientation, degrees];
 	}
 
 	private notifyAppStarted(notification?: NSNotification) {
@@ -512,8 +523,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 	private didChangeStatusBarOrientation(notification: NSNotification) {
 		const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
-		const newOrientation = this.getOrientationValue(statusBarOrientation);
-		this.setOrientation(newOrientation);
+		const [newOrientation, degrees] = this.getOrientationValue(statusBarOrientation);
+		this.setOrientation(newOrientation, degrees);
 	}
 
 	get ios() {
