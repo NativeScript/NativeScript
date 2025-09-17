@@ -14,7 +14,7 @@ export { ControlStateChangeListener } from './core/control-state-change';
 export { ViewBase, eachDescendant, getAncestor, getViewById, booleanConverter, querySelectorAll } from './core/view-base';
 export type { ShowModalOptions } from './core/view-base';
 export { View, CSSType, ContainerView, ViewHelper, AndroidHelper, IOSHelper, isUserInteractionEnabledProperty, PseudoClassHandler, CustomLayoutView } from './core/view';
-export type { Template, KeyedTemplate, ShownModallyData, AddArrayFromBuilder, AddChildFromBuilder, Size } from './core/view';
+export type { Template, KeyedTemplate, ShownModallyData, AddArrayFromBuilder, AddChildFromBuilder, Size, AndroidOverflowInsetData } from './core/view';
 export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue, makeParser, makeValidator } from './core/properties';
 export { addWeakEventListener, removeWeakEventListener } from './core/weak-event-listener';
 export { DatePicker } from './date-picker';
