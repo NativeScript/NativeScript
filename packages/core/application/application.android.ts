@@ -7,6 +7,7 @@ import { SDK_VERSION } from '../utils/constants';
 import type { AndroidApplication as IAndroidApplication } from './application';
 import { ApplicationCommon } from './application-common';
 import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
+import { fontScaleChanged } from '../accessibility/font-scale.android';
 
 declare namespace com {
 	namespace tns {
@@ -392,6 +393,10 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 		if ((diff & 512) /* ActivityInfo.CONFIG_UI_MODE */ !== 0) {
 			this.setSystemAppearance(this.getSystemAppearanceValue(configuration));
+		}
+		if ((diff &  1073741824) /* ActivityInfo.CONFIG_FONT_SCALE */ !== 0) {
+			fontScaleChanged(Number(configuration.fontScale));
+			
 		}
 		this.notify({ eventName: this.configurationChangeEvent, configuration, diff });
 		this._prevConfiguration = new android.content.res.Configuration(configuration);

@@ -4,11 +4,13 @@ import { FontScaleCategory, getClosestValidFontScale } from './font-scale-common
 export * from './font-scale-common';
 
 let currentFontScale: number = null;
-function fontScaleChanged(origFontScale: number) {
+export function fontScaleChanged(origFontScale: number) {
 	const oldValue = currentFontScale;
-	currentFontScale = getClosestValidFontScale(origFontScale);
+	// currentFontScale = getClosestValidFontScale(origFontScale);
+	currentFontScale = origFontScale;
 
 	if (oldValue !== currentFontScale) {
+		console.log('fontScaleChanged', oldValue, origFontScale);
 		Application.notify({
 			eventName: Application.fontScaleChangedEvent,
 			object: Application,
@@ -18,8 +20,6 @@ function fontScaleChanged(origFontScale: number) {
 }
 
 export function getCurrentFontScale(): number {
-	setupConfigListener();
-
 	return currentFontScale;
 }
 
@@ -31,38 +31,6 @@ function useAndroidFontScale() {
 	fontScaleChanged(Number(Utils.android.getResources().getConfiguration().fontScale));
 }
 
-let configChangedCallback: android.content.ComponentCallbacks2;
-function setupConfigListener() {
-	if (configChangedCallback) {
-		return;
-	}
-
-	Application.off(Application.launchEvent, setupConfigListener);
-	const context = Application.android?.context as android.content.Context;
-	if (!context) {
-		Application.on(Application.launchEvent, setupConfigListener);
-
-		return;
-	}
-
-	useAndroidFontScale();
-
-	configChangedCallback = new android.content.ComponentCallbacks2({
-		onLowMemory() {
-			// Dummy
-		},
-		onTrimMemory() {
-			// Dummy
-		},
-		onConfigurationChanged(newConfig: android.content.res.Configuration) {
-			fontScaleChanged(Number(newConfig.fontScale));
-		},
-	});
-
-	context.registerComponentCallbacks(configChangedCallback);
-	Application.on(Application.resumeEvent, useAndroidFontScale);
-}
-
 export function initAccessibilityFontScale(): void {
-	setupConfigListener();
+	useAndroidFontScale();
 }
