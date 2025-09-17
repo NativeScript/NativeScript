@@ -75,13 +75,16 @@ export type { AccessibilityDecrementEventData, AccessibilityIncrementEventData }
 export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS, resolveFileNameFromUrl } from './styling/style-scope';
 export { Background } from './styling/background';
 export type { CacheMode } from './styling/background';
-export { parseCSSShadow } from './styling/css-shadow';
+export { parseCSSShadow, ShadowCSSValues } from './styling/css-shadow';
+export { parseCSSStroke, StrokeCSSValues } from './styling/css-stroke';
 export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
 export { Font, FontStyle, FontWeight, FontVariationSettings } from './styling/font';
+export type { FontStyleType, FontWeightType, FontVariationSettingsType } from './styling/font-interfaces';
 export { Style } from './styling/style';
 export type { CommonLayoutParams } from './styling/style';
 export * from './styling/style-properties';
 export * from './styling/length-shared';
+export { LinearGradient } from './styling/linear-gradient';
 export { CssAnimationParser, parseKeyframeDeclarations } from './styling/css-animation-parser';
 export { CSSHelper } from './styling/css-selector';
 
