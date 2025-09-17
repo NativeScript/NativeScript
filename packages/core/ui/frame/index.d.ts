@@ -3,7 +3,7 @@ import type { NavigatedData, Page } from '../page';
 import type { Observable, EventData } from '../../data/observable';
 import type { Property, View } from '../core/view';
 import type { Transition } from '../transition';
-import type { BackstackEntry } from './frame-interfaces';
+import type { BackstackEntry, NavigationData } from './frame-interfaces';
 
 export * from './frame-interfaces';
 
