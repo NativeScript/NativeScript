@@ -2584,6 +2584,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterGeneralCommissioningAttributeNetworkRecoveryReasonID = 11,
 
+	AttributeIDTypeClusterGeneralCommissioningAttributeIsCommissioningWithoutPowerID = 12,
+
 	AttributeIDTypeClusterGeneralCommissioningAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterGeneralCommissioningAttributeAcceptedCommandListID = 65529,
@@ -4708,7 +4710,7 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterClosureDimensionAttributeCurrentStateID = 0,
 
-	AttributeIDTypeClusterClosureDimensionAttributeTargetID = 1,
+	AttributeIDTypeClusterClosureDimensionAttributeTargetStateID = 1,
 
 	AttributeIDTypeClusterClosureDimensionAttributeResolutionID = 2,
 
@@ -4727,6 +4729,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterClosureDimensionAttributeOverflowID = 9,
 
 	AttributeIDTypeClusterClosureDimensionAttributeModulationTypeID = 10,
+
+	AttributeIDTypeClusterClosureDimensionAttributeLatchControlModesID = 11,
 
 	AttributeIDTypeClusterClosureDimensionAttributeGeneratedCommandListID = 65528,
 
@@ -5099,6 +5103,14 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterThermostatAttributeSchedulesID = 81,
 
 	AttributeIDTypeClusterThermostatAttributeSetpointHoldExpiryTimestampID = 82,
+
+	AttributeIDTypeClusterThermostatAttributeMaxThermostatSuggestionsID = 83,
+
+	AttributeIDTypeClusterThermostatAttributeThermostatSuggestionsID = 84,
+
+	AttributeIDTypeClusterThermostatAttributeCurrentThermostatSuggestionID = 85,
+
+	AttributeIDTypeClusterThermostatAttributeThermostatSuggestionNotFollowingReasonID = 86,
 
 	AttributeIDTypeClusterThermostatAttributeGeneratedCommandListID = 65528,
 
@@ -6956,6 +6968,8 @@ declare const enum MTRAttributeIDType {
 
 	AttributeIDTypeClusterCommodityMeteringAttributeMeasurementTypeID = 2,
 
+	AttributeIDTypeClusterCommodityMeteringAttributeMaximumMeteredQuantitiesID = 3,
+
 	AttributeIDTypeClusterCommodityMeteringAttributeGeneratedCommandListID = 65528,
 
 	AttributeIDTypeClusterCommodityMeteringAttributeAcceptedCommandListID = 65529,
@@ -7263,6 +7277,8 @@ declare const enum MTRAttributeIDType {
 	AttributeIDTypeClusterUnitTestingAttributeGlobalEnumID = 51,
 
 	AttributeIDTypeClusterUnitTestingAttributeGlobalStructID = 52,
+
+	AttributeIDTypeClusterUnitTestingAttributeUnsupportedAttributeRequiringAdminPrivilegeID = 254,
 
 	AttributeIDTypeClusterUnitTestingAttributeUnsupportedID = 255,
 
@@ -85828,11 +85844,17 @@ declare const enum MTRCommandIDType {
 
 	CommandIDTypeClusterThermostatCommandGetWeeklyScheduleID = 2,
 
+	CommandIDTypeClusterThermostatCommandAddThermostatSuggestionResponseID = 2,
+
 	CommandIDTypeClusterThermostatCommandClearWeeklyScheduleID = 3,
 
 	CommandIDTypeClusterThermostatCommandSetActiveScheduleRequestID = 5,
 
 	CommandIDTypeClusterThermostatCommandSetActivePresetRequestID = 6,
+
+	CommandIDTypeClusterThermostatCommandAddThermostatSuggestionID = 7,
+
+	CommandIDTypeClusterThermostatCommandRemoveThermostatSuggestionID = 8,
 
 	CommandIDTypeClusterThermostatCommandAtomicResponseID = 253,
 
@@ -89703,7 +89725,21 @@ declare const enum MTRDeviceTypeIDType {
 
 	JointFabricAdministratorID = 304,
 
+	IntercomID = 320,
+
+	AudioDoorbellID = 321,
+
 	CameraID = 322,
+
+	VideoDoorbellID = 323,
+
+	FloodlightCameraID = 324,
+
+	SnapshotCameraID = 325,
+
+	ChimeID = 326,
+
+	CameraControllerID = 327,
 
 	WindowCoveringID = 514,
 
@@ -89714,8 +89750,6 @@ declare const enum MTRDeviceTypeIDType {
 	ClosurePanelID = 561,
 
 	ClosureControllerID = 574,
-
-	HeatingCoolingUnitID = 768,
 
 	ThermostatID = 769,
 
@@ -89992,6 +90026,8 @@ declare const enum MTRDiscoveryCapabilities {
 	BLE = 2,
 
 	OnNetwork = 4,
+
+	NFC = 16,
 
 	AllMask = 7
 }
@@ -93680,6 +93716,9 @@ declare const enum MTREnergyEVSETargetDayOfWeekBitmap {
 	Saturday = 64
 }
 
+/**
+ * @since 16.1
+ */
 declare const enum MTRErrorCode {
 
 	GeneralError = 1,
@@ -94151,6 +94190,22 @@ declare const enum MTREventIDType {
 	EventIDTypeClusterPumpConfigurationAndControlEventAirDetectionID = 15,
 
 	EventIDTypeClusterPumpConfigurationAndControlEventTurbineOperationID = 16,
+
+	EventIDTypeClusterThermostatEventSystemModeChangeID = 0,
+
+	EventIDTypeClusterThermostatEventLocalTemperatureChangeID = 1,
+
+	EventIDTypeClusterThermostatEventOccupancyChangeID = 2,
+
+	EventIDTypeClusterThermostatEventSetpointChangeID = 3,
+
+	EventIDTypeClusterThermostatEventRunningStateChangeID = 4,
+
+	EventIDTypeClusterThermostatEventRunningModeChangeID = 5,
+
+	EventIDTypeClusterThermostatEventActiveScheduleChangeID = 6,
+
+	EventIDTypeClusterThermostatEventActivePresetChangeID = 7,
 
 	EventIDTypeClusterOccupancySensingEventOccupancyChangedID = 0,
 
@@ -96503,6 +96558,9 @@ declare const enum MTRIlluminanceMeasurementLightSensorType {
 	CMOS = 1
 }
 
+/**
+ * @since 16.1
+ */
 declare const enum MTRInteractionErrorCode {
 
 	InteractionErrorCodeFailure = 1,
@@ -106676,7 +106734,9 @@ declare const enum MTRThermostatFeature {
 
 	MatterScheduleConfiguration = 128,
 
-	Presets = 256
+	Presets = 256,
+
+	Events = 512
 }
 
 /**
@@ -110911,8 +110971,26 @@ declare class MTRXPCDeviceControllerParameters extends MTRDeviceControllerAbstra
 	 */
 	readonly xpcConnectionBlock: () => NSXPCConnection;
 
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { XPCConnectionBlock: () => NSXPCConnection; uniqueIdentifier: NSUUID; });
+
+	/**
+	 * @since 18.2
+	 * @deprecated 26.0
+	 */
 	constructor(o: { XPConnectionBlock: () => NSXPCConnection; uniqueIdentifier: NSUUID; });
 
+	/**
+	 * @since 26.0
+	 */
+	initWithXPCConnectionBlockUniqueIdentifier(xpcConnectionBlock: () => NSXPCConnection, uniqueIdentifier: NSUUID): this;
+
+	/**
+	 * @since 18.2
+	 * @deprecated 26.0
+	 */
 	initWithXPConnectionBlockUniqueIdentifier(xpcConnectionBlock: () => NSXPCConnection, uniqueIdentifier: NSUUID): this;
 }
 

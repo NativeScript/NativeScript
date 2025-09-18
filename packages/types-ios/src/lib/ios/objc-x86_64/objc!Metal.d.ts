@@ -4046,6 +4046,8 @@ declare const enum MTLGPUFamily {
 
 	Apple9 = 1009,
 
+	Apple10 = 1010,
+
 	Mac1 = 2001,
 
 	Mac2 = 2002,
@@ -5883,6 +5885,11 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 	setDepthStoreActionOptions(storeActionOptions: MTLStoreActionOptions): void;
 
 	/**
+	 * @since 26.0
+	 */
+	setDepthTestMinBoundMaxBound(minBound: number, maxBound: number): void;
+
+	/**
 	 * @since 15.0
 	 */
 	setFragmentAccelerationStructureAtBufferIndex(accelerationStructure: MTLAccelerationStructure, bufferIndex: number): void;
@@ -5938,12 +5945,12 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 	/**
 	 * @since 16.0
 	 */
-	setMeshBufferOffsetAtIndex(offset: number, index: number): void;
+	setMeshBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
 
 	/**
 	 * @since 16.0
 	 */
-	setMeshBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+	setMeshBufferOffsetAtIndex(offset: number, index: number): void;
 
 	/**
 	 * @since 16.0
@@ -7223,6 +7230,11 @@ declare class MTLSamplerDescriptor extends NSObject implements NSCopying {
 	 */
 	lodAverage: boolean;
 
+	/**
+	 * @since 26.0
+	 */
+	lodBias: number;
+
 	lodMaxClamp: number;
 
 	lodMinClamp: number;
@@ -7238,6 +7250,11 @@ declare class MTLSamplerDescriptor extends NSObject implements NSCopying {
 	normalizedCoordinates: boolean;
 
 	rAddressMode: MTLSamplerAddressMode;
+
+	/**
+	 * @since 26.0
+	 */
+	reductionMode: MTLSamplerReductionMode;
 
 	sAddressMode: MTLSamplerAddressMode;
 
@@ -7271,6 +7288,18 @@ declare const enum MTLSamplerMipFilter {
 	Nearest = 1,
 
 	Linear = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum MTLSamplerReductionMode {
+
+	WeightedAverage = 0,
+
+	Minimum = 1,
+
+	Maximum = 2
 }
 
 /**

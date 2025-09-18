@@ -1933,6 +1933,8 @@ declare const kVTVideoDecoderUnsupportedDataFormatErr: number;
 
 declare const kVTVideoEncoderAuthorizationErr: number;
 
+declare const kVTVideoEncoderAutoWhiteBalanceNotLockedErr: number;
+
 /**
  * @since 15.0
  */
