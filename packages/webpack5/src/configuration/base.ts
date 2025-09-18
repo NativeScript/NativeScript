@@ -137,7 +137,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			// Ensure imports of the Node 'module' builtin resolve to our polyfill
 			module: require.resolve('../polyfills/module.js'),
 		},
+		// Allow extension-less ESM imports (fixes "fully specified" errors)
+		// Example: '../timer' -> resolves to index.<platform>.js without requiring explicit extension
+		fullySpecified: false,
 	});
+
+	// As an extra guard, ensure rule-level resolve also allows extension-less imports
+	config.module
+		.rule('esm-extensionless')
+		.test(/\.(mjs|js|ts|tsx)$/)
+		.resolve.set('fullySpecified', false);
 
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
 		const defaultSourceMap = 'inline-source-map';
@@ -295,10 +304,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		});
 	} else {
 		// Set up ESM output
-		// NOTE: this fixes all worker bundling issues
-		// however it causes issues with angular lazy loading.
-		// TODO: still need to investigate the right combination of webpack settings there
-		// TODO: test if standalone lazy loaded routes work, maybe it's just with loadChildren modules?
 		config.output.chunkFilename('[name].mjs');
 
 		// now re‑add exactly what you want:
@@ -546,6 +551,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('sass-loader')
 		.loader('sass-loader')
 		.options({
+			// helps ensure proper project compatibility
+			// particularly in cases of workspaces
+			// which may have different nested Sass implementations
+			// via transient dependencies
 			implementation: require('sass'),
 		});
 

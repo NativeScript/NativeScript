@@ -6,16 +6,6 @@ import { join, extname, relative } from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-console.log('__COMMONJS__:', __COMMONJS__);
-
-// const context = require.context("~/", /* deep: */ true, /* filter: */ /\.(xml|js|(?<!\.d\.)ts|s?css)$/);
-
-// const modules = import.meta.glob(
-//   // adjust the pattern to your layout:
-//   "/src/**/*.@(xml|js|ts|scss|css)"
-//   // { eager: true }  // uncomment to import immediately
-// );
-console.log('typeof import.meta.glob:', typeof import.meta.glob);
 if (typeof import.meta.glob !== 'undefined') {
 	// Vite environment
 	const modules = import.meta.glob(
