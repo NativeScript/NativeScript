@@ -56,7 +56,7 @@ export * from './layouts'; // barrel export
 
 export { ListPicker } from './list-picker';
 export { ListView } from './list-view';
-export type { ItemEventData, TemplatedItemsView, ItemsSource } from './list-view';
+export type { ItemEventData, TemplatedItemsView, ItemsSource, SearchEventData } from './list-view';
 export { Page, PageBase } from './page';
 export type { NavigatedData } from './page';
 export { Placeholder } from './placeholder';
