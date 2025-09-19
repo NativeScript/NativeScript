@@ -34,7 +34,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				return keyboardType.toString();
 		}
 	}
-	[keyboardTypeProperty.setNative](value: 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer' | string) {
+	[keyboardTypeProperty.setNative](value: 'datetime' | 'phone' | 'number' | 'decimal' | 'url' | 'email' | 'integer' | string) {
 		let newKeyboardType: UIKeyboardType;
 		switch (value) {
 			case 'datetime':
@@ -47,6 +47,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 			case 'number':
 				newKeyboardType = UIKeyboardType.NumbersAndPunctuation;
+				break;
+
+			case 'decimal':
+				newKeyboardType = UIKeyboardType.DecimalPad;
 				break;
 
 			case 'url':
