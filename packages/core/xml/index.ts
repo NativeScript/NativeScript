@@ -1,7 +1,3 @@
-// TODO: Delete `nativescript-core/xml/xml.js` from source control after
-// https://github.com/NativeScript/nativescript-dev-webpack/issues/932
-
-import * as definition from '.';
 import { EasySAXParser } from '../js-libs/easysax/easysax.js';
 
 /**
@@ -19,15 +15,36 @@ export interface Position {
 	column: number;
 }
 
-export class ParserEventType implements definition.ParserEventType {
+/**
+ * Specifies the type of parser event.
+ */
+export class ParserEventType {
+	/**
+	 * Specifies the StartElement event type.
+	 */
 	static StartElement = 'StartElement';
+	/**
+	 * Specifies the EndElement event type.
+	 */
 	static EndElement = 'EndElement';
+	/**
+	 * Specifies the Text event type.
+	 */
 	static Text = 'Text';
+	/**
+	 * Specifies the CDATA event type.
+	 */
 	static CDATA = 'CDATA';
+	/**
+	 * Specifies the Comment event type.
+	 */
 	static Comment = 'Comment';
 }
 
-export class ParserEvent implements definition.ParserEvent {
+/**
+ * Provides information for a parser event.
+ */
+export class ParserEvent {
 	private _eventType: string;
 	private _position: Position;
 	private _prefix: string;
@@ -46,6 +63,9 @@ export class ParserEvent implements definition.ParserEvent {
 		this._data = data;
 	}
 
+	/**
+	 * Returns a JSON string representation of this instance.
+	 */
 	public toString(): string {
 		return JSON.stringify({
 			eventType: this.eventType,
@@ -58,30 +78,51 @@ export class ParserEvent implements definition.ParserEvent {
 		});
 	}
 
+	/**
+	 * Returns the type of the parser event. This is one of the ParserEventType static members.
+	 */
 	public get eventType(): string {
 		return this._eventType;
 	}
 
+	/**
+	 * Get the position in the xml string where the event was generated.
+	 */
 	public get position(): Position {
 		return this._position;
 	}
 
+	/**
+	 * If namespace processing is enabled, returns the prefix of the element in case the eventType is ParserEventType.StartElement or ParserEventType.EndElement.
+	 */
 	public get prefix(): string {
 		return this._prefix;
 	}
 
+	/**
+	 *  If namespace processing is enabled, returns the namespace of the element in case the eventType is ParserEventType.StartElement or ParserEventType.EndElement.
+	 */
 	public get namespace(): string {
 		return this._namespace;
 	}
 
+	/**
+	 * Returns the name of the element in case the eventType is ParserEventType.StartElement or ParserEventType.EndElement.
+	 */
 	public get elementName(): string {
 		return this._elementName;
 	}
 
+	/**
+	 * Returns a JSON object with the attributes of an element in case the eventType is ParserEventType.StartElement.
+	 */
 	public get attributes(): Object {
 		return this._attributes;
 	}
 
+	/**
+	 * Returns the relevant data in case the eventType is ParserEventType.Text, ParserEventType.CDATA or ParserEventType.Comment.
+	 */
 	public get data(): string {
 		return this._data;
 	}
@@ -421,14 +462,23 @@ function _HandleAmpEntities(found: string, decimalValue: string, hexValue: strin
 	return String.fromCodePoint(parseInt(hexValue, 16));
 }
 
-export class XmlParser implements definition.XmlParser {
+/**
+ * A simple non-validating SAX parser based on https://github.com/vflash/easysax version 0.1.14
+ */
+export class XmlParser {
 	//TODO: Add option to configure whether the parser should report ignorable whitespace, i.e. document formatting whitespace.
 	private _parser: EasySAXParser;
 
 	private _processNamespaces: boolean;
 	private _namespaceStack: Array<any>;
 
-	constructor(onEvent: (event: definition.ParserEvent) => void, onError?: (error: Error, position: Position) => void, processNamespaces?: boolean) {
+	/**
+	 * Creates a new instance of the XmlParser class.
+	 * @param onEvent The callback to execute when a parser event occurs. The 'event' parameter contains information about the event.
+	 * @param onError The callback to execute when a parser error occurs. The 'error' parameter contains the error.
+	 * @param processNamespaces Specifies whether namespaces should be processed.
+	 */
+	constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error, position: Position) => void, processNamespaces?: boolean) {
 		this._processNamespaces = processNamespaces;
 		this._parser = new EasySAXParser();
 
@@ -514,6 +564,10 @@ export class XmlParser implements definition.XmlParser {
 		this._parser.angularSyntax = value;
 	}
 
+	/**
+	 * Parses the supplied xml string.
+	 * @param xmlString The string containing the xml to parse.
+	 */
 	public parse(xmlString: string): void {
 		if (this._processNamespaces) {
 			this._namespaceStack = [];

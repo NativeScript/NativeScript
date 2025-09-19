@@ -84,7 +84,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 	}
 
 	private layout_insets_top_action_bar_hidden_test(layout: view.View) {
-		const keyWindow = Utils.ios.getWindow();
+		const keyWindow = Utils.getWindow<UIWindow>();
 		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
 		// use window inset instead of status bar frame as that's unreliable on iOS 16+
 		const topInset = Math.round(dipToDp(keyWindow ? keyWindow.safeAreaInsets.top : UIApplication.sharedApplication.keyWindow.safeAreaInsets.top));
@@ -417,10 +417,10 @@ export class SafeAreaTests extends testModule.UITest<any> {
 	private dock_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
 		const snippet = `
         <DockLayout id="dock" stretchLastChild="true">
-            <Label id="childLeft" dock="Left" text="left" backgroundColor="red" />
-            <Label id="childTop" dock="Top" text="top" backgroundColor="green" />
-            <Label id="childRight" dock="Right" text="right" backgroundColor="blue" />
-            <Label id="childBottom" dock="Bottom" text="bottom" backgroundColor="yellow" />
+            <Label id="childLeft" dock="left" text="left" backgroundColor="red" />
+            <Label id="childTop" dock="top" text="top" backgroundColor="green" />
+            <Label id="childRight" dock="right" text="right" backgroundColor="blue" />
+            <Label id="childBottom" dock="bottom" text="bottom" backgroundColor="yellow" />
             <Label id="childFill" text="fill"/>
         </DockLayout>
         `;
@@ -466,16 +466,16 @@ export class SafeAreaTests extends testModule.UITest<any> {
 	private dock_nested_layouts_beyond_safe_area(pageOptions?: helper.PageOptions) {
 		const snippet = `
         <DockLayout id="dock" stretchLastChild="true">
-            <DockLayout id="childLeft" dock="Left" text="left" backgroundColor="red">
+            <DockLayout id="childLeft" dock="left" text="left" backgroundColor="red">
                 <Label text="left"/>
             </DockLayout>
-            <DockLayout id="childTop" dock="Top" text="top" backgroundColor="green">
+            <DockLayout id="childTop" dock="top" text="top" backgroundColor="green">
                 <Label text="top" />
             </DockLayout>
-            <DockLayout id="childRight" dock="Right" text="right" backgroundColor="blue">
+            <DockLayout id="childRight" dock="right" text="right" backgroundColor="blue">
                 <Label text="right" />
             </DockLayout>
-            <DockLayout id="childBottom" dock="Bottom" text="bottom" backgroundColor="yellow">
+            <DockLayout id="childBottom" dock="bottom" text="bottom" backgroundColor="yellow">
                 <Label text="bottom" />
             </DockLayout>
             <DockLayout id="childFill" text="fill">

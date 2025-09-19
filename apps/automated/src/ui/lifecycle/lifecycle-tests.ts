@@ -1,7 +1,6 @@
 import * as helper from '../../ui-helper';
 import * as btnCounter from './pages/button-counter';
 import * as TKUnit from '../../tk-unit';
-import { isIOS } from '@nativescript/core';
 
 // Integration tests that asser sertain runtime behavior, lifecycle events atc.
 
@@ -90,7 +89,7 @@ export function test_setting_one_property_while_suspedned_does_not_call_other_pr
 
 // 	TKUnit.assertEqual(btn2.backgroundInternalSetNativeCount, 2, `2: Expected ${btn2.id}'s backgroundInternal.setNative to be exactly once when inflating from xml.`);
 // 	TKUnit.assertEqual(btn2.fontInternalSetNativeCount, 2, `2: Expected ${btn2.id}'s fontInternal.setNative to be called exactly once when inflating from xml.`);
-// 	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, isIOS ? 1 : 2, `2: Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
+// 	TKUnit.assertEqual(btn2.nativeBackgroundRedraws, __APPLE__ ? 1 : 2, `2: Expected ${btn2.id}'s native background to propagated exactly once when inflating from xml.`);
 
 // 	helper.waitUntilLayoutReady(btn2);
 

@@ -45,7 +45,7 @@ jobs:
 
       # TODO: build ui-mobile-base first
       - name: Build @nativescript/core
-        run: npx nx run core:build.npm
+        run: npx nx build core
 
       - name: Publish @nativescript/core
         working-directory: dist/packages/core
