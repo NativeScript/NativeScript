@@ -8128,7 +8128,9 @@ declare const enum malloc_zone_malloc_options_t {
 
 	MALLOC_ZONE_MALLOC_OPTION_NONE = 0,
 
-	MALLOC_ZONE_MALLOC_OPTION_CLEAR = 1
+	MALLOC_ZONE_MALLOC_OPTION_CLEAR = 1,
+
+	MALLOC_ZONE_MALLOC_OPTION_CANONICAL_TAG = 2
 }
 
 /**
@@ -10990,6 +10992,12 @@ declare const enum virtual_memory_guard_exception_code_t {
 
 	kGUARD_EXC_RECLAIM_ACCOUNTING_FAILURE = 9,
 
+	kGUARD_EXC_SEC_IOPL_ON_EXEC_PAGE = 10,
+
+	kGUARD_EXC_SEC_EXEC_ON_IOPL_PAGE = 11,
+
+	kGUARD_EXC_SEC_UPL_WRITE_ON_EXEC_REGION = 12,
+
 	kGUARD_EXC_SEC_ACCESS_FAULT = 98,
 
 	kGUARD_EXC_SEC_ASYNC_ACCESS_FAULT = 99,
@@ -11240,6 +11248,7 @@ interface vm_region_submap_info_64 {
 	behavior: number;
 	object_id: number;
 	user_wired_count: number;
+	flags: number;
 	pages_reusable: number;
 	object_id_full: number;
 }
@@ -11259,6 +11268,7 @@ interface vm_region_submap_short_info_64 {
 	behavior: number;
 	object_id: number;
 	user_wired_count: number;
+	flags: number;
 }
 declare var vm_region_submap_short_info_64: interop.StructType<vm_region_submap_short_info_64>;
 

@@ -273,9 +273,22 @@ export class PageTransition extends Transition {
 		newFragment.setSharedElementEnterTransition(transitionSet);
 		newFragment.setSharedElementReturnTransition(transitionSet);
 
+		// Guard against duplicate shared element names being added to the same transaction
+		const addedSharedElementNames = new Set();
 		presenting.forEach((v) => {
+			const name = v?.sharedTransitionTag;
+			const nativeView = v?.nativeView;
+			if (!name || !nativeView || addedSharedElementNames.has(name)) {
+				// prevent duplicates or invalid items
+				return;
+			}
 			setTransitionName(v);
-			fragmentTransaction.addSharedElement(v.nativeView, v.sharedTransitionTag);
+			try {
+				fragmentTransaction.addSharedElement(nativeView, name);
+				addedSharedElementNames.add(name);
+			} catch (err) {
+				// ignore duplicates or issues adding shared element to avoid crashing
+			}
 		});
 		if (toPage.isLoaded) {
 			onPageLoaded();
