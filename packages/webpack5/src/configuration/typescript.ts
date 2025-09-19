@@ -13,7 +13,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const virtualEntryPath = path.resolve(
 		__dirname,
 		// Note: this is possible if needed
-		// at moment it's not but just leaving as note for futre
+		// at moment it's not but just leaving as note for future
 		// `../stubs/virtual-entry-typescript.${env.commonjs ? 'js' : 'mjs'}`,
 		`../stubs/virtual-entry-typescript.js`,
 	);

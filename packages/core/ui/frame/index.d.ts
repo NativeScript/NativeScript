@@ -1,17 +1,11 @@
-import { NavigationType, FrameBase } from './frame-common';
-import { NavigatedData, Page } from '../page';
-import { Observable, EventData } from '../../data/observable';
-import { Property, View } from '../core/view';
-import { Transition } from '../transition';
-import { BackstackEntry } from './frame-interfaces';
+import type { NavigationType, FrameBase } from './frame-common';
+import type { NavigatedData, Page } from '../page';
+import type { Observable, EventData } from '../../data/observable';
+import type { Property, View } from '../core/view';
+import type { Transition } from '../transition';
+import type { BackstackEntry, NavigationData } from './frame-interfaces';
 
 export * from './frame-interfaces';
-
-export interface NavigationData extends EventData {
-	entry?: BackstackEntry;
-	fromEntry?: BackstackEntry;
-	isBack?: boolean;
-}
 
 /**
  * Represents the logical View unit that is responsible for navigation within an application.
@@ -457,41 +451,6 @@ export interface NavigationTransition {
 }
 
 /**
- * Represents an entry in the back stack of a Frame object.
- */
-export interface BackstackEntry {
-	entry: NavigationEntry;
-	resolvedPage: Page;
-
-	//@private
-	/**
-	 * @private
-	 */
-	navDepth: number;
-	/**
-	 * @private
-	 */
-	fragmentTag: string;
-	/**
-	 * @private
-	 */
-	fragment?: any;
-	/**
-	 * @private
-	 */
-	viewSavedState?: any;
-	/**
-	 * @private
-	 */
-	frameId?: number;
-	/**
-	 * @private
-	 */
-	recreated?: boolean;
-	//@endprivate
-}
-
-/**
  * Represents the Android-specific Frame object, aggregated within the common Frame one.
  * In Android there are two types of navigation - using new Activity instances or using Fragments within the main Activity.
  * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
@@ -529,6 +488,19 @@ export interface AndroidFrame extends Observable {
 	 * @param page The Page instance to search for.
 	 */
 	fragmentForPage(entry: BackstackEntry): any;
+
+	// common properties
+	_resolvedPage?: Page;
+	_currentEntry?: BackstackEntry;
+	_executingContext?: NavigationContext;
+	_inheritStyles?(page: Page): void;
+	isLoaded?: boolean;
+	_styleScope?: any;
+	_addView?(view: View): void;
+	nativeViewProtected?: any /* android.view.View */;
+	_originalBackground?: any /* android.graphics.drawable.Drawable */;
+	backgroundColor?: any;
+	owner?: any;
 }
 
 export interface AndroidActivityCallbacks {
@@ -545,20 +517,6 @@ export interface AndroidActivityCallbacks {
 	onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<string>, grantResults: Array<number>, superFunc: Function): void;
 	onActivityResult(activity: any, requestCode: number, resultCode: number, data: any, superFunc: Function);
 	onNewIntent(activity: any, intent: any, superSetIntentFunc: Function, superFunc: Function): void;
-}
-
-export interface AndroidFragmentCallbacks {
-	onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
-	onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
-	onCreate(fragment: any, savedInstanceState: any, superFunc: Function): void;
-	onCreateView(fragment: any, inflater: any, container: any, savedInstanceState: any, superFunc: Function): any;
-	onSaveInstanceState(fragment: any, outState: any, superFunc: Function): void;
-	onDestroyView(fragment: any, superFunc: Function): void;
-	onDestroy(fragment: any, superFunc: Function): void;
-	onPause(fragment: any, superFunc: Function): void;
-	onResume(fragment: any, superFunc: Function): void;
-	onStop(fragment: any, superFunc: Function): void;
-	toStringOverride(fragment: any, superFunc: Function): string;
 }
 
 /* tslint:disable */

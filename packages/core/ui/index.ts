@@ -1,7 +1,9 @@
 export { ActionBar, ActionItem, ActionItems, NavigationButton } from './action-bar';
 export { ActivityIndicator } from './activity-indicator';
-export { Animation, KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation';
-export type { AnimationDefinition } from './animation';
+export { Animation, _resolveAnimationCurve } from './animation';
+export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation/keyframe-animation';
+export type { AnimationDefinition, Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo, Point3D, AnimationPromise, Cancelable } from './animation/animation-types';
+export * from './animation/animation-shared';
 export { Builder } from './builder';
 export type { LoadOptions } from './builder';
 export type { ComponentModule } from './builder/component-builder';
@@ -9,24 +11,37 @@ export { sanitizeModuleName } from '../utils/common';
 export { Button } from './button';
 export { ContentView } from './content-view';
 export { Binding } from './core/bindable';
-export type { BindingOptions } from './core/bindable';
+export type { BindingOptions } from './core/bindable/bindable-types';
 export { ControlStateChangeListener } from './core/control-state-change';
 export { ViewBase, eachDescendant, getAncestor, getViewById, booleanConverter, querySelectorAll } from './core/view-base';
 export type { ShowModalOptions } from './core/view-base';
 export { View, CSSType, ContainerView, ViewHelper, AndroidHelper, IOSHelper, isUserInteractionEnabledProperty, PseudoClassHandler, CustomLayoutView } from './core/view';
-export type { Template, KeyedTemplate, ShownModallyData, AddArrayFromBuilder, AddChildFromBuilder, Size } from './core/view';
-export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue, makeParser, makeValidator } from './core/properties';
+export type { Template, KeyedTemplate, AddArrayFromBuilder, AddChildFromBuilder, GlassEffectConfig, GlassEffectType, GlassEffectVariant } from './core/view';
+export type { ShownModallyData, Size } from './core/view/view-interfaces';
+export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, makeParser, makeValidator } from './core/properties';
+export { unsetValue } from './core/properties/property-shared';
 export { addWeakEventListener, removeWeakEventListener } from './core/weak-event-listener';
 export { DatePicker } from './date-picker';
 
-// No need go export dialogs, they are already export exported globally
+// import { installPolyfills } from '../globals';
+// No need to export dialogs, they are already export exported globally
+import * as uiDialogs from '../ui/dialogs';
+global.alert = uiDialogs.alert;
+// @ts-ignore
+global.confirm = uiDialogs.confirm;
+// @ts-ignore
+global.prompt = uiDialogs.prompt;
+global.login = uiDialogs.login;
+global.action = uiDialogs.action;
+// global.registerModule('ui-dialogs', () => uiDialogs);
+// installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
 export { DialogStrings, action, alert, confirm, login, prompt, getCurrentPage, Dialogs, inputType, capitalizationType } from './dialogs';
 export type { DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions } from './dialogs';
 
 export * from './editable-text-base';
 export { isEmbedded } from './embedding';
-export { Frame, setActivityCallbacks } from './frame';
-export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks } from './frame';
+export { Frame, setActivityCallbacks, NavigationType } from './frame';
+export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks, NavigationData } from './frame';
 
 export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDirection, GestureEvents, TouchManager } from './gestures';
 export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData, TouchAnimationOptions, VisionHoverOptions } from './gestures';
@@ -60,12 +75,16 @@ export type { AccessibilityDecrementEventData, AccessibilityIncrementEventData }
 export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS, resolveFileNameFromUrl } from './styling/style-scope';
 export { Background } from './styling/background';
 export type { CacheMode } from './styling/background';
-export { parseCSSShadow } from './styling/css-shadow';
+export { parseCSSShadow, ShadowCSSValues } from './styling/css-shadow';
+export { parseCSSStroke, StrokeCSSValues } from './styling/css-stroke';
 export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
 export { Font, FontStyle, FontWeight, FontVariationSettings } from './styling/font';
+export type { FontStyleType, FontWeightType, FontVariationSettingsType } from './styling/font-interfaces';
 export { Style } from './styling/style';
 export type { CommonLayoutParams } from './styling/style';
 export * from './styling/style-properties';
+export * from './styling/length-shared';
+export { LinearGradient } from './styling/linear-gradient';
 export { CssAnimationParser, parseKeyframeDeclarations } from './styling/css-animation-parser';
 export { CSSHelper } from './styling/css-selector';
 

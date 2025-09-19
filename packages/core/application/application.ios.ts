@@ -1,12 +1,53 @@
 import { profile } from '../profiling';
-import { View } from '../ui/core/view';
+import type { View } from '../ui/core/view';
 import { isEmbedded } from '../ui/embedding';
 import { IOSHelper } from '../ui/core/view/view-helper';
-import { NavigationEntry } from '../ui/frame/frame-interfaces';
-import * as Utils from '../utils';
-import type { iOSApplication as IiOSApplication } from './application';
-import { ApplicationCommon } from './application-common';
+import type { NavigationEntry } from '../ui/frame/frame-interfaces';
+import { getWindow } from '../utils/native-helper';
+import { SDK_VERSION } from '../utils/constants';
+import { ios as iosUtils } from '../utils/native-helper';
+import { ApplicationCommon, initializeSdkVersionClass } from './application-common';
 import { ApplicationEventData } from './application-interfaces';
+import { Observable } from '../data/observable';
+import { Trace } from '../trace';
+import {
+	AccessibilityServiceEnabledPropName,
+	CommonA11YServiceEnabledObservable,
+	SharedA11YObservable,
+	a11yServiceClasses,
+	a11yServiceDisabledClass,
+	a11yServiceEnabledClass,
+	fontScaleCategoryClasses,
+	fontScaleExtraLargeCategoryClass,
+	fontScaleExtraSmallCategoryClass,
+	fontScaleMediumCategoryClass,
+	getCurrentA11YServiceClass,
+	getCurrentFontScaleCategory,
+	getCurrentFontScaleClass,
+	getFontScaleCssClasses,
+	setCurrentA11YServiceClass,
+	setCurrentFontScaleCategory,
+	setCurrentFontScaleClass,
+	setFontScaleCssClasses,
+	FontScaleCategory,
+	getClosestValidFontScale,
+	VALID_FONT_SCALES,
+	setFontScale,
+	getFontScale,
+	setInitFontScale,
+	getFontScaleCategory,
+	setInitAccessibilityCssHelper,
+	notifyAccessibilityFocusState,
+	AccessibilityLiveRegion,
+	AccessibilityRole,
+	AccessibilityState,
+	AccessibilityTrait,
+	isA11yEnabled,
+	setA11yEnabled,
+	enforceArray,
+} from '../accessibility/accessibility-common';
+import { iosAddNotificationObserver, iosRemoveNotificationObserver } from './helpers';
+import { getiOSWindow, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setiOSWindow, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 @NativeClass
 class CADisplayLinkTarget extends NSObject {
@@ -41,26 +82,6 @@ class CADisplayLinkTarget extends NSObject {
 }
 
 @NativeClass
-class NotificationObserver extends NSObject {
-	private _onReceiveCallback: (notification: NSNotification) => void;
-
-	public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
-		const observer = <NotificationObserver>super.new();
-		observer._onReceiveCallback = onReceiveCallback;
-
-		return observer;
-	}
-
-	public onReceive(notification: NSNotification): void {
-		this._onReceiveCallback(notification);
-	}
-
-	public static ObjCExposedMethods = {
-		onReceive: { returns: interop.types.void, params: [NSNotification] },
-	};
-}
-
-@NativeClass
 class Responder extends UIResponder implements UIApplicationDelegate {
 	get window(): UIWindow {
 		return Application.ios.window;
@@ -73,11 +94,9 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 	static ObjCProtocols = [UIApplicationDelegate];
 }
 
-export class iOSApplication extends ApplicationCommon implements IiOSApplication {
+export class iOSApplication extends ApplicationCommon {
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
-	private _window: UIWindow;
-	private _notificationObservers: NotificationObserver[] = [];
 	private _rootView: View;
 
 	displayedOnce = false;
@@ -108,7 +127,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	run(entry?: string | NavigationEntry): void {
-		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
 		this.started = true;
 
 		if (this.nativeApp) {
@@ -129,8 +148,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 		this._rootView = rootView;
+		setRootView(rootView);
 		// Attach to the existing iOS app
-		const window = Utils.ios.getWindow();
+		const window = getWindow() as UIWindow;
 
 		if (!window) {
 			return;
@@ -155,7 +175,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			this.setViewControllerView(rootView);
 			embedderDelegate.presentNativeScriptApp(controller);
 		} else {
-			const visibleVC = Utils.ios.getVisibleViewController(rootController);
+			const visibleVC = iosUtils.getVisibleViewController(rootController);
 			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
 		}
 
@@ -198,7 +218,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 			if (minFrameRateDisabled) {
 				let max = 120;
-				const deviceMaxFrames = Utils.ios.getMainScreen().maximumFramesPerSecond;
+				const deviceMaxFrames = iosUtils.getMainScreen().maximumFramesPerSecond;
 				if (options?.max) {
 					if (deviceMaxFrames) {
 						// iOS 10.3
@@ -209,7 +229,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					}
 				}
 
-				if (Utils.SDK_VERSION >= 15 || __VISIONOS__) {
+				if (SDK_VERSION >= 15 || __VISIONOS__) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
 					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
@@ -243,12 +263,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		// TODO: consideration
 		// may not want to cache this value given the potential of multiple scenes
 		// particularly with SwiftUI app lifecycle based apps
-		if (!this._window) {
+		if (!getiOSWindow()) {
 			// Note: NativeScriptViewFactory.getKeyWindow will always be used in SwiftUI app lifecycle based apps
-			this._window = Utils.ios.getWindow();
+			setiOSWindow(getWindow() as UIWindow);
 		}
 
-		return this._window;
+		return getiOSWindow();
 	}
 
 	get delegate(): UIApplicationDelegate & { prototype: UIApplicationDelegate } {
@@ -304,24 +324,16 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
-		const observer = NotificationObserver.initWithCallback(onReceiveCallback);
-		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, 'onReceive', notificationName, null);
-		this._notificationObservers.push(observer);
-
-		return observer;
+		return iosAddNotificationObserver(notificationName, onReceiveCallback);
 	}
 
-	removeNotificationObserver(observer: any, notificationName: string) {
-		const index = this._notificationObservers.indexOf(observer);
-		if (index >= 0) {
-			this._notificationObservers.splice(index, 1);
-			NSNotificationCenter.defaultCenter.removeObserverNameObject(observer, notificationName, null);
-		}
+	removeNotificationObserver(observer: any /* NotificationObserver */, notificationName: string) {
+		iosRemoveNotificationObserver(observer, notificationName);
 	}
 
 	protected getSystemAppearance(): 'light' | 'dark' {
 		// userInterfaceStyle is available on UITraitCollection since iOS 12.
-		if ((!__VISIONOS__ && Utils.SDK_VERSION <= 11) || !this.rootController) {
+		if ((!__VISIONOS__ && SDK_VERSION <= 11) || !this.rootController) {
 			return null;
 		}
 
@@ -367,12 +379,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
 
-		if (this._window) {
+		if (getiOSWindow()) {
 			if (root !== null && !isEmbedded()) {
 				this.setWindowContent(root);
 			}
 		} else {
-			this._window = this.window; // UIApplication.sharedApplication.keyWindow;
+			setiOSWindow(this.window);
 		}
 	}
 
@@ -400,6 +412,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		const controller = this.getViewController(rootView);
 
 		this._rootView = rootView;
+		setRootView(rootView);
 
 		// setup view as styleScopeHost
 		rootView._setupAsRootView({});
@@ -428,17 +441,31 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	// Observers
 	@profile
 	private didFinishLaunchingWithOptions(notification: NSNotification) {
+		if (__DEV__) {
+			/**
+			 * v9+ runtime crash handling
+			 * When crash occurs during boot, we let runtime take over
+			 */
+			if (notification.userInfo) {
+				const isBootCrash = notification.userInfo.objectForKey('NativeScriptBootCrash');
+				if (isBootCrash) {
+					// fatal crash will show in console without app exiting
+					// allowing hot reload fixes to continue
+					return;
+				}
+			}
+		}
 		this.setMaxRefreshRate();
 		// ensures window is assigned to proper window scene
-		this._window = this.window;
+		setiOSWindow(this.window);
 
-		if (!this._window) {
+		if (!getiOSWindow()) {
 			// if still no window, create one
-			this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+			setiOSWindow(UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds));
 		}
 
 		if (!__VISIONOS__) {
-			this.window.backgroundColor = Utils.SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+			this.window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		}
 
 		this.notifyAppStarted(notification);
@@ -514,3 +541,523 @@ global.__onLiveSyncCore = function (context?: ModuleContext) {
 export * from './application-common';
 export const Application = iosApp;
 export const AndroidApplication = undefined;
+
+function fontScaleChanged(origFontScale: number) {
+	const oldValue = getFontScale();
+	setFontScale(getClosestValidFontScale(origFontScale));
+	const currentFontScale = getFontScale();
+
+	if (oldValue !== currentFontScale) {
+		Application.notify({
+			eventName: Application.fontScaleChangedEvent,
+			object: Application,
+			newValue: currentFontScale,
+		});
+	}
+}
+
+export function getCurrentFontScale(): number {
+	setupConfigListener();
+
+	return getFontScale();
+}
+
+const sizeMap = new Map<string, number>([
+	[UIContentSizeCategoryExtraSmall, 0.5],
+	[UIContentSizeCategorySmall, 0.7],
+	[UIContentSizeCategoryMedium, 0.85],
+	[UIContentSizeCategoryLarge, 1],
+	[UIContentSizeCategoryExtraLarge, 1.15],
+	[UIContentSizeCategoryExtraExtraLarge, 1.3],
+	[UIContentSizeCategoryExtraExtraExtraLarge, 1.5],
+	[UIContentSizeCategoryAccessibilityMedium, 2],
+	[UIContentSizeCategoryAccessibilityLarge, 2.5],
+	[UIContentSizeCategoryAccessibilityExtraLarge, 3],
+	[UIContentSizeCategoryAccessibilityExtraExtraLarge, 3.5],
+	[UIContentSizeCategoryAccessibilityExtraExtraExtraLarge, 4],
+]);
+
+function contentSizeUpdated(fontSize: string) {
+	if (sizeMap.has(fontSize)) {
+		fontScaleChanged(sizeMap.get(fontSize));
+
+		return;
+	}
+
+	fontScaleChanged(1);
+}
+
+function useIOSFontScale() {
+	if (Application.ios.nativeApp) {
+		contentSizeUpdated(Application.ios.nativeApp.preferredContentSizeCategory);
+	} else {
+		fontScaleChanged(1);
+	}
+}
+
+let fontSizeObserver;
+function setupConfigListener(attempt = 0) {
+	if (fontSizeObserver) {
+		return;
+	}
+
+	if (!Application.ios.nativeApp) {
+		if (attempt > 100) {
+			fontScaleChanged(1);
+
+			return;
+		}
+
+		// Couldn't get launchEvent to trigger.
+		setTimeout(() => setupConfigListener(attempt + 1), 1);
+
+		return;
+	}
+
+	fontSizeObserver = Application.ios.addNotificationObserver(UIContentSizeCategoryDidChangeNotification, (args) => {
+		const fontSize = args.userInfo.valueForKey(UIContentSizeCategoryNewValueKey);
+		contentSizeUpdated(fontSize);
+	});
+
+	Application.on(Application.exitEvent, () => {
+		if (fontSizeObserver) {
+			Application.ios.removeNotificationObserver(fontSizeObserver, UIContentSizeCategoryDidChangeNotification);
+			fontSizeObserver = null;
+		}
+
+		Application.off(Application.resumeEvent, useIOSFontScale);
+	});
+
+	Application.on(Application.resumeEvent, useIOSFontScale);
+
+	useIOSFontScale();
+}
+setInitFontScale(setupConfigListener);
+
+/**
+ * Convert array of values into a bitmask.
+ *
+ * @param values string values
+ * @param map    map lower-case name to integer value.
+ */
+function inputArrayToBitMask(values: string | string[], map: Map<string, number>): number {
+	return (
+		enforceArray(values)
+			.filter((value) => !!value)
+			.map((value) => `${value}`.toLocaleLowerCase())
+			.filter((value) => map.has(value))
+			.reduce((res, value) => res | map.get(value), 0) || 0
+	);
+}
+
+let AccessibilityTraitsMap: Map<string, number>;
+let RoleTypeMap: Map<AccessibilityRole, number>;
+
+let nativeFocusedNotificationObserver;
+let lastFocusedView: WeakRef<View>;
+function ensureNativeClasses() {
+	if (AccessibilityTraitsMap && nativeFocusedNotificationObserver) {
+		return;
+	}
+
+	AccessibilityTraitsMap = new Map<AccessibilityTrait, number>([
+		[AccessibilityTrait.AllowsDirectInteraction, UIAccessibilityTraitAllowsDirectInteraction],
+		[AccessibilityTrait.CausesPageTurn, UIAccessibilityTraitCausesPageTurn],
+		[AccessibilityTrait.NotEnabled, UIAccessibilityTraitNotEnabled],
+		[AccessibilityTrait.Selected, UIAccessibilityTraitSelected],
+		[AccessibilityTrait.UpdatesFrequently, UIAccessibilityTraitUpdatesFrequently],
+	]);
+
+	RoleTypeMap = new Map<AccessibilityRole, number>([
+		[AccessibilityRole.Adjustable, UIAccessibilityTraitAdjustable],
+		[AccessibilityRole.Button, UIAccessibilityTraitButton],
+		[AccessibilityRole.Checkbox, UIAccessibilityTraitButton],
+		[AccessibilityRole.Header, UIAccessibilityTraitHeader],
+		[AccessibilityRole.KeyboardKey, UIAccessibilityTraitKeyboardKey],
+		[AccessibilityRole.Image, UIAccessibilityTraitImage],
+		[AccessibilityRole.ImageButton, UIAccessibilityTraitImage | UIAccessibilityTraitButton],
+		[AccessibilityRole.Link, UIAccessibilityTraitLink],
+		[AccessibilityRole.None, UIAccessibilityTraitNone],
+		[AccessibilityRole.PlaysSound, UIAccessibilityTraitPlaysSound],
+		[AccessibilityRole.RadioButton, UIAccessibilityTraitButton],
+		[AccessibilityRole.Search, UIAccessibilityTraitSearchField],
+		[AccessibilityRole.StaticText, UIAccessibilityTraitStaticText],
+		[AccessibilityRole.StartsMediaSession, UIAccessibilityTraitStartsMediaSession],
+		[AccessibilityRole.Summary, UIAccessibilityTraitSummaryElement],
+		[AccessibilityRole.Switch, UIAccessibilityTraitButton],
+	]);
+
+	nativeFocusedNotificationObserver = Application.ios.addNotificationObserver(UIAccessibilityElementFocusedNotification, (args: NSNotification) => {
+		const uiView = args.userInfo?.objectForKey(UIAccessibilityFocusedElementKey) as UIView;
+		if (!uiView?.tag) {
+			return;
+		}
+
+		const rootView = Application.getRootView();
+
+		// We use the UIView's tag to find the NativeScript View by its domId.
+		let view = rootView.getViewByDomId<View>(uiView?.tag);
+		if (!view) {
+			for (const modalView of <Array<View>>rootView._getRootModalViews()) {
+				view = modalView.getViewByDomId(uiView?.tag);
+				if (view) {
+					break;
+				}
+			}
+		}
+
+		if (!view) {
+			return;
+		}
+
+		const lastView = lastFocusedView?.deref();
+		if (lastView && view !== lastView) {
+			const lastFocusedUIView = lastView.nativeViewProtected as UIView;
+			if (lastFocusedUIView) {
+				lastFocusedView = null;
+
+				notifyAccessibilityFocusState(lastView, false, true);
+			}
+		}
+
+		lastFocusedView = new WeakRef(view);
+
+		notifyAccessibilityFocusState(view, true, false);
+	});
+
+	Application.on(Application.exitEvent, () => {
+		if (nativeFocusedNotificationObserver) {
+			Application.ios.removeNotificationObserver(nativeFocusedNotificationObserver, UIAccessibilityElementFocusedNotification);
+		}
+
+		nativeFocusedNotificationObserver = null;
+		lastFocusedView = null;
+	});
+}
+
+export function updateAccessibilityProperties(view: View): void {
+	const uiView = view.nativeViewProtected as UIView;
+	if (!uiView) {
+		return;
+	}
+
+	ensureNativeClasses();
+
+	const accessibilityRole = view.accessibilityRole;
+	const accessibilityState = view.accessibilityState;
+
+	if (!view.accessible || view.accessibilityHidden) {
+		uiView.accessibilityTraits = UIAccessibilityTraitNone;
+
+		return;
+	}
+
+	// NOTE: left here for various core inspection passes while running the toolbox app
+	// console.log('--- Accessible element: ', view.constructor.name);
+	// console.log('accessibilityLabel: ', view.accessibilityLabel);
+	// console.log('accessibilityRole: ', accessibilityRole);
+	// console.log('accessibilityState: ', accessibilityState);
+	// console.log('accessibilityValue: ', view.accessibilityValue);
+
+	let a11yTraits = UIAccessibilityTraitNone;
+	if (RoleTypeMap.has(accessibilityRole)) {
+		a11yTraits |= RoleTypeMap.get(accessibilityRole);
+	}
+
+	switch (accessibilityRole) {
+		case AccessibilityRole.Checkbox:
+		case AccessibilityRole.RadioButton:
+		case AccessibilityRole.Switch: {
+			if (accessibilityState === AccessibilityState.Checked) {
+				a11yTraits |= AccessibilityTraitsMap.get(AccessibilityTrait.Selected);
+			}
+			break;
+		}
+		default: {
+			if (accessibilityState === AccessibilityState.Selected) {
+				a11yTraits |= AccessibilityTraitsMap.get(AccessibilityTrait.Selected);
+			}
+			if (accessibilityState === AccessibilityState.Disabled) {
+				a11yTraits |= AccessibilityTraitsMap.get(AccessibilityTrait.NotEnabled);
+			}
+			break;
+		}
+	}
+
+	const UpdatesFrequentlyTrait = AccessibilityTraitsMap.get(AccessibilityTrait.UpdatesFrequently);
+
+	switch (view.accessibilityLiveRegion) {
+		case AccessibilityLiveRegion.Polite:
+		case AccessibilityLiveRegion.Assertive: {
+			a11yTraits |= UpdatesFrequentlyTrait;
+			break;
+		}
+		default: {
+			a11yTraits &= ~UpdatesFrequentlyTrait;
+			break;
+		}
+	}
+
+	// NOTE: left here for various core inspection passes while running the toolbox app
+	// if (view.accessibilityLiveRegion) {
+	// 	console.log('accessibilityLiveRegion:', view.accessibilityLiveRegion);
+	// }
+
+	if (view.accessibilityMediaSession) {
+		a11yTraits |= RoleTypeMap.get(AccessibilityRole.StartsMediaSession);
+	}
+
+	// NOTE: There were duplicated types in traits and roles previously which we conslidated
+	// not sure if this is still needed
+	// accessibilityTraits used to be stored on {N} view component but if the above
+	// is combining all traits fresh each time through, don't believe we need to keep track or previous traits
+	// if (view.accessibilityTraits) {
+	// 	a11yTraits |= inputArrayToBitMask(view.accessibilityTraits, AccessibilityTraitsMap);
+	// }
+
+	// NOTE: left here for various core inspection passes while running the toolbox app
+	// console.log('a11yTraits:', a11yTraits);
+	// console.log('    ');
+
+	uiView.accessibilityTraits = a11yTraits;
+}
+setA11yUpdatePropertiesCallback(updateAccessibilityProperties);
+
+export const sendAccessibilityEvent = (): void => {};
+
+export function isAccessibilityServiceEnabled(): boolean {
+	const accessibilityServiceEnabled = isA11yEnabled();
+	if (typeof accessibilityServiceEnabled === 'boolean') {
+		return accessibilityServiceEnabled;
+	}
+
+	let isVoiceOverRunning: () => boolean;
+	if (typeof UIAccessibilityIsVoiceOverRunning === 'function') {
+		isVoiceOverRunning = UIAccessibilityIsVoiceOverRunning;
+	} else {
+		// iOS is too old to tell us if voice over is enabled
+		if (typeof UIAccessibilityIsVoiceOverRunning !== 'function') {
+			setA11yEnabled(false);
+			return isA11yEnabled();
+		}
+	}
+
+	setA11yEnabled(isVoiceOverRunning());
+
+	let voiceOverStatusChangedNotificationName: string | null = null;
+	if (typeof UIAccessibilityVoiceOverStatusDidChangeNotification !== 'undefined') {
+		voiceOverStatusChangedNotificationName = UIAccessibilityVoiceOverStatusDidChangeNotification;
+	} else if (typeof UIAccessibilityVoiceOverStatusChanged !== 'undefined') {
+		voiceOverStatusChangedNotificationName = UIAccessibilityVoiceOverStatusChanged;
+	}
+
+	if (voiceOverStatusChangedNotificationName) {
+		nativeObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
+			setA11yEnabled(isVoiceOverRunning());
+		});
+
+		Application.on(Application.exitEvent, () => {
+			if (nativeObserver) {
+				Application.ios.removeNotificationObserver(nativeObserver, voiceOverStatusChangedNotificationName);
+			}
+
+			setA11yEnabled(undefined);
+			nativeObserver = null;
+		});
+	}
+
+	Application.on(Application.resumeEvent, () => {
+		setA11yEnabled(isVoiceOverRunning());
+	});
+
+	return isA11yEnabled();
+}
+
+export function getAndroidAccessibilityManager(): null {
+	return null;
+}
+
+let sharedA11YObservable: SharedA11YObservable;
+let nativeObserver;
+
+function getSharedA11YObservable(): SharedA11YObservable {
+	if (sharedA11YObservable) {
+		return sharedA11YObservable;
+	}
+
+	sharedA11YObservable = new SharedA11YObservable();
+
+	let isVoiceOverRunning: () => boolean;
+	if (typeof UIAccessibilityIsVoiceOverRunning === 'function') {
+		isVoiceOverRunning = UIAccessibilityIsVoiceOverRunning;
+	} else {
+		if (typeof UIAccessibilityIsVoiceOverRunning !== 'function') {
+			Trace.write(`UIAccessibilityIsVoiceOverRunning() - is not a function`, Trace.categories.Accessibility, Trace.messageType.error);
+
+			isVoiceOverRunning = () => false;
+		}
+	}
+
+	sharedA11YObservable.set(AccessibilityServiceEnabledPropName, isVoiceOverRunning());
+
+	let voiceOverStatusChangedNotificationName: string | null = null;
+	if (typeof UIAccessibilityVoiceOverStatusDidChangeNotification !== 'undefined') {
+		// iOS 11+
+		voiceOverStatusChangedNotificationName = UIAccessibilityVoiceOverStatusDidChangeNotification;
+	} else if (typeof UIAccessibilityVoiceOverStatusChanged !== 'undefined') {
+		// iOS <11
+		voiceOverStatusChangedNotificationName = UIAccessibilityVoiceOverStatusChanged;
+	}
+
+	if (voiceOverStatusChangedNotificationName) {
+		nativeObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
+			sharedA11YObservable?.set(AccessibilityServiceEnabledPropName, isVoiceOverRunning());
+		});
+
+		Application.on(Application.exitEvent, () => {
+			if (nativeObserver) {
+				Application.ios.removeNotificationObserver(nativeObserver, voiceOverStatusChangedNotificationName);
+			}
+
+			nativeObserver = null;
+
+			if (sharedA11YObservable) {
+				sharedA11YObservable.removeEventListener(Observable.propertyChangeEvent);
+
+				sharedA11YObservable = null;
+			}
+		});
+	}
+
+	Application.on(Application.resumeEvent, () => sharedA11YObservable.set(AccessibilityServiceEnabledPropName, isVoiceOverRunning()));
+
+	return sharedA11YObservable;
+}
+
+export class AccessibilityServiceEnabledObservable extends CommonA11YServiceEnabledObservable {
+	constructor() {
+		super(getSharedA11YObservable());
+	}
+}
+
+let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
+export function ensureClasses() {
+	if (accessibilityServiceObservable) {
+		return;
+	}
+
+	setFontScaleCssClasses(new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`])));
+
+	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
+
+	// Initialize SDK version CSS class once
+	initializeSdkVersionClass(Application.getRootView());
+}
+
+export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: string[], newCssClass: string) => void): void {
+	const fontScale = getFontScale();
+	const fontScaleCategory = getFontScaleCategory();
+	const fontScaleCssClasses = getFontScaleCssClasses();
+	const oldFontScaleClass = getCurrentFontScaleClass();
+	if (fontScaleCssClasses.has(fontScale)) {
+		setCurrentFontScaleClass(fontScaleCssClasses.get(fontScale));
+	} else {
+		setCurrentFontScaleClass(fontScaleCssClasses.get(1));
+	}
+
+	if (oldFontScaleClass !== getCurrentFontScaleClass()) {
+		applyRootCssClass([...fontScaleCssClasses.values()], getCurrentFontScaleClass());
+	}
+
+	const oldActiveFontScaleCategory = getCurrentFontScaleCategory();
+	switch (fontScaleCategory) {
+		case FontScaleCategory.ExtraSmall: {
+			setCurrentFontScaleCategory(fontScaleExtraSmallCategoryClass);
+			break;
+		}
+		case FontScaleCategory.Medium: {
+			setCurrentFontScaleCategory(fontScaleMediumCategoryClass);
+			break;
+		}
+		case FontScaleCategory.ExtraLarge: {
+			setCurrentFontScaleCategory(fontScaleExtraLargeCategoryClass);
+			break;
+		}
+		default: {
+			setCurrentFontScaleCategory(fontScaleMediumCategoryClass);
+			break;
+		}
+	}
+
+	if (oldActiveFontScaleCategory !== getCurrentFontScaleCategory()) {
+		applyRootCssClass(fontScaleCategoryClasses, getCurrentFontScaleCategory());
+	}
+
+	const oldA11YStatusClass = getCurrentA11YServiceClass();
+	if (accessibilityServiceObservable.accessibilityServiceEnabled) {
+		setCurrentA11YServiceClass(a11yServiceEnabledClass);
+	} else {
+		setCurrentA11YServiceClass(a11yServiceDisabledClass);
+	}
+
+	if (oldA11YStatusClass !== getCurrentA11YServiceClass()) {
+		applyRootCssClass(a11yServiceClasses, getCurrentA11YServiceClass());
+	}
+}
+
+function applyRootCssClass(cssClasses: string[], newCssClass: string): void {
+	const rootView = Application.getRootView();
+	if (!rootView) {
+		return;
+	}
+
+	Application.applyCssClass(rootView, cssClasses, newCssClass);
+
+	const rootModalViews = <Array<View>>rootView._getRootModalViews();
+	rootModalViews.forEach((rootModalView) => Application.applyCssClass(rootModalView, cssClasses, newCssClass));
+}
+
+function applyFontScaleToRootViews(): void {
+	const rootView = Application.getRootView();
+	if (!rootView) {
+		return;
+	}
+
+	const fontScale = getCurrentFontScale();
+
+	rootView.style.fontScaleInternal = fontScale;
+
+	const rootModalViews = <Array<View>>rootView._getRootModalViews();
+	rootModalViews.forEach((rootModalView) => (rootModalView.style.fontScaleInternal = fontScale));
+}
+
+export function initAccessibilityCssHelper(): void {
+	ensureClasses();
+
+	Application.on(Application.fontScaleChangedEvent, () => {
+		updateCurrentHelperClasses(applyRootCssClass);
+		applyFontScaleToRootViews();
+	});
+
+	accessibilityServiceObservable.on(AccessibilityServiceEnabledObservable.propertyChangeEvent, () => updateCurrentHelperClasses(applyRootCssClass));
+}
+setInitAccessibilityCssHelper(initAccessibilityCssHelper);
+
+const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
+function toggleApplicationEventListeners(toAdd: boolean, callback: (args: ApplicationEventData) => void) {
+	for (const eventName of applicationEvents) {
+		if (toAdd) {
+			Application.on(eventName, callback);
+		} else {
+			Application.off(eventName, callback);
+		}
+	}
+}
+setToggleApplicationEventListenersCallback(toggleApplicationEventListeners);
+
+setApplicationPropertiesCallback(() => {
+	return {
+		orientation: Application.orientation(),
+		systemAppearance: Application.systemAppearance(),
+	};
+});

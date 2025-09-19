@@ -1,21 +1,18 @@
 import { Screen, Device } from '../platform';
 import { PlatformContext, findMatch, stripQualifiers } from './qualifier-matcher';
-import { registerModulesFromFileSystem } from './non-bundle-workflow-compat';
 import { Trace } from '../trace';
-import { Application } from '../application';
+import { ModuleNameResolverType, ModuleListProvider, initAppForModuleResolver, getResolveInstance, _setResolver } from './helpers';
 
 export type { PlatformContext } from './qualifier-matcher';
 
-export type ModuleListProvider = () => string[];
-
-export class ModuleNameResolver {
+export class ModuleNameResolver implements ModuleNameResolverType {
 	private _cache = {};
 
-	constructor(private context: PlatformContext, private moduleListProvider: ModuleListProvider = global.getRegisteredModules) {
-		Application.on('livesync', (args) => clearCache());
-		Application.on('orientationChanged', (args) => {
-			resolverInstance = undefined;
-		});
+	constructor(
+		private context: PlatformContext,
+		private moduleListProvider: ModuleListProvider = global.getRegisteredModules,
+	) {
+		initAppForModuleResolver();
 	}
 
 	public resolveModuleName(path: string, ext: string): string {
@@ -46,34 +43,32 @@ export class ModuleNameResolver {
 
 		const candidates = this.getCandidates(path, ext);
 		result = findMatch(path, ext, candidates, this.context);
-
 		return result;
 	}
 
 	private getCandidates(path: string, ext: string): Array<string> {
 		const candidates = this.moduleListProvider().filter((moduleName) => moduleName.startsWith(path) && (!ext || moduleName.endsWith(ext)));
-
 		return candidates;
 	}
 }
-
-let resolverInstance: ModuleNameResolver;
 
 export function resolveModuleName(path: string, ext: string): string {
 	if (global.__snapshot) {
 		return resolveModuleSnapshot(path, ext);
 	}
 
-	if (!resolverInstance) {
-		resolverInstance = new ModuleNameResolver({
-			width: Screen.mainScreen.widthDIPs,
-			height: Screen.mainScreen.heightDIPs,
-			os: Device.os,
-			deviceType: Device.deviceType,
-		});
+	if (!getResolveInstance()) {
+		_setResolver(
+			new ModuleNameResolver({
+				width: Screen.mainScreen.widthDIPs,
+				height: Screen.mainScreen.heightDIPs,
+				os: Device.os,
+				deviceType: Device.deviceType,
+			}),
+		);
 	}
 
-	return resolverInstance.resolveModuleName(path, ext);
+	return getResolveInstance().resolveModuleName(path, ext);
 }
 
 function resolveModuleSnapshot(path, ext) {
@@ -88,14 +83,4 @@ function resolveModuleSnapshot(path, ext) {
 		os: 'Android',
 		deviceType: 'Phone',
 	}).resolveModuleName(path, ext);
-}
-
-export function clearCache() {
-	if (resolverInstance) {
-		resolverInstance.clearCache();
-	}
-}
-
-export function _setResolver(resolver: ModuleNameResolver) {
-	resolverInstance = resolver;
 }
