@@ -1,12 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, unsetValue } from '@nativescript/core/ui/core/view';
-import { Button } from '@nativescript/core/ui/button';
-import * as types from '@nativescript/core/utils/types';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { Label } from '@nativescript/core/ui/label';
-import { Trace, isIOS } from '@nativescript/core';
-import { Color } from '@nativescript/core/color';
+import { View, unsetValue, Button, StackLayout, Label, Color, isIOS, Trace, Utils, Page } from '@nativescript/core';
+import { _createBackgroundColorView, _createLabelWithBorder } from './view-tests-common';
 
 // enable the trace, it is disabled by default
 Trace.enable();
@@ -301,5 +296,40 @@ export function checkNativeBackgroundColor(v: View): boolean {
 export function checkNativeBackgroundImage(v: View): boolean {
 	const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
 
-	return bkg && !types.isNullOrUndefined(bkg.getBackgroundImage());
+	return bkg && !Utils.isNullOrUndefined(bkg.getBackgroundImage());
+}
+
+export function testBackgroundColor() {
+	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
+		const lbl = views[0];
+		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+	});
+}
+
+export function testBackgroundBorderColor() {
+	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
+		const lbl = views[0];
+		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+	});
+}
+export function testSetAndRemoveBackgroundColor() {
+	helper.buildUIAndRunTest(_createBackgroundColorView(), function (views: Array<View>) {
+		const lbl = views[0];
+		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+		lbl.backgroundColor = null;
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+	});
+}
+
+export function testBackgroundImage() {
+	const lbl = _createLabelWithBorder();
+	lbl.className = 'myClass';
+	helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
+		const page = <Page>views[1];
+		page.css = ".myClass { background-image: url('~/assets/logo.png') }";
+		TKUnit.assertEqual(checkNativeBackgroundImage(lbl), true, 'Style background-image not loaded correctly.');
+	});
 }

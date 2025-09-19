@@ -1,27 +1,16 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, isIOS, StackLayout, Page, Color, Span, FormattedString } from '@nativescript/core';
+import { View, isIOS, StackLayout, Page, Color, Span, FormattedString, BindingOptions, Observable, TextField } from '@nativescript/core';
 import { getNativeText, getNativeHint, typeTextNatively, typeTextNativelyWithReturn, getNativeSecure, getNativeFontSize, getNativeColor, getNativeBackgroundColor, getNativeTextAlignment, getNativePlaceholderColor, getNativeFocus } from './text-field-tests-native';
-
-// >> require-textfield
-import { TextField } from '@nativescript/core/ui/text-field';
-// << require-textfield
-// Other frequently used modules when working with buttons include:
-// >> require-observable-binding-options-textfield
-import { BindingOptions } from '@nativescript/core/ui/core/bindable';
-
-import { Observable } from '@nativescript/core/data/observable';
-// << require-observable-binding-options-textfield
 
 // ### Binding two TextFields text property to observable view-model property.
 // >> binding-text-property-textfield
-function pageLoaded(args) {
+export function pageLoaded(args) {
 	var page = args.object;
 	var obj = new Observable();
 	obj.set('someProperty', 'Please change this text!');
 	page.bindingContext = obj;
 }
-exports.pageLoaded = pageLoaded;
 // << binding-text-property-textfield
 
 export function test_recycling() {
@@ -187,14 +176,14 @@ export var testBindTextDirectlyToModel = function () {
 };
 
 // Supported for ios only.
-if (isIOS) {
-	exports.test_set_color = function () {
+export function test_set_color() {
+	if (__APPLE__) {
 		helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 			var textField = <TextField>views[0];
 			textField.color = new Color('red');
 			TKUnit.assert(textField.color.ios.CGColor.isEqual(textField.ios.textColor.CGColor), 'textField.color');
 		});
-	};
+	}
 }
 
 export var testBindTextToBindingContext = function () {
@@ -331,6 +320,32 @@ export var testSetKeyboardTypeNumberAndSecure = function () {
 		var textField = <TextField>views[0];
 
 		textField.keyboardType = 'number';
+		textField.secure = true;
+
+		var expectedValue = true;
+		var actualValue = getNativeSecure(textField);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
+	});
+};
+
+export var testSetSecureAndKeyboardTypeDecimal = function () {
+	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+		var textField = <TextField>views[0];
+
+		textField.secure = true;
+		textField.keyboardType = 'decimal';
+
+		var expectedValue = true;
+		var actualValue = getNativeSecure(textField);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
+	});
+};
+
+export var testSetKeyboardTypeDecimalAndSecure = function () {
+	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+		var textField = <TextField>views[0];
+
+		textField.keyboardType = 'decimal';
 		textField.secure = true;
 
 		var expectedValue = true;

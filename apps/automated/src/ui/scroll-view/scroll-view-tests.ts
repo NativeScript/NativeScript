@@ -1,6 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { Button } from '@nativescript/core/ui/button';
-import { Page, isIOS } from '@nativescript/core';
+import { Page, Button } from '@nativescript/core';
 import { UITest } from '../../ui-test';
 import * as layoutHelper from '../layouts/layout-helper';
 import * as helper from '../../ui-helper';
@@ -46,7 +45,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 	public test_vertical_oriantation_creates_correct_native_view() {
 		this.testView.orientation = 'vertical';
 
-		if (isIOS) {
+		if (__APPLE__) {
 			TKUnit.assert(this.testView.ios instanceof UIScrollView, 'ios property is UIScrollView');
 		} else {
 			TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.VerticalScrollView, 'android property should be instanceof org.nativescript.widgets.VerticalScrollView');
@@ -56,7 +55,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 	public test_horizontal_oriantation_creates_correct_native_view() {
 		this.testView.orientation = 'horizontal';
 
-		if (isIOS) {
+		if (__APPLE__) {
 			TKUnit.assert(this.testView.ios instanceof UIScrollView, 'ios property is UIScrollView');
 		} else {
 			TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.HorizontalScrollView, 'android property should be instanceof org.nativescript.widgets.HorizontalScrollView');
@@ -248,7 +247,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 		this.testView.scrollBarIndicatorVisible = true;
 		this.waitUntilTestElementLayoutIsValid();
 
-		if (isIOS) {
+		if (__APPLE__) {
 			TKUnit.assertEqual(this.testView.ios.showsHorizontalScrollIndicator, true);
 		} else {
 			TKUnit.assertEqual(this.testView.android.isHorizontalScrollBarEnabled(), true);
@@ -257,7 +256,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 		this.testView.scrollBarIndicatorVisible = false;
 		this.waitUntilTestElementLayoutIsValid();
 
-		if (isIOS) {
+		if (__APPLE__) {
 			TKUnit.assertEqual(this.testView.ios.showsHorizontalScrollIndicator, false);
 		} else {
 			TKUnit.assertEqual(this.testView.android.isHorizontalScrollBarEnabled(), false);
@@ -269,7 +268,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 		this.testView.scrollBarIndicatorVisible = true;
 		this.waitUntilTestElementLayoutIsValid();
 
-		if (isIOS) {
+		if (__APPLE__) {
 			TKUnit.assertEqual(this.testView.ios.showsVerticalScrollIndicator, true);
 		} else {
 			TKUnit.assertEqual(this.testView.android.isVerticalScrollBarEnabled(), true);
@@ -278,7 +277,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 		this.testView.scrollBarIndicatorVisible = false;
 		this.waitUntilTestElementLayoutIsValid();
 
-		if (isIOS) {
+		if (__APPLE__) {
 			TKUnit.assertEqual(this.testView.ios.showsVerticalScrollIndicator, false);
 		} else {
 			TKUnit.assertEqual(this.testView.android.isVerticalScrollBarEnabled(), false);

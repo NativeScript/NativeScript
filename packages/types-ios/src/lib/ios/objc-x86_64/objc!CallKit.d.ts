@@ -704,21 +704,21 @@ declare class CXSetTranslatingCallAction extends CXCallAction implements NSSecur
 
 	readonly isTranslating: boolean;
 
-	readonly localLocale: NSLocale;
+	readonly localLanguage: string;
 
-	readonly remoteLocale: NSLocale;
+	readonly remoteLanguage: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	constructor(o: { callUUID: NSUUID; isTranslating: boolean; localLocale: NSLocale; remoteLocale: NSLocale; });
+	constructor(o: { callUUID: NSUUID; isTranslating: boolean; localLanguage: string; remoteLanguage: string; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	fulfillWithTranslationEngine(translationEngine: CXTranslationEngine): void;
+	fulfillUsingTranslationEngine(translationEngine: CXTranslationEngine): void;
 
-	initWithCallUUIDIsTranslatingLocalLocaleRemoteLocale(uuid: NSUUID, isTranslating: boolean, localLocale: NSLocale, remoteLocale: NSLocale): this;
+	initWithCallUUIDIsTranslatingLocalLanguageRemoteLanguage(uuid: NSUUID, isTranslating: boolean, localLanguage: string, remoteLanguage: string): this;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -785,5 +785,5 @@ declare const enum CXTranslationEngine {
 
 	Default = 0,
 
-	External = 1
+	Custom = 1
 }

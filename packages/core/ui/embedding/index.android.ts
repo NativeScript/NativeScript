@@ -1,4 +1,4 @@
-import type { View } from '../../ui/core/view';
+import type { View } from '../core/view';
 
 declare namespace org {
 	namespace nativescript {

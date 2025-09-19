@@ -2325,6 +2325,11 @@ declare class WKWebView extends UIView {
 	navigationDelegate: WKNavigationDelegate;
 
 	/**
+	 * @since 26.0
+	 */
+	obscuredContentInsets: UIEdgeInsets;
+
+	/**
 	 * @since 14.0
 	 */
 	pageZoom: number;
