@@ -4,7 +4,7 @@ import { Page } from '../page';
 import { TransitionState } from './frame-common';
 
 // Types.
-import { Application } from '../../application';
+import { Application, AndroidActivityBackPressedEventData } from '../../application';
 
 import { Observable } from '../../data/observable';
 import { Trace } from '../../trace';
@@ -19,6 +19,7 @@ import type { ExpandedEntry } from './fragment.transitions.android';
 import { ensureFragmentClass, fragmentClass } from './fragment';
 import { FragmentCallbacksImplementation } from './callbacks/fragment-callbacks';
 import { ActivityCallbacksImplementation } from './callbacks/activity-callbacks';
+import { Device } from '../../platform';
 
 export * from './frame-common';
 export { setFragmentClass } from './fragment';
@@ -782,8 +783,69 @@ export function getFrameByNumberId(frameId: number): Frame {
 	return null;
 }
 
+let OnBackPressedCallback;
+if (parseInt(Device.sdkVersion) >= 33) {
+	OnBackPressedCallback = (<any>androidx.activity.OnBackPressedCallback).extend('com.tns.OnBackPressedCallback', {
+		handleOnBackPressed() {
+			if (Trace.isEnabled()) {
+				Trace.write('NativeScriptActivity.onBackPressed;', Trace.categories.NativeLifecycle);
+			}
+
+			const activity = this['_activity']?.get();
+			if (!activity) {
+				if (Trace.isEnabled()) {
+					Trace.write('NativeScriptActivity.onBackPressed; Activity is null, calling super', Trace.categories.NativeLifecycle);
+				}
+				this.setEnabled(false);
+				return;
+			}
+
+			const args = <AndroidActivityBackPressedEventData>{
+				eventName: 'activityBackPressed',
+				object: Application,
+				android: Application.android,
+				activity: activity,
+				cancel: false,
+			};
+			Application.android.notify(args);
+			if (args.cancel) {
+				return;
+			}
+
+			const view = activity._rootView;
+			let callSuper = false;
+
+			const viewArgs = <AndroidActivityBackPressedEventData>{
+				eventName: 'activityBackPressed',
+				object: view,
+				activity: activity,
+				cancel: false,
+			};
+			view?.notify(viewArgs);
+
+			// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
+			if (!viewArgs.cancel && (view?.onBackPressed === Frame.prototype.onBackPressed || !view?.onBackPressed())) {
+				callSuper = view instanceof Frame ? !Frame.goBack() : true;
+			}
+
+			if (callSuper) {
+				this.setEnabled(false);
+				activity.getOnBackPressedDispatcher().onBackPressed();
+				this.setEnabled(true);
+			}
+		},
+	});
+}
+
 export function setActivityCallbacks(activity: androidx.appcompat.app.AppCompatActivity): void {
 	activity[CALLBACKS] = new ActivityCallbacksImplementation();
+
+	if (OnBackPressedCallback && !activity['_onBackPressed']) {
+		const callback = new OnBackPressedCallback(true);
+		callback['_activity'] = new WeakRef(activity);
+		activity['_onBackPressed'] = true;
+		(activity as androidx.activity.ComponentActivity).getOnBackPressedDispatcher().addCallback(activity, callback);
+	}
 }
 
 export function setFragmentCallbacks(fragment: androidx.fragment.app.Fragment): void {

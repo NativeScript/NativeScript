@@ -205,7 +205,7 @@ declare module androidx {
 
 declare module androidx {
 	export module activity {
-		export class ComponentDialog implements androidx.activity.OnBackPressedDispatcherOwner {
+		export class ComponentDialog extends android.app.Dialog implements androidx.activity.OnBackPressedDispatcherOwner {
 			public static class: java.lang.Class<androidx.activity.ComponentDialog>;
 			public onStart(): void;
 			public constructor(context: globalAndroid.content.Context);
