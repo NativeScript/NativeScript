@@ -560,12 +560,21 @@ export class View extends ViewCommon {
 			}
 		}
 
-		if (options.ios && options.ios.presentationStyle) {
-			const presentationStyle = options.ios.presentationStyle;
-			controller.modalPresentationStyle = presentationStyle;
+		if (options.ios) {
+			if (options.ios.presentationStyle) {
+				const presentationStyle = options.ios.presentationStyle;
+				controller.modalPresentationStyle = presentationStyle;
 
-			if (presentationStyle === UIModalPresentationStyle.Popover) {
-				this._setupPopoverControllerDelegate(controller, parent);
+				if (presentationStyle === UIModalPresentationStyle.Popover) {
+					this._setupPopoverControllerDelegate(controller, parent);
+				}
+			}
+			if (options.ios.statusBarStyle) {
+				/**
+				 * https://developer.apple.com/documentation/uikit/uiviewcontroller/modalpresentationcapturesstatusbarappearance
+				 */
+				controller.modalPresentationCapturesStatusBarAppearance = true;
+				this.statusBarStyle = options.ios.statusBarStyle;
 			}
 		}
 

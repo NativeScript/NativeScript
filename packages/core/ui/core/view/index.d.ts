@@ -638,6 +638,20 @@ export abstract class View extends ViewCommon {
 	 */
 	cssType: string;
 
+	/**
+	 * (iOS only) Gets or sets the status bar style for this view.
+	 * Note: You must remove Info.plist key `UIViewControllerBasedStatusBarAppearance`
+	 * It defaults to true when not present: https://developer.apple.com/documentation/bundleresources/information-property-list/uiviewcontrollerbasedstatusbarappearance
+	 * Or you can explicitly set it to true:
+	 * <key>UIViewControllerBasedStatusBarAppearance</key>
+	 * <true/>
+	 *
+	 * False value will make this property have no effect.
+	 *
+	 * @nsProperty
+	 */
+	statusBarStyle: 'light' | 'dark';
+
 	cssClasses: Set<string>;
 	cssPseudoClasses: Set<string>;
 
