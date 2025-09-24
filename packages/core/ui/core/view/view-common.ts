@@ -995,6 +995,13 @@ export abstract class ViewCommon extends ViewBase {
 		this._cssType = type.toLowerCase();
 	}
 
+	get statusBarStyle(): 'light' | 'dark' {
+		return this.style.statusBarStyle;
+	}
+	set statusBarStyle(value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
+	}
+
 	get isLayoutRequired(): boolean {
 		return true;
 	}
