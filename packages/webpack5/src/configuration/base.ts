@@ -171,7 +171,39 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		return map as Config.DevTool;
 	};
 
-	config.devtool(getSourceMapType(env.sourceMap));
+	const sourceMapType = getSourceMapType(env.sourceMap);
+
+	// Use devtool for both CommonJS and ESM - let webpack handle source mapping properly
+	config.devtool(sourceMapType);
+
+	// For ESM builds, fix the sourceMappingURL to use correct paths
+	if (!env.commonjs && sourceMapType && sourceMapType !== 'hidden-source-map') {
+		class FixSourceMapUrlPlugin {
+			apply(compiler) {
+				compiler.hooks.emit.tap('FixSourceMapUrlPlugin', (compilation) => {
+					Object.keys(compilation.assets).forEach((filename) => {
+						if (filename.endsWith('.mjs') || filename.endsWith('.js')) {
+							const asset = compilation.assets[filename];
+							let source = asset.source();
+
+							// Replace sourceMappingURL to use file:// protocol pointing to actual location
+							source = source.replace(
+								/\/\/# sourceMappingURL=(.+\.map)/g,
+								`//# sourceMappingURL=file://${outputPath}/$1`,
+							);
+
+							compilation.assets[filename] = {
+								source: () => source,
+								size: () => source.length,
+							};
+						}
+					});
+				});
+			}
+		}
+
+		config.plugin('FixSourceMapUrlPlugin').use(FixSourceMapUrlPlugin);
+	}
 
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
