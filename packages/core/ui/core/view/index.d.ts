@@ -225,6 +225,8 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * If `true` the element is an accessibility element and all the children will be treated as a single selectable component.
+	 *
+	 * @nsProperty
 	 */
 	accessible: boolean;
 
@@ -282,6 +284,8 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * When components dynamically change, we want TalkBack to alert the end user. This is made possible by the accessibilityLiveRegion property.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityLiveRegion: AccessibilityLiveRegion;
 
