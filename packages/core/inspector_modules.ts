@@ -84,7 +84,7 @@ function remapFrame(file: string, line: number, column: number) {
 	 * bundlers can use source map files or inline.
 	 * To use source map files, run with `--env.sourceMap=source-map`.
 	 * Notes:
-	 * @nativescript/webpack 5.1 enables `source-map` files by default when using runtimes v9+.
+	 * Starting with @nativescript/webpack 5.0.25, `source-map` files are used by default when using runtimes v9+.
 	 */
 
 	const appPath = knownFolders.currentApp().path;
