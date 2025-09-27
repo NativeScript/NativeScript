@@ -181,6 +181,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		class FixSourceMapUrlPlugin {
 			apply(compiler) {
 				compiler.hooks.emit.tap('FixSourceMapUrlPlugin', (compilation) => {
+          const leadingCharacter = process.platform === "win32" ? "/":"";
 					Object.keys(compilation.assets).forEach((filename) => {
 						if (filename.endsWith('.mjs') || filename.endsWith('.js')) {
 							const asset = compilation.assets[filename];
@@ -189,7 +190,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 							// Replace sourceMappingURL to use file:// protocol pointing to actual location
 							source = source.replace(
 								/\/\/# sourceMappingURL=(.+\.map)/g,
-								`//# sourceMappingURL=file://${outputPath}/$1`,
+								`//# sourceMappingURL=file://${leadingCharacter}${outputPath}/$1`,
 							);
 
 							compilation.assets[filename] = {
