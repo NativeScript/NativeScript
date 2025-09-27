@@ -1,25 +1,14 @@
 import './globals';
-
 import './debugger/webinspector-network';
 import './debugger/webinspector-dom';
 import './debugger/webinspector-css';
-// require('./debugger/webinspector-network');
-// require('./debugger/webinspector-dom');
-// require('./debugger/webinspector-css');
-
-/**
- * Source map remapping for stack traces for the runtime in-flight error displays
- * Currently this is very slow. Need to find much faster way to remap stack traces.
- * NOTE: This likely should not be in core because errors can happen on boot before core is fully loaded. Ideally the runtime should provide this in full but unsure.
- */
 import { File, knownFolders } from './file-system';
 // import/destructure style helps commonjs/esm build issues
 import * as sourceMapJs from 'source-map-js';
 const { SourceMapConsumer } = sourceMapJs;
 
-// note: webpack config can by default use 'source-map' files with runtimes v9+
+// note: bundlers can by default use 'source-map' files with runtimes v9+
 // helps avoid having to decode the inline base64 source maps
-// currently same performance on inline vs file source maps so file source maps may just be cleaner
 const usingSourceMapFiles = true;
 let loadedSourceMaps: Map<string, any>;
 let consumerCache: Map<string, any>;
@@ -30,9 +19,13 @@ function getConsumer(mapPath: string, sourceMap: any) {
 	}
 	let c = consumerCache.get(mapPath);
 	if (!c) {
-		// parse once
-		c = new SourceMapConsumer(sourceMap);
-		consumerCache.set(mapPath, c);
+		try {
+			c = new SourceMapConsumer(sourceMap);
+			consumerCache.set(mapPath, c);
+		} catch (error) {
+			console.error(`Failed to create SourceMapConsumer for ${mapPath}:`, error);
+			return null;
+		}
 	}
 	return c;
 }
@@ -43,35 +36,43 @@ function loadAndExtractMap(mapPath: string) {
 		loadedSourceMaps = new Map();
 	}
 	let mapText = loadedSourceMaps.get(mapPath);
-	// Note: not sure if separate source map files or inline is better
-	// need to test build times one way or other with webpack, vite and rspack
-	// but this handles either way
 	if (mapText) {
 		return mapText; // already loaded
 	} else {
 		if (File.exists(mapPath)) {
-			const contents = File.fromPath(mapPath).readTextSync();
-			if (usingSourceMapFiles) {
-				mapText = contents;
-			} else {
-				// parse out the inline base64
-				const match = contents.match(/\/\/[#@] sourceMappingURL=data:application\/json[^,]+,(.+)$/);
-				const base64 = match[1];
-				const binary = atob(base64);
-				// this is the raw text of the source map
-				// seems to work without doing the decodeURIComponent trick
-				mapText = binary;
-				// // escape each char code into %XX and let decodeURIComponent build the UTF-8 string
-				// mapText = decodeURIComponent(
-				//   binary
-				//     .split('')
-				//     .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-				//     .join('')
-				// );
+			try {
+				const contents = File.fromPath(mapPath).readTextSync();
+
+				// Note: we may want to do this, keeping for reference if needed in future.
+				// Check size before processing (skip very large source maps)
+				// const maxSizeBytes = 10 * 1024 * 1024; // 10MB limit
+				// if (contents.length > maxSizeBytes) {
+				// 	console.warn(`Source map ${mapPath} is too large (${contents.length} bytes), skipping...`);
+				// 	return null;
+				// }
+
+				if (usingSourceMapFiles) {
+					mapText = contents;
+				} else {
+					// parse out the inline base64
+					const match = contents.match(/\/\/[#@] sourceMappingURL=data:application\/json[^,]+,(.+)$/);
+					if (!match) {
+						console.warn(`Invalid source map format in ${mapPath}`);
+						return null;
+					}
+					const base64 = match[1];
+					const binary = atob(base64);
+					// this is the raw text of the source map
+					// seems to work without doing decodeURIComponent tricks
+					mapText = binary;
+				}
+			} catch (error) {
+				console.error(`Failed to load source map ${mapPath}:`, error);
+				return null;
 			}
 		} else {
 			// no source maps
-			return { source: null, line: 0, column: 0 };
+			return null;
 		}
 	}
 	loadedSourceMaps.set(mapPath, mapText); // cache it
@@ -80,8 +81,9 @@ function loadAndExtractMap(mapPath: string) {
 
 function remapFrame(file: string, line: number, column: number) {
 	/**
-	 * webpack config can use source map files or inline.
+	 * bundlers can use source map files or inline.
 	 * To use source map files, run with `--env.sourceMap=source-map`.
+	 * Notes:
 	 * @nativescript/webpack 5.1 enables `source-map` files by default when using runtimes v9+.
 	 */
 
@@ -92,10 +94,23 @@ function remapFrame(file: string, line: number, column: number) {
 	}
 	const mapPath = `${appPath}/${file.replace('file:///app/', '')}${sourceMapFileExt}`;
 
-	// 3) hand it to the consumer
 	const sourceMap = loadAndExtractMap(mapPath);
+
+	if (!sourceMap) {
+		return { source: null, line: 0, column: 0 };
+	}
+
 	const consumer = getConsumer(mapPath, sourceMap);
-	return consumer.originalPositionFor({ line, column });
+	if (!consumer) {
+		return { source: null, line: 0, column: 0 };
+	}
+
+	try {
+		return consumer.originalPositionFor({ line, column });
+	} catch (error) {
+		console.error(`Failed to get original position for ${file}:${line}:${column}:`, error);
+		return { source: null, line: 0, column: 0 };
+	}
 }
 
 function remapStack(raw: string): string {
@@ -103,21 +118,32 @@ function remapStack(raw: string): string {
 	const out = lines.map((line) => {
 		const m = /\((.+):(\d+):(\d+)\)/.exec(line);
 		if (!m) return line;
-		const [_, file, l, c] = m;
-		const orig = remapFrame(file, +l, +c);
-		if (!orig.source) return line;
-		return line.replace(/\(.+\)/, `(${orig.source}:${orig.line}:${orig.column})`);
+
+		try {
+			const [_, file, l, c] = m;
+			const orig = remapFrame(file, +l, +c);
+			if (!orig.source) return line;
+			return line.replace(/\(.+\)/, `(${orig.source}:${orig.line}:${orig.column})`);
+		} catch (error) {
+			console.error('Failed to remap stack frame:', line, error);
+			return line; // return original line if remapping fails
+		}
 	});
 	return out.join('\n');
 }
 
 /**
- * Added in 9.0 runtimes.
- * Allows the runtime to remap stack traces before displaying them in the in-flight error screens.
+ * Added with 9.0 runtimes.
+ * Allows the runtime to remap stack traces before displaying them via in-flight error screens.
  */
 (global as any).__ns_remapStack = (rawStack: string) => {
 	// console.log('Remapping stack trace...');
-	return remapStack(rawStack);
+	try {
+		return remapStack(rawStack);
+	} catch (error) {
+		console.error('Failed to remap stack trace, returning original:', error);
+		return rawStack; // fallback to original stack trace
+	}
 };
 /**
  * End of source map remapping for stack traces
