@@ -214,12 +214,13 @@ class UIViewControllerImpl extends UIViewController {
 			}
 		}
 
-		if (!this.presentedViewController) {
+		// TODO: testing without the check. Does not seem necessary and have very bad side effects.
+		// if (!this.presentedViewController) {
 			// clear presented viewController here only if no presented controller.
 			// this is needed because in iOS9 the order of events could be - willAppear, willDisappear, didAppear.
 			// If we clean it when we have viewController then once presented VC is dismissed then
 			owner._presentedViewController = null;
-		}
+		// }
 	}
 
 	@profile
