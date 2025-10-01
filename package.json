@@ -53,7 +53,7 @@
 		"copyfiles": "^2.4.0",
 		"css": "^3.0.0",
 		"css-tree": "^3.1.0",
-		"css-what": "^6.1.0",
+		"css-what": "^6.2.2",
 		"dotenv": "~16.4.0",
 		"dotenv-webpack": "^7.0.0",
 		"emoji-regex": "^10.3.0",
