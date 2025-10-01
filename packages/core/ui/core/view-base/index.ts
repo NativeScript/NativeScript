@@ -302,10 +302,6 @@ namespace SuspendType {
 
 const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
 
-/**
- *
- * @nsView ViewBase
- */
 export abstract class ViewBase extends Observable {
 	/**
 	 * String value used when hooking to loaded event.
