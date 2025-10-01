@@ -1,4 +1,4 @@
-import { Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo } from '../animation';
+import { Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo } from '../animation/animation-types';
 import { radiansToDegrees } from '../../utils/number-utils';
 import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d } from '../../matrix';
 import { hasDuplicates } from '../../utils';

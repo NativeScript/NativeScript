@@ -186,15 +186,15 @@ export var testFileRead = function () {
 	// << file-system-example-text
 };
 
-export var testFileReadWriteBinary = function () {
+export function testFileReadWriteBinary() {
 	// >> file-system-read-binary
-	var fileName = 'logo.png';
-	var error;
+	const fileName = 'logo.png';
+	let error;
+	const appFolder = fs.knownFolders.currentApp().path;
+	const sourceFile = fs.File.fromPath(appFolder + '/assets/' + fileName);
+	const destinationFile = fs.knownFolders.documents().getFile(fileName);
 
-	var sourceFile = fs.File.fromPath(__dirname + '/assets/' + fileName);
-	var destinationFile = fs.knownFolders.documents().getFile(fileName);
-
-	var source = sourceFile.readSync((e) => {
+	const source = sourceFile.readSync((e) => {
 		error = e;
 	});
 
@@ -203,7 +203,7 @@ export var testFileReadWriteBinary = function () {
 	});
 
 	// >> (hide)
-	var destination = destinationFile.readSync((e) => {
+	const destination = destinationFile.readSync((e) => {
 		error = e;
 	});
 	TKUnit.assertNull(error);
@@ -216,14 +216,14 @@ export var testFileReadWriteBinary = function () {
 	destinationFile.removeSync();
 	// << (hide)
 	// << file-system-read-binary
-};
+}
 
-export var testFileReadWriteBinaryAsync = function () {
+export function testFileReadWriteBinaryAsync() {
 	// >> file-system-read-binary-async
-	var fileName = 'logo.png';
-
-	var sourceFile = fs.File.fromPath(__dirname + '/assets/' + fileName);
-	var destinationFile = fs.knownFolders.documents().getFile(fileName);
+	const fileName = 'logo.png';
+	const appFolder = fs.knownFolders.currentApp().path;
+	const sourceFile = fs.File.fromPath(appFolder + '/assets/' + fileName);
+	const destinationFile = fs.knownFolders.documents().getFile(fileName);
 
 	// Read the file
 	sourceFile.read().then(
@@ -263,7 +263,7 @@ export var testFileReadWriteBinaryAsync = function () {
 		},
 	);
 	// << file-system-read-binary-async
-};
+}
 
 export var testGetKnownFolders = function () {
 	// >> file-system-known-folders
@@ -425,11 +425,11 @@ export var testFileNameExtension = function () {
 	var file = documents.getFile('Test.txt');
 	// Getting the file name "Test.txt".
 	var fileName = file.name;
-	// Getting the file extension ".txt".
+	// Getting the file extension "txt".
 	var fileExtension = file.extension;
 	// >> (hide)
 	TKUnit.assert(fileName === 'Test.txt', 'Wrong file name.');
-	TKUnit.assert(fileExtension === '.txt', 'Wrong extension.');
+	TKUnit.assert(fileExtension === 'txt', 'Wrong extension.');
 	file.remove();
 	// << (hide)
 	// << file-system-extension
@@ -633,7 +633,7 @@ export function test_FSEntity_Properties() {
 	var documents = fs.knownFolders.documents();
 	var file = documents.getFile('Test_File.txt');
 
-	TKUnit.assert(file.extension === '.txt', 'FileEntity.extension not working.');
+	TKUnit.assert(file.extension === 'txt', 'FileEntity.extension not working.');
 	TKUnit.assert(file.isLocked === false, 'FileEntity.isLocked not working.');
 	TKUnit.assert(file.lastModified instanceof Date, 'FileEntity.lastModified not working.');
 	TKUnit.assert(file.size === 0, 'FileEntity.size not working.');
@@ -746,7 +746,7 @@ export function testAndroidCreate() {
 
 export function test_FileAppend(done) {
 	const content = 'Hello World';
-	const hello_world = global.isIOS ? NSString.stringWithString(content).dataUsingEncoding(NSUTF8StringEncoding) : new java.lang.String(content).getBytes('UTF-8');
+	const hello_world = __APPLE__ ? NSString.stringWithString(content).dataUsingEncoding(NSUTF8StringEncoding) : new java.lang.String(content).getBytes('UTF-8');
 	const file = fs.File.fromPath(fs.path.join(fs.knownFolders.temp().path, `${Date.now()}-app.txt`));
 	file
 		.appendText('Hello')

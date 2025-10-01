@@ -4,7 +4,7 @@
 import { Trace } from '../../trace';
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions, getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
 import { isString, isDefined, isFunction } from '../../utils/types';
-import { Application } from '../../application';
+import { getiOSWindow } from '../../application/helpers-common';
 
 export * from './dialogs-common';
 
@@ -45,7 +45,7 @@ function raiseCallback(callback, result) {
 }
 
 function showUIAlertController(alertController: UIAlertController) {
-	let viewController = Application.ios.rootController;
+	let viewController = getiOSWindow()?.rootViewController;
 
 	while (viewController && viewController.presentedViewController && !viewController.presentedViewController.beingDismissed) {
 		viewController = viewController.presentedViewController;

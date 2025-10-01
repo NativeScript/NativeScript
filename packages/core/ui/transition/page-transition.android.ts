@@ -1,15 +1,15 @@
 import type { View } from '../core/view';
-import { ViewBase } from '../core/view-base';
-import { BackstackEntry } from '../frame';
+import type { ViewBase } from '../core/view-base';
+import type { BackstackEntry } from '../frame';
 import { isNumber } from '../../utils/types';
 import { Transition } from '.';
 import { getRectFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionEventData } from './shared-transition';
 import { ImageSource } from '../../image-source';
 import { ContentView } from '../content-view';
 import { GridLayout } from '../layouts/grid-layout';
-import { Screen } from '../../platform';
+import { Screen } from '../../platform/screen';
 import { ExpandedEntry } from '../frame/fragment.transitions.android';
-import { android as AndroidUtils } from '../../utils/native-helper';
+import { android as androidUtils } from '../../utils/native-helper';
 // import { Image } from '../image';
 
 @NativeClass
@@ -302,10 +302,10 @@ function loadViewInBackground(view: View) {
 	hiddenHost.content = hostView;
 	hiddenHost.visibility = 'collapse';
 	hostView.addChild(view);
-	hiddenHost._setupAsRootView(AndroidUtils.getApplicationContext());
+	hiddenHost._setupAsRootView(androidUtils.getApplicationContext());
 	hiddenHost.callLoaded();
 
-	AndroidUtils.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
+	androidUtils.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
 
 	return {
 		hiddenHost,

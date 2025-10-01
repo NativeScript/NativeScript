@@ -1,4 +1,3 @@
-import type { ApplicationCommon } from './application-common';
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
 
@@ -42,7 +41,7 @@ export interface ApplicationEventData {
 	/**
 	 * The instance that has raised the event.
 	 */
-	object: ApplicationCommon | Observable;
+	object: any; // Application;
 }
 
 /**

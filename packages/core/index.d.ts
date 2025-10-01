@@ -8,13 +8,14 @@
 export type { NativeScriptConfig } from './config';
 
 export * from './application';
+export { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver, androidRegisteredReceivers, iosAddNotificationObserver, iosRemoveNotificationObserver, iosNotificationObservers } from './application/helpers';
+export { getNativeApp, setNativeApp } from './application/helpers-common';
 export * as ApplicationSettings from './application-settings';
-import * as Accessibility from './accessibility';
 export namespace AccessibilityEvents {
-	export const accessibilityBlurEvent = Accessibility.accessibilityBlurEvent;
-	export const accessibilityFocusEvent = Accessibility.accessibilityFocusEvent;
-	export const accessibilityFocusChangedEvent = Accessibility.accessibilityFocusChangedEvent;
-	export const accessibilityPerformEscapeEvent = Accessibility.accessibilityPerformEscapeEvent;
+	export const accessibilityBlurEvent: 'accessibilityBlur';
+	export const accessibilityFocusEvent: 'accessibilityFocus';
+	export const accessibilityFocusChangedEvent: 'accessibilityFocusChanged';
+	export const accessibilityPerformEscapeEvent: 'accessibilityPerformEscape';
 }
 export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
 export { Color } from './color';
@@ -35,13 +36,17 @@ export type { PropertyChangeData, EventData, EventDataValue } from './data/obser
 export { VirtualArray } from './data/virtual-array';
 export type { ItemsLoading } from './data/virtual-array';
 export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess, AndroidDirectory } from './file-system';
-export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
+export type { HttpRequestOptions, HttpResponse, Headers, HttpContent } from './http/http-interfaces';
+export { HttpResponseEncoding } from './http/http-interfaces';
 export * as Http from './http';
 export { ImageAsset } from './image-asset';
 export type { ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
-export { ModuleNameResolver, _setResolver } from './module-name-resolver';
-export type { ModuleListProvider, PlatformContext } from './module-name-resolver';
+export type { iosSymbolScaleType } from './image-source';
+export { ModuleNameResolver } from './module-name-resolver';
+export { _setResolver } from './module-name-resolver/helpers';
+export type { PlatformContext } from './module-name-resolver';
+export type { ModuleListProvider } from './module-name-resolver/helpers';
 export { isAndroid, isIOS, isVisionOS, isApple, Screen, Device, platformNames } from './platform';
 export type { IDevice } from './platform';
 export { profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
