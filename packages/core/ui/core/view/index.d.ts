@@ -8,7 +8,7 @@ import { ShadowCSSValues } from '../../styling/css-shadow';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
 import { ViewBase } from '../view-base';
-import { ViewCommon } from './view-common';
+import { GlassEffectType, ViewCommon } from './view-common';
 import type { Point } from './view-interfaces';
 
 export * from './view-common';
@@ -606,6 +606,14 @@ export abstract class View extends ViewCommon {
 	 * @nsProperty
 	 */
 	visionHoverStyle: string | VisionHoverOptions;
+
+	/**
+	 * Set the iOS Liquid Glass effect style on the view
+	 *
+	 * @nsProperty
+	 */
+
+	iosGlassEffect: GlassEffectType;
 
 	/**
 	 * @nsProperty
