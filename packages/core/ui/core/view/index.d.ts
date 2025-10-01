@@ -47,8 +47,6 @@ export function viewMatchesModuleContext(view: View, context: ModuleContext, typ
 /**
  * This class is the base class for all UI components.
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within.
- *
- * @nsView View
  */
 export abstract class View extends ViewCommon {
 	/**
