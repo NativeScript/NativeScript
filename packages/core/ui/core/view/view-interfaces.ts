@@ -59,3 +59,24 @@ export interface Size {
 	 */
 	height: number;
 }
+
+export interface Inset {
+	top: number;
+	right: number;
+	bottom: number;
+	left: number;
+	topConsumed: boolean;
+	rightConsumed: boolean;
+	bottomConsumed: boolean;
+	leftConsumed: boolean;
+}
+
+/**
+ * Defines the data for the androidOverflowInset event.
+ */
+export interface AndroidOverflowInsetData extends EventData {
+	/**
+	 * The inset values passed to the view to consume or update.
+	 */
+	inset?: Inset;
+}

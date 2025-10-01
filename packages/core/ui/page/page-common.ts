@@ -63,13 +63,6 @@ export class PageBase extends ContentView {
 		}
 	}
 
-	get statusBarStyle(): 'light' | 'dark' {
-		return this.style.statusBarStyle;
-	}
-	set statusBarStyle(value: 'light' | 'dark') {
-		this.style.statusBarStyle = value;
-	}
-
 	public get androidStatusBarBackground(): Color {
 		return this.style.androidStatusBarBackground;
 	}

@@ -107,6 +107,19 @@ export const android: {
 	 * Hides the soft input method, usually a soft keyboard.
 	 */
 	dismissSoftInput: (nativeView?: android.view.View) => void;
+	setStatusBarColor: (lightColor: Color | null = null, darkColor: Color | null = null) => void;
+	setNavigationBarColor: (lightColor: Color | null = null, darkColor: Color | null = null) => void;
+	setDarkModeHandler: (handler: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean) => void;
+	enableEdgeToEdge: (
+		activity: androidx.appcompat.app.AppCompatActivity,
+		options?: {
+			statusBarLightColor?: Color;
+			statusBarDarkColor?: Color;
+			navigationBarLightColor?: Color;
+			navigationBarDarkColor?: Color;
+			handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
+		},
+	) => void;
 };
 
 /**

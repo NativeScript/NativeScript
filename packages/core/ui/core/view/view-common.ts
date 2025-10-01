@@ -79,6 +79,7 @@ export abstract class ViewCommon extends ViewBase {
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
 	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+	public static androidOverflowInsetEvent = 'androidOverflowInset';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
@@ -980,6 +981,7 @@ export abstract class ViewCommon extends ViewBase {
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
 	public iosIgnoreSafeArea: boolean;
+	public androidOverflowEdge: string;
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
@@ -994,6 +996,13 @@ export abstract class ViewCommon extends ViewBase {
 	}
 	set cssType(type: string) {
 		this._cssType = type.toLowerCase();
+	}
+
+	get statusBarStyle(): 'light' | 'dark' {
+		return this.style.statusBarStyle;
+	}
+	set statusBarStyle(value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
 	}
 
 	get isLayoutRequired(): boolean {

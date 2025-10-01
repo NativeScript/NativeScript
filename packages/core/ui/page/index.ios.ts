@@ -349,7 +349,11 @@ class UIViewControllerImpl extends UIViewController {
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner?.deref();
 		if (owner) {
-			return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.DarkContent : UIStatusBarStyle.LightContent;
+			} else {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
 		} else {
 			return UIStatusBarStyle.Default;
 		}
