@@ -44,7 +44,7 @@
 		"@types/jest": "30.0.0",
 		"@types/node": "^20.0.0",
 		"@typescript-eslint/eslint-plugin": "^8.35.0",
-		"@typescript-eslint/parser": "^8.35.0",
+		"@typescript-eslint/parser": "^8.45.0",
 		"@vitest/coverage-v8": "^3.2.4",
 		"@vitest/ui": "^3.2.4",
 		"acorn": "^8.15.0",
