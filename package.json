@@ -34,7 +34,7 @@
 		"@nx/js": "21.3.7",
 		"@nx/node": "21.3.7",
 		"@nx/plugin": "21.3.7",
-		"@nx/vite": "21.3.7",
+		"@nx/vite": "21.6.2",
 		"@nx/web": "21.3.7",
 		"@nx/workspace": "21.3.7",
 		"@prettier/plugin-xml": "^3.4.1",
