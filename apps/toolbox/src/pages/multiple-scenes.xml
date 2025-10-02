@@ -1,0 +1,118 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Multiple Scenes Demo" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <ScrollView>
+        <StackLayout class="p-20">
+            
+            <!-- Scene Support Status -->
+            <StackLayout class="card p-20 m-b-20">
+                <Label text="Scene Support Status" class="h3 text-center m-b-15"/>
+                <Label text="{{ statusText }}" class="body text-center m-b-15" textWrap="true"/>
+                
+                <GridLayout columns="*, *" class="m-t-10">
+                    <Label col="0" text="Scene Count:" class="body"/>
+                    <Label col="1" text="{{ sceneCount }}" class="body font-weight-bold"/>
+                </GridLayout>
+                
+                <Button text="Refresh Info" tap="{{ onRefreshSceneInfo }}" class="btn btn-outline m-t-15"/>
+            </StackLayout>
+
+            <!-- Scene Controls -->
+            <StackLayout class="card p-20 m-b-20" visibility="{{ canCreateNewScene ? 'visible' : 'collapsed' }}">
+                <Label text="Scene Controls (Test on Physical iPad Only)" class="h3 text-center m-b-15"/>
+                <Label text="Create additional windows on iPad (requires scene support enabled in Info.plist)" 
+                       class="caption text-center m-b-15" textWrap="true"/>
+                
+                <GridLayout columns="*,*,*" class="m-t-10">
+                    <Button col="0" text="New Scene" tap="{{ onCreateNewScene }}" class="btn btn-primary m-r-10"/>
+                    <Button col="1" text="New Alternate Scene" tap="{{ onCreateNewSceneAlt }}" class="btn btn-primary m-r-10"/>
+                    <Button col="2" text="Scene Details" tap="{{ onShowSceneDetails }}" class="btn btn-outline m-l-10"/>
+                </GridLayout>
+                
+                <Button text="Test API Info" tap="{{ onTestSceneAPI }}" class="btn btn-outline m-t-10"/>
+            </StackLayout>
+
+            <!-- Configuration Help -->
+            <StackLayout class="card p-20 m-b-20" visibility="{{ isMultiSceneSupported ? 'collapsed' : 'visible' }}">
+                <Label text="Setup Instructions" class="h3 text-center m-b-15"/>
+                <Label text="To enable multi-scene support, add this to your Info.plist:" 
+                       class="body m-b-10" textWrap="true"/>
+                
+                <Label class="code-block m-b-15" textWrap="true">
+                    <Span text="&lt;key&gt;UIApplicationSceneManifest&lt;/key&gt;&#10;"/>
+                    <Span text="&lt;dict&gt;&#10;"/>
+                    <Span text="    &lt;key&gt;UIApplicationSupportsMultipleScenes&lt;/key&gt;&#10;"/>
+                    <Span text="    &lt;true/&gt;&#10;"/>
+                    <Span text="    &lt;key&gt;UISceneConfigurations&lt;/key&gt;&#10;"/>
+                    <Span text="    &lt;dict&gt;&#10;"/>
+                    <Span text="        &lt;key&gt;UIWindowSceneSessionRoleApplication&lt;/key&gt;&#10;"/>
+                    <Span text="        &lt;array&gt;&#10;"/>
+                    <Span text="            &lt;dict&gt;&#10;"/>
+                    <Span text="                &lt;key&gt;UISceneDelegateClassName&lt;/key&gt;&#10;"/>
+                    <Span text="                &lt;string&gt;SceneDelegate&lt;/string&gt;&#10;"/>
+                    <Span text="            &lt;/dict&gt;&#10;"/>
+                    <Span text="        &lt;/array&gt;&#10;"/>
+                    <Span text="    &lt;/dict&gt;&#10;"/>
+                    <Span text="&lt;/dict&gt;"/>
+                </Label>
+                
+                <Label text="After adding this configuration, rebuild and test on iPad for best multi-window experience." 
+                       class="caption" textWrap="true"/>
+            </StackLayout>
+
+            <!-- Scene Events Log -->
+            <StackLayout class="card p-20 m-b-20">
+                <GridLayout columns="*, auto" class="m-b-15">
+                    <Label col="0" text="Scene Events Log" class="h3"/>
+                    <Button col="1" text="Clear" tap="{{ onClearEvents }}" class="btn btn-outline"/>
+                </GridLayout>
+                
+                <ScrollView height="250" class="border">
+                    <StackLayout class="p-10">
+                        <Label visibility="{{ sceneEvents.length === 0 ? 'visible' : 'collapsed' }}" 
+                               text="No scene events yet. Scene events will appear here when scenes are created, activated, or destroyed."
+                               class="caption text-center" textWrap="true"/>
+                        
+                        <Repeater items="{{ sceneEvents }}">
+                            <Repeater.itemTemplate>
+                                <StackLayout class="event-item p-5">
+                                    <Label text="{{ $value }}" class="caption" textWrap="true"/>
+                                </StackLayout>
+                            </Repeater.itemTemplate>
+                        </Repeater>
+                    </StackLayout>
+                </ScrollView>
+            </StackLayout>
+
+            <!-- Usage Instructions -->
+            <StackLayout class="card p-20 m-b-20">
+                <Label text="How to Test" class="h3 text-center m-b-15"/>
+                
+                <StackLayout class="m-b-10">
+                    <Label text="1. iPad Testing:" class="body font-weight-bold"/>
+                    <Label text="• Use iPad with iOS 13+ for multi-window experience" class="caption m-l-15" textWrap="true"/>
+                    <Label text="• iOS 17+: Uses modern activateSceneSessionForRequestErrorHandler API" class="caption m-l-15" textWrap="true"/>
+                    <Label text="• iOS 13-16: Uses legacy requestSceneSessionActivation API" class="caption m-l-15" textWrap="true"/>
+                    <Label text="• Tap 'New Scene' to request additional windows" class="caption m-l-15" textWrap="true"/>
+                    <Label text="• Use split view or slide over gestures" class="caption m-l-15" textWrap="true"/>
+                </StackLayout>
+                
+                <StackLayout class="m-b-10">
+                    <Label text="2. iPhone Testing:" class="body font-weight-bold"/>
+                    <Label text="• Scene events still work but limited to single window" class="caption m-l-15" textWrap="true"/>
+                    <Label text="• Watch background/foreground transitions" class="caption m-l-15" textWrap="true"/>
+                </StackLayout>
+                
+                <StackLayout>
+                    <Label text="3. Scene Events:" class="body font-weight-bold"/>
+                    <Label text="• Monitor the events log for scene lifecycle changes" class="caption m-l-15" textWrap="true"/>
+                    <Label text="• Each scene activation/deactivation is logged" class="caption m-l-15" textWrap="true"/>
+                </StackLayout>
+            </StackLayout>
+
+        </StackLayout>
+    </ScrollView>
+</Page>
