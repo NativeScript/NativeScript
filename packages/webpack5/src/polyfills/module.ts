@@ -27,6 +27,21 @@ function createRequire(filename: string) {
 	};
 }
 
+// CommonJS export
 module.exports = {
 	createRequire: createRequire,
 };
+
+// Provide a named export for ESM consumers: `import { createRequire } from 'module'`
+try {
+	Object.defineProperty(module.exports, 'createRequire', {
+		enumerable: true,
+		value: createRequire,
+	});
+	// Also export under an __esModule flag for certain bundlers
+	Object.defineProperty(module.exports, '__esModule', {
+		value: true,
+	});
+} catch (e) {
+	// ignore in environments where defineProperty is unavailable
+}

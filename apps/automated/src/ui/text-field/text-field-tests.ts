@@ -328,6 +328,32 @@ export var testSetKeyboardTypeNumberAndSecure = function () {
 	});
 };
 
+export var testSetSecureAndKeyboardTypeDecimal = function () {
+	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+		var textField = <TextField>views[0];
+
+		textField.secure = true;
+		textField.keyboardType = 'decimal';
+
+		var expectedValue = true;
+		var actualValue = getNativeSecure(textField);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
+	});
+};
+
+export var testSetKeyboardTypeDecimalAndSecure = function () {
+	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+		var textField = <TextField>views[0];
+
+		textField.keyboardType = 'decimal';
+		textField.secure = true;
+
+		var expectedValue = true;
+		var actualValue = getNativeSecure(textField);
+		TKUnit.assert(actualValue === expectedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedValue);
+	});
+};
+
 export var testBindSecureDirectlyToModel = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
 		var textField = <TextField>views[0];

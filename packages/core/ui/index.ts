@@ -40,8 +40,8 @@ export type { DialogOptions, CancelableOptions, AlertOptions, PromptResult, Prom
 
 export * from './editable-text-base';
 export { isEmbedded } from './embedding';
-export { Frame, setActivityCallbacks } from './frame';
-export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks } from './frame';
+export { Frame, setActivityCallbacks, NavigationType } from './frame';
+export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks, NavigationData } from './frame';
 
 export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDirection, GestureEvents, TouchManager } from './gestures';
 export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData, TouchAnimationOptions, VisionHoverOptions } from './gestures';
@@ -76,12 +76,17 @@ export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS, resolveFileNameFromU
 export { Background } from './styling/background';
 export type { CacheMode } from './styling/background';
 export { parseCSSShadow } from './styling/css-shadow';
+export type { ShadowCSSValues } from './styling/css-shadow';
+export { parseCSSStroke } from './styling/css-stroke';
+export type { StrokeCSSValues } from './styling/css-stroke';
 export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
 export { Font, FontStyle, FontWeight, FontVariationSettings } from './styling/font';
+export type { FontStyleType, FontWeightType, FontVariationSettingsType } from './styling/font-interfaces';
 export { Style } from './styling/style';
 export type { CommonLayoutParams } from './styling/style';
 export * from './styling/style-properties';
 export * from './styling/length-shared';
+export { LinearGradient } from './styling/linear-gradient';
 export { CssAnimationParser, parseKeyframeDeclarations } from './styling/css-animation-parser';
 export { CSSHelper } from './styling/css-selector';
 

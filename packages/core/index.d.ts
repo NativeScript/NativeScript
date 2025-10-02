@@ -42,6 +42,7 @@ export * as Http from './http';
 export { ImageAsset } from './image-asset';
 export type { ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
+export type { iosSymbolScaleType } from './image-source';
 export { ModuleNameResolver } from './module-name-resolver';
 export { _setResolver } from './module-name-resolver/helpers';
 export type { PlatformContext } from './module-name-resolver';

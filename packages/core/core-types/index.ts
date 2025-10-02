@@ -40,11 +40,12 @@ export namespace CoreTypes {
 		unit: 'px',
 	};
 
-	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
+	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'decimal' | 'url' | 'email' | 'integer';
 	export namespace KeyboardType {
 		export const datetime = 'datetime';
 		export const phone = 'phone';
 		export const number = 'number';
+		export const decimal = 'decimal';
 		export const url = 'url';
 		export const email = 'email';
 		export const integer = 'integer';

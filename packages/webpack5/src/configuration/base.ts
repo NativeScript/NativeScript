@@ -2,6 +2,7 @@ import { extname, relative, resolve } from 'path';
 import { ContextExclusionPlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
 import { satisfies } from 'semver';
+import { isVersionGteConsideringPrerelease } from '../helpers/dependencies';
 import { existsSync } from 'fs';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
@@ -10,9 +11,9 @@ import TerserPlugin from 'terser-webpack-plugin';
 
 import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
 import {
-	getAllDependencies,
 	getDependencyVersion,
 	hasDependency,
+	getResolvedDependencyVersionForCheck,
 } from '../helpers/dependencies';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
@@ -40,7 +41,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// set mode
 	config.mode(mode);
 
-	// use source map files with v9+
+	// use source map files by default with v9+
 	function useSourceMapFiles() {
 		if (mode === 'development') {
 			// in development we always use source-map files with v9+ runtimes
@@ -48,20 +49,53 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			env.sourceMap = 'source-map';
 		}
 	}
-	// determine target output by @nativescript/core version
+	// determine target output by @nativescript/* runtime version
 	// v9+ supports ESM output, anything below uses CommonJS
-	if (hasDependency('@nativescript/core')) {
-		const coreVersion = getDependencyVersion('@nativescript/core');
-		// ensure alpha/beta/rc versions are considered as well
-		if (coreVersion && !coreVersion.includes('9.0.0')) {
-			if (!satisfies(coreVersion, '>=9.0.0')) {
-				// @nativescript/core < 9 uses CommonJS output
-				env.commonjs = true;
-			} else {
+	if (
+		hasDependency('@nativescript/ios') ||
+		hasDependency('@nativescript/visionos') ||
+		hasDependency('@nativescript/android')
+	) {
+		const iosVersion = getDependencyVersion('@nativescript/ios');
+		const visionosVersion = getDependencyVersion('@nativescript/visionos');
+		const androidVersion = getDependencyVersion('@nativescript/android');
+
+		if (platform === 'ios') {
+			const iosResolved =
+				getResolvedDependencyVersionForCheck('@nativescript/ios', '9.0.0') ??
+				iosVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(iosResolved, '9.0.0')) {
 				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
 			}
-		} else {
-			useSourceMapFiles();
+		} else if (platform === 'visionos') {
+			const visionosResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/visionos',
+					'9.0.0',
+				) ??
+				visionosVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(visionosResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
+		} else if (platform === 'android') {
+			const androidResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/android',
+					'9.0.0',
+				) ??
+				androidVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(androidResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
 		}
 	}
 
@@ -100,8 +134,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			'mdn-data/css/at-rules.json': require.resolve(
 				'../polyfills/mdn-data-at-rules.js',
 			),
+			// Ensure imports of the Node 'module' builtin resolve to our polyfill
+			module: require.resolve('../polyfills/module.js'),
 		},
+		// Allow extension-less ESM imports (fixes "fully specified" errors)
+		// Example: '../timer' -> resolves to index.<platform>.js without requiring explicit extension
+		fullySpecified: false,
 	});
+
+	// As an extra guard, ensure rule-level resolve also allows extension-less imports
+	config.module
+		.rule('esm-extensionless')
+		.test(/\.(mjs|js|ts|tsx)$/)
+		.resolve.set('fullySpecified', false);
 
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
 		const defaultSourceMap = 'inline-source-map';
@@ -126,7 +171,40 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		return map as Config.DevTool;
 	};
 
-	config.devtool(getSourceMapType(env.sourceMap));
+	const sourceMapType = getSourceMapType(env.sourceMap);
+
+	// Use devtool for both CommonJS and ESM - let webpack handle source mapping properly
+	config.devtool(sourceMapType);
+
+	// For ESM builds, fix the sourceMappingURL to use correct paths
+	if (!env.commonjs && sourceMapType && sourceMapType !== 'hidden-source-map') {
+		class FixSourceMapUrlPlugin {
+			apply(compiler) {
+				compiler.hooks.emit.tap('FixSourceMapUrlPlugin', (compilation) => {
+					const leadingCharacter = process.platform === 'win32' ? '/' : '';
+					Object.keys(compilation.assets).forEach((filename) => {
+						if (filename.endsWith('.mjs') || filename.endsWith('.js')) {
+							const asset = compilation.assets[filename];
+							let source = asset.source();
+
+							// Replace sourceMappingURL to use file:// protocol pointing to actual location
+							source = source.replace(
+								/\/\/# sourceMappingURL=(.+\.map)/g,
+								`//# sourceMappingURL=file://${leadingCharacter}${outputPath}/$1`,
+							);
+
+							compilation.assets[filename] = {
+								source: () => source,
+								size: () => source.length,
+							};
+						}
+					});
+				});
+			}
+		}
+
+		config.plugin('FixSourceMapUrlPlugin').use(FixSourceMapUrlPlugin);
+	}
 
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
@@ -259,10 +337,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		});
 	} else {
 		// Set up ESM output
-		// NOTE: this fixes all worker bundling issues
-		// however it causes issues with angular lazy loading.
-		// TODO: still need to investigate the right combination of webpack settings there
-		// TODO: test if standalone lazy loaded routes work, maybe it's just with loadChildren modules?
 		config.output.chunkFilename('[name].mjs');
 
 		// now re‑add exactly what you want:
@@ -508,7 +582,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.options(postCSSOptions)
 		.end()
 		.use('sass-loader')
-		.loader('sass-loader');
+		.loader('sass-loader')
+		.options({
+			// helps ensure proper project compatibility
+			// particularly in cases of workspaces
+			// which may have different nested Sass implementations
+			// via transient dependencies
+			implementation: require('sass'),
+		});
 
 	// config.plugin('NormalModuleReplacementPlugin').use(NormalModuleReplacementPlugin, [
 	// 	/.*/,

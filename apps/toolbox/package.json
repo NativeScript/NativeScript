@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@nativescript/android": "alpha",
-    "@nativescript/ios": "esm",
+    "@nativescript/ios": "alpha",
     "@nativescript/visionos": "~8.9.0",
     "@nativescript/webpack": "file:../../dist/packages/webpack5",
     "typescript": "~5.8.0"

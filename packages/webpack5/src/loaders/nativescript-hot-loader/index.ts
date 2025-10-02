@@ -24,15 +24,10 @@ export default function loader(content: string, map: any) {
 		return this.callback(null, `${content}\n${hmrRuntime}`, map);
 	}
 
-	const relativePath = relative(
-		opts.appPath ?? this.rootContext,
-		this.resourcePath,
-	).replace(/\\/g, '/');
-
 	const hmrCode = this.hot
 		? dedent`
 			/* NATIVESCRIPT-HOT-LOADER */
-			if(module.hot) {
+			if(module.hot?.accept) {
 				module.hot.accept()
 			}
 		`
