@@ -4,6 +4,9 @@
 /dist
 /tmp
 /out-tsc
+/build
+*.js.map
+*.d.ts.map
 
 # dependencies
 **/node_modules
@@ -19,13 +22,16 @@
 *.launch
 .settings/
 *.sublime-workspace
-
-# IDE - VSCode
+*.sublime-project
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+*.code-workspace
+
+# IDE - VSCode
+.history/
 
 # misc
 /.sass-cache
@@ -45,9 +51,34 @@ apps/**/package-lock.json
 .npmrc
 **/**/*.log
 
+# Testing
+/coverage
+.nyc_output
+junit.xml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.envrc
+
 # System Files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache
 
 # core
 # https://github.com/NativeScript/nativescript-dev-webpack/issues/932
@@ -56,9 +87,42 @@ Thumbs.db
 # types
 ios-typings-prj
 
+# Build artifacts
 .nx/cache
 .nx/workspace-data
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+.fseventsd
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Package managers
+package-lock.json
+.pnpm-debug.log*
+.yarn-integrity
+.yarn-metadata.json
+.pnp.*
+.pnp.cjs
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

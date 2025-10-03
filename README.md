@@ -64,7 +64,7 @@ $ npm run setup
 $ npm start
 ```
 
-We love you and your pull requests 🤗. Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/main/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
+We love you and your pull requests 🤗. Please follow our [contributing guide](CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
 
 ## @nativescript/*
 
