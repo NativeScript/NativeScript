@@ -98,11 +98,6 @@ interface ApplicationEvents {
 	on(event: 'livesync', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 
 	/**
-	 * This event is raised when application css is changed.
-	 */
-	on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
-
-	/**
 	 * This event is raised on application launchEvent.
 	 */
 	on(event: 'launch', callback: (args: LaunchEventData) => void, thisArg?: any): void;
