@@ -56,12 +56,22 @@ export function getNativeApp<T extends NativeApp>(): T {
 
 			// the getInstance might return null if com.tns.NativeScriptApplication exists but is not the starting app type
 			if (!nativeApp) {
-				// TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module?
-				const clazz = java.lang.Class.forName('android.app.ActivityThread');
-				if (clazz) {
-					const method = clazz.getMethod('currentApplication', null);
-					if (method) {
-						nativeApp = method.invoke(null, null);
+				// Handle custom application type by getting current application through reflection
+				// This is a fallback for cases where a custom application type is provided
+				// and the user has not explicitly initialized the application module
+				try {
+					const clazz = java.lang.Class.forName('android.app.ActivityThread');
+					if (clazz) {
+						const method = clazz.getMethod('currentApplication', null);
+						if (method) {
+							nativeApp = method.invoke(null, null);
+						}
+					}
+				} catch (error) {
+					// Reflection failed, this is expected in some edge cases
+					// The app should still function, but without native app reference
+					if (__DEV__) {
+						console.warn('Failed to retrieve native application instance via reflection:', error);
 					}
 				}
 			}
@@ -83,19 +93,39 @@ export function setNativeApp(app: NativeApp) {
 
 let rootView: any;
 
+/**
+ * Get the current root view of the application.
+ * @returns The current root view instance or undefined if not set.
+ */
 export function getRootView() {
 	return rootView;
 }
 
+/**
+ * Set the root view of the application.
+ * This is typically called internally during application initialization.
+ * @param view The root view instance to set.
+ */
 export function setRootView(view: any) {
 	rootView = view;
 }
 
 let _appInBackground: boolean = false;
-export function isAppInBackground() {
+
+/**
+ * Check if the application is currently in the background.
+ * @returns true if the app is in background, false if in foreground.
+ */
+export function isAppInBackground(): boolean {
 	return _appInBackground;
 }
-export function setAppInBackground(value: boolean) {
+
+/**
+ * Set the application background state.
+ * This is typically called internally when the app enters/exits background.
+ * @param value true if app is entering background, false if entering foreground.
+ */
+export function setAppInBackground(value: boolean): void {
 	_appInBackground = value;
 }
 
