@@ -527,8 +527,6 @@ export abstract class View extends ViewCommon {
 	 */
 	scaleY: number;
 
-	//END Style property shortcuts
-
 	/**
 	 * Gets or sets the X component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
 	 *
@@ -542,6 +540,8 @@ export abstract class View extends ViewCommon {
 	 * @nsProperty
 	 */
 	originY: number;
+
+	//END Style property shortcuts
 
 	/**
 	 * The flex-flow Shorthand property specifies the direction of a flex container, as well as its wrapping behavior.

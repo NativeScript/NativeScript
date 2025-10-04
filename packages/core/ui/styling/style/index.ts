@@ -112,6 +112,9 @@ export class Style extends Observable {
 	public fontScaleInternal: number;
 	public backgroundInternal: Background;
 
+	public originX: number;
+	public originY: number;
+
 	public rotate: number;
 	public rotateX: number;
 	public rotateY: number;
