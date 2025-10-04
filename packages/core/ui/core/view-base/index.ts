@@ -79,6 +79,10 @@ export interface ShowModalOptions {
 		 * height of the popup dialog
 		 */
 		height?: number;
+		/**
+		 * The preferred status bar style for the modal view
+		 */
+		statusBarStyle?: 'light' | 'dark';
 	};
 	android?: {
 		/**

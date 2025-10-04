@@ -66,14 +66,6 @@ export declare class Page extends PageBase {
 	public backgroundSpanUnderStatusBar: boolean;
 
 	/**
-	 * Gets or sets the style of the status bar.
-	 *
-	 * @nsProperty
-	 */
-	// @ts-ignore
-	public statusBarStyle: 'light' | 'dark';
-
-	/**
 	 * Gets or sets the color of the status bar in Android.
 	 *
 	 * @nsProperty
