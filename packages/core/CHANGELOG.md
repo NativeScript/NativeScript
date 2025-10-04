@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [8.9.10](https://github.com/Akylas/NativeScript/compare/@akylas/nativescript@8.9.6...@akylas/nativescript@8.9.10) (2025-10-04)
+
+
+### Features
+
+* **dialogs:** allow using keyboard enter/return to confirm on iOS ([#10799](https://github.com/Akylas/NativeScript/issues/10799)) ([326672e](https://github.com/Akylas/NativeScript/commit/326672efb4648b07910e2b641b46171f9e49ad5b))
+* **TextField:** decimal keyboardType  ([#10789](https://github.com/Akylas/NativeScript/issues/10789)) ([55104ae](https://github.com/Akylas/NativeScript/commit/55104ae36af05a84f4f88d288a9807187a5863d3))
+
+
+### Bug Fixes
+
+* `orientationChange` event now also contains rotation in degrees ([fca16b1](https://github.com/Akylas/NativeScript/commit/fca16b17456f107e02208aca456ae967af077056))
+* **android:** make button default text not all caps for improved consistency ([#10854](https://github.com/Akylas/NativeScript/issues/10854)) ([d6d3800](https://github.com/Akylas/NativeScript/commit/d6d38008840b90fac4d2098de124abab0c69416b))
+* **android:** shared element with target name already added to transaction ([#10793](https://github.com/Akylas/NativeScript/issues/10793)) ([e0e8126](https://github.com/Akylas/NativeScript/commit/e0e81268d6c5f30047eaed70062017b5a803882b))
+* **core:** iOS fix for navigation broken after showing modal over view already showing an alert dialog ([71bbb60](https://github.com/Akylas/NativeScript/commit/71bbb607d04faeaedb35cf80e46b8386c74760a3))
+
 ### [8.9.6](https://github.com/Akylas/NativeScript/compare/@akylas/nativescript@8.9.5...@akylas/nativescript@8.9.6) (2025-09-02)
 
 
