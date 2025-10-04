@@ -12,7 +12,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const virtualEntryPath = path.resolve(
 		__dirname,
-		// Note: not sure we'll need this but just an idea if we do.
+		// Note: this is possible if needed
+		// at moment it's not but just leaving as note for future
 		// `../stubs/virtual-entry-typescript.${env.commonjs ? 'js' : 'mjs'}`,
 		`../stubs/virtual-entry-typescript.js`,
 	);

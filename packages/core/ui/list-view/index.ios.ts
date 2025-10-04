@@ -1,7 +1,7 @@
 import { ItemEventData, SearchEventData, ItemsSource } from '.';
 import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty, stickyHeaderProperty, stickyHeaderTemplateProperty, stickyHeaderHeightProperty, sectionedProperty, showSearchProperty, searchAutoHideProperty } from './list-view-common';
 import { CoreTypes } from '../../core-types';
-import { View, KeyedTemplate, Template } from '../core/view';
+import { View, type KeyedTemplate, type Template } from '../core/view';
 import { Length } from '../styling/length-shared';
 import { Observable, EventData } from '../../data/observable';
 import { Color } from '../../color';

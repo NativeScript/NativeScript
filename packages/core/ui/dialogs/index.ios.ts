@@ -30,11 +30,11 @@ function addButtonsToAlertController(alertController: UIAlertController, options
 	}
 
 	if (isString(options.okButtonText)) {
-		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
-				raiseCallback(callback, true);
-			}),
-		);
+		const action = UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
+			raiseCallback(callback, true);
+		});
+		alertController.addAction(action);
+		alertController.preferredAction = action; // Allows using keyboard enter/return to confirm the dialog
 	}
 }
 

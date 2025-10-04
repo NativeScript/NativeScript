@@ -353,6 +353,7 @@ if (!global.NativeScriptHasPolyfilled) {
 		glb.FormData = xhrImpl.FormData;
 		glb.Blob = xhrImpl.Blob;
 		glb.File = xhrImpl.File;
+		glb.FileReader = xhrImpl.FileReader;
 
 		// fetch
 		glb.fetch = fetchPolyfill.fetch;
