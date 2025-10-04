@@ -84,7 +84,7 @@ jobs:
 
       - name: publish
         run: |
-          npm run core:publish -- --no-verify-access --no-private --no-commit-hooks --yes
+          npm run core:publish -- --no-verify-access --no-private --no-commit-hooks --force-publish --yes
           git push --tags
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
