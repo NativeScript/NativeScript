@@ -170,6 +170,36 @@ public class Utils {
 		boolean autoScaleFactor;
 	}
 
+	private static int parsePositiveInt(JSONObject object, String key) {
+		if (object == null || key == null) {
+			return 0;
+		}
+		try {
+			if (!object.has(key)) {
+				return 0;
+			}
+			Object value = object.get(key);
+			if (value instanceof Number) {
+				int n = ((Number) value).intValue();
+				return n > 0 ? n : 0;
+			}
+			if (value instanceof String) {
+				String s = ((String) value).trim();
+				if (s.length() == 0) {
+					return 0;
+				}
+				try {
+					int n = Integer.parseInt(s);
+					return n > 0 ? n : 0;
+				} catch (NumberFormatException ignored) {
+					return 0;
+				}
+			}
+		} catch (Exception ignored) {
+		}
+		return 0;
+	}
+
 	private static final Executor executors = Executors.newCachedThreadPool();
 
 
@@ -297,8 +327,8 @@ public class Utils {
 
 					try {
 						JSONObject object = new JSONObject(options);
-						opts.width = object.optInt("width", 0);
-						opts.height = object.optInt("height", 0);
+						opts.width = parsePositiveInt(object, "width");
+						opts.height = parsePositiveInt(object, "height");
 						opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
 						opts.autoScaleFactor = object.optBoolean("autoScaleFactor", true);
 					} catch (JSONException ignored) {
