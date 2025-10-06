@@ -1,6 +1,0 @@
-framework module TNSWidgets {
-  umbrella header "TNSWidgets.h"
-
-  export *
-  module * { export * }
-}
