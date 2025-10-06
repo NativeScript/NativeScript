@@ -53,8 +53,8 @@
 		"webpack-virtual-modules": "^0.4.0"
 	},
 	"devDependencies": {
-		"@angular-devkit/build-angular": "^20.0.0",
-		"@angular/compiler-cli": "^20.0.0",
+		"@angular-devkit/build-angular": "21.0.0-next.6",
+		"@angular/compiler-cli": "20.0.0",
 		"@babel/helpers": ">=7.26.10",
 		"@types/css": "0.0.38",
 		"@types/jest": "29.5.4",
@@ -65,14 +65,14 @@
 		"@types/terser-webpack-plugin": "5.2.0",
 		"@types/webpack-virtual-modules": "0.4.2",
 		"globby": "14.0.0",
-		"jest": "~29.7.0",
+		"jest": "29.7.0",
 		"jest-matcher-utils": "30.0.0-alpha.3",
 		"nativescript-vue-template-compiler": "2.9.3",
 		"ts-jest": "29.4.4",
 		"typescript": "~5.8.0"
 	},
 	"peerDependencies": {
-		"nativescript-vue-template-compiler": "^2.8.1"
+		"nativescript-vue-template-compiler": "^2.9.3"
 	},
 	"peerDependenciesMeta": {
 		"nativescript-vue-template-compiler": {
