@@ -12,3 +12,8 @@ module UIViewNativeScript {
     header "UIView+NativeScript.h"
     export *
 }
+module TNSWidgets {
+    umbrella header "TNSWidgets/TNSWidgets.h"
+    module * { export * }
+    export *
+}
