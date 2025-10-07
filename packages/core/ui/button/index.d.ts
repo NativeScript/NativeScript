@@ -10,7 +10,7 @@ export class Button extends TextBase {
 	/**
 	 * String value used when hooking to tap event.
 	 *
-	 * @nsEvent {EventData} string;
+	 * @nsEvent {EventData} tap
 	 */
 	public static tapEvent: string;
 
