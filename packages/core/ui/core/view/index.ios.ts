@@ -1,18 +1,17 @@
-// Types.
-import { Point, Position, View as ViewDefinition } from '.';
-
-// Requires
+import type { Point, Position } from './view-interfaces';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant, GlassEffectConfig } from './view-common';
+import { isAccessibilityServiceEnabled } from '../../../application';
+import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
-import { layout, ios as iosUtils } from '../../../utils';
+import { layout, ios as iosUtils, getWindow } from '../../../utils';
 import { SDK_VERSION, supportsGlass } from '../../../utils/constants';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
@@ -20,7 +19,6 @@ import { NativeScriptUIView } from '../../utils';
 import { Color } from '../../../color';
 
 export * from './view-common';
-// helpers (these are okay re-exported here)
 export * from './view-helper';
 // This one can eventually be cleaned up but causes issues with a lot of ui-suite plugins in particular if not exported here
 export * from '../properties';
@@ -29,7 +27,7 @@ const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
-export class View extends ViewCommon implements ViewDefinition {
+export class View extends ViewCommon {
 	// @ts-ignore
 	nativeViewProtected: UIView;
 	// @ts-ignore
@@ -374,7 +372,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		};
 	}
 
-	public getLocationRelativeTo(otherView: ViewDefinition): Point {
+	public getLocationRelativeTo(otherView: View): Point {
 		if (!this.nativeViewProtected || !this.nativeViewProtected.window || !otherView.nativeViewProtected || !otherView.nativeViewProtected.window || this.nativeViewProtected.window !== otherView.nativeViewProtected.window) {
 			return undefined;
 		}
@@ -692,7 +690,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.isAccessibilityElement = !!value;
 
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityIdentifierProperty.getDefault](): string {
@@ -705,7 +703,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityValueProperty.setNative](value: string): void {
@@ -740,20 +738,20 @@ export class View extends ViewCommon implements ViewDefinition {
 	[accessibilityHiddenProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.accessibilityElementsHidden = !!value;
 
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityLiveRegionProperty.setNative](): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
 		this.accessibilityState = value;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityMediaSessionProperty.setNative](): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[isUserInteractionEnabledProperty.getDefault](): boolean {
@@ -1142,7 +1140,7 @@ export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: UIView;
 
 	createNativeView() {
-		const window = iosUtils.getWindow();
+		const window = getWindow<UIWindow>();
 		return UIView.alloc().initWithFrame(window ? window.screen.bounds : UIScreen.mainScreen.bounds);
 	}
 

@@ -8,8 +8,7 @@
 
     <GridLayout backgroundColor="#000">
 
-        <!-- <Image src="https://wallpapers.com/images/hd/yosemite-iphone-1440-x-2560-9t7u3ctc1hmq35p4.jpg" stretch="aspectFill" iosOverflowSafeArea="true" /> -->
-        <Image src="res://bg1.jpg" stretch="aspectFill" iosOverflowSafeArea="true" loaded="{{loadedImage}}" />
+<Image src="https://cdn.wallpapersafari.com/89/64/c6MnRY.jpg" stretch="aspectFill" iosOverflowSafeArea="true" />
         <!-- <ContentView backgroundColor="#000" height="300" verticalAlignment="bottom"/> -->
 
         <ScrollView >
@@ -32,24 +31,28 @@
                             <Label id="like" text="Like" fontSize="22" class="font-weight-bold text-center" loaded="{{loadedGlassLabels}}" />
                         </LiquidGlass>
                     </LiquidGlassContainer> -->
-
-
-                    <!-- <GridLayout row="1" width="300" height="150" iosGlassEffect="regular" horizontalAlignment="center" verticalAlignment="middle">
-                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Regular" />
-            </GridLayout> -->
-
-                    <!-- <GridLayout row="3" width="300" height="150" iosGlassEffect="clear" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10" borderRadius="50">
-                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Clear" />
-            </GridLayout>
-
-            <GridLayout row="4" width="300" height="150" iosGlassEffect="{{iosGlassEffectInteractive}}" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10" borderRadius="50">
-                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Interactive" />
-            </GridLayout> -->
                 </GridLayout>
 
                 <GridLayout height="600"/>
             </StackLayout>
 
         </ScrollView>
+
+
+        <!-- Alternative setup -->
+        <GridLayout rows="*,auto,auto,auto,*">
+
+            <GridLayout row="1" width="300" height="150" iosGlassEffect="regular" horizontalAlignment="center" verticalAlignment="middle">
+                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Regular" />
+            </GridLayout>
+
+            <GridLayout row="2" width="300" height="150" iosGlassEffect="clear" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10">
+                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Clear" />
+            </GridLayout>
+
+            <GridLayout row="3" width="300" height="150" iosGlassEffect="{{iosGlassEffectInteractive}}" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10">
+                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Interactive" />
+            </GridLayout>
+        </GridLayout>
     </GridLayout>
 </Page>

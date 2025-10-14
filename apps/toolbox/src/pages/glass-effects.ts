@@ -7,8 +7,6 @@ export function navigatingTo(args: EventData) {
 	page.bindingContext = new GlassEffectModel();
 }
 
-const originalTransform = Symbol('originalTransform');
-
 export class GlassEffectModel extends Observable {
 	iosGlassEffectInteractive: GlassEffectConfig = {
 		interactive: true,
@@ -36,32 +34,6 @@ export class GlassEffectModel extends Observable {
 						// tint: '#ccc',
 					};
 		btn.iosGlassEffect = this.currentEffect;
-	}
-
-	images = ['res://bg1.jpg', 'res://bg2.jpg', 'res://bg3.jpg'];
-	currentImage = this.images[0];
-	cycleImage() {
-		if (!this.image) {
-			return;
-		}
-		let currentIndex = this.images.indexOf(this.currentImage);
-		currentIndex++;
-		if (currentIndex === this.images.length) {
-			currentIndex = 0;
-		}
-		this.currentImage = this.images[currentIndex];
-		// this.notifyPropertyChange('currentImage', this.currentImage);
-		this.image.animate({ opacity: 0, duration: 300, curve: CoreTypes.AnimationCurve.easeInOut }).then(() => {
-			this.image.src = this.currentImage;
-			setTimeout(() => {
-				this.image.animate({ opacity: 1, duration: 800, curve: CoreTypes.AnimationCurve.easeInOut });
-			});
-		});
-	}
-
-	image: Image;
-	loadedImage(args) {
-		this.image = args.object as Image;
 	}
 
 	glassMerged = false;
@@ -100,61 +72,4 @@ export class GlassEffectModel extends Observable {
 
 		this.glassTargetLabels['like'].text = this.glassMerged ? 'Done' : 'Like';
 	}
-
-	touchAnimation: TouchAnimationOptions = {
-		down: (view: View) => {
-			if (__APPLE__) {
-				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-					0.3,
-					0,
-					0.5,
-					3,
-					UIViewAnimationOptions.CurveEaseInOut | UIViewAnimationOptions.AllowUserInteraction,
-					() => {
-						if (view?.ios) {
-							view[originalTransform] = view[originalTransform] ?? view.ios.transform;
-
-							view.ios.transform = CGAffineTransformConcat(view[originalTransform], CGAffineTransformMakeScale(0.97, 0.97));
-						}
-					},
-					null,
-				);
-			} else {
-				view
-					?.animate({
-						scale: { x: 0.97, y: 0.97 },
-						duration: 120,
-						curve: CoreTypes.AnimationCurve.easeInOut,
-					})
-					.then(() => {})
-					.catch(() => {});
-			}
-		},
-		up: (view: View) => {
-			if (__APPLE__) {
-				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
-					0.3,
-					0,
-					0.5,
-					3,
-					UIViewAnimationOptions.CurveEaseInOut | UIViewAnimationOptions.AllowUserInteraction,
-					() => {
-						if (view?.ios) {
-							view.ios.transform = view[originalTransform] ?? CGAffineTransformMakeScale(1, 1);
-						}
-					},
-					null,
-				);
-			} else {
-				view
-					?.animate({
-						scale: { x: 1, y: 1 },
-						duration: 120,
-						curve: CoreTypes.AnimationCurve.easeInOut,
-					})
-					.then(() => {})
-					.catch(() => {});
-			}
-		},
-	};
 }

@@ -1,5 +1,6 @@
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
+import { Length } from './length-shared';
 import { parseCSSShorthand } from './css-utils';
 
 export interface ShadowCSSValues {

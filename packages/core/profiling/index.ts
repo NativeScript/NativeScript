@@ -1,3 +1,5 @@
+// @ts-ignore apps resolve this at runtime with path alias in project bundlers
+import appConfig from '~/package.json';
 /* eslint-disable prefer-rest-params */
 declare let __startCPUProfiler: any;
 declare let __stopCPUProfiler: any;
@@ -158,7 +160,6 @@ export function enable(mode: InstrumentationMode = 'counters') {
 }
 
 try {
-	const appConfig = require('~/package.json');
 	if (appConfig && appConfig.profiling) {
 		enable(appConfig.profiling);
 	}

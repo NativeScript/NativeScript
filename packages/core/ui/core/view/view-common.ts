@@ -1,6 +1,5 @@
-// Definitions.
-import { View as ViewDefinition, Point, Size, ShownModallyData, Position } from '.';
-
+import type { View as ViewType } from '.';
+import { Point, Size, ShownModallyData, Position } from './view-interfaces';
 import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
 import { layout } from '../../../utils';
@@ -9,37 +8,31 @@ import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
-import { Trace } from '../../../trace';
-import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
-import { setupAccessibleView } from '../../../accessibility';
+import { setupAccessibleView } from '../../../application/helpers';
 
-import { PercentLength } from '../../styling/style-properties';
+import { PercentLength } from '../../styling/length-shared';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, toString as gestureToString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, fromString as gestureFromString, toString as gestureToString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
+import type { GestureEventData } from '../../gestures/gestures-types';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
-import * as am from '../../animation';
-import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
+import { Animation } from '../../animation';
+import type { AnimationPromise } from '../../animation/animation-types';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, getFontScale } from '../../../accessibility';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
+import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent } from '../../../accessibility';
 import { ShadowCSSValues } from '../../styling/css-shadow';
 import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
 import { Flex, FlexFlow } from '../../layouts/flexbox-layout';
+import { CoreTypes, Trace } from '../../styling/styling-shared';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
-
-let animationModule: typeof am;
-function ensureAnimationModule() {
-	if (!animationModule) {
-		animationModule = require('../../animation');
-	}
-}
 
 export function CSSType(type: string): ClassDecorator {
 	return (cls) => {
@@ -47,7 +40,7 @@ export function CSSType(type: string): ClassDecorator {
 	};
 }
 
-export function viewMatchesModuleContext(view: ViewDefinition, context: ModuleContext, types: ModuleType[]): boolean {
+export function viewMatchesModuleContext(view: ViewCommon, context: ModuleContext, types: ModuleType[]): boolean {
 	return context && view._moduleName && context.type && types.some((type) => type === context.type) && context.path && context.path.includes(view._moduleName);
 }
 
@@ -78,7 +71,7 @@ type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; option
 // TODO: remove once we fully switch to the new event system
 const warnedEvent = new Set<string>();
 
-export abstract class ViewCommon extends ViewBase implements ViewDefinition {
+export abstract class ViewCommon extends ViewBase {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
@@ -112,7 +105,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
-	public _modalParent: ViewCommon;
+	public _modalParent?: ViewCommon;
 	private _modalContext: any;
 	private _modal: ViewCommon;
 
@@ -127,7 +120,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	protected _isLayoutValid: boolean;
 	private _cssType: string;
 
-	private _localAnimations: Set<am.Animation>;
+	private _localAnimations: Set<Animation>;
 
 	_currentWidthMeasureSpec: number;
 	_currentHeightMeasureSpec: number;
@@ -409,7 +402,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	public showModal(...args): ViewDefinition {
+	public showModal(...args): ViewType {
 		const { view, options } = this.getModalOptions(args);
 		if (options.transition?.instance) {
 			SharedTransition.updateState(options.transition?.instance.id, {
@@ -446,7 +439,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;
-		this.style.fontScaleInternal = getCurrentFontScale();
+		this.style.fontScaleInternal = getFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
 		this._closeModalCallback = (...originalArgs) => {
@@ -1060,7 +1053,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return ViewHelper.combineMeasuredStates(curState, newState);
 	}
 
-	public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame = true): void {
+	public static layoutChild(parent: ViewCommon, child: ViewCommon, left: number, top: number, right: number, bottom: number, setFrame = true): void {
 		ViewHelper.layoutChild(parent, child, left, top, right, bottom);
 	}
 
@@ -1099,7 +1092,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.eachChildView(<any>callback);
 	}
 
-	public eachChildView(callback: (view: ViewDefinition) => boolean) {
+	public eachChildView(callback: (view: ViewCommon) => boolean) {
 		//
 	}
 
@@ -1127,7 +1120,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return undefined;
 	}
 
-	public getLocationRelativeTo(otherView: ViewDefinition): Point {
+	public getLocationRelativeTo(otherView: ViewCommon): Point {
 		return undefined;
 	}
 
@@ -1143,23 +1136,25 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		};
 	}
 
-	public animate(animation: any): am.AnimationPromise {
-		return this.createAnimation(animation).play();
+	public animate(animation: any): AnimationPromise {
+		const animationInstance = this.createAnimation(animation);
+		const promise = animationInstance.play();
+		(promise as AnimationPromise).cancel = () => animationInstance.cancel();
+		return promise as AnimationPromise;
 	}
 
-	public createAnimation(animation: any): am.Animation {
-		ensureAnimationModule();
+	public createAnimation(animation: any): Animation {
 		if (!this._localAnimations) {
 			this._localAnimations = new Set();
 		}
 		animation.target = this;
-		const anim = new animationModule.Animation([animation]);
+		const anim = new Animation([animation]);
 		this._localAnimations.add(anim);
 
 		return anim;
 	}
 
-	public _removeAnimation(animation: am.Animation): boolean {
+	public _removeAnimation(animation: Animation): boolean {
 		const localAnimations = this._localAnimations;
 		if (localAnimations && localAnimations.has(animation)) {
 			localAnimations.delete(animation);
@@ -1232,11 +1227,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		//
 	}
 
-	_hasAncestorView(ancestorView: ViewDefinition): boolean {
-		const matcher = (view: ViewDefinition) => view === ancestorView;
+	_hasAncestorView(ancestorView: ViewCommon): boolean {
+		const matcher = (view: ViewCommon) => view === ancestorView;
 
 		for (let parent = this.parent; parent != null; parent = parent.parent) {
-			if (matcher(<ViewDefinition>parent)) {
+			if (matcher(<ViewCommon>parent)) {
 				return true;
 			}
 		}

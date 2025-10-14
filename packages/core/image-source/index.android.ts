@@ -1,12 +1,9 @@
-// Definitions.
 import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
-import * as httpModule from '../http';
-
-// Types.
+import { getImageRequest } from '../http/http-shared';
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
-import { Application } from '../application';
+import { getNativeApp } from '../application/helpers-common';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 
@@ -14,30 +11,8 @@ import { getScaledDimensions } from './image-source-common';
 
 export { isFileOrResourcePath };
 
-let http: typeof httpModule;
-function ensureHttp() {
-	if (!http) {
-		http = require('../http');
-	}
-}
-
-let application: android.app.Application;
-let resources: android.content.res.Resources;
-
 function getApplication() {
-	if (!application) {
-		application = Application.android.getNativeApplication();
-	}
-
-	return application;
-}
-
-function getResources() {
-	if (!resources) {
-		resources = getApplication().getResources();
-	}
-
-	return resources;
+	return getNativeApp() as android.app.Application;
 }
 
 export class ImageSource implements ImageSourceDefinition {
@@ -87,14 +62,12 @@ export class ImageSource implements ImageSourceDefinition {
 		});
 	}
 
-	static fromUrl(url: string): Promise<ImageSourceDefinition> {
-		ensureHttp();
-
-		return http.getImage(url);
+	static fromUrl(url: string): Promise<ImageSource> {
+		return getImageRequest(url) as Promise<ImageSource>;
 	}
 
 	static fromResourceSync(name: string): ImageSource {
-		const res = getResources();
+		const res = getApplication().getResources();
 		if (res) {
 			const identifier: number = res.getIdentifier(name, 'drawable', getApplication().getPackageName());
 			if (0 < identifier) {

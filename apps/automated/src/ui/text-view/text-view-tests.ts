@@ -1,21 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import * as viewModule from '@nativescript/core/ui/core/view';
-import * as pagesModule from '@nativescript/core/ui/page';
 import * as textViewTestsNative from './text-view-tests-native';
-import * as colorModule from '@nativescript/core/color';
-import { CoreTypes } from '@nativescript/core';
-import * as platform from '@nativescript/core/platform';
-
-// >> require-textmodules
-import * as textViewModule from '@nativescript/core/ui/text-view';
-// << require-textmodules
-
-// Other frequently used modules when working with buttons include:
-import * as bindable from '@nativescript/core/ui/core/bindable';
-// >> require-observable-textview
-import * as observable from '@nativescript/core/data/observable';
-// << require-observable-textview
+import { CoreTypes, Color, Page, View, TextView, BindingOptions, Observable } from '@nativescript/core';
 
 // >> text-view-xml
 // <Page loaded="pageLoaded">
@@ -28,20 +14,19 @@ import * as observable from '@nativescript/core/data/observable';
 // >> observable-declare
 export function pageLoaded(args) {
 	let page = args.object;
-	let obj = new observable.Observable();
+	let obj = new Observable();
 	obj.set('someProperty', 'Please change this text!');
 	page.bindingContext = obj;
 }
-exports.pageLoaded = pageLoaded;
 // << observable-declare
 
 export function test_recycling() {
 	helper.nativeView_recycling_test(_createTextViewFunc);
 }
 
-var _createTextViewFunc = function (): textViewModule.TextView {
+var _createTextViewFunc = function (): TextView {
 	// >> text-view-create
-	var textView = new textViewModule.TextView();
+	var textView = new TextView();
 	// << text-view-create
 	textView.text = 'textView';
 
@@ -49,8 +34,8 @@ var _createTextViewFunc = function (): textViewModule.TextView {
 };
 
 export var testSetText = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 
 		// >> set-text-value
 		textView.text = 'Hello, world!';
@@ -63,8 +48,8 @@ export var testSetText = function () {
 };
 
 export var testSetTextNull = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 
 		textView.text = null;
 
@@ -75,8 +60,8 @@ export var testSetTextNull = function () {
 };
 
 export var testSetTextUndefined = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 
 		textView.text = undefined;
 
@@ -87,24 +72,25 @@ export var testSetTextUndefined = function () {
 };
 
 // Supported for ios only.
-if (__APPLE__) {
-	exports.test_set_color = function () {
-		helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-			var textView = <textViewModule.TextView>views[0];
-			textView.color = new colorModule.Color('red');
+
+export function test_set_color() {
+	if (__APPLE__) {
+		helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+			var textView = <TextView>views[0];
+			textView.color = new Color('red');
 			TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.textColor.CGColor, 'textView.color');
 		});
-	};
+	}
 }
 
 export var testBindTextDirectlyToModel = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 
 		// >> binding-text-property-textview
-		var model = new observable.Observable();
+		var model = new Observable();
 		model.set('username', 'john');
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'username',
 			targetProperty: 'text',
 		};
@@ -125,15 +111,15 @@ export var testBindTextDirectlyToModel = function () {
 };
 
 export var testBindTextToBindingContext = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 
-		var model = new observable.Observable();
+		var model = new Observable();
 		model.set('username', 'john');
 		page.bindingContext = model;
 
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'username',
 			targetProperty: 'text',
 		};
@@ -149,8 +135,8 @@ export var testBindTextToBindingContext = function () {
 };
 
 export var testTextIsUpdatedWhenUserTypes = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 		textView.updateTextTrigger = 'focusLost';
 
 		var expectedValue = 'Hello, world!';
@@ -162,8 +148,8 @@ export var testTextIsUpdatedWhenUserTypes = function () {
 };
 
 export var testSetHint = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 		textView.text = '';
 
 		// >> set-textview-hint
@@ -177,14 +163,14 @@ export var testSetHint = function () {
 };
 
 export var testBindHintDirectlyToModel = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 		textView.text = '';
 
 		// >> binding-hint-property-textview
-		var model = new observable.Observable();
+		var model = new Observable();
 		model.set('hint', 'type your username here');
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'hint',
 			targetProperty: 'hint',
 		};
@@ -205,16 +191,16 @@ export var testBindHintDirectlyToModel = function () {
 };
 
 export var testBindHintToBindingConext = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 		textView.text = '';
-		var page = <pagesModule.Page>views[1];
+		var page = <Page>views[1];
 
-		var model = new observable.Observable();
+		var model = new Observable();
 		model.set('hint', 'type your username here');
 		page.bindingContext = model;
 
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'hint',
 			targetProperty: 'hint',
 		};
@@ -230,8 +216,8 @@ export var testBindHintToBindingConext = function () {
 };
 
 export var testHintPlusTextiOS = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 		if (!textView.ios) {
 			return;
 		}
@@ -254,14 +240,14 @@ export var testHintPlusTextiOS = function () {
 };
 
 export var testHintColoriOS = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 		if (!textView.ios) {
 			return;
 		}
 
 		textView.text = '';
-		textView.color = new colorModule.Color('red');
+		textView.color = new Color('red');
 		textView.hint = 'hint';
 
 		var expectedValue;
@@ -282,8 +268,8 @@ export var testHintColoriOS = function () {
 };
 
 export var testSetEditable = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 
 		// >> setting-editable-property
 		textView.editable = false;
@@ -296,13 +282,13 @@ export var testSetEditable = function () {
 };
 
 export var testBindEditableDirectlyToModel = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 
 		// >> binding-editable-property
-		var model = new observable.Observable();
+		var model = new Observable();
 		model.set('editable', false);
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'editable',
 			targetProperty: 'editable',
 		};
@@ -323,15 +309,15 @@ export var testBindEditableDirectlyToModel = function () {
 };
 
 export var testBindEditableToBindingConext = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 
-		var model = new observable.Observable();
+		var model = new Observable();
 		model.set('editable', false);
 		page.bindingContext = model;
 
-		var options: bindable.BindingOptions = {
+		var options: BindingOptions = {
 			sourceProperty: 'editable',
 			targetProperty: 'editable',
 		};
@@ -347,8 +333,8 @@ export var testBindEditableToBindingConext = function () {
 };
 
 export var testSetMaxLines = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 
 		textView.maxLines = 3;
 
@@ -360,9 +346,9 @@ export var testSetMaxLines = function () {
 
 var expectedFontSize = 42;
 export var testLocalFontSizeFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 
 		page.css = 'textview { font-size: ' + expectedFontSize + '; }';
 		var actualResult = textView.style.fontSize;
@@ -371,9 +357,9 @@ export var testLocalFontSizeFromCss = function () {
 };
 
 export var testNativeFontSizeFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 		page.css = 'textview { font-size: ' + expectedFontSize + '; }';
 
 		var actualResult = textViewTestsNative.getNativeFontSize(textView);
@@ -382,8 +368,8 @@ export var testNativeFontSizeFromCss = function () {
 };
 
 export var testNativeFontSizeFromLocal = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
 		textView.style.fontSize = expectedFontSize;
 
 		var actualResult = textViewTestsNative.getNativeFontSize(textView);
@@ -393,9 +379,9 @@ export var testNativeFontSizeFromLocal = function () {
 
 var expectedLineHeight = 10;
 export var testLocalLineHeightFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 
 		page.css = 'textview { line-height: ' + expectedLineHeight + '; }';
 		var actualResult = textView.style.lineHeight;
@@ -406,9 +392,9 @@ export var testLocalLineHeightFromCss = function () {
 var expectedColorHex = '#FF0000FF';
 var expectedNormalizedColorHex = '#FF0000';
 export var testLocalColorFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 		page.css = 'textview { color: ' + expectedColorHex + '; }';
 
 		var actualResult = textView.style.color.hex;
@@ -417,9 +403,9 @@ export var testLocalColorFromCss = function () {
 };
 
 export var testNativeColorFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 		page.css = 'textview { color: ' + expectedColorHex + '; }';
 
 		var actualResult = textViewTestsNative.getNativeColor(textView).hex;
@@ -428,9 +414,9 @@ export var testNativeColorFromCss = function () {
 };
 
 export var testNativeColorFromLocal = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		textView.style.color = new colorModule.Color(expectedColorHex);
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		textView.style.color = new Color(expectedColorHex);
 
 		var actualResult = textViewTestsNative.getNativeColor(textView).hex;
 		TKUnit.assert(actualResult === expectedNormalizedColorHex, 'Actual: ' + actualResult + '; Expected: ' + expectedNormalizedColorHex);
@@ -440,9 +426,9 @@ export var testNativeColorFromLocal = function () {
 var expectedBackgroundColorHex = '#00FF00FF';
 var expectedNormalizedBackgroundColorHex = '#00FF00';
 export var testLocalBackgroundColorFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 		page.css = 'textview { background-color: ' + expectedBackgroundColorHex + '; }';
 
 		var actualResult = textView.style.backgroundColor.hex;
@@ -451,9 +437,9 @@ export var testLocalBackgroundColorFromCss = function () {
 };
 
 export var testNativeBackgroundColorFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		var page = <Page>views[1];
 		page.css = 'textview { background-color: ' + expectedBackgroundColorHex + '; }';
 
 		helper.waitUntilLayoutReady(textView);
@@ -464,9 +450,9 @@ export var testNativeBackgroundColorFromCss = function () {
 };
 
 export var testNativeBackgroundColorFromLocal = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var textView = <textViewModule.TextView>views[0];
-		textView.style.backgroundColor = new colorModule.Color(expectedBackgroundColorHex);
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var textView = <TextView>views[0];
+		textView.style.backgroundColor = new Color(expectedBackgroundColorHex);
 
 		helper.waitUntilLayoutReady(textView);
 
@@ -477,9 +463,9 @@ export var testNativeBackgroundColorFromLocal = function () {
 
 var expectedTextAlignment: 'right' = 'right';
 export var testLocalTextAlignmentFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var view = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var view = <TextView>views[0];
+		var page = <Page>views[1];
 		page.css = 'textview { text-align: ' + expectedTextAlignment + '; }';
 
 		var actualResult = view.style.textAlignment;
@@ -488,9 +474,9 @@ export var testLocalTextAlignmentFromCss = function () {
 };
 
 export var testNativeTextAlignmentFromCss = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var view = <textViewModule.TextView>views[0];
-		var page = <pagesModule.Page>views[1];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var view = <TextView>views[0];
+		var page = <Page>views[1];
 		page.css = 'textview { text-align: ' + expectedTextAlignment + '; }';
 
 		var actualResult = textViewTestsNative.getNativeTextAlignment(view);
@@ -499,8 +485,8 @@ export var testNativeTextAlignmentFromCss = function () {
 };
 
 export var testNativeTextAlignmentFromLocal = function () {
-	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
-		var view = <textViewModule.TextView>views[0];
+	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<View>) {
+		var view = <TextView>views[0];
 		view.style.textAlignment = expectedTextAlignment;
 
 		var actualResult = textViewTestsNative.getNativeTextAlignment(view);
@@ -519,10 +505,10 @@ export var testNativeTextAlignmentFromLocal = function () {
 // };
 
 export function test_watch_listerer_is_removed_at_onDetach() {
-	if (platform.isAndroid) {
-		helper.buildUIAndRunTest(_createTextViewFunc(), (views: Array<viewModule.View>) => {
-			let tv = <textViewModule.TextView>views[0];
-			let page = <pagesModule.Page>tv.page;
+	if (__ANDROID__) {
+		helper.buildUIAndRunTest(_createTextViewFunc(), (views: Array<View>) => {
+			let tv = <TextView>views[0];
+			let page = <Page>tv.page;
 			let editText = tv.android;
 			editText.setText('String');
 			page.content = null;
@@ -532,8 +518,8 @@ export function test_watch_listerer_is_removed_at_onDetach() {
 }
 
 export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
-	let view = new textViewModule.TextView();
-	helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+	let view = new TextView();
+	helper.buildUIAndRunTest(view, function (views: Array<View>) {
 		view.text = 'NormalText';
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
@@ -544,9 +530,9 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
 }
 
 export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
-	let view = new textViewModule.TextView();
+	let view = new TextView();
 	let formattedString = helper._generateFormattedString();
-	helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+	helper.buildUIAndRunTest(view, function (views: Array<View>) {
 		view.formattedText = formattedString;
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 

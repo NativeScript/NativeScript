@@ -1,6 +1,7 @@
 export { AbsoluteLayout } from './absolute-layout';
 export { DockLayout } from './dock-layout';
 export { FlexboxLayout } from './flexbox-layout';
+export type { FlexFlow, Flex, AlignSelf, FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent } from './flexbox-layout';
 export { GridLayout, GridUnitType, ItemSpec } from './grid-layout';
 export { RootLayout, getRootLayout, getRootLayoutById } from './root-layout';
 export type { RootLayoutOptions, ShadeCoverOptions } from './root-layout';
