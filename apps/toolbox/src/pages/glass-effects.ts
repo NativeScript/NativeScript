@@ -10,7 +10,7 @@ export function navigatingTo(args: EventData) {
 export class GlassEffectModel extends Observable {
 	iosGlassEffectInteractive: GlassEffectConfig = {
 		interactive: true,
-		tint: '#faabab',
+		// tint: '#faabab',
 		variant: 'clear',
 	};
 	currentEffect: GlassEffectConfig = {
@@ -71,5 +71,29 @@ export class GlassEffectModel extends Observable {
 		this.glassTargetLabels['share'].animate({ opacity: this.glassMerged ? 1 : 0, duration: 300, curve: CoreTypes.AnimationCurve.easeInOut }).catch(() => {});
 
 		this.glassTargetLabels['like'].text = this.glassMerged ? 'Done' : 'Like';
+
+		// for testing, on tap, can see glass effect changes animating differences
+		this.testGlassBindingChanges();
+	}
+
+	testGlassBindingChanges() {
+		setTimeout(() => {
+			this.iosGlassEffectInteractive = {
+				interactive: false,
+				variant: 'regular',
+				// can even animate tint changes (requires starting of transparent tint)
+				// tint: '#faabab',
+			};
+			this.notifyPropertyChange('iosGlassEffectInteractive', this.iosGlassEffectInteractive);
+			setTimeout(() => {
+				this.iosGlassEffectInteractive = {
+					interactive: true,
+					variant: 'clear',
+					// by setting tint to transparent, it will animate on next change
+					// tint: '#00000000',
+				};
+				this.notifyPropertyChange('iosGlassEffectInteractive', this.iosGlassEffectInteractive);
+			}, 1500);
+		}, 1500);
 	}
 }

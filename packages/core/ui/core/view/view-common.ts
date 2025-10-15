@@ -1323,6 +1323,10 @@ export type GlassEffectConfig = {
 	interactive?: boolean;
 	tint?: string | Color;
 	/**
+	 * (LiquidGlassContainer only) spacing between child elements (default is 8)
+	 */
+	spacing?: number;
+	/**
 	 * Duration in milliseconds to animate effect changes (default is 300ms)
 	 */
 	animateChangeDuration?: number;
