@@ -2,10 +2,8 @@ import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
 import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
-import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty, textProperty } from '../text-base';
-import { resetSymbol } from '../text-base/text-base-common';
+import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
-import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
 
 export * from './button-common';
