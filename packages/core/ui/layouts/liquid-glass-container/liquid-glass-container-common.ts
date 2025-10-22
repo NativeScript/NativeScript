@@ -1,3 +1,5 @@
-import { GridLayout } from '../grid-layout';
+import { AbsoluteLayout } from '../absolute-layout';
 
-export class LiquidGlassContainerCommon extends GridLayout {}
+export class LiquidGlassContainerCommon extends AbsoluteLayout {
+	stabilizeLayout() {}
+}

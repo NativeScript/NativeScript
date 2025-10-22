@@ -1,4 +1,4 @@
-import { Observable, EventData, Page, CoreTypes, GlassEffectConfig, View, GlassEffectType, TouchAnimationOptions, Label, Image } from '@nativescript/core';
+import { Observable, EventData, Page, CoreTypes, GlassEffectConfig, View, Label, Animation, LiquidGlassContainer } from '@nativescript/core';
 
 let page: Page;
 
@@ -42,10 +42,10 @@ export class GlassEffectModel extends Observable {
 		const glass = args.object as View;
 		switch (glass.id) {
 			case 'glass1':
-				glass.translateX = -40;
+				glass.translateX = 10;
 				break;
 			case 'glass2':
-				glass.translateX = 40;
+				glass.translateX = 70;
 
 				break;
 		}
@@ -58,22 +58,43 @@ export class GlassEffectModel extends Observable {
 		this.glassTargetLabels[label.id] = label;
 	}
 
-	toggleMergeGlass() {
+	async toggleMergeGlass(args) {
 		if (!this.glassTargets['glass1'] || !this.glassTargets['glass2']) {
 			return;
 		}
+		const container = args?.object as LiquidGlassContainer | undefined;
 		this.glassMerged = !this.glassMerged;
 		const glass1 = this.glassTargets['glass1'];
 		const glass2 = this.glassTargets['glass2'];
-		glass1.animate({ translate: { x: this.glassMerged ? -40 : 0, y: 0 }, duration: 300, curve: CoreTypes.AnimationCurve.easeInOut }).catch(() => {});
-		glass2.animate({ translate: { x: this.glassMerged ? 40 : 0, y: 0 }, duration: 300, curve: CoreTypes.AnimationCurve.easeInOut }).catch(() => {});
 
-		this.glassTargetLabels['share'].animate({ opacity: this.glassMerged ? 1 : 0, duration: 300, curve: CoreTypes.AnimationCurve.easeInOut }).catch(() => {});
+		// Use relative deltas for translate; the container will bake them into frames post-animation
+		const d1 = this.glassMerged ? 25 : -25; // left bubble moves inward/outward
+		const d2 = this.glassMerged ? -25 : 25; // right bubble moves inward/outward
 
-		this.glassTargetLabels['like'].text = this.glassMerged ? 'Done' : 'Like';
+		if (!this.glassMerged) {
+			this.glassTargetLabels['like'].text = 'Like';
+		}
+
+		const animateAll = new Animation([
+			{ target: glass1, translate: { x: d1, y: 0 }, duration: 300, curve: CoreTypes.AnimationCurve.easeOut },
+			{ target: glass2, translate: { x: d2, y: 0 }, duration: 300, curve: CoreTypes.AnimationCurve.easeOut },
+			{
+				target: this.glassTargetLabels['share'],
+				opacity: this.glassMerged ? 0 : 1,
+				duration: 300,
+			},
+		]);
+		animateAll.play().then(() => {
+			if (this.glassMerged) {
+				this.glassTargetLabels['like'].text = 'Done';
+			}
+
+			// Ask container to stabilize frames so UIGlassContainerEffect samples correct positions
+			setTimeout(() => container?.stabilizeLayout?.(), 0);
+		});
 
 		// for testing, on tap, can see glass effect changes animating differences
-		this.testGlassBindingChanges();
+		// this.testGlassBindingChanges();
 	}
 
 	testGlassBindingChanges() {

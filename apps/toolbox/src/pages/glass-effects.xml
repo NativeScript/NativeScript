@@ -24,7 +24,7 @@
                     </LiquidGlass>
 
                     
-                    <LiquidGlassContainer row="4" tap="{{toggleMergeGlass}}" horizontalAlignment="center" verticalAlignment="middle" class="m-t-20" width="300" height="100">
+                    <LiquidGlassContainer row="4" tap="{{toggleMergeGlass}}" horizontalAlignment="left" verticalAlignment="middle" class="m-t-20" width="300" height="100" columns="*">
                         <LiquidGlass id="glass1" loaded="{{loadedGlass}}" borderRadius="50" width="100" height="100">
                             <Label id="share" text="Share" fontSize="22" class="font-weight-bold text-center" width="100" height="100" loaded="{{loadedGlassLabels}}" />
                         </LiquidGlass>
@@ -47,6 +47,9 @@
                         <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Interactive" />
                     </GridLayout>
                 </GridLayout>
+
+                <!-- make scrollable to view glass on scroll -->
+                <ContentView height="500"/>
             </StackLayout>
 
         </ScrollView>
