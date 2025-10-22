@@ -209,34 +209,6 @@ export class Button extends ButtonBase {
 		};
 	}
 
-	// [textProperty.setNative](value: string | number | symbol) {
-	// 	if (SDK_VERSION >= 26) {
-	// 		const config = UIButtonConfiguration.plainButtonConfiguration();
-	// 		// const attrs = {};
-	// 		// attrs[NSFontAttributeName] = UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline);
-	// 		// config.attributedTitle = NSAttributedString.alloc().initWithStringAttributes(this.text, {
-	// 		// 	[NSFontAttributeName]: UIFont.preferredFontForTextStyle(UIFontTextStyleHeadline),
-	// 		// } as any);
-	// 		//attributes: AttributeContainer([
-	// 		// 	.font : UIFont.preferredFont(forTextStyle: .headline)
-	// 		// ])
-	// 		this.nativeViewProtected.tintColor = UIColor.labelColor;
-	// 		config.contentInsets = NSDirectionalEdgeInsetsFromString('8,12,8,12');
-	// 		// semantic; flips as needed over glass
-	// 		config.baseForegroundColor = UIColor.labelColor;
-	// 		this.nativeViewProtected.configuration = config;
-	// 		this._requestLayoutOnTextChanged();
-	// 	} else {
-	// 		const reset = value === resetSymbol;
-	// 			if (!reset && this.formattedText) {
-	// 				return;
-	// 			}
-
-	// 			this._setNativeText(reset);
-	// 			this._requestLayoutOnTextChanged();
-	// 	}
-	// }
-
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		switch (value) {
 			case 'left':
