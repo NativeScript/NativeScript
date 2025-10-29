@@ -221,7 +221,7 @@ export class SearchBar extends SearchBarBase {
 		const attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, attributes);
 		this._getTextField().attributedPlaceholder = attributedPlaceholder;
 	}
-		[clearButtonColorProperty.setNative](value: Color | UIColor) {
+	[clearButtonColorProperty.setNative](value: Color | UIColor) {
 		const textField = this._getTextField();
 		// Check if clear button is available in the text field
 		if (textField && textField.valueForKey('clearButton')) {
