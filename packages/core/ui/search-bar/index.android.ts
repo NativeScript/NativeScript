@@ -73,7 +73,7 @@ return global.__native(this);
 			super();
 
 			// @ts-ignore
-return global.__native(this);
+			return global.__native(this);
 		}
 
 		onClose(): boolean {
