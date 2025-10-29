@@ -1,4 +1,4 @@
-import { getRequestedImageSize } from '../image-asset-common';
+import { getRequestedImageSize } from './image-asset-common';
 
 describe('ImageAssetOptions normalization', () => {
 	it('coerces string width/height to numbers', () => {
