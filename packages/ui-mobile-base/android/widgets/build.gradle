@@ -6,21 +6,12 @@ def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 
 apply plugin: 'com.android.library'
 
-def computeCompileSdkVersion () {
+def computeCompileSdkValue () {
     if(project.hasProperty("compileSdk")) {
         return compileSdk
     }
     else {
         return 31
-    }
-}
-
-def computeBuildToolsVersion() {
-    if(project.hasProperty("buildToolsVersion")) {
-        return buildToolsVersion
-    }
-    else {
-        return "32.0.0"
     }
 }
 
@@ -34,12 +25,13 @@ def computeTargetSdkVersion() {
 }
 
 android {
-    compileSdkVersion computeCompileSdkVersion()
-    buildToolsVersion computeBuildToolsVersion()
+    // AGP 8 DSL: use 'compileSdk' and specify namespace
+    compileSdk computeCompileSdkValue()
+    namespace "org.nativescript.widgets"
 
     defaultConfig {
-        minSdkVersion 17
-        targetSdkVersion computeTargetSdkVersion()
+        minSdk 17
+        targetSdk computeTargetSdkVersion()
         versionCode 1
         versionName "1.0"
     }
