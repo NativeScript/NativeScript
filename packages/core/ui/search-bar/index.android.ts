@@ -1,5 +1,5 @@
 import { Font } from '../styling/font';
-import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty , clearButtonColorProperty } from './search-bar-common';
+import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, clearButtonColorProperty } from './search-bar-common';
 import { isUserInteractionEnabledProperty, isEnabledProperty } from '../core/view';
 import { ad } from '../../utils';
 import { Color } from '../../color';
@@ -34,8 +34,7 @@ function initializeNativeClasses(): void {
 			super();
 
 			// @ts-ignore
-return global.__native(this);
-
+			return global.__native(this);
 		}
 
 		onQueryTextChange(newText: string): boolean {
@@ -276,23 +275,22 @@ export class SearchBar extends SearchBarBase {
 		textView.setHintTextColor(color);
 	}
 	[clearButtonColorProperty.setNative](value: Color) {
-    if (!this.nativeViewProtected) {
-        return;
-    }
+		if (!this.nativeViewProtected) {
+			return;
+		}
 
-    try {
-    // The close (clear) button inside the SearchView can be found by its resource ID
-    const closeButtonId = this.nativeViewProtected.getContext().getResources().getIdentifier('android:id/search_close_btn', null, null);
-    const closeButton = this.nativeViewProtected.findViewById(closeButtonId) as android.widget.ImageView;
+		try {
+			// The close (clear) button inside the SearchView can be found by its resource ID
+			const closeButtonId = this.nativeViewProtected.getContext().getResources().getIdentifier('android:id/search_close_btn', null, null);
+			const closeButton = this.nativeViewProtected.findViewById(closeButtonId) as android.widget.ImageView;
 
-    if (closeButton && value) {
-        closeButton.setColorFilter(value.android);
-    }
-} catch (err) {
-    console.log('Error setting clear button color:', err);
-}
-
-}
+			if (closeButton && value) {
+				closeButton.setColorFilter(value.android);
+			}
+		} catch (err) {
+			console.log('Error setting clear button color:', err);
+		}
+	}
 
 	private _getTextView(): android.widget.TextView {
 		if (!this._searchTextView) {

@@ -52,4 +52,3 @@ export const clearButtonColorProperty = new Property<SearchBarBase, Color>({
 	valueConverter: (v) => new Color(v),
 });
 clearButtonColorProperty.register(SearchBarBase);
-

@@ -1,10 +1,9 @@
 import { Font } from '../styling/font';
-import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty , clearButtonColorProperty } from './search-bar-common';
+import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, clearButtonColorProperty } from './search-bar-common';
 import { isEnabledProperty } from '../core/view';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty } from '../styling/style-properties';
 import { SDK_VERSION } from '../../utils/constants';
-
 
 export * from './search-bar-common';
 
