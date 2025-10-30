@@ -1,6 +1,7 @@
 import { ImageAssetBase, getRequestedImageSize } from './image-asset-common';
 import { path as fsPath, knownFolders } from '../file-system';
 import { queueGC } from '../utils';
+import {Screen} from "../platform";
 
 export * from './image-asset-common';
 
@@ -36,8 +37,14 @@ export class ImageAsset extends ImageAssetBase {
 			callback(null, 'Asset cannot be found.');
 		}
 
-		const srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
-		const srcHeight = this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight;
+		const srcWidth = this.nativeImage ? (
+			typeof this.nativeImage.getWidth === 'function' ? this.nativeImage.getWidth() : this.nativeImage.size?.width
+		) : this.ios.pixelWidth;
+
+		const srcHeight = this.nativeImage ? (
+			typeof this.nativeImage.getHeight === 'function' ? this.nativeImage.getHeight() : this.nativeImage.size?.height
+		) : this.ios.pixelHeight;
+
 		const requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
 
 		if (this.nativeImage) {
