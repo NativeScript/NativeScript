@@ -135,7 +135,7 @@ export function action(message: string, cancelButtonText: string, actions: Array
 export function action(options: ActionOptions): Promise<string>;
 
 /**
- * Provides options for the dialog.
+ * Provides options for dialog behavior, including Android-specific settings.
  */
 export interface CancelableOptions {
 	/**
