@@ -26,6 +26,16 @@ export class ImageAsset extends ImageAssetBase {
 	}
 
 	public getImageAsync(callback: (image, error) => void) {
+		// Fix for issue #6289: ensure numeric width/height
+		if (this.options) {
+			if (typeof this.options.width === "string") {
+				this.options.width = parseInt(this.options.width, 10);
+			}
+			if (typeof this.options.height === "string") {
+				this.options.height = parseInt(this.options.height, 10);
+			}
+		}
+	
 		org.nativescript.widgets.Utils.loadImageAsync(
 			getNativeApp<android.app.Application>().getApplicationContext(),
 			this.android,
@@ -42,4 +52,5 @@ export class ImageAsset extends ImageAssetBase {
 			}),
 		);
 	}
+	
 }
