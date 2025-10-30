@@ -1,4 +1,4 @@
-import { Application } from '../../application';
+import { getNativeApp } from '../../application/helpers-common';
 import { SDK_VERSION } from '../../utils/constants';
 import { platformNames } from '../common';
 import { Screen } from '../screen';
@@ -65,7 +65,7 @@ class DeviceRef {
 
 	get uuid(): string {
 		if (!this._uuid) {
-			const nativeApp = Application.android.getNativeApplication();
+			const nativeApp = getNativeApp() as android.app.Application;
 			this._uuid = android.provider.Settings.Secure.getString(nativeApp.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		}
 

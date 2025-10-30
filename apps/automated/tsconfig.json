@@ -3,10 +3,7 @@
 	"compilerOptions": {
 		"diagnostics": false,
 		"paths": {
-			"~/*": ["src/*"],
-			"tns-core-modules/*": ["@nativescript/core/*"],
-			"@nativescript/core": ["../../packages/core/index.ts"],
-			"@nativescript/core/*": ["../../packages/core/*"]
+			"~/*": ["src/*"]
 		}
 	}
 }

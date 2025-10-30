@@ -72,7 +72,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 				// console.log('CUSTOM namespace:', namespace)
 				resolvedModuleName = resolveModuleName(namespace, '');
 			}
-			instanceModule = global.loadModule(resolvedModuleName, true);
+			instanceModule = global.loadModule(resolvedModuleName);
 		} else {
 			// load module from @nativescript/core/ui or mapped paths
 			// resolvedModuleName =
@@ -84,7 +84,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 			// 			.join('-')
 			// 			.toLowerCase();
 
-			instanceModule = global.loadModule(CORE_UI_BARREL, false);
+			instanceModule = global.loadModule(CORE_UI_BARREL);
 			// don't register core modules for HMR self-accept
 			// instanceModule = global.loadModule(resolvedModuleName, false);
 		}
@@ -95,8 +95,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 		// Create instance of the component.
 		instance = new instanceType();
 	} catch (ex) {
-		const debug: typeof debugModule = require('../../../utils/debug');
-		throw new debug.ScopeError(ex, "Module '" + (resolvedModuleName || elementName) + "' not found for element '" + (namespace ? namespace + ':' : '') + elementName + "'.");
+		throw new debugModule.ScopeError(ex, "Module '" + (resolvedModuleName || elementName) + "' not found for element '" + (namespace ? namespace + ':' : '') + elementName + "'.");
 	}
 
 	return { instance, instanceModule };
@@ -108,7 +107,7 @@ const getComponentModuleExports = profile('getComponentModuleExports', (instance
 		if (codeFileAttribute) {
 			const resolvedCodeFileModule = resolveModuleName(sanitizeModuleName(codeFileAttribute), '');
 			if (resolvedCodeFileModule) {
-				moduleExports = global.loadModule(resolvedCodeFileModule, true);
+				moduleExports = global.loadModule(resolvedCodeFileModule);
 				(<any>instance).exports = moduleExports;
 			} else {
 				throw new Error(`Code file with path "${codeFileAttribute}" cannot be found! Looking for webpack module with name "${resolvedCodeFileModule}"`);
@@ -211,7 +210,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
 				expression: bindOptions[bindingConstants.expression],
 				twoWay: bindOptions[bindingConstants.twoWay],
 			},
-			bindOptions[bindingConstants.source]
+			bindOptions[bindingConstants.source],
 		);
 	} else if (isEventOrGesture(propertyName, instance)) {
 		// Get the event handler from page module exports.
@@ -234,7 +233,6 @@ function getBindingExpressionFromAttribute(value: string): string {
 
 function isBinding(value: any): boolean {
 	let isBinding;
-
 	if (typeof value === 'string') {
 		const str = value.trim();
 		isBinding = str.indexOf('{{') === 0 && str.lastIndexOf('}}') === str.length - 2;

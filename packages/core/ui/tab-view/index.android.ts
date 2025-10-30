@@ -8,10 +8,10 @@ import { ImageSource } from '../../image-source';
 import { Trace } from '../../trace';
 import { Color } from '../../color';
 import { fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
-import { RESOURCE_PREFIX, ad, layout } from '../../utils';
+import { RESOURCE_PREFIX, android as androidUtils, layout } from '../../utils';
 import { FONT_PREFIX, isFontIconURI } from '../../utils/common';
 import { Frame } from '../frame';
-import { Application } from '../../application';
+import { getNativeApp } from '../../application/helpers-common';
 import { AndroidHelper } from '../core/view';
 
 export * from './tab-view-common';
@@ -285,7 +285,7 @@ function initializeNativeClasses() {
 	}
 
 	PagerAdapter = FragmentPagerAdapter;
-	appResources = Application.android.context.getResources();
+	appResources = getNativeApp<android.app.Application>().getApplicationContext().getResources();
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
@@ -302,7 +302,7 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
 			}
 		};
 		if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-			result.iconId = ad.resources.getDrawableId(item.iconSource.slice(RESOURCE_PREFIX.length));
+			result.iconId = androidUtils.resources.getDrawableId(item.iconSource.slice(RESOURCE_PREFIX.length));
 			if (result.iconId === 0) {
 				traceMissingIcon(item.iconSource);
 			}
@@ -328,7 +328,7 @@ let defaultAccentColor: number = undefined;
 function getDefaultAccentColor(context: android.content.Context): number {
 	if (defaultAccentColor === undefined) {
 		//Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-		defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xff33b5e5;
+		defaultAccentColor = androidUtils.resources.getPaletteColor(ACCENT_COLOR, context) || 0xff33b5e5;
 	}
 
 	return defaultAccentColor;
@@ -497,7 +497,7 @@ export class TabView extends TabViewBase {
 		const viewPager = new org.nativescript.widgets.TabViewPager(context);
 		const tabLayout = new org.nativescript.widgets.TabLayout(context);
 		const lp = new org.nativescript.widgets.CommonLayoutParams();
-		const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
+		const primaryColor = androidUtils.resources.getPaletteColor(PRIMARY_COLOR, context);
 		let accentColor = getDefaultAccentColor(context);
 
 		lp.row = 1;

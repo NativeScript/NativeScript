@@ -1,4 +1,4 @@
-﻿import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
+﻿import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 import { Transition } from '.';
 
 export class FadeTransition extends Transition {
@@ -70,7 +70,7 @@ export class FadeTransitionController extends NSObject implements UIViewControll
 					toView.alpha = originalToViewAlpha;
 					fromView.alpha = originalFromViewAlpha;
 					transitionContext.completeTransition(finished);
-				}
+				},
 			);
 		}
 	}

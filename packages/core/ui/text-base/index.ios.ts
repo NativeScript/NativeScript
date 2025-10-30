@@ -9,16 +9,15 @@ import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentPrope
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, fontScaleInternalProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { isString, isNullOrUndefined } from '../../utils/types';
-import { iOSNativeHelper, layout } from '../../utils';
-import { Trace } from '../../trace';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
 
 export * from './text-base-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class UILabelClickHandlerImpl extends NSObject {
@@ -350,7 +349,7 @@ export class TextBase extends TextBaseCommon {
 				const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
 				this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
 
-				if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
+				if (!this.style?.color && SDK_VERSION >= 13 && UIColor.labelColor) {
 					this._setColor(UIColor.labelColor);
 				}
 			}

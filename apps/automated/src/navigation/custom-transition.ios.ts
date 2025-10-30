@@ -1,5 +1,4 @@
 ﻿import { PageTransition, SharedTransition, SharedTransitionAnimationType, SharedTransitionHelper, Transition, Utils } from '@nativescript/core';
-import { CORE_ANIMATION_DEFAULTS } from '@nativescript/core/utils';
 
 export class CustomTransition extends Transition {
 	constructor(duration: number, curve: any) {
@@ -32,7 +31,7 @@ export class CustomTransition extends Transition {
 			},
 			(finished) => {
 				transitionContext.completeTransition(finished);
-			}
+			},
 		);
 	}
 }
@@ -90,7 +89,7 @@ class PageTransitionController extends NSObject implements UIViewControllerAnima
 					}
 			}
 		}
-		return CORE_ANIMATION_DEFAULTS.duration;
+		return Utils.CORE_ANIMATION_DEFAULTS.duration;
 	}
 
 	animateTransition(transitionContext: UIViewControllerContextTransitioning): void {

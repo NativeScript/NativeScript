@@ -2,9 +2,8 @@ import { View } from '../core/view';
 import { LinearGradient } from './linear-gradient';
 import { ClipPathFunction } from './clip-path-function';
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, FILE_PREFIX } from '../../utils';
-import { parse } from '../../css-value';
+import { CSSValue, parse } from '../../css-value/reworkcss-value';
 import { path, knownFolders } from '../../file-system';
-import { Application } from '../../application';
 export * from './background-common';
 
 function fromBase64(source: string): android.graphics.Bitmap {
@@ -115,7 +114,7 @@ function createNativeCSSValueArray(css: string): androidNative.Array<org.natives
 		return null;
 	}
 
-	const cssValues = parse(css);
+	const cssValues = parse(css) as CSSValue[];
 	const nativeArray = Array.create(org.nativescript.widgets.CSSValue, cssValues.length);
 	for (let i = 0, length = cssValues.length; i < length; i++) {
 		nativeArray[i] = new org.nativescript.widgets.CSSValue(cssValues[i].type, cssValues[i].string, cssValues[i].unit, cssValues[i].value);
@@ -123,60 +122,3 @@ function createNativeCSSValueArray(css: string): androidNative.Array<org.natives
 
 	return nativeArray;
 }
-
-export enum CacheMode {
-	none,
-	memory,
-	diskAndMemory,
-}
-
-let currentCacheMode: CacheMode;
-let imageFetcher: org.nativescript.widgets.image.Fetcher;
-
-export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
-	if (currentCacheMode === mode) {
-		return;
-	}
-
-	currentCacheMode = mode;
-	if (!imageFetcher) {
-		imageFetcher = org.nativescript.widgets.image.Fetcher.getInstance(context);
-	} else {
-		imageFetcher.clearCache();
-	}
-
-	const params = new org.nativescript.widgets.image.Cache.CacheParams();
-	params.memoryCacheEnabled = mode !== CacheMode.none;
-	params.setMemCacheSizePercent(memoryCacheSize); // Set memory cache to % of app memory
-	params.diskCacheEnabled = mode === CacheMode.diskAndMemory;
-	params.diskCacheSize = diskCacheSize;
-	const imageCache = org.nativescript.widgets.image.Cache.getInstance(params);
-	imageFetcher.addImageCache(imageCache);
-	imageFetcher.initCache();
-}
-
-function onLiveSync(args): void {
-	if (imageFetcher) {
-		imageFetcher.clearCache();
-	}
-}
-
-global.NativeScriptGlobals.events.on('livesync', onLiveSync);
-
-global.NativeScriptGlobals.addEventWiring(() => {
-	Application.android.on('activityStarted', (args) => {
-		if (!imageFetcher) {
-			initImageCache(args.activity);
-		} else {
-			imageFetcher.initCache();
-		}
-	});
-});
-
-global.NativeScriptGlobals.addEventWiring(() => {
-	Application.android.on('activityStopped', (args) => {
-		if (imageFetcher) {
-			imageFetcher.closeCache();
-		}
-	});
-});

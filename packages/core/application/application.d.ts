@@ -1,4 +1,5 @@
 ﻿import { ApplicationCommon } from './application-common';
+import { FontScaleCategory } from '../accessibility/font-scale-common';
 
 export * from './application-common';
 export * from './application-interfaces';
@@ -192,3 +193,27 @@ export class iOSApplication extends ApplicationCommon {
 	 */
 	removeNotificationObserver(observer: any, notificationName: string);
 }
+
+export const VALID_FONT_SCALES: number[];
+export function getCurrentFontScale(): number;
+export function getAndroidAccessibilityManager(): android.view.accessibility.AccessibilityManager | null;
+
+/**
+ * Update accessibility properties on nativeView
+ */
+export function updateAccessibilityProperties(view: View): void;
+
+/**
+ * Android: helper function for triggering accessibility events
+ */
+export function sendAccessibilityEvent(View: View, eventName: AndroidAccessibilityEvent, text?: string): void;
+
+/**
+ * Is Android TalkBack or iOS VoiceOver enabled?
+ */
+export function isAccessibilityServiceEnabled(): boolean;
+
+/**
+ * Find the last view focused on a page.
+ */
+export function getLastFocusedViewOnPage(page: Page): View | null;

@@ -2,7 +2,7 @@
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
-import { Length } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { Style } from '../styling/style';
 import { Property, CssProperty } from '../core/properties';
 
