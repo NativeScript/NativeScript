@@ -1,0 +1,9 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded" shownModally="onShownModally">
+
+    <GridLayout rows="auto,auto,auto,*" verticalAlignment="top" padding="20">
+        <Button text="Close" tap="{{close}}" horizontalAlignment="right" marginRight="20" />
+
+        <Label row="1" text="Status bar color changed to 'dark'." verticalAlignment="top" marginTop="20" class="text-center" fontSize="12" color="black" />
+        <Label row="2" text="Close and watch it change back." verticalAlignment="top" marginTop="20" class="text-center" fontSize="12" color="black" marginTop="10" />
+    </GridLayout>
+</Page>
