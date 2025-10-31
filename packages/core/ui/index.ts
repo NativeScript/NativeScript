@@ -75,8 +75,10 @@ export type { AccessibilityDecrementEventData, AccessibilityIncrementEventData }
 export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS, resolveFileNameFromUrl } from './styling/style-scope';
 export { Background } from './styling/background';
 export type { CacheMode } from './styling/background';
-export { parseCSSShadow, ShadowCSSValues } from './styling/css-shadow';
-export { parseCSSStroke, StrokeCSSValues } from './styling/css-stroke';
+export { parseCSSShadow } from './styling/css-shadow';
+export type { ShadowCSSValues } from './styling/css-shadow';
+export { parseCSSStroke } from './styling/css-stroke';
+export type { StrokeCSSValues } from './styling/css-stroke';
 export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
 export { Font, FontStyle, FontWeight, FontVariationSettings } from './styling/font';
 export type { FontStyleType, FontWeightType, FontVariationSettingsType } from './styling/font-interfaces';
