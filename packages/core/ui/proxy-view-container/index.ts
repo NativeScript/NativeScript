@@ -231,6 +231,14 @@ export class ProxyViewContainer extends LayoutBase {
 		child[propName] = value;
 		child[proxyPropName] = value;
 	}
+	public set hidden(value: boolean) {
+        super.hidden = value;
+          this.eachChildView((child) => {
+            child.hidden = value;
+           return true;
+    });
+}
+
 }
 
 // Layout propeties to be proxyed to the child views
