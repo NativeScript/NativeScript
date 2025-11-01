@@ -6,7 +6,8 @@ import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
 import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
-import { Property, InheritedProperty } from '../properties';
+import { Property, InheritedProperty, CssProperty } from '../properties';
+import { Style } from '../../styling/style';
 import { EventData } from '../../../data/observable';
 import { ViewHelper } from './view-helper';
 import { setupAccessibleView } from '../../../application/helpers';
@@ -193,6 +194,12 @@ export abstract class ViewCommon extends ViewBase {
 		super.onLoaded();
 
 		setupAccessibleView(this);
+
+		if (this.statusBarStyle) {
+			// reapply status bar style on load
+			// helps back navigation cases to restore if overridden
+			this.updateStatusBarStyle(this.statusBarStyle);
+		}
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -970,6 +977,14 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.androidDynamicElevationOffset = value;
 	}
 
+	/**
+	 * (Android only) Gets closest window parent considering modals.
+	 */
+	getClosestWindow(): android.view.Window {
+		// platform impl
+		return null;
+	}
+
 	//END Style property shortcuts
 
 	public originX: number;
@@ -993,6 +1008,17 @@ export abstract class ViewCommon extends ViewBase {
 	}
 	set cssType(type: string) {
 		this._cssType = type.toLowerCase();
+	}
+
+	get statusBarStyle(): 'light' | 'dark' {
+		return this.style.statusBarStyle;
+	}
+	set statusBarStyle(value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light') {
+		// platform specific impl
 	}
 
 	get isLayoutRequired(): boolean {
@@ -1287,6 +1313,15 @@ export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean
 	valueConverter: booleanConverter,
 });
 isUserInteractionEnabledProperty.register(ViewCommon);
+
+/**
+ * Property backing statusBarStyle.
+ */
+export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
+	name: 'statusBarStyle',
+	cssName: 'status-bar-style',
+});
+statusBarStyleProperty.register(Style);
 
 // Apple only
 export const iosOverflowSafeAreaProperty = new Property<ViewCommon, boolean>({
