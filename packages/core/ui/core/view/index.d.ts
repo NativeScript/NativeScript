@@ -632,8 +632,10 @@ export abstract class View extends ViewCommon {
 	cssType: string;
 
 	/**
-	 * (iOS only) Gets or sets the status bar style for this view.
-	 * Note: You must remove Info.plist key `UIViewControllerBasedStatusBarAppearance`
+	 * Gets or sets the status bar style for this view.
+	 * Platform Notes:
+	 *   - Android: When using this property throughout navigations, ensure starting views have it set as well. Ensures it will reset on back navigation.
+	 *   - iOS: You must remove Info.plist key `UIViewControllerBasedStatusBarAppearance`
 	 * It defaults to true when not present: https://developer.apple.com/documentation/bundleresources/information-property-list/uiviewcontrollerbasedstatusbarappearance
 	 * Or you can explicitly set it to true:
 	 * <key>UIViewControllerBasedStatusBarAppearance</key>
