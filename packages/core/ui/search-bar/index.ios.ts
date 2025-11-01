@@ -222,11 +222,11 @@ export class SearchBar extends SearchBarBase {
 	}
 	[clearButtonColorProperty.setNative](value: Color | UIColor) {
 		const textField = this._getTextField();
+		if (!textField) return;
 		// Check if clear button is available in the text field
-		if (textField && textField.valueForKey('clearButton')) {
-			const button = textField.valueForKey('clearButton');
-			const color = value instanceof Color ? value.ios : value;
-			button.tintColor = color;
-		}
+		const clearButton = textField.valueForKey('clearButton');
+		if (!clearButton) return;
+
+		clearButton.tintColor = value instanceof Color ? value.ios : value;
 	}
 }

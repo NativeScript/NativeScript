@@ -12,6 +12,7 @@ export abstract class SearchBarBase extends View implements SearchBarDefinition 
 	public hint: string;
 	public textFieldBackgroundColor: Color;
 	public textFieldHintColor: Color;
+	public clearButtonColor: Color | string;
 
 	public abstract dismissSoftInput();
 }

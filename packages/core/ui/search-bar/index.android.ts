@@ -275,7 +275,7 @@ export class SearchBar extends SearchBarBase {
 		textView.setHintTextColor(color);
 	}
 	[clearButtonColorProperty.setNative](value: Color) {
-		if (!this.nativeViewProtected) {
+		if (!this.nativeViewProtected || !value) {
 			return;
 		}
 
@@ -284,8 +284,10 @@ export class SearchBar extends SearchBarBase {
 			const closeButtonId = this.nativeViewProtected.getContext().getResources().getIdentifier('android:id/search_close_btn', null, null);
 			const closeButton = this.nativeViewProtected.findViewById(closeButtonId) as android.widget.ImageView;
 
-			if (closeButton && value) {
-				closeButton.setColorFilter(value.android);
+			const color = value instanceof Color ? value.android : new Color(value).android;
+
+			if (closeButton) {
+				closeButton.setColorFilter(color);
 			}
 		} catch (err) {
 			console.log('Error setting clear button color:', err);
