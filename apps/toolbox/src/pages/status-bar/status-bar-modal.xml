@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded" shownModally="onShownModally">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded" shownModally="onShownModally" statusBarStyle="dark">
 
     <GridLayout rows="auto,auto,auto,*" verticalAlignment="top" padding="20">
         <Button text="Close" tap="{{close}}" horizontalAlignment="right" marginRight="20" />

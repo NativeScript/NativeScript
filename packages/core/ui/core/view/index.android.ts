@@ -924,24 +924,15 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[statusBarStyleProperty.getDefault](): {
-		color: number;
-		systemUiVisibility: number;
-	} {
-		if (SDK_VERSION >= 21) {
-			const window = this.getClosestWindow();
-			const decorView = window.getDecorView();
-
-			return {
-				color: window.getStatusBarColor(),
-				systemUiVisibility: decorView.getSystemUiVisibility(),
-			};
-		}
-
-		return null;
+	[statusBarStyleProperty.getDefault]() {
+		return this.style.statusBarStyle;
 	}
 
 	[statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
+		this.updateStatusBarStyle(value);
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
 		if (SDK_VERSION < 21) return; // nothing we can do
 
 		const window = this.getClosestWindow();
@@ -957,12 +948,13 @@ export class View extends ViewCommon {
 			const APPEARANCE_LIGHT_STATUS_BARS = android.view.WindowInsetsController?.APPEARANCE_LIGHT_STATUS_BARS;
 
 			if (typeof value === 'string') {
+				this.style.statusBarStyle = value;
 				if (value === 'light') {
-					// "light" background -> dark icons/text
-					controller.setSystemBarsAppearance(APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS);
-				} else {
-					// "dark" background -> light icons/text
+					// light icons/text
 					controller.setSystemBarsAppearance(0, APPEARANCE_LIGHT_STATUS_BARS);
+				} else {
+					// dark icons/text
+					controller.setSystemBarsAppearance(APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS);
 				}
 			} else {
 				if (value.color != null) window.setStatusBarColor(value.color);
@@ -974,6 +966,7 @@ export class View extends ViewCommon {
 		// API 23–29 path (systemUiVisibility)
 		if (SDK_VERSION >= 23) {
 			if (typeof value === 'string') {
+				this.style.statusBarStyle = value;
 				let flags = decorView.getSystemUiVisibility();
 				if (value === 'light') {
 					// Add the LIGHT_STATUS_BAR bit without clobbering other flags

@@ -908,7 +908,6 @@ export class View extends ViewCommon {
 		return this.style.statusBarStyle;
 	}
 	[statusBarStyleProperty.setNative](value: 'light' | 'dark') {
-		console.log('statusBarStyleProperty.setNative', value);
 		this.style.statusBarStyle = value;
 		const parent = this.parent;
 		if (parent) {

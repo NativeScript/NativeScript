@@ -194,6 +194,12 @@ export abstract class ViewCommon extends ViewBase {
 		super.onLoaded();
 
 		setupAccessibleView(this);
+
+		if (this.statusBarStyle) {
+			// reapply status bar style on load
+			// helps back navigation cases to restore if overridden
+			this.updateStatusBarStyle(this.statusBarStyle);
+		}
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -1009,6 +1015,10 @@ export abstract class ViewCommon extends ViewBase {
 	}
 	set statusBarStyle(value: 'light' | 'dark') {
 		this.style.statusBarStyle = value;
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light') {
+		// platform specific impl
 	}
 
 	get isLayoutRequired(): boolean {
