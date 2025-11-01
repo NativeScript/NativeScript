@@ -871,6 +871,20 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.translateY = value;
 	}
 
+	get originX(): number {
+		return this.style.originX;
+	}
+	set originX(value: number) {
+		this.style.originX = value;
+	}
+
+	get originY(): number {
+		return this.style.originY;
+	}
+	set originY(value: number) {
+		this.style.originY = value;
+	}
+
 	get scaleX(): number {
 		return this.style.scaleX;
 	}
@@ -987,8 +1001,6 @@ export abstract class ViewCommon extends ViewBase {
 
 	//END Style property shortcuts
 
-	public originX: number;
-	public originY: number;
 	public isEnabled: boolean;
 	public isUserInteractionEnabled: boolean;
 	public iosOverflowSafeArea: boolean;
@@ -1276,20 +1288,6 @@ export abstract class ViewCommon extends ViewBase {
 		return;
 	}
 }
-
-export const originXProperty = new Property<ViewCommon, number>({
-	name: 'originX',
-	defaultValue: 0.5,
-	valueConverter: (v) => parseFloat(v),
-});
-originXProperty.register(ViewCommon);
-
-export const originYProperty = new Property<ViewCommon, number>({
-	name: 'originY',
-	defaultValue: 0.5,
-	valueConverter: (v) => parseFloat(v),
-});
-originYProperty.register(ViewCommon);
 
 export const isEnabledProperty = new Property<ViewCommon, boolean>({
 	name: 'isEnabled',

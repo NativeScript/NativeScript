@@ -539,6 +539,22 @@ export const perspectiveProperty = new CssAnimationProperty<Style, number>({
 });
 perspectiveProperty.register(Style);
 
+export const originXProperty = new CssProperty<Style, number>({
+	name: 'originX',
+	cssName: 'origin-x',
+	defaultValue: 0.5,
+	valueConverter: parseFloat,
+});
+originXProperty.register(Style);
+
+export const originYProperty = new CssProperty<Style, number>({
+	name: 'originY',
+	cssName: 'origin-y',
+	defaultValue: 0.5,
+	valueConverter: parseFloat,
+});
+originYProperty.register(Style);
+
 export const scaleXProperty = new CssAnimationProperty<Style, number>({
 	name: 'scaleX',
 	cssName: 'scaleX',
@@ -572,6 +588,25 @@ export const translateYProperty = new CssAnimationProperty<Style, CoreTypes.Fixe
 	valueConverter: FixedLength.parse,
 });
 translateYProperty.register(Style);
+
+const transformOriginProperty = new ShorthandProperty<Style, string>({
+	name: 'transformOrigin',
+	cssName: 'transform-origin',
+
+	getter(this: Style) {
+		return `${this.originX} ${this.originY}`;
+	},
+
+	converter(value: string) {
+		const [x, y] = value.trim().split(/\s+/).map(parseFloat);
+		return [
+			[originXProperty, isNaN(x) ? 0.5 : x],
+			[originYProperty, isNaN(y) ? 0.5 : y],
+		];
+	},
+});
+
+transformOriginProperty.register(Style);
 
 const transformProperty = new ShorthandProperty<Style, string>({
 	name: 'transform',
