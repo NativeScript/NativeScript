@@ -36,7 +36,7 @@
 		"@nx/plugin": "21.3.7",
 		"@nx/vite": "21.3.7",
 		"@nx/web": "21.3.7",
-		"@nx/workspace": "21.3.7",
+		"@nx/workspace": "21.6.8",
 		"@prettier/plugin-xml": "^3.4.1",
 		"@swc-node/register": "~1.10.1",
 		"@swc/core": "~1.12.7",
