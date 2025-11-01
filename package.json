@@ -81,7 +81,7 @@
 		"postcss-import": "^16.0.0",
 		"postcss-loader": "^8.0.0",
 		"prettier": "^3.2.5",
-		"sass": "^1.72.0",
+		"sass": "^1.93.3",
 		"sass-loader": "^16.0.0",
 		"shady-css-parser": "^0.1.0",
 		"terser-webpack-plugin": "^5.0.0",
