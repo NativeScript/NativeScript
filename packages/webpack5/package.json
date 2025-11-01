@@ -56,7 +56,7 @@
 	},
 	"devDependencies": {
 		"@angular/compiler-cli": "^20.0.0",
-		"@angular-devkit/build-angular": "^20.0.0",
+		"@angular-devkit/build-angular": "^20.3.8",
 		"@babel/helpers": ">=7.26.10",
 		"@types/css": "0.0.38",
 		"@types/jest": "29.5.4",
