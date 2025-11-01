@@ -48,6 +48,24 @@ To get started with NativeScript, follow these steps:
     ```
 
 ## Contribute
+## Troubleshooting Common CLI Issues
+
+If you encounter errors when using the NativeScript CLI, try the following solutions:
+
+- **Environment Setup Issues:**  
+  Ensure Node.js (v14.x or later) and the NativeScript CLI are installed properly.  
+  Run `ns doctor` to diagnose environment problems.
+
+- **Emulator Connection Errors:**  
+  Verify that your Android or iOS emulator is running and accessible.  
+  Restart the emulator or device if needed.
+
+- **Plugin Installation Failures:**  
+  Check internet connectivity and retry `npm install`.  
+  Clear npm cache if problems persist: `npm cache clean --force`.
+
+Feel free to open issues if you need more assistance.
+
 
 1. [Setup your local development environment](https://docs.nativescript.org/setup/)
 
