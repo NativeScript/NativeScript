@@ -16,7 +16,7 @@
 		"prepack": "npm run test && npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"
 	},
 	"dependencies": {
-		"@babel/core": "^7.0.0",
+		"@babel/core": "^7.28.5",
 		"@pmmmwh/react-refresh-webpack-plugin": "~0.6.1",
 		"@vue/compiler-sfc": "^3.5.17",
 		"acorn": "^8.0.0",
