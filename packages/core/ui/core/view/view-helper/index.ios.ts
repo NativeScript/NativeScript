@@ -127,6 +127,20 @@ class UILayoutViewController extends UIViewController {
 			}
 		}
 	}
+
+	// @ts-ignore
+	public get preferredStatusBarStyle(): UIStatusBarStyle {
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.DarkContent : UIStatusBarStyle.LightContent;
+			} else {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
+		} else {
+			return UIStatusBarStyle.Default;
+		}
+	}
 }
 
 @NativeClass
