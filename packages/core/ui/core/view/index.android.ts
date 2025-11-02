@@ -1,7 +1,7 @@
 import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, statusBarStyleProperty } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
 import { Length } from '../../styling/length-shared';
 import { layout } from '../../../utils';
@@ -51,6 +51,10 @@ const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
 const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
 const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
 const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+
+const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
+const STATUS_BAR_LIGHT_BCKG = -657931;
+const STATUS_BAR_DARK_BCKG = 1711276032;
 
 const modalMap = new Map<number, DialogOptions>();
 
@@ -1216,6 +1220,89 @@ export class View extends ViewCommon {
 			}
 			nativeView.setLayoutParams(lp);
 		}
+	}
+
+	[statusBarStyleProperty.getDefault]() {
+		return this.style.statusBarStyle;
+	}
+
+	[statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
+		this.updateStatusBarStyle(value);
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
+		if (SDK_VERSION < 21) return; // nothing we can do
+
+		const window = this.getClosestWindow();
+		// Ensure the window draws system bar backgrounds (required to color status bar)
+		window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+		window.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+		const decorView = window.getDecorView();
+
+		// API 30+ path (preferred)
+		const controller = window.getInsetsController?.();
+		if (controller && SDK_VERSION >= 30) {
+			const APPEARANCE_LIGHT_STATUS_BARS = android.view.WindowInsetsController?.APPEARANCE_LIGHT_STATUS_BARS;
+
+			if (typeof value === 'string') {
+				this.style.statusBarStyle = value;
+				if (value === 'light') {
+					// light icons/text
+					controller.setSystemBarsAppearance(0, APPEARANCE_LIGHT_STATUS_BARS);
+				} else {
+					// dark icons/text
+					controller.setSystemBarsAppearance(APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS);
+				}
+			} else {
+				if (value.color != null) window.setStatusBarColor(value.color);
+				// No direct passthrough for systemUiVisibility on API 30+, use appearances instead
+			}
+			return;
+		}
+
+		// API 23–29 path (systemUiVisibility)
+		if (SDK_VERSION >= 23) {
+			if (typeof value === 'string') {
+				this.style.statusBarStyle = value;
+				let flags = decorView.getSystemUiVisibility();
+				if (value === 'light') {
+					// Add the LIGHT_STATUS_BAR bit without clobbering other flags
+					flags |= android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+					decorView.setSystemUiVisibility(flags);
+				} else {
+					// Remove only the LIGHT_STATUS_BAR bit
+					flags &= ~android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+					decorView.setSystemUiVisibility(flags);
+				}
+			} else {
+				if (value.color != null) window.setStatusBarColor(value.color);
+				if (value.systemUiVisibility != null) {
+					// Preserve existing flags, don’t blindly overwrite to 0
+					const merged = (decorView.getSystemUiVisibility() & ~android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) | (value.systemUiVisibility & android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+					decorView.setSystemUiVisibility(merged);
+				}
+			}
+			return;
+		}
+
+		// API 21–22: you can only change the background color; icon color is fixed (light)
+		if (typeof value === 'object' && value.color != null) {
+			window.setStatusBarColor(value.color);
+		}
+	}
+
+	getClosestWindow(): android.view.Window {
+		// When it comes to modals, check parent as it may not be the modal root view itself
+		const view = this.parent ?? this;
+		const dialogFragment = (view as this)._dialogFragment;
+		if (dialogFragment) {
+			const dialog = dialogFragment.getDialog();
+			if (dialog) {
+				return dialog.getWindow();
+			}
+		}
+		return this._context.getWindow();
 	}
 
 	[testIDProperty.setNative](value: string) {

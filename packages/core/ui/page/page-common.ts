@@ -208,15 +208,6 @@ export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>
 enableSwipeBackNavigationProperty.register(PageBase);
 
 /**
- * Property backing statusBarStyle.
- */
-export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
-	name: 'statusBarStyle',
-	cssName: 'status-bar-style',
-});
-statusBarStyleProperty.register(Style);
-
-/**
  * Property backing androidStatusBarBackground.
  */
 export const androidStatusBarBackgroundProperty = new CssProperty<Style, Color>({

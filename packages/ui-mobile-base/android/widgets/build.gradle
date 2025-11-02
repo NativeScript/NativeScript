@@ -4,20 +4,13 @@ def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 
 apply plugin: 'com.android.library'
 
-def computeCompileSdkVersion() {
-	if (project.hasProperty("compileSdk")) {
-		return compileSdk
-	} else {
-		return 35
-	}
-}
-
-def computeBuildToolsVersion() {
-	if (project.hasProperty("buildToolsVersion")) {
-		return buildToolsVersion
-	} else {
-		return "35.0.0"
-	}
+def computeCompileSdkValue () {
+    if(project.hasProperty("compileSdk")) {
+        return compileSdk
+    }
+    else {
+        return 35
+    }
 }
 
 def computeTargetSdkVersion() {
@@ -29,20 +22,22 @@ def computeTargetSdkVersion() {
 }
 
 android {
-	namespace "org.nativescript.widgets"
-	compileSdkVersion computeCompileSdkVersion()
-	buildToolsVersion computeBuildToolsVersion()
+    // AGP 8 DSL: use 'compileSdk' and specify namespace
+    compileSdk computeCompileSdkValue()
+    namespace "org.nativescript.widgets"
 
-	defaultConfig {
-		minSdkVersion 21
-		targetSdkVersion computeTargetSdkVersion()
-	}
-	buildTypes {
-		release {
-			minifyEnabled false
-			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-		}
-	}
+    defaultConfig {
+        minSdk 21
+        targetSdk computeTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
 }
 
 dependencies {
