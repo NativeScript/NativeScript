@@ -143,6 +143,8 @@ if (supportsScenes()) {
 
 @NativeClass
 class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
+	static ObjCProtocols = [UIWindowSceneDelegate];
+
 	private _window: UIWindow;
 	private _scene: UIWindowScene;
 
@@ -155,12 +157,12 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	}
 
 	sceneWillConnectToSessionOptions(scene: UIScene, session: UISceneSession, connectionOptions: UISceneConnectionOptions): void {
-		// console.log('SceneDelegate.sceneWillConnectToSessionOptions called');
-		// console.log('Scene type:', scene.constructor.name);
-		// console.log('Session role:', session.role);
+		if (Trace.isEnabled()) {
+			Trace.write(`SceneDelegate.sceneWillConnectToSessionOptions called with role: ${session.role}`, Trace.categories.NativeLifecycle);
+		}
 
 		if (!(scene instanceof UIWindowScene)) {
-			// console.log('Scene is not a UIWindowScene, ignoring');
+			// Scene is not a UIWindowScene, ignoring
 			return;
 		}
 
@@ -168,7 +170,6 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 
 		// Create window for this scene
 		this._window = UIWindow.alloc().initWithWindowScene(scene);
-		// console.log('Window created for scene');
 
 		// Store the window scene for this window
 		Application.ios._setWindowForScene(this._window, scene);
@@ -229,8 +230,6 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 	sceneDidDisconnect(scene: UIScene): void {
 		// This will be handled by the notification observer in iOSApplication
 	}
-
-	static ObjCProtocols = [UIWindowSceneDelegate];
 }
 // ensure available globally
 global.SceneDelegate = SceneDelegate;
