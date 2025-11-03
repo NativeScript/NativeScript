@@ -12,7 +12,6 @@ export function navigatingTo(args: EventData) {
 export class MultipleScenesModel extends Observable {
 	private _sceneCount = 0;
 	private _isMultiSceneSupported = false;
-	private _openedWindows = new Map<string, UIWindowScene>();
 	private _currentScenes: any[] = [];
 	private _currentWindows: any[] = [];
 	private _sceneEvents: string[] = [];
@@ -137,7 +136,6 @@ export class MultipleScenesModel extends Observable {
 		// Listen for scene content setup events to provide content for new scenes
 		Application.on(SceneEvents.sceneContentSetup, (args: SceneEventData) => {
 			this.addSceneEvent(`Setting up content for new scene: ${this.getSceneDescription(args.scene)}`);
-			this._openedWindows.set(this.getSceneId(args.scene), args.scene);
 			this.setupSceneContent(args);
 		});
 	}
@@ -292,10 +290,9 @@ export class MultipleScenesModel extends Observable {
 
 	private _closeScene(args: EventData) {
 		const btn = args.object as Button;
-		const sceneId = btn.id;
-		console.log('closing scene id from button:', sceneId);
-		const scene = this._openedWindows.get(sceneId);
-		this.closeScene(scene);
+		console.log('closing scene from button tap');
+		// Let core resolve the scene from the view/window context
+		Application.ios.closeWindow(btn);
 	}
 
 	private getSceneAPIInfo(): string {
@@ -461,66 +458,66 @@ export class MultipleScenesModel extends Observable {
 		}
 	}
 
-	private closeScene(scene: UIWindowScene) {
-		if (!scene || !__APPLE__) return;
+	// private closeScene(scene: UIWindowScene) {
+	// 	if (!scene || !__APPLE__) return;
 
-		try {
-			this.addSceneEvent(`Attempting to close scene: ${this.getSceneDescription(scene)}`);
+	// 	try {
+	// 		this.addSceneEvent(`Attempting to close scene: ${this.getSceneDescription(scene)}`);
 
-			// Get the scene session
-			const session = scene.session;
-			if (session) {
-				// Check if this is the primary scene (typically can't be closed)
-				const isPrimaryScene = Application.ios.getPrimaryScene() === scene;
-				const sceneId = this.getSceneId(scene);
-				console.log('isPrimaryScene:', isPrimaryScene, 'sceneId:', sceneId);
+	// 		// Get the scene session
+	// 		const session = scene.session;
+	// 		if (session) {
+	// 			// Check if this is the primary scene (typically can't be closed)
+	// 			const isPrimaryScene = Application.ios.getPrimaryScene() === scene;
+	// 			const sceneId = this.getSceneId(scene);
+	// 			console.log('isPrimaryScene:', isPrimaryScene, 'sceneId:', sceneId);
 
-				if (isPrimaryScene) {
-					this.addSceneEvent(`⚠️  This appears to be the primary scene`);
-					this.addSceneEvent(`💡 Primary scenes typically cannot be closed programmatically`);
-					return;
-				} else {
-					this.addSceneEvent(`✅ This appears to be a secondary scene - closure should work`);
-				}
+	// 			if (isPrimaryScene) {
+	// 				this.addSceneEvent(`⚠️  This appears to be the primary scene`);
+	// 				this.addSceneEvent(`💡 Primary scenes typically cannot be closed programmatically`);
+	// 				return;
+	// 			} else {
+	// 				this.addSceneEvent(`✅ This appears to be a secondary scene - closure should work`);
+	// 			}
 
-				// Try the correct iOS API for scene destruction
-				const app = UIApplication.sharedApplication;
+	// 			// Try the correct iOS API for scene destruction
+	// 			const app = UIApplication.sharedApplication;
 
-				if (app.requestSceneSessionDestructionOptionsErrorHandler) {
-					this.addSceneEvent(`📞 Calling scene destruction API...`);
-					app.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
-						if (error) {
-							console.log('scene destroy error:', error);
-							this.addSceneEvent(`❌ Scene destruction failed: ${error.localizedDescription}`);
-							this.addSceneEvent(`📋 Error details - Domain: ${error.domain}, Code: ${error.code}`);
+	// 			if (app.requestSceneSessionDestructionOptionsErrorHandler) {
+	// 				this.addSceneEvent(`📞 Calling scene destruction API...`);
+	// 				app.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
+	// 					if (error) {
+	// 						console.log('scene destroy error:', error);
+	// 						this.addSceneEvent(`❌ Scene destruction failed: ${error.localizedDescription}`);
+	// 						this.addSceneEvent(`📋 Error details - Domain: ${error.domain}, Code: ${error.code}`);
 
-							// Provide specific guidance based on error
-							if (error.localizedDescription.includes('primary') || error.code === 1) {
-								this.addSceneEvent(`💡 Cannot close primary scene - this is iOS system behavior`);
-								this.addSceneEvent(`ℹ️  Only secondary scenes can be closed via API`);
-							} else if (error.code === 22 || error.domain.includes('FBSWorkspace')) {
-								this.addSceneEvent(`💡 System declined scene destruction request`);
-								this.addSceneEvent(`🔄 This may be due to system resource management`);
-							} else {
-								this.addSceneEvent(`🔍 Unexpected error - scene destruction may not be fully supported`);
-							}
+	// 						// Provide specific guidance based on error
+	// 						if (error.localizedDescription.includes('primary') || error.code === 1) {
+	// 							this.addSceneEvent(`💡 Cannot close primary scene - this is iOS system behavior`);
+	// 							this.addSceneEvent(`ℹ️  Only secondary scenes can be closed via API`);
+	// 						} else if (error.code === 22 || error.domain.includes('FBSWorkspace')) {
+	// 							this.addSceneEvent(`💡 System declined scene destruction request`);
+	// 							this.addSceneEvent(`🔄 This may be due to system resource management`);
+	// 						} else {
+	// 							this.addSceneEvent(`🔍 Unexpected error - scene destruction may not be fully supported`);
+	// 						}
 
-							this.addSceneEvent(`🖱️  Alternative: Use system UI to close (app switcher or split-screen controls)`);
-						} else {
-							this._closeButtons.delete(sceneId);
-							this.addSceneEvent(`✅ Scene destruction request accepted`);
-							this.addSceneEvent(`⏳ Scene should close within a few seconds...`);
-						}
-					});
-				} else {
-					this.addSceneEvent(`❌ Scene destruction API not available`);
-					this.addSceneEvent(`📱 This iOS version/configuration may not support programmatic scene closure`);
-				}
-			} else {
-				this.addSceneEvent('❌ Error: Could not find scene session to close');
-			}
-		} catch (error) {
-			this.addSceneEvent(`❌ Error closing scene: ${error.message}`);
-		}
-	}
+	// 						this.addSceneEvent(`🖱️  Alternative: Use system UI to close (app switcher or split-screen controls)`);
+	// 					} else {
+	// 						this._closeButtons.delete(sceneId);
+	// 						this.addSceneEvent(`✅ Scene destruction request accepted`);
+	// 						this.addSceneEvent(`⏳ Scene should close within a few seconds...`);
+	// 					}
+	// 				});
+	// 			} else {
+	// 				this.addSceneEvent(`❌ Scene destruction API not available`);
+	// 				this.addSceneEvent(`📱 This iOS version/configuration may not support programmatic scene closure`);
+	// 			}
+	// 		} else {
+	// 			this.addSceneEvent('❌ Error: Could not find scene session to close');
+	// 		}
+	// 	} catch (error) {
+	// 		this.addSceneEvent(`❌ Error closing scene: ${error.message}`);
+	// 	}
+	// }
 }

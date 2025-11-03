@@ -215,6 +215,13 @@ export class iOSApplication extends ApplicationCommon {
 	openWindow(data: Record<any, any>): void;
 
 	/**
+	 * Closes a secondary window/scene.
+	 * If no target is provided, attempts to close a non-primary active scene.
+	 * @param target Optional target to resolve the scene to close. Can be a View, UIWindow, UIWindowScene, or a string scene identifier.
+	 */
+	closeWindow(target?: View | UIWindow | UIWindowScene | string): void;
+
+	/**
 	 * Gets all windows for the application.
 	 */
 	getAllWindows(): UIWindow[];

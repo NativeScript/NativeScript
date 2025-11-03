@@ -240,7 +240,8 @@ export class iOSApplication extends ApplicationCommon {
 	private _rootView: View;
 	private _sceneDelegate: UIWindowSceneDelegate;
 	private _windowSceneMap = new Map<UIScene, UIWindow>();
-	private _primaryScene: UIWindowScene;
+	private _primaryScene: UIWindowScene | null = null;
+	private _openedScenesById = new Map<string, UIWindowScene>();
 
 	displayedOnce = false;
 	displayedLinkTarget: CADisplayLinkTarget;
@@ -787,6 +788,14 @@ export class iOSApplication extends ApplicationCommon {
 
 	_removeWindowForScene(scene: UIScene): void {
 		this._windowSceneMap.delete(scene);
+		// also untrack opened scene id
+		try {
+			const s: any = scene as any;
+			if (s && s.session) {
+				const id = this._getSceneId(s as UIWindowScene);
+				this._openedScenesById.delete(id);
+			}
+		} catch {}
 	}
 
 	_getWindowForScene(scene: UIScene): UIWindow | undefined {
@@ -797,6 +806,12 @@ export class iOSApplication extends ApplicationCommon {
 		if (!window) {
 			return;
 		}
+
+		// track opened scene
+		try {
+			const id = this._getSceneId(scene);
+			this._openedScenesById.set(id, scene);
+		} catch {}
 
 		// Set up window background
 		if (!__VISIONOS__) {
@@ -926,31 +941,55 @@ export class iOSApplication extends ApplicationCommon {
 		}
 	}
 
-	private createSceneWithLegacyAPI(data: Record<any, any>) {
-		const windowScene = this.window?.windowScene;
-
-		if (!windowScene) {
+	/**
+	 * Closes a secondary window/scene.
+	 * Usage examples:
+	 *  - Application.ios.closeWindow() // best-effort close of a non-primary scene
+	 *  - Application.ios.closeWindow(button) // from a tap handler within the scene
+	 *  - Application.ios.closeWindow(window)
+	 *  - Application.ios.closeWindow(scene)
+	 *  - Application.ios.closeWindow('scene-id')
+	 */
+	public closeWindow(target?: View | UIWindow | UIWindowScene | string): void {
+		if (!__APPLE__) {
 			return;
 		}
+		try {
+			const scene = this._resolveScene(target);
+			if (!scene) {
+				console.log('closeWindow: No scene resolved for target');
+				return;
+			}
 
-		// Create user activity for the new scene
-		const userActivity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
-		userActivity.userInfo = dataSerialize(data);
+			// Don't allow closing the primary scene
+			if (scene === this._primaryScene) {
+				console.log('closeWindow: Refusing to close the primary scene');
+				return;
+			}
 
-		// Use the legacy API
-		const options = UISceneActivationRequestOptions.new();
-		options.requestingScene = windowScene;
+			const session = scene.session;
+			if (!session) {
+				console.log('closeWindow: Scene has no session to destroy');
+				return;
+			}
 
-		UIApplication.sharedApplication.requestSceneSessionActivationUserActivityOptionsErrorHandler(
-			null, // session - null for new scene
-			userActivity,
-			options,
-			(error: NSError) => {
-				if (error) {
-					console.error(`Legacy scene API failed: ${error.localizedDescription}`);
-				}
-			},
-		);
+			const app = UIApplication.sharedApplication;
+			if (app.requestSceneSessionDestructionOptionsErrorHandler) {
+				app.requestSceneSessionDestructionOptionsErrorHandler(session, null, (error: NSError) => {
+					if (error) {
+						console.log('closeWindow: destruction error', error);
+					} else {
+						// clean up tracked id
+						const id = this._getSceneId(scene);
+						this._openedScenesById.delete(id);
+					}
+				});
+			} else {
+				console.info('closeWindow: Scene destruction API not available on this iOS version');
+			}
+		} catch (err) {
+			console.log('closeWindow: Unexpected error', err);
+		}
 	}
 
 	getAllWindows(): UIWindow[] {
@@ -998,6 +1037,104 @@ export class iOSApplication extends ApplicationCommon {
 
 		// Additional scene configuration can be added here
 		// For now, the notification observers are already set up in the constructor
+	}
+
+	// Stable scene id for lookups
+	private _getSceneId(scene: UIWindowScene): string {
+		try {
+			if (!scene) {
+				return 'Unknown';
+			}
+			// Prefer session persistentIdentifier when available (stable across lifetime)
+			const session = scene.session;
+			const persistentId = session && session.persistentIdentifier;
+			if (persistentId) {
+				return `${persistentId}`;
+			}
+			// Fallbacks
+			if (scene.hash != null) {
+				return `${scene.hash}`;
+			}
+			const desc = scene.description;
+			if (desc) {
+				return `${desc}`;
+			}
+		} catch (err) {
+			// ignore
+		}
+		return 'Unknown';
+	}
+
+	// Resolve a UIWindowScene from various input types
+	private _resolveScene(target?: any): UIWindowScene | null {
+		if (!__APPLE__) {
+			return null;
+		}
+		if (!target) {
+			// Try to pick a non-primary foreground active scene, else last known scene
+			const scenes = this.getWindowScenes?.() || [];
+			const nonPrimary = scenes.filter((s) => s !== this._primaryScene);
+			return nonPrimary[0] || scenes[0] || null;
+		}
+		// If a View was passed, derive its window.scene
+		if (target && typeof target === 'object') {
+			// UIWindowScene
+			if ((target as UIWindowScene).session && (target as UIWindowScene).activationState !== undefined) {
+				return target as UIWindowScene;
+			}
+			// UIWindow
+			if ((target as UIWindow).windowScene) {
+				return (target as UIWindow).windowScene;
+			}
+			// NativeScript View
+			if ((target as View)?.nativeViewProtected) {
+				const uiView = (target as View).nativeViewProtected as UIView;
+				const win = uiView?.window as UIWindow;
+				return win?.windowScene || null;
+			}
+		}
+		// String id lookup
+		if (typeof target === 'string') {
+			if (this._openedScenesById.has(target)) {
+				return this._openedScenesById.get(target);
+			}
+			// Try matching by persistentIdentifier or hash among known scenes
+			const scenes = this.getWindowScenes?.() || [];
+			for (const s of scenes) {
+				const sid = this._getSceneId(s);
+				if (sid === target) {
+					return s;
+				}
+			}
+		}
+		return null;
+	}
+
+	private createSceneWithLegacyAPI(data: Record<any, any>) {
+		const windowScene = this.window?.windowScene;
+
+		if (!windowScene) {
+			return;
+		}
+
+		// Create user activity for the new scene
+		const userActivity = NSUserActivity.alloc().initWithActivityType(`${NSBundle.mainBundle.bundleIdentifier}.scene`);
+		userActivity.userInfo = dataSerialize(data);
+
+		// Use the legacy API
+		const options = UISceneActivationRequestOptions.new();
+		options.requestingScene = windowScene;
+
+		UIApplication.sharedApplication.requestSceneSessionActivationUserActivityOptionsErrorHandler(
+			null, // session - null for new scene
+			userActivity,
+			options,
+			(error: NSError) => {
+				if (error) {
+					console.error(`Legacy scene API failed: ${error.localizedDescription}`);
+				}
+			},
+		);
 	}
 
 	/**
