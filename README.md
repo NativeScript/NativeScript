@@ -147,4 +147,7 @@ Copyright [OpenJS Foundation](https://openjsf.org) and `NativeScript` contributo
 
 [The OpenJS Foundation](https://openjsf.org/) | [Terms of Use](https://terms-of-use.openjsf.org/) | [Privacy Policy](https://privacy-policy.openjsf.org/) | [OpenJS Foundation Bylaws](https://bylaws.openjsf.org/) | [Trademark Policy](https://trademark-policy.openjsf.org/) | [Trademark List](https://trademark-list.openjsf.org/) | [Cookie Policy](https://www.linuxfoundation.org/cookies/)
 
-<h3 align="center">Made with ❤️</h3>
+<p align="center" style="color:#e25555; font-weight:bold;">
+  Made with ❤️ by NativeScript Contributors
+</p>
+
