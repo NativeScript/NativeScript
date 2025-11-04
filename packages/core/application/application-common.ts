@@ -80,6 +80,19 @@ function applySdkVersionClass(rootView: View): void {
 
 const globalEvents = getNativeScriptGlobals().events;
 
+// Scene lifecycle event names
+export const SceneEvents = {
+	sceneWillConnect: 'sceneWillConnect',
+	sceneDidActivate: 'sceneDidActivate',
+	sceneWillResignActive: 'sceneWillResignActive',
+	sceneWillEnterForeground: 'sceneWillEnterForeground',
+	sceneDidEnterBackground: 'sceneDidEnterBackground',
+	sceneDidDisconnect: 'sceneDidDisconnect',
+	sceneContentSetup: 'sceneContentSetup',
+};
+
+export type SceneEventName = (typeof SceneEvents)[keyof typeof SceneEvents];
+
 // helper interface to correctly type Application event handlers
 interface ApplicationEvents {
 	off(eventNames: string, callback?: any, thisArg?: any): void;
@@ -96,11 +109,6 @@ interface ApplicationEvents {
 	 * Event raised then livesync operation is performed.
 	 */
 	on(event: 'livesync', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
-
-	/**
-	 * This event is raised when application css is changed.
-	 */
-	on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on application launchEvent.
