@@ -181,7 +181,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		class FixSourceMapUrlPlugin {
 			apply(compiler) {
 				compiler.hooks.emit.tap('FixSourceMapUrlPlugin', (compilation) => {
-          const leadingCharacter = process.platform === "win32" ? "/":"";
+					const leadingCharacter = process.platform === 'win32' ? '/' : '';
 					Object.keys(compilation.assets).forEach((filename) => {
 						if (filename.endsWith('.mjs') || filename.endsWith('.js')) {
 							const asset = compilation.assets[filename];
