@@ -93,8 +93,7 @@ export class Frame extends FrameBase {
 	constructor() {
 		super();
 		this._android = new AndroidFrame(this);
-		this._defaultOverflowEdge = 1 << 4;
-		this._defaultOverflowEdgeValue = 'dont-apply';
+		this.androidOverflowEdge = 'ignore';
 	}
 
 	public static reloadPage(context?: ModuleContext): void {
