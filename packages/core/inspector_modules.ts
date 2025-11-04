@@ -31,7 +31,50 @@ function getConsumer(mapPath: string, sourceMap: any) {
 	return c;
 }
 
-function loadAndExtractMap(mapPath: string) {
+function safeReadText(path: string): string | null {
+	try {
+		if (File.exists(path)) {
+			return File.fromPath(path).readTextSync();
+		}
+	} catch (_) {}
+	return null;
+}
+
+function findInlineOrLinkedMapFromJs(jsPath: string): { key: string; text: string } | null {
+	const jsText = safeReadText(jsPath);
+	if (!jsText) return null;
+
+	// Look for the last sourceMappingURL directive
+	// Supports both //# and /*# */ styles; capture up to line end or */
+	const re = /[#@]\s*sourceMappingURL=([^\s*]+)(?:\s*\*\/)?/g;
+	let match: RegExpExecArray | null = null;
+	let last: RegExpExecArray | null = null;
+	while ((match = re.exec(jsText))) last = match;
+	if (!last) return null;
+
+	const url = last[1];
+	if (url.startsWith('data:application/json')) {
+		const base64 = url.split(',')[1];
+		if (!base64) return null;
+		try {
+			const text = atob(base64);
+			return { key: `inline:${jsPath}`, text };
+		} catch (_) {
+			return null;
+		}
+	}
+
+	// Linked .map file (relative)
+	const jsDir = jsPath.substring(0, jsPath.lastIndexOf('/'));
+	const mapPath = `${jsDir}/${url}`;
+	const text = safeReadText(mapPath);
+	if (text) {
+		return { key: mapPath, text };
+	}
+	return null;
+}
+
+function loadAndExtractMap(mapPath: string, fallbackJsPath?: string) {
 	// check cache first
 	if (!loadedSourceMaps) {
 		loadedSourceMaps = new Map();
@@ -72,8 +115,20 @@ function loadAndExtractMap(mapPath: string) {
 				return null;
 			}
 		} else {
-			// no source maps
-			return null;
+			// Try fallback: read inline or linked map from the JS file itself
+			if (fallbackJsPath) {
+				const alt = findInlineOrLinkedMapFromJs(fallbackJsPath);
+				if (alt && alt.text) {
+					mapText = alt.text;
+					// Cache under both the requested key and the alt key so future lookups are fast
+					loadedSourceMaps.set(alt.key, alt.text);
+				} else {
+					return null;
+				}
+			} else {
+				// no source maps
+				return null;
+			}
 		}
 	}
 	loadedSourceMaps.set(mapPath, mapText); // cache it
@@ -93,9 +148,19 @@ function remapFrame(file: string, line: number, column: number) {
 	if (usingSourceMapFiles) {
 		sourceMapFileExt = '.map';
 	}
-	const mapPath = `${appPath}/${file.replace('file:///app/', '')}${sourceMapFileExt}`;
+	const rel = file.replace('file:///app/', '');
+	const jsPath = `${appPath}/${rel}`;
+	let mapPath = `${jsPath}${sourceMapFileExt}`; // default: same name + .map
 
-	const sourceMap = loadAndExtractMap(mapPath);
+	// Fallback: if .mjs.map missing, try .js.map
+	if (!File.exists(mapPath) && rel.endsWith('.mjs')) {
+		const jsMapFallback = `${appPath}/${rel.replace(/\.mjs$/, '.js.map')}`;
+		if (File.exists(jsMapFallback)) {
+			mapPath = jsMapFallback;
+		}
+	}
+
+	const sourceMap = loadAndExtractMap(mapPath, jsPath);
 
 	if (!sourceMap) {
 		return { source: null, line: 0, column: 0 };

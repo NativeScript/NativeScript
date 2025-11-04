@@ -89,7 +89,14 @@ export default class FixSourceMapUrlPlugin {
 			compiler.hooks.thisCompilation.tap(
 				'FixSourceMapUrlPlugin',
 				(compilation: any) => {
-					const stage = wp.Compilation.PROCESS_ASSETS_STAGE_DEV_TOOLING;
+					// IMPORTANT:
+					// Run AFTER SourceMapDevToolPlugin has emitted external map assets.
+					// If we run at DEV_TOOLING and replace sources, we may drop mapping info
+					// before Webpack has a chance to write .map files. SUMMARIZE happens later.
+					const stage =
+						wp.Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE ||
+						// Fallback to DEV_TOOLING if summarize is unavailable
+						wp.Compilation.PROCESS_ASSETS_STAGE_DEV_TOOLING;
 					compilation.hooks.processAssets.tap(
 						{ name: 'FixSourceMapUrlPlugin', stage },
 						(assets: Record<string, any>) => {
