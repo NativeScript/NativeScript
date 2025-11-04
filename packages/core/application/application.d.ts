@@ -113,8 +113,9 @@ export class AndroidApplication extends ApplicationCommon {
 	 * For more information, please visit 'http://developer.android.com/reference/android/content/Context.html#registerReceiver%28android.content.BroadcastReceiver,%20android.content.IntentFilter%29'
 	 * @param intentFilter A string containing the intent filter.
 	 * @param onReceiveCallback A callback function that will be called each time the receiver receives a broadcast.
+	 * @return A function that can be called to unregister the receiver.
 	 */
-	registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void;
+	registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): () => void;
 
 	/**
 	 * Unregister a previously registered BroadcastReceiver.
@@ -126,8 +127,14 @@ export class AndroidApplication extends ApplicationCommon {
 	/**
 	 * Get a registered BroadcastReceiver, then you can get the result code of BroadcastReceiver in onReceiveCallback method.
 	 * @param intentFilter A string containing the intent filter.
+	 * @deprecated Use `getRegisteredBroadcastReceivers` instead.
 	 */
 	getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver;
+	/**
+	 * Get all registered BroadcastReceivers for a specific intent filter.
+	 * @param intentFilter a string containing the intent filter
+	 */
+	getRegisteredBroadcastReceivers(intentFilter: string): android.content.BroadcastReceiver[];
 
 	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
 	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
