@@ -24,38 +24,36 @@ export class ProxyViewContainer extends LayoutBase {
 	}
 
 	// No native view for proxy container.
-	// @ts-ignore
-	get ios(): any {
+	public override get ios(): any {
 		return null;
 	}
 
-	// @ts-ignore
-	get android(): any {
+	public override get android(): any {
 		return null;
 	}
 
-	get isLayoutRequested(): boolean {
+	public get isLayoutRequested(): boolean {
 		// Always return false so all layout requests from children bubble up.
 		return false;
 	}
 
-	public createNativeView() {
+	public createNativeView(): any {
 		return undefined;
 	}
 
 	public _getNativeViewsCount(): number {
 		let result = 0;
-		this.eachChildView((cv) => {
-			result += cv._getNativeViewsCount();
+		this.eachChildView((cv: View) => {
+			result += (cv as any)._getNativeViewsCount();
 			return true;
 		});
 		return result;
 	}
 
-	public _eachLayoutView(callback: (View) => void): void {
-		this.eachChildView((cv) => {
+	public _eachLayoutView(callback: (view: View) => void): void {
+		this.eachChildView((cv: View) => {
 			if (!cv.isCollapsed) {
-				cv._eachLayoutView(callback);
+				(cv as any)._eachLayoutView(callback);
 			}
 			return true;
 		});
@@ -99,10 +97,10 @@ export class ProxyViewContainer extends LayoutBase {
 
 		layoutProperties.forEach((propName) => {
 			const proxyPropName = makeProxyPropName(propName);
-			child[proxyPropName] = child[propName];
+			(child as any)[proxyPropName] = (child as any)[propName];
 
 			if (this.proxiedLayoutProperties.has(propName)) {
-				this._applyLayoutPropertyToChild(child, propName, this[propName]);
+				this._applyLayoutPropertyToChild(child, propName, (this as any)[propName]);
 			}
 		});
 
@@ -138,7 +136,8 @@ export class ProxyViewContainer extends LayoutBase {
 
 		const parent = this.parent;
 		if (parent instanceof View) {
-			return parent._removeViewFromNativeVisualTree(child);
+			parent._removeViewFromNativeVisualTree(child);
+			return;
 		}
 	}
 
@@ -191,23 +190,24 @@ export class ProxyViewContainer extends LayoutBase {
 
 	private _applyLayoutPropertyToChild(child: View, propName: string, value: any) {
 		const proxyPropName = makeProxyPropName(propName);
-		if (proxyPropName in child) {
-			if (child[propName] !== child[proxyPropName]) {
+		const childAny = child as any;
+
+		if (proxyPropName in childAny) {
+			if (childAny[propName] !== childAny[proxyPropName]) {
 				if (Trace.isEnabled()) {
-					Trace.write('ProxyViewContainer._applyLayoutPropertyToChild child ' + child + ' has its own value [' + child[propName] + '] for [' + propName + ']', Trace.categories.ViewHierarchy);
+					Trace.write('ProxyViewContainer._applyLayoutPropertyToChild child ' + child + ' has its own value [' + childAny[propName] + '] for [' + propName + ']', Trace.categories.ViewHierarchy);
 				}
 				return;
 			}
 		}
 
-		child[propName] = value;
-		child[proxyPropName] = value;
+		childAny[propName] = value;
+		childAny[proxyPropName] = value;
 	}
 
-	// @ts-ignore
-	public set hidden(value: boolean) {
-		this.eachChildView((child) => {
-			child.hidden = value;
+	public override set hidden(value: boolean): void {
+		this.eachChildView((child: View) => {
+			(child as any).hidden = value;
 			return true;
 		});
 	}
