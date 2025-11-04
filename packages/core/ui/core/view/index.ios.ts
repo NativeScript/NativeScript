@@ -917,7 +917,6 @@ export class View extends ViewCommon {
 				if (!navigationBar) return;
 
 				if (typeof value === 'string') {
-					console.log('here:', value);
 					navigationBar.barStyle = value === 'dark' ? UIBarStyle.Black : UIBarStyle.Default;
 				} else {
 					navigationBar.barStyle = value;
