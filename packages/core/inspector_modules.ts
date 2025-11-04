@@ -23,7 +23,8 @@ function getConsumer(mapPath: string, sourceMap: any) {
 			c = new SourceMapConsumer(sourceMap);
 			consumerCache.set(mapPath, c);
 		} catch (error) {
-			console.error(`Failed to create SourceMapConsumer for ${mapPath}:`, error);
+			// Keep quiet in production-like console; failures just fall back to original stack
+			console.debug && console.debug(`SourceMapConsumer failed for ${mapPath}:`, error);
 			return null;
 		}
 	}
@@ -67,7 +68,7 @@ function loadAndExtractMap(mapPath: string) {
 					mapText = binary;
 				}
 			} catch (error) {
-				console.error(`Failed to load source map ${mapPath}:`, error);
+				console.debug && console.debug(`Failed to load source map ${mapPath}:`, error);
 				return null;
 			}
 		} else {
@@ -108,7 +109,7 @@ function remapFrame(file: string, line: number, column: number) {
 	try {
 		return consumer.originalPositionFor({ line, column });
 	} catch (error) {
-		console.error(`Failed to get original position for ${file}:${line}:${column}:`, error);
+		console.debug && console.debug(`Remap failed for ${file}:${line}:${column}:`, error);
 		return { source: null, line: 0, column: 0 };
 	}
 }
@@ -116,18 +117,36 @@ function remapFrame(file: string, line: number, column: number) {
 function remapStack(raw: string): string {
 	const lines = raw.split('\n');
 	const out = lines.map((line) => {
-		const m = /\((.+):(\d+):(\d+)\)/.exec(line);
-		if (!m) return line;
-
-		try {
-			const [_, file, l, c] = m;
-			const orig = remapFrame(file, +l, +c);
-			if (!orig.source) return line;
-			return line.replace(/\(.+\)/, `(${orig.source}:${orig.line}:${orig.column})`);
-		} catch (error) {
-			console.error('Failed to remap stack frame:', line, error);
-			return line; // return original line if remapping fails
+		// 1) Parenthesized frame: at fn (file:...:L:C)
+		let m = /\((.+):(\d+):(\d+)\)/.exec(line);
+		if (m) {
+			try {
+				const [_, file, l, c] = m;
+				const orig = remapFrame(file, +l, +c);
+				if (!orig.source) return line;
+				return line.replace(/\(.+\)/, `(${orig.source}:${orig.line}:${orig.column})`);
+			} catch (error) {
+				console.debug && console.debug('Remap failed for frame:', line, error);
+				return line;
+			}
 		}
+
+		// 2) Bare frame: at file:///app/vendor.js:L:C (no parentheses)
+		const bare = /(\s+at\s+)([^\s()]+):(\d+):(\d+)/.exec(line);
+		if (bare) {
+			try {
+				const [, prefix, file, l, c] = bare;
+				const orig = remapFrame(file, +l, +c);
+				if (!orig.source) return line;
+				const replacement = `${prefix}${orig.source}:${orig.line}:${orig.column}`;
+				return line.replace(bare[0], replacement);
+			} catch (error) {
+				console.debug && console.debug('Remap failed for bare frame:', line, error);
+				return line;
+			}
+		}
+
+		return line;
 	});
 	return out.join('\n');
 }
@@ -141,7 +160,7 @@ function remapStack(raw: string): string {
 	try {
 		return remapStack(rawStack);
 	} catch (error) {
-		console.error('Failed to remap stack trace, returning original:', error);
+		console.debug && console.debug('Remap failed, returning original:', error);
 		return rawStack; // fallback to original stack trace
 	}
 };
