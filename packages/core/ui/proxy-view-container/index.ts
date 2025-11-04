@@ -11,9 +11,9 @@ import { Trace } from '../../trace';
  */
 // Cases to cover:
 // * Child is added to the attached proxy. Handled in _addViewToNativeVisualTree.
-// * Proxy (with children) is added to the DOM. In _addViewToNativeVisualTree _addViewToNativeVisualTree recursively when the proxy is added to the parent.
+// * Proxy (with children) is added to the DOM. In _addViewToNativeVisualTree recursively when the proxy is added to the parent.
 // * Child is removed from attached proxy. Handled in _removeViewFromNativeVisualTree.
-// * Proxy (with children) is removed form the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
+// * Proxy (with children) is removed from the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 @CSSType('ProxyViewContainer')
 export class ProxyViewContainer extends LayoutBase {
 	private proxiedLayoutProperties = new Set<string>();
@@ -34,10 +34,6 @@ export class ProxyViewContainer extends LayoutBase {
 		return null;
 	}
 
-	// get nativeView(): any {
-	//     return null;
-	// }
-
 	get isLayoutRequested(): boolean {
 		// Always return false so all layout requests from children bubble up.
 		return false;
@@ -51,10 +47,8 @@ export class ProxyViewContainer extends LayoutBase {
 		let result = 0;
 		this.eachChildView((cv) => {
 			result += cv._getNativeViewsCount();
-
 			return true;
 		});
-
 		return result;
 	}
 
@@ -63,7 +57,6 @@ export class ProxyViewContainer extends LayoutBase {
 			if (!cv.isCollapsed) {
 				cv._eachLayoutView(callback);
 			}
-
 			return true;
 		});
 	}
@@ -84,6 +77,7 @@ export class ProxyViewContainer extends LayoutBase {
 			});
 		}
 	}
+
 	_tearDownUI(force?: boolean) {
 		super._tearDownUI(force);
 		if (this.reusable && !force) {
@@ -124,7 +118,6 @@ export class ProxyViewContainer extends LayoutBase {
 			if (atIndex !== undefined) {
 				insideIndex = this._childIndexToNativeChildIndex(atIndex);
 			} else {
-				// Add last;
 				insideIndex = this._getNativeViewsCount();
 			}
 			if (Trace.isEnabled()) {
@@ -149,12 +142,6 @@ export class ProxyViewContainer extends LayoutBase {
 		}
 	}
 
-	/*
-	 * Some layouts (e.g. GridLayout) need to get notified when adding and
-	 * removing children, so that they can update private measure data.
-	 *
-	 * We register our children with the parent to avoid breakage.
-	 */
 	public _registerLayoutChild(child: View) {
 		const parent = this.parent;
 		if (parent instanceof LayoutBase) {
@@ -169,11 +156,7 @@ export class ProxyViewContainer extends LayoutBase {
 		}
 	}
 
-	/*
-	 * Register/unregister existing children with the parent layout.
-	 */
 	public _parentChanged(oldParent: View): void {
-		// call super in order to execute base logic like clear inherited properties, etc.
 		super._parentChanged(oldParent);
 		const addingToParent = this.parent && !oldParent;
 		const newLayout = <LayoutBase>this.parent;
@@ -182,48 +165,37 @@ export class ProxyViewContainer extends LayoutBase {
 		if (addingToParent && newLayout instanceof LayoutBase) {
 			this.eachLayoutChild((child) => {
 				newLayout._registerLayoutChild(child);
-
 				return true;
 			});
 		} else if (oldLayout instanceof LayoutBase) {
 			this.eachLayoutChild((child) => {
 				oldLayout._unregisterLayoutChild(child);
-
 				return true;
 			});
 		}
 	}
 
-	/**
-	 * Layout property changed, proxy the new value to the child view(s)
-	 */
-	public _changedLayoutProperty(propName: string, value: string) {
+	public _changedLayoutProperty(propName: string, value: any) {
 		const numChildren = this._getNativeViewsCount();
 		if (numChildren > 1) {
-			Trace.write("ProxyViewContainer._changeLayoutProperty - you're setting '" + propName + "' for " + this + ' with more than one child. Probably this is not what you want, consider wrapping it in a StackLayout ', Trace.categories.ViewHierarchy, Trace.messageType.error);
+			Trace.write("ProxyViewContainer._changeLayoutProperty - you're setting '" + propName + "' for " + this + ' with more than one child. Consider wrapping it in a StackLayout ', Trace.categories.ViewHierarchy, Trace.messageType.error);
 		}
 
 		this.eachLayoutChild((child) => {
 			this._applyLayoutPropertyToChild(child, propName, value);
-
 			return true;
 		});
 
 		this.proxiedLayoutProperties.add(propName);
 	}
 
-	/**
-	 * Apply the layout property to the child view.
-	 */
 	private _applyLayoutPropertyToChild(child: View, propName: string, value: any) {
 		const proxyPropName = makeProxyPropName(propName);
 		if (proxyPropName in child) {
 			if (child[propName] !== child[proxyPropName]) {
-				// Value was set directly on the child view, don't override.
 				if (Trace.isEnabled()) {
 					Trace.write('ProxyViewContainer._applyLayoutPropertyToChild child ' + child + ' has its own value [' + child[propName] + '] for [' + propName + ']', Trace.categories.ViewHierarchy);
 				}
-
 				return;
 			}
 		}
@@ -231,60 +203,31 @@ export class ProxyViewContainer extends LayoutBase {
 		child[propName] = value;
 		child[proxyPropName] = value;
 	}
+
+	// @ts-ignore
 	public set hidden(value: boolean) {
-        super.hidden = value;
-          this.eachChildView((child) => {
-            child.hidden = value;
-           return true;
-    });
+		this.eachChildView((child) => {
+			child.hidden = value;
+			return true;
+		});
+	}
 }
 
-}
+// Layout properties to be proxied to the child views
+const layoutProperties = ['left', 'top', 'dock', 'flexDirection', 'flexWrap', 'justifyContent', 'alignItems', 'alignContent', 'order', 'flexGrow', 'flexShrink', 'flexWrapBefore', 'alignSelf', 'flexFlow', 'flex', 'column', 'columnSpan', 'col', 'colSpan', 'row', 'rowSpan'];
 
-// Layout propeties to be proxyed to the child views
-const layoutProperties = [
-	// AbsoluteLayout
-	'left',
-	'top',
-
-	// DockLayout
-	'dock',
-
-	// FlexLayout
-	'flexDirection',
-	'flexWrap',
-	'justifyContent',
-	'alignItems',
-	'alignContent',
-	'order',
-	'flexGrow',
-	'flexShrink',
-	'flexWrapBefore',
-	'alignSelf',
-	'flexFlow',
-	'flex',
-
-	// GridLayout
-	'column',
-	'columnSpan',
-	'col',
-	'colSpan',
-	'row',
-	'rowSpan',
-];
-
-// Override the inherited layout properties
 for (const name of layoutProperties) {
-	const proxyProperty = new Property<ProxyViewContainer, string>({
+	// CORRECTION: Changed Property<..., string> to Property<..., any>
+	const proxyProperty = new Property<ProxyViewContainer, any>({
 		name,
 		valueChanged(target, oldValue, value) {
 			target._changedLayoutProperty(name, value);
 		},
 	});
-
 	proxyProperty.register(ProxyViewContainer);
 }
 
-function makeProxyPropName(propName) {
+// CORRECTION: Added types for the function parameter and return value
+function makeProxyPropName(propName: string): string {
 	return `_proxy:${propName}`;
 }
