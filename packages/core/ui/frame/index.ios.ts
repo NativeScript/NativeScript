@@ -634,6 +634,11 @@ class UINavigationControllerImpl extends UINavigationController {
 			}
 		}
 	}
+
+	// @ts-ignore
+	public get childViewControllerForStatusBarStyle() {
+		return this.topViewController;
+	}
 }
 
 function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitionType: string): string {

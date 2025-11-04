@@ -1,5 +1,5 @@
 import { Font } from '../styling/font';
-import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty } from './search-bar-common';
+import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, clearButtonColorProperty } from './search-bar-common';
 import { isEnabledProperty } from '../core/view';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty } from '../styling/style-properties';
@@ -219,5 +219,14 @@ export class SearchBar extends SearchBarBase {
 		}
 		const attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, attributes);
 		this._getTextField().attributedPlaceholder = attributedPlaceholder;
+	}
+	[clearButtonColorProperty.setNative](value: Color | UIColor) {
+		const textField = this._getTextField();
+		if (!textField) return;
+		// Check if clear button is available in the text field
+		const clearButton = textField.valueForKey('clearButton');
+		if (!clearButton) return;
+
+		clearButton.tintColor = value instanceof Color ? value.ios : value;
 	}
 }

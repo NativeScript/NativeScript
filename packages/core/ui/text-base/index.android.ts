@@ -186,6 +186,11 @@ export class TextBase extends TextBaseCommon {
 		super.initNativeView();
 		initializeTextTransformation();
 		const nativeView = this.nativeTextViewProtected;
+
+		// Fix for custom font over-height issue on Android
+		// Disable font padding to prevent extra spacing around text
+		nativeView.setIncludeFontPadding(false);
+
 		this._defaultTransformationMethod = nativeView.getTransformationMethod();
 		this._defaultMovementMethod = nativeView.getMovementMethod();
 		this._minHeight = nativeView.getMinHeight();
