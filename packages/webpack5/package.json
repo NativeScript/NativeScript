@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.25-alpha.5",
+	"version": "5.0.25-alpha.6",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
