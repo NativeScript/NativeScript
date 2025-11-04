@@ -987,7 +987,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
 	public iosIgnoreSafeArea: boolean;
-	public androidOverflowEdge: CoreTypes.AndroidOverflow;
+	public androidOverflowEdge: string;
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
@@ -1314,12 +1314,6 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
-
-export const androidOverflowEdgeProperty = new Property<ViewCommon, CoreTypes.AndroidOverflow>({
-	name: 'androidOverflowEdge',
-	defaultValue: 'ignore',
-});
-androidOverflowEdgeProperty.register(ViewCommon);
 
 export const visionHoverStyleProperty = new Property<ViewCommon, string | VisionHoverOptions>({
 	name: 'visionHoverStyle',
