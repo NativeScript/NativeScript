@@ -774,6 +774,24 @@ export class iOSApplication extends ApplicationCommon {
 			this._primaryScene = null;
 		}
 
+		if (this._primaryScene) {
+			if (SDK_VERSION >= 17) {
+				const request = UISceneSessionActivationRequest.requestWithSession(this._primaryScene.session);
+
+				UIApplication.sharedApplication.activateSceneSessionForRequestErrorHandler(request, (err: NSError) => {
+					if (err) {
+						console.log('Failed to activate primary scene:', err.localizedDescription);
+					}
+				});
+			} else {
+				UIApplication.sharedApplication.requestSceneSessionActivationUserActivityOptionsErrorHandler(this._primaryScene.session, null, null, (err: NSError) => {
+					if (err) {
+						console.log('Failed to activate primary scene (legacy):', err.localizedDescription);
+					}
+				});
+			}
+		}
+
 		this.notify({
 			eventName: SceneEvents.sceneDidDisconnect,
 			object: this,
