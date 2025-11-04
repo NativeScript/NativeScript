@@ -203,6 +203,7 @@ public abstract class LayoutBase extends ViewGroup {
 
 		if (value == OverflowEdgeIgnore) {
 			ViewCompat.setOnApplyWindowInsetsListener(this, null);
+			ViewCompat.requestApplyInsets(this);
 		} else if (windowInsetsListener == null) {
 			// if incoming inset is empty and previous inset is empty return consumed
 			// an incoming empty inset is one way to detect a consumed inset e.g multiple views consumed top/bottom
