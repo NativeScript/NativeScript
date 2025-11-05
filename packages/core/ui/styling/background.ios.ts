@@ -1138,7 +1138,7 @@ function drawBoxShadow(view: View): void {
 
 			// Shadow opacity is handled on the shadow's color instance
 			shadowLayer.shadowOpacity = boxShadow.color?.a ? boxShadow.color.a / 255 : 1;
-			shadowLayer.shadowRadius = shadowRadius;
+			shadowLayer.shadowRadius = shadowRadius * 0.65;
 			shadowLayer.shadowColor = boxShadow.color?.ios?.CGColor;
 			shadowLayer.shadowOffset = CGSizeMake(offsetX, offsetY);
 
