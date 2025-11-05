@@ -1507,17 +1507,23 @@ export class View extends ViewCommon {
 		}
 	}
 
-	protected _drawBoxShadow(boxShadow: BoxShadow) {
+	protected _drawBoxShadow(boxShadows: BoxShadow[]) {
 		const nativeView = this.nativeViewProtected;
-		const config = {
-			shadowColor: boxShadow.color.android,
-			cornerRadius: Length.toDevicePixels(this.borderRadius as CoreTypes.LengthType, 0.0),
-			spreadRadius: boxShadow.spreadRadius,
-			blurRadius: boxShadow.blurRadius,
-			offsetX: boxShadow.offsetX,
-			offsetY: boxShadow.offsetY,
-		};
-		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+		const valueCount = 6;
+		const nativeArray: number[] = Array.create('int', boxShadows.length * valueCount);
+
+		for (let i = 0, length = boxShadows.length; i < length; i++) {
+			const boxShadow = boxShadows[i];
+			const nativeIndex = i * valueCount;
+
+			nativeArray[nativeIndex + 0] = boxShadow.color.android;
+			nativeArray[nativeIndex + 1] = boxShadow.spreadRadius;
+			nativeArray[nativeIndex + 2] = boxShadow.blurRadius;
+			nativeArray[nativeIndex + 3] = boxShadow.offsetX;
+			nativeArray[nativeIndex + 4] = boxShadow.offsetY;
+			nativeArray[nativeIndex + 5] = boxShadow.inset ? 1 : 0;
+		}
+		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, nativeArray);
 	}
 
 	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
@@ -1566,15 +1572,15 @@ export class View extends ViewCommon {
 		// prettier-ignore
 		const onlyColor = !background.hasBorderWidth()
 			&& !background.hasBorderRadius()
-			&& !background.hasBoxShadow()
+			&& !background.hasBoxShadows()
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
 
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
 
-		if (background.hasBoxShadow()) {
-			this._drawBoxShadow(background.getBoxShadow());
+		if (background.hasBoxShadows()) {
+			this._drawBoxShadow(background.getBoxShadows());
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
