@@ -27,7 +27,6 @@ import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
 import { NativeScriptAndroidView } from '../../utils';
 import { Device } from '../../../platform';
-import { Application } from '../../../application/application';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -77,7 +76,7 @@ interface DialogOptions {
 let OnBackPressedCallback;
 
 if (parseInt(Device.sdkVersion) >= 33) {
-	OnBackPressedCallback = (<any>androidx.activity.OnBackPressedCallback).extend({
+	OnBackPressedCallback = (androidx.activity.OnBackPressedCallback as any).extend({
 		handleOnBackPressed() {
 			console.log('OnBackPressedCallback handleOnBackPressed called');
 			const dialog = this['_dialog']?.get();
@@ -92,19 +91,15 @@ if (parseInt(Device.sdkVersion) >= 33) {
 
 			const view = dialog.fragment.owner;
 
-			const args = <AndroidActivityBackPressedEventData>{
+			const args: AndroidActivityBackPressedEventData = {
 				eventName: 'activityBackPressed',
-
 				object: view,
-
 				activity: view._context,
-
 				cancel: false,
 			};
 
 			// Fist fire application.android global event
-
-			Application.android.notify(args);
+			getNativeScriptGlobals().events.notify(args);
 
 			if (args.cancel) {
 				return;
