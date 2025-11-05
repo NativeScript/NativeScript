@@ -53,7 +53,7 @@ export namespace layout {
 	export function hasRtlSupport(): boolean {
 		if (supportsRtl === undefined) {
 			const FLAG_SUPPORTS_RTL = android.content.pm.ApplicationInfo.FLAG_SUPPORTS_RTL;
-			supportsRtl = (AndroidUtils.getApplicationContext().getApplicationInfo().flags & FLAG_SUPPORTS_RTL) == FLAG_SUPPORTS_RTL;
+			supportsRtl = (androidUtils.getApplicationContext().getApplicationInfo().flags & FLAG_SUPPORTS_RTL) == FLAG_SUPPORTS_RTL;
 		}
 
 		return supportsRtl;

@@ -413,7 +413,7 @@ class TransitionDelegate extends NSObject {
 class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
 
-	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationControllerImpl, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
 		let viewController: UIViewController;
 		switch (operation) {
 			case UINavigationControllerOperation.Push:
@@ -433,8 +433,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 			return null;
 		}
 
-		const owner = this.owner?.deref();
-		const layoutDirection: CoreTypes.LayoutDirectionType = owner?.direction;
+		const layoutDirection: CoreTypes.LayoutDirectionType = navigationController.owner?.direction;
 
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
