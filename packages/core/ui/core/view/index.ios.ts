@@ -1,5 +1,5 @@
 import type { Point, Position } from './view-interfaces';
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant, statusBarStyleProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant, GlassEffectConfig, statusBarStyleProperty } from './view-common';
 import { isAccessibilityServiceEnabled } from '../../../application';
 import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -393,7 +393,7 @@ export class View extends ViewCommon {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadow();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadows();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
@@ -904,6 +904,62 @@ export class View extends ViewCommon {
 		}
 	}
 
+	protected _applyGlassEffect(
+		value: GlassEffectType,
+		options: {
+			effectType: 'glass' | 'container';
+			targetView?: UIVisualEffectView;
+			toGlassStyleFn?: (variant?: GlassEffectVariant) => number;
+			onCreate?: (effectView: UIVisualEffectView, effect: UIVisualEffect) => void;
+			onUpdate?: (effectView: UIVisualEffectView, effect: UIVisualEffect, duration: number) => void;
+		},
+	): UIVisualEffectView | undefined {
+		const config: GlassEffectConfig | null = typeof value !== 'string' ? value : null;
+		const variant = config ? config.variant : (value as GlassEffectVariant);
+		const defaultDuration = 0.3;
+		const duration = config ? (config.animateChangeDuration ?? defaultDuration) : defaultDuration;
+
+		let effect: UIGlassEffect | UIGlassContainerEffect | UIVisualEffect;
+
+		// Create the appropriate effect based on type and variant
+		if (!value || ['identity', 'none'].includes(variant)) {
+			effect = UIVisualEffect.new();
+		} else {
+			if (options.effectType === 'glass') {
+				const styleFn = options.toGlassStyleFn || this.toUIGlassStyle.bind(this);
+				effect = UIGlassEffect.effectWithStyle(styleFn(variant));
+				if (config) {
+					(effect as UIGlassEffect).interactive = !!config.interactive;
+					if (config.tint) {
+						(effect as UIGlassEffect).tintColor = typeof config.tint === 'string' ? new Color(config.tint).ios : config.tint;
+					}
+				}
+			} else if (options.effectType === 'container') {
+				effect = UIGlassContainerEffect.alloc().init();
+				(effect as UIGlassContainerEffect).spacing = config?.spacing ?? 8;
+			}
+		}
+
+		// Handle creating new effect view or updating existing one
+		if (options.targetView) {
+			// Update existing effect view
+			if (options.onUpdate) {
+				options.onUpdate(options.targetView, effect, duration);
+			} else {
+				// Default update behavior: animate effect changes
+				UIView.animateWithDurationAnimations(duration, () => {
+					options.targetView.effect = effect;
+				});
+			}
+			return undefined;
+		} else if (options.onCreate) {
+			// Create new effect view and let caller handle setup
+			const effectView = UIVisualEffectView.alloc().initWithEffect(effect);
+			options.onCreate(effectView, effect);
+			return effectView;
+		}
+		return undefined;
+	}
 	[statusBarStyleProperty.getDefault]() {
 		return this.style.statusBarStyle;
 	}
@@ -929,45 +985,37 @@ export class View extends ViewCommon {
 		if (!this.nativeViewProtected || !supportsGlass()) {
 			return;
 		}
-		if (this._glassEffectView) {
-			this._glassEffectView.removeFromSuperview();
-			this._glassEffectView = null;
-		}
-		if (!value) {
-			return;
-		}
-		let effect: UIGlassEffect;
-		if (typeof value === 'string') {
-			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(value));
+
+		if (!this._glassEffectView) {
+			// Create new glass effect view
+			this._glassEffectView = this._applyGlassEffect(value, {
+				effectType: 'glass',
+				onCreate: (effectView, effect) => {
+					// let touches pass to content
+					effectView.userInteractionEnabled = false;
+					effectView.clipsToBounds = true;
+					// size & autoresize
+					if (this._glassEffectMeasure) {
+						clearTimeout(this._glassEffectMeasure);
+					}
+					this._glassEffectMeasure = setTimeout(() => {
+						const size = this.nativeViewProtected.bounds.size;
+						effectView.frame = CGRectMake(0, 0, size.width, size.height);
+						effectView.autoresizingMask = 2;
+						this.nativeViewProtected.insertSubviewAtIndex(effectView, 0);
+					});
+				},
+			});
 		} else {
-			if (value.variant === 'identity') {
-				return;
-			}
-			effect = UIGlassEffect.effectWithStyle(this.toUIGlassStyle(value.variant));
-			if (value.interactive) {
-				effect.interactive = true;
-			}
-			if (value.tint) {
-				effect.tintColor = typeof value.tint === 'string' ? new Color(value.tint).ios : value.tint;
-			}
+			// Update existing glass effect view
+			this._applyGlassEffect(value, {
+				effectType: 'glass',
+				targetView: this._glassEffectView,
+			});
 		}
-		this._glassEffectView = UIVisualEffectView.alloc().initWithEffect(effect);
-		// let touches pass to content
-		this._glassEffectView.userInteractionEnabled = false;
-		this._glassEffectView.clipsToBounds = true;
-		// size & autoresize
-		if (this._glassEffectMeasure) {
-			clearTimeout(this._glassEffectMeasure);
-		}
-		this._glassEffectMeasure = setTimeout(() => {
-			const size = this.nativeViewProtected.bounds.size;
-			this._glassEffectView.frame = CGRectMake(0, 0, size.width, size.height);
-			this._glassEffectView.autoresizingMask = 2;
-			this.nativeViewProtected.insertSubviewAtIndex(this._glassEffectView, 0);
-		});
 	}
 
-	public toUIGlassStyle(value?: GlassEffectVariant) {
+	toUIGlassStyle(value?: GlassEffectVariant) {
 		if (supportsGlass()) {
 			switch (value) {
 				case 'regular':

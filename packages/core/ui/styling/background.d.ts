@@ -34,7 +34,6 @@ export enum CacheMode {
 // 	public borderBottomRightRadius: number;
 // 	public borderBottomLeftRadius: number;
 // 	public clipPath: string | ClipPathFunction;
-// 	public boxShadow: string | BoxShadow;
 // 	public clearFlags: number;
 
 // 	public withColor(value: Color): Background;
@@ -72,8 +71,6 @@ export enum CacheMode {
 // 	public getUniformBorderColor(): Color;
 // 	public getUniformBorderWidth(): number;
 // 	public getUniformBorderRadius(): number;
-// 	public hasBoxShadow(): boolean;
-// 	public getBoxShadow(): BoxShadow;
 // }
 
 export namespace ios {

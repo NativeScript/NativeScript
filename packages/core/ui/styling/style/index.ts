@@ -151,7 +151,7 @@ export class Style extends Observable {
 	public borderBottomRightRadius: CoreTypes.LengthType;
 	public borderBottomLeftRadius: CoreTypes.LengthType;
 
-	public boxShadow: ShadowCSSValues;
+	public boxShadow: string | ShadowCSSValues[];
 
 	public fontSize: number;
 	public fontFamily: string;

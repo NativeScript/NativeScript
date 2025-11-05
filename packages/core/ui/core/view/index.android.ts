@@ -72,6 +72,51 @@ interface DialogOptions {
 	dismissCallback: () => void;
 }
 
+let OnBackPressedCallback;
+
+if (SDK_VERSION >= 33) {
+	OnBackPressedCallback = (androidx.activity.OnBackPressedCallback as any).extend({
+		handleOnBackPressed() {
+			console.log('OnBackPressedCallback handleOnBackPressed called');
+			const dialog = this['_dialog']?.get();
+
+			if (!dialog) {
+				// disable the callback and call super to avoid infinite loop
+
+				this.setEnabled(false);
+
+				return;
+			}
+
+			const view = dialog.fragment.owner;
+
+			const args: AndroidActivityBackPressedEventData = {
+				eventName: 'activityBackPressed',
+				object: view,
+				activity: view._context,
+				cancel: false,
+			};
+
+			// Fist fire application.android global event
+			getNativeScriptGlobals().events.notify(args);
+
+			if (args.cancel) {
+				return;
+			}
+
+			view.notify(args);
+
+			if (!args.cancel) {
+				this.setEnabled(false);
+
+				dialog.getOnBackPressedDispatcher().onBackPressed();
+
+				this.setEnabled(true);
+			}
+		},
+	});
+}
+
 interface TouchListener {
 	new (owner: View): android.view.View.OnTouchListener;
 }
@@ -121,13 +166,23 @@ function initializeDialogFragment() {
 	}
 
 	@NativeClass
-	class DialogImpl extends android.app.Dialog {
+	class DialogImpl extends androidx.appcompat.app.AppCompatDialog {
 		constructor(
 			public fragment: DialogFragmentImpl,
 			context: android.content.Context,
 			themeResId: number,
 		) {
 			super(context, themeResId);
+
+			if (SDK_VERSION >= 33 && OnBackPressedCallback) {
+				const callback = new OnBackPressedCallback(true);
+
+				callback['_dialog'] = new WeakRef(this);
+
+				// @ts-ignore
+
+				this.getOnBackPressedDispatcher().addCallback(this, callback);
+			}
 
 			return global.__native(this);
 		}
@@ -138,6 +193,10 @@ function initializeDialogFragment() {
 		}
 
 		public onBackPressed(): void {
+			if (SDK_VERSION >= 33) {
+				super.onBackPressed();
+				return;
+			}
 			const view = this.fragment.owner;
 			const args = <AndroidActivityBackPressedEventData>{
 				eventName: 'activityBackPressed',
@@ -1448,17 +1507,23 @@ export class View extends ViewCommon {
 		}
 	}
 
-	protected _drawBoxShadow(boxShadow: BoxShadow) {
+	protected _drawBoxShadow(boxShadows: BoxShadow[]) {
 		const nativeView = this.nativeViewProtected;
-		const config = {
-			shadowColor: boxShadow.color.android,
-			cornerRadius: Length.toDevicePixels(this.borderRadius as CoreTypes.LengthType, 0.0),
-			spreadRadius: boxShadow.spreadRadius,
-			blurRadius: boxShadow.blurRadius,
-			offsetX: boxShadow.offsetX,
-			offsetY: boxShadow.offsetY,
-		};
-		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+		const valueCount = 6;
+		const nativeArray: number[] = Array.create('int', boxShadows.length * valueCount);
+
+		for (let i = 0, length = boxShadows.length; i < length; i++) {
+			const boxShadow = boxShadows[i];
+			const nativeIndex = i * valueCount;
+
+			nativeArray[nativeIndex + 0] = boxShadow.color.android;
+			nativeArray[nativeIndex + 1] = boxShadow.spreadRadius;
+			nativeArray[nativeIndex + 2] = boxShadow.blurRadius;
+			nativeArray[nativeIndex + 3] = boxShadow.offsetX;
+			nativeArray[nativeIndex + 4] = boxShadow.offsetY;
+			nativeArray[nativeIndex + 5] = boxShadow.inset ? 1 : 0;
+		}
+		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, nativeArray);
 	}
 
 	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
@@ -1507,15 +1572,15 @@ export class View extends ViewCommon {
 		// prettier-ignore
 		const onlyColor = !background.hasBorderWidth()
 			&& !background.hasBorderRadius()
-			&& !background.hasBoxShadow()
+			&& !background.hasBoxShadows()
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
 
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
 
-		if (background.hasBoxShadow()) {
-			this._drawBoxShadow(background.getBoxShadow());
+		if (background.hasBoxShadows()) {
+			this._drawBoxShadow(background.getBoxShadows());
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
