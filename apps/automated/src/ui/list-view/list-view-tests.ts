@@ -370,9 +370,9 @@ export class ListViewTest extends UITest<ListView> {
 
 	public test_loadMoreItems_raised_when_showing_few_items() {
 		this.setUp();
-		var listView = this.testView;
+		const listView = this.testView;
 
-		var loadMoreItemsCount = 0;
+		let loadMoreItemsCount = 0;
 		listView.items = FEW_ITEMS;
 		listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 		// >> article-loadmoreitems-event

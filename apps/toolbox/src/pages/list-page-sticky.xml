@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="false">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" actionBarHidden="false" androidOverflowEdge="bottom">
     <Page.actionBar>
         <ActionBar>
             <Label text="Components" class="header"/>

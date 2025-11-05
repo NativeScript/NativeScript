@@ -9,8 +9,8 @@ import { StackLayout } from '../layouts/stack-layout';
 import { ProxyViewContainer } from '../proxy-view-container';
 import { LayoutBase } from '../layouts/layout-base';
 import { profile } from '../../profiling';
+import { Trace } from '../../trace';
 import { Builder } from '../builder';
-import { Template } from '../core/view';
 import { Label } from '../label';
 
 export * from './list-view-common';
@@ -19,6 +19,8 @@ const ITEMLOADING = ListViewBase.itemLoadingEvent;
 const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
 const SEARCHCHANGE = ListViewBase.searchChangeEvent;
+const STICKY_HEADER_Z_INDEX = 1000;
+const SEARCH_VIEW_Z_INDEX = 2000;
 
 // View type constants for sectioned lists
 const ITEM_VIEW_TYPE = 0;
@@ -248,7 +250,9 @@ export class ListView extends ListViewBase {
 			try {
 				adapter.notifyDataSetChanged();
 			} catch (error) {
-				console.log('Error refreshing adapter, recreating:', error);
+				if (Trace.isEnabled()) {
+					Trace.error('Error refreshing adapter, recreating: ' + error);
+				}
 				nativeView.setAdapter(new ListViewAdapterClass(this));
 			}
 		}
@@ -401,7 +405,7 @@ export class ListView extends ListViewBase {
 
 			// Position sticky header with proper offset using native positioning
 			if (this._stickyHeaderView.nativeViewProtected) {
-				this._stickyHeaderView.nativeViewProtected.setZ(1000);
+				this._stickyHeaderView.nativeViewProtected.setZ(STICKY_HEADER_Z_INDEX);
 
 				// Use a timeout to ensure search view is measured first
 				setTimeout(() => {
@@ -421,7 +425,7 @@ export class ListView extends ListViewBase {
 		} else {
 			// No search view - position at top
 			if (this._stickyHeaderView.nativeViewProtected) {
-				this._stickyHeaderView.nativeViewProtected.setZ(1000);
+				this._stickyHeaderView.nativeViewProtected.setZ(STICKY_HEADER_Z_INDEX);
 				this._stickyHeaderView.nativeViewProtected.setTranslationY(0);
 			}
 		}
@@ -452,32 +456,33 @@ export class ListView extends ListViewBase {
 		// Request layout to ensure proper measurement
 		this._stickyHeaderView.requestLayout();
 
-		// Then measure and adjust padding if needed
-		setTimeout(() => {
-			if (this._stickyHeaderView) {
-				// Get the actual measured height from the native view
-				const nativeView = this._stickyHeaderView.nativeViewProtected;
-				if (nativeView && nativeView.getMeasuredHeight() > 0) {
-					const measuredHeaderHeight = nativeView.getMeasuredHeight();
-					let finalSearchHeight = searchViewHeight;
-
-					// Re-measure search view if needed
-					if (this.showSearch && this._searchView && (this._searchView as any)._wrapper) {
-						const searchWrapper = (this._searchView as any)._wrapper;
-						if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
-							finalSearchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
+		// Then measure and adjust padding if needed using a layout listener for determinism
+		const stickyHeaderNativeView = this._stickyHeaderView && this._stickyHeaderView.nativeViewProtected;
+		if (stickyHeaderNativeView) {
+			const layoutListener = new android.view.View.OnLayoutChangeListener({
+				onLayoutChange: (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) => {
+					if (v.getMeasuredHeight() > 0) {
+						const measuredHeaderHeight = v.getMeasuredHeight();
+						let finalSearchHeight = searchViewHeight;
+						// Re-measure search view if needed
+						if (this.showSearch && this._searchView && (this._searchView as any)._wrapper) {
+							const searchWrapper = (this._searchView as any)._wrapper;
+							if (searchWrapper.nativeViewProtected && searchWrapper.nativeViewProtected.getMeasuredHeight() > 0) {
+								finalSearchHeight = searchWrapper.nativeViewProtected.getMeasuredHeight();
+							}
 						}
+						// Calculate final padding: search height + sticky header height + small buffer
+						const totalPaddingHeight = finalSearchHeight + measuredHeaderHeight + 4;
+						this._stickyHeaderHeight = measuredHeaderHeight;
+						this.nativeViewProtected.setPadding(0, totalPaddingHeight, 0, 0);
+						this.scrollToIndex(0);
+						// Remove the listener after first valid layout
+						v.removeOnLayoutChangeListener(layoutListener);
 					}
-
-					// Calculate final padding: search height + sticky header height + small buffer
-					const totalPaddingHeight = finalSearchHeight + measuredHeaderHeight + 4;
-					this._stickyHeaderHeight = measuredHeaderHeight;
-					this.nativeViewProtected.setPadding(0, totalPaddingHeight, 0, 0);
-
-					this.scrollToIndex(0);
-				}
-			}
-		}, 150); // Slightly longer delay for more reliable measurement after positioning
+				},
+			});
+			stickyHeaderNativeView.addOnLayoutChangeListener(layoutListener);
+		}
 	}
 
 	private _setupScrollListener() {
@@ -754,7 +759,7 @@ export class ListView extends ListViewBase {
 
 		// Ensure search view appears above everything else
 		if (searchViewWrapper.nativeViewProtected) {
-			searchViewWrapper.nativeViewProtected.setZ(2000); // Higher than sticky header (1000)
+			searchViewWrapper.nativeViewProtected.setZ(SEARCH_VIEW_Z_INDEX);
 		}
 
 		// Store reference for cleanup
