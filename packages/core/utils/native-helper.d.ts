@@ -107,10 +107,27 @@ export const android: {
 	 * Hides the soft input method, usually a soft keyboard.
 	 */
 	dismissSoftInput: (nativeView?: android.view.View) => void;
-	setStatusBarColor: (lightColor: Color | null = null, darkColor: Color | null = null) => void;
-	setNavigationBarColor: (lightColor: Color | null = null, darkColor: Color | null = null) => void;
-	setDarkModeHandler: (handler: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean) => void;
-	enableEdgeToEdge: (
+	/**
+	 * Sets the dark mode handler for the application.
+	 * @param options Options to set dark mode handler.
+	 */
+	setDarkModeHandler(options?: { activity?: androidx.appcompat.app.AppCompatActivity; handler: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean }): void;
+	/**
+	 * Sets the navigation bar color for the application.
+	 * @param options Options to set navigation bar color.
+	 */
+	setNavigationBarColor(options?: { activity?: androidx.appcompat.app.AppCompatActivity; lightColor?: Color; darkColor?: Color }): void;
+	/**
+	 * Sets the status bar color for the application.
+	 * @param options Options to set status bar color.
+	 */
+	setStatusBarColor(options?: { activity?: androidx.appcompat.app.AppCompatActivity; lightColor?: Color; darkColor?: Color }): void;
+	/**
+	 * Enables edge-to-edge navigation for the provided activity.
+	 * @param activity The activity to enable edge-to-edge navigation for.
+	 * @param options Optional configuration for status and navigation bar colors.
+	 */
+	enableEdgeToEdge(
 		activity: androidx.appcompat.app.AppCompatActivity,
 		options?: {
 			statusBarLightColor?: Color;
@@ -119,7 +136,7 @@ export const android: {
 			navigationBarDarkColor?: Color;
 			handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
 		},
-	) => void;
+	): void;
 };
 
 /**

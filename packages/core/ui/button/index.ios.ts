@@ -5,7 +5,6 @@ import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProp
 import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 import { CoreTypes } from '../../core-types';
-import { Color } from '../../color';
 
 export * from './button-common';
 

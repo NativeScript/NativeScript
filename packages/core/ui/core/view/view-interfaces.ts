@@ -60,6 +60,9 @@ export interface Size {
 	height: number;
 }
 
+/**
+ * Defines the inset values for AndroidOverflowInsetData.
+ */
 export interface Inset {
 	top: number;
 	right: number;

@@ -1,7 +1,7 @@
 import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, statusBarStyleProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
 import { Length } from '../../styling/length-shared';
 import { layout } from '../../../utils';
@@ -72,6 +72,51 @@ interface DialogOptions {
 	dismissCallback: () => void;
 }
 
+let OnBackPressedCallback;
+
+if (SDK_VERSION >= 33) {
+	OnBackPressedCallback = (androidx.activity.OnBackPressedCallback as any).extend({
+		handleOnBackPressed() {
+			console.log('OnBackPressedCallback handleOnBackPressed called');
+			const dialog = this['_dialog']?.get();
+
+			if (!dialog) {
+				// disable the callback and call super to avoid infinite loop
+
+				this.setEnabled(false);
+
+				return;
+			}
+
+			const view = dialog.fragment.owner;
+
+			const args: AndroidActivityBackPressedEventData = {
+				eventName: 'activityBackPressed',
+				object: view,
+				activity: view._context,
+				cancel: false,
+			};
+
+			// Fist fire application.android global event
+			getNativeScriptGlobals().events.notify(args);
+
+			if (args.cancel) {
+				return;
+			}
+
+			view.notify(args);
+
+			if (!args.cancel) {
+				this.setEnabled(false);
+
+				dialog.getOnBackPressedDispatcher().onBackPressed();
+
+				this.setEnabled(true);
+			}
+		},
+	});
+}
+
 interface TouchListener {
 	new (owner: View): android.view.View.OnTouchListener;
 }
@@ -121,13 +166,23 @@ function initializeDialogFragment() {
 	}
 
 	@NativeClass
-	class DialogImpl extends android.app.Dialog {
+	class DialogImpl extends androidx.appcompat.app.AppCompatDialog {
 		constructor(
 			public fragment: DialogFragmentImpl,
 			context: android.content.Context,
 			themeResId: number,
 		) {
 			super(context, themeResId);
+
+			if (SDK_VERSION >= 33 && OnBackPressedCallback) {
+				const callback = new OnBackPressedCallback(true);
+
+				callback['_dialog'] = new WeakRef(this);
+
+				// @ts-ignore
+
+				this.getOnBackPressedDispatcher().addCallback(this, callback);
+			}
 
 			return global.__native(this);
 		}
@@ -138,6 +193,10 @@ function initializeDialogFragment() {
 		}
 
 		public onBackPressed(): void {
+			if (SDK_VERSION >= 33) {
+				super.onBackPressed();
+				return;
+			}
 			const view = this.fragment.owner;
 			const args = <AndroidActivityBackPressedEventData>{
 				eventName: 'activityBackPressed',
@@ -329,20 +388,21 @@ const INSET_TOP_CONSUMED = 20;
 const INSET_RIGHT_CONSUMED = 24;
 const INSET_BOTTOM_CONSUMED = 28;
 
+const OverflowEdgeIgnore = -1;
 const OverflowEdgeNone: number = 0;
-const OverflowEdgeLeft: number = 1;
-const OverflowEdgeTop: number = 1 << 1;
-const OverflowEdgeRight: number = 1 << 2;
-const OverflowEdgeBottom: number = 1 << 3;
-const OverflowEdgeDontApply: number = 1 << 4;
-const OverflowEdgeLeftDontConsume: number = 1 << 5;
-const OverflowEdgeTopDontConsume: number = 1 << 6;
-const OverflowEdgeRightDontConsume: number = 1 << 7;
-const OverflowEdgeBottomDontConsume: number = 1 << 8;
-const OverflowEdgeAllButLeft: number = 1 << 9;
-const OverflowEdgeAllButTop: number = 1 << 10;
-const OverflowEdgeAllButRight: number = 1 << 11;
-const OverflowEdgeAllButBottom: number = 1 << 12;
+const OverflowEdgeLeft: number = 1 << 1;
+const OverflowEdgeTop: number = 1 << 2;
+const OverflowEdgeRight: number = 1 << 3;
+const OverflowEdgeBottom: number = 1 << 4;
+const OverflowEdgeDontApply: number = 1 << 5;
+const OverflowEdgeLeftDontConsume: number = 1 << 6;
+const OverflowEdgeTopDontConsume: number = 1 << 7;
+const OverflowEdgeRightDontConsume: number = 1 << 8;
+const OverflowEdgeBottomDontConsume: number = 1 << 9;
+const OverflowEdgeAllButLeft: number = 1 << 10;
+const OverflowEdgeAllButTop: number = 1 << 11;
+const OverflowEdgeAllButRight: number = 1 << 12;
+const OverflowEdgeAllButBottom: number = 1 << 13;
 
 class Inset {
 	private view: DataView;
@@ -578,132 +638,33 @@ export class View extends ViewCommon {
 		return manager;
 	}
 
-	protected _defaultOverflowEdge: number = OverflowEdgeNone;
-	protected _defaultOverflowEdgeValue: string = 'none';
-	// @ts-ignore
-	public set androidOverflowEdge(value: string) {
-		if (typeof value !== 'string') {
+	[androidOverflowEdgeProperty.setNative](value: CoreTypes.AndroidOverflow) {
+		const nativeView = this.nativeViewProtected as any;
+		if (typeof value !== 'string' || nativeView === null || nativeView == undefined) {
 			return;
 		}
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView && nativeView.setOverflowEdge) {
-			if (value === 'none') {
+
+		if (!('setOverflowEdge' in nativeView)) {
+			return;
+		}
+
+		switch (value) {
+			case 'none':
 				nativeView.setOverflowEdge(OverflowEdgeNone);
-			} else {
-				const newValue = parseEdges(value);
-				if (newValue !== null) {
-					nativeView.setOverflowEdge(newValue);
-				}
-			}
-		} else {
-			const edge = parseEdges(value);
+				break;
+			case 'ignore':
+				nativeView.setOverflowEdge(OverflowEdgeIgnore);
+				break;
+			default:
+				{
+					const edge = parseEdges(value);
 
-			if (edge === null) {
-				return;
-			}
-			this._defaultOverflowEdgeValue = value;
-			this._defaultOverflowEdge = edge;
-		}
-	}
-
-	public get androidOverflowEdge() {
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView && nativeView.getOverflowEdge) {
-			const overflowEdge = nativeView.getOverflowEdge();
-			switch (overflowEdge) {
-				case OverflowEdgeNone:
-					return 'none';
-				case OverflowEdgeLeft:
-					return 'left';
-				case OverflowEdgeTop:
-					return 'top';
-				case OverflowEdgeRight:
-					return 'right';
-				case OverflowEdgeBottom:
-					return 'bottom';
-				case OverflowEdgeDontApply:
-					return 'dont-apply';
-				case OverflowEdgeLeftDontConsume:
-					return 'left-dont-consume';
-				case OverflowEdgeTopDontConsume:
-					return 'top-dont-consume';
-				case OverflowEdgeRightDontConsume:
-					return 'right-dont-consume';
-				case OverflowEdgeBottomDontConsume:
-					return 'bottom-dont-consume';
-				case OverflowEdgeAllButLeft:
-					return 'all-but-left';
-				case OverflowEdgeAllButTop:
-					return 'all-but-top';
-				case OverflowEdgeAllButRight:
-					return 'all-but-right';
-				case OverflowEdgeAllButBottom:
-					return 'all-but-bottom';
-				default:
-					{
-						let value = '';
-						const overflowLeftConsume = (overflowEdge & OverflowEdgeLeft) == OverflowEdgeLeft;
-						const overflowTopConsume = (overflowEdge & OverflowEdgeTop) == OverflowEdgeTop;
-						const overflowRightConsume = (overflowEdge & OverflowEdgeRight) == OverflowEdgeRight;
-						const overflowBottomConsume = (overflowEdge & OverflowEdgeBottom) == OverflowEdgeBottom;
-
-						const overflowLeft = (overflowEdge & OverflowEdgeLeftDontConsume) == OverflowEdgeLeftDontConsume;
-						const overflowTop = (overflowEdge & OverflowEdgeTopDontConsume) == OverflowEdgeTopDontConsume;
-						const overflowRight = (overflowEdge & OverflowEdgeRightDontConsume) == OverflowEdgeRightDontConsume;
-						const overflowBottom = (overflowEdge & OverflowEdgeBottomDontConsume) == OverflowEdgeBottomDontConsume;
-
-						if (overflowLeftConsume) {
-							value += 'left';
-						}
-						if (overflowTopConsume) {
-							if (value.length > 0) {
-								value += ',';
-							}
-							value += 'top';
-						}
-						if (overflowRightConsume) {
-							if (value.length > 0) {
-								value += ',';
-							}
-							value += 'right';
-						}
-						if (overflowBottomConsume) {
-							if (value.length > 0) {
-								value += ',';
-							}
-							value += 'bottom';
-						}
-
-						if (overflowLeft) {
-							value += 'left-dont-consume';
-						}
-						if (overflowTop) {
-							if (value.length > 0) {
-								value += ',';
-							}
-							value += 'top-dont-consume';
-						}
-						if (overflowRight) {
-							if (value.length > 0) {
-								value += ',';
-							}
-							value += 'right-dont-consume';
-						}
-						if (overflowBottom) {
-							if (value.length > 0) {
-								value += ',';
-							}
-							value += 'bottom-dont-consume';
-						}
+					if (edge != null) {
+						nativeView.setOverflowEdge(edge);
 					}
-					break;
-			}
-		} else {
-			if (this._defaultOverflowEdgeValue) {
-				return this._defaultOverflowEdgeValue;
-			}
+				}
+				break;
 		}
-		return 'none';
 	}
 
 	@profile
@@ -758,13 +719,6 @@ export class View extends ViewCommon {
 
 		if (!this.insetListenerIsSet && this.needsInsetListener) {
 			this.setInsetListener();
-		}
-
-		const nativeView = this.nativeViewProtected as any;
-		if (typeof this._defaultOverflowEdge === 'number') {
-			if (nativeView && nativeView.setOverflowEdge) {
-				nativeView.setOverflowEdge(this._defaultOverflowEdge);
-			}
 		}
 	}
 
@@ -1553,17 +1507,23 @@ export class View extends ViewCommon {
 		}
 	}
 
-	protected _drawBoxShadow(boxShadow: BoxShadow) {
+	protected _drawBoxShadow(boxShadows: BoxShadow[]) {
 		const nativeView = this.nativeViewProtected;
-		const config = {
-			shadowColor: boxShadow.color.android,
-			cornerRadius: Length.toDevicePixels(this.borderRadius as CoreTypes.LengthType, 0.0),
-			spreadRadius: boxShadow.spreadRadius,
-			blurRadius: boxShadow.blurRadius,
-			offsetX: boxShadow.offsetX,
-			offsetY: boxShadow.offsetY,
-		};
-		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+		const valueCount = 6;
+		const nativeArray: number[] = Array.create('int', boxShadows.length * valueCount);
+
+		for (let i = 0, length = boxShadows.length; i < length; i++) {
+			const boxShadow = boxShadows[i];
+			const nativeIndex = i * valueCount;
+
+			nativeArray[nativeIndex + 0] = boxShadow.color.android;
+			nativeArray[nativeIndex + 1] = boxShadow.spreadRadius;
+			nativeArray[nativeIndex + 2] = boxShadow.blurRadius;
+			nativeArray[nativeIndex + 3] = boxShadow.offsetX;
+			nativeArray[nativeIndex + 4] = boxShadow.offsetY;
+			nativeArray[nativeIndex + 5] = boxShadow.inset ? 1 : 0;
+		}
+		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, nativeArray);
 	}
 
 	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
@@ -1612,15 +1572,15 @@ export class View extends ViewCommon {
 		// prettier-ignore
 		const onlyColor = !background.hasBorderWidth()
 			&& !background.hasBorderRadius()
-			&& !background.hasBoxShadow()
+			&& !background.hasBoxShadows()
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
 
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
 
-		if (background.hasBoxShadow()) {
-			this._drawBoxShadow(background.getBoxShadow());
+		if (background.hasBoxShadows()) {
+			this._drawBoxShadow(background.getBoxShadows());
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
@@ -1654,113 +1614,43 @@ export class View extends ViewCommon {
 	}
 }
 
-function parseEdges(edges: string): number | null {
-	const values = edges.trim().split(',');
-	let newValue = -1;
-	for (let value of values) {
-		const trimmedValue = value.trim();
-		switch (trimmedValue) {
-			case 'none':
-				if (newValue === -1) {
-					newValue = OverflowEdgeNone;
-				} else {
-					newValue |= OverflowEdgeNone;
-				}
-				break;
-			case 'left':
-				if (newValue === -1) {
-					newValue = OverflowEdgeLeft;
-				} else {
-					newValue |= OverflowEdgeLeft;
-				}
-				break;
-			case 'top':
-				if (newValue === -1) {
-					newValue = OverflowEdgeTop;
-				} else {
-					newValue |= OverflowEdgeTop;
-				}
-				break;
-			case 'right':
-				if (newValue === -1) {
-					newValue = OverflowEdgeRight;
-				} else {
-					newValue |= OverflowEdgeRight;
-				}
-				break;
-			case 'bottom':
-				if (newValue === -1) {
-					newValue = OverflowEdgeBottom;
-				} else {
-					newValue |= OverflowEdgeBottom;
-				}
-				break;
-			case 'dont-apply':
-				newValue = OverflowEdgeDontApply;
-				break;
-			case 'left-dont-consume':
-				if (newValue === -1) {
-					newValue = OverflowEdgeLeftDontConsume;
-				} else {
-					newValue |= OverflowEdgeLeftDontConsume;
-				}
-				break;
-			case 'top-dont-consume':
-				if (newValue === -1) {
-					newValue = OverflowEdgeTopDontConsume;
-				} else {
-					newValue |= OverflowEdgeTopDontConsume;
-				}
-				break;
-			case 'right-dont-consume':
-				if (newValue === -1) {
-					newValue = OverflowEdgeRightDontConsume;
-				} else {
-					newValue |= OverflowEdgeRightDontConsume;
-				}
-				break;
-			case 'bottom-dont-consume':
-				if (newValue === -1) {
-					newValue = OverflowEdgeBottomDontConsume;
-				} else {
-					newValue |= OverflowEdgeBottomDontConsume;
-				}
-			case 'all-but-left':
-				if (newValue === -1) {
-					newValue = OverflowEdgeAllButLeft;
-				} else {
-					newValue |= OverflowEdgeAllButLeft;
-				}
-			case 'all-but-top':
-				if (newValue === -1) {
-					newValue = OverflowEdgeAllButTop;
-				} else {
-					newValue |= OverflowEdgeAllButTop;
-				}
-			case 'all-but-right':
-				if (newValue === -1) {
-					newValue = OverflowEdgeAllButRight;
-				} else {
-					newValue |= OverflowEdgeAllButRight;
-				}
-			case 'all-but-bottom':
-				if (newValue === -1) {
-					newValue = OverflowEdgeAllButBottom;
-				} else {
-					newValue |= OverflowEdgeAllButBottom;
-				}
-				break;
-		}
-	}
+const edgeMap: Record<string, number> = {
+	none: OverflowEdgeNone,
+	left: OverflowEdgeLeft,
+	top: OverflowEdgeTop,
+	right: OverflowEdgeRight,
+	bottom: OverflowEdgeBottom,
+	'dont-apply': OverflowEdgeDontApply,
+	'left-dont-consume': OverflowEdgeLeftDontConsume,
+	'top-dont-consume': OverflowEdgeTopDontConsume,
+	'right-dont-consume': OverflowEdgeRightDontConsume,
+	'bottom-dont-consume': OverflowEdgeBottomDontConsume,
+	'all-but-left': OverflowEdgeAllButLeft,
+	'all-but-top': OverflowEdgeAllButTop,
+	'all-but-right': OverflowEdgeAllButRight,
+	'all-but-bottom': OverflowEdgeAllButBottom,
+};
 
-	if (newValue === -1) {
-		return null;
+function parseEdges(edges: string): number | null {
+	let result = 0;
+	const values = edges.split(',');
+	for (const raw of values) {
+		const value = edgeMap[raw.trim()];
+		if (value === undefined) continue;
+		// dont-apply overrides everything else
+		if (value === OverflowEdgeDontApply) return value;
+		result |= value;
 	}
-	return newValue;
+	return result === 0 ? null : result;
 }
 
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
+
+	constructor() {
+		super();
+		this.androidOverflowEdge = 'none';
+	}
 }
 
 export class CustomLayoutView extends ContainerView {

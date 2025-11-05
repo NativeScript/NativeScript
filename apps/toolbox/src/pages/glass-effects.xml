@@ -1,27 +1,57 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
     <Page.actionBar>
-        <ActionBar title="Glass Effects" class="action-bar">
+        <ActionBar title="Glass Effects" color="white">
         </ActionBar>
     </Page.actionBar>
 
-    <GridLayout>
+    <GridLayout backgroundColor="#000">
+        <!-- test color changes over light/dark backgrounds for text -->
+        <!-- <ContentView backgroundColor="#000" height="300" verticalAlignment="bottom"/> -->
+        <Image src="res://bg1.jpg" stretch="aspectFill" iosOverflowSafeArea="true" />
 
-        <Image src="https://cdn.wallpapersafari.com/89/64/c6MnRY.jpg" stretch="aspectFill" iosOverflowSafeArea="true" />
+        <ScrollView backgroundColor="transparent">
+            <StackLayout>
+                <GridLayout rows="*,auto,auto,auto,auto,auto,*">
 
-        <GridLayout rows="*,auto,auto,auto,*">
+                    <Button row="2" text="Toggle Glass" tap="{{toggleGlassEffect}}" horizontalAlignment="center" verticalAlignment="middle" class="c-white font-weight-bold m-y-20 p-4" fontSize="22" borderRadius="32" width="300" height="100" touchAnimation="{{touchAnimation}}" iosGlassEffect="{{currentEffect}}"/>
 
-            <GridLayout row="1" width="300" height="150" iosGlassEffect="regular" horizontalAlignment="center" verticalAlignment="middle">
-                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Regular" />
-            </GridLayout>
+                    <LiquidGlass row="3" width="300" height="100" borderRadius="32" iosGlassEffect="{{iosGlassEffectInteractive}}" >
 
-            <GridLayout row="2" width="300" height="150" iosGlassEffect="clear" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10">
-                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Clear" />
-            </GridLayout>
+                        <Label text="Glass Interactive" fontSize="22" class="font-weight-bold text-center c-white" />
 
-            <GridLayout row="3" width="300" height="150" iosGlassEffect="{{iosGlassEffectInteractive}}" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10">
-                <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Interactive" />
-            </GridLayout>
-        </GridLayout>
+                    </LiquidGlass>
+
+                    
+                    <LiquidGlassContainer row="4" tap="{{toggleMergeGlass}}" horizontalAlignment="left" verticalAlignment="middle" class="m-t-20" width="300" height="100" columns="*">
+                        <LiquidGlass id="glass1" loaded="{{loadedGlass}}" borderRadius="50" width="100" height="100">
+                            <Label id="share" text="Share" fontSize="22" class="font-weight-bold text-center" width="100" height="100" loaded="{{loadedGlassLabels}}" />
+                        </LiquidGlass>
+                        <LiquidGlass id="glass2" loaded="{{loadedGlass}}" borderRadius="50" width="100" height="100">
+                            <Label id="like" text="Like" fontSize="22" class="font-weight-bold text-center" loaded="{{loadedGlassLabels}}" />
+                        </LiquidGlass>
+                    </LiquidGlassContainer>
+                </GridLayout>
+
+                <GridLayout rows="*,auto,auto,auto,*" class="m-t-10">
+                    <GridLayout row="1" width="300" height="100" iosGlassEffect="regular" horizontalAlignment="center" verticalAlignment="middle" borderRadius="32">
+                        <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Regular" />
+                    </GridLayout>
+
+                    <GridLayout row="2" width="300" height="100" iosGlassEffect="clear" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10" borderRadius="32">
+                        <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Clear" />
+                    </GridLayout>
+
+                    <GridLayout row="3" width="300" height="100" iosGlassEffect="{{iosGlassEffectInteractive}}" horizontalAlignment="center" verticalAlignment="middle" class="m-t-10" borderRadius="32">
+                        <Label class="text-center c-white" fontWeight="bold" fontSize="18" text="Glass Effects Interactive" />
+                    </GridLayout>
+                </GridLayout>
+
+                <!-- make scrollable to view glass on scroll -->
+                <ContentView height="500"/>
+            </StackLayout>
+
+        </ScrollView>
+
 
     </GridLayout>
 </Page>

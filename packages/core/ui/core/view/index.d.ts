@@ -386,7 +386,7 @@ export abstract class View extends ViewCommon {
 	 *
 	 * @nsProperty
 	 */
-	boxShadow: string | ShadowCSSValues;
+	boxShadow: string | ShadowCSSValues[];
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.
