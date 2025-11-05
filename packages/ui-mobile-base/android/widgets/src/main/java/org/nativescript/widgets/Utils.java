@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -116,7 +117,8 @@ public class Utils {
 			bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
 		}
 		Canvas canvas = new Canvas(bitmap);
-		if (!ViewCompat.isLaidOut(view)) {
+		// ViewCompat.isLaidOut is deprecated; View#isLaidOut is available since API 19
+		if (!view.isLaidOut()) {
 			view.layout(0, 0, width, height);
 		}
 		view.draw(canvas);
