@@ -3,10 +3,14 @@
  */
 
 // imported for definition purposes only
-import { makeValidator, makeParser } from '../ui/core/properties';
-import { CubicBezierAnimationCurve } from '../ui/animation/animation-interfaces';
+import { makeValidator, makeParser } from './validators';
+import { CubicBezierAnimationCurve } from './animation-types';
 
 export namespace CoreTypes {
+	type AndroidOverflowSingle = 'ignore' | 'none' | 'dont-apply';
+	type AndroidOverflowMultiple = 'left' | 'right' | 'top' | 'bottom' | 'left-dont-consume' | 'top-dont-consume' | 'right-dont-consume' | 'bottom-dont-consume' | 'all-but-left' | 'all-but-top' | 'all-but-right' | 'all-but-bottom';
+	type AndroidOverflowStacked = AndroidOverflowSingle | `${AndroidOverflowSingle},${AndroidOverflowMultiple}`;
+	export type AndroidOverflow = AndroidOverflowSingle | AndroidOverflowStacked;
 	export type CSSWideKeywords = 'initial' | 'inherit' | 'unset' | 'revert';
 
 	/**
@@ -40,11 +44,12 @@ export namespace CoreTypes {
 		unit: 'px',
 	};
 
-	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
+	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'decimal' | 'url' | 'email' | 'integer';
 	export namespace KeyboardType {
 		export const datetime = 'datetime';
 		export const phone = 'phone';
 		export const number = 'number';
+		export const decimal = 'decimal';
 		export const url = 'url';
 		export const email = 'email';
 		export const integer = 'integer';
@@ -146,7 +151,7 @@ export namespace CoreTypes {
 		export const sup = 'sup';
 		export const sub = 'sub';
 		export const baseline = 'baseline';
-		export const isValid = makeValidator<VerticalAlignmentTextType>(top, middle, bottom, stretch, texttop, textbottom, sup, sub, baseline);
+		export const isValid = makeValidator<CoreTypes.VerticalAlignmentTextType>(top, middle, bottom, stretch, texttop, textbottom, sup, sub, baseline);
 		export const parse = (value: string) => (value.toLowerCase() === 'center' ? middle : parseStrict(value));
 		const parseStrict = makeParser<CoreTypes.VerticalAlignmentTextType>(isValid);
 	}

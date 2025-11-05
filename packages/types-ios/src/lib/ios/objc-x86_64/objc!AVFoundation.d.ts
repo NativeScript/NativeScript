@@ -3005,6 +3005,31 @@ declare const enum AVCaptionUnitsType {
 declare var AVCaptionUseDropFrameTimeCodeKey: string;
 
 /**
+ * @since 26.0
+ */
+declare var AVCaptureAspectRatio16x9: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureAspectRatio1x1: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureAspectRatio3x4: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureAspectRatio4x3: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureAspectRatio9x16: string;
+
+/**
  * @since 4.0
  */
 declare class AVCaptureAudioChannel extends NSObject {
@@ -3153,7 +3178,9 @@ declare const enum AVCaptureColorSpace {
 
 	HLG_BT2020 = 2,
 
-	AppleLog = 3
+	AppleLog = 3,
+
+	AppleLog2 = 4
 }
 
 /**
@@ -3626,6 +3653,10 @@ declare class AVCaptureDevice extends NSObject {
 	 */
 	readonly dualCameraSwitchOverVideoZoomFactor: number;
 
+	readonly dynamicAspectRatio: string;
+
+	readonly dynamicDimensions: CMVideoDimensions;
+
 	/**
 	 * @since 8.0
 	 */
@@ -3704,6 +3735,11 @@ declare class AVCaptureDevice extends NSObject {
 	 * @since 26.0
 	 */
 	readonly focusRectOfInterestSupported: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly followingExternalSyncDevice: boolean;
 
 	/**
 	 * @since 7.0
@@ -3807,6 +3843,16 @@ declare class AVCaptureDevice extends NSObject {
 	readonly minFocusRectOfInterestSize: CGSize;
 
 	/**
+	 * @since 26.0
+	 */
+	readonly minSupportedExternalSyncFrameDuration: CMTime;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly minSupportedLockedVideoFrameDuration: CMTime;
+
+	/**
 	 * @since 15.0
 	 */
 	readonly minimumFocusDistance: number;
@@ -3844,6 +3890,8 @@ declare class AVCaptureDevice extends NSObject {
 	 * @since 17.0
 	 */
 	readonly reactionEffectsInProgress: NSArray<AVCaptureReactionEffectState>;
+
+	readonly smartFramingMonitor: AVCaptureSmartFramingMonitor;
 
 	/**
 	 * @since 7.0
@@ -3903,6 +3951,11 @@ declare class AVCaptureDevice extends NSObject {
 	torchMode: AVCaptureTorchMode;
 
 	readonly uniqueID: string;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly videoFrameDurationLocked: boolean;
 
 	/**
 	 * @since 8.0
@@ -4059,6 +4112,8 @@ declare class AVCaptureDevice extends NSObject {
 	 */
 	setCinematicVideoTrackingFocusWithDetectedObjectIDFocusMode(detectedObjectID: number, focusMode: AVCaptureCinematicVideoFocusMode): void;
 
+	setDynamicAspectRatioCompletionHandler(dynamicAspectRatio: string, handler: (p1: CMTime, p2: NSError) => void): void;
+
 	/**
 	 * @since 8.0
 	 */
@@ -4088,6 +4143,11 @@ declare class AVCaptureDevice extends NSObject {
 	 * @since 8.0
 	 */
 	setWhiteBalanceModeLockedWithDeviceWhiteBalanceGainsCompletionHandler(whiteBalanceGains: AVCaptureWhiteBalanceGains, handler: (p1: CMTime) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	setWhiteBalanceModeLockedWithDeviceWhiteBalanceTemperatureAndTintValuesCompletionHandler(whiteBalanceTemperatureAndTintValues: AVCaptureWhiteBalanceTemperatureAndTintValues, handler: (p1: CMTime) => void): void;
 
 	supportsAVCaptureSessionPreset(preset: string): boolean;
 
@@ -4247,6 +4307,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 	 */
 	readonly secondaryNativeResolutionZoomFactors: NSArray<number>;
 
+	readonly smartFramingSupported: boolean;
+
 	readonly spatialVideoCaptureSupported: boolean;
 
 	/**
@@ -4263,6 +4325,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 	 * @since 11.0
 	 */
 	readonly supportedDepthDataFormats: NSArray<AVCaptureDeviceFormat>;
+
+	readonly supportedDynamicAspectRatios: NSArray<string>;
 
 	/**
 	 * @since 16.0
@@ -4387,6 +4451,8 @@ declare class AVCaptureDeviceFormat extends NSObject {
 	 * @since 8.0
 	 */
 	isVideoStabilizationModeSupported(videoStabilizationMode: AVCaptureVideoStabilizationMode): boolean;
+
+	videoFieldOfViewForAspectRatioGeometricDistortionCorrected(aspectRatio: string, geometricDistortionCorrected: boolean): number;
 }
 
 /**
@@ -4403,6 +4469,16 @@ declare class AVCaptureDeviceInput extends AVCaptureInput {
 	/**
 	 * @since 26.0
 	 */
+	readonly activeExternalSyncVideoFrameDuration: CMTime;
+
+	/**
+	 * @since 26.0
+	 */
+	activeLockedVideoFrameDuration: CMTime;
+
+	/**
+	 * @since 26.0
+	 */
 	cinematicVideoCaptureEnabled: boolean;
 
 	/**
@@ -4411,6 +4487,21 @@ declare class AVCaptureDeviceInput extends AVCaptureInput {
 	readonly cinematicVideoCaptureSupported: boolean;
 
 	readonly device: AVCaptureDevice;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly externalSyncDevice: AVExternalSyncDevice;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly externalSyncSupported: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly lockedVideoFrameDurationSupported: boolean;
 
 	/**
 	 * @since 18.0
@@ -4444,6 +4535,11 @@ declare class AVCaptureDeviceInput extends AVCaptureInput {
 
 	constructor(o: { device: AVCaptureDevice; });
 
+	/**
+	 * @since 26.0
+	 */
+	followExternalSyncDeviceVideoFrameDurationDelegate(externalSyncDevice: AVExternalSyncDevice, frameDuration: CMTime, delegate: AVExternalSyncDeviceDelegate): void;
+
 	initWithDeviceError(device: AVCaptureDevice): this;
 
 	/**
@@ -4455,6 +4551,11 @@ declare class AVCaptureDeviceInput extends AVCaptureInput {
 	 * @since 13.0
 	 */
 	portsWithMediaTypeSourceDeviceTypeSourceDevicePosition(mediaType: string, sourceDeviceType: string, sourceDevicePosition: AVCaptureDevicePosition): NSArray<AVCaptureInputPort>;
+
+	/**
+	 * @since 26.0
+	 */
+	unfollowExternalSyncDevice(): void;
 }
 
 /**
@@ -4598,6 +4699,52 @@ declare const enum AVCaptureExposureMode {
 declare var AVCaptureExposureTargetBiasCurrent: number;
 
 /**
+ * @since 26.0
+ */
+declare class AVCaptureExternalDisplayConfiguration extends NSObject {
+
+	static alloc(): AVCaptureExternalDisplayConfiguration; // inherited from NSObject
+
+	static new(): AVCaptureExternalDisplayConfiguration; // inherited from NSObject
+
+	bypassColorSpaceConversion: boolean;
+
+	preferredResolution: CMVideoDimensions;
+
+	shouldMatchFrameRate: boolean;
+}
+
+/**
+ * @since 26.0
+ */
+declare class AVCaptureExternalDisplayConfigurator extends NSObject {
+
+	static alloc(): AVCaptureExternalDisplayConfigurator; // inherited from NSObject
+
+	static new(): AVCaptureExternalDisplayConfigurator; // inherited from NSObject
+
+	readonly active: boolean;
+
+	readonly activeExternalDisplayFrameRate: number;
+
+	readonly device: AVCaptureDevice;
+
+	readonly previewLayer: CALayer;
+
+	static readonly shouldMatchFrameRateSupported: boolean;
+
+	static readonly supportsBypassingColorSpaceConversion: boolean;
+
+	static readonly supportsPreferredResolution: boolean;
+
+	constructor(o: { device: AVCaptureDevice; previewLayer: CALayer; configuration: AVCaptureExternalDisplayConfiguration; });
+
+	initWithDevicePreviewLayerConfiguration(device: AVCaptureDevice, previewLayer: CALayer, configuration: AVCaptureExternalDisplayConfiguration): this;
+
+	stop(): void;
+}
+
+/**
  * @since 4.0
  */
 declare class AVCaptureFileOutput extends AVCaptureOutput {
@@ -4691,6 +4838,20 @@ declare const enum AVCaptureFocusMode {
 	AutoFocus = 1,
 
 	ContinuousAutoFocus = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare class AVCaptureFraming extends NSObject {
+
+	static alloc(): AVCaptureFraming; // inherited from NSObject
+
+	static new(): AVCaptureFraming; // inherited from NSObject
+
+	readonly aspectRatio: string;
+
+	readonly zoomFactor: number;
 }
 
 /**
@@ -5351,6 +5512,16 @@ declare class AVCapturePhotoOutput extends AVCaptureOutput {
 	 * @since 11.0
 	 */
 	readonly cameraCalibrationDataDeliverySupported: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	cameraSensorOrientationCompensationEnabled: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly cameraSensorOrientationCompensationSupported: boolean;
 
 	/**
 	 * @since 17.0
@@ -6389,6 +6560,28 @@ declare class AVCaptureSlider extends AVCaptureControl {
 /**
  * @since 26.0
  */
+declare class AVCaptureSmartFramingMonitor extends NSObject {
+
+	static alloc(): AVCaptureSmartFramingMonitor; // inherited from NSObject
+
+	static new(): AVCaptureSmartFramingMonitor; // inherited from NSObject
+
+	enabledFramings: NSArray<AVCaptureFraming>;
+
+	readonly monitoring: boolean;
+
+	readonly recommendedFraming: AVCaptureFraming;
+
+	readonly supportedFramings: NSArray<AVCaptureFraming>;
+
+	startMonitoringWithError(): boolean;
+
+	stopMonitoring(): void;
+}
+
+/**
+ * @since 26.0
+ */
 declare class AVCaptureSpatialAudioMetadataSampleGenerator extends NSObject {
 
 	static alloc(): AVCaptureSpatialAudioMetadataSampleGenerator; // inherited from NSObject
@@ -6424,6 +6617,16 @@ declare class AVCaptureStillImageOutput extends AVCaptureOutput {
 	readonly availableImageDataCVPixelFormatTypes: NSArray<number>;
 
 	readonly availableImageDataCodecTypes: NSArray<string>;
+
+	/**
+	 * @since 26.0
+	 */
+	cameraSensorOrientationCompensationEnabled: boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly cameraSensorOrientationCompensationSupported: boolean;
 
 	/**
 	 * @since 5.0
@@ -6654,6 +6857,134 @@ declare class AVCaptureSystemZoomSlider extends AVCaptureControl {
 	initWithDeviceAction(device: AVCaptureDevice, action: (p1: number) => void): this;
 }
 
+interface AVCaptureTimecode {
+	hours: number;
+	minutes: number;
+	seconds: number;
+	frames: number;
+	userBits: number;
+	frameDuration: CMTime;
+	sourceType: AVCaptureTimecodeSourceType;
+}
+declare var AVCaptureTimecode: interop.StructType<AVCaptureTimecode>;
+
+/**
+ * @since 26.0
+ */
+declare function AVCaptureTimecodeAdvancedByFrames(timecode: AVCaptureTimecode, framesToAdd: number): AVCaptureTimecode;
+
+/**
+ * @since 26.0
+ */
+declare function AVCaptureTimecodeCreateMetadataSampleBufferAssociatedWithPresentationTimeStamp(timecode: AVCaptureTimecode, presentationTimeStamp: CMTime): interop.Unmanaged<any>;
+
+/**
+ * @since 26.0
+ */
+declare function AVCaptureTimecodeCreateMetadataSampleBufferForDuration(timecode: AVCaptureTimecode, duration: CMTime): interop.Unmanaged<any>;
+
+/**
+ * @since 26.0
+ */
+declare class AVCaptureTimecodeGenerator extends NSObject {
+
+	static alloc(): AVCaptureTimecodeGenerator; // inherited from NSObject
+
+	static new(): AVCaptureTimecodeGenerator; // inherited from NSObject
+
+	readonly availableSources: NSArray<AVCaptureTimecodeSource>;
+
+	readonly currentSource: AVCaptureTimecodeSource;
+
+	readonly delegate: AVCaptureTimecodeGeneratorDelegate;
+
+	readonly delegateCallbackQueue: NSObject & OS_dispatch_queue;
+
+	synchronizationTimeout: number;
+
+	timecodeAlignmentOffset: number;
+
+	timecodeFrameDuration: CMTime;
+
+	static readonly frameCountSource: AVCaptureTimecodeSource;
+
+	static readonly realTimeClockSource: AVCaptureTimecodeSource;
+
+	generateInitialTimecode(): AVCaptureTimecode;
+
+	setDelegateQueue(delegate: AVCaptureTimecodeGeneratorDelegate, callbackQueue: NSObject & OS_dispatch_queue): void;
+
+	startSynchronizationWithTimecodeSource(source: AVCaptureTimecodeSource): void;
+}
+
+/**
+ * @since 26.0
+ */
+interface AVCaptureTimecodeGeneratorDelegate extends NSObjectProtocol {
+
+	timecodeGeneratorDidReceiveUpdateFromSource(generator: AVCaptureTimecodeGenerator, timecode: AVCaptureTimecode, source: AVCaptureTimecodeSource): void;
+
+	timecodeGeneratorDidUpdateAvailableSources(generator: AVCaptureTimecodeGenerator, availableSources: NSArray<AVCaptureTimecodeSource> | AVCaptureTimecodeSource[]): void;
+
+	timecodeGeneratorTransitionedToSynchronizationStatusForSource(generator: AVCaptureTimecodeGenerator, synchronizationStatus: AVCaptureTimecodeGeneratorSynchronizationStatus, source: AVCaptureTimecodeSource): void;
+}
+declare var AVCaptureTimecodeGeneratorDelegate: {
+
+	prototype: AVCaptureTimecodeGeneratorDelegate;
+};
+
+/**
+ * @since 26.0
+ */
+declare const enum AVCaptureTimecodeGeneratorSynchronizationStatus {
+
+	Unknown = 0,
+
+	SourceSelected = 1,
+
+	Synchronizing = 2,
+
+	Synchronized = 3,
+
+	TimedOut = 4,
+
+	SourceUnavailable = 5,
+
+	SourceUnsupported = 6,
+
+	NotRequired = 7
+}
+
+/**
+ * @since 26.0
+ */
+declare class AVCaptureTimecodeSource extends NSObject implements NSCopying {
+
+	static alloc(): AVCaptureTimecodeSource; // inherited from NSObject
+
+	static new(): AVCaptureTimecodeSource; // inherited from NSObject
+
+	readonly displayName: string;
+
+	readonly type: AVCaptureTimecodeSourceType;
+
+	readonly uuid: NSUUID;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum AVCaptureTimecodeSourceType {
+
+	FrameCount = 0,
+
+	RealTimeClock = 1,
+
+	External = 2
+}
+
 /**
  * @since 4.0
  */
@@ -6728,6 +7059,11 @@ declare class AVCaptureVideoDataOutput extends AVCaptureOutput {
 	 * @since 11.0
 	 */
 	availableVideoCodecTypesForAssetWriterWithOutputFileType(outputFileType: string): NSArray<string>;
+
+	/**
+	 * @since 26.0
+	 */
+	recommendedMovieMetadataForVideoCodecTypeAssetWriterOutputFileType(videoCodecType: string, outputFileType: string): NSArray<AVMetadataItem>;
 
 	/**
 	 * @since 7.0
@@ -6913,6 +7249,8 @@ declare const enum AVCaptureVideoStabilizationMode {
 
 	CinematicExtendedEnhanced = 5,
 
+	LowLatency = 6,
+
 	Auto = -1
 }
 
@@ -6951,6 +7289,31 @@ interface AVCaptureWhiteBalanceTemperatureAndTintValues {
 	tint: number;
 }
 declare var AVCaptureWhiteBalanceTemperatureAndTintValues: interop.StructType<AVCaptureWhiteBalanceTemperatureAndTintValues>;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureWhiteBalanceTemperatureAndTintValuesCloudy: AVCaptureWhiteBalanceTemperatureAndTintValues;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureWhiteBalanceTemperatureAndTintValuesDaylight: AVCaptureWhiteBalanceTemperatureAndTintValues;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureWhiteBalanceTemperatureAndTintValuesFluorescent: AVCaptureWhiteBalanceTemperatureAndTintValues;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureWhiteBalanceTemperatureAndTintValuesShadow: AVCaptureWhiteBalanceTemperatureAndTintValues;
+
+/**
+ * @since 26.0
+ */
+declare var AVCaptureWhiteBalanceTemperatureAndTintValuesTungsten: AVCaptureWhiteBalanceTemperatureAndTintValues;
 
 /**
  * @since 4.0
@@ -7827,7 +8190,13 @@ declare const enum AVError {
 
 	ContentKeyRequestPlaybackDestinationDoesNotSupportDeviceIdentifierRandomization = -11888,
 
-	ContentKeyInvalid = -11889
+	ContentKeyInvalid = -11889,
+
+	NoSmartFramingsEnabled = -11890,
+
+	AutoWhiteBalanceNotLocked = -11891,
+
+	FollowExternalSyncDeviceTimedOut = -11892
 }
 
 /**
@@ -7950,6 +8319,74 @@ declare class AVExternalStorageDeviceDiscoverySession extends NSObject {
 	static readonly sharedSession: AVExternalStorageDeviceDiscoverySession;
 
 	static readonly supported: boolean;
+}
+
+/**
+ * @since 26.0
+ */
+declare class AVExternalSyncDevice extends NSObject {
+
+	static alloc(): AVExternalSyncDevice; // inherited from NSObject
+
+	static new(): AVExternalSyncDevice; // inherited from NSObject
+
+	readonly clock: any;
+
+	readonly productID: number;
+
+	signalCompensationDelay: CMTime;
+
+	readonly status: AVExternalSyncDeviceStatus;
+
+	readonly uuid: NSUUID;
+
+	readonly vendorID: number;
+}
+
+/**
+ * @since 26.0
+ */
+interface AVExternalSyncDeviceDelegate extends NSObjectProtocol {
+
+	externalSyncDeviceFailedWithError?(device: AVExternalSyncDevice, error: NSError): void;
+
+	externalSyncDeviceStatusDidChange?(device: AVExternalSyncDevice): void;
+}
+declare var AVExternalSyncDeviceDelegate: {
+
+	prototype: AVExternalSyncDeviceDelegate;
+};
+
+/**
+ * @since 26.0
+ */
+declare class AVExternalSyncDeviceDiscoverySession extends NSObject {
+
+	static alloc(): AVExternalSyncDeviceDiscoverySession; // inherited from NSObject
+
+	static new(): AVExternalSyncDeviceDiscoverySession; // inherited from NSObject
+
+	readonly devices: NSArray<AVExternalSyncDevice>;
+
+	static readonly sharedSession: AVExternalSyncDeviceDiscoverySession;
+
+	static readonly supported: boolean;
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum AVExternalSyncDeviceStatus {
+
+	Unavailable = 0,
+
+	Ready = 1,
+
+	Calibrating = 2,
+
+	ActiveSync = 3,
+
+	FreeRunSync = 4
 }
 
 /**
@@ -10272,6 +10709,11 @@ declare var AVMetadataIdentifierQuickTimeMetadataCameraFocalLength35mmEquivalent
 declare var AVMetadataIdentifierQuickTimeMetadataCameraFrameReadoutTime: string;
 
 /**
+ * @since 26.0
+ */
+declare var AVMetadataIdentifierQuickTimeMetadataCameraISOSensitivity: string;
+
+/**
  * @since 8.0
  */
 declare var AVMetadataIdentifierQuickTimeMetadataCameraIdentifier: string;
@@ -10279,7 +10721,27 @@ declare var AVMetadataIdentifierQuickTimeMetadataCameraIdentifier: string;
 /**
  * @since 26.0
  */
+declare var AVMetadataIdentifierQuickTimeMetadataCameraLensIrisFNumber: string;
+
+/**
+ * @since 26.0
+ */
 declare var AVMetadataIdentifierQuickTimeMetadataCameraLensModel: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataIdentifierQuickTimeMetadataCameraShutterSpeedAngle: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataIdentifierQuickTimeMetadataCameraShutterSpeedTime: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataIdentifierQuickTimeMetadataCameraWhiteBalance: string;
 
 /**
  * @since 26.0
@@ -10515,6 +10977,16 @@ declare var AVMetadataIdentifierQuickTimeMetadataTitle: string;
  * @since 9.0
  */
 declare var AVMetadataIdentifierQuickTimeMetadataVideoOrientation: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataIdentifierQuickTimeMetadataWhiteBalanceByCCTColorMatrices: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataIdentifierQuickTimeMetadataWhiteBalanceByCCTWhiteBalanceFactors: string;
 
 /**
  * @since 8.0
@@ -11371,6 +11843,11 @@ declare var AVMetadataQuickTimeMetadataKeyCameraFocalLength35mmEquivalent: strin
 declare var AVMetadataQuickTimeMetadataKeyCameraFrameReadoutTime: string;
 
 /**
+ * @since 26.0
+ */
+declare var AVMetadataQuickTimeMetadataKeyCameraISOSensitivity: string;
+
+/**
  * @since 4.0
  */
 declare var AVMetadataQuickTimeMetadataKeyCameraIdentifier: string;
@@ -11378,7 +11855,27 @@ declare var AVMetadataQuickTimeMetadataKeyCameraIdentifier: string;
 /**
  * @since 26.0
  */
+declare var AVMetadataQuickTimeMetadataKeyCameraLensIrisFNumber: string;
+
+/**
+ * @since 26.0
+ */
 declare var AVMetadataQuickTimeMetadataKeyCameraLensModel: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataQuickTimeMetadataKeyCameraShutterSpeedAngle: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataQuickTimeMetadataKeyCameraShutterSpeedTime: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataQuickTimeMetadataKeyCameraWhiteBalance: string;
 
 /**
  * @since 26.0
@@ -11554,6 +12051,16 @@ declare var AVMetadataQuickTimeMetadataKeySoftware: string;
  * @since 4.3
  */
 declare var AVMetadataQuickTimeMetadataKeyTitle: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataQuickTimeMetadataKeyWhiteBalanceByCCTColorMatrices: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVMetadataQuickTimeMetadataKeyWhiteBalanceByCCTWhiteBalanceFactors: string;
 
 /**
  * @since 4.0
@@ -16527,6 +17034,16 @@ declare var AVVideoCodecTypeAppleProRes4444: string;
  * @since 18.0
  */
 declare var AVVideoCodecTypeAppleProRes4444XQ: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVVideoCodecTypeAppleProResRAW: string;
+
+/**
+ * @since 26.0
+ */
+declare var AVVideoCodecTypeAppleProResRAWHQ: string;
 
 /**
  * @since 11.0

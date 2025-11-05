@@ -1,7 +1,5 @@
-import { Frame } from '@nativescript/core/ui/frame';
 import * as TKUnit from '../../tk-unit';
-import { unsetValue } from '@nativescript/core/ui/core/view';
-import { PercentLength } from '@nativescript/core/ui/styling/style-properties';
+import { PercentLength, unsetValue, Frame } from '@nativescript/core';
 export * from './frame-tests-common';
 
 export function test_percent_width_and_height_set_to_page_support() {

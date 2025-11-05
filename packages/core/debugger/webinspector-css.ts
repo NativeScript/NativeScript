@@ -1,14 +1,13 @@
-import * as inspectorCommandTypes from './InspectorBackendCommands';
-const inspectorCommands: typeof inspectorCommandTypes = require('./InspectorBackendCommands');
+import * as inspectorCommands from './InspectorBackendCommands';
 
 import * as debuggerDomains from '.';
 
 import { attachCSSInspectorCommandCallbacks } from './devtools-elements';
 
 @inspectorCommands.DomainDispatcher('CSS')
-export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDomainDispatcher {
+export class CSSDomainDebugger implements inspectorCommands.CSSDomain.CSSDomainDispatcher {
 	private _enabled: boolean;
-	public events: inspectorCommandTypes.CSSDomain.CSSFrontend;
+	public events: inspectorCommands.CSSDomain.CSSFrontend;
 	public commands: any;
 
 	constructor() {
@@ -46,33 +45,33 @@ export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDom
 		this._enabled = false;
 	}
 
-	getMatchedStylesForNode(params: inspectorCommandTypes.CSSDomain.GetMatchedStylesForNodeMethodArguments): {
-		inlineStyle?: inspectorCommandTypes.CSSDomain.CSSStyle;
-		attributesStyle?: inspectorCommandTypes.CSSDomain.CSSStyle;
-		matchedCSSRules?: inspectorCommandTypes.CSSDomain.RuleMatch[];
-		pseudoElements?: inspectorCommandTypes.CSSDomain.PseudoElementMatches[];
-		inherited?: inspectorCommandTypes.CSSDomain.InheritedStyleEntry[];
-		cssKeyframesRules?: inspectorCommandTypes.CSSDomain.CSSKeyframesRule[];
+	getMatchedStylesForNode(params: inspectorCommands.CSSDomain.GetMatchedStylesForNodeMethodArguments): {
+		inlineStyle?: inspectorCommands.CSSDomain.CSSStyle;
+		attributesStyle?: inspectorCommands.CSSDomain.CSSStyle;
+		matchedCSSRules?: inspectorCommands.CSSDomain.RuleMatch[];
+		pseudoElements?: inspectorCommands.CSSDomain.PseudoElementMatches[];
+		inherited?: inspectorCommands.CSSDomain.InheritedStyleEntry[];
+		cssKeyframesRules?: inspectorCommands.CSSDomain.CSSKeyframesRule[];
 	} {
 		return {};
 	}
 	// Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by <code>nodeId</code>.
-	getInlineStylesForNode(params: inspectorCommandTypes.CSSDomain.GetInlineStylesForNodeMethodArguments): {
-		inlineStyle?: inspectorCommandTypes.CSSDomain.CSSStyle;
-		attributesStyle?: inspectorCommandTypes.CSSDomain.CSSStyle;
+	getInlineStylesForNode(params: inspectorCommands.CSSDomain.GetInlineStylesForNodeMethodArguments): {
+		inlineStyle?: inspectorCommands.CSSDomain.CSSStyle;
+		attributesStyle?: inspectorCommands.CSSDomain.CSSStyle;
 	} {
 		return {};
 	}
 	// Returns the computed style for a DOM node identified by <code>nodeId</code>.
-	getComputedStyleForNode(params: inspectorCommandTypes.CSSDomain.GetComputedStyleForNodeMethodArguments): {
-		computedStyle: inspectorCommandTypes.CSSDomain.CSSComputedStyleProperty[];
+	getComputedStyleForNode(params: inspectorCommands.CSSDomain.GetComputedStyleForNodeMethodArguments): {
+		computedStyle: inspectorCommands.CSSDomain.CSSComputedStyleProperty[];
 	} {
 		return {
 			computedStyle: this.commands.getComputedStylesForNode(params.nodeId),
 		};
 	}
 	// Requests information about platform fonts which we used to render child TextNodes in the given node.
-	getPlatformFontsForNode(params: inspectorCommandTypes.CSSDomain.GetPlatformFontsForNodeMethodArguments): { fonts: inspectorCommandTypes.CSSDomain.PlatformFontUsage[] } {
+	getPlatformFontsForNode(params: inspectorCommands.CSSDomain.GetPlatformFontsForNodeMethodArguments): { fonts: inspectorCommands.CSSDomain.PlatformFontUsage[] } {
 		return {
 			fonts: [
 				{
@@ -87,7 +86,7 @@ export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDom
 		};
 	}
 	// Returns the current textual content and the URL for a stylesheet.
-	getStyleSheetText(params: inspectorCommandTypes.CSSDomain.GetStyleSheetTextMethodArguments): { text: string } {
+	getStyleSheetText(params: inspectorCommands.CSSDomain.GetStyleSheetTextMethodArguments): { text: string } {
 		return null;
 	}
 }

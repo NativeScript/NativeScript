@@ -1,7 +1,7 @@
 import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from '.';
 import { View, ContainerView, Template, KeyedTemplate, CSSType } from '../core/view';
 import { Property, CoercibleProperty, CssProperty } from '../core/properties';
-import { Length } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { Builder } from '../builder';

@@ -2,7 +2,7 @@
 import { CssProperty, Property } from '../core/properties';
 import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
-import { Frame } from '../frame';
+import type { Frame } from '../frame';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { Color } from '../../color';
@@ -64,14 +64,6 @@ export declare class Page extends PageBase {
 	 * @nsProperty
 	 */
 	public backgroundSpanUnderStatusBar: boolean;
-
-	/**
-	 * Gets or sets the style of the status bar.
-	 *
-	 * @nsProperty
-	 */
-	// @ts-ignore
-	public statusBarStyle: 'light' | 'dark';
 
 	/**
 	 * Gets or sets the color of the status bar in Android.

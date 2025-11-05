@@ -9,6 +9,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
 import { ViewBase } from '../view-base';
 import { ViewCommon } from './view-common';
+import type { Point } from './view-interfaces';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -42,67 +43,6 @@ export function CSSType(type: string): ClassDecorator;
  * @param type Type of the ModuleType to be matched
  */
 export function viewMatchesModuleContext(view: View, context: ModuleContext, type: ModuleType[]): boolean;
-
-/**
- * The Point interface describes a two dimensional location.
- * It has two properties x and y, representing the x and y coordinate of the location.
- */
-export interface Point {
-	/**
-	 * Represents the x coordinate of the location.
-	 */
-	x: number;
-
-	/**
-	 * Represents the y coordinate of the location.
-	 */
-	y: number;
-
-	/**
-	 * Represents the z coordinate of the location.
-	 */
-	z?: number;
-}
-
-export interface Position {
-	top: number;
-	right: number;
-	bottom: number;
-	left: number;
-}
-
-/**
- * The Size interface describes abstract dimensions in two dimensional space.
- * It has two properties width and height, representing the width and height values of the size.
- */
-export interface Size {
-	/**
-	 * Represents the width of the size.
-	 */
-	width: number;
-
-	/**
-	 * Represents the height of the size.
-	 */
-	height: number;
-}
-
-/**
- * Defines the data for the shownModally event.
- */
-export interface ShownModallyData extends EventData {
-	/**
-	 * The context (optional, may be undefined) passed to the view when shown modally.
-	 */
-	context?: any;
-
-	/**
-	 * A callback to call when you want to close the modally shown view.
-	 * Pass in any kind of arguments and you will receive when the callback parameter
-	 * of View.showModal is executed.
-	 */
-	closeCallback?: Function;
-}
 
 /**
  * This class is the base class for all UI components.
@@ -151,6 +91,13 @@ export abstract class View extends ViewCommon {
 	 * @nsEvent {EventDataValue} accessibilityFocusChanged
 	 */
 	public static accessibilityFocusChangedEvent: string;
+
+	/**
+	 * String value used when hooking to androidOverflowInset event.
+	 *
+	 * @nsEvent {EventDataValue} androidOverflowInset
+	 */
+	public static androidOverflowInsetEvent: string;
 
 	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
@@ -691,6 +638,22 @@ export abstract class View extends ViewCommon {
 	 */
 	cssType: string;
 
+	/**
+	 * Gets or sets the status bar style for this view.
+	 * Platform Notes:
+	 *   - Android: When using this property throughout navigations, ensure starting views have it set as well. Ensures it will reset on back navigation.
+	 *   - iOS: You must remove Info.plist key `UIViewControllerBasedStatusBarAppearance`
+	 * It defaults to true when not present: https://developer.apple.com/documentation/bundleresources/information-property-list/uiviewcontrollerbasedstatusbarappearance
+	 * Or you can explicitly set it to true:
+	 * <key>UIViewControllerBasedStatusBarAppearance</key>
+	 * <true/>
+	 *
+	 * False value will make this property have no effect.
+	 *
+	 * @nsProperty
+	 */
+	statusBarStyle: 'light' | 'dark';
+
 	cssClasses: Set<string>;
 	cssPseudoClasses: Set<string>;
 
@@ -845,6 +808,11 @@ export abstract class View extends ViewCommon {
 	 * Raised after the view is shown as a modal dialog.
 	 */
 	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+
+	/**
+	 * Raised after the view is shown as a modal dialog.
+	 */
+	on(event: 'androidOverflowInset', callback: (args: ShownModallyData) => void, thisArg?: any);
 
 	/**
 	 * Returns the current modal view that this page is showing (is parent of), if any.

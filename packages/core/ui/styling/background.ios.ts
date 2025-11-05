@@ -1,13 +1,14 @@
 import { ScrollEventData } from '../scroll-view';
 import { Background as BackgroundDefinition } from './background';
-import { View, Point, Position } from '../core/view';
+import { View } from '../core/view';
+import { Point, Position } from '../core/view/view-interfaces';
 import { LinearGradient } from './linear-gradient';
 import { Screen } from '../../platform';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 import { ImageSource } from '../../image-source';
 import type { CSSValue } from '../../css-value/reworkcss-value';
-import { parse as cssParse } from '../../css-value/reworkcss-value.js';
+import { parse as cssParse } from '../../css-value/reworkcss-value';
 import { BoxShadow } from './box-shadow';
 import { BackgroundClearFlags } from './background-common';
 import { ClipPathFunction } from './clip-path-function';
@@ -461,6 +462,7 @@ function clearNonUniformBorders(nativeView: NativeScriptUIView): void {
 function parsePosition(pos: string): { x: CSSValue; y: CSSValue } {
 	const values = cssParse(pos);
 	if (values.length === 2) {
+		// @ts-ignore
 		return { x: values[0], y: values[1] };
 	}
 
@@ -525,8 +527,8 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
 	if (size) {
 		const values = cssParse(size);
 		if (values.length === 2) {
-			const vx = values[0];
-			const vy = values[1];
+			const vx = values[0] as CSSValue;
+			const vy = values[1] as CSSValue;
 			if (vx.unit === '%' && vy.unit === '%') {
 				imageWidth = (width * vx.value) / 100;
 				imageHeight = (height * vy.value) / 100;

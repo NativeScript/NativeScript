@@ -1,24 +1,36 @@
 // @ts-nocheck
-// vitest.setup.ts
 import { beforeAll, afterAll, vi } from 'vitest';
 
-vi.mock('@nativescript/core/application', () => null);
-
-// Set up global variable
+// mock to allow tests to pass while globals attempt to polyfill crypto
+vi.stubGlobal('crypto', {
+	randomUUID: vi.fn(() => 'mock-uuid'),
+	// Add other necessary crypto methods as mocks
+});
+// Mock out global variables and platform APIs touched while unit testing
 global.__UNIT_TEST__ = true;
 global.__DEV__ = true;
 global.__ANDROID__ = false;
 global.__IOS__ = true;
 global.__VISIONOS__ = false;
 global.__APPLE__ = true;
+global.__COMMONJS__ = false;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
+global.NSBundle = {
+	mainBundle: {
+		bundleIdentifier: 'test',
+		objectForInfoDictionaryKey(key: string) {
+			return true;
+		},
+	},
+};
 global.NSTimer = class NSTimer {};
 global.NSObject = class NSObject {
 	static new() {
 		return new NSObject();
 	}
 };
+global.NSNumber = {};
 global.NSString = {
 	stringWithString() {
 		return {
@@ -84,6 +96,7 @@ global.UIInterfaceOrientation = {
 	LandscapeLeft: 4,
 	LandscapeRight: 3,
 };
+global.UIWindowSceneDelegate = function () {};
 const cgColors = { CGColor: 1 };
 global.UIColor = {
 	alloc() {
@@ -95,6 +108,8 @@ global.UIColor = {
 	},
 	clearColor: cgColors,
 };
+global.UITextField = function () {};
+global.UITextFieldDelegate = function () {};
 global.NSSearchPathDirectory = {
 	LibraryDirectory: '',
 	DeveloperDirectory: '',
@@ -106,6 +121,15 @@ global.NativeScriptUtils = {
 		return {};
 	},
 };
+global.NSURLSessionConfiguration = {
+	defaultSessionConfiguration: function () {
+		return {};
+	},
+	ephemeralSessionConfiguration: function () {
+		return {};
+	},
+};
+global.NSURLSessionTaskDelegate = function () {};
 global.NSOperationQueue = {
 	mainQueue: {
 		addOperationWithBlock(fn: Function) {
@@ -148,6 +172,15 @@ global.UIResponder = function () {};
 global.UIResponder.extend = function () {};
 global.UIViewController = function () {};
 global.UIViewControllerTransitioningDelegate = function () {};
+global.UINavigationControllerDelegate = function () {};
+global.UINavigationController = function () {};
+global.UIUserInterfaceIdiom = {
+	Phone: 0,
+	Pad: 1,
+	TV: 2,
+	CarPlay: 3,
+	Mac: 4,
+};
 global.UIGestureRecognizer = function () {};
 global.UIGestureRecognizerDelegate = function () {};
 global.UIAdaptivePresentationControllerDelegate = function () {};
@@ -164,6 +197,7 @@ global.UIContentSizeCategoryAccessibilityLarge = 2.5;
 global.UIContentSizeCategoryAccessibilityExtraLarge = 3;
 global.UIContentSizeCategoryAccessibilityExtraExtraLarge = 3.5;
 global.UIContentSizeCategoryAccessibilityExtraExtraExtraLarge = 4;
+global.UIViewControllerAnimatedTransitioning = function () {};
 // global.UIDocumentInteractionController = {
 // 	interactionControllerWithURL(url: any) {
 // 		return null;

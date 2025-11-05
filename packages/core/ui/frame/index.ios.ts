@@ -1,20 +1,20 @@
 //Types
 import { iOSFrame as iOSFrameDefinition, NavigationTransition } from '.';
-import type { BackstackEntry } from './frame-interfaces';
 import { FrameBase, NavigationType } from './frame-common';
-import { Page } from '../page';
+import type { BackstackEntry } from './frame-interfaces';
+import type { Page } from '../page';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
-import { CORE_ANIMATION_DEFAULTS, ios as iOSUtils, layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
+import { SDK_VERSION } from '../../utils/constants';
 import { Trace } from '../../trace';
 import { SlideTransition } from '../transition/slide-transition';
 import { FadeTransition } from '../transition/fade-transition';
 import { SharedTransition } from '../transition/shared-transition';
 
 export * from './frame-common';
-
-const majorVersion = iOSUtils.MajorVersion;
 
 const ENTRY = '_entry';
 const DELEGATE = '_delegate';
@@ -155,7 +155,7 @@ export class Frame extends FrameBase {
 		backstackEntry[NAV_DEPTH] = navDepth;
 		viewController[ENTRY] = backstackEntry;
 
-		if (!animated && majorVersion > 10) {
+		if (!animated && SDK_VERSION > 10) {
 			// Reset back button title before pushing view controller to prevent
 			// displaying default 'back' title (when NavigaitonButton custom title is set).
 			const barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction('', UIBarButtonItemStyle.Plain, null, null);
@@ -624,7 +624,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			const owner = this._owner?.deref?.();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
@@ -633,6 +633,11 @@ class UINavigationControllerImpl extends UINavigationController {
 				});
 			}
 		}
+	}
+
+	// @ts-ignore
+	public get childViewControllerForStatusBarStyle() {
+		return this.topViewController;
 	}
 }
 

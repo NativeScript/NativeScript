@@ -1,12 +1,9 @@
-// Definitions.
 import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
-import * as httpModule from '../http';
-
-// Types.
+import { getImageRequest } from '../http/http-shared';
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
-import { Application } from '../application';
+import { getNativeApp } from '../application/helpers-common';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 
@@ -14,30 +11,8 @@ import { getScaledDimensions } from './image-source-common';
 
 export { isFileOrResourcePath };
 
-let http: typeof httpModule;
-function ensureHttp() {
-	if (!http) {
-		http = require('../http');
-	}
-}
-
-let application: android.app.Application;
-let resources: android.content.res.Resources;
-
 function getApplication() {
-	if (!application) {
-		application = Application.android.getNativeApplication();
-	}
-
-	return application;
-}
-
-function getResources() {
-	if (!resources) {
-		resources = getApplication().getResources();
-	}
-
-	return resources;
+	return getNativeApp() as android.app.Application;
 }
 
 export class ImageSource implements ImageSourceDefinition {
@@ -87,14 +62,12 @@ export class ImageSource implements ImageSourceDefinition {
 		});
 	}
 
-	static fromUrl(url: string): Promise<ImageSourceDefinition> {
-		ensureHttp();
-
-		return http.getImage(url);
+	static fromUrl(url: string): Promise<ImageSource> {
+		return getImageRequest(url) as Promise<ImageSource>;
 	}
 
 	static fromResourceSync(name: string): ImageSource {
-		const res = getResources();
+		const res = getApplication().getResources();
 		if (res) {
 			const identifier: number = res.getIdentifier(name, 'drawable', getApplication().getPackageName());
 			if (0 < identifier) {
@@ -208,13 +181,14 @@ export class ImageSource implements ImageSourceDefinition {
 		const textBounds = new android.graphics.Rect();
 		paint.getTextBounds(source, 0, source.length, textBounds);
 
-		const textWidth = textBounds.width();
-		const textHeight = textBounds.height();
+		const padding = 1;
+		const textWidth = textBounds.width() + padding * 2;
+		const textHeight = textBounds.height() + padding * 2;
 		if (textWidth > 0 && textHeight > 0) {
 			const bitmap = android.graphics.Bitmap.createBitmap(textWidth, textHeight, android.graphics.Bitmap.Config.ARGB_8888);
 
 			const canvas = new android.graphics.Canvas(bitmap);
-			canvas.drawText(source, -textBounds.left, -textBounds.top, paint);
+			canvas.drawText(source, -textBounds.left + padding, -textBounds.top + padding, paint);
 
 			return new ImageSource(bitmap);
 		}

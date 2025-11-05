@@ -1,4 +1,3 @@
-import type { ApplicationCommon } from './application-common';
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
 
@@ -42,7 +41,7 @@ export interface ApplicationEventData {
 	/**
 	 * The instance that has raised the event.
 	 */
-	object: ApplicationCommon | Observable;
+	object: any; // Application;
 }
 
 /**
@@ -216,4 +215,29 @@ export interface AndroidActivityBackPressedEventData extends AndroidActivityEven
 
 export interface LoadAppCSSEventData extends ApplicationEventData {
 	cssFile: string;
+}
+
+/**
+ * iOS Event data containing information for scene lifecycle events (iOS 13+).
+ */
+export interface SceneEventData extends ApplicationEventData {
+	/**
+	 * The UIWindowScene instance associated with this event.
+	 */
+	scene?: UIWindowScene;
+
+	/**
+	 * The UIWindow associated with this scene (if applicable).
+	 */
+	window?: UIWindow;
+
+	/**
+	 * Scene connection options (for sceneWillConnect event).
+	 */
+	connectionOptions?: UISceneConnectionOptions;
+
+	/**
+	 * Additional user info from the notification.
+	 */
+	userInfo?: NSDictionary<any, any>;
 }

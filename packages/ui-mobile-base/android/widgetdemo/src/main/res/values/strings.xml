@@ -1,0 +1,9 @@
+<resources>
+	<string name="app_name">WidgetDemo</string>
+	<string name="ipsum">
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur euismod dictum purus, non tempor tortor fermentum vehicula. Donec condimentum eleifend lacus, non varius dui feugiat quis. Integer tincidunt, erat nec lacinia maximus, ante tortor placerat arcu, eu dignissim mauris ipsum et diam. Proin sed magna dui. Donec consequat volutpat mi, sed facilisis quam sollicitudin ac. Nullam pulvinar nunc nec diam molestie, sit amet semper lectus efficitur. Aenean ut lacus arcu. Donec non tempor risus.
+
+Pellentesque blandit congue mattis. Proin eget nibh id nisl pellentesque elementum. Vestibulum neque arcu, luctus vitae pretium sed, venenatis quis odio. Quisque varius ligula id quam ullamcorper, ut gravida magna aliquam. Proin sit amet nibh tempus, aliquam justo ut, accumsan nibh. Curabitur non neque dui. Phasellus ac semper nunc. Aenean placerat lacinia suscipit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+</string>
+</resources>

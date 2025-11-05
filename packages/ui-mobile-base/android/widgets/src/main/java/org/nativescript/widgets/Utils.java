@@ -2,6 +2,7 @@ package org.nativescript.widgets;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -23,6 +24,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.SystemBarStyle;
+import androidx.annotation.ColorInt;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
 import androidx.exifinterface.media.ExifInterface;
@@ -38,7 +42,52 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+
 public class Utils {
+
+	public interface HandleDarkMode {
+		boolean onHandle(int bar, Resources resources);
+	}
+
+	enum HandleDarkModeBar {
+		status(0),
+		navigation(1);
+
+		private final int mValue;
+
+		HandleDarkModeBar(int i) {
+			this.mValue = i;
+		}
+
+		public int getValue() {
+			return this.mValue;
+		}
+	}
+
+	// The light scrim color used in the platform API 29+
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/policy/DecorView.java;drc=6ef0f022c333385dba2c294e35b8de544455bf19;l=142
+	static final int DefaultLightScrim = Color.argb(0xe6, 0xFF, 0xFF, 0xFF);
+
+	// The dark scrim color used in the platform.
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/res/res/color/system_bar_background_semi_transparent.xml
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/res/remote_color_resources_res/values/colors.xml;l=67
+	static final int DefaultDarkScrim = Color.argb(0x80, 0x1b, 0x1b, 0x1b);
+
+	public static void enableEdgeToEdge(ComponentActivity activity) {
+		androidx.activity.EdgeToEdge.enable(activity);
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, HandleDarkMode handleDarkMode) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)), SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources)));
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(statusBarLight, statusBarDark), SystemBarStyle.auto(navigationBarLight, navigationBarDark));
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(statusBarLight, statusBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)), SystemBarStyle.auto(navigationBarLight, navigationBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources)));
+	}
 
 	public static Drawable getDrawable(String uri, Context context) {
 		int resId = 0;
@@ -188,6 +237,36 @@ public class Utils {
 		boolean autoScaleFactor;
 	}
 
+	private static int parsePositiveInt(JSONObject object, String key) {
+		if (object == null || key == null) {
+			return 0;
+		}
+		try {
+			if (!object.has(key) || object.isNull(key)) {
+				return 0;
+			}
+			Object value = object.get(key);
+			if (value instanceof Number) {
+				int parsed = (int) Math.floor(((Number) value).doubleValue());
+				return parsed > 0 ? parsed : 0;
+			}
+			if (value instanceof String) {
+				String s = ((String) value).trim();
+				if (s.length() == 0) {
+					return 0;
+				}
+				try {
+					int parsed = Integer.parseInt(s);
+					return parsed > 0 ? parsed : 0;
+				} catch (NumberFormatException ignored) {
+					return 0;
+				}
+			}
+		} catch (JSONException ignored) {
+		}
+		return 0;
+	}
+
 	private static final Executor executors = Executors.newCachedThreadPool();
 
 
@@ -315,8 +394,9 @@ public class Utils {
 
 					try {
 						JSONObject object = new JSONObject(options);
-						opts.width = object.optInt("width", 0);
-						opts.height = object.optInt("height", 0);
+						// Coerce numeric strings or numbers; fallback to 0 for invalid values
+						opts.width = parsePositiveInt(object, "width");
+						opts.height = parsePositiveInt(object, "height");
 						opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
 						opts.autoScaleFactor = object.optBoolean("autoScaleFactor", true);
 					} catch (JSONException ignored) {
@@ -444,10 +524,7 @@ public class Utils {
 
 					Bitmap.CompressFormat targetFormat = getTargetFormat(format);
 
-					try (
-						ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-						Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)
-					) {
+					try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)) {
 						bitmap.compress(targetFormat, quality, base64Stream);
 						result = outputStream.toString();
 					} catch (Exception e) {
@@ -478,9 +555,7 @@ public class Utils {
 				return new Pair<>((int) width, (int) height);
 			}
 
-			return new Pair<>(
-				Math.round((maxSize * width) / height)
-				, (int) maxSize);
+			return new Pair<>(Math.round((maxSize * width) / height), (int) maxSize);
 		}
 
 		if (width <= maxSize) {

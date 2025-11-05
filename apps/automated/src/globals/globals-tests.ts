@@ -23,8 +23,8 @@ export function test_global_registerModule() {
 	TKUnit.assert(typeof global.registerModule === 'function', 'global.registerModule not a function');
 }
 
-export function test_global_registerWebpackModules() {
-	TKUnit.assert(typeof global.registerWebpackModules === 'function', 'global.registerWebpackModules not a function');
+export function test_global_registerBundlerModules() {
+	TKUnit.assert(typeof global.registerBundlerModules === 'function', 'global.registerBundlerModules not a function');
 }
 
 export function test_global_loadModule() {

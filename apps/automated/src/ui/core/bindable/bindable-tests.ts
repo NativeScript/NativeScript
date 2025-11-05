@@ -1,11 +1,7 @@
-import { Observable, fromObject, fromObjectRecursive } from '@nativescript/core/data/observable';
-import { ViewBase } from '@nativescript/core/ui/core/view-base';
-import { BindingOptions } from '@nativescript/core/ui/core/bindable';
+import { Application, View, Button, Page, StackLayout, Label, TextField, Trace, BindingOptions, ViewBase, Observable, fromObject, fromObjectRecursive, Utils } from '@nativescript/core';
 import * as TKUnit from '../../../tk-unit';
-import * as types from '@nativescript/core/utils/types';
 import * as helper from '../../../ui-helper';
 import * as bindingBuilder from '@nativescript/core/ui/builder/binding-builder';
-import { Application, View, Button, Page, StackLayout, Label, TextField, Trace } from '@nativescript/core';
 declare var WeakRef: any;
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic.
@@ -17,8 +13,8 @@ declare var WeakRef: any;
 
 export function test_Bindable_Members() {
 	const obj = new Label();
-	TKUnit.assert(types.isDefined(obj.bind), 'Bindable.bind not defined');
-	TKUnit.assert(types.isDefined(obj.unbind), 'Bindable.unbind not defined');
+	TKUnit.assert(Utils.isDefined(obj.bind), 'Bindable.bind not defined');
+	TKUnit.assert(Utils.isDefined(obj.unbind), 'Bindable.unbind not defined');
 }
 
 export function test_Binding_to_bindingContext_of_View() {
@@ -502,7 +498,7 @@ export function test_bindingToNestedPropertyWithValueSyntax() {
 			sourceProperty: '$value.testProperty',
 			targetProperty: 'targetPropertyName',
 		},
-		bindingSource
+		bindingSource,
 	);
 
 	TKUnit.assertEqual(testElement.get('targetPropertyName'), 'testValue');
@@ -706,7 +702,7 @@ export function test_UpdatingNestedPropertyViaBinding() {
 			targetProperty: 'text',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	const testElement2 = new Label();
@@ -717,7 +713,7 @@ export function test_UpdatingNestedPropertyViaBinding() {
 			targetProperty: 'text',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	TKUnit.assertEqual(testElement.get('text'), expectedValue1);
@@ -803,7 +799,7 @@ export function test_NestedPropertiesBinding() {
 			targetProperty: 'targetProperty',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	TKUnit.assertEqual(target1.get('targetProperty'), expectedValue);
@@ -835,7 +831,7 @@ export function test_WrongNestedPropertiesBinding() {
 			targetProperty: 'targetProperty',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	TKUnit.assertNotEqual(errorMessage, undefined);
@@ -856,7 +852,7 @@ export function test_NestedPropertiesBindingTwoTargets() {
 			targetProperty: 'targetProperty',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	const target2 = new Label();
@@ -866,7 +862,7 @@ export function test_NestedPropertiesBindingTwoTargets() {
 			targetProperty: 'targetProp',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	TKUnit.assertEqual(target1.get('targetProperty'), expectedText);
@@ -897,7 +893,7 @@ export function test_NestedPropertiesBindingTwoTargetsAndSecondChange() {
 			targetProperty: 'targetProperty',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	const target2 = new Label();
@@ -907,7 +903,7 @@ export function test_NestedPropertiesBindingTwoTargetsAndSecondChange() {
 			targetProperty: 'targetProp',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	TKUnit.assertEqual(target1.get('targetProperty'), expectedText);
@@ -948,7 +944,7 @@ export function test_NestedPropertiesBindingTwoTargetsAndRegularChange() {
 			targetProperty: 'targetProperty',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	const target2 = new Label();
@@ -958,7 +954,7 @@ export function test_NestedPropertiesBindingTwoTargetsAndRegularChange() {
 			targetProperty: 'targetProp',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	TKUnit.assertEqual(target1.get('targetProperty'), expectedText);
@@ -998,7 +994,7 @@ export function test_NestedPropertiesBindingTwoTargetsAndReplacingSomeNestedObje
 			targetProperty: 'targetProperty',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	const target2 = new Label();
@@ -1008,7 +1004,7 @@ export function test_NestedPropertiesBindingTwoTargetsAndReplacingSomeNestedObje
 			targetProperty: 'targetProp',
 			twoWay: true,
 		},
-		viewModel
+		viewModel,
 	);
 
 	TKUnit.assertEqual(target1.get('targetProperty'), expectedText);
@@ -1050,7 +1046,7 @@ export function test_NullSourcePropertyShouldNotCrash() {
 			targetProperty: 'targetProp',
 			expression: 'convFunc(field)',
 		},
-		model
+		model,
 	);
 
 	TKUnit.assertEqual(target.get('targetProp'), convFunc(expectedValue));
@@ -1123,7 +1119,7 @@ export function test_SupportFunctionsInExpressions() {
 			targetProperty: 'text',
 			expression: "isVisible() ? 'visible' : 'collapsed'",
 		},
-		model
+		model,
 	);
 
 	model.set('anyColor', 'blue');
@@ -1151,7 +1147,7 @@ export function test_$ValueSupportWithinExpression() {
 			targetProperty: 'text',
 			expression: "$value.anyColor === 'red' ? 'red' : 'blue'",
 		},
-		model
+		model,
 	);
 
 	model.set('anyColor', 'blue');
@@ -1230,7 +1226,7 @@ export function test_BindingToPropertiesWithSameNames() {
 			targetProperty: 'targetProperty',
 			twoWay: true,
 		},
-		model
+		model,
 	);
 
 	const target2 = new Label();
@@ -1240,7 +1236,7 @@ export function test_BindingToPropertiesWithSameNames() {
 			targetProperty: 'targetProp',
 			twoWay: true,
 		},
-		model
+		model,
 	);
 
 	model.item.set('seconds', model.item.seconds + 1);
@@ -1273,7 +1269,7 @@ export function test_BindingToPropertiesWithSameNamesSecondCase() {
 			targetProperty: 'targetProperty',
 			twoWay: true,
 		},
-		model
+		model,
 	);
 
 	const target2 = new Label();
@@ -1283,7 +1279,7 @@ export function test_BindingToPropertiesWithSameNamesSecondCase() {
 			targetProperty: 'targetProp',
 			twoWay: true,
 		},
-		model
+		model,
 	);
 
 	model.item.set('seconds', model.item.seconds + 1);
@@ -1372,7 +1368,7 @@ export function test_Observable_from_nested_json_binds_correctly() {
 			sourceProperty: 'firstObject.secondObject.dummyProperty',
 			targetProperty: 'text',
 		},
-		model
+		model,
 	);
 
 	model.get('firstObject').get('secondObject').set('dummyProperty', expectedValue);
@@ -1396,7 +1392,7 @@ export function test_Observable_from_nested_json_binds_correctly_when_upper_obje
 			sourceProperty: 'firstObject.secondObject.dummyProperty',
 			targetProperty: 'text',
 		},
-		model
+		model,
 	);
 
 	model.get('firstObject').set('secondObject', fromObject({ dummyProperty: expectedValue }));

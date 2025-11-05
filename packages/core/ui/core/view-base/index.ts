@@ -1,11 +1,11 @@
 import { AlignSelf, Flex, FlexFlow, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
 import { Page } from '../../page';
-import { CoreTypes } from '../../../core-types';
+import { CoreTypes, Trace } from '../../styling/styling-shared';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
 import { CSSUtils } from '../../../css/system-classes';
-import { Source } from '../../../utils/debug';
-import { Binding, BindingOptions } from '../bindable';
-import { Trace } from '../../../trace';
+import { Source } from '../../../utils/debug-source';
+import { Binding } from '../bindable';
+import { BindingOptions } from '../bindable/bindable-types';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
@@ -13,27 +13,15 @@ import type { ModalTransition } from '../../transition/modal-transition';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
+import { unsetValue } from '../properties/property-shared';
 
 import { profile } from '../../../profiling';
 
-import * as dnm from '../../../debugger/dom-node';
-import * as ssm from '../../styling/style-scope';
-import { ViewBase as ViewBaseDefinition } from '.';
+import { DOMNode } from '../../../debugger/dom-types';
+import { applyInlineStyle, CssState, StyleScope } from '../../styling/style-scope';
+import { booleanConverter } from './utils';
 
-let domNodeModule: typeof dnm;
-
-function ensuredomNodeModule(): void {
-	if (!domNodeModule) {
-		domNodeModule = require('../../../debugger/dom-node');
-	}
-}
-
-let styleScopeModule: typeof ssm;
-function ensureStyleScopeModule() {
-	if (!styleScopeModule) {
-		styleScopeModule = require('../../styling/style-scope');
-	}
-}
+export { booleanConverter } from './utils';
 
 const defaultBindingSource = {};
 
@@ -91,6 +79,10 @@ export interface ShowModalOptions {
 		 * height of the popup dialog
 		 */
 		height?: number;
+		/**
+		 * The preferred status bar style for the modal view
+		 */
+		statusBarStyle?: 'light' | 'dark';
 	};
 	android?: {
 		/**
@@ -117,13 +109,13 @@ export interface ShowModalOptions {
  * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getAncestor<T extends ViewBaseDefinition = ViewBaseDefinition>(view: T, criterion: string | { new () }): T {
-	let matcher: (view: ViewBaseDefinition) => view is T;
+export function getAncestor<T extends ViewBase = ViewBase>(view: T, criterion: string | { new () }): T {
+	let matcher: (view: ViewBase) => view is T;
 
 	if (typeof criterion === 'string') {
-		matcher = (view: ViewBaseDefinition): view is T => view.typeName === criterion;
+		matcher = (view: ViewBase): view is T => view.typeName === criterion;
 	} else {
-		matcher = (view: ViewBaseDefinition): view is T => view instanceof criterion;
+		matcher = (view: ViewBase): view is T => view instanceof criterion;
 	}
 
 	for (let parent = view.parent; parent != null; parent = parent.parent) {
@@ -141,7 +133,7 @@ export function getAncestor<T extends ViewBaseDefinition = ViewBaseDefinition>(v
  * @param id - The id of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefinition {
+export function getViewById(view: ViewBase, id: string): ViewBase {
 	if (!view) {
 		return undefined;
 	}
@@ -150,8 +142,8 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
 		return view;
 	}
 
-	let retVal: ViewBaseDefinition;
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	let retVal: ViewBase;
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (child.id === id) {
 			retVal = child;
 
@@ -173,7 +165,7 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
  * @param domId - The id of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBaseDefinition {
+export function getViewByDomId(view: ViewBase, domId: number): ViewBase {
 	if (!view) {
 		return undefined;
 	}
@@ -182,8 +174,8 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
 		return view;
 	}
 
-	let retVal: ViewBaseDefinition;
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	let retVal: ViewBase;
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (view._domId === domId) {
 			retVal = child;
 
@@ -206,17 +198,17 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
  * @param selector - The selector of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function querySelectorAll(view: ViewBaseDefinition, selector: string): Array<ViewBaseDefinition> {
+export function querySelectorAll(view: ViewBase, selector: string): Array<ViewBase> {
 	if (!view) {
 		return [];
 	}
 
-	const retVal: Array<ViewBaseDefinition> = [];
+	const retVal: Array<ViewBase> = [];
 	if (view[selector]) {
 		retVal.push(view);
 	}
 
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (child[selector]) {
 			retVal.push(child);
 		}
@@ -234,13 +226,13 @@ export function querySelectorAll(view: ViewBaseDefinition, selector: string): Ar
  * @param view - Starting view (parent container).
  * @param callback - A function to execute on every child. If function returns false it breaks the iteration.
  */
-export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewBaseDefinition) => boolean) {
+export function eachDescendant(view: ViewBase, callback: (child: ViewBase) => boolean) {
 	if (!callback || !view) {
 		return;
 	}
 
 	let continueIteration: boolean;
-	const localCallback = function (child: ViewBaseDefinition): boolean {
+	const localCallback = function (child: ViewBase): boolean {
 		continueIteration = callback(child);
 		if (continueIteration) {
 			child.eachChild(localCallback);
@@ -314,7 +306,7 @@ const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
  *
  * @nsView ViewBase
  */
-export abstract class ViewBase extends Observable implements ViewBaseDefinition {
+export abstract class ViewBase extends Observable {
 	/**
 	 * String value used when hooking to loaded event.
 	 *
@@ -356,7 +348,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private __nativeView: any;
 	// private _disableNativeViewRecycling: boolean;
 
-	public domNode: dnm.DOMNode;
+	public domNode: DOMNode;
 
 	public recycleNativeView: 'always' | 'never' | 'auto';
 	/**
@@ -423,8 +415,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _domId: number;
 	public _context: any /* android.content.Context */;
 	public _isAddedToNativeVisualTree: boolean;
-	/* "ui/styling/style-scope" */ public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
-	public _styleScope: ssm.StyleScope;
+	/* "ui/styling/style-scope" */ public _cssState: CssState = new CssState(new WeakRef(this));
+	public _styleScope: StyleScope;
 	/**
 	 * A property bag holding suspended native updates.
 	 * Native setters that had to execute while there was no native view,
@@ -648,14 +640,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	/**
 	 * Returns the child view with the specified id.
 	 */
-	getViewById<T extends ViewBaseDefinition>(id: string): T {
+	getViewById<T extends ViewBase>(id: string): T {
 		return <T>getViewById(this, id);
 	}
 
 	/**
 	 * Returns the child view with the specified domId.
 	 */
-	getViewByDomId<T extends ViewBaseDefinition>(domId: number): T {
+	getViewByDomId<T extends ViewBase>(domId: number): T {
 		return <T>getViewByDomId(this, domId);
 	}
 
@@ -676,8 +668,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public ensureDomNode() {
 		if (!this.domNode) {
-			ensuredomNodeModule();
-			this.domNode = new domNodeModule.DOMNode(this);
+			this.domNode = new DOMNode(this);
 		}
 	}
 
@@ -1407,8 +1398,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			throw new Error('Parameter should be valid CSS string!');
 		}
 
-		ensureStyleScopeModule();
-		styleScopeModule.applyInlineStyle(this, style, undefined);
+		applyInlineStyle(this, style, undefined);
 	}
 
 	public _parentChanged(oldParent: ViewBase): void {
@@ -1460,7 +1450,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 	}
 
-	_inheritStyleScope(styleScope: ssm.StyleScope): void {
+	_inheritStyleScope(styleScope: StyleScope): void {
 		// If we are styleScope don't inherit parent stylescope.
 		// TODO: Consider adding parent scope and merge selectors.
 		if (this._isStyleScopeHost) {
@@ -1630,14 +1620,3 @@ export const defaultVisualStateProperty = new Property<ViewBase, string>({
 	},
 });
 defaultVisualStateProperty.register(ViewBase);
-
-export function booleanConverter(v: string | boolean): boolean {
-	const lowercase = (v + '').toLowerCase();
-	if (lowercase === 'true') {
-		return true;
-	} else if (lowercase === 'false') {
-		return false;
-	}
-
-	throw new Error(`Invalid boolean: ${v}`);
-}

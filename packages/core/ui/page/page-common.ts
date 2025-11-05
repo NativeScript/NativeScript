@@ -1,6 +1,7 @@
 import { Page as PageDefinition } from '.';
 import { ContentView } from '../content-view';
-import { View, CSSType, ShownModallyData } from '../core/view';
+import { View, CSSType } from '../core/view';
+import { ShownModallyData } from '../core/view/view-interfaces';
 import { booleanConverter } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
 import { Style } from '../styling/style';
@@ -11,6 +12,7 @@ import { isFrame } from '../frame/frame-helpers';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
+import { PageEvents } from './events';
 
 interface NavigatedData extends EventData {
 	context: any;
@@ -19,10 +21,10 @@ interface NavigatedData extends EventData {
 
 @CSSType('Page')
 export class PageBase extends ContentView {
-	public static navigatingToEvent = 'navigatingTo';
-	public static navigatedToEvent = 'navigatedTo';
-	public static navigatingFromEvent = 'navigatingFrom';
-	public static navigatedFromEvent = 'navigatedFrom';
+	public static navigatingToEvent = PageEvents.navigatingToEvent;
+	public static navigatedToEvent = PageEvents.navigatedToEvent;
+	public static navigatingFromEvent = PageEvents.navigatingFromEvent;
+	public static navigatedFromEvent = PageEvents.navigatedFromEvent;
 
 	private _navigationContext: any;
 	private _actionBar: ActionBar;
@@ -59,13 +61,6 @@ export class PageBase extends ContentView {
 			this._actionBar = value;
 			this._addView(this._actionBar);
 		}
-	}
-
-	get statusBarStyle(): 'light' | 'dark' {
-		return this.style.statusBarStyle;
-	}
-	set statusBarStyle(value: 'light' | 'dark') {
-		this.style.statusBarStyle = value;
 	}
 
 	public get androidStatusBarBackground(): Color {
@@ -211,15 +206,6 @@ export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>
 	valueConverter: booleanConverter,
 });
 enableSwipeBackNavigationProperty.register(PageBase);
-
-/**
- * Property backing statusBarStyle.
- */
-export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
-	name: 'statusBarStyle',
-	cssName: 'status-bar-style',
-});
-statusBarStyleProperty.register(Style);
 
 /**
  * Property backing androidStatusBarBackground.
