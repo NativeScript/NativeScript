@@ -12,6 +12,7 @@ export abstract class SearchBarBase extends View implements SearchBarDefinition 
 	public hint: string;
 	public textFieldBackgroundColor: Color;
 	public textFieldHintColor: Color;
+	public clearButtonColor: Color | string;
 
 	public abstract dismissSoftInput();
 }
@@ -44,3 +45,11 @@ export const textFieldBackgroundColorProperty = new Property<SearchBarBase, Colo
 	valueConverter: (v) => new Color(v),
 });
 textFieldBackgroundColorProperty.register(SearchBarBase);
+
+// --- Added property for clear button color ---
+export const clearButtonColorProperty = new Property<SearchBarBase, Color>({
+	name: 'clearButtonColor',
+	equalityComparer: Color.equals,
+	valueConverter: (v) => new Color(v),
+});
+clearButtonColorProperty.register(SearchBarBase);

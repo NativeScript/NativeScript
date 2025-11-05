@@ -17,6 +17,7 @@ import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData,
 import { Application } from '../../application/application';
 import { isEmbedded, setEmbeddedView } from '../embedding';
 import { CALLBACKS, FRAMEID, framesCache, setFragmentCallbacks } from './frame-helper-for-android';
+import { Device } from '../../platform';
 
 export * from './frame-common';
 export { setFragmentClass } from './fragment';
@@ -74,6 +75,8 @@ export class Frame extends FrameBase {
 	private _containerViewId = -1;
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
+	_defaultOverflowEdge: number;
+	_defaultOverflowEdgeValue: string;
 	/**
 	 * This property indicates that the view is to be reused as a root view or has been previously disposed.
 	 */
@@ -84,6 +87,7 @@ export class Frame extends FrameBase {
 	constructor() {
 		super();
 		this._android = new AndroidFrame(this);
+		this.androidOverflowEdge = 'ignore';
 	}
 
 	public static reloadPage(context?: ModuleContext): void {
@@ -759,6 +763,78 @@ function startActivity(activity: androidx.appcompat.app.AppCompatActivity, frame
 	activity.startActivity(intent);
 }
 
+let OnBackPressedCallback;
+
+if (parseInt(Device.sdkVersion) >= 33) {
+	OnBackPressedCallback = (<any>androidx.activity.OnBackPressedCallback).extend('com.tns.OnBackPressedCallback', {
+		handleOnBackPressed() {
+			if (Trace.isEnabled()) {
+				Trace.write('NativeScriptActivity.onBackPressed;', Trace.categories.NativeLifecycle);
+			}
+
+			const activity = this['_activity']?.get();
+
+			if (!activity) {
+				if (Trace.isEnabled()) {
+					Trace.write('NativeScriptActivity.onBackPressed; Activity is null, calling super', Trace.categories.NativeLifecycle);
+				}
+
+				this.setEnabled(false);
+
+				return;
+			}
+
+			const args = <AndroidActivityBackPressedEventData>{
+				eventName: 'activityBackPressed',
+
+				object: Application,
+
+				android: Application.android,
+
+				activity: activity,
+
+				cancel: false,
+			};
+
+			Application.android.notify(args);
+
+			if (args.cancel) {
+				return;
+			}
+
+			const view = activity._rootView;
+
+			let callSuper = false;
+
+			const viewArgs = <AndroidActivityBackPressedEventData>{
+				eventName: 'activityBackPressed',
+
+				object: view,
+
+				activity: activity,
+
+				cancel: false,
+			};
+
+			view?.notify(viewArgs);
+
+			// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
+
+			if (!viewArgs.cancel && (view?.onBackPressed === Frame.prototype.onBackPressed || !view?.onBackPressed())) {
+				callSuper = view instanceof Frame ? !Frame.goBack() : true;
+			}
+
+			if (callSuper) {
+				this.setEnabled(false);
+
+				activity.getOnBackPressedDispatcher().onBackPressed();
+
+				this.setEnabled(true);
+			}
+		},
+	});
+}
+
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
 const ROOT_VIEW_ID_EXTRA = 'com.tns.activity.rootViewId';
 
@@ -1052,4 +1128,13 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 
 export function setActivityCallbacks(activity: androidx.appcompat.app.AppCompatActivity): void {
 	activity[CALLBACKS] = new ActivityCallbacksImplementation();
+	if (OnBackPressedCallback && !activity['_onBackPressed']) {
+		const callback = new OnBackPressedCallback(true);
+
+		callback['_activity'] = new WeakRef(activity);
+
+		activity['_onBackPressed'] = true;
+
+		(activity as androidx.activity.ComponentActivity).getOnBackPressedDispatcher().addCallback(activity, callback);
+	}
 }

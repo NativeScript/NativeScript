@@ -23,14 +23,58 @@ function getConsumer(mapPath: string, sourceMap: any) {
 			c = new SourceMapConsumer(sourceMap);
 			consumerCache.set(mapPath, c);
 		} catch (error) {
-			console.error(`Failed to create SourceMapConsumer for ${mapPath}:`, error);
+			// Keep quiet in production-like console; failures just fall back to original stack
+			console.debug && console.debug(`SourceMapConsumer failed for ${mapPath}:`, error);
 			return null;
 		}
 	}
 	return c;
 }
 
-function loadAndExtractMap(mapPath: string) {
+function safeReadText(path: string): string | null {
+	try {
+		if (File.exists(path)) {
+			return File.fromPath(path).readTextSync();
+		}
+	} catch (_) {}
+	return null;
+}
+
+function findInlineOrLinkedMapFromJs(jsPath: string): { key: string; text: string } | null {
+	const jsText = safeReadText(jsPath);
+	if (!jsText) return null;
+
+	// Look for the last sourceMappingURL directive
+	// Supports both //# and /*# */ styles; capture up to line end or */
+	const re = /[#@]\s*sourceMappingURL=([^\s*]+)(?:\s*\*\/)?/g;
+	let match: RegExpExecArray | null = null;
+	let last: RegExpExecArray | null = null;
+	while ((match = re.exec(jsText))) last = match;
+	if (!last) return null;
+
+	const url = last[1];
+	if (url.startsWith('data:application/json')) {
+		const base64 = url.split(',')[1];
+		if (!base64) return null;
+		try {
+			const text = atob(base64);
+			return { key: `inline:${jsPath}`, text };
+		} catch (_) {
+			return null;
+		}
+	}
+
+	// Linked .map file (relative)
+	const jsDir = jsPath.substring(0, jsPath.lastIndexOf('/'));
+	const mapPath = `${jsDir}/${url}`;
+	const text = safeReadText(mapPath);
+	if (text) {
+		return { key: mapPath, text };
+	}
+	return null;
+}
+
+function loadAndExtractMap(mapPath: string, fallbackJsPath?: string) {
 	// check cache first
 	if (!loadedSourceMaps) {
 		loadedSourceMaps = new Map();
@@ -67,12 +111,24 @@ function loadAndExtractMap(mapPath: string) {
 					mapText = binary;
 				}
 			} catch (error) {
-				console.error(`Failed to load source map ${mapPath}:`, error);
+				console.debug && console.debug(`Failed to load source map ${mapPath}:`, error);
 				return null;
 			}
 		} else {
-			// no source maps
-			return null;
+			// Try fallback: read inline or linked map from the JS file itself
+			if (fallbackJsPath) {
+				const alt = findInlineOrLinkedMapFromJs(fallbackJsPath);
+				if (alt && alt.text) {
+					mapText = alt.text;
+					// Cache under both the requested key and the alt key so future lookups are fast
+					loadedSourceMaps.set(alt.key, alt.text);
+				} else {
+					return null;
+				}
+			} else {
+				// no source maps
+				return null;
+			}
 		}
 	}
 	loadedSourceMaps.set(mapPath, mapText); // cache it
@@ -92,9 +148,19 @@ function remapFrame(file: string, line: number, column: number) {
 	if (usingSourceMapFiles) {
 		sourceMapFileExt = '.map';
 	}
-	const mapPath = `${appPath}/${file.replace('file:///app/', '')}${sourceMapFileExt}`;
+	const rel = file.replace('file:///app/', '');
+	const jsPath = `${appPath}/${rel}`;
+	let mapPath = `${jsPath}${sourceMapFileExt}`; // default: same name + .map
 
-	const sourceMap = loadAndExtractMap(mapPath);
+	// Fallback: if .mjs.map missing, try .js.map
+	if (!File.exists(mapPath) && rel.endsWith('.mjs')) {
+		const jsMapFallback = `${appPath}/${rel.replace(/\.mjs$/, '.js.map')}`;
+		if (File.exists(jsMapFallback)) {
+			mapPath = jsMapFallback;
+		}
+	}
+
+	const sourceMap = loadAndExtractMap(mapPath, jsPath);
 
 	if (!sourceMap) {
 		return { source: null, line: 0, column: 0 };
@@ -108,7 +174,7 @@ function remapFrame(file: string, line: number, column: number) {
 	try {
 		return consumer.originalPositionFor({ line, column });
 	} catch (error) {
-		console.error(`Failed to get original position for ${file}:${line}:${column}:`, error);
+		console.debug && console.debug(`Remap failed for ${file}:${line}:${column}:`, error);
 		return { source: null, line: 0, column: 0 };
 	}
 }
@@ -116,18 +182,36 @@ function remapFrame(file: string, line: number, column: number) {
 function remapStack(raw: string): string {
 	const lines = raw.split('\n');
 	const out = lines.map((line) => {
-		const m = /\((.+):(\d+):(\d+)\)/.exec(line);
-		if (!m) return line;
-
-		try {
-			const [_, file, l, c] = m;
-			const orig = remapFrame(file, +l, +c);
-			if (!orig.source) return line;
-			return line.replace(/\(.+\)/, `(${orig.source}:${orig.line}:${orig.column})`);
-		} catch (error) {
-			console.error('Failed to remap stack frame:', line, error);
-			return line; // return original line if remapping fails
+		// 1) Parenthesized frame: at fn (file:...:L:C)
+		let m = /\((.+):(\d+):(\d+)\)/.exec(line);
+		if (m) {
+			try {
+				const [_, file, l, c] = m;
+				const orig = remapFrame(file, +l, +c);
+				if (!orig.source) return line;
+				return line.replace(/\(.+\)/, `(${orig.source}:${orig.line}:${orig.column})`);
+			} catch (error) {
+				console.debug && console.debug('Remap failed for frame:', line, error);
+				return line;
+			}
 		}
+
+		// 2) Bare frame: at file:///app/vendor.js:L:C (no parentheses)
+		const bare = /(\s+at\s+)([^\s()]+):(\d+):(\d+)/.exec(line);
+		if (bare) {
+			try {
+				const [, prefix, file, l, c] = bare;
+				const orig = remapFrame(file, +l, +c);
+				if (!orig.source) return line;
+				const replacement = `${prefix}${orig.source}:${orig.line}:${orig.column}`;
+				return line.replace(bare[0], replacement);
+			} catch (error) {
+				console.debug && console.debug('Remap failed for bare frame:', line, error);
+				return line;
+			}
+		}
+
+		return line;
 	});
 	return out.join('\n');
 }
@@ -141,7 +225,7 @@ function remapStack(raw: string): string {
 	try {
 		return remapStack(rawStack);
 	} catch (error) {
-		console.error('Failed to remap stack trace, returning original:', error);
+		console.debug && console.debug('Remap failed, returning original:', error);
 		return rawStack; // fallback to original stack trace
 	}
 };

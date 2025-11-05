@@ -1,5 +1,5 @@
 import type { Point, Position } from './view-interfaces';
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant, GlassEffectConfig } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant, GlassEffectConfig, statusBarStyleProperty } from './view-common';
 import { isAccessibilityServiceEnabled } from '../../../application';
 import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -393,7 +393,7 @@ export class View extends ViewCommon {
 		}
 
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadow();
+		const backgroundDependsOnSize = (background.image && background.image !== 'none') || background.clipPath || !background.hasUniformBorder() || background.hasBorderRadius() || background.hasBoxShadows();
 
 		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
 			this._redrawNativeBackground(background);
@@ -560,12 +560,21 @@ export class View extends ViewCommon {
 			}
 		}
 
-		if (options.ios && options.ios.presentationStyle) {
-			const presentationStyle = options.ios.presentationStyle;
-			controller.modalPresentationStyle = presentationStyle;
+		if (options.ios) {
+			if (options.ios.presentationStyle) {
+				const presentationStyle = options.ios.presentationStyle;
+				controller.modalPresentationStyle = presentationStyle;
 
-			if (presentationStyle === UIModalPresentationStyle.Popover) {
-				this._setupPopoverControllerDelegate(controller, parent);
+				if (presentationStyle === UIModalPresentationStyle.Popover) {
+					this._setupPopoverControllerDelegate(controller, parent);
+				}
+			}
+			if (options.ios.statusBarStyle) {
+				/**
+				 * https://developer.apple.com/documentation/uikit/uiviewcontroller/modalpresentationcapturesstatusbarappearance
+				 */
+				controller.modalPresentationCapturesStatusBarAppearance = true;
+				this.statusBarStyle = options.ios.statusBarStyle;
 			}
 		}
 
@@ -950,6 +959,26 @@ export class View extends ViewCommon {
 			return effectView;
 		}
 		return undefined;
+	}
+	[statusBarStyleProperty.getDefault]() {
+		return this.style.statusBarStyle;
+	}
+	[statusBarStyleProperty.setNative](value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
+		const parent = this.parent;
+		if (parent) {
+			const ctrl = parent.ios?.controller;
+			if (ctrl && ctrl instanceof UINavigationController) {
+				const navigationBar = ctrl.navigationBar;
+				if (!navigationBar) return;
+
+				if (typeof value === 'string') {
+					navigationBar.barStyle = value === 'dark' ? UIBarStyle.Black : UIBarStyle.Default;
+				} else {
+					navigationBar.barStyle = value;
+				}
+			}
+		}
 	}
 
 	[iosGlassEffectProperty.setNative](value: GlassEffectType) {

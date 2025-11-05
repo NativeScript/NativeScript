@@ -93,6 +93,13 @@ export abstract class View extends ViewCommon {
 	public static accessibilityFocusChangedEvent: string;
 
 	/**
+	 * String value used when hooking to androidOverflowInset event.
+	 *
+	 * @nsEvent {EventDataValue} androidOverflowInset
+	 */
+	public static androidOverflowInsetEvent: string;
+
+	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
 	 */
 	// @ts-ignore
@@ -377,7 +384,7 @@ export abstract class View extends ViewCommon {
 	 *
 	 * @nsProperty
 	 */
-	boxShadow: string | ShadowCSSValues;
+	boxShadow: string | ShadowCSSValues[];
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.
@@ -631,6 +638,22 @@ export abstract class View extends ViewCommon {
 	 */
 	cssType: string;
 
+	/**
+	 * Gets or sets the status bar style for this view.
+	 * Platform Notes:
+	 *   - Android: When using this property throughout navigations, ensure starting views have it set as well. Ensures it will reset on back navigation.
+	 *   - iOS: You must remove Info.plist key `UIViewControllerBasedStatusBarAppearance`
+	 * It defaults to true when not present: https://developer.apple.com/documentation/bundleresources/information-property-list/uiviewcontrollerbasedstatusbarappearance
+	 * Or you can explicitly set it to true:
+	 * <key>UIViewControllerBasedStatusBarAppearance</key>
+	 * <true/>
+	 *
+	 * False value will make this property have no effect.
+	 *
+	 * @nsProperty
+	 */
+	statusBarStyle: 'light' | 'dark';
+
 	cssClasses: Set<string>;
 	cssPseudoClasses: Set<string>;
 
@@ -785,6 +808,11 @@ export abstract class View extends ViewCommon {
 	 * Raised after the view is shown as a modal dialog.
 	 */
 	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+
+	/**
+	 * Raised after the view is shown as a modal dialog.
+	 */
+	on(event: 'androidOverflowInset', callback: (args: ShownModallyData) => void, thisArg?: any);
 
 	/**
 	 * Returns the current modal view that this page is showing (is parent of), if any.

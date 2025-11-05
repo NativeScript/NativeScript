@@ -6,7 +6,8 @@ import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
 import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
-import { Property, InheritedProperty } from '../properties';
+import { Property, InheritedProperty, CssProperty } from '../properties';
+import { Style } from '../../styling/style';
 import { EventData } from '../../../data/observable';
 import { ViewHelper } from './view-helper';
 import { setupAccessibleView } from '../../../application/helpers';
@@ -79,6 +80,7 @@ export abstract class ViewCommon extends ViewBase {
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
 	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+	public static androidOverflowInsetEvent = 'androidOverflowInset';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
@@ -198,6 +200,12 @@ export abstract class ViewCommon extends ViewBase {
 		super.onLoaded();
 
 		setupAccessibleView(this);
+
+		if (this.statusBarStyle) {
+			// reapply status bar style on load
+			// helps back navigation cases to restore if overridden
+			this.updateStatusBarStyle(this.statusBarStyle);
+		}
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -721,10 +729,10 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.backgroundRepeat = value;
 	}
 
-	get boxShadow(): ShadowCSSValues {
+	get boxShadow(): string | ShadowCSSValues[] {
 		return this.style.boxShadow;
 	}
-	set boxShadow(value: ShadowCSSValues) {
+	set boxShadow(value: string | ShadowCSSValues[]) {
 		this.style.boxShadow = value;
 	}
 
@@ -975,6 +983,14 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.androidDynamicElevationOffset = value;
 	}
 
+	/**
+	 * (Android only) Gets closest window parent considering modals.
+	 */
+	getClosestWindow(): android.view.Window {
+		// platform impl
+		return null;
+	}
+
 	//END Style property shortcuts
 
 	public originX: number;
@@ -984,6 +1000,7 @@ export abstract class ViewCommon extends ViewBase {
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
 	public iosIgnoreSafeArea: boolean;
+	public androidOverflowEdge: CoreTypes.AndroidOverflow;
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
@@ -998,6 +1015,17 @@ export abstract class ViewCommon extends ViewBase {
 	}
 	set cssType(type: string) {
 		this._cssType = type.toLowerCase();
+	}
+
+	get statusBarStyle(): 'light' | 'dark' {
+		return this.style.statusBarStyle;
+	}
+	set statusBarStyle(value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light') {
+		// platform specific impl
 	}
 
 	get isLayoutRequired(): boolean {
@@ -1319,6 +1347,15 @@ export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean
 });
 isUserInteractionEnabledProperty.register(ViewCommon);
 
+/**
+ * Property backing statusBarStyle.
+ */
+export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
+	name: 'statusBarStyle',
+	cssName: 'status-bar-style',
+});
+statusBarStyleProperty.register(Style);
+
 // Apple only
 export const iosOverflowSafeAreaProperty = new Property<ViewCommon, boolean>({
 	name: 'iosOverflowSafeArea',
@@ -1339,6 +1376,12 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+
+export const androidOverflowEdgeProperty = new Property<ViewCommon, CoreTypes.AndroidOverflow>({
+	name: 'androidOverflowEdge',
+	defaultValue: 'ignore',
+});
+androidOverflowEdgeProperty.register(ViewCommon);
 
 /**
  * Glass effects
