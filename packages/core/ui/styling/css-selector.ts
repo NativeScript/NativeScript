@@ -1,7 +1,7 @@
 import { parse as convertToCSSWhatSelector, Selector as CSSWhatSelector, DataType as CSSWhatDataType } from 'css-what';
 import '../../globals';
 import { isCssVariable } from '../core/properties';
-import { Trace } from '../../trace';
+import { Trace, CoreTypes } from './styling-shared';
 import { isNullOrUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';

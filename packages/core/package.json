@@ -2,8 +2,10 @@
 	"name": "@nativescript/core",
 	"version": "9.0.0",
 	"description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
+	"type": "module",
 	"main": "index",
 	"types": "index.d.ts",
+	"module": "./index.js",
 	"sideEffects": [
 		"bundle-entry-points.js",
 		"./globals/index.js",
@@ -12,6 +14,8 @@
 	"files": [
 		"**/*.d.ts",
 		"**/*.js",
+		"**/*.mjs",
+		"**/*.cjs",
 		"**/*.map",
 		"**/platforms/ios/**",
 		"platforms/android/**",
@@ -49,20 +53,21 @@
 	},
 	"license": "Apache-2.0",
 	"scripts": {
-		"postinstall": "node cli-hooks/postinstall.js",
-		"preuninstall": "node cli-hooks/preuninstall.js"
+		"postinstall": "node cli-hooks/postinstall.mjs",
+		"preuninstall": "node cli-hooks/preuninstall.mjs"
 	},
 	"dependencies": {
-		"@csstools/css-calc": "~2.1.2",
-		"@csstools/css-color-parser": "^3.0.8",
-		"@csstools/css-parser-algorithms": "^3.0.4",
-		"@csstools/css-tokenizer": "^3.0.3",
-		"@nativescript/hook": "~2.0.0",
-		"acorn": "^8.7.0",
-		"css-tree": "^1.1.2",
-		"css-what": "^6.1.0",
+		"@csstools/css-calc": "~2.1.4",
+		"@csstools/css-color-parser": "^3.0.10",
+		"@csstools/css-parser-algorithms": "^3.0.5",
+		"@csstools/css-tokenizer": "^3.0.4",
+		"@nativescript/hook": "~3.0.4",
+		"acorn": "^8.15.0",
+		"css-tree": "^3.1.0",
+		"css-what": "^7.0.0",
 		"emoji-regex": "^10.2.1",
-		"source-map": "0.6.1",
+		"source-map": "0.7.6",
+		"source-map-js": "^1.2.1",
 		"tslib": "^2.0.0"
 	},
 	"nativescript": {
@@ -74,7 +79,7 @@
 			{
 				"name": "nativescript-core",
 				"type": "before-checkForChanges",
-				"script": "cli-hooks/before-checkForChanges.js",
+				"script": "cli-hooks/before-checkForChanges.mjs",
 				"inject": true
 			}
 		]

@@ -50,6 +50,9 @@ export interface IWebpackEnv {
 	// print webpack stats (default: true)
 	stats?: boolean;
 
+	// enable commonjs modules (default: ES modules, esm)
+	commonjs?: boolean;
+
 	// misc
 	replace?: string[] | string;
 	watchNodeModules?: boolean;
@@ -158,10 +161,9 @@ export function chainWebpack(
  * @param mergeFn An object or a function that optionally returns an object (can mutate the object directly and return nothing)
  */
 export function mergeWebpack(
-	mergeFn: ((
-		config: Partial<webpack.Configuration>,
-		env: IWebpackEnv,
-	) => any) | Partial<webpack.Configuration>,
+	mergeFn:
+		| ((config: Partial<webpack.Configuration>, env: IWebpackEnv) => any)
+		| Partial<webpack.Configuration>,
 ) {
 	webpackMerges.push(mergeFn);
 }

@@ -9,6 +9,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
 import { ViewBase } from '../view-base';
 import { ViewCommon } from './view-common';
+import type { Point } from './view-interfaces';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -18,17 +19,6 @@ export * from './view-helper';
 export * from '../properties';
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
-
-export interface Inset {
-	top: number;
-	right: number;
-	bottom: number;
-	left: number;
-	topConsumed: boolean;
-	rightConsumed: boolean;
-	bottomConsumed: boolean;
-	leftConsumed: boolean;
-}
 
 /**
  * Specifies the type name for the instances of this View class,
@@ -53,77 +43,6 @@ export function CSSType(type: string): ClassDecorator;
  * @param type Type of the ModuleType to be matched
  */
 export function viewMatchesModuleContext(view: View, context: ModuleContext, type: ModuleType[]): boolean;
-
-/**
- * The Point interface describes a two dimensional location.
- * It has two properties x and y, representing the x and y coordinate of the location.
- */
-export interface Point {
-	/**
-	 * Represents the x coordinate of the location.
-	 */
-	x: number;
-
-	/**
-	 * Represents the y coordinate of the location.
-	 */
-	y: number;
-
-	/**
-	 * Represents the z coordinate of the location.
-	 */
-	z?: number;
-}
-
-export interface Position {
-	top: number;
-	right: number;
-	bottom: number;
-	left: number;
-}
-
-/**
- * The Size interface describes abstract dimensions in two dimensional space.
- * It has two properties width and height, representing the width and height values of the size.
- */
-export interface Size {
-	/**
-	 * Represents the width of the size.
-	 */
-	width: number;
-
-	/**
-	 * Represents the height of the size.
-	 */
-	height: number;
-}
-
-/**
- * Defines the data for the shownModally event.
- */
-export interface ShownModallyData extends EventData {
-	/**
-	 * The context (optional, may be undefined) passed to the view when shown modally.
-	 */
-	context?: any;
-
-	/**
-	 * A callback to call when you want to close the modally shown view.
-	 * Pass in any kind of arguments and you will receive when the callback parameter
-	 * of View.showModal is executed.
-	 */
-	closeCallback?: Function;
-}
-
-/**
- * Defines the data for the androidOverflowInset event.
- */
-export interface AndroidOverflowInsetData extends EventData {
-	/**
-	 * The inset values passed to the view to consume or update.
-	 */
-	inset?: Inset;
-}
 
 /**
  * This class is the base class for all UI components.
@@ -718,6 +637,22 @@ export abstract class View extends ViewCommon {
 	 * Using this as element type should allow for PascalCase and kebap-case selectors, when fully qualified, to match the element.
 	 */
 	cssType: string;
+
+	/**
+	 * Gets or sets the status bar style for this view.
+	 * Platform Notes:
+	 *   - Android: When using this property throughout navigations, ensure starting views have it set as well. Ensures it will reset on back navigation.
+	 *   - iOS: You must remove Info.plist key `UIViewControllerBasedStatusBarAppearance`
+	 * It defaults to true when not present: https://developer.apple.com/documentation/bundleresources/information-property-list/uiviewcontrollerbasedstatusbarappearance
+	 * Or you can explicitly set it to true:
+	 * <key>UIViewControllerBasedStatusBarAppearance</key>
+	 * <true/>
+	 *
+	 * False value will make this property have no effect.
+	 *
+	 * @nsProperty
+	 */
+	statusBarStyle: 'light' | 'dark';
 
 	cssClasses: Set<string>;
 	cssPseudoClasses: Set<string>;

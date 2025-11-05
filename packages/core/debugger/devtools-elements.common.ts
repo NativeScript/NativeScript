@@ -1,19 +1,24 @@
-// Types
-import { ViewBase } from '../ui/core/view-base';
-
-//Requires
-import { getNodeById } from './dom-node';
+import { androidGetCurrentActivity } from '../application/helpers';
+import { getRootView } from '../application/helpers-common';
+import type { ViewBase } from '../ui/core/view-base';
+import { unsetValue } from '../ui/core/properties/property-shared';
+import { getNodeById } from './dom-types';
 import { mainThreadify } from '../utils';
 
-// Use lazy requires for core modules
-const getAppRootView = () => require('../application').getRootView();
-
-let unsetValue;
-function unsetViewValue(view, name) {
-	if (!unsetValue) {
-		unsetValue = require('../ui/core/properties').unsetValue;
+function getAppRootView() {
+	if (__ANDROID__) {
+		const activity = androidGetCurrentActivity();
+		if (!activity) {
+			return undefined;
+		}
+		const callbacks = activity['_callbacks'];
+		return callbacks ? callbacks.getRootView() : undefined;
+	} else {
+		return getRootView();
 	}
+}
 
+function unsetViewValue(view, name) {
 	view[name] = unsetValue;
 }
 

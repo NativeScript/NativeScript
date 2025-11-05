@@ -1,13 +1,13 @@
-// Definitions.
-import type { Point, CustomLayoutView as CustomLayoutViewDefinition, Position } from '.';
+import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
-
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
+import { getNativeScriptGlobals } from '../../../globals/global-utils';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
-import { isCssWideKeyword } from '../properties';
+import { isCssWideKeyword } from '../properties/property-shared';
 import { EventData } from '../../../data/observable';
 
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
@@ -17,9 +17,11 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, Application } from '../../../application';
+import { AndroidActivityBackPressedEventData } from '../../../application/application-interfaces';
+import { isAppInBackground, updateA11yPropertiesCallback } from '../../../application/helpers-common';
+import { updateContentDescription } from '../../../application/helpers';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
@@ -49,6 +51,10 @@ const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
 const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
 const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
 const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+
+const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
+const STATUS_BAR_LIGHT_BCKG = -657931;
+const STATUS_BAR_DARK_BCKG = 1711276032;
 
 const modalMap = new Map<number, DialogOptions>();
 
@@ -141,7 +147,7 @@ function initializeDialogFragment() {
 			};
 
 			// Fist fire application.android global event
-			Application.android.notify(args);
+			getNativeScriptGlobals().events.notify(args);
 			if (args.cancel) {
 				return;
 			}
@@ -874,7 +880,7 @@ export class View extends ViewCommon {
 		// if the app is in background while triggering _showNativeModalView
 		// then DialogFragment.show will trigger IllegalStateException: Can not perform this action after onSaveInstanceState
 		// so if in background we create an event to call _showNativeModalView when loaded (going back in foreground)
-		if (Application.inBackground && !parent.isLoaded) {
+		if (isAppInBackground() && !parent.isLoaded) {
 			const onLoaded = () => {
 				parent.off('loaded', onLoaded);
 				this._showNativeModalView(parent, options);
@@ -1002,7 +1008,7 @@ export class View extends ViewCommon {
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value as AccessibilityRole;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 
 		if (SDK_VERSION >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
@@ -1028,7 +1034,7 @@ export class View extends ViewCommon {
 
 	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
 		this.accessibilityState = value as AccessibilityState;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
@@ -1111,6 +1117,89 @@ export class View extends ViewCommon {
 		}
 	}
 
+	[statusBarStyleProperty.getDefault]() {
+		return this.style.statusBarStyle;
+	}
+
+	[statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
+		this.updateStatusBarStyle(value);
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
+		if (SDK_VERSION < 21) return; // nothing we can do
+
+		const window = this.getClosestWindow();
+		// Ensure the window draws system bar backgrounds (required to color status bar)
+		window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+		window.addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+		const decorView = window.getDecorView();
+
+		// API 30+ path (preferred)
+		const controller = window.getInsetsController?.();
+		if (controller && SDK_VERSION >= 30) {
+			const APPEARANCE_LIGHT_STATUS_BARS = android.view.WindowInsetsController?.APPEARANCE_LIGHT_STATUS_BARS;
+
+			if (typeof value === 'string') {
+				this.style.statusBarStyle = value;
+				if (value === 'light') {
+					// light icons/text
+					controller.setSystemBarsAppearance(0, APPEARANCE_LIGHT_STATUS_BARS);
+				} else {
+					// dark icons/text
+					controller.setSystemBarsAppearance(APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS);
+				}
+			} else {
+				if (value.color != null) window.setStatusBarColor(value.color);
+				// No direct passthrough for systemUiVisibility on API 30+, use appearances instead
+			}
+			return;
+		}
+
+		// API 23–29 path (systemUiVisibility)
+		if (SDK_VERSION >= 23) {
+			if (typeof value === 'string') {
+				this.style.statusBarStyle = value;
+				let flags = decorView.getSystemUiVisibility();
+				if (value === 'light') {
+					// Add the LIGHT_STATUS_BAR bit without clobbering other flags
+					flags |= android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+					decorView.setSystemUiVisibility(flags);
+				} else {
+					// Remove only the LIGHT_STATUS_BAR bit
+					flags &= ~android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+					decorView.setSystemUiVisibility(flags);
+				}
+			} else {
+				if (value.color != null) window.setStatusBarColor(value.color);
+				if (value.systemUiVisibility != null) {
+					// Preserve existing flags, don’t blindly overwrite to 0
+					const merged = (decorView.getSystemUiVisibility() & ~android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) | (value.systemUiVisibility & android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+					decorView.setSystemUiVisibility(merged);
+				}
+			}
+			return;
+		}
+
+		// API 21–22: you can only change the background color; icon color is fixed (light)
+		if (typeof value === 'object' && value.color != null) {
+			window.setStatusBarColor(value.color);
+		}
+	}
+
+	getClosestWindow(): android.view.Window {
+		// When it comes to modals, check parent as it may not be the modal root view itself
+		const view = this.parent ?? this;
+		const dialogFragment = (view as this)._dialogFragment;
+		if (dialogFragment) {
+			const dialog = dialogFragment.getDialog();
+			if (dialog) {
+				return dialog.getWindow();
+			}
+		}
+		return this._context.getWindow();
+	}
+
 	[testIDProperty.setNative](value: string) {
 		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
@@ -1130,7 +1219,7 @@ export class View extends ViewCommon {
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
 
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
@@ -1161,7 +1250,7 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityMediaSessionProperty.setNative](value: string): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[androidElevationProperty.getDefault](): number {
@@ -1499,7 +1588,7 @@ export class ContainerView extends View {
 	}
 }
 
-export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
+export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: android.view.ViewGroup;
 
 	public createNativeView() {
@@ -1598,15 +1687,15 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 				setPixels(this.nativeViewProtected, auto);
 			} else if (typeof length === 'number') {
 				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length)));
-			} else if (length.unit == 'dip') {
+			} else if ((length as CoreTypes.LengthDipUnit).unit == 'dip') {
 				// tslint:disable-line
-				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length.value)));
-			} else if (length.unit == 'px') {
+				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels((length as CoreTypes.LengthDipUnit).value)));
+			} else if ((length as CoreTypes.LengthPxUnit).unit == 'px') {
 				// tslint:disable-line
-				setPixels(this.nativeViewProtected, layout.round(length.value));
-			} else if (length.unit == '%') {
+				setPixels(this.nativeViewProtected, layout.round((length as CoreTypes.LengthPxUnit).value));
+			} else if ((length as CoreTypes.LengthPercentUnit).unit == '%') {
 				// tslint:disable-line
-				setPercent(this.nativeViewProtected, length.value);
+				setPercent(this.nativeViewProtected, (length as CoreTypes.LengthPercentUnit).value);
 			} else {
 				throw new Error(`Unsupported PercentLength ${length}`);
 			}

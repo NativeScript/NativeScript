@@ -1,6 +1,6 @@
 import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty } from './wrap-layout-common';
 import { CoreTypes } from '../../../core-types';
-import { Length } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 
 export * from './wrap-layout-common';
 

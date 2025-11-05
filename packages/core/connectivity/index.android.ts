@@ -1,5 +1,6 @@
-import { Application } from '../application';
+import { getNativeApp } from '../application/helpers-common';
 import { SDK_VERSION } from '../utils/constants';
+import { Application } from '../application';
 
 export enum connectionType {
 	none = 0,
@@ -18,7 +19,7 @@ const vpn = 'vpn';
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
-	return Application.android.getNativeApplication().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+	return getNativeApp<android.app.Application>().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {

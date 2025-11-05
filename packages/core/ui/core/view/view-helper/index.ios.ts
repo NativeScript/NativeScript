@@ -1,11 +1,12 @@
 // Types
-import { Position, View } from '..';
+import { Position } from '../view-interfaces';
+import type { View } from '..';
 
 // Requires
 import { ViewHelper } from './view-helper-common';
 import { SDK_VERSION } from '../../../../utils/constants';
-import { ios as iOSUtils, layout } from '../../../../utils';
-import { Trace } from '../../../../trace';
+import { layout, Trace } from './view-helper-shared';
+import { ios as iOSUtils } from '../../../../utils';
 
 export * from './view-helper-common';
 export const AndroidHelper = 0;
@@ -41,7 +42,7 @@ class UILayoutViewController extends UIViewController {
 		super.viewDidLayoutSubviews();
 		const owner = this.owner?.deref();
 		if (owner) {
-			if (iOSUtils.MajorVersion >= 11) {
+			if (SDK_VERSION >= 11) {
 				// Handle nested UILayoutViewController safe area application.
 				// Currently, UILayoutViewController can be nested only in a TabView.
 				// The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
@@ -116,7 +117,7 @@ class UILayoutViewController extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (iOSUtils.MajorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			const owner = this.owner?.deref();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
@@ -124,6 +125,20 @@ class UILayoutViewController extends UIViewController {
 					object: owner,
 				});
 			}
+		}
+	}
+
+	// @ts-ignore
+	public get preferredStatusBarStyle(): UIStatusBarStyle {
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.DarkContent : UIStatusBarStyle.LightContent;
+			} else {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
+		} else {
+			return UIStatusBarStyle.Default;
 		}
 	}
 }

@@ -1,18 +1,21 @@
-import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
-import { initAccessibilityFontScale } from '../accessibility/font-scale';
 import { CoreTypes } from '../core-types';
 import { CSSUtils } from '../css/system-classes';
 import { Device, Screen } from '../platform';
 import { profile } from '../profiling';
 import { Trace } from '../trace';
+import { clearResolverCache, prepareAppForModuleResolver, _setResolver } from '../module-name-resolver/helpers';
 import { Builder } from '../ui/builder';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
 import type { View } from '../ui/core/view';
 import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
-import type { AndroidApplication as IAndroidApplication, iOSApplication as IiOSApplication } from './';
+import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
+import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
+import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
+import { getNativeScriptGlobals } from '../globals/global-utils';
+import { SDK_VERSION } from '../utils/constants';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -27,7 +30,68 @@ const SYSTEM_APPEARANCE_CSS_CLASSES = [
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`,
 ];
 
-const globalEvents = global.NativeScriptGlobals.events;
+// SDK Version CSS classes
+let sdkVersionClasses: string[] = [];
+
+export function initializeSdkVersionClass(rootView: View): void {
+	const majorVersion = Math.floor(SDK_VERSION);
+	sdkVersionClasses = [];
+
+	let platformPrefix = '';
+	if (__APPLE__) {
+		platformPrefix = __VISIONOS__ ? 'ns-visionos' : 'ns-ios';
+	} else if (__ANDROID__) {
+		platformPrefix = 'ns-android';
+	}
+
+	if (platformPrefix) {
+		// Add exact version class (e.g., .ns-ios-26 or .ns-android-36)
+		// this acts like 'gte' for that major version range
+		// e.g., if user wants iOS 27, they can add .ns-ios-27 specifiers
+		sdkVersionClasses.push(`${platformPrefix}-${majorVersion}`);
+	}
+
+	// Apply the SDK version classes to root views
+	applySdkVersionClass(rootView);
+}
+
+function applySdkVersionClass(rootView: View): void {
+	if (!sdkVersionClasses.length) {
+		return;
+	}
+
+	if (!rootView) {
+		return;
+	}
+
+	// Batch apply all SDK version classes to root view for better performance
+	const classesToAdd = sdkVersionClasses.filter((className) => !rootView.cssClasses.has(className));
+	classesToAdd.forEach((className) => rootView.cssClasses.add(className));
+
+	// Apply to modal views only if there are any
+	const rootModalViews = <Array<View>>rootView._getRootModalViews();
+	if (rootModalViews.length > 0) {
+		rootModalViews.forEach((rootModalView) => {
+			const modalClassesToAdd = sdkVersionClasses.filter((className) => !rootModalView.cssClasses.has(className));
+			modalClassesToAdd.forEach((className) => rootModalView.cssClasses.add(className));
+		});
+	}
+}
+
+const globalEvents = getNativeScriptGlobals().events;
+
+// Scene lifecycle event names
+export const SceneEvents = {
+	sceneWillConnect: 'sceneWillConnect',
+	sceneDidActivate: 'sceneDidActivate',
+	sceneWillResignActive: 'sceneWillResignActive',
+	sceneWillEnterForeground: 'sceneWillEnterForeground',
+	sceneDidEnterBackground: 'sceneDidEnterBackground',
+	sceneDidDisconnect: 'sceneDidDisconnect',
+	sceneContentSetup: 'sceneContentSetup',
+};
+
+export type SceneEventName = (typeof SceneEvents)[keyof typeof SceneEvents];
 
 // helper interface to correctly type Application event handlers
 interface ApplicationEvents {
@@ -45,11 +109,6 @@ interface ApplicationEvents {
 	 * Event raised then livesync operation is performed.
 	 */
 	on(event: 'livesync', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
-
-	/**
-	 * This event is raised when application css is changed.
-	 */
-	on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on application launchEvent.
@@ -160,7 +219,7 @@ export class ApplicationCommon {
 	 * @internal - should not be constructed by the user.
 	 */
 	constructor() {
-		global.NativeScriptGlobals.appInstanceReady = true;
+		getNativeScriptGlobals().appInstanceReady = true;
 
 		global.__onUncaughtError = (error: NativeScriptError) => {
 			this.notify({
@@ -309,13 +368,11 @@ export class ApplicationCommon {
 		// implement in platform specific files (iOS only for now)
 	}
 
-	protected mainEntry: NavigationEntry;
-
 	/**
 	 * @returns The main entry of the application
 	 */
 	getMainEntry() {
-		return this.mainEntry;
+		return getAppMainEntry();
 	}
 
 	@profile
@@ -349,11 +406,11 @@ export class ApplicationCommon {
 
 			if (!rootView) {
 				// try to navigate to the mainEntry (if specified)
-				if (!this.mainEntry) {
+				if (!getAppMainEntry()) {
 					throw new Error('Main entry is missing. App cannot be started. Verify app bootstrap.');
 				}
 
-				rootView = Builder.createViewFromEntry(this.mainEntry);
+				rootView = Builder.createViewFromEntry(getAppMainEntry());
 			}
 		}
 
@@ -365,14 +422,14 @@ export class ApplicationCommon {
 	}
 
 	resetRootView(entry?: NavigationEntry | string) {
-		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
 		// rest of implementation is platform specific
 	}
 
 	initRootView(rootView: View) {
 		this.setRootViewCSSClasses(rootView);
-		initAccessibilityCssHelper();
-		initAccessibilityFontScale();
+		readyInitAccessibilityCssHelper();
+		readyInitFontScale();
 		this.notify(<InitRootViewEventData>{ eventName: this.initRootViewEvent, rootView });
 	}
 
@@ -508,7 +565,7 @@ export class ApplicationCommon {
 	}
 
 	hasLaunched(): boolean {
-		return global.NativeScriptGlobals && global.NativeScriptGlobals.launched;
+		return getNativeScriptGlobals().launched;
 	}
 
 	private _systemAppearance: 'dark' | 'light' | null;
@@ -575,14 +632,12 @@ export class ApplicationCommon {
 		rootView._onCssStateChange();
 	}
 
-	private _inBackground: boolean = false;
-
 	get inBackground() {
-		return this._inBackground;
+		return isAppInBackground();
 	}
 
 	setInBackground(value: boolean, additonalData?: any) {
-		this._inBackground = value;
+		setAppInBackground(value);
 
 		this.notify(<ApplicationEventData>{
 			eventName: value ? this.backgroundEvent : this.foregroundEvent,
@@ -614,11 +669,11 @@ export class ApplicationCommon {
 
 	public started = false;
 
-	get android(): IAndroidApplication {
+	get android(): AndroidApplicationType {
 		return undefined;
 	}
 
-	get ios(): IiOSApplication {
+	get ios(): iOSApplicationType {
 		return undefined;
 	}
 
@@ -630,3 +685,10 @@ export class ApplicationCommon {
 		return this.ios;
 	}
 }
+
+prepareAppForModuleResolver(() => {
+	ApplicationCommon.on('livesync', (args) => clearResolverCache());
+	ApplicationCommon.on('orientationChanged', (args) => {
+		_setResolver(undefined);
+	});
+});

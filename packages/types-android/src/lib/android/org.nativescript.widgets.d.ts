@@ -322,6 +322,8 @@
             export class GridLayout extends LayoutBase {
                 constructor(context: android.content.Context);
 
+								public addRow(itemSpec: ItemSpec): void;
+                public addColumn(itemSpec: ItemSpec): void;
                 public addRow(value: number, type: org.nativescript.widgets.GridUnitType): void;
                 public addColumn(value: number, type: org.nativescript.widgets.GridUnitType): void;
 

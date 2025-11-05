@@ -30,7 +30,6 @@
 				"forDevice": false,
 				"prepare": false
 			},
-			"configurations": {},
 			"dependsOn": ["^build"]
 		},
 		"prepare": {
