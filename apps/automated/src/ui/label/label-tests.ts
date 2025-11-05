@@ -305,8 +305,8 @@ export class LabelTest extends testModule.UITest<Label> {
 
 		if (testLabel.android) {
 			actualTextSize = testLabel.android.getTextSize();
-			const density = Utils.layout.getDisplayDensity();
-			expSize = fontSize * density;
+			// This will cover the case of device text size being affected by a11y
+			expSize = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP, fontSize, testLabel._context.getResources().getDisplayMetrics());
 			TKUnit.assertAreClose(actualTextSize, expSize, 0.1, 'Wrong native FontSize');
 
 			actualColors = testLabel.android.getTextColors();
