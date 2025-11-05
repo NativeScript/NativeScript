@@ -217,7 +217,6 @@ export class ProxyViewContainer extends LayoutBase {
 const layoutProperties = ['left', 'top', 'dock', 'flexDirection', 'flexWrap', 'justifyContent', 'alignItems', 'alignContent', 'order', 'flexGrow', 'flexShrink', 'flexWrapBefore', 'alignSelf', 'flexFlow', 'flex', 'column', 'columnSpan', 'col', 'colSpan', 'row', 'rowSpan'];
 
 for (const name of layoutProperties) {
-	// CORRECTION: Changed Property<..., string> to Property<..., any>
 	const proxyProperty = new Property<ProxyViewContainer, any>({
 		name,
 		valueChanged(target, oldValue, value) {
@@ -227,7 +226,6 @@ for (const name of layoutProperties) {
 	proxyProperty.register(ProxyViewContainer);
 }
 
-// CORRECTION: Added types for the function parameter and return value
-function makeProxyPropName(propName: string): string {
+function makeProxyPropName(propName: string) {
 	return `_proxy:${propName}`;
 }
