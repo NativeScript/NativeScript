@@ -99,7 +99,6 @@ export abstract class ViewCommon extends ViewBase {
 	 */
 	public visionHoverStyle: string | VisionHoverOptions;
 	public visionIgnoreHoverStyle: boolean;
-	iosGlassEffect: GlassEffectType;
 
 	/**
 	 * iOS 26+ Glass
