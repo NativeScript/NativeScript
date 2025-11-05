@@ -1,6 +1,7 @@
 import { ItemEventData, ItemsSource } from '.';
 import { ListViewBase, separatorColorProperty, itemTemplatesProperty } from './list-view-common';
 import { View, KeyedTemplate } from '../core/view';
+import { PercentLength } from '../styling/length-shared';
 import { unsetValue } from '../core/properties/property-shared';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
@@ -404,11 +405,28 @@ function ensureListViewAdapterClass() {
 
 				this.owner._prepareItem(args.view, index);
 				if (!args.view.parent) {
-					// Proxy containers should not get treated as layouts.
-					// Wrap them in a real layout as well.
+					// Ensure margins defined on the template root are honored on Android ListView.
+					// ListView's children don't support layout margins, so we insert an outer wrapper
+					// and keep the original view (with its margins) inside. This mirrors iOS spacing.
+					const mt = PercentLength.toDevicePixels(args.view.marginTop, 0, Number.NaN);
+					const mb = PercentLength.toDevicePixels(args.view.marginBottom, 0, Number.NaN);
+					const ml = PercentLength.toDevicePixels(args.view.marginLeft, 0, Number.NaN);
+					const mr = PercentLength.toDevicePixels(args.view.marginRight, 0, Number.NaN);
+					const hasMargins = mt > 0 || mb > 0 || ml > 0 || mr > 0;
+
+					// If the view is already a LayoutBase (typical for templates like GridLayout),
+					// we wrap it so its margins take effect. For non-layout roots (labels, etc.)
+					// we already wrap below with a StackLayout.
 					if (args.view instanceof LayoutBase && !(args.view instanceof ProxyViewContainer)) {
-						this.owner._addView(args.view);
-						convertView = args.view.nativeViewProtected;
+						if (hasMargins) {
+							const outer = new StackLayout();
+							outer.addChild(args.view);
+							this.owner._addView(outer);
+							convertView = outer.nativeViewProtected;
+						} else {
+							this.owner._addView(args.view);
+							convertView = args.view.nativeViewProtected;
+						}
 					} else {
 						const sp = new StackLayout();
 						sp.addChild(args.view);
