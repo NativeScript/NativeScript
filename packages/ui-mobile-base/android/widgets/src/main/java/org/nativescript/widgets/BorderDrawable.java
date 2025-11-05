@@ -528,7 +528,6 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			}
 
 			if (this.borderRightWidth > 0) {
-
 				rightBorderPaint.reset();
 				rightBorderPaint.setColor(this.borderRightColor);
 				rightBorderPaint.setAntiAlias(true);
@@ -544,7 +543,6 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			}
 
 			if (this.borderBottomWidth > 0) {
-
 				bottomBorderPaint.reset();
 				bottomBorderPaint.setColor(this.borderBottomColor);
 				bottomBorderPaint.setAntiAlias(true);
