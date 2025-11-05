@@ -26,7 +26,6 @@ import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
 import { NativeScriptAndroidView } from '../../utils';
-import { Device } from '../../../platform';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -75,7 +74,7 @@ interface DialogOptions {
 
 let OnBackPressedCallback;
 
-if (parseInt(Device.sdkVersion) >= 33) {
+if (SDK_VERSION >= 33) {
 	OnBackPressedCallback = (androidx.activity.OnBackPressedCallback as any).extend({
 		handleOnBackPressed() {
 			console.log('OnBackPressedCallback handleOnBackPressed called');
@@ -175,7 +174,7 @@ function initializeDialogFragment() {
 		) {
 			super(context, themeResId);
 
-			if (parseInt(Device.sdkVersion) >= 33 && OnBackPressedCallback) {
+			if (SDK_VERSION >= 33 && OnBackPressedCallback) {
 				const callback = new OnBackPressedCallback(true);
 
 				callback['_dialog'] = new WeakRef(this);
@@ -194,7 +193,7 @@ function initializeDialogFragment() {
 		}
 
 		public onBackPressed(): void {
-			if (parseInt(Device.sdkVersion) >= 33) {
+			if (SDK_VERSION >= 33) {
 				super.onBackPressed();
 				return;
 			}
