@@ -100,6 +100,11 @@ export abstract class ViewCommon extends ViewBase {
 	public visionHoverStyle: string | VisionHoverOptions;
 	public visionIgnoreHoverStyle: boolean;
 
+	/**
+	 * iOS 26+ Glass
+	 */
+	iosGlassEffect: GlassEffectType;
+
 	protected _closeModalCallback: Function;
 	public _manager: any;
 	public _modalParent?: ViewCommon;
@@ -1262,6 +1267,32 @@ export abstract class ViewCommon extends ViewBase {
 		return false;
 	}
 
+	/**
+	 * Shared helper method for applying glass effects to views.
+	 * This method can be used by View and its subclasses (LiquidGlass, LiquidGlassContainer, etc.)
+	 * iOS only at the moment but could be applied to others once supported in other platforms.
+	 *
+	 * @param value - The glass effect configuration
+	 * @param options - Configuration options for different glass effect behaviors
+	 * @param options.effectType - Type of effect to create: 'glass' | 'container'
+	 * @param options.targetView - The UIVisualEffectView to apply the effect to (if updating existing view)
+	 * @param options.toGlassStyleFn - Custom function to convert variant to UIGlassEffectStyle
+	 * @param options.onCreate - Callback when a new effect view is created (for initial setup)
+	 * @param options.onUpdate - Callback when an existing effect view is updated
+	 */
+	protected _applyGlassEffect(
+		value: GlassEffectType,
+		options: {
+			effectType: 'glass' | 'container';
+			targetView?: UIVisualEffectView;
+			toGlassStyleFn?: (variant?: GlassEffectVariant) => number;
+			onCreate?: (effectView: UIVisualEffectView, effect: UIVisualEffect) => void;
+			onUpdate?: (effectView: UIVisualEffectView, effect: UIVisualEffect, duration: number) => void;
+		},
+	): UIVisualEffectView | undefined {
+		return undefined;
+	}
+
 	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
 		return;
 	}
@@ -1355,8 +1386,20 @@ androidOverflowEdgeProperty.register(ViewCommon);
 /**
  * Glass effects
  */
-export type GlassEffectVariant = 'regular' | 'clear' | 'identity';
-export type GlassEffectConfig = { variant?: GlassEffectVariant; interactive?: boolean; tint: string | Color };
+export type GlassEffectVariant = 'regular' | 'clear' | 'identity' | 'none';
+export type GlassEffectConfig = {
+	variant?: GlassEffectVariant;
+	interactive?: boolean;
+	tint?: string | Color;
+	/**
+	 * (LiquidGlassContainer only) spacing between child elements (default is 8)
+	 */
+	spacing?: number;
+	/**
+	 * Duration in milliseconds to animate effect changes (default is 300ms)
+	 */
+	animateChangeDuration?: number;
+};
 export type GlassEffectType = GlassEffectVariant | GlassEffectConfig;
 export const iosGlassEffectProperty = new Property<ViewCommon, GlassEffectType>({
 	name: 'iosGlassEffect',
