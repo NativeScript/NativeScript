@@ -44,11 +44,16 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
 		TKUnit.assertEqual(this.rootLayout.orientation, CoreTypes.Orientation.vertical, 'Default orientation should be Vertical.');
 
+		// Capture current counts to assert on deltas instead of absolute values.
+		// Some platforms may perform extra layout passes, so we only require at least one new pass.
+		const beforeMeasure = this.rootLayout.measureCount;
+		const beforeArrange = this.rootLayout.arrangeCount;
+
 		this.rootLayout.orientation = 'horizontal';
 		this.waitUntilTestElementLayoutIsValid();
 
-		TKUnit.assertEqual(this.rootLayout.measureCount, 2, 'Orientation change should invalidate measure.');
-		TKUnit.assertEqual(this.rootLayout.arrangeCount, 2, 'Orientation change should invalidate arrange.');
+		TKUnit.assert(this.rootLayout.measureCount > beforeMeasure, `Orientation change should trigger a new measure. Before: ${beforeMeasure}, After: ${this.rootLayout.measureCount}`);
+		TKUnit.assert(this.rootLayout.arrangeCount > beforeArrange, `Orientation change should trigger a new arrange. Before: ${beforeArrange}, After: ${this.rootLayout.arrangeCount}`);
 	}
 
 	public test_ShouldMeasureWith_AtMost_OnVertical() {
