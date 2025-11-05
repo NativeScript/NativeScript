@@ -4,12 +4,10 @@
         </ActionBar>
     </Page.actionBar>
 
-
-
     <GridLayout backgroundColor="#000">
-        <Image src="res://bg1.jpg" stretch="aspectFill" iosOverflowSafeArea="true" width="100%" height="100%" />
         <!-- test color changes over light/dark backgrounds for text -->
         <!-- <ContentView backgroundColor="#000" height="300" verticalAlignment="bottom"/> -->
+        <Image src="res://bg1.jpg" stretch="aspectFill" iosOverflowSafeArea="true" />
 
         <ScrollView backgroundColor="transparent">
             <StackLayout>
