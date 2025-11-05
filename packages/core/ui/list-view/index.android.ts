@@ -408,16 +408,16 @@ function ensureListViewAdapterClass() {
 					// Ensure margins defined on the template root are honored on Android ListView.
 					// ListView's children don't support layout margins, so we insert an outer wrapper
 					// and keep the original view (with its margins) inside. This mirrors iOS spacing.
-					const mt = PercentLength.toDevicePixels(args.view.marginTop, 0, Number.NaN);
-					const mb = PercentLength.toDevicePixels(args.view.marginBottom, 0, Number.NaN);
-					const ml = PercentLength.toDevicePixels(args.view.marginLeft, 0, Number.NaN);
-					const mr = PercentLength.toDevicePixels(args.view.marginRight, 0, Number.NaN);
-					const hasMargins = mt > 0 || mb > 0 || ml > 0 || mr > 0;
 
 					// If the view is already a LayoutBase (typical for templates like GridLayout),
 					// we wrap it so its margins take effect. For non-layout roots (labels, etc.)
 					// we already wrap below with a StackLayout.
 					if (args.view instanceof LayoutBase && !(args.view instanceof ProxyViewContainer)) {
+						const mt = PercentLength.toDevicePixels(args.view.marginTop, 0, Number.NaN);
+						const mb = PercentLength.toDevicePixels(args.view.marginBottom, 0, Number.NaN);
+						const ml = PercentLength.toDevicePixels(args.view.marginLeft, 0, Number.NaN);
+						const mr = PercentLength.toDevicePixels(args.view.marginRight, 0, Number.NaN);
+						const hasMargins = mt > 0 || mb > 0 || ml > 0 || mr > 0;
 						if (hasMargins) {
 							const outer = new StackLayout();
 							outer.addChild(args.view);
