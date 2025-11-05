@@ -39,14 +39,6 @@ class TabViewDemoModel extends Observable {
 		});
 	};
 
-	randomizeColors = () => {
-		if (!this.tabView || !this.tabView.items) return;
-		this.tabView.items.forEach((item) => {
-			const color = new Color(this.randomColor());
-			(item as TabViewItem).style.color = color;
-		});
-	};
-
 	private setIcons(iconSources: string[]) {
 		const items = this.tabView.items as TabViewItem[];
 		for (let i = 0; i < items.length; i++) {
@@ -66,17 +58,6 @@ class TabViewDemoModel extends Observable {
 		(this.tabView.items as TabViewItem[]).forEach((item) => {
 			(item as TabViewItem).style.color = color;
 		});
-	}
-
-	private randomColor(): string {
-		const r = Math.floor(Math.random() * 200 + 30);
-		const g = Math.floor(Math.random() * 200 + 30);
-		const b = Math.floor(Math.random() * 200 + 30);
-		return `#${this.toHex(r)}${this.toHex(g)}${this.toHex(b)}`;
-	}
-
-	private toHex(n: number) {
-		return n.toString(16).padStart(2, '0');
 	}
 }
 

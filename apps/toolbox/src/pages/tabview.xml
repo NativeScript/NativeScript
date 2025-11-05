@@ -13,8 +13,7 @@
                 <GridLayout columns="*, *" rows="auto, auto" class="m-y-10">
                     <Button text="Use sys:// icons" col="0" row="0" tap="{{ useSysIcons }}" class="btn btn-primary" />
                     <Button text="Use font:// icons" col="1" row="0" tap="{{ useFontIcons }}" class="btn btn-primary" />
-                    <Button text="Clear icons" col="0" row="1" tap="{{ clearIcons }}" class="btn btn-primary" />
-                    <Button text="Randomize colors" col="1" row="1" tap="{{ randomizeColors }}" class="btn btn-primary" />
+                    <Button text="Clear icons" colSpan="2" row="1" tap="{{ clearIcons }}" class="btn btn-primary" />
                 </GridLayout>
 
                 <Label textWrap="true" class="t-12" text="Note: sys:// icons are iOS-only and map to SF Symbols via UIImage.systemImageNamed. On Android, sys:// will not render and is expected to show no icon." />
