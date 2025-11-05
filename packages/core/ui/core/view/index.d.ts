@@ -9,7 +9,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
 import { ViewBase } from '../view-base';
 import { ViewCommon } from './view-common';
-import type { Point } from './view-interfaces';
+import type { Point, ShownModallyData } from './view-interfaces';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)

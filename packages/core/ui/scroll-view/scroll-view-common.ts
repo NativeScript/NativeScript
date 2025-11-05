@@ -15,10 +15,10 @@ export abstract class ScrollViewBase extends ContentView {
 
 	private _addedScrollEvent = false;
 
-	public addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
+	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		const hasExistingScrollListeners: boolean = this.hasListeners(ScrollViewBase.scrollEvent);
 
-		super.addEventListener(arg, callback, thisArg, once);
+		super.addEventListener(eventName, callback, thisArg, once);
 
 		// This indicates that a scroll listener was added for first time
 		if (!hasExistingScrollListeners && this.hasListeners(ScrollViewBase.scrollEvent)) {
@@ -30,10 +30,10 @@ export abstract class ScrollViewBase extends ContentView {
 		}
 	}
 
-	public removeEventListener(arg: string, callback?: (data: EventData) => void, thisArg?: any): void {
+	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		const hasExistingScrollListeners: boolean = this.hasListeners(ScrollViewBase.scrollEvent);
 
-		super.removeEventListener(arg, callback, thisArg);
+		super.removeEventListener(eventName, callback, thisArg);
 
 		// This indicates that the final scroll listener was removed
 		if (hasExistingScrollListeners && !this.hasListeners(ScrollViewBase.scrollEvent)) {
