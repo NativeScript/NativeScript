@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" statusBarStyle="dark">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" androidOverflowEdge="bottom" statusBarStyle="dark">
   <Page.actionBar>
     <ActionBar title="Dev Toolbox" icon="" class="action-bar" iosLargeTitle="true" iosShadow="false">
     </ActionBar>
@@ -34,3 +34,4 @@
     </ScrollView>
   </StackLayout>
 </Page>
+
