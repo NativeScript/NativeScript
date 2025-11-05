@@ -92,7 +92,7 @@ export class Button extends ButtonBase {
 		super.resetNativeView();
 
 		if (this._stateListAnimator && SDK_VERSION >= 21) {
-			(<any>this.nativeViewProtected).setStateListAnimator(this._stateListAnimator);
+			this.nativeViewProtected.setStateListAnimator(this._stateListAnimator);
 			this._stateListAnimator = undefined;
 		}
 	}

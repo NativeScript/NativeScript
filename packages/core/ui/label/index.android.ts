@@ -29,10 +29,12 @@ export class Label extends TextBase implements LabelDefinition {
 	}
 
 	public initNativeView(): void {
+		const isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
+
 		super.initNativeView();
 		const textView = this.nativeTextViewProtected;
 		textView.setSingleLine(true);
-		textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+		textView.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 		textView.setGravity(android.view.Gravity.CENTER_VERTICAL);
 	}
 

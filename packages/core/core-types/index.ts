@@ -100,6 +100,7 @@ export namespace CoreTypes {
 	export namespace WhiteSpace {
 		export const normal = 'normal';
 		export const nowrap = 'nowrap';
+		export const wrap = 'wrap';
 	}
 
 	export type TextOverflowType = 'clip' | 'ellipsis' | CSSWideKeywords;

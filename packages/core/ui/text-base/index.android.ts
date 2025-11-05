@@ -3,7 +3,7 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 import { Font } from '../styling/font';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../styling/style-properties';
 import { Length } from '../styling/length-shared';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
@@ -368,6 +368,14 @@ export class TextBase extends TextBaseCommon {
 		this.adjustLineBreak();
 	}
 
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		// Handle text ellipsis
+		if (this.whiteSpace === 'nowrap' || this.maxLines > 0) {
+			this.nativeTextViewProtected.setEllipsize(value === CoreTypes.LayoutDirection.rtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
+		}
+		super[directionProperty.setNative](value);
+	}
+
 	private adjustLineBreak() {
 		const whiteSpace = this.whiteSpace;
 		const textOverflow = this.textOverflow;
@@ -375,22 +383,25 @@ export class TextBase extends TextBaseCommon {
 		switch (whiteSpace) {
 			case 'initial':
 			case 'normal':
+			case 'wrap':
 				nativeView.setSingleLine(false);
 				nativeView.setEllipsize(null);
 				break;
-			case 'nowrap':
+			case 'nowrap': {
+				const isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
+
 				switch (textOverflow) {
 					case 'initial':
 					case 'ellipsis':
 						nativeView.setSingleLine(true);
-						nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
 						break;
 					default:
 						nativeView.setSingleLine(false);
-						nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
 						break;
 				}
+				nativeView.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 				break;
+			}
 		}
 	}
 
@@ -528,8 +539,10 @@ export class TextBase extends TextBaseCommon {
 		if (value <= 0) {
 			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);
 		} else {
+			const isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
+
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
-			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
+			nativeTextViewProtected.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 		}
 	}
 
