@@ -44,8 +44,6 @@ export namespace CoreTypes {
 		unit: 'px',
 	};
 
-	export type LayoutDirection = 'ltr' | 'rtl';
-
 	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'decimal' | 'url' | 'email' | 'integer';
 	export namespace KeyboardType {
 		export const datetime = 'datetime';

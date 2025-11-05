@@ -18,8 +18,11 @@ export class Button extends ButtonBase {
 
 	createNativeView() {
 		const nativeView = UIButton.buttonWithType(UIButtonType.System);
+
 		// This is the default for both platforms
-		nativeView.titleLabel.textAlignment = NSTextAlignment.Center;
+		if (nativeView.titleLabel) {
+			nativeView.titleLabel.textAlignment = NSTextAlignment.Center;
+		}
 		return nativeView;
 	}
 
