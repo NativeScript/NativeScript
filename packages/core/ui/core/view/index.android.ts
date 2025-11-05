@@ -26,6 +26,8 @@ import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
 import { NativeScriptAndroidView } from '../../utils';
+import { Device } from '../../../platform';
+import { Application } from '../../../application/application';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -70,6 +72,55 @@ interface DialogOptions {
 	windowSoftInputMode: number;
 	shownCallback: () => void;
 	dismissCallback: () => void;
+}
+
+let OnBackPressedCallback;
+
+if (parseInt(Device.sdkVersion) >= 33) {
+	OnBackPressedCallback = (<any>androidx.activity.OnBackPressedCallback).extend({
+		handleOnBackPressed() {
+			console.log('OnBackPressedCallback handleOnBackPressed called');
+			const dialog = this['_dialog']?.get();
+
+			if (!dialog) {
+				// disable the callback and call super to avoid infinite loop
+
+				this.setEnabled(false);
+
+				return;
+			}
+
+			const view = dialog.fragment.owner;
+
+			const args = <AndroidActivityBackPressedEventData>{
+				eventName: 'activityBackPressed',
+
+				object: view,
+
+				activity: view._context,
+
+				cancel: false,
+			};
+
+			// Fist fire application.android global event
+
+			Application.android.notify(args);
+
+			if (args.cancel) {
+				return;
+			}
+
+			view.notify(args);
+
+			if (!args.cancel) {
+				this.setEnabled(false);
+
+				dialog.getOnBackPressedDispatcher().onBackPressed();
+
+				this.setEnabled(true);
+			}
+		},
+	});
 }
 
 interface TouchListener {
@@ -121,13 +172,23 @@ function initializeDialogFragment() {
 	}
 
 	@NativeClass
-	class DialogImpl extends android.app.Dialog {
+	class DialogImpl extends androidx.appcompat.app.AppCompatDialog {
 		constructor(
 			public fragment: DialogFragmentImpl,
 			context: android.content.Context,
 			themeResId: number,
 		) {
 			super(context, themeResId);
+
+			if (parseInt(Device.sdkVersion) >= 33 && OnBackPressedCallback) {
+				const callback = new OnBackPressedCallback(true);
+
+				callback['_dialog'] = new WeakRef(this);
+
+				// @ts-ignore
+
+				this.getOnBackPressedDispatcher().addCallback(this, callback);
+			}
 
 			return global.__native(this);
 		}
@@ -138,6 +199,10 @@ function initializeDialogFragment() {
 		}
 
 		public onBackPressed(): void {
+			if (parseInt(Device.sdkVersion) >= 33) {
+				super.onBackPressed();
+				return;
+			}
 			const view = this.fragment.owner;
 			const args = <AndroidActivityBackPressedEventData>{
 				eventName: 'activityBackPressed',
