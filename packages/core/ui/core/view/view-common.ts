@@ -95,6 +95,7 @@ export abstract class ViewCommon extends ViewBase {
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
 	public iosIgnoreSafeArea: boolean;
+	public androidOverflowEdge: CoreTypes.AndroidOverflow;
 
 	public testID: string;
 
