@@ -2,6 +2,7 @@ import { View, CSSType } from '../core/view';
 import { LayoutBase } from '../layouts/layout-base';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';
+import { hiddenProperty } from '../core/view-base';
 
 /**
  * Proxy view container that adds all its native children directly to the parent.
@@ -102,6 +103,11 @@ export class ProxyViewContainer extends LayoutBase {
 			Trace.write('ProxyViewContainer._addViewToNativeVisualTree for a child ' + child + ' ViewContainer.parent: ' + this.parent, Trace.categories.ViewHierarchy);
 		}
 		super._addViewToNativeVisualTree(child);
+
+		// Apply hidden state to new child if the container is hidden
+		if (this.hidden) {
+			child.hidden = true;
+		}
 
 		layoutProperties.forEach((propName) => {
 			const proxyPropName = makeProxyPropName(propName);
@@ -231,6 +237,18 @@ export class ProxyViewContainer extends LayoutBase {
 		child[propName] = value;
 		child[proxyPropName] = value;
 	}
+
+	/**
+	 * Apply the hidden state to all child views.
+	 * When ProxyViewContainer is hidden, all its children should also be hidden
+	 * since they are directly added to the parent's native view tree.
+	 */
+	private _applyHiddenToChildren(hidden: boolean): void {
+		this.eachChildView((child) => {
+			child.hidden = hidden;
+			return true;
+		});
+	}
 }
 
 // Layout propeties to be proxyed to the child views
@@ -276,6 +294,25 @@ for (const name of layoutProperties) {
 
 	proxyProperty.register(ProxyViewContainer);
 }
+
+// Override the hidden property to propagate it to all children
+// Since ProxyViewContainer has no native view, we need to apply the hidden state
+// to all children so they are visually hidden when the container is hidden.
+const proxyHiddenProperty = new Property<ProxyViewContainer, boolean>({
+	name: 'hidden',
+	defaultValue: false,
+	affectsLayout: __APPLE__,
+	valueConverter: hiddenProperty.valueConverter,
+	valueChanged(target, oldValue, newValue) {
+		// Call the base implementation to set isCollapsed for layout calculations
+		if (target) {
+			target.isCollapsed = !!newValue;
+		}
+		// Apply hidden state to all children
+		target._applyHiddenToChildren(!!newValue);
+	},
+});
+proxyHiddenProperty.register(ProxyViewContainer);
 
 function makeProxyPropName(propName) {
 	return `_proxy:${propName}`;
