@@ -152,7 +152,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		if (owner) {
 			// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
 			// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-			const backToMoreWillBeVisible = navigationController.tabBarController?.viewControllers?.containsObject?.(viewController);
+			const backToMoreWillBeVisible = navigationController.tabBarController?.viewControllers?.containsObject(viewController);
 			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 		}
 	}
