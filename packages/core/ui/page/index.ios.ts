@@ -444,7 +444,7 @@ export class Page extends PageBase {
 
 	public _updateStatusBarStyle(value?: string) {
 		const frame = this.frame;
-		if (frame && value) {
+		if (frame?.ios && value) {
 			const navigationController: UINavigationController = frame.ios.controller;
 			const navigationBar = navigationController.navigationBar;
 

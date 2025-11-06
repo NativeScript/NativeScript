@@ -108,8 +108,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 		const owner = this._owner?.deref();
 		if (owner) {
 			// "< More" cannot be visible after clicking on the main tab bar buttons.
-			const backToMoreWillBeVisible = false;
-			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+			owner._handleTwoNavigationBars(false);
 		}
 
 		if (tabBarController.selectedViewController === viewController) {
@@ -416,9 +415,14 @@ export class TabView extends TabViewBase {
 		const actionBarVisible = page.frame._getNavBarVisible(page);
 
 		if (backToMoreWillBeVisible && actionBarVisible) {
-			page.frame.ios._disableNavBarAnimation = true;
-			page.actionBarHidden = true;
-			page.frame.ios._disableNavBarAnimation = false;
+			if (page.frame.ios) {
+				page.frame.ios._disableNavBarAnimation = true;
+				page.actionBarHidden = true;
+				page.frame.ios._disableNavBarAnimation = false;
+			} else {
+				page.actionBarHidden = true;
+			}
+
 			this._actionBarHiddenByTabView = true;
 			if (Trace.isEnabled()) {
 				Trace.write(`TabView hid action bar`, Trace.categories.Debug);
@@ -428,9 +432,14 @@ export class TabView extends TabViewBase {
 		}
 
 		if (!backToMoreWillBeVisible && this._actionBarHiddenByTabView) {
-			page.frame.ios._disableNavBarAnimation = true;
-			page.actionBarHidden = false;
-			page.frame.ios._disableNavBarAnimation = false;
+			if (page.frame.ios) {
+				page.frame.ios._disableNavBarAnimation = true;
+				page.actionBarHidden = false;
+				page.frame.ios._disableNavBarAnimation = false;
+			} else {
+				page.actionBarHidden = false;
+			}
+
 			this._actionBarHiddenByTabView = undefined;
 			if (Trace.isEnabled()) {
 				Trace.write(`TabView restored action bar`, Trace.categories.Debug);
