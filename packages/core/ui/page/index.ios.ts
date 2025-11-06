@@ -377,7 +377,13 @@ export class Page extends PageBase {
 	}
 
 	createNativeView() {
-		return this.viewController.view;
+		// View controller can be disposed during view disposal, so make sure to create a new one if not defined
+		if (!this._ios) {
+			const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+			controller.view.backgroundColor = this._backgroundColor;
+			this.viewController = this._ios = controller;
+		}
+		return this._ios.view;
 	}
 
 	disposeNativeView() {
@@ -488,7 +494,7 @@ export class Page extends PageBase {
 
 		const insets = this.getSafeAreaInsets();
 
-		if (!__VISIONOS__ && SDK_VERSION <= 10) {
+		if (!__VISIONOS__ && SDK_VERSION <= 10 && this.viewController) {
 			// iOS 10 and below don't have safe area insets API,
 			// there we need only the top inset on the Page
 			insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));
