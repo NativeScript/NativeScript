@@ -1,6 +1,7 @@
-import { SplitViewBase, SplitRole, displayModeProperty, splitBehaviorProperty, preferredPrimaryColumnWidthFractionProperty, preferredSupplementaryColumnWidthFractionProperty } from './split-view-common';
+import { SplitViewBase, SplitRole, displayModeProperty, splitBehaviorProperty, preferredPrimaryColumnWidthFractionProperty, preferredSupplementaryColumnWidthFractionProperty, preferredInspectorColumnWidthFractionProperty } from './split-view-common';
 import { View } from '../core/view';
 import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 @NativeClass
 class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewControllerDelegate {
@@ -46,15 +47,19 @@ class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewC
 		return UISplitViewControllerColumn.Secondary;
 	}
 
-	toggleSidebar(sender: UIBarButtonItem): void {
+	toggleInspector(sender: UIBarButtonItem): void {
 		const owner = this._owner.deref();
 		if (owner) {
-			owner.showPrimary();
+			if (owner.inspectorShowing) {
+				owner.hideInspector();
+			} else {
+				owner.showInspector();
+			}
 		}
 	}
 
 	static ObjCExposedMethods = {
-		'toggleSidebar:': { returns: interop.types.void, params: [UIBarButtonItem] },
+		'toggleInspector:': { returns: interop.types.void, params: [UIBarButtonItem] },
 	};
 }
 
@@ -69,6 +74,7 @@ export class SplitView extends SplitViewBase {
 	// Keep role -> controller
 	private _controllers = new Map<SplitRole, UIViewController | UINavigationController>();
 	private _children = new Map<SplitRole, View>();
+	inspectorShowing = false;
 
 	constructor() {
 		super();
@@ -193,6 +199,44 @@ export class SplitView extends SplitViewBase {
 		this.viewController.showColumn(UISplitViewControllerColumn.Supplementary);
 	}
 
+	showInspector(): void {
+		if (!this.viewController) return;
+		// Guard for older OS versions by feature-detecting inspector-related API
+		if (this.viewController.preferredInspectorColumnWidthFraction !== undefined) {
+			this.viewController.showColumn(UISplitViewControllerColumn.Inspector);
+			this.notifyInspectorChange(true);
+		}
+	}
+
+	hideInspector(): void {
+		if (!this.viewController) return;
+		if (this.viewController.preferredInspectorColumnWidthFraction !== undefined) {
+			this.viewController.hideColumn(UISplitViewControllerColumn.Inspector);
+			this.notifyInspectorChange(false);
+		}
+	}
+
+	notifyInspectorChange(showing: boolean): void {
+		this.inspectorShowing = showing;
+		this.notify({
+			eventName: 'inspectorChange',
+			object: this,
+			data: { showing },
+		});
+	}
+
+	onLoaded() {
+		super.onLoaded();
+
+		// Note: buttons items can only be applied after UINavigationController's view controllers are pushed after onLoaded
+		setTimeout(() => {
+			const inspector = this._controllers.get('inspector');
+			if (inspector) {
+				this._attachInspectorButton();
+			}
+		});
+	}
+
 	private _resolveRoleForChild(child: SplitViewBase, atIndex: number): SplitRole {
 		const explicit = SplitViewBase.getRole(child);
 		if (explicit) {
@@ -228,6 +272,41 @@ export class SplitView extends SplitViewBase {
 		return wrapper;
 	}
 
+	private _attachInspectorButton(): void {
+		const inspector = this._controllers.get('inspector');
+		if (!(inspector instanceof UINavigationController)) {
+			return;
+		}
+
+		const targetVC = inspector.topViewController ?? inspector.visibleViewController;
+		if (!targetVC || !targetVC.navigationItem) {
+			// Subscribe to Frame event to know when a VC is shown, then attach the button.
+			// Can only attach buttons once VC is available
+			const frameChild = this._children.get('inspector') as any;
+			if (frameChild && frameChild.on && !frameChild._inspectorVCShownHandler) {
+				frameChild._inspectorVCShownHandler = () => {
+					frameChild.off('viewControllerShown', frameChild._inspectorVCShownHandler);
+					frameChild._inspectorVCShownHandler = null;
+					this._attachInspectorButton();
+				};
+				frameChild.on('viewControllerShown', frameChild._inspectorVCShownHandler.bind(this));
+			}
+			return;
+		}
+
+		// Avoid duplicates
+		if (targetVC.navigationItem.rightBarButtonItem) {
+			return;
+		}
+
+		// Build the bar button and attach to the visible controller
+		// TODO: can provide properties to customize this
+		const cfg = UIImageSymbolConfiguration.configurationWithPointSizeWeightScale(18, UIImageSymbolWeight.Regular, UIImageSymbolScale.Medium);
+		const image = UIImage.systemImageNamedWithConfiguration('sidebar.trailing', cfg);
+		const item = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, this._delegate, 'toggleInspector:');
+		targetVC.navigationItem.rightBarButtonItem = item;
+	}
+
 	private _syncControllers(): void {
 		if (!this.viewController) {
 			return;
@@ -236,6 +315,7 @@ export class SplitView extends SplitViewBase {
 		const primary = this._controllers.get('primary');
 		const secondary = this._controllers.get('secondary');
 		const supplementary = this._controllers.get('supplementary');
+		const inspector = this._controllers.get('inspector');
 
 		if (primary) {
 			this.viewController.setViewControllerForColumn(primary, UISplitViewControllerColumn.Primary);
@@ -245,6 +325,11 @@ export class SplitView extends SplitViewBase {
 		}
 		if (supplementary) {
 			this.viewController.setViewControllerForColumn(supplementary, UISplitViewControllerColumn.Supplementary);
+		}
+		if (inspector) {
+			if (this.viewController.preferredInspectorColumnWidthFraction !== undefined) {
+				this.viewController.setViewControllerForColumn(inspector, UISplitViewControllerColumn.Inspector);
+			}
 		}
 
 		this._applyPreferences();
@@ -298,20 +383,19 @@ export class SplitView extends SplitViewBase {
 		const primary = this._controllers.get('primary');
 		const secondary = this._controllers.get('secondary');
 		const supplementary = this._controllers.get('supplementary');
+		const inspector = this._controllers.get('inspector');
 		if (secondary instanceof UINavigationController && secondary.navigationItem) {
-			// TODO: add properties to customize this
+			// TODO: can add properties to customize this
 			secondary.navigationItem.leftBarButtonItem = this.viewController.displayModeButtonItem;
-
-			// Optional: slightly larger symbol weight/size
-			// const cfg = UIImageSymbolConfiguration.configurationWithPointSizeWeightScale(18, UIImageSymbolWeight.Regular, UIImageSymbolScale.Medium);
-			// const image = UIImage.systemImageNamedWithConfiguration('sidebar.left', cfg);
-
-			// const item = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, this._delegate, 'toggleSidebar:');
-			// secondary.navigationItem.leftBarButtonItem = item;
 			secondary.navigationItem.leftItemsSupplementBackButton = true;
 		}
 		if (supplementary) {
 			this.showSupplementary();
+		}
+		if (inspector) {
+			this.showInspector();
+			// Ensure the inspector column gets its toggle button as soon as the first page is shown
+			this._attachInspectorButton();
 		}
 
 		// Width fractions
@@ -319,9 +403,17 @@ export class SplitView extends SplitViewBase {
 			this.viewController.preferredPrimaryColumnWidthFraction = this.preferredPrimaryColumnWidthFraction;
 		}
 		if (SplitView.SplitStyle === 'triple') {
-			// supplementary only applies in triple style
+			// supplementary applies in triple style
 			if (typeof this.preferredSupplementaryColumnWidthFraction === 'number' && !isNaN(this.preferredSupplementaryColumnWidthFraction)) {
 				this.viewController.preferredSupplementaryColumnWidthFraction = this.preferredSupplementaryColumnWidthFraction;
+			}
+		}
+
+		if (SDK_VERSION >= 26) {
+			// Inspector width fraction
+			const inspectorWidth = this.preferredInspectorColumnWidthFraction;
+			if (typeof inspectorWidth === 'number' && !isNaN(inspectorWidth)) {
+				this.viewController.preferredInspectorColumnWidthFraction = inspectorWidth;
 			}
 		}
 	}
@@ -339,6 +431,10 @@ export class SplitView extends SplitViewBase {
 	}
 
 	[preferredSupplementaryColumnWidthFractionProperty.setNative](value: number) {
+		this._applyPreferences();
+	}
+
+	[preferredInspectorColumnWidthFractionProperty.setNative](value: number) {
 		this._applyPreferences();
 	}
 }

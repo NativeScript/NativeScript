@@ -358,6 +358,17 @@ export class Frame extends FrameBase {
 	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
 		//
 	}
+
+	// Emits an event whenever the UINavigationController shows a view controller.
+	// Consumers can subscribe to 'viewControllerShown'
+	// to safely interact with the visible controller/navigationItem once it exists.
+	public _onViewControllerShown(viewController: UIViewController): void {
+		this.notify({
+			eventName: 'viewControllerShown',
+			object: this,
+			viewController,
+		});
+	}
 }
 
 const transitionDelegates = new Array<TransitionDelegate>();
@@ -634,6 +645,16 @@ class UINavigationControllerImpl extends UINavigationController {
 		});
 
 		return null;
+	}
+
+	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+		if (Trace.isEnabled()) {
+			Trace.write('Frame.navigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
+		}
+		const owner = this._owner?.deref();
+		if (owner) {
+			owner._onViewControllerShown(viewController);
+		}
 	}
 
 	// Mind implementation for other controllers

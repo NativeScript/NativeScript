@@ -234,6 +234,11 @@ export interface ItemEventData extends EventData {
 	index: number;
 
 	/**
+	 * When data is sectioned (any platform that supports sections), this is the section index for the item.
+	 */
+	section?: number;
+
+	/**
 	 * The view that is associated to the item, for which the event is raised.
 	 */
 	view: View;

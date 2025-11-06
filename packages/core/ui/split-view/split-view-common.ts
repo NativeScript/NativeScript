@@ -2,9 +2,10 @@ import { LayoutBase } from '../layouts/layout-base';
 import { View, CSSType } from '../core/view';
 import { Property, makeParser, makeValidator } from '../core/properties';
 
-export type SplitRole = 'primary' | 'secondary' | 'supplementary';
-const splitRoleConverter = makeParser<SplitRole>(makeValidator<SplitRole>('primary', 'secondary', 'supplementary'));
+export type SplitRole = 'primary' | 'secondary' | 'supplementary' | 'inspector';
+const splitRoleConverter = makeParser<SplitRole>(makeValidator<SplitRole>('primary', 'secondary', 'supplementary', 'inspector'));
 
+// Note: Using 'inspector' splitRole does not (yet) require a distinct style; it's an optional trailing column.
 export type SplitStyle = 'automatic' | 'double' | 'triple';
 
 export type SplitDisplayMode = 'automatic' | 'secondaryOnly' | 'oneBesideSecondary' | 'oneOverSecondary' | 'twoBesideSecondary' | 'twoOverSecondary' | 'twoDisplaceSecondary';
@@ -14,7 +15,7 @@ export type SplitBehavior = 'automatic' | 'tile' | 'overlay' | 'displace';
 const splitBehaviorConverter = makeParser<SplitBehavior>(makeValidator<SplitBehavior>('automatic', 'tile', 'overlay', 'displace'));
 
 // Default child roles (helps authoring without setting splitRole on children)
-const ROLE_ORDER: SplitRole[] = ['primary', 'secondary', 'supplementary'];
+const ROLE_ORDER: SplitRole[] = ['primary', 'secondary', 'supplementary', 'inspector'];
 
 @CSSType('SplitView')
 export class SplitViewBase extends LayoutBase {
@@ -39,6 +40,8 @@ export class SplitViewBase extends LayoutBase {
 	preferredPrimaryColumnWidthFraction: number;
 	/** Supplementary column width fraction (0..1, iOS 14+ triple) */
 	preferredSupplementaryColumnWidthFraction: number;
+	/** Inspector column width fraction (0..1, iOS 17+/18+ when Inspector column available) */
+	preferredInspectorColumnWidthFraction: number;
 
 	/**
 	 * Get child role (primary, secondary, supplementary)
@@ -76,6 +79,14 @@ export class SplitViewBase extends LayoutBase {
 	}
 
 	showSupplementary() {
+		// Platform-specific implementations may override
+	}
+
+	showInspector() {
+		// Platform-specific implementations may override
+	}
+
+	hideInspector() {
 		// Platform-specific implementations may override
 	}
 
@@ -131,3 +142,11 @@ export const preferredSupplementaryColumnWidthFractionProperty = new Property<Sp
 	valueConverter: (v) => Math.max(0, Math.min(1, parseFloat(v))),
 });
 preferredSupplementaryColumnWidthFractionProperty.register(SplitViewBase);
+
+export const preferredInspectorColumnWidthFractionProperty = new Property<SplitViewBase, number>({
+	name: 'preferredInspectorColumnWidthFraction',
+	defaultValue: 0,
+	affectsLayout: __APPLE__,
+	valueConverter: (v) => Math.max(0, Math.min(1, parseFloat(v))),
+});
+preferredInspectorColumnWidthFractionProperty.register(SplitViewBase);

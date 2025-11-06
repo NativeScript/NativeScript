@@ -5,6 +5,7 @@
   <StackLayout class="p-16">
     <Label text="Secondary" marginBottom="12" fontSize="22" fontWeight="bold" />
     <Label text="{{ selectedItem }}" textWrap="true" tap="{{toggle}}" />
+    <Label text="Show Inspector" textWrap="true" tap="{{toggle}}" />
   </StackLayout>
 
 </Page>

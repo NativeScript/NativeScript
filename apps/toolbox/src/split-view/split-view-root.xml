@@ -1,4 +1,5 @@
-<SplitView xmlns="http://schemas.nativescript.org/tns.xsd" displayMode="twoBesideSecondary" splitBehavior="tile" preferredPrimaryColumnWidthFraction="0.25" preferredSupplementaryColumnWidthFraction="0.33">
+<SplitView xmlns="http://schemas.nativescript.org/tns.xsd" displayMode="twoBesideSecondary" splitBehavior="tile" preferredPrimaryColumnWidthFraction="0.25" preferredSupplementaryColumnWidthFraction="0.33"
+preferredInspectorColumnWidthFraction="0.20">
   <Frame splitRole="primary" defaultPage="split-view/split-view-primary">
 
   </Frame>
@@ -8,6 +9,10 @@
   </Frame>
 
   <Frame splitRole="supplementary" defaultPage="split-view/split-view-supplement">
+
+  </Frame>
+
+  <Frame splitRole="inspector" defaultPage="pages/list-page-sticky">
 
   </Frame>
 
