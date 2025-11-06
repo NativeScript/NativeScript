@@ -1,6 +1,6 @@
 import { Label as LabelDefinition } from '.';
 import { Background } from '../styling/background';
-import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, directionProperty } from '../styling/style-properties';
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
 import { CoreTypes } from '../../core-types';
@@ -127,12 +127,22 @@ export class Label extends TextBase implements LabelDefinition {
 		this.adjustLineBreak();
 	}
 
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		// Handle text ellipsis
+		if ((this.whiteSpace === 'nowrap' && this.textOverflow !== 'clip') || this.maxLines > 0) {
+			const nativeTextView = this.nativeTextViewProtected;
+			nativeTextView.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+		}
+		super[directionProperty.setNative](value);
+	}
+
 	private adjustLineBreak() {
 		const whiteSpace = this.whiteSpace;
 		const textOverflow = this.textOverflow;
 		const nativeView = this.nativeTextViewProtected;
 
 		switch (whiteSpace) {
+			case 'wrap':
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 				nativeView.numberOfLines = this.maxLines;
@@ -148,7 +158,7 @@ export class Label extends TextBase implements LabelDefinition {
 						nativeView.numberOfLines = this.maxLines;
 						break;
 					default:
-						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+						nativeView.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
 						nativeView.numberOfLines = 1;
 						break;
 				}

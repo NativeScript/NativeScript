@@ -88,6 +88,15 @@ export abstract class ViewCommon extends ViewBase {
 	public accessibilityHint: string;
 	public accessibilityIgnoresInvertColors: boolean;
 
+	public originX: number;
+	public originY: number;
+	public isEnabled: boolean;
+	public isUserInteractionEnabled: boolean;
+	public iosOverflowSafeArea: boolean;
+	public iosOverflowSafeAreaEnabled: boolean;
+	public iosIgnoreSafeArea: boolean;
+	public androidOverflowEdge: CoreTypes.AndroidOverflow;
+
 	public testID: string;
 
 	public touchAnimation: boolean | TouchAnimationOptions;
@@ -736,10 +745,16 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.boxShadow = value;
 	}
 
+	get direction(): CoreTypes.LayoutDirectionType {
+		return this.style.direction;
+	}
+	set direction(value: CoreTypes.LayoutDirectionType) {
+		this.style.direction = value;
+	}
+
 	get minWidth(): CoreTypes.LengthType {
 		return this.style.minWidth;
 	}
-
 	set minWidth(value: CoreTypes.LengthType) {
 		this.style.minWidth = value;
 	}
@@ -992,15 +1007,6 @@ export abstract class ViewCommon extends ViewBase {
 	}
 
 	//END Style property shortcuts
-
-	public originX: number;
-	public originY: number;
-	public isEnabled: boolean;
-	public isUserInteractionEnabled: boolean;
-	public iosOverflowSafeArea: boolean;
-	public iosOverflowSafeAreaEnabled: boolean;
-	public iosIgnoreSafeArea: boolean;
-	public androidOverflowEdge: CoreTypes.AndroidOverflow;
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;

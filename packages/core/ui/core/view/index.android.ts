@@ -2,8 +2,7 @@ import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
-import { Length } from '../../styling/length-shared';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -1104,9 +1103,16 @@ export class View extends ViewCommon {
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		const gravity = lp.gravity;
 		const weight = lp.weight;
+
 		// Set only if params gravity exists.
-		if (gravity !== undefined) {
+		if (gravity != null) {
 			switch (value) {
+				case 'start':
+					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_RIGHT : GRAVITY_LEFT) | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
 				case 'left':
 					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
@@ -1121,6 +1127,12 @@ export class View extends ViewCommon {
 					break;
 				case 'right':
 					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
+				case 'end':
+					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_LEFT : GRAVITY_RIGHT) | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}
@@ -1259,10 +1271,6 @@ export class View extends ViewCommon {
 		return this._context.getWindow();
 	}
 
-	[testIDProperty.setNative](value: string) {
-		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
-	}
-
 	setAccessibilityIdentifier(view, value) {
 		const id = Utils.android.resources.getId(':id/nativescript_accessibility_id');
 
@@ -1273,6 +1281,26 @@ export class View extends ViewCommon {
 
 		if (this.testID && this.testID !== value) this.testID = value;
 		if (this.accessibilityIdentifier !== value) this.accessibilityIdentifier = value;
+	}
+
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		const nativeView = this.nativeViewProtected;
+
+		switch (value) {
+			case CoreTypes.LayoutDirection.ltr:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LTR);
+				break;
+			case CoreTypes.LayoutDirection.rtl:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
+				break;
+			default:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LOCALE);
+				break;
+		}
+	}
+
+	[testIDProperty.setNative](value: string) {
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {

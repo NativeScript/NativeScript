@@ -1051,6 +1051,14 @@ export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction
 });
 clipPathProperty.register(Style);
 
+export const directionProperty = new InheritedCssProperty<Style, CoreTypes.LayoutDirectionType>({
+	defaultValue: null,
+	name: 'direction',
+	cssName: 'direction',
+	affectsLayout: __APPLE__,
+});
+directionProperty.register(Style);
+
 export const zIndexProperty = new CssProperty<Style, number>({
 	name: 'zIndex',
 	cssName: 'z-index',

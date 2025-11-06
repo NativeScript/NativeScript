@@ -1,3 +1,4 @@
+import { CoreTypes } from '../core-types';
 import { profile } from '../profiling';
 import type { View } from '../ui/core/view';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
@@ -375,6 +376,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	onConfigurationChanged(configuration: android.content.res.Configuration): void {
 		this.setOrientation(this.getOrientationValue(configuration));
 		this.setSystemAppearance(this.getSystemAppearanceValue(configuration));
+		this.setLayoutDirection(this.getLayoutDirectionValue(configuration));
 	}
 
 	getNativeApplication() {
@@ -554,6 +556,23 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			case android.content.res.Configuration.UI_MODE_NIGHT_NO:
 			case android.content.res.Configuration.UI_MODE_NIGHT_UNDEFINED:
 				return 'light';
+		}
+	}
+
+	getLayoutDirection(): CoreTypes.LayoutDirectionType {
+		const resources = this.context.getResources();
+		const configuration = resources.getConfiguration();
+		return this.getLayoutDirectionValue(configuration);
+	}
+
+	private getLayoutDirectionValue(configuration: android.content.res.Configuration): CoreTypes.LayoutDirectionType {
+		const layoutDirection = configuration.getLayoutDirection();
+
+		switch (layoutDirection) {
+			case android.view.View.LAYOUT_DIRECTION_LTR:
+				return CoreTypes.LayoutDirection.ltr;
+			case android.view.View.LAYOUT_DIRECTION_RTL:
+				return CoreTypes.LayoutDirection.rtl;
 		}
 	}
 

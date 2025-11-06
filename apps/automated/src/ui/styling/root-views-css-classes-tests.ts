@@ -17,6 +17,8 @@ const LANDSCAPE_ORIENTATION_CSS_CLASS = 'ns-landscape';
 const UNKNOWN_ORIENTATION_CSS_CLASS = 'ns-unknown';
 const DARK_SYSTEM_APPEARANCE_CSS_CLASS = 'ns-dark';
 const LIGHT_SYSTEM_APPEARANCE_CSS_CLASS = 'ns-light';
+const LTR_LAYOUT_DIRECTION_CSS_CLASS = 'ns-ltr';
+const RTL_LAYOUT_DIRECTION_CSS_CLASS = 'ns-rtl';
 
 function _test_root_css_class(view: View, isModal: boolean, shouldSetClassName: boolean) {
 	if (shouldSetClassName) {
@@ -78,12 +80,14 @@ function _test_orientation_css_class(rootView: View, shouldSetClassName: boolean
 	}
 
 	const cssClasses = rootView.cssClasses;
-	let appOrientation;
+
+	let appOrientation: 'portrait' | 'landscape' | 'unknown';
 	if (isAndroid) {
-		appOrientation = Application.android.orientation;
+		appOrientation = Application.android.orientation();
 	} else {
-		appOrientation = Application.ios.orientation;
+		appOrientation = Application.ios.orientation();
 	}
+
 	if (appOrientation === 'portrait') {
 		TKUnit.assertTrue(cssClasses.has(PORTRAIT_ORIENTATION_CSS_CLASS), `${PORTRAIT_ORIENTATION_CSS_CLASS} CSS class is missing`);
 		TKUnit.assertFalse(cssClasses.has(LANDSCAPE_ORIENTATION_CSS_CLASS), `${LANDSCAPE_ORIENTATION_CSS_CLASS} CSS class is present`);
@@ -92,7 +96,7 @@ function _test_orientation_css_class(rootView: View, shouldSetClassName: boolean
 		TKUnit.assertTrue(cssClasses.has(LANDSCAPE_ORIENTATION_CSS_CLASS), `${LANDSCAPE_ORIENTATION_CSS_CLASS} CSS class is missing`);
 		TKUnit.assertFalse(cssClasses.has(PORTRAIT_ORIENTATION_CSS_CLASS), `${PORTRAIT_ORIENTATION_CSS_CLASS} CSS class is present`);
 		TKUnit.assertFalse(cssClasses.has(UNKNOWN_ORIENTATION_CSS_CLASS), `${UNKNOWN_ORIENTATION_CSS_CLASS} CSS class is present`);
-	} else if (appOrientation === 'landscape') {
+	} else {
 		TKUnit.assertTrue(cssClasses.has(UNKNOWN_ORIENTATION_CSS_CLASS), `${UNKNOWN_ORIENTATION_CSS_CLASS} CSS class is missing`);
 		TKUnit.assertFalse(cssClasses.has(LANDSCAPE_ORIENTATION_CSS_CLASS), `${LANDSCAPE_ORIENTATION_CSS_CLASS} CSS class is present`);
 		TKUnit.assertFalse(cssClasses.has(PORTRAIT_ORIENTATION_CSS_CLASS), `${PORTRAIT_ORIENTATION_CSS_CLASS} CSS class is present`);
@@ -109,12 +113,14 @@ function _test_system_appearance_css_class(rootView: View, shouldSetClassName: b
 	}
 
 	const cssClasses = rootView.cssClasses;
-	let systemAppearance;
+
+	let systemAppearance: 'dark' | 'light' | null;
 	if (isAndroid) {
-		systemAppearance = Application.android.systemAppearance;
+		systemAppearance = Application.android.systemAppearance();
 	} else {
-		systemAppearance = Application.ios.systemAppearance;
+		systemAppearance = Application.ios.systemAppearance();
 	}
+
 	if (isIOS && !__VISIONOS__ && Utils.SDK_VERSION <= 12) {
 		TKUnit.assertFalse(cssClasses.has(DARK_SYSTEM_APPEARANCE_CSS_CLASS), `${DARK_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`);
 		TKUnit.assertFalse(cssClasses.has(LIGHT_SYSTEM_APPEARANCE_CSS_CLASS), `${LIGHT_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`);
@@ -124,6 +130,36 @@ function _test_system_appearance_css_class(rootView: View, shouldSetClassName: b
 	} else if (systemAppearance === 'light') {
 		TKUnit.assertTrue(cssClasses.has(LIGHT_SYSTEM_APPEARANCE_CSS_CLASS), `${LIGHT_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is missing`);
 		TKUnit.assertFalse(cssClasses.has(DARK_SYSTEM_APPEARANCE_CSS_CLASS), `${DARK_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`);
+	}
+
+	if (shouldSetClassName) {
+		TKUnit.assertTrue(cssClasses.has(CLASS_NAME), `${CLASS_NAME} CSS class is missing`);
+	}
+}
+
+function _test_layout_direction_css_class(rootView: View, shouldSetClassName: boolean) {
+	if (shouldSetClassName) {
+		rootView.className = CLASS_NAME;
+	}
+
+	const cssClasses = rootView.cssClasses;
+
+	let appLayoutDirection: CoreTypes.LayoutDirectionType | null;
+	if (isAndroid) {
+		appLayoutDirection = Application.android.layoutDirection();
+	} else {
+		appLayoutDirection = Application.ios.layoutDirection();
+	}
+
+	if (appLayoutDirection === 'ltr') {
+		TKUnit.assertTrue(cssClasses.has(LTR_LAYOUT_DIRECTION_CSS_CLASS), `${LTR_LAYOUT_DIRECTION_CSS_CLASS} CSS class is missing`);
+		TKUnit.assertFalse(cssClasses.has(RTL_LAYOUT_DIRECTION_CSS_CLASS), `${RTL_LAYOUT_DIRECTION_CSS_CLASS} CSS class is present`);
+	} else if (appLayoutDirection === 'rtl') {
+		TKUnit.assertTrue(cssClasses.has(RTL_LAYOUT_DIRECTION_CSS_CLASS), `${RTL_LAYOUT_DIRECTION_CSS_CLASS} CSS class is missing`);
+		TKUnit.assertFalse(cssClasses.has(LTR_LAYOUT_DIRECTION_CSS_CLASS), `${LTR_LAYOUT_DIRECTION_CSS_CLASS} CSS class is present`);
+	} else {
+		TKUnit.assertFalse(cssClasses.has(LTR_LAYOUT_DIRECTION_CSS_CLASS), `${LTR_LAYOUT_DIRECTION_CSS_CLASS} CSS class is present`);
+		TKUnit.assertFalse(cssClasses.has(RTL_LAYOUT_DIRECTION_CSS_CLASS), `${RTL_LAYOUT_DIRECTION_CSS_CLASS} CSS class is present`);
 	}
 
 	if (shouldSetClassName) {
