@@ -247,7 +247,6 @@ export class TextBase extends TextBaseCommon {
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const nativeView = <UITextField | UITextView | UILabel>this.nativeTextViewProtected;
 		switch (value) {
-			case 'initial':
 			case 'left':
 				nativeView.textAlignment = NSTextAlignment.Left;
 				break;
@@ -259,6 +258,9 @@ export class TextBase extends TextBaseCommon {
 				break;
 			case 'justify':
 				nativeView.textAlignment = NSTextAlignment.Justified;
+				break;
+			default:
+				nativeView.textAlignment = NSTextAlignment.Natural;
 				break;
 		}
 	}
@@ -290,17 +292,19 @@ export class TextBase extends TextBaseCommon {
 	[maxLinesProperty.setNative](value: CoreTypes.MaxLinesType) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
 		const numberOfLines = this.whiteSpace !== CoreTypes.WhiteSpace.nowrap ? value : 1;
+		const ellipsisType = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+
 		if (nativeTextViewProtected instanceof UITextView) {
 			nativeTextViewProtected.textContainer.maximumNumberOfLines = numberOfLines;
 
 			if (value !== 0) {
-				nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+				nativeTextViewProtected.textContainer.lineBreakMode = ellipsisType;
 			} else {
 				nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 			}
 		} else if (nativeTextViewProtected instanceof UILabel) {
 			nativeTextViewProtected.numberOfLines = numberOfLines;
-			nativeTextViewProtected.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+			nativeTextViewProtected.lineBreakMode = ellipsisType;
 		} else if (nativeTextViewProtected instanceof UIButton) {
 			nativeTextViewProtected.titleLabel.numberOfLines = numberOfLines;
 		}

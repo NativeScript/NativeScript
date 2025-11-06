@@ -2,7 +2,7 @@ import { isAccessibilityServiceEnabled } from '../../application';
 import type { Frame } from '../frame';
 import { BackstackEntry, NavigationType } from '../frame/frame-interfaces';
 import { View, IOSHelper } from '../core/view';
-import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './page-common';
+import { PageBase, actionBarHiddenProperty } from './page-common';
 
 import { profile } from '../../profiling';
 import { layout } from '../../utils/layout-helper';
@@ -319,11 +319,20 @@ class UIViewControllerImpl extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this._owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this._owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
@@ -349,7 +358,11 @@ class UIViewControllerImpl extends UIViewController {
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner?.deref();
 		if (owner) {
-			return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.DarkContent;
+			} else {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
 		} else {
 			return UIStatusBarStyle.Default;
 		}
@@ -554,21 +567,6 @@ export class Page extends PageBase {
 		if (frame) {
 			// Update nav-bar visibility with disabled animations
 			frame._updateActionBar(this, true);
-		}
-	}
-
-	[statusBarStyleProperty.getDefault](): UIBarStyle {
-		return UIBarStyle.Default;
-	}
-	[statusBarStyleProperty.setNative](value: string | UIBarStyle) {
-		const frame = this.frame;
-		if (frame) {
-			const navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
-			if (typeof value === 'string') {
-				navigationBar.barStyle = value === 'dark' ? UIBarStyle.Black : UIBarStyle.Default;
-			} else {
-				navigationBar.barStyle = value;
-			}
 		}
 	}
 

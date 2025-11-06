@@ -1,6 +1,7 @@
 // Types
 import { View as ViewDefinition } from '..';
-import { CoreTypes, layout, Trace } from './view-helper-shared';
+import { CoreTypes } from '../../../../core-types';
+import { layout, Trace } from './view-helper-shared';
 
 export class ViewHelper {
 	public static measureChild(parent: ViewDefinition, child: ViewDefinition, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
@@ -95,18 +96,21 @@ export class ViewHelper {
 		}
 
 		switch (hAlignment) {
+			case 'start':
+				childLeft = child.direction === CoreTypes.LayoutDirection.rtl ? right - childWidth - effectiveMarginRight : left + effectiveMarginLeft;
+				break;
 			case 'left':
 				childLeft = left + effectiveMarginLeft;
 				break;
-
 			case 'center':
 				childLeft = left + (right - left - childWidth + (effectiveMarginLeft - effectiveMarginRight)) / 2;
 				break;
-
 			case 'right':
 				childLeft = right - childWidth - effectiveMarginRight;
 				break;
-
+			case 'end':
+				childLeft = child.direction === CoreTypes.LayoutDirection.rtl ? left + effectiveMarginLeft : right - childWidth - effectiveMarginRight;
+				break;
 			case 'stretch':
 			default:
 				childLeft = left + effectiveMarginLeft;
