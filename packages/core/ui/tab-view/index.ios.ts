@@ -3,7 +3,7 @@ import { Font } from '../styling/font';
 
 import { IOSHelper, View } from '../core/view';
 import { ViewBase } from '../core/view-base';
-import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon } from './tab-view-common';
+import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon, iosBottomAccessoryProperty, iosTabBarMinimizeBehaviorProperty } from './tab-view-common';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { fontInternalProperty } from '../styling/style-properties';
@@ -286,6 +286,8 @@ export class TabView extends TabViewBase {
 	private _delegate: UITabBarControllerDelegateImpl;
 	private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
 	private _iconsCache = {};
+	private _bottomAccessoryNsView: View;
+	private _bottomAccessory: UITabAccessory;
 
 	constructor() {
 		super();
@@ -317,11 +319,18 @@ export class TabView extends TabViewBase {
 		}
 
 		this._ios.delegate = this._delegate;
+
+		// Re-apply bottom accessory if set
+		if (this.iosBottomAccessory) {
+			this._applyBottomAccessory(this.iosBottomAccessory, false);
+		}
 	}
 
 	public onUnloaded() {
 		this._ios.delegate = null;
 		this._ios.moreNavigationController.delegate = null;
+		// Avoid retaining custom view when unloading
+		this._applyBottomAccessory(null, false);
 		super.onUnloaded();
 	}
 
@@ -657,6 +666,88 @@ export class TabView extends TabViewBase {
 				}
 			}
 		}
+	}
+
+	// iOS 26+: bottom accessory support
+	[iosBottomAccessoryProperty.getDefault](): View {
+		return null;
+	}
+	[iosBottomAccessoryProperty.setNative](value: View) {
+		this._applyBottomAccessory(value, false);
+	}
+
+	// iOS 26+: tab bar minimize behavior
+	[iosTabBarMinimizeBehaviorProperty.getDefault](): 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp' {
+		return 'automatic';
+	}
+	[iosTabBarMinimizeBehaviorProperty.setNative](value: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp') {
+		if (SDK_VERSION < 26) {
+			return;
+		}
+		let mapped: UITabBarMinimizeBehavior;
+		switch (value) {
+			case 'never':
+				mapped = UITabBarMinimizeBehavior.Never;
+				break;
+			case 'onScrollDown':
+				mapped = UITabBarMinimizeBehavior.OnScrollDown;
+				break;
+			case 'onScrollUp':
+				mapped = UITabBarMinimizeBehavior.OnScrollUp;
+				break;
+			case 'automatic':
+			default:
+				mapped = UITabBarMinimizeBehavior.Automatic;
+		}
+		(this._ios as any).tabBarMinimizeBehavior = mapped;
+	}
+
+	private _applyBottomAccessory(value: View | null, animated: boolean) {
+		// Guard for platform availability
+		if (SDK_VERSION < 26) {
+			return;
+		}
+		// Clear previous
+		if (!value) {
+			// Clear on controller
+			try {
+				(this._ios as any).setBottomAccessoryAnimated(null, animated);
+			} catch (err) {
+				// Fallback to property if needed
+				try {
+					(this._ios as any).bottomAccessory = null;
+				} catch (_) {}
+			}
+			// Tear down previously managed NS view
+			if (this._bottomAccessoryNsView) {
+				// Do not remove from a parent; we didn't add it to the NS view tree.
+				try {
+					this._bottomAccessoryNsView._tearDownUI(true);
+				} catch (_) {}
+				this._bottomAccessoryNsView = null;
+			}
+			this._bottomAccessory = null;
+			return;
+		}
+
+		// Ensure the NativeScript view has a native view
+		const nsView = value as View;
+		if (!nsView.nativeViewProtected) {
+			// mirror dialogs approach to setup UI for a detached view
+			(nsView as any)._setupUI(<any>{});
+		}
+		const contentView = nsView.nativeViewProtected as UIView;
+		if (!contentView) {
+			return;
+		}
+		const accessory = UITabAccessory.alloc().initWithContentView(contentView);
+		try {
+			(this._ios as any).setBottomAccessoryAnimated(accessory, animated);
+		} catch (err) {
+			(this._ios as any).bottomAccessory = accessory;
+		}
+		this._bottomAccessoryNsView = nsView;
+		this._bottomAccessory = accessory;
 	}
 }
 
