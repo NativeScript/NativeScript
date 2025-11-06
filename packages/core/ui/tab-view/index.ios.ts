@@ -126,7 +126,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
 		const owner = this._owner?.deref();
 		if (owner) {
-			owner._onViewControllerShown(viewController);
+			owner._onViewControllerShown(tabBarController, viewController);
 		}
 	}
 }
@@ -153,7 +153,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		if (owner) {
 			// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
 			// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-			const backToMoreWillBeVisible = owner.ios.viewControllers.containsObject(viewController);
+			const backToMoreWillBeVisible = navigationController.tabBarController?.viewControllers?.containsObject?.(viewController);
 			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 		}
 	}
@@ -166,7 +166,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		navigationController.navigationBar.topItem.rightBarButtonItem = null;
 		const owner = this._owner?.deref();
 		if (owner) {
-			owner._onViewControllerShown(viewController);
+			owner._onViewControllerShown(navigationController.tabBarController, viewController);
 		}
 	}
 }
@@ -383,13 +383,13 @@ export class TabView extends TabViewBase {
 		this.setMeasuredDimension(widthAndState, heightAndState);
 	}
 
-	public _onViewControllerShown(viewController: UIViewController) {
+	public _onViewControllerShown(tabBarController: UITabBarController, viewController: UIViewController) {
 		// This method could be called with the moreNavigationController or its list controller, so we have to check.
 		if (Trace.isEnabled()) {
 			Trace.write('TabView._onViewControllerShown(' + viewController + ');', Trace.categories.Debug);
 		}
-		if (this._ios?.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
-			this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
+		if (tabBarController?.viewControllers && tabBarController.viewControllers.containsObject(viewController)) {
+			this.selectedIndex = tabBarController.viewControllers.indexOfObject(viewController);
 		} else {
 			if (Trace.isEnabled()) {
 				Trace.write('TabView._onViewControllerShown: viewController is not one of our viewControllers', Trace.categories.Debug);
@@ -403,7 +403,12 @@ export class TabView extends TabViewBase {
 		}
 
 		// The "< Back" and "< More" navigation bars should not be visible simultaneously.
-		const page = this.page || this._selectedView?.page || (<any>this)._selectedView?.currentPage;
+		let page = this.page || this._selectedView?.page;
+
+		if (!page && this._selectedView instanceof Frame) {
+			page = this._selectedView.currentPage;
+		}
+
 		if (!page || !page.frame) {
 			return;
 		}
