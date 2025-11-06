@@ -6,6 +6,9 @@ import { SDK_VERSION } from '../../utils/constants';
 @NativeClass
 class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewControllerDelegate {
 	public static ObjCProtocols = [UISplitViewControllerDelegate];
+	static ObjCExposedMethods = {
+		toggleInspector: { returns: interop.types.void, params: [] },
+	};
 	private _owner: WeakRef<SplitView>;
 
 	public static initWithOwner(owner: WeakRef<SplitView>): UISplitViewControllerDelegateImpl {
@@ -47,7 +50,7 @@ class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewC
 		return UISplitViewControllerColumn.Secondary;
 	}
 
-	toggleInspector(sender: UIBarButtonItem): void {
+	toggleInspector(): void {
 		const owner = this._owner.deref();
 		if (owner) {
 			if (owner.inspectorShowing) {
@@ -57,10 +60,6 @@ class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewC
 			}
 		}
 	}
-
-	static ObjCExposedMethods = {
-		'toggleInspector:': { returns: interop.types.void, params: [UIBarButtonItem] },
-	};
 }
 
 export class SplitView extends SplitViewBase {
@@ -78,8 +77,6 @@ export class SplitView extends SplitViewBase {
 
 	constructor() {
 		super();
-		// Prefer modern initializer when available; otherwise default
-		console.log('this._getSplitStyle(): ', this._getSplitStyle());
 		this.viewController = UISplitViewController.alloc().initWithStyle(this._getSplitStyle());
 	}
 
@@ -117,8 +114,6 @@ export class SplitView extends SplitViewBase {
 	public _addViewToNativeVisualTree(child: SplitViewBase, atIndex: number): boolean {
 		const role = this._resolveRoleForChild(child, atIndex);
 		const controller = this._ensureControllerForChild(child);
-		console.log('set controllers for role: ' + role);
-		console.log('controller: ', controller);
 		this._children.set(role, child);
 		this._controllers.set(role, controller);
 		this._syncControllers();
@@ -225,18 +220,6 @@ export class SplitView extends SplitViewBase {
 		});
 	}
 
-	onLoaded() {
-		super.onLoaded();
-
-		// Note: buttons items can only be applied after UINavigationController's view controllers are pushed after onLoaded
-		setTimeout(() => {
-			const inspector = this._controllers.get('inspector');
-			if (inspector) {
-				this._attachInspectorButton();
-			}
-		});
-	}
-
 	private _resolveRoleForChild(child: SplitViewBase, atIndex: number): SplitRole {
 		const explicit = SplitViewBase.getRole(child);
 		if (explicit) {
@@ -278,16 +261,14 @@ export class SplitView extends SplitViewBase {
 			return;
 		}
 
-		const targetVC = inspector.topViewController ?? inspector.visibleViewController;
-		if (!targetVC || !targetVC.navigationItem) {
-			// Subscribe to Frame event to know when a VC is shown, then attach the button.
+		const targetVC = inspector.topViewController;
+		if (!targetVC) {
+			// Subscribe to Frame event to know when the top VC is shown, then attach the button.
 			// Can only attach buttons once VC is available
 			const frameChild = this._children.get('inspector') as any;
 			if (frameChild && frameChild.on && !frameChild._inspectorVCShownHandler) {
 				frameChild._inspectorVCShownHandler = () => {
-					frameChild.off('viewControllerShown', frameChild._inspectorVCShownHandler);
-					frameChild._inspectorVCShownHandler = null;
-					this._attachInspectorButton();
+					setTimeout(() => this._attachInspectorButton());
 				};
 				frameChild.on('viewControllerShown', frameChild._inspectorVCShownHandler.bind(this));
 			}
@@ -299,11 +280,10 @@ export class SplitView extends SplitViewBase {
 			return;
 		}
 
-		// Build the bar button and attach to the visible controller
 		// TODO: can provide properties to customize this
 		const cfg = UIImageSymbolConfiguration.configurationWithPointSizeWeightScale(18, UIImageSymbolWeight.Regular, UIImageSymbolScale.Medium);
 		const image = UIImage.systemImageNamedWithConfiguration('sidebar.trailing', cfg);
-		const item = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, this._delegate, 'toggleInspector:');
+		const item = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, this._delegate, 'toggleInspector');
 		targetVC.navigationItem.rightBarButtonItem = item;
 	}
 
