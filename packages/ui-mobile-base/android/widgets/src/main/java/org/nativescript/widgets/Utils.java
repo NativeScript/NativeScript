@@ -175,13 +175,13 @@ public class Utils {
 			return 0;
 		}
 		try {
-			if (!object.has(key)) {
+			if (!object.has(key) || object.isNull(key)) {
 				return 0;
 			}
 			Object value = object.get(key);
 			if (value instanceof Number) {
-				int n = ((Number) value).intValue();
-				return n > 0 ? n : 0;
+				int parsed = (int) Math.floor(((Number) value).doubleValue());
+				return parsed > 0 ? parsed : 0;
 			}
 			if (value instanceof String) {
 				String s = ((String) value).trim();
@@ -189,13 +189,13 @@ public class Utils {
 					return 0;
 				}
 				try {
-					int n = Integer.parseInt(s);
-					return n > 0 ? n : 0;
+					int parsed = Integer.parseInt(s);
+					return parsed > 0 ? parsed : 0;
 				} catch (NumberFormatException ignored) {
 					return 0;
 				}
 			}
-		} catch (Exception ignored) {
+		} catch (JSONException ignored) {
 		}
 		return 0;
 	}
@@ -327,6 +327,7 @@ public class Utils {
 
 					try {
 						JSONObject object = new JSONObject(options);
+						// Coerce numeric strings or numbers; fallback to 0 for invalid values
 						opts.width = parsePositiveInt(object, "width");
 						opts.height = parsePositiveInt(object, "height");
 						opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
