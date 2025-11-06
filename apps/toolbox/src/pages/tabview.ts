@@ -1,4 +1,4 @@
-import { EventData, Observable, Page, Color, TabView, TabViewItem, GridLayout, Label } from '@nativescript/core';
+import { EventData, Observable, Page, Color, TabView, TabViewItem, StackLayout, Label } from '@nativescript/core';
 
 class TabViewDemoModel extends Observable {
 	private page: Page;
@@ -63,19 +63,17 @@ class TabViewDemoModel extends Observable {
 	// iOS bottom accessory demo (iOS 26+). Safe to call on other platforms; will be ignored.
 	attachBottomAccessory = () => {
 		if (!this.tabView) return;
-
-		// Better: use a StackLayout constructed as a View
-		const root = new GridLayout();
-		root.padding = 4;
+		const root = new StackLayout();
+		root.padding = 12;
+		root.height = 48; // ensure visible height
 		root.backgroundColor = new Color('#1A1A1A');
 		root.borderTopWidth = 1;
 		root.borderColor = new Color('#333');
 		const label = new Label();
 		label.text = 'Bottom Accessory (iOS 26+)';
-		label.color = new Color('#000');
+		label.color = new Color('#FFFFFF');
 		root.addChild(label);
 		(this.tabView as any).iosBottomAccessory = root;
-		this.tabView.requestLayout();
 	};
 
 	clearBottomAccessory = () => {
@@ -83,9 +81,9 @@ class TabViewDemoModel extends Observable {
 		(this.tabView as any).iosBottomAccessory = null;
 	};
 
-	setMinimizeScrollDown = () => {
+	setMinimizeAutomatic = () => {
 		if (!this.tabView) return;
-		this.tabView.iosTabBarMinimizeBehavior = 'onScrollDown';
+		(this.tabView as any).iosTabBarMinimizeBehavior = 'automatic';
 	};
 
 	setMinimizeNever = () => {
