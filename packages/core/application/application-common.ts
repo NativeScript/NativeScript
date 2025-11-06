@@ -11,7 +11,7 @@ import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
-import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, UnhandledErrorEventData } from './application-interfaces';
+import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, LayoutDirectionChangedEventData, UnhandledErrorEventData } from './application-interfaces';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
@@ -28,6 +28,12 @@ const ORIENTATION_CSS_CLASSES = [
 const SYSTEM_APPEARANCE_CSS_CLASSES = [
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.light}`,
 	`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`,
+];
+
+// prettier-ignore
+const LAYOUT_DIRECTION_CSS_CLASSES = [
+	`${CSSUtils.CLASS_PREFIX}${CoreTypes.LayoutDirection.ltr}`,
+	`${CSSUtils.CLASS_PREFIX}${CoreTypes.LayoutDirection.rtl}`,
 ];
 
 // SDK Version CSS classes
@@ -80,6 +86,19 @@ function applySdkVersionClass(rootView: View): void {
 
 const globalEvents = getNativeScriptGlobals().events;
 
+// Scene lifecycle event names
+export const SceneEvents = {
+	sceneWillConnect: 'sceneWillConnect',
+	sceneDidActivate: 'sceneDidActivate',
+	sceneWillResignActive: 'sceneWillResignActive',
+	sceneWillEnterForeground: 'sceneWillEnterForeground',
+	sceneDidEnterBackground: 'sceneDidEnterBackground',
+	sceneDidDisconnect: 'sceneDidDisconnect',
+	sceneContentSetup: 'sceneContentSetup',
+};
+
+export type SceneEventName = (typeof SceneEvents)[keyof typeof SceneEvents];
+
 // helper interface to correctly type Application event handlers
 interface ApplicationEvents {
 	off(eventNames: string, callback?: any, thisArg?: any): void;
@@ -96,11 +115,6 @@ interface ApplicationEvents {
 	 * Event raised then livesync operation is performed.
 	 */
 	on(event: 'livesync', callback: (args: ApplicationEventData) => void, thisArg?: any): void;
-
-	/**
-	 * This event is raised when application css is changed.
-	 */
-	on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any): void;
 
 	/**
 	 * This event is raised on application launchEvent.
@@ -156,6 +170,12 @@ interface ApplicationEvents {
 	 */
 	on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any): void;
 
+	/**
+	 * This event is raised when the operating system layout direction changes
+	 * between ltr and rtl.
+	 */
+	on(event: 'layoutDirectionChanged', callback: (args: LayoutDirectionChangedEventData) => void, thisArg?: any): void;
+
 	on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any): void;
 }
 
@@ -172,6 +192,7 @@ export class ApplicationCommon {
 	readonly discardedErrorEvent = 'discardedError';
 	readonly orientationChangedEvent = 'orientationChanged';
 	readonly systemAppearanceChangedEvent = 'systemAppearanceChanged';
+	readonly layoutDirectionChangedEvent = 'layoutDirectionChanged';
 	readonly fontScaleChangedEvent = 'fontScaleChanged';
 	readonly livesyncEvent = 'livesync';
 	readonly loadAppCssEvent = 'loadAppCss';
@@ -206,6 +227,21 @@ export class ApplicationCommon {
 	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
 	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
 	hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
+
+	private _orientation: 'portrait' | 'landscape' | 'unknown';
+	private _systemAppearance: 'dark' | 'light' | null;
+	private _layoutDirection: CoreTypes.LayoutDirectionType | null;
+	private _inBackground: boolean = false;
+	private _suspended: boolean = false;
+	private _cssFile = './app.css';
+
+	protected mainEntry: NavigationEntry;
+
+	public started = false;
+	/**
+	 * Boolean to enable/disable systemAppearanceChanged
+	 */
+	public autoSystemAppearanceChanged = true;
 
 	/**
 	 * @internal - should not be constructed by the user.
@@ -313,6 +349,7 @@ export class ApplicationCommon {
 		const deviceType = Device.deviceType.toLowerCase();
 		const orientation = this.orientation();
 		const systemAppearance = this.systemAppearance();
+		const layoutDirection = this.layoutDirection();
 
 		if (platform) {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}`);
@@ -328,6 +365,10 @@ export class ApplicationCommon {
 
 		if (systemAppearance) {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${systemAppearance}`);
+		}
+
+		if (layoutDirection) {
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${layoutDirection}`);
 		}
 
 		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
@@ -439,12 +480,11 @@ export class ApplicationCommon {
 		bindableResources.set(res);
 	}
 
-	private cssFile = './app.css';
 	/**
 	 * Sets css file name for the application.
 	 */
 	setCssFileName(cssFileName: string) {
-		this.cssFile = cssFileName;
+		this._cssFile = cssFileName;
 		this.notify(<CssChangedEventData>{
 			eventName: this.cssChangedEvent,
 			object: this,
@@ -456,7 +496,7 @@ export class ApplicationCommon {
 	 * Gets css file name for the application.
 	 */
 	getCssFileName(): string {
-		return this.cssFile;
+		return this._cssFile;
 	}
 
 	/**
@@ -498,8 +538,6 @@ export class ApplicationCommon {
 	run(entry?: string | NavigationEntry) {
 		throw new Error('run() Not implemented.');
 	}
-
-	private _orientation: 'portrait' | 'landscape' | 'unknown';
 
 	protected getOrientation(): 'portrait' | 'landscape' | 'unknown' {
 		// override in platform specific Application class
@@ -560,8 +598,6 @@ export class ApplicationCommon {
 		return getNativeScriptGlobals().launched;
 	}
 
-	private _systemAppearance: 'dark' | 'light' | null;
-
 	protected getSystemAppearance(): 'dark' | 'light' | null {
 		// override in platform specific Application class
 		throw new Error('getSystemAppearance() not implemented');
@@ -586,11 +622,6 @@ export class ApplicationCommon {
 		// return cached value, or get it from the platform specific override
 		return (this._systemAppearance ??= this.getSystemAppearance());
 	}
-
-	/**
-	 * Boolean to enable/disable systemAppearanceChanged
-	 */
-	autoSystemAppearanceChanged = true;
 
 	/**
 	 * enable/disable systemAppearanceChanged
@@ -624,6 +655,56 @@ export class ApplicationCommon {
 		rootView._onCssStateChange();
 	}
 
+	protected getLayoutDirection(): CoreTypes.LayoutDirectionType | null {
+		// override in platform specific Application class
+		throw new Error('getLayoutDirection() not implemented');
+	}
+
+	protected setLayoutDirection(value: CoreTypes.LayoutDirectionType) {
+		if (this._layoutDirection === value) {
+			return;
+		}
+		this._layoutDirection = value;
+		this.layoutDirectionChanged(this.getRootView(), value);
+		this.notify(<LayoutDirectionChangedEventData>{
+			eventName: this.layoutDirectionChangedEvent,
+			android: this.android,
+			ios: this.ios,
+			newValue: value,
+			object: this,
+		});
+	}
+
+	layoutDirection(): CoreTypes.LayoutDirectionType | null {
+		// return cached value, or get it from the platform specific override
+		return (this._layoutDirection ??= this.getLayoutDirection());
+	}
+
+	/**
+	 * Updates root view classes including those of modals
+	 * @param rootView the root view
+	 * @param newLayoutDirection the new layout direction change
+	 */
+	layoutDirectionChanged(rootView: View, newLayoutDirection: CoreTypes.LayoutDirectionType): void {
+		if (!rootView) {
+			return;
+		}
+
+		const newLayoutDirectionCssClass = `${CSSUtils.CLASS_PREFIX}${newLayoutDirection}`;
+		this.applyCssClass(rootView, LAYOUT_DIRECTION_CSS_CLASSES, newLayoutDirectionCssClass, true);
+
+		const rootModalViews = rootView._getRootModalViews();
+		rootModalViews.forEach((rootModalView) => {
+			this.applyCssClass(rootModalView as View, LAYOUT_DIRECTION_CSS_CLASSES, newLayoutDirectionCssClass, true);
+
+			// Trigger state change for root modal view classes and media queries
+			rootModalView._onCssStateChange();
+		});
+
+		// Trigger state change for root view classes and media queries
+		rootView._onCssStateChange();
+	}
+
 	get inBackground() {
 		return isAppInBackground();
 	}
@@ -639,8 +720,6 @@ export class ApplicationCommon {
 			...additonalData,
 		});
 	}
-
-	private _suspended: boolean = false;
 
 	get suspended() {
 		return this._suspended;
@@ -658,8 +737,6 @@ export class ApplicationCommon {
 			...additonalData,
 		});
 	}
-
-	public started = false;
 
 	get android(): AndroidApplicationType {
 		return undefined;

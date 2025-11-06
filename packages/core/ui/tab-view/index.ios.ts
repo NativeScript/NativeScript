@@ -12,7 +12,8 @@ import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
-import { layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
+import { FONT_PREFIX, isFontIconURI, isSystemURI, SYSTEM_PREFIX } from '../../utils/common';
 import { SDK_VERSION } from '../../utils/constants';
 import { Device } from '../../platform';
 export * from './tab-view-common';
@@ -74,11 +75,20 @@ class UITabBarControllerImpl extends UITabBarController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this._owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this._owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
@@ -239,7 +249,7 @@ export class TabViewItem extends TabViewItemBase {
 		const parent = <TabView>this.parent;
 		const controller = this.__controller;
 		if (parent && controller) {
-			const icon = parent._getIcon(this.iconSource);
+			const icon = parent._getIcon(this);
 			const index = parent.items.indexOf(this);
 			const title = getTransformedText(this.title, this.style.textTransform);
 
@@ -456,7 +466,7 @@ export class TabView extends TabViewBase {
 
 		items.forEach((item, i) => {
 			const controller = this.getViewController(item);
-			const icon = this._getIcon(item.iconSource);
+			const icon = this._getIcon(item);
 			const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title || '', icon, i);
 			updateTitleAndIconPositions(item, tabBarItem, controller);
 
@@ -492,20 +502,36 @@ export class TabView extends TabViewBase {
 		}
 	}
 
-	public _getIcon(iconSource: string): UIImage {
-		if (!iconSource) {
+	public _getIcon(item: TabViewItem): UIImage {
+		if (!item || !item.iconSource) {
 			return null;
 		}
 
-		let image: UIImage = this._iconsCache[iconSource];
+		let image: UIImage = this._iconsCache[item.iconSource];
 		if (!image) {
-			const is = ImageSource.fromFileOrResourceSync(iconSource);
+			let is: ImageSource;
+			if (isSystemURI(item.iconSource)) {
+				is = ImageSource.fromSystemImageSync(item.iconSource.slice(SYSTEM_PREFIX.length));
+			} else if (isFontIconURI(item.iconSource)) {
+				// Allow specifying a separate font family for the icon via style.iconFontFamily.
+				// If provided, construct a Font from the family and (optionally) size from fontInternal.
+				let iconFont = item.style.fontInternal;
+				const iconFontFamily = item.iconFontFamily || item.style.iconFontFamily;
+				if (iconFontFamily) {
+					// Preserve size/style from existing fontInternal if present.
+					const baseFont = item.style.fontInternal || Font.default;
+					iconFont = baseFont.withFontFamily(iconFontFamily);
+				}
+				is = ImageSource.fromFontIconCodeSync(item.iconSource.slice(FONT_PREFIX.length), iconFont, item.style.color);
+			} else {
+				is = ImageSource.fromFileOrResourceSync(item.iconSource);
+			}
 			if (is && is.ios) {
 				const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
-				this._iconsCache[iconSource] = originalRenderedImage;
+				this._iconsCache[item.iconSource] = originalRenderedImage;
 				image = originalRenderedImage;
 			} else {
-				traceMissingIcon(iconSource);
+				traceMissingIcon(item.iconSource);
 			}
 		}
 

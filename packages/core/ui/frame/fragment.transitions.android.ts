@@ -6,6 +6,7 @@ import { NavigationTransition, BackstackEntry } from '.';
 import { Transition } from '../transition';
 import { FlipTransition } from '../transition/flip-transition';
 import { _resolveAnimationCurve } from '../animation';
+import { CoreTypes } from '../enums';
 import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
 import { SharedTransition, SharedTransitionAnimationType } from '../transition/shared-transition';
@@ -55,7 +56,7 @@ export interface ExpandedEntry extends BackstackEntry {
 	isAnimationRunning: boolean;
 }
 
-export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, isNestedDefaultTransition?: boolean): void {
+export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, layoutDirection: CoreTypes.LayoutDirectionType, isNestedDefaultTransition?: boolean): void {
 	const currentFragment: androidx.fragment.app.Fragment = currentEntry ? currentEntry.fragment : null;
 	const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 	const entries = waitingQueue.get(frameId);
@@ -137,9 +138,12 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 			setupCurrentFragmentFadeTransition({ duration: 150, curve: null }, currentEntry);
 		}
 	} else if (name.indexOf('slide') === 0) {
-		setupNewFragmentSlideTransition(navigationTransition, newEntry, name);
+		const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'right' : 'left';
+		const direction = name.substring('slide'.length) || defaultDirection; // Extract the direction from the string
+
+		setupNewFragmentSlideTransition(navigationTransition, newEntry, direction);
 		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentSlideTransition(navigationTransition, currentEntry, name);
+			setupCurrentFragmentSlideTransition(navigationTransition, currentEntry, direction);
 		}
 	} else if (name === 'fade') {
 		setupNewFragmentFadeTransition(navigationTransition, newEntry);
@@ -152,7 +156,8 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 			setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
 		}
 	} else if (name.indexOf('flip') === 0) {
-		const direction = name.substring('flip'.length) || 'right'; //Extract the direction from the string
+		const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'left' : 'right';
+		const direction = name.substring('flip'.length) || defaultDirection; // Extract the direction from the string
 		const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
 
 		setupNewFragmentCustomTransition(navigationTransition, newEntry, flipTransition);
@@ -623,9 +628,9 @@ function setReturnTransition(navigationTransition: NavigationTransition, entry: 
 	fragment.setReturnTransition(transition);
 }
 
-function setupNewFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, name: string): void {
-	setupCurrentFragmentSlideTransition(navTransition, entry, name);
-	const direction = name.substring('slide'.length) || 'left'; //Extract the direction from the string
+function setupNewFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, direction: string): void {
+	setupCurrentFragmentSlideTransition(navTransition, entry, direction);
+
 	switch (direction) {
 		case 'left':
 			setEnterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.RIGHT));
@@ -649,8 +654,7 @@ function setupNewFragmentSlideTransition(navTransition: NavigationTransition, en
 	}
 }
 
-function setupCurrentFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, name: string): void {
-	const direction = name.substring('slide'.length) || 'left'; //Extract the direction from the string
+function setupCurrentFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, direction: string): void {
 	switch (direction) {
 		case 'left':
 			setExitTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.LEFT));

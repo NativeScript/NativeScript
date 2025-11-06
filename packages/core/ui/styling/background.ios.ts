@@ -103,7 +103,7 @@ export namespace ios {
 			layer.mask.path = generateClipPath(view, layer.bounds);
 		}
 
-		if (background.hasBoxShadow()) {
+		if (background.hasBoxShadows()) {
 			drawBoxShadow(view);
 			needsLayerAdjustmentOnScroll = true;
 		}
@@ -214,12 +214,10 @@ export namespace ios {
 		callback(generatePatternImage(bitmap, view, flip));
 	}
 
-	export function generateShadowLayerPaths(view: View, bounds: CGRect): { maskPath: any; shadowPath: any } {
+	export function generateShadowLayerPaths(view: View, boxShadow: BoxShadow, bounds: CGRect): { maskPath: any; shadowPath: any } {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 		const layer = nativeView.layer;
-
-		const boxShadow: BoxShadow = background.getBoxShadow();
 		const spreadRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
 
 		const { width, height } = bounds.size;
@@ -1080,65 +1078,56 @@ function drawBoxShadow(view: View): void {
 	}
 
 	const bounds = nativeView.bounds;
-	const boxShadow: BoxShadow = background.getBoxShadow();
+	const boxShadows: BoxShadow[] = background.getBoxShadows();
 
 	// Initialize outer shadows
-	let outerShadowContainerLayer: CALayer;
+	let shadowGroupLayer: CALayer;
+
 	if (nativeView.outerShadowContainerLayer) {
-		outerShadowContainerLayer = nativeView.outerShadowContainerLayer;
+		shadowGroupLayer = nativeView.outerShadowContainerLayer;
 	} else {
-		outerShadowContainerLayer = CALayer.new();
-
-		// TODO: Make this dynamic when views get support for multiple shadows
-		const shadowLayer = CALayer.new();
-		// This mask is necessary to maintain transparent background
-		const maskLayer = CAShapeLayer.new();
-		maskLayer.fillRule = kCAFillRuleEvenOdd;
-
-		shadowLayer.mask = maskLayer;
-		outerShadowContainerLayer.addSublayer(shadowLayer);
+		shadowGroupLayer = CALayer.new();
 
 		// Instead of nesting it, add shadow container layer underneath view so that it's not affected by border masking
-		layer.superlayer.insertSublayerBelow(outerShadowContainerLayer, layer);
-		nativeView.outerShadowContainerLayer = outerShadowContainerLayer;
+		layer.superlayer.insertSublayerBelow(shadowGroupLayer, layer);
+		nativeView.outerShadowContainerLayer = shadowGroupLayer;
 	}
 
-	// Apply clip path to shadow
-	if (nativeView.maskType === iosViewUtils.LayerMask.CLIP_PATH && layer.mask instanceof CAShapeLayer) {
-		if (!outerShadowContainerLayer.mask) {
-			outerShadowContainerLayer.mask = CAShapeLayer.new();
+	// Check if the number of shadow layers is correct
+	if (!shadowGroupLayer.sublayers || boxShadows.length > shadowGroupLayer.sublayers.count) {
+		const length = shadowGroupLayer.sublayers ? boxShadows.length - shadowGroupLayer.sublayers.count : boxShadows.length;
+
+		for (let i = 0; i < length; i++) {
+			const shadowLayer = CALayer.new();
+			// This mask is necessary to maintain transparent background
+			const maskLayer = CAShapeLayer.new();
+
+			maskLayer.fillRule = kCAFillRuleEvenOdd;
+			shadowLayer.mask = maskLayer;
+			shadowGroupLayer.addSublayer(shadowLayer);
 		}
-		if (outerShadowContainerLayer.mask instanceof CAShapeLayer) {
-			outerShadowContainerLayer.mask.path = layer.mask.path;
+	} else if (shadowGroupLayer.sublayers && boxShadows.length < shadowGroupLayer.sublayers.count) {
+		for (let i = 0, length = shadowGroupLayer.sublayers.count - boxShadows.length; i < length; i++) {
+			shadowGroupLayer.sublayers[i].removeFromSuperlayer();
 		}
 	}
 
-	outerShadowContainerLayer.bounds = bounds;
-	outerShadowContainerLayer.transform = layer.transform;
-	outerShadowContainerLayer.anchorPoint = layer.anchorPoint;
-	outerShadowContainerLayer.position = nativeView.center;
-	outerShadowContainerLayer.zPosition = layer.zPosition;
-
-	// Inherit view visibility values
-	outerShadowContainerLayer.opacity = layer.opacity;
-	outerShadowContainerLayer.hidden = layer.hidden;
-
-	const outerShadowLayers = outerShadowContainerLayer.sublayers;
-	if (outerShadowLayers?.count) {
-		for (let i = 0, count = outerShadowLayers.count; i < count; i++) {
-			const shadowLayer = outerShadowLayers[i];
+	if (shadowGroupLayer.sublayers?.count) {
+		for (let i = 0, count = shadowGroupLayer.sublayers.count; i < count; i++) {
+			const shadowLayer = shadowGroupLayer.sublayers[i];
+			const boxShadow = boxShadows[i];
 			const shadowRadius = layout.toDeviceIndependentPixels(boxShadow.blurRadius);
-			const spreadRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
 			const offsetX = layout.toDeviceIndependentPixels(boxShadow.offsetX);
 			const offsetY = layout.toDeviceIndependentPixels(boxShadow.offsetY);
-			const { maskPath, shadowPath } = ios.generateShadowLayerPaths(view, bounds);
+			const { maskPath, shadowPath } = ios.generateShadowLayerPaths(view, boxShadow, bounds);
 
 			shadowLayer.allowsEdgeAntialiasing = true;
 			shadowLayer.contentsScale = Screen.mainScreen.scale;
 
 			// Shadow opacity is handled on the shadow's color instance
 			shadowLayer.shadowOpacity = boxShadow.color?.a ? boxShadow.color.a / 255 : 1;
-			shadowLayer.shadowRadius = shadowRadius;
+			// Use this multiplier to imitate CSS shadow blur
+			shadowLayer.shadowRadius = shadowRadius * 0.5;
 			shadowLayer.shadowColor = boxShadow.color?.ios?.CGColor;
 			shadowLayer.shadowOffset = CGSizeMake(offsetX, offsetY);
 
@@ -1151,6 +1140,26 @@ function drawBoxShadow(view: View): void {
 			}
 		}
 	}
+
+	// Apply clip path to shadow
+	if (nativeView.maskType === iosViewUtils.LayerMask.CLIP_PATH && layer.mask instanceof CAShapeLayer) {
+		if (!shadowGroupLayer.mask) {
+			shadowGroupLayer.mask = CAShapeLayer.new();
+		}
+		if (shadowGroupLayer.mask instanceof CAShapeLayer) {
+			shadowGroupLayer.mask.path = layer.mask.path;
+		}
+	}
+
+	shadowGroupLayer.bounds = bounds;
+	shadowGroupLayer.transform = layer.transform;
+	shadowGroupLayer.anchorPoint = layer.anchorPoint;
+	shadowGroupLayer.position = nativeView.center;
+	shadowGroupLayer.zPosition = layer.zPosition;
+
+	// Inherit view visibility values
+	shadowGroupLayer.opacity = layer.opacity;
+	shadowGroupLayer.hidden = layer.hidden;
 }
 
 function clearBoxShadow(nativeView: NativeScriptUIView) {

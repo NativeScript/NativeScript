@@ -6,7 +6,6 @@ import type { View } from '..';
 import { ViewHelper } from './view-helper-common';
 import { SDK_VERSION } from '../../../../utils/constants';
 import { layout, Trace } from './view-helper-shared';
-import { ios as iOSUtils } from '../../../../utils';
 
 export * from './view-helper-common';
 export const AndroidHelper = 0;
@@ -117,14 +116,37 @@ class UILayoutViewController extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this.owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
+		}
+	}
+
+	// @ts-ignore
+	public get preferredStatusBarStyle(): UIStatusBarStyle {
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.DarkContent : UIStatusBarStyle.LightContent;
+			} else {
+				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
+		} else {
+			return UIStatusBarStyle.Default;
 		}
 	}
 }
@@ -177,6 +199,7 @@ class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIP
 
 export class IOSHelper {
 	static traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
+	static traitCollectionLayoutDirectionChangedEvent = 'traitCollectionLayoutDirectionChanged';
 	static UILayoutViewController = UILayoutViewController;
 	static UIAdaptivePresentationControllerDelegateImp = UIAdaptivePresentationControllerDelegateImp;
 	static UIPopoverPresentationControllerDelegateImp = UIPopoverPresentationControllerDelegateImp;

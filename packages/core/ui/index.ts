@@ -17,7 +17,7 @@ export { ViewBase, eachDescendant, getAncestor, getViewById, booleanConverter, q
 export type { ShowModalOptions } from './core/view-base';
 export { View, CSSType, ContainerView, ViewHelper, AndroidHelper, IOSHelper, isUserInteractionEnabledProperty, PseudoClassHandler, CustomLayoutView } from './core/view';
 export type { Template, KeyedTemplate, AddArrayFromBuilder, AddChildFromBuilder, GlassEffectConfig, GlassEffectType, GlassEffectVariant } from './core/view';
-export type { ShownModallyData, Size } from './core/view/view-interfaces';
+export type { ShownModallyData, Size, AndroidOverflowInsetData } from './core/view/view-interfaces';
 export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, makeParser, makeValidator } from './core/properties';
 export { unsetValue } from './core/properties/property-shared';
 export { addWeakEventListener, removeWeakEventListener } from './core/weak-event-listener';
@@ -56,7 +56,7 @@ export * from './layouts'; // barrel export
 
 export { ListPicker } from './list-picker';
 export { ListView } from './list-view';
-export type { ItemEventData, TemplatedItemsView, ItemsSource } from './list-view';
+export type { ItemEventData, TemplatedItemsView, ItemsSource, SearchEventData } from './list-view';
 export { Page, PageBase } from './page';
 export type { NavigatedData } from './page';
 export { Placeholder } from './placeholder';
