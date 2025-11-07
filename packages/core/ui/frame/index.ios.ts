@@ -132,7 +132,7 @@ export class Frame extends FrameBase {
 		const nativeTransition = _getNativeTransition(navigationTransition, true, this.direction);
 		if (!nativeTransition && navigationTransition) {
 			if (!navControllerDelegate) {
-				navControllerDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.initWithOwner(new WeakRef(this));
+				navControllerDelegate = UINavigationControllerAnimatedDelegate.new();
 			}
 
 			this._ios.controller.delegate = navControllerDelegate;
@@ -150,7 +150,9 @@ export class Frame extends FrameBase {
 			}
 		} else {
 			// default
-			navControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
+			if (!navControllerDelegate) {
+				navControllerDelegate = UINavigationControllerDelegateImpl.new();
+			}
 			this._ios.controller.delegate = navControllerDelegate;
 			viewController[DELEGATE] = navControllerDelegate;
 		}
@@ -425,20 +427,12 @@ class TransitionDelegate extends NSObject {
 @NativeClass
 class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
-	private _owner: WeakRef<Frame>;
 
-	public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerDelegateImpl {
-		const controller = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.alloc().init();
-		controller._owner = owner;
-
-		return controller;
-	}
-
-	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
 		if (Trace.isEnabled()) {
 			Trace.write('Frame.navigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
 		}
-		const owner = this._owner?.deref();
+		const owner = navigationController.owner;
 		console.log('navigationControllerDidShowViewControllerAnimated');
 		if (owner) {
 			owner._onViewControllerShown(viewController);
@@ -449,14 +443,6 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 @NativeClass
 class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
-	private _owner: WeakRef<Frame>;
-
-	public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerAnimatedDelegate {
-		const controller = <UINavigationControllerAnimatedDelegate>UINavigationControllerAnimatedDelegate.alloc().init();
-		controller._owner = owner;
-
-		return controller;
-	}
 
 	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationControllerImpl, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
 		let viewController: UIViewController;
@@ -524,11 +510,11 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 		return null;
 	}
 
-	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
 		if (Trace.isEnabled()) {
 			Trace.write('Frame.navigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
 		}
-		const owner = this._owner?.deref();
+		const owner = navigationController.owner;
 		if (owner) {
 			owner._onViewControllerShown(viewController);
 		}
