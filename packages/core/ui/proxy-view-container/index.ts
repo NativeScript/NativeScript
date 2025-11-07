@@ -2,7 +2,7 @@ import { View, CSSType } from '../core/view';
 import { LayoutBase } from '../layouts/layout-base';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';
-import { hiddenProperty } from '../core/view-base';
+import { hiddenProperty, booleanConverter } from '../core/view-base';
 
 /**
  * Proxy view container that adds all its native children directly to the parent.
@@ -243,7 +243,7 @@ export class ProxyViewContainer extends LayoutBase {
 	 * When ProxyViewContainer is hidden, all its children should also be hidden
 	 * since they are directly added to the parent's native view tree.
 	 */
-	private _applyHiddenToChildren(hidden: boolean): void {
+	protected _applyHiddenToChildren(hidden: boolean): void {
 		this.eachChildView((child) => {
 			child.hidden = hidden;
 			return true;
@@ -302,7 +302,7 @@ const proxyHiddenProperty = new Property<ProxyViewContainer, boolean>({
 	name: 'hidden',
 	defaultValue: false,
 	affectsLayout: __APPLE__,
-	valueConverter: hiddenProperty.valueConverter,
+	valueConverter: booleanConverter,
 	valueChanged(target, oldValue, newValue) {
 		// Call the base implementation to set isCollapsed for layout calculations
 		if (target) {
