@@ -105,6 +105,7 @@ function notifyForItemAtIndex(listView: ListViewBase, cell: any, view: View, eve
 		eventName: eventName,
 		object: listView,
 		index: indexPath.row,
+		section: indexPath.section,
 		view: view,
 		ios: cell,
 		android: undefined,
