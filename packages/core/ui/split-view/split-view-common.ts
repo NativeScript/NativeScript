@@ -20,7 +20,7 @@ const ROLE_ORDER: SplitRole[] = ['primary', 'secondary', 'supplementary', 'inspe
 @CSSType('SplitView')
 export class SplitViewBase extends LayoutBase {
 	/**
-	 * The master display split style display settings.
+	 * The display style for the split view controller.
 	 * Must be set before bootstrapping the app.
 	 */
 	static SplitStyle: SplitStyle;
@@ -30,7 +30,7 @@ export class SplitViewBase extends LayoutBase {
 		return null;
 	}
 
-	/** Child role (primary, secondary, supplementary) */
+	/** Child role (primary, secondary, supplementary, inspector) */
 	splitRole: SplitRole;
 	/** Preferred display mode */
 	displayMode: SplitDisplayMode;
@@ -44,14 +44,14 @@ export class SplitViewBase extends LayoutBase {
 	preferredInspectorColumnWidthFraction: number;
 
 	/**
-	 * Get child role (primary, secondary, supplementary)
+	 * Get child role (primary, secondary, supplementary, inspector)
 	 */
 	public static getRole(element: SplitViewBase): SplitRole {
 		return element.splitRole;
 	}
 
 	/**
-	 * Set child role (primary, secondary, supplementary)
+	 * Set child role (primary, secondary, supplementary, inspector)
 	 */
 	public static setRole(element: SplitViewBase, value: SplitRole): void {
 		element.splitRole = value;
@@ -79,6 +79,10 @@ export class SplitViewBase extends LayoutBase {
 	}
 
 	showSupplementary() {
+		// Platform-specific implementations may override
+	}
+
+	hideSupplementary() {
 		// Platform-specific implementations may override
 	}
 
