@@ -1,8 +1,2 @@
 <Frame defaultPage="main-page">
 </Frame>
-
-<!-- Test SplitView 
-    Must be root component of the app to work properly
--->
-<!-- <Frame defaultPage="split-view/split-view-root">
-</Frame> -->
