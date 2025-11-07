@@ -129,14 +129,15 @@ export class Frame extends FrameBase {
 			viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
 		}
 
+		if (!navControllerDelegate) {
+			navControllerDelegate = UINavigationControllerDelegateImpl.new();
+		}
+
+		this._ios.controller.delegate = navControllerDelegate;
+		viewController[DELEGATE] = navControllerDelegate;
+
 		const nativeTransition = _getNativeTransition(navigationTransition, true, this.direction);
 		if (!nativeTransition && navigationTransition) {
-			if (!navControllerDelegate) {
-				navControllerDelegate = UINavigationControllerAnimatedDelegate.new();
-			}
-
-			this._ios.controller.delegate = navControllerDelegate;
-			viewController[DELEGATE] = navControllerDelegate;
 			if (navigationTransition.instance) {
 				this.transitionId = navigationTransition.instance.id;
 				const transitionState = SharedTransition.getState(this.transitionId);
@@ -148,13 +149,6 @@ export class Frame extends FrameBase {
 					}, this);
 				}
 			}
-		} else {
-			// default
-			if (!navControllerDelegate) {
-				navControllerDelegate = UINavigationControllerDelegateImpl.new();
-			}
-			this._ios.controller.delegate = navControllerDelegate;
-			viewController[DELEGATE] = navControllerDelegate;
 		}
 
 		backstackEntry[NAV_DEPTH] = navDepth;
@@ -426,22 +420,6 @@ class TransitionDelegate extends NSObject {
 
 @NativeClass
 class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
-	public static ObjCProtocols = [UINavigationControllerDelegate];
-
-	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
-		if (Trace.isEnabled()) {
-			Trace.write('Frame.navigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
-		}
-		const owner = navigationController.owner;
-		console.log('navigationControllerDidShowViewControllerAnimated');
-		if (owner) {
-			owner._onViewControllerShown(viewController);
-		}
-	}
-}
-
-@NativeClass
-class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
 
 	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationControllerImpl, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
