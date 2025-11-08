@@ -83,6 +83,7 @@ $ npm start
 ```
 
 We love you and your pull requests 🤗. Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/main/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
+NativeScript empowers you to access native APIs from JavaScript directly, enabling rich mobile application development across iOS, Android, and visionOS platforms.
 
 ## @nativescript/*
 
@@ -141,13 +142,34 @@ Outside the source centralized in this repo, NativeScript consists of a few othe
 - [Artwork](https://github.com/NativeScript/artwork)
   Want to use our logo or colors? Feel free to use any of our ready-to-use media material.
 
+
+
+
+The NativeScript project consists of multiple repositories focused on different platforms and functionalities:
+
+    iOS and visionOS Runtime: JavaScript execution on iOS and visionOS devices (C++, Objective-C, Swift)
+
+    Android Runtime: JavaScript execution on Android devices (C++, Java, Kotlin)
+
+    CLI: Command-line interface to create, build, and run NativeScript apps
+
+    Docs: Documentation in Markdown
+
+    Plugins: Official plugins and plugin marketplace
+
+    Firebase: Modular Firebase implementation
+
+    ML Kit: Google’s ML Kit SDKs support
+
+    Payments: In-app purchase and payment integration
+
+    Artwork: Media assets like logos and branding material
 ## Copyright notice
 
-Copyright [OpenJS Foundation](https://openjsf.org) and `NativeScript` contributors. All rights reserved. The [OpenJS Foundation](https://openjsf.org) has registered trademarks and uses trademarks.  For a list of trademarks of the [OpenJS Foundation](https://openjsf.org), please see our [Trademark Policy](https://trademark-policy.openjsf.org/) and [Trademark List](https://trademark-list.openjsf.org/).  Trademarks and logos not indicated on the [list of OpenJS Foundation trademarks](https://trademark-list.openjsf.org) are trademarks™ or registered® trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them.
+Copyright [OpenJS Foundation](https://openjsf.org) and `NativeScript` contributors. All rights reserved. The [OpenJS Foundation](https://openjsf.org) has registered trademarks and uses trad>
 
-[The OpenJS Foundation](https://openjsf.org/) | [Terms of Use](https://terms-of-use.openjsf.org/) | [Privacy Policy](https://privacy-policy.openjsf.org/) | [OpenJS Foundation Bylaws](https://bylaws.openjsf.org/) | [Trademark Policy](https://trademark-policy.openjsf.org/) | [Trademark List](https://trademark-list.openjsf.org/) | [Cookie Policy](https://www.linuxfoundation.org/cookies/)
+[The OpenJS Foundation](https://openjsf.org/) | [Terms of Use](https://terms-of-use.openjsf.org/) | [Privacy Policy](https://privacy-policy.openjsf.org/) | [OpenJS Foundation Bylaws](https:>
 
 <p align="center" style="color:#e25555; font-weight:bold;">
   Made with ❤️ by NativeScript Contributors
-</p>
-
+<p>
