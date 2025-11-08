@@ -10,10 +10,18 @@
             <StackLayout padding="20">
                 <Label class="description" textWrap="true" text="Test TabViewItem iconSource with sys:// (iOS SF Symbols) and font:// (custom/font glyph)." />
 
-                <GridLayout columns="*, *" rows="auto, auto" class="m-y-10">
+                <GridLayout columns="*, *" rows="auto, auto, auto, auto" class="m-y-10">
                     <Button text="Use sys:// icons" col="0" row="0" tap="{{ useSysIcons }}" class="btn btn-primary" />
                     <Button text="Use font:// icons" col="1" row="0" tap="{{ useFontIcons }}" class="btn btn-primary" />
                     <Button text="Clear icons" colSpan="2" row="1" tap="{{ clearIcons }}" class="btn btn-primary" />
+
+                    <!-- iOS 26+ bottom accessory demo -->
+                    <Button text="Add accessory" col="0" row="2" tap="{{ attachBottomAccessory }}" class="btn btn-primary" />
+                    <Button text="Clear accessory" col="1" row="2" tap="{{ clearBottomAccessory }}" class="btn btn-secondary" />
+
+                    <!-- iOS 26+ minimize behavior demo -->
+                    <Button text="Minimize: Down" col="0" row="3" tap="{{ setMinimizeScrollDown }}" class="btn btn-primary" />
+                    <Button text="Minimize: Never" col="1" row="3" tap="{{ setMinimizeNever }}" class="btn btn-secondary" />
                 </GridLayout>
 
                 <Label textWrap="true" class="t-12" text="Note: sys:// icons are iOS-only and map to SF Symbols via UIImage.systemImageNamed. On Android, sys:// will not render and is expected to show no icon." />
@@ -22,7 +30,9 @@
 
         <!-- Second tab -->
         <TabViewItem title="Second" iconSource="font://&#x42;">
-            <Label text="Second Tab Content" textAlignment="center" verticalAlignment="center" />
+            <Frame defaultPage="pages/list-page-sticky">
+
+            </Frame>
         </TabViewItem>
 
         <!-- Third tab -->

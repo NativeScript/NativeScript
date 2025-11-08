@@ -3,7 +3,7 @@ import { Font } from '../styling/font';
 
 import { IOSHelper, View } from '../core/view';
 import { ViewBase } from '../core/view-base';
-import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon } from './tab-view-common';
+import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon, iosBottomAccessoryProperty, iosTabBarMinimizeBehaviorProperty } from './tab-view-common';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { fontInternalProperty } from '../styling/style-properties';
@@ -15,7 +15,7 @@ import { Frame } from '../frame';
 import { layout } from '../../utils/layout-helper';
 import { FONT_PREFIX, isFontIconURI, isSystemURI, SYSTEM_PREFIX } from '../../utils/common';
 import { SDK_VERSION } from '../../utils/constants';
-import { Device } from '../../platform';
+import { Device, Screen } from '../../platform';
 export * from './tab-view-common';
 
 @NativeClass
@@ -285,6 +285,7 @@ export class TabView extends TabViewBase {
 	private _delegate: UITabBarControllerDelegateImpl;
 	private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
 	private _iconsCache = {};
+	private _bottomAccessoryNsView: View;
 	private _ios: UITabBarControllerImpl;
 	private _actionBarHiddenByTabView: boolean;
 
@@ -328,6 +329,11 @@ export class TabView extends TabViewBase {
 		if (this._ios) {
 			this._ios.delegate = this._delegate;
 		}
+
+		// Re-apply bottom accessory if set
+		if (this.iosBottomAccessory) {
+			this._applyBottomAccessory(this.iosBottomAccessory, false);
+		}
 	}
 
 	public onUnloaded() {
@@ -338,6 +344,8 @@ export class TabView extends TabViewBase {
 				this._ios.moreNavigationController.delegate = null;
 			}
 		}
+		// Avoid retaining custom view when unloading
+		this._applyBottomAccessory(null, false);
 		super.onUnloaded();
 	}
 
@@ -682,10 +690,168 @@ export class TabView extends TabViewBase {
 			for (let i = 0, length = items.length; i < length; i++) {
 				const item = items[i];
 				if (item.iconSource) {
-					(<TabViewItem>item)._update();
+					(item as TabViewItem)._update();
 				}
 			}
 		}
+	}
+
+	// iOS 26+: bottom accessory support
+	[iosBottomAccessoryProperty.getDefault](): View {
+		return null;
+	}
+	[iosBottomAccessoryProperty.setNative](value: View) {
+		this._applyBottomAccessory(value, false);
+	}
+
+	// iOS 26+: tab bar minimize behavior
+	[iosTabBarMinimizeBehaviorProperty.getDefault](): 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp' {
+		return 'automatic';
+	}
+	[iosTabBarMinimizeBehaviorProperty.setNative](value: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp') {
+		if (SDK_VERSION < 26) {
+			return;
+		}
+		let mapped: UITabBarMinimizeBehavior;
+		switch (value) {
+			case 'never':
+				mapped = UITabBarMinimizeBehavior.Never;
+				break;
+			case 'onScrollDown':
+				mapped = UITabBarMinimizeBehavior.OnScrollDown;
+				break;
+			case 'onScrollUp':
+				mapped = UITabBarMinimizeBehavior.OnScrollUp;
+				break;
+			case 'automatic':
+			default:
+				mapped = UITabBarMinimizeBehavior.Automatic;
+		}
+		this._ios.tabBarMinimizeBehavior = mapped;
+	}
+
+	private _applyBottomAccessory(value: View | null, animated: boolean) {
+		// Guard for platform availability
+		if (SDK_VERSION < 26) {
+			return;
+		}
+
+		const setAccessory = (accessory: UITabAccessory | null) => {
+			try {
+				this._ios.setBottomAccessoryAnimated(accessory, animated);
+			} catch (err) {
+				// Fallback to property if needed
+				this._ios.bottomAccessory = accessory;
+			}
+		};
+
+		// Clear previous
+		if (!value) {
+			// Clear on controller
+			setAccessory(null);
+			// Tear down previously managed NS view
+			if (this._bottomAccessoryNsView) {
+				// Do not remove from a parent; we didn't add it to the NS view tree.
+				try {
+					this._bottomAccessoryNsView._tearDownUI(true);
+				} catch (_) {}
+				this._bottomAccessoryNsView = null;
+			}
+			return;
+		}
+
+		// Ensure the NativeScript view has a native view
+		const nsView = value;
+		if (!nsView.nativeViewProtected) {
+			// mirror dialogs approach to setup UI for a detached view
+			nsView._setupUI({} as any);
+		}
+		// Just mark it loaded, if not already, so measurement & styling are applied.
+		if (!nsView.isLoaded) {
+			// In detached scenarios we simply callLoaded after setup.
+			nsView.callLoaded();
+		}
+		const contentView = nsView.nativeViewProtected as UIView;
+		if (!contentView) {
+			return;
+		}
+
+		// Use frame-based sizing; keep autoresizing mask-based behavior enabled (no Auto Layout constraints added here).
+		contentView.translatesAutoresizingMaskIntoConstraints = true;
+		// Measure desired height with the tab bar width
+		let tabBarWidth = this._ios?.tabBar?.frame?.size?.width || Screen.mainScreen.screen.bounds.size.width;
+		// Account for safe area insets so accessory doesn't extend visually past rounded corners
+		if (this._ios?.tabBar?.safeAreaInsets) {
+			const insets = this._ios.tabBar.safeAreaInsets;
+			// Reduce usable width by left+right safe area (typically 0, but defensive)
+			const horizontalInsets = insets.left + insets.right;
+			if (horizontalInsets > 0 && horizontalInsets < tabBarWidth) {
+				tabBarWidth -= horizontalInsets;
+			}
+		}
+		const tabBarWidthPx = layout.toDevicePixels(tabBarWidth);
+		// Prefer flooring to avoid overshooting container by +1px due to FP rounding
+		const tabBarWidthPxRounded = Math.floor(tabBarWidthPx);
+		let measuredHeight = 0;
+		// Measure using device-pixel width; flooring prevents +1px expansion
+		const widthSpec = layout.makeMeasureSpec(tabBarWidthPxRounded, layout.EXACTLY);
+		const heightSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+		nsView.measure(widthSpec, heightSpec);
+		measuredHeight = layout.toDeviceIndependentPixels(nsView.getMeasuredHeight());
+
+		// Use a sensible minimum height (44pt button row) if measurement is tiny
+		const minHeight = 44;
+		const finalHeight = Math.max(minHeight, measuredHeight || 0);
+		// Rely on container height constraint (below) and frame-based layout inside container.
+		const container = NSTabAccessoryContainer.initWithOwner(new WeakRef(nsView));
+		container.translatesAutoresizingMaskIntoConstraints = true;
+		container.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
+		// Mask any subpixel spill just in case
+		container.clipsToBounds = true;
+		container.addSubview(contentView);
+		// Constrain the container height (not the content) so UIKit has a concrete size.
+		const containerHeight = container.heightAnchor.constraintEqualToConstant(finalHeight);
+		containerHeight.priority = 999;
+		NSLayoutConstraint.activateConstraints([containerHeight]);
+
+		const accessory = UITabAccessory.alloc().initWithContentView(container);
+		setAccessory(accessory);
+		// Keep references for later teardown
+		this._bottomAccessoryNsView = nsView;
+	}
+}
+
+@NativeClass
+class NSTabAccessoryContainer extends UIView {
+	_owner: WeakRef<View>;
+	static initWithOwner(owner: WeakRef<View>): NSTabAccessoryContainer {
+		const v = NSTabAccessoryContainer.new() as NSTabAccessoryContainer;
+		v._owner = owner;
+		return v;
+	}
+
+	override layoutSubviews() {
+		super.layoutSubviews();
+		const owner = this._owner?.deref();
+		if (!owner?.nativeViewProtected) return;
+		owner.nativeViewProtected.frame = this.bounds;
+		const w = this.bounds.size.width;
+		const h = this.bounds.size.height;
+		try {
+			// Convert to device pixels and floor to avoid +1px overshoot from rounding
+			let wp = Math.floor(layout.toDevicePixels(w));
+			const hp = Math.floor(layout.toDevicePixels(h));
+			// Clamp width to <= container pixel width (defensive)
+			const containerPxWidth = Math.floor(layout.toDevicePixels(this.bounds.size.width));
+			if (wp > containerPxWidth) {
+				wp = containerPxWidth;
+			}
+			// Ensure NS view and its children are measured with the final container width
+			const widthSpec = layout.makeMeasureSpec(wp, layout.EXACTLY);
+			const heightSpec = layout.makeMeasureSpec(hp, layout.EXACTLY);
+			owner.measure(widthSpec, heightSpec);
+			owner.layout(0, 0, wp, hp);
+		} catch (_) {}
 	}
 }
 
