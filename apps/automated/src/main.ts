@@ -87,13 +87,13 @@ Application.on(Application.lowMemoryEvent, function (args: ApplicationEventData)
 // Error events.
 Application.on(Application.uncaughtErrorEvent, function (args: UnhandledErrorEventData) {
 	console.log('NativeScriptError:', args.error);
-	console.log(args.error.nativeException ?? (<any>args.error).nativeError);
+	console.log(args.error.nativeException ?? (args.error as any).nativeError);
 	console.log(args.error.stackTrace ?? args.error.stack);
 });
 
 Application.on(Application.discardedErrorEvent, function (args: DiscardedErrorEventData) {
 	console.log('[Discarded] NativeScriptError:', args.error);
-	console.log(args.error.nativeException ?? (<any>args.error).nativeError);
+	console.log(args.error.nativeException ?? (args.error as any).nativeError);
 	console.log(args.error.stackTrace ?? args.error.stack);
 });
 
@@ -149,5 +149,4 @@ if (typeof NSDate !== 'undefined') {
 }
 
 console.log(`TIME TO LOAD APP: ${time} ms`);
-
 Application.run({ moduleName: 'app-root' });

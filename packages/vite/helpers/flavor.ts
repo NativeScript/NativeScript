@@ -1,0 +1,60 @@
+// import { defaultConfigs } from '..';
+import { getAllDependencies } from './utils.js';
+
+let targetFlavor: string;
+
+export function getProjectFlavor(): string {
+	if (!targetFlavor) {
+		const detectedFlavor = determineProjectFlavor();
+		if (detectedFlavor) {
+			targetFlavor = detectedFlavor;
+		} else {
+			targetFlavor = 'javascript'; // default to javascript if undetectable
+		}
+	}
+	return targetFlavor;
+}
+/**
+ * Utility to determine the project flavor based on installed dependencies
+ * (vue, angular, react, svelete, typescript, javascript...)
+ */
+export function determineProjectFlavor(): string | false {
+	const dependencies = getAllDependencies();
+
+	if (dependencies.includes('nativescript-vue')) {
+		return 'vue';
+	}
+
+	if (dependencies.includes('@nativescript/angular')) {
+		return 'angular';
+	}
+
+	if (dependencies.includes('react-nativescript')) {
+		return 'react';
+	}
+
+	if (dependencies.includes('@nativescript-community/solid-js') || dependencies.includes('solid-js')) {
+		return 'solid';
+	}
+
+	if (dependencies.includes('svelte-native') || dependencies.includes('@nativescript-community/svelte-native')) {
+		return 'svelte';
+	}
+
+	// the order is important - angular, react, and svelte also include these deps
+	// but should return prior to this condition!
+	if (dependencies.includes('@nativescript/core') && dependencies.includes('typescript')) {
+		return 'typescript';
+	}
+
+	if (dependencies.includes('@nativescript/core')) {
+		return 'javascript';
+	}
+
+	console.info(`
+		Could not determine project flavor.
+		Please use webpack.useConfig('<flavor>') to explicitly set the base config.
+	`);
+
+	return false;
+}
