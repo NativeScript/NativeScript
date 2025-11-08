@@ -128,7 +128,7 @@ export class TabView extends View {
 	iosTabBarMinimizeBehavior: TabBarMinimizeType;
 
 	/**
-	 * iOS 26+: Optional bottom accessory view that appears beneath the tab bar.
+	 * iOS 26+: Optional bottom accessory view that appears above the tab bar.
 	 * Provide a NativeScript View instance. On platforms < iOS 26 this is ignored.
 	 *
 	 * @nsProperty
