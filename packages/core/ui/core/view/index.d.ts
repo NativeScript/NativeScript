@@ -9,7 +9,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
 import { ViewBase } from '../view-base';
 import { ViewCommon } from './view-common';
-import type { Point } from './view-interfaces';
+import type { Point, ShownModallyData } from './view-interfaces';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -91,6 +91,18 @@ export abstract class View extends ViewCommon {
 	 * @nsEvent {EventDataValue} accessibilityFocusChanged
 	 */
 	public static accessibilityFocusChangedEvent: string;
+
+	/**
+	 * String value used when hooking to androidOverflowInset event.
+	 *
+	 * @nsEvent {EventDataValue} androidOverflowInset
+	 */
+	public static androidOverflowInsetEvent: string;
+
+	/**
+	 * @private
+	 */
+	public static _hasRtlSupport: boolean;
 
 	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
@@ -377,7 +389,14 @@ export abstract class View extends ViewCommon {
 	 *
 	 * @nsProperty
 	 */
-	boxShadow: string | ShadowCSSValues;
+	boxShadow: string | ShadowCSSValues[];
+
+	/**
+	 * Gets or sets the layout direction of the view.
+	 *
+	 * @nsProperty
+	 */
+	direction: CoreTypes.LayoutDirectionType;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.
@@ -621,7 +640,7 @@ export abstract class View extends ViewCommon {
 	public touchDelay: number;
 
 	/**
-	 * Gets is layout is valid. This is a read-only property.
+	 * Gets if layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;
 
@@ -801,6 +820,11 @@ export abstract class View extends ViewCommon {
 	 * Raised after the view is shown as a modal dialog.
 	 */
 	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+
+	/**
+	 * Raised after the view is shown as a modal dialog.
+	 */
+	on(event: 'androidOverflowInset', callback: (args: ShownModallyData) => void, thisArg?: any);
 
 	/**
 	 * Returns the current modal view that this page is showing (is parent of), if any.

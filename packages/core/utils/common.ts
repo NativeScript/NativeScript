@@ -6,9 +6,10 @@ export * from './mainthread-helper';
 export * from './macrotask-scheduler';
 export * from './utils-shared';
 
+export const FILE_PREFIX = 'file:///';
+export const FONT_PREFIX = 'font://';
 export const RESOURCE_PREFIX = 'res://';
 export const SYSTEM_PREFIX = 'sys://';
-export const FILE_PREFIX = 'file:///';
 
 export function escapeRegexSymbols(source: string): string {
 	const escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
@@ -84,10 +85,14 @@ export function isFontIconURI(uri: string): boolean {
 	if (!types.isString(uri)) {
 		return false;
 	}
+	return uri.trim().startsWith(FONT_PREFIX);
+}
 
-	const firstSegment = uri.trim().split('//')[0];
-
-	return firstSegment && firstSegment.indexOf('font:') === 0;
+export function isSystemURI(uri: string): boolean {
+	if (!types.isString(uri)) {
+		return false;
+	}
+	return uri.trim().startsWith(SYSTEM_PREFIX);
 }
 
 export function isDataURI(uri: string): boolean {
