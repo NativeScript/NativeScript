@@ -72,24 +72,17 @@ class TabViewDemoModel extends Observable {
 	attachBottomAccessory = () => {
 		if (!this.tabView) return;
 		const root = new GridLayout();
-		// root.addColumn(new ItemSpec(1, 'star'));
-		// root.addRow(new ItemSpec(1, 'star'));
 
-		root.backgroundColor = new Color('green');
+		// root.backgroundColor = new Color('green');
 		root.iosOverflowSafeArea = false;
 		root.padding = 12;
 		root.width = { unit: '%', value: 100 };
 		root.height = 56; // ensure visible height
-		// root.backgroundColor = new Color('#1A1A1A');
-		// root.borderTopWidth = 1;
-		// root.borderColor = new Color('#333');
 		const label = new Label();
-		label.backgroundColor = new Color('red');
+		// label.backgroundColor = new Color('red');
 		label.text = 'Bottom Accessory (iOS 26+)';
 		label.color = new Color('#000');
 		label.textAlignment = 'center';
-		// label.marginTop = 14;
-		// label.width = { unit: '%', value: 100 };
 		GridLayout.setColumn(label, 0);
 		GridLayout.setRow(label, 0);
 		root.addChild(label);

@@ -286,7 +286,6 @@ export class TabView extends TabViewBase {
 	private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
 	private _iconsCache = {};
 	private _bottomAccessoryNsView: View;
-	private _bottomAccessory: UITabAccessory;
 	private _ios: UITabBarControllerImpl;
 	private _actionBarHiddenByTabView: boolean;
 
@@ -736,15 +735,20 @@ export class TabView extends TabViewBase {
 		if (SDK_VERSION < 26) {
 			return;
 		}
+
+		const setAccessory = (accessory: UITabAccessory | null) => {
+			try {
+				this._ios.setBottomAccessoryAnimated(accessory, animated);
+			} catch (err) {
+				// Fallback to property if needed
+				this._ios.bottomAccessory = accessory;
+			}
+		};
+
 		// Clear previous
 		if (!value) {
 			// Clear on controller
-			try {
-				this._ios.setBottomAccessoryAnimated(null, animated);
-			} catch (err) {
-				// Fallback to property if needed
-				this._ios.bottomAccessory = null;
-			}
+			setAccessory(null);
 			// Tear down previously managed NS view
 			if (this._bottomAccessoryNsView) {
 				// Do not remove from a parent; we didn't add it to the NS view tree.
@@ -753,7 +757,6 @@ export class TabView extends TabViewBase {
 				} catch (_) {}
 				this._bottomAccessoryNsView = null;
 			}
-			this._bottomAccessory = null;
 			return;
 		}
 
@@ -790,13 +793,11 @@ export class TabView extends TabViewBase {
 		// Prefer flooring to avoid overshooting container by +1px due to FP rounding
 		const tabBarWidthPxRounded = Math.floor(tabBarWidthPx);
 		let measuredHeight = 0;
-		try {
-			// Measure using device-pixel width; flooring prevents +1px expansion
-			const widthSpec = layout.makeMeasureSpec(tabBarWidthPxRounded, layout.EXACTLY);
-			const heightSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
-			nsView.measure(widthSpec, heightSpec);
-			measuredHeight = layout.toDeviceIndependentPixels(nsView.getMeasuredHeight());
-		} catch (_) {}
+		// Measure using device-pixel width; flooring prevents +1px expansion
+		const widthSpec = layout.makeMeasureSpec(tabBarWidthPxRounded, layout.EXACTLY);
+		const heightSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+		nsView.measure(widthSpec, heightSpec);
+		measuredHeight = layout.toDeviceIndependentPixels(nsView.getMeasuredHeight());
 
 		// Use a sensible minimum height (44pt button row) if measurement is tiny
 		const minHeight = 44;
@@ -814,13 +815,9 @@ export class TabView extends TabViewBase {
 		NSLayoutConstraint.activateConstraints([containerHeight]);
 
 		const accessory = UITabAccessory.alloc().initWithContentView(container);
-		try {
-			this._ios.setBottomAccessoryAnimated(accessory, animated);
-		} catch (err) {
-			this._ios.bottomAccessory = accessory;
-		}
+		setAccessory(accessory);
+		// Keep references for later teardown
 		this._bottomAccessoryNsView = nsView;
-		this._bottomAccessory = accessory;
 	}
 }
 
