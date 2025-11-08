@@ -30,10 +30,9 @@
 
         <!-- Second tab -->
         <TabViewItem title="Second" iconSource="font://&#x42;">
-            <!-- <Label text="Second Tab Content" textAlignment="center" verticalAlignment="center" /> -->
-            <Frame splitRole="inspector" defaultPage="pages/list-page-sticky">
+            <Frame defaultPage="pages/list-page-sticky">
 
-  </Frame>
+            </Frame>
         </TabViewItem>
 
         <!-- Third tab -->
