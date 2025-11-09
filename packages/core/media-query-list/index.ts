@@ -1,18 +1,32 @@
+import { ApplicationEventName, ApplicationEventNames } from '../application/application-event-names';
 import type { ApplicationEventData } from '../application/application-interfaces';
-import { getApplicationProperties, toggleApplicationEventListeners } from '../application/helpers-common';
+import { getApplicationProperties } from '../application/helpers-common';
 import { matchQuery, MediaQueryType } from '../css-mediaquery';
 import { EventData, Observable } from '../data/observable';
+import { getNativeScriptGlobals } from '../globals/global-utils';
 import { Screen } from '../platform/screen';
 import { Trace } from '../trace';
 import { Optional } from '../utils/typescript-utils';
 
-const mediaQueryLists: MediaQueryListImpl[] = [];
-
 type MediaQueryLegacyEventCb = (this: MediaQueryList, ev: MediaQueryListEvent) => any;
 
-interface MediaQueryListEventData extends EventData {
+export interface MediaQueryListEventData extends EventData {
 	matches: boolean;
 	media: string;
+}
+
+const mediaQueryLists: MediaQueryListImpl[] = [];
+const globalEvents = getNativeScriptGlobals().events;
+const applicationEvents: ApplicationEventName[] = [ApplicationEventNames.orientationChangedEvent, ApplicationEventNames.systemAppearanceChangedEvent];
+
+function toggleApplicationEventListeners(toAdd: boolean) {
+	for (const eventName of applicationEvents) {
+		if (toAdd) {
+			globalEvents.on(eventName, onDeviceChange);
+		} else {
+			globalEvents.off(eventName, onDeviceChange);
+		}
+	}
 }
 
 function onDeviceChange(args: ApplicationEventData) {
@@ -113,7 +127,7 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 			mediaQueryLists.push(this);
 
 			if (mediaQueryLists.length === 1) {
-				toggleApplicationEventListeners(true, onDeviceChange);
+				toggleApplicationEventListeners(true);
 			}
 		}
 	}
@@ -133,7 +147,7 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 					mediaQueryLists.splice(index, 1);
 
 					if (!mediaQueryLists.length) {
-						toggleApplicationEventListeners(false, onDeviceChange);
+						toggleApplicationEventListeners(false);
 					}
 				}
 			}
