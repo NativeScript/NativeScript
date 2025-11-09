@@ -15,9 +15,9 @@ export interface MediaQueryListEventData extends EventData {
 	media: string;
 }
 
-const mediaQueryLists: MediaQueryListImpl[] = [];
 const globalEvents = getNativeScriptGlobals().events;
 const applicationEvents: ApplicationEventName[] = [ApplicationEventNames.orientationChangedEvent, ApplicationEventNames.systemAppearanceChangedEvent];
+const mediaQueryLists: MediaQueryListImpl[] = [];
 
 function toggleApplicationEventListeners(toAdd: boolean) {
 	for (const eventName of applicationEvents) {
