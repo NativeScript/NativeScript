@@ -99,14 +99,10 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	}
 
 	get media(): string {
-		this._checkIfShouldThrow();
-
 		return this.mMedia;
 	}
 
 	get matches(): boolean {
-		this._checkIfShouldThrow();
-
 		return this.mMatches;
 	}
 
@@ -116,8 +112,6 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	}
 
 	public override addEventListener(eventName: string, callback: (data: MediaQueryListEventData) => void, thisArg?: any, once?: boolean): void {
-		this._checkIfShouldThrow();
-
 		const hasChangeListeners = this.hasListeners(MediaQueryListImpl.changeEvent);
 
 		// Call super method first since it throws in the case of bad parameters
@@ -133,8 +127,6 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	}
 
 	public override removeEventListener(eventName: string, callback?: (data: MediaQueryListEventData) => void, thisArg?: any): void {
-		this._checkIfShouldThrow();
-
 		// Call super method first since it throws in the case of bad parameters
 		super.removeEventListener(eventName, callback, thisArg);
 
@@ -155,8 +147,6 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	}
 
 	addListener(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any): void {
-		this._checkIfShouldThrow();
-
 		// This kind of implementation helps maintain listener registration order
 		// regardless of using the deprecated methods or property onchange
 		const wrapperCallback = (data) => {
@@ -176,8 +166,6 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	}
 
 	removeListener(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any): void {
-		this._checkIfShouldThrow();
-
 		const mediaChangeListeners = this.mediaQueryChangeListeners;
 
 		if (mediaChangeListeners && mediaChangeListeners.has(callback)) {
@@ -188,14 +176,10 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	}
 
 	public get onchange(): (this: MediaQueryList, ev: MediaQueryListEvent) => any {
-		this._checkIfShouldThrow();
-
 		return this._onChange;
 	}
 
 	public set onchange(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any) {
-		this._checkIfShouldThrow();
-
 		// Remove old listener if any
 		if (this._onChange) {
 			this.removeListener(this._onChange);
@@ -206,12 +190,6 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 		}
 
 		this._onChange = callback;
-	}
-
-	private _checkIfShouldThrow() {
-		if (this === MediaQueryListImpl.prototype) {
-			throw new TypeError('Illegal invocation');
-		}
 	}
 }
 

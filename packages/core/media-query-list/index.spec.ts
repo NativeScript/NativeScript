@@ -44,31 +44,5 @@ describe('media-query-list', () => {
 		it('should throw when calling constructor', () => {
 			expect(() => new MediaQueryList()).toThrow(new TypeError('Illegal constructor'));
 		});
-
-		it('should throw when accessing matches and media getters', () => {
-			const error = new TypeError('Illegal invocation');
-
-			expect(() => MediaQueryList.prototype.matches).toThrow(error);
-			expect(() => MediaQueryList.prototype.media).toThrow(error);
-		});
-
-		it('should throw when accessing or modifying onchange event', () => {
-			const error = new TypeError('Illegal invocation');
-
-			expect(() => MediaQueryList.prototype.onchange).toThrow(error);
-			expect(() => {
-				MediaQueryList.prototype.onchange = null;
-			}).toThrow(error);
-		});
-
-		it('should throw when adding or removing event listeners', () => {
-			const eventCallback = (data) => {};
-			const error = new TypeError('Illegal invocation');
-
-			expect(() => MediaQueryList.prototype.addEventListener('change', eventCallback)).toThrow(error);
-			expect(() => MediaQueryList.prototype.removeEventListener('change', eventCallback)).toThrow(error);
-			expect(() => MediaQueryList.prototype.addListener(eventCallback)).toThrow(error);
-			expect(() => MediaQueryList.prototype.removeListener(eventCallback)).toThrow(error);
-		});
 	});
 });
