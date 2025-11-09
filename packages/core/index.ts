@@ -3,6 +3,7 @@
 // Init globals first (use import to ensure it's always at the top)
 import './globals';
 export * from './application';
+export * from './application/application-event-names';
 export { getNativeApp, setNativeApp } from './application/helpers-common';
 export * as ApplicationSettings from './application-settings';
 import * as Accessibility from './accessibility';

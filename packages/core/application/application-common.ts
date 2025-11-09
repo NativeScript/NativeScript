@@ -12,6 +12,7 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, LayoutDirectionChangedEventData, UnhandledErrorEventData } from './application-interfaces';
+import { ApplicationEventNames } from './application-event-names';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
@@ -180,24 +181,24 @@ interface ApplicationEvents {
 }
 
 export class ApplicationCommon {
-	readonly launchEvent = 'launch';
-	readonly suspendEvent = 'suspend';
-	readonly displayedEvent = 'displayed';
-	readonly backgroundEvent = 'background';
-	readonly foregroundEvent = 'foreground';
-	readonly resumeEvent = 'resume';
-	readonly exitEvent = 'exit';
-	readonly lowMemoryEvent = 'lowMemory';
-	readonly uncaughtErrorEvent = 'uncaughtError';
-	readonly discardedErrorEvent = 'discardedError';
-	readonly orientationChangedEvent = 'orientationChanged';
-	readonly systemAppearanceChangedEvent = 'systemAppearanceChanged';
-	readonly layoutDirectionChangedEvent = 'layoutDirectionChanged';
-	readonly fontScaleChangedEvent = 'fontScaleChanged';
-	readonly livesyncEvent = 'livesync';
-	readonly loadAppCssEvent = 'loadAppCss';
-	readonly cssChangedEvent = 'cssChanged';
-	readonly initRootViewEvent = 'initRootView';
+	declare readonly launchEvent: string;
+	declare readonly suspendEvent: string;
+	declare readonly displayedEvent: string;
+	declare readonly backgroundEvent: string;
+	declare readonly foregroundEvent: string;
+	declare readonly resumeEvent: string;
+	declare readonly exitEvent: string;
+	declare readonly lowMemoryEvent: string;
+	declare readonly uncaughtErrorEvent: string;
+	declare readonly discardedErrorEvent: string;
+	declare readonly orientationChangedEvent: string;
+	declare readonly systemAppearanceChangedEvent: string;
+	declare readonly layoutDirectionChangedEvent: string;
+	declare readonly fontScaleChangedEvent: string;
+	declare readonly livesyncEvent: string;
+	declare readonly loadAppCssEvent: string;
+	declare readonly cssChangedEvent: string;
+	declare readonly initRootViewEvent: string;
 
 	// Expose statically for backwards compat on AndroidApplication.on etc.
 	/**
@@ -248,6 +249,11 @@ export class ApplicationCommon {
 	 */
 	constructor() {
 		getNativeScriptGlobals().appInstanceReady = true;
+
+		// Assign event names
+		for (const key in ApplicationEventNames) {
+			this[key] = ApplicationEventNames[key];
+		}
 
 		global.__onUncaughtError = (error: NativeScriptError) => {
 			this.notify({
