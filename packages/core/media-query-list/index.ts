@@ -111,7 +111,7 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 		super.notify<T>(data);
 	}
 
-	public override addEventListener(eventName: string, callback: (data: MediaQueryListEventData) => void, thisArg?: any, once?: boolean): void {
+	public override addEventListener(eventName: 'change', callback: (data: MediaQueryListEventData) => void, thisArg?: any, once?: boolean): void {
 		const hasChangeListeners = this.hasListeners(MediaQueryListImpl.changeEvent);
 
 		// Call super method first since it throws in the case of bad parameters
@@ -126,7 +126,7 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 		}
 	}
 
-	public override removeEventListener(eventName: string, callback?: (data: MediaQueryListEventData) => void, thisArg?: any): void {
+	public override removeEventListener(eventName: 'change', callback?: (data: MediaQueryListEventData) => void, thisArg?: any): void {
 		// Call super method first since it throws in the case of bad parameters
 		super.removeEventListener(eventName, callback, thisArg);
 
