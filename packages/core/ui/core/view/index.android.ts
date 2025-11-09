@@ -694,12 +694,34 @@ export class View extends ViewCommon {
 	}
 
 	public handleGestureTouch(event: android.view.MotionEvent): any {
-		for (const type in this._gestureObservers) {
-			const list = this._gestureObservers[type];
-			list.forEach((element) => {
-				element.androidOnTouchEvent(event);
-			});
+		// This keeps a copy of gesture observers from the map to ensure concurrency
+		const allObservers = Object.values(this._gestureObservers);
+
+		for (const observers of allObservers) {
+			const length = observers.length;
+
+			if (!length) {
+				continue;
+			}
+
+			if (length === 1) {
+				const entry = observers[0];
+				if (entry) {
+					entry.androidOnTouchEvent(event);
+				}
+			} else {
+				// This keeps a copy of gesture observers list to ensure concurrency
+				const observersCp = observers.slice();
+
+				for (let i = 0; i < length; i++) {
+					const entry = observersCp[i];
+					if (entry) {
+						entry.androidOnTouchEvent(event);
+					}
+				}
+			}
 		}
+
 		if (this.parent instanceof View) {
 			this.parent.handleGestureTouch(event);
 		}
