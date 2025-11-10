@@ -37,8 +37,9 @@ export function transformNativeClassSource(code: string, fileName: string) {
 		if (result.outputText.includes('@NativeClass')) {
 			return null;
 		}
+		const sanitizedCode = result.outputText.replace(/void\s*\*\s*\?/g, 'void 0 ?').replace(/void\s*\/[a-z]\s*:/gi, 'void 0 :');
 		return {
-			code: result.outputText,
+			code: sanitizedCode,
 			map: result.sourceMapText ? JSON.parse(result.sourceMapText) : null,
 		};
 	} catch (e) {
