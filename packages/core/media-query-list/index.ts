@@ -107,14 +107,16 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	}
 
 	public override notify<T extends Optional<MediaQueryListEventData, 'object' | 'media' | 'matches'>>(data: T): void {
-		this.mMatches = data.matches;
+		// Update match state
+		if (data.eventName === 'change') {
+			this.mMatches = data.matches;
+		}
 		super.notify<T>(data);
 	}
 
 	public override addEventListener(eventName: 'change', callback: (data: MediaQueryListEventData) => void, thisArg?: any, once?: boolean): void {
 		const hasChangeListeners = this.hasListeners(MediaQueryListImpl.changeEvent);
 
-		// Call super method first since it throws in the case of bad parameters
 		super.addEventListener(eventName, callback, thisArg, once);
 
 		if (eventName === MediaQueryListImpl.changeEvent && !hasChangeListeners) {
@@ -127,7 +129,6 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	}
 
 	public override removeEventListener(eventName: 'change', callback?: (data: MediaQueryListEventData) => void, thisArg?: any): void {
-		// Call super method first since it throws in the case of bad parameters
 		super.removeEventListener(eventName, callback, thisArg);
 
 		if (eventName === MediaQueryListImpl.changeEvent) {
