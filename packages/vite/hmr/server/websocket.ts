@@ -5234,7 +5234,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
   try {
     const g = globalThis;
     if (g.__NS_REQUIRE_GUARD_INSTALLED__) return;
-    const makeGuard = (orig, label) => function (this) {
+	const makeGuard = (orig, label) => function () {
       try {
         const spec = arguments[0];
         if (typeof spec === 'string' && /^(?:https?:)\/\//.test(spec)) {

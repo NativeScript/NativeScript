@@ -351,6 +351,8 @@ function printRunTestStats() {
 
 	let finalMessage = `\n` + `=== ALL TESTS COMPLETE ===\n` + `${allTests.length - failedTestCount} OK, ${failedTestCount} failed\n` + `DURATION: ${totalTime} ms\n` + `=== END OF TESTS ===\n`;
 
+	Trace.setCategories(Trace.categories.Test);
+	Trace.enable();
 	TKUnit.write(finalMessage, Trace.messageType.info);
 
 	failedTestInfo.forEach((message, i, arr) => {

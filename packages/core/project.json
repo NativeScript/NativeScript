@@ -49,6 +49,11 @@
 						"input": "{projectRoot}/",
 						"output": "./"
 					}
+				],
+				"transformers": [
+					{
+						"name": "../tools/transformers/native-class"
+					}
 				]
 			},
 			"dependsOn": ["^build"]
