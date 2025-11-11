@@ -24,7 +24,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vitejs/plugin-vue-jsx": "^5.1.1",
     "@vue/compiler-sfc": "^3.4.38",
-    "esbuild": "^0.21.5",
+    "esbuild": "^0.25.0",
     "minimist": "^1.2.8",
     "react-reconciler": "^0.32.0",
     "sass": ">=1.70.0 <2",
