@@ -1,156 +1,319 @@
 import ts from 'typescript';
 
-/**
- * A TypeScript transform that compiles classes marked with `@NativeClass` as es5
- */
+// NativeClass transformer
+// Goal: Downlevel ONLY classes decorated with @NativeClass / @NativeClass() to ES5 IIFE form
+// while leaving all other code at the project’s configured target (modern). We cannot globally
+// force ScriptTarget.ES5 because that would regress performance and syntax elsewhere.
+//
+// Strategy:
+// 1. Detect decorator via AST or textual marker (/*__NativeClass__*/ inserted by strip loader).
+// 2. Extract the full class (including leading decorator trivia) and remove the decorator/marker.
+// 3. Use a localized transpileModule call (target ES5) ONLY for that class snippet with helpers disabled.
+// 4. Parse the emitted ES5 snippet into statements and splice them back into the original tree.
+// 5. Clean up any __decorate([...]) helper statements still referencing NativeClass as a fallback.
+//
+// IMPORTANT: We intentionally avoid deep traversal to reduce chance of corrupting internal TS state.
+// Only top-level/class-block statement arrays are rewritten.
 export default function (ctx: ts.TransformationContext) {
 	const factory = ctx.factory ?? ts.factory;
+	return (sourceFile: ts.SourceFile) => {
+		if (sourceFile.isDeclarationFile) return sourceFile;
+		let mutated = false;
 
-	function isNativeClassExtension(node: ts.ClassDeclaration) {
-		let decorators: Readonly<ts.Decorator[]> | undefined;
+		// Minimal mutable shape
+		type MutableNode = ts.Node & {
+			flags?: ts.NodeFlags;
+			parent?: ts.Node;
+			pos?: number;
+			end?: number;
+		};
 
-		if ('canHaveDecorators' in ts && ts.canHaveDecorators(node)) {
-			decorators = ts.getDecorators(node);
-		} else {
-			decorators = (node as any).decorators;
+		function getIdentifierText(node: ts.Node | undefined): string | undefined {
+			if (!node) return undefined;
+			if (ts.isIdentifier(node)) return node.text;
+			if (ts.isDecorator(node)) return getIdentifierText(node.expression);
+			if (ts.isCallExpression(node)) return getIdentifierText(node.expression);
+			if (ts.isPropertyAccessExpression(node)) return node.name.text;
+			if (ts.isParenthesizedExpression(node))
+				return getIdentifierText(node.expression);
+			return undefined;
 		}
 
-		return !!decorators?.some((d) => {
-			const fullText = d.getFullText().trim();
-			return fullText.indexOf('@NativeClass') > -1;
-		});
-	}
-
-	function transformNode(node: ts.Node): ts.Node {
-		if (ts.isSourceFile(node)) {
-			return factory.updateSourceFile(
-				node,
-				transformStatements(node.statements),
-			);
+		function hasNativeClassDecorator(node: ts.ClassDeclaration): boolean {
+			// Primary: standard decorator detection
+			const decorators = (
+				'canHaveDecorators' in ts && ts.canHaveDecorators(node)
+					? ts.getDecorators(node)
+					: (node as any).decorators
+			) as ts.NodeArray<ts.Decorator> | undefined;
+			if (decorators?.some((d) => getIdentifierText(d) === 'NativeClass'))
+				return true;
+			// Fallback: text-level check in leading trivia (handles parser quirks / differing TS versions)
+			const sf = node.getSourceFile?.() ?? sourceFile;
+			const start = (node as any).getFullStart
+				? (node as any).getFullStart()
+				: (node.pos ?? node.getStart?.(sf));
+			const text = sf.text.slice(start, node.end);
+			if (/^\s*@NativeClass\b/m.test(text)) return true;
+			// Also detect marker inserted by strip loader
+			return /\/\*__NativeClass__\*\//m.test(text);
 		}
 
-		if (ts.isBlock(node)) {
-			return factory.updateBlock(node, transformStatements(node.statements));
-		}
+		function emitDownleveledClass(node: ts.ClassDeclaration): ts.Statement[] {
+			const sf = node.getSourceFile?.() ?? sourceFile;
+			const start = (node as any).getFullStart
+				? (node as any).getFullStart()
+				: (node.pos ?? node.getStart?.(sf));
+			const nodeText = sf.text.slice(start, node.end);
+			// Remove either original decorator or marker line
+			const stripped = nodeText
+				.replace(/^\s*@NativeClass(?:\([\s\S]*?\))?\s*/m, '')
+				.replace(/^\s*\/\*__NativeClass__\*\/\s*/m, '');
 
-		if (ts.isModuleBlock(node)) {
-			return factory.updateModuleBlock(
-				node,
-				transformStatements(node.statements),
-			);
-		}
-
-		return ts.visitEachChild(node, transformNode, ctx);
-	}
-
-	function transformStatements(
-		statements: ts.NodeArray<ts.Statement>,
-	): ts.NodeArray<ts.Statement> {
-		const result: ts.Statement[] = [];
-
-		for (const statement of statements) {
-			if (isNativeClassDecorateStatement(statement)) {
-				continue;
-			}
-			if (
-				ts.isClassDeclaration(statement) &&
-				isNativeClassExtension(statement)
-			) {
-				result.push(...createHelper(statement));
-				continue;
-			}
-
-			result.push(ts.visitEachChild(statement, transformNode, ctx));
-		}
-
-		return factory.createNodeArray(result);
-	}
-
-	function synthesizeNode<T extends ts.Node>(node: T): T {
-		function visit(current: ts.Node): ts.Node {
-			const updated = ts.visitEachChild(current, visit, ctx);
-			ts.setTextRange(updated, { pos: -1, end: -1 });
-			return updated;
-		}
-
-		return visit(node) as T;
-	}
-
-	function isNativeClassDecorateStatement(statement: ts.Statement): boolean {
-		if (!ts.isExpressionStatement(statement)) {
-			return false;
-		}
-
-		const expr = statement.expression;
-		if (
-			!ts.isBinaryExpression(expr) ||
-			expr.operatorToken.kind !== ts.SyntaxKind.EqualsToken
-		) {
-			return false;
-		}
-
-		const right = expr.right;
-		if (!ts.isCallExpression(right)) {
-			return false;
-		}
-
-		const callee = right.expression;
-		if (!ts.isIdentifier(callee) || callee.text !== '__decorate') {
-			return false;
-		}
-
-		const decoratorArray = right.arguments[0];
-		if (!decoratorArray || !ts.isArrayLiteralExpression(decoratorArray)) {
-			return false;
-		}
-
-		return decoratorArray.elements.some(
-			(element) => ts.isIdentifier(element) && element.text === 'NativeClass',
-		);
-	}
-
-	function createHelper(node: ts.ClassDeclaration): ts.Statement[] {
-		const transpiled = ts
-			.transpileModule(
-				node.getText().replace(/@NativeClass(?:\((?:.|\n)*?\))?\s*/gm, ''),
-				{
+			// Perform localized ES5 transpile ONLY for this class block.
+			const downleveled = ts
+				.transpileModule(stripped, {
 					compilerOptions: {
-						noEmitHelpers: true,
 						module: ts.ModuleKind.ESNext,
 						target: ts.ScriptTarget.ES5,
+						noEmitHelpers: true,
 						experimentalDecorators: true,
 						emitDecoratorMetadata: true,
+						useDefineForClassFields: false,
 					},
-				},
-			)
-			.outputText.replace(
-				/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs,
-				'$1enumerable: true$3',
-			)
-			.replace(/void\s*\*\s*\?\s*void\s*\/b/g, 'void 0 ? void 0');
+				})
+				.outputText.replace(
+					/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs,
+					'$1enumerable: true$3',
+				);
 
-		const helperSource = ts.createSourceFile(
-			(node.getSourceFile()?.fileName ?? 'NativeClass.ts') + '.helper.js',
-			transpiled,
-			ts.ScriptTarget.ES2015,
-			true,
-			ts.ScriptKind.JS,
-		);
-
-		const helperStatements: ts.Statement[] = [];
-
-		for (const statement of helperSource.statements) {
-			if (statement.kind === ts.SyntaxKind.EndOfFileToken) {
-				continue;
+			const helperSource = ts.createSourceFile(
+				`${node.getSourceFile()?.fileName ?? 'NativeClass.ts'}.helper.js`,
+				downleveled,
+				ts.ScriptTarget.ES5,
+				true,
+				ts.ScriptKind.JS,
+			);
+			const out: ts.Statement[] = [];
+			for (const stmt of helperSource.statements) {
+				if (stmt.kind === ts.SyntaxKind.EndOfFileToken) continue;
+				out.push(prepareSynthesizedNode(stmt, node));
 			}
+			return out;
+		}
 
-			helperStatements.push(
-				synthesizeNode(ts.visitEachChild(statement, transformNode, ctx)),
+		function removeNativeClassImport(
+			node: ts.ImportDeclaration,
+		): ts.ImportDeclaration | undefined {
+			const clause = node.importClause;
+			if (
+				!clause ||
+				!clause.namedBindings ||
+				!ts.isNamedImports(clause.namedBindings)
+			)
+				return node;
+			const remain = clause.namedBindings.elements.filter(
+				(el) => (el.propertyName ?? el.name).text !== 'NativeClass',
+			);
+			if (remain.length === clause.namedBindings.elements.length) return node;
+			if (
+				remain.length === 0 &&
+				!clause.name &&
+				!clause.isTypeOnly &&
+				!(clause as any).phaseModifier
+			)
+				return undefined;
+			const updatedNamed = remain.length
+				? factory.updateNamedImports(clause.namedBindings, remain)
+				: undefined;
+			const updatedClause = factory.updateImportClause(
+				clause,
+				clause.isTypeOnly,
+				clause.name,
+				updatedNamed,
+			);
+			return factory.updateImportDeclaration(
+				node,
+				node.modifiers,
+				updatedClause,
+				node.moduleSpecifier,
+				node.assertClause,
 			);
 		}
 
-		return helperStatements;
-	}
+		function removeNativeClassFromDecorate(
+			statement: ts.ExpressionStatement,
+		): ts.ExpressionStatement | undefined {
+			const expr = (statement as any).expression as ts.Expression | undefined;
+			if (
+				!expr ||
+				!ts.isBinaryExpression(expr) ||
+				expr.operatorToken.kind !== ts.SyntaxKind.EqualsToken
+			)
+				return statement;
+			const right = expr.right;
+			if (
+				!ts.isCallExpression(right) ||
+				getIdentifierText(right.expression) !== '__decorate' ||
+				right.arguments.length === 0
+			)
+				return statement;
+			const arr = right.arguments[0];
+			if (!ts.isArrayLiteralExpression(arr)) return statement;
+			const retained = arr.elements.filter(
+				(el) => getIdentifierText(el) !== 'NativeClass',
+			);
+			if (retained.length === arr.elements.length) return statement;
+			if (retained.length === 0) return undefined; // remove whole statement
+			const newArr = factory.updateArrayLiteralExpression(arr, retained);
+			const newCall = factory.updateCallExpression(
+				right,
+				right.expression,
+				right.typeArguments,
+				[newArr, ...right.arguments.slice(1)],
+			);
+			const newBin = factory.updateBinaryExpression(
+				expr,
+				expr.left,
+				expr.operatorToken,
+				newCall,
+			);
+			return factory.updateExpressionStatement(statement, newBin);
+		}
 
-	return (source: ts.SourceFile) => transformNode(source) as ts.SourceFile;
+		function visitNode(node: ts.Node): ts.Node {
+			// Do not traverse synthesized helper trees; leave them intact
+			if (((node as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
+				return node;
+			}
+			if (ts.isSourceFile(node)) {
+				const [stmts, changed] = transformStatements(node.statements, true);
+				return changed ? factory.updateSourceFile(node, stmts) : node;
+			}
+			if (ts.isBlock(node)) {
+				const [stmts, changed] = transformStatements(node.statements, false);
+				return changed ? factory.updateBlock(node, stmts) : node;
+			}
+			if (ts.isModuleBlock(node)) {
+				const [stmts, changed] = transformStatements(node.statements, false);
+				return changed ? factory.updateModuleBlock(node, stmts) : node;
+			}
+			if (ts.isCaseClause(node)) {
+				// Avoid deep traversal; only transform statements inside the clause
+				const [stmts, changed] = transformStatements(node.statements, false);
+				return changed
+					? factory.updateCaseClause(node, node.expression, stmts)
+					: node;
+			}
+			if (ts.isDefaultClause(node)) {
+				const [stmts, changed] = transformStatements(node.statements, false);
+				return changed ? factory.updateDefaultClause(node, stmts) : node;
+			}
+			// No generic deep traversal; leave unrelated subtrees intact
+			return node;
+		}
+
+		function transformStatements(
+			statements: ts.NodeArray<ts.Statement>,
+			isTopLevel: boolean,
+		): [ts.NodeArray<ts.Statement>, boolean] {
+			let changed = false;
+			const out: ts.Statement[] = [];
+			for (const s of statements) {
+				if (((s as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
+					out.push(s);
+					continue;
+				}
+				if (ts.isClassDeclaration(s)) {
+					if (hasNativeClassDecorator(s)) {
+						mutated = true;
+						changed = true;
+						out.push(...emitDownleveledClass(s));
+						continue;
+					} else {
+						// As an extra fallback, raw text check in case decorator nodes failed and regex missed
+						const sf = s.getSourceFile();
+						const start = (s as any).getFullStart
+							? (s as any).getFullStart()
+							: (s.pos ?? s.getStart?.(sf));
+						const raw = sf.text.slice(start, s.end);
+						if (/^\s*@NativeClass\b/m.test(raw)) {
+							mutated = true;
+							changed = true;
+							out.push(...emitDownleveledClass(s));
+							continue;
+						}
+					}
+				}
+				if (ts.isExpressionStatement(s)) {
+					const updated = removeNativeClassFromDecorate(s);
+					if (!updated) {
+						mutated = true;
+						changed = true;
+						continue;
+					}
+					out.push(updated);
+					continue;
+				}
+				if (isTopLevel && ts.isImportDeclaration(s)) {
+					const updated = removeNativeClassImport(s);
+					if (!updated) {
+						mutated = true;
+						changed = true;
+						continue;
+					}
+					if (updated !== s) {
+						mutated = true;
+						changed = true;
+					}
+					out.push(updated);
+					continue;
+				}
+				// No deep traversal for unrelated nodes
+				out.push(s);
+			}
+			return [changed ? factory.createNodeArray(out) : statements, changed];
+		}
+
+		const updated = ts.visitNode(sourceFile, visitNode) as ts.SourceFile;
+		if (!mutated) return sourceFile;
+		return updated;
+	};
+}
+
+// Clone and mark helper nodes as synthesized; attach original for diagnostics
+function prepareSynthesizedNode<T extends ts.Node>(
+	node: T,
+	original: ts.Node,
+): T {
+	const cloneNode = (
+		ts.factory as unknown as { cloneNode?: (value: ts.Node) => ts.Node }
+	).cloneNode;
+	const getMutableClone = (
+		ts as unknown as { getMutableClone?: <U extends ts.Node>(value: U) => U }
+	).getMutableClone;
+	const prepared = (cloneNode?.(node) ?? getMutableClone?.(node) ?? node) as T;
+	markSynthesizedRecursive(prepared);
+	setSynthesizedRangeRecursive(prepared);
+	setOriginalRecursive(prepared, original);
+	return prepared;
+}
+
+function markSynthesizedRecursive(node: ts.Node): void {
+	const mutable = node as any as { flags?: ts.NodeFlags };
+	mutable.flags = ((mutable.flags ?? 0) |
+		ts.NodeFlags.Synthesized) as ts.NodeFlags;
+	ts.forEachChild(node, (child) => markSynthesizedRecursive(child));
+}
+
+function setSynthesizedRangeRecursive(node: ts.Node): void {
+	const mutable = node as any as { pos?: number; end?: number };
+	if (typeof mutable.pos === 'number') mutable.pos = -1;
+	if (typeof mutable.end === 'number') mutable.end = -1;
+	ts.forEachChild(node, (child) => setSynthesizedRangeRecursive(child));
+}
+
+function setOriginalRecursive(node: ts.Node, original: ts.Node): void {
+	ts.setOriginalNode(node, original);
+	ts.forEachChild(node, (child) => setOriginalRecursive(child, original));
 }

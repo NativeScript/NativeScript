@@ -11,9 +11,10 @@ export function createNativeClassTransformerPlugin(): Plugin {
 		async transform(code: string, id: string) {
 			if (!code) return null;
 			const bareId = id.split('?')[0];
-			const isTSFile = bareId.endsWith('.ts') || bareId.endsWith('.tsx');
+			const isTSFile = /\.(ts|tsx)$/.test(bareId);
+			const isJSFile = /\.(js|mjs|cjs)$/.test(bareId);
 			const isVueTSBlock = !isTSFile && /[?&]lang\.(ts|tsx)\b/.test(id);
-			if (!isTSFile && !isVueTSBlock) return null;
+			if (!isTSFile && !isVueTSBlock && !isJSFile) return null;
 			const res = transformNativeClassSource(code, bareId);
 			return res; // may be null if no @NativeClass present
 		},
