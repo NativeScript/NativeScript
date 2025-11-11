@@ -9,6 +9,9 @@ function before(_options, program) {
 		return (sourceFile) => {
 			let mutated = false;
 
+			// Always preserve original top-level import declarations in final output
+			const originalImportStatements = sourceFile.statements.filter((s) => ts.isImportDeclaration(s));
+
 			const transformStatements = (statements, isTopLevel) => {
 				let changed = false;
 				const result = [];
@@ -38,17 +41,11 @@ function before(_options, program) {
 					}
 
 					if (isTopLevel && ts.isImportDeclaration(statement)) {
-						const updated = removeNativeClassImport(factory, statement);
-						if (updated === undefined) {
-							mutated = true;
-							changed = true;
-							continue;
-						}
-						if (updated !== statement) {
-							mutated = true;
-							changed = true;
-						}
-						result.push(updated);
+						// Safety: Do not alter import declarations here. Earlier versions attempted to
+						// remove `NativeClass` from named imports, but this proved too risky and could
+						// accidentally elide unrelated imports in certain TS versions/configs. We keep
+						// imports intact and rely on bundlers/TS to tree-shake if needed.
+						result.push(statement);
 						continue;
 					}
 
@@ -109,10 +106,15 @@ function before(_options, program) {
 				return sourceFile;
 			}
 
-			const updatedSource = factory.updateSourceFile(sourceFile, updatedStatements);
-			setParents(updatedSource.statements, updatedSource);
-			clearBindingRecursive(updatedSource);
-			ts.bindSourceFile(updatedSource, compilerOptions);
+			// Ensure imports are retained at the top in the updated source
+			const nonImportStatements = updatedStatements.filter((s) => !ts.isImportDeclaration(s));
+			const finalStatements = factory.createNodeArray([...originalImportStatements, ...nonImportStatements]);
+
+			const updatedSource = factory.updateSourceFile(sourceFile, finalStatements);
+			// Do NOT clear or rebind the entire SourceFile here. Doing so can break TS's
+			// import usage analysis and lead to import elision. The factory/update API
+			// preserves parents/bindings for original nodes (like imports). We only
+			// synthesize/bind the newly inserted class replacement statements.
 			return updatedSource;
 		};
 	};
@@ -124,6 +126,7 @@ function hasNativeClassDecorator(node) {
 }
 
 function emitDownleveledClass(node) {
+	// Preserve leading trivia (including possible preceding import statements separated earlier by bundler) only remove the decorator itself.
 	const stripped = node.getText().replace(/@NativeClass(?:\((?:.|\n)*?\))?\s*/gm, '');
 	const downleveled = ts
 		.transpileModule(stripped, {
@@ -139,7 +142,7 @@ useDefineForClassFields: false,
 		.outputText.replace(/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs, '$1enumerable: true$3');
 
 	const helperSource = ts.createSourceFile(
-(node.getSourceFile()?.fileName ?? 'NativeClass.ts') + '.helper.js',
+		(node.getSourceFile()?.fileName ?? 'NativeClass.ts') + '.helper.js',
 		downleveled,
 		ts.ScriptTarget.ES5,
 		true,
@@ -149,6 +152,10 @@ useDefineForClassFields: false,
 	const statements = [];
 	for (const statement of helperSource.statements) {
 		if (statement.kind === ts.SyntaxKind.EndOfFileToken) {
+			continue;
+		}
+		// Explicitly skip import declarations accidentally re-emitted (shouldn't occur but defensive)
+		if (ts.isImportDeclaration(statement)) {
 			continue;
 		}
 		const prepared = prepareSynthesizedNode(statement, node);

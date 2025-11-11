@@ -268,6 +268,14 @@ export interface NativeScriptConfig {
 	 */
 	bundler?: BundlerType;
 	/**
+	 * Enable runtime logging of script loading.
+	 */
+	logScriptLoading?: boolean;
+	/**
+	 * Show visual error display when an uncaught JS exception occurs.
+	 */
+	showErrorDisplay?: boolean;
+	/**
 	 * iOS specific configurations
 	 * Various iOS specific configurations including iOS runtime flags.
 	 */
