@@ -36,8 +36,10 @@ export default function (ctx: ts.TransformationContext) {
 			const sf = node.getSourceFile?.() ?? sourceFile;
 			const fullStart = (node as any).getFullStart ? (node as any).getFullStart() : node.pos;
 			const nodeText = sf.text.slice(fullStart, node.end);
-			const stripped = nodeText.replace(/^\s*@NativeClass(?:\([\s\S]*?\))?\s*/m, '').replace(/^\s*\/\*__NativeClass__\*\/\s*/m, '');
-			const downleveled = ts.transpileModule(stripped, {
+			// Remove marker/decorator but preserve surrounding newline so next 'class' stays on its own line
+			let stripped = nodeText.replace(/@NativeClass(?:\([\s\S]*?\))?/m, '').replace(/\/\*__NativeClass__\*\//m, '');
+			// Provide a .ts filename to help transpileModule parse TS types consistently
+			const transpileResult = ts.transpileModule(stripped, {
 				compilerOptions: {
 					module: ts.ModuleKind.ESNext,
 					target: ts.ScriptTarget.ES5,
@@ -46,7 +48,15 @@ export default function (ctx: ts.TransformationContext) {
 					emitDecoratorMetadata: true,
 					useDefineForClassFields: false,
 				},
-			}).outputText;
+				fileName: sf.fileName.endsWith('.ts') ? sf.fileName : `${sf.fileName}.ts`,
+				reportDiagnostics: !!process.env.NATIVECLASS_DEBUG,
+			});
+			if (process.env.NATIVECLASS_DEBUG && transpileResult.diagnostics?.length) {
+				// Emit only first diagnostic for brevity
+				const first = transpileResult.diagnostics[0];
+				console.warn('[NativeClass:vite] diagnostic', first.messageText);
+			}
+			const downleveled = transpileResult.outputText;
 
 			const helperSource = ts.createSourceFile(`${node.getSourceFile()?.fileName ?? 'NativeClass.ts'}.helper.js`, downleveled, ts.ScriptTarget.ES5, true, ts.ScriptKind.JS);
 			// Visitor to set enumerable: true inside Object.defineProperty descriptor objects safely (no regex)
