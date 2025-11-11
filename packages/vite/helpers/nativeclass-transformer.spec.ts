@@ -125,4 +125,29 @@ describe('NativeClass transformer helper', () => {
 		const res = transformNativeClassSource(NO_DECORATOR_TS, '/app/src/none.ts');
 		expect(res).toBeNull();
 	});
+
+	it('handles Android-style constructor returning global.__native(this) without leaking top-level return', () => {
+		const ANDROID_CONSTRUCTOR_TS = `
+@NativeClass
+export class FooImpl extends NSObject {
+	constructor() {
+		super();
+		return global.__native(this);
+	}
+}
+`;
+		// Use a non-platform-specific filename in unit tests so the helper doesn't skip due to CLI flags
+		const res = transformNativeClassSource(ANDROID_CONSTRUCTOR_TS, '/app/src/page-transition.ts');
+		expect(res).toBeTruthy();
+		const code = res!.code;
+		// No decorator remnants
+		expect(code).not.toContain('@NativeClass');
+		expect(code).not.toContain('/*__NativeClass__*/');
+		// Should be downleveled to ES5 constructs
+		expect(/Object\.defineProperty\(|function\s*\(/.test(code)).toBeTruthy();
+		// Parse and ensure there is no top-level return statement
+		const sf = ts.createSourceFile('/check.js', code, ts.ScriptTarget.ES2017, true, ts.ScriptKind.JS);
+		const hasTopLevelReturn = sf.statements.some((s) => s.kind === ts.SyntaxKind.ReturnStatement);
+		expect(hasTopLevelReturn).toBe(false);
+	});
 });
