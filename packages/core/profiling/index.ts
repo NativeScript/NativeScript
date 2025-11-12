@@ -3,6 +3,19 @@ import appConfig from '~/package.json';
 /* eslint-disable prefer-rest-params */
 declare let __startCPUProfiler: any;
 declare let __stopCPUProfiler: any;
+declare const __NS_PROFILING_DEBUG__: boolean | undefined;
+declare const __NS_PROFILING_DEBUG_CONSOLE__: boolean | undefined;
+
+const enum MemberType {
+	Static,
+	Instance,
+}
+
+export enum Level {
+	none,
+	lifecycle,
+	timeline,
+}
 
 export function uptime(): number {
 	return global.android ? (<any>org).nativescript.Process.getUpTime() : global.__tns_uptime();
@@ -28,12 +41,84 @@ export interface TimerInfo {
 	runCount: number;
 }
 
-// Use object instead of map as it is a bit faster
-const timers: { [index: string]: TimerInfo } = {};
+// Global singleton state (prevents duplication under multiple module instances)
 const anyGlobal = <any>global;
-const profileNames: string[] = [];
+type ProfilingDebugPhase = 'timer-start' | 'timer-stop' | 'timer-stop-pending' | 'timer-reset' | 'wrap-instance' | 'wrap-static' | 'wrap-named' | 'wrap-function';
+
+export interface ProfilingDebugEntry {
+	phase: ProfilingDebugPhase;
+	name: string;
+	timestamp: number;
+	detail?: { runCount?: number; count?: number; totalTime?: number; note?: string };
+}
+
+type ProfilerState = {
+	timers: { [index: string]: TimerInfo };
+	profileNames: string[];
+	tracingLevel: Level;
+	profileFunctionFactory?: <F extends Function>(fn: F, name: string, type?: MemberType) => F;
+	debug?: boolean;
+	debugEvents?: ProfilingDebugEntry[];
+	debugConsole?: boolean;
+};
+const __nsProfiling: ProfilerState = (anyGlobal.__nsProfiling ||= {
+	timers: {},
+	profileNames: [],
+	tracingLevel: undefined as any,
+	profileFunctionFactory: undefined,
+});
+// Initialize default tracing level if first load
+if (__nsProfiling.tracingLevel === undefined) {
+	__nsProfiling.tracingLevel = Level.none;
+}
+const debugEnabledFromDefine = typeof __NS_PROFILING_DEBUG__ !== 'undefined' ? __NS_PROFILING_DEBUG__ : undefined;
+const debugConsoleFromDefine = typeof __NS_PROFILING_DEBUG_CONSOLE__ !== 'undefined' ? __NS_PROFILING_DEBUG_CONSOLE__ : undefined;
+if (typeof __nsProfiling.debug !== 'boolean') {
+	__nsProfiling.debug = debugEnabledFromDefine ?? false;
+}
+if (!Array.isArray(__nsProfiling.debugEvents)) {
+	__nsProfiling.debugEvents = [];
+}
+if (typeof __nsProfiling.debugConsole !== 'boolean') {
+	__nsProfiling.debugConsole = debugConsoleFromDefine ?? true;
+}
+// Use object instead of map as it is a bit faster
+const timers: { [index: string]: TimerInfo } = __nsProfiling.timers;
+const profileNames: string[] = __nsProfiling.profileNames;
+const debugEvents = __nsProfiling.debugEvents!;
 
 export const time = (global.__time || Date.now) as () => number;
+
+function recordDebugEvent(phase: ProfilingDebugPhase, name: string, detail?: ProfilingDebugEntry['detail']): void {
+	if (!__nsProfiling.debug) {
+		return;
+	}
+	const entry: ProfilingDebugEntry = {
+		phase,
+		name,
+		timestamp: time(),
+		detail,
+	};
+	debugEvents.push(entry);
+	if (__nsProfiling.debugConsole !== false) {
+		const summary = detail
+			? Object.entries(detail)
+					.map(([key, value]) => `${key}=${value}`)
+					.join(' ')
+			: '';
+		console.log(`[profiling:${phase}] ${name}${summary ? ' ' + summary : ''}`);
+	}
+}
+
+function summarizeTimerInfo(info: TimerInfo | undefined) {
+	return info
+		? {
+				runCount: info.runCount,
+				count: info.count,
+				totalTime: info.totalTime,
+			}
+		: undefined;
+}
 
 export function start(name: string): void {
 	let info = timers[name];
@@ -41,6 +126,7 @@ export function start(name: string): void {
 	if (info) {
 		info.currentStart = time();
 		info.runCount++;
+		recordDebugEvent('timer-start', name, summarizeTimerInfo(info));
 	} else {
 		info = {
 			totalTime: 0,
@@ -50,6 +136,7 @@ export function start(name: string): void {
 		};
 		timers[name] = info;
 		profileNames.push(name);
+		recordDebugEvent('timer-start', name, summarizeTimerInfo(info));
 	}
 }
 
@@ -64,11 +151,13 @@ export function stop(name: string): TimerInfo {
 		info.runCount--;
 		if (info.runCount) {
 			info.count++;
+			recordDebugEvent('timer-stop-pending', name, summarizeTimerInfo(info));
 		} else {
 			info.lastTime = time() - info.currentStart;
 			info.totalTime += info.lastTime;
 			info.count++;
 			info.currentStart = 0;
+			recordDebugEvent('timer-stop', name, summarizeTimerInfo(info));
 		}
 	} else {
 		throw new Error(`Timer ${name} paused more times than started.`);
@@ -131,19 +220,9 @@ function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string,
 			};
 }
 
-const enum MemberType {
-	Static,
-	Instance,
-}
+let tracingLevel: Level = __nsProfiling.tracingLevel;
 
-export enum Level {
-	none,
-	lifecycle,
-	timeline,
-}
-let tracingLevel: Level = Level.none;
-
-let profileFunctionFactory: <F extends Function>(fn: F, name: string, type?: MemberType) => F;
+let profileFunctionFactory: <F extends Function>(fn: F, name: string, type?: MemberType) => F = __nsProfiling.profileFunctionFactory;
 export function enable(mode: InstrumentationMode = 'counters') {
 	profileFunctionFactory =
 		mode &&
@@ -157,6 +236,10 @@ export function enable(mode: InstrumentationMode = 'counters') {
 			lifecycle: Level.lifecycle,
 			timeline: Level.timeline,
 		}[mode] || Level.none;
+
+	// persist to global singleton so other module instances share the same state
+	__nsProfiling.profileFunctionFactory = profileFunctionFactory;
+	__nsProfiling.tracingLevel = tracingLevel;
 }
 
 try {
@@ -173,10 +256,24 @@ try {
 
 export function disable() {
 	profileFunctionFactory = undefined;
+	__nsProfiling.profileFunctionFactory = undefined;
 }
 
 function profileFunction<F extends Function>(fn: F, customName?: string): F {
-	return profileFunctionFactory<F>(fn, customName || fn.name);
+	const name = customName || fn.name;
+	recordDebugEvent('wrap-function', name);
+	if (profileFunctionFactory) {
+		return profileFunctionFactory<F>(fn, name);
+	}
+	// Lazy wrapper: if factory not available at decoration time, defer to runtime
+	return <any>function () {
+		const fac = (anyGlobal.__nsProfiling && anyGlobal.__nsProfiling.profileFunctionFactory) || profileFunctionFactory;
+		if (fac) {
+			const wrapped = fac(fn, name);
+			return wrapped.apply(this, arguments);
+		}
+		return fn.apply(this, arguments);
+	};
 }
 
 const profileMethodUnnamed = (target: Object, key: symbol | string, descriptor) => {
@@ -194,8 +291,22 @@ const profileMethodUnnamed = (target: Object, key: symbol | string, descriptor) 
 
 	const name = className + key?.toString();
 
-	//editing the descriptor/value parameter
-	descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Instance);
+	// editing the descriptor/value parameter
+	// Always install a wrapper that records timing regardless of current factory state to match webpack behavior.
+	// If a profiling factory is active use it; otherwise fallback to counters start/stop directly.
+	if (profileFunctionFactory) {
+		descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Instance);
+	} else {
+		descriptor.value = function () {
+			start(name);
+			try {
+				return originalMethod.apply(this, arguments);
+			} finally {
+				stop(name);
+			}
+		};
+	}
+	recordDebugEvent('wrap-instance', name);
 
 	// return edited descriptor as opposed to overwriting the descriptor
 	return descriptor;
@@ -215,8 +326,20 @@ const profileStaticMethodUnnamed = <F extends Function>(ctor: F, key: symbol | s
 	}
 	const name = className + key?.toString();
 
-	//editing the descriptor/value parameter
-	descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Static);
+	// editing the descriptor/value parameter
+	if (profileFunctionFactory) {
+		descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Static);
+	} else {
+		descriptor.value = function () {
+			start(name);
+			try {
+				return originalMethod.apply(this, arguments);
+			} finally {
+				stop(name);
+			}
+		};
+	}
+	recordDebugEvent('wrap-static', name);
 
 	// return edited descriptor as opposed to overwriting the descriptor
 	return descriptor;
@@ -231,10 +354,22 @@ function profileMethodNamed(name: string): MethodDecorator {
 		}
 		const originalMethod = descriptor.value;
 
-		//editing the descriptor/value parameter
-		descriptor.value = profileFunctionFactory(originalMethod, name);
+		// editing the descriptor/value parameter
+		if (profileFunctionFactory) {
+			descriptor.value = profileFunctionFactory(originalMethod, name);
+		} else {
+			descriptor.value = function () {
+				start(name);
+				try {
+					return originalMethod.apply(this, arguments);
+				} finally {
+					stop(name);
+				}
+			};
+		}
 
 		// return edited descriptor as opposed to overwriting the descriptor
+		recordDebugEvent('wrap-named', name);
 		return descriptor;
 	};
 }
@@ -245,40 +380,16 @@ const voidMethodDecorator = () => {
 
 export function profile(nameFnOrTarget?: string | Function | Object, fnOrKey?: Function | string | symbol, descriptor?: PropertyDescriptor, attrs?: any): any {
 	if (typeof nameFnOrTarget === 'object' && (typeof fnOrKey === 'string' || typeof fnOrKey === 'symbol')) {
-		if (!profileFunctionFactory) {
-			return;
-		}
-
 		return profileMethodUnnamed(nameFnOrTarget, fnOrKey, descriptor);
 	} else if (typeof nameFnOrTarget === 'function' && (typeof fnOrKey === 'string' || typeof fnOrKey === 'symbol')) {
-		if (!profileFunctionFactory) {
-			return;
-		}
-
 		return profileStaticMethodUnnamed(nameFnOrTarget, fnOrKey, descriptor);
 	} else if (typeof nameFnOrTarget === 'string' && typeof fnOrKey === 'function') {
-		if (!profileFunctionFactory) {
-			return fnOrKey;
-		}
-
 		return profileFunction(fnOrKey, nameFnOrTarget);
 	} else if (typeof nameFnOrTarget === 'function') {
-		if (!profileFunctionFactory) {
-			return nameFnOrTarget;
-		}
-
 		return profileFunction(nameFnOrTarget);
 	} else if (typeof nameFnOrTarget === 'string') {
-		if (!profileFunctionFactory) {
-			return voidMethodDecorator;
-		}
-
 		return profileMethodNamed(nameFnOrTarget);
 	} else {
-		if (!profileFunctionFactory) {
-			return voidMethodDecorator;
-		}
-
 		return profileMethodUnnamed;
 	}
 }
@@ -300,8 +411,10 @@ export function resetProfiles(): void {
 		if (info) {
 			if (info.runCount) {
 				console.log('---- timer with name [' + name + "] is currently running and won't be reset");
+				recordDebugEvent('timer-reset', name, summarizeTimerInfo(info));
 			} else {
 				timers[name] = undefined;
+				recordDebugEvent('timer-reset', name, summarizeTimerInfo(info));
 			}
 		}
 	});
