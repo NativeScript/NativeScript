@@ -4,6 +4,7 @@
 /dist
 /tmp
 /out-tsc
+.ns-vite-build
 
 # dependencies
 **/node_modules

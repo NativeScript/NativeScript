@@ -155,8 +155,8 @@ class UILayoutViewController extends UIViewController {
 class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
 	public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
 
-	private owner: WeakRef<View>;
-	private closedCallback: Function;
+	owner: WeakRef<View>;
+	closedCallback: Function;
 
 	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
 		const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
@@ -178,8 +178,8 @@ class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UI
 class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
 	public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
 
-	private owner: WeakRef<View>;
-	private closedCallback: Function;
+	owner: WeakRef<View>;
+	closedCallback: Function;
 
 	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
 		const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
