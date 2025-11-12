@@ -1,4 +1,4 @@
-import { EventData, Observable, Page, Color, TabView, TabViewItem } from '@nativescript/core';
+import { EventData, Observable, Page, Color, TabView, TabViewItem, StackLayout, Label, Utils, GridLayout, ItemSpec } from '@nativescript/core';
 
 class TabViewDemoModel extends Observable {
 	private page: Page;
@@ -35,14 +35,22 @@ class TabViewDemoModel extends Observable {
 	clearIcons = () => {
 		if (!this.tabView || !this.tabView.items) return;
 		this.tabView.items.forEach((item) => {
-			(item as TabViewItem).iconSource = undefined;
+			item.iconSource = undefined;
 		});
 	};
 
 	private setIcons(iconSources: string[]) {
 		const items = this.tabView.items as TabViewItem[];
+		let isSystemIcons: boolean;
 		for (let i = 0; i < items.length; i++) {
-			items[i].iconSource = iconSources[i % iconSources.length];
+			const iconSource = iconSources[i % iconSources.length];
+			items[i].iconSource = iconSource;
+			if (iconSource.startsWith(Utils.SYSTEM_PREFIX)) {
+				isSystemIcons = true;
+			}
+		}
+		if (__APPLE__) {
+			this.tabView.tabTextFontSize = isSystemIcons ? 11 : null;
 		}
 	}
 
@@ -56,9 +64,45 @@ class TabViewDemoModel extends Observable {
 
 	private applyItemColor(color: Color) {
 		(this.tabView.items as TabViewItem[]).forEach((item) => {
-			(item as TabViewItem).style.color = color;
+			item.style.color = color;
 		});
 	}
+
+	// iOS bottom accessory demo (iOS 26+). Safe to call on other platforms; will be ignored.
+	attachBottomAccessory = () => {
+		if (!this.tabView) return;
+		const root = new GridLayout();
+
+		// root.backgroundColor = new Color('green');
+		root.iosOverflowSafeArea = false;
+		root.padding = 12;
+		root.width = { unit: '%', value: 100 };
+		root.height = 56; // ensure visible height
+		const label = new Label();
+		// label.backgroundColor = new Color('red');
+		label.text = 'Bottom Accessory (iOS 26+)';
+		label.color = new Color('#000');
+		label.textAlignment = 'center';
+		GridLayout.setColumn(label, 0);
+		GridLayout.setRow(label, 0);
+		root.addChild(label);
+		this.tabView.iosBottomAccessory = root;
+	};
+
+	clearBottomAccessory = () => {
+		if (!this.tabView) return;
+		this.tabView.iosBottomAccessory = null;
+	};
+
+	setMinimizeScrollDown = () => {
+		if (!this.tabView) return;
+		this.tabView.iosTabBarMinimizeBehavior = 'onScrollDown';
+	};
+
+	setMinimizeNever = () => {
+		if (!this.tabView) return;
+		this.tabView.iosTabBarMinimizeBehavior = 'never';
+	};
 }
 
 const vm = new TabViewDemoModel();

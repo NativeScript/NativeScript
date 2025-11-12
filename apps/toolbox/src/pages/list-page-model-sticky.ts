@@ -1,4 +1,5 @@
 import { Observable, Dialogs, DialogStrings, View, EventData, SearchEventData } from '@nativescript/core';
+import { getItemCallbacks } from '../split-view/split-view-root';
 type CountryListType = Array<{ title: string; items: Array<{ name: string; code: string; flag: string; isVisible?: boolean }> }>;
 export class ListPageModelSticky extends Observable {
 	countries: CountryListType = [
@@ -1380,11 +1381,14 @@ export class ListPageModelSticky extends Observable {
 	}
 
 	componentsItemTap(args): void {
-		Dialogs.alert({
-			title: 'Want to play?',
-			message: 'Nothing to see here yet. Feel free to add more examples to play around.',
-			okButtonText: DialogStrings.OK,
-		});
+		const letter = this.countries[args.section];
+		console.log('Tapped on category: ' + letter.title);
+		if (letter.items?.length) {
+			const country = letter.items[args.index];
+			console.log('Tapped on country: ' + country.name);
+			// used in splitview demo
+			getItemCallbacks().forEach((callback) => callback(`${country.name} was selected.`));
+		}
 	}
 
 	itemLoading(args: EventData): void {

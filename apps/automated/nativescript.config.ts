@@ -9,5 +9,8 @@ export default {
 	},
 	cli: {
 		packageManager: 'npm',
+		additionalPathsToClean: ['.ns-vite-build'],
 	},
+	// bundler: 'vite',
+	// bundlerConfigPath: 'vite.config.ts',
 } as NativeScriptConfig;

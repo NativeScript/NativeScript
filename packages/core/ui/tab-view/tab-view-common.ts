@@ -95,6 +95,16 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 	public androidSwipeEnabled: boolean;
 	public iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
 	public androidIconRenderingMode: 'alwaysOriginal' | 'alwaysTemplate';
+	/**
+	 * iOS 26+: Optional bottom accessory view that appears beneath the tab bar.
+	 * Provide a NativeScript View instance. On platforms < iOS 26 this is ignored.
+	 */
+	public iosBottomAccessory: View;
+
+	/**
+	 * iOS 26+: Controls tab bar minimize behavior. One of: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp'.
+	 */
+	public iosTabBarMinimizeBehavior: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp';
 
 	get androidSelectedTabHighlightColor(): Color {
 		return this.style.androidSelectedTabHighlightColor;
@@ -272,6 +282,20 @@ export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 androidSwipeEnabledProperty.register(TabViewBase);
+
+// iOS 26 bottom accessory support
+export const iosBottomAccessoryProperty = new Property<TabViewBase, View>({
+	name: 'iosBottomAccessory',
+});
+iosBottomAccessoryProperty.register(TabViewBase);
+
+// iOS 26 tab bar minimize behavior
+export type TabBarMinimizeType = 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp';
+export const iosTabBarMinimizeBehaviorProperty = new Property<TabViewBase, TabBarMinimizeType>({
+	name: 'iosTabBarMinimizeBehavior',
+	defaultValue: 'automatic',
+});
+iosTabBarMinimizeBehaviorProperty.register(TabViewBase);
 
 export const tabTextFontSizeProperty = new CssProperty<Style, number>({
 	name: 'tabTextFontSize',

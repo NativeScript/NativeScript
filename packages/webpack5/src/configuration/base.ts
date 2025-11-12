@@ -454,7 +454,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 					before: [require('../transformers/NativeClass').default],
 				};
 			},
-		});
+		})
+		.end()
+		// Ensure pre-loaders run BEFORE ts-loader (loaders execute right-to-left):
+		// order: [ts-loader, native-class-downlevel-loader, native-class-strip-loader]
+		// execution: strip -> downlevel -> ts-loader
+		.use('native-class-downlevel-loader')
+		.loader('native-class-downlevel-loader')
+		.end()
+		.use('native-class-strip-loader')
+		.loader('native-class-strip-loader');
 
 	// Use Fork TS Checker to do type checking in a separate non-blocking process
 	config.when(hasDependency('typescript'), (config) => {

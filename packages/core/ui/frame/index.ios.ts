@@ -28,9 +28,10 @@ let navControllerDelegate: UINavigationControllerDelegate = null;
 
 export class Frame extends FrameBase {
 	viewController: UINavigationControllerImpl;
-	public _ios: iOSFrame;
 	iosNavigationBarClass: typeof NSObject;
 	iosToolbarClass: typeof NSObject;
+
+	private _ios: iOSFrame;
 
 	constructor() {
 		super();
@@ -44,7 +45,13 @@ export class Frame extends FrameBase {
 			this._pushInFrameStack();
 		}
 
-		return this.viewController.view;
+		// View controller can be disposed during view disposal, so make sure to create a new one if not defined
+		if (!this._ios) {
+			this._ios = new iOSFrame(this);
+			this.viewController = this._ios.controller;
+		}
+
+		return this._ios.controller.view;
 	}
 
 	public disposeNativeView() {
@@ -129,14 +136,15 @@ export class Frame extends FrameBase {
 			viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
 		}
 
+		if (!navControllerDelegate) {
+			navControllerDelegate = UINavigationControllerDelegateImpl.new();
+		}
+
+		this._ios.controller.delegate = navControllerDelegate;
+		viewController[DELEGATE] = navControllerDelegate;
+
 		const nativeTransition = _getNativeTransition(navigationTransition, true, this.direction);
 		if (!nativeTransition && navigationTransition) {
-			if (!navControllerDelegate) {
-				navControllerDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
-			}
-
-			this._ios.controller.delegate = navControllerDelegate;
-			viewController[DELEGATE] = navControllerDelegate;
 			if (navigationTransition.instance) {
 				this.transitionId = navigationTransition.instance.id;
 				const transitionState = SharedTransition.getState(this.transitionId);
@@ -148,9 +156,6 @@ export class Frame extends FrameBase {
 					}, this);
 				}
 			}
-		} else {
-			viewController[DELEGATE] = null;
-			this._ios.controller.delegate = null;
 		}
 
 		backstackEntry[NAV_DEPTH] = navDepth;
@@ -358,6 +363,17 @@ export class Frame extends FrameBase {
 	public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
 		//
 	}
+
+	// Emits an event whenever the UINavigationController shows a view controller.
+	// Consumers can subscribe to 'viewControllerShown'
+	// to safely interact with the visible controller/navigationItem once it exists.
+	public _onViewControllerShown(viewController: UIViewController): void {
+		this.notify({
+			eventName: 'viewControllerShown',
+			object: this,
+			viewController,
+		});
+	}
 }
 
 const transitionDelegates = new Array<TransitionDelegate>();
@@ -410,7 +426,7 @@ class TransitionDelegate extends NSObject {
 }
 
 @NativeClass
-class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
+class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
 
 	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationControllerImpl, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
@@ -477,6 +493,16 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 		}
 
 		return null;
+	}
+
+	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
+		if (Trace.isEnabled()) {
+			Trace.write('Frame.navigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
+		}
+		const owner = navigationController.owner;
+		if (owner) {
+			owner._onViewControllerShown(viewController);
+		}
 	}
 }
 
@@ -755,9 +781,7 @@ export function _getNativeCurve(transition: NavigationTransition): UIViewAnimati
 	return UIViewAnimationCurve.EaseInOut;
 }
 
-/* tslint:disable */
 class iOSFrame implements iOSFrameDefinition {
-	/* tslint:enable */
 	private _controller: UINavigationControllerImpl;
 	private _showNavigationBar: boolean;
 	private _navBarVisibility: 'auto' | 'never' | 'always' = 'auto';
