@@ -8,7 +8,7 @@ import { ShadowCSSValues } from '../../styling/css-shadow';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
 import { ViewBase } from '../view-base';
-import { ViewCommon } from './view-common';
+import { GlassEffectType, ViewCommon } from './view-common';
 import type { Point, ShownModallyData } from './view-interfaces';
 
 export * from './view-common';
@@ -237,6 +237,8 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * If `true` the element is an accessibility element and all the children will be treated as a single selectable component.
+	 *
+	 * @nsProperty
 	 */
 	accessible: boolean;
 
@@ -294,6 +296,8 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * When components dynamically change, we want TalkBack to alert the end user. This is made possible by the accessibilityLiveRegion property.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityLiveRegion: AccessibilityLiveRegion;
 
@@ -621,6 +625,13 @@ export abstract class View extends ViewCommon {
 	 * @nsProperty
 	 */
 	visionHoverStyle: string | VisionHoverOptions;
+
+	/**
+	 * Set the iOS liquid glass effect style on the view.
+	 *
+	 * @nsProperty
+	 */
+	iosGlassEffect: GlassEffectType;
 
 	/**
 	 * @nsProperty
