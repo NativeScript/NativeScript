@@ -95,10 +95,14 @@ export class DockLayout extends DockLayoutBase {
 		this.eachLayoutChild((child, last) => {
 			let childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
 			let childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
+			const availableWidth = remainingWidth;
+			const availableHeight = remainingHeight;
+			const horizontalAlignment = child.horizontalAlignment;
+			const extendForAlignment = horizontalAlignment === 'center' || horizontalAlignment === 'right' || horizontalAlignment === 'end';
 
 			if (last && this.stretchLastChild) {
 				// Last child with stretch - give it all the space and return;
-				View.layoutChild(this, child, x, y, x + remainingWidth, y + remainingHeight);
+				View.layoutChild(this, child, x, y, x + availableWidth, y + availableHeight);
 
 				return;
 			}
@@ -108,23 +112,28 @@ export class DockLayout extends DockLayoutBase {
 				case 'top':
 					childLeft = x;
 					childTop = y;
-					childWidth = remainingWidth;
+					childWidth = availableWidth;
 					y += childHeight;
-					remainingHeight = Math.max(0, remainingHeight - childHeight);
+					remainingHeight = Math.max(0, availableHeight - childHeight);
 					break;
 
 				case 'bottom':
 					childLeft = x;
 					childTop = y + remainingHeight - childHeight;
-					childWidth = remainingWidth;
-					remainingHeight = Math.max(0, remainingHeight - childHeight);
+					childWidth = availableWidth;
+					remainingHeight = Math.max(0, availableHeight - childHeight);
 					break;
 
 				case 'right':
 					childLeft = x + remainingWidth - childWidth;
 					childTop = y;
 					childHeight = remainingHeight;
-					remainingWidth = Math.max(0, remainingWidth - childWidth);
+					remainingWidth = Math.max(0, availableWidth - childWidth);
+					if (extendForAlignment && availableWidth > childWidth) {
+						const slotLeft = childLeft - (availableWidth - childWidth);
+						View.layoutChild(this, child, slotLeft, childTop, slotLeft + availableWidth, childTop + childHeight);
+						return;
+					}
 					break;
 
 				case 'left':
@@ -133,7 +142,11 @@ export class DockLayout extends DockLayoutBase {
 					childTop = y;
 					childHeight = remainingHeight;
 					x += childWidth;
-					remainingWidth = Math.max(0, remainingWidth - childWidth);
+					remainingWidth = Math.max(0, availableWidth - childWidth);
+					if (extendForAlignment && availableWidth > childWidth) {
+						View.layoutChild(this, child, childLeft, childTop, childLeft + availableWidth, childTop + childHeight);
+						return;
+					}
 					break;
 			}
 
