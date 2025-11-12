@@ -1,5 +1,3 @@
-export type ApplicationEventName = (typeof ApplicationEventNames)[keyof typeof ApplicationEventNames];
-
 export const ApplicationEventNames = Object.freeze({
 	launchEvent: 'launch',
 	suspendEvent: 'suspend',
@@ -20,3 +18,6 @@ export const ApplicationEventNames = Object.freeze({
 	cssChangedEvent: 'cssChanged',
 	initRootViewEvent: 'initRootView',
 });
+
+export type ApplicationEventNameType = typeof ApplicationEventNames;
+export type ApplicationEventName = ApplicationEventNameType[keyof ApplicationEventNameType];

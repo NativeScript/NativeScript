@@ -10,14 +10,16 @@ import { Optional } from '../utils/typescript-utils';
 
 type MediaQueryLegacyEventCb = (this: MediaQueryList, ev: MediaQueryListEvent) => any;
 
-export interface MediaQueryListEventData extends EventData {
-	matches: boolean;
-	media: string;
+export interface MediaQueryListEvent {
+	readonly matches: boolean;
+	readonly media: string;
 }
+
+export interface MediaQueryListEventData extends EventData, MediaQueryListEvent {}
 
 const globalEvents = getNativeScriptGlobals().events;
 const applicationEvents: ApplicationEventName[] = [ApplicationEventNames.orientationChangedEvent, ApplicationEventNames.systemAppearanceChangedEvent];
-const mediaQueryLists: MediaQueryListImpl[] = [];
+const mediaQueryLists: MediaQueryList[] = [];
 
 function toggleApplicationEventListeners(toAdd: boolean) {
 	for (const eventName of applicationEvents) {
@@ -34,7 +36,7 @@ function onDeviceChange(args: ApplicationEventData) {
 		const matches = checkIfMediaQueryMatches(mql.media);
 		if (mql.matches !== matches) {
 			mql.notify({
-				eventName: MediaQueryListImpl.changeEvent,
+				eventName: MediaQueryList.changeEvent,
 				object: mql,
 				matches: matches,
 				media: mql.media,
@@ -43,7 +45,7 @@ function onDeviceChange(args: ApplicationEventData) {
 	}
 }
 
-function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
+export function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
 	const { widthPixels, heightPixels } = Screen.mainScreen;
 
 	let matches: boolean;
@@ -67,8 +69,8 @@ function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
 	return matches;
 }
 
-function matchMedia(mediaQueryString: string): MediaQueryListImpl {
-	return Reflect.construct(MediaQueryListInternal, [mediaQueryString], MediaQueryListImpl) as any;
+export function matchMedia(mediaQueryString: string): MediaQueryList {
+	return Reflect.construct(MediaQueryListInternal, [mediaQueryString], MediaQueryList) as any;
 }
 
 // For internal usage
@@ -84,7 +86,7 @@ class MediaQueryListInternal extends Observable {
 	}
 }
 
-class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dispatchEvent' | 'addEventListener' | 'removeEventListener'> {
+export class MediaQueryList extends Observable {
 	public static readonly changeEvent = 'change';
 
 	private readonly mMedia: string;
@@ -108,18 +110,18 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 
 	public override notify<T extends Optional<MediaQueryListEventData, 'object' | 'media' | 'matches'>>(data: T): void {
 		// Update match state
-		if (data.eventName === 'change') {
+		if (data.eventName === MediaQueryList.changeEvent) {
 			this.mMatches = data.matches;
 		}
 		super.notify<T>(data);
 	}
 
 	public override addEventListener(eventName: 'change', callback: (data: MediaQueryListEventData) => void, thisArg?: any, once?: boolean): void {
-		const hasChangeListeners = this.hasListeners(MediaQueryListImpl.changeEvent);
+		const hasChangeListeners = this.hasListeners(MediaQueryList.changeEvent);
 
 		super.addEventListener(eventName, callback, thisArg, once);
 
-		if (eventName === MediaQueryListImpl.changeEvent && !hasChangeListeners) {
+		if (eventName === MediaQueryList.changeEvent && !hasChangeListeners) {
 			mediaQueryLists.push(this);
 
 			if (mediaQueryLists.length === 1) {
@@ -131,8 +133,8 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 	public override removeEventListener(eventName: 'change', callback?: (data: MediaQueryListEventData) => void, thisArg?: any): void {
 		super.removeEventListener(eventName, callback, thisArg);
 
-		if (eventName === MediaQueryListImpl.changeEvent) {
-			const hasChangeListeners = this.hasListeners(MediaQueryListImpl.changeEvent);
+		if (eventName === MediaQueryList.changeEvent) {
+			const hasChangeListeners = this.hasListeners(MediaQueryList.changeEvent);
 
 			if (!hasChangeListeners) {
 				const index = mediaQueryLists.indexOf(this);
@@ -147,18 +149,18 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 		}
 	}
 
-	addListener(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any): void {
+	addListener(callback: (this: MediaQueryList, ev: MediaQueryList) => any): void {
 		// This kind of implementation helps maintain listener registration order
 		// regardless of using the deprecated methods or property onchange
-		const wrapperCallback = (data) => {
-			callback.call(this, <MediaQueryListEvent>{
+		const wrapperCallback = (_data) => {
+			callback.call(this, <MediaQueryList>{
 				matches: this.matches,
 				media: this.media,
 			});
 		};
 
 		// Call this method first since it throws in the case of bad parameters
-		this.addEventListener(MediaQueryListImpl.changeEvent, wrapperCallback);
+		this.addEventListener(MediaQueryList.changeEvent, wrapperCallback);
 
 		if (!this.mediaQueryChangeListeners) {
 			this.mediaQueryChangeListeners = new Map();
@@ -171,7 +173,7 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 
 		if (mediaChangeListeners && mediaChangeListeners.has(callback)) {
 			// Call this method first since it throws in the case of bad parameters
-			this.removeEventListener(MediaQueryListImpl.changeEvent, mediaChangeListeners.get(callback));
+			this.removeEventListener(MediaQueryList.changeEvent, mediaChangeListeners.get(callback));
 			mediaChangeListeners.delete(callback);
 		}
 	}
@@ -193,5 +195,3 @@ class MediaQueryListImpl extends Observable implements Omit<MediaQueryList, 'dis
 		this._onChange = callback;
 	}
 }
-
-export { checkIfMediaQueryMatches, matchMedia, MediaQueryListImpl as MediaQueryList };
