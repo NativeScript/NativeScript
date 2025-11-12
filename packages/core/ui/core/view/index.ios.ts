@@ -8,7 +8,7 @@ import { layout, ios as iosUtils, getWindow } from '../../../utils';
 import { SDK_VERSION, supportsGlass } from '../../../utils/constants';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
@@ -1015,16 +1015,20 @@ export class View extends ViewCommon {
 		}
 	}
 
-	toUIGlassStyle(value?: GlassEffectVariant) {
-		if (supportsGlass()) {
-			switch (value) {
-				case 'regular':
-					return UIGlassEffectStyle?.Regular ?? 0;
-				case 'clear':
-					return UIGlassEffectStyle?.Clear ?? 1;
-			}
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		const nativeView = this.nativeViewProtected;
+
+		switch (value) {
+			case CoreTypes.LayoutDirection.ltr:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.ForceLeftToRight;
+				break;
+			case CoreTypes.LayoutDirection.rtl:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft;
+				break;
+			default:
+				nativeView.semanticContentAttribute = UISemanticContentAttribute.Unspecified;
+				break;
 		}
-		return 1;
 	}
 
 	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
@@ -1074,6 +1078,18 @@ export class View extends ViewCommon {
 		this.sendAccessibilityEvent({
 			iosNotificationType: IOSPostAccessibilityNotificationType.Screen,
 		});
+	}
+
+	public toUIGlassStyle(value?: GlassEffectVariant) {
+		if (supportsGlass()) {
+			switch (value) {
+				case 'regular':
+					return UIGlassEffectStyle?.Regular ?? 0;
+				case 'clear':
+					return UIGlassEffectStyle?.Clear ?? 1;
+			}
+		}
+		return 1;
 	}
 
 	_getCurrentLayoutBounds(): Position {

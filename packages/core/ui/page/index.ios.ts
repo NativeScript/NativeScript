@@ -319,11 +319,20 @@ class UIViewControllerImpl extends UIViewController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this._owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this._owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
@@ -377,7 +386,13 @@ export class Page extends PageBase {
 	}
 
 	createNativeView() {
-		return this.viewController.view;
+		// View controller can be disposed during view disposal, so make sure to create a new one if not defined
+		if (!this._ios) {
+			const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+			controller.view.backgroundColor = this._backgroundColor;
+			this.viewController = this._ios = controller;
+		}
+		return this._ios.view;
 	}
 
 	disposeNativeView() {
@@ -438,7 +453,7 @@ export class Page extends PageBase {
 
 	public _updateStatusBarStyle(value?: string) {
 		const frame = this.frame;
-		if (frame && value) {
+		if (frame?.ios && value) {
 			const navigationController: UINavigationController = frame.ios.controller;
 			const navigationBar = navigationController.navigationBar;
 
@@ -488,7 +503,7 @@ export class Page extends PageBase {
 
 		const insets = this.getSafeAreaInsets();
 
-		if (!__VISIONOS__ && SDK_VERSION <= 10) {
+		if (!__VISIONOS__ && SDK_VERSION <= 10 && this.viewController) {
 			// iOS 10 and below don't have safe area insets API,
 			// there we need only the top inset on the Page
 			insets.top = layout.round(layout.toDevicePixels(this.viewController.view.safeAreaLayoutGuide.layoutFrame.origin.y));

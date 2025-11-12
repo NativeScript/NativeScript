@@ -3,9 +3,8 @@ import { textOverflowProperty, textProperty, whiteSpaceProperty } from '../text-
 import { hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { colorProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { colorProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, directionProperty } from '../styling/style-properties';
 import { layout, isEmoji } from '../../utils';
-import { profile } from '../../profiling';
 
 export * from './text-field-common';
 
@@ -326,6 +325,11 @@ export class TextField extends TextFieldBase {
 		this.adjustLineBreak();
 	}
 
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		this.adjustLineBreak();
+		super[directionProperty.setNative](value);
+	}
+
 	private adjustLineBreak() {
 		let paragraphStyle: NSMutableParagraphStyle;
 
@@ -339,11 +343,12 @@ export class TextField extends TextFieldBase {
 					default:
 						// ellipsis
 						paragraphStyle = NSMutableParagraphStyle.new();
-						paragraphStyle.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+						paragraphStyle.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
 						break;
 				}
 				break;
 			case 'wrap':
+			case 'normal':
 				paragraphStyle = NSMutableParagraphStyle.new();
 				paragraphStyle.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 				break;

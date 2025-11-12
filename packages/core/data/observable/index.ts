@@ -42,6 +42,10 @@ interface ListenerEntry {
 	once?: true;
 }
 
+interface ListEntryMap {
+	[eventName: string]: Array<ListenerEntry>;
+}
+
 let _wrappedIndex = 0;
 
 /**
@@ -107,7 +111,7 @@ export class Observable {
 	 */
 	public _isViewBase: boolean;
 
-	private readonly _observers: { [eventName: string]: Array<ListenerEntry> } = {};
+	private readonly _observers: ListEntryMap = {};
 
 	/**
 	 * Gets the value of the specified property.
@@ -379,7 +383,7 @@ export class Observable {
 			const eventName = data.eventName + eventType;
 			const entries = _globalEventHandlers[eventClass][eventName];
 			if (entries) {
-				Observable._handleEvent(entries, data);
+				Observable._fireEvent(entries, data);
 			}
 		}
 
@@ -388,7 +392,7 @@ export class Observable {
 			const eventName = data.eventName + eventType;
 			const entries = _globalEventHandlers['*'][eventName];
 			if (entries) {
-				Observable._handleEvent(entries, data);
+				Observable._fireEvent(entries, data);
 			}
 		}
 	}
@@ -411,35 +415,49 @@ export class Observable {
 
 		const observers = this._observers[data.eventName];
 		if (observers) {
-			Observable._handleEvent(observers, dataWithObject);
+			Observable._fireEvent(observers, dataWithObject);
 		}
 
 		this._globalNotify(eventClass, '', dataWithObject);
 	}
 
-	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
-		if (!observers.length) {
+	private static _fireEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
+		const length = observers.length;
+
+		if (!length) {
 			return;
 		}
 
-		for (let i = observers.length - 1; i >= 0; i--) {
-			const entry = observers[i];
-			if (!entry) {
-				continue;
-			}
+		if (length === 1) {
+			const index = 0;
+			this._handleListenerEntry<T>(observers[index], index, observers, data);
+		} else {
+			// This keeps a copy of observers list to ensure concurrency
+			const observersCp = observers.slice();
 
-			if (entry.once) {
-				observers.splice(i, 1);
+			for (let i = 0; i < length; i++) {
+				const entry = observersCp[i];
+				this._handleListenerEntry<T>(entry, i, observers, data);
 			}
+		}
+	}
 
-			const returnValue = entry.thisArg ? entry.callback.apply(entry.thisArg, [data]) : entry.callback(data);
+	private static _handleListenerEntry<T extends EventData>(entry: ListenerEntry, index: number, observers: Array<ListenerEntry>, data: T): void {
+		if (!entry) {
+			return;
+		}
 
-			// This ensures errors thrown inside asynchronous functions do not get swallowed
-			if (returnValue instanceof Promise) {
-				returnValue.catch((err) => {
-					console.error(err);
-				});
-			}
+		if (entry.once) {
+			observers.splice(index, 1);
+		}
+
+		const returnValue = entry.thisArg ? entry.callback.apply(entry.thisArg, [data]) : entry.callback(data);
+
+		// This ensures errors thrown inside asynchronous functions do not get swallowed
+		if (returnValue instanceof Promise) {
+			returnValue.catch((err) => {
+				console.error(err);
+			});
 		}
 	}
 

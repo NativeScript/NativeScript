@@ -100,6 +100,7 @@ export namespace CoreTypes {
 	export namespace WhiteSpace {
 		export const normal = 'normal';
 		export const nowrap = 'nowrap';
+		export const wrap = 'wrap';
 	}
 
 	export type TextOverflowType = 'clip' | 'ellipsis' | CSSWideKeywords;
@@ -123,13 +124,15 @@ export namespace CoreTypes {
 		export const unknown = 'unknown';
 	}
 
-	export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch' | CSSWideKeywords;
+	export type HorizontalAlignmentType = 'start' | 'left' | 'center' | 'right' | 'end' | 'stretch' | CSSWideKeywords;
 	export namespace HorizontalAlignment {
+		export const start = 'start';
 		export const left = 'left';
 		export const center = 'center';
 		export const right = 'right';
+		export const end = 'end';
 		export const stretch = 'stretch';
-		export const isValid = makeValidator<HorizontalAlignmentType>(left, center, right, stretch);
+		export const isValid = makeValidator<HorizontalAlignmentType>(start, left, center, right, end, stretch);
 		export const parse = makeParser<HorizontalAlignmentType>(isValid);
 	}
 
@@ -290,6 +293,12 @@ export namespace CoreTypes {
 		export const light = 'light';
 		export const dark = 'dark';
 	}
+
+	export type LayoutDirectionType = 'ltr' | 'rtl';
+	export namespace LayoutDirection {
+		export const ltr = 'ltr';
+		export const rtl = 'rtl';
+	}
 }
 
 /**
@@ -374,6 +383,7 @@ export const Enums = {
 	StatusBarStyle: CoreTypes.StatusBarStyle,
 	Stretch: CoreTypes.ImageStretch,
 	SystemAppearance: CoreTypes.SystemAppearance,
+	LayoutDirection: CoreTypes.LayoutDirection,
 	TextAlignment: CoreTypes.TextAlignment,
 	TextDecoration: CoreTypes.TextDecoration,
 	TextTransform: CoreTypes.TextTransform,

@@ -43,6 +43,11 @@ export namespace layout {
 	export function makeMeasureSpec(px: number, mode: number): number;
 
 	/**
+	 * Checks whether application has RTL support.
+	 */
+	export function hasRtlSupport(): boolean;
+
+	/**
 	 * Gets display density for the current device.
 	 */
 	export function getDisplayDensity(): number;

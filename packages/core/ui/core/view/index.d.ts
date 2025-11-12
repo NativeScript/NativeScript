@@ -8,8 +8,8 @@ import { ShadowCSSValues } from '../../styling/css-shadow';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
 import { ViewBase } from '../view-base';
-import { GlassEffectType, ViewCommon } from './view-common';
-import type { Point } from './view-interfaces';
+import { ViewCommon } from './view-common';
+import type { Point, ShownModallyData } from './view-interfaces';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -96,6 +96,11 @@ export abstract class View extends ViewCommon {
 	 * @nsEvent {EventDataValue} androidOverflowInset
 	 */
 	public static androidOverflowInsetEvent: string;
+
+	/**
+	 * @private
+	 */
+	public static _hasRtlSupport: boolean;
 
 	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
@@ -389,6 +394,13 @@ export abstract class View extends ViewCommon {
 	boxShadow: string | ShadowCSSValues[];
 
 	/**
+	 * Gets or sets the layout direction of the view.
+	 *
+	 * @nsProperty
+	 */
+	direction: CoreTypes.LayoutDirectionType;
+
+	/**
 	 * Gets or sets the minimum width the view may grow to.
 	 *
 	 * @nsProperty
@@ -638,7 +650,7 @@ export abstract class View extends ViewCommon {
 	public touchDelay: number;
 
 	/**
-	 * Gets is layout is valid. This is a read-only property.
+	 * Gets if layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;
 

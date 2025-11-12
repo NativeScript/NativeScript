@@ -1,0 +1,16 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"files": [],
+	"include": [],
+	"compilerOptions": {
+		"moduleResolution": "bundler"
+	},
+	"references": [
+		{
+			"path": "./tsconfig.lib.json"
+		},
+		{
+			"path": "./tsconfig.spec.json"
+		}
+	]
+}

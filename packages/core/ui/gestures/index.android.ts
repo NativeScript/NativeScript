@@ -441,7 +441,7 @@ function _getPanArgs(deltaX: number, deltaY: number, view: View, state: GestureS
 
 function _executeCallback(observer: GesturesObserver, args: GestureEventData) {
 	if (observer && observer.callback) {
-		observer.callback.call((<any>observer)._context, args);
+		observer.callback.call(observer.context, args);
 	}
 }
 
