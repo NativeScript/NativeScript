@@ -8,7 +8,7 @@ import { Screen } from '../platform/screen';
 import { Trace } from '../trace';
 import { Optional } from '../utils/typescript-utils';
 
-type MediaQueryLegacyEventCb = (this: MediaQueryList, ev: MediaQueryListEvent) => any;
+export type MediaQueryLegacyEventCb = (this: MediaQueryList, ev: MediaQueryListEvent) => any;
 
 export interface MediaQueryListEvent {
 	readonly matches: boolean;
@@ -92,7 +92,7 @@ export class MediaQueryList extends Observable {
 	private readonly mMedia: string;
 	private mMatches: boolean;
 
-	private _onChange: (this: MediaQueryList, ev: MediaQueryListEvent) => any;
+	private _onChange: MediaQueryLegacyEventCb;
 	private mediaQueryChangeListeners: Map<MediaQueryLegacyEventCb, (data: EventData) => void>;
 
 	constructor() {
@@ -168,7 +168,7 @@ export class MediaQueryList extends Observable {
 		this.mediaQueryChangeListeners.set(callback, wrapperCallback);
 	}
 
-	removeListener(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any): void {
+	removeListener(callback: MediaQueryLegacyEventCb): void {
 		const mediaChangeListeners = this.mediaQueryChangeListeners;
 
 		if (mediaChangeListeners && mediaChangeListeners.has(callback)) {
@@ -178,11 +178,11 @@ export class MediaQueryList extends Observable {
 		}
 	}
 
-	public get onchange(): (this: MediaQueryList, ev: MediaQueryListEvent) => any {
+	public get onchange(): MediaQueryLegacyEventCb {
 		return this._onChange;
 	}
 
-	public set onchange(callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any) {
+	public set onchange(callback: MediaQueryLegacyEventCb) {
 		// Remove old listener if any
 		if (this._onChange) {
 			this.removeListener(this._onChange);
@@ -193,5 +193,13 @@ export class MediaQueryList extends Observable {
 		}
 
 		this._onChange = callback;
+	}
+
+	toJSON() {
+		return {
+			media: this.media,
+			matches: this.matches,
+			onchange: this.onchange,
+		} as this;
 	}
 }
