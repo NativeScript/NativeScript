@@ -3,6 +3,14 @@ import { View as ViewDefinition } from '..';
 import { CoreTypes } from '../../../../core-types';
 import { layout, Trace } from './view-helper-shared';
 
+const globalAny: any = global;
+function debugLayoutChild(tag: string, payload: Record<string, unknown>): void {
+	if (!globalAny.__nsProfiling?.debug) {
+		return;
+	}
+	console.log(`[layout-child-debug:${tag}]`, payload);
+}
+
 export class ViewHelper {
 	public static measureChild(parent: ViewDefinition, child: ViewDefinition, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
 		let measureWidth = 0;
@@ -125,6 +133,19 @@ export class ViewHelper {
 		const childBottom = Math.round(childTop + childHeight);
 		childLeft = Math.round(childLeft);
 		childTop = Math.round(childTop);
+		debugLayoutChild('computed', {
+			parent: `${child.parent}`,
+			child: `${child}`,
+			hAlignment,
+			vAlignment,
+			left,
+			right,
+			childMeasuredWidth: child.getMeasuredWidth(),
+			effectiveMarginLeft,
+			effectiveMarginRight,
+			computedLeft: childLeft,
+			computedRight: childRight,
+		});
 
 		if (Trace.isEnabled()) {
 			Trace.write(child.parent + ' :layoutChild: ' + child + ' ' + childLeft + ', ' + childTop + ', ' + childRight + ', ' + childBottom, Trace.categories.Layout);

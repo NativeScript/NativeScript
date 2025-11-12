@@ -1072,6 +1072,12 @@ export abstract class ViewCommon extends ViewBase {
 
 	public requestLayout(): void {
 		this._isLayoutValid = false;
+		if ((<any>global).__nsProfiling?.debug) {
+			console.log('[layout-debug:invalidate]', {
+				view: `${this}`,
+				isLayoutValid: this._isLayoutValid,
+			});
+		}
 		super.requestLayout();
 	}
 

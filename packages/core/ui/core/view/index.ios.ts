@@ -77,6 +77,12 @@ export class View extends ViewCommon {
 
 	public requestLayout(): void {
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
+		if (global.__nsProfiling?.debug) {
+			console.log('[layout-debug:request-layout]', {
+				view: `${this}`,
+				parent: `${this.parent}`,
+			});
+		}
 		super.requestLayout();
 
 		const nativeView = this.nativeViewProtected;
