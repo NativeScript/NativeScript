@@ -1,7 +1,6 @@
 name: Release Workflow
 
 on:
-  # Manual trigger so environment reviewers can explicitly approve production publishes.
   workflow_dispatch:
     inputs:
       dist-tag:
@@ -57,7 +56,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
@@ -68,7 +67,6 @@ jobs:
         run: npm run setup
 
       # Collect a one-time password (OTP) from a reviewer via the environment approval gate.
-      # The value is provided securely at approval time and not stored in repo secrets.
       - id: wait_for_otp
         name: Wait for npm OTP (2FA)
         if: ${{ inputs.dry-run == false }}
@@ -117,7 +115,6 @@ jobs:
       - name: nx release publish
         if: ${{ inputs.dry-run == false }}
         env:
-          # Map the OTP obtained from wait-for-secrets into npm's standard environment variable
           NPM_CONFIG_OTP: ${{ steps.wait_for_otp.outputs.NPM_OTP }}
           # For npm provenance via OIDC
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
@@ -136,13 +133,6 @@ jobs:
         run: |
           echo "Nx Release completed."
           echo "- dist-tag: $NPM_DIST_TAG"
-          # Notes for maintainers:
-          echo "- dry-run: ${{ inputs.dry-run }}"
-          # 2) Create another Environment "npm-publish-dry-run" (can be unprotected) used only for dry-run testing.
-          # 3) Add repo secret NPM_PUBLISH_TOKEN with publish rights to the @nativescript scope. Keep 2FA enabled on the npm account.
-          # 4) Optionally add NX_CLOUD_ACCESS_TOKEN if you use Nx Cloud.
-          # 5) The release tag pattern is driven by nx.json (e.g., {version}-{projectName}); this workflow does not override it.
-          # 6) To test safely, run with input dry-run = true. This will NOT request OTP, push, or publish.
 
         run: |
           echo "Nx Release publish completed for tag: ${GITHUB_REF#refs/tags/} with dist-tag: ${NPM_DIST_TAG}"
