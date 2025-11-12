@@ -92,8 +92,8 @@ export class MediaQueryList extends Observable {
 	private readonly mMedia: string;
 	private mMatches: boolean;
 
-	private _onChange: MediaQueryEventCallback;
-	private mediaQueryChangeListeners: Map<MediaQueryEventCallback, (data: EventData) => void>;
+	private mOnchange: MediaQueryEventCallback;
+	private mMediaQueryChangeListeners: Map<MediaQueryEventCallback, (data: EventData) => void>;
 
 	constructor() {
 		super();
@@ -162,14 +162,14 @@ export class MediaQueryList extends Observable {
 		// Call this method first since it throws in the case of bad parameters
 		this.addEventListener(MediaQueryList.changeEvent, wrapperCallback);
 
-		if (!this.mediaQueryChangeListeners) {
-			this.mediaQueryChangeListeners = new Map();
+		if (!this.mMediaQueryChangeListeners) {
+			this.mMediaQueryChangeListeners = new Map();
 		}
-		this.mediaQueryChangeListeners.set(callback, wrapperCallback);
+		this.mMediaQueryChangeListeners.set(callback, wrapperCallback);
 	}
 
 	removeListener(callback: MediaQueryEventCallback): void {
-		const mediaChangeListeners = this.mediaQueryChangeListeners;
+		const mediaChangeListeners = this.mMediaQueryChangeListeners;
 
 		if (mediaChangeListeners && mediaChangeListeners.has(callback)) {
 			// Call this method first since it throws in the case of bad parameters
@@ -179,20 +179,20 @@ export class MediaQueryList extends Observable {
 	}
 
 	public get onchange(): MediaQueryEventCallback {
-		return this._onChange;
+		return this.mOnchange;
 	}
 
 	public set onchange(callback: MediaQueryEventCallback) {
 		// Remove old listener if any
-		if (this._onChange) {
-			this.removeListener(this._onChange);
+		if (this.mOnchange) {
+			this.removeListener(this.mOnchange);
 		}
 
 		if (callback) {
 			this.addListener(callback);
 		}
 
-		this._onChange = callback;
+		this.mOnchange = callback;
 	}
 
 	toJSON() {
