@@ -1,11 +1,8 @@
 import { ApplicationEventName, ApplicationEventNames } from '../application/application-event-names';
 import type { ApplicationEventData } from '../application/application-interfaces';
-import { getApplicationProperties } from '../application/helpers-common';
-import { matchQuery, MediaQueryType } from '../css-mediaquery';
+import { checkIfMediaQueryMatches } from '../css-mediaquery';
 import { EventData, Observable } from '../data/observable';
 import { getNativeScriptGlobals } from '../globals/global-utils';
-import { Screen } from '../platform/screen';
-import { Trace } from '../trace';
 import { Optional } from '../utils/typescript-utils';
 
 export type MediaQueryEventCallback = (this: MediaQueryList, ev: MediaQueryListEvent) => any;
@@ -43,30 +40,6 @@ function onDeviceChange(args: ApplicationEventData) {
 			});
 		}
 	}
-}
-
-export function checkIfMediaQueryMatches(mediaQueryString: string): boolean {
-	const { widthPixels, heightPixels } = Screen.mainScreen;
-
-	let matches: boolean;
-
-	try {
-		const appProperties = getApplicationProperties();
-		matches = matchQuery(mediaQueryString, {
-			type: MediaQueryType.screen,
-			width: widthPixels,
-			height: heightPixels,
-			'device-width': widthPixels,
-			'device-height': heightPixels,
-			orientation: appProperties.orientation,
-			'prefers-color-scheme': appProperties.systemAppearance,
-		});
-	} catch (err) {
-		matches = false;
-		Trace.write(err, Trace.categories.MediaQuery, Trace.messageType.error);
-	}
-
-	return matches;
 }
 
 export function matchMedia(mediaQueryString: string): MediaQueryList {

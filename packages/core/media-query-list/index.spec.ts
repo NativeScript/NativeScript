@@ -1,18 +1,8 @@
-import { matchMedia, checkIfMediaQueryMatches, MediaQueryList } from '.';
+import { matchMedia, MediaQueryList } from '.';
 import { Screen } from '../platform';
 
 describe('media-query-list', () => {
 	const { widthDIPs } = Screen.mainScreen;
-
-	describe('checkIfMediaQueryMatches', () => {
-		it('should return true for a correct match', () => {
-			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs})`)).toBe(true);
-		});
-
-		it('should return false for an incorrect match', () => {
-			expect(checkIfMediaQueryMatches(`only screen and (max-width: ${widthDIPs - 1})`)).toBe(false);
-		});
-	});
 
 	describe('matchMedia', () => {
 		it('should return a MediaQueryList that matches the css media query', () => {
