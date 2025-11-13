@@ -1,4 +1,4 @@
-<SplitView xmlns="http://schemas.nativescript.org/tns.xsd" displayMode="allVisible" splitBehavior="tile"
+<SplitView xmlns="http://schemas.nativescript.org/tns.xsd" displayMode="twoBesideSecondary" splitBehavior="tile"
 preferredPrimaryColumnWidthFraction="0.26" preferredSupplementaryColumnWidthFraction="0.28"
 preferredInspectorColumnWidthFraction="0.18">
   <Frame splitRole="primary" defaultPage="split-view/split-view-primary">
