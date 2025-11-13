@@ -9,7 +9,9 @@ export function makeValidator<T>(...values: T[]): (value: any) => value is T {
 export function makeParser<T>(isValid: (value: any) => boolean, allowNumbers = false): (value: any) => T {
 	return (value) => {
 		const lower = value && value.toLowerCase();
-		if (isValid(lower)) {
+		if (isValid(value)) {
+			return value;
+		} else if (isValid(lower)) {
 			return lower;
 		} else {
 			if (allowNumbers) {
