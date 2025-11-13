@@ -1,10 +1,10 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-  <ActionBar title="Detail" class="action-bar" iosLargeTitle="true" />
+  <ActionBar title="Detail" class="action-bar" />
 
   <ScrollView>
-    <StackLayout padding="32 28 48" backgroundColor="#ffffff">
+    <StackLayout padding="28" backgroundColor="#ffffff">
       <Label text="Secondary View" textTransform="uppercase" fontSize="12" color="#636366" marginBottom="8" />
-      <Label text="{{ selectedBrief ? selectedBrief.title : 'Choose a brief' }}" fontSize="28" fontWeight="700" textWrap="true" marginBottom="8" />
+      <Label text="{{ selectedBrief ? selectedBrief.category : 'Choose a brief' }}" fontSize="28" fontWeight="700" textWrap="true" marginBottom="8" />
       <Label text="{{ selectedBrief ? selectedBrief.status : '' }}" fontSize="14" color="#6e6e73" marginBottom="8" />
       <Label text="{{ selectedBrief ? selectedBrief.notes : '' }}" textWrap="true" color="#1c1c1e" marginBottom="16" />
 

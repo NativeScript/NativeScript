@@ -1,32 +1,24 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" backgroundColor="#f2f2f7">
   <ActionBar title="Briefs" class="action-bar" iosLargeTitle="true" />
-
-  <GridLayout rows="auto,*" backgroundColor="#f2f2f7">
-    <StackLayout row="0" padding="24 20 4">
-      <Label text="Workspaces" textTransform="uppercase" fontSize="12" color="#636366" />
-      <Label text="Choose a brief to preview" fontSize="24" fontWeight="bold" marginTop="4" />
-      <Label text="Primary column drives the rest of the split view." color="#8e8e93" />
-    </StackLayout>
 
     <ListView row="1" items="{{ briefs }}" itemTap="{{ onItemTap }}" separatorColor="#00ffffff" backgroundColor="#f2f2f7">
       <ListView.itemTemplate>
-        <GridLayout rows="auto,auto,auto" columns="auto,*" padding="16" margin="0 16 12" borderRadius="18" backgroundColor="white" rowSpacing="6">
+        <GridLayout rows="auto,auto,auto" columns="auto,*" padding="16" margin="12 16 12" borderRadius="18" backgroundColor="white" rowSpacing="6">
           <StackLayout col="0" rowSpan="3" width="5" borderRadius="3" backgroundColor="{{ accent }}" />
 
-          <GridLayout col="1" row="0" columns="*,auto">
+          <GridLayout col="1" row="0" columns="*,auto" marginLeft="4">
             <Label col="0" text="{{ title }}" fontSize="18" fontWeight="600" />
             <Label col="1" text="{{ status }}" fontSize="12" color="#6e6e73" padding="2 8" borderRadius="10" backgroundColor="#f2f2f7" marginLeft="12" />
           </GridLayout>
 
-          <Label col="1" row="1" text="{{ summary }}" textWrap="true" color="#6e6e73" />
+          <Label col="1" row="1" text="{{ summary }}" textWrap="true" fontSize="14" color="#6e6e73" marginLeft="4" />
 
-          <GridLayout col="1" row="2" columns="auto,*" verticalAlignment="center">
+          <GridLayout col="1" row="2" columns="auto,*" verticalAlignment="center" marginLeft="4">
             <Label col="0" text="{{ category }}" fontSize="13" color="#0a84ff" />
             <Label col="1" text="{{ updated }}" fontSize="12" color="#8e8e93" marginLeft="12" />
           </GridLayout>
         </GridLayout>
       </ListView.itemTemplate>
     </ListView>
-  </GridLayout>
 
 </Page>

@@ -1,5 +1,5 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-  <ActionBar title="Overview" class="action-bar" iosLargeTitle="true" />
+  <ActionBar title="Overview" class="action-bar" />
 
   <ScrollView>
     <StackLayout padding="28" backgroundColor="#f8f8fb">

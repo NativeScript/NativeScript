@@ -5,11 +5,11 @@ preferredInspectorColumnWidthFraction="0.18">
 
   </Frame>
 
-  <Frame splitRole="secondary" defaultPage="split-view/split-view-secondary">
+  <Frame splitRole="supplementary" defaultPage="split-view/split-view-supplement">
 
   </Frame>
 
-  <Frame splitRole="supplementary" defaultPage="split-view/split-view-supplement">
+  <Frame splitRole="secondary" defaultPage="split-view/split-view-secondary">
 
   </Frame>
 
