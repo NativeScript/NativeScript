@@ -1,10 +1,37 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-  <ActionBar title="Supplementary View" class="action-bar">
-  </ActionBar>
-  <!-- Supplementary column (detail) -->
-  <StackLayout class="p-16">
-    <Label text="Supplementary" marginBottom="12" fontSize="22" fontWeight="bold" />
-    <Label text="{{ selectedItem }}" textWrap="true" tap="{{toggle}}" />
-  </StackLayout>
+  <ActionBar title="Overview" class="action-bar" iosLargeTitle="true" />
+
+  <ScrollView>
+    <StackLayout padding="28" backgroundColor="#f8f8fb">
+      <Label text="Supplementary View" textTransform="uppercase" fontSize="12" color="#636366" marginBottom="8" />
+      <Label text="{{ selectedBrief ? selectedBrief.title : 'Pick a brief on the left' }}" fontSize="22" fontWeight="700" textWrap="true" marginBottom="8" />
+      <Label text="{{ selectedBrief ? selectedBrief.summary : '' }}" textWrap="true" color="#1c1c1e" marginBottom="18" />
+
+      <StackLayout orientation="horizontal" marginBottom="18">
+        <StackLayout marginRight="16">
+          <Label text="Owner" fontSize="12" color="#6e6e73" textTransform="uppercase" />
+          <Label text="{{ selectedBrief ? selectedBrief.owner : '' }}" fontSize="16" fontWeight="600" />
+        </StackLayout>
+        <StackLayout>
+          <Label text="Updated" fontSize="12" color="#6e6e73" textTransform="uppercase" />
+          <Label text="{{ selectedBrief ? selectedBrief.updated : '' }}" fontSize="16" />
+        </StackLayout>
+      </StackLayout>
+
+      <StackLayout marginBottom="18">
+        <Label text="Highlights" fontSize="16" fontWeight="600" />
+        <Repeater items="{{ selectedBrief ? selectedBrief.highlights : [] }}">
+          <Repeater.itemTemplate>
+            <StackLayout padding="14" marginTop="10" borderRadius="14" backgroundColor="#ffffff">
+              <Label text="{{ label }}" fontSize="12" color="#636366" textTransform="uppercase" />
+              <Label text="{{ value }}" textWrap="true" fontSize="16" fontWeight="500" />
+            </StackLayout>
+          </Repeater.itemTemplate>
+        </Repeater>
+      </StackLayout>
+
+      <Label text="Show list" color="#0a84ff" tap="{{ toggle }}" />
+    </StackLayout>
+  </ScrollView>
 
 </Page>

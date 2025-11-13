@@ -1,13 +1,29 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-  <ActionBar title="Primary View" class="action-bar" iosLargeTitle="true"></ActionBar>
+  <ActionBar title="Briefs" class="action-bar" iosLargeTitle="true" />
 
-  <!-- Primary column (master) -->
-  <GridLayout rows="auto,*">
-    <!-- <Label text="Primary" marginBottom="12" marginLeft="8" fontSize="22" fontWeight="bold" /> -->
-    <ListView row="1" items="{{ items }}" itemTap="{{ onItemTap }}" backgroundColor="white">
+  <GridLayout rows="auto,*" backgroundColor="#f2f2f7">
+    <StackLayout row="0" padding="24 20 4">
+      <Label text="Workspaces" textTransform="uppercase" fontSize="12" color="#636366" />
+      <Label text="Choose a brief to preview" fontSize="24" fontWeight="bold" marginTop="4" />
+      <Label text="Primary column drives the rest of the split view." color="#8e8e93" />
+    </StackLayout>
+
+    <ListView row="1" items="{{ briefs }}" itemTap="{{ onItemTap }}" separatorColor="#00ffffff" backgroundColor="#f2f2f7">
       <ListView.itemTemplate>
-        <GridLayout padding="12">
-          <Label text="{{ $value }}" fontSize="18" />
+        <GridLayout rows="auto,auto,auto" columns="auto,*" padding="16" margin="0 16 12" borderRadius="18" backgroundColor="white" rowSpacing="6">
+          <StackLayout col="0" rowSpan="3" width="5" borderRadius="3" backgroundColor="{{ accent }}" />
+
+          <GridLayout col="1" row="0" columns="*,auto">
+            <Label col="0" text="{{ title }}" fontSize="18" fontWeight="600" />
+            <Label col="1" text="{{ status }}" fontSize="12" color="#6e6e73" padding="2 8" borderRadius="10" backgroundColor="#f2f2f7" marginLeft="12" />
+          </GridLayout>
+
+          <Label col="1" row="1" text="{{ summary }}" textWrap="true" color="#6e6e73" />
+
+          <GridLayout col="1" row="2" columns="auto,*" verticalAlignment="center">
+            <Label col="0" text="{{ category }}" fontSize="13" color="#0a84ff" />
+            <Label col="1" text="{{ updated }}" fontSize="12" color="#8e8e93" marginLeft="12" />
+          </GridLayout>
         </GridLayout>
       </ListView.itemTemplate>
     </ListView>

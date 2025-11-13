@@ -1,11 +1,33 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-  <ActionBar title="Secondary View" class="action-bar">
-  </ActionBar>
-  <!-- Secondary column (detail) -->
-  <StackLayout class="p-16">
-    <Label text="Secondary" marginBottom="12" fontSize="22" fontWeight="bold" />
-    <Label text="{{ selectedItem }}" textWrap="true" tap="{{toggle}}" />
-    <Label text="Show Inspector" tap="{{toggleInspector}}" class="m-t-10 font-weight-bold" visibility="{{ showInspectorButton ? 'visible' : 'collapsed' }}" />
-  </StackLayout>
+  <ActionBar title="Detail" class="action-bar" iosLargeTitle="true" />
+
+  <ScrollView>
+    <StackLayout padding="32 28 48" backgroundColor="#ffffff">
+      <Label text="Secondary View" textTransform="uppercase" fontSize="12" color="#636366" marginBottom="8" />
+      <Label text="{{ selectedBrief ? selectedBrief.title : 'Choose a brief' }}" fontSize="28" fontWeight="700" textWrap="true" marginBottom="8" />
+      <Label text="{{ selectedBrief ? selectedBrief.status : '' }}" fontSize="14" color="#6e6e73" marginBottom="8" />
+      <Label text="{{ selectedBrief ? selectedBrief.notes : '' }}" textWrap="true" color="#1c1c1e" marginBottom="16" />
+
+      <StackLayout marginBottom="16">
+        <Label text="Action Items" fontSize="16" fontWeight="600" />
+        <Repeater items="{{ selectedBrief ? selectedBrief.actions : [] }}">
+          <Repeater.itemTemplate>
+            <GridLayout columns="auto,*" marginTop="8" verticalAlignment="center">
+              <Label col="0" text="•" fontSize="18" color="#0a84ff" />
+              <Label col="1" text="{{ $value }}" textWrap="true" color="#1c1c1e" marginLeft="12" />
+            </GridLayout>
+          </Repeater.itemTemplate>
+        </Repeater>
+      </StackLayout>
+
+      <StackLayout marginBottom="16">
+        <Label text="Latest update" fontSize="13" color="#6e6e73" />
+        <Label text="{{ selectedBrief ? selectedBrief.tagline : '' }}" fontSize="16" fontWeight="600" textWrap="true" />
+        <Label text="{{ selectedBrief ? selectedBrief.updated : '' }}" fontSize="13" color="#8e8e93" />
+      </StackLayout>
+
+      <Button text="Show Inspector" tap="{{ toggleInspector }}" class="btn btn-primary" visibility="{{ showInspectorButton ? 'visible' : 'collapsed' }}" />
+    </StackLayout>
+  </ScrollView>
 
 </Page>

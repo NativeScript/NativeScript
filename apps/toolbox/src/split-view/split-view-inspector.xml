@@ -1,0 +1,45 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <ActionBar title="Inspector" class="action-bar" iosLargeTitle="true" />
+
+  <ScrollView>
+    <StackLayout padding="24" backgroundColor="#f2f2f7">
+      <Label text="Inspector" textTransform="uppercase" fontSize="12" color="#636366" marginBottom="8" />
+      <Label text="{{ selectedBrief ? selectedBrief.title : 'Choose a brief' }}" fontSize="20" fontWeight="700" textWrap="true" marginBottom="8" />
+      <Label text="{{ selectedBrief ? selectedBrief.tagline : '' }}" textWrap="true" color="#6e6e73" marginBottom="18" />
+
+      <Label text="Project Stats" fontSize="15" fontWeight="600" marginBottom="8" />
+      <Repeater items="{{ selectedBrief ? selectedBrief.metrics : [] }}">
+        <Repeater.itemsLayout>
+          <StackLayout />
+        </Repeater.itemsLayout>
+        <Repeater.itemTemplate>
+          <StackLayout padding="14" marginBottom="10" borderRadius="16" backgroundColor="#ffffff">
+            <Label text="{{ label }}" fontSize="12" color="#636366" textTransform="uppercase" />
+            <Label text="{{ value }}" fontSize="18" fontWeight="600" />
+          </StackLayout>
+        </Repeater.itemTemplate>
+      </Repeater>
+
+      <Label text="Contributors" fontSize="15" fontWeight="600" marginTop="12" marginBottom="8" />
+      <Repeater items="{{ selectedBrief ? selectedBrief.contributors : [] }}">
+        <Repeater.itemsLayout>
+          <FlexboxLayout flexWrap="wrap" />
+        </Repeater.itemsLayout>
+        <Repeater.itemTemplate>
+          <Label text="{{ $value }}" padding="6 14" margin="6 6 0 0" borderRadius="18" backgroundColor="#ffffff" />
+        </Repeater.itemTemplate>
+      </Repeater>
+
+      <Label text="Tags" fontSize="15" fontWeight="600" marginTop="12" marginBottom="8" />
+      <Repeater items="{{ selectedBrief ? selectedBrief.tags : [] }}">
+        <Repeater.itemsLayout>
+          <FlexboxLayout flexWrap="wrap" />
+        </Repeater.itemsLayout>
+        <Repeater.itemTemplate>
+          <Label text="{{ $value }}" padding="4 12" margin="6 6 0 0" borderRadius="14" backgroundColor="#e5e5ea" color="#1c1c1e" />
+        </Repeater.itemTemplate>
+      </Repeater>
+    </StackLayout>
+  </ScrollView>
+
+</Page>

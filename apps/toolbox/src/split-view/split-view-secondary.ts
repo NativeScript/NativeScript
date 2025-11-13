@@ -1,5 +1,5 @@
 import { Observable, EventData, Page, SplitView } from '@nativescript/core';
-import { setItemCallbacks } from './split-view-root';
+import { SplitViewBrief, setItemCallbacks } from './split-view-root';
 let page: Page;
 
 export function navigatingTo(args: EventData) {
@@ -8,7 +8,7 @@ export function navigatingTo(args: EventData) {
 }
 
 export class SplitViewSecondaryModel extends Observable {
-	selectedItem = `Select an item from Primary.`;
+	selectedBrief: SplitViewBrief | null = null;
 	showInspectorButton = false;
 
 	constructor() {
@@ -28,8 +28,8 @@ export class SplitViewSecondaryModel extends Observable {
 		SplitView.getInstance()?.showInspector();
 	}
 
-	changeItem(item: any) {
-		this.selectedItem = item;
-		this.notifyPropertyChange('selectedItem', item);
+	changeItem(item: SplitViewBrief) {
+		this.selectedBrief = item;
+		this.notifyPropertyChange('selectedBrief', item);
 	}
 }
