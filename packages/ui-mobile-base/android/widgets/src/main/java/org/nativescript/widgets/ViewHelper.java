@@ -382,7 +382,7 @@ public class ViewHelper {
 		return result;
 	}
 
-	public static void setHorizontalAlignment(android.view.View view, String value, Boolean rtl) throws Throwable {
+	public static void setHorizontalAlignment(android.view.View view, String value, boolean rtl) throws Throwable {
 		ViewGroup.LayoutParams params = view.getLayoutParams();
 		// Initialize if empty.
 		if (params == null) {
