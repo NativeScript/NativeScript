@@ -1,0 +1,1 @@
+export { CubicBezierAnimationCurve }  from './../../core-types/animation-types'

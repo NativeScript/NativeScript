@@ -1,7 +1,7 @@
 import { Application, ApplicationEventData } from '../application';
 import { Trace } from '../trace';
 import { SDK_VERSION } from '../utils/constants';
-import { resources } from '../utils/android';
+import { resources } from '../utils/native-helper-for-android';
 import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';
