@@ -106,6 +106,7 @@ export class Style extends Observable {
 	}
 
 	public fontInternal: Font;
+	public iconFontFamily: string;
 	/**
 	 * This property ensures inheritance of a11y scale among views.
 	 */
@@ -150,7 +151,9 @@ export class Style extends Observable {
 	public borderBottomRightRadius: CoreTypes.LengthType;
 	public borderBottomLeftRadius: CoreTypes.LengthType;
 
-	public boxShadow: ShadowCSSValues;
+	public boxShadow: string | ShadowCSSValues[];
+
+	public direction: CoreTypes.LayoutDirectionType;
 
 	public fontSize: number;
 	public fontFamily: string;

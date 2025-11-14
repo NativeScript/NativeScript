@@ -16,6 +16,7 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
 	private _title = '';
 	private _view: View;
 	private _iconSource: string;
+	iconFontFamily: string;
 
 	get textTransform(): CoreTypes.TextTransformType {
 		return this.style.textTransform;
@@ -95,6 +96,16 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 	public androidSwipeEnabled: boolean;
 	public iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
 	public androidIconRenderingMode: 'alwaysOriginal' | 'alwaysTemplate';
+	/**
+	 * iOS 26+: Optional bottom accessory view that appears beneath the tab bar.
+	 * Provide a NativeScript View instance. On platforms < iOS 26 this is ignored.
+	 */
+	public iosBottomAccessory: View;
+
+	/**
+	 * iOS 26+: Controls tab bar minimize behavior. One of: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp'.
+	 */
+	public iosTabBarMinimizeBehavior: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp';
 
 	get androidSelectedTabHighlightColor(): Color {
 		return this.style.androidSelectedTabHighlightColor;
@@ -273,6 +284,20 @@ export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({
 });
 androidSwipeEnabledProperty.register(TabViewBase);
 
+// iOS 26 bottom accessory support
+export const iosBottomAccessoryProperty = new Property<TabViewBase, View>({
+	name: 'iosBottomAccessory',
+});
+iosBottomAccessoryProperty.register(TabViewBase);
+
+// iOS 26 tab bar minimize behavior
+export type TabBarMinimizeType = 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp';
+export const iosTabBarMinimizeBehaviorProperty = new Property<TabViewBase, TabBarMinimizeType>({
+	name: 'iosTabBarMinimizeBehavior',
+	defaultValue: 'automatic',
+});
+iosTabBarMinimizeBehaviorProperty.register(TabViewBase);
+
 export const tabTextFontSizeProperty = new CssProperty<Style, number>({
 	name: 'tabTextFontSize',
 	cssName: 'tab-text-font-size',
@@ -287,6 +312,12 @@ export const tabTextColorProperty = new CssProperty<Style, Color>({
 	valueConverter: colorConverter,
 });
 tabTextColorProperty.register(Style);
+
+export const iconFontFamilyProperty = new CssProperty<Style, string>({
+	name: 'iconFontFamily',
+	cssName: 'icon-font-family',
+});
+iconFontFamilyProperty.register(Style);
 
 export const tabBackgroundColorProperty = new CssProperty<Style, Color>({
 	name: 'tabBackgroundColor',

@@ -81,6 +81,12 @@ export function mainThreadify(func: Function): (...args: any[]) => void;
 export function isFontIconURI(uri: string): boolean;
 
 /**
+ * Returns true if the specified URI is a system URI like "sys://...".
+ * @param uri The URI.
+ */
+export function isSystemURI(uri: string): boolean;
+
+/**
  * Returns true if the specified path points to a resource or local file.
  * @param path The path.
  */

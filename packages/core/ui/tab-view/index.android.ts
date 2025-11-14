@@ -9,6 +9,7 @@ import { Trace } from '../../trace';
 import { Color } from '../../color';
 import { fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
 import { RESOURCE_PREFIX, android as androidUtils, layout } from '../../utils';
+import { FONT_PREFIX, isFontIconURI } from '../../utils/common';
 import { Frame } from '../frame';
 import { getApplicationContext } from '../../application/helpers.android';
 import { AndroidHelper } from '../core/view';
@@ -249,19 +250,31 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
 	result.title = item.title;
 
 	if (item.iconSource) {
-		if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-			result.iconId = androidUtils.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
-			if (result.iconId === 0) {
-				traceMissingIcon(item.iconSource);
-			}
-		} else {
-			const is = ImageSource.fromFileOrResourceSync(item.iconSource);
+		const addDrawable = (is: ImageSource) => {
 			if (is) {
 				// TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
 				result.iconDrawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
 			} else {
 				traceMissingIcon(item.iconSource);
 			}
+		};
+		if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+			result.iconId = androidUtils.resources.getDrawableId(item.iconSource.slice(RESOURCE_PREFIX.length));
+			if (result.iconId === 0) {
+				traceMissingIcon(item.iconSource);
+			}
+		} else if (isFontIconURI(item.iconSource)) {
+			// Allow specifying a separate font family for the icon via style.iconFontFamily.
+			let iconFont: any = item.style.fontInternal;
+			const iconFontFamily = item.iconFontFamily || item.style.iconFontFamily;
+			if (iconFontFamily) {
+				const baseFont = item.style.fontInternal || Font.default;
+				iconFont = baseFont.withFontFamily(iconFontFamily);
+			}
+			const is = ImageSource.fromFontIconCodeSync(item.iconSource.slice(FONT_PREFIX.length), iconFont, item.style.color);
+			addDrawable(is);
+		} else {
+			addDrawable(ImageSource.fromFileOrResourceSync(item.iconSource));
 		}
 	}
 

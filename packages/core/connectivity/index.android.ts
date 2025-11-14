@@ -1,6 +1,6 @@
 import { getApplicationContext } from '../application/helpers.android';
-import { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver } from '../application/helpers';
 import { SDK_VERSION } from '../utils/constants';
+import { Application } from '../application';
 
 export enum connectionType {
 	none = 0,
@@ -110,7 +110,7 @@ function startMonitoringLegacy(connectionTypeChangedCallback) {
 		connectionTypeChangedCallback(newConnectionType);
 	};
 	const zoneCallback = zonedCallback(onReceiveCallback);
-	androidRegisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
+	Application.android.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
 }
 
 let callback;
@@ -171,6 +171,6 @@ export function stopMonitoring(): void {
 			callback = null;
 		}
 	} else {
-		androidUnregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
+		Application.android.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
 	}
 }

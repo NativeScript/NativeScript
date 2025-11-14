@@ -79,6 +79,10 @@ export interface ShowModalOptions {
 		 * height of the popup dialog
 		 */
 		height?: number;
+		/**
+		 * The preferred status bar style for the modal view
+		 */
+		statusBarStyle?: 'light' | 'dark';
 	};
 	android?: {
 		/**
@@ -1136,6 +1140,32 @@ export abstract class ViewBase extends Observable {
 	 */
 	public initNativeView(): void {
 		//
+	}
+
+	/**
+	 * Resets properties/listeners set to the native view.
+	 */
+	public resetNativeView(): void {
+		//
+	}
+
+	private resetNativeViewInternal(): void {
+		// const nativeView = this.nativeViewProtected;
+		// if (nativeView && __ANDROID__) {
+		//     const recycle = this.recycleNativeView;
+		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
+		//         resetNativeView(this);
+		//         if (this._isPaddingRelative) {
+		//             nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+		//         } else {
+		//             nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+		//         }
+		//         this.resetNativeView();
+		//     }
+		// }
+		// if (this._cssState) {
+		//     this._cancelAllAnimations();
+		// }
 	}
 
 	/**

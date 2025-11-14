@@ -14,6 +14,7 @@
     "@nativescript/android": "*",
     "@nativescript/ios": "*",
     "@nativescript/visionos": "*",
+    "@nativescript/vite": "*",
     "@nativescript/webpack": "*",
     "circular-dependency-plugin": "^5.2.2",
     "typescript": "~5.8.0"

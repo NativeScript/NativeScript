@@ -30,6 +30,12 @@ export class ListView extends View {
 	 * @nsEvent itemLoading
 	 */
 	public static loadMoreItemsEvent: string;
+	/**
+	 * String value used when hooking to searchChange event.
+	 *
+	 * @nsEvent {SearchEventData} searchChange
+	 */
+	public static searchChangeEvent: string;
 
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
@@ -100,6 +106,62 @@ export class ListView extends View {
 	iosEstimatedRowHeight: CoreTypes.LengthType;
 
 	/**
+	 * Gets or sets a value indicating whether the ListView should display sticky headers.
+	 * When enabled, headers will remain visible at the top while scrolling through sections.
+	 *
+	 * @nsProperty
+	 */
+	stickyHeader: boolean;
+
+	/**
+	 * Gets or sets the template for sticky headers.
+	 *
+	 * @nsProperty
+	 */
+	stickyHeaderTemplate: string | Template;
+
+	/**
+	 * Gets or sets the height of sticky headers.
+	 *
+	 * @nsProperty
+	 */
+	stickyHeaderHeight: CoreTypes.LengthType;
+
+	/**
+	 * Gets or sets a value indicating whether the ListView should show default top padding above section headers.
+	 * When set to false (default), removes iOS default spacing for a tighter layout.
+	 * When set to true, preserves iOS default ~4-5px spacing above section headers.
+	 *
+	 * @nsProperty
+	 */
+	stickyHeaderTopPadding: boolean;
+
+	/**
+	 * Gets or sets a value indicating whether the ListView should treat items as sectioned data.
+	 * When enabled, items array should contain objects with 'items' property for section content.
+	 * Each section will have its own sticky header.
+	 *
+	 * @nsProperty
+	 */
+	sectioned: boolean;
+
+	/**
+	 * Gets or sets whether search functionality is enabled.
+	 * When enabled on iOS, uses native UISearchController for optimal performance.
+	 *
+	 * @nsProperty
+	 */
+	showSearch: boolean;
+
+	/**
+	 * Gets or sets whether the search bar should auto-hide when scrolling (iOS only).
+	 * When true, the search bar will automatically hide when the user scrolls down
+	 * and reappear when scrolling up, using iOS native behavior.
+	 * Only applies when showSearch is true and running on iOS with navigation controller.
+	 *
+	 * @nsProperty
+	 */
+	searchAutoHide: boolean; /**
 	 * Forces the ListView to reload all its items.
 	 */
 	refresh();
@@ -155,6 +217,11 @@ export class ListView extends View {
 	 * Raised when the ListView is scrolled so that its last item is visible.
 	 */
 	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any): void;
+
+	/**
+	 * Raised when the search text in the search bar changes.
+	 */
+	on(event: 'searchChange', callback: (args: SearchEventData) => void, thisArg?: any): void;
 }
 
 /**
@@ -165,6 +232,11 @@ export interface ItemEventData extends EventData {
 	 * The index of the item, for which the event is raised.
 	 */
 	index: number;
+
+	/**
+	 * When data is sectioned (any platform that supports sections), this is the section index for the item.
+	 */
+	section?: number;
 
 	/**
 	 * The view that is associated to the item, for which the event is raised.
@@ -180,6 +252,26 @@ export interface ItemEventData extends EventData {
 	 * Gets the native [android widget](http://developer.android.com/reference/android/view/ViewGroup.html) that represents the user interface where the view is hosted. Valid only when running on Android OS.
 	 */
 	android: any /* android.view.ViewGroup */;
+}
+
+/**
+ * Event data containing information for the search text change event.
+ */
+export interface SearchEventData extends EventData {
+	/**
+	 * The current search text value.
+	 */
+	text: string;
+
+	/**
+	 * Gets the native [iOS UISearchController](https://developer.apple.com/documentation/uikit/uisearchcontroller) that represents the search controller. Valid only when running on iOS.
+	 */
+	ios?: any /* UISearchController */;
+
+	/**
+	 * Gets the native Android search view. Valid only when running on Android OS.
+	 */
+	android?: any;
 }
 
 export interface ItemsSource {
@@ -230,3 +322,38 @@ export const iosEstimatedRowHeightProperty: Property<ListView, CoreTypes.LengthT
  * Backing property for separator color property.
  */
 export const separatorColorProperty: CssProperty<Style, Color>;
+
+/**
+ * Represents the observable property backing the stickyHeader property of each ListView instance.
+ */
+export const stickyHeaderProperty: Property<ListView, boolean>;
+
+/**
+ * Represents the sticky header template property of each ListView instance.
+ */
+export const stickyHeaderTemplateProperty: Property<ListView, string | Template>;
+
+/**
+ * Represents the observable property backing the stickyHeaderHeight property of each ListView instance.
+ */
+export const stickyHeaderHeightProperty: Property<ListView, CoreTypes.LengthType>;
+
+/**
+ * Represents the observable property backing the stickyHeaderTopPadding property of each ListView instance.
+ */
+export const stickyHeaderTopPaddingProperty: Property<ListView, boolean>;
+
+/**
+ * Represents the observable property backing the sectioned property of each ListView instance.
+ */
+export const sectionedProperty: Property<ListView, boolean>;
+
+/**
+ * Represents the observable property backing the showSearch property of each ListView instance.
+ */
+export const showSearchProperty: Property<ListView, boolean>;
+
+/**
+ * Represents the observable property backing the searchAutoHide property of each ListView instance.
+ */
+export const searchAutoHideProperty: Property<ListView, boolean>;

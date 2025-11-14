@@ -6,6 +6,7 @@ import { NavigationTransition, BackstackEntry } from '.';
 import { Transition } from '../transition';
 import { FlipTransition } from '../transition/flip-transition';
 import { _resolveAnimationCurve } from '../animation';
+import { CoreTypes } from '../enums';
 import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
 import { FadeTransition } from '../transition/fade-transition';
@@ -57,7 +58,7 @@ export interface ExpandedEntry extends BackstackEntry {
 	isNestedDefaultTransition: boolean;
 }
 
-export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, isNestedDefaultTransition?: boolean): void {
+export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, layoutDirection: CoreTypes.LayoutDirectionType, isNestedDefaultTransition?: boolean): void {
 	const currentFragment: androidx.fragment.app.Fragment = currentEntry ? currentEntry.fragment : null;
 	const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 	const entries = waitingQueue.get(frameId);
@@ -131,12 +132,14 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 	} else if (name === 'default') {
 		transition = new FadeTransition(150, null);
 	} else if (name.indexOf('slide') === 0) {
-		const direction = name.substring('slide'.length) || 'left'; //Extract the direction from the string
+		const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'right' : 'left';
+		const direction = name.substring('slide'.length) || defaultDirection; // Extract the direction from the string
 		transition = new SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
 	} else if (name === 'fade') {
 		transition = new FadeTransition(navigationTransition.duration, navigationTransition.curve);
 	} else if (name.indexOf('flip') === 0) {
-		const direction = name.substring('flip'.length) || 'right'; //Extract the direction from the string
+		const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'left' : 'right';
+		const direction = name.substring('flip'.length) || defaultDirection; // Extract the direction from the string
 		transition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
 	}
 	if (transition) {

@@ -1,0 +1,39 @@
+{
+	"name": "vite",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "packages/vite",
+	"projectType": "library",
+	"generators": {},
+	"namedInputs": {
+		"default": ["{projectRoot}/**/*"],
+		"production": ["!{projectRoot}/**/*.spec.ts"]
+	},
+	"targets": {
+		"lint": {
+			"executor": "@nx/eslint:lint",
+			"options": {
+				"lintFilePatterns": ["packages/vite/**/*.ts", "packages/vite/**/*.spec.ts", "packages/vite/**/*.spec.tsx", "packages/vite/**/*.d.ts"]
+			}
+		},
+		"build": {
+			"executor": "@nx/js:tsc",
+			"inputs": ["default", "^production"],
+			"outputs": ["{workspaceRoot}/dist/packages/vite"],
+			"options": {
+				"tsConfig": "{projectRoot}/tsconfig.lib.json",
+				"outputPath": "{workspaceRoot}/dist/packages/vite",
+				"rootDir": "{projectRoot}",
+				"main": "{projectRoot}/index.ts",
+				"assets": ["{workspaceRoot}/LICENSE", "{projectRoot}/README.md"]
+			},
+			"dependsOn": ["^build"]
+		},
+		"test": {
+			"executor": "@nx/vite:test",
+			"outputs": ["{options.reportsDirectory}"],
+			"options": {
+				"reportsDirectory": "../../coverage/packages/vite"
+			}
+		}
+	}
+}

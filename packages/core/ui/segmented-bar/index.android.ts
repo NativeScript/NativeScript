@@ -7,6 +7,7 @@ import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { VIEW_GONE } from '../core/view/index.android';
 import { Trace } from '../../trace';
+import { CoreTypes } from '../../core-types';
 
 export * from './segmented-bar-common';
 
@@ -75,12 +76,14 @@ function initializeNativeClasses(): void {
 
 		createTabContent(tag: string): android.view.View {
 			const tv = new android.widget.TextView(this.owner._context);
+			const isRtl = this.owner.direction === CoreTypes.LayoutDirection.rtl;
+
 			// This is collapsed by default and made visible
 			// by android when TabItem becomes visible/selected.
 			// TODO: Try commenting visibility change.
 			tv.setVisibility(VIEW_GONE);
 			tv.setMaxLines(1);
-			tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+			tv.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 
 			return tv;
 		}

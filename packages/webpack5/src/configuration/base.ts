@@ -24,6 +24,7 @@ import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
 import { getIPS } from '../helpers/host';
+import FixSourceMapUrlPlugin from '../plugins/FixSourceMapUrlPlugin';
 import {
 	getAvailablePlatforms,
 	getAbsoluteDistPath,
@@ -178,32 +179,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// For ESM builds, fix the sourceMappingURL to use correct paths
 	if (!env.commonjs && sourceMapType && sourceMapType !== 'hidden-source-map') {
-		class FixSourceMapUrlPlugin {
-			apply(compiler) {
-				compiler.hooks.emit.tap('FixSourceMapUrlPlugin', (compilation) => {
-          const leadingCharacter = process.platform === "win32" ? "/":"";
-					Object.keys(compilation.assets).forEach((filename) => {
-						if (filename.endsWith('.mjs') || filename.endsWith('.js')) {
-							const asset = compilation.assets[filename];
-							let source = asset.source();
-
-							// Replace sourceMappingURL to use file:// protocol pointing to actual location
-							source = source.replace(
-								/\/\/# sourceMappingURL=(.+\.map)/g,
-								`//# sourceMappingURL=file://${leadingCharacter}${outputPath}/$1`,
-							);
-
-							compilation.assets[filename] = {
-								source: () => source,
-								size: () => source.length,
-							};
-						}
-					});
-				});
-			}
-		}
-
-		config.plugin('FixSourceMapUrlPlugin').use(FixSourceMapUrlPlugin);
+		config
+			.plugin('FixSourceMapUrlPlugin')
+			.use(FixSourceMapUrlPlugin as any, [{ outputPath }]);
 	}
 
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
@@ -476,7 +454,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 					before: [require('../transformers/NativeClass').default],
 				};
 			},
-		});
+		})
+		.end()
+		// Ensure pre-loaders run BEFORE ts-loader (loaders execute right-to-left):
+		// order: [ts-loader, native-class-downlevel-loader, native-class-strip-loader]
+		// execution: strip -> downlevel -> ts-loader
+		.use('native-class-downlevel-loader')
+		.loader('native-class-downlevel-loader')
+		.end()
+		.use('native-class-strip-loader')
+		.loader('native-class-strip-loader');
 
 	// Use Fork TS Checker to do type checking in a separate non-blocking process
 	config.when(hasDependency('typescript'), (config) => {

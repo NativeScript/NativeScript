@@ -91,6 +91,15 @@ export class Button extends ButtonBase {
 		super.disposeNativeView();
 	}
 
+	public resetNativeView(): void {
+		super.resetNativeView();
+
+		if (this._stateListAnimator && SDK_VERSION >= 21) {
+			this.nativeViewProtected.setStateListAnimator(this._stateListAnimator);
+			this._stateListAnimator = undefined;
+		}
+	}
+
 	@PseudoClassHandler('normal', 'highlighted', 'pressed', 'active')
 	_updateButtonStateChangeHandler(subscribe: boolean) {
 		if (subscribe) {
@@ -158,7 +167,7 @@ export class Button extends ButtonBase {
 	}
 
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
-		// Button initial value is center.
+		// Button initial value is center
 		const newValue = value === 'initial' ? 'center' : value;
 		super[textAlignmentProperty.setNative](newValue);
 	}

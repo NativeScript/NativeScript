@@ -6,7 +6,8 @@ import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
 import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
-import { Property, InheritedProperty } from '../properties';
+import { Property, InheritedProperty, CssProperty } from '../properties';
+import { Style } from '../../styling/style';
 import { EventData } from '../../../data/observable';
 import { ViewHelper } from './view-helper';
 
@@ -76,12 +77,26 @@ export abstract class ViewCommon extends ViewBase {
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
 	public static closingModallyEvent = 'closingModally';
+	public static accessibilityBlurEvent = accessibilityBlurEvent;
+	public static accessibilityFocusEvent = accessibilityFocusEvent;
+	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
+	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+	public static androidOverflowInsetEvent = 'androidOverflowInset';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
 	public accessibilityValue: string;
 	public accessibilityHint: string;
 	public accessibilityIgnoresInvertColors: boolean;
+
+	public originX: number;
+	public originY: number;
+	public isEnabled: boolean;
+	public isUserInteractionEnabled: boolean;
+	public iosOverflowSafeArea: boolean;
+	public iosOverflowSafeAreaEnabled: boolean;
+	public iosIgnoreSafeArea: boolean;
+	public androidOverflowEdge: CoreTypes.AndroidOverflow;
 
 	public testID: string;
 
@@ -94,6 +109,11 @@ export abstract class ViewCommon extends ViewBase {
 	 */
 	public visionHoverStyle: string | VisionHoverOptions;
 	public visionIgnoreHoverStyle: boolean;
+
+	/**
+	 * iOS 26+ Glass
+	 */
+	iosGlassEffect: GlassEffectType;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -196,6 +216,12 @@ export abstract class ViewCommon extends ViewBase {
 		super.onLoaded();
 
 		setupAccessibleView(this);
+
+		if (this.statusBarStyle) {
+			// reapply status bar style on load
+			// helps back navigation cases to restore if overridden
+			this.updateStatusBarStyle(this.statusBarStyle);
+		}
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -745,17 +771,23 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.backgroundRepeat = value;
 	}
 
-	get boxShadow(): ShadowCSSValues {
+	get boxShadow(): string | ShadowCSSValues[] {
 		return this.style.boxShadow;
 	}
-	set boxShadow(value: ShadowCSSValues) {
+	set boxShadow(value: string | ShadowCSSValues[]) {
 		this.style.boxShadow = value;
+	}
+
+	get direction(): CoreTypes.LayoutDirectionType {
+		return this.style.direction;
+	}
+	set direction(value: CoreTypes.LayoutDirectionType) {
+		this.style.direction = value;
 	}
 
 	get minWidth(): CoreTypes.LengthType {
 		return this.style.minWidth;
 	}
-
 	set minWidth(value: CoreTypes.LengthType) {
 		this.style.minWidth = value;
 	}
@@ -999,15 +1031,15 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.androidDynamicElevationOffset = value;
 	}
 
-	//END Style property shortcuts
+	/**
+	 * (Android only) Gets closest window parent considering modals.
+	 */
+	getClosestWindow(): android.view.Window {
+		// platform impl
+		return null;
+	}
 
-	public originX: number;
-	public originY: number;
-	public isEnabled: boolean;
-	public isUserInteractionEnabled: boolean;
-	public iosOverflowSafeArea: boolean;
-	public iosOverflowSafeAreaEnabled: boolean;
-	public iosIgnoreSafeArea: boolean;
+	//END Style property shortcuts
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
@@ -1022,6 +1054,17 @@ export abstract class ViewCommon extends ViewBase {
 	}
 	set cssType(type: string) {
 		this._cssType = type.toLowerCase();
+	}
+
+	get statusBarStyle(): 'light' | 'dark' {
+		return this.style.statusBarStyle;
+	}
+	set statusBarStyle(value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light') {
+		// platform specific impl
 	}
 
 	get isLayoutRequired(): boolean {
@@ -1198,13 +1241,13 @@ export abstract class ViewCommon extends ViewBase {
 		return false;
 	}
 
-	// public resetNativeView(): void {
-	// 	if (this._localAnimations) {
-	// 		this._localAnimations.forEach((a) => this._removeAnimation(a));
-	// 	}
+	public resetNativeView(): void {
+		if (this._localAnimations) {
+			this._localAnimations.forEach((a) => this._removeAnimation(a));
+		}
 
-	// 	super.resetNativeView();
-	// }
+		super.resetNativeView();
+	}
 
 	public _modifyNativeViewFrame(nativeView: any, frame: any) {
 		//
@@ -1269,6 +1312,32 @@ export abstract class ViewCommon extends ViewBase {
 		return false;
 	}
 
+	/**
+	 * Shared helper method for applying glass effects to views.
+	 * This method can be used by View and its subclasses (LiquidGlass, LiquidGlassContainer, etc.)
+	 * iOS only at the moment but could be applied to others once supported in other platforms.
+	 *
+	 * @param value - The glass effect configuration
+	 * @param options - Configuration options for different glass effect behaviors
+	 * @param options.effectType - Type of effect to create: 'glass' | 'container'
+	 * @param options.targetView - The UIVisualEffectView to apply the effect to (if updating existing view)
+	 * @param options.toGlassStyleFn - Custom function to convert variant to UIGlassEffectStyle
+	 * @param options.onCreate - Callback when a new effect view is created (for initial setup)
+	 * @param options.onUpdate - Callback when an existing effect view is updated
+	 */
+	protected _applyGlassEffect(
+		value: GlassEffectType,
+		options: {
+			effectType: 'glass' | 'container';
+			targetView?: UIVisualEffectView;
+			toGlassStyleFn?: (variant?: GlassEffectVariant) => number;
+			onCreate?: (effectView: UIVisualEffectView, effect: UIVisualEffect) => void;
+			onUpdate?: (effectView: UIVisualEffectView, effect: UIVisualEffect, duration: number) => void;
+		},
+	): UIVisualEffectView | undefined {
+		return undefined;
+	}
+
 	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
 		return;
 	}
@@ -1323,6 +1392,15 @@ export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean
 });
 isUserInteractionEnabledProperty.register(ViewCommon);
 
+/**
+ * Property backing statusBarStyle.
+ */
+export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
+	name: 'statusBarStyle',
+	cssName: 'status-bar-style',
+});
+statusBarStyleProperty.register(Style);
+
 // Apple only
 export const iosOverflowSafeAreaProperty = new Property<ViewCommon, boolean>({
 	name: 'iosOverflowSafeArea',
@@ -1344,11 +1422,29 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
 
+export const androidOverflowEdgeProperty = new Property<ViewCommon, CoreTypes.AndroidOverflow>({
+	name: 'androidOverflowEdge',
+	defaultValue: 'ignore',
+});
+androidOverflowEdgeProperty.register(ViewCommon);
+
 /**
  * Glass effects
  */
-export type GlassEffectVariant = 'regular' | 'clear' | 'identity';
-export type GlassEffectConfig = { variant?: GlassEffectVariant; interactive?: boolean; tint: string | Color };
+export type GlassEffectVariant = 'regular' | 'clear' | 'identity' | 'none';
+export type GlassEffectConfig = {
+	variant?: GlassEffectVariant;
+	interactive?: boolean;
+	tint?: string | Color;
+	/**
+	 * (LiquidGlassContainer only) spacing between child elements (default is 8)
+	 */
+	spacing?: number;
+	/**
+	 * Duration in milliseconds to animate effect changes (default is 300ms)
+	 */
+	animateChangeDuration?: number;
+};
 export type GlassEffectType = GlassEffectVariant | GlassEffectConfig;
 export const iosGlassEffectProperty = new Property<ViewCommon, GlassEffectType>({
 	name: 'iosGlassEffect',

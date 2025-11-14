@@ -10,9 +10,7 @@ export class BoxShadowModel extends Observable {
 	private _selectedBackgroundType: string;
 	private _selectedBorderType: string;
 	private _selectedAnimation: string;
-	private _boxShadow: string = '0 0 2 2 rgba(200, 0, 0, 0.4)';
-	// private _boxShadow: string = '5 5 1 1 rgba(255, 0, 0, .9)';
-	// private _boxShadow: string = '5 5 5 10 rgba(255, 0, 0, .9)';
+	private _boxShadow: string = '-5 -5 5 5 rgba(200, 0, 0, 0.5), 5 5 5 5 rgba(0, 99, 0, 0.5)';
 
 	background: string;
 	borderColor: string;
@@ -139,7 +137,7 @@ export class BoxShadowModel extends Observable {
 						width: originalWidth,
 						duration: animationDuration,
 						curve,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);
@@ -157,7 +155,7 @@ export class BoxShadowModel extends Observable {
 						height: originalHeight,
 						duration: animationDuration,
 						curve,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);
@@ -180,7 +178,7 @@ export class BoxShadowModel extends Observable {
 						translate: { x: 0, y: 0 },
 						duration: animationDuration,
 						curve,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);

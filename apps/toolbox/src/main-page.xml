@@ -1,6 +1,6 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" androidOverflowEdge="bottom" statusBarStyle="dark">
   <Page.actionBar>
-    <ActionBar title="Dev Toolbox" icon="" class="action-bar" iosLargeTitle="true" iosShadow="false">
+    <ActionBar title="Dev Toolbox" icon="" class="action-bar">
     </ActionBar>
   </Page.actionBar>
   <StackLayout>
@@ -18,9 +18,13 @@
         <Button text="image-handling" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="labels" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="list-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="list-page-sticky" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="multiple-scenes" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="scroll-view" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="status-bar" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="switch" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="tabview" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="touch-animations" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="transitions" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="vector-image" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
@@ -32,3 +36,4 @@
     </ScrollView>
   </StackLayout>
 </Page>
+

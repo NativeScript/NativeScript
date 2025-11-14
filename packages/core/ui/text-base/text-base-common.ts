@@ -18,10 +18,12 @@ import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
 const CHILD_FORMATTED_TEXT = 'formattedText';
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
+	public static iosTextAnimationFallback = true;
+
+	public _isManualRtlTextStyleNeeded: boolean;
 	public text: string;
 	public formattedText: FormattedString;
 	public iosTextAnimation: 'inherit' | boolean;
-	static iosTextAnimationFallback = true;
 
 	/***
 	 * In the NativeScript Core; by default the nativeTextViewProtected points to the same value as nativeViewProtected.
@@ -228,7 +230,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 export function isBold(fontWeight: FontWeightType): boolean {
 	return fontWeight === 'bold' || fontWeight === '700' || fontWeight === '800' || fontWeight === '900';
 }
-// TextBaseCommon.prototype._isSingleLine = false;
+TextBaseCommon.prototype._isManualRtlTextStyleNeeded = false;
 
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',

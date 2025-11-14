@@ -267,3 +267,75 @@ Button {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* Multiple Scenes Demo Styles */
+
+.card {
+    background-color: #f8f9fa;
+    border-radius: 12;
+    border-width: 1;
+    border-color: #e9ecef;
+    margin-bottom: 15;
+}
+
+.code-block {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    padding: 15;
+    border-radius: 8;
+    font-family: "Courier New", monospace;
+    font-size: 12;
+}
+
+.event-item {
+    background-color: #f1f3f4;
+    border-radius: 6;
+    margin-bottom: 5;
+}
+
+.event-item:nth-child(even) {
+    background-color: #e8eaed;
+}
+
+.border {
+    border-width: 1;
+    border-color: #dee2e6;
+    border-radius: 8;
+    background-color: white;
+}
+
+.btn {
+    border-radius: 8;
+    font-weight: bold;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #007bff;
+    border-width: 2;
+    border-color: #007bff;
+}
+
+.h3 {
+    font-size: 18;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.body {
+    font-size: 14;
+    color: #495057;
+}
+
+.caption {
+    font-size: 12;
+    color: #6c757d;
+}
+
+.font-weight-bold {
+    font-weight: bold;
+}
+
+.text-center {
+    text-align: center;
+}

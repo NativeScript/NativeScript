@@ -3,7 +3,7 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 import { Font } from '../styling/font';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../styling/style-properties';
 import { Length } from '../styling/length-shared';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
@@ -18,58 +18,6 @@ import { testIDProperty } from '../core/view';
 import { isCssWideKeyword } from '../core/properties/property-shared';
 
 export * from './text-base-common';
-
-// let TextTransformation: TextTransformation;
-
-// export interface TextTransformation {
-// 	new (owner: WeakRef<TextBase>): any /* android.text.method.TransformationMethod */;
-// }
-
-// function initializeTextTransformation(): void {
-// 	if (TextTransformation) {
-// 		return;
-// 	}
-
-// 	@NativeClass
-// 	@Interfaces([android.text.method.TransformationMethod])
-// 	class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
-// 		constructor(public owner: WeakRef<TextBase>) {
-// 			super();
-
-// 			return global.__native(this);
-// 		}
-
-// 		public getTransformation(charSeq: any, view: android.view.View): any {
-// 			const owner = this.owner?.get();
-// 			if (!owner) {
-// 				return charSeq;
-// 			}
-// 			if (owner.ignoreNextTransform) {
-// 				owner.ignoreNextTransform = false;
-// 				return charSeq;
-// 			}
-// 			const transform = owner.textTransform;
-// 			if (transform === 'none') {
-// 				return charSeq
-// 			}
-// 			// NOTE: Do we need to transform the new text here?
-// 			const formattedText = owner.formattedText;
-// 			if (formattedText) {
-// 				return owner.createFormattedTextNative(formattedText);;
-// 			} else {
-// 				const text = owner.text;
-// 				const stringValue = isNullOrUndefined(text) ? '' : text.toString();
-// 				return getTransformedText(stringValue, transform);
-// 			}
-// 		}
-
-// 		public onFocusChanged(view: android.view.View, sourceText: string, focused: boolean, direction: number, previouslyFocusedRect: android.graphics.Rect): void {
-// 			// Do nothing for now.
-// 		}
-// 	}
-
-// 	TextTransformation = TextTransformationImpl;
-// }
 
 interface ClickableSpan {
 	new (owner: Span): android.text.style.ClickableSpan;
@@ -181,12 +129,7 @@ function initializeBaselineAdjustedSpan(): void {
 export class TextBase extends TextBaseCommon {
 	public nativeViewProtected: org.nativescript.widgets.StyleableTextView;
 
-	private _defaultTransformationMethod: android.text.method.TransformationMethod;
 	private _paintFlags: number;
-	private _minHeight: number;
-	private _maxHeight: number;
-	private _minLines: number;
-	private _maxLines: number;
 	private _tappable = false;
 	private _defaultMovementMethod: android.text.method.MovementMethod;
 	// so that we dont set fontInternal when setting fontSize (useless)
@@ -196,29 +139,25 @@ export class TextBase extends TextBaseCommon {
 		return super.nativeTextViewProtected;
 	}
 
-	// public initNativeView(): void {
-	// 	super.initNativeView();
-	// 	initializeTextTransformation();
-	// 	const nativeView = this.nativeTextViewProtected;
-	// 	this._defaultTransformationMethod = nativeView.getTransformationMethod();
-	// 	this._defaultMovementMethod = nativeView.getMovementMethod();
-	// 	this._minHeight = nativeView.getMinHeight();
-	// 	this._maxHeight = nativeView.getMaxHeight();
-	// 	this._minLines = nativeView.getMinLines();
-	// 	this._maxLines = nativeView.getMaxLines();
-	// }
+	public initNativeView(): void {
+		super.initNativeView();
+
+		const nativeView = this.nativeTextViewProtected;
+
+		// Fix for custom font over-height issue on Android
+		// Disable font padding to prevent extra spacing around text
+		nativeView.setIncludeFontPadding(false);
+
+		if (layout.hasRtlSupport() && this._isManualRtlTextStyleNeeded) {
+			// This is a default to match iOS layout direction behaviour
+			nativeView.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
+		}
+	}
 
 	public disposeNativeView(): void {
 		super.disposeNativeView();
 
 		this._tappable = false;
-		// this._defaultTransformationMethod = null;
-		// this._defaultMovementMethod = null;
-		// this._paintFlags = 0;
-		// this._minHeight = 0;
-		// this._maxHeight = 0;
-		// this._minLines = 0;
-		// this._maxLines = 0;
 	}
 
 	// public resetNativeView(): void {
@@ -319,19 +258,42 @@ export class TextBase extends TextBaseCommon {
 		return 'initial';
 	}
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
+		// TextAlignment API has no effect unless app has rtl support defined in manifest
+		const supportsRtlTextAlign = layout.hasRtlSupport() && this._isManualRtlTextStyleNeeded;
 		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+
+		// In the cases of left and right, use gravity alignment as TEXT_ALIGNMENT_TEXT_START
+		// and TEXT_ALIGNMENT_TEXT_END are affected by text direction
+		// Also, gravity start seem to affect text direction based on language, so use gravity left and right respectively
 		switch (value) {
+			case 'left':
+			case 'justify':
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_GRAVITY);
+				}
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.LEFT | verticalGravity);
+				break;
 			case 'center':
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;
 			case 'right':
-				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_GRAVITY);
+				}
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.RIGHT | verticalGravity);
 				break;
 			default:
-				// initial | left | justify
+				// initial
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
+				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
 		}
+
 		if (SDK_VERSION >= 26) {
 			if (value === 'justify') {
 				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD);
@@ -351,6 +313,14 @@ export class TextBase extends TextBaseCommon {
 		this.adjustLineBreak();
 	}
 
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		// Handle text ellipsis
+		if (this.whiteSpace === 'nowrap' || this.maxLines > 0) {
+			this.nativeTextViewProtected.setEllipsize(value === CoreTypes.LayoutDirection.rtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
+		}
+		super[directionProperty.setNative](value);
+	}
+
 	private adjustLineBreak() {
 		const whiteSpace = this.whiteSpace;
 		const textOverflow = this.textOverflow;
@@ -358,22 +328,25 @@ export class TextBase extends TextBaseCommon {
 		switch (whiteSpace) {
 			case 'initial':
 			case 'normal':
+			case 'wrap':
 				nativeView.setSingleLine(false);
 				nativeView.setEllipsize(null);
 				break;
-			case 'nowrap':
+			case 'nowrap': {
+				const isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
+
 				switch (textOverflow) {
 					case 'initial':
 					case 'ellipsis':
 						nativeView.setSingleLine(true);
-						nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
 						break;
 					default:
 						nativeView.setSingleLine(false);
-						nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
 						break;
 				}
+				nativeView.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 				break;
+			}
 		}
 	}
 
@@ -514,8 +487,10 @@ export class TextBase extends TextBaseCommon {
 		if (value <= 0) {
 			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);
 		} else {
+			const isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
+
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
-			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
+			nativeTextViewProtected.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 		}
 	}
 

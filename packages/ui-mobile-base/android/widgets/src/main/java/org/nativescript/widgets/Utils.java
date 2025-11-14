@@ -2,14 +2,16 @@ package org.nativescript.widgets;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -23,6 +25,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.SystemBarStyle;
+import androidx.annotation.ColorInt;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
 import androidx.exifinterface.media.ExifInterface;
@@ -39,7 +44,52 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+
 public class Utils {
+
+	public interface HandleDarkMode {
+		boolean onHandle(int bar, Resources resources);
+	}
+
+	enum HandleDarkModeBar {
+		status(0),
+		navigation(1);
+
+		private final int mValue;
+
+		HandleDarkModeBar(int i) {
+			this.mValue = i;
+		}
+
+		public int getValue() {
+			return this.mValue;
+		}
+	}
+
+	// The light scrim color used in the platform API 29+
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/com/android/internal/policy/DecorView.java;drc=6ef0f022c333385dba2c294e35b8de544455bf19;l=142
+	static final int DefaultLightScrim = Color.argb(0xe6, 0xFF, 0xFF, 0xFF);
+
+	// The dark scrim color used in the platform.
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/res/res/color/system_bar_background_semi_transparent.xml
+// https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/res/remote_color_resources_res/values/colors.xml;l=67
+	static final int DefaultDarkScrim = Color.argb(0x80, 0x1b, 0x1b, 0x1b);
+
+	public static void enableEdgeToEdge(ComponentActivity activity) {
+		androidx.activity.EdgeToEdge.enable(activity);
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, HandleDarkMode handleDarkMode) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)), SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources)));
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(statusBarLight, statusBarDark), SystemBarStyle.auto(navigationBarLight, navigationBarDark));
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
+		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(statusBarLight, statusBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)), SystemBarStyle.auto(navigationBarLight, navigationBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources)));
+	}
 
 	public static Drawable getDrawable(String uri, Context context) {
 		int resId = 0;
@@ -68,7 +118,8 @@ public class Utils {
 			bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
 		}
 		Canvas canvas = new Canvas(bitmap);
-		if (!ViewCompat.isLaidOut(view)) {
+		// ViewCompat.isLaidOut is deprecated; View#isLaidOut is available since API 19
+		if (!view.isLaidOut()) {
 			view.layout(0, 0, width, height);
 		}
 		view.draw(canvas);
@@ -116,23 +167,55 @@ public class Utils {
 		}
 	}
 
-	public static void drawBoxShadow(View view, String value) {
+	@SuppressWarnings("deprecation")
+	private static void clipCanvasOutPathLegacy(Canvas canvas, Path clipPath) {
+		canvas.clipPath(clipPath, Region.Op.DIFFERENCE);
+	}
+
+	public static void clipCanvasOutPath(Canvas canvas, Path clipPath) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			canvas.clipOutPath(clipPath);
+		} else {
+			clipCanvasOutPathLegacy(canvas, clipPath);
+		}
+	}
+
+	public static void drawBoxShadow(View view, int[] values) {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
 		}
 
-		Drawable currentBg = view.getBackground();
+		Drawable background = view.getBackground();
+		Drawable wrappedBg;
 
-		if (currentBg instanceof BoxShadowDrawable) {
-			((BoxShadowDrawable) currentBg).setValue(value);
-		} else {
-			if (currentBg == null) {
-				currentBg = new ColorDrawable(Color.TRANSPARENT);
+		if (background != null) {
+			Log.d("BoxShadowDrawable", "current background is: " + background.getClass().getName());
+
+			if (background instanceof BoxShadowDrawable) {
+				wrappedBg = ((BoxShadowDrawable) background).getWrappedDrawable();
+
+				if (wrappedBg != null) {
+					Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + wrappedBg.getClass().getName());
+				}
+			} else {
+				wrappedBg = background;
 			}
-			view.setBackground(new BoxShadowDrawable(currentBg, value));
+		} else {
+			wrappedBg = null;
 		}
 
-		if (view.getParent() != null && view.getParent() instanceof ViewGroup) {
+		// replace background
+		Log.d("BoxShadowDrawable", "replacing background with new BoxShadowDrawable...");
+		view.setBackground(new BoxShadowDrawable(wrappedBg, values));
+
+		background = view.getBackground();
+		if (background != null) {
+			Log.d("BoxShadowDrawable", "new background is: " + background.getClass().getName());
+		}
+
+		int count = 0;
+		while (view.getParent() != null && view.getParent() instanceof ViewGroup) {
+			count++;
 			ViewGroup parent = (ViewGroup) view.getParent();
 			parent.setClipChildren(false);
 		}
@@ -160,6 +243,36 @@ public class Utils {
 		int height;
 		boolean keepAspectRatio;
 		boolean autoScaleFactor;
+	}
+
+	private static int parsePositiveInt(JSONObject object, String key) {
+		if (object == null || key == null) {
+			return 0;
+		}
+		try {
+			if (!object.has(key) || object.isNull(key)) {
+				return 0;
+			}
+			Object value = object.get(key);
+			if (value instanceof Number) {
+				int parsed = (int) Math.floor(((Number) value).doubleValue());
+				return parsed > 0 ? parsed : 0;
+			}
+			if (value instanceof String) {
+				String s = ((String) value).trim();
+				if (s.length() == 0) {
+					return 0;
+				}
+				try {
+					int parsed = Integer.parseInt(s);
+					return parsed > 0 ? parsed : 0;
+				} catch (NumberFormatException ignored) {
+					return 0;
+				}
+			}
+		} catch (JSONException ignored) {
+		}
+		return 0;
 	}
 
 	private static final Executor executors = Executors.newCachedThreadPool();
@@ -430,10 +543,7 @@ public class Utils {
 
 					Bitmap.CompressFormat targetFormat = getTargetFormat(format);
 
-					try (
-						ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-						Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)
-					) {
+					try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)) {
 						bitmap.compress(targetFormat, quality, base64Stream);
 						result = outputStream.toString();
 					} catch (Exception e) {
@@ -464,9 +574,7 @@ public class Utils {
 				return new Pair<>((int) width, (int) height);
 			}
 
-			return new Pair<>(
-				Math.round((maxSize * width) / height)
-				, (int) maxSize);
+			return new Pair<>(Math.round((maxSize * width) / height), (int) maxSize);
 		}
 
 		if (width <= maxSize) {

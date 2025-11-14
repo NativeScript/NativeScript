@@ -3,7 +3,7 @@ import { Font } from '../styling/font';
 
 import { IOSHelper, View } from '../core/view';
 import { ViewBase } from '../core/view-base';
-import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon } from './tab-view-common';
+import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon, iosBottomAccessoryProperty, iosTabBarMinimizeBehaviorProperty } from './tab-view-common';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { fontInternalProperty } from '../styling/style-properties';
@@ -12,9 +12,10 @@ import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
-import { layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
+import { FONT_PREFIX, isFontIconURI, isSystemURI, SYSTEM_PREFIX } from '../../utils/common';
 import { SDK_VERSION } from '../../utils/constants';
-import { Device } from '../../platform';
+import { Device, Screen } from '../../platform';
 export * from './tab-view-common';
 
 @NativeClass
@@ -74,11 +75,20 @@ class UITabBarControllerImpl extends UITabBarController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (SDK_VERSION >= 13) {
-			const owner = this._owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this._owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
@@ -107,8 +117,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 		const owner = this._owner?.deref();
 		if (owner) {
 			// "< More" cannot be visible after clicking on the main tab bar buttons.
-			const backToMoreWillBeVisible = false;
-			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+			owner._handleTwoNavigationBars(false);
 		}
 
 		if (tabBarController.selectedViewController === viewController) {
@@ -125,7 +134,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
 		const owner = this._owner?.deref();
 		if (owner) {
-			owner._onViewControllerShown(viewController);
+			owner._onViewControllerShown(tabBarController, viewController);
 		}
 	}
 }
@@ -152,7 +161,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		if (owner) {
 			// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
 			// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-			const backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
+			const backToMoreWillBeVisible = navigationController.tabBarController?.viewControllers?.containsObject(viewController);
 			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 		}
 	}
@@ -165,7 +174,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		navigationController.navigationBar.topItem.rightBarButtonItem = null;
 		const owner = this._owner?.deref();
 		if (owner) {
-			owner._onViewControllerShown(viewController);
+			owner._onViewControllerShown(navigationController.tabBarController, viewController);
 		}
 	}
 }
@@ -239,7 +248,7 @@ export class TabViewItem extends TabViewItemBase {
 		const parent = <TabView>this.parent;
 		const controller = this.__controller;
 		if (parent && controller) {
-			const icon = parent._getIcon(this.iconSource);
+			const icon = parent._getIcon(this);
 			const index = parent.items.indexOf(this);
 			const title = getTransformedText(this.title, this.style.textTransform);
 
@@ -270,18 +279,27 @@ export class TabViewItem extends TabViewItemBase {
 }
 
 export class TabView extends TabViewBase {
-	declare viewController: UITabBarControllerImpl;
-	declare items: TabViewItem[];
-	public _ios: UITabBarControllerImpl;
+	public viewController: UITabBarControllerImpl;
+	public items: TabViewItem[];
+
 	private _delegate: UITabBarControllerDelegateImpl;
 	private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
 	private _iconsCache = {};
+	private _bottomAccessoryNsView: View;
+	private _ios: UITabBarControllerImpl;
+	private _actionBarHiddenByTabView: boolean;
 
 	constructor() {
 		super();
-
 		this.viewController = this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
-		this.nativeViewProtected = this._ios.view;
+	}
+
+	createNativeView() {
+		// View controller can be disposed during view disposal, so make sure to create a new one if not defined
+		if (!this._ios) {
+			this.viewController = this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
+		}
+		return this._ios.view;
 	}
 
 	initNativeView() {
@@ -293,6 +311,8 @@ export class TabView extends TabViewBase {
 	disposeNativeView() {
 		this._delegate = null;
 		this._moreNavigationControllerDelegate = null;
+		this.viewController = null;
+		this._ios = null;
 		super.disposeNativeView();
 	}
 
@@ -306,12 +326,26 @@ export class TabView extends TabViewBase {
 			selectedView._pushInFrameStackRecursive();
 		}
 
-		this._ios.delegate = this._delegate;
+		if (this._ios) {
+			this._ios.delegate = this._delegate;
+		}
+
+		// Re-apply bottom accessory if set
+		if (this.iosBottomAccessory) {
+			this._applyBottomAccessory(this.iosBottomAccessory, false);
+		}
 	}
 
 	public onUnloaded() {
-		this._ios.delegate = null;
-		this._ios.moreNavigationController.delegate = null;
+		if (this._ios) {
+			this._ios.delegate = null;
+
+			if (this._ios.moreNavigationController) {
+				this._ios.moreNavigationController.delegate = null;
+			}
+		}
+		// Avoid retaining custom view when unloading
+		this._applyBottomAccessory(null, false);
 		super.onUnloaded();
 	}
 
@@ -365,13 +399,13 @@ export class TabView extends TabViewBase {
 		this.setMeasuredDimension(widthAndState, heightAndState);
 	}
 
-	public _onViewControllerShown(viewController: UIViewController) {
+	public _onViewControllerShown(tabBarController: UITabBarController, viewController: UIViewController) {
 		// This method could be called with the moreNavigationController or its list controller, so we have to check.
 		if (Trace.isEnabled()) {
 			Trace.write('TabView._onViewControllerShown(' + viewController + ');', Trace.categories.Debug);
 		}
-		if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
-			this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
+		if (tabBarController?.viewControllers && tabBarController.viewControllers.containsObject(viewController)) {
+			this.selectedIndex = tabBarController.viewControllers.indexOfObject(viewController);
 		} else {
 			if (Trace.isEnabled()) {
 				Trace.write('TabView._onViewControllerShown: viewController is not one of our viewControllers', Trace.categories.Debug);
@@ -379,14 +413,18 @@ export class TabView extends TabViewBase {
 		}
 	}
 
-	private _actionBarHiddenByTabView: boolean;
 	public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
 		if (Trace.isEnabled()) {
 			Trace.write(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, Trace.categories.Debug);
 		}
 
 		// The "< Back" and "< More" navigation bars should not be visible simultaneously.
-		const page = this.page || this._selectedView?.page || (<any>this)._selectedView?.currentPage;
+		let page = this.page || this._selectedView?.page;
+
+		if (!page && this._selectedView instanceof Frame) {
+			page = this._selectedView.currentPage;
+		}
+
 		if (!page || !page.frame) {
 			return;
 		}
@@ -394,9 +432,14 @@ export class TabView extends TabViewBase {
 		const actionBarVisible = page.frame._getNavBarVisible(page);
 
 		if (backToMoreWillBeVisible && actionBarVisible) {
-			page.frame.ios._disableNavBarAnimation = true;
-			page.actionBarHidden = true;
-			page.frame.ios._disableNavBarAnimation = false;
+			if (page.frame.ios) {
+				page.frame.ios._disableNavBarAnimation = true;
+				page.actionBarHidden = true;
+				page.frame.ios._disableNavBarAnimation = false;
+			} else {
+				page.actionBarHidden = true;
+			}
+
 			this._actionBarHiddenByTabView = true;
 			if (Trace.isEnabled()) {
 				Trace.write(`TabView hid action bar`, Trace.categories.Debug);
@@ -406,9 +449,14 @@ export class TabView extends TabViewBase {
 		}
 
 		if (!backToMoreWillBeVisible && this._actionBarHiddenByTabView) {
-			page.frame.ios._disableNavBarAnimation = true;
-			page.actionBarHidden = false;
-			page.frame.ios._disableNavBarAnimation = false;
+			if (page.frame.ios) {
+				page.frame.ios._disableNavBarAnimation = true;
+				page.actionBarHidden = false;
+				page.frame.ios._disableNavBarAnimation = false;
+			} else {
+				page.actionBarHidden = false;
+			}
+
 			this._actionBarHiddenByTabView = undefined;
 			if (Trace.isEnabled()) {
 				Trace.write(`TabView restored action bar`, Trace.categories.Debug);
@@ -447,7 +495,6 @@ export class TabView extends TabViewBase {
 		const length = items ? items.length : 0;
 		if (length === 0) {
 			this._ios.viewControllers = null;
-
 			return;
 		}
 
@@ -456,7 +503,7 @@ export class TabView extends TabViewBase {
 
 		items.forEach((item, i) => {
 			const controller = this.getViewController(item);
-			const icon = this._getIcon(item.iconSource);
+			const icon = this._getIcon(item);
 			const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title || '', icon, i);
 			updateTitleAndIconPositions(item, tabBarItem, controller);
 
@@ -492,20 +539,36 @@ export class TabView extends TabViewBase {
 		}
 	}
 
-	public _getIcon(iconSource: string): UIImage {
-		if (!iconSource) {
+	public _getIcon(item: TabViewItem): UIImage {
+		if (!item || !item.iconSource) {
 			return null;
 		}
 
-		let image: UIImage = this._iconsCache[iconSource];
+		let image: UIImage = this._iconsCache[item.iconSource];
 		if (!image) {
-			const is = ImageSource.fromFileOrResourceSync(iconSource);
+			let is: ImageSource;
+			if (isSystemURI(item.iconSource)) {
+				is = ImageSource.fromSystemImageSync(item.iconSource.slice(SYSTEM_PREFIX.length));
+			} else if (isFontIconURI(item.iconSource)) {
+				// Allow specifying a separate font family for the icon via style.iconFontFamily.
+				// If provided, construct a Font from the family and (optionally) size from fontInternal.
+				let iconFont = item.style.fontInternal;
+				const iconFontFamily = item.iconFontFamily || item.style.iconFontFamily;
+				if (iconFontFamily) {
+					// Preserve size/style from existing fontInternal if present.
+					const baseFont = item.style.fontInternal || Font.default;
+					iconFont = baseFont.withFontFamily(iconFontFamily);
+				}
+				is = ImageSource.fromFontIconCodeSync(item.iconSource.slice(FONT_PREFIX.length), iconFont, item.style.color);
+			} else {
+				is = ImageSource.fromFileOrResourceSync(item.iconSource);
+			}
 			if (is && is.ios) {
 				const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
-				this._iconsCache[iconSource] = originalRenderedImage;
+				this._iconsCache[item.iconSource] = originalRenderedImage;
 				image = originalRenderedImage;
 			} else {
-				traceMissingIcon(iconSource);
+				traceMissingIcon(item.iconSource);
 			}
 		}
 
@@ -627,10 +690,168 @@ export class TabView extends TabViewBase {
 			for (let i = 0, length = items.length; i < length; i++) {
 				const item = items[i];
 				if (item.iconSource) {
-					(<TabViewItem>item)._update();
+					(item as TabViewItem)._update();
 				}
 			}
 		}
+	}
+
+	// iOS 26+: bottom accessory support
+	[iosBottomAccessoryProperty.getDefault](): View {
+		return null;
+	}
+	[iosBottomAccessoryProperty.setNative](value: View) {
+		this._applyBottomAccessory(value, false);
+	}
+
+	// iOS 26+: tab bar minimize behavior
+	[iosTabBarMinimizeBehaviorProperty.getDefault](): 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp' {
+		return 'automatic';
+	}
+	[iosTabBarMinimizeBehaviorProperty.setNative](value: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp') {
+		if (SDK_VERSION < 26) {
+			return;
+		}
+		let mapped: UITabBarMinimizeBehavior;
+		switch (value) {
+			case 'never':
+				mapped = UITabBarMinimizeBehavior.Never;
+				break;
+			case 'onScrollDown':
+				mapped = UITabBarMinimizeBehavior.OnScrollDown;
+				break;
+			case 'onScrollUp':
+				mapped = UITabBarMinimizeBehavior.OnScrollUp;
+				break;
+			case 'automatic':
+			default:
+				mapped = UITabBarMinimizeBehavior.Automatic;
+		}
+		this._ios.tabBarMinimizeBehavior = mapped;
+	}
+
+	private _applyBottomAccessory(value: View | null, animated: boolean) {
+		// Guard for platform availability
+		if (SDK_VERSION < 26) {
+			return;
+		}
+
+		const setAccessory = (accessory: UITabAccessory | null) => {
+			try {
+				this._ios.setBottomAccessoryAnimated(accessory, animated);
+			} catch (err) {
+				// Fallback to property if needed
+				this._ios.bottomAccessory = accessory;
+			}
+		};
+
+		// Clear previous
+		if (!value) {
+			// Clear on controller
+			setAccessory(null);
+			// Tear down previously managed NS view
+			if (this._bottomAccessoryNsView) {
+				// Do not remove from a parent; we didn't add it to the NS view tree.
+				try {
+					this._bottomAccessoryNsView._tearDownUI(true);
+				} catch (_) {}
+				this._bottomAccessoryNsView = null;
+			}
+			return;
+		}
+
+		// Ensure the NativeScript view has a native view
+		const nsView = value;
+		if (!nsView.nativeViewProtected) {
+			// mirror dialogs approach to setup UI for a detached view
+			nsView._setupUI({} as any);
+		}
+		// Just mark it loaded, if not already, so measurement & styling are applied.
+		if (!nsView.isLoaded) {
+			// In detached scenarios we simply callLoaded after setup.
+			nsView.callLoaded();
+		}
+		const contentView = nsView.nativeViewProtected as UIView;
+		if (!contentView) {
+			return;
+		}
+
+		// Use frame-based sizing; keep autoresizing mask-based behavior enabled (no Auto Layout constraints added here).
+		contentView.translatesAutoresizingMaskIntoConstraints = true;
+		// Measure desired height with the tab bar width
+		let tabBarWidth = this._ios?.tabBar?.frame?.size?.width || Screen.mainScreen.screen.bounds.size.width;
+		// Account for safe area insets so accessory doesn't extend visually past rounded corners
+		if (this._ios?.tabBar?.safeAreaInsets) {
+			const insets = this._ios.tabBar.safeAreaInsets;
+			// Reduce usable width by left+right safe area (typically 0, but defensive)
+			const horizontalInsets = insets.left + insets.right;
+			if (horizontalInsets > 0 && horizontalInsets < tabBarWidth) {
+				tabBarWidth -= horizontalInsets;
+			}
+		}
+		const tabBarWidthPx = layout.toDevicePixels(tabBarWidth);
+		// Prefer flooring to avoid overshooting container by +1px due to FP rounding
+		const tabBarWidthPxRounded = Math.floor(tabBarWidthPx);
+		let measuredHeight = 0;
+		// Measure using device-pixel width; flooring prevents +1px expansion
+		const widthSpec = layout.makeMeasureSpec(tabBarWidthPxRounded, layout.EXACTLY);
+		const heightSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+		nsView.measure(widthSpec, heightSpec);
+		measuredHeight = layout.toDeviceIndependentPixels(nsView.getMeasuredHeight());
+
+		// Use a sensible minimum height (44pt button row) if measurement is tiny
+		const minHeight = 44;
+		const finalHeight = Math.max(minHeight, measuredHeight || 0);
+		// Rely on container height constraint (below) and frame-based layout inside container.
+		const container = NSTabAccessoryContainer.initWithOwner(new WeakRef(nsView));
+		container.translatesAutoresizingMaskIntoConstraints = true;
+		container.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
+		// Mask any subpixel spill just in case
+		container.clipsToBounds = true;
+		container.addSubview(contentView);
+		// Constrain the container height (not the content) so UIKit has a concrete size.
+		const containerHeight = container.heightAnchor.constraintEqualToConstant(finalHeight);
+		containerHeight.priority = 999;
+		NSLayoutConstraint.activateConstraints([containerHeight]);
+
+		const accessory = UITabAccessory.alloc().initWithContentView(container);
+		setAccessory(accessory);
+		// Keep references for later teardown
+		this._bottomAccessoryNsView = nsView;
+	}
+}
+
+@NativeClass
+class NSTabAccessoryContainer extends UIView {
+	_owner: WeakRef<View>;
+	static initWithOwner(owner: WeakRef<View>): NSTabAccessoryContainer {
+		const v = NSTabAccessoryContainer.new() as NSTabAccessoryContainer;
+		v._owner = owner;
+		return v;
+	}
+
+	override layoutSubviews() {
+		super.layoutSubviews();
+		const owner = this._owner?.deref();
+		if (!owner?.nativeViewProtected) return;
+		owner.nativeViewProtected.frame = this.bounds;
+		const w = this.bounds.size.width;
+		const h = this.bounds.size.height;
+		try {
+			// Convert to device pixels and floor to avoid +1px overshoot from rounding
+			let wp = Math.floor(layout.toDevicePixels(w));
+			const hp = Math.floor(layout.toDevicePixels(h));
+			// Clamp width to <= container pixel width (defensive)
+			const containerPxWidth = Math.floor(layout.toDevicePixels(this.bounds.size.width));
+			if (wp > containerPxWidth) {
+				wp = containerPxWidth;
+			}
+			// Ensure NS view and its children are measured with the final container width
+			const widthSpec = layout.makeMeasureSpec(wp, layout.EXACTLY);
+			const heightSpec = layout.makeMeasureSpec(hp, layout.EXACTLY);
+			owner.measure(widthSpec, heightSpec);
+			owner.layout(0, 0, wp, hp);
+		} catch (_) {}
 	}
 }
 

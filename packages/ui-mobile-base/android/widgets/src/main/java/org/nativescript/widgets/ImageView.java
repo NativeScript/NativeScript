@@ -365,6 +365,17 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 			float uniformScale;
 			float pivotX, pivotY;
 			switch (this.getScaleType()) {
+				case CENTER:
+					uniformScale = 1;
+					matrix.postTranslate((innerWidth - bitmapWidth) / 2, (innerHeight - bitmapHeight) / 2);
+					matrix.postScale(uniformScale, uniformScale, innerWidth / 2, innerHeight / 2);
+					canvas.clipRect(
+						borderLeftWidth + (innerWidth - bitmapWidth * uniformScale) / 2,
+						borderTopWidth + (innerHeight - bitmapHeight * uniformScale) / 2,
+						borderLeftWidth + (innerWidth + bitmapWidth * uniformScale) / 2,
+						borderTopWidth + (innerHeight + bitmapHeight * uniformScale) / 2
+					);
+					break;
 				case FIT_CENTER: // aspectFit
 					uniformScale = Math.min(fittingScaleX, fittingScaleY);
 					matrix.postTranslate((innerWidth - bitmapWidth) / 2, (innerHeight - bitmapHeight) / 2);

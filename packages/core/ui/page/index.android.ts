@@ -1,4 +1,4 @@
-import { PageBase, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from './page-common';
+import { PageBase, actionBarHiddenProperty, androidStatusBarBackgroundProperty } from './page-common';
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
@@ -10,10 +10,6 @@ import { AndroidAccessibilityEvent } from '../../accessibility/accessibility-typ
 import { isAccessibilityServiceEnabled } from '../../accessibility';
 
 export * from './page-common';
-
-const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
-const STATUS_BAR_LIGHT_BCKG = -657931;
-const STATUS_BAR_DARK_BCKG = 1711276032;
 
 export class Page extends PageBase {
 	declare nativeViewProtected: org.nativescript.widgets.GridLayout;
@@ -70,19 +66,6 @@ export class Page extends PageBase {
 		}
 	}
 
-	private getClosestWindow() {
-		// When it comes to modals, check if page has a parent as it may not be the modal root view itself
-		const view = this.parent ?? this;
-		const dialogFragment = (<any>view)._dialogFragment;
-		if (dialogFragment) {
-			const dialog = dialogFragment.getDialog();
-			if (dialog) {
-				return dialog.getWindow();
-			}
-		}
-		return this._context.getWindow();
-	}
-
 	[actionBarHiddenProperty.setNative](value: boolean) {
 		// in case the actionBar is not created and actionBarHidden is changed to true
 		// the actionBar will be created by updateActionBar
@@ -91,44 +74,10 @@ export class Page extends PageBase {
 		}
 	}
 
-	[statusBarStyleProperty.getDefault](): {
-		color: number;
-		systemUiVisibility: number;
-	} {
-		if (SDK_VERSION >= 21) {
-			const window = this.getClosestWindow();
-			const decorView = window.getDecorView();
-
-			return {
-				color: (<any>window).getStatusBarColor(),
-				systemUiVisibility: decorView.getSystemUiVisibility(),
-			};
-		}
-
-		return null;
-	}
-	[statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
-		if (SDK_VERSION >= 21) {
-			const window = this.getClosestWindow();
-			const decorView = window.getDecorView();
-
-			if (value === 'light') {
-				(<any>window).setStatusBarColor(STATUS_BAR_LIGHT_BCKG);
-				decorView.setSystemUiVisibility(SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-			} else if (value === 'dark') {
-				(<any>window).setStatusBarColor(STATUS_BAR_DARK_BCKG);
-				decorView.setSystemUiVisibility(0);
-			} else {
-				(<any>window).setStatusBarColor(value.color);
-				decorView.setSystemUiVisibility(value.systemUiVisibility);
-			}
-		}
-	}
-
 	[androidStatusBarBackgroundProperty.getDefault](): number {
 		if (SDK_VERSION >= 21) {
 			const window = this.getClosestWindow();
-			return (<any>window).getStatusBarColor();
+			return window.getStatusBarColor();
 		}
 
 		return null;
@@ -137,7 +86,7 @@ export class Page extends PageBase {
 		if (SDK_VERSION >= 21) {
 			const window = this.getClosestWindow();
 			const color = value instanceof Color ? value.android : value;
-			(<any>window).setStatusBarColor(color);
+			window.setStatusBarColor(color);
 		}
 	}
 

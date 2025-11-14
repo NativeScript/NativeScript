@@ -16,6 +16,7 @@ import { LinearGradient } from './linear-gradient';
 import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
+import { parseCSSCommaSeparatedListOfValues } from './css-utils';
 
 export { Length, FixedLength, PercentLength } from './length-shared';
 
@@ -989,25 +990,38 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 });
 borderBottomLeftRadiusProperty.register(Style);
 
-const boxShadowProperty = new CssProperty<Style, ShadowCSSValues>({
+const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
-		return target.backgroundInternal.withBoxShadow(
-			newValue
-				? {
-						inset: newValue.inset,
-						offsetX: Length.toDevicePixels(newValue.offsetX, 0),
-						offsetY: Length.toDevicePixels(newValue.offsetY, 0),
-						blurRadius: Length.toDevicePixels(newValue.blurRadius, 0),
-						spreadRadius: Length.toDevicePixels(newValue.spreadRadius, 0),
-						color: newValue.color,
-					}
+		return target.backgroundInternal.withBoxShadows(
+			newValue?.length
+				? newValue.map((v) => {
+						return {
+							inset: v.inset,
+							offsetX: Length.toDevicePixels(v.offsetX, 0),
+							offsetY: Length.toDevicePixels(v.offsetY, 0),
+							blurRadius: Length.toDevicePixels(v.blurRadius, 0),
+							spreadRadius: Length.toDevicePixels(v.spreadRadius, 0),
+							color: v.color,
+						};
+					})
 				: null, false
 		);
 	}),
 	valueConverter: (value) => {
-		return parseCSSShadow(value);
+		const values = parseCSSCommaSeparatedListOfValues(value);
+		const result: ShadowCSSValues[] = [];
+
+		// The first layer specified is drawn as if it is closest to the user
+		for (let i = values.length - 1; i >= 0; i--) {
+			const shadowVal = parseCSSShadow(values[i]);
+			if (shadowVal) {
+				result.push(shadowVal);
+			}
+		}
+
+		return result;
 	},
 });
 boxShadowProperty.register(Style);
@@ -1033,6 +1047,14 @@ export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction
 	},
 });
 clipPathProperty.register(Style);
+
+export const directionProperty = new InheritedCssProperty<Style, CoreTypes.LayoutDirectionType>({
+	defaultValue: null,
+	name: 'direction',
+	cssName: 'direction',
+	affectsLayout: __APPLE__,
+});
+directionProperty.register(Style);
 
 export const zIndexProperty = new CssProperty<Style, number>({
 	name: 'zIndex',

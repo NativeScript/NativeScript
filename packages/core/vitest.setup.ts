@@ -18,6 +18,14 @@ global.__CSS_USE_CSS_TOOLS__ = true;
 global.__COMMONJS__ = false;
 global.WeakRef.prototype.get = global.WeakRef.prototype.deref;
 global.NativeClass = function () {};
+global.NSBundle = {
+	mainBundle: {
+		bundleIdentifier: 'test',
+		objectForInfoDictionaryKey(key: string) {
+			return true;
+		},
+	},
+};
 global.NSTimer = class NSTimer {};
 global.NSObject = class NSObject {
 	static new() {
@@ -90,6 +98,7 @@ global.UIInterfaceOrientation = {
 	LandscapeLeft: 4,
 	LandscapeRight: 3,
 };
+global.UIWindowSceneDelegate = function () {};
 const cgColors = { CGColor: 1 };
 global.UIColor = {
 	alloc() {

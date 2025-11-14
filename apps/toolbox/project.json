@@ -56,5 +56,5 @@
 			}
 		}
 	},
-	"implicitDependencies": ["webpack5"]
+	"implicitDependencies": ["webpack5", "vite"]
 }

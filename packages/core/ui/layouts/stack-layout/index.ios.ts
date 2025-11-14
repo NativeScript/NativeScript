@@ -148,15 +148,19 @@ export class StackLayout extends StackLayoutBase {
 		const childBottom = bottom - top - paddingBottom;
 
 		switch (this.horizontalAlignment) {
+			case CoreTypes.HorizontalAlignment.start:
+				childLeft = this.direction === CoreTypes.LayoutDirection.rtl ? right - left - this._totalLength + paddingLeft : paddingLeft;
+				break;
 			case CoreTypes.HorizontalAlignment.center:
 			case CoreTypes.HorizontalAlignment.middle:
 				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
-
 			case CoreTypes.HorizontalAlignment.right:
 				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
-
+			case CoreTypes.HorizontalAlignment.end:
+				childLeft = this.direction === CoreTypes.LayoutDirection.rtl ? paddingLeft : right - left - this._totalLength + paddingLeft;
+				break;
 			case CoreTypes.HorizontalAlignment.left:
 			case CoreTypes.HorizontalAlignment.stretch:
 			default:

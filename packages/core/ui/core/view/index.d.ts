@@ -8,8 +8,8 @@ import { ShadowCSSValues } from '../../styling/css-shadow';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
 import { ViewBase } from '../view-base';
-import { ViewCommon } from './view-common';
-import type { Point } from './view-interfaces';
+import { GlassEffectType, ViewCommon } from './view-common';
+import type { Point, ShownModallyData } from './view-interfaces';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -91,6 +91,18 @@ export abstract class View extends ViewCommon {
 	 * @nsEvent {EventDataValue} accessibilityFocusChanged
 	 */
 	public static accessibilityFocusChangedEvent: string;
+
+	/**
+	 * String value used when hooking to androidOverflowInset event.
+	 *
+	 * @nsEvent {EventDataValue} androidOverflowInset
+	 */
+	public static androidOverflowInsetEvent: string;
+
+	/**
+	 * @private
+	 */
+	public static _hasRtlSupport: boolean;
 
 	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
@@ -225,6 +237,8 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * If `true` the element is an accessibility element and all the children will be treated as a single selectable component.
+	 *
+	 * @nsProperty
 	 */
 	accessible: boolean;
 
@@ -282,6 +296,8 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * When components dynamically change, we want TalkBack to alert the end user. This is made possible by the accessibilityLiveRegion property.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityLiveRegion: AccessibilityLiveRegion;
 
@@ -382,7 +398,14 @@ export abstract class View extends ViewCommon {
 	 *
 	 * @nsProperty
 	 */
-	boxShadow: string | ShadowCSSValues;
+	boxShadow: string | ShadowCSSValues[];
+
+	/**
+	 * Gets or sets the layout direction of the view.
+	 *
+	 * @nsProperty
+	 */
+	direction: CoreTypes.LayoutDirectionType;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.
@@ -609,6 +632,13 @@ export abstract class View extends ViewCommon {
 	visionHoverStyle: string | VisionHoverOptions;
 
 	/**
+	 * Set the iOS liquid glass effect style on the view.
+	 *
+	 * @nsProperty
+	 */
+	iosGlassEffect: GlassEffectType;
+
+	/**
 	 * @nsProperty
 	 */
 	public testID: string;
@@ -626,7 +656,7 @@ export abstract class View extends ViewCommon {
 	public touchDelay: number;
 
 	/**
-	 * Gets is layout is valid. This is a read-only property.
+	 * Gets if layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;
 
@@ -635,6 +665,22 @@ export abstract class View extends ViewCommon {
 	 * Using this as element type should allow for PascalCase and kebap-case selectors, when fully qualified, to match the element.
 	 */
 	cssType: string;
+
+	/**
+	 * Gets or sets the status bar style for this view.
+	 * Platform Notes:
+	 *   - Android: When using this property throughout navigations, ensure starting views have it set as well. Ensures it will reset on back navigation.
+	 *   - iOS: You must remove Info.plist key `UIViewControllerBasedStatusBarAppearance`
+	 * It defaults to true when not present: https://developer.apple.com/documentation/bundleresources/information-property-list/uiviewcontrollerbasedstatusbarappearance
+	 * Or you can explicitly set it to true:
+	 * <key>UIViewControllerBasedStatusBarAppearance</key>
+	 * <true/>
+	 *
+	 * False value will make this property have no effect.
+	 *
+	 * @nsProperty
+	 */
+	statusBarStyle: 'light' | 'dark';
 
 	cssClasses: Set<string>;
 	cssPseudoClasses: Set<string>;
@@ -790,6 +836,11 @@ export abstract class View extends ViewCommon {
 	 * Raised after the view is shown as a modal dialog.
 	 */
 	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
+
+	/**
+	 * Raised after the view is shown as a modal dialog.
+	 */
+	on(event: 'androidOverflowInset', callback: (args: ShownModallyData) => void, thisArg?: any);
 
 	/**
 	 * Returns the current modal view that this page is showing (is parent of), if any.

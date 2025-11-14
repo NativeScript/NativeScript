@@ -5,11 +5,10 @@ import { editableProperty, hintProperty, placeholderColorProperty, _updateCharac
 import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
-import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, directionProperty } from '../styling/style-properties';
 import { layout, isRealDevice } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 
-import { profile } from '../../profiling';
 export { WritingToolsAllowedInput, WritingToolsBehavior } from './text-view-common';
 
 @NativeClass
@@ -259,6 +258,15 @@ export class TextView extends TextViewBaseCommon {
 	}
 	[textProperty.setNative](value: string) {
 		this._refreshHintState(this.hint, value);
+	}
+
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		// Handle text ellipsis
+		if (this.maxLines > 0) {
+			const textContainer = this.nativeTextViewProtected.textContainer;
+			textContainer.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+		}
+		super[directionProperty.setNative](value);
 	}
 
 	[hintProperty.getDefault](): string {

@@ -615,9 +615,9 @@ export class ActionBar extends ActionBarBase {
 		// Page should be attached to frame to update the action bar.
 		if (this.page?.frame?.ios?.controller) {
 			return (<UINavigationController>this.page.frame.ios.controller).navigationBar;
-		} else {
-			return undefined;
 		}
+
+		return null;
 	}
 
 	[colorProperty.getDefault](): UIColor {

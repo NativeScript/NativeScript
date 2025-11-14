@@ -1,11 +1,10 @@
 import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
-import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../styling/style-properties';
 import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 import { CoreTypes } from '../../core-types';
-import { Color } from '../../color';
 
 export * from './button-common';
 
@@ -20,7 +19,13 @@ export class Button extends ButtonBase {
 	private _stateChangedHandler: ControlStateChangeListener;
 
 	createNativeView() {
-		return UIButton.buttonWithType(UIButtonType.System);
+		const nativeView = UIButton.buttonWithType(UIButtonType.System);
+
+		// This is the default for both platforms
+		if (nativeView.titleLabel) {
+			nativeView.titleLabel.textAlignment = NSTextAlignment.Center;
+		}
+		return nativeView;
 	}
 
 	public initNativeView(): void {
@@ -216,14 +221,18 @@ export class Button extends ButtonBase {
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Left;
 				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
 				break;
-			case 'initial':
-			case 'center':
-				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Center;
-				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
-				break;
 			case 'right':
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Right;
 				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
+				break;
+			case 'justify':
+				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Justified;
+				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
+				break;
+			default:
+				// initial | center
+				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Center;
+				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
 				break;
 		}
 	}
@@ -236,11 +245,21 @@ export class Button extends ButtonBase {
 		this.adjustLineBreak();
 	}
 
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		// Handle text ellipsis
+		if (this.textOverflow === 'ellipsis' || this.maxLines > 0) {
+			const nativeTextView = this.nativeViewProtected.titleLabel;
+			nativeTextView.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+		}
+		super[directionProperty.setNative](value);
+	}
+
 	private adjustLineBreak() {
 		const whiteSpace = this.whiteSpace;
 		const textOverflow = this.textOverflow;
 		const nativeView = this.nativeViewProtected.titleLabel;
 		switch (whiteSpace) {
+			case 'wrap':
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 				nativeView.numberOfLines = this.maxLines;
@@ -256,7 +275,7 @@ export class Button extends ButtonBase {
 						nativeView.numberOfLines = this.maxLines;
 						break;
 					case 'ellipsis':
-						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+						nativeView.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
 						nativeView.numberOfLines = 1;
 						break;
 					default:

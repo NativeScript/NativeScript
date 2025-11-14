@@ -19,7 +19,7 @@ export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 	}
 
 	set options(value: ImageAssetOptions) {
-		this._options = value;
+		this._options = normalizeImageAssetOptions(value);
 	}
 
 	get nativeImage(): any {
@@ -38,6 +38,35 @@ export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 	}
 }
 
+function toPositiveInt(value: any): number {
+	if (value == null) {
+		return 0;
+	}
+	if (typeof value === 'number') {
+		return value > 0 ? Math.floor(value) : 0;
+	}
+	if (typeof value === 'string') {
+		const parsed = parseInt(value, 10);
+		return isNaN(parsed) || parsed <= 0 ? 0 : parsed;
+	}
+	return 0;
+}
+
+function normalizeImageAssetOptions(options: ImageAssetOptions): ImageAssetOptions {
+	const normalized = options ? { ...options } : ({} as ImageAssetOptions);
+	// Coerce potential string values to positive integers; fallback to 0
+	// to trigger default sizing downstream
+	(normalized as any).width = toPositiveInt((options as any)?.width);
+	(normalized as any).height = toPositiveInt((options as any)?.height);
+	if (typeof normalized.keepAspectRatio !== 'boolean') {
+		normalized.keepAspectRatio = true;
+	}
+	if (typeof normalized.autoScaleFactor !== 'boolean') {
+		normalized.autoScaleFactor = true;
+	}
+	return normalized;
+}
+
 export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, reqHeight) {
 	const widthCoef = sourceWidth / reqWidth;
 	const heightCoef = sourceHeight / reqHeight;
@@ -50,6 +79,7 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 }
 
 export function getRequestedImageSize(src: { width: number; height: number }, options: ImageAssetOptions): { width: number; height: number } {
+	options = normalizeImageAssetOptions(options);
 	if (options.width || options.height || options.maxWidth || options.maxHeight) {
 		let reqWidth = options.width || (options.maxWidth ? Math.min(options.maxWidth, src.width) : src.width);
 		let reqHeight = options.height || (options.maxHeight ? Math.min(options.maxHeight, src.height) : src.height);

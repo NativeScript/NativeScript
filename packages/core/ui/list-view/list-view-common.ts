@@ -1,4 +1,4 @@
-import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from '.';
+import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView, SearchEventData } from '.';
 import { View, ContainerView, Template, KeyedTemplate, CSSType } from '../core/view';
 import { Property, CoercibleProperty, CssProperty } from '../core/properties';
 import { colorConverter } from '../styling/style-properties';
@@ -12,6 +12,8 @@ import { ObservableArray, ChangedData } from '../../data/observable-array';
 import { addWeakEventListener, removeWeakEventListener } from '../core/weak-event-listener';
 import { CoreTypes } from '../../core-types';
 import { isFunction } from '../../utils/types';
+import { Trace } from '../../trace';
+import { booleanConverter } from '../core/view-base';
 
 const autoEffectiveRowHeight = -1;
 
@@ -20,6 +22,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public static itemLoadingEvent = 'itemLoading';
 	public static itemTapEvent = 'itemTap';
 	public static loadMoreItemsEvent = 'loadMoreItems';
+	public static searchChangeEvent = 'searchChange';
 	// TODO: get rid of such hacks.
 	public static knownFunctions = ['itemTemplateSelector', 'itemIdGenerator']; //See component-builder.ts isKnownFunction
 
@@ -50,6 +53,13 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public items: any[] | ItemsSource;
 	public itemTemplate: string | Template;
 	public itemTemplates: string | Array<KeyedTemplate>;
+	public stickyHeader: boolean;
+	public stickyHeaderTemplate: string | Template;
+	public stickyHeaderHeight: CoreTypes.LengthType;
+	public stickyHeaderTopPadding: boolean;
+	public sectioned: boolean;
+	public showSearch: boolean;
+	public searchAutoHide: boolean;
 
 	get separatorColor(): Color {
 		return this.style.separatorColor;
@@ -126,10 +136,56 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 		}
 	}
 
+	public _prepareItemInSection(item: View, section: number, index: number) {
+		if (item) {
+			item.bindingContext = this._getDataItemInSection(section, index);
+		}
+	}
+
 	private _getDataItem(index: number): any {
 		const thisItems = <ItemsSource>this.items;
 
 		return thisItems.getItem ? thisItems.getItem(index) : thisItems[index];
+	}
+
+	public _getSectionCount(): number {
+		if (!this.sectioned || !this.items) {
+			return 1;
+		}
+		return this.items.length;
+	}
+
+	public _getItemsInSection(section: number): any[] | ItemsSource {
+		if (!this.sectioned || !this.items) {
+			return this.items;
+		}
+		const sectionData = this.items[section];
+		return sectionData?.items || [];
+	}
+
+	public _getSectionData(section: number): any {
+		if (!this.sectioned || !this.items || !Array.isArray(this.items)) {
+			return null;
+		}
+
+		if (section < 0 || section >= this.items.length) {
+			if (Trace.isEnabled()) {
+				Trace.write(`ListView: Section ${section} out of bounds (total sections: ${this.items.length})`, Trace.categories.Debug);
+			}
+			return null;
+		}
+
+		const sectionData = this.items[section];
+		if (Trace.isEnabled() && !sectionData) {
+			Trace.write(`ListView: Section ${section} data is null/undefined`, Trace.categories.Debug);
+		}
+
+		return sectionData;
+	}
+
+	public _getDataItemInSection(section: number, index: number): any {
+		const sectionItems = this._getItemsInSection(section);
+		return (sectionItems as ItemsSource).getItem ? (sectionItems as ItemsSource).getItem(index) : sectionItems[index];
 	}
 
 	public _getDefaultItemContent(index: number): View {
@@ -165,6 +221,7 @@ export interface ListViewBase {
 	on(event: 'itemLoading', callback: (args: ItemEventData) => void, thisArg?: any): void;
 	on(event: 'itemTap', callback: (args: ItemEventData) => void, thisArg?: any): void;
 	on(event: 'loadMoreItems', callback: (args: EventData) => void, thisArg?: any): void;
+	on(event: 'searchChange', callback: (args: SearchEventData) => void, thisArg?: any): void;
 }
 
 /**
@@ -250,3 +307,54 @@ export const separatorColorProperty = new CssProperty<Style, Color>({
 	valueConverter: colorConverter,
 });
 separatorColorProperty.register(Style);
+
+export const stickyHeaderProperty = new Property<ListViewBase, boolean>({
+	name: 'stickyHeader',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+stickyHeaderProperty.register(ListViewBase);
+
+export const stickyHeaderTemplateProperty = new Property<ListViewBase, string | Template>({
+	name: 'stickyHeaderTemplate',
+	valueChanged: (target) => {
+		target.refresh();
+	},
+});
+stickyHeaderTemplateProperty.register(ListViewBase);
+
+export const stickyHeaderHeightProperty = new Property<ListViewBase, CoreTypes.LengthType>({
+	name: 'stickyHeaderHeight',
+	defaultValue: 'auto',
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
+});
+stickyHeaderHeightProperty.register(ListViewBase);
+
+export const stickyHeaderTopPaddingProperty = new Property<ListViewBase, boolean>({
+	name: 'stickyHeaderTopPadding',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+stickyHeaderTopPaddingProperty.register(ListViewBase);
+
+export const sectionedProperty = new Property<ListViewBase, boolean>({
+	name: 'sectioned',
+	defaultValue: false,
+	valueConverter: (v) => !!v,
+});
+sectionedProperty.register(ListViewBase);
+
+export const showSearchProperty = new Property<ListViewBase, boolean>({
+	name: 'showSearch',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+showSearchProperty.register(ListViewBase);
+
+export const searchAutoHideProperty = new Property<ListViewBase, boolean>({
+	name: 'searchAutoHide',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+searchAutoHideProperty.register(ListViewBase);

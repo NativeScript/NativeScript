@@ -128,8 +128,9 @@ export class AndroidApplication extends ApplicationCommon {
 	 * For more information, please visit 'http://developer.android.com/reference/android/content/Context.html#registerReceiver%28android.content.BroadcastReceiver,%20android.content.IntentFilter%29'
 	 * @param intentFilter A string containing the intent filter.
 	 * @param onReceiveCallback A callback function that will be called each time the receiver receives a broadcast.
+	 * @return A function that can be called to unregister the receiver.
 	 */
-	registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void;
+	registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): () => void;
 
 	/**
 	 * Unregister a previously registered BroadcastReceiver.
@@ -141,8 +142,14 @@ export class AndroidApplication extends ApplicationCommon {
 	/**
 	 * Get a registered BroadcastReceiver, then you can get the result code of BroadcastReceiver in onReceiveCallback method.
 	 * @param intentFilter A string containing the intent filter.
+	 * @deprecated Use `getRegisteredBroadcastReceivers` instead.
 	 */
 	getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver;
+	/**
+	 * Get all registered BroadcastReceivers for a specific intent filter.
+	 * @param intentFilter a string containing the intent filter
+	 */
+	getRegisteredBroadcastReceivers(intentFilter: string): android.content.BroadcastReceiver[];
 
 	on(event: 'activityCreate', callback: (args: Interfaces.AndroidActivityBundleEventData) => void, thisArg?: any): void;
 	on(event: 'activityCreated', callback: (args: Interfaces.AndroidActivityBundleEventData) => void, thisArg?: any): void;
@@ -157,7 +164,7 @@ export class AndroidApplication extends ApplicationCommon {
 	on(event: 'activityNewIntent', callback: (args: Interfaces.AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
 	on(event: 'activityRequestPermissions', callback: (args: Interfaces.AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
 	on(event: 'dialogOnCreateView', callback: (args: Interfaces.AndroidDialogFragmentOnCreateViewEventData) => void, thisArg?: any): void;
-	on(event: 'configurationChange', callback: (args: Interfaces.AndroidDialogFragmentOnCreateViewEventData) => void, thisArg?: any): void;
+	on(event: 'configurationChange', callback: (args: Interfaces.AndroidConfigurationChangeEventData) => void, thisArg?: any): void;
 }
 
 export class iOSApplication extends ApplicationCommon {
@@ -210,4 +217,70 @@ export class iOSApplication extends ApplicationCommon {
 	 * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
 	 */
 	removeNotificationObserver(observer: any, notificationName: string);
+
+	/**
+	 * Checks if the application supports scenes.
+	 */
+	supportsScenes(): boolean;
+
+	/**
+	 * Checks if the application supports multiple scenes.
+	 */
+	supportsMultipleScenes(): boolean;
+
+	/**
+	 * Checks if the application is using the scene lifecycle.
+	 */
+	isUsingSceneLifecycle(): boolean;
+
+	/**
+	 * Opens a new window with the specified data.
+	 * @param data The data to pass to the new window.
+	 */
+	openWindow(data: Record<any, any>): void;
+
+	/**
+	 * Closes a secondary window/scene.
+	 * If no target is provided, attempts to close a non-primary active scene.
+	 * @param target Optional target to resolve the scene to close. Can be a View, UIWindow, UIWindowScene, or a string scene identifier.
+	 */
+	closeWindow(target?: View | UIWindow | UIWindowScene | string): void;
+
+	/**
+	 * Gets all windows for the application.
+	 */
+	getAllWindows(): UIWindow[];
+
+	/**
+	 * Gets all scenes for the application.
+	 */
+	getAllScenes(): UIScene[];
+
+	/**
+	 * Gets all window scenes for the application.
+	 */
+	getWindowScenes(): UIWindowScene[];
+
+	/**
+	 * Gets the primary window for the application.
+	 */
+	getPrimaryWindow(): UIWindow;
+
+	/**
+	 * Gets the primary scene for the application.
+	 */
+	getPrimaryScene(): UIWindowScene;
+
+	/**
+	 * Sets the root view for a specific window.
+	 * @param window The window to set the root view for.
+	 * @param view The view to set as the root view.
+	 */
+	setWindowRootView(window: UIWindow, view: View): void;
+
+	/**
+	 * The scene delegate for the application.
+	 * Get the current one or set a custom one.
+	 */
+	sceneDelegate: UIWindowSceneDelegate;
 }

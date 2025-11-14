@@ -199,11 +199,11 @@ export class TextBase extends View implements AddChildFromBuilder {
 	 */
 	_setNativeText(reset?: boolean): void;
 
-	// /**
-	//  * @private
-	//  */
-	// _isSingleLine: boolean;
-	// //@endprivate
+	/**
+	 * @private
+	 */
+	_isManualRtlTextStyleNeeded: boolean;
+	//@endprivate
 }
 
 export interface TextTransformation {

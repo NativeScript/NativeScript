@@ -1,13 +1,17 @@
 import * as ApplicationSettings from '../application-settings';
+import { CoreTypes } from '../core-types';
 import { profile } from '../profiling';
 import type { View } from '../ui/core/view';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
+import { SDK_VERSION } from '../utils/constants';
 import { ApplicationCommon } from './application-common';
-import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
+import type { AndroidActivityBundleEventData, AndroidActivityEventData, AndroidConfigurationChangeEventData, ApplicationEventData } from './application-interfaces';
 import { fontScaleChanged } from '../accessibility/font-scale.android';
-import { androidGetForegroundActivity, androidGetStartActivity, androidPendingReceiverRegistrations, androidRegisterBroadcastReceiver, androidRegisteredReceivers, androidSetForegroundActivity, androidSetStartActivity, androidUnregisterBroadcastReceiver } from './helpers';
+import { androidGetForegroundActivity, androidGetStartActivity, androidSetForegroundActivity, androidSetStartActivity } from './helpers';
 import { getImageFetcher, getNativeApp, getRootView, initImageCache, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
+import type { AndroidApplication as IAndroidApplication } from './application';
+import lazy from '../utils/lazy';
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
 
@@ -247,6 +251,35 @@ function initNativeScriptComponentCallbacks() {
 	return NativeScriptComponentCallbacks_;
 }
 
+interface RegisteredReceiverInfo {
+	receiver: android.content.BroadcastReceiver;
+	intent: string;
+	callback: (context: android.content.Context, intent: android.content.Intent) => void;
+	id: number;
+	flags: number;
+}
+
+const BroadcastReceiver = lazy(() => {
+	@NativeClass
+	class BroadcastReceiverImpl extends android.content.BroadcastReceiver {
+		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+
+		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+			super();
+			this._onReceiveCallback = onReceiveCallback;
+
+			return global.__native(this);
+		}
+
+		public onReceive(context: android.content.Context, intent: android.content.Intent) {
+			if (this._onReceiveCallback) {
+				this._onReceiveCallback(context, intent);
+			}
+		}
+	}
+	return BroadcastReceiverImpl;
+});
+
 export class AndroidApplication extends ApplicationCommon {
 	static readonly fragmentCreateEvent = 'fragmentCreate';
 	static readonly activityCreateEvent = 'activityCreate';
@@ -316,10 +349,13 @@ export class AndroidApplication extends ApplicationCommon {
 			console.error('Error initializing AndroidApplication', err, err.stack);
 		}
 	}
-
+	private _registeredReceivers: Record<string, RegisteredReceiverInfo[]> = {};
+	private _registeredReceiversById: Record<number, RegisteredReceiverInfo> = {};
+	private _nextReceiverId: number = 1;
+	private _pendingReceiverRegistrations: Omit<RegisteredReceiverInfo, 'receiver'>[] = [];
 	private _registerPendingReceivers() {
-		androidPendingReceiverRegistrations.forEach((func) => func(this.context));
-		androidPendingReceiverRegistrations.length = 0;
+		this._pendingReceiverRegistrations.forEach((info) => this._registerReceiver(this.context, info.intent, info.callback, info.flags, info.id));
+		this._pendingReceiverRegistrations.length = 0;
 	}
 	private _prevConfiguration: android.content.res.Configuration;
 	onConfigurationChanged(configuration: android.content.res.Configuration): void {
@@ -351,8 +387,12 @@ export class AndroidApplication extends ApplicationCommon {
 			fontScaleChanged(Number(configuration.fontScale));
 			
 		}
-		this.notify({ eventName: this.configurationChangeEvent, configuration, diff });
+		if ((diff &   8192) /* ActivityInfo.CONFIG_LAYOUT_DIRECTION */ !== 0) {
+			this.setLayoutDirection(this.getLayoutDirectionValue(configuration));
+		}
+		this.notify(<AndroidConfigurationChangeEventData>{ eventName: this.configurationChangeEvent, configuration, diff });
 		this._prevConfiguration = new android.content.res.Configuration(configuration);
+
 	}
 
 	getNativeApplication() {
@@ -426,18 +466,69 @@ export class AndroidApplication extends ApplicationCommon {
 	// RECEIVER_EXPORTED (2)
 	// RECEIVER_NOT_EXPORTED (4)
 	// RECEIVER_VISIBLE_TO_INSTANT_APPS (1)
-	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void, flags = 2): void {
-		androidRegisterBroadcastReceiver(intentFilter, onReceiveCallback, flags);
+	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void, flags = 2): () => void {
+		const receiverId = this._nextReceiverId++;
+		if (this.context) {
+			this._registerReceiver(this.context, intentFilter, onReceiveCallback, flags, receiverId);
+		} else {
+			this._pendingReceiverRegistrations.push({
+				intent: intentFilter,
+				callback: onReceiveCallback,
+				id: receiverId,
+				flags,
+			});
+		}
+		let removed = false;
+		return () => {
+			if (removed) {
+				return;
+			}
+			removed = true;
+			if (this._registeredReceiversById[receiverId]) {
+				const receiverInfo = this._registeredReceiversById[receiverId];
+				this.context.unregisterReceiver(receiverInfo.receiver);
+				this._registeredReceivers[receiverInfo.intent] = this._registeredReceivers[receiverInfo.intent]?.filter((ri) => ri.id !== receiverId);
+				delete this._registeredReceiversById[receiverId];
+			} else {
+				this._pendingReceiverRegistrations = this._pendingReceiverRegistrations.filter((ri) => ri.id !== receiverId);
+			}
+		};
+	}
+	private _registerReceiver(context: android.content.Context, intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void, flags: number, id: number): android.content.BroadcastReceiver {
+		const receiver: android.content.BroadcastReceiver = new (BroadcastReceiver())(onReceiveCallback);
+		if (SDK_VERSION >= 26) {
+			context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter), flags);
+		} else {
+			context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
+		}
+		const receiverInfo: RegisteredReceiverInfo = { receiver, intent: intentFilter, callback: onReceiveCallback, id: typeof id === 'number' ? id : this._nextReceiverId++, flags };
+		this._registeredReceivers[intentFilter] ??= [];
+		this._registeredReceivers[intentFilter].push(receiverInfo);
+		this._registeredReceiversById[receiverInfo.id] = receiverInfo;
+		return receiver;
 	}
 
 	public unregisterBroadcastReceiver(intentFilter: string): void {
-		androidUnregisterBroadcastReceiver(intentFilter);
+		const receivers = this._registeredReceivers[intentFilter];
+		if (receivers) {
+			receivers.forEach((receiver) => {
+				this.context.unregisterReceiver(receiver.receiver);
+			});
+			this._registeredReceivers[intentFilter] = [];
+		}
 	}
 
 	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
-		return androidRegisteredReceivers[intentFilter];
+		return this._registeredReceivers[intentFilter]?.[0].receiver;
 	}
 
+	public getRegisteredBroadcastReceivers(intentFilter: string): android.content.BroadcastReceiver[] {
+		const receiversInfo = this._registeredReceivers[intentFilter];
+		if (receiversInfo) {
+			return receiversInfo.map((info) => info.receiver);
+		}
+		return [];
+	}
 	getRootView(): View {
 		const activity = this.startActivity;
 		if (!activity) {
@@ -481,6 +572,23 @@ export class AndroidApplication extends ApplicationCommon {
 			case android.content.res.Configuration.UI_MODE_NIGHT_NO:
 			case android.content.res.Configuration.UI_MODE_NIGHT_UNDEFINED:
 				return 'light';
+		}
+	}
+
+	getLayoutDirection(): CoreTypes.LayoutDirectionType {
+		const resources = this.context.getResources();
+		const configuration = resources.getConfiguration();
+		return this.getLayoutDirectionValue(configuration);
+	}
+
+	private getLayoutDirectionValue(configuration: android.content.res.Configuration): CoreTypes.LayoutDirectionType {
+		const layoutDirection = configuration.getLayoutDirection();
+
+		switch (layoutDirection) {
+			case android.view.View.LAYOUT_DIRECTION_LTR:
+				return CoreTypes.LayoutDirection.ltr;
+			case android.view.View.LAYOUT_DIRECTION_RTL:
+				return CoreTypes.LayoutDirection.rtl;
 		}
 	}
 
