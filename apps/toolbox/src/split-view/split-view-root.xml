@@ -1,20 +1,16 @@
-<SplitView xmlns="http://schemas.nativescript.org/tns.xsd" displayMode="twoBesideSecondary" splitBehavior="tile"
-preferredPrimaryColumnWidthFraction="0.26" preferredSupplementaryColumnWidthFraction="0.28"
-preferredInspectorColumnWidthFraction="0.18">
-  <Frame splitRole="primary" defaultPage="split-view/split-view-primary">
+<SplitView 
+  displayMode="twoBesideSecondary" 
+  splitBehavior="tile"
+  preferredPrimaryColumnWidthFraction="0.26" 
+  preferredSupplementaryColumnWidthFraction="0.28"
+  preferredInspectorColumnWidthFraction="0.18">
 
-  </Frame>
+  <Frame splitRole="primary" defaultPage="split-view/split-view-primary" />
 
-  <Frame splitRole="supplementary" defaultPage="split-view/split-view-supplement">
+  <Frame splitRole="supplementary" defaultPage="split-view/split-view-supplement" />
 
-  </Frame>
+  <Frame splitRole="secondary" defaultPage="split-view/split-view-secondary" />
 
-  <Frame splitRole="secondary" defaultPage="split-view/split-view-secondary">
-
-  </Frame>
-
-  <Frame splitRole="inspector" defaultPage="split-view/split-view-inspector">
-
-  </Frame>
+  <Frame splitRole="inspector" defaultPage="split-view/split-view-inspector" />
 
 </SplitView>
