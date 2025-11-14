@@ -65,7 +65,7 @@ class SliderChangeHandlerImpl extends NSObject {
 }
 
 export class Slider extends SliderBase {
-	nativeViewProtected: TNSSlider;
+	declare nativeViewProtected: TNSSlider;
 	private _changeHandler: NSObject;
 
 	public createNativeView(): TNSSlider {

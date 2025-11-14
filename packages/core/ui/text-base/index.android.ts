@@ -11,53 +11,13 @@ import { Span } from './span';
 import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
+import { _getStoredClassDefaultPropertyValue } from '../core/properties';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
 import { testIDProperty } from '../core/view';
 import { isCssWideKeyword } from '../core/properties/property-shared';
 
 export * from './text-base-common';
-
-let TextTransformation: TextTransformation;
-
-export interface TextTransformation {
-	new (owner: TextBase): android.text.method.TransformationMethod;
-}
-
-function initializeTextTransformation(): void {
-	if (TextTransformation) {
-		return;
-	}
-
-	@NativeClass
-	@Interfaces([android.text.method.TransformationMethod])
-	class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
-		constructor(public textBase: TextBase) {
-			super();
-
-			return global.__native(this);
-		}
-
-		public getTransformation(charSeq: any, view: android.view.View): any {
-			// NOTE: Do we need to transform the new text here?
-			const formattedText = this.textBase.formattedText;
-			if (formattedText) {
-				return this.textBase.createFormattedTextNative(formattedText);
-			} else {
-				const text = this.textBase.text;
-				const stringValue = isNullOrUndefined(text) ? '' : text.toString();
-
-				return getTransformedText(stringValue, this.textBase.textTransform);
-			}
-		}
-
-		public onFocusChanged(view: android.view.View, sourceText: string, focused: boolean, direction: number, previouslyFocusedRect: android.graphics.Rect): void {
-			// Do nothing for now.
-		}
-	}
-
-	TextTransformation = TextTransformationImpl;
-}
 
 interface ClickableSpan {
 	new (owner: Span): android.text.style.ClickableSpan;
@@ -169,14 +129,11 @@ function initializeBaselineAdjustedSpan(): void {
 export class TextBase extends TextBaseCommon {
 	public nativeViewProtected: org.nativescript.widgets.StyleableTextView;
 
-	private _defaultTransformationMethod: android.text.method.TransformationMethod;
 	private _paintFlags: number;
-	private _minHeight: number;
-	private _maxHeight: number;
-	private _minLines: number;
-	private _maxLines: number;
 	private _tappable = false;
 	private _defaultMovementMethod: android.text.method.MovementMethod;
+	// so that we dont set fontInternal when setting fontSize (useless)
+	protected handleFontSize = true;
 
 	get nativeTextViewProtected(): org.nativescript.widgets.StyleableTextView {
 		return super.nativeTextViewProtected;
@@ -192,13 +149,6 @@ export class TextBase extends TextBaseCommon {
 		// Disable font padding to prevent extra spacing around text
 		nativeView.setIncludeFontPadding(false);
 
-		this._defaultTransformationMethod = nativeView.getTransformationMethod();
-		this._defaultMovementMethod = nativeView.getMovementMethod();
-		this._minHeight = nativeView.getMinHeight();
-		this._maxHeight = nativeView.getMaxHeight();
-		this._minLines = nativeView.getMinLines();
-		this._maxLines = nativeView.getMaxLines();
-
 		if (layout.hasRtlSupport() && this._isManualRtlTextStyleNeeded) {
 			// This is a default to match iOS layout direction behaviour
 			nativeView.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
@@ -209,43 +159,6 @@ export class TextBase extends TextBaseCommon {
 		super.disposeNativeView();
 
 		this._tappable = false;
-		this._defaultTransformationMethod = null;
-		this._defaultMovementMethod = null;
-		this._paintFlags = 0;
-		this._minHeight = 0;
-		this._maxHeight = 0;
-		this._minLines = 0;
-		this._maxLines = 0;
-	}
-
-	public resetNativeView(): void {
-		super.resetNativeView();
-		const nativeView = this.nativeTextViewProtected;
-		// We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-		nativeView.setSingleLine(this._isSingleLine);
-		nativeView.setTransformationMethod(this._defaultTransformationMethod);
-		this._defaultTransformationMethod = null;
-
-		if (this._paintFlags !== undefined) {
-			nativeView.setPaintFlags(this._paintFlags);
-			this._paintFlags = undefined;
-		}
-
-		if (this._minLines !== -1) {
-			nativeView.setMinLines(this._minLines);
-		} else {
-			nativeView.setMinHeight(this._minHeight);
-		}
-
-		this._minHeight = this._minLines = undefined;
-
-		if (this._maxLines !== -1) {
-			nativeView.setMaxLines(this._maxLines);
-		} else {
-			nativeView.setMaxHeight(this._maxHeight);
-		}
-
-		this._maxHeight = this._maxLines = undefined;
 	}
 
 	[textProperty.getDefault](): symbol | number {
@@ -270,11 +183,6 @@ export class TextBase extends TextBaseCommon {
 	}
 	[formattedTextProperty.setNative](value: FormattedString) {
 		const nativeView = this.nativeTextViewProtected;
-		if (!value) {
-			if (nativeView instanceof android.widget.Button && nativeView.getTransformationMethod() instanceof TextTransformation) {
-				nativeView.setTransformationMethod(this._defaultTransformationMethod);
-			}
-		}
 
 		// Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
 		if ((<any>this).secure) {
@@ -284,29 +192,12 @@ export class TextBase extends TextBaseCommon {
 		const spannableStringBuilder = this.createFormattedTextNative(value);
 		nativeView.setText(<any>spannableStringBuilder);
 		this._setTappableState(isStringTappable(value));
-
-		textProperty.nativeValueChange(this, value === null || value === undefined ? '' : value.toString());
-
-		if (spannableStringBuilder && nativeView instanceof android.widget.Button && !(nativeView.getTransformationMethod() instanceof TextTransformation)) {
-			// Replace Android Button's default transformation (in case the developer has not already specified a text-transform) method
-			// with our transformation method which can handle formatted text.
-			// Otherwise, the default tranformation method of the Android Button will overwrite and ignore our spannableStringBuilder.
-			nativeView.setTransformationMethod(new TextTransformation(this));
-		}
 	}
 
+	[textTransformProperty.getDefault](): CoreTypes.TextTransformType {
+		return 'initial';
+	}
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
-		if (value === 'initial') {
-			this.nativeTextViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-			return;
-		}
-
-		// Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
-		if ((<any>this).secure) {
-			return;
-		}
-
-		this.nativeTextViewProtected.setTransformationMethod(new TextTransformation(this));
 	}
 
 	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {
@@ -406,7 +297,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[colorProperty.getDefault](): android.content.res.ColorStateList {
-		return this.nativeTextViewProtected.getTextColors();
+		return _getStoredClassDefaultPropertyValue(colorProperty, this, () => this.nativeTextViewProtected.getTextColors());
 	}
 	[colorProperty.setNative](value: Color | android.content.res.ColorStateList) {
 		if (!this.formattedText || !(value instanceof Color)) {
@@ -432,16 +323,19 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
-		return this.nativeTextViewProtected.getTypeface();
+		return _getStoredClassDefaultPropertyValue(fontInternalProperty, this, () => this.nativeTextViewProtected.getTypeface());
 	}
 	[fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
 		if (!this.formattedText || !(value instanceof Font)) {
 			this.nativeTextViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+			if (SDK_VERSION < 28 && this.lineHeight !== undefined) {
+				this[lineHeightProperty.setNative](this.lineHeight as any);
+			}
 		}
 	}
 
 	[textDecorationProperty.getDefault]() {
-		return (this._paintFlags = this.nativeTextViewProtected.getPaintFlags());
+		return _getStoredClassDefaultPropertyValue(textDecorationProperty, this, () => this.nativeTextViewProtected.getPaintFlags());
 	}
 
 	[textDecorationProperty.setNative](value: number | CoreTypes.TextDecorationType) {
@@ -466,12 +360,12 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[textShadowProperty.getDefault]() {
-		return {
+		return _getStoredClassDefaultPropertyValue(textShadowProperty, this, () => ({
 			radius: this.nativeTextViewProtected.getShadowRadius(),
 			offsetX: this.nativeTextViewProtected.getShadowDx(),
 			offsetY: this.nativeTextViewProtected.getShadowDy(),
 			color: this.nativeTextViewProtected.getShadowColor(),
-		};
+		}));
 	}
 
 	[textShadowProperty.setNative](value: ShadowCSSValues) {
@@ -513,14 +407,14 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[lineHeightProperty.getDefault](): number {
-		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
+		return _getStoredClassDefaultPropertyValue(lineHeightProperty, this, () => this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity());
 	}
 	[lineHeightProperty.setNative](value: number) {
 		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
 	}
 
 	[letterSpacingProperty.getDefault](): number {
-		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
+		return _getStoredClassDefaultPropertyValue(letterSpacingProperty, this, () => org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected));
 	}
 	[letterSpacingProperty.setNative](value: number) {
 		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
@@ -549,13 +443,14 @@ export class TextBase extends TextBaseCommon {
 	_setNativeText(reset = false): void {
 		if (reset) {
 			this.nativeTextViewProtected.setText(null);
-
 			return;
 		}
 
 		let transformedText: any;
 		if (this.formattedText) {
 			transformedText = this.createFormattedTextNative(this.formattedText);
+		} else if ((this.text as any) instanceof android.text.Spanned) {
+			transformedText = this.text;
 		} else {
 			const text = this.text;
 			const stringValue = text === null || text === undefined ? '' : text.toString();
@@ -575,14 +470,18 @@ export class TextBase extends TextBaseCommon {
 	_setTappableState(tappable: boolean) {
 		if (this._tappable !== tappable) {
 			this._tappable = tappable;
+			const nativeView = this.nativeViewProtected;
 			if (this._tappable) {
 				// Setting singleLine to true results in conflicts with LinkMovementMethod
 				// See https://stackoverflow.com/a/34407901
-				this.nativeTextViewProtected.setSingleLine(false);
-				this.nativeTextViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
-				this.nativeTextViewProtected.setHighlightColor(null);
-			} else {
-				this.nativeTextViewProtected.setMovementMethod(this._defaultMovementMethod);
+				nativeView.setSingleLine(false);
+				if (!this._defaultMovementMethod) {
+					this._defaultMovementMethod = nativeView.getMovementMethod();
+				}
+				nativeView.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+				nativeView.setHighlightColor(null);
+			} else if (this._defaultMovementMethod) {
+				nativeView.setMovementMethod(this._defaultMovementMethod);
 			}
 		}
 	}
@@ -706,3 +605,4 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 	//     ssb.setSpan(new android.text.style.ScaleXSpan((letterSpacing + 1) / 10), start, end, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 	// }
 }
+TextBase.prototype._hasDefaultAccessibilityContentDescription = true;

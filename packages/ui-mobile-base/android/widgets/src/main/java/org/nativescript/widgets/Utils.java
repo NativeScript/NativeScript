@@ -35,6 +35,7 @@ import androidx.exifinterface.media.ExifInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.Throwable;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
@@ -183,7 +184,6 @@ public class Utils {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
 		}
-		Log.d("BoxShadowDrawable", "drawBoxShadow");
 
 		Drawable background = view.getBackground();
 		Drawable wrappedBg;
@@ -281,14 +281,14 @@ public class Utils {
 	}
 
 
-	private static Pair<Integer, Integer> getRequestedImageSize(Pair<Integer, Integer> src, Pair<Integer, Integer> maxSize, ImageAssetOptions options) {
+	private static Pair<Integer, Integer> getRequestedImageSize(Pair<Integer, Integer> src, ImageAssetOptions options) {
 		int reqWidth = options.width;
 		if (reqWidth <= 0) {
-			reqWidth = Math.min(src.first, maxSize.first);
+			reqWidth = src.first;
 		}
 		int reqHeight = options.height;
 		if (reqHeight <= 0) {
-			reqHeight = Math.min(src.second, maxSize.second);
+			reqHeight = src.second;
 		}
 
 		if (options.keepAspectRatio) {
@@ -359,7 +359,7 @@ public class Utils {
 		return rotationAngle;
 	}
 
-	public static void loadImageAsync(final Context context, final String src, final String options, final int maxWidth, final int maxHeight, final AsyncImageCallback callback) {
+	public static void loadImageAsync(final Context context, final String src, final String options, final AsyncImageCallback callback) {
 		final Handler mHandler = new Handler(Looper.myLooper());
 		executors.execute(new Runnable() {
 			@Override
@@ -393,12 +393,21 @@ public class Utils {
 					ImageAssetOptions opts = new ImageAssetOptions();
 					opts.keepAspectRatio = true;
 					opts.autoScaleFactor = true;
+					opts.width = bitmapOptions.outWidth;
+					opts.height = bitmapOptions.outHeight;
 
 					try {
 						JSONObject object = new JSONObject(options);
-						// Coerce numeric strings or numbers; fallback to 0 for invalid values
-						opts.width = parsePositiveInt(object, "width");
-						opts.height = parsePositiveInt(object, "height");
+						if (object.has("width")) {
+							opts.width = object.optInt("width", bitmapOptions.outWidth);
+						} else if (object.has("maxWidth")) {
+							opts.width = Math.min(bitmapOptions.outWidth, object.optInt("maxWidth", bitmapOptions.outWidth));
+						}
+						if (object.has("height")) {
+							opts.height = object.optInt("height", bitmapOptions.outHeight);
+						} else if (object.has("maxHeight")) {
+							opts.height = Math.min(bitmapOptions.outHeight, object.optInt("maxHeight", bitmapOptions.outHeight));
+						}
 						opts.keepAspectRatio = object.optBoolean("keepAspectRatio", true);
 						opts.autoScaleFactor = object.optBoolean("autoScaleFactor", true);
 					} catch (JSONException ignored) {
@@ -406,12 +415,18 @@ public class Utils {
 
 
 					Pair<Integer, Integer> sourceSize = new Pair<>(bitmapOptions.outWidth, bitmapOptions.outHeight);
-					Pair<Integer, Integer> maxSize = new Pair<>(maxWidth, maxHeight);
-					Pair<Integer, Integer> requestedSize = getRequestedImageSize(sourceSize, maxSize, opts);
+					Pair<Integer, Integer> requestedSize = getRequestedImageSize(sourceSize, opts);
 					int sampleSize = org.nativescript.widgets.image.Fetcher.calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.first, requestedSize.second);
 					BitmapFactory.Options finalBitmapOptions = new BitmapFactory.Options();
 					finalBitmapOptions.inSampleSize = sampleSize;
-
+					if (sampleSize != 1) {
+						// scale to exact size
+						finalBitmapOptions.inScaled = true;
+						finalBitmapOptions.inDensity = sourceSize.first;
+						finalBitmapOptions.inTargetDensity =  bitmapOptions.outWidth * sampleSize;
+					} else {
+						finalBitmapOptions.inScaled = false;
+					}
 
 					String error = null;
 					// read as minimum bitmap as possible (slightly bigger than the requested size)
@@ -425,10 +440,6 @@ public class Utils {
 
 
 					if (bitmap != null) {
-						if (requestedSize.first != bitmap.getWidth() || requestedSize.second != bitmap.getHeight()) {
-							// scale to exact size
-							bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, requestedSize.first, requestedSize.second, true);
-						}
 						int rotationAngle;
 
 						if (pfd != null) {

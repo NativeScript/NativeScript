@@ -65,12 +65,12 @@ class CustomLinearInterpolator extends android.view.animation.LinearInterpolator
 	}
 }
 
-function setTransitionName(view: ViewBase) {
+function setTransitionName(view: ViewBase, value?) {
 	if (!view?.sharedTransitionTag) {
 		return;
 	}
 	try {
-		androidx.core.view.ViewCompat.setTransitionName(view.nativeView, view.sharedTransitionTag);
+		androidx.core.view.ViewCompat.setTransitionName(view.nativeView, value !== undefined ? value : view.sharedTransitionTag);
 	} catch (err) {
 		// ignore
 	}
@@ -188,13 +188,18 @@ export class PageTransition extends Transition {
 			return;
 		}
 
+		const pageStart = state.pageStart;
 		const pageEnd = state.pageEnd;
 
 		//we can't look for presented right now as the toPage might not be loaded
 		// and thus some views like ListView/Pager... might not have loaded their "children"
 		// presented will be handled in loaded event of toPage
-		const { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
+		let { presenting } = SharedTransition.getSharedElements(fromPage, null);
 
+		if (pageStart?.sharedTransitionTags) {
+			const keys = Object.keys(pageStart?.sharedTransitionTags);
+			presenting = presenting.filter((v) => keys.indexOf(v.sharedTransitionTag) !== -1);
+		}
 		// Note: we can enhance android more over time with element targeting across different screens
 		// const pageStart = state.pageStart;
 		// const pageEndIndependentTags = Object.keys(pageEnd?.sharedTransitionTags || {});
@@ -228,9 +233,13 @@ export class PageTransition extends Transition {
 		const onPageLoaded = () => {
 			// add a timeout so that Views like ListView / CollectionView can have their children instantiated
 			setTimeout(() => {
-				const { presented } = SharedTransition.getSharedElements(fromPage, toPage);
+				let { presented } = SharedTransition.getSharedElements(fromPage, toPage);
+				if (pageEnd?.sharedTransitionTags) {
+					const keys = Object.keys(pageEnd?.sharedTransitionTags);
+					presented = presented.filter((v) => keys.indexOf(v.sharedTransitionTag) !== -1);
+				}
 				// const sharedElementTags = sharedElements.map((v) => v.sharedTransitionTag);
-				presented.forEach(setTransitionName);
+				presented.forEach((v) => setTransitionName(v));
 				newFragment.startPostponedEnterTransition();
 			}, this.pageLoadedTimeout);
 		};
@@ -247,7 +256,9 @@ export class PageTransition extends Transition {
 		const transitionSet = new androidx.transition.TransitionSet();
 		transitionSet.setDuration(customDuration > -1 ? customDuration : this.getDuration());
 		transitionSet.addTransition(new androidx.transition.ChangeBounds());
+		transitionSet.addTransition(new androidx.transition.ChangeClipBounds());
 		transitionSet.addTransition(new androidx.transition.ChangeTransform());
+		transitionSet.addTransition(new androidx.transition.ChangeImageTransform());
 		transitionSet.setOrdering(androidx.transition.TransitionSet.ORDERING_TOGETHER);
 
 		if (customDuration) {
@@ -284,6 +295,21 @@ export class PageTransition extends Transition {
 		} else {
 			toPage.once('loaded', onPageLoaded);
 		}
+	}
+	onTransitionEnd(entry) {
+		// as we use hide on fragments instead of remove
+		// we need to reset setTransitionName after transition end
+		// otherwise it will break next transitions using the same transitionName
+		const fromPage = entry?.resolvedPage;
+		const { presenting } = SharedTransition.getSharedElements(fromPage, null);
+		presenting.forEach((v) => {
+			setTransitionName(v, null);
+			// androidx.transition.ChangeTransform does not restore setTransitionAlpha
+			// which makes the view invisible.
+			// can be a problem when the transition view on the return animation is not the same as enter
+			// one example is RecyclerView to ViewPager transition
+			(v.nativeViewProtected as android.view.View).setTransitionAlpha(1);
+		});
 	}
 }
 

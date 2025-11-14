@@ -8,9 +8,8 @@
 
 # dependencies
 **/node_modules
-**/yarn.lock
-**/pnpm-lock.yaml
 .npmrc
+.yarn
 
 # IDEs and editors
 .idea

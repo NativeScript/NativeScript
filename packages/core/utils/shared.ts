@@ -6,15 +6,19 @@
  * @param param2 Options for the debounce behavior
  * @returns A new debounced function
  */
-export function debounce(fn: any, delay = 300, { leading }: { leading?: boolean } = {}) {
+export function debounce(fn: any, delay = 300, { leading, trailing, ignoreFirstTrail }: { leading?: boolean; trailing?: boolean; ignoreFirstTrail?: boolean } = {}) {
 	let timer: NodeJS.Timeout;
 	return (...args: Array<any>) => {
+		let noTrail = false;
 		if (timer === undefined && leading) {
+			noTrail = ignoreFirstTrail === true;
 			fn.apply(this, args);
 		}
 		clearTimeout(timer);
 		timer = setTimeout(() => {
-			fn.apply(this, args);
+			if (trailing !== false && !noTrail) {
+				fn.apply(this, args);
+			}
 			timer = undefined;
 		}, delay);
 	};

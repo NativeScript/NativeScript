@@ -1,17 +1,18 @@
-import { isAccessibilityServiceEnabled } from '../../application';
-import { PageBase, actionBarHiddenProperty, androidStatusBarBackgroundProperty } from './page-common';
+import { PageBase, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from './page-common';
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
 import { SDK_VERSION } from '../../utils/constants';
 import { profile } from '../../profiling';
-import { AndroidAccessibilityEvent, getLastFocusedViewOnPage } from '../../accessibility/accessibility-common';
+import { getLastFocusedViewOnPage } from '../../accessibility/accessibility-common';
+import { AndroidAccessibilityEvent } from '../../accessibility/accessibility-types';
+import { isAccessibilityServiceEnabled } from '../../accessibility';
 
 export * from './page-common';
 
 export class Page extends PageBase {
-	nativeViewProtected: org.nativescript.widgets.GridLayout;
+	declare nativeViewProtected: org.nativescript.widgets.GridLayout;
 
 	public createNativeView() {
 		const layout = new org.nativescript.widgets.GridLayout(this._context);
@@ -114,7 +115,8 @@ export class Page extends PageBase {
 
 			return;
 		}
-
-		this.actionBar.accessibilityScreenChanged();
+		if (this.hasActionBar) {
+			this.actionBar.accessibilityScreenChanged();
+		}
 	}
 }

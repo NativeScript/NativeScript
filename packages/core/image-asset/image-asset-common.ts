@@ -33,6 +33,9 @@ export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 	public getImageAsync(callback: (image: any, error: Error) => void) {
 		//
 	}
+	getImage(): Promise<any> {
+		throw new Error('Method not implemented.');
+	}
 }
 
 function toPositiveInt(value: any): number {
@@ -76,18 +79,22 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 }
 
 export function getRequestedImageSize(src: { width: number; height: number }, options: ImageAssetOptions): { width: number; height: number } {
-	const normalized = normalizeImageAssetOptions(options);
-	let reqWidth = normalized.width || Math.min(src.width, Screen.mainScreen.widthPixels);
-	let reqHeight = normalized.height || Math.min(src.height, Screen.mainScreen.heightPixels);
+		options = normalizeImageAssetOptions(options);
+		if (options.width || options.height || options.maxWidth || options.maxHeight) {
+		let reqWidth = options.width || (options.maxWidth ? Math.min(options.maxWidth, src.width) : src.width);
+		let reqHeight = options.height || (options.maxHeight ? Math.min(options.maxHeight, src.height) : src.height);
 
-	if (options && options.keepAspectRatio) {
-		const safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
-		reqWidth = safeAspectSize.width;
-		reqHeight = safeAspectSize.height;
+		if (options && options.keepAspectRatio) {
+			const safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
+			reqWidth = safeAspectSize.width;
+			reqHeight = safeAspectSize.height;
+		}
+
+		return {
+			width: reqWidth,
+			height: reqHeight,
+		};
 	}
 
-	return {
-		width: reqWidth,
-		height: reqHeight,
-	};
+	return src;
 }

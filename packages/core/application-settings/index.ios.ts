@@ -95,3 +95,11 @@ export function flush(): boolean {
 export function getAllKeys(): Array<string> {
 	return utils.ios.collections.nsArrayToJSArray(userDefaults.dictionaryRepresentation().allKeys);
 }
+export function getAllJSON(ignoreRegexp?: string | RegExp): string {
+	//@ts-ignore
+	return NSApplicationSettings.userDefaultsToJSONStringWithIgnoreRegexp(typeof ignoreRegexp === 'string' ? ignoreRegexp : ignoreRegexp?.toString());
+}
+
+export function getNative() {
+	return userDefaults;
+}

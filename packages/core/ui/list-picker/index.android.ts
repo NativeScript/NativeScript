@@ -84,7 +84,7 @@ function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.gra
 }
 
 export class ListPicker extends ListPickerBase {
-	nativeViewProtected: android.widget.NumberPicker;
+	declare nativeViewProtected: android.widget.NumberPicker;
 	private _selectorWheelPaint: android.graphics.Paint;
 
 	public createNativeView() {

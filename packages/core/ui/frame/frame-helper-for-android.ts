@@ -2,10 +2,8 @@ import { Trace } from '../../trace';
 import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions } from './fragment.transitions';
 import type { BackstackEntry } from '.';
 import { profile } from '../../profiling';
-import { getNativeApp } from '../../application/helpers-common';
-import { Color } from '../../color';
 import type { Page } from '../page';
-import type { AndroidFrame as Frame } from '.';
+import type { Frame } from '.';
 export const FRAMEID = '_frameId';
 export const CALLBACKS = '_callbacks';
 export const framesCache = new Array<WeakRef<any>>();
@@ -37,6 +35,12 @@ function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Fr
 		entry = current;
 	} else if (executingContext && executingContext.entry && executingContext.entry.fragmentTag === fragmentTag) {
 		entry = executingContext.entry;
+	} else {
+		frame.backStack.forEach((e) => {
+			if (e && e.fragmentTag === fragmentTag) {
+				entry = e;
+			}
+		});
 	}
 
 	let page: Page;
@@ -73,6 +77,9 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 	public onCreateAnimator(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
 		let animator = null;
 		const entry = <any>this.entry;
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onCreateAnimator(${transit},${enter}, ${nextAnim})`, Trace.categories.Animation);
+		}
 
 		// Return enterAnimator only when new (no current entry) nested transition.
 		if (enter && entry.isNestedDefaultTransition) {
@@ -81,6 +88,14 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 		}
 
 		return animator || superFunc.call(fragment, transit, enter, nextAnim);
+	}
+
+	@profile
+	public onCreateAnimation(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): globalAndroid.view.animation.Animation {
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onCreateAnimation(${transit},${enter}, ${nextAnim})`, Trace.categories.Animation);
+		}
+		return superFunc.call(fragment, transit, enter, nextAnim);
 	}
 
 	@profile
@@ -202,17 +217,17 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 				Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
 			}
 
-			const hasRemovingParent = fragment.getRemovingParentFragment();
+			// const hasRemovingParent = fragment.getRemovingParentFragment();
 
-			if (hasRemovingParent) {
-				const nativeFrameView = this.frame.nativeViewProtected;
-				if (nativeFrameView) {
-					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(getNativeApp<android.app.Application>().getApplicationContext().getResources(), this.backgroundBitmap);
-					this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
-					nativeFrameView.setBackgroundDrawable(bitmapDrawable);
-					this.backgroundBitmap = null;
-				}
-			}
+			// if (hasRemovingParent) {
+			// 	const nativeFrameView = this.frame.nativeViewProtected;
+			// 	if (nativeFrameView) {
+			// 		const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(getApplicationContext().getResources(), this.backgroundBitmap);
+			// 		this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
+			// 		nativeFrameView.setBackgroundDrawable(bitmapDrawable);
+			// 		this.backgroundBitmap = null;
+			// 	}
+			// }
 		} finally {
 			superFunc.call(fragment);
 		}
@@ -238,52 +253,15 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 		// "IllegalStateException: Failure saving state: active fragment has cleared index: -1"
 		// in a specific mixed parent / nested frame navigation scenario
 		entry.fragment = null;
-
-		const page = entry.resolvedPage;
-		if (!page) {
-			// todo: check why this happens when using shared element transition!!!
-			// commented out the Trace.error to prevent a crash (the app will still work interestingly)
-			console.log(`${fragment}.onDestroy: entry has no resolvedPage`);
-			// Trace.error(`${fragment}.onDestroy: entry has no resolvedPage`);
-
-			return null;
-		}
 	}
 
 	@profile
 	public onPause(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		try {
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			const hasRemovingParent = fragment.getRemovingParentFragment();
-
-			if (hasRemovingParent) {
-				this.backgroundBitmap = this.loadBitmapFromView(this.frame.nativeViewProtected);
-			}
-		} finally {
-			superFunc.call(fragment);
-		}
+		superFunc.call(fragment);
 	}
 
 	@profile
 	public onResume(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		const frame = this.entry.resolvedPage.frame;
-		// on some cases during the first navigation on nested frames the animation doesn't trigger
-		// we depend on the animation (even None animation) to set the entry as the current entry
-		// animation should start between start and resume, so if we have an executing navigation here it probably means the animation was skipped
-		// so we manually set the entry
-		// also, to be compatible with fragments 1.2.x we need this setTimeout as animations haven't run on onResume yet
-		const weakRef = new WeakRef(this);
-		setTimeout(() => {
-			const owner = weakRef.get();
-			if (!owner) {
-				return;
-			}
-			if (frame._executingContext && !(<any>owner.entry).isAnimationRunning) {
-				frame.setCurrent(owner.entry, frame._executingContext.navigationType);
-			}
-		}, 0);
-
 		superFunc.call(fragment);
 	}
 

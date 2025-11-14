@@ -37,19 +37,75 @@ export interface Cancelable {
 
 export type AnimationPromise = Promise<void> & Cancelable;
 
+
+/**
+ * Defines animation options for the View.animate method.
+ */
 export interface AnimationDefinition {
+	/**
+	 * The view whose property is to be animated.
+	 */
 	target?: View;
+
+	/**
+	 * Animates the opacity of the view. Value should be a number between 0.0 and 1.0
+	 */
 	opacity?: number;
-	backgroundColor?: Color | any;
-	translate?: Pair | { x: number; y: number };
-	scale?: Pair | { x: number; y: number };
-	height?: CoreTypes.PercentLengthType | string | any;
-	width?: CoreTypes.PercentLengthType | string | any;
-	rotate?: number | Point3D | { x: number; y: number; z: number };
+
+	/**
+	 * Animates the backgroundColor of the view.
+	 */
+	backgroundColor?: Color;
+
+	/**
+	 * Animates the translate affine transform of the view.
+	 */
+	translate?: Pair;
+
+	/**
+	 * Animates the scale affine transform of the view.
+	 */
+	scale?: Pair;
+
+	/**
+	 * Animates the height of a view.
+	 */
+	height?: CoreTypes.PercentLengthType | string;
+
+	/**
+	 * Animates the width of a view.
+	 */
+	width?: CoreTypes.PercentLengthType | string;
+
+	/**
+	 * Animates the rotate affine transform of the view. Value should be a number specifying the rotation amount in degrees.
+	 */
+	rotate?: number | Point3D;
+
+	/**
+	 * The length of the animation in milliseconds. The default duration is 300 milliseconds.
+	 */
 	duration?: number;
+
+	/**
+	 * The amount of time, in milliseconds, to delay starting the animation.
+	 */
 	delay?: number;
+
+	/**
+	 * Specifies how many times the animation should be played. Default is 1.
+	 * iOS animations support fractional iterations, i.e. 1.5.
+	 * To repeat an animation infinitely, use Number.POSITIVE_INFINITY
+	 */
 	iterations?: number;
+
+	/**
+	 * An optional animation curve. Possible values are contained in the [AnimationCurve enumeration](../modules/_ui_enums_.animationcurve.html).
+	 * Alternatively, you can pass an instance of type UIViewAnimationCurve for iOS or android.animation.TimeInterpolator for Android.
+	 */
 	curve?: any;
+
+	[k: string]: any;
 }
 
 export interface Point3D {
@@ -69,12 +125,14 @@ export interface Cancelable {
 
 export interface PropertyAnimation {
 	target: View;
-	property: string;
+	property: any;
+	propertyName: string;
 	value: any;
 	duration?: number;
 	delay?: number;
 	iterations?: number;
 	curve?: any;
+	animationBlock?: Function;
 }
 
 export interface PropertyAnimationInfo extends PropertyAnimation {

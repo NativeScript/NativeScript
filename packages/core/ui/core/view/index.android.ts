@@ -16,15 +16,16 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData } from '../../../application/application-interfaces';
+import { Application } from '../../../application';
+import { AndroidActivityBackPressedEventData, AndroidDialogFragmentOnCreateViewEventData } from '../../../application/application-interfaces';
 import { isAppInBackground, updateA11yPropertiesCallback } from '../../../application/helpers-common';
-import { updateContentDescription } from '../../../application/helpers';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, AccessibilityState } from '../../../accessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, AccessibilityState, updateContentDescription } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
 import { NativeScriptAndroidView } from '../../utils';
+import { _getStoredClassDefaultPropertyValue } from '../properties';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -40,16 +41,22 @@ const statePressed = 16842919; // android.R.attr.state_pressed
 const stateEnabled = 16842910; // android.R.attr.state_enabled
 const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
-const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
-const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
-const GRAVITY_LEFT = 3; // android.view.Gravity.LEFT
-const GRAVITY_RIGHT = 5; // android.view.Gravity.RIGHT
-const GRAVITY_TOP = 48; // android.view.Gravity.TOP
-const GRAVITY_BOTTOM = 80; // android.view.Gravity.BOTTOM
-const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
-const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
-const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
-const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+export const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
+export const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
+export const GRAVITY_LEFT = 3; // android.view.Gravity.LEFT
+export const GRAVITY_RIGHT = 5; // android.view.Gravity.RIGHT
+export const GRAVITY_TOP = 48; // android.view.Gravity.TOP
+export const GRAVITY_BOTTOM = 80; // android.view.Gravity.BOTTOM
+export const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
+export const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
+export const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
+export const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+
+export const VIEW_GONE = 8; //android.view.View.GONE;
+export const VIEW_VISIBLE = 0; //android.view.View.VISIBLE;
+export const VIEW_INVISIBLE = 4; //android.view.View.INVISIBLE;
+
+const ViewHelper = org.nativescript.widgets.ViewHelper;
 
 const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
 const STATUS_BAR_LIGHT_BCKG = -657931;
@@ -66,7 +73,8 @@ interface DialogOptions {
 	animated: boolean;
 	stretched: boolean;
 	cancelable: boolean;
-	windowSoftInputMode: number;
+	windowSoftInputMode?: number;
+	style?: number;
 	shownCallback: () => void;
 	dismissCallback: () => void;
 }
@@ -121,7 +129,7 @@ interface TouchListener {
 }
 
 interface DialogFragment {
-	new (): androidx.fragment.app.DialogFragment;
+	new (): androidx.fragment.app.DialogFragment & { showImmediatelyFromBackground?: boolean };
 }
 
 function initializeTouchListener(): void {
@@ -221,8 +229,10 @@ function initializeDialogFragment() {
 	@NativeClass
 	class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
 		public owner: View;
+		public showImmediatelyFromBackground: boolean;
 		private _fullscreen: boolean;
 		private _windowSoftInputMode: number;
+		private _animationStyle: number;
 		private _animated: boolean;
 		private _stretched: boolean;
 		private _cancelable: boolean;
@@ -258,6 +268,7 @@ function initializeDialogFragment() {
 			this._dismissCallback = options.dismissCallback;
 			this._shownCallback = options.shownCallback;
 			this._windowSoftInputMode = options.windowSoftInputMode;
+			this._animationStyle = options.style;
 			this.setStyle(androidx.fragment.app.DialogFragment.STYLE_NO_TITLE, 0);
 
 			let theme = this.getTheme();
@@ -282,7 +293,7 @@ function initializeDialogFragment() {
 			// set the modal window animation
 			// https://github.com/NativeScript/NativeScript/issues/5989
 			if (this._animated) {
-				dialog.getWindow().setWindowAnimations(styleAnimationDialog);
+				dialog.getWindow().setWindowAnimations(this._animationStyle ?? styleAnimationDialog);
 			}
 
 			dialog.setCanceledOnTouchOutside(this._cancelable);
@@ -294,11 +305,18 @@ function initializeDialogFragment() {
 			const owner = this.owner;
 			this.activity = new WeakRef(this.getActivity());
 			owner._setupAsRootView(this.getActivity());
+			owner.parent = Application.getRootView();
 			owner._isAddedToNativeVisualTree = true;
 
 			// we need to set the window SoftInputMode here.
 			// it wont work is set in onStart
 			const window = this.getDialog().getWindow();
+			Application.android.notify(<AndroidDialogFragmentOnCreateViewEventData>{
+				eventName: Application.android.dialogOnCreateViewEvent,
+				object: owner,
+				dialog: this.getDialog(),
+				window,
+			});
 			if (this._windowSoftInputMode !== undefined) {
 				window.setSoftInputMode(this._windowSoftInputMode);
 			} else {
@@ -314,6 +332,9 @@ function initializeDialogFragment() {
 			if (this._fullscreen) {
 				const window = this.getDialog().getWindow();
 				const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+				// set the animations to use on showing and hiding the dialog
+				// window.setWindowAnimations(16973826); //android.R.style.Animation_Dialog
+				window.setWindowAnimations(this._animationStyle ?? 16973826 /* android.R.style.Animation_Dialog */);
 				window.setLayout(length, length);
 				// This removes the default backgroundDrawable so there are no margins.
 				window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
@@ -329,7 +350,7 @@ function initializeDialogFragment() {
 
 		public onDismiss(dialog: android.content.DialogInterface): void {
 			super.onDismiss(dialog);
-			const manager = this.getFragmentManager();
+			const manager = this.getParentFragmentManager();
 			const activity = this.activity?.get();
 			if (manager && !activity?.isChangingConfigurations()) {
 				removeModal(this.owner._domId);
@@ -359,6 +380,21 @@ function initializeDialogFragment() {
 
 				owner._isAddedToNativeVisualTree = false;
 				owner._tearDownUI(true);
+				owner.parent = null;
+			}
+		}
+
+		public show(manager, tag: string) {
+			try {
+				return super.show(manager, tag);
+			} catch (e) {
+				if (this.showImmediatelyFromBackground && manager instanceof androidx.fragment.app.FragmentManager) {
+					const ft = manager.beginTransaction();
+					ft.add(this, tag);
+					ft.commitAllowingStateLoss();
+				} else {
+					throw e;
+				}
 			}
 		}
 	}
@@ -497,7 +533,7 @@ export class View extends ViewCommon {
 	public static androidBackPressedEvent = androidBackPressedEvent;
 
 	public _dialogFragment: androidx.fragment.app.DialogFragment;
-	public _manager: androidx.fragment.app.FragmentManager;
+	public declare _manager: androidx.fragment.app.FragmentManager;
 	private touchListenerIsSet: boolean;
 	private touchListener: android.view.View.OnTouchListener;
 	private layoutChangeListenerIsSet: boolean;
@@ -506,7 +542,7 @@ export class View extends ViewCommon {
 	private insetListenerIsSet: boolean;
 	private needsInsetListener: boolean;
 
-	nativeViewProtected: android.view.View;
+	declare nativeViewProtected: android.view.View;
 
 	// TODO: Implement unobserve that detach the touchListener.
 	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
@@ -765,7 +801,8 @@ export class View extends ViewCommon {
 	}
 
 	setOnTouchListener() {
-		if (this.touchListenerIsSet || !this.nativeViewProtected || !this.hasGestureObservers()) {
+		const view = this.nativeViewProtected;
+		if (this.touchListenerIsSet || !view || !this.hasGestureObservers()) {
 			return;
 		}
 
@@ -773,12 +810,11 @@ export class View extends ViewCommon {
 		// false as we might need the ability for the event to pass through to a parent view
 		initializeTouchListener();
 		this.touchListener = this.touchListener || new TouchListener(this);
-		this.nativeViewProtected.setOnTouchListener(this.touchListener);
+		view.setOnTouchListener(this.touchListener);
 
 		this.touchListenerIsSet = true;
-
-		if (this.nativeViewProtected.setClickable) {
-			this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
+		if (view.setClickable) {
+			view.setClickable(this.isUserInteractionEnabled);
 		}
 	}
 
@@ -824,6 +860,11 @@ export class View extends ViewCommon {
 
 	@profile
 	public requestLayout(): void {
+		if (this.mSuspendRequestLayout) {
+			this._requetLayoutNeeded = true;
+			return;
+		}
+		this._requetLayoutNeeded = false;
 		super.requestLayout();
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.requestLayout();
@@ -960,7 +1001,7 @@ export class View extends ViewCommon {
 		// if the app is in background while triggering _showNativeModalView
 		// then DialogFragment.show will trigger IllegalStateException: Can not perform this action after onSaveInstanceState
 		// so if in background we create an event to call _showNativeModalView when loaded (going back in foreground)
-		if (isAppInBackground() && !parent.isLoaded) {
+		if (isAppInBackground() && !parent.isLoaded && options?.android?.showImmediatelyFromBackground !== true) {
 			const onLoaded = () => {
 				parent.off('loaded', onLoaded);
 				this._showNativeModalView(parent, options);
@@ -972,22 +1013,12 @@ export class View extends ViewCommon {
 		initializeDialogFragment();
 
 		const df = new DialogFragment();
+		df.showImmediatelyFromBackground = options?.android?.showImmediatelyFromBackground;
 		const args = new android.os.Bundle();
 		args.putInt(DOMID, this._domId);
 		df.setArguments(args);
 
-		let cancelable = true;
-		let windowSoftInputMode: number;
-
-		if (options.android) {
-			if ((<any>options).android.cancelable !== undefined) {
-				cancelable = !!(<any>options).android.cancelable;
-				console.log('ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.');
-			}
-			windowSoftInputMode = (<any>options).android.windowSoftInputMode;
-		}
-
-		cancelable = options.cancelable !== undefined ? !!options.cancelable : cancelable;
+		const cancelable = options.cancelable !== undefined ? !!options.cancelable : true;
 
 		const dialogOptions: DialogOptions = {
 			owner: this,
@@ -995,7 +1026,7 @@ export class View extends ViewCommon {
 			animated: !!options.animated,
 			stretched: !!options.stretched,
 			cancelable: cancelable,
-			windowSoftInputMode: windowSoftInputMode,
+			...(options?.android || {}),
 			shownCallback: () => this._raiseShownModallyEvent(),
 			dismissCallback: () => this.closeModal(),
 		};
@@ -1005,15 +1036,14 @@ export class View extends ViewCommon {
 		this._dialogFragment = df;
 		this._raiseShowingModallyEvent();
 
-		this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
+		df.show(parent._getFragmentManager(), this._domId.toString());
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
-		if (this._dialogFragment) {
-			const manager = this._dialogFragment.getFragmentManager();
-			if (manager) {
-				this._dialogFragment.dismissAllowingStateLoss();
-			}
+		this._raiseClosingModallyEvent();
+		const df = this._dialogFragment;
+		if (df?.getParentFragmentManager()) {
+			df.dismissAllowingStateLoss();
 		}
 
 		this._dialogFragment = null;
@@ -1044,35 +1074,38 @@ export class View extends ViewCommon {
 	}
 
 	[hiddenProperty.getDefault](): boolean {
-		return this.nativeViewProtected.getVisibility() === android.view.View.GONE;
+		return _getStoredClassDefaultPropertyValue(hiddenProperty, this, () => this.nativeViewProtected.getVisibility() === VIEW_GONE);
 	}
 	[hiddenProperty.setNative](value: boolean) {
-		this.nativeViewProtected.setVisibility(value ? android.view.View.GONE : android.view.View.VISIBLE);
+		this.nativeViewProtected.setVisibility(value ? VIEW_GONE : VIEW_VISIBLE);
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
-		const nativeVisibility = this.nativeViewProtected.getVisibility();
-		switch (nativeVisibility) {
-			case android.view.View.VISIBLE:
-				return 'visible';
-			case android.view.View.INVISIBLE:
-				return 'hidden';
-			case android.view.View.GONE:
-				return 'collapse';
-			default:
-				throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
-		}
+		return _getStoredClassDefaultPropertyValue(visibilityProperty, this, () => {
+			const nativeVisibility = this.nativeViewProtected.getVisibility();
+			switch (nativeVisibility) {
+				case VIEW_VISIBLE:
+					return 'visible';
+				case VIEW_INVISIBLE:
+					return 'hidden';
+				case VIEW_GONE:
+					return 'collapse';
+				default:
+					throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
+			}
+		});
 	}
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
 			case 'visible':
-				this.nativeViewProtected.setVisibility(android.view.View.VISIBLE);
+				this.nativeViewProtected.setVisibility(VIEW_VISIBLE);
 				break;
 			case 'hidden':
-				this.nativeViewProtected.setVisibility(android.view.View.INVISIBLE);
+				this.nativeViewProtected.setVisibility(VIEW_INVISIBLE);
 				break;
 			case 'collapse':
-				this.nativeViewProtected.setVisibility(android.view.View.GONE);
+			case 'collapsed':
+				this.nativeViewProtected.setVisibility(VIEW_GONE);
 				break;
 			default:
 				throw new Error(`Invalid visibility value: ${value}. Valid values are: visible, hidden, collapse.`);
@@ -1080,7 +1113,7 @@ export class View extends ViewCommon {
 	}
 
 	[opacityProperty.getDefault](): number {
-		return this.nativeViewProtected.getAlpha();
+		return _getStoredClassDefaultPropertyValue(opacityProperty, this, () => this.nativeViewProtected.getAlpha());
 	}
 	[opacityProperty.setNative](value: number) {
 		this.nativeViewProtected.setAlpha(float(value));
@@ -1118,96 +1151,17 @@ export class View extends ViewCommon {
 	}
 
 	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
-		return <CoreTypes.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
+		return _getStoredClassDefaultPropertyValue(horizontalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getHorizontalAlignment(this.nativeViewProtected));
 	}
 	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
-		const nativeView = this.nativeViewProtected;
-		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-		const gravity = lp.gravity;
-		const weight = lp.weight;
-
-		// Set only if params gravity exists.
-		if (gravity != null) {
-			switch (value) {
-				case 'start':
-					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_RIGHT : GRAVITY_LEFT) | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'left':
-					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'center':
-					lp.gravity = GRAVITY_CENTER_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'right':
-					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'end':
-					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_LEFT : GRAVITY_RIGHT) | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -2;
-					}
-					break;
-				case 'stretch':
-					lp.gravity = GRAVITY_FILL_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
-					if (weight < 0) {
-						lp.weight = -1;
-					}
-					break;
-			}
-			nativeView.setLayoutParams(lp);
-		}
+		ViewHelper.setHorizontalAlignment(this.nativeViewProtected, value);
 	}
 
 	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
-		return <CoreTypes.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
+		return _getStoredClassDefaultPropertyValue(verticalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getVerticalAlignment(this.nativeViewProtected));
 	}
 	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
-		const nativeView = this.nativeViewProtected;
-		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-		const gravity = lp.gravity;
-		const height = lp.height;
-		// Set only if params gravity exists.
-		if (gravity !== undefined) {
-			switch (value) {
-				case 'top':
-					lp.gravity = GRAVITY_TOP | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'middle':
-					lp.gravity = GRAVITY_CENTER_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'bottom':
-					lp.gravity = GRAVITY_BOTTOM | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -2;
-					}
-					break;
-				case 'stretch':
-					lp.gravity = GRAVITY_FILL_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
-					if (height < 0) {
-						lp.height = -1;
-					}
-					break;
-			}
-			nativeView.setLayoutParams(lp);
-		}
+		ViewHelper.setVerticalAlignment(this.nativeViewProtected, value);
 	}
 
 	[statusBarStyleProperty.getDefault]() {
@@ -1326,9 +1280,13 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
-		this.nativeViewProtected.setFocusable(!!value);
-
-		updateA11yPropertiesCallback(this);
+		// we should only call set focusable if user interaction is enabled and if not a layout
+		if (!this['addChild']) {
+			this.nativeViewProtected.setFocusable(!!value && this.isUserInteractionEnabled);
+		}
+		if (value) {
+			updateA11yPropertiesCallback(this);
+		}
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
@@ -1336,17 +1294,17 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityValueProperty.setNative](value: string): void {
-		this._androidContentDescriptionUpdated = true;
+		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
 
 	[accessibilityLabelProperty.setNative](value: string): void {
-		this._androidContentDescriptionUpdated = true;
+		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
 
 	[accessibilityHintProperty.setNative](value: string): void {
-		this._androidContentDescriptionUpdated = true;
+		this._androidContentDescriptionNeedsUpdate = true;
 		updateContentDescription(this);
 	}
 
@@ -1363,7 +1321,7 @@ export class View extends ViewCommon {
 	}
 
 	[androidElevationProperty.getDefault](): number {
-		return this.getDefaultElevation();
+		return _getStoredClassDefaultPropertyValue(androidElevationProperty, this, () => this.getDefaultElevation());
 	}
 	[androidElevationProperty.setNative](value: number) {
 		if (SDK_VERSION < 21) {
@@ -1443,42 +1401,42 @@ export class View extends ViewCommon {
 	}
 
 	[rotateProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setRotate(this.nativeViewProtected, float(value));
+		ViewHelper.setRotate(this.nativeViewProtected, float(value));
 	}
 
 	[rotateXProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setRotateX(this.nativeViewProtected, float(value));
+		ViewHelper.setRotateX(this.nativeViewProtected, float(value));
 	}
 
 	[rotateYProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setRotateY(this.nativeViewProtected, float(value));
+		ViewHelper.setRotateY(this.nativeViewProtected, float(value));
 	}
 
 	[perspectiveProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setPerspective(this.nativeViewProtected, float(value * Screen.mainScreen.scale));
+		ViewHelper.setPerspective(this.nativeViewProtected, float(value * Screen.mainScreen.scale));
 	}
 
 	[scaleXProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setScaleX(this.nativeViewProtected, float(value));
+		ViewHelper.setScaleX(this.nativeViewProtected, float(value));
 	}
 
 	[scaleYProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setScaleY(this.nativeViewProtected, float(value));
+		ViewHelper.setScaleY(this.nativeViewProtected, float(value));
 	}
 
 	[translateXProperty.setNative](value: CoreTypes.dip) {
-		org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeViewProtected, layout.toDevicePixels(value));
+		ViewHelper.setTranslateX(this.nativeViewProtected, layout.toDevicePixels(value));
 	}
 
 	[translateYProperty.setNative](value: CoreTypes.dip) {
-		org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeViewProtected, layout.toDevicePixels(value));
+		ViewHelper.setTranslateY(this.nativeViewProtected, layout.toDevicePixels(value));
 	}
 
 	[zIndexProperty.getDefault](): number {
 		return 0;
 	}
 	[zIndexProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setZIndex(this.nativeViewProtected, value);
+		ViewHelper.setZIndex(this.nativeViewProtected, value);
 	}
 
 	[backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
@@ -1505,28 +1463,34 @@ export class View extends ViewCommon {
 		}
 	}
 
-	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: android.graphics.drawable.Drawable) {
-		const nativeView = <NativeScriptAndroidView>this.nativeViewProtected;
-
-		if (onlyColor) {
-			const backgroundColor = background.color.android;
-
+	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any, shouldClipToOutline: boolean) {
+		const nativeView = this.nativeViewProtected as NativeScriptAndroidView;
+		const canUseOutlineProvider = !background.hasBorderWidth() && !background.hasBoxShadow() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
+		if (onlyColor || canUseOutlineProvider) {
+			const backgroundColor = background.color?.android;
 			if (isBorderDrawable) {
 				// We need to duplicate the drawable or we lose the "default" cached drawable
 				backgroundDrawable = nativeView._cachedDrawable != null ? AndroidHelper.getCopyOrDrawable(nativeView._cachedDrawable, nativeView.getResources()) : null;
 				nativeView.setBackground(backgroundDrawable);
 			}
+			if (backgroundColor) {
+				if (this.needsNativeDrawableFill && backgroundDrawable) {
+					backgroundDrawable.mutate();
 
-			// Apply color to drawables when there is the need to maintain visual things like button ripple effect
-			if (this.needsNativeDrawableFill && backgroundDrawable) {
-				backgroundDrawable.mutate();
+					AndroidHelper.setDrawableColor(backgroundColor, backgroundDrawable);
+					backgroundDrawable.invalidateSelf();
+				} else {
+					nativeView.setBackgroundColor(backgroundColor);
+				}
+			}
+			// borderDrawable is slow
+			// let s use outline provider when we can
+			if (shouldClipToOutline) {
+				ViewHelper.setOutlineProvider(nativeView, background.borderTopLeftRadius, background.borderTopRightRadius, background.borderBottomRightRadius, background.borderBottomLeftRadius);
 
-				AndroidHelper.setDrawableColor(backgroundColor, backgroundDrawable);
-				backgroundDrawable.invalidateSelf();
-			} else {
-				nativeView.setBackgroundColor(backgroundColor);
 			}
 		} else {
+			ViewHelper.clearOutlineProvider(nativeView);
 			if (background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR) {
 				if (backgroundDrawable) {
 					backgroundDrawable.mutate();
@@ -1537,7 +1501,6 @@ export class View extends ViewCommon {
 					nativeView.setBackgroundColor(-1);
 				}
 			}
-
 			if (background.isEmpty()) {
 				// Reset background to default if not already set
 				const defaultDrawable = nativeView._cachedDrawable ?? null;
@@ -1575,7 +1538,6 @@ export class View extends ViewCommon {
 		}
 		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, nativeArray);
 	}
-
 	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
 		if (value instanceof Background) {
 			this.onBackgroundOrBorderPropertyChanged();
@@ -1622,15 +1584,13 @@ export class View extends ViewCommon {
 		// prettier-ignore
 		const onlyColor = !background.hasBorderWidth()
 			&& !background.hasBorderRadius()
-			&& !background.hasBoxShadows()
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
-
-		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
-
-		if (background.hasBoxShadows()) {
-			this._drawBoxShadow(background.getBoxShadows());
+		const shouldClipToOutline = !onlyColor || !background.hasBoxShadow();
+		this._applyBackground(background, isBorderDrawable, onlyColor, drawable, shouldClipToOutline);
+		if (background.hasBoxShadow()) {
+			this._drawBoxShadow(background.getBoxShadow());
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
@@ -1704,7 +1664,7 @@ export class ContainerView extends View {
 }
 
 export class CustomLayoutView extends ContainerView {
-	nativeViewProtected: android.view.ViewGroup;
+	declare nativeViewProtected: android.view.ViewGroup;
 
 	public createNativeView() {
 		return new org.nativescript.widgets.ContentLayout(this._context);
@@ -1738,6 +1698,14 @@ export class CustomLayoutView extends ContainerView {
 
 	public _setChildMinHeightNative(child: View, value: CoreTypes.LengthType): void {
 		child._setMinHeightNative(value);
+	}
+
+	public _removeFromNativeVisualTree(): void {
+		super._removeFromNativeVisualTree();
+		const parent = this.nativeViewProtected?.getParent();
+		if (parent && parent['removeView']) {
+			parent['removeView'](this.nativeViewProtected);
+		}
 	}
 
 	public _removeViewFromNativeVisualTree(child: ViewCommon): void {
@@ -1821,40 +1789,40 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 createNativePercentLengthProperty({
 	setter: marginTopProperty.setNative,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMarginTop;
+		return ViewHelper.setMarginTop;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setMarginTopPercent;
+		return ViewHelper.setMarginTopPercent;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: marginRightProperty.setNative,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMarginRight;
+		return ViewHelper.setMarginRight;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setMarginRightPercent;
+		return ViewHelper.setMarginRightPercent;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: marginBottomProperty.setNative,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMarginBottom;
+		return ViewHelper.setMarginBottom;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setMarginBottomPercent;
+		return ViewHelper.setMarginBottomPercent;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: marginLeftProperty.setNative,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMarginLeft;
+		return ViewHelper.setMarginLeft;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setMarginLeftPercent;
+		return ViewHelper.setMarginLeftPercent;
 	},
 });
 
@@ -1862,10 +1830,10 @@ createNativePercentLengthProperty({
 	setter: widthProperty.setNative,
 	auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setWidth;
+		return ViewHelper.setWidth;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setWidthPercent;
+		return ViewHelper.setWidthPercent;
 	},
 });
 
@@ -1873,23 +1841,23 @@ createNativePercentLengthProperty({
 	setter: heightProperty.setNative,
 	auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setHeight;
+		return ViewHelper.setHeight;
 	},
 	get setPercent() {
-		return org.nativescript.widgets.ViewHelper.setHeightPercent;
+		return ViewHelper.setHeightPercent;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: '_setMinWidthNative',
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMinWidth;
+		return ViewHelper.setMinWidth;
 	},
 });
 
 createNativePercentLengthProperty({
 	setter: '_setMinHeightNative',
 	get setPixels() {
-		return org.nativescript.widgets.ViewHelper.setMinHeight;
+		return ViewHelper.setMinHeight;
 	},
 });

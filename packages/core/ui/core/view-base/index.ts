@@ -96,6 +96,17 @@ export interface ShowModalOptions {
 		 * For possible values see https://developer.android.com/reference/android/view/WindowManager.LayoutParams#softInputMode
 		 */
 		windowSoftInputMode?: number;
+
+		/**
+		 * An optional parameter specifying the style of the dialog window.
+		 */
+		style?: number;
+
+		/**
+		 * An optional parameter to force show the modal from background. If used then you dont get android state save mechanism
+		 * if not used then the modal showing is delayed until the app is in foreground again
+		 */
+		showImmediatelyFromBackground?: boolean;
 	};
 	/**
 	 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
@@ -337,7 +348,7 @@ export abstract class ViewBase extends Observable {
 	private _iosView: Object;
 	private _androidView: Object;
 	private _style: Style;
-	private _isLoaded: boolean;
+	private _isLoaded: boolean = false;
 
 	/**
 	 * @deprecated
@@ -346,6 +357,9 @@ export abstract class ViewBase extends Observable {
 
 	private _templateParent: ViewBase;
 	private __nativeView: any;
+
+	private _needsCssChange = false;
+
 	// private _disableNativeViewRecycling: boolean;
 
 	public domNode: DOMNode;
@@ -386,6 +400,7 @@ export abstract class ViewBase extends Observable {
 	 * @nsProperty
 	 */
 	public className: string;
+	public disableCss: boolean;
 
 	/**
 	 * Gets or sets the visual state of the view.
@@ -422,11 +437,11 @@ export abstract class ViewBase extends Observable {
 	 * Native setters that had to execute while there was no native view,
 	 * or the view was detached from the visual tree etc. will accumulate in this object,
 	 * and will be applied when all prerequisites are met.
+	 * Initializing ensure we never call `applyAllNativeSetters` and always use _suspendedUpdates
 	 * @private
 	 */
-	public _suspendedUpdates: {
-		[propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
-	};
+	public _suspendedUpdates: Map<string, Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>> = new Map();
+
 	//@endprivate
 	/**
 	 * Determines the depth of suspended updates.
@@ -684,18 +699,29 @@ export abstract class ViewBase extends Observable {
 		if (this._isLoaded) {
 			return;
 		}
-
+		// the view is going to be layed out after
+		// no need for requestLayout which can be pretty slow because
+		// called a lot and going all up the chain to the page
+		this.suspendRequestLayout = true;
 		this._isLoaded = true;
-		this._cssState.onLoaded();
-		this._resumeNativeUpdates(SuspendType.Loaded);
+		if (this._needsCssChange) {
+			this._onCssStateChange();
+		} else if (!this.disableCss) {
+			this._cssState.onLoaded();
+		}
 
 		this.eachChild((child) => {
 			this.loadView(child);
-
 			return true;
 		});
+		this._resumeNativeUpdates(SuspendType.Loaded);
 
-		this._emit('loaded');
+		this.suspendRequestLayout = false;
+
+		if (!this.parent?.mSuspendRequestLayout && this.isLayoutRequestNeeded) {
+			this.requestLayout();
+		}
+		this._emit(ViewBase.loadedEvent);
 	}
 
 	@profile
@@ -714,7 +740,9 @@ export abstract class ViewBase extends Observable {
 		});
 
 		this._isLoaded = false;
-		this._cssState.onUnloaded();
+		if (!this.disableCss) {
+			this._cssState.onUnloaded();
+		}
 		this._emit('unloaded');
 	}
 
@@ -724,23 +752,39 @@ export abstract class ViewBase extends Observable {
 		}
 	}
 
-	public _suspendNativeUpdates(type: SuspendType): void {
+	public _suspendNativeUpdates(type: SuspendType, recursive = false, shouldSuspendRequestLayout = false): void {
+		if (shouldSuspendRequestLayout) {
+			this.suspendRequestLayout = true;
+		}
 		if (type) {
 			this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount | type;
 		} else {
 			this._suspendNativeUpdatesCount++;
 		}
+		if (recursive) {
+			this.eachChild((child) => {
+				child._suspendNativeUpdates(type, recursive, shouldSuspendRequestLayout);
+				return true;
+			});
+		}
 	}
-	public _resumeNativeUpdates(type: SuspendType): void {
+	public _resumeNativeUpdates(type: SuspendType, recursive = false, shouldResumeRequestLayout = false): void {
+		if (recursive) {
+			this.eachChild((child) => {
+				child._resumeNativeUpdates(type, recursive, shouldResumeRequestLayout);
+				return true;
+			});
+		}
 		if (type) {
 			this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount & ~type;
 		} else {
-			if ((this._suspendNativeUpdatesCount & SuspendType.IncrementalCountMask) === 0) {
-				throw new Error(`Invalid call to ${this}._resumeNativeUpdates`);
+			if (this._suspendNativeUpdatesCount > 0) {
+				this._suspendNativeUpdatesCount--;
 			}
-			this._suspendNativeUpdatesCount--;
 		}
-
+		if (shouldResumeRequestLayout) {
+			this.suspendRequestLayout = false;
+		}
 		if (!this._suspendNativeUpdatesCount) {
 			this.onResumeNativeUpdates();
 		}
@@ -921,6 +965,19 @@ export abstract class ViewBase extends Observable {
 		}
 	}
 
+	_requetLayoutNeeded = false;
+	get isLayoutRequestNeeded() {
+		return this._requetLayoutNeeded;
+	}
+	// we can initialize it to true for less unwanted requestLayout calls
+	mSuspendRequestLayout = true;
+	set suspendRequestLayout(value: boolean) {
+		this.mSuspendRequestLayout = value;
+	}
+	get suspendRequestLayout() {
+		return this.mSuspendRequestLayout;
+	}
+
 	/**
 	 * Invalidates the layout of the view and triggers a new layout pass.
 	 */
@@ -930,6 +987,13 @@ export abstract class ViewBase extends Observable {
 		const parent = this.parent;
 		if (parent) {
 			this.performLayout();
+		}
+	}
+
+	requestlayoutIfNeeded() {
+		if (this._requetLayoutNeeded) {
+			this._requetLayoutNeeded = false;
+			this.requestLayout();
 		}
 	}
 
@@ -1079,32 +1143,6 @@ export abstract class ViewBase extends Observable {
 	}
 
 	/**
-	 * Resets properties/listeners set to the native view.
-	 */
-	public resetNativeView(): void {
-		//
-	}
-
-	private resetNativeViewInternal(): void {
-		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && __ANDROID__) {
-		//     const recycle = this.recycleNativeView;
-		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
-		//         resetNativeView(this);
-		//         if (this._isPaddingRelative) {
-		//             nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-		//         } else {
-		//             nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-		//         }
-		//         this.resetNativeView();
-		//     }
-		// }
-		// if (this._cssState) {
-		//     this._cancelAllAnimations();
-		// }
-	}
-
-	/**
 	 * if _setupAsRootView is called it means it is not supposed to be
 	 * added to a parent. However parent can be set before for the purpose
 	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree
@@ -1128,7 +1166,7 @@ export abstract class ViewBase extends Observable {
 			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
 			if (this.reusable) {
 				if (!this.mIsRootView && this.parent && !this._isAddedToNativeVisualTree) {
-					const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
+					const nativeIndex = atIndex !== undefined ? this.parent._childIndexToNativeChildIndex(atIndex) : atIndex;
 					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 				}
 			}
@@ -1203,7 +1241,7 @@ export abstract class ViewBase extends Observable {
 		this.setNativeView(nativeView);
 
 		if (!this.mIsRootView && this.parent) {
-			const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
+			const nativeIndex = atIndex !== undefined ? this.parent._childIndexToNativeChildIndex(atIndex) : undefined;
 			this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 		}
 
@@ -1228,14 +1266,14 @@ export abstract class ViewBase extends Observable {
 
 		if (this.__nativeView) {
 			this._suspendNativeUpdates(SuspendType.NativeView);
-			// We may do a `this.resetNativeView()` here?
 		}
 
 		this.__nativeView = this.nativeViewProtected = value;
 		if (this.__nativeView) {
-			this._suspendedUpdates = undefined;
 			this.initNativeView();
 			this._resumeNativeUpdates(SuspendType.NativeView);
+		} else {
+			this._suspendedUpdates = undefined;
 		}
 	}
 
@@ -1262,8 +1300,6 @@ export abstract class ViewBase extends Observable {
 		}
 		const preserveNativeView = this.reusable && !force;
 
-		this.resetNativeViewInternal();
-
 		if (!preserveNativeView) {
 			this.eachChild((child) => {
 				child._tearDownUI(force);
@@ -1271,9 +1307,11 @@ export abstract class ViewBase extends Observable {
 				return true;
 			});
 		}
-
 		if (this.parent) {
 			this.parent._removeViewFromNativeVisualTree(this);
+		} else {
+			//ensure we still remove the view or we could create memory leaks
+			this._removeFromNativeVisualTree();
 		}
 
 		// const nativeView = this.nativeViewProtected;
@@ -1327,6 +1365,13 @@ export abstract class ViewBase extends Observable {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Method is intended to be overridden by inheritors and used as "protected"
+	 */
+	public _removeFromNativeVisualTree(): void {
+		this._isAddedToNativeVisualTree = false;
 	}
 
 	/**
@@ -1418,7 +1463,7 @@ export abstract class ViewBase extends Observable {
 
 	public onResumeNativeUpdates(): void {
 		// Apply native setters...
-		initNativeView(this, undefined, undefined);
+		initNativeView(this);
 	}
 
 	public toString(): string {
@@ -1441,16 +1486,24 @@ export abstract class ViewBase extends Observable {
 	 * Notifies each child's css state for change, recursively.
 	 * Either the style scope, className or id properties were changed.
 	 */
-	_onCssStateChange(): void {
-		this._cssState.onChange();
-		eachDescendant(this, (child: ViewBase) => {
-			child._cssState.onChange();
-
+	_onCssStateChange(force = false): boolean {
+		if (this.disableCss) {
 			return true;
+		}
+		if (!this.isLoaded && !force) {
+			this._needsCssChange = true;
+			return false;
+		}
+		this._cssState.onChange(force);
+		eachDescendant(this, (child: ViewBase) => {
+			return child._onCssStateChange();
 		});
 	}
 
 	_inheritStyleScope(styleScope: StyleScope): void {
+		if (this.disableCss) {
+			return;
+		}
 		// If we are styleScope don't inherit parent stylescope.
 		// TODO: Consider adding parent scope and merge selectors.
 		if (this._isStyleScopeHost) {
@@ -1575,26 +1628,28 @@ hiddenProperty.register(ViewBase);
 export const classNameProperty = new Property<ViewBase, string>({
 	name: 'className',
 	valueChanged(view: ViewBase, oldValue: string, newValue: string) {
+		if (view.disableCss) {
+			return;
+		}
 		const cssClasses = view.cssClasses;
-		const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
+		// const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
 
-		const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
-		const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		// const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
+		// const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
 
 		cssClasses.clear();
 
-		if (shouldAddModalRootViewCssClasses) {
-			cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
-		} else if (shouldAddRootViewCssClasses) {
-			cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
-		}
+		// if (shouldAddModalRootViewCssClasses) {
+		// 	cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
+		// } else if (shouldAddRootViewCssClasses) {
+		// 	cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
+		// }
 
-		rootViewsCssClasses.forEach((c) => cssClasses.add(c));
+		// rootViewsCssClasses.forEach((c) => cssClasses.add(c));
 
 		if (typeof newValue === 'string' && newValue !== '') {
 			newValue.split(' ').forEach((c) => cssClasses.add(c));
 		}
-
 		view._onCssStateChange();
 	},
 });
@@ -1605,6 +1660,12 @@ export const idProperty = new Property<ViewBase, string>({
 	valueChanged: (view, oldValue, newValue) => view._onCssStateChange(),
 });
 idProperty.register(ViewBase);
+export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
+	name: 'disableCss',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+disableCssProperty.register(ViewBase);
 
 export const defaultVisualStateProperty = new Property<ViewBase, string>({
 	name: 'defaultVisualState',

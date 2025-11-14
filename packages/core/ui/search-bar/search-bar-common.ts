@@ -1,6 +1,7 @@
 ﻿import { SearchBar as SearchBarDefinition } from '.';
 import { View, CSSType } from '../core/view';
 import { Property } from '../core/properties';
+import { colorConverter } from '../styling/style-properties';
 import { Color } from '../../color';
 
 @CSSType('SearchBar')
@@ -35,14 +36,14 @@ hintProperty.register(SearchBarBase);
 export const textFieldHintColorProperty = new Property<SearchBarBase, Color>({
 	name: 'textFieldHintColor',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 textFieldHintColorProperty.register(SearchBarBase);
 
 export const textFieldBackgroundColorProperty = new Property<SearchBarBase, Color>({
 	name: 'textFieldBackgroundColor',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 textFieldBackgroundColorProperty.register(SearchBarBase);
 

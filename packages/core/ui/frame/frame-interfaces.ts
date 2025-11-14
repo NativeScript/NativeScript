@@ -34,6 +34,10 @@ export interface BackstackEntry {
 	viewSavedState?: any;
 	frameId?: number;
 	recreated?: boolean;
+
+	transition?: NavigationTransition;
+	transitioniOS?: NavigationTransition;
+	transitionAndroid?: NavigationTransition;
 }
 
 export interface NavigationContext {
@@ -130,6 +134,7 @@ export interface AndroidActivityCallbacks {
 export interface AndroidFragmentCallbacks {
 	onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
 	onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
+	onCreateAnimation(fragment: any, transit: number, enter: boolean, nextAnim: number): any;
 	onCreate(fragment: any, savedInstanceState: any, superFunc: Function): void;
 	onCreateView(fragment: any, inflater: any, container: any, savedInstanceState: any, superFunc: Function): any;
 	onSaveInstanceState(fragment: any, outState: any, superFunc: Function): void;

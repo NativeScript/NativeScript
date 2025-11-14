@@ -433,7 +433,7 @@ class UISearchResultsUpdatingImpl extends NSObject implements UISearchResultsUpd
 }
 
 export class ListView extends ListViewBase {
-	public nativeViewProtected: UITableView;
+	public declare nativeViewProtected: UITableView;
 	// tslint:disable-next-line
 	private _dataSource;
 	private _delegate;

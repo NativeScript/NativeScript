@@ -7,7 +7,7 @@ import { IOSIndicatorViewStyle } from '.';
 export * from './activity-indicator-common';
 
 export class ActivityIndicator extends ActivityIndicatorBase {
-	nativeViewProtected: UIActivityIndicatorView;
+	declare nativeViewProtected: UIActivityIndicatorView;
 
 	createNativeView() {
 		const viewStyle = this._getNativeIndicatorViewStyle(this.iosIndicatorViewStyle);

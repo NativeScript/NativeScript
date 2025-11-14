@@ -7,12 +7,12 @@ import { SharedTransitionHelper } from './shared-transition-helper';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
 
 export class ModalTransition extends Transition {
-	transitionController: ModalTransitionController;
-	interactiveController: UIPercentDrivenInteractiveTransition;
+	declare transitionController: ModalTransitionController;
+	declare interactiveController: UIPercentDrivenInteractiveTransition;
 	interactiveGestureRecognizer: UIScreenEdgePanGestureRecognizer;
-	presented: UIViewController;
-	presenting: UIViewController;
-	sharedElements: {
+	declare presented: UIViewController;
+	declare presenting: UIViewController;
+	declare sharedElements: {
 		presented?: Array<SharedElementSettings>;
 		presenting?: Array<SharedElementSettings>;
 		// independent sharedTransitionTags which are part of the shared transition but only on one page

@@ -41,7 +41,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	public GridLayout(Context context, String rows) {
-		this(context);
+		this(context, null, 0);
 		this.addRowsFromJSON(rows);
 	}
 
@@ -61,7 +61,6 @@ public class GridLayout extends LayoutBase {
 	}
 
 	public void addRow(ItemSpec itemSpec) {
-		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
 		this._rows.add(itemSpec);
 
@@ -76,7 +75,6 @@ public class GridLayout extends LayoutBase {
 	}
 
 	public void addColumn(ItemSpec itemSpec) {
-		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
 		this._cols.add(itemSpec);
 

@@ -45,7 +45,7 @@ function initializeImageLoadedListener() {
 }
 
 export class Image extends ImageBase {
-	nativeViewProtected: org.nativescript.widgets.ImageView;
+	declare nativeViewProtected: org.nativescript.widgets.ImageView;
 
 	public useCache = true;
 
@@ -71,11 +71,6 @@ export class Image extends ImageBase {
 			(<any>this.nativeViewProtected).listener.owner = null;
 		}
 		super.disposeNativeView();
-	}
-
-	public resetNativeView(): void {
-		super.resetNativeView();
-		this.nativeViewProtected.setImageMatrix(new android.graphics.Matrix());
 	}
 
 	public _createImageSourceFromSrc(value: string | ImageSource | ImageAsset) {

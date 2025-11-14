@@ -34,8 +34,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 }
 
 export class ScrollView extends ScrollViewBase {
-	public nativeViewProtected: UIScrollView;
-
+	public declare nativeViewProtected: UIScrollView;
 	private _contentMeasuredWidth = 0;
 	private _contentMeasuredHeight = 0;
 	private _isFirstLayout: boolean = true;
@@ -175,7 +174,8 @@ export class ScrollView extends ScrollViewBase {
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
-		if (!this.nativeViewProtected) {
+		const view = this.nativeViewProtected;
+		if (!view) {
 			return;
 		}
 
@@ -188,7 +188,7 @@ export class ScrollView extends ScrollViewBase {
 			// Disable automatic adjustment of scroll view insets
 			// Consider exposing this as property with all 4 modes
 			// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
-			this.nativeViewProtected.contentInsetAdjustmentBehavior = 2;
+			view.contentInsetAdjustmentBehavior = 2;
 		}
 
 		let scrollInsetWidth = scrollWidth + insets.left + insets.right;
@@ -202,7 +202,7 @@ export class ScrollView extends ScrollViewBase {
 			scrollHeight = Math.max(this._contentMeasuredHeight, scrollHeight);
 		}
 
-		this.nativeViewProtected.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(scrollInsetWidth), layout.toDeviceIndependentPixels(scrollInsetHeight));
+		view.contentSize = CGSizeMake(layout.toDeviceIndependentPixels(scrollInsetWidth), layout.toDeviceIndependentPixels(scrollInsetHeight));
 
 		// RTL handling
 		if (this.orientation === 'horizontal') {
@@ -212,7 +212,7 @@ export class ScrollView extends ScrollViewBase {
 				if (this.direction === CoreTypes.LayoutDirection.rtl) {
 					const scrollableWidth = scrollInsetWidth - this.getMeasuredWidth();
 					if (scrollableWidth > 0) {
-						this.nativeViewProtected.contentOffset = CGPointMake(layout.toDeviceIndependentPixels(scrollableWidth), this.verticalOffset);
+						view.contentOffset = CGPointMake(layout.toDeviceIndependentPixels(scrollableWidth), this.verticalOffset);
 					}
 				}
 			}

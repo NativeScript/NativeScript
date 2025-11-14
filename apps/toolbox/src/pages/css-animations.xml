@@ -1,0 +1,7 @@
+<Page loaded="onLoaded">
+    <GridLayout rows="*,*,*,*,*,*" columns="*,*,*">
+        <Button class="s0 fade-blink" row="0" col="0" text="Button"/>
+        <Label color="black" class="s0 color-blink" row="1" col="0" text="This is a test" backgroundColor="red"/>
+        <Button class="s0 slide-blink" row="2" col="0" text="Button"/>
+    </GridLayout>
+</Page>

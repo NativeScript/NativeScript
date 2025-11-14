@@ -128,6 +128,7 @@ export namespace CoreTypes {
 	export namespace HorizontalAlignment {
 		export const start = 'start';
 		export const left = 'left';
+		export const middle = 'middle';
 		export const center = 'center';
 		export const right = 'right';
 		export const end = 'end';
@@ -136,12 +137,15 @@ export namespace CoreTypes {
 		export const parse = makeParser<HorizontalAlignmentType>(isValid);
 	}
 
-	export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch' | CSSWideKeywords;
+	export type VerticalAlignmentType = 'top' | 'middle' | 'center' | 'bottom' | 'stretch' | CSSWideKeywords;
 	export namespace VerticalAlignment {
 		export const top = 'top';
 		export const middle = 'middle';
+		export const center = 'center';
 		export const bottom = 'bottom';
 		export const stretch = 'stretch';
+		export const isValid = makeValidator<VerticalAlignmentType>(top, center, middle, bottom, stretch);
+		export const parse = makeParser<VerticalAlignmentType>(isValid);
 	}
 	export type VerticalAlignmentTextType = VerticalAlignmentType | 'text-top' | 'text-bottom' | 'sup' | 'sub' | 'baseline';
 	export namespace VerticalAlignmentText {
@@ -173,9 +177,9 @@ export namespace CoreTypes {
 		export const collapse: VisibilityType = 'collapse';
 		export const collapsed: VisibilityType = 'collapsed';
 		export const hidden: VisibilityType = 'hidden';
-		export const isValid = makeValidator<CoreTypes.VisibilityType>(visible, hidden, collapse);
-		export const parse = (value: string) => (value.toLowerCase() === 'collapsed' ? collapse : parseStrict(value));
+		export const isValid = makeValidator<CoreTypes.VisibilityType>(visible, hidden, collapse, collapsed);
 		const parseStrict = makeParser<CoreTypes.VisibilityType>(isValid);
+		export const parse = parseStrict;
 	}
 
 	export namespace FontAttributes {

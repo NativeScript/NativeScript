@@ -10,6 +10,8 @@ import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, 
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
+import { ContentView } from '../content-view';
+import { Transition } from '../transition';
 import { ensureFragmentClass, fragmentClass } from './fragment';
 import { getAppMainEntry } from '../../application/helpers-common';
 
@@ -70,7 +72,6 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 }
 
 export class Frame extends FrameBase {
-	public _originalBackground: any;
 	private _android: AndroidFrame;
 	private _containerViewId = -1;
 	private _tearDownPending = false;
@@ -205,7 +206,9 @@ export class Frame extends FrameBase {
 			// NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
 			const cachedTransitionState = _getTransitionState(this._currentEntry);
 
-			if (cachedTransitionState) {
+			// we can end up here also after an activity recreate. In this case the entry fragment was destroyed
+			// and we also dont have cachedTransitionState. We still need to navigate again
+			if (cachedTransitionState || !entry.fragment) {
 				this._cachedTransitionState = cachedTransitionState;
 				this._currentEntry = null;
 				// NavigateCore will eventually call _processNextNavigationEntry again.
@@ -245,12 +248,6 @@ export class Frame extends FrameBase {
 	}
 
 	onLoaded(): void {
-		if (this._originalBackground) {
-			this.backgroundColor = null;
-			this.backgroundColor = this._originalBackground;
-			this._originalBackground = null;
-		}
-
 		this._ensureEntryFragment();
 		super.onLoaded();
 	}
@@ -301,7 +298,7 @@ export class Frame extends FrameBase {
 			return;
 		}
 		const fragment: androidx.fragment.app.Fragment = this._currentEntry.fragment;
-		const fragmentManager: androidx.fragment.app.FragmentManager = fragment.getFragmentManager();
+		const fragmentManager: androidx.fragment.app.FragmentManager = fragment.getParentFragmentManager();
 
 		const transaction = fragmentManager.beginTransaction();
 		const fragmentExitTransition = fragment.getExitTransition();
@@ -331,7 +328,11 @@ export class Frame extends FrameBase {
 		backstackEntry.fragment = newFragment;
 		backstackEntry.fragmentTag = fragmentTag;
 		backstackEntry.navDepth = navDepth;
-
+		Application.android.notify({
+			eventName: Application.AndroidApplication.fragmentCreateEvent,
+			object: Application.android,
+			fragment: newFragment,
+		});
 		return newFragment;
 	}
 
@@ -420,7 +421,6 @@ export class Frame extends FrameBase {
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
 	public _navigateCore(newEntry: BackstackEntry) {
-		// should be (newEntry: BackstackEntry)
 		super._navigateCore(newEntry);
 
 		// set frameId here so that we could use it in fragment.transitions
@@ -478,11 +478,25 @@ export class Frame extends FrameBase {
 			// transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
-		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-
+		if (this._currentEntry) {
+			// we only hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// it will be removed once the navigation is done
+			transaction.hide(this._currentEntry.fragment);
+		}
+		if (clearHistory || isReplace) {
+			// we need to ensure we dont listen for animations of
+			// in between fragments or they could break our transition end handling
+			// and set the wrong current entry
+			for (let index = 0; index < this.backStack.length; index++) {
+				_clearEntry(this.backStack[index]);
+			}
+			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+		} else {
+			transaction.add(this.containerViewId, newFragment, newFragmentTag);
+		}
 		navigationTransition?.instance?.androidFragmentTransactionCallback?.(transaction, currentEntry, newEntry);
 
-		transaction.commitAllowingStateLoss();
+		transaction.commitNowAllowingStateLoss();
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry & ExpandedEntry) {
@@ -491,7 +505,7 @@ export class Frame extends FrameBase {
 
 		const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
 		const transaction = manager.beginTransaction();
-
+		let wasCreated = false;
 		if (!backstackEntry.fragment) {
 			// Happens on newer API levels. On older all fragments
 			// are recreated once activity is created.
@@ -499,22 +513,68 @@ export class Frame extends FrameBase {
 			// We need to recreate its animations and then reverse it.
 			backstackEntry.fragment = this.createFragment(backstackEntry, backstackEntry.fragmentTag);
 			_updateTransitions(backstackEntry);
+			wasCreated = true;
 		}
 
 		_reverseTransitions(backstackEntry, this._currentEntry);
 
-		transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
+		const currentIndex = this.backStack.length;
+		const goBackToIndex = this.backStack.indexOf(backstackEntry);
 
-		backstackEntry.transition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
+		// the order is important so that the last transition listener called be
+		// the one from the current entry we are going back from
+		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
+			// we need to ensure we dont listen for animations of
+			// in between fragments or they could break our transition end handling
+			// and set the wrong current entry
+			_clearEntry(this.backStack[index]);
+			transaction.remove(this.backStack[index].fragment);
+		}
+		if (this._currentEntry !== backstackEntry) {
+			const entry = this._currentEntry as ExpandedEntry;
+			// if we are going back we need to store where we are backing to
+			// so that we can set the current entry
+			// it only needs to be done on the return transition
+			if (entry.returnTransitionListener) {
+				entry.returnTransitionListener.backEntry = backstackEntry;
+			}
 
-		transaction.commitAllowingStateLoss();
+			// we only hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// it will be removed once the navigation is done
+			transaction.hide(this._currentEntry.fragment);
+
+			// let's show the previous fragment
+			if (wasCreated) {
+				transaction.add(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
+			} else {
+				transaction.show(backstackEntry.fragment);
+			}
+		}
+
+		let navigationTransition: Transition;
+		if (backstackEntry) {
+			navigationTransition = this._getNavigationTransition(backstackEntry, false)?.instance;
+		}
+		if (navigationTransition === undefined) {
+			navigationTransition = backstackEntry.transition;
+		}
+
+		navigationTransition?.androidFragmentTransactionCallback?.(transaction, this._currentEntry, backstackEntry);
+
+		transaction.commitNowAllowingStateLoss();
 	}
 
 	public _removeEntry(removed: BackstackEntry): void {
 		super._removeEntry(removed);
-
 		if (removed.fragment) {
+			// we only did hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// so lets remove it
+			const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
+			const transaction = manager.beginTransaction();
+			transaction.remove(removed.fragment);
+			// clear entry before commit because commit now will release the fragment right away
 			_clearEntry(removed);
+			transaction.commitNowAllowingStateLoss();
 			removed.fragment = null;
 		}
 
@@ -835,16 +895,17 @@ if (parseInt(Device.sdkVersion) >= 33) {
 	});
 }
 
-const activityRootViewsMap = new Map<number, WeakRef<View>>();
+const activityRootViewsMap = new Map<number, WeakRef<ContentView>>();
 const ROOT_VIEW_ID_EXTRA = 'com.tns.activity.rootViewId';
 
 export let moduleLoaded: boolean;
 
 export class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
-	private _rootView: View;
+	private _rootView: ContentView;
+	private _subRootView: View;
 
 	public getRootView(): View {
-		return this._rootView;
+		return this._subRootView || this._rootView;
 	}
 
 	@profile
@@ -874,6 +935,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			const rootViewId = savedInstanceState.getInt(ROOT_VIEW_ID_EXTRA, -1);
 			if (rootViewId !== -1 && activityRootViewsMap.has(rootViewId)) {
 				this._rootView = activityRootViewsMap.get(rootViewId)?.get();
+				this._subRootView = this._rootView.content;
 			}
 		}
 
@@ -885,6 +947,12 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 				intent,
 			});
 		}
+
+		Application.android.notify({
+			eventName: Application.AndroidApplication.activityCreateEvent,
+			object: Application.android,
+			activity,
+		});
 
 		this.setActivityContent(activity, savedInstanceState, true);
 		moduleLoaded = true;
@@ -978,12 +1046,16 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			if (rootView) {
 				rootView._tearDownUI(true);
 			}
+			this._rootView = null;
 
 			// this may happen when the user changes the system theme
 			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
 			// as a result, launchEvent will never be called
 			// possible alternative: always fire launchEvent and exitEvent, but pass extra flags to make it clear what kind of launch/destroy is happening
 			if (activity.isFinishing()) {
+				// only clear _subRootView is finishing
+				// other we might reuse it
+				this._subRootView = null;
 				const exitArgs = {
 					eventName: Application.exitEvent,
 					object: Application.android,
@@ -1079,6 +1151,7 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		}
 		// Delete previously cached root view in order to recreate it.
 		this._rootView = null;
+		this._subRootView = null;
 		this.setActivityContent(activity, null, false);
 		this._rootView.callLoaded();
 	}
@@ -1089,40 +1162,52 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 	// 3. Livesync if rootView has no custom _onLivesync. this._rootView should have been cleared upfront. Launch event should not fired
 	// 4. resetRootView method. this._rootView should have been cleared upfront. Launch event should not fired
 	private setActivityContent(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, fireLaunchEvent: boolean): void {
-		let rootView = this._rootView;
-
-		if (Trace.isEnabled()) {
-			Trace.write(`Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`, Trace.categories.NativeLifecycle);
-		}
-
-		const intent = activity.getIntent();
-		rootView = Application.createRootView(rootView, fireLaunchEvent, {
-			// todo: deprecate in favor of args.intent?
-			android: intent,
-			intent,
-			savedInstanceState,
-		});
-
-		if (!rootView) {
-			// no root view created
-			return;
-		}
-
+		const rootView = new ContentView();
 		activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
-
 		// setup view as styleScopeHost
 		rootView._setupAsRootView(activity);
-
+		this._rootView = rootView;
+		// sets root classes once rootView is ready...
+		let subRootView = this._subRootView;
+		// in case we recreate the activity, subRootView is already created.
+		// we just want to set it as content
+		if (subRootView) {
+			if (subRootView.parent && subRootView.parent !== rootView) {
+				try {
+					// we might catch errors if the nativeView is already disposed
+					subRootView.parent._removeView(subRootView);
+				} catch (err) {}
+			}
+			rootView.content = subRootView;
+		}
+		Application.initRootView(rootView);
 		if (isEmbedded()) {
 			setEmbeddedView(rootView);
 		} else {
 			activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
 		}
 
-		this._rootView = rootView;
+		if (Trace.isEnabled()) {
+			Trace.write(`Frame.setActivityContent rootView: ${rootView} subRootView: ${subRootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`, Trace.categories.NativeLifecycle);
+		}
 
-		// sets root classes once rootView is ready...
-		Application.initRootView(rootView);
+		const intent = activity.getIntent();
+		subRootView = Application.createRootView(subRootView, fireLaunchEvent, {
+			// todo: deprecate in favor of args.intent?
+			android: intent,
+			intent,
+			savedInstanceState,
+		});
+
+		if (!subRootView) {
+			// no root view created
+			return;
+		}
+		this._subRootView = subRootView;
+		if (subRootView.parent && subRootView.parent !== rootView) {
+			subRootView.parent._removeView(subRootView);
+		}
+		rootView.content = subRootView;
 	}
 }
 

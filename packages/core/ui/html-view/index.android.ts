@@ -7,7 +7,7 @@ import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } fro
 export * from './html-view-common';
 
 export class HtmlView extends HtmlViewBase {
-	nativeViewProtected: android.widget.TextView;
+	declare nativeViewProtected: android.widget.TextView;
 
 	public createNativeView() {
 		return new android.widget.TextView(this._context);
@@ -23,11 +23,6 @@ export class HtmlView extends HtmlViewBase {
 		// This makes the html <a href...> work
 		nativeView.setLinksClickable(true);
 		nativeView.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
-	}
-
-	public resetNativeView(): void {
-		super.resetNativeView();
-		this.nativeViewProtected.setAutoLinkMask(0);
 	}
 
 	[htmlProperty.getDefault](): string {

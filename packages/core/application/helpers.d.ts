@@ -1,8 +1,4 @@
 /**
- * Initialize accessibility for View. This should be called on loaded-event.
- */
-export function setupAccessibleView(view: View): void;
-/**
  * Android: Update the content description for views
  */
 export const updateContentDescription: (view: any /* View */, forceUpdate?: boolean) => string | null;

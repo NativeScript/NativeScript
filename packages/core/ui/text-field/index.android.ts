@@ -98,5 +98,3 @@ export class TextField extends TextFieldBase {
 		this._setInputType(inputType);
 	}
 }
-
-TextField.prototype._isSingleLine = true;

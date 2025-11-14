@@ -105,6 +105,7 @@ interface ApplicationEvents {
 	notify<T = ApplicationEventData>(eventData: T): void;
 	hasListeners(eventName: string): boolean;
 
+	once(eventNames: string, callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 	on(eventNames: string, callback: (args: ApplicationEventData) => void, thisArg?: any): void;
 	/**
 	 * This event is raised when application css is changed.
@@ -223,8 +224,8 @@ export class ApplicationCommon {
 
 	// Application events go through the global events.
 	on: ApplicationEvents['on'] = globalEvents.on.bind(globalEvents);
-	once: ApplicationEvents['on'] = globalEvents.once.bind(globalEvents);
 	off: ApplicationEvents['off'] = globalEvents.off.bind(globalEvents);
+	once: ApplicationEvents['once'] = globalEvents.once.bind(globalEvents);
 	notify: ApplicationEvents['notify'] = globalEvents.notify.bind(globalEvents);
 	hasListeners: ApplicationEvents['hasListeners'] = globalEvents.hasListeners.bind(globalEvents);
 
@@ -336,7 +337,7 @@ export class ApplicationCommon {
 		rootView.cssClasses.delete(cssClass);
 	}
 
-	private increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
+	public increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
 		const styleScope: StyleScope = rootView._styleScope ?? (rootView as Frame)?.currentPage?._styleScope;
 
 		if (styleScope) {
@@ -370,6 +371,7 @@ export class ApplicationCommon {
 		if (layoutDirection) {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${layoutDirection}`);
 		}
+		initializeSdkVersionClass();
 
 		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
@@ -461,8 +463,8 @@ export class ApplicationCommon {
 
 	initRootView(rootView: View) {
 		this.setRootViewCSSClasses(rootView);
-		readyInitAccessibilityCssHelper();
-		readyInitFontScale();
+		// ensure css is "loaded" on the rootview so that user rootview can access css variables right away
+		rootView._onCssStateChange(true);
 		this.notify(<InitRootViewEventData>{ eventName: this.initRootViewEvent, rootView });
 	}
 
@@ -544,7 +546,7 @@ export class ApplicationCommon {
 		throw new Error('getOrientation() not implemented');
 	}
 
-	protected setOrientation(value: 'portrait' | 'landscape' | 'unknown') {
+	protected setOrientation(value: 'portrait' | 'landscape' | 'unknown', degrees?: number) {
 		if (this._orientation === value) {
 			return;
 		}
@@ -561,6 +563,7 @@ export class ApplicationCommon {
 			android: this.android,
 			ios: this.ios,
 			newValue: value,
+			degrees,
 			object: this,
 		});
 	}
@@ -608,14 +611,18 @@ export class ApplicationCommon {
 			return;
 		}
 		this._systemAppearance = value;
-		this.systemAppearanceChanged(this.getRootView(), value);
-		this.notify(<SystemAppearanceChangedEventData>{
+		const args = <SystemAppearanceChangedEventData>{
 			eventName: this.systemAppearanceChangedEvent,
 			android: this.android,
 			ios: this.ios,
 			newValue: value,
+			cancel: false,
 			object: this,
-		});
+		};
+		this.notify(args);
+		if (args.cancel === false) {
+			this.systemAppearanceChanged(this.getRootView(), value);
+		}
 	}
 
 	systemAppearance(): 'dark' | 'light' | null {

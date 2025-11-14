@@ -68,3 +68,15 @@ export function flush(): boolean;
  * @return Array containing all stored keys
  */
 export function getAllKeys(): Array<string>;
+
+/**
+ * Get a JSON representation of all store dictionary
+ * @return JSON string representation
+ */
+export function getAllJSON(ignoreRegexp?: string | RegExp): string;
+
+/**
+ * Returns the native object handling shared preferences
+ * @return the native object android.content.SharedPreferences or NSUserDefaults
+ */
+export function getNative(): any;

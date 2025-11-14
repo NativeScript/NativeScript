@@ -279,9 +279,8 @@ export class TabViewItem extends TabViewItemBase {
 }
 
 export class TabView extends TabViewBase {
-	public viewController: UITabBarControllerImpl;
-	public items: TabViewItem[];
-
+	declare viewController: UITabBarControllerImpl;
+	declare items: TabViewItem[];
 	private _delegate: UITabBarControllerDelegateImpl;
 	private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
 	private _iconsCache = {};

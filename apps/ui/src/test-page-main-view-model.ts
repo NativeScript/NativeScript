@@ -4,6 +4,7 @@ import { Color } from '@nativescript/core/color';
 import { WrapLayout } from '@nativescript/core/ui/layouts/wrap-layout';
 import { alert } from '@nativescript/core/ui/dialogs';
 import * as platform from '@nativescript/core/platform';
+import * as button from '@nativescript/core/ui/button';
 
 export class TestPageMainViewModel extends Observable {
 	private _colors = ['#0000cc', '#33cc33', '#0000cc'];
@@ -64,7 +65,7 @@ export class TestPageMainViewModel extends Observable {
 			btn.style.backgroundColor = new Color(this._colors[count++ % 3]);
 			btn.style.borderRadius = 5;
 			btn.on(
-				Button.tapEvent,
+				button.tapEvent,
 				function (eventData) {
 					let text = btn.text;
 					this.loadExample(text);

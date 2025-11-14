@@ -3,7 +3,7 @@ import { StackLayoutBase, orientationProperty } from './stack-layout-common';
 export * from './stack-layout-common';
 
 export class StackLayout extends StackLayoutBase {
-	nativeViewProtected: org.nativescript.widgets.StackLayout;
+	declare nativeViewProtected: org.nativescript.widgets.StackLayout;
 
 	public createNativeView() {
 		return new org.nativescript.widgets.StackLayout(this._context);

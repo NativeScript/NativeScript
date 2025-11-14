@@ -118,10 +118,14 @@ export class FrameBase extends CustomLayoutView {
 	public _addChildFromBuilder(name: string, value: any) {
 		throw new Error(`Frame should not have a view. Use 'defaultPage' property instead.`);
 	}
-
+	inOnLoaded = false;
 	@profile
 	public onLoaded() {
+		// there we dont want to call "loadView" on pages in the backstack as they are not visible
+		this.inOnLoaded = true;
 		super.onLoaded();
+		this.inOnLoaded = false;
+
 		this._processNextNavigationEntry();
 	}
 
@@ -261,9 +265,8 @@ export class FrameBase extends CustomLayoutView {
 
 		// In case we navigated forward to a page that was in the backstack
 		// with clearHistory: true
+		this._resolvedPage = newPage;
 		if (!newPage.frame) {
-			this._resolvedPage = newPage;
-
 			this._addView(newPage);
 		}
 
@@ -292,8 +295,8 @@ export class FrameBase extends CustomLayoutView {
 	public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
 		const isBack = navigationType === NavigationType.back;
 		const isReplace = navigationType === NavigationType.replace;
-		this.raiseCurrentPageNavigatedEvents(isBack);
 		const current = this._currentEntry;
+		this.raiseCurrentPageNavigatedEvents(isBack);
 
 		// Do nothing for Hot Module Replacement
 		if (isBack) {
@@ -427,39 +430,51 @@ export class FrameBase extends CustomLayoutView {
 
 	@profile
 	public performNavigation(navigationContext: NavigationContext) {
-		this._executingContext = navigationContext;
+		try {
+			this._executingContext = navigationContext;
 
-		const backstackEntry = navigationContext.entry;
-		const isBackNavigation = navigationContext.navigationType === NavigationType.back;
-		this._onNavigatingTo(backstackEntry, isBackNavigation);
-		const navigationTransition = this._getNavigationTransition(backstackEntry.entry);
-		if (navigationTransition?.instance) {
-			const state = SharedTransition.getState(navigationTransition?.instance.id);
-			SharedTransition.updateState(navigationTransition?.instance.id, {
-				// Allow setting custom page context to override default (from) page
-				// helpful for deeply nested frame navigation setups (eg: Nested Tab Navigation)
-				// when sharing elements in this condition, the (from) page would
-				// get overridden on each frame preventing shared element matching
-				page: state?.page || this.currentPage,
-				toPage: this,
-			});
+			const backstackEntry = navigationContext.entry;
+			const isBackNavigation = navigationContext.navigationType === NavigationType.back;
+			this._onNavigatingTo(backstackEntry, isBackNavigation);
+			const navigationTransition = this._getNavigationTransition(backstackEntry.entry);
+			if (navigationTransition?.instance) {
+				const state = SharedTransition.getState(navigationTransition?.instance.id);
+				SharedTransition.updateState(navigationTransition?.instance.id, {
+					// Allow setting custom page context to override default (from) page
+					// helpful for deeply nested frame navigation setups (eg: Nested Tab Navigation)
+					// when sharing elements in this condition, the (from) page would
+					// get overridden on each frame preventing shared element matching
+					page: state?.page || this.currentPage,
+					toPage: this,
+				});
+			}
+			this._navigateCore(backstackEntry);
+		} catch (error) {
+			// reset _executingContext or next navigations will be blocked
+			this._executingContext = null;
+			throw error;
 		}
-		this._navigateCore(backstackEntry);
 	}
 
 	@profile
 	performGoBack(navigationContext: NavigationContext) {
-		const backstack = this._backStack;
-		const backstackEntry = navigationContext.entry || backstack[backstack.length - 1];
+		try {
+			const backstack = this._backStack;
+			const backstackEntry = navigationContext.entry || backstack[backstack.length - 1];
 
-		if (backstackEntry) {
-			navigationContext.entry = backstackEntry;
+			if (backstackEntry) {
+				navigationContext.entry = backstackEntry;
 
-			this._executingContext = navigationContext;
-			this._onNavigatingTo(backstackEntry, true);
-			this._goBackCore(backstackEntry);
-		} else {
-			Trace.write('Frame.performGoBack: No backstack entry found to navigate back to', Trace.categories.Navigation, Trace.messageType.warn);
+				this._executingContext = navigationContext;
+				this._onNavigatingTo(backstackEntry, true);
+				this._goBackCore(backstackEntry);
+			} else {
+				Trace.write('Frame.performGoBack: No backstack entry found to navigate back to', Trace.categories.Navigation, Trace.messageType.warn);
+			}
+		} catch (error) {
+			// reset _executingContext or next navigations will be blocked
+			this._executingContext = null;
+			throw error;
 		}
 	}
 
@@ -478,6 +493,9 @@ export class FrameBase extends CustomLayoutView {
 	public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
 		if (this.currentPage) {
 			this.currentPage.onNavigatingFrom(isBack);
+		}
+		if (isBack) {
+			backstackEntry.resolvedPage.callLoaded();
 		}
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
@@ -581,6 +599,15 @@ export class FrameBase extends CustomLayoutView {
 		if (page) {
 			callback(page);
 		}
+		if (this.inOnLoaded) {
+			return;
+		}
+		for (let index = 0; index < this.backStack.length; index++) {
+			const backstackEntry = this.backStack[index];
+			if (backstackEntry.resolvedPage) {
+				callback(backstackEntry.resolvedPage);
+			}
+		}
 	}
 
 	public _getIsAnimatedNavigation(entry: NavigationEntry): boolean {
@@ -595,7 +622,7 @@ export class FrameBase extends CustomLayoutView {
 		return FrameBase.defaultAnimatedNavigation;
 	}
 
-	public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
+	public _getNavigationTransition(entry: NavigationEntry, returnDefault = true): NavigationTransition {
 		if (entry) {
 			if (__APPLE__ && entry.transitioniOS !== undefined) {
 				return entry.transitioniOS;
@@ -614,7 +641,7 @@ export class FrameBase extends CustomLayoutView {
 			return this.transition;
 		}
 
-		return FrameBase.defaultTransition;
+		return returnDefault ? FrameBase.defaultTransition : undefined;
 	}
 
 	public get navigationBarHeight(): number {
