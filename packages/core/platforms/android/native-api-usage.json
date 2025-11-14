@@ -162,6 +162,7 @@
         "android.view:ViewTreeObserver.OnGlobalLayoutListener",
         "android.view:ViewTreeObserver.OnScrollChangedListener",
         "android.view:Window",
+        "android.view:WindowInsetsController",
         "android.view:WindowManager.LayoutParams",
         "android.webkit:MimeTypeMap",
         "android.webkit:URLUtil",
