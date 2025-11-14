@@ -71,7 +71,7 @@ export default function nativeClassDownlevelLoader(
 				target: ts.ScriptTarget.ES5,
 				noEmitHelpers: true,
 				experimentalDecorators: true,
-				emitDecoratorMetadata: true,
+				emitDecoratorMetadata: false,
 				useDefineForClassFields: false,
 			},
 			fileName: this.resourcePath.endsWith('.ts')

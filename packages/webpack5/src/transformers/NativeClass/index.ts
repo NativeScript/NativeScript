@@ -14,12 +14,12 @@ import ts from 'typescript';
 //
 // IMPORTANT: We intentionally avoid deep traversal to reduce chance of corrupting internal TS state.
 // Only top-level/class-block statement arrays are rewritten.
-export default function (ctx: ts.TransformationContext) {
-	const factory = ctx.factory ?? ts.factory;
+export default function (context: ts.TransformationContext, ...args) {
+	const factory = context.factory ?? ts.factory;
 	return (sourceFile: ts.SourceFile) => {
 		if (sourceFile.isDeclarationFile) return sourceFile;
 		let mutated = false;
-
+		
 		// Minimal mutable shape
 		type MutableNode = ts.Node & {
 			flags?: ts.NodeFlags;
@@ -78,7 +78,7 @@ export default function (ctx: ts.TransformationContext) {
 						target: ts.ScriptTarget.ES5,
 						noEmitHelpers: true,
 						experimentalDecorators: true,
-						emitDecoratorMetadata: true,
+						emitDecoratorMetadata: false,
 						useDefineForClassFields: false,
 					},
 				})
@@ -182,8 +182,8 @@ export default function (ctx: ts.TransformationContext) {
 		}
 
 		function visitNode(node: ts.Node): ts.Node {
-			// Do not traverse synthesized helper trees; leave them intact
-			if (((node as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
+		// Do not traverse synthesized helper trees; leave them intact
+	if (((node as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized ) {
 				return node;
 			}
 			if (ts.isSourceFile(node)) {
@@ -210,7 +210,7 @@ export default function (ctx: ts.TransformationContext) {
 				return changed ? factory.updateDefaultClause(node, stmts) : node;
 			}
 			// No generic deep traversal; leave unrelated subtrees intact
-			return node;
+			return ts.visitEachChild(node, visitNode, context);
 		}
 
 		function transformStatements(
@@ -218,63 +218,86 @@ export default function (ctx: ts.TransformationContext) {
 			isTopLevel: boolean,
 		): [ts.NodeArray<ts.Statement>, boolean] {
 			let changed = false;
-			const out: ts.Statement[] = [];
-			for (const s of statements) {
-				if (((s as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
-					out.push(s);
+			if (!statements) {
+				return [null, changed];
+			}
+			const result: ts.Statement[] = [];
+			for (const statement of statements) {
+				if (((statement as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
+					result.push(statement);
 					continue;
 				}
-				if (ts.isClassDeclaration(s)) {
-					if (hasNativeClassDecorator(s)) {
+				if (ts.isClassDeclaration(statement)) {
+					if (hasNativeClassDecorator(statement)) {
 						mutated = true;
 						changed = true;
-						out.push(...emitDownleveledClass(s));
+						result.push(...emitDownleveledClass(statement));
 						continue;
 					} else {
 						// As an extra fallback, raw text check in case decorator nodes failed and regex missed
-						const sf = s.getSourceFile();
-						const start = (s as any).getFullStart
-							? (s as any).getFullStart()
-							: (s.pos ?? s.getStart?.(sf));
-						const raw = sf.text.slice(start, s.end);
+						const sf = statement.getSourceFile();
+						const start = (statement as any).getFullStart
+							? (statement as any).getFullStart()
+							: (statement.pos ?? statement.getStart?.(sf));
+						const raw = sf.text.slice(start, statement.end);
 						if (/^\s*@NativeClass\b/m.test(raw)) {
 							mutated = true;
 							changed = true;
-							out.push(...emitDownleveledClass(s));
+							result.push(...emitDownleveledClass(statement));
 							continue;
 						}
 					}
 				}
-				if (ts.isExpressionStatement(s)) {
-					const updated = removeNativeClassFromDecorate(s);
+				if (ts.isExpressionStatement(statement)) {
+					const updated = removeNativeClassFromDecorate(statement);
 					if (!updated) {
 						mutated = true;
 						changed = true;
 						continue;
 					}
-					out.push(updated);
+					const visited = ts.visitEachChild(updated, visitNode, context);
+					if (updated !== statement || visited !== statement) {
+						mutated = true;
+						changed = true;
+					}
+					result.push(visited);
 					continue;
 				}
-				if (isTopLevel && ts.isImportDeclaration(s)) {
-					const updated = removeNativeClassImport(s);
+				if (isTopLevel && ts.isImportDeclaration(statement)) {
+					const updated = removeNativeClassImport(statement);
 					if (!updated) {
 						mutated = true;
 						changed = true;
 						continue;
 					}
-					if (updated !== s) {
+					if (updated !== statement) {
 						mutated = true;
 						changed = true;
 					}
-					out.push(updated);
+					result.push(updated);
 					continue;
 				}
 				// No deep traversal for unrelated nodes
-				out.push(s);
+				result.push(statement);
 			}
-			return [changed ? factory.createNodeArray(out) : statements, changed];
+			return [changed ? factory.createNodeArray(result) : statements, changed];
 		}
 
+
+		// we detect ts-patch
+		if (args.length) {
+			const statements= ts.visitNodes(sourceFile.statements, visitNode) as unknown as ts.Statement[];
+				if (!mutated) {
+					return sourceFile;
+				}
+			const updatedSource = factory.updateSourceFile(sourceFile, statements as unknown as ts.Statement[]);
+			// Do NOT clear or rebind the entire SourceFile here. Doing so can break TS's
+			// import usage analysis and lead to import elision. The factory/update API
+			// preserves parents/bindings for original nodes (like imports). We only
+			// synthesize/bind the newly inserted class replacement statements.
+			return updatedSource;
+		}
+		
 		const updated = ts.visitNode(sourceFile, visitNode) as ts.SourceFile;
 		if (!mutated) return sourceFile;
 		return updated;

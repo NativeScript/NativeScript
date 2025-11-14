@@ -98,7 +98,7 @@ export function transformNativeClassSource(code: string, fileName: string) {
 								module: ts.ModuleKind.ESNext,
 								target: ts.ScriptTarget.ES5,
 								experimentalDecorators: true,
-								emitDecoratorMetadata: true,
+								emitDecoratorMetadata: false,
 								noEmitHelpers: true,
 								useDefineForClassFields: false,
 							},
