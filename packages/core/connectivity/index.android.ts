@@ -1,4 +1,5 @@
-import { Application } from '../application';
+import { getApplicationContext } from '../application/helpers.android';
+import { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver } from '../application/helpers';
 import { SDK_VERSION } from '../utils/constants';
 
 export enum connectionType {
@@ -18,7 +19,7 @@ const vpn = 'vpn';
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
-	return Application.android.getNativeApplication().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+	return getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {
@@ -109,7 +110,7 @@ function startMonitoringLegacy(connectionTypeChangedCallback) {
 		connectionTypeChangedCallback(newConnectionType);
 	};
 	const zoneCallback = zonedCallback(onReceiveCallback);
-	Application.android.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
+	androidRegisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
 }
 
 let callback;
@@ -170,6 +171,6 @@ export function stopMonitoring(): void {
 			callback = null;
 		}
 	} else {
-		Application.android.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
+		androidUnregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
 	}
 }

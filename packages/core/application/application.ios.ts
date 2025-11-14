@@ -1,12 +1,19 @@
 import { profile } from '../profiling';
-import type { ContentView, View } from '../ui';
+import { ContentView } from '../ui/content-view';
+import type { View } from '../ui/core/view';
 import { isEmbedded } from '../ui/embedding';
 import { IOSHelper } from '../ui/core/view/view-helper';
-import { NavigationEntry } from '../ui/frame/frame-interfaces';
-import * as Utils from '../utils';
-import type { iOSApplication as IiOSApplication } from './application';
+import type { NavigationEntry } from '../ui/frame/frame-interfaces';
+import { getWindow } from '../utils/native-helper';
+import { SDK_VERSION } from '../utils/constants';
+import { ios as iosUtils } from '../utils/native-helper';
 import { ApplicationCommon } from './application-common';
 import { ApplicationEventData } from './application-interfaces';
+import { Observable } from '../data/observable';
+import { Trace } from '../trace';
+
+import { iosAddNotificationObserver, iosRemoveNotificationObserver } from './helpers';
+import { getiOSWindow, setApplicationPropertiesCallback, setAppMainEntry, setiOSWindow, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 @NativeClass
 class CADisplayLinkTarget extends NSObject {
@@ -41,26 +48,6 @@ class CADisplayLinkTarget extends NSObject {
 }
 
 @NativeClass
-class NotificationObserver extends NSObject {
-	private _onReceiveCallback: (notification: NSNotification) => void;
-
-	public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
-		const observer = <NotificationObserver>super.new();
-		observer._onReceiveCallback = onReceiveCallback;
-
-		return observer;
-	}
-
-	public onReceive(notification: NSNotification): void {
-		this._onReceiveCallback(notification);
-	}
-
-	public static ObjCExposedMethods = {
-		onReceive: { returns: interop.types.void, params: [NSNotification] },
-	};
-}
-
-@NativeClass
 class Responder extends UIResponder implements UIApplicationDelegate {
 	get window(): UIWindow {
 		return Application.ios.window;
@@ -73,11 +60,9 @@ class Responder extends UIResponder implements UIApplicationDelegate {
 	static ObjCProtocols = [UIApplicationDelegate];
 }
 
-export class iOSApplication extends ApplicationCommon implements IiOSApplication {
+export class iOSApplication extends ApplicationCommon {
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
-	private _window: UIWindow;
-	private _notificationObservers: NotificationObserver[] = [];
 	private _rootView: View;
 	private _subRootView: View;
 
@@ -109,7 +94,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	run(entry?: string | NavigationEntry): void {
-		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
 		this.started = true;
 
 		if (this.nativeApp) {
@@ -130,8 +115,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			return;
 		}
 		this._rootView = rootView;
+		setRootView(rootView);
 		// Attach to the existing iOS app
-		const window = Utils.ios.getWindow();
+		const window = getWindow() as UIWindow;
 
 		if (!window) {
 			return;
@@ -156,7 +142,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			this.setViewControllerView(rootView);
 			embedderDelegate.presentNativeScriptApp(controller);
 		} else {
-			const visibleVC = Utils.ios.getVisibleViewController(rootController);
+			const visibleVC = iosUtils.getVisibleViewController(rootController);
 			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
 		}
 
@@ -199,7 +185,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 
 			if (minFrameRateDisabled) {
 				let max = 120;
-				const deviceMaxFrames = Utils.ios.getMainScreen().maximumFramesPerSecond;
+				const deviceMaxFrames = iosUtils.getMainScreen().maximumFramesPerSecond;
 				if (options?.max) {
 					if (deviceMaxFrames) {
 						// iOS 10.3
@@ -210,7 +196,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 					}
 				}
 
-				if (Utils.SDK_VERSION >= 15 || __VISIONOS__) {
+				if (SDK_VERSION >= 15 || __VISIONOS__) {
 					const min = options?.min || max / 2;
 					const preferred = options?.preferred || max;
 					this.displayedLink.preferredFrameRateRange = CAFrameRateRangeMake(min, max, preferred);
@@ -244,12 +230,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		// TODO: consideration
 		// may not want to cache this value given the potential of multiple scenes
 		// particularly with SwiftUI app lifecycle based apps
-		if (!this._window) {
+		if (!getiOSWindow()) {
 			// Note: NativeScriptViewFactory.getKeyWindow will always be used in SwiftUI app lifecycle based apps
-			this._window = Utils.ios.getWindow();
+			setiOSWindow(getWindow() as UIWindow);
 		}
 
-		return this._window;
+		return getiOSWindow();
 	}
 
 	get delegate(): UIApplicationDelegate & { prototype: UIApplicationDelegate } {
@@ -305,24 +291,16 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	}
 
 	addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
-		const observer = NotificationObserver.initWithCallback(onReceiveCallback);
-		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, 'onReceive', notificationName, null);
-		this._notificationObservers.push(observer);
-
-		return observer;
+		return iosAddNotificationObserver(notificationName, onReceiveCallback);
 	}
 
-	removeNotificationObserver(observer: any, notificationName: string) {
-		const index = this._notificationObservers.indexOf(observer);
-		if (index >= 0) {
-			this._notificationObservers.splice(index, 1);
-			NSNotificationCenter.defaultCenter.removeObserverNameObject(observer, notificationName, null);
-		}
+	removeNotificationObserver(observer: any /* NotificationObserver */, notificationName: string) {
+		iosRemoveNotificationObserver(observer, notificationName);
 	}
 
 	protected getSystemAppearance(): 'light' | 'dark' {
 		// userInterfaceStyle is available on UITraitCollection since iOS 12.
-		if ((!__VISIONOS__ && Utils.SDK_VERSION <= 11) || !this.rootController) {
+		if ((!__VISIONOS__ && SDK_VERSION <= 11) || !this.rootController) {
 			return null;
 		}
 
@@ -379,12 +357,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
 
-		if (this._window) {
+		if (getiOSWindow()) {
 			if (root !== null && !isEmbedded()) {
 				this.setWindowContent(root);
 			}
 		} else {
-			this._window = this.window; // UIApplication.sharedApplication.keyWindow;
+			setiOSWindow(this.window);
 		}
 	}
 
@@ -410,13 +388,16 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		}
 
 		// TODO: using import crashes. it creates a circular dependency  which is tricky to fix right now
-		const ContentView = require('../ui/content-view').ContentView;
 
 		const rootView = new ContentView();
 		const controller = this.getViewController(rootView);
+
 		this._rootView = rootView;
+		setRootView(rootView);
+
 		// setup view as styleScopeHost
 		rootView._setupAsRootView({});
+
 		this.setViewControllerView(rootView);
 
 		const win = this.window;
@@ -448,26 +429,36 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			subRootView.parent._removeView(subRootView);
 		}
 		(rootView as ContentView).content = subRootView;
-
-		if (!haveController) {
-			this._window.makeKeyAndVisible();
-		}
 	}
 
 	// Observers
 	@profile
 	private didFinishLaunchingWithOptions(notification: NSNotification) {
+		if (__DEV__) {
+			/**
+			 * v9+ runtime crash handling
+			 * When crash occurs during boot, we let runtime take over
+			 */
+			if (notification.userInfo) {
+				const isBootCrash = notification.userInfo.objectForKey('NativeScriptBootCrash');
+				if (isBootCrash) {
+					// fatal crash will show in console without app exiting
+					// allowing hot reload fixes to continue
+					return;
+				}
+			}
+		}
 		this.setMaxRefreshRate();
 		// ensures window is assigned to proper window scene
-		this._window = this.window;
+		setiOSWindow(this.window);
 
-		if (!this._window) {
+		if (!getiOSWindow()) {
 			// if still no window, create one
-			this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+			setiOSWindow(UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds));
 		}
 
 		if (!__VISIONOS__) {
-			this.window.backgroundColor = Utils.SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+			this.window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 		}
 
 		this.notifyAppStarted(notification);
@@ -543,3 +534,22 @@ global.__onLiveSyncCore = function (context?: ModuleContext) {
 export * from './application-common';
 export const Application = iosApp;
 export const AndroidApplication = undefined;
+
+const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
+function toggleApplicationEventListeners(toAdd: boolean, callback: (args: ApplicationEventData) => void) {
+	for (const eventName of applicationEvents) {
+		if (toAdd) {
+			Application.on(eventName, callback);
+		} else {
+			Application.off(eventName, callback);
+		}
+	}
+}
+setToggleApplicationEventListenersCallback(toggleApplicationEventListeners);
+
+setApplicationPropertiesCallback(() => {
+	return {
+		orientation: Application.orientation(),
+		systemAppearance: Application.systemAppearance(),
+	};
+});

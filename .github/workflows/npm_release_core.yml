@@ -22,8 +22,13 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
         with:
           fetch-depth: "0"
           submodules: true
@@ -38,7 +43,7 @@ jobs:
         with:
           secrets: ${{ toJSON(secrets) }}
 
-      - uses: oleksiyrudenko/gha-git-credentials@v2-latest
+      - uses: oleksiyrudenko/gha-git-credentials@8bb1fe6d543b2233ef1856cd3b0181f5abbd4d6a # v2.1.2
         with:
           token: '${{ secrets.GITHUB_TOKEN }}'
           name: Martin Guillon

@@ -8,11 +8,16 @@ import { notifyAccessibilityFocusState } from './accessibility-common';
 import { initAccessibilityCssHelper } from './accessibility-css-helper';
 import { getAndroidAccessibilityManager } from './accessibility-service';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
-import { initAccessibilityFontScale } from './font-scale';
+import { getCurrentFontScale, initAccessibilityFontScale } from './font-scale.android';
+import { setA11yUpdatePropertiesCallback } from '../application/helpers-common';
 
 export * from './accessibility-common';
 export * from './accessibility-types';
 export * from './font-scale';
+
+export function getFontScale(): number {
+	return getCurrentFontScale();
+}
 
 let clickableRolesMap = new Set<AccessibilityRole>();
 
@@ -90,6 +95,8 @@ function accessibilityEventHelper(view: View, eventType: number) {
 let TNSAccessibilityDelegate: android.view.View.androidviewViewAccessibilityDelegate;
 
 const androidViewToTNSView = new WeakMap<android.view.View, WeakRef<View>>();
+let accessibilityEventMap: Map<AndroidAccessibilityEvent, number>;
+let accessibilityEventTypeMap: Map<number, string>;
 
 function ensureNativeClasses() {
 	if (TNSAccessibilityDelegate) {
@@ -358,6 +365,7 @@ export function updateAccessibilityProperties(view: View) {
 		_pendingViews = [];
 	});
 }
+setA11yUpdatePropertiesCallback(updateAccessibilityProperties);
 
 export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibilityEvent, text?: string): void {
 	if (!isAccessibilityServiceEnabled()) {
@@ -369,6 +377,14 @@ export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibili
 		if (Trace.isEnabled()) {
 			Trace.write(`sendAccessibilityEvent(${view}, ${eventType}, ${text}): no nativeView`, Trace.categories.Accessibility);
 		}
+		return;
+	}
+
+	if (!eventType) {
+		if (Trace.isEnabled()) {
+			Trace.write(`endAccessibilityEvent(${view}, ${eventType}, ${text}): no eventName provided`, Trace.categories.Accessibility);
+		}
+
 		return;
 	}
 
@@ -418,18 +434,32 @@ function setAccessibilityDelegate(view: View): void {
 	androidView.setAccessibilityDelegate(TNSAccessibilityDelegate);
 }
 
-export function updateContentDescription(view: View, forceUpdate?: boolean) {
-	let androidView = view.nativeViewProtected as android.view.View;
-	if (!androidView) {
+export function updateContentDescription(view: any /* View */, forceUpdate?: boolean): string | null {
+	if (!view.nativeViewProtected) {
 		return;
 	}
+
+	return applyContentDescription(view, forceUpdate);
+}
+
+export function applyContentDescription(view: any /* View */, forceUpdate?: boolean) {
+	let androidView = view.nativeViewProtected as android.view.View;
+	if (!androidView || (androidView instanceof android.widget.TextView && !view._androidContentDescriptionUpdated)) {
+		return null;
+	}
+
 	if (androidView instanceof androidx.appcompat.widget.Toolbar) {
 		androidView = org.nativescript.widgets.ViewHelper.getChildAppCompatTextView(androidView) || androidView;
 	}
 
-	if (!forceUpdate && view._androidContentDescriptionNeedsUpdate === false) {
+	const cls = `applyContentDescription(${view})`;
+
+	const titleValue = view['title'] as string;
+	const textValue = view['text'] as string;
+
+	if (!forceUpdate && view._androidContentDescriptionUpdated === false && textValue === view['_lastText'] && titleValue === view['_lastTitle']) {
 		// prevent updating this too much
-		return;
+		return androidView.getContentDescription();
 	}
 
 	const contentDescriptionBuilder = new Array<string>();
@@ -446,56 +476,63 @@ export function updateContentDescription(view: View, forceUpdate?: boolean) {
 
 	if (view.accessibilityLabel) {
 		if (Trace.isEnabled()) {
-			Trace.write(`applyContentDescription(${view}) - have accessibilityLabel`, Trace.categories.Accessibility);
+			Trace.write(`${cls} - have accessibilityLabel`, Trace.categories.Accessibility);
 		}
 
-		contentDescriptionBuilder.push(view.accessibilityLabel);
+		contentDescriptionBuilder.push(`${view.accessibilityLabel}`);
 	}
 
-	const titleValue = view['title'] as string;
-	const textValue = view['text'] as string;
 	if (view.accessibilityValue) {
 		if (Trace.isEnabled()) {
-			Trace.write(`applyContentDescription(${view}) - have accessibilityValue`, Trace.categories.Accessibility);
+			Trace.write(`${cls} - have accessibilityValue`, Trace.categories.Accessibility);
 		}
 
-		contentDescriptionBuilder.push(view.accessibilityValue);
+		contentDescriptionBuilder.push(`${view.accessibilityValue}`);
 	} else if (textValue) {
 		if (textValue !== view.accessibilityLabel) {
 			if (Trace.isEnabled()) {
-				Trace.write(`applyContentDescription(${view}) - don't have accessibilityValue - use 'text' value`, Trace.categories.Accessibility);
+				Trace.write(`${cls} - don't have accessibilityValue - use 'text' value`, Trace.categories.Accessibility);
 			}
 
-			contentDescriptionBuilder.push(textValue);
+			contentDescriptionBuilder.push(`${textValue}`);
 		}
 	} else if (titleValue) {
 		if (titleValue !== view.accessibilityLabel) {
 			if (Trace.isEnabled()) {
-				Trace.write(`applyContentDescription(${view}) - don't have accessibilityValue - use 'title' value`, Trace.categories.Accessibility);
+				Trace.write(`${cls} - don't have accessibilityValue - use 'title' value`, Trace.categories.Accessibility);
 			}
 
-			contentDescriptionBuilder.push(titleValue);
+			contentDescriptionBuilder.push(`${titleValue}`);
 		}
 	}
 
 	if (view.accessibilityHint) {
 		if (Trace.isEnabled()) {
-			Trace.write(`applyContentDescription(${view}) - have accessibilityHint`, Trace.categories.Accessibility);
+			Trace.write(`${cls} - have accessibilityHint`, Trace.categories.Accessibility);
 		}
 
-		contentDescriptionBuilder.push(view.accessibilityHint);
+		contentDescriptionBuilder.push(`${view.accessibilityHint}`);
 	}
 
-	let contentDescription = contentDescriptionBuilder.join('. ').trim();
-	if (contentDescription === '.' || contentDescription.length === 0) {
-		contentDescription = null;
+	const contentDescription = contentDescriptionBuilder.join('. ').trim().replace(/^\.$/, '');
+
+	if (contentDescription) {
+		if (Trace.isEnabled()) {
+			Trace.write(`${cls} - set to "${contentDescription}"`, Trace.categories.Accessibility);
+		}
+
+		androidView.setContentDescription(contentDescription);
+	} else {
+		if (Trace.isEnabled()) {
+			Trace.write(`${cls} - remove value`, Trace.categories.Accessibility);
+		}
+
+		androidView.setContentDescription(null);
 	}
 
-	if (Trace.isEnabled()) {
-		Trace.write(`applyContentDescription(${view}) - set to "${contentDescription}"`, Trace.categories.Accessibility);
-	}
+	view['_lastTitle'] = titleValue;
+	view['_lastText'] = textValue;
+	view._androidContentDescriptionUpdated = false;
 
-	androidView.setContentDescription(contentDescription);
-
-	view._androidContentDescriptionNeedsUpdate = false;
+	return contentDescription;
 }

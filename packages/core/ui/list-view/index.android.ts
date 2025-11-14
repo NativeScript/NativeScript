@@ -1,7 +1,7 @@
 import { ItemEventData, ItemsSource } from '.';
 import { ListViewBase, separatorColorProperty, itemTemplatesProperty } from './list-view-common';
 import { View, KeyedTemplate } from '../core/view';
-import { unsetValue } from '../core/properties';
+import { unsetValue } from '../core/properties/property-shared';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { Observable } from '../../data/observable';
@@ -269,7 +269,7 @@ export class ListView extends ListViewBase {
 			| {
 					dividerHeight: number;
 					divider: android.graphics.drawable.Drawable;
-			  }
+			  },
 	) {
 		const nativeView = this.nativeViewProtected;
 		if (value instanceof Color) {

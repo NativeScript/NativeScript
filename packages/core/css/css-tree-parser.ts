@@ -1,4 +1,4 @@
-import { parse } from 'css-tree';
+import * as cssTree from 'css-tree';
 
 function mapSelectors(selector: string): string[] {
 	if (!selector) {
@@ -129,7 +129,7 @@ function transformAst(node, css, type = null) {
 
 export function cssTreeParse(css, source): any {
 	const errors = [];
-	const ast = parse(css, {
+	const ast = cssTree.parse(css, {
 		parseValue: false,
 		parseAtrulePrelude: false,
 		parseRulePrelude: false,

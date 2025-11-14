@@ -1,5 +1,6 @@
 import { encoding as textEncoding } from '../text';
-import { ios as IOSUtils } from '../utils';
+import { getFileExtension, ios as IOSUtils } from '../utils';
+import { getCurrentAppPath } from '../utils/ios';
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
@@ -257,7 +258,7 @@ export class FileSystemAccess {
 	}
 
 	public getCurrentAppPath(): string {
-		return IOSUtils.getCurrentAppPath();
+		return getCurrentAppPath();
 	}
 
 	public copy = this.copySync.bind(this);
@@ -613,24 +614,8 @@ export class FileSystemAccess {
 		return url.path;
 	}
 
-	// TODO: This method is the same as in the iOS implementation.
-	// Make it in a separate file / module so it can be reused from both implementations.
 	public getFileExtension(path: string): string {
-		// TODO [For Panata]: The definitions currently specify "any" as a return value of this method
-		//const nsString = Foundation.NSString.stringWithString(path);
-		//const extension = nsString.pathExtension();
-
-		//if (extension && extension.length > 0) {
-		//    extension = extension.concat(".", extension);
-		//}
-
-		//return extension;
-		const dotIndex = path.lastIndexOf('.');
-		if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
-			return path.substring(dotIndex);
-		}
-
-		return '';
+		return getFileExtension(path);
 	}
 
 	private deleteEntity(path: string, onError?: (error: any) => any) {

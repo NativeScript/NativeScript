@@ -1,15 +1,9 @@
 import { assert, assertEqual } from '../tk-unit';
-import { DOMNode } from '@nativescript/core/debugger/dom-node';
+import { DOMNode } from '@nativescript/core/debugger/dom-types';
 import { attachDOMInspectorCommandCallbacks, attachCSSInspectorCommandCallbacks, attachDOMInspectorEventCallbacks } from '@nativescript/core/debugger/devtools-elements';
 import { InspectorCommands, InspectorEvents } from '@nativescript/core/debugger/devtools-elements';
-import { unsetValue } from '@nativescript/core/ui/core/properties';
-import { Button } from '@nativescript/core/ui/button';
-import { Slider } from '@nativescript/core/ui/slider';
-import { Label } from '@nativescript/core/ui/label';
+import { unsetValue, Button, Slider, Label, TextView, StackLayout, isAndroid } from '@nativescript/core';
 import { textProperty } from '@nativescript/core/ui/text-base';
-import { TextView } from '@nativescript/core/ui/text-view';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { isAndroid } from '@nativescript/core/platform';
 
 let originalInspectorGlobal: InspectorCommands & InspectorEvents;
 

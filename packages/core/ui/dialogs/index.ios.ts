@@ -4,7 +4,8 @@
 import { Trace } from '../../trace';
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions, getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions, CancelableOptions } from './dialogs-common';
 import { isString, isDefined, isFunction } from '../../utils/types';
-import { Application } from '../../application';
+import { getiOSWindow, getRootView } from '../../application/helpers-common';
+import type { View } from '../core/view';
 
 export * from './dialogs-common';
 
@@ -30,11 +31,11 @@ function addButtonsToAlertController(alertController: UIAlertController, options
 	}
 
 	if (isString(options.okButtonText)) {
-		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
-				raiseCallback(callback, true);
-			}),
-		);
+		const action = UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
+			raiseCallback(callback, true);
+		});
+		alertController.addAction(action);
+		alertController.preferredAction = action; // Allows using keyboard enter/return to confirm the dialog
 	}
 }
 
@@ -45,72 +46,77 @@ function raiseCallback(callback, result) {
 }
 
 function showUIAlertController(alertController: UIAlertController, options: CancelableOptions) {
-	let rootView = Application.getRootView();
+	// TODO: llok at using getiOSWindow() for multi window support
+	const rootViewController = getiOSWindow()?.rootViewController;
+	let viewController = rootViewController;
+	let rootView = getRootView();
 	if (rootView.parent) {
 		rootView = rootView.parent as any;
 	}
-	let currentView = getCurrentPage() || rootView;
+	let currentView: View = getCurrentPage();
 	if (currentView) {
 		currentView = currentView.modal || currentView;
-		let viewController = currentView.viewController;
-		if (!viewController) {
-			Trace.write(`No root controller found to open dialog.`, Trace.categories.Error, Trace.messageType.warn);
-			return;
-		}
-		if (!viewController.presentedViewController && rootView.viewController.presentedViewController && !rootView.viewController.presentedViewController.beingDismissed) {
-			viewController = rootView.viewController.presentedViewController;
-		}
-
-		while (viewController.presentedViewController && !viewController.presentedViewController.beingDismissed) {
-			while (viewController.presentedViewController instanceof UIAlertController || (viewController.presentedViewController['isAlertController'] && viewController.presentedViewController.presentedViewController)) {
-				viewController = viewController.presentedViewController;
-			}
-			if (viewController.presentedViewController instanceof UIAlertController || viewController.presentedViewController['isAlertController']) {
-				break;
-			} else {
-				viewController = viewController.presentedViewController;
-			}
-		}
-
-		const color = getButtonColors().color;
-		if (color) {
-			alertController.view.tintColor = color.ios;
-		}
-
-		const lblColor = getLabelColor();
-		if (lblColor) {
-			if (alertController.title) {
-				const title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-				alertController.setValueForKey(title, 'attributedTitle');
-			}
-			if (alertController.message) {
-				const message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-				alertController.setValueForKey(message, 'attributedMessage');
-			}
-		}
-		function block() {
-			if (alertController.popoverPresentationController) {
-				alertController.popoverPresentationController.sourceView = viewController.view;
-				alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
-				alertController.popoverPresentationController.permittedArrowDirections = 0 as UIPopoverArrowDirection;
-			}
-			viewController.presentViewControllerAnimatedCompletion(alertController, true, null);
-		}
-		if (viewController.presentedViewController) {
-			if (viewController.presentedViewController.beingDismissed || options.iosForceClosePresentedViewController === true) {
-				viewController.dismissViewControllerAnimatedCompletion(true, () => {
-					block();
-				});
-			} else {
-				throw new Error('controller_already_presented');
-			}
-		} else {
-			block();
-		}
-		viewController.presentModalViewControllerAnimated(alertController, true);
-	} else {
-		Trace.write(`No root view found to open dialog.`, Trace.categories.Error, Trace.messageType.warn);
+		viewController = currentView.viewController;
 	}
+	if (!viewController) {
+		Trace.write(`No root controller found to open dialog.`, Trace.categories.Error, Trace.messageType.warn);
+		return;
+	}
+	if (!viewController.presentedViewController) {
+		if (rootView.viewController.presentedViewController && !rootView.viewController.presentedViewController.beingDismissed) {
+			viewController = rootView.viewController.presentedViewController;
+		} else if (rootView.viewController.presentedViewController && !rootViewController.presentedViewController.beingDismissed) {
+			viewController = rootViewController.presentedViewController;
+		}
+	}
+
+	while (viewController.presentedViewController && !viewController.presentedViewController.beingDismissed) {
+		while (viewController.presentedViewController instanceof UIAlertController || (viewController.presentedViewController['isAlertController'] && viewController.presentedViewController.presentedViewController)) {
+			viewController = viewController.presentedViewController;
+		}
+		if (viewController.presentedViewController instanceof UIAlertController || viewController.presentedViewController['isAlertController']) {
+			break;
+		} else {
+			viewController = viewController.presentedViewController;
+		}
+	}
+
+	const color = getButtonColors().color;
+	if (color) {
+		alertController.view.tintColor = color.ios;
+	}
+
+	const lblColor = getLabelColor();
+	if (lblColor) {
+		if (alertController.title) {
+			const title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+			alertController.setValueForKey(title, 'attributedTitle');
+		}
+		if (alertController.message) {
+			const message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+			alertController.setValueForKey(message, 'attributedMessage');
+		}
+	}
+	function block() {
+		if (alertController.popoverPresentationController) {
+			alertController.popoverPresentationController.sourceView = viewController.view;
+			alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
+			alertController.popoverPresentationController.permittedArrowDirections = 0 as UIPopoverArrowDirection;
+		}
+		viewController.presentViewControllerAnimatedCompletion(alertController, true, null);
+	}
+	if (viewController.presentedViewController) {
+		if (viewController.presentedViewController.beingDismissed || options.iosForceClosePresentedViewController === true) {
+			viewController.dismissViewControllerAnimatedCompletion(true, () => {
+				block();
+			});
+		} else {
+			throw new Error('controller_already_presented');
+		}
+	} else {
+		block();
+	}
+	viewController.presentModalViewControllerAnimated(alertController, true);
 }
 
 export function alert(arg: any): Promise<void> {

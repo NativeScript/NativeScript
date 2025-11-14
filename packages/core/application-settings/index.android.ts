@@ -1,11 +1,12 @@
 import * as common from './application-settings-common';
 import { Application, DiscardedErrorEventData } from '../application';
 import { wrapNativeException } from '../utils';
+import { getApplicationContext } from '../application/helpers.android';
 
 let sharedPreferences: android.content.SharedPreferences;
 function ensureSharedPreferences() {
 	if (!sharedPreferences) {
-		sharedPreferences = Application.android.getNativeApplication().getApplicationContext().getSharedPreferences('prefs.db', 0);
+		sharedPreferences = getApplicationContext().getSharedPreferences('prefs.db', 0);
 	}
 }
 

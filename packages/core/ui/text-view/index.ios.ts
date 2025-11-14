@@ -5,7 +5,7 @@ import { editableProperty, hintProperty, placeholderColorProperty, _updateCharac
 import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
-import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length } from '../styling/style-properties';
+import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { layout, isRealDevice } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 

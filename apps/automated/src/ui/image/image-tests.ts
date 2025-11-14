@@ -15,7 +15,7 @@ import { ImageSource } from '@nativescript/core/image-source';
 import * as ViewModule from '@nativescript/core/ui/core/view';
 import * as helper from '../../ui-helper';
 import * as color from '@nativescript/core/color';
-import * as backgroundModule from '@nativescript/core/ui/styling/background';
+import * as appHelpers from '@nativescript/core/application/helpers-common';
 import { Application } from '@nativescript/core';
 const imagePath = '~/assets/logo.png';
 
@@ -23,8 +23,8 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(() => new Image());
 }
 
-if (global.isAndroid) {
-	(<any>backgroundModule).initImageCache(Application.android.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
+if (__ANDROID__) {
+	appHelpers.initImageCache(Application.android.startActivity, appHelpers.CacheMode.memory); // use memory cache only.
 }
 
 const expectLayoutRequest = __APPLE__ && Utils.SDK_VERSION >= 18;
@@ -65,7 +65,7 @@ function runImageTestSync(image: ImageModule.Image, src: string) {
 
 	image.src = src;
 
-	let imageSourceAvailable = global.isIOS ? !!image.imageSource : true;
+	let imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
 	TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 	TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 }
@@ -78,7 +78,7 @@ function runImageTestAsync(image: ImageModule.Image, src: string, done: (e: any)
 		image.off(IMAGE_LOADED_EVENT, handler);
 
 		try {
-			let imageSourceAvailable = global.isIOS ? !!image.imageSource : true;
+			let imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
 			TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 			TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 			done(null);
@@ -255,7 +255,7 @@ export const test_SettingStretch_none = function () {
 };
 
 function ios<T>(func: T): T {
-	return global.isIOS ? func : undefined;
+	return __APPLE__ ? func : undefined;
 }
 
 export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(() => {

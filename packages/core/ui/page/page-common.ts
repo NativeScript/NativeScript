@@ -1,6 +1,7 @@
 import { Page as PageDefinition } from '.';
 import { ContentView } from '../content-view';
-import { View, CSSType, ShownModallyData } from '../core/view';
+import { View, CSSType } from '../core/view';
+import { ShownModallyData } from '../core/view/view-interfaces';
 import { booleanConverter } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
 import { colorConverter } from '../styling/style-properties';
@@ -12,6 +13,7 @@ import { isFrame } from '../frame/frame-helpers';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
+import { PageEvents } from './events';
 
 interface NavigatedData extends EventData<PageDefinition> {
 	context: any;
@@ -20,10 +22,10 @@ interface NavigatedData extends EventData<PageDefinition> {
 
 @CSSType('Page')
 export class PageBase extends ContentView {
-	public static navigatingToEvent = 'navigatingTo';
-	public static navigatedToEvent = 'navigatedTo';
-	public static navigatingFromEvent = 'navigatingFrom';
-	public static navigatedFromEvent = 'navigatedFrom';
+	public static navigatingToEvent = PageEvents.navigatingToEvent;
+	public static navigatedToEvent = PageEvents.navigatedToEvent;
+	public static navigatingFromEvent = PageEvents.navigatingFromEvent;
+	public static navigatedFromEvent = PageEvents.navigatedFromEvent;
 
 	private _navigationContext: any;
 	private _actionBar: ActionBar;

@@ -3,7 +3,8 @@
  */
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from './dialogs-common';
 import { getLabelColor, getButtonColors, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
-import { ad } from '../../utils/native-helper';
+import { android as androidUtils } from '../../utils/native-helper';
+import { getApplicationContext } from '../../application/helpers.android';
 
 export * from './dialogs-common';
 
@@ -12,7 +13,7 @@ function isString(value): value is string {
 }
 
 function createAlertDialog(options?: DialogOptions): android.app.AlertDialog.Builder {
-	const alert = new android.app.AlertDialog.Builder(ad.getCurrentActivity(), options.theme ? options.theme : -1);
+	const alert = new android.app.AlertDialog.Builder(androidUtils.getCurrentActivity(), options.theme ? options.theme : -1);
 	alert.setTitle(options && isString(options.title) ? options.title : '');
 	alert.setMessage(options && isString(options.message) ? options.message : '');
 	if (options && options.cancelable === false) {
@@ -202,7 +203,7 @@ export function prompt(...args): Promise<PromptResult> {
 		try {
 			const alert = createAlertDialog(options);
 
-			const input = new android.widget.EditText(ad.getCurrentActivity());
+			const input = new android.widget.EditText(androidUtils.getCurrentActivity());
 
 			if (options) {
 				if (options.inputType === inputType.password) {
@@ -259,19 +260,19 @@ export function login(...args: any[]): Promise<LoginResult> {
 		try {
 			const alert = createAlertDialog(options);
 
-			const userNameInput = new android.widget.EditText(ad.getApplicationContext());
+			const userNameInput = new android.widget.EditText(getApplicationContext());
 
 			userNameInput.setHint(options.userNameHint ? options.userNameHint : '');
 			userNameInput.setText(options.userName ? options.userName : '');
 
-			const passwordInput = new android.widget.EditText(ad.getApplicationContext());
+			const passwordInput = new android.widget.EditText(getApplicationContext());
 			passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
 			passwordInput.setTypeface(android.graphics.Typeface.DEFAULT);
 
 			passwordInput.setHint(options.passwordHint ? options.passwordHint : '');
 			passwordInput.setText(options.password ? options.password : '');
 
-			const layout = new android.widget.LinearLayout(ad.getApplicationContext());
+			const layout = new android.widget.LinearLayout(getApplicationContext());
 			layout.setOrientation(1);
 			layout.addView(userNameInput);
 			layout.addView(passwordInput);
@@ -322,7 +323,7 @@ export function action(...args): Promise<string> {
 
 	return new Promise<string>((resolve, reject) => {
 		try {
-			const alert = new android.app.AlertDialog.Builder(ad.getCurrentActivity(), options.theme ? options.theme : -1);
+			const alert = new android.app.AlertDialog.Builder(androidUtils.getCurrentActivity(), options.theme ? options.theme : -1);
 			const message = options && isString(options.message) ? options.message : '';
 			const title = options && isString(options.title) ? options.title : '';
 			if (options && options.cancelable === false) {

@@ -1,5 +1,5 @@
 import type { View } from '../core/view';
-import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../../utils/common';
+import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../../utils/animation-helpers';
 import { isNumber } from '../../utils/types';
 import { Transition, SharedElementSettings, TransitionInteractiveState } from '.';
 import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';

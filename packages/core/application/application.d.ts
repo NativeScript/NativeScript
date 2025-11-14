@@ -1,5 +1,5 @@
 ﻿import { ApplicationCommon } from './application-common';
-import * as Interfaces from './application-interfaces';
+import type * as Interfaces from './application-interfaces';
 
 export * from './application-common';
 export * from './application-interfaces';

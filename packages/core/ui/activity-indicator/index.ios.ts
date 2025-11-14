@@ -1,8 +1,7 @@
 import { ActivityIndicatorBase, busyProperty, iosIndicatorViewStyleProperty } from './activity-indicator-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { SDK_VERSION } from '../../utils';
-import { iOSNativeHelper } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { IOSIndicatorViewStyle } from '.';
 
 export * from './activity-indicator-common';

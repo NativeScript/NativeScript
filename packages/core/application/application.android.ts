@@ -1,59 +1,13 @@
 import * as ApplicationSettings from '../application-settings';
 import { profile } from '../profiling';
-import { View } from '../ui/core/view';
-import { isEmbedded } from '../ui/embedding';
+import type { View } from '../ui/core/view';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
-import { SDK_VERSION } from '../utils/constants';
-import type { AndroidApplication as IAndroidApplication } from './application';
 import { ApplicationCommon } from './application-common';
 import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
 import { fontScaleChanged } from '../accessibility/font-scale.android';
-
-declare namespace com {
-	namespace tns {
-		class NativeScriptApplication extends android.app.Application {
-			static getInstance(): NativeScriptApplication;
-		}
-
-		namespace embedding {
-			class ApplicationHolder {
-				static getInstance(): android.app.Application;
-			}
-		}
-	}
-}
-
-declare class BroadcastReceiver extends android.content.BroadcastReceiver {
-	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void);
-}
-
-let BroadcastReceiver_: typeof BroadcastReceiver;
-function initBroadcastReceiver() {
-	if (BroadcastReceiver_) {
-		return BroadcastReceiver_;
-	}
-
-	@NativeClass
-	class BroadcastReceiverImpl extends android.content.BroadcastReceiver {
-		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
-
-		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-			super();
-			this._onReceiveCallback = onReceiveCallback;
-
-			return global.__native(this);
-		}
-
-		public onReceive(context: android.content.Context, intent: android.content.Intent) {
-			if (this._onReceiveCallback) {
-				this._onReceiveCallback(context, intent);
-			}
-		}
-	}
-
-	BroadcastReceiver_ = BroadcastReceiverImpl;
-	return BroadcastReceiver_;
-}
+import { androidGetForegroundActivity, androidGetStartActivity, androidPendingReceiverRegistrations, androidRegisterBroadcastReceiver, androidRegisteredReceivers, androidSetForegroundActivity, androidSetStartActivity, androidUnregisterBroadcastReceiver } from './helpers';
+import { getImageFetcher, getNativeApp, getRootView, initImageCache, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
+import { getNativeScriptGlobals } from '../globals/global-utils';
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
 
@@ -293,7 +247,7 @@ function initNativeScriptComponentCallbacks() {
 	return NativeScriptComponentCallbacks_;
 }
 
-export class AndroidApplication extends ApplicationCommon implements IAndroidApplication {
+export class AndroidApplication extends ApplicationCommon {
 	static readonly fragmentCreateEvent = 'fragmentCreate';
 	static readonly activityCreateEvent = 'activityCreate';
 	static readonly activityCreatedEvent = 'activityCreated';
@@ -345,6 +299,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 
 		try {
 			this._nativeApp = nativeApp;
+			setNativeApp(nativeApp);
 			this._context = nativeApp.getApplicationContext();
 			this._prevConfiguration = new android.content.res.Configuration(this._context.getResources().getConfiguration());
 			this._packageName = nativeApp.getPackageName();
@@ -362,11 +317,9 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 	}
 
-	private _registeredReceivers = {};
-	private _pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
 	private _registerPendingReceivers() {
-		this._pendingReceiverRegistrations.forEach((func) => func(this.context));
-		this._pendingReceiverRegistrations.length = 0;
+		androidPendingReceiverRegistrations.forEach((func) => func(this.context));
+		androidPendingReceiverRegistrations.length = 0;
 	}
 	private _prevConfiguration: android.content.res.Configuration;
 	onConfigurationChanged(configuration: android.content.res.Configuration): void {
@@ -409,27 +362,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 			return nativeApp;
 		}
 
-		// Try getting it from module - check whether application.android.init has been explicitly called
-		// check whether the com.tns.NativeScriptApplication type exists
-		if (com.tns.NativeScriptApplication) {
-			nativeApp = com.tns.NativeScriptApplication.getInstance();
-		}
-
-		if (!nativeApp && isEmbedded()) {
-			nativeApp = com.tns.embedding.ApplicationHolder.getInstance();
-		}
-
-		// the getInstance might return null if com.tns.NativeScriptApplication exists but is not the starting app type
-		if (!nativeApp) {
-			// TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module?
-			const clazz = java.lang.Class.forName('android.app.ActivityThread');
-			if (clazz) {
-				const method = clazz.getMethod('currentApplication', null);
-				if (method) {
-					nativeApp = method.invoke(null, null);
-				}
-			}
-		}
+		nativeApp = getNativeApp<android.app.Application>();
 
 		// we cannot work without having the app instance
 		if (!nativeApp) {
@@ -449,7 +382,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 
 		this.started = true;
-		this.mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
 
 		if (!this.nativeApp) {
 			const nativeApp = this.getNativeApplication();
@@ -457,23 +390,20 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 	}
 
-	private _startActivity: androidx.appcompat.app.AppCompatActivity;
-	private _foregroundActivity: androidx.appcompat.app.AppCompatActivity;
-
 	get startActivity() {
-		return this._startActivity;
+		return androidGetStartActivity();
 	}
 
 	get foregroundActivity() {
-		return this._foregroundActivity;
+		return androidGetForegroundActivity();
 	}
 
 	setStartActivity(value: androidx.appcompat.app.AppCompatActivity) {
-		this._startActivity = value;
+		androidSetStartActivity(value);
 	}
 
 	setForegroundActivity(value: androidx.appcompat.app.AppCompatActivity) {
-		this._foregroundActivity = value;
+		androidSetForegroundActivity(value);
 	}
 
 	get paused(): boolean {
@@ -497,34 +427,15 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	// RECEIVER_NOT_EXPORTED (4)
 	// RECEIVER_VISIBLE_TO_INSTANT_APPS (1)
 	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void, flags = 2): void {
-		const registerFunc = (context: android.content.Context) => {
-			const receiver: android.content.BroadcastReceiver = new (initBroadcastReceiver())(onReceiveCallback);
-			if (SDK_VERSION >= 26) {
-				context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter), flags);
-			} else {
-				context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
-			}
-			this._registeredReceivers[intentFilter] = receiver;
-		};
-
-		if (this.context) {
-			registerFunc(this.context);
-		} else {
-			this._pendingReceiverRegistrations.push(registerFunc);
-		}
+		androidRegisterBroadcastReceiver(intentFilter, onReceiveCallback, flags);
 	}
 
 	public unregisterBroadcastReceiver(intentFilter: string): void {
-		const receiver = this._registeredReceivers[intentFilter];
-		if (receiver) {
-			this.context.unregisterReceiver(receiver);
-			this._registeredReceivers[intentFilter] = undefined;
-			delete this._registeredReceivers[intentFilter];
-		}
+		androidUnregisterBroadcastReceiver(intentFilter);
 	}
 
 	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
-		return this._registeredReceivers[intentFilter];
+		return androidRegisteredReceivers[intentFilter];
 	}
 
 	getRootView(): View {
@@ -534,7 +445,8 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 		const callbacks: AndroidActivityCallbacks = activity['_callbacks'];
 
-		return callbacks ? callbacks.getRootView() : undefined;
+		setRootView(callbacks ? callbacks.getRootView() : undefined);
+		return getRootView();
 	}
 
 	resetRootView(entry?: NavigationEntry | string): void {
@@ -599,3 +511,49 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 export * from './application-common';
 export const Application = new AndroidApplication();
 export const iOSApplication = undefined;
+
+
+const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
+function toggleApplicationEventListeners(toAdd: boolean, callback: (args: ApplicationEventData) => void) {
+	for (const eventName of applicationEvents) {
+		if (toAdd) {
+			Application.on(eventName, callback);
+		} else {
+			Application.off(eventName, callback);
+		}
+	}
+}
+setToggleApplicationEventListenersCallback(toggleApplicationEventListeners);
+
+setApplicationPropertiesCallback(() => {
+	return {
+		orientation: Application.orientation(),
+		systemAppearance: Application.systemAppearance(),
+	};
+});
+
+function onLiveSync(args): void {
+	if (getImageFetcher()) {
+		getImageFetcher().clearCache();
+	}
+}
+
+getNativeScriptGlobals().events.on('livesync', onLiveSync);
+
+getNativeScriptGlobals().addEventWiring(() => {
+	Application.android.on('activityStarted', (args: any) => {
+		if (!getImageFetcher()) {
+			initImageCache(args.activity);
+		} else {
+			getImageFetcher().initCache();
+		}
+	});
+});
+
+getNativeScriptGlobals().addEventWiring(() => {
+	Application.android.on('activityStopped', (args) => {
+		if (getImageFetcher()) {
+			getImageFetcher().closeCache();
+		}
+	});
+});

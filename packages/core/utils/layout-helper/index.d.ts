@@ -7,13 +7,15 @@ export namespace layout {
 	/**
 	 * Bits that provide the actual measured size.
 	 */
-	export const MEASURED_HEIGHT_STATE_SHIFT: number;
-	export const MEASURED_SIZE_MASK: number;
-	export const MEASURED_STATE_MASK: number;
-	export const MEASURED_STATE_TOO_SMALL: number;
+	export const MODE_SHIFT: number;
+	export const MODE_MASK: number;
 	export const UNSPECIFIED: number;
 	export const EXACTLY: number;
 	export const AT_MOST: number;
+	export const MEASURED_HEIGHT_STATE_SHIFT: number;
+	export const MEASURED_STATE_TOO_SMALL: number;
+	export const MEASURED_STATE_MASK: number;
+	export const MEASURED_SIZE_MASK: number;
 
 	/**
 	 * Gets layout mode from a given specification as string.

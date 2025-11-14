@@ -1,14 +1,15 @@
 // Types.
-import { Animation as AnimationBaseDefinition } from '.';
-import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
-
-// Requires.
+import { Point3D } from './animation-types';
+import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair } from './animation-shared';
+import { PropertyAnimation } from './animation-shared';
+import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { Style } from '../styling/style';
+import { PercentLength } from '../styling/length-shared';
 import { CssAnimationProperty, CssProperty, InheritedCssProperty, ShorthandProperty } from '../core/properties';
-import { View } from '../core/view';
+import { Style } from '../styling/style';
+import type { View } from '../core/view';
 
-export * from './animation-interfaces';
+export * from './animation-shared';
 
 export function getPropertyFromKey(key: string, view: View) {
 	return CssAnimationProperty.properties[key] || ShorthandProperty.properties[key] || InheritedCssProperty.properties[key] || CssProperty.properties[key] || Style.prototype[key] || view.constructor['registeredProps']?.[key] || Object.getPrototypeOf(view)[key];
@@ -25,7 +26,7 @@ export namespace Properties {
 }
 export const AnimationNonAnimatableProperties = ['duration', 'valueSource', 'delay', 'iterations', 'curve', 'target'];
 
-export abstract class AnimationBase implements AnimationBaseDefinition {
+export abstract class AnimationBase {
 	public _propertyAnimations: Array<PropertyAnimation>;
 	public _playSequentially: boolean;
 	private _isPlaying: boolean;

@@ -2,7 +2,7 @@ import { ItemEventData } from '.';
 import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty } from './list-view-common';
 import { CoreTypes } from '../../core-types';
 import { View, KeyedTemplate } from '../core/view';
-import { Length } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { Observable, EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { layout } from '../../utils';

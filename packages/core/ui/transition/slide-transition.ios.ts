@@ -1,6 +1,6 @@
 ﻿import { Transition } from '.';
-import { Screen } from '../../platform';
-import { CORE_ANIMATION_DEFAULTS } from '../../utils/common';
+import { Screen } from '../../platform/screen';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 
 export class SlideTransition extends Transition {
 	declare transitionController: SlideTransitionController;
@@ -105,7 +105,7 @@ export class SlideTransitionController extends NSObject implements UIViewControl
 					toView.transform = originalToViewTransform;
 					fromView.transform = originalFromViewTransform;
 					transitionContext.completeTransition(finished);
-				}
+				},
 			);
 		}
 	}

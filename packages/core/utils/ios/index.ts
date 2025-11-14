@@ -1,7 +1,7 @@
 import { Application } from '../../application';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../common';
+import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../../utils/animation-helpers';
 import { SDK_VERSION } from '../constants';
 
 declare let UIImagePickerControllerSourceType: any;

@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"rootDir": ".",
 		"baseUrl": ".",
-		"target": "es2018",
+		"target": "es2022",
 		"module": "commonjs",
 		"declaration": true,
 		"emitDecoratorMetadata": true,

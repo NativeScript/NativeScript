@@ -1,7 +1,7 @@
 ﻿import type { View } from '../core/view';
 import { SharedElementSettings, TransitionInteractiveState, Transition } from '.';
 import { isNumber } from '../../utils/types';
-import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../../utils/common';
+import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../../utils/animation-helpers';
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
 import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';
 import { SharedTransitionHelper } from './shared-transition-helper';

@@ -1,6 +1,6 @@
 import type { BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition } from './frame-interfaces';
 import { NavigationType } from './frame-interfaces';
-import { Page } from '../page';
+import type { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';
@@ -15,7 +15,7 @@ import { SharedTransition } from '../transition/shared-transition';
 import { NavigationData } from '.';
 
 export { NavigationType } from './frame-interfaces';
-export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
+export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame, NavigationData } from './frame-interfaces';
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
 	let entry: NavigationEntry;
@@ -716,7 +716,7 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		// Handle markup/script changes in currentPage
-		if (this.currentPage && viewMatchesModuleContext(this.currentPage, context, ['markup', 'script'])) {
+		if (this.currentPage && viewMatchesModuleContext(this.currentPage as any, context, ['markup', 'script'])) {
 			Trace.write(`Change Handled: Replacing page ${context.path}`, Trace.categories.Livesync);
 
 			// Replace current page with a default fade transition

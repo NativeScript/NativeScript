@@ -1,12 +1,13 @@
 import { PageBase, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from './page-common';
-import { CoreTypes } from '../../core-types';
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
 import { SDK_VERSION } from '../../utils/constants';
 import { profile } from '../../profiling';
-import { AndroidAccessibilityEvent, getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
+import { getLastFocusedViewOnPage } from '../../accessibility/accessibility-common';
+import { AndroidAccessibilityEvent } from '../../accessibility/accessibility-types';
+import { isAccessibilityServiceEnabled } from '../../accessibility';
 
 export * from './page-common';
 
@@ -23,7 +24,7 @@ export class Page extends PageBase {
 			JSON.stringify([
 				{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
 				{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
-			])
+			]),
 		);
 		return layout;
 	}

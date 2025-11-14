@@ -1,4 +1,5 @@
-import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, isCssWideKeyword } from '../core/properties';
+import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
+import { unsetValue, isCssWideKeyword } from '../core/properties/property-shared';
 import { Style } from './style';
 
 import { Color } from '../../color';
@@ -8,12 +9,15 @@ import { layout } from '../../utils';
 
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
+import { Length, FixedLength, PercentLength } from './length-shared';
 
 import { parseBackground } from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
 import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
+
+export { Length, FixedLength, PercentLength } from './length-shared';
 
 interface ShorthandPositioning {
 	top: string;
@@ -24,7 +28,7 @@ interface ShorthandPositioning {
 
 function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
 function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
-function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean {
+function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType | CoreTypes.LengthDipUnit): boolean {
 	if (a == 'auto' || isCssWideKeyword(a)) {
 		return b == 'auto' || isCssWideKeyword(b);
 	}
@@ -40,16 +44,16 @@ function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLength
 		if (!b) {
 			return false;
 		}
-		return b.unit == 'dip' && a == b.value;
+		return (b as CoreTypes.LengthDipUnit).unit == 'dip' && a == (b as CoreTypes.LengthDipUnit).value;
 	}
 
 	if (typeof b === 'number') {
-		return a ? a.unit == 'dip' && a.value == b : false;
+		return a ? (a as CoreTypes.LengthDipUnit).unit == 'dip' && (a as CoreTypes.LengthDipUnit).value == b : false;
 	}
 	if (!a || !b) {
 		return false;
 	}
-	return a.value == b.value && a.unit == b.unit;
+	return (a as CoreTypes.LengthDipUnit).value == (b as CoreTypes.LengthDipUnit).value && (a as CoreTypes.LengthDipUnit).unit == (b as CoreTypes.LengthDipUnit).unit;
 }
 
 function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
@@ -61,12 +65,12 @@ function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentL
 		return length.toString();
 	}
 
-	let val = length.value;
-	if (length.unit === '%') {
+	let val = (length as CoreTypes.LengthPercentUnit).value;
+	if ((length as CoreTypes.LengthPercentUnit).unit === '%') {
 		val *= 100;
 	}
 
-	return val + length.unit;
+	return val + (length as CoreTypes.LengthPercentUnit).unit;
 }
 
 function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
@@ -76,13 +80,17 @@ function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number 
 	if (typeof length === 'number') {
 		return layout.round(layout.toDevicePixels(length));
 	}
+	// @ts-ignore
 	switch (length.unit) {
 		case 'px':
+			// @ts-ignore
 			return layout.round(length.value);
 		case '%':
+			// @ts-ignore
 			return layout.round(parentAvailableWidth * length.value);
 		case 'dip':
 		default:
+			// @ts-ignore
 			return layout.round(layout.toDevicePixels(length.value));
 	}
 }
@@ -92,102 +100,6 @@ export function colorConverter(v: string | Color): Color {
 		return v as Color;
 	}
 	return new Color(v);
-}
-
-export namespace PercentLength {
-	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.PercentLengthType {
-		if (fromValue == 'auto') {
-			return 'auto';
-		}
-
-		if (typeof fromValue === 'string') {
-			const stringValue = fromValue.trim();
-			if (stringValue.endsWith('%')) {
-				// Normalize result to values between -1 and 1
-				const value = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${fromValue}`);
-				}
-				return { unit: '%', value };
-			} else if (stringValue.endsWith('px')) {
-				const value: CoreTypes.px = parseFloat(stringValue.slice(-2).trim());
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${fromValue}`);
-				}
-
-				return { unit: 'px', value };
-			} else {
-				const value: CoreTypes.dip = parseFloat(stringValue);
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${fromValue}`);
-				}
-
-				return value;
-			}
-		} else {
-			return fromValue;
-		}
-	}
-
-	export const equals: {
-		(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
-	} = equalsCommon;
-	export const toDevicePixels: {
-		(length: CoreTypes.PercentLengthType, auto: number, parentAvailableWidth: number): number;
-	} = toDevicePixelsCommon;
-	export const convertToString: {
-		(length: CoreTypes.PercentLengthType): string;
-	} = convertToStringCommon;
-}
-
-export namespace FixedLength {
-	export function parse(fromValue: string | CoreTypes.FixedLengthType): CoreTypes.FixedLengthType {
-		if (typeof fromValue === 'string') {
-			let stringValue = fromValue.trim();
-			if (stringValue.endsWith('px')) {
-				stringValue = stringValue.slice(0, -2).trim();
-				const value: CoreTypes.px = parseFloat(stringValue);
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${stringValue}`);
-				}
-
-				return { unit: 'px', value };
-			} else {
-				const value: CoreTypes.dip = parseFloat(stringValue);
-				if (isNaN(value) || !isFinite(value)) {
-					throw new Error(`Invalid value: ${stringValue}`);
-				}
-
-				return value;
-			}
-		} else {
-			return fromValue;
-		}
-	}
-	export const equals: { (a: CoreTypes.FixedLengthType, b: CoreTypes.FixedLengthType): boolean } = equalsCommon;
-	export const toDevicePixels: {
-		(length: CoreTypes.FixedLengthType): number;
-	} = toDevicePixelsCommon;
-	export const convertToString: {
-		(length: CoreTypes.FixedLengthType): string;
-	} = convertToStringCommon;
-}
-
-export namespace Length {
-	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.LengthType {
-		if (fromValue == 'auto') {
-			return 'auto';
-		}
-
-		return FixedLength.parse(fromValue);
-	}
-	export const equals: { (a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean } = equalsCommon;
-	export const toDevicePixels: {
-		(length: CoreTypes.LengthType, auto?: number): number;
-	} = toDevicePixelsCommon;
-	export const convertToString: {
-		(length: CoreTypes.LengthType): string;
-	} = convertToStringCommon;
 }
 
 function isNonNegativeFiniteNumber(value: number): boolean {

@@ -1,13 +1,8 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View, EventData, Button, Observable, Color, Page, FormattedString } from '@nativescript/core';
+import { View, EventData, Button, Observable, Color, Page, FormattedString, BindingOptions, Span } from '@nativescript/core';
 import * as buttonTestsNative from './button-tests-native';
-import * as spanModule from '@nativescript/core/text/span';
 import { tapEvent } from '@nativescript/core/ui/button';
-
-// >> button-require-others
-import { BindingOptions } from '@nativescript/core/ui/core/bindable';
-// << button-require-others
 
 export function test_recycling() {
 	helper.nativeView_recycling_test(() => new Button());
@@ -327,13 +322,13 @@ export var testNativeTextAlignmentFromLocal = function () {
 };
 
 export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function () {
-	var firstSpan = new spanModule.Span();
+	var firstSpan = new Span();
 	firstSpan.fontSize = 10;
 	firstSpan.text = 'First';
-	var secondSpan = new spanModule.Span();
+	var secondSpan = new Span();
 	secondSpan.fontSize = 15;
 	secondSpan.text = 'Second';
-	var thirdSpan = new spanModule.Span();
+	var thirdSpan = new Span();
 	thirdSpan.fontSize = 20;
 	thirdSpan.text = 'Third';
 	var formattedString1 = new FormattedString();
@@ -393,7 +388,7 @@ export function test_setting_formattedText_With_UnknownFont_DoesNotCrash() {
 	helper.buildUIAndRunTest(btn, function (views) {
 		TKUnit.waitUntilReady(() => btn.isLayoutValid);
 
-		let span = new spanModule.Span();
+		let span = new Span();
 		span.text = 'Login';
 		let formattedString = new FormattedString();
 		formattedString.spans.push(span);

@@ -1,14 +1,13 @@
-import * as inspectorCommandTypes from './InspectorBackendCommands';
-const inspectorCommands: typeof inspectorCommandTypes = require('./InspectorBackendCommands');
+import * as inspectorCommands from './InspectorBackendCommands';
 
 import * as debuggerDomains from '.';
 
 import { attachDOMInspectorEventCallbacks, attachDOMInspectorCommandCallbacks } from './devtools-elements';
 
 @inspectorCommands.DomainDispatcher('DOM')
-export class DOMDomainDebugger implements inspectorCommandTypes.DOMDomain.DOMDomainDispatcher {
+export class DOMDomainDebugger implements inspectorCommands.DOMDomain.DOMDomainDispatcher {
 	private _enabled: boolean;
-	public events: inspectorCommandTypes.DOMDomain.DOMFrontend;
+	public events: inspectorCommands.DOMDomain.DOMFrontend;
 	public commands: any;
 
 	constructor() {
@@ -47,41 +46,41 @@ export class DOMDomainDebugger implements inspectorCommandTypes.DOMDomain.DOMDom
 		this._enabled = false;
 	}
 
-	getDocument(): { root: inspectorCommandTypes.DOMDomain.Node } {
+	getDocument(): { root: inspectorCommands.DOMDomain.Node } {
 		const domNode = this.commands.getDocument();
 
 		return { root: domNode };
 	}
 
-	removeNode(params: inspectorCommandTypes.DOMDomain.RemoveNodeMethodArguments): void {
+	removeNode(params: inspectorCommands.DOMDomain.RemoveNodeMethodArguments): void {
 		this.commands.removeNode(params.nodeId);
 	}
 
-	setAttributeValue(params: inspectorCommandTypes.DOMDomain.SetAttributeValueMethodArguments): void {
+	setAttributeValue(params: inspectorCommands.DOMDomain.SetAttributeValueMethodArguments): void {
 		throw new Error('Method not implemented.');
 	}
 
-	setAttributesAsText(params: inspectorCommandTypes.DOMDomain.SetAttributesAsTextMethodArguments): void {
+	setAttributesAsText(params: inspectorCommands.DOMDomain.SetAttributesAsTextMethodArguments): void {
 		this.commands.setAttributeAsText(params.nodeId, params.text, params.name);
 	}
 
-	removeAttribute(params: inspectorCommandTypes.DOMDomain.RemoveAttributeMethodArguments): void {
+	removeAttribute(params: inspectorCommands.DOMDomain.RemoveAttributeMethodArguments): void {
 		throw new Error('Method not implemented.');
 	}
 
-	performSearch(params: inspectorCommandTypes.DOMDomain.PerformSearchMethodArguments): { searchId: string; resultCount: number } {
+	performSearch(params: inspectorCommands.DOMDomain.PerformSearchMethodArguments): { searchId: string; resultCount: number } {
 		return null;
 	}
 
-	getSearchResults(params: inspectorCommandTypes.DOMDomain.GetSearchResultsMethodArguments): { nodeIds: inspectorCommandTypes.DOMDomain.NodeId[] } {
+	getSearchResults(params: inspectorCommands.DOMDomain.GetSearchResultsMethodArguments): { nodeIds: inspectorCommands.DOMDomain.NodeId[] } {
 		return null;
 	}
 
-	discardSearchResults(params: inspectorCommandTypes.DOMDomain.DiscardSearchResultsMethodArguments): void {
+	discardSearchResults(params: inspectorCommands.DOMDomain.DiscardSearchResultsMethodArguments): void {
 		return;
 	}
 
-	highlightNode(params: inspectorCommandTypes.DOMDomain.HighlightNodeMethodArguments): void {
+	highlightNode(params: inspectorCommands.DOMDomain.HighlightNodeMethodArguments): void {
 		return;
 	}
 
@@ -89,7 +88,7 @@ export class DOMDomainDebugger implements inspectorCommandTypes.DOMDomain.DOMDom
 		return;
 	}
 
-	resolveNode(params: inspectorCommandTypes.DOMDomain.ResolveNodeMethodArguments): { object: inspectorCommandTypes.RuntimeDomain.RemoteObject } {
+	resolveNode(params: inspectorCommands.DOMDomain.ResolveNodeMethodArguments): { object: inspectorCommands.RuntimeDomain.RemoteObject } {
 		return null;
 	}
 }

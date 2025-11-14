@@ -50,6 +50,9 @@ export interface IWebpackEnv {
 	// print webpack stats (default: true)
 	stats?: boolean;
 
+	// enable commonjs modules (default: ES modules, esm)
+	commonjs?: boolean;
+
 	// misc
 	replace?: string[] | string;
 	watchNodeModules?: boolean;

@@ -10,7 +10,7 @@ import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
 import { FadeTransition } from '../transition/fade-transition';
 import { SlideTransition } from '../transition/slide-transition';
-import { SharedTransition, SharedTransitionEventData, SharedTransitionAnimationType } from '../transition/shared-transition';
+import { SharedTransition, SharedTransitionAnimationType } from '../transition/shared-transition';
 
 interface TransitionListener {
 	new (entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;

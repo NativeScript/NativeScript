@@ -1,7 +1,8 @@
 import type { Transition, TransitionNavigationType, SharedTransitionTagPropertiesToMatch } from '.';
 import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
-import { isNumber, CORE_ANIMATION_DEFAULTS } from '../../utils';
+import { isNumber } from '../../utils/types';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
 import type { PanGestureEventData } from '../gestures';

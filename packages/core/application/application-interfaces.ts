@@ -1,6 +1,6 @@
-import type { ApplicationCommon } from './application-common';
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
+import type { ApplicationCommon } from './application-common';
 
 /**
  * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
@@ -43,7 +43,7 @@ export interface ApplicationEventData extends EventData {
 	 * The instance that has raised the event.
 	 */
 	// TODO: find a way to do object: ApplicationCommon | Observable;
-	object?: any;
+	object?: any; // Application
 }
 
 /**

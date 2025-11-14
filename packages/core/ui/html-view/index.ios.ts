@@ -3,7 +3,8 @@ import { Font } from '../styling/font';
 import { colorProperty, fontInternalProperty } from '../styling/style-properties';
 import { HtmlViewBase, htmlProperty, selectableProperty, linkColorProperty } from './html-view-common';
 import { View } from '../core/view';
-import { SDK_VERSION, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './html-view-common';
 

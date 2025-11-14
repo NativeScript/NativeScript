@@ -72,3 +72,26 @@ export function getLastFocusedViewOnPage(page: Page): View | null {
 
 	return null;
 }
+
+let a11yServiceEnabled: boolean;
+export function isA11yEnabled(): boolean {
+	if (typeof a11yServiceEnabled === 'boolean') {
+		return a11yServiceEnabled;
+	}
+	return undefined;
+}
+export function setA11yEnabled(value: boolean): void {
+	a11yServiceEnabled = value;
+}
+
+export function enforceArray(val: string | string[]): string[] {
+	if (Array.isArray(val)) {
+		return val;
+	}
+
+	if (typeof val === 'string') {
+		return val.split(/[, ]/g).filter((v: string) => !!v);
+	}
+
+	return [];
+}

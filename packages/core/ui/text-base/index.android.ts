@@ -1,22 +1,21 @@
-// Types
-import { ShadowCSSValues } from '../styling/css-shadow';
 import { getClosestPropertyValue, maxLinesProperty, textOverflowProperty } from './text-base-common';
-
-// Requires
+import { ShadowCSSValues } from '../styling/css-shadow';
 import { Font } from '../styling/font';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
+import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
+import { StrokeCSSValues } from '../styling/css-stroke';
+import { FormattedString } from './formatted-string';
+import { Span } from './span';
 import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { _getStoredClassDefaultPropertyValue } from '../core/properties';
-import { StrokeCSSValues } from '../styling/css-stroke';
-import { Length, backgroundColorProperty, colorProperty, fontInternalProperty, fontSizeProperty, paddingBottomProperty, paddingLeftProperty, paddingRightProperty, paddingTopProperty } from '../styling/style-properties';
-import { FormattedString } from './formatted-string';
-import { Span } from './span';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
-import { isCssWideKeyword, testIDProperty } from '../../ui/core/view';
+import { testIDProperty } from '../core/view';
+import { isCssWideKeyword } from '../core/properties/property-shared';
 
 export * from './text-base-common';
 
@@ -435,7 +434,7 @@ export class TextBase extends TextBaseCommon {
 				if (value === 'none' || isCssWideKeyword(value)) {
 					this.nativeTextViewProtected.setPaintFlags(0);
 				} else {
-					this.nativeTextViewProtected.setPaintFlags(value);
+					this.nativeTextViewProtected.setPaintFlags(value as number);
 				}
 				break;
 		}

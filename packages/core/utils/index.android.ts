@@ -1,10 +1,12 @@
 import { Trace } from '../trace';
-import { getFileExtension } from './common';
+import { getFileExtension } from './utils-shared';
 import { SDK_VERSION } from './constants';
-import { android as AndroidUtils } from './native-helper';
+import { android as androidUtils } from './native-helper';
 import { topmost } from '../ui/frame/frame-stack';
+import { debounce, throttle } from './shared';
 
 export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
+export * from './animation-helpers';
 export * from './common';
 export * from './constants';
 export * from './debug';
@@ -12,12 +14,46 @@ export * from './layout-helper';
 export * from './macrotask-scheduler';
 export * from './mainthread-helper';
 export * from './native-helper';
+export * from './shared';
 export * from './types';
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
 
 export function GC() {
 	gc();
+}
+
+let throttledGC: Map<number, () => void>;
+let debouncedGC: Map<number, () => void>;
+
+export function queueGC(delay = 900, useThrottle?: boolean) {
+	/**
+	 * developers can use different queueGC settings to optimize their own apps
+	 * each setting is stored in a Map to reuse each time app calls it
+	 */
+	if (useThrottle) {
+		if (!throttledGC) {
+			throttledGC = new Map();
+		}
+		if (!throttledGC.get(delay)) {
+			throttledGC.set(
+				delay,
+				throttle(() => GC(), delay),
+			);
+		}
+		throttledGC.get(delay)();
+	} else {
+		if (!debouncedGC) {
+			debouncedGC = new Map();
+		}
+		if (!debouncedGC.get(delay)) {
+			debouncedGC.set(
+				delay,
+				debounce(() => GC(), delay),
+			);
+		}
+		debouncedGC.get(delay)();
+	}
 }
 
 export function releaseNativeObject(object: java.lang.Object) {
@@ -42,7 +78,7 @@ export function wrapNativeException<T = any>(ex: NSError, wrapError: (...args) =
 }
 
 export function openUrl(location: string): boolean {
-	const context = AndroidUtils.getApplicationContext();
+	const context = androidUtils.getApplicationContext();
 	try {
 		const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -57,7 +93,7 @@ export function openUrl(location: string): boolean {
 export function openUrlAsync(location: string): Promise<boolean> {
 	return new Promise<boolean>((resolve, reject) => {
 		try {
-			const context = AndroidUtils.getApplicationContext();
+			const context = androidUtils.getApplicationContext();
 			const intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
 			intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
 			context.startActivity(intent);
@@ -118,7 +154,7 @@ function getMimeTypeNameFromExtension(filePath: string): string {
  * @returns {boolean} whether opening the file succeeded or not
  */
 export function openFile(filePath: string, title: string = 'Open File...'): boolean {
-	const context = AndroidUtils.getApplicationContext();
+	const context = androidUtils.getApplicationContext();
 	try {
 		// Ensure external storage is available
 		if (!isExternalStorageAvailable()) {
@@ -199,18 +235,14 @@ Please ensure you have your manifest correctly configured with the FileProvider.
 	}
 }
 
-export function isRealDevice(): boolean {
-	return AndroidUtils.isRealDevice();
-}
-
 export function dismissSoftInput(nativeView?: any): void {
-	AndroidUtils.dismissSoftInput(nativeView);
+	androidUtils.dismissSoftInput(nativeView);
 }
 
 export function dismissKeyboard() {
 	dismissSoftInput();
 	const modalDialog = (topmost()?._modalParent ?? (topmost()?.modal as any))?._dialogFragment?.getDialog();
-	const view = modalDialog ?? AndroidUtils.getCurrentActivity();
+	const view = modalDialog ?? androidUtils.getCurrentActivity();
 	if (view) {
 		const focus = view.getCurrentFocus();
 
@@ -222,7 +254,7 @@ export function dismissKeyboard() {
 
 export function copyToClipboard(value: string) {
 	try {
-		const clipboard = AndroidUtils.getApplicationContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+		const clipboard = androidUtils.getApplicationContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
 		const clip = android.content.ClipData.newPlainText('Clipboard value', value);
 		clipboard.setPrimaryClip(clip);
 	} catch (err) {

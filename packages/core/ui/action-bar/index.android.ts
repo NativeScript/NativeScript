@@ -6,10 +6,10 @@ import { Color } from '../../color';
 import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
-import { Application } from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
+import { getApplicationContext } from '../../application/helpers.android';
 import { SDK_VERSION } from '../../utils/constants';
-import * as Utils from '../../utils';
+import { getNativeApp } from '../../application/helpers-common';
 
 export * from './action-bar-common';
 
@@ -78,7 +78,7 @@ function initializeMenuItemClickListener(): void {
 	}
 
 	MenuItemClickListener = MenuItemClickListenerImpl;
-	appResources = Utils.android.getApplicationContext().getResources();
+	appResources = getApplicationContext().getResources();
 }
 
 export class ActionItem extends ActionItemBase {
@@ -293,7 +293,7 @@ export class ActionBar extends ActionBarBase {
 					traceMissingIcon(icon);
 				}
 			} else {
-				const defaultIcon = Application.android.nativeApp.getApplicationInfo().icon;
+				const defaultIcon = (getNativeApp() as android.app.Application).getApplicationInfo().icon;
 				this.nativeViewProtected.setLogo(defaultIcon);
 			}
 		} else {
@@ -308,7 +308,7 @@ export class ActionBar extends ActionBarBase {
 			if (title !== undefined) {
 				this.nativeViewProtected.setTitle(title);
 			} else {
-				const appContext = Utils.android.getApplicationContext();
+				const appContext = getApplicationContext();
 				const appInfo = appContext.getApplicationInfo();
 				const appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
 				if (appLabel) {
@@ -509,7 +509,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
 	let result = null;
 	if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', Application.android.packageName);
+		const resourceId: number = resources.getIdentifier(icon.substring(RESOURCE_PREFIX.length), 'drawable', getApplicationContext().getPackageName());
 		if (resourceId > 0) {
 			result = resourceId;
 		}

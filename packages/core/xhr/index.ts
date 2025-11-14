@@ -1,5 +1,6 @@
-import * as http from '../http';
-import * as types from '../utils/types';
+import type { HttpRequestOptions, HttpResponse } from '../http/http-interfaces';
+import { request } from '../http';
+import { isString, isFunction } from '../utils/types';
 import { Trace } from '../trace';
 
 namespace XMLHttpRequestResponseType {
@@ -24,7 +25,7 @@ export class XMLHttpRequest {
 	public onloadstart: (...args: any[]) => void;
 	public onprogress: (...args: any[]) => void;
 
-	private _options: http.HttpRequestOptions;
+	private _options: HttpRequestOptions;
 	private _readyState: number;
 	private _status: number;
 	private _response: any;
@@ -64,7 +65,7 @@ export class XMLHttpRequest {
 			throw new Error("Failed to read the 'responseText' property from 'XMLHttpRequest': " + "The value is only accessible if the object's 'responseType' is '' or 'text' " + `(was '${this._responseType}').`);
 		}
 
-		if (types.isFunction(this._responseTextReader)) {
+		if (isFunction(this._responseTextReader)) {
 			return this._responseTextReader();
 		}
 
@@ -103,7 +104,7 @@ export class XMLHttpRequest {
 		this._readyState = this.UNSENT;
 	}
 
-	private _loadResponse(r: http.HttpResponse) {
+	private _loadResponse(r: HttpResponse) {
 		this._status = r.statusCode;
 		this._headers = r.headers;
 		this._setReadyState(this.HEADERS_RECEIVED);
@@ -135,7 +136,7 @@ export class XMLHttpRequest {
 	}
 
 	private emitEvent(eventName: string, ...args: Array<any>) {
-		if (types.isFunction(this['on' + eventName])) {
+		if (isFunction(this['on' + eventName])) {
 			this['on' + eventName](...args);
 		}
 
@@ -188,15 +189,15 @@ export class XMLHttpRequest {
 	}
 
 	public open(method: string, url: string, async?: boolean, user?: string, password?: string) {
-		if (types.isString(method) && types.isString(url)) {
+		if (isString(method) && isString(url)) {
 			this._options = { url: url, method: method };
 			this._options.headers = {};
 
-			if (types.isString(user)) {
+			if (isString(user)) {
 				this._options.headers['user'] = user;
 			}
 
-			if (types.isString(password)) {
+			if (isString(password)) {
 				this._options.headers['password'] = password;
 			}
 
@@ -232,7 +233,7 @@ export class XMLHttpRequest {
 			throw new Error("Failed to execute 'send' on 'XMLHttpRequest': " + "The object's state must be OPENED.");
 		}
 
-		if (types.isString(data) && this._options.method !== 'GET') {
+		if (isString(data) && this._options.method !== 'GET') {
 			//The Android Java HTTP lib throws an exception if we provide a
 			//a request body for GET requests, so we avoid doing that.
 			//Browser implementations silently ignore it as well.
@@ -250,8 +251,7 @@ export class XMLHttpRequest {
 
 		this.emitEvent('loadstart');
 
-		http
-			.request(this._options)
+		request(this._options)
 			.then((r) => {
 				if (!this._errorFlag && this._sendFlag) {
 					this._loadResponse(r);
@@ -269,7 +269,7 @@ export class XMLHttpRequest {
 			throw new Error("Failed to execute 'setRequestHeader' on 'XMLHttpRequest': " + "The object's state must be OPENED.");
 		}
 
-		if (types.isString(header) && types.isString(value)) {
+		if (isString(header) && isString(value)) {
 			this._options.headers[header] = value;
 		}
 	}
@@ -289,7 +289,7 @@ export class XMLHttpRequest {
 	}
 
 	public getResponseHeader(header: string): string {
-		if (types.isString(header) && this._readyState > 1 && this._headers && !this._errorFlag) {
+		if (isString(header) && this._readyState > 1 && this._headers && !this._errorFlag) {
 			header = header.toLowerCase();
 			for (const i in this._headers) {
 				if (i.toLowerCase() === header) {
@@ -352,6 +352,28 @@ const statuses = {
 	504: 'Gateway Timeout',
 	505: 'HTTP Version Not Supported',
 };
+
+export class FormData {
+	private _data: Map<string, any>;
+
+	constructor() {
+		this._data = new Map<string, any>();
+	}
+
+	append(name: string, value: any) {
+		this._data.set(name, value);
+	}
+
+	toString(): string {
+		const arr = new Array<string>();
+
+		this._data.forEach(function (value, name, map) {
+			arr.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);
+		});
+
+		return arr.join('&');
+	}
+}
 
 export class Blob {
 	// Note: only for use by XHR
@@ -537,7 +559,7 @@ export class FileReader {
 	}
 
 	private emitEvent(eventName: string, ...args: Array<any>) {
-		if (types.isFunction(this['on' + eventName])) {
+		if (isFunction(this['on' + eventName])) {
 			this['on' + eventName](...args);
 		}
 

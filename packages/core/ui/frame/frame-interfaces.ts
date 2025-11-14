@@ -1,8 +1,7 @@
-// Types
-import { View } from '../core/view';
-import { Page } from '../page';
-import { Transition } from '../transition';
-import { Observable } from '../../data/observable';
+import type { View } from '../core/view';
+import type { Page } from '../page';
+import type { Transition } from '../transition';
+import type { Observable, EventData } from '../../data/observable';
 
 export enum NavigationType {
 	back,
@@ -55,6 +54,47 @@ export interface NavigationTransition {
 	instance?: Transition;
 	duration?: number;
 	curve?: any;
+}
+
+/**
+ * Represents an entry in the back stack of a Frame object.
+ */
+export interface BackstackEntry {
+	entry: NavigationEntry;
+	resolvedPage: Page;
+
+	//@private
+	/**
+	 * @private
+	 */
+	navDepth: number;
+	/**
+	 * @private
+	 */
+	fragmentTag: string;
+	/**
+	 * @private
+	 */
+	fragment?: any;
+	/**
+	 * @private
+	 */
+	viewSavedState?: any;
+	/**
+	 * @private
+	 */
+	frameId?: number;
+	/**
+	 * @private
+	 */
+	recreated?: boolean;
+	//@endprivate
+}
+
+export interface NavigationData extends EventData {
+	entry?: BackstackEntry;
+	fromEntry?: BackstackEntry;
+	isBack?: boolean;
 }
 
 export interface TransitionState {

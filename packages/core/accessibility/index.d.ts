@@ -6,6 +6,8 @@ export * from './accessibility-common';
 export * from './accessibility-types';
 export * from './font-scale';
 
+export function getFontScale(): number;
+
 /**
  * Initialize accessibility for View. This should be called on loaded-event.
  */
@@ -35,3 +37,5 @@ export function isAccessibilityServiceEnabled(): boolean;
  * Find the last view focused on a page.
  */
 export function getLastFocusedViewOnPage(page: Page): View | null;
+
+export function getAndroidAccessibilityManager(): android.view.accessibility.AccessibilityManager | null;

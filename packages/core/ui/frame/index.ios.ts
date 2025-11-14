@@ -1,12 +1,14 @@
 //Types
 import { iOSFrame as iOSFrameDefinition, NavigationTransition } from '.';
-import type { BackstackEntry } from './frame-interfaces';
 import { FrameBase, NavigationType } from './frame-common';
-import { Page } from '../page';
+import type { BackstackEntry } from './frame-interfaces';
+import type { Page } from '../page';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
-import { CORE_ANIMATION_DEFAULTS, SDK_VERSION, ios as iOSUtils, layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
+import { SDK_VERSION } from '../../utils/constants';
 import { Trace } from '../../trace';
 import { SlideTransition } from '../transition/slide-transition';
 import { FadeTransition } from '../transition/fade-transition';

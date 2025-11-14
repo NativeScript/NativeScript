@@ -1,38 +1,28 @@
+import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { CssAnimationProperty, unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { CssAnimationProperty, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
 import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '../../css';
 
 import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR, matchMediaQueryString } from './css-selector';
-import { Trace } from '../../trace';
+import { Trace } from './styling-shared';
 import { File, knownFolders, path } from '../../file-system';
 import { Application, CssChangedEventData, LoadAppCSSEventData } from '../../application';
-import { profile } from '../../profiling';
+import { profile } from './styling-profile';
 
-import * as kam from '../animation/keyframe-animation';
-let keyframeAnimationModule: typeof kam;
-function ensureKeyframeAnimationModule() {
-	if (!keyframeAnimationModule) {
-		keyframeAnimationModule = require('../animation/keyframe-animation');
-	}
-}
+import { Keyframes, KeyframeAnimationInfo, KeyframeAnimation } from '../animation/keyframe-animation';
 
-import * as capm from './css-animation-parser';
+import { CssAnimationParser } from './css-animation-parser';
 import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
 import { cleanupImportantFlags } from './css-utils';
-
-let cssAnimationParserModule: typeof capm;
-function ensureCssAnimationParserModule() {
-	if (!cssAnimationParserModule) {
-		cssAnimationParserModule = require('./css-animation-parser');
-	}
-}
+// @ts-ignore apps resolve this at runtime with path alias in project bundlers
+import appConfig from '~/package.json';
 
 let parser: 'rework' | 'nativescript' | 'css-tree' = 'css-tree';
 try {
-	const appConfig = require('~/package.json');
 	if (appConfig) {
 		if (appConfig.cssParser === 'rework') {
 			parser = 'rework';
@@ -44,15 +34,15 @@ try {
 	//
 }
 
-type KeyframesMap = Map<string, kam.Keyframes[]>;
+type KeyframesMap = Map<string, Keyframes[]>;
 
 let mergedApplicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectors: RuleSet[] = [];
 const applicationAdditionalSelectors: RuleSet[] = [];
 
-let mergedApplicationCssKeyframes: kam.Keyframes[] = [];
-let applicationCssKeyframes: kam.Keyframes[] = [];
-const applicationAdditionalKeyframes: kam.Keyframes[] = [];
+let mergedApplicationCssKeyframes: Keyframes[] = [];
+let applicationCssKeyframes: Keyframes[] = [];
+const applicationAdditionalKeyframes: Keyframes[] = [];
 
 let applicationCssSelectorVersion = 0;
 
@@ -97,7 +87,7 @@ export function mergeCssKeyframes(): void {
 
 class CSSSource {
 	private _selectors: RuleSet[] = [];
-	private _keyframes: kam.Keyframes[] = [];
+	private _keyframes: Keyframes[] = [];
 
 	private constructor(
 		private _ast: ReworkCSS.SyntaxTree,
@@ -205,7 +195,7 @@ class CSSSource {
 		return this._selectors;
 	}
 
-	get keyframes(): kam.Keyframes[] {
+	get keyframes(): Keyframes[] {
 		return this._keyframes;
 	}
 
@@ -245,21 +235,17 @@ class CSSSource {
 	}
 
 	@profile
-	private parseCSSAst() {
+	private async parseCSSAst() {
 		if (this._source) {
 			if (__CSS_PARSER__ === 'css-tree') {
-				const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
-				this._ast = cssTreeParse(this._source, this._file);
+				this._ast = (await import('../../css/css-tree-parser')).cssTreeParse(this._source, this._file);
 			} else if (__CSS_PARSER__ === 'nativescript') {
-				const CSS3Parser = require('../../css/CSS3Parser').CSS3Parser;
-				const CSSNativeScript = require('../../css/CSSNativeScript').CSSNativeScript;
-				const cssparser = new CSS3Parser(this._source);
+				const cssparser = new (await import('../../css/CSS3Parser')).CSS3Parser(this._source);
 				const stylesheet = cssparser.parseAStylesheet();
-				const cssNS = new CSSNativeScript();
+				const cssNS = new (await import('../../css/CSSNativeScript')).CSSNativeScript();
 				this._ast = cssNS.parseStylesheet(stylesheet);
 			} else if (__CSS_PARSER__ === 'rework') {
-				const parseCss = require('../../css').parse;
-				this._ast = parseCss(this._source, { source: this._file });
+				this._ast = (await import('../../css/lib/parse')).parse(this._source, { source: this._file });
 			}
 		}
 	}
@@ -270,17 +256,15 @@ class CSSSource {
 			const nodes = this._ast.stylesheet.rules;
 
 			const rulesets: RuleSet[] = [];
-			const keyframes: kam.Keyframes[] = [];
+			const keyframes: Keyframes[] = [];
 
 			// When css2json-loader is enabled, imports are handled there and removed from AST rules
 			populateRulesFromImports(nodes, rulesets, keyframes);
 			_populateRules(nodes, rulesets, keyframes);
 
 			if (rulesets && rulesets.length) {
-				ensureCssAnimationParserModule();
-
 				rulesets.forEach((rule) => {
-					rule[animationsSymbol] = cssAnimationParserModule.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations);
+					rule[animationsSymbol] = CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations);
 				});
 			}
 
@@ -294,7 +278,7 @@ class CSSSource {
 	}
 }
 
-function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: kam.Keyframes[]): void {
+function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[]): void {
 	const imports = nodes.filter((r) => r.type === 'import');
 	if (!imports.length) {
 		return;
@@ -329,10 +313,10 @@ function populateRulesFromImports(nodes: ReworkCSS.Node[], rulesets: RuleSet[], 
 	}
 }
 
-export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: kam.Keyframes[], mediaQueryString?: string): void {
+export function _populateRules(nodes: ReworkCSS.Node[], rulesets: RuleSet[], keyframes: Keyframes[], mediaQueryString?: string): void {
 	for (const node of nodes) {
 		if (isKeyframe(node)) {
-			const keyframeRule: kam.Keyframes = {
+			const keyframeRule: Keyframes = {
 				name: node.name,
 				keyframes: node.keyframes,
 				mediaQueryString: mediaQueryString,
@@ -501,8 +485,8 @@ const loadCss = profile(`"style-scope".loadCss`, (cssModule: string): void => {
 	}
 });
 
-global.NativeScriptGlobals.events.on('cssChanged', <any>onCssChanged);
-global.NativeScriptGlobals.events.on('livesync', onLiveSync);
+getNativeScriptGlobals().events.on('cssChanged', <any>onCssChanged);
+getNativeScriptGlobals().events.on('livesync', onLiveSync);
 
 // Call to this method is injected in the application in:
 //  - no-snapshot - code injected in app.ts by [bundle-config-loader](https://github.com/NativeScript/nativescript-dev-webpack/blob/9b1e34d8ef838006c9b575285c42d2304f5f02b5/bundle-config-loader.ts#L85-L92)
@@ -511,7 +495,7 @@ global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 // when the snapshot is created - there is no way to use file qualifiers or change the name of on app.css
 export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: LoadAppCSSEventData) => {
 	loadCss(args.cssFile, null, null);
-	global.NativeScriptGlobals.events.off('loadAppCss', loadAppCSS);
+	getNativeScriptGlobals().events.off('loadAppCss', loadAppCSS);
 });
 
 if (Application.hasLaunched()) {
@@ -525,13 +509,13 @@ if (Application.hasLaunched()) {
 		null,
 	);
 } else {
-	global.NativeScriptGlobals.events.on('loadAppCss', loadAppCSS);
+	getNativeScriptGlobals().events.on('loadAppCss', loadAppCSS);
 }
 
 export class CssState {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
 	static emptyPropertyBag: Record<string, unknown> = {};
-	static emptyAnimationArray: ReadonlyArray<kam.KeyframeAnimation> = Object.freeze([]);
+	static emptyAnimationArray: ReadonlyArray<KeyframeAnimation> = Object.freeze([]);
 	static emptyMatch: Readonly<SelectorsMatch<ViewBase>> = {
 		selectors: [],
 		changeMap: new Map(),
@@ -543,7 +527,7 @@ export class CssState {
 	_onDynamicStateChangeHandler: () => void;
 	_appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
 	private _appliedPropertyValues: Record<string, unknown> = CssState.emptyPropertyBag;
-	_appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
+	_appliedAnimations: ReadonlyArray<KeyframeAnimation>;
 	_appliedSelectorsVersion: number;
 
 	_match: SelectorsMatch<ViewBase>;
@@ -570,6 +554,9 @@ export class CssState {
 		}
 	}
 
+	/**
+	 * Checks whether style scope and CSS state selectors are in sync.
+	 */
 	public isSelectorsLatestVersionApplied(): boolean {
 		const view = this.viewRef.get();
 		if (!view) {
@@ -634,14 +621,13 @@ export class CssState {
 	}
 
 	private playKeyframeAnimations(matchingSelectors: SelectorCore[]): void {
-		const animations: kam.KeyframeAnimation[] = [];
+		const animations: KeyframeAnimation[] = [];
 
 		matchingSelectors.forEach((selector) => {
-			const ruleAnimations: kam.KeyframeAnimationInfo[] = selector.ruleset?.[animationsSymbol];
+			const ruleAnimations: KeyframeAnimationInfo[] = selector.ruleset?.[animationsSymbol];
 			if (ruleAnimations) {
-				ensureKeyframeAnimationModule();
 				for (const animationInfo of ruleAnimations) {
-					const animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
+					const animation = KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
 					if (animation) {
 						animations.push(animation);
 					}
@@ -836,10 +822,10 @@ export class StyleScope {
 	private _css = '';
 
 	private _mergedCssSelectors: RuleSet[];
-	private _mergedCssKeyframes: kam.Keyframes[];
+	private _mergedCssKeyframes: Keyframes[];
 
 	private _localCssSelectors: RuleSet[] = [];
-	private _localCssKeyframes: kam.Keyframes[] = [];
+	private _localCssKeyframes: Keyframes[] = [];
 	private _localCssSelectorVersion = 0;
 
 	private _localCssSelectorsAppliedVersion = 0;
@@ -910,17 +896,15 @@ export class StyleScope {
 		this.ensureSelectors();
 	}
 
-	public getKeyframeAnimationWithName(animationName: string): kam.KeyframeAnimationInfo {
+	public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
 		if (!this._mergedCssKeyframes) {
 			return null;
 		}
 
 		const keyframeRule = this.findKeyframeRule(animationName);
 
-		ensureKeyframeAnimationModule();
-		const animation = new keyframeAnimationModule.KeyframeAnimationInfo();
-		ensureCssAnimationParserModule();
-		animation.keyframes = keyframeRule ? cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(keyframeRule.keyframes) : null;
+		const animation = new KeyframeAnimationInfo();
+		animation.keyframes = keyframeRule ? CssAnimationParser.keyframesArrayFromCSS(keyframeRule.keyframes) : null;
 
 		return animation;
 	}
@@ -933,6 +917,9 @@ export class StyleScope {
 		return this.getSelectorsVersion();
 	}
 
+	/**
+	 * Increase the application CSS selector version.
+	 */
 	public _increaseApplicationCssSelectorVersion(): void {
 		applicationCssSelectorVersion++;
 	}
@@ -948,7 +935,7 @@ export class StyleScope {
 	@profile
 	private _createSelectors() {
 		const toMerge: RuleSet[] = [];
-		const toMergeKeyframes: kam.Keyframes[] = [];
+		const toMergeKeyframes: Keyframes[] = [];
 
 		toMerge.push(...mergedApplicationCssSelectors.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
 		toMergeKeyframes.push(...mergedApplicationCssKeyframes.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
@@ -1010,24 +997,22 @@ export class StyleScope {
 
 		for (let i = selectors.length - 1; i >= 0; i--) {
 			const ruleset = selectors[i].ruleset;
-			const animations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
+			const animations: KeyframeAnimationInfo[] = ruleset[animationsSymbol];
 
 			if (animations != null && animations.length) {
-				ensureCssAnimationParserModule();
-
 				for (const animation of animations) {
 					const keyframeRule = this.findKeyframeRule(animation.name);
-					animation.keyframes = keyframeRule ? cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(keyframeRule.keyframes) : null;
+					animation.keyframes = keyframeRule ? CssAnimationParser.keyframesArrayFromCSS(keyframeRule.keyframes) : null;
 				}
 			}
 		}
 	}
 
-	public getAnimations(ruleset: RuleSet): kam.KeyframeAnimationInfo[] {
+	public getAnimations(ruleset: RuleSet): KeyframeAnimationInfo[] {
 		return ruleset[animationsSymbol];
 	}
 
-	private findKeyframeRule(animationName: string): kam.Keyframes {
+	private findKeyframeRule(animationName: string): Keyframes {
 		if (!this._mergedCssKeyframes) {
 			return null;
 		}

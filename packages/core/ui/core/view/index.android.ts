@@ -1,13 +1,13 @@
-// Definitions.
-import type { Point, CustomLayoutView as CustomLayoutViewDefinition, Position } from '.';
+import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
-
+import { getNativeScriptGlobals } from '../../../globals/global-utils';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
-import { isCssWideKeyword } from '../properties';
+import { isCssWideKeyword } from '../properties/property-shared';
 import { EventData } from '../../../data/observable';
 
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
@@ -17,9 +17,11 @@ import { Background, BackgroundClearFlags, refreshBorderDrawable } from '../../s
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
-import { AndroidActivityBackPressedEventData, AndroidDialogFragmentOnCreateViewEventData, Application } from '../../../application';
+import { Application } from '../../../application';
+import { AndroidActivityBackPressedEventData, AndroidDialogFragmentOnCreateViewEventData } from '../../../application/application-interfaces';
+import { isAppInBackground, updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, AccessibilityState, updateContentDescription } from '../../../accessibility';
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
@@ -149,7 +151,7 @@ function initializeDialogFragment() {
 			};
 
 			// Fist fire application.android global event
-			Application.android.notify(args);
+			getNativeScriptGlobals().events.notify(args);
 			if (args.cancel) {
 				return;
 			}
@@ -722,7 +724,7 @@ export class View extends ViewCommon {
 		// if the app is in background while triggering _showNativeModalView
 		// then DialogFragment.show will trigger IllegalStateException: Can not perform this action after onSaveInstanceState
 		// so if in background we create an event to call _showNativeModalView when loaded (going back in foreground)
-		if (Application.inBackground && !parent.isLoaded && options?.android?.showImmediatelyFromBackground !== true) {
+		if (isAppInBackground() && !parent.isLoaded && options?.android?.showImmediatelyFromBackground !== true) {
 			const onLoaded = () => {
 				parent.off('loaded', onLoaded);
 				this._showNativeModalView(parent, options);
@@ -842,7 +844,7 @@ export class View extends ViewCommon {
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value as AccessibilityRole;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 
 		if (SDK_VERSION >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
@@ -868,7 +870,7 @@ export class View extends ViewCommon {
 
 	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
 		this.accessibilityState = value as AccessibilityState;
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
@@ -907,7 +909,7 @@ export class View extends ViewCommon {
 			this.nativeViewProtected.setFocusable(!!value && this.isUserInteractionEnabled);
 		}
 		if (value) {
-			updateAccessibilityProperties(this);
+			updateA11yPropertiesCallback(this);
 		}
 	}
 
@@ -939,7 +941,7 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityMediaSessionProperty.setNative](value: string): void {
-		updateAccessibilityProperties(this);
+		updateA11yPropertiesCallback(this);
 	}
 
 	[androidElevationProperty.getDefault](): number {
@@ -1242,7 +1244,7 @@ export class View extends ViewCommon {
 
 export class ContainerView extends View {}
 
-export class CustomLayoutView extends ContainerView implements CustomLayoutViewDefinition {
+export class CustomLayoutView extends ContainerView {
 	declare nativeViewProtected: android.view.ViewGroup;
 
 	public createNativeView() {
@@ -1349,15 +1351,15 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 				setPixels(this.nativeViewProtected, auto);
 			} else if (typeof length === 'number') {
 				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length)));
-			} else if (length.unit == 'dip') {
+			} else if ((length as CoreTypes.LengthDipUnit).unit == 'dip') {
 				// tslint:disable-line
-				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length.value)));
-			} else if (length.unit == 'px') {
+				setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels((length as CoreTypes.LengthDipUnit).value)));
+			} else if ((length as CoreTypes.LengthPxUnit).unit == 'px') {
 				// tslint:disable-line
-				setPixels(this.nativeViewProtected, layout.round(length.value));
-			} else if (length.unit == '%') {
+				setPixels(this.nativeViewProtected, layout.round((length as CoreTypes.LengthPxUnit).value));
+			} else if ((length as CoreTypes.LengthPercentUnit).unit == '%') {
 				// tslint:disable-line
-				setPercent(this.nativeViewProtected, length.value);
+				setPercent(this.nativeViewProtected, (length as CoreTypes.LengthPercentUnit).value);
 			} else {
 				throw new Error(`Unsupported PercentLength ${length}`);
 			}

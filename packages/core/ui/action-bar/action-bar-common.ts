@@ -5,8 +5,10 @@ import { CoreTypes } from '../../core-types';
 import { View, CSSType } from '../core/view';
 import { ViewBase, booleanConverter } from '../core/view-base';
 import { Trace } from '../../trace';
-import { ShorthandProperty, CssProperty, Property, unsetValue } from '../core/properties';
-import { Length, horizontalAlignmentProperty, verticalAlignmentProperty } from '../styling/style-properties';
+import { ShorthandProperty, CssProperty, Property } from '../core/properties';
+import { unsetValue } from '../core/properties/property-shared';
+import { horizontalAlignmentProperty, verticalAlignmentProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { Style } from '../styling/style';
 
 @CSSType('ActionBar')

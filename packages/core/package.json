@@ -1,85 +1,87 @@
 {
   "name": "@akylas/nativescript",
-  "version": "8.9.6",
-  "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
-  "main": "index",
-  "types": "index.d.ts",
-  "sideEffects": [
-    "bundle-entry-points.js",
-    "./globals/index.js",
-    "./globals"
-  ],
-  "files": [
-    "**/*.d.ts",
-    "**/*.js",
-    "**/*.map",
-    "**/platforms/ios/**",
-    "platforms/android/**",
-    "!platforms/android/core.aar",
-    "!platforms/android/nativescripts.aar",
-    "!platforms/android/winter_cg-release.aar",
-    "**/package.json"
-  ],
-  "keywords": [
-    "NativeScript",
-    "JavaScript",
-    "Android",
-    "iOS",
-    "TypeScript"
-  ],
-  "funding": [
-    {
-      "type": "opencollective",
-      "url": "https://opencollective.com/NativeScript"
-    },
-    {
-      "type": "github",
-      "url": "https://github.com/sponsors/NativeScript"
-    }
-  ],
-  "homepage": "https://github.com/Akylas/NativeScript",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Akylas/NativeScript"
-  },
-  "author": {
-    "name": "NativeScript",
-    "email": "oss@nativescript.org"
-  },
-  "bugs": {
-    "url": "https://github.com/Akylas/NativeScript/issues"
-  },
-  "license": "Apache-2.0",
-  "scripts": {
-    "postinstall": "node cli-hooks/postinstall.js",
-    "preuninstall": "node cli-hooks/preuninstall.js"
-  },
-  "dependencies": {
-    "@csstools/css-calc": "~2.1.2",
-    "@csstools/css-color-parser": "^3.0.8",
-    "@csstools/css-parser-algorithms": "^3.0.4",
-    "@csstools/css-tokenizer": "^3.0.3",
-    "@nativescript/hook": "~2.0.0",
-    "acorn": "^8.7.0",
-    "css-tree": "^1.1.2",
-    "css-what": "^6.1.0",
-    "emoji-regex": "^10.3.0",
-    "reduce-css-calc": "^2.1.8",
-    "tslib": "^2.6.3"
-  },
-  "nativescript": {
-    "platforms": {
-      "ios": "6.0.0",
-      "android": "6.0.0"
-    },
-    "hooks": [
-      {
-        "name": "nativescript-core",
-        "type": "before-checkForChanges",
-        "script": "cli-hooks/before-checkForChanges.js",
-        "inject": true
-      }
-    ]
-  },
-  "gitHead": "bbbea4934ce0d044ac411c3c7fdc2dc33ac3683c"
+	"version": "9.0.0",
+	"description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
+	"type": "module",
+	"main": "index",
+	"types": "index.d.ts",
+	"module": "./index.js",
+	"sideEffects": [
+		"bundle-entry-points.js",
+		"./globals/index.js",
+		"./globals"
+	],
+	"files": [
+		"**/*.d.ts",
+		"**/*.js",
+		"**/*.mjs",
+		"**/*.cjs",
+		"**/*.map",
+		"**/platforms/ios/**",
+		"platforms/android/**",
+		"!platforms/android/core.aar",
+		"**/package.json"
+	],
+	"keywords": [
+		"NativeScript",
+		"JavaScript",
+		"Android",
+		"iOS",
+		"TypeScript"
+	],
+	"funding": [
+		{
+			"type": "opencollective",
+			"url": "https://opencollective.com/NativeScript"
+		},
+		{
+			"type": "github",
+			"url": "https://github.com/sponsors/NativeScript"
+		}
+	],
+	"homepage": "https://nativescript.org",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Akylas/NativeScript"
+	},
+	"author": {
+		"name": "NativeScript",
+		"email": "oss@nativescript.org"
+	},
+	"bugs": {
+		"url": "https://github.com/Akylas/NativeScript/issues"
+	},
+	"license": "Apache-2.0",
+	"scripts": {
+		"postinstall": "node cli-hooks/postinstall.mjs",
+		"preuninstall": "node cli-hooks/preuninstall.mjs"
+	},
+	"dependencies": {
+		"@csstools/css-calc": "~2.1.4",
+		"@csstools/css-color-parser": "^3.0.10",
+		"@csstools/css-parser-algorithms": "^3.0.5",
+		"@csstools/css-tokenizer": "^3.0.4",
+		"@nativescript/hook": "~3.0.4",
+		"acorn": "^8.15.0",
+		"css-tree": "^3.1.0",
+		"css-what": "^7.0.0",
+		"emoji-regex": "^10.2.1",
+		"source-map": "0.7.6",
+		"source-map-js": "^1.2.1",
+		"tslib": "^2.0.0"
+	},
+	"nativescript": {
+		"platforms": {
+			"ios": "6.0.0",
+			"android": "6.0.0"
+		},
+		"hooks": [
+			{
+				"name": "nativescript-core",
+				"type": "before-checkForChanges",
+				"script": "cli-hooks/before-checkForChanges.mjs",
+				"inject": true
+			}
+		]
+	}
 }

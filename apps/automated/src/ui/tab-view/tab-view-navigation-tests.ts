@@ -1,13 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { isIOS, isAndroid } from '@nativescript/core/platform';
-import { Label } from '@nativescript/core/ui/label';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { Frame } from '@nativescript/core/ui/frame';
-import { Page } from '@nativescript/core/ui/page';
-import { ListView, ItemEventData } from '@nativescript/core/ui/list-view';
-import { TabView, TabViewItem } from '@nativescript/core/ui/tab-view';
-import { Button, tapEvent} from '@nativescript/core/ui/button';
+import { isIOS, isAndroid, Label, StackLayout, Frame, Page, ListView, ItemEventData, TabView, TabViewItem, Button } from '@nativescript/core';
 
 var ASYNC = 2;
 

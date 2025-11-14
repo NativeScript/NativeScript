@@ -1,6 +1,7 @@
 import { ScrollEventData } from '.';
 import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty } from './scroll-view-common';
-import { SDK_VERSION, layout } from '../../utils';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { View } from '../core/view';
 
 export * from './scroll-view-common';

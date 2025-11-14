@@ -1,16 +1,16 @@
 import { AnimationDefinitionInternal, AnimationPromise, PropertyAnimation, AnimationBase, Properties } from './animation-common';
 import { View } from '../core/view';
-import { CubicBezierAnimationCurve } from './animation-interfaces';
+import { CubicBezierAnimationCurve } from '../../core-types/animation-types';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
-import { layout } from '../../utils';
+import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty } from '../styling/style-properties';
+import { PercentLength } from '../styling/length-shared';
+import { layout } from '../../utils/layout-helper';
 import { SDK_VERSION } from '../../utils/constants';
-import { Device, Screen } from '../../platform';
+import { Screen } from '../../platform/screen';
 import lazy from '../../utils/lazy';
 
 export * from './animation-common';
-export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
 
 let argbEvaluator: android.animation.ArgbEvaluator;
 function ensureArgbEvaluator() {

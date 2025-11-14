@@ -1,10 +1,11 @@
 // Types
 import { AnimationDefinitionInternal, AnimationPromise, IOSView, PropertyAnimation, PropertyAnimationInfo, AnimationBase, Properties } from './animation-common';
 import { View } from '../core/view';
-import { CubicBezierAnimationCurve } from './animation-interfaces';
+import { CubicBezierAnimationCurve } from '../../core-types/animation-types';
 import { Trace } from '../../trace';
-import { rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
-import { CssAnimationProperty, Property } from '../core/properties';
+import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty } from '../styling/style-properties';
+import type { CssAnimationProperty, Property } from '../core/properties';
+import { PercentLength } from '../styling/length-shared';
 import { ios as iosBackground } from '../styling/background';
 import { ios as iosViewUtils, NativeScriptUIView } from '../utils';
 

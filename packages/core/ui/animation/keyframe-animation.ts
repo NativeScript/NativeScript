@@ -6,9 +6,9 @@ import { CoreTypes } from '../../core-types';
 import { Trace } from '../../trace';
 
 // Types.
-import { unsetValue } from '../core/properties';
-import { Animation } from '.';
-import { scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, rotateXProperty, rotateYProperty } from '../styling/style-properties';
+import { unsetValue } from '../core/properties/property-shared';
+import { Animation } from './index';
+import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty } from '../styling/style-properties';
 import { AnimationNonAnimatableProperties, getPropertyFromKey } from './animation-common';
 
 export interface Keyframes {

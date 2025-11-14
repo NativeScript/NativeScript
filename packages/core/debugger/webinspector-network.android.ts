@@ -1,8 +1,7 @@
-import * as inspectorCommandTypes from './InspectorBackendCommands';
-const inspectorCommands: typeof inspectorCommandTypes = require('./InspectorBackendCommands');
+import * as inspectorCommands from './InspectorBackendCommands';
+import { getApplicationContext } from '../application/helpers.android';
 
 import * as debuggerDomains from '.';
-const getApplicationContext = () => require('../utils/android').getApplicationContext();
 
 declare let __inspectorSendEvent;
 
@@ -100,7 +99,7 @@ export class Request {
 		}
 	}
 
-	public responseReceived(response: inspectorCommandTypes.NetworkDomain.Response): void {
+	public responseReceived(response: inspectorCommands.NetworkDomain.Response): void {
 		if (this._networkDomainDebugger.enabled) {
 			this._networkDomainDebugger.events.responseReceived(this.requestID, frameId, loaderId, __inspectorTimestamp(), <any>this.resourceType, response);
 		}
@@ -112,7 +111,7 @@ export class Request {
 		}
 	}
 
-	public requestWillBeSent(request: inspectorCommandTypes.NetworkDomain.Request): void {
+	public requestWillBeSent(request: inspectorCommands.NetworkDomain.Request): void {
 		if (this._networkDomainDebugger.enabled) {
 			this._networkDomainDebugger.events.requestWillBeSent(this.requestID, frameId, loaderId, request.url, request, __inspectorTimestamp(), { type: 'Script' });
 		}
@@ -120,9 +119,9 @@ export class Request {
 }
 
 @inspectorCommands.DomainDispatcher('Network')
-export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomain.NetworkDomainDispatcher {
+export class NetworkDomainDebugger implements inspectorCommands.NetworkDomain.NetworkDomainDispatcher {
 	private _enabled: boolean;
-	public events: inspectorCommandTypes.NetworkDomain.NetworkFrontend;
+	public events: inspectorCommands.NetworkDomain.NetworkFrontend;
 
 	constructor() {
 		this.events = new inspectorCommands.NetworkDomain.NetworkFrontend();
@@ -161,14 +160,14 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
 	/**
 	 * Specifies whether to always send extra HTTP headers with the requests from this page.
 	 */
-	setExtraHTTPHeaders(params: inspectorCommandTypes.NetworkDomain.SetExtraHTTPHeadersMethodArguments): void {
+	setExtraHTTPHeaders(params: inspectorCommands.NetworkDomain.SetExtraHTTPHeadersMethodArguments): void {
 		//
 	}
 
 	/**
 	 * Returns content served for the given request.
 	 */
-	getResponseBody(params: inspectorCommandTypes.NetworkDomain.GetResponseBodyMethodArguments): { body: string; base64Encoded: boolean } {
+	getResponseBody(params: inspectorCommands.NetworkDomain.GetResponseBodyMethodArguments): { body: string; base64Encoded: boolean } {
 		const resource_data = resources_datas[params.requestId];
 		// java.io.ByteArrayOutputStream
 		const body = resource_data.hasTextContent ? resource_data.data.toString('UTF-8') : android.util.Base64.encodeToString(resource_data.data?.buf?.(), android.util.Base64.NO_WRAP);
@@ -215,14 +214,14 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
 	/**
 	 * Toggles ignoring cache for each request. If <code>true</code>, cache will not be used.
 	 */
-	setCacheDisabled(params: inspectorCommandTypes.NetworkDomain.SetCacheDisabledMethodArguments): void {
+	setCacheDisabled(params: inspectorCommands.NetworkDomain.SetCacheDisabledMethodArguments): void {
 		//
 	}
 
 	/**
 	 * Loads a resource in the context of a frame on the inspected page without cross origin checks.
 	 */
-	loadResource(params: inspectorCommandTypes.NetworkDomain.LoadResourceMethodArguments): { content: string; mimeType: string; status: number } {
+	loadResource(params: inspectorCommands.NetworkDomain.LoadResourceMethodArguments): { content: string; mimeType: string; status: number } {
 		const appPath = getApplicationContext().getFilesDir().getCanonicalPath() + '/app';
 		const pathUrl = params.url.replace('file://', appPath);
 		const file = new java.io.File(pathUrl);

@@ -1,9 +1,9 @@
 import { FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontVariationSettings, FONTS_BASE_PATH } from './font-common';
 import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
+import { getApplicationContext } from '../../application/helpers.android';
 import { Trace } from '../../trace';
 import { SDK_VERSION } from '../../utils/constants';
 import * as fs from '../../file-system';
-import { ad } from '../../utils';
 
 export * from './font-common';
 
@@ -36,7 +36,7 @@ function computeFontCacheKey(fontFamily: string, font: Font) {
 function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Typeface {
 	const cacheKey = SDK_VERSION >= 26 ? computeFontCacheKey(fontFamily, font) : fontFamily;
 
-	appAssets = appAssets || (ad.getApplicationContext() as android.content.Context).getAssets();
+	appAssets = appAssets || getApplicationContext().getAssets();
 	if (!appAssets) {
 		return null;
 	}

@@ -1,14 +1,18 @@
 import { Application } from '../application';
-import type { ViewBase } from '../ui/core/view-base';
 import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { initAccessibilityCssHelper } from './accessibility-css-helper';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
-import { initAccessibilityFontScale } from './font-scale';
+import { getCurrentFontScale, initAccessibilityFontScale } from './font-scale.ios';
+import { setA11yUpdatePropertiesCallback } from '../application/helpers-common';
 
 export * from './accessibility-common';
 export * from './accessibility-types';
 export * from './font-scale';
+
+export function getFontScale(): number {
+	return getCurrentFontScale();
+}
 
 function enforceArray(val: string | string[]): string[] {
 	if (Array.isArray(val)) {
@@ -226,6 +230,7 @@ export function updateAccessibilityProperties(view: View): void {
 
 	uiView.accessibilityTraits = a11yTraits;
 }
+setA11yUpdatePropertiesCallback(updateAccessibilityProperties);
 
 export const sendAccessibilityEvent = (): void => {};
 export const updateContentDescription = (): void => null;

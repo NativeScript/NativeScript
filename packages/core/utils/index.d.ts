@@ -1,4 +1,5 @@
 export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
+export * from './animation-helpers';
 export * from './common';
 export * from './constants';
 export * from './debug';
@@ -6,6 +7,7 @@ export * from './layout-helper';
 export * from './macrotask-scheduler';
 export * from './mainthread-helper';
 export * from './native-helper';
+export * from './shared';
 export * from './types';
 
 export const RESOURCE_PREFIX: string;
@@ -32,20 +34,6 @@ export function GC();
  * @param useThrottle Instead of default debounce strategy, use throttling
  */
 export function queueGC(delay?: number, useThrottle?: boolean);
-
-/**
- * A simple throttle utility
- * @param fn Function to throttle
- * @param delay Customize the delay (default is 300ms)
- */
-export function throttle<T extends Function = any>(fn: T, delay?: number): T;
-
-/**
- * A simple debounce utility
- * @param fn Function to debounce
- * @param delay Customize the delay (default is 300ms)
- */
-export function debounce<T extends Function = any>(fn: T, delay?: number, options?: { leading?: boolean; trailing?: boolean; ignoreFirstTrail?: boolean }): T;
 
 /**
  * Releases the reference to the wrapped native object

@@ -1,7 +1,8 @@
 import { ImageAssetBase, getRequestedImageSize } from './image-asset-common';
 import { path as fsPath, knownFolders } from '../file-system';
-import { android, wrapNativeException } from '../utils';
-import { Screen } from '../platform';
+import { getApplicationContext } from '../application/helpers.android';
+import { wrapNativeException } from '../utils';
+import { Screen } from '../platform/screen';
 export * from './image-asset-common';
 
 export class ImageAsset extends ImageAssetBase {
@@ -27,7 +28,7 @@ export class ImageAsset extends ImageAssetBase {
 
 	public getImageAsync(callback: (image, error) => void) {
 		org.nativescript.widgets.Utils.loadImageAsync(
-			android.getApplicationContext(),
+			getApplicationContext(),
 			this.android,
 			JSON.stringify(this.options || {}),
 			new org.nativescript.widgets.Utils.AsyncImageCallback({
@@ -37,13 +38,13 @@ export class ImageAsset extends ImageAssetBase {
 				onError(ex) {
 					callback(null, wrapNativeException(ex));
 				},
-			})
+			}),
 		);
 	}
 	public getImage() {
 		return new Promise((resolve, reject) => {
 			org.nativescript.widgets.Utils.loadImageAsync(
-				android.getApplicationContext(),
+				getApplicationContext(),
 				this.android,
 				JSON.stringify(this.options || {}),
 				new org.nativescript.widgets.Utils.AsyncImageCallback({

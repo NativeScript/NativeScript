@@ -1,7 +1,7 @@
 ﻿import { View, AddChildFromBuilder } from '../core/view';
 import { FormattedString } from './formatted-string';
 import { Style } from '../styling/style';
-import { Length } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { Property, CssProperty, InheritedCssProperty } from '../core/properties';
 import { CoreTypes } from '../../core-types';
 import { ShadowCSSValues } from '../styling/css-shadow';

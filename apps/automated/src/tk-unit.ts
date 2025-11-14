@@ -11,8 +11,7 @@
 
 */
 
-import { isIOS, Trace, Device } from '@nativescript/core';
-import * as types from '@nativescript/core/utils/types';
+import { Trace, Device, Utils } from '@nativescript/core';
 
 const sdkVersion = parseInt(Device.sdkVersion);
 
@@ -172,10 +171,10 @@ export function assertFalse(test: boolean, message?: string) {
 
 export function assertNotEqual(actual: any, expected: any, message?: string) {
 	let equals = false;
-	if (types.isUndefined(actual) && types.isUndefined(expected)) {
+	if (Utils.isUndefined(actual) && Utils.isUndefined(expected)) {
 		equals = true;
-	} else if (!types.isNullOrUndefined(actual) && !types.isNullOrUndefined(expected)) {
-		if (types.isFunction(actual.equals)) {
+	} else if (!Utils.isNullOrUndefined(actual) && !Utils.isNullOrUndefined(expected)) {
+		if (Utils.isFunction(actual.equals)) {
 			// Use the equals method
 			if (actual.equals(expected)) {
 				equals = true;
@@ -191,7 +190,7 @@ export function assertNotEqual(actual: any, expected: any, message?: string) {
 }
 
 export function assertEqual<T extends { equals?(arg: T): boolean } | any>(actual: T, expected: T, message: string = '') {
-	if (!types.isNullOrUndefined(actual) && !types.isNullOrUndefined(expected) && types.getClass(actual) === types.getClass(expected) && types.isFunction((<any>actual).equals)) {
+	if (!Utils.isNullOrUndefined(actual) && !Utils.isNullOrUndefined(expected) && Utils.getClass(actual) === Utils.getClass(expected) && Utils.isFunction((<any>actual).equals)) {
 		// Use the equals method
 		if (!(<any>actual).equals(expected)) {
 			throw new Error(`${message} Actual: <${actual}>(${typeof actual}). Expected: <${expected}>(${typeof expected})`);
@@ -352,7 +351,7 @@ export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 5, s
 		return;
 	}
 
-	if (isIOS) {
+	if (__APPLE__) {
 		const timeoutMs = timeoutSec * 1000;
 		let totalWaitTime = 0;
 		while (true) {

@@ -1,11 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import * as viewModule from '@nativescript/core/ui/core/view';
-import { Label } from '@nativescript/core/ui/label';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import * as colorModule from '@nativescript/core/color';
-import { CoreTypes, PercentLength } from '@nativescript/core';
-import { AnimationPromise, AnimationDefinition, Animation } from '@nativescript/core/ui/animation';
+import { AnimationPromise, AnimationDefinition, Animation, CoreTypes, PercentLength, Label, StackLayout, View, Color } from '@nativescript/core';
 
 // >> animation-require
 // import * as animation from '@nativescript/core/ui/animation';
@@ -38,7 +33,7 @@ export function test_AnimatingProperties(done) {
 	label
 		.animate({
 			opacity: 0.75,
-			backgroundColor: new colorModule.Color('Red'),
+			backgroundColor: new Color('Red'),
 			translate: { x: 100, y: 100 },
 			scale: { x: 2, y: 2 },
 			rotate: 180,
@@ -79,7 +74,7 @@ export function test_PlayRejectsWhenAlreadyPlayingAnimation(done) {
 			if (e === 'Animation is already playing.') {
 				done();
 			}
-		}
+		},
 	);
 }
 
@@ -267,9 +262,18 @@ export function test_AnimateOpacity(done) {
 		});
 }
 
+export function test_AnimateOpacity_ShouldThrow_IfNotNumber() {
+	var label = new Label();
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
+		TKUnit.assertThrows(() => {
+			label.animate({ opacity: <any>'0.75' });
+		}, 'Setting opacity to a non number should throw.');
+	});
+}
+
 export function test_AnimateDelay_ShouldThrow_IfNotNumber() {
 	var label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ delay: <any>'1' });
 		}, 'Setting delay to a non number should throw.');
@@ -278,7 +282,7 @@ export function test_AnimateDelay_ShouldThrow_IfNotNumber() {
 
 export function test_AnimateDuration_ShouldThrow_IfNotNumber() {
 	var label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ duration: <any>'1' });
 		}, 'Setting duration to a non number should throw.');
@@ -287,16 +291,25 @@ export function test_AnimateDuration_ShouldThrow_IfNotNumber() {
 
 export function test_AnimateIterations_ShouldThrow_IfNotNumber() {
 	var label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ iterations: <any>'1' });
 		}, 'Setting iterations to a non number should throw.');
 	});
 }
 
+export function test_AnimateRotate_ShouldThrow_IfNotNumber() {
+	var label = new Label();
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
+		TKUnit.assertThrows(() => {
+			label.animate({ rotate: <any>'1' });
+		}, 'Setting rotate to a non number should throw.');
+	});
+}
+
 export function test_AnimateScale_ShouldThrow_IfNotPair() {
 	var label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ scale: <any>'1' });
 		}, 'Setting scale to a non Pair should throw.');
@@ -305,7 +318,7 @@ export function test_AnimateScale_ShouldThrow_IfNotPair() {
 
 export function test_AnimateTranslate_ShouldThrow_IfNotPair() {
 	var label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ translate: <any>'1' });
 		}, 'Setting translate to a non Pair should throw.');
@@ -314,7 +327,7 @@ export function test_AnimateTranslate_ShouldThrow_IfNotPair() {
 
 export function test_AnimateBackgroundColor_ShouldThrow_IfNotValidColorStringOrColor() {
 	var label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ backgroundColor: <any>'test' });
 		}, 'Setting backgroundColor to a not valid color string or Color should throw.');
@@ -323,12 +336,12 @@ export function test_AnimateBackgroundColor_ShouldThrow_IfNotValidColorStringOrC
 
 export function test_AnimateBackgroundColor(done) {
 	let label = prepareTest();
-	var red = new colorModule.Color('Red');
+	var red = new Color('Red');
 
 	label
 		.animate({ backgroundColor: red, duration: 5 })
 		.then(() => {
-			TKUnit.assert((<colorModule.Color>label.backgroundColor).equals(red));
+			TKUnit.assert((<Color>label.backgroundColor).equals(red));
 			done();
 		})
 		.catch((e) => {
@@ -339,12 +352,12 @@ export function test_AnimateBackgroundColor(done) {
 export function test_AnimateBackgroundColor_FromString(done) {
 	let label = prepareTest();
 	var expected = 'Red';
-	var clr = new colorModule.Color(expected);
+	var clr = new Color(expected);
 
 	label
 		.animate({ backgroundColor: <any>expected, duration: 5 })
 		.then(() => {
-			TKUnit.assert((<colorModule.Color>label.backgroundColor).equals(clr));
+			TKUnit.assert((<Color>label.backgroundColor).equals(clr));
 			done();
 		})
 		.catch((e) => {
@@ -487,7 +500,7 @@ export function test_AnimateExtent_Should_AcceptNumberValuesAsDip(done) {
 
 export function test_AnimateExtent_Should_ThrowIfCannotParsePercentLength() {
 	const label = new Label();
-	helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+	helper.buildUIAndRunTest(label, (views: Array<View>) => {
 		TKUnit.assertThrows(() => {
 			label.animate({ width: '-frog%' });
 		}, 'Invalid percent string should throw');
@@ -592,7 +605,7 @@ export function test_PlayPromiseIsResolvedWhenAnimationFinishes(done) {
 		function onRejected(e) {
 			TKUnit.assert(false, 'Animation play promise should be resolved, not rejected.');
 			done(e);
-		}
+		},
 	);
 }
 
@@ -609,14 +622,14 @@ export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
 		function onRejected(e) {
 			TKUnit.assert(animation.isPlaying === false, 'Animation.isPlaying should be false when animation play promise is rejected.');
 			done();
-		}
+		},
 	);
 
 	animation.cancel();
 }
 
-function assertIOSNativeTransformIsCorrect(view: viewModule.View) {
-	if (global.isIOS) {
+function assertIOSNativeTransformIsCorrect(view: View) {
+	if (__APPLE__) {
 		var errorMessage = (<any>require('@nativescript/core/ui/animation'))._getTransformMismatchErrorMessage(view);
 		if (errorMessage) {
 			TKUnit.assert(false, errorMessage);

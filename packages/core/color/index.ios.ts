@@ -1,6 +1,7 @@
 import { ColorBase } from './color-common';
+import type { IColor } from './color-types';
 
-export class Color extends ColorBase {
+export class Color extends ColorBase implements IColor {
 	private _ios: UIColor;
 
 	get ios(): UIColor {

@@ -9,11 +9,12 @@ import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentPrope
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, fontScaleInternalProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { isString, isNullOrUndefined } from '../../utils/types';
-import { SDK_VERSION, layout } from '../../utils';
-import { Trace } from '../../trace';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
 
 export * from './text-base-common';
@@ -123,6 +124,9 @@ class UILabelClickHandlerImpl extends NSObject {
 }
 
 export class TextBase extends TextBaseCommon {
+	//TODO: remove as it needs to be added after TS 5.7 change https://github.com/microsoft/TypeScript/pull/59860
+	[key: symbol]: (...args: any[]) => any | void;
+
 	declare nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
 	public _spanRanges: NSRange[];
 

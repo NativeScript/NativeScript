@@ -7,53 +7,23 @@ import { Application } from '../../../application';
 import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
-import { CoreTypes } from '../../enums';
+import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
+
+export { makeValidator, makeParser } from '../../../core-types/validators';
 
 //fixes issue https://github.com/microsoft/TypeScript/issues/37663
 const isFunction = (x: unknown): x is Function => typeof x === 'function';
 
-/**
- * Value specifying that Property should be set to its initial value.
- */
-export const unsetValue: any = new Object();
-
-export interface PropertyOptions<T, U> {
-	readonly name: string;
-	readonly defaultValue?: U | ((property, view: ViewBase) => U);
-	readonly affectsLayout?: boolean;
-	readonly equalityComparer?: (x: U, y: U, target: T) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
-	readonly valueConverter?: (value: string) => U;
-}
-
-export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
-	readonly coerceValue: (t: T, u: U) => U;
-}
-
-export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
-	readonly cssName: string;
-}
-
-export interface ShorthandPropertyOptions<P> {
-	readonly name: string;
-	readonly cssName: string;
-	readonly converter: (value: string | P) => [CssProperty<any, any> | CssAnimationProperty<any, any>, any][];
-	readonly getter: (this: Style) => string | P;
-}
-
-export interface CssAnimationPropertyOptions<T, U> {
-	readonly name: string;
-	readonly cssName?: string;
-	readonly defaultValue?: U;
-	readonly affectsLayout?: boolean;
-	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
-	readonly valueConverter?: (value: string) => U;
-}
-
 const cssPropertyNames: string[] = [];
+const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
+
+// Hoisted regex/constants for hot paths to avoid re-allocation
+const CSS_VARIABLE_NAME_RE = /^--[^,\s]+?$/;
+const DIP_RE = /([0-9]+(\.[0-9]+)?)dip\b/g;
+const UNSET_RE = /unset/g;
+const INFINITY_RE = /infinity/g;
 
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
 const inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
@@ -76,14 +46,6 @@ function print(map) {
 	}
 }
 
-function isCssUnsetValue(value: any): boolean {
-	return value === 'unset' || value === 'revert';
-}
-
-function isResetValue(value: any): boolean {
-	return value === unsetValue || value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
-}
-
 export function _printUnregisteredProperties(): void {
 	print(symbolPropertyMap);
 	print(cssSymbolPropertyMap);
@@ -98,7 +60,7 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 }
 
 export function isCssVariable(property: string) {
-	return /^--[^,\s]+?$/.test(property);
+	return CSS_VARIABLE_NAME_RE.test(property);
 }
 
 export function isCssCalcExpression(value: string) {
@@ -107,10 +69,6 @@ export function isCssCalcExpression(value: string) {
 
 export function isCssVariableExpression(value: string) {
 	return value.includes('var(--');
-}
-
-export function isCssWideKeyword(value: any): value is CoreTypes.CSSWideKeywords {
-	return value === 'initial' || value === 'inherit' || isCssUnsetValue(value);
 }
 
 export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
@@ -193,24 +151,27 @@ export function _getStoredClassDefaultPropertyValue(property, view, defaultBlock
 }
 
 function _replaceDip(value: string) {
-	return value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1');
+	return value.replace(DIP_RE, '$1');
 }
 
 function _replaceKeywordsWithValues(value: string) {
 	let cssValue = value;
 	if (cssValue.includes('unset')) {
-		cssValue = cssValue.replace(/unset/g, '0');
+		cssValue = cssValue.replace(UNSET_RE, '0');
 	}
 	if (cssValue.includes('infinity')) {
-		cssValue = cssValue.replace(/infinity/g, '999999');
+		cssValue = cssValue.replace(INFINITY_RE, '999999');
 	}
 	return cssValue;
 }
 
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
-	const props = [];
-	Object.getOwnPropertySymbols(map).forEach((symbol) => props.push(map[symbol]));
-
+	const symbols = Object.getOwnPropertySymbols(map);
+	const len = symbols.length;
+	const props = new Array(len);
+	for (let i = 0; i < len; i++) {
+		props[i] = map[symbols[i]];
+	}
 	return props;
 }
 
@@ -1389,31 +1350,14 @@ function _propagateInheritableProperties<U extends ViewBase | Style, T extends I
 	}
 }
 
-export function makeValidator<T>(...values: T[]): (value: any) => value is T {
-	return (value: any): value is T => values.includes(value);
-}
-
-export function makeParser<T>(isValid: (value: any) => boolean, allowNumbers = false): (value: any) => T {
-	return (value) => {
-		const lower = value?.toLowerCase();
-		if (isValid(lower)) {
-			return lower;
-		} else if (allowNumbers) {
-			const convNumber = +value;
-			if (!isNaN(convNumber)) {
-				return value;
-			}
-		}
-		throw new Error('Invalid value: ' + value);
-	};
-}
-
 export function getSetProperties(view: ViewBase): [string, any][] {
 	const result = [];
 
-	Object.getOwnPropertyNames(view).forEach((prop) => {
+	const ownProps = Object.getOwnPropertyNames(view);
+	for (let i = 0; i < ownProps.length; i++) {
+		const prop = ownProps[i];
 		result.push([prop, view[prop]]);
-	});
+	}
 
 	const symbols = Object.getOwnPropertySymbols(view);
 	for (const symbol of symbols) {
@@ -1433,7 +1377,9 @@ export function getComputedCssValues(view: ViewBase): [string, any][] {
 	const result = [];
 	const style = view.style;
 	for (const prop of cssPropertyNames) {
-		result.push([prop, style[prop]]);
+		if (prop !== undefined && prop !== null) {
+			result.push([prop, style[prop]]);
+		}
 	}
 
 	// Add these to enable box model in chrome-devtools styles tab

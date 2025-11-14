@@ -1,6 +1,6 @@
 {
 	"name": "@akylas/nativescript-webpack",
-	"version": "5.0.24",
+	"version": "5.0.25-alpha.1",
 	"main": "dist/index.js",
 	"files": [
 		"dist"
@@ -35,7 +35,7 @@
 		"postcss-import": "^16.0.0",
 		"postcss-loader": "^8.0.0",
 		"raw-loader": "^4.0.0",
-		"react-refresh": "~0.17.0",
+		"react-refresh": "~0.18.0",
 		"sass": "^1.0.0",
 		"sass-loader": "^16.0.0",
 		"sax": "^1.0.0",
@@ -68,7 +68,7 @@
 		"jest": "~29.7.0",
 		"jest-matcher-utils": "30.0.0-alpha.3",
 		"nativescript-vue-template-compiler": "2.9.3",
-		"ts-jest": "29.4.0",
+		"ts-jest": "29.4.4",
 		"typescript": "~5.8.0"
 	},
 	"peerDependencies": {
