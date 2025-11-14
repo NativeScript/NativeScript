@@ -1,4 +1,3 @@
-import { SDK_VERSION } from '../utils/constants';
 import { getNativeApp, updateA11yPropertiesCallback } from './helpers-common';
 import { AccessibilityRole, AccessibilityState } from '../accessibility/accessibility-common';
 import { Trace } from '../trace';
