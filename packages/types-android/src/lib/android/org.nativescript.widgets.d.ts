@@ -623,7 +623,7 @@
                 public static setMarginBottomPercent(view: android.view.View, value: number): void;
 
                 public static getHorizontalAlignment(view: android.view.View): string;
-                public static setHorizontalAlignment(view: android.view.View, value: string): void;
+                public static setHorizontalAlignment(view: android.view.View, value: string, rtl: boolean): void;
 
                 public static getVerticalAlignment(view: android.view.View): string;
                 public static setVerticalAlignment(view: android.view.View, value: string): void;
@@ -810,7 +810,7 @@ declare module org {
                 public static getBitmapFromView(param0: globalAndroid.view.View): globalAndroid.graphics.Bitmap;
 				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static clipCanvasOutPath(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.graphics.Path): void;
-			    public static drawBoxShadow(param0: globalAndroid.view.View, param1: string): void;
+				public static drawBoxShadow(param0: globalAndroid.view.View, param1: number[]): void;
                 public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static toBase64StringAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: number, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static resizeAsync(param0: globalAndroid.graphics.Bitmap, param1: number, param2: string, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;

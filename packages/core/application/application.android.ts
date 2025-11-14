@@ -1,12 +1,13 @@
-import { CoreTypes } from '../core-types';
 import * as ApplicationSettings from '../application-settings';
+import { CoreTypes } from '../core-types';
 import { profile } from '../profiling';
 import type { View } from '../ui/core/view';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
+import { SDK_VERSION } from '../utils/constants';
 import { ApplicationCommon } from './application-common';
-import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
+import type { AndroidActivityBundleEventData, AndroidActivityEventData, AndroidConfigurationChangeEventData, ApplicationEventData } from './application-interfaces';
 import { fontScaleChanged } from '../accessibility/font-scale.android';
-import { androidGetForegroundActivity, androidGetStartActivity, androidPendingReceiverRegistrations, androidRegisterBroadcastReceiver, androidRegisteredReceivers, androidSetForegroundActivity, androidSetStartActivity, androidUnregisterBroadcastReceiver } from './helpers';
+import { androidGetForegroundActivity, androidGetStartActivity, androidSetForegroundActivity, androidSetStartActivity } from './helpers';
 import { getImageFetcher, getNativeApp, getRootView, initImageCache, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import type { AndroidApplication as IAndroidApplication } from './application';
@@ -250,6 +251,35 @@ function initNativeScriptComponentCallbacks() {
 	return NativeScriptComponentCallbacks_;
 }
 
+interface RegisteredReceiverInfo {
+	receiver: android.content.BroadcastReceiver;
+	intent: string;
+	callback: (context: android.content.Context, intent: android.content.Intent) => void;
+	id: number;
+	flags: number;
+}
+
+const BroadcastReceiver = lazy(() => {
+	@NativeClass
+	class BroadcastReceiverImpl extends android.content.BroadcastReceiver {
+		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+
+		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+			super();
+			this._onReceiveCallback = onReceiveCallback;
+
+			return global.__native(this);
+		}
+
+		public onReceive(context: android.content.Context, intent: android.content.Intent) {
+			if (this._onReceiveCallback) {
+				this._onReceiveCallback(context, intent);
+			}
+		}
+	}
+	return BroadcastReceiverImpl;
+});
+
 export class AndroidApplication extends ApplicationCommon {
 	static readonly fragmentCreateEvent = 'fragmentCreate';
 	static readonly activityCreateEvent = 'activityCreate';
@@ -357,8 +387,12 @@ export class AndroidApplication extends ApplicationCommon {
 			fontScaleChanged(Number(configuration.fontScale));
 			
 		}
+		if ((diff &   8192) /* ActivityInfo.CONFIG_LAYOUT_DIRECTION */ !== 0) {
+			this.setLayoutDirection(this.getLayoutDirectionValue(configuration));
+		}
 		this.notify(<AndroidConfigurationChangeEventData>{ eventName: this.configurationChangeEvent, configuration, diff });
 		this._prevConfiguration = new android.content.res.Configuration(configuration);
+
 	}
 
 	getNativeApplication() {

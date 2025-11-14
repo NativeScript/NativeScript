@@ -5,36 +5,58 @@ import type { View } from '../core/view';
 import type { CoreTypes } from '../../core-types';
 import type { Color } from '../../color';
 
+
+/**
+ * Defines a key-value pair for css transformation
+ */
 export type Transformation = {
 	property: TransformationType;
 	value: TransformationValue;
 };
 
+/**
+ * Defines possible css transformations
+ */
 export type TransformationType = 'rotate' | 'rotate3d' | 'rotateX' | 'rotateY' | 'translate' | 'translate3d' | 'translateX' | 'translateY' | 'scale' | 'scale3d' | 'scaleX' | 'scaleY';
 
+/**
+ * Defines possible css transformation values
+ */
 export type TransformationValue = Point3D | Pair | number;
 
+/**
+ * Defines a point in 3d space (x, y and z) for rotation in 3d animations.
+ */
 export interface Point3D {
 	x: number;
 	y: number;
 	z: number;
 }
 
+/**
+ * Defines a pair of values (horizontal and vertical) for translate and scale animations.
+ */
+export interface Pair {
+	x: number;
+	y: number;
+}
+
+/**
+ * Defines full information for css transformation
+ */
 export type TransformFunctionsInfo = {
 	translate: Pair;
 	rotate: Point3D;
 	scale: Pair;
 };
 
-export interface Pair {
-	x: number;
-	y: number;
-}
-
 export interface Cancelable {
 	cancel(): void;
 }
 
+/**
+ * A Promise that can cancel the animation.
+ */
 export type AnimationPromise = Promise<void> & Cancelable;
 
 

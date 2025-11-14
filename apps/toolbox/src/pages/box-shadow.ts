@@ -137,7 +137,7 @@ export class BoxShadowModel extends Observable {
 						width: originalWidth,
 						duration: animationDuration,
 						curve,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);
@@ -155,7 +155,7 @@ export class BoxShadowModel extends Observable {
 						height: originalHeight,
 						duration: animationDuration,
 						curve,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);
@@ -178,7 +178,7 @@ export class BoxShadowModel extends Observable {
 						translate: { x: 0, y: 0 },
 						duration: animationDuration,
 						curve,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);

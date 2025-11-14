@@ -382,7 +382,7 @@ public class ViewHelper {
 		return result;
 	}
 
-	public static void setHorizontalAlignment(android.view.View view, String value) throws Throwable {
+	public static void setHorizontalAlignment(android.view.View view, String value, Boolean rtl) throws Throwable {
 		ViewGroup.LayoutParams params = view.getLayoutParams();
 		// Initialize if empty.
 		if (params == null) {
@@ -394,6 +394,12 @@ public class ViewHelper {
 			int gravity = field.getInt(params);
 			Field weightField = getField(params.getClass(), "weight");
 			switch (value) {
+				case "start":
+					gravity = (rtl ? Gravity.RIGHT : Gravity.LEFT) | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -2.0f);
+					}
+					break;
 				case "left":
 					gravity = Gravity.LEFT | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
 					if (weightField != null && weightField.getFloat(params) < 0) {
@@ -409,6 +415,12 @@ public class ViewHelper {
 					break;
 				case "right":
 					gravity = Gravity.RIGHT | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
+					if (weightField != null && weightField.getFloat(params) < 0) {
+						weightField.setFloat(params, -2.0f);
+					}
+					break;
+				case "end":
+					gravity = (rtl ? Gravity.LEFT : Gravity.RIGHT) | (gravity & Gravity.VERTICAL_GRAVITY_MASK);
 					if (weightField != null && weightField.getFloat(params) < 0) {
 						weightField.setFloat(params, -2.0f);
 					}

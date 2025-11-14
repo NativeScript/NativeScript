@@ -39,9 +39,6 @@ export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 }
 
 function toPositiveInt(value: any): number {
-	if (value == null) {
-		return 0;
-	}
 	if (typeof value === 'number') {
 		return value > 0 ? Math.floor(value) : 0;
 	}
@@ -49,7 +46,7 @@ function toPositiveInt(value: any): number {
 		const parsed = parseInt(value, 10);
 		return isNaN(parsed) || parsed <= 0 ? 0 : parsed;
 	}
-	return 0;
+	return null;
 }
 
 function normalizeImageAssetOptions(options: ImageAssetOptions): ImageAssetOptions {
@@ -58,6 +55,8 @@ function normalizeImageAssetOptions(options: ImageAssetOptions): ImageAssetOptio
 	// to trigger default sizing downstream
 	(normalized as any).width = toPositiveInt((options as any)?.width);
 	(normalized as any).height = toPositiveInt((options as any)?.height);
+	(normalized as any).maxWidth = toPositiveInt((options as any)?.maxWidth);
+	(normalized as any).maxHeight = toPositiveInt((options as any)?.maxHeight);
 	if (typeof normalized.keepAspectRatio !== 'boolean') {
 		normalized.keepAspectRatio = true;
 	}
@@ -79,8 +78,8 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 }
 
 export function getRequestedImageSize(src: { width: number; height: number }, options: ImageAssetOptions): { width: number; height: number } {
-		options = normalizeImageAssetOptions(options);
-		if (options.width || options.height || options.maxWidth || options.maxHeight) {
+	options = normalizeImageAssetOptions(options);
+	if (options.width || options.height || options.maxWidth || options.maxHeight) {
 		let reqWidth = options.width || (options.maxWidth ? Math.min(options.maxWidth, src.width) : src.width);
 		let reqHeight = options.height || (options.maxHeight ? Math.min(options.maxHeight, src.height) : src.height);
 

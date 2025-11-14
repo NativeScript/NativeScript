@@ -1143,6 +1143,32 @@ export abstract class ViewBase extends Observable {
 	}
 
 	/**
+	 * Resets properties/listeners set to the native view.
+	 */
+	public resetNativeView(): void {
+		//
+	}
+
+	private resetNativeViewInternal(): void {
+		// const nativeView = this.nativeViewProtected;
+		// if (nativeView && __ANDROID__) {
+		//     const recycle = this.recycleNativeView;
+		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
+		//         resetNativeView(this);
+		//         if (this._isPaddingRelative) {
+		//             nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+		//         } else {
+		//             nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+		//         }
+		//         this.resetNativeView();
+		//     }
+		// }
+		// if (this._cssState) {
+		//     this._cancelAllAnimations();
+		// }
+	}
+
+	/**
 	 * if _setupAsRootView is called it means it is not supposed to be
 	 * added to a parent. However parent can be set before for the purpose
 	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree

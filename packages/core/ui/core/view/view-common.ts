@@ -76,12 +76,12 @@ export abstract class ViewCommon extends ViewBase {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
+	public static closingModallyEvent = 'closingModally';
 	public static accessibilityBlurEvent = accessibilityBlurEvent;
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
 	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
 	public static androidOverflowInsetEvent = 'androidOverflowInset';
-	public static closingModallyEvent = 'closingModally';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;

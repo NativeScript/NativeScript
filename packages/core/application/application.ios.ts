@@ -8,11 +8,11 @@ import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { ios as iosUtils, dataSerialize } from '../utils/native-helper';
 import { ApplicationCommon, SceneEvents } from './application-common';
-import { ApplicationEventData } from './application-interfaces';
+import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 
-import { iosAddNotificationObserver, iosRemoveNotificationObserver } from './helpers';
+import { CoreTypes } from '../core-types';
 import { getiOSWindow, setApplicationPropertiesCallback, setAppMainEntry, setiOSWindow, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 @NativeClass
@@ -224,13 +224,13 @@ export class iOSApplication extends ApplicationCommon {
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
 	private _rootView: View;
+	private _subRootView: View;
 	private _sceneDelegate: UIWindowSceneDelegate;
 	private _windowSceneMap = new Map<UIScene, UIWindow>();
 	private _primaryScene: UIWindowScene | null = null;
 	private _openedScenesById = new Map<string, UIWindowScene>();
 
 	private _notificationObservers: NotificationObserver[] = [];
-	private _subRootView: View;
 
 	displayedOnce = false;
 	displayedLinkTarget: CADisplayLinkTarget;

@@ -1154,7 +1154,7 @@ export class View extends ViewCommon {
 		return _getStoredClassDefaultPropertyValue(horizontalAlignmentProperty, this, () => <CoreTypes.VerticalAlignmentType>ViewHelper.getHorizontalAlignment(this.nativeViewProtected));
 	}
 	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
-		ViewHelper.setHorizontalAlignment(this.nativeViewProtected, value);
+		ViewHelper.setHorizontalAlignment(this.nativeViewProtected, value, this.direction === CoreTypes.LayoutDirection.rtl);
 	}
 
 	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
@@ -1465,7 +1465,7 @@ export class View extends ViewCommon {
 
 	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any, shouldClipToOutline: boolean) {
 		const nativeView = this.nativeViewProtected as NativeScriptAndroidView;
-		const canUseOutlineProvider = !background.hasBorderWidth() && !background.hasBoxShadow() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
+		const canUseOutlineProvider = !background.hasBorderWidth() && !background.hasBoxShadows() && !background.clipPath && !background.image && SDK_VERSION >= 21 && (SDK_VERSION >= 33 || background.hasUniformBorderRadius());
 		if (onlyColor || canUseOutlineProvider) {
 			const backgroundColor = background.color?.android;
 			if (isBorderDrawable) {
@@ -1587,10 +1587,10 @@ export class View extends ViewCommon {
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
-		const shouldClipToOutline = !onlyColor || !background.hasBoxShadow();
+		const shouldClipToOutline = !onlyColor || !background.hasBoxShadows();
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable, shouldClipToOutline);
-		if (background.hasBoxShadow()) {
-			this._drawBoxShadow(background.getBoxShadow());
+		if (background.hasBoxShadows()) {
+			this._drawBoxShadow(background.getBoxShadows());
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?

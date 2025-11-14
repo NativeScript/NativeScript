@@ -141,7 +141,6 @@ export class TextBase extends TextBaseCommon {
 
 	public initNativeView(): void {
 		super.initNativeView();
-		initializeTextTransformation();
 
 		const nativeView = this.nativeTextViewProtected;
 

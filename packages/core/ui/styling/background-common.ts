@@ -184,9 +184,9 @@ export class Background {
 		return clone;
 	}
 
-	public withBoxShadow(value: : BoxShadow[], forceClone = true): Background {
+	public withBoxShadows(value: BoxShadow[], forceClone = true): Background {
 		const clone = this.cloneOrDirty(forceClone);
-		clone.boxShadow = value;
+		clone.boxShadows = value;
 		if (!value) {
 			this.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
 		}
@@ -241,7 +241,7 @@ export class Background {
 			value1.borderTopRightRadius === value2.borderTopRightRadius &&
 			value1.borderBottomRightRadius === value2.borderBottomRightRadius &&
 			value1.borderBottomLeftRadius === value2.borderBottomLeftRadius &&
-			value1.boxShadow === value2.boxShadow &&
+			value1.boxShadows === value2.boxShadows &&
 			value1.clipPath === value2.clipPath && 
 			isClipPathEqual
 			// && value1.clearFlags === value2.clearFlags

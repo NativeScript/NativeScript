@@ -34,7 +34,8 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 }
 
 export class ScrollView extends ScrollViewBase {
-	public declare nativeViewProtected: UIScrollView;
+	public nativeViewProtected: UIScrollView;
+
 	private _contentMeasuredWidth = 0;
 	private _contentMeasuredHeight = 0;
 	private _isFirstLayout: boolean = true;

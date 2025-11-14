@@ -52,11 +52,11 @@ export class GridLayout extends GridLayoutBase {
 		this.nativeViewProtected.addRowsAndColumnsFromJSON(jsonRows, jsonColumns);
 	}
 
-	// public resetNativeView() {
-	// 	// Update native GridLayout
-	// 	this.nativeViewProtected.reset();
-	// 	super.resetNativeView();
-	// }
+	public resetNativeView() {
+		// Update native GridLayout
+		this.nativeViewProtected.reset();
+		super.resetNativeView();
+	}
 
 	public _onRowAdded(itemSpec: ItemSpec) {
 		if (this.nativeViewProtected) {

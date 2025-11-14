@@ -124,7 +124,7 @@ export namespace CoreTypes {
 		export const unknown = 'unknown';
 	}
 
-	export type HorizontalAlignmentType = 'start' | 'left' | 'center' | 'right' | 'end' | 'stretch' | CSSWideKeywords;
+	export type HorizontalAlignmentType = 'start' | 'left' | 'middle'  | 'center' | 'right' | 'end' | 'stretch' | CSSWideKeywords;
 	export namespace HorizontalAlignment {
 		export const start = 'start';
 		export const left = 'left';

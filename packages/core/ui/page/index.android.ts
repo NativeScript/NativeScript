@@ -1,4 +1,4 @@
-import { PageBase, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from './page-common';
+import { PageBase, actionBarHiddenProperty, androidStatusBarBackgroundProperty } from './page-common';
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';

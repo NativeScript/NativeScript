@@ -1,5 +1,6 @@
 ﻿export type { Pair, Transformation, TransformationType, TransformationValue, TransformFunctionsInfo, Point3D, AnimationDefinition, AnimationPromise, Cancelable } from './animation-types';
 export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
+import type { AnimationDefinition, AnimationPromise } from './animation-types';
 
 /**
  * Defines a animation set.

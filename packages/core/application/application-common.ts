@@ -12,7 +12,6 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, LayoutDirectionChangedEventData, UnhandledErrorEventData } from './application-interfaces';
-import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import { SDK_VERSION } from '../utils/constants';
@@ -376,7 +375,7 @@ export class ApplicationCommon {
 		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 		rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
-
+		initializeSdkVersionClass(rootView);
 		this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
 		rootView._onCssStateChange();
 

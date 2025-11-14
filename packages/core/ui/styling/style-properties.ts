@@ -994,7 +994,7 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
-		return target.backgroundInternal.withBoxShadow(
+		return target.backgroundInternal.withBoxShadows(
 			newValue?.length
 				? newValue.map((v) => {
 						return {

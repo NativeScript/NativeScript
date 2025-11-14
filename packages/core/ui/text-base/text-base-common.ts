@@ -227,10 +227,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 }
 
-TextBaseCommon.prototype._isManualRtlTextStyleNeeded = false;
 export function isBold(fontWeight: FontWeightType): boolean {
 	return fontWeight === 'bold' || fontWeight === '700' || fontWeight === '800' || fontWeight === '900';
 }
+TextBaseCommon.prototype._isManualRtlTextStyleNeeded = false;
 
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',
