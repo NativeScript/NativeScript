@@ -1,6 +1,5 @@
 import { encoding as textEncoding } from '../text';
 import { getFileExtension, ios as IOSUtils } from '../utils';
-import { getCurrentAppPath } from '../utils/ios';
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
@@ -258,7 +257,7 @@ export class FileSystemAccess {
 	}
 
 	public getCurrentAppPath(): string {
-		return getCurrentAppPath();
+		return IOSUtils.getCurrentAppPath();
 	}
 
 	public copy = this.copySync.bind(this);

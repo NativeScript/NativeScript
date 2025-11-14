@@ -370,12 +370,13 @@ export class ApplicationCommon {
 		if (layoutDirection) {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${layoutDirection}`);
 		}
-		initializeSdkVersionClass();
 
 		rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 		rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
+
 		initializeSdkVersionClass(rootView);
+		
 		this.increaseStyleScopeApplicationCssSelectorVersion(rootView);
 		rootView._onCssStateChange();
 

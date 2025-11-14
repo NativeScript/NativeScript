@@ -15,6 +15,9 @@ import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
 import { PageEvents } from './events';
 
+// was defined here before, some plugins depend on it right now
+export { statusBarStyleProperty } from '../core/view/view-common'
+
 interface NavigatedData extends EventData<PageDefinition> {
 	context: any;
 	isBackNavigation: boolean;
