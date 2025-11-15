@@ -6,7 +6,7 @@
 		"declaration": true,
 		"ignoreDeprecations": "5.0",
 		"removeComments": false,
-		"emitDecoratorMetadata": true,
+		"emitDecoratorMetadata": false,
 		"experimentalDecorators": true,
 		"diagnostics": true,
 		"sourceMap": true,
