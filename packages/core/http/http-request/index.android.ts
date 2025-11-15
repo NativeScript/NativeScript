@@ -189,7 +189,7 @@ function buildJavaOptions(options: HttpRequestOptions) {
 	if (typeof options.method === 'string') {
 		javaOptions.method = options.method;
 	}
-	if (typeof options.content === 'string' || options.content instanceof FormData) {
+	if (typeof options.content === 'string' || (typeof FormData !== 'undefined' && options.content instanceof FormData)) {
 		const nativeString = new java.lang.String(options.content.toString());
 		const nativeBytes = nativeString.getBytes('UTF-8');
 		const nativeBuffer = java.nio.ByteBuffer.wrap(nativeBytes);

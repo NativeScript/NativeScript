@@ -13,7 +13,7 @@ export class ChangeType {
 /**
  * Event args for "changed" event.
  */
-export interface ChangedData<T> extends EventData {
+export interface ChangedData<T, U = Observable> extends EventData<U> {
 	/**
 	 * Change type.
 	 */

@@ -1,4 +1,5 @@
 ﻿import { StackLayout, Label, Button, EventData } from '@nativescript/core';
+import * as button from '@nativescript/core/ui/button';
 
 export class MyControl extends StackLayout {
 	constructor() {
@@ -9,7 +10,7 @@ export class MyControl extends StackLayout {
 		var lbl = new Label();
 		var btn = new Button();
 		btn.text = 'Tap me!';
-		btn.on(Button.tapEvent, (args: EventData) => {
+		btn.on(button.tapEvent, (args: EventData) => {
 			lbl.text = 'Tap ' + counter++;
 		});
 

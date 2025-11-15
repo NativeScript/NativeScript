@@ -2,6 +2,11 @@
 import { EventData } from '../../data/observable';
 
 /**
+ * String value used when hooking to tap event.
+ */
+export const tapEvent: string;
+
+/**
  * Represents a standard Button widget.
  *
  * @nsView Button

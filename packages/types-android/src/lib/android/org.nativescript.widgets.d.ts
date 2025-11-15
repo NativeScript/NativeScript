@@ -623,7 +623,7 @@
                 public static setMarginBottomPercent(view: android.view.View, value: number): void;
 
                 public static getHorizontalAlignment(view: android.view.View): string;
-                public static setHorizontalAlignment(view: android.view.View, value: string): void;
+                public static setHorizontalAlignment(view: android.view.View, value: string, rtl: boolean): void;
 
                 public static getVerticalAlignment(view: android.view.View): string;
                 public static setVerticalAlignment(view: android.view.View, value: string): void;
@@ -673,6 +673,18 @@
                 public static setLetterspacing(view: android.view.View, value: number): void;
 
                 public static setBackground(view: android.view.View, background: android.graphics.drawable.Drawable): void;
+
+                public static setCommonGridLayoutParam(view: android.view.View, type: string, value: number): void;
+
+                public static setOutlineProvider(view: android.view.View, borderTopLeftRadius: number,
+                     borderTopRightRadius: number,
+                     borderBottomRightRadius: number,
+                     borderBottomLeftRadius: number);
+                public static clearOutlineProvider(view: android.view.View);
+
+                public static isTextView(view: android.view.View): boolean;
+                public static getChildAppCompatTextView(view: android.view.View): androidx.appcompat.widget.AppCompatTextView;
+                public static toolbarAccessibilityScreenChanged(view: androidx.appcompat.widget.Toolbar);
             }
 
             export class DisableUserInteractionListener extends java.lang.Object implements android.view.View.OnTouchListener {
@@ -747,6 +759,48 @@ declare module org {
 	}
 }
 
+declare namespace org {
+	export namespace nativescript {
+		export namespace widgets {
+			export class FolderHelper extends java.lang.Object {
+				public static class: java.lang.Class<org.nativescript.widgets.FolderHelper>;
+				public getParent(): androidx.documentfile.provider.DocumentFile;
+				public createFile(param0: string, param1: string): string;
+				public rename(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FolderHelper.Callback): void;
+				public static fromUri(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): org.nativescript.widgets.FolderHelper;
+				public getOrCreateFile(param0: string, param1: boolean): androidx.documentfile.provider.DocumentFile;
+				public getName(): string;
+				public getDocumentFile(): androidx.documentfile.provider.DocumentFile;
+				public createDirectory(param0: string): string;
+				public static fromString(param0: globalAndroid.content.Context, param1: string): org.nativescript.widgets.FolderHelper;
+				public getOrCreateFolder(param0: string, param1: boolean): androidx.documentfile.provider.DocumentFile;
+				public exists(): boolean;
+				public renameSync(param0: globalAndroid.content.Context, param1: string, param2: org.nativescript.widgets.FolderHelper.Callback): void;
+				public static exists(param0: globalAndroid.content.Context, param1: globalAndroid.net.Uri): boolean;
+				public static exists(param0: globalAndroid.content.Context, param1: string): boolean;
+				public containsFileOrFolder(param0: string): boolean;
+				public getLastModified(): number;
+				public delete(param0: globalAndroid.content.Context): boolean;
+			}
+			export namespace FolderHelper {
+				export class Callback extends java.lang.Object {
+					public static class: java.lang.Class<org.nativescript.widgets.FolderHelper.Callback>;
+					/**
+					 * Constructs a new instance of the org.nativescript.widgets.FolderHelper$Callback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+					 */
+					public constructor(implementation: {
+						onError(param0: java.lang.Exception): void;
+						onSuccess(param0: any): void;
+					});
+					public constructor();
+					public onError(param0: java.lang.Exception): void;
+					public onSuccess(param0: any): void;
+				}
+			}
+		}
+	}
+}
+
 declare module org {
 	export module nativescript {
 		export module widgets {
@@ -754,7 +808,7 @@ declare module org {
 				public static class: java.lang.Class<org.nativescript.widgets.Utils>;
                 public static getBitmapFromDrawable(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.Bitmap;
                 public static getBitmapFromView(param0: globalAndroid.view.View): globalAndroid.graphics.Bitmap;
-				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: number, param4: number, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static clipCanvasOutPath(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.graphics.Path): void;
 				public static drawBoxShadow(param0: globalAndroid.view.View, param1: number[]): void;
                 public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;

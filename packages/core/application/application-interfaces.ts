@@ -1,5 +1,6 @@
 import type { EventData, Observable } from '../data/observable';
 import type { View } from '../ui/core/view';
+import type { ApplicationCommon } from './application-common';
 import type { CoreTypes } from '../core-types';
 
 /**
@@ -23,7 +24,7 @@ export interface NativeScriptError extends Error {
 /**
  * Event data containing information for the application events.
  */
-export interface ApplicationEventData {
+export interface ApplicationEventData extends EventData {
 	/**
 	 * The name of the event.
 	 */
@@ -42,13 +43,14 @@ export interface ApplicationEventData {
 	/**
 	 * The instance that has raised the event.
 	 */
-	object: any; // Application;
+	// TODO: find a way to do object: ApplicationCommon | Observable;
+	object?: any; // Application
 }
 
 /**
  * Event data containing information for launch event.
  */
-export interface LaunchEventData extends EventData {
+export interface LaunchEventData extends EventData<ApplicationCommon> {
 	/**
 	 * The root view for this Window on iOS or Activity for Android.
 	 * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
@@ -71,6 +73,11 @@ export interface OrientationChangedEventData extends ApplicationEventData {
 	 * New orientation value.
 	 */
 	newValue: 'portrait' | 'landscape' | 'unknown';
+
+	/**
+	 * current device rotation in degrees.
+	 */
+	degrees?: number;
 }
 
 /**
@@ -81,6 +88,7 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 	 * New system appearance value.
 	 */
 	newValue: 'light' | 'dark';
+	cancel: boolean;
 }
 
 /**
@@ -137,21 +145,11 @@ export interface InitRootViewEventData extends ApplicationEventData {
 /**
  * Data for the Android activity events.
  */
-export interface AndroidActivityEventData {
+export interface AndroidActivityEventData extends ApplicationEventData {
 	/**
 	 * The activity.
 	 */
-	activity: androidx.appcompat.app.AppCompatActivity;
-
-	/**
-	 * The name of the event.
-	 */
-	eventName: string;
-
-	/**
-	 * The instance that has raised the event.
-	 */
-	object: any;
+	activity?: androidx.appcompat.app.AppCompatActivity;
 }
 
 /**
@@ -161,7 +159,7 @@ export interface AndroidActivityBundleEventData extends AndroidActivityEventData
 	/**
 	 * The bundle.
 	 */
-	bundle: android.os.Bundle;
+	bundle?: android.os.Bundle;
 }
 
 /**
@@ -171,17 +169,17 @@ export interface AndroidActivityRequestPermissionsEventData extends AndroidActiv
 	/**
 	 * The request code.
 	 */
-	requestCode: number;
+	requestCode?: number;
 
 	/**
 	 * The Permissions.
 	 */
-	permissions: Array<string>;
+	permissions?: Array<string>;
 
 	/**
 	 * The Granted.
 	 */
-	grantResults: Array<number>;
+	grantResults?: Array<number>;
 }
 
 /**
@@ -191,17 +189,17 @@ export interface AndroidActivityResultEventData extends AndroidActivityEventData
 	/**
 	 * The request code.
 	 */
-	requestCode: number;
+	requestCode?: number;
 
 	/**
 	 * The result code.
 	 */
-	resultCode: number;
+	resultCode?: number;
 
 	/**
 	 * The intent.
 	 */
-	intent: android.content.Intent;
+	intent?: android.content.Intent;
 }
 
 /**
@@ -211,7 +209,7 @@ export interface AndroidActivityNewIntentEventData extends AndroidActivityEventD
 	/**
 	 * The intent.
 	 */
-	intent: any /* android.content.Intent */;
+	intent?: any /* android.content.Intent */;
 }
 
 /**
@@ -221,11 +219,49 @@ export interface AndroidActivityBackPressedEventData extends AndroidActivityEven
 	/**
 	 * In the event handler, set this value to true if you want to cancel the back navigation and do something else instead.
 	 */
-	cancel: boolean;
+	cancel?: boolean;
 }
 
 export interface LoadAppCSSEventData extends ApplicationEventData {
 	cssFile: string;
+}
+
+/**
+ * Data for the Android dialog fragment onCreateView event.
+ */
+export interface AndroidDialogFragmentOnCreateViewEventData extends ApplicationEventData {
+	/**
+	 * The name of the event.
+	 */
+	eventName: string;
+
+	/**
+	 * Gets the window of the created dialog_min_width_major
+	 */
+	window?: any; // android.view.Window;
+	/**
+	 * Gets native dialog
+	 */
+	dialog?: any; // AndroidApplication;
+}
+
+/**
+ * Data for the Android onConfigurationChange event.
+ */
+export interface AndroidConfigurationChangeEventData extends ApplicationEventData {
+	/**
+	 * The name of the event.
+	 */
+	eventName: string;
+
+	/**
+	 * Gets the configuration from the event
+	 */
+	config?: any; // android.content.res.Configuration;
+	/**
+	 * Gets the diff from the previous configuration
+	 */
+	diff?: number;
 }
 
 /**

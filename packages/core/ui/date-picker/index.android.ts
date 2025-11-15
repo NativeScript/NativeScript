@@ -59,7 +59,7 @@ function initializeDateChangedListener(): void {
 }
 
 export class DatePicker extends DatePickerBase {
-	nativeViewProtected: android.widget.DatePicker;
+	declare nativeViewProtected: android.widget.DatePicker;
 	timePicker: TimePicker;
 
 	public createNativeView() {

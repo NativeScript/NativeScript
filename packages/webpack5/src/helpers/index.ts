@@ -9,7 +9,7 @@ import { addVirtualEntry, addVirtualModule } from './virtualModules';
 import { applyFileReplacements } from './fileReplacements';
 import { addCopyRule, removeCopyRule } from './copyRules';
 import { error, info, warn, warnOnce } from './log';
-import { determineProjectFlavor } from './flavor';
+import { determineProjectFlavor, projectUsesCustomFlavor } from './flavor';
 import { readTsConfig } from './typescript';
 import { getValue } from './config';
 import { getIPS } from './host';
@@ -48,6 +48,7 @@ export default {
 	},
 	flavor: {
 		determineProjectFlavor,
+		projectUsesCustomFlavor,
 	},
 	host: {
 		getIPS,

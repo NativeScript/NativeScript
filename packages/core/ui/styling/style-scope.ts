@@ -1,9 +1,10 @@
 import { getNativeScriptGlobals } from '../../globals/global-utils';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
-import { _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
+import { CssAnimationProperty, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { unsetValue } from '../core/properties/property-shared';
 import * as ReworkCSS from '../../css';
+import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '../../css';
 
 import { RuleSet, StyleSheetSelectorScope, SelectorCore, SelectorsMatch, ChangeMap, fromAstNode, Node, MEDIA_QUERY_SEPARATOR, matchMediaQueryString } from './css-selector';
 import { Trace } from './styling-shared';
@@ -17,10 +18,6 @@ import { CssAnimationParser } from './css-animation-parser';
 import { sanitizeModuleName } from '../../utils/common';
 import { resolveModuleName } from '../../module-name-resolver';
 import { cleanupImportantFlags } from './css-utils';
-import { cssTreeParse } from '../../css/css-tree-parser';
-import { CSS3Parser } from '../../css/CSS3Parser';
-import { CSSNativeScript } from '../../css/CSSNativeScript';
-import { parse as parseCss } from '../../css/lib/parse';
 // @ts-ignore apps resolve this at runtime with path alias in project bundlers
 import appConfig from '~/package.json';
 
@@ -241,14 +238,14 @@ class CSSSource {
 	private async parseCSSAst() {
 		if (this._source) {
 			if (__CSS_PARSER__ === 'css-tree') {
-				this._ast = cssTreeParse(this._source, this._file);
+				this._ast = (await import('../../css/css-tree-parser')).cssTreeParse(this._source, this._file);
 			} else if (__CSS_PARSER__ === 'nativescript') {
-				const cssparser = new CSS3Parser(this._source);
+				const cssparser = new (await import('../../css/CSS3Parser')).CSS3Parser(this._source);
 				const stylesheet = cssparser.parseAStylesheet();
-				const cssNS = new CSSNativeScript();
+				const cssNS = new (await import('../../css/CSSNativeScript')).CSSNativeScript();
 				this._ast = cssNS.parseStylesheet(stylesheet);
 			} else if (__CSS_PARSER__ === 'rework') {
-				this._ast = parseCss(this._source, { source: this._file });
+				this._ast = (await import('../../css/lib/parse')).parse(this._source, { source: this._file });
 			}
 		}
 	}
@@ -545,9 +542,9 @@ export class CssState {
 	 * Called when a change had occurred that may invalidate the statically matching selectors (class, id, ancestor selectors).
 	 * As a result, at some point in time, the selectors matched have to be requerried from the style scope and applied to the view.
 	 */
-	public onChange(): void {
+	public onChange(force = false): void {
 		const view = this.viewRef.get();
-		if (view && view.isLoaded) {
+		if (view && (force || view.isLoaded)) {
 			this.unsubscribeFromDynamicUpdates();
 			this.updateMatch();
 			this.subscribeForDynamicUpdates();
@@ -571,6 +568,7 @@ export class CssState {
 		return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
 	}
 
+	@profile
 	public onLoaded(): void {
 		if (this._matchInvalid) {
 			this.updateMatch();
@@ -661,15 +659,9 @@ export class CssState {
 
 		const view = this.viewRef.get();
 		if (view) {
-			view.style['keyframe:rotate'] = unsetValue;
-			view.style['keyframe:rotateX'] = unsetValue;
-			view.style['keyframe:rotateY'] = unsetValue;
-			view.style['keyframe:scaleX'] = unsetValue;
-			view.style['keyframe:scaleY'] = unsetValue;
-			view.style['keyframe:translateX'] = unsetValue;
-			view.style['keyframe:translateY'] = unsetValue;
-			view.style['keyframe:backgroundColor'] = unsetValue;
-			view.style['keyframe:opacity'] = unsetValue;
+			Object.values(CssAnimationProperty.properties).forEach((property) => {
+				view.style[property.keyframe] = unsetValue;
+			});
 		} else {
 			Trace.write(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 		}
@@ -1104,28 +1096,35 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle).selectors;
+	const oldInlineRuleSet = view['oldInlineStyle'] ? CSSSource.fromSource(`local { ${view['oldInlineStyle']} }`).selectors : null;
 
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
 
+	const declarations = inlineRuleSet?.[0]?.declarations || [];
+	const oldDeclarations = oldInlineRuleSet?.[0]?.declarations;
 	// Set all the css-variables first, so we can be sure they are up-to-date
-	inlineRuleSet[0].declarations.forEach((d) => {
+	for (let index = declarations.length - 1; index >= 0; index--) {
+		const d = declarations[index];
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
 		if (isCssVariable(property)) {
 			view.style.setUnscopedCssVariable(property, d.value);
+			declarations.splice(index, 1);
 		}
-	});
+		if (oldDeclarations) {
+			const oldIndex = oldDeclarations.findIndex((d2) => d2.property === d.property);
+			if (oldIndex >= 0) {
+				oldDeclarations.splice(oldIndex, 1);
+			}
+		}
+	}
 
-	inlineRuleSet[0].declarations.forEach((d) => {
+	for (let index = declarations.length - 1; index >= 0; index--) {
+		const d = declarations[index];
 		// Use the actual property name so that a local value is set.
 		const property = d.property;
 		try {
-			if (isCssVariable(property)) {
-				// Skip css-variables, they have been handled
-				return;
-			}
-
 			const value = evaluateCssExpressions(view, property, d.value);
 			if (property in view.style) {
 				view.style[property] = value;
@@ -1135,7 +1134,24 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
 		} catch (e) {
 			Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
 		}
-	});
+	}
+	if (oldDeclarations) {
+		for (let index = oldDeclarations.length - 1; index >= 0; index--) {
+			const d = oldDeclarations[index];
+			// Use the actual property name so that a local value is set.
+			const property = d.property;
+			try {
+				if (property in view.style) {
+					view.style[property] = '';
+				} else {
+					view[property] = null;
+				}
+			} catch (e) {
+				Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
+			}
+		}
+	}
+	view['oldInlineStyle'] = styleStr;
 
 	// This is needed in case of changes to css-variable or css-calc expressions.
 	view._onCssStateChange();

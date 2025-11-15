@@ -4,7 +4,7 @@ import { View } from '../core/view';
 export * from './layout-base-common';
 
 export class LayoutBase extends LayoutBaseCommon {
-	nativeViewProtected: UIView;
+	declare nativeViewProtected: UIView;
 
 	public addChild(child: View): void {
 		super.addChild(child);
@@ -35,9 +35,6 @@ export class LayoutBase extends LayoutBaseCommon {
 		}
 	}
 
-	[clipToBoundsProperty.getDefault](): boolean {
-		return false;
-	}
 	[clipToBoundsProperty.setNative](value: boolean) {
 		this._setNativeClipToBounds();
 	}

@@ -1,0 +1,17 @@
+<Page backgroundColor="skyblue">
+    <GridLayout rows="auto,auto,auto" verticalAlignment="top" backgroundColor="gold">
+        <Label backgroundColor="darkblue" originY="0"
+               tap="tapLabel"
+               height="64" fontSize="32" color="skyblue" textAlignment="center"
+               text="Click here"/>
+        <Label row="1" backgroundColor="darkgreen" originY="0"
+               tap="tapLabel"
+               textWrap="true"
+               fontSize="32" color="lime" textAlignment="center"
+               text="Or here&#xa; i am multi line!"/>
+        <Label row="2" backgroundColor="darkred" originY="0"
+               tap="tapLabel"
+               height="64" fontSize="32" color="pink" textAlignment="center"
+               text="But NOT here"/>
+    </GridLayout>
+</Page>

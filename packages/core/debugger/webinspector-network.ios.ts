@@ -35,10 +35,7 @@ export class Request {
 	private _data: any;
 	private _mimeType: string;
 
-	constructor(
-		private _networkDomainDebugger: NetworkDomainDebugger,
-		private _requestID: string,
-	) {}
+	constructor(private _networkDomainDebugger: NetworkDomainDebugger, private _requestID: string) {}
 
 	get mimeType(): string {
 		return this._mimeType;

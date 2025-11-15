@@ -69,8 +69,9 @@ export namespace IOSHelper {
 	export function getFrameFromPosition(position: Position, insets?: Position): any; /* CGRect */
 	export function shrinkToSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
 	export function expandBeyondSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
-	export class UILayoutViewController {
+	export class UILayoutViewController extends UIViewController {
 		public static initWithOwner(owner: WeakRef<View>): UILayoutViewController;
+		modal?: boolean;
 	}
 	export class UIAdaptivePresentationControllerDelegateImp {
 		public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp;

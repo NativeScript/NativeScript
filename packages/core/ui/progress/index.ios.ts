@@ -5,7 +5,7 @@ import { colorProperty, backgroundColorProperty, backgroundInternalProperty } fr
 export * from './progress-common';
 
 export class Progress extends ProgressBase {
-	nativeViewProtected: UIProgressView;
+	declare nativeViewProtected: UIProgressView;
 
 	createNativeView() {
 		return UIProgressView.new();

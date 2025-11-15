@@ -4,7 +4,7 @@ import { ChangedData, ChangeType } from '../observable-array';
 /**
  * Event args for "itemsLoading" event.
  */
-export interface ItemsLoading extends EventData {
+export interface ItemsLoading<T = Observable> extends EventData<T> {
 	/**
 	 * Start index.
 	 */

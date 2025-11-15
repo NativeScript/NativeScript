@@ -1,12 +1,17 @@
 import * as textModule from '../text';
-import { getNativeApp } from '../application/helpers-common';
+import { Application } from '../application';
+import { wrapNativeException } from '../utils';
+import { getApplicationContext } from '../application/helpers.android';
 import { getFileExtension } from '../utils/utils-shared';
 import { SDK_VERSION } from '../utils/constants';
 
 import type { IFileSystemAccess } from './file-system-access';
 
 function getOrSetHelper(path: string): org.nativescript.widgets.FileHelper {
-	return org.nativescript.widgets.FileHelper.fromString(getNativeApp<android.app.Application>().getApplicationContext(), path);
+	return org.nativescript.widgets.FileHelper.fromString(getApplicationContext(), path);
+}
+function getOrSetFolderHelper(path: string): org.nativescript.widgets.FolderHelper {
+	return org.nativescript.widgets.FolderHelper.fromString(getApplicationContext(), path);
 }
 
 function isContentUri(path: string): boolean {
@@ -47,18 +52,32 @@ export class FileSystemAccess implements IFileSystemAccess {
 		}
 	}
 
-	public getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
-		return this.ensureFile(new java.io.File(path), false, onError);
+	public getFile(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string; extension: string } {
+		if (create) {
+			return this.ensureFile(new java.io.File(path), false, onError);
+		} else {
+			return {
+				path: path,
+				name: path.split('/').pop(),
+				extension: path.split('.').pop(),
+			};
+		}
 	}
 
-	public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+	public getFolder(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string } {
 		const javaFile = new java.io.File(path);
-		const dirInfo = this.ensureFile(javaFile, true, onError);
-		if (!dirInfo) {
-			return undefined;
-		}
+		if (create) {
+			const dirInfo = this.ensureFile(javaFile, true, onError);
+			if (!dirInfo) {
+				return undefined;
+			}
 
-		return { path: dirInfo.path, name: dirInfo.name };
+			return { path: dirInfo.path, name: dirInfo.name };
+		}
+		return {
+			path,
+			name: path.split('/').pop(),
+		};
 	}
 
 	public eachEntity(path: string, onEntity: (file: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any) {
@@ -129,10 +148,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 					onError({ message: 'File deletion failed' });
 				}
 			}
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -157,10 +174,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 					onError({ message: 'Folder deletion failed.' });
 				}
 			}
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -168,21 +183,14 @@ export class FileSystemAccess implements IFileSystemAccess {
 		try {
 			const javaFile = new java.io.File(path);
 			if (!javaFile.getCanonicalFile().isDirectory()) {
-				if (onError) {
-					onError({
-						message: 'The specified parameter is not a Folder entity.',
-					});
-				}
-
+				onError?.(new Error('The specified parameter is not a Folder entity.'));
 				return;
 			}
 
 			// TODO: Asynchronous
 			this.deleteFolderContent(javaFile);
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -213,30 +221,30 @@ export class FileSystemAccess implements IFileSystemAccess {
 	}
 
 	public getDocumentsFolderPath(): string {
-		const dir = getNativeApp<android.app.Application>().getApplicationContext().getFilesDir();
+		const dir = getApplicationContext().getFilesDir();
 
 		return dir.getAbsolutePath();
 	}
 	public getExternalDocumentsFolderPath(): string {
-		const dirs = getNativeApp<android.app.Application>().getApplicationContext().getExternalFilesDirs(null);
+		const dirs = getApplicationContext().getExternalFilesDirs(null);
 		let dir;
 		if (dirs && dirs.length > 1) {
 			dir = dirs[dirs.length - 1];
 		}
 		if (!dir) {
-			dir = getNativeApp<android.app.Application>().getApplicationContext().getExternalFilesDir(null);
+			dir = getApplicationContext().getExternalFilesDir(null);
 		}
 		return dir.getAbsolutePath();
 	}
 
 	public getLogicalRootPath(): string {
-		const dir = getNativeApp<android.app.Application>().getApplicationContext().getFilesDir();
+		const dir = getApplicationContext().getFilesDir();
 
 		return dir.getCanonicalPath();
 	}
 
 	public getTempFolderPath(): string {
-		const dir = getNativeApp<android.app.Application>().getApplicationContext().getCacheDir();
+		const dir = getApplicationContext().getCacheDir();
 
 		return dir.getAbsolutePath();
 	}
@@ -249,11 +257,9 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public copySync(src: string, dest: string, onError?: (error: any) => any) {
 		try {
-			return org.nativescript.widgets.Async.File.copySync(src, dest, getNativeApp<android.app.Application>().getApplicationContext());
+			return org.nativescript.widgets.Async.File.copySync(src, dest, getApplicationContext());
 		} catch (error) {
-			if (onError) {
-				onError(error);
-			}
+			onError?.(wrapNativeException(error));
 		}
 
 		return false;
@@ -261,6 +267,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 	public copyAsync(src: string, dest: string): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
+			// TODO: clean this i dont think the try catch is needed.
+			// also that all file can be refactored
 			try {
 				org.nativescript.widgets.Async.File.copy(
 					src,
@@ -273,11 +281,13 @@ export class FileSystemAccess implements IFileSystemAccess {
 							reject(err);
 						},
 					}),
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 				);
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -301,6 +311,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -312,10 +324,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			const buffer = new ArrayBuffer(javaFile.length());
 			channel.read(buffer as any);
 			return buffer;
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -339,6 +349,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -351,10 +363,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			dataInputStream.readFully(bytes);
 
 			return bytes;
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -387,6 +397,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -397,10 +409,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			const channel = stream.getChannel();
 			channel.write(FileSystemAccess.getBuffer(buffer));
 			stream.close();
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -416,15 +426,15 @@ export class FileSystemAccess implements IFileSystemAccess {
 						onComplete: () => {
 							resolve();
 						},
-						onError: (err) => {
-							reject(err);
-						},
+						onError: reject,
 					}),
 					null,
 				);
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -434,10 +444,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			const stream = new java.io.FileOutputStream(javaFile, true);
 			stream.write(bytes, 0, bytes.length);
 			stream.close();
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -453,15 +461,15 @@ export class FileSystemAccess implements IFileSystemAccess {
 						onComplete: () => {
 							resolve();
 						},
-						onError: (err) => {
-							reject(err);
-						},
+						onError: reject,
 					}),
 					null,
 				);
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -472,10 +480,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			const channel = stream.getChannel();
 			channel.write(FileSystemAccess.getBuffer(buffer));
 			stream.close();
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -491,15 +497,15 @@ export class FileSystemAccess implements IFileSystemAccess {
 						onComplete: () => {
 							resolve();
 						},
-						onError: (err) => {
-							reject(err);
-						},
+						onError: reject,
 					}),
 					null,
 				);
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -509,10 +515,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			const stream = new java.io.FileOutputStream(javaFile);
 			stream.write(bytes, 0, bytes.length);
 			stream.close();
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -537,15 +541,15 @@ export class FileSystemAccess implements IFileSystemAccess {
 							}
 							resolve(result);
 						},
-						onError: (err) => {
-							reject(err);
-						},
+						onError: reject,
 					}),
 					null,
 				);
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -588,10 +592,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 			bufferedReader.close();
 
 			return result;
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -622,15 +624,15 @@ export class FileSystemAccess implements IFileSystemAccess {
 						onComplete: () => {
 							resolve();
 						},
-						onError: (err) => {
-							reject(err);
-						},
+						onError: reject,
 					}),
 					null,
 				);
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -647,10 +649,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 			writer.write(content);
 			writer.close();
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -672,15 +672,15 @@ export class FileSystemAccess implements IFileSystemAccess {
 						onComplete: () => {
 							resolve();
 						},
-						onError: (err) => {
-							reject(err);
-						},
+						onError: reject,
 					}),
 					null,
 				);
 			} catch (ex) {
 				reject(ex);
 			}
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -697,16 +697,14 @@ export class FileSystemAccess implements IFileSystemAccess {
 
 			writer.write(content);
 			writer.close();
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
 	private deleteFolderContent(file: java.io.File): boolean {
 		const filesList = file.listFiles();
-		if (filesList.length === 0) {
+		if (!filesList || filesList.length === 0) {
 			return true; // Nothing to delete, so success!
 		}
 
@@ -740,12 +738,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 				}
 
 				if (!created) {
-					// TODO: unified approach for error messages
-					if (onError) {
-						onError('Failed to create new java File for path ' + javaFile.getAbsolutePath());
-					}
-
-					return undefined;
+					onError?.(new Error('Failed to create new java File for path ' + javaFile.getAbsolutePath()));
+					return;
 				} else {
 					javaFile.setReadable(true);
 					javaFile.setWritable(true);
@@ -759,13 +753,9 @@ export class FileSystemAccess implements IFileSystemAccess {
 				name: javaFile.getName(),
 				extension: this.getFileExtension(path),
 			};
-		} catch (exception) {
-			// TODO: unified approach for error messages
-			if (onError) {
-				onError(exception);
-			}
-
-			return undefined;
+		} catch (error) {
+			onError?.(wrapNativeException(error));
+			return;
 		}
 	}
 
@@ -775,14 +765,11 @@ export class FileSystemAccess implements IFileSystemAccess {
 		return getFileExtension(path);
 	}
 
-	private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
+	protected enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
 		try {
 			let javaFile = new java.io.File(path);
 			if (!javaFile.getCanonicalFile().isDirectory()) {
-				if (onError) {
-					onError('There is no folder existing at path ' + path);
-				}
-
+				onError?.(new Error('There is no folder existing at path ' + path));
 				return;
 			}
 
@@ -808,10 +795,8 @@ export class FileSystemAccess implements IFileSystemAccess {
 					break;
 				}
 			}
-		} catch (exception) {
-			if (onError) {
-				onError(exception);
-			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
 	}
 
@@ -874,11 +859,23 @@ export class FileSystemAccess29 extends FileSystemAccess {
 
 	getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
 		if (isContentUri(path)) {
+			try {
+				const parent = getOrSetFolderHelper(path).getParent();
+				if (parent) {
+					return {
+						path: parent.getUri().toString(),
+						name: parent.getName(),
+					};
+				}
+			} catch (e) {
+				onError?.(wrapNativeException(e));
+				return;
+			}
 			return null;
 		}
 		return super.getParent(path, onError);
 	}
-	getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
+	getFile(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string; extension: string } {
 		if (isContentUri(path)) {
 			try {
 				const file = getOrSetHelper(path);
@@ -889,62 +886,137 @@ export class FileSystemAccess29 extends FileSystemAccess {
 					extension: file.getExtension(),
 				};
 			} catch (e) {
-				if (typeof onError === 'function') {
-					onError(e);
-				}
+				onError?.(wrapNativeException(e));
 				return;
 			}
 		}
 		return super.getFile(path, onError);
 	}
-	getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+	getFolder(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string } {
 		if (isContentUri(path)) {
+			const folder = getOrSetFolderHelper(path);
+			if (folder) {
+				return {
+					path,
+					name: folder.getName(),
+				};
+			}
 			return null;
 		}
-		return super.getFolder(path, onError);
+		return super.getFolder(path, onError, create);
 	}
-	getEntities(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string }[] {
-		if (isContentUri(path)) {
-			return null;
+
+	protected enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
+		if (!isContentUri(path)) {
+			return super.enumEntities(path, callback);
 		}
-		return super.getEntities(path, onError);
-	}
-	eachEntity(path: string, onEntity: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any) {
-		if (isContentUri(path)) {
-			return null;
+		try {
+			const folder = getOrSetFolderHelper(path);
+			if (!folder) {
+				onError?.(new Error('There is no folder existing at path ' + path));
+				return;
+			}
+			const documentFolder = folder.getDocumentFile() as androidx.documentfile.provider.DocumentFile;
+			const filesList = documentFolder.listFiles();
+			const length = filesList.length;
+			let info;
+			let retVal;
+			let documentFile: androidx.documentfile.provider.DocumentFile;
+
+			for (let i = 0; i < length; i++) {
+				documentFile = filesList[i];
+
+				info = {
+					path: documentFile.getUri().toString(),
+					name: documentFile.getName(),
+				};
+
+				if (documentFile.isFile()) {
+					info.extension = this.getFileExtension(info.path);
+				}
+
+				retVal = callback(info);
+				if (retVal === false) {
+					break;
+				}
+			}
+		} catch (error) {
+			onError?.(wrapNativeException(error));
 		}
-		super.eachEntity(path, onEntity);
 	}
 	fileExists(path: string): boolean {
 		if (isContentUri(path)) {
-			return org.nativescript.widgets.FileHelper.exists(getNativeApp<android.app.Application>().getApplicationContext(), path);
+			return org.nativescript.widgets.FileHelper.exists(getApplicationContext(), path);
 		}
 		return super.fileExists(path);
 	}
 	folderExists(path: string): boolean {
 		if (isContentUri(path)) {
-			return null;
+			return org.nativescript.widgets.FolderHelper.exists(getApplicationContext(), path);
 		}
 		return super.folderExists(path);
 	}
 	deleteFile(path: string, onError?: (error: any) => any) {
 		if (isContentUri(path)) {
 			try {
-				getOrSetHelper(path).delete(getNativeApp<android.app.Application>().getApplicationContext());
+				getOrSetHelper(path).delete(getApplicationContext());
 			} catch (e) {
-				onError?.(e);
+				onError?.(wrapNativeException(e));
 			}
 		} else {
 			super.deleteFile(path, onError);
 		}
 	}
 	deleteFolder(path: string, onError?: (error: any) => any) {
-		if (!isContentUri(path)) {
+		if (isContentUri(path)) {
+			try {
+				getOrSetFolderHelper(path).delete(getApplicationContext());
+			} catch (e) {
+				onError?.(wrapNativeException(e));
+			}
+		} else {
 			super.deleteFolder(path, onError);
 		}
 	}
+	private deleteDocumentUriFolderContent(documentFile: androidx.documentfile.provider.DocumentFile): boolean {
+		if (!documentFile.isDirectory()) {
+			return false;
+		}
+		const filesList = documentFile.listFiles();
+		if (filesList.length === 0) {
+			return true; // Nothing to delete, so success!
+		}
+
+		let childFile: androidx.documentfile.provider.DocumentFile;
+		let success = false;
+
+		for (let i = 0; i < filesList.length; i++) {
+			childFile = filesList[i];
+			if (childFile.isDirectory()) {
+				success = this.deleteDocumentUriFolderContent(childFile);
+				if (!success) {
+					break;
+				}
+			}
+
+			success = childFile.delete();
+		}
+
+		return success;
+	}
 	emptyFolder(path: string, onError?: (error: any) => any): void {
-		if (!isContentUri(path)) {
+		if (isContentUri(path)) {
+			try {
+				const documentFile = getOrSetFolderHelper(path)?.getDocumentFile();
+				if (!documentFile?.isDirectory()) {
+					onError?.(new Error('The specified parameter is not a Folder entity.'));
+					return;
+				}
+				this.deleteDocumentUriFolderContent(documentFile);
+			} catch (error) {
+				onError?.(wrapNativeException(error));
+			}
+		} else {
 			super.emptyFolder(path, onError);
 		}
 	}
@@ -954,12 +1026,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			getOrSetHelper(path).renameSync(getNativeApp<android.app.Application>().getApplicationContext(), newPath, callback);
+			getOrSetHelper(path).renameSync(getApplicationContext(), newPath, callback);
 		} else {
 			super.rename(path, newPath, onError);
 		}
@@ -968,17 +1040,17 @@ export class FileSystemAccess29 extends FileSystemAccess {
 	public renameAsync(path: string, newPath: string): Promise<any> {
 		return new Promise<void>((resolve, reject) => {
 			getOrSetHelper(path).renameSync(
-				getNativeApp<android.app.Application>().getApplicationContext(),
+				getApplicationContext(),
 				newPath,
 				new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {
 						resolve();
 					},
-					onError(error) {
-						reject(error);
-					},
+					onError: reject,
 				}),
 			);
+		}).catch((ex) => {
+			throw wrapNativeException(ex);
 		});
 	}
 
@@ -1001,17 +1073,17 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).appendBuffer(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					FileSystemAccess.getBuffer(content),
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.appendAsync(path, content);
@@ -1023,12 +1095,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			getOrSetHelper(path).appendSync(getNativeApp<android.app.Application>().getApplicationContext(), FileSystemAccess.getBuffer(content), callback);
+			getOrSetHelper(path).appendSync(getApplicationContext(), FileSystemAccess.getBuffer(content), callback);
 		} else {
 			super.appendSync(path, content, onError);
 		}
@@ -1040,17 +1112,17 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).append(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					content,
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.appendAsync(path, content);
@@ -1062,12 +1134,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			getOrSetHelper(path).appendSync(getNativeApp<android.app.Application>().getApplicationContext(), content, callback);
+			getOrSetHelper(path).appendSync(getApplicationContext(), content, callback);
 		} else {
 			super.appendSync(path, content, onError);
 		}
@@ -1079,18 +1151,18 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).appendText(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					content,
 					encoding ?? null,
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.appendTextAsync(path, content, encoding);
@@ -1102,12 +1174,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			getOrSetHelper(path).appendTextSync(getNativeApp<android.app.Application>().getApplicationContext(), content, encoding ?? null, callback);
+			getOrSetHelper(path).appendTextSync(getApplicationContext(), content, encoding ?? null, callback);
 		} else {
 			super.appendTextSync(path, content, onError);
 		}
@@ -1117,19 +1189,19 @@ export class FileSystemAccess29 extends FileSystemAccess {
 
 	readTextAsync(path: string, encoding?: any): Promise<string> {
 		if (isContentUri(path)) {
-			return new Promise((resolve, reject) => {
+			return new Promise<string>((resolve, reject) => {
 				getOrSetHelper(path).readText(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					encoding ?? null,
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.readTextAsync(path, encoding);
@@ -1140,12 +1212,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			return getOrSetHelper(path).readTextSync(getNativeApp<android.app.Application>().getApplicationContext(), encoding ?? null, callback);
+			return getOrSetHelper(path).readTextSync(getApplicationContext(), encoding ?? null, callback);
 		} else {
 			return super.readTextSync(path, onError, encoding);
 		}
@@ -1157,16 +1229,16 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise((resolve, reject) => {
 				getOrSetHelper(path).readBuffer(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.readBufferAsync(path);
@@ -1178,12 +1250,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			const ret = getOrSetHelper(path).readBufferSync(getNativeApp<android.app.Application>().getApplicationContext(), callback);
+			const ret = getOrSetHelper(path).readBufferSync(getApplicationContext(), callback);
 			if (ret) {
 				return null;
 			}
@@ -1198,16 +1270,16 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise((resolve, reject) => {
 				getOrSetHelper(path).read(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve(result);
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.readAsync(path);
@@ -1219,12 +1291,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			return getOrSetHelper(path).readSync(getNativeApp<android.app.Application>().getApplicationContext(), callback);
+			return getOrSetHelper(path).readSync(getApplicationContext(), callback);
 		}
 		return super.readSync(path, onError);
 	}
@@ -1235,18 +1307,18 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).writeText(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					content,
 					encoding ?? null,
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.writeTextAsync(path, content, encoding);
@@ -1258,12 +1330,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			getOrSetHelper(path).writeTextSync(getNativeApp<android.app.Application>().getApplicationContext(), content, encoding ?? null, callback);
+			getOrSetHelper(path).writeTextSync(getApplicationContext(), content, encoding ?? null, callback);
 		} else {
 			super.writeTextSync(path, content, onError);
 		}
@@ -1275,17 +1347,17 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).writeBuffer(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					FileSystemAccess.getBuffer(content),
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.writeAsync(path, content);
@@ -1297,12 +1369,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			getOrSetHelper(path).writeSync(getNativeApp<android.app.Application>().getApplicationContext(), FileSystemAccess.getBuffer(content), callback);
+			getOrSetHelper(path).writeSync(getApplicationContext(), FileSystemAccess.getBuffer(content), callback);
 		} else {
 			super.writeSync(path, content, onError);
 		}
@@ -1314,17 +1386,17 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		if (isContentUri(path)) {
 			return new Promise<void>((resolve, reject) => {
 				getOrSetHelper(path).write(
-					getNativeApp<android.app.Application>().getApplicationContext(),
+					getApplicationContext(),
 					content,
 					new org.nativescript.widgets.FileHelper.Callback({
 						onSuccess(result) {
 							resolve();
 						},
-						onError(error) {
-							reject(error);
-						},
+						onError: reject,
 					}),
 				);
+			}).catch((ex) => {
+				throw wrapNativeException(ex);
 			});
 		}
 		return super.writeAsync(path, content);
@@ -1336,12 +1408,12 @@ export class FileSystemAccess29 extends FileSystemAccess {
 			if (typeof onError === 'function') {
 				callback = new org.nativescript.widgets.FileHelper.Callback({
 					onSuccess(result) {},
-					onError(error) {
-						onError(error);
+					onError(ex) {
+						onError(wrapNativeException(ex));
 					},
 				});
 			}
-			getOrSetHelper(path).writeSync(getNativeApp<android.app.Application>().getApplicationContext(), content, callback);
+			getOrSetHelper(path).writeSync(getApplicationContext(), content, callback);
 		} else {
 			super.writeSync(path, content, onError);
 		}
@@ -1357,12 +1429,103 @@ export class FileSystemAccess29 extends FileSystemAccess {
 		return super.getPathSeparator();
 	}
 	normalizePath(path: string): string {
+		if (isContentUri(path)) {
+			return android.net.Uri.parse(path).toString();
+		}
 		return super.normalizePath(path);
 	}
 	joinPath(left: string, right: string): string {
 		return super.joinPath(left, right);
 	}
 	joinPaths(paths: string[]): string {
+		const [firstPath, ...others] = paths;
+		if (isContentUri(firstPath)) {
+			// custom SAF uri generation
+			const split = firstPath.split('%3A');
+			if (split.length === 2) {
+				return [[firstPath, 'document', firstPath.split('/').pop()].join('/'), ...others].join('%2F');
+			} else {
+				return [firstPath, ...others].join('%2F');
+			}
+		}
 		return super.joinPaths(paths);
+	}
+	contains(path: string, fileName: string): boolean {
+		if (isContentUri(path)) {
+			return getOrSetFolderHelper(path).containsFileOrFolder(fileName);
+		} else {
+			const subPath = this.joinPath(path, fileName);
+
+			if (this.fileExists(subPath)) {
+				return true;
+			}
+
+			return this.folderExists(subPath);
+		}
+	}
+	getOrCreateFile?(
+		path: string,
+		fileName: string,
+		create?: boolean,
+	): {
+		path: string;
+		name: string;
+		extension: string;
+	} {
+		if (isContentUri(path)) {
+			const documentFile = getOrSetFolderHelper(path).getOrCreateFile(fileName, create);
+			const subPath = documentFile?.getUri()?.toString();
+			return documentFile
+				? {
+						path: subPath,
+						name: documentFile.getName(),
+						extension: getOrSetHelper(subPath).getExtension(),
+					}
+				: undefined;
+		} else {
+			const subPath = this.joinPath(path, fileName);
+
+			return super.getFile(
+				subPath,
+				(error) => {
+					throw error;
+				},
+				create,
+			);
+		}
+	}
+	/**
+	 *get a file inside a folder.
+	 * @param path folder path.
+	 * @param fileName filename to check
+	 * Returns boolean
+	 */
+	getOrCreateFolder?(
+		path: string,
+		fileName: string,
+		create?: boolean,
+	): {
+		path: string;
+		name: string;
+	} {
+		if (isContentUri(path)) {
+			const documentFile = getOrSetFolderHelper(path).getOrCreateFolder(fileName, create);
+			return documentFile
+				? {
+						path: documentFile.getUri().toString(),
+						name: documentFile.getName(),
+					}
+				: undefined;
+		} else {
+			const subPath = this.joinPath(path, fileName);
+
+			return super.getFolder(
+				subPath,
+				(error) => {
+					throw error;
+				},
+				create,
+			);
+		}
 	}
 }

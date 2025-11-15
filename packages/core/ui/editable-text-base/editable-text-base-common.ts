@@ -7,6 +7,7 @@ import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
+import { colorConverter } from '../styling/style-properties';
 
 function focusChangeHandler(args: EventData): void {
 	const view = args.object as EditableTextBase;
@@ -31,6 +32,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 	public autocapitalizationType: CoreTypes.AutocapitalizationInputType;
 	public autofillType: CoreTypes.AutofillType;
 	public editable: boolean;
+	public selectable: boolean;
 	public autocorrect: boolean;
 	public hint: string;
 	public maxLength: number;
@@ -63,7 +65,7 @@ export const placeholderColorProperty = new CssProperty<Style, Color>({
 	name: 'placeholderColor',
 	cssName: 'placeholder-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 placeholderColorProperty.register(Style);
 
@@ -86,6 +88,13 @@ export const editableProperty = new Property<EditableTextBase, boolean>({
 	valueConverter: booleanConverter,
 });
 editableProperty.register(EditableTextBase);
+
+export const selectableProperty = new Property<EditableTextBase, boolean>({
+	name: 'selectable',
+	defaultValue: true,
+	valueConverter: booleanConverter,
+});
+selectableProperty.register(EditableTextBase);
 
 export const updateTextTriggerProperty = new Property<EditableTextBase, CoreTypes.UpdateTextTriggerType>({ name: 'updateTextTrigger', defaultValue: CoreTypes.UpdateTextTrigger.textChanged });
 updateTextTriggerProperty.register(EditableTextBase);

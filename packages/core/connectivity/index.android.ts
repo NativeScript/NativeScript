@@ -1,4 +1,4 @@
-import { getNativeApp } from '../application/helpers-common';
+import { getApplicationContext } from '../application/helpers.android';
 import { SDK_VERSION } from '../utils/constants';
 import { Application } from '../application';
 
@@ -19,7 +19,7 @@ const vpn = 'vpn';
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
-	return getNativeApp<android.app.Application>().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+	return getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {

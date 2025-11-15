@@ -124,7 +124,10 @@ class UILabelClickHandlerImpl extends NSObject {
 }
 
 export class TextBase extends TextBaseCommon {
-	public nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
+	//TODO: remove as it needs to be added after TS 5.7 change https://github.com/microsoft/TypeScript/pull/59860
+	[key: symbol]: (...args: any[]) => any | void;
+
+	declare nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
 	public _spanRanges: NSRange[];
 
 	private _tappable = false;
@@ -185,7 +188,7 @@ export class TextBase extends TextBaseCommon {
 	[formattedTextProperty.setNative](value: FormattedString) {
 		this._setNativeText();
 		this._setTappableState(isStringTappable(value));
-		textProperty.nativeValueChange(this, !value ? '' : value.toString());
+		// textProperty.nativeValueChange(this, !value ? '' : value.toString());
 		this._requestLayoutOnTextChanged();
 	}
 
@@ -269,6 +272,9 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
+	[textTransformProperty.getDefault](): CoreTypes.TextTransformType {
+		return 'initial';
+	}
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		this._setNativeText();
 	}
@@ -327,44 +333,174 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	clearText() {
+		const nativeView = this.nativeTextViewProtected;
+		if (nativeView instanceof UIButton) {
+			// Clear attributedText or title won't be affected.
+			nativeView.setAttributedTitleForState(null, UIControlState.Normal);
+			nativeView.setTitleForState(null, UIControlState.Normal);
+		} else {
+			// Clear attributedText or text won't be affected.
+			nativeView.attributedText = null;
+			nativeView.text = null;
+		}
+	}
+
 	_setNativeText(reset = false): void {
 		this._animationWrap(() => {
+			const nativeView = this.nativeTextViewProtected;
 			if (reset) {
-				const nativeView = this.nativeTextViewProtected;
-				if (nativeView instanceof UIButton) {
-					// Clear attributedText or title won't be affected.
-					nativeView.setAttributedTitleForState(null, UIControlState.Normal);
-					nativeView.setTitleForState(null, UIControlState.Normal);
-				} else {
-					// Clear attributedText or text won't be affected.
-					nativeView.attributedText = null;
-					nativeView.text = null;
-				}
-
+				this.clearText();
 				return;
 			}
 
-			const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
-			const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
+			// const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
+			// const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
 			if (this.formattedText) {
-				this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
-			} else {
+				this.setFormattedTextDecorationAndTransform();
+				// this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
+			} else if (this.text) {
+				this.setTextDecorationAndTransform();
 				// console.log('setTextDecorationAndTransform...')
-				const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-				this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
+				// const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
+				// this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
 
-				if (!this.style?.color && SDK_VERSION >= 13 && UIColor.labelColor) {
-					this._setColor(UIColor.labelColor);
-				}
+				// if (!this.style?.color && SDK_VERSION >= 13 && UIColor.labelColor) {
+				// 	this._setColor(UIColor.labelColor);
+				// }
+			} else {
+				this.clearText();
+				return;
 			}
-			if (this.style?.textStroke) {
-				this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
+
+			if (this.style?.textStroke && nativeView instanceof UILabel) {
+				nativeView.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 			}
 		});
 	}
+	setFormattedTextDecorationAndTransform() {
+		const attrText = this.createFormattedTextNative(this.formattedText);
+		if (this.letterSpacing !== 0) {
+			attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeTextViewProtected.font.pointSize, { location: 0, length: attrText.length });
+		}
+
+		if (this.style.lineHeight) {
+			const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+			paragraphStyle.minimumLineHeight = this.lineHeight;
+			// make sure a possible previously set text alignment setting is not lost when line height is specified
+			if (this.nativeTextViewProtected instanceof UIButton) {
+				paragraphStyle.alignment = (<UIButton>this.nativeTextViewProtected).titleLabel.textAlignment;
+			} else {
+				paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeTextViewProtected).textAlignment;
+			}
+
+			if (this.nativeTextViewProtected instanceof UILabel) {
+				// make sure a possible previously set line break mode is not lost when line height is specified
+				paragraphStyle.lineBreakMode = this.nativeTextViewProtected.lineBreakMode;
+			}
+			attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
+		} else if (this.nativeTextViewProtected instanceof UITextView) {
+			const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+			paragraphStyle.alignment = (<UITextView>this.nativeTextViewProtected).textAlignment;
+			attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
+		}
+
+		if (this.nativeTextViewProtected instanceof UIButton) {
+			this.nativeTextViewProtected.setAttributedTitleForState(attrText, UIControlState.Normal);
+		} else {
+			if (SDK_VERSION >= 13 && UIColor.labelColor) {
+				this.nativeTextViewProtected.textColor = UIColor.labelColor;
+			}
+
+			this.nativeTextViewProtected.attributedText = attrText;
+		}
+	}
+	setTextDecorationAndTransform() {
+		const style = this.style;
+		const dict = new Map<string, any>();
+		switch (style.textDecoration) {
+			case 'none':
+				break;
+			case 'underline':
+				dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.Single);
+				break;
+			case 'line-through':
+				dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.Single);
+				break;
+			case 'underline line-through':
+				dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.Single);
+				dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.Single);
+				break;
+			default:
+				throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
+		}
+
+		if (style.letterSpacing !== 0 && this.nativeTextViewProtected.font) {
+			const kern = style.letterSpacing * this.nativeTextViewProtected.font.pointSize;
+			dict.set(NSKernAttributeName, kern);
+			if (this.nativeTextViewProtected instanceof UITextField) {
+				this.nativeTextViewProtected.defaultTextAttributes.setValueForKey(kern, NSKernAttributeName);
+			}
+		}
+
+		const isTextView = this.nativeTextViewProtected instanceof UITextView;
+		if (style.lineHeight) {
+			const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+			paragraphStyle.lineSpacing = style.lineHeight;
+			// make sure a possible previously set text alignment setting is not lost when line height is specified
+			if (this.nativeTextViewProtected instanceof UIButton) {
+				paragraphStyle.alignment = (<UIButton>this.nativeTextViewProtected).titleLabel.textAlignment;
+			} else {
+				paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeTextViewProtected).textAlignment;
+			}
+
+			if (this.nativeTextViewProtected instanceof UILabel) {
+				// make sure a possible previously set line break mode is not lost when line height is specified
+				paragraphStyle.lineBreakMode = this.nativeTextViewProtected.lineBreakMode;
+			}
+			dict.set(NSParagraphStyleAttributeName, paragraphStyle);
+		} else if (isTextView) {
+			const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+			paragraphStyle.alignment = (<UITextView>this.nativeTextViewProtected).textAlignment;
+			dict.set(NSParagraphStyleAttributeName, paragraphStyle);
+		}
+
+		const source = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
+		if (dict.size > 0 || isTextView) {
+			if (isTextView && this.nativeTextViewProtected.font) {
+				// UITextView's font seems to change inside.
+				dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
+			}
+
+			const result = <any>source instanceof NSAttributedString ? NSMutableAttributedString.alloc().initWithAttributedString(<any>source) : NSMutableAttributedString.alloc().initWithString(source);
+			result.setAttributesRange(<any>dict, {
+				location: 0,
+				length: source.length,
+			});
+			if (this.nativeTextViewProtected instanceof UIButton) {
+				this.nativeTextViewProtected.setAttributedTitleForState(result, UIControlState.Normal);
+			} else {
+				this.nativeTextViewProtected.attributedText = result;
+			}
+		} else {
+			if (this.nativeTextViewProtected instanceof UIButton) {
+				// Clear attributedText or title won't be affected.
+				this.nativeTextViewProtected.setAttributedTitleForState(null, UIControlState.Normal);
+				this.nativeTextViewProtected.setTitleForState(source, UIControlState.Normal);
+			} else {
+				// Clear attributedText or text won't be affected.
+				this.nativeTextViewProtected.attributedText = undefined;
+				this.nativeTextViewProtected.text = source;
+			}
+		}
+
+		if (!style.color && SDK_VERSION >= 13 && UIColor.labelColor) {
+			this._setColor(UIColor.labelColor);
+		}
+	}
 
 	createFormattedTextNative(value: FormattedString) {
-		return NativeScriptUtils.createMutableStringWithDetails(<any>this.getFormattedStringDetails(value));
+		return NativeScriptUtils.createMutableStringWithDetails(this.getFormattedStringDetails(value) as any);
 	}
 
 	getFormattedStringDetails(formattedString: FormattedString) {
@@ -508,8 +644,9 @@ function isStringTappable(formattedString: FormattedString) {
 	if (!formattedString) {
 		return false;
 	}
-	for (let i = 0, length = formattedString.spans.length; i < length; i++) {
-		const span = formattedString.spans.getItem(i);
+	const spans = formattedString.spans;
+	for (let i = 0, length = spans.length; i < length; i++) {
+		const span = spans.getItem(i);
 		if (span.tappable) {
 			return true;
 		}

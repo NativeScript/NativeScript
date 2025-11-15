@@ -1,4 +1,4 @@
-import { ButtonBase } from './button-common';
+import { ButtonBase, tapEvent } from './button-common';
 import { PseudoClassHandler } from '../core/view';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
 import { Length } from '../styling/length-shared';
@@ -34,7 +34,7 @@ function initializeClickListener(): void {
 		public onClick(v: android.view.View): void {
 			const owner = this.owner;
 			if (owner) {
-				owner._emit(ButtonBase.tapEvent);
+				owner._emit(tapEvent);
 			}
 		}
 	}
@@ -57,7 +57,10 @@ function onButtonStateChange(args: TouchGestureEventData) {
 }
 
 export class Button extends ButtonBase {
-	nativeViewProtected: android.widget.Button;
+	// defining this here means tap event wont be handled
+	// by the gesture observers
+	public static tapEvent = tapEvent;
+	declare nativeViewProtected: android.widget.Button;
 
 	private _stateListAnimator: any;
 
@@ -74,7 +77,7 @@ export class Button extends ButtonBase {
 		super.initNativeView();
 		const nativeView = this.nativeViewProtected;
 		// make consistent with iOS, easier on users given css styling
-		nativeView.setAllCaps(false);
+		// nativeView.setAllCaps(false);
 		initializeClickListener();
 		const clickListener = new ClickListener(this);
 		nativeView.setOnClickListener(clickListener);

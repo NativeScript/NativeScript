@@ -56,4 +56,5 @@ export declare class Transition {
 	iosNavigatedController?(navigationController: any /* UINavigationController */, operation: number, fromVC: any /* UIViewController */, toVC: any /* UIViewController */): any /* UIViewControllerAnimatedTransitioning */;
 
 	androidFragmentTransactionCallback?(fragmentTransaction: any /* androidx.fragment.app.FragmentTransaction */, currentEntry: BackstackEntry, newEntry: BackstackEntry): void;
+	onTransitionEnd?(entry: BackstackEntry);
 }

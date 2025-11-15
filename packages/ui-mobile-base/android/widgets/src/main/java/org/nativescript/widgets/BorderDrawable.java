@@ -20,18 +20,25 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.regex.Pattern;
+
+import android.os.Build;
+import android.util.Log;
 
 /**
  * Created by hristov on 6/15/2016.
  */
 public class BorderDrawable extends ColorDrawable implements BitmapOwner {
-	private final float density;
+	private float density;
 	private String id;
 
 	private int borderTopColor;
@@ -202,44 +209,54 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			this.hasUniformBorderRadius();
 	}
 
-	public BorderDrawable(float density) {
-		super();
-		this.density = density;
-	}
+	private void init(float density, String id) {
+		borderPaint.setAntiAlias(true);
+		backgroundColorPaint.setAntiAlias(true);
+		backgroundPaint.setAntiAlias(true);
+		backgroundPaint.setFilterBitmap(true);
+		borderPath.setFillType(Path.FillType.EVEN_ODD);
 
-	public BorderDrawable(float density, String id) {
-		super();
 		this.density = density;
 		this.id = id;
 	}
 
+	public BorderDrawable(float density) {
+		super();
+		this.init(density, null);
+	}
+
+	public BorderDrawable(float density, String id) {
+		super();
+		this.init(density, id);
+	}
+
 	public void refresh(int borderTopColor,
-											int borderRightColor,
-											int borderBottomColor,
-											int borderLeftColor,
+						int borderRightColor,
+						int borderBottomColor,
+						int borderLeftColor,
 
-											float borderTopWidth,
-											float borderRightWidth,
-											float borderBottomWidth,
-											float borderLeftWidth,
+						float borderTopWidth,
+						float borderRightWidth,
+						float borderBottomWidth,
+						float borderLeftWidth,
 
-											float borderTopLeftRadius,
-											float borderTopRightRadius,
-											float borderBottomRightRadius,
-											float borderBottomLeftRadius,
+						float borderTopLeftRadius,
+						float borderTopRightRadius,
+						float borderBottomRightRadius,
+						float borderBottomLeftRadius,
 
-											String clipPath,
+						String clipPath,
 
-											int backgroundColor,
-											String backgroundImageUri,
-											Bitmap backgroundBitmap,
-											LinearGradientDefinition backgroundGradient,
-											Context context,
-											String backgroundRepeat,
-											String backgroundPosition,
-											CSSValue[] backgroundPositionParsedCSSValues,
-											String backgroundSize,
-											CSSValue[] backgroundSizeParsedCSSValues) {
+						int backgroundColor,
+						String backgroundImageUri,
+						Bitmap backgroundBitmap,
+						LinearGradientDefinition backgroundGradient,
+						Context context,
+						String backgroundRepeat,
+						String backgroundPosition,
+						CSSValue[] backgroundPositionParsedCSSValues,
+						String backgroundSize,
+						CSSValue[] backgroundSizeParsedCSSValues) {
 
 		this.borderTopColor = borderTopColor;
 		this.borderRightColor = borderRightColor;
@@ -284,12 +301,12 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 	RectF backgroundRect = new RectF();
 	Paint backgroundColorPaint = new Paint();
 	Path backgroundNoRepeatPath = new Path();
-	Paint backgroundImagePaint = new Paint();
-	Paint backgroundGradientPaint = new Paint();
+	Paint backgroundPaint = new Paint();
 	Paint borderPaint = new Paint();
 	Path borderPath = new Path();
-	RectF borderOuterRect = new RectF();
-	RectF borderInnerRect = new RectF();
+	RectF borderRect = new RectF();
+
+	BitmapShader backgroundImageShader = null;
 
 	PointF lto = new PointF(); // left-top-outside
 	PointF lti = new PointF(); // left-top-inside
@@ -302,19 +319,6 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 
 	PointF lbo = new PointF(); // left-bottom-outside
 	PointF lbi = new PointF(); // left-bottom-inside
-
-
-	Paint topBorderPaint = new Paint();
-	Path topBorderPath = new Path();
-
-	Paint rightBorderPaint = new Paint();
-	Path rightBorderPath = new Path();
-
-	Paint bottomBorderPaint = new Paint();
-	Path bottomBorderPath = new Path();
-
-	Paint leftBorderPaint = new Paint();
-	Path leftBorderPath = new Path();
 
 	@Override
 	public void draw(Canvas canvas) {
@@ -352,10 +356,8 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 
 		// draw background
 		if (this.backgroundColor != 0) {
-			backgroundColorPaint.reset();
 			backgroundColorPaint.setStyle(Paint.Style.FILL);
 			backgroundColorPaint.setColor(this.backgroundColor);
-			backgroundColorPaint.setAntiAlias(true);
 
 			if (this.clipPath != null && !this.clipPath.isEmpty()) {
 				drawClipPath(this.clipPath, canvas, backgroundColorPaint, backgroundBoundsF, this.density);
@@ -376,19 +378,8 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 				params.sizeY = this.backgroundBitmap.getHeight();
 			}
 			transform.postTranslate(params.posX, params.posY);
-
-
-			backgroundImagePaint.reset();
-
-			BitmapShader shader = new BitmapShader(
-				this.backgroundBitmap,
-				params.repeatX ? Shader.TileMode.REPEAT : Shader.TileMode.CLAMP,
-				params.repeatY ? Shader.TileMode.REPEAT : Shader.TileMode.CLAMP
-			);
-			shader.setLocalMatrix(transform);
-			backgroundImagePaint.setAntiAlias(true);
-			backgroundImagePaint.setFilterBitmap(true);
-			backgroundImagePaint.setShader(shader);
+			backgroundImageShader.setLocalMatrix(transform);
+			backgroundPaint.setShader(backgroundImageShader);
 
 			float imageWidth = params.repeatX ? width : params.sizeX;
 			float imageHeight = params.repeatY ? height : params.sizeY;
@@ -396,19 +387,19 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			params.posY = params.repeatY ? 0 : params.posY;
 
 			if (this.clipPath != null && !this.clipPath.isEmpty()) {
-				drawClipPath(this.clipPath, canvas, backgroundImagePaint, backgroundBoundsF, this.density);
+				drawClipPath(this.clipPath, canvas, backgroundPaint, backgroundBoundsF, this.density);
 			} else {
 				boolean supportsPathOp = android.os.Build.VERSION.SDK_INT >= 19;
 				if (supportsPathOp) {
 					backgroundNoRepeatPath.reset();
 					backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, Path.Direction.CCW);
 					intersect(backgroundNoRepeatPath, backgroundPath);
-					canvas.drawPath(backgroundNoRepeatPath, backgroundImagePaint);
+					canvas.drawPath(backgroundNoRepeatPath, backgroundPaint);
 				} else {
 					// Clipping here will not be anti-aliased but at least it won't shine through the rounded corners.
 					canvas.save();
 					canvas.clipRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight);
-					canvas.drawPath(backgroundPath, backgroundImagePaint);
+					canvas.drawPath(backgroundPath, backgroundPaint);
 					canvas.restore();
 				}
 			}
@@ -416,21 +407,16 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 
 		if (this.backgroundGradient != null) {
 			LinearGradientDefinition def = this.backgroundGradient;
-
-			backgroundGradientPaint.reset();
-
 			LinearGradient shader = new LinearGradient(
 				def.getStartX() * width, def.getStartY() * height,
 				def.getEndX() * width, def.getEndY() * height,
 				def.getColors(), def.getStops(), Shader.TileMode.MIRROR);
-			backgroundGradientPaint.setAntiAlias(true);
-			backgroundGradientPaint.setFilterBitmap(true);
-			backgroundGradientPaint.setShader(shader);
+			backgroundPaint.setShader(shader);
 
 			if (this.clipPath != null && !this.clipPath.isEmpty()) {
-				drawClipPath(this.clipPath, canvas, backgroundGradientPaint, backgroundBoundsF, this.density);
+				drawClipPath(this.clipPath, canvas, backgroundPaint, backgroundBoundsF, this.density);
 			} else {
-				canvas.drawPath(backgroundPath, backgroundGradientPaint);
+				canvas.drawPath(backgroundPath, backgroundPaint);
 			}
 		}
 
@@ -438,7 +424,6 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		if (this.clipPath != null && !this.clipPath.isEmpty()) {
 			float borderWidth = this.getUniformBorderWidth();
 			if (borderWidth > 0) {
-				borderPaint.reset();
 				borderPaint.setColor(this.getUniformBorderColor());
 				borderPaint.setStyle(Paint.Style.STROKE);
 				borderPaint.setStrokeWidth(borderWidth);
@@ -449,14 +434,12 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 		} else if (this.hasUniformBorderColor()) {
 			// iOS and browsers use black when no color is specified.
 			if (borderLeftWidth > 0 || borderTopWidth > 0 || borderRightWidth > 0 || borderBottomWidth > 0) {
-				borderPaint.reset();
 				borderPaint.setColor(this.getUniformBorderColor());
 				borderPaint.setStyle(Paint.Style.FILL);
-				borderPaint.setAntiAlias(true);
 
 				borderPath.reset();
 
-				borderOuterRect.set(0, 0, width, height);
+				borderRect.set(0, 0, width, height);
 
 				float[] borderOuterRadii = {
 					borderTopLeftRadius, borderTopLeftRadius,
@@ -464,9 +447,9 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 					borderBottomRightRadius, borderBottomRightRadius,
 					borderBottomLeftRadius, borderBottomLeftRadius
 				};
-				borderPath.addRoundRect(borderOuterRect, borderOuterRadii, Path.Direction.CW);
+				borderPath.addRoundRect(borderRect, borderOuterRadii, Path.Direction.CW);
 
-				borderInnerRect.set(
+				borderRect.set(
 					borderLeftWidth,
 					borderTopWidth,
 					width - borderRightWidth,
@@ -478,7 +461,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 					Math.max(0, borderBottomRightRadius - borderRightWidth), Math.max(0, borderBottomRightRadius - borderBottomWidth),
 					Math.max(0, borderBottomLeftRadius - borderLeftWidth), Math.max(0, borderBottomLeftRadius - borderBottomWidth)
 				};
-				borderPath.addRoundRect(borderInnerRect, borderInnerRadii, Path.Direction.CCW);
+				borderPath.addRoundRect(borderRect, borderInnerRadii, Path.Direction.CCW);
 
 				canvas.drawPath(borderPath, borderPaint);
 			}
@@ -512,64 +495,55 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			lbi.set(left, bounds.bottom - bottom); // left-bottom-inside
 
 
+			borderPaint.setStyle(Paint.Style.FILL);
 			if (this.borderTopWidth > 0) {
-				topBorderPaint.reset();
-				topBorderPaint.setColor(this.borderTopColor);
-				topBorderPaint.setAntiAlias(true);
+				borderPaint.setColor(this.borderTopColor);
 
-				topBorderPath.reset();
-				topBorderPath.setFillType(Path.FillType.EVEN_ODD);
-				topBorderPath.moveTo(lto.x, lto.y);
-				topBorderPath.lineTo(rto.x, rto.y);
-				topBorderPath.lineTo(rti.x, rti.y);
-				topBorderPath.lineTo(lti.x, lti.y);
-				topBorderPath.close();
-				canvas.drawPath(topBorderPath, topBorderPaint);
+				borderPath.reset();
+				borderPath.moveTo(lto.x, lto.y);
+				borderPath.lineTo(rto.x, rto.y);
+				borderPath.lineTo(rti.x, rti.y);
+				borderPath.lineTo(lti.x, lti.y);
+				borderPath.close();
+				canvas.drawPath(borderPath, borderPaint);
 			}
 
 			if (this.borderRightWidth > 0) {
-				rightBorderPaint.reset();
-				rightBorderPaint.setColor(this.borderRightColor);
-				rightBorderPaint.setAntiAlias(true);
+				borderPaint.setColor(this.borderRightColor);
 
-				rightBorderPath.reset();
-				rightBorderPath.setFillType(Path.FillType.EVEN_ODD);
-				rightBorderPath.moveTo(rto.x, rto.y);
-				rightBorderPath.lineTo(rbo.x, rbo.y);
-				rightBorderPath.lineTo(rbi.x, rbi.y);
-				rightBorderPath.lineTo(rti.x, rti.y);
-				rightBorderPath.close();
-				canvas.drawPath(rightBorderPath, rightBorderPaint);
+				borderPath.reset();
+				borderPath.moveTo(rto.x, rto.y);
+				borderPath.lineTo(rbo.x, rbo.y);
+				borderPath.lineTo(rbi.x, rbi.y);
+				borderPath.lineTo(rti.x, rti.y);
+				borderPath.close();
+				canvas.drawPath(borderPath, borderPaint);
 			}
 
 			if (this.borderBottomWidth > 0) {
-				bottomBorderPaint.reset();
-				bottomBorderPaint.setColor(this.borderBottomColor);
-				bottomBorderPaint.setAntiAlias(true);
+				borderPaint.setColor(this.borderBottomColor);
 
-				bottomBorderPath.reset();
-				bottomBorderPath.setFillType(Path.FillType.EVEN_ODD);
-				bottomBorderPath.moveTo(rbo.x, rbo.y);
-				bottomBorderPath.lineTo(lbo.x, lbo.y);
-				bottomBorderPath.lineTo(lbi.x, lbi.y);
-				bottomBorderPath.lineTo(rbi.x, rbi.y);
-				bottomBorderPath.close();
-				canvas.drawPath(bottomBorderPath, bottomBorderPaint);
+				borderPath.reset();
+				borderPath.setFillType(Path.FillType.EVEN_ODD);
+				borderPath.moveTo(rbo.x, rbo.y);
+				borderPath.lineTo(lbo.x, lbo.y);
+				borderPath.lineTo(lbi.x, lbi.y);
+				borderPath.lineTo(rbi.x, rbi.y);
+				borderPath.close();
+				canvas.drawPath(borderPath, borderPaint);
 			}
 
 			if (this.borderLeftWidth > 0) {
-				leftBorderPaint.reset();
-				leftBorderPaint.setColor(this.borderLeftColor);
-				leftBorderPaint.setAntiAlias(true);
+				borderPaint.setColor(this.borderLeftColor);
 
-				leftBorderPath.reset();
-				leftBorderPath.setFillType(Path.FillType.EVEN_ODD);
-				leftBorderPath.moveTo(lbo.x, lbo.y);
-				leftBorderPath.lineTo(lto.x, lto.y);
-				leftBorderPath.lineTo(lti.x, lti.y);
-				leftBorderPath.lineTo(lbi.x, lbi.y);
-				leftBorderPath.close();
-				canvas.drawPath(leftBorderPath, leftBorderPaint);
+				borderPath.reset();
+				borderPath.setFillType(Path.FillType.EVEN_ODD);
+				borderPath.moveTo(lbo.x, lbo.y);
+				borderPath.lineTo(lto.x, lto.y);
+				borderPath.lineTo(lti.x, lti.y);
+				borderPath.lineTo(lbi.x, lbi.y);
+				borderPath.close();
+				canvas.drawPath(borderPath, borderPaint);
 			}
 		}
 	}
@@ -874,6 +848,13 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 	@Override
 	public void setBitmap(Bitmap value) {
 		backgroundBitmap = value;
+		BackgroundDrawParams params = this.getDrawParams(0, 0);
+
+		backgroundImageShader = new BitmapShader(
+				this.backgroundBitmap,
+				params.repeatX ? Shader.TileMode.REPEAT : Shader.TileMode.CLAMP,
+				params.repeatY ? Shader.TileMode.REPEAT : Shader.TileMode.CLAMP
+			);
 		invalidateSelf();
 		drawable = null;
 	}

@@ -1,4 +1,4 @@
-import { getNativeApp } from '../application/helpers-common';
+import { getApplicationContext } from '../application/helpers.android';
 
 // console.log('__dirname:', global.__dirname);
 
@@ -16,7 +16,7 @@ function getCurrentAppPath(): string {
 
 		return appPath;
 	} else {
-		const dir = getNativeApp<android.app.Application>().getApplicationContext().getFilesDir();
+		const dir = getApplicationContext().getFilesDir();
 
 		return `${dir.getCanonicalPath()}/app`;
 	}

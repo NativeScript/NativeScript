@@ -45,35 +45,34 @@ export function refreshBorderDrawable(view: View, borderDrawable: org.nativescri
 		const blackColor = -16777216; //android.graphics.Color.BLACK;
 
 		let imageUri: string;
-		if (background.image && typeof background.image === 'string' && background.image !== 'none') {
-			imageUri = background.image;
-			const match = imageUri.match(pattern);
-			if (match && match[2]) {
-				imageUri = match[2];
-			}
-		}
-
 		let bitmap: android.graphics.Bitmap = null;
-		if (isDataURI(imageUri)) {
-			const base64Data = imageUri.split(',')[1];
-			if (base64Data !== undefined) {
-				bitmap = fromBase64(base64Data);
-				imageUri = null;
-			}
-		} else if (isFileOrResourcePath(imageUri)) {
-			if (imageUri.indexOf(RESOURCE_PREFIX) !== 0) {
-				let fileName = imageUri;
-				if (fileName.indexOf('~/') === 0) {
-					fileName = path.join(knownFolders.currentApp().path, fileName.replace('~/', ''));
-				}
-
-				imageUri = FILE_PREFIX + fileName;
-			}
-		}
-
 		let gradient: org.nativescript.widgets.LinearGradientDefinition = null;
-		if (background.image && background.image instanceof LinearGradient) {
-			gradient = fromGradient(background.image);
+		if (background.image) {
+			if (typeof background.image === 'string' && background.image !== 'none') {
+				imageUri = background.image;
+				const match = imageUri.match(pattern);
+				if (match && match[2]) {
+					imageUri = match[2];
+				}
+				if (isDataURI(imageUri)) {
+					const base64Data = imageUri.split(',')[1];
+					if (base64Data !== undefined) {
+						bitmap = fromBase64(base64Data);
+						imageUri = null;
+					}
+				} else if (isFileOrResourcePath(imageUri)) {
+					if (imageUri.indexOf(RESOURCE_PREFIX) !== 0) {
+						let fileName = imageUri;
+						if (fileName.indexOf('~/') === 0) {
+							fileName = path.join(knownFolders.currentApp().path, fileName.replace('~/', ''));
+						}
+
+						imageUri = FILE_PREFIX + fileName;
+					}
+				}
+			} else if (background.image instanceof LinearGradient) {
+				gradient = fromGradient(background.image);
+			}
 		}
 
 		borderDrawable.refresh(

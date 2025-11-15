@@ -81,7 +81,7 @@ const alignSelfMap = {
 };
 
 export class FlexboxLayout extends FlexboxLayoutBase {
-	nativeViewProtected: org.nativescript.widgets.FlexboxLayout;
+	declare nativeViewProtected: org.nativescript.widgets.FlexboxLayout;
 
 	constructor() {
 		super();
@@ -92,42 +92,22 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		return new widgetFlexboxLayout(this._context);
 	}
 
-	public resetNativeView(): void {
-		super.resetNativeView();
-		(<any>this.nativeViewProtected).invalidateOrdersCache();
-	}
-
-	[flexDirectionProperty.getDefault](): FlexDirection {
-		return flexDirectionProperty.defaultValue;
-	}
 	[flexDirectionProperty.setNative](flexDirection: FlexDirection) {
 		this.nativeViewProtected.setFlexDirection(flexDirectionMap[flexDirection]);
 	}
 
-	[flexWrapProperty.getDefault](): FlexWrap {
-		return flexWrapProperty.defaultValue;
-	}
 	[flexWrapProperty.setNative](flexWrap: FlexWrap) {
 		this.nativeViewProtected.setFlexWrap(flexWrapMap[flexWrap]);
 	}
 
-	[justifyContentProperty.getDefault](): JustifyContent {
-		return justifyContentProperty.defaultValue;
-	}
 	[justifyContentProperty.setNative](justifyContent: JustifyContent) {
 		this.nativeViewProtected.setJustifyContent(justifyContentMap[justifyContent]);
 	}
 
-	[alignItemsProperty.getDefault](): AlignItems {
-		return alignItemsProperty.defaultValue;
-	}
 	[alignItemsProperty.setNative](alignItems: AlignItems) {
 		this.nativeViewProtected.setAlignItems(alignItemsMap[alignItems]);
 	}
 
-	[alignContentProperty.getDefault](): AlignContent {
-		return alignContentProperty.defaultValue;
-	}
 	[alignContentProperty.setNative](alignContent: AlignContent) {
 		this.nativeViewProtected.setAlignContent(alignContentMap[alignContent]);
 	}

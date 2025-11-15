@@ -1,6 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
 import { isIOS, isAndroid, Label, StackLayout, Frame, Page, ListView, ItemEventData, TabView, TabViewItem, Button } from '@nativescript/core';
+import * as button from '@nativescript/core/ui/button';
 
 var ASYNC = 2;
 
@@ -37,7 +38,7 @@ function _createListView(): ListView {
 		var button = <Button>args.view;
 		if (!button) {
 			button = new Button();
-			button.on(Button.tapEvent, _clickHandlerFactory(args.index));
+			button.on(button.tapEvent, _clickHandlerFactory(args.index));
 			args.view = button;
 		}
 
