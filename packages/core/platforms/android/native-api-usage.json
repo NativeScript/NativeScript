@@ -208,6 +208,7 @@
         "android.widget:TimePicker",
         "android.widget:TimePicker.OnTimeChangedListener",
         "androidx.appcompat.app:AppCompatActivity",
+        "androidx.appcompat.app:AppCompatDialog",
         "androidx.appcompat.widget:AppCompatTextView",
         "androidx.appcompat.widget:SearchView",
         "androidx.appcompat.widget:SearchView.OnCloseListener",
