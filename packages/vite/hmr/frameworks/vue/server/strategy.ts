@@ -172,9 +172,6 @@ async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void
 	const vueFiles = findVueFiles(root, root);
 
 	if (!vueFiles.length) {
-		if (verbose) {
-			console.log('[registry] No .vue files found');
-		}
 		return;
 	}
 

@@ -48,6 +48,7 @@ import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { vueServerStrategy } from '../frameworks/vue/server/strategy.js';
 import { angularServerStrategy } from '../frameworks/angular/server/strategy.js';
 import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
+import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 import { buildInlineTemplateBlock, createProcessSfcCode, extractTemplateRender, processTemplateVariantMinimal } from '../frameworks/vue/server/sfc-transforms.js';
 import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
@@ -64,6 +65,7 @@ const STRATEGY_REGISTRY = new Map<string, FrameworkServerStrategy>([
 	['vue', vueServerStrategy],
 	['angular', angularServerStrategy],
 	['solid', solidServerStrategy],
+	['typescript', typescriptServerStrategy],
 ]);
 
 function resolveFrameworkStrategy(flavor: string): FrameworkServerStrategy {
@@ -2267,6 +2269,18 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	}
 	function emitFullGraph(ws: WebSocket) {
 		try {
+			if (verbose) {
+				try {
+					const payload = fullGraphPayload();
+					console.log('[hmr-ws][graph] emitFullGraph version', payload.version, 'modules=', payload.modules.length);
+					if (payload.modules.length) {
+						console.log(
+							'[hmr-ws][graph] sample module ids',
+							payload.modules.slice(0, 5).map((m: any) => m.id),
+						);
+					}
+				} catch {}
+			}
 			ws.send(JSON.stringify(fullGraphPayload()));
 		} catch {}
 	}
@@ -2314,7 +2328,20 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 		graphVersion++;
 		const gm: GraphModule = { id, deps: normDeps, hash };
 		graph.set(id, gm);
+		if (verbose) {
+			try {
+				console.log('[hmr-ws][graph] upsert', { id, deps: normDeps, hash, graphVersion });
+				console.log('[hmr-ws][graph] size', graph.size);
+			} catch {}
+		}
 		emitDelta([gm], []);
+	}
+	function isTypescriptFlavor(): boolean {
+		try {
+			return ACTIVE_STRATEGY?.flavor === 'typescript';
+		} catch {
+			return false;
+		}
 	}
 	function removeGraphModule(id: string) {
 		if (!graph.has(id)) return;
@@ -2731,6 +2758,25 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							// 5) __ns_import(new URL('/ns/m/...', import.meta.url).href)
 							code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\)\.href)/g, `$1$2?v=${ver}$3`);
 							transformed.code = code;
+							// TypeScript-specific graph population: when TS flavor is active
+							// and this is an application module under the virtual app root,
+							// upsert it into the HMR graph so ns:hmr-full-graph is non-empty.
+							try {
+								if (isTypescriptFlavor()) {
+									const id = (resolvedCandidate || spec).replace(/[?#].*$/, '');
+									// Only track app modules (under APP_VIRTUAL_WITH_SLASH) and ts/js/tsx/jsx/mjs.
+									const isApp = id.startsWith(APP_VIRTUAL_WITH_SLASH) || id.startsWith('/app/');
+									if (isApp && /\.(ts|tsx|js|jsx|mjs|mts|cts)$/i.test(id)) {
+										const deps = Array.from(collectImportDependencies(code, id));
+										if (verbose) {
+											try {
+												console.log('[hmr-ws][ts-graph] candidate', { id, depsCount: deps.length });
+											} catch {}
+										}
+										upsertGraphModule(id, code, deps);
+									}
+								}
+							} catch {}
 						}
 					} catch {}
 					// If transformRequest failed, handle bare-module vendor shims for 'vue' and 'pinia'
