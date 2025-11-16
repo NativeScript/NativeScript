@@ -43,17 +43,29 @@ import '../vendor-bootstrap.js';
 import type { VendorManifest } from '../shared/vendor/manifest.js';
 import { NS_NATIVE_TAGS } from './compiler.js';
 import { vueSfcCompiler } from '../frameworks/vue/server/compiler.js';
+import { linkAngularPartialsIfNeeded } from '../frameworks/angular/server/linker.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { vueServerStrategy } from '../frameworks/vue/server/strategy.js';
 import { angularServerStrategy } from '../frameworks/angular/server/strategy.js';
+import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
+import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 import { buildInlineTemplateBlock, createProcessSfcCode, extractTemplateRender, processTemplateVariantMinimal } from '../frameworks/vue/server/sfc-transforms.js';
 import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
+import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 
 const { parse, compileTemplate, compileScript } = vueSfcCompiler;
+
+const APP_ROOT_DIR = getProjectAppPath();
+const APP_VIRTUAL_PREFIX = getProjectAppVirtualPath();
+const APP_VIRTUAL_WITH_SLASH = `${APP_VIRTUAL_PREFIX}/`;
+const DEFAULT_MAIN_ENTRY = getProjectAppRelativePath('app.ts');
+const DEFAULT_MAIN_ENTRY_VIRTUAL = getProjectAppVirtualPath('app.ts');
 
 const STRATEGY_REGISTRY = new Map<string, FrameworkServerStrategy>([
 	['vue', vueServerStrategy],
 	['angular', angularServerStrategy],
+	['solid', solidServerStrategy],
+	['typescript', typescriptServerStrategy],
 ]);
 
 function resolveFrameworkStrategy(flavor: string): FrameworkServerStrategy {
@@ -1129,8 +1141,12 @@ function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, p
 /**
  * Process code for device: inject globals, remove framework imports
  */
+
 function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
 	let result = code;
+
+	// Ensure Angular partial declarations are linked before any sanitizers run so runtime never hits the JIT path.
+	result = linkAngularPartialsIfNeeded(result);
 
 	// First: aggressively strip any lingering virtual dynamic-import-helper before anything else.
 	// Doing this up-front prevents downstream dependency collection from seeing the virtual id.
@@ -1982,7 +1998,7 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 				} else {
 					const vueFile = sfcFileMap.get(vueKey);
 					if (vueFile) {
-						const target = `_ns_hmr/src/sfc/${vueFile}`;
+						const target = `_ns_hmr/${APP_ROOT_DIR}/sfc/${vueFile}`;
 						const relPath = importerOutDir ? ensureRel(path.posix.relative(importerOutDir, target)) : ensureRel(target);
 						if (verbose) {
 							console.log(`[rewrite] .vue rewrite: ${spec} → ${relPath}`);
@@ -2108,7 +2124,7 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 		if (vueKey) {
 			const vueFile = sfcFileMap.get(vueKey);
 			if (vueFile) {
-				const target = `_ns_hmr/src/sfc/${vueFile}`;
+				const target = `_ns_hmr/${APP_ROOT_DIR}/sfc/${vueFile}`;
 				const relPath = importerOutDir ? ensureRel(path.posix.relative(importerOutDir, target)) : ensureRel(target);
 				if (verbose) {
 					console.log(`[rewrite] .vue rewrite (VUE_FILE_IMPORT): ${spec} → ${relPath}`);
@@ -2172,7 +2188,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	// Only include application modules we can serve (e.g., under /src and known .vue/.ts/.js entries in the graph).
 	function computeTxnOrderForChanged(changedIds: string[]): string[] {
 		const includeExt = (id: string) => ACTIVE_STRATEGY.matchesFile(id) || /\.(ts|js|mjs|tsx|jsx)$/i.test(id);
-		const isApp = (id: string) => id.startsWith('/src/');
+		const isApp = (id: string) => id.startsWith(APP_VIRTUAL_WITH_SLASH);
 		const roots = changedIds.map(normalizeGraphId).filter((id) => graph.has(id) && (isApp(id) || ACTIVE_STRATEGY.matchesFile(id)) && includeExt(id));
 		const toVisit = new Set<string>();
 		// Collect dependency closure (downstream deps from roots)
@@ -2228,8 +2244,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			}
 		}
 		if (!id.startsWith('/')) id = '/' + id;
-		// Collapse ./src/ or /src/ when nested (defensive)
-		const idx = id.indexOf('/src/');
+		// Collapse nested app root indicators when present (defensive)
+		const idx = id.indexOf(APP_VIRTUAL_WITH_SLASH);
 		if (idx !== -1) id = id.slice(idx);
 		return id;
 	}
@@ -2253,6 +2269,18 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	}
 	function emitFullGraph(ws: WebSocket) {
 		try {
+			if (verbose) {
+				try {
+					const payload = fullGraphPayload();
+					console.log('[hmr-ws][graph] emitFullGraph version', payload.version, 'modules=', payload.modules.length);
+					if (payload.modules.length) {
+						console.log(
+							'[hmr-ws][graph] sample module ids',
+							payload.modules.slice(0, 5).map((m: any) => m.id),
+						);
+					}
+				} catch {}
+			}
 			ws.send(JSON.stringify(fullGraphPayload()));
 		} catch {}
 	}
@@ -2300,7 +2328,20 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 		graphVersion++;
 		const gm: GraphModule = { id, deps: normDeps, hash };
 		graph.set(id, gm);
+		if (verbose) {
+			try {
+				console.log('[hmr-ws][graph] upsert', { id, deps: normDeps, hash, graphVersion });
+				console.log('[hmr-ws][graph] size', graph.size);
+			} catch {}
+		}
 		emitDelta([gm], []);
+	}
+	function isTypescriptFlavor(): boolean {
+		try {
+			return ACTIVE_STRATEGY?.flavor === 'typescript';
+		} catch {
+			return false;
+		}
 	}
 	function removeGraphModule(id: string) {
 		if (!graph.has(id)) return;
@@ -2449,7 +2490,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					}
 					// Mirror normalization from ws handler
 					spec = spec.replace(/[?#].*$/, '');
-					if (spec.startsWith('@/')) spec = '/src/' + spec.slice(2);
+					if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
 					spec = spec.replace(/\/(index)(?:\/(?:index))+$/i, '/$1');
 					if (spec.startsWith('./')) spec = spec.slice(1);
 					if (!spec.startsWith('/')) spec = '/' + spec;
@@ -2627,7 +2668,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							}
 						}
 					} catch {}
-					if (spec.startsWith('@/')) spec = '/src/' + spec.slice(2);
+					if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
 					if (spec.startsWith('./')) spec = spec.slice(1);
 					if (!spec.startsWith('/')) spec = '/' + spec;
 					const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
@@ -2717,6 +2758,25 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							// 5) __ns_import(new URL('/ns/m/...', import.meta.url).href)
 							code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\)\.href)/g, `$1$2?v=${ver}$3`);
 							transformed.code = code;
+							// TypeScript-specific graph population: when TS flavor is active
+							// and this is an application module under the virtual app root,
+							// upsert it into the HMR graph so ns:hmr-full-graph is non-empty.
+							try {
+								if (isTypescriptFlavor()) {
+									const id = (resolvedCandidate || spec).replace(/[?#].*$/, '');
+									// Only track app modules (under APP_VIRTUAL_WITH_SLASH) and ts/js/tsx/jsx/mjs.
+									const isApp = id.startsWith(APP_VIRTUAL_WITH_SLASH) || id.startsWith('/app/');
+									if (isApp && /\.(ts|tsx|js|jsx|mjs|mts|cts)$/i.test(id)) {
+										const deps = Array.from(collectImportDependencies(code, id));
+										if (verbose) {
+											try {
+												console.log('[hmr-ws][ts-graph] candidate', { id, depsCount: deps.length });
+											} catch {}
+										}
+										upsertGraphModule(id, code, deps);
+									}
+								}
+							} catch {}
 						}
 					} catch {}
 					// If transformRequest failed, handle bare-module vendor shims for 'vue' and 'pinia'
@@ -2958,7 +3018,7 @@ export const piniaSymbol = p.piniaSymbol;
 											let local = u.pathname.replace(/^\/ns\/m/, '');
 											try {
 												// Normalize project-relative path
-												if (local.startsWith('@/')) local = '/src/' + local.slice(2);
+												if (local.startsWith('@/')) local = APP_VIRTUAL_WITH_SLASH + local.slice(2);
 												if (local.startsWith('./')) local = local.slice(1);
 												if (!local.startsWith('/')) local = '/' + local;
 												const hasExt = /(\.ts|\.tsx|\.js|\.jsx|\.mjs|\.mts|\.cts|\.vue)$/i.test(local);
@@ -3300,11 +3360,12 @@ export const piniaSymbol = p.piniaSymbol;
 					let mainEntry = '/';
 					try {
 						const pkg = getPackageJson();
-						const main = pkg?.main || 'src/app.ts';
-						const abs = getProjectFilePath(main).replace(/\\\\/g, '/');
-						// Normalize to '/src/...' if within project root
-						const idx = abs.indexOf('/src/');
-						mainEntry = idx >= 0 ? abs.substring(idx) : '/src/app.ts';
+						const main = pkg?.main || DEFAULT_MAIN_ENTRY;
+						const abs = getProjectFilePath(main).replace(/\\/g, '/');
+						// Normalize to '/app/...'
+						const marker = `/${APP_ROOT_DIR}/`;
+						const idx = abs.indexOf(marker);
+						mainEntry = idx >= 0 ? abs.substring(idx) : DEFAULT_MAIN_ENTRY_VIRTUAL;
 					} catch {}
 					// Build a tiny wrapper that imports the compiled entry runtime from the dev server
 					let code =
@@ -3449,7 +3510,7 @@ export const piniaSymbol = p.piniaSymbol;
 						res.end('export {}\n');
 						return;
 					}
-					if (fullSpec.startsWith('@/')) fullSpec = '/src/' + fullSpec.slice(2);
+					if (fullSpec.startsWith('@/')) fullSpec = APP_VIRTUAL_WITH_SLASH + fullSpec.slice(2);
 					if (!fullSpec.startsWith('/')) fullSpec = '/' + fullSpec;
 
 					const isVariant = /[?&]vue&type=/.test(fullSpec);
@@ -3751,7 +3812,7 @@ export const piniaSymbol = p.piniaSymbol;
 										} else if (!spec.startsWith('/')) {
 											// Handle '@/'
 											if (spec.startsWith('@@/')) spec = '/' + spec.slice(2);
-											if (spec.startsWith('@/')) spec = '/src/' + spec.slice(2);
+											if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
 										}
 										// Strip query for plain .vue (keep variant imports intact)
 										if (!/\bvue&type=/.test(src)) {
@@ -3915,7 +3976,7 @@ export const piniaSymbol = p.piniaSymbol;
 						res.end(JSON.stringify({ error: 'missing path' }));
 						return;
 					}
-					if (spec.startsWith('@/')) spec = '/src/' + spec.slice(2);
+					if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
 					if (!spec.startsWith('/')) spec = '/' + spec;
 					const base = spec.replace(/[?#].*$/, '');
 					// Transform variants to inspect exports
@@ -3987,7 +4048,7 @@ export const piniaSymbol = p.piniaSymbol;
 						res.end('export {}\n');
 						return;
 					}
-					if (spec.startsWith('@/')) spec = '/src/' + spec.slice(2);
+					if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
 					if (!spec.startsWith('/')) spec = '/' + spec;
 					const base = spec.replace(/[?#].*$/, '');
 					if (diag) {
@@ -4225,7 +4286,7 @@ export const piniaSymbol = p.piniaSymbol;
 											absImp = path.posix.normalize(path.posix.join(importerDir, spec));
 											if (!absImp.startsWith('/')) absImp = '/' + absImp;
 										} else if (!spec.startsWith('/')) {
-											if (absImp.startsWith('@/')) absImp = '/src/' + absImp.slice(2);
+											if (absImp.startsWith('@/')) absImp = APP_VIRTUAL_WITH_SLASH + absImp.slice(2);
 										}
 										const asmUrl = `/ns/asm/${ver}?path=${encodeURIComponent(absImp)}&mode=inline`;
 										return `${pfx}import ${clause} from ${JSON.stringify(asmUrl)};`;
@@ -4725,7 +4786,7 @@ export const piniaSymbol = p.piniaSymbol;
 								// Normalize: strip query/hash, ensure leading '/'
 								if (typeof spec === 'string') {
 									spec = spec.replace(/[?#].*$/, '');
-									if (spec.startsWith('@/')) spec = '/src/' + spec.slice(2);
+									if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
 									// Collapse accidental repeated index segments: /foo/index/index -> /foo/index
 									spec = spec.replace(/\/(index)(?:\/(?:index))+$/i, '/$1');
 									if (spec === '@') {
@@ -5018,8 +5079,11 @@ export const piniaSymbol = p.piniaSymbol;
 			const root = server.config.root || process.cwd();
 			const srcDir = `${root}/src`;
 			const coreDir = `${root}/core`;
+			const appDir = `${root}/${APP_ROOT_DIR}`;
 			const normalizedFile = file.split(path.sep).join('/');
-			const shouldIgnore = !(normalizedFile.includes(srcDir) || normalizedFile.includes(coreDir));
+			const inSrcOrCore = normalizedFile.includes(srcDir) || normalizedFile.includes(coreDir);
+			const inApp = normalizedFile.includes(appDir);
+			const shouldIgnore = !(inSrcOrCore || inApp);
 			if (shouldIgnore) return;
 			if (verbose) console.log(`[hmr-ws] Hot update for: ${file}`);
 
@@ -5076,6 +5140,23 @@ export const piniaSymbol = p.piniaSymbol;
 					});
 				} catch (error) {
 					console.warn('[hmr-ws][angular] update failed:', error);
+				}
+				return;
+			}
+
+			// TypeScript flavor: emit generic graph delta for app XML/TS/style changes
+			if (ACTIVE_STRATEGY.flavor === 'typescript') {
+				try {
+					const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+					if (verbose) console.log('[hmr-ws][ts] app file hot update', { file, rel });
+					// Treat the changed file itself as a graph module with no deps. We only
+					// care that its hash/identity changes so the client sees a delta and can
+					// perform a TS root reset. Code is not used for execution here.
+					upsertGraphModule(rel, '', []);
+					const gm = graph.get(normalizeGraphId(rel));
+					if (gm) emitDelta([gm], []);
+				} catch (e) {
+					if (verbose) console.warn('[hmr-ws][ts] failed to emit delta for', file, e);
 				}
 				return;
 			}
@@ -5349,12 +5430,12 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 					}
 
 					// Heuristic for barrel index modules that might not have explicit .mjs import strings
-					// If an import referencing '/src/utils' (without explicit 'index') was collapsed by rewriting,
-					// ensure '/src/utils/index.mjs' is included when we see either '/src/utils' base or a usage pattern.
-					if (!Array.from(filtered).some((p) => /\/src\/utils\/index\.mjs$/i.test(p))) {
-						// Simple pattern: presence of 'src/utils/' substring in code implies possible barrel usage.
-						if (/src\/utils\//.test(code)) {
-							addCandidate('/src/utils/index.mjs');
+					const utilsIndexCandidate = `${APP_VIRTUAL_WITH_SLASH}utils/index.mjs`;
+					const hasUtilsIndex = Array.from(filtered).some((p) => p.toLowerCase() === utilsIndexCandidate.toLowerCase());
+					if (!hasUtilsIndex) {
+						const utilsMarker = `${APP_VIRTUAL_WITH_SLASH}utils/`;
+						if (code.includes(utilsMarker)) {
+							addCandidate(utilsIndexCandidate);
 						}
 					}
 					if (filtered.size) {
@@ -5388,6 +5469,16 @@ export function hmrWebSocketVue(opts: { verbose?: boolean }): Plugin {
 
 export function hmrWebSocketAngular(opts: { verbose?: boolean }): Plugin {
 	ACTIVE_STRATEGY = resolveFrameworkStrategy('angular');
+	return createHmrWebSocketPlugin(opts);
+}
+
+export function hmrWebSocketSolid(opts: { verbose?: boolean }): Plugin {
+	ACTIVE_STRATEGY = resolveFrameworkStrategy('solid');
+	return createHmrWebSocketPlugin(opts);
+}
+
+export function hmrWebSocketTypescript(opts: { verbose?: boolean }): Plugin {
+	ACTIVE_STRATEGY = resolveFrameworkStrategy('typescript');
 	return createHmrWebSocketPlugin(opts);
 }
 

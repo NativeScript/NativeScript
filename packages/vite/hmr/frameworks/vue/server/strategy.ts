@@ -4,8 +4,10 @@ import * as path from 'path';
 import * as PAT from '../../../server/constants.js';
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import { getProjectAppPath } from '../../../../helpers/utils.js';
 
 const VENDOR_MJS = '/@nativescript/vendor.mjs';
+const VUE_HTTP_SFC_DIR = `${getProjectAppPath()}/sfc`;
 const VUE_IMPORTS_TO_VENDOR: RegExp[] = [/(from\s+["'])vue(?:\/[A-Za-z0-9_\-\/]+)?(["'])/g, /(from\s+["'])nativescript-vue(?:\/[A-Za-z0-9_\-\/]+)?(["'])/g];
 
 function stripVueHmrNoise(code: string): string {
@@ -170,9 +172,6 @@ async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void
 	const vueFiles = findVueFiles(root, root);
 
 	if (!vueFiles.length) {
-		if (verbose) {
-			console.log('[registry] No .vue files found');
-		}
 		return;
 	}
 
@@ -220,7 +219,7 @@ async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void
 
 			if (helpers?.rewriteImports) {
 				const projectRoot = server.config.root || process.cwd();
-				code = helpers.rewriteImports(code, rel, sfcFileMap, depFileMap, projectRoot, verbose, 'src/sfc');
+				code = helpers.rewriteImports(code, rel, sfcFileMap, depFileMap, projectRoot, verbose, VUE_HTTP_SFC_DIR);
 			}
 
 			const fileName = sfcFileMap.get(rel);

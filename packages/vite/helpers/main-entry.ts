@@ -2,8 +2,10 @@ import { getPackageJson, getProjectFilePath, getProjectRootPath } from './projec
 import fs from 'fs';
 import path from 'path';
 import { getProjectFlavor } from './flavor.js';
+import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
+const appRootDir = getProjectAppPath();
 
 // main entry (always included regardless of HMR)
 const packageJson = getPackageJson();
@@ -14,13 +16,13 @@ const mainEntryRelPosix = (() => {
 		const rel = path.relative(projectRoot, mainEntry).replace(/\\/g, '/');
 		return ('/' + rel).replace(/\/+/g, '/');
 	} catch {
-		return '/src/app.ts';
+		return getProjectAppVirtualPath('app.ts');
 	}
 })();
 const flavor = getProjectFlavor() as string;
 
 // Optional polyfills support (non-HMR specific but dev friendly)
-const polyfillsPath = getProjectFilePath('src/polyfills.ts');
+const polyfillsPath = getProjectFilePath(getProjectAppRelativePath('polyfills.ts'));
 const polyfillsExists = fs.existsSync(polyfillsPath);
 
 const VIRTUAL_ID = 'virtual:entry-with-polyfills';
@@ -38,6 +40,13 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 			// consistent verbose flag to easily reference below
 			let imports = "const __nsVerboseLog = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;\n";
+
+			// Ensure any CommonJS-style tooling requires (e.g. from Babel or other
+			// build-time libraries that may be accidentally bundled) do not attempt
+			// to resolve Node built-ins like 'fs' or 'path' on device. These modules
+			// are not used at runtime for NativeScript apps, so we safely return an
+			// empty object from a global require shim when present.
+			imports += "try { if (typeof globalThis !== 'undefined') { globalThis.require = function () { return {}; }; } } catch {}\n";
 
 			// Banner diagnostics for visibility at runtime
 			if (opts.verbose) {
@@ -179,10 +188,10 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			// ---- Global CSS injection (always-needed if file exists) ----
-			const appCssPath = path.resolve(projectRoot, 'src/app.css');
+			const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
 			if (fs.existsSync(appCssPath)) {
 				imports += `// Import and apply global CSS before app bootstrap\n`;
-				imports += `import appCssContent from './src/app.css?inline';\n`;
+				imports += `import appCssContent from './${appRootDir}/app.css?inline';\n`;
 				imports += `import { Application } from '@nativescript/core';\n`;
 				imports += `if (appCssContent) { try { Application.addCss(appCssContent); } catch (error) { console.error('Error applying CSS:', error); } }\n`;
 				if (opts.verbose) {
