@@ -13,6 +13,11 @@ import { handleCssUpdates } from './css-handler.js';
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 const VERBOSE = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;
 declare const __NS_TARGET_FLAVOR__: string | undefined;
+declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
+
+const APP_ROOT_VIRTUAL = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
+const APP_VIRTUAL_WITH_SLASH = APP_ROOT_VIRTUAL.endsWith('/') ? APP_ROOT_VIRTUAL : `${APP_ROOT_VIRTUAL}/`;
+const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}app.ts`;
 
 // Policy: by default, let the app's own main entry mount initially; HMR client handles updates/remounts only.
 // Flip this to true via global __NS_HMR_ALLOW_INITIAL_MOUNT__ if you need the client to perform the first mount.
@@ -86,6 +91,7 @@ installDeepDiagnostics();
  * Flavor hooks
  */
 import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, ensurePiniaOnApp, addSfcMapping, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate } from '../frameworks/vue/client/index.js';
+import { handleAngularHotUpdateMessage, installAngularHmrClientHooks } from '../frameworks/angular/client/index.js';
 switch (__NS_TARGET_FLAVOR__) {
 	case 'vue':
 		if (VERBOSE) {
@@ -99,6 +105,7 @@ switch (__NS_TARGET_FLAVOR__) {
 				console.log('[hmr-client] Initializing Angular HMR shims');
 			} catch {}
 		}
+		installAngularHmrClientHooks();
 		break;
 }
 
@@ -275,6 +282,9 @@ function installDeepDiagnostics() {
 let initialMounted = !!(globalThis as any).__NS_HMR_BOOT_COMPLETE__;
 // Prevent duplicate initial-mount scheduling across rapid full-graph broadcasts and re-evaluations
 let initialMounting = !!(globalThis as any).__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__;
+// TypeScript flavor: track registry modules and inferred main id
+let tsModuleSet: Set<string> | null = null;
+let tsMainId: string | null = null;
 const changedQueue: any[] = [];
 let processingQueue = false;
 
@@ -300,7 +310,7 @@ function applyFullGraph(payload: any) {
 	setGraphVersion(payload.version);
 	if (VERBOSE) console.log('[hmr][graph] full graph applied version', getGraphVersion(), 'modules=', graph.size);
 	// Guarded initial mount rescue: if app hasn't replaced the placeholder shortly after graph arrives,
-	// perform a one-time mount. This waits briefly to let /src/app.ts start() run first to avoid double mounts.
+	// perform a one-time mount. This waits briefly to let the app's main entry start() run first to avoid double mounts.
 	try {
 		const g: any = globalThis as any;
 		const bootDone = !!g.__NS_HMR_BOOT_COMPLETE__;
@@ -354,23 +364,61 @@ function applyFullGraph(payload: any) {
 						} catch {}
 						return;
 					}
-					// If placeholder still active and no real root, try a one-time gentle initial mount
+					// If placeholder still active and no real root, try a one-time gentle initial mount.
+					// Vue: prefer SFCs; TypeScript: import the app main TS module and let performResetRoot handle it once.
 					const placeholderActive = isPlaceholderActive();
 					if (!placeholderActive) return;
-					if (VERBOSE) console.log('[hmr][init] placeholder persists after delay; performing one-time initial mount');
-					// Prefer first .vue under /src/app.ts deps, else first .vue in graph
-					let candidate: string | null = null;
-					const appEntry = graph.get('/src/app.ts');
-					if (appEntry && Array.isArray(appEntry.deps)) {
-						const vueDep = appEntry.deps.find((d) => typeof d === 'string' && /\.vue$/i.test(d));
-						if (vueDep) candidate = vueDep;
-					}
-					if (!candidate) {
-						for (const id of graph.keys()) {
-							if (/\.vue$/i.test(id)) {
-								candidate = id;
-								break;
+					if (VERBOSE) console.log('[hmr][init] placeholder persists after delay; evaluating rescue policy');
+					// Flavor-specific rescue handling
+					if (__NS_TARGET_FLAVOR__ === 'typescript') {
+						// For TS apps, perform a one-time resetRootView to the conventional
+						// app root module. This mimics what Application.run would do and
+						// replaces the placeholder with the real UI without trying to
+						// treat app.ts as a component.
+						try {
+							const App = getCore('Application') || g.Application;
+							if (App && typeof App.resetRootView === 'function') {
+								if (VERBOSE) console.log('[hmr][init] TS flavor: performing rescue resetRootView to moduleName=app-root');
+								initialMounting = true;
+								try {
+									g.__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ = true;
+								} catch {}
+								App.resetRootView({ moduleName: 'app-root' } as any);
+								initialMounted = true;
+								try {
+									g.__NS_HMR_BOOT_COMPLETE__ = true;
+								} catch {}
+								if (VERBOSE) console.log('[hmr][init] TS rescue resetRootView complete');
+							} else if (VERBOSE) {
+								console.warn('[hmr][init] TS flavor: Application.resetRootView unavailable; cannot perform rescue');
 							}
+						} catch (e) {
+							console.warn('[hmr][init] TS rescue resetRootView failed', e);
+						} finally {
+							initialMounting = false;
+							try {
+								g.__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ = false;
+							} catch {}
+						}
+						return;
+					}
+					let candidate: string | null = null;
+					switch (__NS_TARGET_FLAVOR__) {
+						case 'vue': {
+							const appEntry = graph.get(APP_MAIN_ENTRY_SPEC);
+							if (appEntry && Array.isArray(appEntry.deps)) {
+								const vueDep = appEntry.deps.find((d) => typeof d === 'string' && /\.vue$/i.test(d));
+								if (vueDep) candidate = vueDep;
+							}
+							if (!candidate) {
+								for (const id of graph.keys()) {
+									if (/\.vue$/i.test(id)) {
+										candidate = id;
+										break;
+									}
+								}
+							}
+							break;
 						}
 					}
 					if (!candidate) return;
@@ -410,27 +458,35 @@ function applyFullGraph(payload: any) {
 		}
 	} catch {}
 	// On first full graph, if we have not mounted yet, attempt an initial mount
-	// by choosing a likely Vue root component and performing a resetRootView with it.
+	// by choosing a likely root component for the active flavor and performing a resetRootView with it.
 	try {
 		// Short-circuit if boot is complete or an initial mount is already underway (across realms/evals)
 		const bootDone = !!(globalThis as any).__NS_HMR_BOOT_COMPLETE__;
 		const bootInProgress = !!(globalThis as any).__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ || initialMounting;
-		// Only allow initial mount when explicitly enabled. Rely on the app's own /src/app.ts start() for the first mount
+		// Only allow initial mount when explicitly enabled. Rely on the app's own main entry start() for the first mount
 		// to avoid double-mount races that can cause duplicate navigation logs.
 		if (ALLOW_INITIAL_MOUNT && !initialMounted && !bootDone && !bootInProgress && !getCurrentApp() && !getRootFrame()) {
-			// Prefer the first .vue dependency of /src/app.ts, else first .vue in graph
 			let candidate: string | null = null;
-			const appEntry = graph.get('/src/app.ts');
-			if (appEntry && Array.isArray(appEntry.deps)) {
-				const vueDep = appEntry.deps.find((d) => typeof d === 'string' && /\.vue$/i.test(d));
-				if (vueDep) candidate = vueDep;
-			}
-			if (!candidate) {
-				for (const id of graph.keys()) {
-					if (/\.vue$/i.test(id)) {
-						candidate = id;
-						break;
+			switch (__NS_TARGET_FLAVOR__) {
+				case 'vue': {
+					const appEntry = graph.get(APP_MAIN_ENTRY_SPEC);
+					if (appEntry && Array.isArray(appEntry.deps)) {
+						const vueDep = appEntry.deps.find((d) => typeof d === 'string' && /\.vue$/i.test(d));
+						if (vueDep) candidate = vueDep;
 					}
+					if (!candidate) {
+						for (const id of graph.keys()) {
+							if (/\.vue$/i.test(id)) {
+								candidate = id;
+								break;
+							}
+						}
+					}
+					break;
+				}
+				case 'typescript': {
+					// For TS flavor, do not perform client-driven initial mount; rely on Application.run.
+					return;
 				}
 			}
 			if (candidate) {
@@ -441,7 +497,7 @@ function applyFullGraph(payload: any) {
 				} catch {}
 				(async () => {
 					try {
-						if (VERBOSE) console.log('[hmr][init] mounting initial Vue root from', candidate);
+						if (VERBOSE) console.log('[hmr][init] mounting initial root from', candidate, 'flavor=', __NS_TARGET_FLAVOR__);
 						// Android-only: avoid racing entry-runtime reset and Activity bring-up
 						try {
 							const g: any = globalThis as any;
@@ -470,7 +526,21 @@ function applyFullGraph(payload: any) {
 								if (!ok && VERBOSE) console.warn('[hmr][init] proceeding without explicit boot-ready signal (timeout)');
 							}
 						} catch {}
-						const comp = await loadSfcComponent(candidate!, 'initial_mount');
+						let comp: any = null;
+						switch (__NS_TARGET_FLAVOR__) {
+							case 'vue':
+								comp = await loadSfcComponent(candidate!, 'initial_mount');
+								break;
+							case 'typescript':
+								try {
+									const url = await requestModuleFromServer(candidate!);
+									const mod: any = await import(/* @vite-ignore */ url);
+									comp = mod && (mod.default || mod);
+								} catch (e) {
+									if (VERBOSE) console.warn('[hmr][init] TS initial mount failed to import', candidate, e);
+								}
+								break;
+						}
 						if (comp) {
 							const ok = await performResetRoot(comp);
 							if (ok) {
@@ -496,19 +566,29 @@ function applyFullGraph(payload: any) {
 					}
 				})();
 			} else if (VERBOSE) {
-				console.warn('[hmr][init] no Vue component found in graph to mount initially');
+				console.warn('[hmr][init] no component found in graph to mount initially for flavor', __NS_TARGET_FLAVOR__);
 			}
 		}
 	} catch {}
 }
+
 function applyDelta(payload: any) {
-	if (payload.baseVersion !== getGraphVersion()) {
-		if (VERBOSE) console.warn('[hmr][graph] version mismatch requesting resync', payload.baseVersion, getGraphVersion());
-		// Request resync (simple ping) – server will resend full graph (protocol extension placeholder)
-		hmrSocket?.send(JSON.stringify({ type: 'ns:hmr-resync-request' }));
-		return;
+	// If versions are out of sync, request a full graph resync, but still
+	// opportunistically queue the changed ids so the client can react once
+	// the resync arrives. This is especially important for simple TS flavors
+	// where we only need a signal that "something changed" to trigger a
+	// resetRootView-driven hot update.
+	const currentVersion = getGraphVersion();
+	const versionMatches = payload.baseVersion === currentVersion;
+	if (!versionMatches) {
+		if (VERBOSE) console.warn('[hmr][graph] version mismatch requesting resync', payload.baseVersion, currentVersion);
+		try {
+			hmrSocket?.send(JSON.stringify({ type: 'ns:hmr-resync-request' }));
+		} catch {}
 	}
-	setGraphVersion(payload.newVersion);
+	if (versionMatches) {
+		setGraphVersion(payload.newVersion);
+	}
 
 	const changed = payload.changed || [];
 	switch (__NS_TARGET_FLAVOR__) {
@@ -518,15 +598,17 @@ function applyDelta(payload: any) {
 	}
 
 	(payload.changed || []).forEach((m: any) => {
-		if (m && m.id) graph.set(m.id, { id: m.id, deps: m.deps || [], hash: m.hash || '' });
+		if (!m || !m.id) return;
+		// Always update the local graph view with the announced module metadata
+		graph.set(m.id, { id: m.id, deps: m.deps || [], hash: m.hash || '' });
 	});
 	(payload.removed || []).forEach((r: string) => {
 		graph.delete(r);
 	});
-	if (VERBOSE) console.log('[hmr][graph] delta applied newVersion', getGraphVersion(), 'changed=', (payload.changed || []).length, 'removed=', (payload.removed || []).length);
+	if (VERBOSE) console.log('[hmr][graph] delta applied newVersion', getGraphVersion(), 'changed=', (payload.changed || []).length, 'removed=', (payload.removed || []).length, 'baseVersion=', payload.baseVersion);
 	// Queue evaluation of changed modules (placeholder pipeline)
 	if (payload.changed?.length) {
-		// HARD SUPPRESS: the very first delta (baseVersion 0) commonly includes /src/app.ts which is already evaluated during bootstrap.
+		// HARD SUPPRESS: the very first delta (baseVersion 0) commonly includes the app main entry which is already evaluated during bootstrap.
 		// Importing it again with a cache-bust often produces a spurious module-not-found (timestamp param treated as distinct file).
 		const isInitial = payload.baseVersion === 0;
 		// Filter out virtual helper ids (e.g. '\0plugin-vue:export-helper') which we do not evaluate directly
@@ -549,20 +631,21 @@ function applyDelta(payload: any) {
 		} catch (e) {
 			if (VERBOSE) console.warn('[hmr][prefetch] failed', e);
 		}
+		const isAppMainEntryId = (value: string) => value.endsWith(APP_MAIN_ENTRY_SPEC);
 		for (const id of realIds) {
 			// We now rely on SFC registry update events to trigger root resets for .vue files directly
 			if (/\.vue$/i.test(id)) {
 				if (VERBOSE) console.log('[hmr][delta] skipping queue for .vue id; will handle on registry update', id);
 				continue;
 			}
-			if (isInitial && /\/src\/app\.ts$/.test(id)) {
-				if (VERBOSE) console.log('[hmr][delta] suppressing initial /src/app.ts evaluation');
+			if (isInitial && isAppMainEntryId(id)) {
+				if (VERBOSE) console.log(`[hmr][delta] suppressing initial ${APP_MAIN_ENTRY_SPEC} evaluation`);
 				continue;
 			}
-			if (/\/src\/app\.ts$/.test(id)) {
+			if (isAppMainEntryId(id)) {
 				try {
 					const exists = (globalThis as any).require?.(id) || (globalThis as any).__nsGetModuleExports?.(id);
-					if (!exists && VERBOSE) console.log('[hmr][delta] skipping unresolved /src/app.ts change');
+					if (!exists && VERBOSE) console.log(`[hmr][delta] skipping unresolved ${APP_MAIN_ENTRY_SPEC} change`);
 					if (!exists) continue;
 				} catch {
 					/* ignore */
@@ -732,8 +815,60 @@ async function processQueue() {
 	}
 	if (processingQueue) return;
 	processingQueue = true;
-	// ...existing code...
-	processingQueue = false;
+	try {
+		// Simple deterministic drain of the queue. We currently focus on TS flavor
+		// by re-importing changed modules (to refresh their HTTP ESM copies) and
+		// then performing a root reset so the UI reflects the new code.
+		const seen = new Set<string>();
+		const drained: string[] = [];
+		while (changedQueue.length) {
+			const id = changedQueue.shift();
+			if (!id || typeof id !== 'string') continue;
+			if (seen.has(id)) continue;
+			seen.add(id);
+			drained.push(id);
+		}
+		if (!drained.length) return;
+		if (VERBOSE) console.log('[hmr][queue] processing changed ids', drained);
+		// Evaluate changed modules best-effort; failures shouldn't completely break HMR.
+		for (const id of drained) {
+			try {
+				const spec = normalizeSpec(id);
+				const url = await requestModuleFromServer(spec);
+				if (!url) continue;
+				if (VERBOSE) console.log('[hmr][queue] re-import', { id, spec, url });
+				await import(/* @vite-ignore */ url);
+			} catch (e) {
+				if (VERBOSE) console.warn('[hmr][queue] re-import failed for', id, e);
+			}
+		}
+		// After evaluating the batch, perform flavor-specific UI refresh.
+		switch (__NS_TARGET_FLAVOR__) {
+			case 'vue':
+				// Vue SFCs are handled via the registry update path; nothing to do here.
+				break;
+			case 'typescript': {
+				// For TS apps, always reset back to the conventional app root.
+				// This preserves the shell (Frame, ActionBar, etc.) that the app's
+				// own bootstrapping wires up via `Application.run`.
+				try {
+					const g: any = globalThis as any;
+					const App = getCore('Application') || g.Application;
+					if (!App || typeof App.resetRootView !== 'function') {
+						if (VERBOSE) console.warn('[hmr][queue] TS flavor: Application.resetRootView unavailable; skipping UI refresh');
+						break;
+					}
+					if (VERBOSE) console.log('[hmr][queue] TS flavor: resetRootView(app-root) after changes');
+					App.resetRootView({ moduleName: 'app-root' } as any);
+				} catch (e) {
+					console.warn('[hmr][queue] TS flavor: resetRootView(app-root) failed', e);
+				}
+				break;
+			}
+		}
+	} finally {
+		processingQueue = false;
+	}
 }
 let hmrSocket: WebSocket | null = null;
 // Track server-announced batches for each version so we can import in-order client-side
@@ -889,6 +1024,29 @@ async function handleHmrMessage(ev: any) {
 			applyFullGraph(msg);
 			return;
 		}
+		if (msg.type === 'ns:ts-module-registry') {
+			try {
+				const mods: string[] = Array.isArray(msg.modules) ? msg.modules.filter((m: any) => typeof m === 'string') : [];
+				if (mods.length) {
+					if (!tsModuleSet) tsModuleSet = new Set<string>();
+					mods.forEach((m) => tsModuleSet!.add(m));
+					// Prefer explicit app main entry if present, else first module
+					if (mods.includes(APP_MAIN_ENTRY_SPEC)) {
+						tsMainId = APP_MAIN_ENTRY_SPEC;
+					} else if (!tsMainId) {
+						tsMainId = mods[0];
+					}
+					if (VERBOSE)
+						console.log('[hmr-client][ts-registry] registered TS modules', {
+							count: tsModuleSet.size,
+							mainId: tsMainId,
+						});
+				}
+			} catch (e) {
+				if (VERBOSE) console.warn('[hmr-client][ts-registry] failed to record', e);
+			}
+			return;
+		}
 		if (msg.type === 'ns:hmr-delta') {
 			setGraphVersion(Number(msg.newVersion || getGraphVersion() || 0));
 			try {
@@ -897,34 +1055,7 @@ async function handleHmrMessage(ev: any) {
 			} catch {}
 			applyDelta(msg);
 			return;
-		} else if (msg.type === 'ns:angular-update') {
-			try {
-				if (VERBOSE) console.log('[hmr-client][angular] update', msg);
-				// Minimal safe policy for Angular today: if the app provides a bootstrap
-				// factory via globalThis.__NS_ANGULAR_BOOTSTRAP__, perform a full root
-				// replacement. Otherwise, log a guidance message.
-				const g: any = globalThis as any;
-				const App = getCore('Application') || g.Application;
-				const bootstrap = g.__NS_ANGULAR_BOOTSTRAP__;
-				if (typeof App?.resetRootView === 'function' && typeof bootstrap === 'function') {
-					if (VERBOSE) console.log('[hmr-client][angular] resetRootView via bootstrap factory');
-					try {
-						(g as any).__NS_DEV_RESET_IN_PROGRESS__ = true;
-					} catch {}
-					App.resetRootView({ create: () => bootstrap() });
-					setTimeout(() => {
-						try {
-							(g as any).__NS_DEV_RESET_IN_PROGRESS__ = false;
-						} catch {}
-					}, 0);
-					return;
-				}
-				if (VERBOSE) console.warn('[hmr-client][angular] No __NS_ANGULAR_BOOTSTRAP__ factory found; consider exposing one from main.ts');
-			} catch (e) {
-				try {
-					console.warn('[hmr-client][angular] failed to handle update', e && (e.message || e));
-				} catch {}
-			}
+		} else if (handleAngularHotUpdateMessage(msg, { getCore, verbose: VERBOSE })) {
 			return;
 		}
 	}
@@ -1078,6 +1209,28 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 						case 'vue':
 							cachedRoot = getRootForVue(newComponent, state);
 							break;
+						case 'typescript': {
+							// For TS flavor, treat the component as a factory or direct NS view.
+							let root: any = null;
+							try {
+								if (typeof newComponent === 'function') {
+									root = newComponent();
+								} else {
+									root = newComponent;
+								}
+							} catch (e) {
+								console.warn('[hmr-client][ts] root factory invocation failed', e);
+							}
+							cachedRoot = root || {};
+							// Heuristic: if the root "looks" like a Frame, prefer frame semantics
+							try {
+								const name = String(cachedRoot?.constructor?.name || '').replace(/^_+/, '');
+								if (/^Frame(\$\d+)?$/.test(name)) {
+									rootKind = 'frame';
+								}
+							} catch {}
+							break;
+						}
 					}
 					return cachedRoot;
 				} catch (e) {
@@ -1356,7 +1509,7 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 	if (opts?.wsUrl) {
 		setHMRWsUrl(opts.wsUrl);
 	}
-	if (VERBOSE) console.log('[hmr-client] Initializing Vue HMR client', getHMRWsUrl() ? `(ws: ${getHMRWsUrl()})` : '');
+	if (VERBOSE) console.log('[hmr-client] Initializing HMR client', getHMRWsUrl() ? `(ws: ${getHMRWsUrl()})` : '');
 	// Prevent duplicate client initialization across re-evaluations
 	const g: any = globalThis as any;
 	if (g.__NS_HMR_CLIENT_ACTIVE__) {

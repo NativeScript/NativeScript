@@ -1,5 +1,7 @@
 import type { Plugin } from 'vite';
 import { createRequire } from 'node:module';
+import { ensureSharedAngularLinker } from './shared-linker.js';
+import { containsRealNgDeclare } from './util.js';
 
 /**
  * Vite plugin to run Angular linker (Babel) over partial-compiled Angular libraries
@@ -32,8 +34,13 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 		}
 	}
 
-	// Restrict to Angular framework packages in pre phase to avoid extra work.
-	const FILTER = /node_modules\/(?:@angular|@nativescript\/angular)\/.*\.[mc]?js$/;
+	// Base filter: Angular framework libraries + NativeScript Angular + its polyfills bundle.
+	const FILTER = /node_modules\/(?:@angular|@nativescript\/angular)\/.*\.[mc]?js$|nativescript-angular-polyfills\.mjs$/;
+	// When NS_STRICT_NG_LINK_ALL=1 we aggressively try to link **any** JS/ESM
+	// file that contains a real ɵɵngDeclare* call site, not just node_modules.
+	// This is primarily for NativeScript strict / HMR flows so that no partial
+	// declarations survive into the device bundle and trigger the JIT runtime.
+	const strictAll = process.env.NS_STRICT_NG_LINK_ALL === '1' || process.env.NS_STRICT_NG_LINK_ALL === 'true';
 
 	return {
 		name: 'ns-angular-linker-vite',
@@ -41,14 +48,17 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 		async load(id) {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 			const cleanId = id.split('?', 1)[0];
-			if (!FILTER.test(cleanId)) return null;
+			// In non-strict mode we only ever touch Angular framework libraries.
+			if (!strictAll && !FILTER.test(cleanId)) return null;
 			try {
 				const fs = await import('node:fs/promises');
 				const code = await fs.readFile(cleanId, 'utf8');
 				if (!code) return null;
-				await ensureDeps();
-				if (!babel || !createLinker) return null;
-				const plugin = createLinker({ sourceMapping: false });
+				// Under NS_STRICT_NG_LINK_ALL we will attempt to link **any** file
+				// that actually contains a ɵɵngDeclare* call site.
+				if (strictAll && !FILTER.test(cleanId) && !containsRealNgDeclare(code)) return null;
+				const { babel, linkerPlugin } = await ensureSharedAngularLinker(projectRoot);
+				if (!babel || !linkerPlugin) return null;
 				if (debug) {
 					try {
 						console.log('[ns-angular-linker][vite-load] linking', cleanId);
@@ -60,7 +70,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 					babelrc: false,
 					sourceMaps: false,
 					compact: false,
-					plugins: [plugin],
+					plugins: [linkerPlugin],
 				});
 				if (result?.code && result.code !== code) {
 					return { code: result.code, map: null } as any;
@@ -72,8 +82,11 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 			// Strip Vite/Rollup query strings before testing
 			const cleanId = id.split('?', 1)[0];
-			if (!FILTER.test(cleanId)) return null;
+			// Same policy as load(): in strictAll we allow any file that actually
+			// contains a real ngDeclare call; otherwise we restrict to framework libs.
+			if (!strictAll && !FILTER.test(cleanId)) return null;
 			if (!code) return null;
+			if (strictAll && !FILTER.test(cleanId) && !containsRealNgDeclare(code)) return null;
 			await ensureDeps();
 			if (!babel || !createLinker) return null;
 			try {
@@ -137,23 +150,17 @@ export function angularLinkerVitePluginPost(projectRoot?: string): Plugin {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 			// Only JS/ESM files
 			if (!/\.(m?js)(\?|$)/.test(id)) return null;
-			if (!code || (code.indexOf('\u0275\u0275ngDeclare') === -1 && code.indexOf('ɵɵngDeclare') === -1 && code.indexOf('ngDeclare') === -1)) return null;
-			await ensureDeps();
-			if (!babel || !createLinker) return null;
+			if (!code || !containsRealNgDeclare(code)) return null;
+			const { babel, linkerPlugin } = await ensureSharedAngularLinker(projectRoot);
+			if (!babel || !linkerPlugin) return null;
 			try {
-				const plugin = createLinker({ sourceMapping: false });
-				if (debug) {
-					try {
-						console.log('[ns-angular-linker][vite-post] linking', id.split('?', 1)[0]);
-					} catch {}
-				}
 				const result = await (babel as any).transformAsync(code, {
 					filename: id.split('?', 1)[0],
 					configFile: false,
 					babelrc: false,
 					sourceMaps: false,
 					compact: false,
-					plugins: [plugin],
+					plugins: [linkerPlugin],
 				});
 				if (result?.code && result.code !== code) {
 					return { code: result.code, map: null };

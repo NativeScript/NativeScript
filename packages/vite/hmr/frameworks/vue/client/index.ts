@@ -2,6 +2,13 @@ import { attachDiagnosticsToFrame, deriveHttpOrigin, getCore, getCurrentApp, get
 
 // satisfied by define replacement
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
+declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
+
+const APP_VIRTUAL_WITH_SLASH = (() => {
+	const root = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
+	return root.replace(/\/+$/, '') + '/';
+})();
+
 // Optional runtime knob: allow disabling assembler path in favor of variant-only flow
 const DISABLE_ASM: boolean = !!(globalThis as any).__NS_HMR_DISABLE_ASM__;
 
@@ -628,7 +635,7 @@ export function recordVuePayloadChanges(changed: any[], graphVersion: number) {
 async function waitForSfcMapping(id: string, timeoutMs = 350): Promise<boolean> {
 	if (!/\.vue$/i.test(id)) return true;
 	const base = id.split('?')[0];
-	const srcIdx = base.indexOf('/src/');
+	const srcIdx = base.indexOf(APP_VIRTUAL_WITH_SLASH);
 	const rel = srcIdx !== -1 ? base.slice(srcIdx) : base;
 	if (sfcArtifactMap.has(rel) || sfcArtifactMap.has(base)) return true;
 	const start = Date.now();
@@ -645,9 +652,9 @@ export function addSfcMapping(originalPath: string, fileName: string) {
 		if (!originalPath || !fileName) return;
 		const base = originalPath.split('?')[0];
 		const norm = normalizeSpec(base);
-		// Also derive a relative variant if under /src/ to handle lookups that slice to /src/ portion
+		// Also derive a relative variant if under app root to handle lookups that slice to that portion
 		let rel = norm;
-		const srcIdx = norm.indexOf('/src/');
+		const srcIdx = norm.indexOf(APP_VIRTUAL_WITH_SLASH);
 		if (srcIdx !== -1) rel = norm.slice(srcIdx);
 		sfcArtifactMap.set(norm, fileName);
 		if (rel !== norm) sfcArtifactMap.set(rel, fileName);

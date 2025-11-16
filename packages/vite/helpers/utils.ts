@@ -97,3 +97,61 @@ export function getDependencyPath(dependencyName: string): string | null {
 export function getDependencyVersion(packageName: string): string | undefined {
 	return packageJson.dependencies?.[packageName] ?? packageJson.devDependencies?.[packageName] ?? (packageJson as any).peerDependencies?.[packageName];
 }
+
+let cachedAppPath: string | undefined;
+
+function normalizePathSegment(segment?: string | null): string | undefined {
+	if (!segment) return undefined;
+	const normalized = segment
+		.replace(/\\/g, '/')
+		.replace(/^\.\/+/, '')
+		.replace(/^\/+/, '')
+		.replace(/\/+$/, '');
+	return normalized || undefined;
+}
+
+function deriveAppPathFromPackage(): string | undefined {
+	const mainEntry = packageJson?.main;
+	const normalized = normalizePathSegment(mainEntry);
+	if (!normalized) return undefined;
+	const segments = normalized.split('/').filter(Boolean);
+	if (segments.length >= 2) {
+		return segments[0];
+	}
+	return undefined;
+}
+
+function computeProjectAppPath(): string {
+	if (cachedAppPath) return cachedAppPath;
+	let candidate: string | undefined;
+	try {
+		const config = nsConfigToJson();
+		candidate = normalizePathSegment((config as any)?.appPath);
+	} catch {}
+	if (!candidate) {
+		candidate = deriveAppPathFromPackage();
+	}
+	cachedAppPath = candidate || 'src';
+	return cachedAppPath;
+}
+
+export function getProjectAppPath(): string {
+	return computeProjectAppPath();
+}
+
+export function getProjectAppRelativePath(subPath = ''): string {
+	const base = computeProjectAppPath();
+	const cleanSub = normalizePathSegment(subPath);
+	if (!cleanSub) return base;
+	return `${base}/${cleanSub}`.replace(/\/+/g, '/');
+}
+
+export function getProjectAppAbsolutePath(subPath = ''): string {
+	const rel = getProjectAppRelativePath(subPath);
+	return path.resolve(getProjectRootPath(), rel);
+}
+
+export function getProjectAppVirtualPath(subPath = ''): string {
+	const rel = getProjectAppRelativePath(subPath).replace(/^\/+/, '');
+	return `/${rel.replace(/\/+/g, '/')}`;
+}

@@ -12,6 +12,7 @@ vi.mock('../../../helpers/vendor-rewrite.js', () => {
 
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
 import { vueServerStrategy } from './strategy.js';
+import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import type { FrameworkProcessFileContext, FrameworkRegistryContext } from '../../../server/framework-strategy.js';
 
 type ProcessHelpers = NonNullable<FrameworkProcessFileContext['helpers']>;
@@ -19,11 +20,15 @@ type RegistryHelpers = NonNullable<FrameworkRegistryContext['helpers']>;
 
 const mockedRewriteVendor = vi.mocked(rewriteVendorVueSpec);
 
+const APP_ENTRY = getProjectAppVirtualPath('App.vue');
+const APP_ENTRY_WITH_QUERY = `${APP_ENTRY}?vue&type=script&lang.ts`;
+const CHILD_ENTRY = getProjectAppVirtualPath('Child.vue');
+
 describe('vueServerStrategy', () => {
 	it('matches and cleans Vue modules', () => {
 		expect(vueServerStrategy.flavor).toBe('vue');
-		expect(vueServerStrategy.matchesFile('/src/App.vue')).toBe(true);
-		expect(vueServerStrategy.matchesFile('/src/App.vue?vue&type=script&lang.ts')).toBe(true);
+		expect(vueServerStrategy.matchesFile(APP_ENTRY)).toBe(true);
+		expect(vueServerStrategy.matchesFile(APP_ENTRY_WITH_QUERY)).toBe(true);
 
 		const dirty = `
 import "./App.vue?type=style&lang.css";
@@ -83,8 +88,8 @@ const lazy = import("/ns/sfc/components/View.vue");
 			transformRequest: vi.fn(async () => ({ code: 'export default {};' })),
 		} as unknown as FrameworkProcessFileContext['server'];
 
-		const basePath = '/src/App.vue';
-		const childPath = '/src/Child.vue';
+		const basePath = APP_ENTRY;
+		const childPath = CHILD_ENTRY;
 		const sfcFileMap = new Map<string, string>([[basePath, 'sfc-root.mjs']]);
 		const depFileMap = new Map<string, string>();
 		const visitedPaths = new Set<string>();
