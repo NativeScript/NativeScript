@@ -13,6 +13,11 @@ import { handleCssUpdates } from './css-handler.js';
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 const VERBOSE = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;
 declare const __NS_TARGET_FLAVOR__: string | undefined;
+declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
+
+const APP_ROOT_VIRTUAL = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
+const APP_VIRTUAL_WITH_SLASH = APP_ROOT_VIRTUAL.endsWith('/') ? APP_ROOT_VIRTUAL : `${APP_ROOT_VIRTUAL}/`;
+const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}app.ts`;
 
 // Policy: by default, let the app's own main entry mount initially; HMR client handles updates/remounts only.
 // Flip this to true via global __NS_HMR_ALLOW_INITIAL_MOUNT__ if you need the client to perform the first mount.
@@ -86,6 +91,7 @@ installDeepDiagnostics();
  * Flavor hooks
  */
 import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, ensurePiniaOnApp, addSfcMapping, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate } from '../frameworks/vue/client/index.js';
+import { handleAngularHotUpdateMessage, installAngularHmrClientHooks } from '../frameworks/angular/client/index.js';
 switch (__NS_TARGET_FLAVOR__) {
 	case 'vue':
 		if (VERBOSE) {
@@ -99,6 +105,7 @@ switch (__NS_TARGET_FLAVOR__) {
 				console.log('[hmr-client] Initializing Angular HMR shims');
 			} catch {}
 		}
+		installAngularHmrClientHooks();
 		break;
 }
 
@@ -300,7 +307,7 @@ function applyFullGraph(payload: any) {
 	setGraphVersion(payload.version);
 	if (VERBOSE) console.log('[hmr][graph] full graph applied version', getGraphVersion(), 'modules=', graph.size);
 	// Guarded initial mount rescue: if app hasn't replaced the placeholder shortly after graph arrives,
-	// perform a one-time mount. This waits briefly to let /src/app.ts start() run first to avoid double mounts.
+	// perform a one-time mount. This waits briefly to let the app's main entry start() run first to avoid double mounts.
 	try {
 		const g: any = globalThis as any;
 		const bootDone = !!g.__NS_HMR_BOOT_COMPLETE__;
@@ -358,9 +365,9 @@ function applyFullGraph(payload: any) {
 					const placeholderActive = isPlaceholderActive();
 					if (!placeholderActive) return;
 					if (VERBOSE) console.log('[hmr][init] placeholder persists after delay; performing one-time initial mount');
-					// Prefer first .vue under /src/app.ts deps, else first .vue in graph
+					// Prefer the first .vue dependency under the app's main entry, else first .vue in graph
 					let candidate: string | null = null;
-					const appEntry = graph.get('/src/app.ts');
+					const appEntry = graph.get(APP_MAIN_ENTRY_SPEC);
 					if (appEntry && Array.isArray(appEntry.deps)) {
 						const vueDep = appEntry.deps.find((d) => typeof d === 'string' && /\.vue$/i.test(d));
 						if (vueDep) candidate = vueDep;
@@ -415,12 +422,12 @@ function applyFullGraph(payload: any) {
 		// Short-circuit if boot is complete or an initial mount is already underway (across realms/evals)
 		const bootDone = !!(globalThis as any).__NS_HMR_BOOT_COMPLETE__;
 		const bootInProgress = !!(globalThis as any).__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ || initialMounting;
-		// Only allow initial mount when explicitly enabled. Rely on the app's own /src/app.ts start() for the first mount
+		// Only allow initial mount when explicitly enabled. Rely on the app's own main entry start() for the first mount
 		// to avoid double-mount races that can cause duplicate navigation logs.
 		if (ALLOW_INITIAL_MOUNT && !initialMounted && !bootDone && !bootInProgress && !getCurrentApp() && !getRootFrame()) {
-			// Prefer the first .vue dependency of /src/app.ts, else first .vue in graph
+			// Prefer the first .vue dependency of the app's main entry, else first .vue in graph
 			let candidate: string | null = null;
-			const appEntry = graph.get('/src/app.ts');
+			const appEntry = graph.get(APP_MAIN_ENTRY_SPEC);
 			if (appEntry && Array.isArray(appEntry.deps)) {
 				const vueDep = appEntry.deps.find((d) => typeof d === 'string' && /\.vue$/i.test(d));
 				if (vueDep) candidate = vueDep;
@@ -526,7 +533,7 @@ function applyDelta(payload: any) {
 	if (VERBOSE) console.log('[hmr][graph] delta applied newVersion', getGraphVersion(), 'changed=', (payload.changed || []).length, 'removed=', (payload.removed || []).length);
 	// Queue evaluation of changed modules (placeholder pipeline)
 	if (payload.changed?.length) {
-		// HARD SUPPRESS: the very first delta (baseVersion 0) commonly includes /src/app.ts which is already evaluated during bootstrap.
+		// HARD SUPPRESS: the very first delta (baseVersion 0) commonly includes the app main entry which is already evaluated during bootstrap.
 		// Importing it again with a cache-bust often produces a spurious module-not-found (timestamp param treated as distinct file).
 		const isInitial = payload.baseVersion === 0;
 		// Filter out virtual helper ids (e.g. '\0plugin-vue:export-helper') which we do not evaluate directly
@@ -549,20 +556,21 @@ function applyDelta(payload: any) {
 		} catch (e) {
 			if (VERBOSE) console.warn('[hmr][prefetch] failed', e);
 		}
+		const isAppMainEntryId = (value: string) => value.endsWith(APP_MAIN_ENTRY_SPEC);
 		for (const id of realIds) {
 			// We now rely on SFC registry update events to trigger root resets for .vue files directly
 			if (/\.vue$/i.test(id)) {
 				if (VERBOSE) console.log('[hmr][delta] skipping queue for .vue id; will handle on registry update', id);
 				continue;
 			}
-			if (isInitial && /\/src\/app\.ts$/.test(id)) {
-				if (VERBOSE) console.log('[hmr][delta] suppressing initial /src/app.ts evaluation');
+			if (isInitial && isAppMainEntryId(id)) {
+				if (VERBOSE) console.log(`[hmr][delta] suppressing initial ${APP_MAIN_ENTRY_SPEC} evaluation`);
 				continue;
 			}
-			if (/\/src\/app\.ts$/.test(id)) {
+			if (isAppMainEntryId(id)) {
 				try {
 					const exists = (globalThis as any).require?.(id) || (globalThis as any).__nsGetModuleExports?.(id);
-					if (!exists && VERBOSE) console.log('[hmr][delta] skipping unresolved /src/app.ts change');
+					if (!exists && VERBOSE) console.log(`[hmr][delta] skipping unresolved ${APP_MAIN_ENTRY_SPEC} change`);
 					if (!exists) continue;
 				} catch {
 					/* ignore */
@@ -897,34 +905,7 @@ async function handleHmrMessage(ev: any) {
 			} catch {}
 			applyDelta(msg);
 			return;
-		} else if (msg.type === 'ns:angular-update') {
-			try {
-				if (VERBOSE) console.log('[hmr-client][angular] update', msg);
-				// Minimal safe policy for Angular today: if the app provides a bootstrap
-				// factory via globalThis.__NS_ANGULAR_BOOTSTRAP__, perform a full root
-				// replacement. Otherwise, log a guidance message.
-				const g: any = globalThis as any;
-				const App = getCore('Application') || g.Application;
-				const bootstrap = g.__NS_ANGULAR_BOOTSTRAP__;
-				if (typeof App?.resetRootView === 'function' && typeof bootstrap === 'function') {
-					if (VERBOSE) console.log('[hmr-client][angular] resetRootView via bootstrap factory');
-					try {
-						(g as any).__NS_DEV_RESET_IN_PROGRESS__ = true;
-					} catch {}
-					App.resetRootView({ create: () => bootstrap() });
-					setTimeout(() => {
-						try {
-							(g as any).__NS_DEV_RESET_IN_PROGRESS__ = false;
-						} catch {}
-					}, 0);
-					return;
-				}
-				if (VERBOSE) console.warn('[hmr-client][angular] No __NS_ANGULAR_BOOTSTRAP__ factory found; consider exposing one from main.ts');
-			} catch (e) {
-				try {
-					console.warn('[hmr-client][angular] failed to handle update', e && (e.message || e));
-				} catch {}
-			}
+		} else if (handleAngularHotUpdateMessage(msg, { getCore, verbose: VERBOSE })) {
 			return;
 		}
 	}
@@ -1356,7 +1337,7 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 	if (opts?.wsUrl) {
 		setHMRWsUrl(opts.wsUrl);
 	}
-	if (VERBOSE) console.log('[hmr-client] Initializing Vue HMR client', getHMRWsUrl() ? `(ws: ${getHMRWsUrl()})` : '');
+	if (VERBOSE) console.log('[hmr-client] Initializing HMR client', getHMRWsUrl() ? `(ws: ${getHMRWsUrl()})` : '');
 	// Prevent duplicate client initialization across re-evaluations
 	const g: any = globalThis as any;
 	if (g.__NS_HMR_CLIENT_ACTIVE__) {

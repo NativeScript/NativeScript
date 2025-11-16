@@ -33,6 +33,7 @@ import { createPlatformCssPlugin } from '../helpers/css-platform-plugin.js';
 import { createNativeClassTransformerPlugin } from '../helpers/nativeclass-transformer-plugin.js';
 import { getThemeCoreGenericAliases, createEnsureHoistedThemeLinkPlugin, createThemeCoreCssFallbackPlugin } from '../helpers/theme-core-plugins.js';
 import { createPostCssConfig } from '../helpers/postcss-platform-config.js';
+import { getProjectAppPath, getProjectAppRelativePath } from '../helpers/utils.js';
 // Load HMR plugins lazily to avoid compiling dev-only sources during library build
 // This prevents TypeScript from traversing the heavy HMR implementation graph when not needed
 // function getHMRPluginsSafe(opts: {
@@ -67,6 +68,9 @@ const distOutputFolder = process.env.NS_VITE_DIST_DIR || '.ns-vite-build';
 const useHttps = process.env.NS_HTTPS === '1' || process.env.NS_HTTPS === 'true';
 
 const projectRoot = getProjectRootPath();
+const appSourceDir = getProjectAppPath();
+const resolveFromAppRoot = (subPath: string) => path.resolve(projectRoot, getProjectAppRelativePath(subPath));
+const appGlobPattern = `${appSourceDir}/**`;
 
 // Resolve @nativescript/core root.
 // Prefer monorepo source (packages/core) when present to match webpack5 behavior,
@@ -204,9 +208,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Generic platform resolution for any npm package
 			packagePlatformAliases({ tsConfig, platform, verbose }),
 			// 2) Catch everything else under "~/" → your src/
-			{ find: /^~\/(.*)$/, replacement: path.resolve(projectRoot, 'src/$1') },
+			{ find: /^~\/(.*)$/, replacement: path.resolve(projectRoot, `${appSourceDir}/$1`) },
 			// optional: "@" → src/
-			{ find: '@', replacement: path.resolve(projectRoot, 'src') },
+			{ find: '@', replacement: path.resolve(projectRoot, appSourceDir) },
 		],
 		extensions: platformExtensions,
 		preserveSymlinks: true,
@@ -222,20 +226,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	});
 
 	// Default static copy: copy/merge assets and fonts when present
-	const assetsSrcDir = path.resolve(projectRoot, 'src/assets');
-	const assetsAppDir = path.resolve(projectRoot, 'app/assets');
-	const fontsSrcDir = path.resolve(projectRoot, 'src/fonts');
-	const fontsAppDir = path.resolve(projectRoot, 'app/fonts');
+	const assetsDir = resolveFromAppRoot('assets');
+	const fontsDir = resolveFromAppRoot('fonts');
 	const staticCopyTargets = [];
-	if (existsSync(assetsSrcDir)) {
-		staticCopyTargets.push({ src: `${assetsSrcDir}/**/*`, dest: 'assets' });
-	} else if (existsSync(assetsAppDir)) {
-		staticCopyTargets.push({ src: `${assetsAppDir}/**/*`, dest: 'assets' });
+	if (existsSync(assetsDir)) {
+		staticCopyTargets.push({ src: `${assetsDir}/**/*`, dest: 'assets' });
 	}
-	if (existsSync(fontsSrcDir)) {
-		staticCopyTargets.push({ src: `${fontsSrcDir}/**/*`, dest: 'fonts' });
-	} else if (existsSync(fontsAppDir)) {
-		staticCopyTargets.push({ src: `${fontsAppDir}/**/*`, dest: 'fonts' });
+	if (existsSync(fontsDir)) {
+		staticCopyTargets.push({ src: `${fontsDir}/**/*`, dest: 'fonts' });
 	}
 
 	let disableOptimizeDeps = false;
@@ -318,6 +316,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 						mode: targetMode,
 						verbose,
 						emitAssets: true,
+						flavor,
 					})
 				: undefined,
 			// Vue HMR plugins for development mode
@@ -346,7 +345,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			dynamicImportPlugin(),
 			// Transform Vite worker URLs to NativeScript format AFTER bundling
 			workerUrlPlugin(),
-			// Copy static assets and fonts when present in project src/
+			// Copy static assets and fonts when present in project app root
 			...((staticCopyTargets == null ? void 0 : staticCopyTargets.length)
 				? [
 						viteStaticCopy({
@@ -420,10 +419,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			sourcemap: debug,
 			// Disable module preloading to avoid browser APIs
 			modulePreload: false,
-			// Under HMR, avoid rebuilds on src/** changes — device consumes updates via /ns-hmr
+			// Under HMR, avoid rebuilds on app root changes — device consumes updates via /ns-hmr
 			...(hmrActive && {
 				watch: {
-					exclude: ['src/**'],
+					exclude: [appGlobPattern],
 				},
 			}),
 			// Optimize for development speed
@@ -483,12 +482,12 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 						}
 					},
 				},
-				// When HMR is active, prevent Vite's build watcher from reacting to src/** changes.
+				// When HMR is active, prevent Vite's build watcher from reacting to source folder changes.
 				// The device will get updates via socket /ns-hmr instead.
 				...(hmrActive
 					? {
 							watch: {
-								exclude: ['src/**'],
+								exclude: [appGlobPattern],
 							},
 						}
 					: {}),

@@ -34,6 +34,9 @@ interface VendorManifestPluginOptions {
 	// When false, do not emit ns-vendor.mjs/ns-vendor-manifest.json into the build outDir.
 	// Useful during HMR to avoid duplicate on-disk vendor bundles that can confuse SBG.
 	emitAssets?: boolean;
+	// Optional framework flavor (vue, angular, react, solid, etc.) so the vendor
+	// bundle can tailor which framework runtimes are included.
+	flavor?: string;
 }
 
 interface GenerateVendorOptions {
@@ -41,6 +44,7 @@ interface GenerateVendorOptions {
 	platform: string;
 	mode: 'development' | 'production';
 	verbose?: boolean;
+	flavor?: string;
 }
 
 export const VENDOR_MANIFEST_ID = '@nativescript/vendor-manifest';
@@ -55,7 +59,10 @@ export const DEFAULT_MANIFEST_FILENAME = 'ns-vendor-manifest.json';
 // Do not force-include @nativescript/core in the dev vendor bundle.
 // Keeping core out of vendor avoids duplicate side-effect registrations (e.g.,
 // com.tns.FragmentClass, com.tns.NativeScriptActivity) across bundle.mjs and vendor.
-const ALWAYS_INCLUDE = new Set<string>();
+// Reserved for any future always-include packages; keep empty by default so
+// framework-specific tooling like @angular/compiler are only pulled in when
+// the corresponding framework is actually used.
+const ALWAYS_INCLUDE = new Set<string>([]);
 const ALWAYS_EXCLUDE = new Set<string>([
 	'@nativescript/android',
 	'@nativescript/ios',
@@ -66,7 +73,6 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'@angular/animations',
 	'@angular/platform-browser/animations',
 	// Not needed at runtime with linked partials; reduce vendor size/memory.
-	'@angular/compiler',
 	'@angular/platform-browser-dynamic',
 	// Native add-on helpers pulled by ws or others; exclude in NS dev vendor
 	'bufferutil',
@@ -75,6 +81,15 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'bufferutil',
 	'utf-8-validate',
 	'node-gyp-build',
+	'@babel/core',
+	'@babel/helper-plugin-utils',
+	'@babel/generator',
+	'@babel/helper-string-parser',
+	'@babel/helper-validator-identifier',
+	'@babel/parser',
+	'@babel/plugin-syntax-typescript',
+	'@babel/plugin-transform-typescript',
+	'@babel/types',
 	// Heavy dependency not needed in vendor dev bundle; fetch via HTTP loader instead
 	'rxjs',
 	'nativescript',
@@ -107,6 +122,7 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 				platform: options.platform,
 				mode: options.mode,
 				verbose: options.verbose,
+				flavor: options.flavor,
 			})
 				.then((result) => {
 					cachedResult = result;
@@ -249,9 +265,21 @@ export default vendorManifest;
 }
 
 async function generateVendorBundle(options: GenerateVendorOptions): Promise<VendorBundleResult> {
-	const { projectRoot, platform, mode } = options;
-	const entries = collectVendorModules(projectRoot, platform);
+	const { projectRoot, platform, mode, flavor } = options;
+	const entries = collectVendorModules(projectRoot, platform, flavor);
 	const entryCode = createVendorEntry(entries);
+
+	const plugins: esbuild.Plugin[] = [
+		// Resolve virtual modules and Angular shims used by the vendor entry.
+		createVendorEsbuildPlugin(projectRoot),
+	];
+	// Only run the Angular linker in the vendor bundle when the active flavor
+	// is Angular. Solid and other flavors do not require @angular/compiler,
+	// and attempting to bundle it pulls in Babel tooling that depends on
+	// Node built-ins like fs/path/url in a browser-like environment.
+	if (flavor === 'angular') {
+		plugins.push(angularLinkerEsbuildPlugin(projectRoot));
+	}
 
 	const buildResult = await esbuild.build({
 		stdin: {
@@ -282,15 +310,8 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		define: {
 			'process.env.NODE_ENV': JSON.stringify(mode),
 		},
-		plugins: [
-			// Resolve a few virtual modules used by the vendor entry
-			createVendorEsbuildPlugin(projectRoot),
-			// Critically, transform Angular partial-compiled packages in node_modules
-			// (e.g., @angular/*, @nativescript/angular) using the Angular linker.
-			// Without this, runtime will attempt JIT interpretation and throw
-			// "JIT compiler unavailable" on device.
-			angularLinkerEsbuildPlugin(projectRoot),
-		],
+		plugins,
+		external: ['fs', 'fs/promises', 'path', 'url', 'module', 'node:fs', 'node:fs/promises', 'node:path', 'node:url', 'node:module', 'assert', 'process', 'v8', 'util'],
 	});
 
 	if (!buildResult.outputFiles?.length) {
@@ -308,7 +329,7 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	};
 }
 
-function collectVendorModules(projectRoot: string, platform: string): string[] {
+function collectVendorModules(projectRoot: string, platform: string, flavor?: string): string[] {
 	const packageJsonPath = path.resolve(projectRoot, 'package.json');
 	const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 	const projectRequire = createRequire(packageJsonPath);
@@ -328,8 +349,16 @@ function collectVendorModules(projectRoot: string, platform: string): string[] {
 		return !name.includes('/');
 	};
 
+	const isAngularFlavor = flavor === 'angular';
 	const addCandidate = (name: string) => {
 		if (!name || shouldSkipDependency(name)) {
+			return;
+		}
+		// Avoid pulling Angular compiler/runtime into the dev vendor bundle when
+		// the current project flavor is not Angular (for example, solid). This
+		// prevents esbuild from trying to bundle @angular/compiler and its Babel
+		// toolchain, which requires Node built-ins like fs/path/url.
+		if (!isAngularFlavor && (name === '@angular/compiler' || name.startsWith('@angular/'))) {
 			return;
 		}
 		const isRoot = isPackageRootSpecifier(name);

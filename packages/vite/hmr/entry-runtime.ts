@@ -7,6 +7,8 @@ type EntryOpts = {
 	verbose?: boolean;
 };
 
+declare const __NS_APP_ROOT_VIRTUAL__: string;
+
 function parseStackUrlLineCol(err: any): { url?: string; line?: number; column?: number } {
 	try {
 		const stack = (err && (err.stack || err.message)) || '';
@@ -41,7 +43,7 @@ async function fetchCodeframe(u: string, line?: number) {
 
 export default async function startEntry(opts: EntryOpts) {
 	const ORIGIN = String(opts.origin || '');
-	const MAIN = String(opts.main || '/src/app.ts');
+	const MAIN = String(opts.main || `${__NS_APP_ROOT_VIRTUAL__}/app.ts`);
 	const VER = String(opts.ver || '0');
 	const VERBOSE = !!opts.verbose;
 	// Announce chosen origin globally for any consumers (e.g., HMR client or helpers)

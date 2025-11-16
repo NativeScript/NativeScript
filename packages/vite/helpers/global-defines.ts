@@ -1,3 +1,8 @@
+import { getProjectAppPath, getProjectAppVirtualPath } from './utils.js';
+
+const APP_ROOT_DIR = getProjectAppPath();
+const APP_ROOT_VIRTUAL = getProjectAppVirtualPath();
+
 export function getGlobalDefines(opts: { platform: string; targetMode: string; verbose: boolean; flavor: string; isCI?: boolean }) {
 	return {
 		// Define platform flags for runtime checks
@@ -17,6 +22,8 @@ export function getGlobalDefines(opts: { platform: string; targetMode: string; v
 		__TEST__: false,
 		// determine if running in CI environment
 		__CI__: JSON.stringify(!!opts.isCI),
+		__NS_APP_ROOT_DIR__: JSON.stringify(APP_ROOT_DIR),
+		__NS_APP_ROOT_VIRTUAL__: JSON.stringify(APP_ROOT_VIRTUAL),
 		// Critical for various integrations (e.g. Vue only includes hmr runtime on this condition)
 		'process.env.NODE_ENV': JSON.stringify(opts.targetMode === 'development' ? 'development' : 'production'),
 	};

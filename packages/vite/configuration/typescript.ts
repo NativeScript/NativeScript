@@ -4,6 +4,7 @@ import path from 'node:path';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from '../helpers/project.js';
+import { getProjectAppPath } from '../helpers/utils.js';
 
 /**
  * TypeScript + XML NativeScript Vite configuration.
@@ -18,6 +19,8 @@ function createBundlerContextPlugin(): Plugin {
 	// Determine the app's declared main entry to avoid eagerly importing it (which would execute Application.run too early)
 	const projectRoot = getProjectRootPath();
 	const pkg = getPackageJson();
+	const appRoot = getProjectAppPath();
+	const appRootPrefix = `${appRoot}/`;
 	let mainEntryRel: string | undefined;
 	try {
 		const mainAbs = getProjectFilePath(pkg.main);
@@ -36,7 +39,7 @@ function createBundlerContextPlugin(): Plugin {
 			if (id !== RESOLVED_ID) return null;
 			// Build platform-filtered static module registry similar to webpack's require.context.
 			// Generic: only XML, styles and their paired code-behind files. Test/app specific additions belong in app vite.config.ts.
-			const roots = ['src', 'app'];
+			const roots = [appRoot];
 			function walk(dir: string, out: string[]) {
 				let entries: string[] = [];
 				try {
@@ -78,8 +81,7 @@ function createBundlerContextPlugin(): Plugin {
 			}
 			function toCtxKey(abs: string) {
 				let rel = abs;
-				if (rel.startsWith('src/')) rel = rel.slice('src/'.length);
-				else if (rel.startsWith('app/')) rel = rel.slice('app/'.length);
+				if (rel.startsWith(appRootPrefix)) rel = rel.slice(appRootPrefix.length);
 				else if (rel.startsWith('packages/core/src/')) rel = rel.slice('packages/core/src/'.length);
 				return './' + rel;
 			}

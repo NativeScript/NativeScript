@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
+import { getProjectAppPath } from '../helpers/utils.js';
 
 /**
  * Registers bundler modules for plain JavaScript apps (no .ts files),
@@ -16,6 +17,8 @@ function createBundlerContextPlugin(): Plugin {
 	const ENTRY_ID = '\0virtual:entry-with-polyfills';
 	const flags = getCliFlags();
 	const platform: 'android' | 'ios' | 'visionos' | undefined = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
+	const appRoot = getProjectAppPath();
+	const appRootPrefix = `${appRoot}/`;
 
 	return {
 		name: 'ns-bundler-context-js',
@@ -27,7 +30,7 @@ function createBundlerContextPlugin(): Plugin {
 		load(id) {
 			if (id !== RESOLVED_ID) return null;
 			// Build a platform-filtered static module registry at build time using recursive fs walk (no fast-glob dependency).
-			const roots = ['src', 'app'];
+			const roots = [appRoot];
 			const styleExtsSet = new Set(['css', 'scss', 'less', 'sass']);
 			function walk(dir: string, out: string[]) {
 				let entries: string[] = [];
@@ -70,8 +73,7 @@ function createBundlerContextPlugin(): Plugin {
 			}
 			function toCtxKey(abs: string) {
 				let rel = abs;
-				if (rel.startsWith('src/')) rel = rel.slice('src/'.length);
-				else if (rel.startsWith('app/')) rel = rel.slice('app/'.length);
+				if (rel.startsWith(appRootPrefix)) rel = rel.slice(appRootPrefix.length);
 				return './' + rel;
 			}
 			const xmlFiles = enumerate((ext) => ext === 'xml').filter((f) => !shouldExcludeAbsolute(f));

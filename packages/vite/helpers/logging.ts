@@ -123,5 +123,9 @@ function shouldSuppressViteWarning(msg: string): boolean {
 	if ((msg.includes('contains an annotation that Rollup cannot interpret') || msg.includes('position of the comment')) && (msg.includes('@nativescript/vendor') || msg.includes('"@nativescript/vendor"'))) {
 		return true;
 	}
+	// Analog Angular optimizer/router plugins do not emit sourcemaps; Vite floods logs with warnings.
+	if (msg.includes('Sourcemap is likely to be incorrect') && (msg.includes('analogjs-router-optimization') || msg.includes('@analogjs/vite-plugin-angular-optimizer'))) {
+		return true;
+	}
 	return false;
 }
