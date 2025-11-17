@@ -17,7 +17,7 @@ export default function ($staticConfig, hookArgs) {
     if (projectData.projectType === "Angular") {
         const webpackMinVer = getMinWebpackVersion(projectData);
 
-        if (webpackMinVer && !satisfiesRequriredVersion(webpackMinVer, 1, 3)) {
+        if (webpackMinVer && !satisfiesRequiredVersion(webpackMinVer, 1, 3)) {
             throw new Error(`Building @nativescript/core for Angular requires ${webpackPackageName} with version at least 1.3.0. Please upgrade: npm i ${webpackPackageName} --save-dev.`);
         }
     }
