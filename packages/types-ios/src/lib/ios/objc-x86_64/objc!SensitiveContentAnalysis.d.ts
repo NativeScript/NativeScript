@@ -64,15 +64,15 @@ declare class SCVideoStreamAnalyzer extends NSObject {
 
 	analyzePixelBuffer(pixelBuffer: any): void;
 
-	beginAnalysisOfCaptureDeviceInputError(captureDeviceInput: AVCaptureDeviceInput): boolean;
+	beginAnalysisOfCaptureDeviceInputError(captureDeviceInput: AVCaptureDeviceInput, error?: interop.Reference<NSError>): boolean;
 
-	beginAnalysisOfDecompressionSessionError(decompressionSession: any): boolean;
+	beginAnalysisOfDecompressionSessionError(decompressionSession: any, error?: interop.Reference<NSError>): boolean;
 
 	continueStream(): void;
 
 	endAnalysis(): void;
 
-	initWithParticipantUUIDStreamDirectionError(participantUUID: string, streamDirection: SCVideoStreamAnalyzerStreamDirection): this;
+	initWithParticipantUUIDStreamDirectionError(participantUUID: string, streamDirection: SCVideoStreamAnalyzerStreamDirection, error?: interop.Reference<NSError>): this;
 }
 
 /**

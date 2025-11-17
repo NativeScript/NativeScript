@@ -343,12 +343,12 @@ declare class HKAudiogramSensitivityPoint extends NSObject implements NSSecureCo
 	 * @since 13.0
 	 * @deprecated 18.1
 	 */
-	static sensitivityPointWithFrequencyLeftEarSensitivityRightEarSensitivityError(frequency: HKQuantity, leftEarSensitivity: HKQuantity, rightEarSensitivity: HKQuantity): HKAudiogramSensitivityPoint;
+	static sensitivityPointWithFrequencyLeftEarSensitivityRightEarSensitivityError(frequency: HKQuantity, leftEarSensitivity: HKQuantity, rightEarSensitivity: HKQuantity, error?: interop.Reference<NSError>): HKAudiogramSensitivityPoint;
 
 	/**
 	 * @since 18.1
 	 */
-	static sensitivityPointWithFrequencyTestsError(frequency: HKQuantity, tests: NSArray<HKAudiogramSensitivityTest> | HKAudiogramSensitivityTest[]): HKAudiogramSensitivityPoint;
+	static sensitivityPointWithFrequencyTestsError(frequency: HKQuantity, tests: NSArray<HKAudiogramSensitivityTest> | HKAudiogramSensitivityTest[], error?: interop.Reference<NSError>): HKAudiogramSensitivityPoint;
 
 	readonly frequency: HKQuantity;
 
@@ -385,7 +385,7 @@ declare class HKAudiogramSensitivityPointClampingRange extends NSObject implemen
 
 	static alloc(): HKAudiogramSensitivityPointClampingRange; // inherited from NSObject
 
-	static clampingRangeWithLowerBoundUpperBoundError(lowerBound: number, upperBound: number): HKAudiogramSensitivityPointClampingRange;
+	static clampingRangeWithLowerBoundUpperBoundError(lowerBound: number, upperBound: number, error?: interop.Reference<NSError>): HKAudiogramSensitivityPointClampingRange;
 
 	static new(): HKAudiogramSensitivityPointClampingRange; // inherited from NSObject
 
@@ -435,7 +435,7 @@ declare class HKAudiogramSensitivityTest extends NSObject implements NSCopying, 
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSensitivityTypeMaskedSideClampingRangeError(sensitivity: HKQuantity, type: HKAudiogramConductionType, masked: boolean, side: HKAudiogramSensitivityTestSide, clampingRange: HKAudiogramSensitivityPointClampingRange): this;
+	initWithSensitivityTypeMaskedSideClampingRangeError(sensitivity: HKQuantity, type: HKAudiogramConductionType, masked: boolean, side: HKAudiogramSensitivityTestSide, clampingRange: HKAudiogramSensitivityPointClampingRange, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -634,7 +634,7 @@ declare class HKCDADocument extends NSObject {
  */
 declare class HKCDADocumentSample extends HKDocumentSample {
 
-	static CDADocumentSampleWithDataStartDateEndDateMetadataValidationError(documentData: NSData, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCDADocumentSample;
+	static CDADocumentSampleWithDataStartDateEndDateMetadataValidationError(documentData: NSData, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>, error?: interop.Reference<NSError>): HKCDADocumentSample;
 
 	static alloc(): HKCDADocumentSample; // inherited from NSObject
 
@@ -2075,7 +2075,7 @@ declare class HKFHIRVersion extends NSObject implements NSCopying, NSSecureCodin
 
 	static primaryR4Version(): HKFHIRVersion;
 
-	static versionFromVersionStringError(versionString: string): HKFHIRVersion;
+	static versionFromVersionStringError(versionString: string, error?: interop.Reference<NSError>): HKFHIRVersion;
 
 	readonly FHIRRelease: string;
 
@@ -2297,7 +2297,7 @@ declare class HKHealthStore extends NSObject {
 	/**
 	 * @since 14.0
 	 */
-	activityMoveModeWithError(): HKActivityMoveModeObject;
+	activityMoveModeWithError(error?: interop.Reference<NSError>): HKActivityMoveModeObject;
 
 	/**
 	 * @since 8.0
@@ -2307,20 +2307,20 @@ declare class HKHealthStore extends NSObject {
 
 	authorizationStatusForType(type: HKObjectType): HKAuthorizationStatus;
 
-	biologicalSexWithError(): HKBiologicalSexObject;
+	biologicalSexWithError(error?: interop.Reference<NSError>): HKBiologicalSexObject;
 
-	bloodTypeWithError(): HKBloodTypeObject;
+	bloodTypeWithError(error?: interop.Reference<NSError>): HKBloodTypeObject;
 
 	/**
 	 * @since 10.0
 	 */
-	dateOfBirthComponentsWithError(): NSDateComponents;
+	dateOfBirthComponentsWithError(error?: interop.Reference<NSError>): NSDateComponents;
 
 	/**
 	 * @since 8.0
 	 * @deprecated 10.0
 	 */
-	dateOfBirthWithError(): Date;
+	dateOfBirthWithError(error?: interop.Reference<NSError>): Date;
 
 	deleteObjectWithCompletion(object: HKObject, completion: (p1: boolean, p2: NSError) => void): void;
 
@@ -2350,7 +2350,7 @@ declare class HKHealthStore extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	fitzpatrickSkinTypeWithError(): HKFitzpatrickSkinTypeObject;
+	fitzpatrickSkinTypeWithError(error?: interop.Reference<NSError>): HKFitzpatrickSkinTypeObject;
 
 	/**
 	 * @since 12.0
@@ -2419,7 +2419,7 @@ declare class HKHealthStore extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	wheelchairUseWithError(): HKWheelchairUseObject;
+	wheelchairUseWithError(error?: interop.Reference<NSError>): HKWheelchairUseObject;
 }
 
 /**
@@ -3757,12 +3757,12 @@ declare class HKQuantitySeriesSampleBuilder extends NSObject {
 
 	initWithHealthStoreQuantityTypeStartDateDevice(healthStore: HKHealthStore, quantityType: HKQuantityType, startDate: Date, device: HKDevice): this;
 
-	insertQuantityDateError(quantity: HKQuantity, date: Date): boolean;
+	insertQuantityDateError(quantity: HKQuantity, date: Date, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 13.0
 	 */
-	insertQuantityDateIntervalError(quantity: HKQuantity, dateInterval: NSDateInterval): boolean;
+	insertQuantityDateIntervalError(quantity: HKQuantity, dateInterval: NSDateInterval, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -6740,7 +6740,7 @@ declare class HKWorkoutSession extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 26.0
 	 */
-	initWithHealthStoreConfigurationError(healthStore: HKHealthStore, workoutConfiguration: HKWorkoutConfiguration): this;
+	initWithHealthStoreConfigurationError(healthStore: HKHealthStore, workoutConfiguration: HKWorkoutConfiguration, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 17.0

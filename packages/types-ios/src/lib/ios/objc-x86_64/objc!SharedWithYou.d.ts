@@ -250,7 +250,7 @@ declare class SWHighlightCenter extends NSObject {
 	 */
 	clearNoticesForHighlight(highlight: SWCollaborationHighlight): void;
 
-	collaborationHighlightForIdentifierError(collaborationIdentifier: string): SWCollaborationHighlight;
+	collaborationHighlightForIdentifierError(collaborationIdentifier: string, error?: interop.Reference<NSError>): SWCollaborationHighlight;
 
 	/**
 	 * @since 16.0

@@ -30,9 +30,9 @@ declare class NLContextualEmbedding extends NSObject {
 
 	readonly scripts: NSArray<string>;
 
-	embeddingResultForStringLanguageError(string: string, language: string): NLContextualEmbeddingResult;
+	embeddingResultForStringLanguageError(string: string, language: string, error?: interop.Reference<NSError>): NLContextualEmbeddingResult;
 
-	loadWithError(): boolean;
+	loadWithError(error?: interop.Reference<NSError>): boolean;
 
 	requestEmbeddingAssetsWithCompletionHandler(completionHandler: (p1: NLContextualEmbeddingAssetsResult, p2: NSError) => void): void;
 
@@ -99,7 +99,7 @@ declare class NLEmbedding extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	static embeddingWithContentsOfURLError(url: NSURL): NLEmbedding;
+	static embeddingWithContentsOfURLError(url: NSURL, error?: interop.Reference<NSError>): NLEmbedding;
 
 	static new(): NLEmbedding; // inherited from NSObject
 
@@ -136,7 +136,7 @@ declare class NLEmbedding extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	static writeEmbeddingForDictionaryLanguageRevisionToURLError(dictionary: NSDictionary<string, NSArray<number>>, language: string, revision: number, url: NSURL): boolean;
+	static writeEmbeddingForDictionaryLanguageRevisionToURLError(dictionary: NSDictionary<string, NSArray<number>>, language: string, revision: number, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 13.0
@@ -229,14 +229,14 @@ declare class NLGazetteer extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	static gazetteerWithContentsOfURLError(url: NSURL): NLGazetteer;
+	static gazetteerWithContentsOfURLError(url: NSURL, error?: interop.Reference<NSError>): NLGazetteer;
 
 	static new(): NLGazetteer; // inherited from NSObject
 
 	/**
 	 * @since 13.0
 	 */
-	static writeGazetteerForDictionaryLanguageToURLError(dictionary: NSDictionary<string, NSArray<string>>, language: string, url: NSURL): boolean;
+	static writeGazetteerForDictionaryLanguageToURLError(dictionary: NSDictionary<string, NSArray<string>>, language: string, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 13.0
@@ -266,17 +266,17 @@ declare class NLGazetteer extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	initWithContentsOfURLError(url: NSURL): this;
+	initWithContentsOfURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 13.0
 	 */
-	initWithDataError(data: NSData): this;
+	initWithDataError(data: NSData, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 13.0
 	 */
-	initWithDictionaryLanguageError(dictionary: NSDictionary<string, NSArray<string>>, language: string): this;
+	initWithDictionaryLanguageError(dictionary: NSDictionary<string, NSArray<string>>, language: string, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 13.0
@@ -629,12 +629,12 @@ declare class NLModel extends NSObject {
 	/**
 	 * @since 12.0
 	 */
-	static modelWithContentsOfURLError(url: NSURL): NLModel;
+	static modelWithContentsOfURLError(url: NSURL, error?: interop.Reference<NSError>): NLModel;
 
 	/**
 	 * @since 12.0
 	 */
-	static modelWithMLModelError(mlModel: MLModel): NLModel;
+	static modelWithMLModelError(mlModel: MLModel, error?: interop.Reference<NSError>): NLModel;
 
 	static new(): NLModel; // inherited from NSObject
 

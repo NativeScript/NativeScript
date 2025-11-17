@@ -87,7 +87,7 @@ declare class CSImportExtension extends NSObject implements NSExtensionRequestHa
 
 	self(): this;
 
-	updateAttributesForFileAtURLError(attributes: CSSearchableItemAttributeSet, contentURL: NSURL): boolean;
+	updateAttributesForFileAtURLError(attributes: CSSearchableItemAttributeSet, contentURL: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -147,12 +147,12 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 	/**
 	 * @since 11.0
 	 */
-	dataForSearchableIndexItemIdentifierTypeIdentifierError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string): NSData;
+	dataForSearchableIndexItemIdentifierTypeIdentifierError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 11.0
 	 */
-	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean): NSURL;
+	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean, error?: interop.Reference<NSError>): NSURL;
 
 	isEqual(object: any): boolean;
 
@@ -200,7 +200,7 @@ declare class CSLocalizedString extends NSString {
 
 	static new(): CSLocalizedString; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): CSLocalizedString; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSItemProviderReading
 
 	static string(): CSLocalizedString; // inherited from NSString
 
@@ -208,13 +208,13 @@ declare class CSLocalizedString extends NSString {
 
 	static stringWithCharactersLength(characters: interop.Pointer | interop.Reference<string>, length: number): CSLocalizedString; // inherited from NSString
 
-	static stringWithContentsOfFileEncodingError(path: string, enc: number): CSLocalizedString; // inherited from NSString
+	static stringWithContentsOfFileEncodingError(path: string, enc: number, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
 
-	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>): CSLocalizedString; // inherited from NSString
+	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
 
-	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number): CSLocalizedString; // inherited from NSString
+	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
 
-	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>): CSLocalizedString; // inherited from NSString
+	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): CSLocalizedString; // inherited from NSString
 
 	static stringWithString(string: string): CSLocalizedString; // inherited from NSString
 
@@ -452,12 +452,12 @@ interface CSSearchableIndexDelegate extends NSObjectProtocol {
 	/**
 	 * @since 11.0
 	 */
-	dataForSearchableIndexItemIdentifierTypeIdentifierError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string): NSData;
+	dataForSearchableIndexItemIdentifierTypeIdentifierError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 11.0
 	 */
-	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean): NSURL;
+	fileURLForSearchableIndexItemIdentifierTypeIdentifierInPlaceError?(searchableIndex: CSSearchableIndex, itemIdentifier: string, typeIdentifier: string, inPlace: boolean, error?: interop.Reference<NSError>): NSURL;
 
 	searchableIndexDidFinishThrottle?(searchableIndex: CSSearchableIndex): void;
 

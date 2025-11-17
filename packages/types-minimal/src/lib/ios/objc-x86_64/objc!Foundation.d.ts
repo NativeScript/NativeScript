@@ -69,7 +69,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 	/**
 	 * @since 11.0
 	 */
-	static arrayWithContentsOfURLError<ObjectType>(url: NSURL): NSArray<any>;
+	static arrayWithContentsOfURLError<ObjectType>(url: NSURL, error?: interop.Reference<NSError>): NSArray<any>;
 
 	static arrayWithObject<ObjectType>(anObject: any): NSArray<ObjectType>;
 
@@ -254,7 +254,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 	/**
 	 * @since 11.0
 	 */
-	initWithContentsOfURLError(url: NSURL): this;
+	initWithContentsOfURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
 	initWithObjects(firstObj: any): this;
 
@@ -347,7 +347,7 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 	/**
 	 * @since 11.0
 	 */
-	writeToURLError(url: NSURL): boolean;
+	writeToURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 declare class NSAssertionHandler extends NSObject {
@@ -410,7 +410,7 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSItemPr
 
 	static new(): NSAttributedString; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSAttributedString;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSAttributedString;
 
 	readonly length: number;
 
@@ -509,7 +509,7 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSItemPr
 	/**
 	 * @since 7.0
 	 */
-	dataFromRangeDocumentAttributesError(range: NSRange, dict: NSDictionary<string, any>): NSData;
+	dataFromRangeDocumentAttributesError(range: NSRange, dict: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 6.0
@@ -541,7 +541,7 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSItemPr
 	/**
 	 * @since 7.0
 	 */
-	fileWrapperFromRangeDocumentAttributesError(range: NSRange, dict: NSDictionary<string, any>): NSFileWrapper;
+	fileWrapperFromRangeDocumentAttributesError(range: NSRange, dict: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSFileWrapper;
 
 	initWithAttributedString(attrStr: NSAttributedString): this;
 
@@ -550,28 +550,28 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSItemPr
 	/**
 	 * @since 15.0
 	 */
-	initWithContentsOfMarkdownFileAtURLOptionsBaseURLError(markdownFile: NSURL, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL): this;
+	initWithContentsOfMarkdownFileAtURLOptionsBaseURLError(markdownFile: NSURL, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 7.0
 	 */
-	initWithDataOptionsDocumentAttributesError(data: NSData, options: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>): this;
+	initWithDataOptionsDocumentAttributesError(data: NSData, options: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 7.0
 	 * @deprecated 9.0
 	 */
-	initWithFileURLOptionsDocumentAttributesError(url: NSURL, options: NSDictionary<any, any>, dict: interop.Pointer | interop.Reference<NSDictionary<any, any>>): this;
+	initWithFileURLOptionsDocumentAttributesError(url: NSURL, options: NSDictionary<any, any>, dict: interop.Pointer | interop.Reference<NSDictionary<any, any>>, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 15.0
 	 */
-	initWithMarkdownOptionsBaseURLError(markdown: NSData, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL): this;
+	initWithMarkdownOptionsBaseURLError(markdown: NSData, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 15.0
 	 */
-	initWithMarkdownStringOptionsBaseURLError(markdownString: string, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL): this;
+	initWithMarkdownStringOptionsBaseURLError(markdownString: string, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL, error?: interop.Reference<NSError>): this;
 
 	initWithString(str: string): this;
 
@@ -580,7 +580,7 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSItemPr
 	/**
 	 * @since 9.0
 	 */
-	initWithURLOptionsDocumentAttributesError(url: NSURL, options: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>): this;
+	initWithURLOptionsDocumentAttributesError(url: NSURL, options: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>, error?: interop.Reference<NSError>): this;
 
 	isEqual(object: any): boolean;
 
@@ -927,7 +927,7 @@ declare class NSBundle extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	loadAndReturnError(): boolean;
+	loadAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	loadNibNamedOwnerOptions(name: string, owner: any, options: NSDictionary<string, any>): NSArray<any>;
 
@@ -937,6 +937,11 @@ declare class NSBundle extends NSObject {
 	localizedAttributedStringForKeyValueTable(key: string, value: string, tableName: string): NSAttributedString;
 
 	localizedStringForKeyValueTable(key: string, value: string, tableName: string): string;
+
+	/**
+	 * @since 18.4
+	 */
+	localizedStringForKeyValueTableLocalizations(key: string, value: string, tableName: string, localizations: NSArray<string> | string[]): string;
 
 	objectForInfoDictionaryKey(key: string): any;
 
@@ -955,7 +960,7 @@ declare class NSBundle extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	preflightAndReturnError(): boolean;
+	preflightAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
@@ -1537,6 +1542,11 @@ declare class NSCalendar extends NSObject implements NSCopying, NSSecureCoding {
 declare var NSCalendarDayChangedNotification: string;
 
 /**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierBangla: string;
+
+/**
  * @since 4.0
  */
 declare var NSCalendarIdentifierBuddhist: string;
@@ -1552,6 +1562,11 @@ declare var NSCalendarIdentifierChinese: string;
 declare var NSCalendarIdentifierCoptic: string;
 
 /**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierDangi: string;
+
+/**
  * @since 4.0
  */
 declare var NSCalendarIdentifierEthiopicAmeteAlem: string;
@@ -1565,6 +1580,11 @@ declare var NSCalendarIdentifierEthiopicAmeteMihret: string;
  * @since 4.0
  */
 declare var NSCalendarIdentifierGregorian: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierGujarati: string;
 
 /**
  * @since 4.0
@@ -1607,6 +1627,26 @@ declare var NSCalendarIdentifierIslamicUmmAlQura: string;
 declare var NSCalendarIdentifierJapanese: string;
 
 /**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierKannada: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierMalayalam: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierMarathi: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierOdia: string;
+
+/**
  * @since 4.0
  */
 declare var NSCalendarIdentifierPersian: string;
@@ -1615,6 +1655,26 @@ declare var NSCalendarIdentifierPersian: string;
  * @since 4.0
  */
 declare var NSCalendarIdentifierRepublicOfChina: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierTamil: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierTelugu: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierVietnamese: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSCalendarIdentifierVikram: string;
 
 declare const enum NSCalendarOptions {
 
@@ -1670,6 +1730,10 @@ declare const enum NSCalendarUnit {
 	CalendarUnitCalendar = 1048576,
 
 	CalendarUnitTimeZone = 2097152,
+
+	CalendarUnitIsLeapMonth = 1073741824,
+
+	CalendarUnitIsRepeatedDay = 2147483648,
 
 	EraCalendarUnit = 2,
 
@@ -1880,7 +1944,17 @@ declare class NSCoder extends NSObject {
 
 	decodeBoolForKey(key: string): boolean;
 
+	/**
+	 * @since 18.4
+	 */
+	decodeBytesForKeyMinimumLength(key: string, length: number): interop.Pointer | interop.Reference<any>;
+
 	decodeBytesForKeyReturnedLength(key: string, lengthp: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
+
+	/**
+	 * @since 18.4
+	 */
+	decodeBytesWithMinimumLength(length: number): interop.Pointer | interop.Reference<any>;
 
 	decodeBytesWithReturnedLength(lengthp: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
@@ -1963,22 +2037,22 @@ declare class NSCoder extends NSObject {
 	/**
 	 * @since 9.0
 	 */
-	decodeTopLevelObjectAndReturnError(): any;
+	decodeTopLevelObjectAndReturnError(error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 9.0
 	 */
-	decodeTopLevelObjectForKeyError(key: string): any;
+	decodeTopLevelObjectForKeyError(key: string, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 9.0
 	 */
-	decodeTopLevelObjectOfClassForKeyError(aClass: typeof NSObject, key: string): any;
+	decodeTopLevelObjectOfClassForKeyError(aClass: typeof NSObject, key: string, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 9.0
 	 */
-	decodeTopLevelObjectOfClassesForKeyError(classes: NSSet<typeof NSObject>, key: string): any;
+	decodeTopLevelObjectOfClassesForKeyError(classes: NSSet<typeof NSObject>, key: string, error?: interop.Reference<NSError>): any;
 
 	decodeUIEdgeInsetsForKey(key: string): UIEdgeInsets;
 
@@ -2290,7 +2364,7 @@ declare class NSConstantString extends NSSimpleCString {
 
 	static new(): NSConstantString; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSConstantString; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSConstantString; // inherited from NSItemProviderReading
 
 	static string(): NSConstantString; // inherited from NSString
 
@@ -2298,13 +2372,13 @@ declare class NSConstantString extends NSSimpleCString {
 
 	static stringWithCharactersLength(characters: interop.Pointer | interop.Reference<string>, length: number): NSConstantString; // inherited from NSString
 
-	static stringWithContentsOfFileEncodingError(path: string, enc: number): NSConstantString; // inherited from NSString
+	static stringWithContentsOfFileEncodingError(path: string, enc: number, error?: interop.Reference<NSError>): NSConstantString; // inherited from NSString
 
-	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>): NSConstantString; // inherited from NSString
+	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSConstantString; // inherited from NSString
 
-	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number): NSConstantString; // inherited from NSString
+	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number, error?: interop.Reference<NSError>): NSConstantString; // inherited from NSString
 
-	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>): NSConstantString; // inherited from NSString
+	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSConstantString; // inherited from NSString
 
 	static stringWithString(string: string): NSConstantString; // inherited from NSString
 
@@ -2392,7 +2466,7 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 
 	static dataWithContentsOfFileCompletion(path: string, callback: (p1: NSData) => void): void;
 
-	static dataWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions): NSData;
+	static dataWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 2.0
@@ -2402,7 +2476,7 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 
 	static dataWithContentsOfURL(url: NSURL): NSData;
 
-	static dataWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: NSDataReadingOptions): NSData;
+	static dataWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: NSDataReadingOptions, error?: interop.Reference<NSError>): NSData;
 
 	static dataWithData(data: NSData): NSData;
 
@@ -2492,7 +2566,7 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 	/**
 	 * @since 13.0
 	 */
-	compressedDataUsingAlgorithmError(algorithm: NSDataCompressionAlgorithm): this;
+	compressedDataUsingAlgorithmError(algorithm: NSDataCompressionAlgorithm, error?: interop.Reference<NSError>): this;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
@@ -2501,7 +2575,7 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 	/**
 	 * @since 13.0
 	 */
-	decompressedDataUsingAlgorithmError(algorithm: NSDataCompressionAlgorithm): this;
+	decompressedDataUsingAlgorithmError(algorithm: NSDataCompressionAlgorithm, error?: interop.Reference<NSError>): this;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -2551,7 +2625,7 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 
 	initWithContentsOfFile(path: string): this;
 
-	initWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions): this;
+	initWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 2.0
@@ -2561,7 +2635,7 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 
 	initWithContentsOfURL(url: NSURL): this;
 
-	initWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: NSDataReadingOptions): this;
+	initWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: NSDataReadingOptions, error?: interop.Reference<NSError>): this;
 
 	initWithData(data: NSData): this;
 
@@ -2598,11 +2672,11 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 
 	writeToFileAtomicallyCompletion(path: string, atomically: boolean, callback: () => void): void;
 
-	writeToFileOptionsError(path: string, writeOptionsMask: NSDataWritingOptions): boolean;
+	writeToFileOptionsError(path: string, writeOptionsMask: NSDataWritingOptions, error?: interop.Reference<NSError>): boolean;
 
 	writeToURLAtomically(url: NSURL, atomically: boolean): boolean;
 
-	writeToURLOptionsError(url: NSURL, writeOptionsMask: NSDataWritingOptions): boolean;
+	writeToURLOptionsError(url: NSURL, writeOptionsMask: NSDataWritingOptions, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -2648,7 +2722,7 @@ declare class NSDataDetector extends NSRegularExpression {
 
 	static alloc(): NSDataDetector; // inherited from NSObject
 
-	static dataDetectorWithTypesError(checkingTypes: number): NSDataDetector;
+	static dataDetectorWithTypesError(checkingTypes: number, error?: interop.Reference<NSError>): NSDataDetector;
 
 	static new(): NSDataDetector; // inherited from NSObject
 
@@ -2656,7 +2730,7 @@ declare class NSDataDetector extends NSRegularExpression {
 
 	constructor(o: { types: number; });
 
-	initWithTypesError(checkingTypes: number): this;
+	initWithTypesError(checkingTypes: number, error?: interop.Reference<NSError>): this;
 }
 
 declare const enum NSDataReadingOptions {
@@ -2877,6 +2951,11 @@ declare class NSDateComponents extends NSObject implements NSCopying, NSSecureCo
 	 * @since 4.0
 	 */
 	quarter: number;
+
+	/**
+	 * @since 26.0
+	 */
+	repeatedDay: boolean;
 
 	second: number;
 
@@ -3160,7 +3239,7 @@ declare class NSDateFormatter extends NSFormatter {
 
 	dateFromString(string: string): Date;
 
-	getObjectValueForStringRangeError(obj: interop.Pointer | interop.Reference<any>, string: string, rangep: interop.Pointer | interop.Reference<NSRange>): boolean;
+	getObjectValueForStringRangeError(obj: interop.Pointer | interop.Reference<any>, string: string, rangep: interop.Pointer | interop.Reference<NSRange>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 8.0
@@ -3485,7 +3564,7 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 	/**
 	 * @since 11.0
 	 */
-	static dictionaryWithContentsOfURLError<KeyType, ObjectType>(url: NSURL): NSDictionary<string, any>;
+	static dictionaryWithContentsOfURLError<KeyType, ObjectType>(url: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
 	static dictionaryWithDictionary<KeyType, ObjectType>(dict: NSDictionary<any, any>): NSDictionary<KeyType, ObjectType>;
 
@@ -3640,7 +3719,7 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 	/**
 	 * @since 11.0
 	 */
-	initWithContentsOfURLError(url: NSURL): this;
+	initWithContentsOfURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
 	initWithDictionary(otherDictionary: NSDictionary<any, any>): this;
 
@@ -3724,9 +3803,13 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 	/**
 	 * @since 11.0
 	 */
-	writeToURLError(url: NSURL): boolean;
+	writeToURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
+/**
+ * @since 2.0
+ * @deprecated 26.0
+ */
 declare var NSDidBecomeSingleThreadedNotification: string;
 
 /**
@@ -4511,21 +4594,21 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 4.0
 	 */
-	static fileHandleForReadingFromURLError(url: NSURL): NSFileHandle;
+	static fileHandleForReadingFromURLError(url: NSURL, error?: interop.Reference<NSError>): NSFileHandle;
 
 	static fileHandleForUpdatingAtPath(path: string): NSFileHandle;
 
 	/**
 	 * @since 4.0
 	 */
-	static fileHandleForUpdatingURLError(url: NSURL): NSFileHandle;
+	static fileHandleForUpdatingURLError(url: NSURL, error?: interop.Reference<NSError>): NSFileHandle;
 
 	static fileHandleForWritingAtPath(path: string): NSFileHandle;
 
 	/**
 	 * @since 4.0
 	 */
-	static fileHandleForWritingToURLError(url: NSURL): NSFileHandle;
+	static fileHandleForWritingToURLError(url: NSURL, error?: interop.Reference<NSError>): NSFileHandle;
 
 	static fileHandleWithDataCompletion(path: string, data: NSData, callback: (p1: NSFileHandle, p2: NSError) => void): void;
 
@@ -4576,7 +4659,7 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	closeAndReturnError(): boolean;
+	closeAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 2.0
@@ -4589,7 +4672,7 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	getOffsetError(offsetInFile: interop.Pointer | interop.Reference<number>): boolean;
+	getOffsetError(offsetInFile: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): boolean;
 
 	initWithCoder(coder: NSCoder): this;
 
@@ -4612,12 +4695,12 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	readDataToEndOfFileAndReturnError(): NSData;
+	readDataToEndOfFileAndReturnError(error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 13.0
 	 */
-	readDataUpToLengthError(length: number): NSData;
+	readDataUpToLengthError(length: number, error?: interop.Reference<NSError>): NSData;
 
 	readInBackgroundAndNotify(): void;
 
@@ -4636,7 +4719,7 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	seekToEndReturningOffsetError(offsetInFile: interop.Pointer | interop.Reference<number>): boolean;
+	seekToEndReturningOffsetError(offsetInFile: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 2.0
@@ -4647,12 +4730,12 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	seekToOffsetError(offset: number): boolean;
+	seekToOffsetError(offset: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 13.0
 	 */
-	synchronizeAndReturnError(): boolean;
+	synchronizeAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 2.0
@@ -4663,7 +4746,7 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	truncateAtOffsetError(offset: number): boolean;
+	truncateAtOffsetError(offset: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 2.0
@@ -4684,7 +4767,7 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 13.0
 	 */
-	writeDataError(data: NSData): boolean;
+	writeDataError(data: NSData, error?: interop.Reference<NSError>): boolean;
 }
 
 declare var NSFileHandleConnectionAcceptedNotification: string;
@@ -4739,12 +4822,12 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 4.0
 	 */
-	URLForDirectoryInDomainAppropriateForURLCreateError(directory: NSSearchPathDirectory, domain: NSSearchPathDomainMask, url: NSURL, shouldCreate: boolean): NSURL;
+	URLForDirectoryInDomainAppropriateForURLCreateError(directory: NSSearchPathDirectory, domain: NSSearchPathDomainMask, url: NSURL, shouldCreate: boolean, error?: interop.Reference<NSError>): NSURL;
 
 	/**
 	 * @since 5.0
 	 */
-	URLForPublishingUbiquitousItemAtURLExpirationDateError(url: NSURL, outDate: interop.Pointer | interop.Reference<Date>): NSURL;
+	URLForPublishingUbiquitousItemAtURLExpirationDateError(url: NSURL, outDate: interop.Pointer | interop.Reference<Date>, error?: interop.Reference<NSError>): NSURL;
 
 	/**
 	 * @since 5.0
@@ -4759,12 +4842,12 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	attributesOfFileSystemForPathError(path: string): NSDictionary<string, any>;
+	attributesOfFileSystemForPathError(path: string, error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
 	/**
 	 * @since 2.0
 	 */
-	attributesOfItemAtPathError(path: string): NSDictionary<string, any>;
+	attributesOfItemAtPathError(path: string, error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
 	changeCurrentDirectoryPath(path: string): boolean;
 
@@ -4788,22 +4871,22 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	contentsOfDirectoryAtPathError(path: string): NSArray<string>;
+	contentsOfDirectoryAtPathError(path: string, error?: interop.Reference<NSError>): NSArray<string>;
 
 	/**
 	 * @since 4.0
 	 */
-	contentsOfDirectoryAtURLIncludingPropertiesForKeysOptionsError(url: NSURL, keys: NSArray<string> | string[], mask: NSDirectoryEnumerationOptions): NSArray<NSURL>;
+	contentsOfDirectoryAtURLIncludingPropertiesForKeysOptionsError(url: NSURL, keys: NSArray<string> | string[], mask: NSDirectoryEnumerationOptions, error?: interop.Reference<NSError>): NSArray<NSURL>;
 
 	/**
 	 * @since 2.0
 	 */
-	copyItemAtPathToPathError(srcPath: string, dstPath: string): boolean;
+	copyItemAtPathToPathError(srcPath: string, dstPath: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 */
-	copyItemAtURLToURLError(srcURL: NSURL, dstURL: NSURL): boolean;
+	copyItemAtURLToURLError(srcURL: NSURL, dstURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 2.0
@@ -4814,12 +4897,12 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path: string, createIntermediates: boolean, attributes: NSDictionary<string, any>): boolean;
+	createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path: string, createIntermediates: boolean, attributes: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	createDirectoryAtURLWithIntermediateDirectoriesAttributesError(url: NSURL, createIntermediates: boolean, attributes: NSDictionary<string, any>): boolean;
+	createDirectoryAtURLWithIntermediateDirectoriesAttributesError(url: NSURL, createIntermediates: boolean, attributes: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	createFileAtPathContentsAttributes(path: string, data: NSData, attr: NSDictionary<string, any>): boolean;
 
@@ -4832,17 +4915,17 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	createSymbolicLinkAtPathWithDestinationPathError(path: string, destPath: string): boolean;
+	createSymbolicLinkAtPathWithDestinationPathError(path: string, destPath: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	createSymbolicLinkAtURLWithDestinationURLError(url: NSURL, destURL: NSURL): boolean;
+	createSymbolicLinkAtURLWithDestinationURLError(url: NSURL, destURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 2.0
 	 */
-	destinationOfSymbolicLinkAtPathError(path: string): string;
+	destinationOfSymbolicLinkAtPathError(path: string, error?: interop.Reference<NSError>): string;
 
 	/**
 	 * @since 2.0
@@ -4862,7 +4945,12 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 5.0
 	 */
-	evictUbiquitousItemAtURLError(url: NSURL): boolean;
+	evictUbiquitousItemAtURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	fetchLatestRemoteVersionOfItemAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSFileVersion, p2: NSError) => void): void;
 
 	/**
 	 * @since 2.0
@@ -4890,12 +4978,12 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 8.0
 	 */
-	getRelationshipOfDirectoryAtURLToItemAtURLError(outRelationship: interop.Pointer | interop.Reference<NSURLRelationship>, directoryURL: NSURL, otherURL: NSURL): boolean;
+	getRelationshipOfDirectoryAtURLToItemAtURLError(outRelationship: interop.Pointer | interop.Reference<NSURLRelationship>, directoryURL: NSURL, otherURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 8.0
 	 */
-	getRelationshipOfDirectoryInDomainToItemAtURLError(outRelationship: interop.Pointer | interop.Reference<NSURLRelationship>, directory: NSSearchPathDirectory, domainMask: NSSearchPathDomainMask, url: NSURL): boolean;
+	getRelationshipOfDirectoryInDomainToItemAtURLError(outRelationship: interop.Pointer | interop.Reference<NSURLRelationship>, directory: NSSearchPathDirectory, domainMask: NSSearchPathDomainMask, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	isDeletableFileAtPath(path: string): boolean;
 
@@ -4913,12 +5001,12 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	linkItemAtPathToPathError(srcPath: string, dstPath: string): boolean;
+	linkItemAtPathToPathError(srcPath: string, dstPath: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 */
-	linkItemAtURLToURLError(srcURL: NSURL, dstURL: NSURL): boolean;
+	linkItemAtURLToURLError(srcURL: NSURL, dstURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
@@ -4928,12 +5016,12 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	moveItemAtPathToPathError(srcPath: string, dstPath: string): boolean;
+	moveItemAtPathToPathError(srcPath: string, dstPath: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 */
-	moveItemAtURLToURLError(srcURL: NSURL, dstURL: NSURL): boolean;
+	moveItemAtURLToURLError(srcURL: NSURL, dstURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 2.0
@@ -4942,34 +5030,44 @@ declare class NSFileManager extends NSObject {
 	pathContentOfSymbolicLinkAtPath(path: string): string;
 
 	/**
-	 * @since 2.0
+	 * @since 26.0
 	 */
-	removeItemAtPathError(path: string): boolean;
-
-	/**
-	 * @since 4.0
-	 */
-	removeItemAtURLError(URL: NSURL): boolean;
-
-	/**
-	 * @since 4.0
-	 */
-	replaceItemAtURLWithItemAtURLBackupItemNameOptionsResultingItemURLError(originalItemURL: NSURL, newItemURL: NSURL, backupItemName: string, options: NSFileManagerItemReplacementOptions, resultingURL: interop.Pointer | interop.Reference<NSURL>): boolean;
+	pauseSyncForUbiquitousItemAtURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
 
 	/**
 	 * @since 2.0
 	 */
-	setAttributesOfItemAtPathError(attributes: NSDictionary<string, any>, path: string): boolean;
+	removeItemAtPathError(path: string, error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 4.0
+	 */
+	removeItemAtURLError(URL: NSURL, error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 4.0
+	 */
+	replaceItemAtURLWithItemAtURLBackupItemNameOptionsResultingItemURLError(originalItemURL: NSURL, newItemURL: NSURL, backupItemName: string, options: NSFileManagerItemReplacementOptions, resultingURL: interop.Pointer | interop.Reference<NSURL>, error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	resumeSyncForUbiquitousItemAtURLWithBehaviorCompletionHandler(url: NSURL, behavior: NSFileManagerResumeSyncBehavior, completionHandler: (p1: NSError) => void): void;
+
+	/**
+	 * @since 2.0
+	 */
+	setAttributesOfItemAtPathError(attributes: NSDictionary<string, any>, path: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	setUbiquitousItemAtURLDestinationURLError(flag: boolean, url: NSURL, destinationURL: NSURL): boolean;
+	setUbiquitousItemAtURLDestinationURLError(flag: boolean, url: NSURL, destinationURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	startDownloadingUbiquitousItemAtURLError(url: NSURL): boolean;
+	startDownloadingUbiquitousItemAtURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	stringWithFileSystemRepresentationLength(str: string | interop.Pointer | interop.Reference<any>, len: number): string;
 
@@ -4978,12 +5076,17 @@ declare class NSFileManager extends NSObject {
 	/**
 	 * @since 2.0
 	 */
-	subpathsOfDirectoryAtPathError(path: string): NSArray<string>;
+	subpathsOfDirectoryAtPathError(path: string, error?: interop.Reference<NSError>): NSArray<string>;
 
 	/**
 	 * @since 11.0
 	 */
-	trashItemAtURLResultingItemURLError(url: NSURL, outResultingURL: interop.Pointer | interop.Reference<NSURL>): boolean;
+	trashItemAtURLResultingItemURLError(url: NSURL, outResultingURL: interop.Pointer | interop.Reference<NSURL>, error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 26.0
+	 */
+	uploadLocalVersionOfUbiquitousItemAtURLWithConflictResolutionPolicyCompletionHandler(url: NSURL, conflictResolutionPolicy: NSFileManagerUploadLocalVersionConflictPolicy, completionHandler: (p1: NSFileVersion, p2: NSError) => void): void;
 }
 
 interface NSFileManagerDelegate extends NSObjectProtocol {
@@ -5057,6 +5160,38 @@ declare const enum NSFileManagerItemReplacementOptions {
 	UsingNewMetadataOnly = 1,
 
 	WithoutDeletingBackupItem = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum NSFileManagerResumeSyncBehavior {
+
+	PreserveLocalChanges = 0,
+
+	AfterUploadWithFailOnConflict = 1,
+
+	DropLocalChanges = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum NSFileManagerSupportedSyncControls {
+
+	PauseSync = 1,
+
+	FailUploadOnConflict = 2
+}
+
+/**
+ * @since 26.0
+ */
+declare const enum NSFileManagerUploadLocalVersionConflictPolicy {
+
+	ConflictPolicyDefault = 0,
+
+	ConflictPolicyFailOnConflict = 1
 }
 
 declare var NSFileModificationDate: string;
@@ -5261,7 +5396,7 @@ declare class NSFileVersion extends NSObject {
 
 	static otherVersionsOfItemAtURL(url: NSURL): NSArray<NSFileVersion>;
 
-	static removeOtherVersionsOfItemAtURLError(url: NSURL): boolean;
+	static removeOtherVersionsOfItemAtURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	static unresolvedConflictVersionsOfItemAtURL(url: NSURL): NSArray<NSFileVersion>;
 
@@ -5296,9 +5431,9 @@ declare class NSFileVersion extends NSObject {
 
 	resolved: boolean;
 
-	removeAndReturnError(): boolean;
+	removeAndReturnError(error?: interop.Reference<NSError>): boolean;
 
-	replaceItemAtURLOptionsError(url: NSURL, options: NSFileVersionReplacingOptions): NSURL;
+	replaceItemAtURLOptionsError(url: NSURL, options: NSFileVersionReplacingOptions, error?: interop.Reference<NSError>): NSURL;
 }
 
 declare const enum NSFileVersionAddingOptions {
@@ -5385,7 +5520,7 @@ declare class NSFileWrapper extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 4.0
 	 */
-	initWithURLOptionsError(url: NSURL, options: NSFileWrapperReadingOptions): this;
+	initWithURLOptionsError(url: NSURL, options: NSFileWrapperReadingOptions, error?: interop.Reference<NSError>): this;
 
 	keyForFileWrapper(child: NSFileWrapper): string;
 
@@ -5397,14 +5532,14 @@ declare class NSFileWrapper extends NSObject implements NSSecureCoding {
 	/**
 	 * @since 4.0
 	 */
-	readFromURLOptionsError(url: NSURL, options: NSFileWrapperReadingOptions): boolean;
+	readFromURLOptionsError(url: NSURL, options: NSFileWrapperReadingOptions, error?: interop.Reference<NSError>): boolean;
 
 	removeFileWrapper(child: NSFileWrapper): void;
 
 	/**
 	 * @since 4.0
 	 */
-	writeToURLOptionsOriginalContentsURLError(url: NSURL, options: NSFileWrapperWritingOptions, originalContentsURL: NSURL): boolean;
+	writeToURLOptionsOriginalContentsURLError(url: NSURL, options: NSFileWrapperWritingOptions, originalContentsURL: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -5775,6 +5910,7 @@ declare var NSHTTPCookieExpires: string;
 
 /**
  * @since 2.0
+ * @deprecated 9.0
  */
 declare var NSHTTPCookieManagerAcceptPolicyChangedNotification: string;
 
@@ -5827,6 +5963,11 @@ declare var NSHTTPCookieSameSiteStrict: string;
  * @since 2.0
  */
 declare var NSHTTPCookieSecure: string;
+
+/**
+ * @since 18.2
+ */
+declare var NSHTTPCookieSetByJavaScript: string;
 
 /**
  * @since 2.0
@@ -6803,7 +6944,7 @@ declare var NSItemProviderReading: {
 
 	prototype: NSItemProviderReading;
 
-	objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSItemProviderReading;
+	objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSItemProviderReading;
 };
 
 /**
@@ -6861,19 +7002,19 @@ declare const enum NSJSONReadingOptions {
  */
 declare class NSJSONSerialization extends NSObject {
 
-	static JSONObjectWithDataOptionsError(data: NSData, opt: NSJSONReadingOptions): any;
+	static JSONObjectWithDataOptionsError(data: NSData, opt: NSJSONReadingOptions, error?: interop.Reference<NSError>): any;
 
-	static JSONObjectWithStreamOptionsError(stream: NSInputStream, opt: NSJSONReadingOptions): any;
+	static JSONObjectWithStreamOptionsError(stream: NSInputStream, opt: NSJSONReadingOptions, error?: interop.Reference<NSError>): any;
 
 	static alloc(): NSJSONSerialization; // inherited from NSObject
 
-	static dataWithJSONObjectOptionsError(obj: any, opt: NSJSONWritingOptions): NSData;
+	static dataWithJSONObjectOptionsError(obj: any, opt: NSJSONWritingOptions, error?: interop.Reference<NSError>): NSData;
 
 	static isValidJSONObject(obj: any): boolean;
 
 	static new(): NSJSONSerialization; // inherited from NSObject
 
-	static writeJSONObjectToStreamOptionsError(obj: any, stream: NSOutputStream, opt: NSJSONWritingOptions): number;
+	static writeJSONObjectToStreamOptionsError(obj: any, stream: NSOutputStream, opt: NSJSONWritingOptions, error?: interop.Reference<NSError>): number;
 }
 
 /**
@@ -6998,7 +7139,7 @@ declare class NSKeyedArchiver extends NSCoder {
 	/**
 	 * @since 11.0
 	 */
-	static archivedDataWithRootObjectRequiringSecureCodingError(object: any, requiresSecureCoding: boolean): NSData;
+	static archivedDataWithRootObjectRequiringSecureCodingError(object: any, requiresSecureCoding: boolean, error?: interop.Reference<NSError>): NSData;
 
 	static classNameForClass(cls: typeof NSObject): string;
 
@@ -7098,37 +7239,37 @@ declare class NSKeyedUnarchiver extends NSCoder {
 	 * @since 2.0
 	 * @deprecated 12.0
 	 */
-	static unarchiveTopLevelObjectWithDataError(data: NSData): any;
+	static unarchiveTopLevelObjectWithDataError(data: NSData, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 14.0
 	 */
-	static unarchivedArrayOfObjectsOfClassFromDataError(cls: typeof NSObject, data: NSData): NSArray<any>;
+	static unarchivedArrayOfObjectsOfClassFromDataError(cls: typeof NSObject, data: NSData, error?: interop.Reference<NSError>): NSArray<any>;
 
 	/**
 	 * @since 14.0
 	 */
-	static unarchivedArrayOfObjectsOfClassesFromDataError(classes: NSSet<typeof NSObject>, data: NSData): NSArray<any>;
+	static unarchivedArrayOfObjectsOfClassesFromDataError(classes: NSSet<typeof NSObject>, data: NSData, error?: interop.Reference<NSError>): NSArray<any>;
 
 	/**
 	 * @since 14.0
 	 */
-	static unarchivedDictionaryWithKeysOfClassObjectsOfClassFromDataError(keyCls: typeof NSObject, valueCls: typeof NSObject, data: NSData): NSDictionary<any, any>;
+	static unarchivedDictionaryWithKeysOfClassObjectsOfClassFromDataError(keyCls: typeof NSObject, valueCls: typeof NSObject, data: NSData, error?: interop.Reference<NSError>): NSDictionary<any, any>;
 
 	/**
 	 * @since 14.0
 	 */
-	static unarchivedDictionaryWithKeysOfClassesObjectsOfClassesFromDataError(keyClasses: NSSet<typeof NSObject>, valueClasses: NSSet<typeof NSObject>, data: NSData): NSDictionary<any, any>;
+	static unarchivedDictionaryWithKeysOfClassesObjectsOfClassesFromDataError(keyClasses: NSSet<typeof NSObject>, valueClasses: NSSet<typeof NSObject>, data: NSData, error?: interop.Reference<NSError>): NSDictionary<any, any>;
 
 	/**
 	 * @since 11.0
 	 */
-	static unarchivedObjectOfClassFromDataError(cls: typeof NSObject, data: NSData): any;
+	static unarchivedObjectOfClassFromDataError(cls: typeof NSObject, data: NSData, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 11.0
 	 */
-	static unarchivedObjectOfClassesFromDataError(classes: NSSet<typeof NSObject>, data: NSData): any;
+	static unarchivedObjectOfClassesFromDataError(classes: NSSet<typeof NSObject>, data: NSData, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 9.0
@@ -7160,7 +7301,7 @@ declare class NSKeyedUnarchiver extends NSCoder {
 	/**
 	 * @since 11.0
 	 */
-	initForReadingFromDataError(data: NSData): this;
+	initForReadingFromDataError(data: NSData, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 2.0
@@ -7657,6 +7798,11 @@ declare class NSListFormatter extends NSFormatter {
 
 	stringFromItems(items: NSArray<any> | any[]): string;
 }
+
+/**
+ * @since 26.0
+ */
+declare var NSListItemDelimiterAttributeName: string;
 
 declare var NSLoadedClasses: string;
 
@@ -8843,7 +8989,7 @@ declare class NSMorphology extends NSObject implements NSCopying, NSSecureCoding
 	 * @since 15.0
 	 * @deprecated 17.0
 	 */
-	setCustomPronounForLanguageError(features: NSMorphologyCustomPronoun, language: string): boolean;
+	setCustomPronounForLanguageError(features: NSMorphologyCustomPronoun, language: string, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -9038,7 +9184,7 @@ declare class NSMutableAttributedString extends NSAttributedString {
 
 	static new(): NSMutableAttributedString; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSMutableAttributedString; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSMutableAttributedString; // inherited from NSItemProviderReading
 
 	readonly mutableString: NSMutableString;
 
@@ -9064,18 +9210,18 @@ declare class NSMutableAttributedString extends NSAttributedString {
 	/**
 	 * @since 7.0
 	 */
-	readFromDataOptionsDocumentAttributesError(data: NSData, opts: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>): boolean;
+	readFromDataOptionsDocumentAttributesError(data: NSData, opts: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 7.0
 	 * @deprecated 9.0
 	 */
-	readFromFileURLOptionsDocumentAttributesError(url: NSURL, opts: NSDictionary<any, any>, dict: interop.Pointer | interop.Reference<NSDictionary<any, any>>): boolean;
+	readFromFileURLOptionsDocumentAttributesError(url: NSURL, opts: NSDictionary<any, any>, dict: interop.Pointer | interop.Reference<NSDictionary<any, any>>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
 	 */
-	readFromURLOptionsDocumentAttributesError(url: NSURL, opts: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>): boolean;
+	readFromURLOptionsDocumentAttributesError(url: NSURL, opts: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>, error?: interop.Reference<NSError>): boolean;
 
 	removeAttributeRange(name: string, range: NSRange): void;
 
@@ -9146,11 +9292,11 @@ declare class NSMutableData extends NSData {
 
 	static dataWithContentsOfFile(path: string): NSMutableData; // inherited from NSData
 
-	static dataWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions): NSMutableData; // inherited from NSData
+	static dataWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions, error?: interop.Reference<NSError>): NSMutableData; // inherited from NSData
 
 	static dataWithContentsOfURL(url: NSURL): NSMutableData; // inherited from NSData
 
-	static dataWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: NSDataReadingOptions): NSMutableData; // inherited from NSData
+	static dataWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: NSDataReadingOptions, error?: interop.Reference<NSError>): NSMutableData; // inherited from NSData
 
 	static dataWithData(data: NSData): NSMutableData; // inherited from NSData
 
@@ -9173,12 +9319,12 @@ declare class NSMutableData extends NSData {
 	/**
 	 * @since 13.0
 	 */
-	compressUsingAlgorithmError(algorithm: NSDataCompressionAlgorithm): boolean;
+	compressUsingAlgorithmError(algorithm: NSDataCompressionAlgorithm, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 13.0
 	 */
-	decompressUsingAlgorithmError(algorithm: NSDataCompressionAlgorithm): boolean;
+	decompressUsingAlgorithmError(algorithm: NSDataCompressionAlgorithm, error?: interop.Reference<NSError>): boolean;
 
 	increaseLengthBy(extraLength: number): void;
 
@@ -9432,7 +9578,7 @@ declare class NSMutableString extends NSString {
 
 	static new(): NSMutableString; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSMutableString; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSMutableString; // inherited from NSItemProviderReading
 
 	static string(): NSMutableString; // inherited from NSString
 
@@ -9442,13 +9588,13 @@ declare class NSMutableString extends NSString {
 
 	static stringWithCharactersLength(characters: interop.Pointer | interop.Reference<string>, length: number): NSMutableString; // inherited from NSString
 
-	static stringWithContentsOfFileEncodingError(path: string, enc: number): NSMutableString; // inherited from NSString
+	static stringWithContentsOfFileEncodingError(path: string, enc: number, error?: interop.Reference<NSError>): NSMutableString; // inherited from NSString
 
-	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>): NSMutableString; // inherited from NSString
+	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSMutableString; // inherited from NSString
 
-	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number): NSMutableString; // inherited from NSString
+	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number, error?: interop.Reference<NSError>): NSMutableString; // inherited from NSString
 
-	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>): NSMutableString; // inherited from NSString
+	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSMutableString; // inherited from NSString
 
 	static stringWithString(string: string): NSMutableString; // inherited from NSString
 
@@ -9499,6 +9645,7 @@ declare class NSMutableURLRequest extends NSURLRequest {
 
 	/**
 	 * @since 4.0
+	 * @deprecated 18.4
 	 */
 	HTTPShouldUsePipelining: boolean;
 
@@ -9537,6 +9684,11 @@ declare class NSMutableURLRequest extends NSURLRequest {
 	attribution: NSURLRequestAttribution;
 
 	cachePolicy: NSURLRequestCachePolicy;
+
+	/**
+	 * @since 18.2
+	 */
+	cookiePartitionIdentifier: string;
 
 	mainDocumentURL: NSURL;
 
@@ -10261,7 +10413,7 @@ declare class NSNumberFormatter extends NSFormatter {
 
 	zeroSymbol: string;
 
-	getObjectValueForStringRangeError(obj: interop.Pointer | interop.Reference<any>, string: string, rangep: interop.Pointer | interop.Reference<NSRange>): boolean;
+	getObjectValueForStringRangeError(obj: interop.Pointer | interop.Reference<any>, string: string, rangep: interop.Pointer | interop.Reference<NSRange>, error?: interop.Reference<NSError>): boolean;
 
 	numberFromString(string: string): number;
 
@@ -11824,7 +11976,7 @@ declare class NSPropertyListSerialization extends NSObject {
 	/**
 	 * @since 4.0
 	 */
-	static dataWithPropertyListFormatOptionsError(plist: any, format: NSPropertyListFormat, opt: number): NSData;
+	static dataWithPropertyListFormatOptionsError(plist: any, format: NSPropertyListFormat, opt: number, error?: interop.Reference<NSError>): NSData;
 
 	static new(): NSPropertyListSerialization; // inherited from NSObject
 
@@ -11839,17 +11991,17 @@ declare class NSPropertyListSerialization extends NSObject {
 	/**
 	 * @since 4.0
 	 */
-	static propertyListWithDataOptionsFormatError(data: NSData, opt: NSPropertyListMutabilityOptions, format: interop.Pointer | interop.Reference<NSPropertyListFormat>): any;
+	static propertyListWithDataOptionsFormatError(data: NSData, opt: NSPropertyListMutabilityOptions, format: interop.Pointer | interop.Reference<NSPropertyListFormat>, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 4.0
 	 */
-	static propertyListWithStreamOptionsFormatError(stream: NSInputStream, opt: NSPropertyListMutabilityOptions, format: interop.Pointer | interop.Reference<NSPropertyListFormat>): any;
+	static propertyListWithStreamOptionsFormatError(stream: NSInputStream, opt: NSPropertyListMutabilityOptions, format: interop.Pointer | interop.Reference<NSPropertyListFormat>, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 4.0
 	 */
-	static writePropertyListToStreamFormatOptionsError(plist: any, stream: NSOutputStream, format: NSPropertyListFormat, opt: number): number;
+	static writePropertyListToStreamFormatOptionsError(plist: any, stream: NSOutputStream, format: NSPropertyListFormat, opt: number, error?: interop.Reference<NSError>): number;
 }
 
 declare const NSPropertyListWriteInvalidError: number;
@@ -11933,11 +12085,11 @@ declare class NSPurgeableData extends NSMutableData implements NSDiscardableCont
 
 	static dataWithContentsOfFile(path: string): NSPurgeableData; // inherited from NSData
 
-	static dataWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions): NSPurgeableData; // inherited from NSData
+	static dataWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions, error?: interop.Reference<NSError>): NSPurgeableData; // inherited from NSData
 
 	static dataWithContentsOfURL(url: NSURL): NSPurgeableData; // inherited from NSData
 
-	static dataWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: NSDataReadingOptions): NSPurgeableData; // inherited from NSData
+	static dataWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: NSDataReadingOptions, error?: interop.Reference<NSError>): NSPurgeableData; // inherited from NSData
 
 	static dataWithData(data: NSData): NSPurgeableData; // inherited from NSData
 
@@ -12025,7 +12177,7 @@ declare class NSRegularExpression extends NSObject implements NSCopying, NSSecur
 
 	static new(): NSRegularExpression; // inherited from NSObject
 
-	static regularExpressionWithPatternOptionsError(pattern: string, options: NSRegularExpressionOptions): NSRegularExpression;
+	static regularExpressionWithPatternOptionsError(pattern: string, options: NSRegularExpressionOptions, error?: interop.Reference<NSError>): NSRegularExpression;
 
 	readonly numberOfCaptureGroups: number;
 
@@ -12049,7 +12201,7 @@ declare class NSRegularExpression extends NSObject implements NSCopying, NSSecur
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithPatternOptionsError(pattern: string, options: NSRegularExpressionOptions): this;
+	initWithPatternOptionsError(pattern: string, options: NSRegularExpressionOptions, error?: interop.Reference<NSError>): this;
 
 	matchesInStringOptionsRange(string: string, options: NSMatchingOptions, range: NSRange): NSArray<NSTextCheckingResult>;
 
@@ -12523,7 +12675,7 @@ declare class NSSimpleCString extends NSString {
 
 	static new(): NSSimpleCString; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSSimpleCString; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSSimpleCString; // inherited from NSItemProviderReading
 
 	static string(): NSSimpleCString; // inherited from NSString
 
@@ -12531,13 +12683,13 @@ declare class NSSimpleCString extends NSString {
 
 	static stringWithCharactersLength(characters: interop.Pointer | interop.Reference<string>, length: number): NSSimpleCString; // inherited from NSString
 
-	static stringWithContentsOfFileEncodingError(path: string, enc: number): NSSimpleCString; // inherited from NSString
+	static stringWithContentsOfFileEncodingError(path: string, enc: number, error?: interop.Reference<NSError>): NSSimpleCString; // inherited from NSString
 
-	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>): NSSimpleCString; // inherited from NSString
+	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSSimpleCString; // inherited from NSString
 
-	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number): NSSimpleCString; // inherited from NSString
+	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number, error?: interop.Reference<NSError>): NSSimpleCString; // inherited from NSString
 
-	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>): NSSimpleCString; // inherited from NSString
+	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSSimpleCString; // inherited from NSString
 
 	static stringWithString(string: string): NSSimpleCString; // inherited from NSString
 
@@ -12878,7 +13030,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	static new(): NSString; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSString;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSString;
 
 	static pathWithComponents(components: NSArray<string> | string[]): string;
 
@@ -12913,9 +13065,9 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	static stringWithContentsOfFileEncodingCompletion(path: string, enc: number, callback: (p1: string, p2: NSError) => void): void;
 
-	static stringWithContentsOfFileEncodingError(path: string, enc: number): NSString;
+	static stringWithContentsOfFileEncodingError(path: string, enc: number, error?: interop.Reference<NSError>): NSString;
 
-	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>): NSString;
+	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSString;
 
 	/**
 	 * @since 2.0
@@ -12923,9 +13075,9 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	 */
 	static stringWithContentsOfURL(url: NSURL): any;
 
-	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number): NSString;
+	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number, error?: interop.Reference<NSError>): NSString;
 
-	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>): NSString;
+	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSString;
 
 	static stringWithString(string: string): NSString;
 
@@ -13315,9 +13467,9 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	 */
 	initWithContentsOfFile(path: string): this;
 
-	initWithContentsOfFileEncodingError(path: string, enc: number): this;
+	initWithContentsOfFileEncodingError(path: string, enc: number, error?: interop.Reference<NSError>): this;
 
-	initWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>): this;
+	initWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 2.0
@@ -13325,9 +13477,9 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	 */
 	initWithContentsOfURL(url: NSURL): this;
 
-	initWithContentsOfURLEncodingError(url: NSURL, enc: number): this;
+	initWithContentsOfURLEncodingError(url: NSURL, enc: number, error?: interop.Reference<NSError>): this;
 
-	initWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>): this;
+	initWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): this;
 
 	initWithDataEncoding(data: NSData, encoding: number): this;
 
@@ -13563,7 +13715,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	writeToFileAtomicallyEncodingCompletion(path: string, atomically: boolean, enc: number, callback: (p1: NSError) => void): void;
 
-	writeToFileAtomicallyEncodingError(path: string, useAuxiliaryFile: boolean, enc: number): boolean;
+	writeToFileAtomicallyEncodingError(path: string, useAuxiliaryFile: boolean, enc: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 2.0
@@ -13571,7 +13723,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	 */
 	writeToURLAtomically(url: NSURL, atomically: boolean): boolean;
 
-	writeToURLAtomicallyEncodingError(url: NSURL, useAuxiliaryFile: boolean, enc: number): boolean;
+	writeToURLAtomicallyEncodingError(url: NSURL, useAuxiliaryFile: boolean, enc: number, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum NSStringCompareOptions {
@@ -14159,6 +14311,10 @@ declare class NSThread extends NSObject {
 	start(): void;
 }
 
+/**
+ * @since 2.0
+ * @deprecated 26.0
+ */
 declare var NSThreadWillExitNotification: string;
 
 /**
@@ -14339,12 +14495,12 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 8.0
 	 */
-	static URLByResolvingAliasFileAtURLOptionsError(url: NSURL, options: NSURLBookmarkResolutionOptions): NSURL;
+	static URLByResolvingAliasFileAtURLOptionsError(url: NSURL, options: NSURLBookmarkResolutionOptions, error?: interop.Reference<NSError>): NSURL;
 
 	/**
 	 * @since 4.0
 	 */
-	static URLByResolvingBookmarkDataOptionsRelativeToURLBookmarkDataIsStaleError(bookmarkData: NSData, options: NSURLBookmarkResolutionOptions, relativeURL: NSURL, isStale: interop.Pointer | interop.Reference<boolean>): NSURL;
+	static URLByResolvingBookmarkDataOptionsRelativeToURLBookmarkDataIsStaleError(bookmarkData: NSData, options: NSURLBookmarkResolutionOptions, relativeURL: NSURL, isStale: interop.Pointer | interop.Reference<boolean>, error?: interop.Reference<NSError>): NSURL;
 
 	/**
 	 * @since 9.0
@@ -14370,7 +14526,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 4.0
 	 */
-	static bookmarkDataWithContentsOfURLError(bookmarkFileURL: NSURL): NSData;
+	static bookmarkDataWithContentsOfURLError(bookmarkFileURL: NSURL, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 7.0
@@ -14403,7 +14559,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 
 	static new(): NSURL; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSURL;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSURL;
 
 	/**
 	 * @since 4.0
@@ -14413,7 +14569,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 4.0
 	 */
-	static writeBookmarkDataToURLOptionsError(bookmarkData: NSData, bookmarkFileURL: NSURL, options: number): boolean;
+	static writeBookmarkDataToURLOptionsError(bookmarkData: NSData, bookmarkFileURL: NSURL, options: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
@@ -14614,17 +14770,17 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 4.0
 	 */
-	bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(options: NSURLBookmarkCreationOptions, keys: NSArray<string> | string[], relativeURL: NSURL): NSData;
+	bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(options: NSURLBookmarkCreationOptions, keys: NSArray<string> | string[], relativeURL: NSURL, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 8.0
 	 */
-	checkPromisedItemIsReachableAndReturnError(): boolean;
+	checkPromisedItemIsReachableAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 */
-	checkResourceIsReachableAndReturnError(): boolean;
+	checkResourceIsReachableAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	class(): typeof NSObject;
 
@@ -14647,12 +14803,12 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 8.0
 	 */
-	getPromisedItemResourceValueForKeyError(value: interop.Pointer | interop.Reference<any>, key: string): boolean;
+	getPromisedItemResourceValueForKeyError(value: interop.Pointer | interop.Reference<any>, key: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 */
-	getResourceValueForKeyError(value: interop.Pointer | interop.Reference<any>, key: string): boolean;
+	getResourceValueForKeyError(value: interop.Pointer | interop.Reference<any>, key: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
@@ -14662,7 +14818,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 4.0
 	 */
-	initByResolvingBookmarkDataOptionsRelativeToURLBookmarkDataIsStaleError(bookmarkData: NSData, options: NSURLBookmarkResolutionOptions, relativeURL: NSURL, isStale: interop.Pointer | interop.Reference<boolean>): this;
+	initByResolvingBookmarkDataOptionsRelativeToURLBookmarkDataIsStaleError(bookmarkData: NSData, options: NSURLBookmarkResolutionOptions, relativeURL: NSURL, isStale: interop.Pointer | interop.Reference<boolean>, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 7.0
@@ -14732,7 +14888,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 8.0
 	 */
-	promisedItemResourceValuesForKeysError(keys: NSArray<string> | string[]): NSDictionary<string, any>;
+	promisedItemResourceValuesForKeysError(keys: NSArray<string> | string[], error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
 	/**
 	 * @since 7.0
@@ -14747,7 +14903,7 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 4.0
 	 */
-	resourceValuesForKeysError(keys: NSArray<string> | string[]): NSDictionary<string, any>;
+	resourceValuesForKeysError(keys: NSArray<string> | string[], error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
 	respondsToSelector(aSelector: string): boolean;
 
@@ -14758,12 +14914,12 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 	/**
 	 * @since 4.0
 	 */
-	setResourceValueForKeyError(value: any, key: string): boolean;
+	setResourceValueForKeyError(value: any, key: string, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.0
 	 */
-	setResourceValuesError(keyedValues: NSDictionary<string, any>): boolean;
+	setResourceValuesError(keyedValues: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 7.0
@@ -15167,7 +15323,7 @@ declare class NSURLConnection extends NSObject {
 	 * @since 2.0
 	 * @deprecated 9.0
 	 */
-	static sendSynchronousRequestReturningResponseError(request: NSURLRequest, response: interop.Pointer | interop.Reference<NSURLResponse>): NSData;
+	static sendSynchronousRequestReturningResponseError(request: NSURLRequest, response: interop.Pointer | interop.Reference<NSURLResponse>, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 5.0
@@ -15458,6 +15614,7 @@ declare class NSURLCredentialStorage extends NSObject {
 
 /**
  * @since 2.0
+ * @deprecated 12.0
  */
 declare var NSURLCredentialStorageChangedNotification: string;
 
@@ -15565,6 +15722,7 @@ declare var NSURLErrorFailingURLPeerTrustErrorKey: string;
 
 /**
  * @since 4.0
+ * @deprecated 18.4
  */
 declare var NSURLErrorFailingURLStringErrorKey: string;
 
@@ -15959,11 +16117,13 @@ declare class NSURLProtectionSpace extends NSObject implements NSCopying, NSSecu
 
 /**
  * @since 2.0
+ * @deprecated 18.4
  */
 declare var NSURLProtectionSpaceFTP: string;
 
 /**
  * @since 2.0
+ * @deprecated 18.4
  */
 declare var NSURLProtectionSpaceFTPProxy: string;
 
@@ -16143,6 +16303,7 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 
 	/**
 	 * @since 4.0
+	 * @deprecated 18.4
 	 */
 	readonly HTTPShouldUsePipelining: boolean;
 
@@ -16181,6 +16342,11 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 	readonly attribution: NSURLRequestAttribution;
 
 	readonly cachePolicy: NSURLRequestCachePolicy;
+
+	/**
+	 * @since 18.2
+	 */
+	readonly cookiePartitionIdentifier: string;
 
 	readonly mainDocumentURL: NSURL;
 
@@ -16450,6 +16616,10 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	HTTPShouldSetCookies: boolean;
 
+	/**
+	 * @since 7.0
+	 * @deprecated 18.4
+	 */
 	HTTPShouldUsePipelining: boolean;
 
 	/**
@@ -16497,6 +16667,11 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 	 */
 	discretionary: boolean;
 
+	/**
+	 * @since 26.0
+	 */
+	enablesEarlyData: boolean;
+
 	readonly identifier: string;
 
 	/**
@@ -16529,12 +16704,18 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	/**
 	 * @since 9.0
+	 * @deprecated 18.4
 	 */
 	shouldUseExtendedBackgroundIdleMode: boolean;
 
 	timeoutIntervalForRequest: number;
 
 	timeoutIntervalForResource: number;
+
+	/**
+	 * @since 18.4
+	 */
+	usesClassicLoadingMode: boolean;
 
 	/**
 	 * @since 11.0
@@ -17292,6 +17473,11 @@ declare var NSURLUbiquitousItemIsExcludedFromSyncKey: string;
 declare var NSURLUbiquitousItemIsSharedKey: string;
 
 /**
+ * @since 26.0
+ */
+declare var NSURLUbiquitousItemIsSyncPausedKey: string;
+
+/**
  * @since 5.0
  */
 declare var NSURLUbiquitousItemIsUploadedKey: string;
@@ -17312,6 +17498,11 @@ declare var NSURLUbiquitousItemPercentDownloadedKey: string;
  * @deprecated 6.0
  */
 declare var NSURLUbiquitousItemPercentUploadedKey: string;
+
+/**
+ * @since 26.0
+ */
+declare var NSURLUbiquitousItemSupportedSyncControlsKey: string;
 
 /**
  * @since 7.0
@@ -17731,16 +17922,19 @@ declare const NSUbiquitousKeyValueStoreServerChange: number;
 
 /**
  * @since 9.3
+ * @deprecated 9.3
  */
 declare var NSUbiquitousUserDefaultsCompletedInitialSyncNotification: string;
 
 /**
  * @since 9.3
+ * @deprecated 9.3
  */
 declare var NSUbiquitousUserDefaultsDidChangeAccountsNotification: string;
 
 /**
  * @since 9.3
+ * @deprecated 9.3
  */
 declare var NSUbiquitousUserDefaultsNoCloudAccountNotification: string;
 
@@ -18881,7 +19075,7 @@ declare class NSUserActivity extends NSObject implements NSItemProviderReading, 
 
 	static new(): NSUserActivity; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSUserActivity;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSUserActivity;
 
 	readonly activityType: string;
 
@@ -19419,6 +19613,10 @@ declare const enum NSVolumeEnumerationOptions {
 	ProduceFileReferenceURLs = 4
 }
 
+/**
+ * @since 2.0
+ * @deprecated 26.0
+ */
 declare var NSWillBecomeMultiThreadedNotification: string;
 
 declare const NSWindows95OperatingSystem: number;
