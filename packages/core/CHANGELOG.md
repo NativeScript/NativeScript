@@ -1,3 +1,76 @@
+# 9.0.0 (2025-11-17)
+
+### 🚀 Features
+
+- @nativescript/vite ([#10948](https://github.com/NativeScript/NativeScript/pull/10948))
+- **core:** ensure concurrency when firing events ([#10946](https://github.com/NativeScript/NativeScript/pull/10946))
+- **ios:** TabView iOS 26+ bottomAccessory + minimizeBehavior ([#10945](https://github.com/NativeScript/NativeScript/pull/10945))
+- **ios:** SplitView UI component ([#10942](https://github.com/NativeScript/NativeScript/pull/10942))
+- **core:** support for style direction property (ltr/rtl) ([#10691](https://github.com/NativeScript/NativeScript/pull/10691))
+- **tabs:** iconSource support for sys:// and font:// icons ([#10783](https://github.com/NativeScript/NativeScript/pull/10783))
+- **ListView:** sticky headers, sectioned data, optional search bar with auto-hide ([#10790](https://github.com/NativeScript/NativeScript/pull/10790))
+- **ios:** iosGlassEffect and LiquidGlass containers ([#10901](https://github.com/NativeScript/NativeScript/pull/10901))
+- **core:** multiple css box-shadows support ([#10777](https://github.com/NativeScript/NativeScript/pull/10777))
+- **android:** API Level 35+ OnBackPressed handling ([#10938](https://github.com/NativeScript/NativeScript/pull/10938))
+- **android:** utils for enableEdgeToEdge, setStatusBarColor, setNavigationBarColor, setDarkModeHandler ([fcb8253b4](https://github.com/NativeScript/NativeScript/commit/fcb8253b4))
+- **android:** edge to edge ([#10774](https://github.com/NativeScript/NativeScript/pull/10774))
+- **android:** support independent broadcast listeners ([#10936](https://github.com/NativeScript/NativeScript/pull/10936))
+- **ios:** multi-window support ([#10786](https://github.com/NativeScript/NativeScript/pull/10786))
+- **search-bar:** clear button color support ([#10903](https://github.com/NativeScript/NativeScript/pull/10903))
+- **core:** statusBarStyle ease of use and more control ([#10859](https://github.com/NativeScript/NativeScript/pull/10859))
+- **webpack:** support es module bundling ([#10788](https://github.com/NativeScript/NativeScript/pull/10788))
+- **dialogs:** allow using keyboard enter/return to confirm on iOS ([#10799](https://github.com/NativeScript/NativeScript/pull/10799))
+- **TextField:** decimal keyboardType ([#10789](https://github.com/NativeScript/NativeScript/pull/10789))
+- iOS 26 types with improvements (ActionBar, Switch) + .ns-{platform}-{sdkVersion} css root scoping ([#10775](https://github.com/NativeScript/NativeScript/pull/10775))
+- **ios:** improved handling for navigation events ([#10757](https://github.com/NativeScript/NativeScript/pull/10757))
+- **TextField:** support css white-space and text-overflow ([#10737](https://github.com/NativeScript/NativeScript/pull/10737))
+- **nx-cloud:** organize workspace caching with improved input/outputs ([#10734](https://github.com/NativeScript/NativeScript/pull/10734))
+
+### 🩹 Fixes
+
+- **core:** makeParser check value as is first ([2f2f948b1](https://github.com/NativeScript/NativeScript/commit/2f2f948b1))
+- **core:** makeParser impl ([26534108f](https://github.com/NativeScript/NativeScript/commit/26534108f))
+- **ios:** Switch offBackgroundColor handling for iOS 26+ ([#10943](https://github.com/NativeScript/NativeScript/pull/10943))
+- **ios:** allow creating missing view controllers on reused views ([#10941](https://github.com/NativeScript/NativeScript/pull/10941))
+- **android:** ListView margin handling on layout containers ([#10937](https://github.com/NativeScript/NativeScript/pull/10937))
+- **ios:** apply fontScaleInternal on app startup ([#10935](https://github.com/NativeScript/NativeScript/pull/10935))
+- **webpack:** es module source mapping improvements ([bbeca526f](https://github.com/NativeScript/NativeScript/commit/bbeca526f))
+- **android:** remove extra font padding by default ([#10771](https://github.com/NativeScript/NativeScript/pull/10771))
+- **application:** remove dupe cssChanged event handler definition ([#10892](https://github.com/NativeScript/NativeScript/pull/10892))
+- **android:** coerce string width/height in ImageAssetOptions ([#10862](https://github.com/NativeScript/NativeScript/pull/10862))
+- **android:** prevent clipped font icons on Android ([#10858](https://github.com/NativeScript/NativeScript/pull/10858))
+- animation types ([e1ff2982e](https://github.com/NativeScript/NativeScript/commit/e1ff2982e))
+- **webpack:** es module source map resolution ([#10860](https://github.com/NativeScript/NativeScript/pull/10860))
+- types export on ui/index ([54c069f51](https://github.com/NativeScript/NativeScript/commit/54c069f51))
+- **android:** make button default text not all caps for improved consistency ([#10854](https://github.com/NativeScript/NativeScript/pull/10854))
+- **android:** shared element with target name already added to transaction ([#10793](https://github.com/NativeScript/NativeScript/pull/10793))
+- **core:** pin source-map due to minor bump using url ([1cc3c7374](https://github.com/NativeScript/NativeScript/commit/1cc3c7374))
+- **android:** improved handling for nested frames ([#10713](https://github.com/NativeScript/NativeScript/pull/10713))
+- **core:** FlexboxLayout nested views alignment corrections ([#10766](https://github.com/NativeScript/NativeScript/pull/10766))
+- **core:** Improved css clip-path parsing ([#10753](https://github.com/NativeScript/NativeScript/pull/10753))
+- **android:** RootLayout shade cover unexpected delay ([#10752](https://github.com/NativeScript/NativeScript/pull/10752))
+- **android:** RootLayout shade cover blinking animation ([#10750](https://github.com/NativeScript/NativeScript/pull/10750))
+- **android:** allow CSS styling of neutral button in dialogs ([#10745](https://github.com/NativeScript/NativeScript/pull/10745))
+- core packaging missing .d.ts files ([#10742](https://github.com/NativeScript/NativeScript/pull/10742))
+- **ios:** listview measurement ([#10740](https://github.com/NativeScript/NativeScript/pull/10740))
+
+### 🔥 Performance
+
+- property optimizations ([#10850](https://github.com/NativeScript/NativeScript/pull/10850))
+
+### ❤️ Thank You
+
+- Abdelkarim Ait Bourich @VeinDevTtv
+- Ahmed salman @ahmedsalman74
+- Dimitris-Rafail Katsampas @CatchABus
+- dollaransh17 @dollaransh17
+- Eduardo Speroni @edusperoni
+- felixkrautschuk
+- Nathan Walker
+- Osei Fortune @triniwiz
+- Samuel Schultze
+- snehitha-30727
+
 ## 8.9.9 (2025-09-09)
 
 ### 🚀 Features
