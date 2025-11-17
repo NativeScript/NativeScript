@@ -24,7 +24,7 @@
 				"outputPath": "{workspaceRoot}/dist/packages/vite",
 				"rootDir": "{projectRoot}",
 				"main": "{projectRoot}/index.ts",
-				"assets": ["{workspaceRoot}/LICENSE", "{projectRoot}/README.md"]
+				"assets": ["{workspaceRoot}/LICENSE", "{projectRoot}/README.md", "{projectRoot}/bin/cli.cjs"]
 			},
 			"dependsOn": ["^build"]
 		},

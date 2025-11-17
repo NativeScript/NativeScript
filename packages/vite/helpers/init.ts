@@ -87,33 +87,33 @@ function getFlavorImportAndConfig(flavor: string): { importLine: string; configE
 		case 'angular':
 			return {
 				importLine: "import { angularConfig } from '@nativescript/vite';",
-				configExpr: 'angularConfig({})',
+				configExpr: 'angularConfig({ mode })',
 			};
 		case 'react':
 			return {
 				importLine: "import { reactConfig } from '@nativescript/vite';",
-				configExpr: 'reactConfig({})',
+				configExpr: 'reactConfig({ mode })',
 			};
 		case 'solid':
 			return {
 				importLine: "import { solidConfig } from '@nativescript/vite';",
-				configExpr: 'solidConfig({})',
+				configExpr: 'solidConfig({ mode })',
 			};
 		case 'vue':
 			return {
 				importLine: "import { vueConfig } from '@nativescript/vite';",
-				configExpr: 'vueConfig({})',
+				configExpr: 'vueConfig({ mode })',
 			};
 		case 'typescript':
 			return {
 				importLine: "import { typescriptConfig } from '@nativescript/vite';",
-				configExpr: 'typescriptConfig({})',
+				configExpr: 'typescriptConfig({ mode })',
 			};
 		case 'javascript':
 		default:
 			return {
 				importLine: "import { javascriptConfig } from '@nativescript/vite';",
-				configExpr: 'javascriptConfig({})',
+				configExpr: 'javascriptConfig({ mode })',
 			};
 	}
 }
