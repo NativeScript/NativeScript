@@ -231,28 +231,28 @@ declare class AUAudioUnit extends NSObject {
 
 	constructor(o: { componentDescription: AudioComponentDescription; options: AudioComponentInstantiationOptions; });
 
-	allocateRenderResourcesAndReturnError(): boolean;
+	allocateRenderResourcesAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	deallocateRenderResources(): void;
 
 	/**
 	 * @since 13.0
 	 */
-	deleteUserPresetError(userPreset: AUAudioUnitPreset): boolean;
+	deleteUserPresetError(userPreset: AUAudioUnitPreset, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 12.0
 	 */
-	disableProfileCableOnChannelError(profile: MIDICIProfile, cable: number, channel: number): boolean;
+	disableProfileCableOnChannelError(profile: MIDICIProfile, cable: number, channel: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 12.0
 	 */
-	enableProfileCableOnChannelError(profile: MIDICIProfile, cable: number, channel: number): boolean;
+	enableProfileCableOnChannelError(profile: MIDICIProfile, cable: number, channel: number, error?: interop.Reference<NSError>): boolean;
 
-	initWithComponentDescriptionError(componentDescription: AudioComponentDescription): this;
+	initWithComponentDescriptionError(componentDescription: AudioComponentDescription, error?: interop.Reference<NSError>): this;
 
-	initWithComponentDescriptionOptionsError(componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions): this;
+	initWithComponentDescriptionOptionsError(componentDescription: AudioComponentDescription, options: AudioComponentInstantiationOptions, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 16.0
@@ -264,7 +264,7 @@ declare class AUAudioUnit extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	presetStateForError(userPreset: AUAudioUnitPreset): NSDictionary<string, any>;
+	presetStateForError(userPreset: AUAudioUnitPreset, error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
 	/**
 	 * @since 12.0
@@ -280,7 +280,7 @@ declare class AUAudioUnit extends NSObject {
 	/**
 	 * @since 13.0
 	 */
-	saveUserPresetError(userPreset: AUAudioUnitPreset): boolean;
+	saveUserPresetError(userPreset: AUAudioUnitPreset, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 11.0
@@ -291,7 +291,7 @@ declare class AUAudioUnit extends NSObject {
 
 	shouldChangeToFormatForBus(format: AVAudioFormat, bus: AUAudioUnitBus): boolean;
 
-	startHardwareAndReturnError(): boolean;
+	startHardwareAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	stopHardware(): void;
 
@@ -339,9 +339,9 @@ declare class AUAudioUnitBus extends NSObject {
 
 	constructor(o: { format: AVAudioFormat; });
 
-	initWithFormatError(format: AVAudioFormat): this;
+	initWithFormatError(format: AVAudioFormat, error?: interop.Reference<NSError>): this;
 
-	setFormatError(format: AVAudioFormat): boolean;
+	setFormatError(format: AVAudioFormat, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -379,7 +379,7 @@ declare class AUAudioUnitBusArray extends NSObject implements NSFastEnumeration 
 
 	replaceBusses(busArray: NSArray<AUAudioUnitBus> | AUAudioUnitBus[]): void;
 
-	setBusCountError(count: number): boolean;
+	setBusCountError(count: number, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum AUAudioUnitBusType {
@@ -391,7 +391,7 @@ declare const enum AUAudioUnitBusType {
 
 interface AUAudioUnitFactory extends NSExtensionRequestHandling {
 
-	createAudioUnitWithComponentDescriptionError(desc: AudioComponentDescription): AUAudioUnit;
+	createAudioUnitWithComponentDescriptionError(desc: AudioComponentDescription, error?: interop.Reference<NSError>): AUAudioUnit;
 }
 declare var AUAudioUnitFactory: {
 

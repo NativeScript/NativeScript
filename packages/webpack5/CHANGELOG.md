@@ -1,3 +1,20 @@
+## 5.0.25 (2025-11-17)
+
+### 🚀 Features
+
+- NativeClass transformer now supports ts-patch and ts-loader ([#10952](https://github.com/NativeScript/NativeScript/pull/10952))
+- **webpack:** support es module bundling ([#10788](https://github.com/NativeScript/NativeScript/pull/10788))
+
+### 🩹 Fixes
+
+- **webpack:** es module source mapping improvements ([bbeca526f](https://github.com/NativeScript/NativeScript/commit/bbeca526f))
+- **webpack:** es module source map resolution ([#10860](https://github.com/NativeScript/NativeScript/pull/10860))
+
+### ❤️ Thank You
+
+- farfromrefuge
+- Nathan Walker
+
 ## 5.0.24 (2025-03-23)
 
 ### 🚀 Features

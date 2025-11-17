@@ -3331,7 +3331,7 @@ declare class NSTextStorage extends NSMutableAttributedString implements NSSecur
 
 	static new(): NSTextStorage; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): NSTextStorage; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): NSTextStorage; // inherited from NSItemProviderReading
 
 	readonly changeInLength: number;
 
@@ -6184,7 +6184,7 @@ declare class UIApplication extends UIResponder {
 	/**
 	 * @since 18.2
 	 */
-	defaultStatusForCategoryError(category: UIApplicationCategory): UIApplicationCategoryDefaultStatus;
+	defaultStatusForCategoryError(category: UIApplicationCategory, error?: interop.Reference<NSError>): UIApplicationCategoryDefaultStatus;
 
 	/**
 	 * @since 3.0
@@ -11987,7 +11987,7 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	static new(): UIColor; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): UIColor;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): UIColor;
 
 	readonly CGColor: any;
 
@@ -14366,13 +14366,13 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	contentsForTypeError(typeName: string): any;
+	contentsForTypeError(typeName: string, error?: interop.Reference<NSError>): any;
 
 	disableEditing(): void;
 
 	enableEditing(): void;
 
-	fileAttributesToWriteToURLForSaveOperationError(url: NSURL, saveOperation: UIDocumentSaveOperation): NSDictionary<any, any>;
+	fileAttributesToWriteToURLForSaveOperationError(url: NSURL, saveOperation: UIDocumentSaveOperation, error?: interop.Reference<NSError>): NSDictionary<any, any>;
 
 	fileNameExtensionForTypeSaveOperation(typeName: string, saveOperation: UIDocumentSaveOperation): string;
 
@@ -14388,7 +14388,7 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	loadFromContentsOfTypeError(contents: any, typeName: string): boolean;
+	loadFromContentsOfTypeError(contents: any, typeName: string, error?: interop.Reference<NSError>): boolean;
 
 	navigationItemDidEndRenamingWithTitle(navigationItem: UINavigationItem, title: string): void;
 
@@ -14435,7 +14435,7 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 
 	presentedSubitemDidChangeAtURL(url: NSURL): void;
 
-	readFromURLError(url: NSURL): boolean;
+	readFromURLError(url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	relinquishPresentedItemToReader(reader: (p1: () => void) => void): void;
 
@@ -14466,9 +14466,9 @@ declare class UIDocument extends NSObject implements NSFilePresenter, NSProgress
 
 	userInteractionNoLongerPermittedForError(error: NSError): void;
 
-	writeContentsAndAttributesSafelyToURLForSaveOperationError(contents: any, additionalFileAttributes: NSDictionary<any, any>, url: NSURL, saveOperation: UIDocumentSaveOperation): boolean;
+	writeContentsAndAttributesSafelyToURLForSaveOperationError(contents: any, additionalFileAttributes: NSDictionary<any, any>, url: NSURL, saveOperation: UIDocumentSaveOperation, error?: interop.Reference<NSError>): boolean;
 
-	writeContentsToURLForSaveOperationOriginalContentsURLError(contents: any, url: NSURL, saveOperation: UIDocumentSaveOperation, originalContentsURL: NSURL): boolean;
+	writeContentsToURLForSaveOperationOriginalContentsURLError(contents: any, url: NSURL, saveOperation: UIDocumentSaveOperation, originalContentsURL: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -17823,7 +17823,7 @@ declare class UIGraphicsPDFRenderer extends UIGraphicsRenderer {
 
 	initWithBoundsFormat(bounds: CGRect, format: UIGraphicsPDFRendererFormat): this;
 
-	writePDFToURLWithActionsError(url: NSURL, actions: (p1: UIGraphicsPDFRendererContext) => void): boolean;
+	writePDFToURLWithActionsError(url: NSURL, actions: (p1: UIGraphicsPDFRendererContext) => void, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -17913,7 +17913,7 @@ declare class UIGraphicsRenderer extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	runDrawingActionsCompletionActionsError(drawingActions: (p1: UIGraphicsRendererContext) => void, completionActions: (p1: UIGraphicsRendererContext) => void): boolean;
+	runDrawingActionsCompletionActionsError(drawingActions: (p1: UIGraphicsRendererContext) => void, completionActions: (p1: UIGraphicsRendererContext) => void, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -18364,7 +18364,7 @@ declare class UIImage extends NSObject implements NSItemProviderReading, NSItemP
 
 	static new(): UIImage; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): UIImage;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): UIImage;
 
 	/**
 	 * @since 13.0
@@ -19903,7 +19903,7 @@ declare var UIItemProviderReadingAugmentationDesignating: {
 
 	_ui_augmentingNSItemProviderReadingClass(): typeof NSObject;
 
-	objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): UIItemProviderReadingAugmentationDesignating;
+	objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): UIItemProviderReadingAugmentationDesignating;
 };
 
 interface UIItemProviderReadingAugmentationProviding {
@@ -19912,7 +19912,7 @@ declare var UIItemProviderReadingAugmentationProviding: {
 
 	prototype: UIItemProviderReadingAugmentationProviding;
 
-	objectWithItemProviderDataTypeIdentifierRequestedClassError(data: NSData, typeIdentifier: string, requestedClass: typeof NSObject): any;
+	objectWithItemProviderDataTypeIdentifierRequestedClassError(data: NSData, typeIdentifier: string, requestedClass: typeof NSObject, error?: interop.Reference<NSError>): any;
 };
 
 /**
@@ -21827,15 +21827,15 @@ declare class UIManagedDocument extends UIDocument {
 
 	static readonly persistentStoreName: string;
 
-	additionalContentForURLError(absoluteURL: NSURL): any;
+	additionalContentForURLError(absoluteURL: NSURL, error?: interop.Reference<NSError>): any;
 
-	configurePersistentStoreCoordinatorForURLOfTypeModelConfigurationStoreOptionsError(storeURL: NSURL, fileType: string, configuration: string, storeOptions: NSDictionary<any, any>): boolean;
+	configurePersistentStoreCoordinatorForURLOfTypeModelConfigurationStoreOptionsError(storeURL: NSURL, fileType: string, configuration: string, storeOptions: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
 
 	persistentStoreTypeForFileType(fileType: string): string;
 
-	readAdditionalContentFromURLError(absoluteURL: NSURL): boolean;
+	readAdditionalContentFromURLError(absoluteURL: NSURL, error?: interop.Reference<NSError>): boolean;
 
-	writeAdditionalContentToURLOriginalContentsURLError(content: any, absoluteURL: NSURL, absoluteOriginalContentsURL: NSURL): boolean;
+	writeAdditionalContentToURLOriginalContentsURLError(content: any, absoluteURL: NSURL, absoluteOriginalContentsURL: NSURL, error?: interop.Reference<NSError>): boolean;
 }
 
 /**

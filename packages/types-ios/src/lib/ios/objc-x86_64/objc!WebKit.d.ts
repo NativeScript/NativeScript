@@ -1603,11 +1603,11 @@ declare class WKWebExtensionController extends NSObject {
 
 	initWithConfiguration(configuration: WKWebExtensionControllerConfiguration): this;
 
-	loadExtensionContextError(extensionContext: WKWebExtensionContext): boolean;
+	loadExtensionContextError(extensionContext: WKWebExtensionContext, error?: interop.Reference<NSError>): boolean;
 
 	removeDataOfTypesFromDataRecordsCompletionHandler(dataTypes: NSSet<string>, dataRecords: NSArray<WKWebExtensionDataRecord> | WKWebExtensionDataRecord[], completionHandler: () => void): void;
 
-	unloadExtensionContextError(extensionContext: WKWebExtensionContext): boolean;
+	unloadExtensionContextError(extensionContext: WKWebExtensionContext, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -1808,9 +1808,9 @@ declare class WKWebExtensionMatchPattern extends NSObject implements NSCopying, 
 
 	initWithCoder(coder: NSCoder): this;
 
-	initWithSchemeHostPathError(scheme: string, host: string, path: string): this;
+	initWithSchemeHostPathError(scheme: string, host: string, path: string, error?: interop.Reference<NSError>): this;
 
-	initWithStringError(string: string): this;
+	initWithStringError(string: string, error?: interop.Reference<NSError>): this;
 
 	matchesPattern(pattern: WKWebExtensionMatchPattern): boolean;
 

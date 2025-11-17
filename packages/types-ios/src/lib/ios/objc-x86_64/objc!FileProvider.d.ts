@@ -192,7 +192,7 @@ declare class NSFileProviderDomainVersion extends NSObject implements NSSecureCo
  */
 interface NSFileProviderEnumerating extends NSObjectProtocol {
 
-	enumeratorForContainerItemIdentifierRequestError(containerItemIdentifier: string, request: NSFileProviderRequest): NSFileProviderEnumerator;
+	enumeratorForContainerItemIdentifierRequestError(containerItemIdentifier: string, request: NSFileProviderRequest, error?: interop.Reference<NSError>): NSFileProviderEnumerator;
 }
 declare var NSFileProviderEnumerating: {
 
@@ -332,7 +332,7 @@ declare class NSFileProviderExtension extends NSObject {
 	 * @since 8.0
 	 * @deprecated 11.0
 	 */
-	static writePlaceholderAtURLWithMetadataError(placeholderURL: NSURL, metadata: NSDictionary<string, any>): boolean;
+	static writePlaceholderAtURLWithMetadataError(placeholderURL: NSURL, metadata: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 8.0
@@ -354,7 +354,7 @@ declare class NSFileProviderExtension extends NSObject {
 
 	deleteItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSError) => void): void;
 
-	enumeratorForContainerItemIdentifierError(containerItemIdentifier: string): NSFileProviderEnumerator;
+	enumeratorForContainerItemIdentifierError(containerItemIdentifier: string, error?: interop.Reference<NSError>): NSFileProviderEnumerator;
 
 	/**
 	 * @since 11.0
@@ -368,7 +368,7 @@ declare class NSFileProviderExtension extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	itemForIdentifierError(identifier: string): NSFileProviderItem;
+	itemForIdentifierError(identifier: string, error?: interop.Reference<NSError>): NSFileProviderItem;
 
 	persistentIdentifierForItemAtURL(url: NSURL): string;
 
@@ -391,7 +391,7 @@ declare class NSFileProviderExtension extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	supportedServiceSourcesForItemIdentifierError(itemIdentifier: string): NSArray<NSFileProviderServiceSource>;
+	supportedServiceSourcesForItemIdentifierError(itemIdentifier: string, error?: interop.Reference<NSError>): NSArray<NSFileProviderServiceSource>;
 
 	trashItemWithIdentifierCompletionHandler(itemIdentifier: string, completionHandler: (p1: NSFileProviderItem, p2: NSError) => void): void;
 
@@ -685,7 +685,7 @@ declare class NSFileProviderManager extends NSObject {
 	/**
 	 * @since 11.0
 	 */
-	static writePlaceholderAtURLWithMetadataError(placeholderURL: NSURL, metadata: NSFileProviderItem): boolean;
+	static writePlaceholderAtURLWithMetadataError(placeholderURL: NSURL, metadata: NSFileProviderItem, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 11.0
@@ -729,7 +729,7 @@ declare class NSFileProviderManager extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	listAvailableTestingOperationsWithError(): NSArray<NSFileProviderTestingOperation>;
+	listAvailableTestingOperationsWithError(error?: interop.Reference<NSError>): NSArray<NSFileProviderTestingOperation>;
 
 	registerURLSessionTaskForItemWithIdentifierCompletionHandler(task: NSURLSessionTask, identifier: string, completion: (p1: NSError) => void): void;
 
@@ -746,7 +746,7 @@ declare class NSFileProviderManager extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	runTestingOperationsError(operations: NSArray<NSFileProviderTestingOperation> | NSFileProviderTestingOperation[]): NSDictionary<NSFileProviderTestingOperation, NSError>;
+	runTestingOperationsError(operations: NSArray<NSFileProviderTestingOperation> | NSFileProviderTestingOperation[], error?: interop.Reference<NSError>): NSDictionary<NSFileProviderTestingOperation, NSError>;
 
 	signalEnumeratorForContainerItemIdentifierCompletionHandler(containerItemIdentifier: string, completion: (p1: NSError) => void): void;
 
@@ -758,7 +758,7 @@ declare class NSFileProviderManager extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	temporaryDirectoryURLWithError(): NSURL;
+	temporaryDirectoryURLWithError(error?: interop.Reference<NSError>): NSURL;
 
 	/**
 	 * @since 16.0
@@ -881,7 +881,7 @@ interface NSFileProviderServiceSource {
 
 	serviceName: string;
 
-	makeListenerEndpointAndReturnError(): NSXPCListenerEndpoint;
+	makeListenerEndpointAndReturnError(error?: interop.Reference<NSError>): NSXPCListenerEndpoint;
 }
 declare var NSFileProviderServiceSource: {
 

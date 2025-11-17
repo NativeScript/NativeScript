@@ -349,7 +349,7 @@ declare class MSSticker extends NSObject {
 
 	constructor(o: { contentsOfFileURL: NSURL; localizedDescription: string; });
 
-	initWithContentsOfFileURLLocalizedDescriptionError(fileURL: NSURL, localizedDescription: string): this;
+	initWithContentsOfFileURLLocalizedDescriptionError(fileURL: NSURL, localizedDescription: string, error?: interop.Reference<NSError>): this;
 }
 
 /**

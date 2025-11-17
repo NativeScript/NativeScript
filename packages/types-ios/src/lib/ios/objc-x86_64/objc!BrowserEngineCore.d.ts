@@ -16,7 +16,7 @@ declare class BEAudioSession extends NSObject {
 
 	initWithAudioSession(audioSession: AVAudioSession): this;
 
-	setPreferredOutputError(outPort: AVAudioSessionPortDescription): boolean;
+	setPreferredOutputError(outPort: AVAudioSessionPortDescription, error?: interop.Reference<NSError>): boolean;
 }
 
 /**

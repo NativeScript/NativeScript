@@ -34,7 +34,7 @@ jobs:
     name: Version and Publish (gated by environment)
     runs-on: ubuntu-latest
     environment:
-      name: ${{ inputs['dry-run'] == 'true' && 'npm-publish-dry-run' || 'npm-publish' }}
+      name: ${{ inputs.dry-run && 'npm-publish-dry-run' || 'npm-publish' }}
 
     env:
       # Default dist-tag if not provided via workflow_dispatch input
@@ -69,15 +69,15 @@ jobs:
       # Collect a one-time password (OTP) from a reviewer via the environment approval gate.
       - id: wait_for_otp
         name: Wait for npm OTP (2FA)
-        if: ${{ inputs['dry-run'] != 'true' }}
-        uses: step-security/wait-for-secrets@v2
+        if: ${{ !inputs.dry-run }}
+        uses: step-security/wait-for-secrets@v1
         with:
           secrets: |
             NPM_OTP
           timeout-minutes: 30
 
       - name: Configure npm auth
-        if: ${{ inputs['dry-run'] != 'true' }}
+        if: ${{ !inputs.dry-run }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
@@ -91,7 +91,7 @@ jobs:
 
       # VERSION: updates versions, changelogs, creates git tags following nx.json releaseTag pattern.
       - name: nx release version
-        if: ${{ inputs['dry-run'] != 'true' }}
+        if: ${{ !inputs.dry-run }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NX_GROUP_ARG: ${{ inputs['release-group'] != '' && format('--group {0}', inputs['release-group']) || '' }}
@@ -99,7 +99,7 @@ jobs:
           npx nx release version ${NX_GROUP_ARG} --yes --verbose
 
       - name: nx release version (dry-run)
-        if: ${{ inputs['dry-run'] == 'true' }}
+        if: ${{ inputs.dry-run }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NX_GROUP_ARG: ${{ inputs['release-group'] != '' && format('--group {0}', inputs['release-group']) || '' }}
@@ -108,19 +108,18 @@ jobs:
 
       # Ensure version commits and tags are pushed if version step created them.
       - name: Push version commits and tags
-        if: ${{ inputs['dry-run'] != 'true' }}
+        if: ${{ !inputs.dry-run }}
         run: |
           # Push commits (if any) and tags created by Nx Release
           git push --follow-tags || true
 
       # PUBLISH: perform npm publish using Nx Release, with 2FA OTP and provenance.
       - name: nx release publish
-        if: ${{ inputs['dry-run'] != 'true' }}
+        if: ${{ !inputs.dry-run }}
         env:
           NPM_CONFIG_OTP: ${{ steps.wait_for_otp.outputs.NPM_OTP }}
           # For npm provenance via OIDC
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-        env:
           NX_GROUP_ARG: ${{ inputs['release-group'] != '' && format('--group {0}', inputs['release-group']) || '' }}
         run: |
           test -n "$NPM_CONFIG_OTP" || { echo "Missing NPM OTP from environment approval"; exit 1; }
@@ -128,7 +127,7 @@ jobs:
           npx nx release publish ${NX_GROUP_ARG} --tag "$NPM_DIST_TAG" --provenance --yes --verbose
 
       - name: nx release publish (dry-run)
-        if: ${{ inputs['dry-run'] == 'true' }}
+        if: ${{ inputs.dry-run }}
         env:
           NX_GROUP_ARG: ${{ inputs['release-group'] != '' && format('--group {0}', inputs['release-group']) || '' }}
         run: |

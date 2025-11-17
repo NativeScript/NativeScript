@@ -8,7 +8,7 @@ declare class MTKMesh extends NSObject {
 
 	static new(): MTKMesh; // inherited from NSObject
 
-	static newMeshesFromAssetDeviceSourceMeshesError(asset: MDLAsset, device: MTLDevice, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh>>): NSArray<MTKMesh>;
+	static newMeshesFromAssetDeviceSourceMeshesError(asset: MDLAsset, device: MTLDevice, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh>>, error?: interop.Reference<NSError>): NSArray<MTKMesh>;
 
 	name: string;
 
@@ -22,7 +22,7 @@ declare class MTKMesh extends NSObject {
 
 	constructor(o: { mesh: MDLMesh; device: MTLDevice; });
 
-	initWithMeshDeviceError(mesh: MDLMesh, device: MTLDevice): this;
+	initWithMeshDeviceError(mesh: MDLMesh, device: MTLDevice, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -228,15 +228,15 @@ declare class MTKTextureLoader extends NSObject {
 
 	newTextureWithCGImageOptionsCompletionHandler(cgImage: any, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
-	newTextureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, any>): MTLTexture;
+	newTextureWithCGImageOptionsError(cgImage: any, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
 
 	newTextureWithContentsOfURLOptionsCompletionHandler(URL: NSURL, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
-	newTextureWithContentsOfURLOptionsError(URL: NSURL, options: NSDictionary<string, any>): MTLTexture;
+	newTextureWithContentsOfURLOptionsError(URL: NSURL, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
 
 	newTextureWithDataOptionsCompletionHandler(data: NSData, options: NSDictionary<string, any>, completionHandler: (p1: MTLTexture, p2: NSError) => void): void;
 
-	newTextureWithDataOptionsError(data: NSData, options: NSDictionary<string, any>): MTLTexture;
+	newTextureWithDataOptionsError(data: NSData, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
 
 	/**
 	 * @since 10.0
@@ -246,7 +246,7 @@ declare class MTKTextureLoader extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	newTextureWithMDLTextureOptionsError(texture: MDLTexture, options: NSDictionary<string, any>): MTLTexture;
+	newTextureWithMDLTextureOptionsError(texture: MDLTexture, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
 
 	/**
 	 * @since 10.0
@@ -256,7 +256,7 @@ declare class MTKTextureLoader extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	newTextureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>): MTLTexture;
+	newTextureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): MTLTexture;
 
 	/**
 	 * @since 10.0
@@ -266,7 +266,7 @@ declare class MTKTextureLoader extends NSObject {
 	/**
 	 * @since 10.0
 	 */
-	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any>): NSArray<MTLTexture>;
+	newTexturesWithContentsOfURLsOptionsError(URLs: NSArray<NSURL> | NSURL[], options: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSArray<MTLTexture>;
 
 	/**
 	 * @since 10.0

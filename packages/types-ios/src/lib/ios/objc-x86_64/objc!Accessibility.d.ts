@@ -436,9 +436,9 @@ declare class AXFeatureOverrideSessionManager extends NSObject {
 
 	static readonly sharedInstance: AXFeatureOverrideSessionManager;
 
-	beginOverrideSessionEnablingOptionsDisablingOptionsError(enableOptions: AXFeatureOverrideSessionOptions, disableOptions: AXFeatureOverrideSessionOptions): AXFeatureOverrideSession;
+	beginOverrideSessionEnablingOptionsDisablingOptionsError(enableOptions: AXFeatureOverrideSessionOptions, disableOptions: AXFeatureOverrideSessionOptions, error?: interop.Reference<NSError>): AXFeatureOverrideSession;
 
-	endOverrideSessionError(session: AXFeatureOverrideSession): boolean;
+	endOverrideSessionError(session: AXFeatureOverrideSession, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum AXFeatureOverrideSessionOptions {

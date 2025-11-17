@@ -22,7 +22,7 @@ declare class EXHostViewController extends UIViewController {
 
 	placeholderView: UIView;
 
-	makeXPCConnectionWithError(): NSXPCConnection;
+	makeXPCConnectionWithError(error?: interop.Reference<NSError>): NSXPCConnection;
 }
 
 /**

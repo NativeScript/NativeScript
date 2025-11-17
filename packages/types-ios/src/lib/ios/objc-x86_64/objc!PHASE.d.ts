@@ -63,13 +63,13 @@ declare class PHASEAssetRegistry extends NSObject {
 
 	assetForIdentifier(identifier: string): PHASEAsset;
 
-	registerGlobalMetaParameterError(metaParameterDefinition: PHASEMetaParameterDefinition): PHASEGlobalMetaParameterAsset;
+	registerGlobalMetaParameterError(metaParameterDefinition: PHASEMetaParameterDefinition, error?: interop.Reference<NSError>): PHASEGlobalMetaParameterAsset;
 
-	registerSoundAssetAtURLIdentifierAssetTypeChannelLayoutNormalizationModeError(url: NSURL, identifier: string, assetType: PHASEAssetType, channelLayout: AVAudioChannelLayout, normalizationMode: PHASENormalizationMode): PHASESoundAsset;
+	registerSoundAssetAtURLIdentifierAssetTypeChannelLayoutNormalizationModeError(url: NSURL, identifier: string, assetType: PHASEAssetType, channelLayout: AVAudioChannelLayout, normalizationMode: PHASENormalizationMode, error?: interop.Reference<NSError>): PHASESoundAsset;
 
-	registerSoundAssetWithDataIdentifierFormatNormalizationModeError(data: NSData, identifier: string, format: AVAudioFormat, normalizationMode: PHASENormalizationMode): PHASESoundAsset;
+	registerSoundAssetWithDataIdentifierFormatNormalizationModeError(data: NSData, identifier: string, format: AVAudioFormat, normalizationMode: PHASENormalizationMode, error?: interop.Reference<NSError>): PHASESoundAsset;
 
-	registerSoundEventAssetWithRootNodeIdentifierError(rootNode: PHASESoundEventNodeDefinition, identifier: string): PHASESoundEventNodeAsset;
+	registerSoundEventAssetWithRootNodeIdentifierError(rootNode: PHASESoundEventNodeDefinition, identifier: string, error?: interop.Reference<NSError>): PHASESoundEventNodeAsset;
 
 	unregisterAssetWithIdentifierCompletion(identifier: string, handler: (p1: boolean) => void): void;
 }
@@ -410,7 +410,7 @@ declare class PHASEEngine extends NSObject {
 
 	pause(): void;
 
-	startAndReturnError(): boolean;
+	startAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	stop(): void;
 
@@ -875,7 +875,7 @@ declare class PHASEObject extends NSObject implements NSCopying {
 
 	constructor(o: { engine: PHASEEngine; });
 
-	addChildError(child: PHASEObject): boolean;
+	addChildError(child: PHASEObject, error?: interop.Reference<NSError>): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -1159,9 +1159,9 @@ declare class PHASESoundEvent extends NSObject {
 
 	constructor(o: { engine: PHASEEngine; assetIdentifier: string; mixerParameters: PHASEMixerParameters; });
 
-	initWithEngineAssetIdentifierError(engine: PHASEEngine, assetIdentifier: string): this;
+	initWithEngineAssetIdentifierError(engine: PHASEEngine, assetIdentifier: string, error?: interop.Reference<NSError>): this;
 
-	initWithEngineAssetIdentifierMixerParametersError(engine: PHASEEngine, assetIdentifier: string, mixerParameters: PHASEMixerParameters): this;
+	initWithEngineAssetIdentifierMixerParametersError(engine: PHASEEngine, assetIdentifier: string, mixerParameters: PHASEMixerParameters, error?: interop.Reference<NSError>): this;
 
 	pause(): void;
 
