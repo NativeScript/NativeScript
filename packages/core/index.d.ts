@@ -46,6 +46,7 @@ export type { iosSymbolScaleType } from './image-source';
 export { ModuleNameResolver } from './module-name-resolver';
 export { _setResolver } from './module-name-resolver/helpers';
 export type { PlatformContext } from './module-name-resolver';
+export * from './media-query-list';
 export type { ModuleListProvider } from './module-name-resolver/helpers';
 export { isAndroid, isIOS, isVisionOS, isApple, Screen, Device, platformNames } from './platform';
 export type { IDevice } from './platform';
