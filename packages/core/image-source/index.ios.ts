@@ -373,7 +373,7 @@ export class ImageSource implements ImageSourceDefinition {
 	public saveToFileAsync(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<boolean> {
 		return new Promise<boolean>((resolve, reject) => {
 			if (!this.ios) {
-				reject(false);
+				reject(new Error('saveToFileAsync: no native image passed'));
 			}
 			let isSuccess = false;
 			try {

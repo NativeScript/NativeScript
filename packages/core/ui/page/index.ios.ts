@@ -1,4 +1,3 @@
-import { isAccessibilityServiceEnabled } from '../../application';
 import type { Frame } from '../frame';
 import { BackstackEntry, NavigationType } from '../frame/frame-interfaces';
 import { View, IOSHelper } from '../core/view';
@@ -9,6 +8,7 @@ import { layout } from '../../utils/layout-helper';
 import { SDK_VERSION } from '../../utils/constants';
 import { getLastFocusedViewOnPage } from '../../accessibility/accessibility-common';
 import { SharedTransition } from '../transition/shared-transition';
+import { isAccessibilityServiceEnabled } from '../../accessibility';
 
 export * from './page-common';
 
@@ -27,33 +27,53 @@ class UIViewControllerImpl extends UIViewController {
 
 	public isBackstackSkipped: boolean;
 	public isBackstackCleared: boolean;
-	private didFirstLayout: boolean;
+	// private didFirstLayout: boolean;
 	// this is initialized in initWithOwner since the constructor doesn't run on native classes
-	private _isRunningLayout: number;
-	private get isRunningLayout() {
-		return this._isRunningLayout !== 0;
-	}
-	private startRunningLayout() {
-		this._isRunningLayout++;
-	}
-	private finishRunningLayout() {
-		this._isRunningLayout--;
-		this.didFirstLayout = true;
-	}
-	private runLayout(cb: () => void) {
-		try {
-			this.startRunningLayout();
-			cb();
-		} finally {
-			this.finishRunningLayout();
-		}
-	}
+	// private _isRunningLayout: number;
+	// private get isRunningLayout() {
+	// 	return this._isRunningLayout !== 0;
+	// }
+	// private startRunningLayout() {
+	// 	this._isRunningLayout++;
+	// }
+	// private finishRunningLayout() {
+	// 	this._isRunningLayout--;
+	// 	this.clearScheduledLayout();
+	// }
+	// private runLayout(cb: () => void) {
+	// 	try {
+	// 		this.startRunningLayout();
+	// 		cb();
+	// 	} finally {
+	// 		this.finishRunningLayout();
+	// 	}
+	// }
+
+	// layoutTimer: number;
+
+	// private clearScheduledLayout() {
+	// 	if (this.layoutTimer) {
+	// 		clearTimeout(this.layoutTimer);
+	// 		this.layoutTimer = null;
+	// 	}
+	// }
+
+	// private scheduleLayout() {
+	// 	if (this.layoutTimer) {
+	// 		return;
+	// 	}
+	// 	setTimeout(() => {
+	// 		this.layoutTimer = null;
+	// 		if (!this.isRunningLayout) {
+	// 			this.runLayout(() => this.layoutOwner());
+	// 		}
+	// 	});
+	// }
 
 	public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
 		const controller = <UIViewControllerImpl>UIViewControllerImpl.new();
 		controller._owner = owner;
-		controller._isRunningLayout = 0;
-		controller.didFirstLayout = false;
+		// controller._isRunningLayout = 0;
 
 		return controller;
 	}
@@ -138,7 +158,6 @@ class UIViewControllerImpl extends UIViewController {
 
 		const navigationController = this.navigationController;
 		const frame: Frame = navigationController ? (<any>navigationController).owner : null;
-
 		if (frame) {
 			const newEntry: BackstackEntry = this[ENTRY];
 
@@ -195,12 +214,13 @@ class UIViewControllerImpl extends UIViewController {
 			}
 		}
 
-		if (!this.presentedViewController) {
+		// TODO: testing without the check. Does not seem necessary and have very bad side effects.
+		// if (!this.presentedViewController) {
 			// clear presented viewController here only if no presented controller.
 			// this is needed because in iOS9 the order of events could be - willAppear, willDisappear, didAppear.
 			// If we clean it when we have viewController then once presented VC is dismissed then
 			owner._presentedViewController = null;
-		}
+		// }
 	}
 
 	@profile
@@ -248,17 +268,17 @@ class UIViewControllerImpl extends UIViewController {
 
 	public viewSafeAreaInsetsDidChange(): void {
 		super.viewSafeAreaInsetsDidChange();
-		if (this.isRunningLayout || !this.didFirstLayout) {
-			return;
-		}
-		const owner = this._owner?.deref();
-		if (owner) {
-			this.runLayout(() => IOSHelper.layoutView(this, owner));
-		}
+		// if (this.isRunningLayout || !this.didFirstLayout) {
+		// 	return;
+		// }
+		// const owner = this._owner?.deref();
+		// if (owner) {
+		// 	this.runLayout(() => IOSHelper.layoutView(this, owner));
+		// }
 	}
 
 	public viewDidLayoutSubviews(): void {
-		this.startRunningLayout();
+		// this.startRunningLayout();
 		super.viewDidLayoutSubviews();
 		const owner = this._owner?.deref();
 		if (owner) {
@@ -312,7 +332,7 @@ class UIViewControllerImpl extends UIViewController {
 
 			IOSHelper.layoutView(this, owner);
 		}
-		this.finishRunningLayout();
+		// this.finishRunningLayout();
 	}
 
 	// Mind implementation for other controllerss
@@ -370,8 +390,8 @@ class UIViewControllerImpl extends UIViewController {
 }
 
 export class Page extends PageBase {
-	nativeViewProtected: UIView;
-	viewController: UIViewControllerImpl;
+	declare nativeViewProtected: UIView;
+	declare viewController: UIViewControllerImpl;
 	onAccessibilityPerformEscape: () => boolean;
 
 	private _backgroundColor = SDK_VERSION <= 12 && !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
@@ -605,7 +625,7 @@ export class Page extends PageBase {
 			return;
 		}
 
-		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
+		if (this.hasActionBar && (this.actionBar.accessibilityLabel || this.actionBar.title)) {
 			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.actionBar.nativeView);
 
 			return;

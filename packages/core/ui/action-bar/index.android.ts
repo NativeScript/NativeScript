@@ -1,14 +1,15 @@
 import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from '.';
-import { isAccessibilityServiceEnabled } from '../../application';
-import { updateContentDescription } from '../../application/helpers';
 import { ActionItemBase, ActionBarBase, isVisible, flatProperty, traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty } from './action-bar-common';
-import { AndroidHelper, View } from '../core/view';
+import { View } from '../core/view';
+import { VIEW_GONE, VIEW_VISIBLE } from '../core/view/index.android';
 import { Color } from '../../color';
 import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
-import { getNativeApp } from '../../application/helpers-common';
+import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
+import { getApplicationContext } from '../../application/helpers.android';
 import { SDK_VERSION } from '../../utils/constants';
+import { getNativeApp } from '../../application/helpers-common';
 
 export * from './action-bar-common';
 
@@ -16,7 +17,6 @@ const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 10000;
 const DEFAULT_ELEVATION = 4;
 
-let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
 	actionItemIdGenerator++;
@@ -61,8 +61,6 @@ function initializeMenuItemClickListener(): void {
 		return;
 	}
 
-	AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
-
 	@NativeClass
 	@Interfaces([androidx.appcompat.widget.Toolbar.OnMenuItemClickListener])
 	class MenuItemClickListenerImpl extends java.lang.Object implements androidx.appcompat.widget.Toolbar.OnMenuItemClickListener {
@@ -80,7 +78,7 @@ function initializeMenuItemClickListener(): void {
 	}
 
 	MenuItemClickListener = MenuItemClickListenerImpl;
-	appResources = getNativeApp<android.app.Application>().getApplicationContext().getResources();
+	appResources = getApplicationContext().getResources();
 }
 
 export class ActionItem extends ActionItemBase {
@@ -142,7 +140,7 @@ export class NavigationButton extends ActionItem {}
 
 export class ActionBar extends ActionBarBase {
 	private _android: AndroidActionBarSettings;
-	public nativeViewProtected: androidx.appcompat.widget.Toolbar;
+	public declare nativeViewProtected: androidx.appcompat.widget.Toolbar;
 
 	constructor() {
 		super();
@@ -199,13 +197,13 @@ export class ActionBar extends ActionBarBase {
 
 		const page = this.page;
 		if (!page.frame || !page.frame._getNavBarVisible(page)) {
-			this.nativeViewProtected.setVisibility(android.view.View.GONE);
+			this.nativeViewProtected.setVisibility(VIEW_GONE);
 
 			// If action bar is hidden - no need to fill it with items.
 			return;
 		}
 
-		this.nativeViewProtected.setVisibility(android.view.View.VISIBLE);
+		this.nativeViewProtected.setVisibility(VIEW_VISIBLE);
 
 		// Add menu items
 		this._addActionItems();
@@ -310,7 +308,7 @@ export class ActionBar extends ActionBarBase {
 			if (title !== undefined) {
 				this.nativeViewProtected.setTitle(title);
 			} else {
-				const appContext = getNativeApp<android.app.Application>().getApplicationContext();
+				const appContext = getApplicationContext();
 				const appInfo = appContext.getApplicationInfo();
 				const appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
 				if (appLabel) {
@@ -471,36 +469,7 @@ export class ActionBar extends ActionBarBase {
 		const originalIsAccessibilityHeading = SDK_VERSION >= 28 && nativeView.isAccessibilityHeading();
 
 		try {
-			nativeView.setFocusable(false);
-			nativeView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-
-			let announceView: android.view.View | null = null;
-
-			const numChildren = nativeView.getChildCount();
-			for (let i = 0; i < numChildren; i += 1) {
-				const childView = nativeView.getChildAt(i);
-				if (!childView) {
-					continue;
-				}
-
-				childView.setFocusable(true);
-				if (childView instanceof androidx.appcompat.widget.AppCompatTextView) {
-					announceView = childView;
-					if (SDK_VERSION >= 28) {
-						announceView.setAccessibilityHeading(true);
-					}
-				}
-			}
-
-			if (!announceView) {
-				announceView = nativeView;
-			}
-
-			announceView.setFocusable(true);
-			announceView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
-
-			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
-			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+			org.nativescript.widgets.ViewHelper.toolbarAccessibilityScreenChanged(nativeView);
 		} catch {
 			// ignore
 		} finally {
@@ -512,7 +481,7 @@ export class ActionBar extends ActionBarBase {
 				}
 
 				if (SDK_VERSION >= 28) {
-					nativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
+					localNativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
 				}
 
 				if (SDK_VERSION >= 26) {
@@ -525,15 +494,8 @@ export class ActionBar extends ActionBarBase {
 	}
 }
 
-function getAppCompatTextView(toolbar: androidx.appcompat.widget.Toolbar): typeof AppCompatTextView {
-	for (let i = 0, count = toolbar.getChildCount(); i < count; i++) {
-		const child = toolbar.getChildAt(i);
-		if (child instanceof AppCompatTextView) {
-			return child;
-		}
-	}
-
-	return null;
+function getAppCompatTextView(toolbar: androidx.appcompat.widget.Toolbar) {
+	return org.nativescript.widgets.ViewHelper.getChildAppCompatTextView(toolbar);
 }
 
 ActionBar.prototype.recycleNativeView = 'auto';
@@ -547,7 +509,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
 	let result = null;
 	if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-		const resourceId: number = resources.getIdentifier(icon.substring(RESOURCE_PREFIX.length), 'drawable', getNativeApp<android.app.Application>().getApplicationContext().getPackageName());
+		const resourceId: number = resources.getIdentifier(icon.substring(RESOURCE_PREFIX.length), 'drawable', getApplicationContext().getPackageName());
 		if (resourceId > 0) {
 			result = resourceId;
 		}

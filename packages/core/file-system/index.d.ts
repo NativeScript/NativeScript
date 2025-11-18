@@ -73,7 +73,7 @@ export class FileSystemEntity {
 /**
  * Contains Android-specific the file system helpers.
  */
-declare class Android {
+export class Android {
 	createFile(options: { relativePath?: string; name: string; mime: string; directory: AndroidDirectory }): File;
 }
 
@@ -81,7 +81,7 @@ declare class Android {
  * Contains iOS-specific the file system helpers.
  */
 
-declare class iOS {}
+export class iOS {}
 
 /**
  * Represents a File entity on the file system.
@@ -96,6 +96,11 @@ export class File extends FileSystemEntity {
 	 * @param path The path to check for.
 	 */
 	static exists(path: string): boolean;
+
+	/**
+	 * Can be used to determine if an entity is a Folder without testing for class (uglified).
+	 */
+	isFolder: false;
 
 	/**
 	 * Gets the extension of the file.
@@ -160,7 +165,7 @@ export class File extends FileSystemEntity {
 	 * @param path The path to get/create the file at.
 	 * @param copy An optional value when set, copies the content-uri to a temp file enabling the legacy behaviour
 	 */
-	static fromPath(path: string, copy?: boolean): File;
+	static fromPath(path: string, copy?: boolean, create?: boolean): File;
 
 	/**
 	 * Reads the content of the file as a string using the specified encoding (defaults to UTF-8).
@@ -220,6 +225,11 @@ export class File extends FileSystemEntity {
  */
 export class Folder extends FileSystemEntity {
 	/**
+	 * Can be used to determine if an entity is a Folder without testing for class (uglified).
+	 */
+	isFolder: true;
+
+	/**
 	 * Determines whether this instance is a KnownFolder (accessed through the KnownFolders object).
 	 */
 	isKnown: boolean;
@@ -228,7 +238,7 @@ export class Folder extends FileSystemEntity {
 	 * Gets or creates a Folder entity at the specified path.
 	 * @param path The path to get/create the folder at.
 	 */
-	static fromPath(path: string): Folder;
+	static fromPath(path: string, create?: boolean): Folder;
 
 	/**
 	 * Checks whether a Folder with the specified path already exists.
@@ -257,31 +267,33 @@ export class Folder extends FileSystemEntity {
 	/**
 	 * Gets or creates a File entity with the specified name within this Folder.
 	 * @param name The name of the file to get/create.
+	 * @param create create the file if not existing (default to true)
 	 */
-	getFile(name: string): File;
+	getFile(name: string, create?: boolean): File;
 
 	/**
 	 * Gets or creates a Folder entity with the specified name within this Folder.
 	 * @param name The name of the folder to get/create.
+	 * @param create create the file if not existing (default to true)
 	 */
-	getFolder(name: string): Folder;
+	getFolder(name: string, create?: boolean): Folder;
 
 	/**
 	 * Gets all the top-level entities residing within this folder.
 	 */
-	getEntities(): Promise<Array<FileSystemEntity>>;
+	getEntities(): Promise<Array<File | Folder>>;
 
 	/**
 	 * Gets all the top-level entities residing within this folder synchronously.
 	 * @param onError An optional function to be called if some error occurs.
 	 */
-	getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity>;
+	getEntitiesSync(onError?: (error: any) => any): Array<File | Folder>;
 
 	/**
 	 * Enumerates all the top-level FileSystem entities residing within this folder.
 	 * @param onEntity A callback that receives the current entity. If the callback returns false this will mean for the iteration to stop.
 	 */
-	eachEntity(onEntity: (entity: FileSystemEntity) => boolean);
+	eachEntity(onEntity: (entity: File | Folder) => boolean);
 }
 
 /**

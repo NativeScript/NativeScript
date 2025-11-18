@@ -1,5 +1,7 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
+import { FILE_PREFIX } from '../utils';
 import { SDK_VERSION } from '../utils/constants';
+import { getApplicationContext } from '../application/helpers.android';
 import { getNativeApp } from '../application/helpers-common';
 
 // The FileSystemAccess implementation, used through all the APIs.
@@ -11,7 +13,7 @@ let fileAccess: IFileSystemAccess;
  */
 export function getFileAccess(): IFileSystemAccess {
 	if (!fileAccess) {
-		if (__ANDROID__ && SDK_VERSION >= 29) {
+		if (__ANDROID__) {
 			fileAccess = new FileSystemAccess29();
 		} else {
 			fileAccess = new FileSystemAccess();
@@ -140,10 +142,12 @@ export class FileSystemEntity {
 		// call rename for FileSystemAccess29
 		if ((<any>fileAccess).__skip) {
 			fileAccess.rename(this.path, newName, localError);
-			const fileInfo = getFileAccess().getFile(this.path, null);
-			if (fileInfo) {
-				this._name = fileInfo.name;
-				this._extension = fileInfo.extension;
+			if (File.exists(this.path)) {
+				const fileInfo = getFileAccess().getFile(this.path, null);
+				if (fileInfo) {
+					this._name = fileInfo.name;
+					this._extension = fileInfo.extension;
+				}
 			}
 			return;
 		}
@@ -270,7 +274,7 @@ class Android {
 			throw new Error(`createFile is available on Android only!`);
 		}
 
-		const context = getNativeApp<android.app.Application>().getApplicationContext() as android.content.Context;
+		const context = getApplicationContext();
 
 		const meta = new android.content.ContentValues();
 		meta.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, options.name);
@@ -304,6 +308,7 @@ class iOS {}
 const ios = new iOS();
 
 export class File extends FileSystemEntity {
+	isFolder = false;
 	public static get ios() {
 		return ios;
 	}
@@ -312,14 +317,17 @@ export class File extends FileSystemEntity {
 		return ad;
 	}
 
-	public static fromPath(path: string, copy: boolean = false) {
+	public static fromPath(path: string, copy: boolean = false, create: boolean = true) {
 		const onError = function (error) {
 			throw error;
 		};
-
+		if (__IOS__ && path.startsWith(FILE_PREFIX)) {
+			// if the path starts with file:// then fileAccess will see it as non existing even if it exists
+			path = path.substring(FILE_PREFIX.length);
+		}
 		if (__ANDROID__ && copy) {
 			if (path.startsWith('content:')) {
-				const fileInfo = getFileAccess().getFile(path, onError);
+				const fileInfo = getFileAccess().getFile(path, onError, create);
 				// falls back to creating a temp file without a known extension.
 				if (!fileInfo) {
 					const tempFile = `${knownFolders.temp().path}/${java.util.UUID.randomUUID().toString()}`;
@@ -335,7 +343,7 @@ export class File extends FileSystemEntity {
 			}
 		}
 
-		const fileInfo = getFileAccess().getFile(path, onError);
+		const fileInfo = getFileAccess().getFile(path, onError, create);
 		if (!fileInfo) {
 			return undefined;
 		}
@@ -386,22 +394,18 @@ export class File extends FileSystemEntity {
 				);
 		});
 	}
-
+	private _onCallback(callback) {
+		return (result) => {
+			this._locked = false;
+			callback?.(result);
+		};
+	}
 	public appendSync(content: any, onError?: (error: any) => any): void {
 		this._checkAccess();
 
 		try {
 			this._locked = true;
-
-			const that = this;
-			const localError = function (error) {
-				that._locked = false;
-				if (onError) {
-					onError(error);
-				}
-			};
-
-			getFileAccess().appendSync(this.path, content, localError);
+			getFileAccess().appendSync(this.path, content, this._onCallback(onError));
 		} finally {
 			this._locked = false;
 		}
@@ -439,16 +443,7 @@ export class File extends FileSystemEntity {
 
 		try {
 			this._locked = true;
-
-			const that = this;
-			const localError = function (error) {
-				that._locked = false;
-				if (onError) {
-					onError(error);
-				}
-			};
-
-			getFileAccess().appendTextSync(this.path, content, localError, encoding);
+			getFileAccess().appendTextSync(this.path, content, this._onCallback(onError), encoding);
 		} finally {
 			this._locked = false;
 		}
@@ -485,16 +480,7 @@ export class File extends FileSystemEntity {
 		this._checkAccess();
 
 		this._locked = true;
-
-		const that = this;
-		const localError = (error) => {
-			that._locked = false;
-			if (onError) {
-				onError(error);
-			}
-		};
-
-		const content = getFileAccess().copySync(this.path, dest, localError);
+		const content = getFileAccess().copySync(this.path, dest, this._onCallback(onError));
 
 		this._locked = false;
 
@@ -533,15 +519,7 @@ export class File extends FileSystemEntity {
 
 		this._locked = true;
 
-		const that = this;
-		const localError = (error) => {
-			that._locked = false;
-			if (onError) {
-				onError(error);
-			}
-		};
-
-		const content = getFileAccess().readSync(this.path, localError);
+		const content = getFileAccess().readSync(this.path, this._onCallback(onError));
 
 		this._locked = false;
 
@@ -581,15 +559,7 @@ export class File extends FileSystemEntity {
 		try {
 			this._locked = true;
 
-			const that = this;
-			const localError = function (error) {
-				that._locked = false;
-				if (onError) {
-					onError(error);
-				}
-			};
-
-			getFileAccess().writeSync(this.path, content, localError);
+			getFileAccess().writeSync(this.path, content, this._onCallback(onError));
 		} finally {
 			this._locked = false;
 		}
@@ -627,15 +597,7 @@ export class File extends FileSystemEntity {
 
 		this._locked = true;
 
-		const that = this;
-		const localError = (error) => {
-			that._locked = false;
-			if (onError) {
-				onError(error);
-			}
-		};
-
-		const content = getFileAccess().readTextSync(this.path, localError, encoding);
+		const content = getFileAccess().readTextSync(this.path, this._onCallback(onError), encoding);
 		this._locked = false;
 
 		return content;
@@ -673,16 +635,7 @@ export class File extends FileSystemEntity {
 
 		try {
 			this._locked = true;
-
-			const that = this;
-			const localError = function (error) {
-				that._locked = false;
-				if (onError) {
-					onError(error);
-				}
-			};
-
-			getFileAccess().writeTextSync(this.path, content, localError, encoding);
+			getFileAccess().writeTextSync(this.path, content, this._onCallback(onError), encoding);
 		} finally {
 			this._locked = false;
 		}
@@ -696,12 +649,19 @@ export class File extends FileSystemEntity {
 }
 
 export class Folder extends FileSystemEntity {
-	public static fromPath(path: string): Folder {
-		const onError = function (error) {
-			throw error;
-		};
-
-		const folderInfo = getFileAccess().getFolder(path, onError);
+	isFolder = true;
+	public static fromPath(path: string, create = true): Folder {
+		if (__IOS__ && path.startsWith(FILE_PREFIX)) {
+			// if the path starts with file:// then fileAccess will see it as non existing even if it exists
+			path = path.substring(FILE_PREFIX.length);
+		}
+		const folderInfo = getFileAccess().getFolder(
+			path,
+			(error) => {
+				throw error;
+			},
+			create,
+		);
 		if (!folderInfo) {
 			return undefined;
 		}
@@ -715,6 +675,9 @@ export class Folder extends FileSystemEntity {
 
 	public contains(name: string): boolean {
 		const fileAccess = getFileAccess();
+		if (fileAccess.contains) {
+			return fileAccess.contains(this.path, name);
+		}
 		const path = fileAccess.joinPath(this.path, name);
 
 		if (fileAccess.fileExists(path)) {
@@ -747,15 +710,21 @@ export class Folder extends FileSystemEntity {
 		return this._isKnown;
 	}
 
-	public getFile(name: string): File {
+	public getFile(name: string, create = true): File {
 		const fileAccess = getFileAccess();
+		if (fileAccess.getOrCreateFile) {
+			const fileInfo = fileAccess.getOrCreateFile(this.path, name, create);
+			return fileInfo ? createFile(fileInfo) : undefined;
+		}
 		const path = fileAccess.joinPath(this.path, name);
 
-		const onError = function (error) {
-			throw error;
-		};
-
-		const fileInfo = fileAccess.getFile(path, onError);
+		const fileInfo = fileAccess.getFile(
+			path,
+			(error) => {
+				throw error;
+			},
+			create,
+		);
 		if (!fileInfo) {
 			return undefined;
 		}
@@ -763,15 +732,21 @@ export class Folder extends FileSystemEntity {
 		return createFile(fileInfo);
 	}
 
-	public getFolder(name: string): Folder {
+	public getFolder(name: string, create = true): Folder {
 		const fileAccess = getFileAccess();
+		if (fileAccess.getOrCreateFolder) {
+			const folderInfo = fileAccess.getOrCreateFolder(this.path, name, create);
+			return folderInfo ? createFolder(folderInfo) : undefined;
+		}
 		const path = fileAccess.joinPath(this.path, name);
 
-		const onError = function (error) {
-			throw error;
-		};
-
-		const folderInfo = fileAccess.getFolder(path, onError);
+		const folderInfo = fileAccess.getFolder(
+			path,
+			(error) => {
+				throw error;
+			},
+			create,
+		);
 		if (!folderInfo) {
 			return undefined;
 		}
@@ -779,7 +754,7 @@ export class Folder extends FileSystemEntity {
 		return createFolder(folderInfo);
 	}
 
-	public getEntities(): Promise<Array<FileSystemEntity>> {
+	public getEntities(): Promise<Array<File | Folder>> {
 		return new Promise((resolve, reject) => {
 			let hasError = false;
 			const localError = function (error) {
@@ -794,13 +769,13 @@ export class Folder extends FileSystemEntity {
 		});
 	}
 
-	public getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity> {
+	public getEntitiesSync(onError?: (error: any) => any): Array<File | Folder> {
 		const fileInfos = getFileAccess().getEntities(this.path, onError);
 		if (!fileInfos) {
 			return null;
 		}
 
-		const entities = new Array<FileSystemEntity>();
+		const entities = new Array<File | Folder>();
 		for (let i = 0; i < fileInfos.length; i++) {
 			if (fileInfos[i].extension) {
 				entities.push(createFile(fileInfos[i]));
@@ -812,7 +787,7 @@ export class Folder extends FileSystemEntity {
 		return entities;
 	}
 
-	public eachEntity(onEntity: (entity: FileSystemEntity) => boolean) {
+	public eachEntity(onEntity: (entity: File | Folder) => boolean) {
 		if (!onEntity) {
 			return;
 		}
@@ -1047,9 +1022,7 @@ export namespace path {
 	}
 
 	export function join(...paths: string[]): string {
-		const fileAccess = getFileAccess();
-
-		return fileAccess.joinPaths(paths);
+		return getFileAccess().joinPaths(paths);
 	}
 
 	export const separator = getFileAccess().getPathSeparator();

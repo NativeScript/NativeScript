@@ -1,6 +1,7 @@
 ﻿import { View, CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { Property } from '../core/properties';
+import { colorConverter } from '../styling/style-properties';
 import { Color } from '../../color';
 import { HtmlView as HtmlViewDefinition } from '.';
 
@@ -31,6 +32,6 @@ selectableProperty.register(HtmlViewBase);
 export const linkColorProperty = new Property<HtmlViewBase, Color>({
 	name: 'linkColor',
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 linkColorProperty.register(HtmlViewBase);

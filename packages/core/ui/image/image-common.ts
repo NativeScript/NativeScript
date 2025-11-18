@@ -7,6 +7,7 @@ import { ImageSource, iosSymbolScaleType } from '../../image-source';
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX, SYSTEM_PREFIX } from '../../utils';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
+import { colorConverter } from '../styling/style-properties';
 import { Length } from '../styling/length-shared';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { Trace } from '../../trace';
@@ -175,7 +176,7 @@ export const tintColorProperty = new InheritedCssProperty<Style, Color>({
 	name: 'tintColor',
 	cssName: 'tint-color',
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 tintColorProperty.register(Style);
 

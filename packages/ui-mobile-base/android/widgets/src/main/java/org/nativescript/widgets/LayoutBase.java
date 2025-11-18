@@ -1,6 +1,14 @@
 package org.nativescript.widgets;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -148,10 +156,10 @@ public abstract class LayoutBase extends ViewGroup {
 		return new CommonLayoutParams(from);
 	}
 
-	@Override
-	public boolean shouldDelayChildPressedState() {
-		return false;
-	}
+    @Override
+    public boolean shouldDelayChildPressedState() {
+        return false;
+    }
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {

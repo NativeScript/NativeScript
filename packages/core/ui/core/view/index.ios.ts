@@ -1,7 +1,5 @@
 import type { Point, Position } from './view-interfaces';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, iosGlassEffectProperty, GlassEffectType, GlassEffectVariant, GlassEffectConfig, statusBarStyleProperty } from './view-common';
-import { isAccessibilityServiceEnabled } from '../../../application';
-import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, ios as iosUtils, getWindow } from '../../../utils';
@@ -11,11 +9,15 @@ import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState , isAccessibilityServiceEnabled} from '../../../accessibility';
+
+import { updateA11yPropertiesCallback } from '../../../application/helpers-common';
+
 import { CoreTypes } from '../../../core-types';
 import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
 import { NativeScriptUIView } from '../../utils';
+import { Application } from '../../../application';
 import { Color } from '../../../color';
 
 export * from './view-common';
@@ -66,9 +68,31 @@ export class View extends ViewCommon {
 	get isLayoutRequested(): boolean {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 	}
+	initNativeView() {
+		super.initNativeView();
+		const nativeView = this.nativeViewProtected;
+		/**
+		 * We need to map back from the UIView to the NativeScript View for accessibility.
+		 *
+		 * We do that by setting the uiView's tag to the View's domId.
+		 * This way we can do reverse lookup.
+		 */
+		nativeView.tag = this._domId;
+	}
+
+	requestlayoutIfNeeded() {
+		if (this.isLayoutRequired || this._requetLayoutNeeded) {
+			this._requetLayoutNeeded = false;
+			this.requestLayout();
+		}
+	}
 
 	disposeNativeView() {
 		super.disposeNativeView();
+
+		if (this.viewController) {
+			this.viewController = null;
+		}
 
 		this._cachedFrame = null;
 		this._isLaidOut = false;
@@ -76,6 +100,11 @@ export class View extends ViewCommon {
 	}
 
 	public requestLayout(): void {
+		if (this.mSuspendRequestLayout) {
+			this._requetLayoutNeeded = true;
+			return;
+		}
+		this._requetLayoutNeeded = false;
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
 		super.requestLayout();
 
@@ -84,8 +113,9 @@ export class View extends ViewCommon {
 			nativeView.setNeedsLayout();
 		}
 
-		if (this.viewController && this.viewController.view !== nativeView) {
-			this.viewController.view.setNeedsLayout();
+		const controller = this.viewController;
+		if (controller && controller.view !== nativeView) {
+			controller.view.setNeedsLayout();
 		}
 	}
 
@@ -155,12 +185,17 @@ export class View extends ViewCommon {
 	private layoutOuterShadows(): void {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		if (nativeView?.outerShadowContainerLayer) {
-			CATransaction.setDisableActions(true);
+			const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+			if (!isInTheMiddleOfAnimation) {
+				CATransaction.setDisableActions(true);
+			}
 
 			nativeView.outerShadowContainerLayer.bounds = nativeView.bounds;
 			nativeView.outerShadowContainerLayer.position = nativeView.center;
 
-			CATransaction.setDisableActions(false);
+			if (!isInTheMiddleOfAnimation) {
+				CATransaction.setDisableActions(false);
+			}
 		}
 	}
 
@@ -401,6 +436,11 @@ export class View extends ViewCommon {
 	}
 
 	public updateNativeTransform() {
+		// if (!this.isLayoutValid) {
+		// 	this._hasPendingTransform = true;
+		// 	return;
+		// }
+
 		const scaleX = this.scaleX || 1e-6;
 		const scaleY = this.scaleY || 1e-6;
 		const perspective = this.perspective || 300;
@@ -423,15 +463,19 @@ export class View extends ViewCommon {
 				CATransaction.begin();
 			}
 			// Disable CALayer animatable property changes
-			CATransaction.setDisableActions(true);
-
+			const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+			if (!isInTheMiddleOfAnimation) {
+				CATransaction.setDisableActions(true);
+			}
 			this.nativeViewProtected.layer.transform = transform;
 			if (nativeView.outerShadowContainerLayer) {
 				nativeView.outerShadowContainerLayer.transform = transform;
 			}
 			this._isTransformed = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
 
-			CATransaction.setDisableActions(false);
+			if (!isInTheMiddleOfAnimation) {
+				CATransaction.setDisableActions(false);
+			}
 			if (!updateSuspended) {
 				CATransaction.commit();
 			}
@@ -443,7 +487,10 @@ export class View extends ViewCommon {
 		const newPoint = CGPointMake(originX, originY);
 
 		// Disable CALayer animatable property changes
-		CATransaction.setDisableActions(true);
+		const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(true);
+		}
 
 		nativeView.layer.anchorPoint = newPoint;
 
@@ -464,7 +511,9 @@ export class View extends ViewCommon {
 			nativeView.outerShadowContainerLayer.position = CGPointMake(frame.origin.x + frame.size.width * originX, frame.origin.y + frame.size.height * originY);
 		}
 
-		CATransaction.setDisableActions(false);
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(false);
+		}
 	}
 
 	// By default we update the view's presentation layer when setting backgroundColor and opacity properties.
@@ -483,33 +532,28 @@ export class View extends ViewCommon {
 	}
 
 	protected _showNativeModalView(parent: View, options: ShowModalOptions) {
-		const parentWithController = IOSHelper.getParentWithViewController(parent);
+		let parentWithController = IOSHelper.getParentWithViewController(parent);
 		if (!parentWithController) {
 			Trace.write(`Could not find parent with viewController for ${parent} while showing modal view.`, Trace.categories.ViewHierarchy, Trace.messageType.error);
 
 			return;
 		}
 
-		const parentController = parentWithController.viewController;
-		if (parentController.presentedViewController) {
-			Trace.write('Parent is already presenting view controller. Close the current modal page before showing another one!', Trace.categories.ViewHierarchy, Trace.messageType.error);
-
-			return;
-		}
-
-		if (!parentController.view || !parentController.view.window) {
-			Trace.write('Parent page is not part of the window hierarchy.', Trace.categories.ViewHierarchy, Trace.messageType.error);
-
-			return;
+		let parentController = parentWithController.viewController;
+		// we loop to ensure we are showing from the top presented view controller
+		while (parentController.presentedViewController && !parentController.presentedViewController.beingDismissed) {
+			parentController = parentController.presentedViewController;
+			parentWithController = parentWithController['_modal'] || parentWithController;
 		}
 
 		this._setupAsRootView({});
 
 		super._showNativeModalView(<ViewCommon>parentWithController, options);
-		let controller = this.viewController;
+		let controller: IOSHelper.UILayoutViewController = this.viewController;
 		if (!controller) {
 			const nativeView = this.ios || this.nativeViewProtected;
-			controller = <UIViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
+			controller = <IOSHelper.UILayoutViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
+			controller.modal = true;
 
 			if (nativeView instanceof UIView) {
 				controller.view.addSubview(nativeView);
@@ -517,6 +561,8 @@ export class View extends ViewCommon {
 
 			this.viewController = controller;
 		}
+		// we set the parent to root to access all css root variables
+		this.parent = Application.getRootView();
 
 		if (options.transition) {
 			controller.modalPresentationStyle = UIModalPresentationStyle.Custom;
@@ -607,7 +653,6 @@ export class View extends ViewCommon {
 		//   console.log('accessibilityPerformEscape!!')
 		//   return true;
 		// }
-
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
@@ -632,6 +677,7 @@ export class View extends ViewCommon {
 
 			return;
 		}
+		this._raiseClosingModallyEvent();
 
 		// modal view has already been closed by UI, probably as a popover
 		if (!parent.viewController.presentedViewController) {
@@ -640,12 +686,20 @@ export class View extends ViewCommon {
 			return;
 		}
 
-		const parentController = parent.viewController;
+		let parentController = parent.viewController;
+		// if a dialog (UIAlertController or custom one defining isAlertController) we need to loop over to get the
+		// top presentedViewController to correctly hide without hiding the dialog
+		// though we dont want to go "over" to not go into possible top shown modal
+		if (parentController.presentedViewController && parentController.presentedViewController.presentedViewController && (parentController.presentedViewController instanceof UIAlertController || parentController.presentedViewController['isAlertController'])) {
+			parentController = parentController.presentedViewController;
+		}
+
+		// while(parentController.presentedViewController && parentController.presentedViewController.presentedViewController) {
+		// }
 		let animated = true;
 		if (this._modalAnimatedOptions?.length) {
 			animated = this._modalAnimatedOptions.slice(-1)[0];
 		}
-
 		parentController.dismissViewControllerAnimatedCompletion(animated, () => {
 			const transitionState = SharedTransition.getState(this.transitionId);
 			if (!transitionState?.interactiveCancelled) {
@@ -789,10 +843,11 @@ export class View extends ViewCommon {
 				break;
 			case CoreTypes.Visibility.hidden:
 			case CoreTypes.Visibility.collapse:
+			case CoreTypes.Visibility.collapsed:
 				nativeView.hidden = true;
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}", "${CoreTypes.Visibility.collapsed}".`);
 		}
 
 		// Apply visibility value to shadows as well
@@ -811,7 +866,10 @@ export class View extends ViewCommon {
 			CATransaction.begin();
 		}
 		// Disable CALayer animatable property changes
-		CATransaction.setDisableActions(true);
+		const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(true);
+		}
 
 		nativeView.alpha = value;
 		// Apply opacity value to shadows as well
@@ -819,7 +877,9 @@ export class View extends ViewCommon {
 			nativeView.outerShadowContainerLayer.opacity = value;
 		}
 
-		CATransaction.setDisableActions(false);
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(false);
+		}
 		if (!updateSuspended) {
 			CATransaction.commit();
 		}
@@ -1046,7 +1106,7 @@ export class View extends ViewCommon {
 			args = options.message;
 		}
 
-		switch (options.iosNotificationType) {
+		switch (options.iosNotificationType as IOSPostAccessibilityNotificationType) {
 			case IOSPostAccessibilityNotificationType.Announcement: {
 				notification = UIAccessibilityAnnouncementNotification;
 				break;
@@ -1111,12 +1171,16 @@ export class View extends ViewCommon {
 	}
 
 	_redrawNativeBackground(value: UIColor | Background): void {
+		const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
 		const updateSuspended = this._isPresentationLayerUpdateSuspended();
+
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
-		// Disable CALayer animatable property changes
-		CATransaction.setDisableActions(true);
+		if (!isInTheMiddleOfAnimation) {
+			// Disable CALayer animatable property changes
+			CATransaction.setDisableActions(true);
+		}
 
 		const nativeView = this.nativeViewProtected;
 		if (nativeView) {
@@ -1130,7 +1194,9 @@ export class View extends ViewCommon {
 			}
 		}
 
-		CATransaction.setDisableActions(false);
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(false);
+		}
 		if (!updateSuspended) {
 			CATransaction.commit();
 		}
@@ -1263,6 +1329,13 @@ export class CustomLayoutView extends ContainerView {
 		}
 
 		return false;
+	}
+
+	public _removeFromNativeVisualTree(): void {
+		super._removeFromNativeVisualTree();
+		if (this.nativeViewProtected) {
+			this.nativeViewProtected.removeFromSuperview();
+		}
 	}
 
 	public _removeViewFromNativeVisualTree(child: View): void {

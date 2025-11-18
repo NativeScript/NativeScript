@@ -3,9 +3,9 @@ import { Screen } from '../../platform/screen';
 import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 
 export class SlideTransition extends Transition {
-	transitionController: SlideTransitionController;
-	presented: UIViewController;
-	presenting: UIViewController;
+	declare transitionController: SlideTransitionController;
+	declare presented: UIViewController;
+	declare presenting: UIViewController;
 	operation: number;
 	direction: string;
 

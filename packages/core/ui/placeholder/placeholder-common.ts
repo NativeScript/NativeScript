@@ -1,6 +1,7 @@
+import type { Placeholder } from '.';
 import { EventData } from '../../data/observable';
 
-export interface CreateViewEventData extends EventData {
+export interface CreateViewEventData extends EventData<Placeholder> {
 	/**
 	 * The native view that should be added to the visual tree.
 	 */

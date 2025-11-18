@@ -1,6 +1,7 @@
 ﻿import type { GesturesObserverDefinition, GestureEvents, GestureStateTypes, SwipeDirection, TouchAction, GestureEventData, TapGestureEventData, TouchGestureEventData, Pointer, GestureEventDataWithState, PinchGestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from './gestures-types';
 import { GestureTypes } from './gestures-types';
 import type { View } from '../core/view';
+export { GesturesObserverBase as GesturesObserver };
 
 /**
  * Returns a string representation of a gesture type.
@@ -101,7 +102,5 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 		this._context = null;
 	}
 }
-
-export { GesturesObserverBase as GesturesObserver };
 
 export { TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, GestureEvents } from './gestures-types';

@@ -99,8 +99,8 @@ class NoScrollAnimationUITextView extends UITextView {
 
 @CSSType('TextView')
 export class TextView extends TextViewBaseCommon {
-	nativeViewProtected: UITextView;
-	nativeTextViewProtected: UITextView;
+	declare nativeViewProtected: UITextView;
+	declare nativeTextViewProtected: UITextView;
 	private _delegate: UITextViewDelegateImpl;
 	private _isShowingHint: boolean;
 

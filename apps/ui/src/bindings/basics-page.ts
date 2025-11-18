@@ -28,7 +28,7 @@ export function createPage() {
 	//buttonTwoWay.automationText = "buttonTwoWay";
 
 	buttonSetText.text = 'SetText';
-	buttonSetText.on(buttonModule.Button.tapEvent, function () {
+	buttonSetText.on(buttonModule.tapEvent, function () {
 		targetOneWay.text = 'Test';
 		targetTwoWay.text = 'Test';
 	});
@@ -47,7 +47,7 @@ export function createPage() {
 	buttonOneWay.on(buttonModule.Button.loadedEvent, function () {
 		buttonOneWay.text = sourceOneWay.get('textSource');
 	});
-	buttonOneWay.on(buttonModule.Button.tapEvent, function () {
+	buttonOneWay.on(buttonModule.tapEvent, function () {
 		buttonOneWay.text = sourceOneWay.get('textSource');
 	});
 
@@ -67,7 +67,7 @@ export function createPage() {
 	buttonTwoWay.on(buttonModule.Button.loadedEvent, function () {
 		buttonTwoWay.text = sourceTwoWay.get('textSource');
 	});
-	buttonTwoWay.on(buttonModule.Button.tapEvent, function () {
+	buttonTwoWay.on(buttonModule.tapEvent, function () {
 		buttonTwoWay.text = sourceTwoWay.get('textSource');
 	});
 

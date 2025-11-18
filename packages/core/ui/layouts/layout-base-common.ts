@@ -3,6 +3,7 @@ import { CoreTypes } from '../../core-types';
 import { View, CustomLayoutView, AddChildFromBuilder } from '../core/view';
 import { booleanConverter, getViewById } from '../core/view-base';
 import { Property } from '../core/properties';
+import { profile } from '../../profiling';
 
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 	private _subViews = new Array<View>();
@@ -42,6 +43,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		//Overridden
 	}
 
+	@profile
 	public addChild(child: View): void {
 		// TODO: Do we need this method since we have the core logic in the View implementation?
 		this._subViews.push(child);
@@ -59,6 +61,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		return false;
 	}
 
+	@profile
 	public removeChild(child: View): void {
 		this._removeView(child);
 
@@ -156,9 +159,10 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 	}
 }
 
+// by default android view are not clipped while iOS are
 export const clipToBoundsProperty = new Property<LayoutBaseCommon, boolean>({
 	name: 'clipToBounds',
-	defaultValue: true,
+	defaultValue: __IOS__ ? false : true,
 	valueConverter: booleanConverter,
 });
 clipToBoundsProperty.register(LayoutBaseCommon);

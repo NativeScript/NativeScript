@@ -5,3 +5,4 @@ dist
 !**/*.d.ts
 jest.config.js
 npm-debug.log
+platforms/android/*.aar

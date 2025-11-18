@@ -29,7 +29,7 @@ class SwitchChangeHandlerImpl extends NSObject {
 }
 
 export class Switch extends SwitchBase {
-	nativeViewProtected: UISwitch;
+	declare nativeViewProtected: UISwitch;
 	private _handler: NSObject;
 	// Defer color updates while iOS 26+ "glass" toggle animation runs
 	private _toggleColorTimer: NodeJS.Timeout | null = null;

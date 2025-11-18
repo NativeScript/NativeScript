@@ -1,4 +1,4 @@
-import { Observable, EventData, Page } from '@nativescript/core';
+import { Observable, EventData, Page, CoreTypes } from '@nativescript/core';
 
 export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;
@@ -123,17 +123,20 @@ export class BoxShadowModel extends Observable {
 	toggleAnimation(args) {
 		const view = args.object;
 		const animationDuration = 500;
+		let curve;
 		if (this._selectedAnimation === 'width') {
 			const originalWidth = args.object.getActualSize().width;
 			view
 				.animate({
 					width: originalWidth / 2,
 					duration: animationDuration,
+					curve,
 				})
 				.then(() =>
 					view.animate({
 						width: originalWidth,
 						duration: animationDuration,
+						curve,
 					}),
 				)
 				.catch((err) => {
@@ -145,11 +148,13 @@ export class BoxShadowModel extends Observable {
 				.animate({
 					height: originalHeight / 2,
 					duration: animationDuration,
+					curve,
 				})
 				.then(() =>
 					view.animate({
 						height: originalHeight,
 						duration: animationDuration,
+						curve,
 					}),
 				)
 				.catch((err) => {
@@ -162,7 +167,8 @@ export class BoxShadowModel extends Observable {
 					scale: this._selectedAnimation === 'scale' ? { x: 0.5, y: 0.6 } : { x: 1, y: 1 },
 					rotate: this._selectedAnimation === 'rotate' ? 180 : 0,
 					translate: this._selectedAnimation === 'translate' ? { x: 100, y: 100 } : { x: 0, y: 0 },
-					duration: 500,
+					duration: animationDuration,
+					curve,
 				})
 				.then(() =>
 					view.animate({
@@ -170,7 +176,8 @@ export class BoxShadowModel extends Observable {
 						scale: { x: 1, y: 1 },
 						rotate: 0,
 						translate: { x: 0, y: 0 },
-						duration: 500,
+						duration: animationDuration,
+						curve,
 					}),
 				)
 				.catch((err) => {

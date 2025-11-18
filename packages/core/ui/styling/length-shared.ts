@@ -101,9 +101,8 @@ export namespace PercentLength {
 				}
 
 				return { unit: '%', value };
-			} else if (stringValue.indexOf('px') !== -1) {
-				stringValue = stringValue.replace('px', '').trim();
-				const value: CoreTypes.px = parseFloat(stringValue);
+			} else if (stringValue.endsWith('px')) {
+				const value: CoreTypes.px = parseFloat(stringValue.slice(-2).trim());
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
@@ -143,8 +142,8 @@ export namespace FixedLength {
 	export function parse(fromValue: string | CoreTypes.FixedLengthType): CoreTypes.FixedLengthType {
 		if (typeof fromValue === 'string') {
 			let stringValue = fromValue.trim();
-			if (stringValue.indexOf('px') !== -1) {
-				stringValue = stringValue.replace('px', '').trim();
+			if (stringValue.endsWith('px')) {
+				stringValue = stringValue.slice(0, -2).trim();
 				const value: CoreTypes.px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);

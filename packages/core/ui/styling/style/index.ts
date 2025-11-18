@@ -8,7 +8,7 @@ import { Observable } from '../../../data/observable';
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf, FlexFlow, Flex } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import type { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { ShadowCSSValues } from '../css-shadow';
 import { StrokeCSSValues } from '../css-stroke';
 import { ClipPathFunction } from '../clip-path-function';

@@ -5,7 +5,7 @@ class MainScreen {
 
 	private initMetrics(): void {
 		const nativeApp = getNativeApp() as android.app.Application;
-		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
+		(nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager).getDefaultDisplay().getRealMetrics(this._metrics);
 	}
 
 	private get metrics(): android.util.DisplayMetrics {
@@ -44,6 +44,3 @@ class MainScreen {
 export class Screen {
 	static mainScreen = new MainScreen();
 }
-
-// This retains compatibility with NS6
-export const screen = Screen;

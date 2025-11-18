@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -529,12 +530,12 @@ public class FileHelper {
 		}
 
 		InputStream is = getInputStream(context, uri);
-		InputStreamReader isr = new InputStreamReader(is, characterSet);
-		BufferedReader reader = new BufferedReader(isr);
+		int n = 0;
 		char[] buf = new char[is.available()];
-		reader.read(buf);
-		reader.close();
-		return new String(buf);
+		InputStreamReader isr = new InputStreamReader(is, characterSet);
+		StringWriter writer = new StringWriter();
+    	while (-1 != (n = isr.read(buf))) writer.write(buf, 0, n);
+    	return writer.toString();
 	}
 
 	public String readTextSync(Context context, @Nullable String encoding, @Nullable Callback callback) {
@@ -719,27 +720,8 @@ public class FileHelper {
 
 	public boolean delete(Context context) {
 		try {
-			if (Build.VERSION.SDK_INT >= 19) {
-				if (isExternalStorageDocument(uri)) {
-					File file = getFile(context, uri);
-					if (file != null) {
-						return file.delete();
-					}
-					return false;
-				} else {
-					if (DocumentsContract.isDocumentUri(context, uri)) {
-						if (Build.VERSION.SDK_INT >= 29) {
-							if (!uri.toString().startsWith("content://com.android.providers.downloads.documents")) {
-								return context.getContentResolver().delete(
-									MediaStore.getMediaUri(context, uri), null, null
-								) > 0;
-							}
-
-						} else {
-							return DocumentsContract.deleteDocument(context.getContentResolver(), uri);
-						}
-					}
-				}
+			if (Build.VERSION.SDK_INT >= 19 && DocumentsContract.isDocumentUri(context, uri)) {
+				return DocumentsContract.deleteDocument(context.getContentResolver(), uri);
 			}
 			return context.getContentResolver().delete(uri, null, null) > 0;
 		} catch (SecurityException | FileNotFoundException e) {

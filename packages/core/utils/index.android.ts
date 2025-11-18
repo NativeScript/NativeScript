@@ -60,6 +60,23 @@ export function releaseNativeObject(object: java.lang.Object) {
 	__releaseNativeCounterpart(object);
 }
 
+export function wrapNativeException<T = any>(ex: NSError, wrapError: (...args) => T = (msg) => new Error(msg) as any) {
+	if (!ex) {
+		return;
+	}
+	if (typeof ex === 'string') {
+		return wrapError(ex);
+	}
+	if (!(ex instanceof Error)) {
+		const err = wrapError(ex.toString());
+		err['nativeException'] = ex;
+		//@ts-ignore
+		err['stackTrace'] = com.tns.NativeScriptException.getStackTraceAsString(ex);
+		return err;
+	}
+	return ex;
+}
+
 export function openUrl(location: string): boolean {
 	const context = androidUtils.getApplicationContext();
 	try {
@@ -67,10 +84,7 @@ export function openUrl(location: string): boolean {
 		intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(intent);
 	} catch (e) {
-		// We don't do anything with an error. We just output it
-		Trace.write(`Failed to start activity for handling URL: ${location}`, Trace.categories.Error, Trace.messageType.error);
-
-		return false;
+		throw wrapNativeException(e);
 	}
 
 	return true;
@@ -190,7 +204,7 @@ Applications cannot access internal storage of other application on Android (see
 		const providerName = `${context.getPackageName()}.provider`;
 		Trace.write(`fully-qualified provider name [${providerName}]`, Trace.categories.Debug);
 
-		const apkURI = androidx.core.content.FileProvider.getUriForFile(context, providerName, new java.io.File(filePath));
+		const apkURI = filePath.startsWith('content://') ? android.net.Uri.parse(filePath) : androidx.core.content.FileProvider.getUriForFile(context, providerName, new java.io.File(filePath));
 
 		// Set flags & URI as data type on the view action
 		intent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);

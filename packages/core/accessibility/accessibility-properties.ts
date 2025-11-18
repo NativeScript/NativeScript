@@ -1,8 +1,8 @@
 import { CssProperty, InheritedCssProperty, Property } from '../ui/core/properties';
-import type { View } from '../ui/core/view';
-import { booleanConverter } from '../ui/core/view-base/utils';
+import { ContainerView, type View } from '../ui/core/view';
+import { booleanConverter } from '../ui/core/view-base';
 import { Style } from '../ui/styling/style';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-common';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
 
 function makePropertyEnumConverter<T>(enumValues) {
 	return (value: string): T | null => {
@@ -26,6 +26,9 @@ function makePropertyEnumConverter<T>(enumValues) {
 
 export const accessibilityEnabledProperty = new CssProperty<Style, boolean>({
 	name: 'accessible',
+	defaultValue(property, view) {
+		return typeof __ACCESSIBILITY_DEFAULT_ENABLED__ === 'undefined' ? !(view instanceof ContainerView) : __ACCESSIBILITY_DEFAULT_ENABLED__;
+	},
 	cssName: 'a11y-enabled',
 	valueConverter: booleanConverter,
 });

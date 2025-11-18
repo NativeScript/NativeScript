@@ -1,9 +1,10 @@
 ﻿import { WebView } from '.';
-import { EventData } from '../../data/observable';
+import { EventData, Observable } from '../../data/observable';
+import type { WebViewBase } from './web-view-common';
 
 export type WebViewNavigationType = 'linkClicked' | 'formSubmitted' | 'backForward' | 'reload' | 'formResubmitted' | 'other' | undefined;
 
-export interface LoadEventData extends EventData {
+export interface LoadEventData<T = WebViewBase> extends EventData<T> {
 	url: string;
 	navigationType: WebViewNavigationType;
 	error: string;

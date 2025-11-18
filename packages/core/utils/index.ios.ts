@@ -31,6 +31,24 @@ export function openFile(filePath: string): boolean {
 	return false;
 }
 
+export function wrapNativeException<T = any>(ex: NSError, wrapError: (...args) => T = (msg) => new Error(msg) as any) {
+	if (!ex) {
+		return;
+	}
+	if (typeof ex === 'string') {
+		return wrapError(ex);
+	}
+	if (!(ex instanceof Error)) {
+		const err = wrapError(ex.localizedDescription);
+		err['nativeException'] = ex;
+		err['code'] = ex.code;
+		err['domain'] = ex.domain;
+		// TODO: we loose native stack. see how to get it
+		return err;
+	}
+	return ex;
+}
+
 export function GC() {
 	__collect();
 }
@@ -83,8 +101,6 @@ export function openUrl(location: string): boolean {
 		// We Don't do anything with an error.  We just output it
 		Trace.write('Error in OpenURL', Trace.categories.Error, Trace.messageType.error);
 	}
-
-	return false;
 }
 
 export function openUrlAsync(location: string): Promise<boolean> {

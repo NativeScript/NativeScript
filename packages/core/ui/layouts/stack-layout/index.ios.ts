@@ -113,6 +113,7 @@ export class StackLayout extends StackLayoutBase {
 		const childRight = right - left - paddingRight;
 
 		switch (this.verticalAlignment) {
+			case CoreTypes.VerticalAlignment.center:
 			case CoreTypes.VerticalAlignment.middle:
 				childTop = (bottom - top - this._totalLength) / 2 + paddingTop;
 				break;
@@ -151,6 +152,7 @@ export class StackLayout extends StackLayoutBase {
 				childLeft = this.direction === CoreTypes.LayoutDirection.rtl ? right - left - this._totalLength + paddingLeft : paddingLeft;
 				break;
 			case CoreTypes.HorizontalAlignment.center:
+			case CoreTypes.HorizontalAlignment.middle:
 				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
 			case CoreTypes.HorizontalAlignment.right:

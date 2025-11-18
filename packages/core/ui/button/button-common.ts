@@ -4,10 +4,10 @@ import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { AccessibilityRole } from '../../accessibility';
 
+export const tapEvent = 'tap';
+
 @CSSType('Button')
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {
-	public static tapEvent = 'tap';
-
 	accessibilityRole = AccessibilityRole.Button;
 
 	get textWrap(): boolean {

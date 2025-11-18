@@ -1,0 +1,31 @@
+<Page>
+    <AbsoluteLayout>
+        <GridLayout top="0" left="0" width="100%" rows="48, 48, 48, 48, 48, 48" columns="*,*,*">
+
+            <Label row="0" colSpan="3" text="Animate"/>
+            <SegmentedBar row="1" colSpan="3" id="select">
+                <SegmentedBar.items>
+                    <SegmentedBarItem title="height"/>
+                    <SegmentedBarItem title="width"/>
+                    <SegmentedBarItem title="opacity"/>
+                    <SegmentedBarItem title="color"/>
+                    <SegmentedBarItem title="rotate"/>
+                    <SegmentedBarItem title="scale"/>
+                </SegmentedBar.items>
+            </SegmentedBar>
+
+            <Label row="2" colSpan="3" text="Easing"/>
+            <Button row="3" col="0" text="easeIn" tap="easeAnimate"/>
+            <Button row="3" col="1" text="easeOut" tap="easeAnimate"/>
+            <Button row="3" col="2" text="easeInOut" tap="easeAnimate"/>
+            <Button row="4" col="0" text="spring" tap="easeAnimate"/>
+            <Button row="4" col="1" text="linear" tap="easeAnimate"/>
+            <Button row="4" col="2" text="ease" tap="easeAnimate"/>
+        </GridLayout>
+
+        <Label top="300" left="96" height="128" width="128"
+               borderColor="purple" borderWidth="1"/>
+        <Label top="300" left="96" height="128" width="128"
+               id="target" backgroundColor="purple"/>
+    </AbsoluteLayout>
+</Page>

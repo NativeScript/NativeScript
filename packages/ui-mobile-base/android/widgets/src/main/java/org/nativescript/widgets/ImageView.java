@@ -14,6 +14,7 @@ import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -135,7 +136,7 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 			sb.append(", measureHeight: ");
 			sb.append(measureHeight);
 
-			CommonLayoutParams.log(CommonLayoutParams.TAG, sb.toString());
+			Log.v(CommonLayoutParams.TAG, sb.toString());
 		}
 
 		int widthSizeAndState = resolveSizeAndState(measureWidth, widthMeasureSpec, 0);

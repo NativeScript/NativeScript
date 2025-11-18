@@ -11,9 +11,11 @@ export * from './button-common';
 const observableVisualStates = ['highlighted']; // States like :disabled are handled elsewhere
 
 export class Button extends ButtonBase {
-	public nativeViewProtected: UIButton;
+	// we dont defile tapEvent to let the gesture obserers handle it
+	// in some weird case with UICollectionView UIControlEvents.TouchUpInside is not working
+	public declare nativeViewProtected: UIButton;
 
-	private _tapHandler: NSObject;
+	// private _tapHandler: NSObject;
 	private _stateChangedHandler: ControlStateChangeListener;
 
 	createNativeView() {
@@ -28,12 +30,12 @@ export class Button extends ButtonBase {
 
 	public initNativeView(): void {
 		super.initNativeView();
-		this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
-		this.nativeViewProtected.addTargetActionForControlEvents(this._tapHandler, 'tap', UIControlEvents.TouchUpInside);
+		// this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
+		// this.nativeViewProtected.addTargetActionForControlEvents(this._tapHandler, 'tap', UIControlEvents.TouchUpInside);
 	}
 
 	public disposeNativeView(): void {
-		this._tapHandler = null;
+		// this._tapHandler = null;
 
 		if (this._stateChangedHandler) {
 			this._stateChangedHandler.stop();
@@ -323,27 +325,27 @@ export class Button extends ButtonBase {
 	}
 }
 
-@NativeClass
-class TapHandlerImpl extends NSObject {
-	private _owner: WeakRef<Button>;
+// @NativeClass
+// class TapHandlerImpl extends NSObject {
+// 	private _owner: WeakRef<Button>;
 
-	public static initWithOwner(owner: WeakRef<Button>): TapHandlerImpl {
-		const handler = <TapHandlerImpl>TapHandlerImpl.new();
-		handler._owner = owner;
-		return handler;
-	}
+// 	public static initWithOwner(owner: WeakRef<Button>): TapHandlerImpl {
+// 		const handler = <TapHandlerImpl>TapHandlerImpl.new();
+// 		handler._owner = owner;
+// 		return handler;
+// 	}
 
-	public tap(args) {
-		// _owner is a {N} view which could get destroyed when a tap initiates (protect!)
-		if (this._owner) {
-			const owner = this._owner?.deref();
-			if (owner) {
-				owner._emit(ButtonBase.tapEvent);
-			}
-		}
-	}
+// 	public tap(args) {
+// 		// _owner is a {N} view which could get destroyed when a tap initiates (protect!)
+// 		if (this._owner) {
+//			const owner = this._owner?.deref();
+// 			if (owner) {
+// 				owner._emit(ButtonBase.tapEvent);
+// 			}
+// 		}
+// 	}
 
-	public static ObjCExposedMethods = {
-		tap: { returns: interop.types.void, params: [interop.types.id] },
-	};
-}
+// 	public static ObjCExposedMethods = {
+// 		tap: { returns: interop.types.void, params: [interop.types.id] },
+// 	};
+// }

@@ -5,7 +5,7 @@ import { Length } from '../../styling/length-shared';
 export * from './wrap-layout-common';
 
 export class WrapLayout extends WrapLayoutBase {
-	nativeViewProtected: org.nativescript.widgets.WrapLayout;
+	declare nativeViewProtected: org.nativescript.widgets.WrapLayout;
 
 	public createNativeView() {
 		return new org.nativescript.widgets.WrapLayout(this._context);

@@ -51,7 +51,7 @@ function getListener(): android.widget.SeekBar.OnSeekBarChangeListener {
 
 export class Slider extends SliderBase {
 	_supressNativeValue: boolean;
-	nativeViewProtected: OwnerSeekBar;
+	declare nativeViewProtected: OwnerSeekBar;
 
 	public createNativeView() {
 		if (!SeekBar) {
@@ -73,14 +73,6 @@ export class Slider extends SliderBase {
 	public disposeNativeView() {
 		this.nativeViewProtected.owner = null;
 		super.disposeNativeView();
-	}
-
-	public resetNativeView(): void {
-		super.resetNativeView();
-		const nativeView = this.nativeViewProtected;
-		nativeView.setMax(100);
-		nativeView.setProgress(0);
-		nativeView.setKeyProgressIncrement(1);
 	}
 
 	/**

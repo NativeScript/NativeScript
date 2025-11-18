@@ -1,0 +1,51 @@
+
+dependencies {
+    def androidXViewPagerVersion = "1.0.0"
+    if (project.hasProperty("androidXViewPager")) {
+        androidXViewPagerVersion = androidXViewPager
+        println "\t + using android X library androidx.viewpager2:viewpager2:$androidXViewPagerVersion"
+    }
+
+    def androidXFragmentVersion = "1.4.1"
+    if (project.hasProperty("androidXFragment")) {
+        androidXFragmentVersion = androidXFragment
+        println "\t +  using android X library androidx.fragment:fragment:$androidXFragmentVersion"
+    }
+
+    def androidXTransitionVersion = "1.4.1"
+    if (project.hasProperty("androidXTransition")) {
+        androidXTransitionVersion = androidXTransition
+        println "\t +  using android X library androidx.transition:transition:$androidXTransitionVersion"
+    }
+
+    def androidXExifInterfaceVersion = "1.3.3"
+    if (project.hasProperty("androidXExifInterface")) {
+        androidXExifInterfaceVersion = androidXExifInterface
+        println "\t +  using android X library androidx.exifinterface:exifinterface:$androidXExifInterfaceVersion"
+    }
+
+
+    def androidXAppCompatVersion = "1.4.1"
+    if (project.hasProperty("androidXAppCompat")) {
+        androidXAppCompatVersion = androidXAppCompat
+        println "\t +  using android X library androidx.appcompat:appcompat:$androidXAppCompatVersion"
+    }
+
+		def androidXDocumentFileVersion = "1.0.1"
+		if (project.hasProperty("androidXDocumentFile")) {
+			androidXDocumentFileVersion = androidXDocumentFile
+		println "\t +  using android X library androidx.documentfile:documentfile:$androidXDocumentFileVersion"
+	}
+
+
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    println 'Using android X'
+    // implementation 'androidx.viewpager:viewpager:' + androidxVersion
+    implementation "androidx.viewpager2:viewpager2:$androidXViewPagerVersion"
+    implementation "androidx.fragment:fragment:$androidXFragmentVersion"
+    implementation "androidx.transition:transition:$androidXTransitionVersion"
+    implementation "androidx.exifinterface:exifinterface:$androidXExifInterfaceVersion"
+    implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
+		implementation "androidx.documentfile:documentfile:$androidXDocumentFileVersion"
+}

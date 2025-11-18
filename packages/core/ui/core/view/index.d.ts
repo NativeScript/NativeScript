@@ -345,7 +345,12 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Internal use only. This is used to limit the number of updates to android.view.View.setContentDescription()
 	 */
-	_androidContentDescriptionUpdated?: boolean;
+	_androidContentDescriptionNeedsUpdate?: boolean;
+
+	/**
+	 * Internal use only. Determine if the view has a default contentDescription
+	 */
+	_hasDefaultAccessibilityContentDescription?: boolean;
 
 	/**
 	 *
@@ -853,6 +858,11 @@ export abstract class View extends ViewCommon {
 	public createAnimation(options: AnimationDefinition): Animation;
 
 	/**
+	 * Cancel all animations started with `animate`
+	 */
+	public cancelAllAnimations();
+
+	/**
 	 * Returns the iOS safe area insets of this view.
 	 */
 	public getSafeAreaInsets(): Position;
@@ -1062,7 +1072,7 @@ export abstract class View extends ViewCommon {
 	 * @private
 	 *  method called on Android to apply the background. This allows custom handling
 	 */
-	_applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any);
+	_applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any, shouldClipToOutline: boolean);
 
 	/**
 	 * @private

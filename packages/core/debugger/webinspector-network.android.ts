@@ -1,5 +1,5 @@
 import * as inspectorCommands from './InspectorBackendCommands';
-import { getNativeApp } from '../application/helpers-common';
+import { getApplicationContext } from '../application/helpers.android';
 
 import * as debuggerDomains from '.';
 
@@ -36,10 +36,7 @@ export class Request {
 	private _data: any;
 	private _mimeType: string;
 
-	constructor(
-		private _networkDomainDebugger: NetworkDomainDebugger,
-		private _requestID: string,
-	) {}
+	constructor(private _networkDomainDebugger: NetworkDomainDebugger, private _requestID: string) {}
 
 	get mimeType(): string {
 		return this._mimeType;
@@ -225,7 +222,7 @@ export class NetworkDomainDebugger implements inspectorCommands.NetworkDomain.Ne
 	 * Loads a resource in the context of a frame on the inspected page without cross origin checks.
 	 */
 	loadResource(params: inspectorCommands.NetworkDomain.LoadResourceMethodArguments): { content: string; mimeType: string; status: number } {
-		const appPath = getNativeApp<android.app.Application>().getApplicationContext().getFilesDir().getCanonicalPath() + '/app';
+		const appPath = getApplicationContext().getFilesDir().getCanonicalPath() + '/app';
 		const pathUrl = params.url.replace('file://', appPath);
 		const file = new java.io.File(pathUrl);
 		const is = file.exists() ? new java.io.FileInputStream(file) : undefined;
