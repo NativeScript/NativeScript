@@ -1,3 +1,14 @@
+## 9.0.2 (2025-11-20)
+
+### 🩹 Fixes
+
+- **image-source:** url loading under different conditions ([#10955](https://github.com/NativeScript/NativeScript/pull/10955))
+- **core:** hook helper ([dec2b4b2d](https://github.com/NativeScript/NativeScript/commit/dec2b4b2d))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 # 9.0.0 (2025-11-17)
 
 ### 🚀 Features
