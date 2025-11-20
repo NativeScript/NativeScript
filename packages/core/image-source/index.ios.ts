@@ -7,7 +7,7 @@ import { Trace } from '../trace';
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject, SYSTEM_PREFIX } from '../utils';
 import { getScaledDimensions } from './image-source-common';
-import { getImageRequest } from '../http/http-shared';
+import { getImage } from '../http';
 
 export { isFileOrResourcePath };
 
@@ -58,7 +58,7 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromUrl(url: string): Promise<ImageSource> {
-		return getImageRequest(url) as Promise<ImageSource>;
+		return getImage(url) as Promise<ImageSource>;
 	}
 
 	static iosSystemScaleFor(scale: iosSymbolScaleType) {

@@ -1,4 +1,4 @@
-import { setGetImageRequest, type ImageSourceLike } from './http-shared';
+import { type ImageSourceLike } from './http-shared';
 import { request } from './http-request';
 export { request } from './http-request';
 export * from './http-interfaces';
@@ -51,7 +51,6 @@ export function getImage(arg: any): Promise<ImageSourceLike> {
 		);
 	});
 }
-setGetImageRequest(getImage);
 
 export function getFile(arg: any, destinationFilePath?: string): Promise<any> {
 	return new Promise<any>((resolve, reject) => {
