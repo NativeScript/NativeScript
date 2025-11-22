@@ -1,6 +1,8 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
+import * as sliderTestsNative from './slider-tests-native';
 import { BindingOptions, View, Page, Observable, EventData, PropertyChangeData, Color } from '@nativescript/core';
+import { LinearGradient } from '@nativescript/core/ui/styling/linear-gradient';
 
 // >> article-require-slider
 import { Slider } from '@nativescript/core/ui/slider';
@@ -526,4 +528,23 @@ function setNativeValue(slider: Slider, value: number) {
 		// setting value trough code does not send notification, so simulate that manually.
 		slider.ios.sendActionsForControlEvents(UIControlEvents.ValueChanged);
 	}
+}
+
+export function test_set_gradients_native() {
+	const slider = new Slider();
+	function testAction(views: Array<View>) {
+		const gradient = new LinearGradient();
+		gradient.angle = 0;
+		gradient.colorStops = [{ color: new Color('#ff0000') }, { color: new Color('#00ff00') }];
+
+		slider.minTrackGradient = gradient;
+		slider.maxTrackGradient = gradient;
+
+		const nativeMin = sliderTestsNative.getNativeMinTrackImage(slider);
+		const nativeProgress = sliderTestsNative.getNativeProgressDrawable(slider);
+
+		TKUnit.assert(nativeMin !== null || nativeProgress !== null, 'Native gradient drawable or image should be applied on either platform');
+	}
+
+	helper.buildUIAndRunTest(new Slider(), testAction);
 }

@@ -2,6 +2,7 @@ import { Slider as SliderDefinition } from '.';
 import { AccessibilityRole } from '../../accessibility';
 import { CoercibleProperty, Property } from '../core/properties';
 import { CSSType, View } from '../core/view';
+import { LinearGradient } from '../styling/linear-gradient';
 
 // TODO: Extract base Range class for slider and progress
 @CSSType('Slider')
@@ -13,6 +14,10 @@ export class SliderBase extends View implements SliderDefinition {
 	public value: number;
 	public minValue: number;
 	public maxValue: number;
+
+	// Optional gradients for the filled (min/left) and unfilled (max/right) tracks.
+	public minTrackGradient: LinearGradient | null;
+	public maxTrackGradient: LinearGradient | null;
 
 	get accessibilityStep(): number {
 		return this.style.accessibilityStep;
@@ -75,3 +80,27 @@ export const maxValueProperty = new CoercibleProperty<SliderBase, number>({
 	valueConverter: (v) => (__APPLE__ ? parseFloat(v) : parseInt(v)),
 });
 maxValueProperty.register(SliderBase);
+
+/**
+ * Represents the observable property backing the minTrackGradient property of each Slider instance.
+ */
+export const minTrackGradientProperty = new Property<SliderBase, LinearGradient | null>({
+	name: 'minTrackGradient',
+	defaultValue: null,
+	valueChanged: (target, oldValue, newValue) => {
+		// Platform specific handlers will observe and apply gradients when native view is available.
+	},
+});
+minTrackGradientProperty.register(SliderBase);
+
+/**
+ * Represents the observable property backing the maxTrackGradient property of each Slider instance.
+ */
+export const maxTrackGradientProperty = new Property<SliderBase, LinearGradient | null>({
+	name: 'maxTrackGradient',
+	defaultValue: null,
+	valueChanged: (target, oldValue, newValue) => {
+		// Platform specific handlers will observe and apply gradients when native view is available.
+	},
+});
+maxTrackGradientProperty.register(SliderBase);
