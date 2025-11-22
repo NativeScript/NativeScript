@@ -1,4 +1,5 @@
 [![NativeScript](./tools/graphics/cover.png)](https://nativescript.org)
+This is a test update to check pull request workflow.
 
 <p>
 
