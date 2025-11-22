@@ -46,6 +46,7 @@ import {
 	setA11yEnabled,
 	enforceArray,
 } from '../accessibility/accessibility-common';
+import { CoreTypes } from '../core-types';
 import { getiOSWindow, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setiOSWindow, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 
 @NativeClass
@@ -339,10 +340,17 @@ export class iOSApplication extends ApplicationCommon {
 		const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 
 		rootView._setupAsRootView({});
+
 		rootView.on(IOSHelper.traitCollectionColorAppearanceChangedEvent, () => {
 			const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
 			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
 			this.setSystemAppearance(newSystemAppearance);
+		});
+
+		rootView.on(IOSHelper.traitCollectionLayoutDirectionChangedEvent, () => {
+			const layoutDirection = controller.traitCollection.layoutDirection;
+			const newLayoutDirection = this.getLayoutDirectionValue(layoutDirection);
+			this.setLayoutDirection(newLayoutDirection);
 		});
 
 		if (embedderDelegate) {
@@ -533,6 +541,24 @@ export class iOSApplication extends ApplicationCommon {
 		}
 	}
 
+	protected getLayoutDirection(): CoreTypes.LayoutDirectionType {
+		if (!this.rootController) {
+			return null;
+		}
+
+		const layoutDirection = this.rootController.traitCollection.layoutDirection;
+		return this.getLayoutDirectionValue(layoutDirection);
+	}
+
+	private getLayoutDirectionValue(layoutDirection: number): CoreTypes.LayoutDirectionType {
+		switch (layoutDirection) {
+			case UITraitEnvironmentLayoutDirection.LeftToRight:
+				return CoreTypes.LayoutDirection.ltr;
+			case UITraitEnvironmentLayoutDirection.RightToLeft:
+				return CoreTypes.LayoutDirection.rtl;
+		}
+	}
+
 	protected getOrientation() {
 		let statusBarOrientation: UIInterfaceOrientation;
 		if (__VISIONOS__) {
@@ -622,6 +648,12 @@ export class iOSApplication extends ApplicationCommon {
 			const newSystemAppearance = this.getSystemAppearanceValue(userInterfaceStyle);
 
 			this.setSystemAppearance(newSystemAppearance);
+		});
+
+		rootView.on(IOSHelper.traitCollectionLayoutDirectionChangedEvent, () => {
+			const layoutDirection = controller.traitCollection.layoutDirection;
+			const newLayoutDirection = this.getLayoutDirectionValue(layoutDirection);
+			this.setLayoutDirection(newLayoutDirection);
 		});
 	}
 

@@ -3135,7 +3135,7 @@ declare class NETunnelProviderSession extends NEVPNConnection {
 	/**
 	 * @since 9.0
 	 */
-	startTunnelWithOptionsAndReturnError(options: NSDictionary<string, any>): boolean;
+	startTunnelWithOptionsAndReturnError(options: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
@@ -3204,12 +3204,12 @@ declare class NEVPNConnection extends NSObject {
 	/**
 	 * @since 8.0
 	 */
-	startVPNTunnelAndReturnError(): boolean;
+	startVPNTunnelAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 9.0
 	 */
-	startVPNTunnelWithOptionsAndReturnError(options: NSDictionary<string, NSObject>): boolean;
+	startVPNTunnelWithOptionsAndReturnError(options: NSDictionary<string, NSObject>, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 8.0

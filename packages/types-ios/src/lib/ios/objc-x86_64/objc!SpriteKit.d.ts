@@ -15,7 +15,7 @@ declare class SK3DNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SK3DNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SK3DNode; // inherited from SKNode
 
 	static nodeWithViewportSize(viewportSize: CGSize): SK3DNode;
 
@@ -525,7 +525,7 @@ declare class SKAudioNode extends SKNode implements NSSecureCoding {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKAudioNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKAudioNode; // inherited from SKNode
 
 	autoplayLooped: boolean;
 
@@ -592,7 +592,7 @@ declare class SKCameraNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKCameraNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKCameraNode; // inherited from SKNode
 
 	containedNodeSet(): NSSet<SKNode>;
 
@@ -656,7 +656,7 @@ declare class SKCropNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKCropNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKCropNode; // inherited from SKNode
 
 	maskNode: SKNode;
 }
@@ -674,7 +674,7 @@ declare class SKEffectNode extends SKNode implements SKWarpable {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKEffectNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKEffectNode; // inherited from SKNode
 
 	blendMode: SKBlendMode;
 
@@ -740,7 +740,7 @@ declare class SKEmitterNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKEmitterNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKEmitterNode; // inherited from SKNode
 
 	emissionAngle: number;
 
@@ -880,7 +880,7 @@ declare class SKFieldNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKFieldNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKFieldNode; // inherited from SKNode
 
 	static noiseFieldWithSmoothnessAnimationSpeed(smoothness: number, speed: number): SKFieldNode;
 
@@ -1011,7 +1011,7 @@ declare class SKLabelNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKLabelNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKLabelNode; // inherited from SKNode
 
 	/**
 	 * @since 11.0
@@ -1086,7 +1086,7 @@ declare class SKLightNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKLightNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKLightNode; // inherited from SKNode
 
 	ambientColor: UIColor;
 
@@ -1165,7 +1165,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKNode;
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKNode;
 
 	static obstaclesFromNodeBounds(nodes: NSArray<SKNode> | SKNode[]): NSArray<GKPolygonObstacle>;
 
@@ -1811,7 +1811,7 @@ declare class SKReferenceNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKReferenceNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKReferenceNode; // inherited from SKNode
 
 	static referenceNodeWithFileNamed(fileName: string): SKReferenceNode;
 
@@ -1930,7 +1930,7 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKScene; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKScene; // inherited from SKNode
 
 	static sceneWithSize(size: CGSize): SKScene;
 
@@ -2134,7 +2134,7 @@ declare class SKShapeNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKShapeNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKShapeNode; // inherited from SKNode
 
 	/**
 	 * @since 8.0
@@ -2247,7 +2247,7 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKSpriteNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKSpriteNode; // inherited from SKNode
 
 	static spriteNodeWithColorSize(color: UIColor, size: CGSize): SKSpriteNode;
 
@@ -2726,7 +2726,7 @@ declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding 
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKTileMapNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKTileMapNode; // inherited from SKNode
 
 	static tileMapNodeWithTileSetColumnsRowsTileSize(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize): SKTileMapNode;
 
@@ -2875,7 +2875,7 @@ declare class SKTransformNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKTransformNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKTransformNode; // inherited from SKNode
 
 	xRotation: number;
 
@@ -3152,7 +3152,7 @@ declare class SKVideoNode extends SKNode {
 	/**
 	 * @since 12.0
 	 */
-	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>): SKVideoNode; // inherited from SKNode
+	static nodeWithFileNamedSecurelyWithClassesAndError(filename: string, classes: NSSet<typeof NSObject>, error?: interop.Reference<NSError>): SKVideoNode; // inherited from SKNode
 
 	static videoNodeWithAVPlayer(player: AVPlayer): SKVideoNode;
 

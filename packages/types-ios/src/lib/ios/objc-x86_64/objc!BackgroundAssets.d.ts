@@ -64,15 +64,15 @@ declare class BAAssetPackManager extends NSObject {
 
 	static readonly sharedManager: BAAssetPackManager;
 
-	URLForPathError(path: string): NSURL;
+	URLForPathError(path: string, error?: interop.Reference<NSError>): NSURL;
 
 	checkForUpdatesWithCompletionHandler(completionHandler: (p1: NSSet<string>, p2: NSSet<string>, p3: NSError) => void): void;
 
-	contentsAtPathSearchingInAssetPackWithIdentifierOptionsError(path: string, assetPackIdentifier: string, options: NSDataReadingOptions): NSData;
+	contentsAtPathSearchingInAssetPackWithIdentifierOptionsError(path: string, assetPackIdentifier: string, options: NSDataReadingOptions, error?: interop.Reference<NSError>): NSData;
 
 	ensureLocalAvailabilityOfAssetPackCompletionHandler(assetPack: BAAssetPack, completionHandler: (p1: NSError) => void): void;
 
-	fileDescriptorForPathSearchingInAssetPackWithIdentifierError(path: string, assetPackIdentifier: string): number;
+	fileDescriptorForPathSearchingInAssetPackWithIdentifierError(path: string, assetPackIdentifier: string, error?: interop.Reference<NSError>): number;
 
 	getAllAssetPacksWithCompletionHandler(completionHandler: (p1: NSSet<BAAssetPack>, p2: NSError) => void): void;
 
@@ -102,9 +102,9 @@ declare class BAAssetPackManifest extends NSObject {
 
 	allDownloadsForContentRequest(contentRequest: BAContentRequest): NSSet<BADownload>;
 
-	initFromDataApplicationGroupIdentifierError(data: NSData, applicationGroupIdentifier: string): this;
+	initFromDataApplicationGroupIdentifierError(data: NSData, applicationGroupIdentifier: string, error?: interop.Reference<NSError>): this;
 
-	initWithContentsOfURLApplicationGroupIdentifierError(URL: NSURL, applicationGroupIdentifier: string): this;
+	initWithContentsOfURLApplicationGroupIdentifierError(URL: NSURL, applicationGroupIdentifier: string, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -208,12 +208,12 @@ declare class BADownloadManager extends NSObject {
 	/**
 	 * @since 16.1
 	 */
-	cancelDownloadError(download: BADownload): boolean;
+	cancelDownloadError(download: BADownload, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.4
 	 */
-	fetchCurrentDownloads(): NSArray<BADownload>;
+	fetchCurrentDownloads(error?: interop.Reference<NSError>): NSArray<BADownload>;
 
 	/**
 	 * @since 16.1
@@ -233,12 +233,12 @@ declare class BADownloadManager extends NSObject {
 	/**
 	 * @since 16.1
 	 */
-	scheduleDownloadError(download: BADownload): boolean;
+	scheduleDownloadError(download: BADownload, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 16.1
 	 */
-	startForegroundDownloadError(download: BADownload): boolean;
+	startForegroundDownloadError(download: BADownload, error?: interop.Reference<NSError>): boolean;
 }
 
 /**

@@ -734,9 +734,9 @@ declare class GKGameActivity extends NSObject {
 
 	static new(): GKGameActivity; // inherited from NSObject
 
-	static startWithDefinitionError(activityDefinition: GKGameActivityDefinition): GKGameActivity;
+	static startWithDefinitionError(activityDefinition: GKGameActivityDefinition, error?: interop.Reference<NSError>): GKGameActivity;
 
-	static startWithDefinitionPartyCodeError(activityDefinition: GKGameActivityDefinition, partyCode: string): GKGameActivity;
+	static startWithDefinitionPartyCodeError(activityDefinition: GKGameActivityDefinition, partyCode: string, error?: interop.Reference<NSError>): GKGameActivity;
 
 	readonly achievements: NSSet<GKAchievement>;
 
@@ -1754,7 +1754,7 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 	/**
 	 * @since 15.0
 	 */
-	presentFriendRequestCreatorFromViewControllerError(viewController: UIViewController): boolean;
+	presentFriendRequestCreatorFromViewControllerError(viewController: UIViewController, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 7.0
@@ -1861,18 +1861,18 @@ declare class GKMatch extends NSObject {
 	 */
 	rematchWithCompletionHandler(completionHandler: (p1: GKMatch, p2: NSError) => void): void;
 
-	sendDataToAllPlayersWithDataModeError(data: NSData, mode: GKMatchSendDataMode): boolean;
+	sendDataToAllPlayersWithDataModeError(data: NSData, mode: GKMatchSendDataMode, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 8.0
 	 */
-	sendDataToPlayersDataModeError(data: NSData, players: NSArray<GKPlayer> | GKPlayer[], mode: GKMatchSendDataMode): boolean;
+	sendDataToPlayersDataModeError(data: NSData, players: NSArray<GKPlayer> | GKPlayer[], mode: GKMatchSendDataMode, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.1
 	 * @deprecated 8.0
 	 */
-	sendDataToPlayersWithDataModeError(data: NSData, playerIDs: NSArray<string> | string[], mode: GKMatchSendDataMode): boolean;
+	sendDataToPlayersWithDataModeError(data: NSData, playerIDs: NSArray<string> | string[], mode: GKMatchSendDataMode, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 4.1
@@ -2733,7 +2733,7 @@ declare class GKSession extends NSObject {
 	 */
 	constructor(o: { sessionID: string; displayName: string; sessionMode: GKSessionMode; });
 
-	acceptConnectionFromPeerError(peerID: string): boolean;
+	acceptConnectionFromPeerError(peerID: string, error?: interop.Reference<NSError>): boolean;
 
 	cancelConnectToPeer(peerID: string): void;
 
@@ -2763,13 +2763,13 @@ declare class GKSession extends NSObject {
 	 * @since 3.0
 	 * @deprecated 7.0
 	 */
-	sendDataToAllPeersWithDataModeError(data: NSData, mode: GKSendDataMode): boolean;
+	sendDataToAllPeersWithDataModeError(data: NSData, mode: GKSendDataMode, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 3.0
 	 * @deprecated 7.0
 	 */
-	sendDataToPeersWithDataModeError(data: NSData, peers: NSArray<any> | any[], mode: GKSendDataMode): boolean;
+	sendDataToPeersWithDataModeError(data: NSData, peers: NSArray<any> | any[], mode: GKSendDataMode, error?: interop.Reference<NSError>): boolean;
 
 	setDataReceiveHandlerWithContext(handler: any, context: interop.Pointer | interop.Reference<any>): void;
 }
@@ -3478,7 +3478,7 @@ declare class GKVoiceChatService extends NSObject {
 
 	remoteParticipantVolume: number;
 
-	acceptCallIDError(callID: number): boolean;
+	acceptCallIDError(callID: number, error?: interop.Reference<NSError>): boolean;
 
 	denyCallID(callID: number): void;
 
@@ -3486,7 +3486,7 @@ declare class GKVoiceChatService extends NSObject {
 
 	receivedRealTimeDataFromParticipantID(audio: NSData, participantID: string): void;
 
-	startVoiceChatWithParticipantIDError(participantID: string): boolean;
+	startVoiceChatWithParticipantIDError(participantID: string, error?: interop.Reference<NSError>): boolean;
 
 	stopVoiceChatWithParticipantID(participantID: string): void;
 }

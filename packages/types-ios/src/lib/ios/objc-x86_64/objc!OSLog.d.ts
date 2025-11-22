@@ -454,22 +454,22 @@ declare class OSLogStore extends NSObject {
 	/**
 	 * @since 15.0
 	 */
-	static storeWithScopeError(scope: OSLogStoreScope): OSLogStore;
+	static storeWithScopeError(scope: OSLogStoreScope, error?: interop.Reference<NSError>): OSLogStore;
 
 	/**
 	 * @since 15.0
 	 */
-	static storeWithURLError(url: NSURL): OSLogStore;
+	static storeWithURLError(url: NSURL, error?: interop.Reference<NSError>): OSLogStore;
 
 	/**
 	 * @since 15.0
 	 */
-	entriesEnumeratorAndReturnError(): OSLogEnumerator;
+	entriesEnumeratorAndReturnError(error?: interop.Reference<NSError>): OSLogEnumerator;
 
 	/**
 	 * @since 15.0
 	 */
-	entriesEnumeratorWithOptionsPositionPredicateError(options: OSLogEnumeratorOptions, position: OSLogPosition, predicate: NSPredicate): OSLogEnumerator;
+	entriesEnumeratorWithOptionsPositionPredicateError(options: OSLogEnumeratorOptions, position: OSLogPosition, predicate: NSPredicate, error?: interop.Reference<NSError>): OSLogEnumerator;
 
 	/**
 	 * @since 15.0

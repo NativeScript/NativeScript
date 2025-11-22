@@ -351,6 +351,8 @@ function printRunTestStats() {
 
 	let finalMessage = `\n` + `=== ALL TESTS COMPLETE ===\n` + `${allTests.length - failedTestCount} OK, ${failedTestCount} failed\n` + `DURATION: ${totalTime} ms\n` + `=== END OF TESTS ===\n`;
 
+	Trace.setCategories(Trace.categories.Test);
+	Trace.enable();
 	TKUnit.write(finalMessage, Trace.messageType.info);
 
 	failedTestInfo.forEach((message, i, arr) => {
@@ -497,7 +499,11 @@ export function runAll(testSelector?: string) {
 
 		const testModule = allTests[name];
 
-		const test = testModule.createTestCase ? testModule.createTestCase() : testModule;
+		// In ESM environments (like Vite), module namespace objects are not extensible.
+		// Some tests expect to set arbitrary properties like `name` on the test instance.
+		// If a module doesn't provide `createTestCase()`, wrap its exports in a plain
+		// mutable object to safely attach metadata without mutating the namespace object.
+		const test = testModule.createTestCase ? testModule.createTestCase() : ({ ...testModule } as any);
 		test.name = name;
 
 		testsQueue.push(new TestInfo(startLog, test));

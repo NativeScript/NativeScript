@@ -212,7 +212,7 @@ declare class AVAsset extends NSObject implements AVAsynchronousKeyValueLoading,
 	 */
 	metadataForFormat(format: string): NSArray<AVMetadataItem>;
 
-	statusOfValueForKeyError(key: string): AVKeyValueStatus;
+	statusOfValueForKeyError(key: string, error?: interop.Reference<NSError>): AVKeyValueStatus;
 
 	/**
 	 * @since 4.0
@@ -838,7 +838,7 @@ declare class AVAssetImageGenerator extends NSObject {
 	 * @since 4.0
 	 * @deprecated 18.0
 	 */
-	copyCGImageAtTimeActualTimeError(requestedTime: CMTime, actualTime: interop.Pointer | interop.Reference<CMTime>): any;
+	copyCGImageAtTimeActualTimeError(requestedTime: CMTime, actualTime: interop.Pointer | interop.Reference<CMTime>, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 16.0
@@ -930,7 +930,7 @@ declare class AVAssetReader extends NSObject {
 
 	static alloc(): AVAssetReader; // inherited from NSObject
 
-	static assetReaderWithAssetError(asset: AVAsset): AVAssetReader;
+	static assetReaderWithAssetError(asset: AVAsset, error?: interop.Reference<NSError>): AVAssetReader;
 
 	static new(): AVAssetReader; // inherited from NSObject
 
@@ -955,7 +955,7 @@ declare class AVAssetReader extends NSObject {
 
 	cancelReading(): void;
 
-	initWithAssetError(asset: AVAsset): this;
+	initWithAssetError(asset: AVAsset, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 4.1
@@ -1349,13 +1349,13 @@ declare class AVAssetResourceLoadingRequest extends NSObject {
 	 * @since 9.0
 	 * @deprecated 18.0
 	 */
-	persistentContentKeyFromKeyVendorResponseOptionsError(keyVendorResponse: NSData, options: NSDictionary<string, any>): NSData;
+	persistentContentKeyFromKeyVendorResponseOptionsError(keyVendorResponse: NSData, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSData;
 
 	/**
 	 * @since 7.0
 	 * @deprecated 18.0
 	 */
-	streamingContentKeyRequestDataForAppContentIdentifierOptionsError(appIdentifier: NSData, contentIdentifier: NSData, options: NSDictionary<string, any>): NSData;
+	streamingContentKeyRequestDataForAppContentIdentifierOptionsError(appIdentifier: NSData, contentIdentifier: NSData, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSData;
 }
 
 /**
@@ -1600,7 +1600,7 @@ declare class AVAssetTrack extends NSObject implements AVAsynchronousKeyValueLoa
 	 */
 	segmentForTrackTime(trackTime: CMTime): AVAssetTrackSegment;
 
-	statusOfValueForKeyError(key: string): AVKeyValueStatus;
+	statusOfValueForKeyError(key: string, error?: interop.Reference<NSError>): AVKeyValueStatus;
 }
 
 /**
@@ -1838,7 +1838,7 @@ declare class AVAssetWriter extends NSObject {
 
 	static alloc(): AVAssetWriter; // inherited from NSObject
 
-	static assetWriterWithURLFileTypeError(outputURL: NSURL, outputFileType: string): AVAssetWriter;
+	static assetWriterWithURLFileTypeError(outputURL: NSURL, outputFileType: string, error?: interop.Reference<NSError>): AVAssetWriter;
 
 	static new(): AVAssetWriter; // inherited from NSObject
 
@@ -1963,7 +1963,7 @@ declare class AVAssetWriter extends NSObject {
 	 */
 	initWithContentType(outputContentType: UTType): this;
 
-	initWithURLFileTypeError(outputURL: NSURL, outputFileType: string): this;
+	initWithURLFileTypeError(outputURL: NSURL, outputFileType: string, error?: interop.Reference<NSError>): this;
 
 	startSessionAtSourceTime(startTime: CMTime): void;
 
@@ -2314,7 +2314,7 @@ interface AVAsynchronousKeyValueLoading {
 
 	loadValuesAsynchronouslyForKeysCompletionHandler(keys: NSArray<string> | string[], handler: () => void): void;
 
-	statusOfValueForKeyError(key: string): AVKeyValueStatus;
+	statusOfValueForKeyError(key: string, error?: interop.Reference<NSError>): AVKeyValueStatus;
 }
 declare var AVAsynchronousKeyValueLoading: {
 
@@ -2708,7 +2708,7 @@ declare class AVCaptionFormatConformer extends NSObject {
 
 	constructor(o: { conversionSettings: NSDictionary<string, any>; });
 
-	conformedCaptionForCaptionError(caption: AVCaption): AVCaption;
+	conformedCaptionForCaptionError(caption: AVCaption, error?: interop.Reference<NSError>): AVCaption;
 
 	initWithConversionSettings(conversionSettings: NSDictionary<string, any>): this;
 }
@@ -4080,7 +4080,7 @@ declare class AVCaptureDevice extends NSObject {
 
 	isWhiteBalanceModeSupported(whiteBalanceMode: AVCaptureWhiteBalanceMode): boolean;
 
-	lockForConfiguration(): boolean;
+	lockForConfiguration(error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 17.0
@@ -4137,7 +4137,7 @@ declare class AVCaptureDevice extends NSObject {
 	/**
 	 * @since 6.0
 	 */
-	setTorchModeOnWithLevelError(torchLevel: number): boolean;
+	setTorchModeOnWithLevelError(torchLevel: number, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 8.0
@@ -4462,7 +4462,7 @@ declare class AVCaptureDeviceInput extends AVCaptureInput {
 
 	static alloc(): AVCaptureDeviceInput; // inherited from NSObject
 
-	static deviceInputWithDeviceError(device: AVCaptureDevice): AVCaptureDeviceInput;
+	static deviceInputWithDeviceError(device: AVCaptureDevice, error?: interop.Reference<NSError>): AVCaptureDeviceInput;
 
 	static new(): AVCaptureDeviceInput; // inherited from NSObject
 
@@ -4540,7 +4540,7 @@ declare class AVCaptureDeviceInput extends AVCaptureInput {
 	 */
 	followExternalSyncDeviceVideoFrameDurationDelegate(externalSyncDevice: AVExternalSyncDevice, frameDuration: CMTime, delegate: AVExternalSyncDeviceDelegate): void;
 
-	initWithDeviceError(device: AVCaptureDevice): this;
+	initWithDeviceError(device: AVCaptureDevice, error?: interop.Reference<NSError>): this;
 
 	/**
 	 * @since 18.0
@@ -5000,7 +5000,7 @@ declare class AVCaptureMetadataInput extends AVCaptureInput {
 
 	constructor(o: { formatDescription: any; clock: any; });
 
-	appendTimedMetadataGroupError(metadata: AVTimedMetadataGroup): boolean;
+	appendTimedMetadataGroupError(metadata: AVTimedMetadataGroup, error?: interop.Reference<NSError>): boolean;
 
 	initWithFormatDescriptionClock(desc: any, clock: any): this;
 }
@@ -6574,7 +6574,7 @@ declare class AVCaptureSmartFramingMonitor extends NSObject {
 
 	readonly supportedFramings: NSArray<AVCaptureFraming>;
 
-	startMonitoringWithError(): boolean;
+	startMonitoringWithError(error?: interop.Reference<NSError>): boolean;
 
 	stopMonitoring(): void;
 }
@@ -7501,7 +7501,7 @@ declare class AVContentKeyRequest extends NSObject {
 	/**
 	 * @since 11.2
 	 */
-	respondByRequestingPersistableContentKeyRequestAndReturnError(): boolean;
+	respondByRequestingPersistableContentKeyRequestAndReturnError(error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -7963,7 +7963,7 @@ declare class AVDepthData extends NSObject {
 
 	static alloc(): AVDepthData; // inherited from NSObject
 
-	static depthDataFromDictionaryRepresentationError(imageSourceAuxDataInfoDictionary: NSDictionary<any, any>): AVDepthData;
+	static depthDataFromDictionaryRepresentationError(imageSourceAuxDataInfoDictionary: NSDictionary<any, any>, error?: interop.Reference<NSError>): AVDepthData;
 
 	static new(): AVDepthData; // inherited from NSObject
 
@@ -7985,7 +7985,7 @@ declare class AVDepthData extends NSObject {
 
 	depthDataByConvertingToDepthDataType(depthDataType: number): this;
 
-	depthDataByReplacingDepthDataMapWithPixelBufferError(pixelBuffer: any): this;
+	depthDataByReplacingDepthDataMapWithPixelBufferError(pixelBuffer: any, error?: interop.Reference<NSError>): this;
 
 	dictionaryRepresentationForAuxiliaryDataType(outAuxDataType: interop.Pointer | interop.Reference<string>): NSDictionary<any, any>;
 }
@@ -8302,7 +8302,7 @@ declare class AVExternalStorageDevice extends NSObject {
 
 	static readonly authorizationStatus: AVAuthorizationStatus;
 
-	nextAvailableURLsWithPathExtensionsError(extensionArray: NSArray<string> | string[]): NSArray<NSURL>;
+	nextAvailableURLsWithPathExtensionsError(extensionArray: NSArray<string> | string[], error?: interop.Reference<NSError>): NSArray<NSURL>;
 }
 
 /**
@@ -8556,7 +8556,7 @@ declare class AVFragmentedAsset extends AVURLAsset implements AVFragmentMinding 
 
 	static new(): AVFragmentedAsset; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): AVFragmentedAsset; // inherited from NSItemProviderReading
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): AVFragmentedAsset; // inherited from NSItemProviderReading
 
 	/**
 	 * @since 12.0
@@ -11534,7 +11534,7 @@ declare class AVMetadataItem extends NSObject implements AVAsynchronousKeyValueL
 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	statusOfValueForKeyError(key: string): AVKeyValueStatus;
+	statusOfValueForKeyError(key: string, error?: interop.Reference<NSError>): AVKeyValueStatus;
 }
 
 /**
@@ -12977,7 +12977,7 @@ declare class AVMovie extends AVAsset implements NSCopying, NSMutableCopying {
 	/**
 	 * @since 13.0
 	 */
-	movieHeaderWithFileTypeError(fileType: string): NSData;
+	movieHeaderWithFileTypeError(fileType: string, error?: interop.Reference<NSError>): NSData;
 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -12990,7 +12990,7 @@ declare class AVMovie extends AVAsset implements NSCopying, NSMutableCopying {
 	/**
 	 * @since 13.0
 	 */
-	writeMovieHeaderToURLFileTypeOptionsError(URL: NSURL, fileType: string, options: AVMovieWritingOptions): boolean;
+	writeMovieHeaderToURLFileTypeOptionsError(URL: NSURL, fileType: string, options: AVMovieWritingOptions, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -13209,7 +13209,7 @@ declare class AVMutableComposition extends AVComposition {
 	 * @since 4.0
 	 * @deprecated 18.0
 	 */
-	insertTimeRangeOfAssetAtTimeError(timeRange: CMTimeRange, asset: AVAsset, startTime: CMTime): boolean;
+	insertTimeRangeOfAssetAtTimeError(timeRange: CMTimeRange, asset: AVAsset, startTime: CMTime, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 15.0
@@ -13260,12 +13260,12 @@ declare class AVMutableCompositionTrack extends AVCompositionTrack {
 
 	insertEmptyTimeRange(timeRange: CMTimeRange): void;
 
-	insertTimeRangeOfTrackAtTimeError(timeRange: CMTimeRange, track: AVAssetTrack, startTime: CMTime): boolean;
+	insertTimeRangeOfTrackAtTimeError(timeRange: CMTimeRange, track: AVAssetTrack, startTime: CMTime, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 5.0
 	 */
-	insertTimeRangesOfTracksAtTimeError(timeRanges: NSArray<NSValue> | NSValue[], tracks: NSArray<AVAssetTrack> | AVAssetTrack[], startTime: CMTime): boolean;
+	insertTimeRangesOfTracksAtTimeError(timeRanges: NSArray<NSValue> | NSValue[], tracks: NSArray<AVAssetTrack> | AVAssetTrack[], startTime: CMTime, error?: interop.Reference<NSError>): boolean;
 
 	removeTimeRange(timeRange: CMTimeRange): void;
 
@@ -13281,7 +13281,7 @@ declare class AVMutableCompositionTrack extends AVCompositionTrack {
 
 	scaleTimeRangeToDuration(timeRange: CMTimeRange, duration: CMTime): void;
 
-	validateTrackSegmentsError(trackSegments: NSArray<AVCompositionTrackSegment> | AVCompositionTrackSegment[]): boolean;
+	validateTrackSegmentsError(trackSegments: NSArray<AVCompositionTrackSegment> | AVCompositionTrackSegment[], error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -13378,13 +13378,13 @@ declare class AVMutableMovie extends AVMovie {
 	/**
 	 * @since 13.0
 	 */
-	static movieWithDataOptionsError(data: NSData, options: NSDictionary<string, any>): AVMutableMovie;
+	static movieWithDataOptionsError(data: NSData, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): AVMutableMovie;
 
-	static movieWithSettingsFromMovieOptionsError(movie: AVMovie, options: NSDictionary<string, any>): AVMutableMovie;
+	static movieWithSettingsFromMovieOptionsError(movie: AVMovie, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): AVMutableMovie;
 
 	static movieWithURLOptions(URL: NSURL, options: NSDictionary<string, any>): AVMutableMovie; // inherited from AVMovie
 
-	static movieWithURLOptionsError(URL: NSURL, options: NSDictionary<string, any>): AVMutableMovie;
+	static movieWithURLOptionsError(URL: NSURL, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): AVMutableMovie;
 
 	static new(): AVMutableMovie; // inherited from NSObject
 
@@ -13414,15 +13414,15 @@ declare class AVMutableMovie extends AVMovie {
 
 	addMutableTracksCopyingSettingsFromTracksOptions(existingTracks: NSArray<AVAssetTrack> | AVAssetTrack[], options: NSDictionary<string, any>): NSArray<AVMutableMovieTrack>;
 
-	initWithDataOptionsError(data: NSData, options: NSDictionary<string, any>): this;
+	initWithDataOptionsError(data: NSData, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 
-	initWithSettingsFromMovieOptionsError(movie: AVMovie, options: NSDictionary<string, any>): this;
+	initWithSettingsFromMovieOptionsError(movie: AVMovie, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 
-	initWithURLOptionsError(URL: NSURL, options: NSDictionary<string, any>): this;
+	initWithURLOptionsError(URL: NSURL, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): this;
 
 	insertEmptyTimeRange(timeRange: CMTimeRange): void;
 
-	insertTimeRangeOfAssetAtTimeCopySampleDataError(timeRange: CMTimeRange, asset: AVAsset, startTime: CMTime, copySampleData: boolean): boolean;
+	insertTimeRangeOfAssetAtTimeCopySampleDataError(timeRange: CMTimeRange, asset: AVAsset, startTime: CMTime, copySampleData: boolean, error?: interop.Reference<NSError>): boolean;
 
 	/**
 	 * @since 15.0
@@ -13494,7 +13494,7 @@ declare class AVMutableMovieTrack extends AVMovieTrack {
 	/**
 	 * @since 13.0
 	 */
-	appendSampleBufferDecodeTimePresentationTimeError(sampleBuffer: any, outDecodeTime: interop.Pointer | interop.Reference<CMTime>, outPresentationTime: interop.Pointer | interop.Reference<CMTime>): boolean;
+	appendSampleBufferDecodeTimePresentationTimeError(sampleBuffer: any, outDecodeTime: interop.Pointer | interop.Reference<CMTime>, outPresentationTime: interop.Pointer | interop.Reference<CMTime>, error?: interop.Reference<NSError>): boolean;
 
 	insertEmptyTimeRange(timeRange: CMTimeRange): void;
 
@@ -13503,7 +13503,7 @@ declare class AVMutableMovieTrack extends AVMovieTrack {
 	 */
 	insertMediaTimeRangeIntoTimeRange(mediaTimeRange: CMTimeRange, trackTimeRange: CMTimeRange): boolean;
 
-	insertTimeRangeOfTrackAtTimeCopySampleDataError(timeRange: CMTimeRange, track: AVAssetTrack, startTime: CMTime, copySampleData: boolean): boolean;
+	insertTimeRangeOfTrackAtTimeCopySampleDataError(timeRange: CMTimeRange, track: AVAssetTrack, startTime: CMTime, copySampleData: boolean, error?: interop.Reference<NSError>): boolean;
 
 	removeTimeRange(timeRange: CMTimeRange): void;
 
@@ -13795,7 +13795,7 @@ declare class AVPersistableContentKeyRequest extends AVContentKeyRequest {
 
 	static new(): AVPersistableContentKeyRequest; // inherited from NSObject
 
-	persistableContentKeyFromKeyVendorResponseOptionsError(keyVendorResponse: NSData, options: NSDictionary<string, any>): NSData;
+	persistableContentKeyFromKeyVendorResponseOptionsError(keyVendorResponse: NSData, options: NSDictionary<string, any>, error?: interop.Reference<NSError>): NSData;
 }
 
 interface AVPixelAspectRatio {
@@ -15660,7 +15660,7 @@ declare class AVPlayerPlaybackCoordinator extends AVPlaybackCoordinator {
 	/**
 	 * @since 26.0
 	 */
-	coordinateUsingCoordinationMediumError(coordinationMedium: AVPlaybackCoordinationMedium): boolean;
+	coordinateUsingCoordinationMediumError(coordinationMedium: AVPlaybackCoordinationMedium, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -15807,7 +15807,7 @@ declare class AVPortraitEffectsMatte extends NSObject {
 
 	static new(): AVPortraitEffectsMatte; // inherited from NSObject
 
-	static portraitEffectsMatteFromDictionaryRepresentationError(imageSourceAuxDataInfoDictionary: NSDictionary<any, any>): AVPortraitEffectsMatte;
+	static portraitEffectsMatteFromDictionaryRepresentationError(imageSourceAuxDataInfoDictionary: NSDictionary<any, any>, error?: interop.Reference<NSError>): AVPortraitEffectsMatte;
 
 	readonly mattingImage: any;
 
@@ -15817,7 +15817,7 @@ declare class AVPortraitEffectsMatte extends NSObject {
 
 	portraitEffectsMatteByApplyingExifOrientation(exifOrientation: CGImagePropertyOrientation): this;
 
-	portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBufferError(pixelBuffer: any): this;
+	portraitEffectsMatteByReplacingPortraitEffectsMatteWithPixelBufferError(pixelBuffer: any, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -16184,12 +16184,12 @@ declare class AVSampleBufferGenerator extends NSObject {
 	/**
 	 * @since 16.0
 	 */
-	createSampleBufferForRequestAddingToBatchError(request: AVSampleBufferRequest, batch: AVSampleBufferGeneratorBatch): any;
+	createSampleBufferForRequestAddingToBatchError(request: AVSampleBufferRequest, batch: AVSampleBufferGeneratorBatch, error?: interop.Reference<NSError>): any;
 
 	/**
 	 * @since 16.0
 	 */
-	createSampleBufferForRequestError(request: AVSampleBufferRequest): any;
+	createSampleBufferForRequestError(request: AVSampleBufferRequest, error?: interop.Reference<NSError>): any;
 
 	initWithAssetTimebase(asset: AVAsset, timebase: any): this;
 
@@ -16530,7 +16530,7 @@ declare class AVSemanticSegmentationMatte extends NSObject {
 
 	static new(): AVSemanticSegmentationMatte; // inherited from NSObject
 
-	static semanticSegmentationMatteFromImageSourceAuxiliaryDataTypeDictionaryRepresentationError(imageSourceAuxiliaryDataType: string, imageSourceAuxiliaryDataInfoDictionary: NSDictionary<any, any>): AVSemanticSegmentationMatte;
+	static semanticSegmentationMatteFromImageSourceAuxiliaryDataTypeDictionaryRepresentationError(imageSourceAuxiliaryDataType: string, imageSourceAuxiliaryDataInfoDictionary: NSDictionary<any, any>, error?: interop.Reference<NSError>): AVSemanticSegmentationMatte;
 
 	readonly matteType: string;
 
@@ -16542,7 +16542,7 @@ declare class AVSemanticSegmentationMatte extends NSObject {
 
 	semanticSegmentationMatteByApplyingExifOrientation(exifOrientation: CGImagePropertyOrientation): this;
 
-	semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBufferError(pixelBuffer: any): this;
+	semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBufferError(pixelBuffer: any, error?: interop.Reference<NSError>): this;
 }
 
 /**
@@ -16756,7 +16756,7 @@ declare class AVURLAsset extends AVAsset implements AVContentKeyRecipient, NSIte
 
 	static new(): AVURLAsset; // inherited from NSObject
 
-	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): AVURLAsset;
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string, error?: interop.Reference<NSError>): AVURLAsset;
 
 	readonly URL: NSURL;
 

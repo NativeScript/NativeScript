@@ -1874,15 +1874,15 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	exportObjectToURLPreviewImageError(url: NSURL, previewImage: UIImage): boolean;
+	exportObjectToURLPreviewImageError(url: NSURL, previewImage: UIImage, error?: interop.Reference<NSError>): boolean;
 
-	initWithArchiveURLError(url: NSURL): this;
+	initWithArchiveURLError(url: NSURL, error?: interop.Reference<NSError>): this;
 
 	initWithCoder(coder: NSCoder): this;
 
 	referenceObjectByApplyingTransform(transform: simd_float4x4): ARReferenceObject;
 
-	referenceObjectByMergingObjectError(object: ARReferenceObject): ARReferenceObject;
+	referenceObjectByMergingObjectError(object: ARReferenceObject, error?: interop.Reference<NSError>): ARReferenceObject;
 }
 
 /**

@@ -372,7 +372,7 @@ declare class SSReadingList extends NSObject {
 
 	static supportsURL(URL: NSURL): boolean;
 
-	addReadingListItemWithURLTitlePreviewTextError(URL: NSURL, title: string, previewText: string): boolean;
+	addReadingListItemWithURLTitlePreviewTextError(URL: NSURL, title: string, previewText: string, error?: interop.Reference<NSError>): boolean;
 }
 
 /**

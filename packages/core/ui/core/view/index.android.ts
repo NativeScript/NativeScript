@@ -1,9 +1,8 @@
 import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, statusBarStyleProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
-import { Length } from '../../styling/length-shared';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -72,6 +71,51 @@ interface DialogOptions {
 	dismissCallback: () => void;
 }
 
+let OnBackPressedCallback;
+
+if (SDK_VERSION >= 33) {
+	OnBackPressedCallback = (androidx.activity.OnBackPressedCallback as any).extend({
+		handleOnBackPressed() {
+			console.log('OnBackPressedCallback handleOnBackPressed called');
+			const dialog = this['_dialog']?.get();
+
+			if (!dialog) {
+				// disable the callback and call super to avoid infinite loop
+
+				this.setEnabled(false);
+
+				return;
+			}
+
+			const view = dialog.fragment.owner;
+
+			const args: AndroidActivityBackPressedEventData = {
+				eventName: 'activityBackPressed',
+				object: view,
+				activity: view._context,
+				cancel: false,
+			};
+
+			// Fist fire application.android global event
+			getNativeScriptGlobals().events.notify(args);
+
+			if (args.cancel) {
+				return;
+			}
+
+			view.notify(args);
+
+			if (!args.cancel) {
+				this.setEnabled(false);
+
+				dialog.getOnBackPressedDispatcher().onBackPressed();
+
+				this.setEnabled(true);
+			}
+		},
+	});
+}
+
 interface TouchListener {
 	new (owner: View): android.view.View.OnTouchListener;
 }
@@ -121,13 +165,23 @@ function initializeDialogFragment() {
 	}
 
 	@NativeClass
-	class DialogImpl extends android.app.Dialog {
+	class DialogImpl extends androidx.appcompat.app.AppCompatDialog {
 		constructor(
 			public fragment: DialogFragmentImpl,
 			context: android.content.Context,
 			themeResId: number,
 		) {
 			super(context, themeResId);
+
+			if (SDK_VERSION >= 33 && OnBackPressedCallback) {
+				const callback = new OnBackPressedCallback(true);
+
+				callback['_dialog'] = new WeakRef(this);
+
+				// @ts-ignore
+
+				this.getOnBackPressedDispatcher().addCallback(this, callback);
+			}
 
 			return global.__native(this);
 		}
@@ -138,6 +192,10 @@ function initializeDialogFragment() {
 		}
 
 		public onBackPressed(): void {
+			if (SDK_VERSION >= 33) {
+				super.onBackPressed();
+				return;
+			}
 			const view = this.fragment.owner;
 			const args = <AndroidActivityBackPressedEventData>{
 				eventName: 'activityBackPressed',
@@ -320,6 +378,121 @@ function getModalOptions(domId: number): DialogOptions {
 	return modalMap.get(domId);
 }
 
+const INSET_LEFT = 0;
+const INSET_TOP = 4;
+const INSET_RIGHT = 8;
+const INSET_BOTTOM = 12;
+const INSET_LEFT_CONSUMED = 16;
+const INSET_TOP_CONSUMED = 20;
+const INSET_RIGHT_CONSUMED = 24;
+const INSET_BOTTOM_CONSUMED = 28;
+
+const OverflowEdgeIgnore = -1;
+const OverflowEdgeNone: number = 0;
+const OverflowEdgeLeft: number = 1 << 1;
+const OverflowEdgeTop: number = 1 << 2;
+const OverflowEdgeRight: number = 1 << 3;
+const OverflowEdgeBottom: number = 1 << 4;
+const OverflowEdgeDontApply: number = 1 << 5;
+const OverflowEdgeLeftDontConsume: number = 1 << 6;
+const OverflowEdgeTopDontConsume: number = 1 << 7;
+const OverflowEdgeRightDontConsume: number = 1 << 8;
+const OverflowEdgeBottomDontConsume: number = 1 << 9;
+const OverflowEdgeAllButLeft: number = 1 << 10;
+const OverflowEdgeAllButTop: number = 1 << 11;
+const OverflowEdgeAllButRight: number = 1 << 12;
+const OverflowEdgeAllButBottom: number = 1 << 13;
+
+class Inset {
+	private view: DataView;
+	private data: ArrayBuffer;
+	constructor(data: java.nio.ByteBuffer) {
+		this.data = (<any>ArrayBuffer).from(data);
+		this.view = new DataView(this.data);
+	}
+
+	public get left(): number {
+		return this.view.getInt32(INSET_LEFT, true);
+	}
+
+	public set left(value: number) {
+		this.view.setInt32(INSET_LEFT, value, true);
+	}
+
+	public get top(): number {
+		return this.view.getInt32(INSET_TOP, true);
+	}
+
+	public set top(value: number) {
+		this.view.setInt32(INSET_TOP, value, true);
+	}
+
+	public get right(): number {
+		return this.view.getInt32(INSET_RIGHT, true);
+	}
+
+	public set right(value: number) {
+		this.view.setInt32(INSET_RIGHT, value, true);
+	}
+
+	public get bottom(): number {
+		return this.view.getInt32(INSET_BOTTOM, true);
+	}
+
+	public set bottom(value: number) {
+		this.view.setInt32(INSET_BOTTOM, value, true);
+	}
+
+	public get leftConsumed(): boolean {
+		return this.view.getInt32(INSET_LEFT_CONSUMED, true) > 0;
+	}
+
+	public set leftConsumed(value: boolean) {
+		this.view.setInt32(INSET_LEFT_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get topConsumed(): boolean {
+		return this.view.getInt32(INSET_TOP_CONSUMED, true) > 0;
+	}
+
+	public set topConsumed(value: boolean) {
+		this.view.setInt32(INSET_TOP_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get rightConsumed(): boolean {
+		return this.view.getInt32(INSET_RIGHT_CONSUMED, true) > 0;
+	}
+
+	public set rightConsumed(value: boolean) {
+		this.view.setInt32(INSET_RIGHT_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get bottomConsumed(): boolean {
+		return this.view.getInt32(INSET_BOTTOM_CONSUMED, true) > 0;
+	}
+
+	public set bottomConsumed(value: boolean) {
+		this.view.setInt32(INSET_BOTTOM_CONSUMED, value ? 1 : 0, true);
+	}
+
+	toString() {
+		return `Inset: left=${this.left}, top=${this.top}, right=${this.right}, bottom=${this.bottom}, ` + `leftConsumed=${this.leftConsumed}, topConsumed=${this.topConsumed}, ` + `rightConsumed=${this.rightConsumed}, bottomConsumed=${this.bottomConsumed}`;
+	}
+
+	toJSON() {
+		return {
+			left: this.left,
+			top: this.top,
+			right: this.right,
+			bottom: this.bottom,
+			leftConsumed: this.leftConsumed,
+			topConsumed: this.topConsumed,
+			rightConsumed: this.rightConsumed,
+			bottomConsumed: this.bottomConsumed,
+		};
+	}
+}
+
 export class View extends ViewCommon {
 	public static androidBackPressedEvent = androidBackPressedEvent;
 
@@ -330,6 +503,8 @@ export class View extends ViewCommon {
 	private layoutChangeListenerIsSet: boolean;
 	private layoutChangeListener: android.view.View.OnLayoutChangeListener;
 	private _rootManager: androidx.fragment.app.FragmentManager;
+	private insetListenerIsSet: boolean;
+	private needsInsetListener: boolean;
 
 	nativeViewProtected: android.view.View;
 
@@ -348,6 +523,12 @@ export class View extends ViewCommon {
 		if (this.isLoaded && !this.layoutChangeListenerIsSet && isLayoutEvent) {
 			this.setOnLayoutChangeListener();
 		}
+
+		const isInsetEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.androidOverflowInsetEvent) !== -1 : false;
+		// only avaiable on LayoutBase
+		if (!this.insetListenerIsSet && isInsetEvent) {
+			this.setInsetListener();
+		}
 	}
 
 	removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
@@ -358,6 +539,43 @@ export class View extends ViewCommon {
 		if (this.isLoaded && this.layoutChangeListenerIsSet && isLayoutEvent && !this.needsOnLayoutChangeListener()) {
 			this.nativeViewProtected.removeOnLayoutChangeListener(this.layoutChangeListener);
 			this.layoutChangeListenerIsSet = false;
+		}
+
+		const isInsetEvent = typeof eventNames === 'string' ? eventNames.indexOf(ViewCommon.androidOverflowInsetEvent) !== -1 : false;
+
+		if (this.insetListenerIsSet && isInsetEvent && this.nativeViewProtected && (this.nativeViewProtected as any).setInsetListener) {
+			(this.nativeViewProtected as any).setInsetListener(null);
+			this.insetListenerIsSet = false;
+		}
+	}
+
+	private setInsetListener() {
+		if (this.nativeViewProtected) {
+			if ((this.nativeViewProtected as any).setInsetListener) {
+				const ref = new WeakRef(this);
+				(this.nativeViewProtected as any).setInsetListener(
+					new org.nativescript.widgets.LayoutBase.WindowInsetListener({
+						onApplyWindowInsets(param0) {
+							const owner = ref.get();
+							if (!owner) {
+								return;
+							}
+
+							const inset = new Inset(param0);
+							const args = {
+								eventName: ViewCommon.androidOverflowInsetEvent,
+								object: this,
+								inset,
+							};
+							owner.notify(args);
+						},
+					}),
+				);
+				this.insetListenerIsSet = true;
+			}
+			this.needsInsetListener = false;
+		} else {
+			this.needsInsetListener = true;
 		}
 	}
 
@@ -419,6 +637,35 @@ export class View extends ViewCommon {
 		return manager;
 	}
 
+	[androidOverflowEdgeProperty.setNative](value: CoreTypes.AndroidOverflow) {
+		const nativeView = this.nativeViewProtected as any;
+		if (typeof value !== 'string' || nativeView === null || nativeView == undefined) {
+			return;
+		}
+
+		if (!('setOverflowEdge' in nativeView)) {
+			return;
+		}
+
+		switch (value) {
+			case 'none':
+				nativeView.setOverflowEdge(OverflowEdgeNone);
+				break;
+			case 'ignore':
+				nativeView.setOverflowEdge(OverflowEdgeIgnore);
+				break;
+			default:
+				{
+					const edge = parseEdges(value);
+
+					if (edge != null) {
+						nativeView.setOverflowEdge(edge);
+					}
+				}
+				break;
+		}
+	}
+
 	@profile
 	public onLoaded() {
 		this._manager = null;
@@ -447,12 +694,34 @@ export class View extends ViewCommon {
 	}
 
 	public handleGestureTouch(event: android.view.MotionEvent): any {
-		for (const type in this._gestureObservers) {
-			const list = this._gestureObservers[type];
-			list.forEach((element) => {
-				element.androidOnTouchEvent(event);
-			});
+		// This keeps a copy of gesture observers from the map to ensure concurrency
+		const allObservers = Object.values(this._gestureObservers);
+
+		for (const observers of allObservers) {
+			const length = observers.length;
+
+			if (!length) {
+				continue;
+			}
+
+			if (length === 1) {
+				const entry = observers[0];
+				if (entry) {
+					entry.androidOnTouchEvent(event);
+				}
+			} else {
+				// This keeps a copy of gesture observers list to ensure concurrency
+				const observersCp = observers.slice();
+
+				for (let i = 0; i < length; i++) {
+					const entry = observersCp[i];
+					if (entry) {
+						entry.androidOnTouchEvent(event);
+					}
+				}
+			}
 		}
+
 		if (this.parent instanceof View) {
 			this.parent.handleGestureTouch(event);
 		}
@@ -467,6 +736,10 @@ export class View extends ViewCommon {
 
 		if (this.needsOnLayoutChangeListener()) {
 			this.setOnLayoutChangeListener();
+		}
+
+		if (!this.insetListenerIsSet && this.needsInsetListener) {
+			this.setInsetListener();
 		}
 	}
 
@@ -852,9 +1125,16 @@ export class View extends ViewCommon {
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		const gravity = lp.gravity;
 		const weight = lp.weight;
+
 		// Set only if params gravity exists.
-		if (gravity !== undefined) {
+		if (gravity != null) {
 			switch (value) {
+				case 'start':
+					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_RIGHT : GRAVITY_LEFT) | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
 				case 'left':
 					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
@@ -869,6 +1149,12 @@ export class View extends ViewCommon {
 					break;
 				case 'right':
 					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
+						lp.weight = -2;
+					}
+					break;
+				case 'end':
+					lp.gravity = (this.direction === CoreTypes.LayoutDirection.rtl ? GRAVITY_LEFT : GRAVITY_RIGHT) | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}
@@ -1007,10 +1293,6 @@ export class View extends ViewCommon {
 		return this._context.getWindow();
 	}
 
-	[testIDProperty.setNative](value: string) {
-		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
-	}
-
 	setAccessibilityIdentifier(view, value) {
 		const id = Utils.android.resources.getId(':id/nativescript_accessibility_id');
 
@@ -1021,6 +1303,26 @@ export class View extends ViewCommon {
 
 		if (this.testID && this.testID !== value) this.testID = value;
 		if (this.accessibilityIdentifier !== value) this.accessibilityIdentifier = value;
+	}
+
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		const nativeView = this.nativeViewProtected;
+
+		switch (value) {
+			case CoreTypes.LayoutDirection.ltr:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LTR);
+				break;
+			case CoreTypes.LayoutDirection.rtl:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
+				break;
+			default:
+				nativeView.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LOCALE);
+				break;
+		}
+	}
+
+	[testIDProperty.setNative](value: string) {
+		this.setAccessibilityIdentifier(this.nativeViewProtected, value);
 	}
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
@@ -1255,17 +1557,23 @@ export class View extends ViewCommon {
 		}
 	}
 
-	protected _drawBoxShadow(boxShadow: BoxShadow) {
+	protected _drawBoxShadow(boxShadows: BoxShadow[]) {
 		const nativeView = this.nativeViewProtected;
-		const config = {
-			shadowColor: boxShadow.color.android,
-			cornerRadius: Length.toDevicePixels(this.borderRadius as CoreTypes.LengthType, 0.0),
-			spreadRadius: boxShadow.spreadRadius,
-			blurRadius: boxShadow.blurRadius,
-			offsetX: boxShadow.offsetX,
-			offsetY: boxShadow.offsetY,
-		};
-		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+		const valueCount = 6;
+		const nativeArray: number[] = Array.create('int', boxShadows.length * valueCount);
+
+		for (let i = 0, length = boxShadows.length; i < length; i++) {
+			const boxShadow = boxShadows[i];
+			const nativeIndex = i * valueCount;
+
+			nativeArray[nativeIndex + 0] = boxShadow.color.android;
+			nativeArray[nativeIndex + 1] = boxShadow.spreadRadius;
+			nativeArray[nativeIndex + 2] = boxShadow.blurRadius;
+			nativeArray[nativeIndex + 3] = boxShadow.offsetX;
+			nativeArray[nativeIndex + 4] = boxShadow.offsetY;
+			nativeArray[nativeIndex + 5] = boxShadow.inset ? 1 : 0;
+		}
+		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, nativeArray);
 	}
 
 	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
@@ -1314,15 +1622,15 @@ export class View extends ViewCommon {
 		// prettier-ignore
 		const onlyColor = !background.hasBorderWidth()
 			&& !background.hasBorderRadius()
-			&& !background.hasBoxShadow()
+			&& !background.hasBoxShadows()
 			&& !background.clipPath
 			&& !background.image
 			&& !!background.color;
 
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
 
-		if (background.hasBoxShadow()) {
-			this._drawBoxShadow(background.getBoxShadow());
+		if (background.hasBoxShadows()) {
+			this._drawBoxShadow(background.getBoxShadows());
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
@@ -1356,8 +1664,43 @@ export class View extends ViewCommon {
 	}
 }
 
+const edgeMap: Record<string, number> = {
+	none: OverflowEdgeNone,
+	left: OverflowEdgeLeft,
+	top: OverflowEdgeTop,
+	right: OverflowEdgeRight,
+	bottom: OverflowEdgeBottom,
+	'dont-apply': OverflowEdgeDontApply,
+	'left-dont-consume': OverflowEdgeLeftDontConsume,
+	'top-dont-consume': OverflowEdgeTopDontConsume,
+	'right-dont-consume': OverflowEdgeRightDontConsume,
+	'bottom-dont-consume': OverflowEdgeBottomDontConsume,
+	'all-but-left': OverflowEdgeAllButLeft,
+	'all-but-top': OverflowEdgeAllButTop,
+	'all-but-right': OverflowEdgeAllButRight,
+	'all-but-bottom': OverflowEdgeAllButBottom,
+};
+
+function parseEdges(edges: string): number | null {
+	let result = 0;
+	const values = edges.split(',');
+	for (const raw of values) {
+		const value = edgeMap[raw.trim()];
+		if (value === undefined) continue;
+		// dont-apply overrides everything else
+		if (value === OverflowEdgeDontApply) return value;
+		result |= value;
+	}
+	return result === 0 ? null : result;
+}
+
 export class ContainerView extends View {
 	public iosOverflowSafeArea: boolean;
+
+	constructor() {
+		super();
+		this.androidOverflowEdge = 'none';
+	}
 }
 
 export class CustomLayoutView extends ContainerView {

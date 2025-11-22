@@ -1,0 +1,142 @@
+name: Release Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      dist-tag:
+        description: "npm dist-tag to use (e.g. latest | next | canary)"
+        required: false
+        type: string
+        default: next
+      dry-run:
+        description: "Run release steps without making changes (no git push, no publish)"
+        required: false
+        type: boolean
+        default: false
+      release-group:
+        description: "Optional Nx release group or project to scope the release (empty = default behavior)"
+        required: false
+        type: string
+        default: ""
+
+concurrency:
+  # Avoid overlapping publishes on the same ref/branch
+  group: nx-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write        # needed to push version commits and tags
+  pull-requests: write   # for changelog PRs/comments if Nx uses them
+  id-token: write        # required for npm provenance (OIDC)
+
+jobs:
+  release:
+    name: Version and Publish (gated by environment)
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.dry-run && 'npm-publish-dry-run' || 'npm-publish' }}
+
+    env:
+      # Default dist-tag if not provided via workflow_dispatch input
+      NPM_DIST_TAG: ${{ inputs['dist-tag'] || 'next' }}
+      # Optional: provide Nx Cloud token if used in this repo
+      NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository (full history for tagging)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repo setup
+        run: npm run setup
+
+      # Collect a one-time password (OTP) from a reviewer via the environment approval gate.
+      - id: wait_for_otp
+        name: Wait for npm OTP (2FA)
+        if: ${{ !inputs.dry-run }}
+        uses: step-security/wait-for-secrets@v1
+        with:
+          secrets: |
+            NPM_OTP
+          timeout-minutes: 30
+
+      - name: Configure npm auth
+        if: ${{ !inputs.dry-run }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: |
+          test -n "$NPM_TOKEN" || { echo "NPM_PUBLISH_TOKEN secret is required"; exit 1; }
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+
+      - name: Configure git user for automated commits
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # VERSION: updates versions, changelogs, creates git tags following nx.json releaseTag pattern.
+      - name: nx release version
+        if: ${{ !inputs.dry-run }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NX_GROUP_ARG: ${{ inputs['release-group'] != '' && format('--group {0}', inputs['release-group']) || '' }}
+        run: |
+          npx nx release version ${NX_GROUP_ARG} --yes --verbose
+
+      - name: nx release version (dry-run)
+        if: ${{ inputs.dry-run }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NX_GROUP_ARG: ${{ inputs['release-group'] != '' && format('--group {0}', inputs['release-group']) || '' }}
+        run: |
+          npx nx release version ${NX_GROUP_ARG} --yes --verbose --dry-run
+
+      # Ensure version commits and tags are pushed if version step created them.
+      - name: Push version commits and tags
+        if: ${{ !inputs.dry-run }}
+        run: |
+          # Push commits (if any) and tags created by Nx Release
+          git push --follow-tags || true
+
+      # PUBLISH: perform npm publish using Nx Release, with 2FA OTP and provenance.
+      - name: nx release publish
+        if: ${{ !inputs.dry-run }}
+        env:
+          NPM_CONFIG_OTP: ${{ steps.wait_for_otp.outputs.NPM_OTP }}
+          # For npm provenance via OIDC
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+          NX_GROUP_ARG: ${{ inputs['release-group'] != '' && format('--group {0}', inputs['release-group']) || '' }}
+        run: |
+          test -n "$NPM_CONFIG_OTP" || { echo "Missing NPM OTP from environment approval"; exit 1; }
+          # Use Nx Release to publish all changed packages; tag controls npm dist-tag; provenance enables supply chain attestations
+          npx nx release publish ${NX_GROUP_ARG} --tag "$NPM_DIST_TAG" --provenance --yes --verbose
+
+      - name: nx release publish (dry-run)
+        if: ${{ inputs.dry-run }}
+        env:
+          NX_GROUP_ARG: ${{ inputs['release-group'] != '' && format('--group {0}', inputs['release-group']) || '' }}
+        run: |
+          npx nx release publish ${NX_GROUP_ARG} --tag "$NPM_DIST_TAG" --provenance --yes --verbose --dry-run
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "Nx Release completed."
+          echo "- dist-tag: $NPM_DIST_TAG"
+          echo "- release-group: '${{ inputs['release-group'] }}'"
+          echo "- dry-run: ${{ inputs['dry-run'] }}"

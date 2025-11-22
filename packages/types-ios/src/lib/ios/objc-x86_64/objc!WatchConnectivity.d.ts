@@ -108,7 +108,7 @@ declare class WCSession extends NSObject {
 
 	transferUserInfo(userInfo: NSDictionary<string, any>): WCSessionUserInfoTransfer;
 
-	updateApplicationContextError(applicationContext: NSDictionary<string, any>): boolean;
+	updateApplicationContextError(applicationContext: NSDictionary<string, any>, error?: interop.Reference<NSError>): boolean;
 }
 
 /**

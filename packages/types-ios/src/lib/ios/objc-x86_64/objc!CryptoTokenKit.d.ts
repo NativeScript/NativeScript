@@ -117,7 +117,7 @@ declare class TKSmartCard extends NSObject {
 
 	sendInsP1P2DataLeReply(ins: number, p1: number, p2: number, requestData: NSData, le: number, reply: (p1: NSData, p2: number, p3: NSError) => void): void;
 
-	sendInsP1P2DataLeSwError(ins: number, p1: number, p2: number, requestData: NSData, le: number, sw: interop.Pointer | interop.Reference<number>): NSData;
+	sendInsP1P2DataLeSwError(ins: number, p1: number, p2: number, requestData: NSData, le: number, sw: interop.Pointer | interop.Reference<number>, error?: interop.Reference<NSError>): NSData;
 
 	transmitRequestReply(request: NSData, reply: (p1: NSData, p2: NSError) => void): void;
 
@@ -312,7 +312,7 @@ declare class TKSmartCardSlotNFCSession extends NSObject {
 
 	endSession(): void;
 
-	updateWithMessageError(message: string): boolean;
+	updateWithMessageError(message: string, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum TKSmartCardSlotState {
@@ -356,7 +356,7 @@ declare class TKSmartCardTokenDriver extends TKTokenDriver {
 
 interface TKSmartCardTokenDriverDelegate extends TKTokenDriverDelegate {
 
-	tokenDriverCreateTokenForSmartCardAIDError(driver: TKSmartCardTokenDriver, smartCard: TKSmartCard, AID: NSData): TKSmartCardToken;
+	tokenDriverCreateTokenForSmartCardAIDError(driver: TKSmartCardTokenDriver, smartCard: TKSmartCard, AID: NSData, error?: interop.Reference<NSError>): TKSmartCardToken;
 }
 declare var TKSmartCardTokenDriverDelegate: {
 
@@ -376,9 +376,9 @@ declare class TKSmartCardTokenRegistrationManager extends NSObject {
 
 	static readonly defaultManager: TKSmartCardTokenRegistrationManager;
 
-	registerSmartCardWithTokenIDPromptMessageError(tokenID: string, promptMessage: string): boolean;
+	registerSmartCardWithTokenIDPromptMessageError(tokenID: string, promptMessage: string, error?: interop.Reference<NSError>): boolean;
 
-	unregisterSmartCardWithTokenIDError(tokenID: string): boolean;
+	unregisterSmartCardWithTokenIDError(tokenID: string, error?: interop.Reference<NSError>): boolean;
 }
 
 /**
@@ -399,7 +399,7 @@ declare class TKSmartCardTokenSession extends TKTokenSession {
 	/**
 	 * @since 26.0
 	 */
-	getSmartCardWithError(): TKSmartCard;
+	getSmartCardWithError(error?: interop.Reference<NSError>): TKSmartCard;
 }
 
 declare class TKSmartCardUserInteraction extends NSObject {
@@ -533,7 +533,7 @@ declare class TKTokenAuthOperation extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	finishWithError(): boolean;
+	finishWithError(error?: interop.Reference<NSError>): boolean;
 
 	initWithCoder(coder: NSCoder): this;
 }
@@ -553,9 +553,9 @@ declare class TKTokenConfiguration extends NSObject {
 
 	keychainItems: NSArray<TKTokenKeychainItem>;
 
-	certificateForObjectIDError(objectID: any): TKTokenKeychainCertificate;
+	certificateForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainCertificate;
 
-	keyForObjectIDError(objectID: any): TKTokenKeychainKey;
+	keyForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainKey;
 }
 
 /**
@@ -563,7 +563,7 @@ declare class TKTokenConfiguration extends NSObject {
  */
 interface TKTokenDelegate extends NSObjectProtocol {
 
-	tokenCreateSessionWithError(token: TKToken): TKTokenSession;
+	tokenCreateSessionWithError(token: TKToken, error?: interop.Reference<NSError>): TKTokenSession;
 
 	tokenTerminateSession?(token: TKToken, session: TKTokenSession): void;
 }
@@ -614,7 +614,7 @@ interface TKTokenDriverDelegate extends NSObjectProtocol {
 	/**
 	 * @since 14.0
 	 */
-	tokenDriverTokenForConfigurationError?(driver: TKTokenDriver, configuration: TKTokenConfiguration): TKToken;
+	tokenDriverTokenForConfigurationError?(driver: TKTokenDriver, configuration: TKTokenConfiguration, error?: interop.Reference<NSError>): TKToken;
 }
 declare var TKTokenDriverDelegate: {
 
@@ -676,11 +676,11 @@ declare class TKTokenKeychainContents extends NSObject {
 
 	readonly items: NSArray<TKTokenKeychainItem>;
 
-	certificateForObjectIDError(objectID: any): TKTokenKeychainCertificate;
+	certificateForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainCertificate;
 
 	fillWithItems(items: NSArray<TKTokenKeychainItem> | TKTokenKeychainItem[]): void;
 
-	keyForObjectIDError(objectID: any): TKTokenKeychainKey;
+	keyForObjectIDError(objectID: any, error?: interop.Reference<NSError>): TKTokenKeychainKey;
 }
 
 /**
@@ -786,13 +786,13 @@ declare class TKTokenSession extends NSObject {
  */
 interface TKTokenSessionDelegate extends NSObjectProtocol {
 
-	tokenSessionBeginAuthForOperationConstraintError?(session: TKTokenSession, operation: TKTokenOperation, constraint: any): TKTokenAuthOperation;
+	tokenSessionBeginAuthForOperationConstraintError?(session: TKTokenSession, operation: TKTokenOperation, constraint: any, error?: interop.Reference<NSError>): TKTokenAuthOperation;
 
-	tokenSessionDecryptDataUsingKeyAlgorithmError?(session: TKTokenSession, ciphertext: NSData, keyObjectID: any, algorithm: TKTokenKeyAlgorithm): NSData;
+	tokenSessionDecryptDataUsingKeyAlgorithmError?(session: TKTokenSession, ciphertext: NSData, keyObjectID: any, algorithm: TKTokenKeyAlgorithm, error?: interop.Reference<NSError>): NSData;
 
-	tokenSessionPerformKeyExchangeWithPublicKeyUsingKeyAlgorithmParametersError?(session: TKTokenSession, otherPartyPublicKeyData: NSData, objectID: any, algorithm: TKTokenKeyAlgorithm, parameters: TKTokenKeyExchangeParameters): NSData;
+	tokenSessionPerformKeyExchangeWithPublicKeyUsingKeyAlgorithmParametersError?(session: TKTokenSession, otherPartyPublicKeyData: NSData, objectID: any, algorithm: TKTokenKeyAlgorithm, parameters: TKTokenKeyExchangeParameters, error?: interop.Reference<NSError>): NSData;
 
-	tokenSessionSignDataUsingKeyAlgorithmError?(session: TKTokenSession, dataToSign: NSData, keyObjectID: any, algorithm: TKTokenKeyAlgorithm): NSData;
+	tokenSessionSignDataUsingKeyAlgorithmError?(session: TKTokenSession, dataToSign: NSData, keyObjectID: any, algorithm: TKTokenKeyAlgorithm, error?: interop.Reference<NSError>): NSData;
 
 	tokenSessionSupportsOperationUsingKeyAlgorithm?(session: TKTokenSession, operation: TKTokenOperation, keyObjectID: any, algorithm: TKTokenKeyAlgorithm): boolean;
 }
