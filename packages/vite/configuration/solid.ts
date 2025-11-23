@@ -47,7 +47,7 @@ const plugins = [
 ];
 
 export const solidConfig = ({ mode }): UserConfig => {
-	return mergeConfig(baseConfig({ mode }), {
+	return mergeConfig(baseConfig({ mode, flavor: 'solid' }), {
 		plugins,
 	});
 };

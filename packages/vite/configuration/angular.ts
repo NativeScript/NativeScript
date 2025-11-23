@@ -305,7 +305,7 @@ export const angularConfig = ({ mode }): UserConfig => {
 
 	const enableRollupLinker = process.env.NS_ENABLE_ROLLUP_LINKER === '1' || process.env.NS_ENABLE_ROLLUP_LINKER === 'true' || hmrActive;
 
-	return mergeConfig(baseConfig({ mode }), {
+	return mergeConfig(baseConfig({ mode, flavor: 'angular' }), {
 		plugins: [...plugins, ...(enableRollupLinker ? [angularRollupLinker(process.cwd())] : []), renderChunkLinker, postLinker],
 		// Always alias fesm2022 deep imports to package root so vendor bridge can externalize properly
 		resolve: {
