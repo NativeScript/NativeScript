@@ -22,8 +22,21 @@ const mainEntryRelPosix = (() => {
 const flavor = getProjectFlavor() as string;
 
 // Optional polyfills support (non-HMR specific but dev friendly)
-const polyfillsPath = getProjectFilePath(getProjectAppRelativePath('polyfills.ts'));
-const polyfillsExists = fs.existsSync(polyfillsPath);
+// Resolve polyfills relative to the main entry directory so it works both for standalone projects and monorepos/workspaces where the workspace root and app root differ.
+// We keep both the absolute filesystem path (for existsSync) and a project-root-relative POSIX path (for the import specifier used in Vite).
+const mainEntryDir = path.dirname(mainEntry);
+const polyfillsFsPath = path.resolve(mainEntryDir, 'polyfills.ts');
+const polyfillsExists = fs.existsSync(polyfillsFsPath);
+const polyfillsImportSpecifier = (() => {
+	try {
+		// Normalize to "/..." posix-style (similar to mainEntryRelPosix)
+		const rel = path.relative(projectRoot, polyfillsFsPath).replace(/\\/g, '/');
+		return ('/' + rel).replace(/\/+/g, '/');
+	} catch {
+		// Fallback to a simple relative specifier next to main entry
+		return './polyfills.ts';
+	}
+})();
 
 const VIRTUAL_ID = 'virtual:entry-with-polyfills';
 const RESOLVED = '\0' + VIRTUAL_ID;
@@ -167,9 +180,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 			// ---- Optional polyfills ----
 			if (polyfillsExists) {
-				imports += `import '${polyfillsPath}';\n`;
+				imports += `import '${polyfillsImportSpecifier}';\n`;
 				if (opts.verbose) {
-					imports += `console.info('[ns-entry] polyfills imported from', ${JSON.stringify(polyfillsPath)});\n`;
+					imports += `console.info('[ns-entry] polyfills imported from', ${JSON.stringify(polyfillsImportSpecifier)});\n`;
 				}
 			} else if (opts.verbose) {
 				imports += "console.info('[ns-entry] no polyfills file found');\n";
