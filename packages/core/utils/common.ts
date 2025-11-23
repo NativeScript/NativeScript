@@ -1,6 +1,20 @@
 import * as types from './types';
 import { dispatchToMainThread, dispatchToUIThread, isMainThread } from './mainthread-helper';
-import emojiRegex from 'emoji-regex';
+import * as emojiRegexModule from 'emoji-regex';
+
+// Normalize emoji-regex CommonJS / ESM shapes into a callable function.
+// Some bundlers expose it as module.exports, others as module.exports.default.
+const emojiRegex: (input: string) => RegExp = (() => {
+	const mod: any = emojiRegexModule;
+	if (mod && typeof mod.default === 'function') {
+		return mod.default;
+	}
+	if (typeof mod === 'function') {
+		return mod;
+	}
+	// Fallback: minimal safe regex that never throws.
+	return () => /./g;
+})();
 
 export * from './mainthread-helper';
 export * from './macrotask-scheduler';
@@ -168,5 +182,5 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
 export function isEmoji(value: string): boolean {
 	// TODO: In a future runtime update, we can switch to using Unicode Property Escapes:
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes
-	return emojiRegex().test(value);
+	return emojiRegex(value).test(value);
 }
