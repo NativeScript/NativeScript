@@ -1,6 +1,7 @@
 import type { Plugin, ResolvedConfig } from 'vite';
 import { createRequire } from 'node:module';
 import path from 'path';
+import { pathToFileURL } from 'url';
 const require = createRequire(import.meta.url);
 
 const VIRTUAL_ID = 'virtual:ns-hmr-client';
@@ -32,8 +33,21 @@ export function nsHmrClientVitePlugin(opts: { platform: string; verbose?: boolea
 			const projectRoot = config?.root || process.cwd();
 			let clientImport = clientFsPath;
 			try {
-				const rel = path.relative(projectRoot, clientFsPath).replace(/\\/g, '/');
-				clientImport = (rel.startsWith('.') ? rel : `/${rel}`).replace(/\/+/g, '/');
+				// Compute a project-relative POSIX path when possible. When `path.relative`
+				// returns an absolute path (this can occur on Windows if roots differ or
+				// when path.relative returns a drive-letter-prefixed path), avoid creating
+				// a specifier like `/D:/...` which later gets resolved to `D:\D:\...`.
+				const rel = path.relative(projectRoot, clientFsPath);
+				const relPosix = rel.replace(/\\/g, '/');
+
+				// If `rel` is absolute (e.g. starts with a drive letter on Windows),
+				// use a file:// URL for the import so Vite/Rollup do not prepend the
+				// project root and cause duplicated drive prefixes.
+				if (path.isAbsolute(rel)) {
+					clientImport = pathToFileURL(clientFsPath).toString();
+				} else {
+					clientImport = (relPosix.startsWith('.') ? relPosix : `/${relPosix}`).replace(/\/+/g, '/');
+				}
 			} catch {
 				// On any failure, keep the original path but normalize to POSIX
 				clientImport = clientFsPath.replace(/\\/g, '/');
