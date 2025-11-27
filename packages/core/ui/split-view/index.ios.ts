@@ -1,7 +1,8 @@
-import { SplitViewBase, SplitRole, displayModeProperty, splitBehaviorProperty, preferredPrimaryColumnWidthFractionProperty, preferredSupplementaryColumnWidthFractionProperty, preferredInspectorColumnWidthFractionProperty } from './split-view-common';
+import { SplitViewBase, displayModeProperty, splitBehaviorProperty, preferredPrimaryColumnWidthFractionProperty, preferredSupplementaryColumnWidthFractionProperty, preferredInspectorColumnWidthFractionProperty } from './split-view-common';
 import { View } from '../core/view';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
+import type { SplitRole } from '.';
 
 @NativeClass
 class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewControllerDelegate {
