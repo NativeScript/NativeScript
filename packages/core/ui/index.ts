@@ -71,7 +71,8 @@ export { SegmentedBar, SegmentedBarItem } from './segmented-bar';
 export type { SelectedIndexChangedEventData } from './segmented-bar';
 export { Slider } from './slider';
 export type { AccessibilityDecrementEventData, AccessibilityIncrementEventData } from './slider';
-export * from './split-view';
+export { SplitView } from './split-view';
+export type { SplitStyle, SplitRole, SplitDisplayMode, SplitBehavior } from './split-view';
 
 export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS, resolveFileNameFromUrl } from './styling/style-scope';
 export { Background } from './styling/background';
