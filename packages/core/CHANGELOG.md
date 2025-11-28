@@ -1,3 +1,24 @@
+## 9.0.4 (2025-11-28)
+
+### 🩹 Fixes
+
+- **ios:** prevent gc from collecting current navigation transition ([#10967](https://github.com/NativeScript/NativeScript/pull/10967))
+- **SplitView:** export improvements ([#10968](https://github.com/NativeScript/NativeScript/pull/10968))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+
+## 9.0.3 (2025-11-23)
+
+### 🚀 Features
+
+- **core:** improve esm/commonjs compat with emoji-regex dependency ([8aa77c23c](https://github.com/NativeScript/NativeScript/commit/8aa77c23c))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 9.0.2 (2025-11-20)
 
 ### 🩹 Fixes
