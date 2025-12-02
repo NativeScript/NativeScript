@@ -58,7 +58,7 @@
 		"@vue/compiler-sfc": "^3.5.24",
 		"acorn": "^8.15.0",
 		"acorn-stage3": "^4.0.0",
-		"copy-webpack-plugin": "^13.0.0",
+		"copy-webpack-plugin": "^13.0.1",
 		"copyfiles": "^2.4.0",
 		"css": "^3.0.0",
 		"css-tree": "^3.1.0",
