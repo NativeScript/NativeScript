@@ -1,17 +1,10 @@
 import { LayoutBase } from '../layouts/layout-base';
 import { View, CSSType } from '../core/view';
 import { Property, makeParser, makeValidator } from '../core/properties';
+import type { SplitBehavior, SplitDisplayMode, SplitRole, SplitStyle } from '.';
 
-export type SplitRole = 'primary' | 'secondary' | 'supplementary' | 'inspector';
 const splitRoleConverter = makeParser<SplitRole>(makeValidator<SplitRole>('primary', 'secondary', 'supplementary', 'inspector'));
-
-// Note: Using 'inspector' splitRole does not (yet) require a distinct style; it's an optional trailing column.
-export type SplitStyle = 'automatic' | 'double' | 'triple';
-
-export type SplitDisplayMode = 'automatic' | 'secondaryOnly' | 'oneBesideSecondary' | 'oneOverSecondary' | 'twoBesideSecondary' | 'twoOverSecondary' | 'twoDisplaceSecondary';
 const splitDisplayModeConverter = makeParser<SplitDisplayMode>(makeValidator<SplitDisplayMode>('automatic', 'secondaryOnly', 'oneBesideSecondary', 'oneOverSecondary', 'twoBesideSecondary', 'twoOverSecondary', 'twoDisplaceSecondary'));
-
-export type SplitBehavior = 'automatic' | 'tile' | 'overlay' | 'displace';
 const splitBehaviorConverter = makeParser<SplitBehavior>(makeValidator<SplitBehavior>('automatic', 'tile', 'overlay', 'displace'));
 
 // Default child roles (helps authoring without setting splitRole on children)

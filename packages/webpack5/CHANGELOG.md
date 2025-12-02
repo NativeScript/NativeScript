@@ -1,3 +1,14 @@
+## 5.0.27 (2025-11-28)
+
+### 🩹 Fixes
+
+- **webpack:** fallback to commonjs when no runtimes detected ([d22797e1e](https://github.com/NativeScript/NativeScript/commit/d22797e1e))
+- **webpack:** backwards compat with older core versions ([c907e31ae](https://github.com/NativeScript/NativeScript/commit/c907e31ae))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 5.0.25 (2025-11-17)
 
 ### 🚀 Features

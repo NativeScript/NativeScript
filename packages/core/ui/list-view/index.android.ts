@@ -1150,6 +1150,10 @@ function ensureListViewAdapterClass() {
 				ios: undefined,
 			};
 
+			if (this.owner.sectioned) {
+				(args as any).section = section;
+			}
+
 			this.owner.notify(args);
 
 			if (!args.view) {
@@ -1161,6 +1165,11 @@ function ensureListViewAdapterClass() {
 					args.view.height = this.owner.rowHeight;
 				} else {
 					args.view.height = <CoreTypes.LengthType>unsetValue;
+				}
+
+				if (this.owner.sectioned) {
+					(args.view as any)._listViewItemIndex = itemIndex;
+					(args.view as any)._listViewSectionIndex = section;
 				}
 
 				// Use sectioned item preparation

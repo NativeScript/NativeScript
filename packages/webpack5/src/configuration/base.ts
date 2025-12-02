@@ -98,6 +98,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				env.commonjs = true;
 			}
 		}
+	} else {
+		env.commonjs = true;
 	}
 
 	// config.stats({
