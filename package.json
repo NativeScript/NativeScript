@@ -29,7 +29,7 @@
 		"@csstools/css-tokenizer": "^3.0.3",
 		"@nativescript/hook": "^3.0.4",
 		"@nativescript/nx": "^22.0.0",
-		"@nstudio/focus": "^20.0.2",
+		"@nstudio/focus": "^20.0.3",
 		"@nstudio/nps-i": "~2.0.0",
 		"@nx/devkit": "22.0.2",
 		"@nx/eslint-plugin": "22.0.2",
