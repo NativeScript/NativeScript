@@ -50,7 +50,7 @@
 		"@types/jest": "30.0.0",
 		"@types/node": "^20.0.0",
 		"@typescript-eslint/eslint-plugin": "^8.46.4",
-		"@typescript-eslint/parser": "^8.46.4",
+		"@typescript-eslint/parser": "^8.48.0",
 		"@vitejs/plugin-vue": "^6.0.1",
 		"@vitejs/plugin-vue-jsx": "^5.1.1",
 		"@vitest/coverage-v8": "^3.2.4",
