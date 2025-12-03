@@ -1279,7 +1279,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 	if (SDK_VERSION >= 19) {
 		touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
 			onTouchExplorationStateChanged(enabled) {
-				updateAccessibilityState();
+				updateAccessibilityServiceState();
 
 				if (Trace.isEnabled()) {
 					Trace.write(`TouchExplorationStateChangeListener state changed to: ${!!enabled}`, Trace.categories.Accessibility);
