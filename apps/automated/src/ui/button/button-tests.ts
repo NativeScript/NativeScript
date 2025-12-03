@@ -2,6 +2,7 @@ import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
 import { View, EventData, Button, Observable, Color, Page, FormattedString, BindingOptions, Span } from '@nativescript/core';
 import * as buttonTestsNative from './button-tests-native';
+import * as button from '@nativescript/core/ui/button';
 
 export function test_recycling() {
 	helper.nativeView_recycling_test(() => new Button());
@@ -95,7 +96,7 @@ var _testOnClick = function (views: Array<View>) {
 
 	var actualValue = false;
 	// >> button-tap
-	button.on(Button.tapEvent, function (args: EventData) {
+	button.on(button.tapEvent, function (args: EventData) {
 		// Do something
 		// >> (hide)
 		actualValue = true;

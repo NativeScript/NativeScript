@@ -42,7 +42,6 @@ export class GridLayout extends GridLayoutBase {
 	}
 
 	protected invalidate(): void {
-		super.invalidate();
 		this.requestLayout();
 	}
 

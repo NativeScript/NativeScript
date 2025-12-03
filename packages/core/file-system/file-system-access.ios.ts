@@ -1,5 +1,5 @@
 import { encoding as textEncoding } from '../text';
-import { getFileExtension, iOSNativeHelper } from '../utils';
+import { getFileExtension, ios as IOSUtils } from '../utils';
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
@@ -46,12 +46,12 @@ export class FileSystemAccess {
 		}
 	}
 
-	public getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
+	public getFile(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string; extension: string } {
 		try {
 			const fileManager = NSFileManager.defaultManager;
 			const exists = fileManager.fileExistsAtPath(path);
 
-			if (!exists) {
+			if (create && !exists) {
 				const parentPath = this.getParent(path, onError).path;
 				if (!fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(parentPath, true, null) || !fileManager.createFileAtPathContentsAttributes(path, null, null)) {
 					if (onError) {
@@ -62,7 +62,7 @@ export class FileSystemAccess {
 				}
 			}
 
-			const fileName = fileManager.displayNameAtPath(path);
+			const fileName = create ? fileManager.displayNameAtPath(path) : path.split('/').pop();
 
 			return {
 				path: path,
@@ -78,12 +78,12 @@ export class FileSystemAccess {
 		}
 	}
 
-	public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+	public getFolder(path: string, onError?: (error: any) => any, create: boolean = true): { path: string; name: string } {
 		try {
 			const fileManager = NSFileManager.defaultManager;
 			const exists = this.folderExists(path);
 
-			if (!exists) {
+			if (create && !exists) {
 				try {
 					fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path, true, null);
 				} catch (ex) {
@@ -95,7 +95,7 @@ export class FileSystemAccess {
 				}
 			}
 
-			const dirName = fileManager.displayNameAtPath(path);
+			const dirName = create ? fileManager.displayNameAtPath(path) : path.split('/').pop();
 
 			return {
 				path: path,
@@ -257,7 +257,7 @@ export class FileSystemAccess {
 	}
 
 	public getCurrentAppPath(): string {
-		return iOSNativeHelper.getCurrentAppPath();
+		return IOSUtils.getCurrentAppPath();
 	}
 
 	public copy = this.copySync.bind(this);
@@ -293,6 +293,8 @@ export class FileSystemAccess {
 	}
 
 	public copyAsync(src: string, dest: string): Promise<boolean> {
+		// TODO: use  fileManager.copyItem in swift running on a background thread
+		// would be safer and prevent loading the whole thing in memory
 		return new Promise<boolean>((resolve, reject) => {
 			try {
 				NSData.dataWithContentsOfFileCompletion(src, (data) => {
@@ -684,7 +686,7 @@ export class FileSystemAccess {
 	}
 
 	public joinPaths(paths: string[]): string {
-		return iOSNativeHelper.joinPaths(...paths);
+		return IOSUtils.joinPaths(...paths);
 	}
 }
 

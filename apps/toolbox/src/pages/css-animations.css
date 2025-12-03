@@ -1,0 +1,79 @@
+.fade-blink {
+    animation-name: fadeAndBack;
+    animation-duration: 800ms;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+}
+.scale-blink {
+    animation-name: scaleAndBack;
+    animation-duration: 800ms;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+}
+.slide-blink {
+    animation-name: slideAndBack;
+    animation-duration: 800ms;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+}
+.color-blink {
+    animation-name: colorAndBack;
+    animation-duration: 800ms;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fadeAndBack {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+@keyframes colorAndBack {
+    0% {
+        background-color: blue;
+    }
+
+    50% {
+        background-color: yellow;
+    }
+
+    100% {
+        background-color: blue;
+    }
+}
+
+@keyframes slideAndBack {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(100%);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleAndBack {
+    0% {
+        transform: scale(1, 1);
+    }
+
+    50% {
+        transform: scale(0, 0);
+    }
+
+    100% {
+        transform: scale(1, 1);
+    }
+}

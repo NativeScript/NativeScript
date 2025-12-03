@@ -7,7 +7,7 @@
 		"sourceMap": true,
 		"declaration": true,
 		"moduleResolution": "bundler",
-		"emitDecoratorMetadata": true,
+		"emitDecoratorMetadata": false,
 		"experimentalDecorators": true,
 		"noEmitOnError": true,
 		"noEmitHelpers": true,

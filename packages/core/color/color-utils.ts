@@ -1,7 +1,4 @@
-import { color } from '@csstools/css-color-parser';
-import { parseComponentValue } from '@csstools/css-parser-algorithms';
-import { serializeRGB } from '@csstools/css-color-parser';
-import { tokenize } from '@csstools/css-tokenizer';
+import { Trace } from '../trace';
 
 export const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)|(^#[0-9A-F]{4}$)/i;
 
@@ -10,19 +7,29 @@ export function isCssColorMixExpression(value: string) {
 }
 
 export function argbFromColorMix(value: string): number {
-	const astComponentValue = parseComponentValue(tokenize({ css: value }));
-	const colorData = color(astComponentValue);
+	if (__CSS_USE_CSS_TOOLS__) {
+		const parseComponentValue = require('@csstools/css-parser-algorithms').parseComponentValue;
+		const serializeRGB = require('@csstools/css-color-parser').serializeRGB;
+		const tokenize = require('@csstools/css-tokenizer').tokenize;
+		const color = require('@csstools/css-color-parser').color;
+		const astComponentValue = parseComponentValue(tokenize({ css: value }));
+		const colorData = color(astComponentValue);
 
-	let argb: number;
+		let argb: number;
 
-	if (colorData) {
-		const serialized = serializeRGB(colorData);
-		argb = argbFromRgbOrRgba(serialized.toString());
+		if (colorData) {
+			const serialized = serializeRGB(colorData);
+			argb = argbFromRgbOrRgba(serialized.toString());
+		} else {
+			argb = -1;
+		}
+
+		return argb;
 	} else {
-		argb = -1;
+		Trace.write(`To use color-mix you must define __CSS_USE_CSS_TOOLS__ in webpack Define`, Trace.categories.Accessibility, Trace.messageType.error);
+		return -1;
 	}
-
-	return argb;
+	
 }
 
 export function fromArgbToRgba(argb: number): { a: number; r: number; g: number; b: number } {

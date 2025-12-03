@@ -1,0 +1,15 @@
+{
+    "whitelist-plugins-usages": true,
+    "whitelist": [
+        "androidx.appcompat.content.res:AppCompatResources",
+        "android.os:MessageQueue",
+        "android.os:Message",
+        "java.lang.reflect:AccessibleObject",
+        "android.view:ViewGroup.MarginLayoutParams"
+    ],
+    "blacklist": [
+        "androidx.appcompat*:R.*", "androidx.appcompat*:R*", "*:*BuildConfig", 
+        "com.nativescript*:R.*", "com.nativescript*:R", 
+        "org.nativescript*:R.*", "org.nativescript*:R"
+    ]
+  }

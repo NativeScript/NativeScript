@@ -69,6 +69,11 @@ export namespace ios {
 	}
 
 	export function drawBackgroundVisualEffects(view: View): void {
+		const isInTheMiddleOfAnimation = UIView.inheritedAnimationDuration > 0;
+		CATransaction.begin();
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(true);
+		}
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeScriptUIView>view.nativeViewProtected;
 		const layer: CALayer = nativeView.layer;
@@ -111,6 +116,10 @@ export namespace ios {
 		if (needsLayerAdjustmentOnScroll) {
 			registerAdjustLayersOnScrollListener(view);
 		}
+		if (!isInTheMiddleOfAnimation) {
+			CATransaction.setDisableActions(false);
+		}
+		CATransaction.commit();
 	}
 
 	export function clearBackgroundVisualEffects(view: View): void {

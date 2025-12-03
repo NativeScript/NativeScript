@@ -3,7 +3,7 @@ import { Optional } from '../../utils/typescript-utils';
 /**
  * Base event data.
  */
-export interface EventData {
+export interface EventData<T = Observable> {
 	/**
 	 * The name of the event.
 	 */
@@ -11,17 +11,17 @@ export interface EventData {
 	/**
 	 * The Observable instance that has raised the event.
 	 */
-	object: Observable;
+	object?: T;
 }
 
-export interface EventDataValue extends EventData {
+export interface EventDataValue<T = Observable> extends EventData<T> {
 	value?: boolean;
 }
 
 /**
  * Data for the "propertyChange" event.
  */
-export interface PropertyChangeData extends EventData {
+export interface PropertyChangeData<T = Observable> extends EventData<T> {
 	/**
 	 * The name of the property that has changed.
 	 */
@@ -36,10 +36,10 @@ export interface PropertyChangeData extends EventData {
 	oldValue?: any;
 }
 
-interface ListenerEntry {
-	callback: (data: EventData) => void;
-	thisArg?: any;
-	once?: true;
+interface ListenerEntry<T = Observable> {
+	callback: (data: EventData<T>) => void;
+	thisArg: any;
+	once?: boolean;
 }
 
 interface ListEntryMap {
@@ -203,8 +203,7 @@ export class Observable {
 	 * @param thisArg An optional parameter which when set will be used as "this" in callback method call.
 	 * @param once An optional parameter which when set will cause the event listener to fire once.
 	 */
-	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
-		once = once || undefined;
+	public addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once: boolean = false): void {
 		thisArg = thisArg || undefined;
 
 		if (typeof eventName !== 'string') {
@@ -230,13 +229,11 @@ export class Observable {
 
 	/**
 	 * Removes listener(s) for the specified event name.
-	 * @param eventName Name of the event to attach to.
+	 * @param event name of the event the specified listener is associated with.
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
 	public removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
-		thisArg = thisArg || undefined;
-
 		if (typeof eventName !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
@@ -258,29 +255,14 @@ export class Observable {
 		}
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static on(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		this.addEventListener(eventName, callback, thisArg, once);
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static once(eventName: string, callback: (data: EventData) => void, thisArg?: any): void {
 		this.addEventListener(eventName, callback, thisArg, true);
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static off(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		this.removeEventListener(eventName, callback, thisArg);
 	}
@@ -307,11 +289,6 @@ export class Observable {
 		}
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static removeEventListener(eventName: string, callback?: (data: EventData) => void, thisArg?: any): void {
 		thisArg = thisArg || undefined;
 
@@ -344,11 +321,6 @@ export class Observable {
 		}
 	}
 
-	/**
-	 * Please avoid using the static event-handling APIs as they will be removed
-	 * in future.
-	 * @deprecated
-	 */
 	public static addEventListener(eventName: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
 		once = once || undefined;
 		thisArg = thisArg || undefined;
@@ -410,14 +382,14 @@ export class Observable {
 		data.object = data.object || this;
 		const dataWithObject = data as EventData;
 
-		const eventClass = this.constructor.name;
-		this._globalNotify(eventClass, 'First', dataWithObject);
+		// this._globalNotify(eventClass, 'First', dataWithObject);
 
 		const observers = this._observers[data.eventName];
 		if (observers) {
 			Observable._fireEvent(observers, dataWithObject);
 		}
 
+		const eventClass = this.constructor.name;
 		this._globalNotify(eventClass, '', dataWithObject);
 	}
 

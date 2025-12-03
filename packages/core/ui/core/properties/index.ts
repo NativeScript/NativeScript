@@ -2,14 +2,17 @@ import { ViewBase } from '../view-base';
 import { PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Trace } from '../../../trace';
 
+import { Application } from '../../../application';
+
 import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
 import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
-import { calc } from '@csstools/css-calc';
 
-// Backwards compatibility
-export { unsetValue } from './property-shared';
+export { makeValidator, makeParser } from '../../../core-types/validators';
+
+//fixes issue https://github.com/microsoft/TypeScript/issues/37663
+const isFunction = (x: unknown): x is Function => typeof x === 'function';
 
 const cssPropertyNames: string[] = [];
 const HAS_OWN = Object.prototype.hasOwnProperty;
@@ -101,7 +104,13 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
 			.map((v) => v.trim())
 			.filter((v) => !!v);
 		const cssVariableName = matched.shift();
-		let cssVariableValue = view.style.getCssVariable(cssVariableName);
+		let cssVariableValue;
+		const rootView = Application.getRootView();
+		if (typeof __ONLY_ALLOW_ROOT_VARIABLES__ !== 'undefined' && __ONLY_ALLOW_ROOT_VARIABLES__ === true && rootView) {
+			cssVariableValue = rootView.style.getCssVariable(cssVariableName);
+		} else {
+			cssVariableValue = view.style.getCssVariable(cssVariableName);
+		}
 		if (cssVariableValue === null && matched.length) {
 			cssVariableValue = _evaluateCssVariableExpression(view, cssName, matched.join(', ')).split(',')[0];
 		}
@@ -122,11 +131,23 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 
 	if (isCssCalcExpression(value)) {
-		return calc(_replaceKeywordsWithValues(_replaceDip(value)));
+		if (__CSS_USE_CSS_TOOLS__) {
+			return require('@csstools/css-calc').calc(_replaceKeywordsWithValues(_replaceDip(value)));
+		} else {
+			Trace.write(`To use css calc() you must define __CSS_USE_CSS_TOOLS__ in webpack Define`, Trace.categories.Accessibility, Trace.messageType.error);
+			return value;
+		}
 	} else {
 		return value;
 	}
-	return value;
+}
+
+export function _getStoredClassDefaultPropertyValue(property, view, defaultBlock) {
+	let defaultValue = view.constructor.prototype[property.defaultValueKey];
+	if (!defaultValue) {
+		defaultValue = view.constructor.prototype[property.defaultValueKey] = defaultBlock();
+	}
+	return defaultValue;
 }
 
 function _replaceDip(value: string) {
@@ -154,20 +175,144 @@ function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>
 	return props;
 }
 
+function overrideHandlers<T, U>(property: Property<any, U> | CssProperty<any, U> | ShorthandProperty<any, U> | CssAnimationProperty<any, U>) {
+	return function (options: any) {
+		if (property instanceof CssAnimationProperty || property instanceof CssProperty || property instanceof ShorthandProperty) {
+			Object.keys(options).forEach((key) => {
+				if (key === 'cssName') {
+					if (options[key] !== undefined) {
+						//@ts-ignore ignore readonly
+						property.cssName = 'css:' + options[key];
+						//@ts-ignore ignore readonly
+						property.cssLocalName = options[key];
+					}
+				} else if (options[key] !== undefined) {
+					property[key] = options[key];
+				}
+			});
+		} else {
+			Object.keys(options).forEach((key) => {
+				if (options[key] !== undefined) {
+					property[key] = options[key];
+				}
+			});
+		}
+	};
+}
+
+function getPropertySetter<T extends ViewBase, U>(property: Property<T, U>) {
+	return function (this: T, boxedValue: U): void {
+		const reset = isResetValue(boxedValue);
+		let value: U;
+		let wrapped: boolean;
+		const key = property.key;
+		const defaultValue = property.defaultValue;
+		const actualDefaultValue = isFunction(defaultValue) ? defaultValue(property, this) : defaultValue;
+		if (reset) {
+			value = actualDefaultValue;
+			if (property instanceof CoercibleProperty) {
+				delete this[property.coerceKey];
+			}
+		} else {
+			wrapped = boxedValue && (<any>boxedValue).wrapped;
+			value = wrapped ? WrappedValue.unwrap(boxedValue) : boxedValue;
+
+			if (property.valueConverter && typeof value === 'string') {
+				value = property.valueConverter(value);
+			}
+			if (property instanceof CoercibleProperty) {
+				this[property.coerceKey] = value;
+				value = property.coerceValue(this, value);
+			}
+		}
+		const oldValue = <U>(key in this ? this[key] : actualDefaultValue);
+		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value) : oldValue !== value;
+
+		if (wrapped || changed) {
+			const defaultValueKey = property.defaultValueKey;
+			const setNative = property.setNative;
+			const valueChanged = property.valueChanged;
+			const getDefault = property.getDefault;
+			const eventName = property.eventName;
+			const propertyName = property.name;
+			if (reset) {
+				delete this[key];
+				if (valueChanged) {
+					valueChanged(this, oldValue, value);
+				}
+				if (this[setNative]) {
+					if (this._suspendNativeUpdatesCount) {
+						this._suspendedUpdates?.set(propertyName, property);
+					} else {
+						if (defaultValueKey in this) {
+							this[setNative](this[defaultValueKey]);
+						} else {
+							this[setNative](actualDefaultValue);
+						}
+					}
+				}
+			} else {
+				this[key] = value;
+				if (valueChanged) {
+					valueChanged(this, oldValue, value);
+				}
+
+				if (this[setNative]) {
+					if (this._suspendNativeUpdatesCount) {
+						this._suspendedUpdates?.set(propertyName, property);
+					} else {
+						if (!(defaultValueKey in this)) {
+							this[defaultValueKey] = this[getDefault] ? this[getDefault]() : actualDefaultValue;
+						}
+						this[setNative](value);
+					}
+				}
+			}
+
+			if ((!__UI_USE_EXTERNAL_RENDERER__ || !this._suspendNativeUpdatesCount) && this.hasListeners(eventName)) {
+				this.notify<PropertyChangeData>({
+					object: this,
+					eventName,
+					propertyName,
+					value,
+					oldValue,
+				});
+			}
+
+			if (property.affectsLayout) {
+				this.requestLayout();
+			}
+
+			if (this.domNode) {
+				if (reset) {
+					this.domNode.attributeRemoved(propertyName);
+				} else {
+					this.domNode.attributeModified(propertyName, value);
+				}
+			}
+		}
+	};
+}
+
 export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U>, Property<T, U> {
 	private registered: boolean;
 
 	public readonly name: string;
 	public readonly key: symbol;
+	public readonly eventName: string;
 
 	public readonly getDefault: symbol;
 	public readonly setNative: symbol;
 
 	public readonly defaultValueKey: symbol;
-	public readonly defaultValue: U;
-	public readonly nativeValueChange: (owner: T, value: U) => void;
+	public readonly defaultValue: U | ((property: Property<T, U>, view: T) => U);
 
 	public isStyleProperty: boolean;
+
+	public affectsLayout?: boolean;
+	public equalityComparer?: (x: U, y: U) => boolean;
+	public valueChanged?: (target: T, oldValue: U, newValue: U) => void;
+	public valueConverter?: (value: string) => U;
 
 	public get: () => U;
 	public set: (value: U) => void;
@@ -176,9 +321,9 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 	public configurable = true;
 
 	constructor(options: PropertyOptions<T, U>) {
-		const propertyName = options.name;
-		this.name = propertyName;
-
+		this.overrideHandlers = overrideHandlers(this);
+		this.overrideHandlers(options);
+		const propertyName = this.name;
 		const key = Symbol(propertyName + ':propertyKey');
 		this.key = key;
 
@@ -191,157 +336,68 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 		const defaultValueKey = Symbol(propertyName + ':nativeDefaultValue');
 		this.defaultValueKey = defaultValueKey;
 
-		const defaultValue: U = options.defaultValue;
-		this.defaultValue = defaultValue;
-
-		const eventName = propertyName + 'Change';
-
-		let equalityComparer = options.equalityComparer;
-		let affectsLayout: boolean = options.affectsLayout;
-		let valueChanged = options.valueChanged;
-		let valueConverter = options.valueConverter;
-
-		this.overrideHandlers = function (options: PropertyOptions<T, U>) {
-			if (typeof options.equalityComparer !== 'undefined') {
-				equalityComparer = options.equalityComparer;
-			}
-			if (typeof options.affectsLayout !== 'undefined') {
-				affectsLayout = options.affectsLayout;
-			}
-			if (typeof options.valueChanged !== 'undefined') {
-				valueChanged = options.valueChanged;
-			}
-			if (typeof options.valueConverter !== 'undefined') {
-				valueConverter = options.valueConverter;
-			}
-		};
-
+		this.eventName = propertyName + 'Change';
 		const property = this;
-
-		this.set = function (this: T, boxedValue: U): void {
-			const reset = isResetValue(boxedValue);
-			let value: U;
-			let wrapped: boolean;
-			if (reset) {
-				value = defaultValue;
-			} else {
-				wrapped = boxedValue && (<any>boxedValue).wrapped;
-				value = wrapped ? WrappedValue.unwrap(boxedValue) : boxedValue;
-
-				if (valueConverter && typeof value === 'string') {
-					value = valueConverter(value);
-				}
-			}
-
-			const oldValue = <U>(key in this ? this[key] : defaultValue);
-			const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
-
-			if (wrapped || changed) {
-				if (affectsLayout) {
-					this.requestLayout();
-				}
-
-				if (reset) {
-					delete this[key];
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-					if (this[setNative]) {
-						if (this._suspendNativeUpdatesCount) {
-							if (this._suspendedUpdates) {
-								this._suspendedUpdates[propertyName] = property;
-							}
-						} else if (defaultValueKey in this) {
-							this[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
-						} else {
-							this[setNative](defaultValue);
-						}
-					}
-				} else {
-					this[key] = value;
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-					if (this[setNative]) {
-						if (this._suspendNativeUpdatesCount) {
-							if (this._suspendedUpdates) {
-								this._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = this[getDefault] ? this[getDefault]() : defaultValue;
-							}
-							this[setNative](value);
-						}
-					}
-				}
-
-				if (this.hasListeners(eventName)) {
-					this.notify<PropertyChangeData>({
-						object: this,
-						eventName,
-						propertyName,
-						value,
-						oldValue,
-					});
-				}
-
-				if (this.domNode) {
-					if (reset) {
-						this.domNode.attributeRemoved(propertyName);
-					} else {
-						this.domNode.attributeModified(propertyName, value);
-					}
-				}
-			}
-		};
-
+		this.set = getPropertySetter(this);
 		this.get = function (this: T): U {
-			return <U>(key in this ? this[key] : defaultValue);
-		};
-
-		this.nativeValueChange = function (owner: T, value: U): void {
-			const oldValue = <U>(key in owner ? owner[key] : defaultValue);
-			const changed = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
-			if (changed) {
-				owner[key] = value;
-				if (valueChanged) {
-					valueChanged(owner, oldValue, value);
-				}
-
-				if (owner.nativeViewProtected && !(defaultValueKey in owner)) {
-					owner[defaultValueKey] = owner[getDefault] ? owner[getDefault]() : defaultValue;
-				}
-
-				if (owner.hasListeners(eventName)) {
-					owner.notify<PropertyChangeData>({
-						object: owner,
-						eventName,
-						propertyName,
-						value,
-						oldValue,
-					});
-				}
-
-				if (affectsLayout) {
-					owner.requestLayout();
-				}
-
-				if (owner.domNode) {
-					owner.domNode.attributeModified(propertyName, value);
-				}
+			if (key in this) {
+				return <U>this[key];
 			}
+			const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(property, this) : property.defaultValue;
+			return <U>actualDefaultValue;
 		};
-
 		symbolPropertyMap[key] = this;
 	}
+	nativeValueChange(owner: T, value: U): void {
+		const key = this.key;
+		const defaultValue = this.defaultValue;
+		const actualDefaultValue = isFunction(defaultValue) ? defaultValue(this, owner) : defaultValue;
+		const oldValue = <U>(key in owner ? owner[key] : actualDefaultValue);
+		const changed = this.equalityComparer ? !this.equalityComparer(oldValue, value) : oldValue !== value;
+		if (changed) {
+			const defaultValueKey = this.defaultValueKey;
+			const getDefault = this.getDefault;
+			const eventName = this.eventName;
+			const propertyName = this.name;
+			owner[key] = value;
+			if (this.valueChanged) {
+				this.valueChanged(owner, oldValue, value);
+			}
 
+			if (owner.nativeViewProtected && !(defaultValueKey in owner)) {
+				owner[defaultValueKey] = owner[getDefault] ? owner[getDefault]() : actualDefaultValue;
+			}
+
+			if (owner.hasListeners(eventName)) {
+				owner.notify<PropertyChangeData>({
+					object: owner,
+					eventName,
+					propertyName,
+					value,
+					oldValue,
+				});
+			}
+
+			if (this.affectsLayout) {
+				owner.requestLayout();
+			}
+
+			if (owner.domNode) {
+				owner.domNode.attributeModified(propertyName, value);
+			}
+		}
+	}
 	public register(cls: { prototype: T }): void {
 		if (this.registered) {
 			throw new Error(`Property ${this.name} already registered.`);
 		}
 		this.registered = true;
+		// we store the property in the class static variable
+		// so that animations can get access to us
+		if (!cls['registeredProps']) {
+			cls['registeredProps'] = {};
+		}
+		cls['registeredProps'][this.name] = this;
 		Object.defineProperty(cls.prototype, this.name, this);
 	}
 
@@ -352,137 +408,19 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 Property.prototype.isStyleProperty = false;
 
 export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements CoercibleProperty<T, U> {
-	public readonly coerce: (target: T) => void;
+	coerceKey?: symbol;
+	coerceValue?: (t: T, u: U) => U;
 
 	constructor(options: CoerciblePropertyOptions<T, U>) {
 		super(options);
+		this.coerceKey = Symbol(this.name + ':coerceKey');
+	}
 
-		const propertyName = options.name;
-		const key = this.key;
-		const getDefault: symbol = this.getDefault;
-		const setNative: symbol = this.setNative;
-		const defaultValueKey = this.defaultValueKey;
-		const defaultValue: U = this.defaultValue;
-
-		const coerceKey = Symbol(propertyName + ':coerceKey');
-
-		const eventName = propertyName + 'Change';
-		let affectsLayout: boolean = options.affectsLayout;
-		let equalityComparer = options.equalityComparer;
-		let valueChanged = options.valueChanged;
-		let valueConverter = options.valueConverter;
-		let coerceCallback = options.coerceValue;
-
-		const property = this;
-
-		this.overrideHandlers = function (options: CoerciblePropertyOptions<T, U>) {
-			if (typeof options.equalityComparer !== 'undefined') {
-				equalityComparer = options.equalityComparer;
-			}
-			if (typeof options.affectsLayout !== 'undefined') {
-				affectsLayout = options.affectsLayout;
-			}
-			if (typeof options.valueChanged !== 'undefined') {
-				valueChanged = options.valueChanged;
-			}
-			if (typeof options.valueConverter !== 'undefined') {
-				valueConverter = options.valueConverter;
-			}
-			if (typeof options.coerceValue !== 'undefined') {
-				coerceCallback = options.coerceValue;
-			}
-		};
-
-		this.coerce = function (target: T): void {
-			const originalValue = <U>(coerceKey in target ? target[coerceKey] : defaultValue);
-			// need that to make coercing but also fire change events
-			target[propertyName] = originalValue;
-		};
-
-		this.set = function (this: T, boxedValue: U): void {
-			const reset = isResetValue(boxedValue);
-			let value: U;
-			let wrapped: boolean;
-			if (reset) {
-				value = defaultValue;
-				delete this[coerceKey];
-			} else {
-				wrapped = boxedValue && (<any>boxedValue).wrapped;
-				value = wrapped ? WrappedValue.unwrap(boxedValue) : boxedValue;
-
-				if (valueConverter && typeof value === 'string') {
-					value = valueConverter(value);
-				}
-
-				this[coerceKey] = value;
-				value = coerceCallback(this, value);
-			}
-
-			const oldValue = key in this ? this[key] : defaultValue;
-			const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
-
-			if (wrapped || changed) {
-				if (reset) {
-					delete this[key];
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (this[setNative]) {
-						if (this._suspendNativeUpdatesCount) {
-							if (this._suspendedUpdates) {
-								this._suspendedUpdates[propertyName] = property;
-							}
-						} else if (defaultValueKey in this) {
-							this[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
-						} else {
-							this[setNative](defaultValue);
-						}
-					}
-				} else {
-					this[key] = value;
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (this[setNative]) {
-						if (this._suspendNativeUpdatesCount) {
-							if (this._suspendedUpdates) {
-								this._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = this[getDefault] ? this[getDefault]() : defaultValue;
-							}
-							this[setNative](value);
-						}
-					}
-				}
-
-				if (this.hasListeners(eventName)) {
-					this.notify<PropertyChangeData>({
-						object: this,
-						eventName,
-						propertyName,
-						value,
-						oldValue,
-					});
-				}
-
-				if (affectsLayout) {
-					this.requestLayout();
-				}
-
-				if (this.domNode) {
-					if (reset) {
-						this.domNode.attributeRemoved(propertyName);
-					} else {
-						this.domNode.attributeModified(propertyName, value);
-					}
-				}
-			}
-		};
+	coerce(target: T): void {
+		const actualDefaultValue = isFunction(this.defaultValue) ? this.defaultValue(this, target) : this.defaultValue;
+		const originalValue = <U>(this.coerceKey in target ? target[this.coerceKey] : actualDefaultValue);
+		// need that to make coercing but also fire change events
+		target[this.name] = originalValue;
 	}
 }
 
@@ -492,14 +430,13 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 
 	constructor(options: PropertyOptions<T, U>) {
 		super(options);
-		const name = options.name;
 		const key = this.key;
-		const defaultValue = options.defaultValue;
 
-		const sourceKey = Symbol(name + ':valueSourceKey');
+		const sourceKey = Symbol(this.name + ':valueSourceKey');
 		this.sourceKey = sourceKey;
 
 		const setBase = this.set;
+		const property = this;
 		const setFunc = (valueSource: ValueSource) =>
 			function (value: U): void {
 				const that = <T>this;
@@ -512,10 +449,11 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 
 					// If value is not initial or unset and view has a parent that has non-default value, use it as the reset value.
 					if (value !== 'initial' && parent && parent[sourceKey] !== ValueSource.Default) {
-						unboxedValue = parent[name];
+						unboxedValue = parent[property.name];
 						newValueSource = ValueSource.Inherited;
 					} else {
-						unboxedValue = defaultValue;
+						const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(property, that) : property.defaultValue;
+						unboxedValue = actualDefaultValue;
 						newValueSource = ValueSource.Default;
 					}
 				} else {
@@ -559,12 +497,107 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 	}
 }
 
-export class CssProperty<T extends Style, U> {
+function setCssFunc<T extends Style, U>(property: CssProperty<T, U>, valueSource: ValueSource) {
+	return function (this: T, newValue: any): void {
+		const view = this.viewRef.get();
+		if (!view) {
+			Trace.write(`${newValue} not set to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
+
+			return;
+		}
+		const sourceKey = property.sourceKey;
+		if (valueSource === ValueSource.Css) {
+			const currentValueSource: number = this[sourceKey] || ValueSource.Default;
+
+			// We have localValueSource - NOOP.
+			if (currentValueSource === ValueSource.Local) {
+				return;
+			}
+		}
+		const defaultValue = property.defaultValue;
+		const actualDefaultValue = isFunction(defaultValue) ? defaultValue(property, view) : defaultValue;
+		const key = property.key;
+		const reset = isResetValue(newValue) || newValue === '';
+		let value: U;
+		if (reset) {
+			value = actualDefaultValue;
+			delete this[sourceKey];
+		} else {
+			this[sourceKey] = valueSource;
+			value = property.valueConverter && typeof newValue === 'string' ? property.valueConverter(newValue) : <U>newValue;
+		}
+
+		const oldValue = <U>(key in this ? this[key] : actualDefaultValue);
+		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value, this) : oldValue !== value;
+		if (changed) {
+			const setNative = property.setNative;
+			const defaultValueKey = property.defaultValueKey;
+			const propertyName = property.name;
+			const valueChanged = property.valueChanged;
+			const eventName = property.eventName;
+			if (reset) {
+				delete this[key];
+				if (valueChanged) {
+					valueChanged(this, oldValue, value);
+				}
+
+				if (view[setNative]) {
+					if (view._suspendNativeUpdatesCount) {
+						view._suspendedUpdates?.set(propertyName, property);
+					} else {
+						if (defaultValueKey in this) {
+							view[setNative](this[defaultValueKey]);
+						} else {
+							view[setNative](actualDefaultValue);
+						}
+					}
+				}
+			} else {
+				this[key] = value;
+				if (valueChanged) {
+					valueChanged(this, oldValue, value);
+				}
+
+				if (view[setNative]) {
+					if (view._suspendNativeUpdatesCount) {
+						view._suspendedUpdates?.set(propertyName, property);
+					} else {
+						if (!(defaultValueKey in this)) {
+							const getDefault = property.getDefault;
+							this[defaultValueKey] = view[getDefault] ? view[getDefault]() : actualDefaultValue;
+						}
+						view[setNative](value);
+					}
+				}
+			}
+
+			if ((!__UI_USE_EXTERNAL_RENDERER__ || !view._suspendNativeUpdatesCount) && this.hasListeners(eventName)) {
+				this.notify<PropertyChangeData>({
+					object: this,
+					eventName,
+					propertyName,
+					value,
+					oldValue,
+				});
+			}
+
+			if (property.affectsLayout) {
+				view.requestLayout();
+			}
+		}
+	};
+}
+
+export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
+	public static properties: {
+		[cssName: string]: CssProperty<any, any>;
+	} = {};
 	private registered: boolean;
 
 	public readonly name: string;
 	public readonly cssName: string;
 	public readonly cssLocalName: string;
+	public readonly eventName: string;
 
 	protected readonly cssValueDescriptor: PropertyDescriptor;
 	protected readonly localValueDescriptor: PropertyDescriptor;
@@ -576,240 +609,59 @@ export class CssProperty<T extends Style, U> {
 	public readonly setNative: symbol;
 	public readonly sourceKey: symbol;
 	public readonly defaultValueKey: symbol;
-	public readonly defaultValue: U;
+	public readonly defaultValue: U | ((property: CssProperty<T, U>, view: ViewBase) => U);
+
+	public affectsLayout?: boolean;
+	public equalityComparer?: (x: U, y: U, target: T) => boolean;
+	public valueChanged?: (target: T, oldValue: U, newValue: U) => void;
+	public valueConverter?: (value: string) => U;
 
 	public overrideHandlers: (options: CssPropertyOptions<T, U>) => void;
 
 	constructor(options: CssPropertyOptions<T, U>) {
-		const propertyName = options.name;
-		this.name = propertyName;
+		this.overrideHandlers = overrideHandlers(this);
+		this.overrideHandlers(options);
+		const propertyName = this.name;
 
-		// Guard against undefined cssName
-		if (options.cssName) {
-			cssPropertyNames.push(options.cssName);
+		CssProperty.properties[propertyName] = this;
+		if (this.cssLocalName && this.cssLocalName !== propertyName) {
+			CssProperty.properties[this.cssLocalName] = this;
 		}
-
-		this.cssName = `css:${options.cssName}`;
-		this.cssLocalName = options.cssName;
 
 		const key = Symbol(propertyName + ':propertyKey');
 		this.key = key;
 
-		const sourceKey = Symbol(propertyName + ':valueSourceKey');
-		this.sourceKey = sourceKey;
+		this.sourceKey = Symbol(propertyName + ':valueSourceKey');
 
-		const getDefault = Symbol(propertyName + ':getDefault');
-		this.getDefault = getDefault;
+		this.getDefault = Symbol(propertyName + ':getDefault');
 
-		const setNative = Symbol(propertyName + ':setNative');
-		this.setNative = setNative;
+		this.setNative = Symbol(propertyName + ':setNative');
 
-		const defaultValueKey = Symbol(propertyName + ':nativeDefaultValue');
-		this.defaultValueKey = defaultValueKey;
+		this.defaultValueKey = Symbol(propertyName + ':nativeDefaultValue');
 
-		const defaultValue: U = options.defaultValue;
-		this.defaultValue = defaultValue;
-
-		const eventName = propertyName + 'Change';
-		let affectsLayout: boolean = options.affectsLayout;
-		let equalityComparer = options.equalityComparer;
-		let valueChanged = options.valueChanged;
-		let valueConverter = options.valueConverter;
-
-		this.overrideHandlers = function (options: CssPropertyOptions<T, U>) {
-			if (typeof options.equalityComparer !== 'undefined') {
-				equalityComparer = options.equalityComparer;
-			}
-			if (typeof options.affectsLayout !== 'undefined') {
-				affectsLayout = options.affectsLayout;
-			}
-			if (typeof options.valueChanged !== 'undefined') {
-				valueChanged = options.valueChanged;
-			}
-			if (typeof options.valueConverter !== 'undefined') {
-				valueConverter = options.valueConverter;
-			}
-		};
+		this.eventName = propertyName + 'Change';
 
 		const property = this;
-
-		function setLocalValue(this: T, newValue: U | string): void {
-			const view = this.viewRef.get();
-			if (!view) {
-				Trace.write(`${newValue} not set to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
-
-				return;
-			}
-
-			const reset = isResetValue(newValue) || newValue === '';
-			let value: U;
-
-			if (reset) {
-				value = defaultValue;
-				delete this[sourceKey];
-			} else {
-				this[sourceKey] = ValueSource.Local;
-				value = valueConverter && typeof newValue === 'string' ? valueConverter(newValue) : <U>newValue;
-			}
-
-			const oldValue = <U>(key in this ? this[key] : defaultValue);
-			const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
-
-			if (changed) {
-				if (reset) {
-					delete this[key];
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else if (defaultValueKey in this) {
-							view[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
-						} else {
-							view[setNative](defaultValue);
-						}
-					}
-				} else {
-					this[key] = value;
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-							}
-							view[setNative](value);
-						}
-					}
-				}
-
-				if (this.hasListeners(eventName)) {
-					this.notify<PropertyChangeData>({
-						object: this,
-						eventName,
-						propertyName,
-						value,
-						oldValue,
-					});
-				}
-
-				if (affectsLayout) {
-					view.requestLayout();
-				}
-			}
-		}
-
-		function setCssValue(this: T, newValue: U | string): void {
-			const view = this.viewRef.get();
-			if (!view) {
-				Trace.write(`${newValue} not set to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
-
-				return;
-			}
-
-			const currentValueSource: number = this[sourceKey] || ValueSource.Default;
-
-			// We have localValueSource - NOOP.
-			if (currentValueSource === ValueSource.Local) {
-				return;
-			}
-
-			const reset = isResetValue(newValue) || newValue === '';
-			let value: U;
-
-			if (reset) {
-				value = defaultValue;
-				delete this[sourceKey];
-			} else {
-				value = valueConverter && typeof newValue === 'string' ? valueConverter(newValue) : <U>newValue;
-				this[sourceKey] = ValueSource.Css;
-			}
-
-			const oldValue = <U>(key in this ? this[key] : defaultValue);
-			const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
-
-			if (changed) {
-				if (reset) {
-					delete this[key];
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else if (defaultValueKey in this) {
-							view[setNative](this[defaultValueKey]);
-							delete this[defaultValueKey];
-						} else {
-							view[setNative](defaultValue);
-						}
-					}
-				} else {
-					this[key] = value;
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-							}
-							view[setNative](value);
-						}
-					}
-				}
-
-				if (this.hasListeners(eventName)) {
-					this.notify<PropertyChangeData>({
-						object: this,
-						eventName,
-						propertyName,
-						value,
-						oldValue,
-					});
-				}
-
-				if (affectsLayout) {
-					view.requestLayout();
-				}
-			}
-		}
-
 		function get(): U {
-			return key in this ? this[key] : defaultValue;
+			if (key in this) {
+				return <U>this[key];
+			}
+			const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(property, this.viewRef.get()) : property.defaultValue;
+			return <U>actualDefaultValue;
 		}
 
 		this.cssValueDescriptor = {
 			enumerable: true,
 			configurable: true,
 			get: get,
-			set: setCssValue,
+			set: setCssFunc(this, ValueSource.Css),
 		};
 
 		this.localValueDescriptor = {
 			enumerable: true,
 			configurable: true,
 			get: get,
-			set: setLocalValue,
+			set: setCssFunc(this, ValueSource.Local),
 		};
 
 		cssSymbolPropertyMap[key] = this;
@@ -819,6 +671,9 @@ export class CssProperty<T extends Style, U> {
 		if (this.registered) {
 			throw new Error(`Property ${this.name} already registered.`);
 		}
+		// we add it so that overrideHandlers might work
+		cssPropertyNames.push(this.cssLocalName);
+
 		this.registered = true;
 		Object.defineProperty(cls.prototype, this.name, this.localValueDescriptor);
 		Object.defineProperty(cls.prototype, this.cssName, this.cssValueDescriptor);
@@ -837,6 +692,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 	public readonly name: string;
 	public readonly cssName: string;
 	public readonly cssLocalName: string;
+	public readonly eventName: string;
 
 	public readonly getDefault: symbol;
 	public readonly setNative: symbol;
@@ -848,35 +704,30 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 	public readonly key: symbol;
 	private readonly source: symbol;
 
-	public readonly defaultValue: U;
+	public readonly defaultValue: U | ((property: CssAnimationProperty<T, U>, view: ViewBase) => U);
 
 	public isStyleProperty: boolean;
 
-	private static properties: {
+	public static properties: {
 		[cssName: string]: CssAnimationProperty<any, any>;
 	} = {};
 
-	public _valueConverter?: (value: string) => any;
+	readonly affectsLayout?: boolean;
+	readonly equalityComparer?: (x: U, y: U) => boolean;
+	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
+	readonly valueConverter?: (value: string) => U;
+	public overrideHandlers: (options: CssAnimationPropertyOptions<T, U>) => void;
 
 	constructor(options: CssAnimationPropertyOptions<T, U>) {
-		const propertyName = options.name;
-		this.name = propertyName;
+		this.overrideHandlers = overrideHandlers(this);
+		this.overrideHandlers(options);
 
-		if (options.cssName) {
-			cssPropertyNames.push(options.cssName);
-		}
+		const propertyName = this.name;
 
 		CssAnimationProperty.properties[propertyName] = this;
-		if (options.cssName && options.cssName !== propertyName) {
-			CssAnimationProperty.properties[options.cssName] = this;
+		if (this.cssLocalName && this.cssLocalName !== propertyName) {
+			CssAnimationProperty.properties[this.cssLocalName] = this;
 		}
-
-		this._valueConverter = options.valueConverter;
-
-		const cssLocalName = options.cssName || propertyName;
-		this.cssLocalName = cssLocalName;
-		const cssName = 'css:' + cssLocalName;
-		this.cssName = cssName;
 
 		const keyframeName = 'keyframe:' + propertyName;
 		this.keyframe = keyframeName;
@@ -885,9 +736,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		const defaultValueKey = Symbol(defaultName);
 		this.defaultValueKey = defaultValueKey;
 
-		this.defaultValue = options.defaultValue;
-
-		const cssValue = Symbol(cssName);
+		const cssValue = Symbol(this.cssName);
 		const styleValue = Symbol(`local:${propertyName}`);
 		const keyframeValue = Symbol(keyframeName);
 		const computedValue = Symbol('computed-value:' + propertyName);
@@ -898,7 +747,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		this.getDefault = Symbol(propertyName + ':getDefault');
 		const getDefault = this.getDefault;
 		const setNative = (this.setNative = Symbol(propertyName + ':setNative'));
-		const eventName = propertyName + 'Change';
+		this.eventName = propertyName + 'Change';
 
 		const property = this;
 
@@ -921,7 +770,12 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 						return;
 					}
 
-					const oldValue = this[computedValue];
+					let oldValue = this[computedValue];
+					// this[computedValue] is set at prototype level to property.defaultValue
+					// so we need to check if property.defaultValue is a function
+					if (property.defaultValue === oldValue && typeof oldValue === 'function') {
+						oldValue = oldValue(property, view);
+					}
 					const oldSource = this[computedSource];
 					const wasSet = oldSource !== ValueSource.Default;
 					const reset = isResetValue(boxedValue) || boxedValue === '';
@@ -942,8 +796,8 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 							}
 						}
 					} else {
-						if (options.valueConverter && typeof boxedValue === 'string') {
-							boxedValue = options.valueConverter(boxedValue);
+						if (property.valueConverter && typeof boxedValue === 'string') {
+							boxedValue = property.valueConverter(boxedValue);
 						}
 						this[symbol] = boxedValue;
 						if (this[computedSource] <= propertySource) {
@@ -956,34 +810,34 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 					const source = this[computedSource];
 					const isSet = source !== ValueSource.Default;
 
-					const computedValueChanged = oldValue !== value && (!options.equalityComparer || !options.equalityComparer(oldValue, value));
+					const computedValueChanged = oldValue !== value && (!property.equalityComparer || !property.equalityComparer(oldValue, value));
 
-					if (computedValueChanged && options.valueChanged) {
-						options.valueChanged(this, oldValue, value);
+					if (computedValueChanged && property.valueChanged) {
+						property.valueChanged(this, oldValue, value);
 					}
 
 					if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
 						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
+							view._suspendedUpdates?.set(propertyName, property);
 						} else {
 							if (isSet) {
 								if (!wasSet && !(defaultValueKey in this)) {
-									this[defaultValueKey] = view[getDefault] ? view[getDefault]() : options.defaultValue;
+									const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(property, this.viewRef.get()) : property.defaultValue;
+									this[defaultValueKey] = view[getDefault] ? view[getDefault]() : actualDefaultValue;
 								}
 								view[setNative](value);
 							} else if (wasSet) {
 								if (defaultValueKey in this) {
 									view[setNative](this[defaultValueKey]);
 								} else {
-									view[setNative](options.defaultValue);
+									const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(property, this.viewRef.get()) : property.defaultValue;
+									view[setNative](actualDefaultValue);
 								}
 							}
 						}
 					}
-
-					if (computedValueChanged && this.hasListeners(eventName)) {
+					const eventName = property.eventName;
+					if (computedValueChanged && (!__UI_USE_EXTERNAL_RENDERER__ || !view._suspendNativeUpdatesCount) && this.hasListeners(eventName)) {
 						this.notify<PropertyChangeData>({
 							object: this,
 							eventName,
@@ -991,6 +845,9 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 							value,
 							oldValue,
 						});
+					}
+					if (property.affectsLayout) {
+						view.requestLayout();
 					}
 				},
 			};
@@ -1005,7 +862,10 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		cssSymbolPropertyMap[computedValue] = this;
 
 		this.register = (cls: { prototype: T }) => {
-			cls.prototype[computedValue] = options.defaultValue;
+			// we add it so that overrideHandlers might work
+			cssPropertyNames.push(this.cssLocalName);
+
+			cls.prototype[computedValue] = this.defaultValue;
 			cls.prototype[computedSource] = ValueSource.Default;
 
 			cls.prototype[cssValue] = unsetValue;
@@ -1013,10 +873,10 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 			cls.prototype[keyframeValue] = unsetValue;
 
 			Object.defineProperty(cls.prototype, defaultName, defaultPropertyDescriptor);
-			Object.defineProperty(cls.prototype, cssName, cssPropertyDescriptor);
+			Object.defineProperty(cls.prototype, this.cssName, cssPropertyDescriptor);
 			Object.defineProperty(cls.prototype, propertyName, stylePropertyDescriptor);
-			if (options.cssName && options.cssName !== options.name) {
-				Object.defineProperty(cls.prototype, options.cssName, stylePropertyDescriptor);
+			if (this.cssLocalName && this.cssLocalName !== this.name) {
+				Object.defineProperty(cls.prototype, this.cssLocalName, stylePropertyDescriptor);
 			}
 			Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);
 		};
@@ -1034,7 +894,8 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 
 		if (!(defaultValueKey in target)) {
 			const getDefault = this.getDefault;
-			target[defaultValueKey] = view[getDefault] ? view[getDefault]() : this.defaultValue;
+			const actualDefaultValue = isFunction(this.defaultValue) ? this.defaultValue(this, view) : this.defaultValue;
+			target[defaultValueKey] = view[getDefault] ? view[getDefault]() : actualDefaultValue;
 		}
 	}
 
@@ -1052,164 +913,163 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 }
 CssAnimationProperty.prototype.isStyleProperty = true;
 
+function setCssInheritedFunc<T extends Style, U>(property: InheritedCssProperty<T, U>, valueSource: ValueSource) {
+	return function (this: T, boxedValue: any): void {
+		const view = this.viewRef.get();
+		if (!view) {
+			Trace.write(`${boxedValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
+
+			return;
+		}
+		const key = property.key;
+		const defaultValue = property.defaultValue;
+		const actualDefaultValue = isFunction(defaultValue) ? defaultValue(property, view) : defaultValue;
+		const sourceKey = property.sourceKey;
+		const propertyName = property.name;
+
+		const reset = isResetValue(boxedValue) || boxedValue === '';
+		const currentValueSource: number = this[sourceKey] || ValueSource.Default;
+		if (reset) {
+			// If we want to reset cssValue and we have localValue - return;
+			if (valueSource === ValueSource.Css && currentValueSource === ValueSource.Local) {
+				return;
+			}
+		} else {
+			if (currentValueSource > valueSource) {
+				return;
+			}
+		}
+
+		const oldValue = <U>(key in this ? this[key] : actualDefaultValue);
+		let value: U;
+		let unsetNativeValue = false;
+		if (reset) {
+			const parentStyle = view.parent ? view.parent.style : null;
+
+			// If value is not initial or unset and view has a parent that has non-default value, use it as the reset value.
+			if (boxedValue !== 'initial' && parentStyle && parentStyle[sourceKey] > ValueSource.Default) {
+				value = parentStyle[propertyName];
+				this[sourceKey] = ValueSource.Inherited;
+				this[key] = value;
+			} else {
+				value = actualDefaultValue;
+				delete this[sourceKey];
+				delete this[key];
+				unsetNativeValue = true;
+			}
+		} else {
+			this[sourceKey] = valueSource;
+			if (property.valueConverter && typeof boxedValue === 'string') {
+				value = property.valueConverter(boxedValue);
+			} else {
+				value = boxedValue;
+			}
+			this[key] = value;
+		}
+
+		const changed: boolean = property.equalityComparer ? !property.equalityComparer(oldValue, value, this) : oldValue !== value;
+
+		if (changed) {
+			const setNative = property.setNative;
+			const defaultValueKey = property.defaultValueKey;
+			const eventName = property.eventName;
+			const getDefault = property.getDefault;
+			if (property.valueChanged) {
+				property.valueChanged(this, oldValue, value);
+			}
+
+			if (view[setNative]) {
+				if (view._suspendNativeUpdatesCount) {
+					view._suspendedUpdates?.set(propertyName, property);
+				} else {
+					if (unsetNativeValue) {
+						if (defaultValueKey in this) {
+							view[setNative](this[defaultValueKey]);
+						} else {
+							view[setNative](actualDefaultValue);
+						}
+					} else {
+						if (!(defaultValueKey in this)) {
+							this[defaultValueKey] = view[getDefault] ? view[getDefault]() : actualDefaultValue;
+						}
+
+						view[setNative](value);
+					}
+				}
+			}
+
+			if ((!__UI_USE_EXTERNAL_RENDERER__ || !view._suspendNativeUpdatesCount) && this.hasListeners(eventName)) {
+				this.notify<PropertyChangeData>({
+					object: this,
+					eventName,
+					propertyName,
+					value,
+					oldValue,
+				});
+			}
+
+			if (property.affectsLayout) {
+				view.requestLayout();
+			}
+
+			view.eachChild((child) => {
+				const childStyle = child.style;
+				const childValueSource = childStyle[sourceKey] || ValueSource.Default;
+				if (reset) {
+					if (childValueSource === ValueSource.Inherited) {
+						property.setDefaultValue.call(childStyle, unsetValue);
+					}
+				} else {
+					if (childValueSource <= ValueSource.Inherited) {
+						property.setInheritedValue.call(childStyle, value);
+					}
+				}
+
+				return true;
+			});
+		}
+	};
+}
+
 export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements InheritedCssProperty<T, U> {
 	public setInheritedValue: (value: U) => void;
-
+	public setDefaultValue: (value: U) => void;
+	public static properties: {
+		[cssName: string]: InheritedCssProperty<any, any>;
+	} = {};
 	constructor(options: CssPropertyOptions<T, U>) {
 		super(options);
 		const propertyName = options.name;
+		InheritedCssProperty.properties[propertyName] = this;
 
-		const key = this.key;
-		const sourceKey = this.sourceKey;
-		const getDefault = this.getDefault;
-		const setNative = this.setNative;
-		const defaultValueKey = this.defaultValueKey;
-		const eventName = propertyName + 'Change';
-		const defaultValue: U = options.defaultValue;
-
-		let affectsLayout: boolean = options.affectsLayout;
-		let equalityComparer = options.equalityComparer;
-		let valueChanged = options.valueChanged;
-		let valueConverter = options.valueConverter;
-
-		const property = this;
-
-		this.overrideHandlers = function (options: CssPropertyOptions<T, U>) {
-			if (typeof options.equalityComparer !== 'undefined') {
-				equalityComparer = options.equalityComparer;
-			}
-			if (typeof options.affectsLayout !== 'undefined') {
-				affectsLayout = options.affectsLayout;
-			}
-			if (typeof options.valueChanged !== 'undefined') {
-				valueChanged = options.valueChanged;
-			}
-			if (typeof options.valueConverter !== 'undefined') {
-				valueConverter = options.valueConverter;
-			}
-		};
-
-		const setFunc = (valueSource: ValueSource) =>
-			function (this: T, boxedValue: any): void {
-				const view = this.viewRef.get();
-				if (!view) {
-					Trace.write(`${boxedValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
-					return;
-				}
-
-				const reset = isResetValue(boxedValue) || boxedValue === '';
-				const currentValueSource: number = this[sourceKey] || ValueSource.Default;
-
-				if (reset) {
-					// If we want to reset cssValue and we have localValue - return;
-					if (valueSource === ValueSource.Css && currentValueSource === ValueSource.Local) {
-						return;
-					}
-				} else {
-					if (currentValueSource > valueSource) {
-						return;
-					}
-				}
-
-				const oldValue: U = key in this ? this[key] : defaultValue;
-				let value: U;
-				let unsetNativeValue = false;
-
-				if (reset) {
-					const parentStyle = view.parent ? view.parent.style : null;
-
-					// If value is not initial or unset and view has a parent that has non-default value, use it as the reset value.
-					if (boxedValue !== 'initial' && parentStyle && parentStyle[sourceKey] > ValueSource.Default) {
-						value = parentStyle[propertyName];
-						this[sourceKey] = ValueSource.Inherited;
-						this[key] = value;
-					} else {
-						value = defaultValue;
-						delete this[sourceKey];
-						delete this[key];
-						unsetNativeValue = true;
-					}
-				} else {
-					this[sourceKey] = valueSource;
-					if (valueConverter && typeof boxedValue === 'string') {
-						value = valueConverter(boxedValue);
-					} else {
-						value = boxedValue;
-					}
-					this[key] = value;
-				}
-
-				const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
-
-				if (changed) {
-					if (valueChanged) {
-						valueChanged(this, oldValue, value);
-					}
-
-					if (view[setNative]) {
-						if (view._suspendNativeUpdatesCount) {
-							if (view._suspendedUpdates) {
-								view._suspendedUpdates[propertyName] = property;
-							}
-						} else if (unsetNativeValue) {
-							if (defaultValueKey in this) {
-								view[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								view[setNative](defaultValue);
-							}
-						} else {
-							if (!(defaultValueKey in this)) {
-								this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-							}
-
-							view[setNative](value);
-						}
-					}
-
-					if (this.hasListeners(eventName)) {
-						this.notify<PropertyChangeData>({
-							object: this,
-							eventName,
-							propertyName,
-							value,
-							oldValue,
-						});
-					}
-
-					if (affectsLayout) {
-						view.requestLayout();
-					}
-
-					view.eachChild((child) => {
-						const childStyle = child.style;
-						const childValueSource = childStyle[sourceKey] || ValueSource.Default;
-						if (reset) {
-							if (childValueSource === ValueSource.Inherited) {
-								setDefaultFunc.call(childStyle, unsetValue);
-							}
-						} else {
-							if (childValueSource <= ValueSource.Inherited) {
-								setInheritedFunc.call(childStyle, value);
-							}
-						}
-
-						return true;
-					});
-				}
-			};
-
-		const setDefaultFunc = setFunc(ValueSource.Default);
-		const setInheritedFunc = setFunc(ValueSource.Inherited);
-
-		this.setInheritedValue = setInheritedFunc;
-		this.cssValueDescriptor.set = setFunc(ValueSource.Css);
-		this.localValueDescriptor.set = setFunc(ValueSource.Local);
-
+		this.setDefaultValue = setCssInheritedFunc(this, ValueSource.Default);
+		this.setInheritedValue = setCssInheritedFunc(this, ValueSource.Inherited);
+		this.cssValueDescriptor.set = setCssInheritedFunc(this, ValueSource.Css);
+		this.localValueDescriptor.set = setCssInheritedFunc(this, ValueSource.Local);
 		inheritableCssProperties.push(this);
 	}
 }
 
+function setShorthandFunc<T extends Style, U>(property: ShorthandProperty<T, U>, valueSource: ValueSource) {
+	return function (this: T, newValue: any): void {
+		const view = this.viewRef.get();
+		if (!view) {
+			Trace.write(`setLocalValue not executed to view because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
+
+			return;
+		}
+
+		view._batchUpdate(() => {
+			for (const [p, v] of property.converter(newValue)) {
+				if (valueSource === ValueSource.Css) {
+					this[p.cssName] = v;
+				} else {
+					this[p.name] = v;
+				}
+			}
+		});
+	};
+}
 export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<T, P> {
 	private registered: boolean;
 
@@ -1221,69 +1081,41 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 	protected readonly cssValueDescriptor: PropertyDescriptor;
 	protected readonly localValueDescriptor: PropertyDescriptor;
 	protected readonly propertyBagDescriptor: PropertyDescriptor;
-
+	readonly converter: (value: string | P) => [CssProperty<any, any> | CssAnimationProperty<any, any>, any][];
+	public overrideHandlers: (options: ShorthandPropertyOptions<P>) => void;
 	public readonly sourceKey: symbol;
 
+	public static properties: {
+		[cssName: string]: ShorthandProperty<any, any>;
+	} = {};
+
 	constructor(options: ShorthandPropertyOptions<P>) {
-		this.name = options.name;
-
+		this.overrideHandlers = overrideHandlers(this);
+		this.overrideHandlers(options);
 		const key = Symbol(this.name + ':propertyKey');
+		ShorthandProperty.properties[this.name] = this;
 		this.key = key;
-
-		this.cssName = `css:${options.cssName}`;
-		this.cssLocalName = `${options.cssName}`;
-
-		const converter = options.converter;
-
-		function setLocalValue(this: T, value: string | P): void {
-			const view = this.viewRef.get();
-			if (!view) {
-				Trace.write(`setLocalValue not executed to view because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
-
-				return;
-			}
-
-			view._batchUpdate(() => {
-				for (const [p, v] of converter(value)) {
-					this[p.name] = v;
-				}
-			});
-		}
-
-		function setCssValue(this: T, value: string): void {
-			const view = this.viewRef.get();
-			if (!view) {
-				Trace.write(`setCssValue not executed to view because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
-
-				return;
-			}
-
-			view._batchUpdate(() => {
-				for (const [p, v] of converter(value)) {
-					this[p.cssName] = v;
-				}
-			});
-		}
 
 		this.cssValueDescriptor = {
 			enumerable: true,
 			configurable: true,
 			get: options.getter,
-			set: setCssValue,
+			set: setShorthandFunc(this, ValueSource.Css),
 		};
 
 		this.localValueDescriptor = {
 			enumerable: true,
 			configurable: true,
 			get: options.getter,
-			set: setLocalValue,
+			set: setShorthandFunc(this, ValueSource.Local),
 		};
 
+		const property = this;
 		this.propertyBagDescriptor = {
 			enumerable: false,
 			configurable: true,
 			set(value: string) {
-				converter(value).forEach(([property, value]) => {
+				property.converter(value).forEach(([property, value]) => {
 					this[property.cssLocalName] = value;
 				});
 			},
@@ -1308,14 +1140,12 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 	}
 }
 
-export { makeValidator, makeParser } from '../../../core-types/validators';
-
-function inheritablePropertyValuesOn(view: ViewBase): Array<{ property: InheritedProperty<any, any>; value: any }> {
+function inheritablePropertyValuesOn<T extends InheritedProperty<any, any> | InheritedCssProperty<any, any>>(view: ViewBase | Style, properties: Array<T>): Array<{ property: T; value: any }> {
 	const array = new Array<{
-		property: InheritedProperty<any, any>;
+		property: T;
 		value: any;
 	}>();
-	for (const prop of inheritableProperties) {
+	for (const prop of properties) {
 		const sourceKey = prop.sourceKey;
 		const valueSource: number = view[sourceKey] || ValueSource.Default;
 		if (valueSource !== ValueSource.Default) {
@@ -1328,51 +1158,48 @@ function inheritablePropertyValuesOn(view: ViewBase): Array<{ property: Inherite
 	return array;
 }
 
-function inheritableCssPropertyValuesOn(style: Style): Array<{ property: InheritedCssProperty<any, any>; value: any }> {
-	const array = new Array<{
-		property: InheritedCssProperty<any, any>;
-		value: any;
-	}>();
-	for (const prop of inheritableCssProperties) {
-		const sourceKey = prop.sourceKey;
-		const valueSource: number = style[sourceKey] || ValueSource.Default;
-		if (valueSource !== ValueSource.Default) {
-			// use prop.name as it will return value or default value.
-			// prop.key will return undefined if property is set the same value as default one.
-			array.push({ property: prop, value: style[prop.name] });
-		}
-	}
-
-	return array;
-}
-
 type PropertyInterface = Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 
 export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
+	if (view._suspendNativeUpdatesCount) {
+		return;
+	}
+	const wasSuspended = view.suspendRequestLayout;
+	view.suspendRequestLayout = true;
+
 	if (view._suspendedUpdates) {
 		applyPendingNativeSetters(view);
+		view._suspendedUpdates.clear();
 	} else {
+		// this case can happen for example after a _teardownUI / _setupUI.
+		// in this case style props are already set to the right values
+		// so they wont trigger a change => _suspendedUpdates
+		// so we need to iterate over them all (slow but not that slow)
 		applyAllNativeSetters(view);
 	}
-	// Would it be faster to delete all members of the old object?
-	view._suspendedUpdates = {};
+
+	// if the view requestLayout was not suspended before
+	// it means we can request a layout if needed.
+	// will be done after otherwise
+	view.suspendRequestLayout = wasSuspended;
+	if (!wasSuspended) {
+		view.requestlayoutIfNeeded();
+	}
 });
 
 export function applyPendingNativeSetters(view: ViewBase): void {
 	// TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
-	const suspendedUpdates = view._suspendedUpdates;
-	for (const propertyName in suspendedUpdates) {
-		if (!HAS_OWN.call(suspendedUpdates, propertyName)) continue;
-		const property = <PropertyInterface>suspendedUpdates[propertyName];
+	view._suspendedUpdates.forEach((property, propertyName) => {
 		const setNative = property.setNative;
 		if (view[setNative]) {
 			const { getDefault, isStyleProperty, defaultValueKey, defaultValue } = property;
+			const actualDefaultValue = isFunction(defaultValue) ? defaultValue(property, view) : defaultValue;
 			let value;
 			if (isStyleProperty) {
 				const style = view.style;
 				if ((<CssProperty<Style, any> | CssAnimationProperty<Style, any>>property).isSet(view.style)) {
 					if (!(defaultValueKey in style)) {
-						style[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+						style[defaultValueKey] = view[getDefault] ? view[getDefault]() : actualDefaultValue;
 					}
 					value = view.style[propertyName];
 				} else {
@@ -1381,7 +1208,7 @@ export function applyPendingNativeSetters(view: ViewBase): void {
 			} else {
 				if ((<Property<ViewBase, any>>property).isSet(view)) {
 					if (!(defaultValueKey in view)) {
-						view[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+						view[defaultValueKey] = view[getDefault] ? view[getDefault]() : actualDefaultValue;
 					}
 					value = view[propertyName];
 				} else {
@@ -1391,7 +1218,7 @@ export function applyPendingNativeSetters(view: ViewBase): void {
 			// TODO: Only if value is different from the value before the scope was created.
 			view[setNative](value);
 		}
-	}
+	});
 }
 
 export function applyAllNativeSetters(view: ViewBase): void {
@@ -1407,7 +1234,8 @@ export function applyAllNativeSetters(view: ViewBase): void {
 		if (setNative in view) {
 			const defaultValueKey = property.defaultValueKey;
 			if (!(defaultValueKey in view)) {
-				view[defaultValueKey] = view[getDefault] ? view[getDefault]() : property.defaultValue;
+				const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(view) : property.defaultValue;
+				view[defaultValueKey] = view[getDefault] ? view[getDefault]() : actualDefaultValue;
 			}
 
 			const value = view[symbol];
@@ -1426,7 +1254,8 @@ export function applyAllNativeSetters(view: ViewBase): void {
 		if (view[property.setNative]) {
 			const defaultValueKey = property.defaultValueKey;
 			if (!(defaultValueKey in style)) {
-				style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
+				const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(view) : property.defaultValue;
+				style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : actualDefaultValue;
 			}
 
 			const value = style[symbol];
@@ -1446,9 +1275,9 @@ export function resetNativeView(view: ViewBase): void {
 		if (view[property.setNative]) {
 			if (property.defaultValueKey in view) {
 				view[property.setNative](view[property.defaultValueKey]);
-				delete view[property.defaultValueKey];
 			} else {
-				view[property.setNative](property.defaultValue);
+				const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(property, view) : property.defaultValue;
+				view[property.setNative](actualDefaultValue);
 			}
 		}
 	}
@@ -1465,9 +1294,9 @@ export function resetNativeView(view: ViewBase): void {
 		if (view[property.setNative]) {
 			if (property.defaultValueKey in style) {
 				view[property.setNative](style[property.defaultValueKey]);
-				delete style[property.defaultValueKey];
 			} else {
-				view[property.setNative](property.defaultValue);
+				const actualDefaultValue = isFunction(property.defaultValue) ? property.defaultValue(property, view) : property.defaultValue;
+				view[property.setNative](actualDefaultValue);
 			}
 		}
 	}
@@ -1503,26 +1332,20 @@ export function resetCSSProperties(style: Style): void {
 	}
 }
 
-export function propagateInheritableProperties(view: ViewBase, child: ViewBase): void {
-	const inheritablePropertyValues = inheritablePropertyValuesOn(view);
+export function propagateInheritableCssProperties(style: Style, child: Style) {
+	return _propagateInheritableProperties(style, child, inheritableCssProperties);
+}
+export function propagateInheritableProperties(view: ViewBase, child: ViewBase) {
+	return _propagateInheritableProperties(view, child, inheritableProperties);
+}
+function _propagateInheritableProperties<U extends ViewBase | Style, T extends InheritedProperty<any, any> | InheritedCssProperty<any, any>>(view: U, child: U, properties: Array<T>): void {
+	const inheritablePropertyValues = inheritablePropertyValuesOn(view, properties);
 	for (const pair of inheritablePropertyValues) {
 		const prop = pair.property;
 		const sourceKey = prop.sourceKey;
 		const currentValueSource: number = child[sourceKey] || ValueSource.Default;
 		if (currentValueSource <= ValueSource.Inherited) {
 			prop.setInheritedValue.call(child, pair.value);
-		}
-	}
-}
-
-export function propagateInheritableCssProperties(parentStyle: Style, childStyle: Style): void {
-	const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(parentStyle);
-	for (const pair of inheritableCssPropertyValues) {
-		const prop = pair.property;
-		const sourceKey = prop.sourceKey;
-		const currentValueSource: number = childStyle[sourceKey] || ValueSource.Default;
-		if (currentValueSource <= ValueSource.Inherited) {
-			prop.setInheritedValue.call(childStyle, pair.value, ValueSource.Inherited);
 		}
 	}
 }

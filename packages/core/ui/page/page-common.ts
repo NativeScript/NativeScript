@@ -4,6 +4,7 @@ import { View, CSSType } from '../core/view';
 import { ShownModallyData } from '../core/view/view-interfaces';
 import { booleanConverter } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
+import { colorConverter } from '../styling/style-properties';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { EventData } from '../../data/observable';
@@ -14,7 +15,10 @@ import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
 import { PageEvents } from './events';
 
-interface NavigatedData extends EventData {
+// was defined here before, some plugins depend on it right now
+export { statusBarStyleProperty } from '../core/view/view-common'
+
+interface NavigatedData extends EventData<PageDefinition> {
 	context: any;
 	isBackNavigation: boolean;
 }
@@ -74,17 +78,8 @@ export class PageBase extends ContentView {
 		return this;
 	}
 
-	public _parentChanged(oldParent: View): void {
-		const newParent = this.parent;
-		if (newParent && !isFrame(newParent)) {
-			throw new Error(`Page can only be nested inside Frame. New parent: ${newParent}`);
-		}
-
-		super._parentChanged(oldParent);
-	}
-
 	public _addChildFromBuilder(name: string, value: any) {
-		if (value instanceof ActionBar) {
+		if (value.constructor.name === 'ActionBar') {
 			this.actionBar = value;
 		} else {
 			super._addChildFromBuilder(name, value);
@@ -96,7 +91,7 @@ export class PageBase extends ContentView {
 	}
 
 	get frame(): Frame {
-		return <Frame>this.parent;
+		return isFrame(this.parent) ? <Frame>this.parent : null;
 	}
 
 	private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
@@ -214,6 +209,6 @@ export const androidStatusBarBackgroundProperty = new CssProperty<Style, Color>(
 	name: 'androidStatusBarBackground',
 	cssName: 'android-status-bar-background',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 androidStatusBarBackgroundProperty.register(Style);

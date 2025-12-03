@@ -4,7 +4,7 @@
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from './dialogs-common';
 import { getLabelColor, getButtonColors, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
 import { android as androidUtils } from '../../utils/native-helper';
-import { getNativeApp } from '../../application/helpers-common';
+import { getApplicationContext } from '../../application/helpers.android';
 
 export * from './dialogs-common';
 
@@ -260,19 +260,19 @@ export function login(...args: any[]): Promise<LoginResult> {
 		try {
 			const alert = createAlertDialog(options);
 
-			const userNameInput = new android.widget.EditText(getNativeApp<android.app.Application>().getApplicationContext());
+			const userNameInput = new android.widget.EditText(getApplicationContext());
 
 			userNameInput.setHint(options.userNameHint ? options.userNameHint : '');
 			userNameInput.setText(options.userName ? options.userName : '');
 
-			const passwordInput = new android.widget.EditText(getNativeApp<android.app.Application>().getApplicationContext());
+			const passwordInput = new android.widget.EditText(getApplicationContext());
 			passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
 			passwordInput.setTypeface(android.graphics.Typeface.DEFAULT);
 
 			passwordInput.setHint(options.passwordHint ? options.passwordHint : '');
 			passwordInput.setText(options.password ? options.password : '');
 
-			const layout = new android.widget.LinearLayout(getNativeApp<android.app.Application>().getApplicationContext());
+			const layout = new android.widget.LinearLayout(getApplicationContext());
 			layout.setOrientation(1);
 			layout.addView(userNameInput);
 			layout.addView(passwordInput);

@@ -11,7 +11,7 @@ import { fontSizeProperty, fontInternalProperty } from '../styling/style-propert
 import { RESOURCE_PREFIX, android as androidUtils, layout } from '../../utils';
 import { FONT_PREFIX, isFontIconURI } from '../../utils/common';
 import { Frame } from '../frame';
-import { getNativeApp } from '../../application/helpers-common';
+import { getApplicationContext } from '../../application/helpers.android';
 import { AndroidHelper } from '../core/view';
 
 export * from './tab-view-common';
@@ -84,49 +84,6 @@ function initializeNativeClasses() {
 			const tabItem = this.owner.items[this.index];
 
 			return tabItem.view.nativeViewProtected;
-		}
-
-		public onDestroyView() {
-			const hasRemovingParent = this.getRemovingParentFragment();
-
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
-				this.owner._originalBackground = this.owner.backgroundColor || new Color('White');
-				this.owner.nativeViewProtected.setBackground(bitmapDrawable);
-				this.backgroundBitmap = null;
-			}
-
-			super.onDestroyView();
-		}
-
-		public onPause(): void {
-			const hasRemovingParent = this.getRemovingParentFragment();
-
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
-			}
-
-			super.onPause();
-		}
-
-		private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
-			// Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
-			// const width = view.getWidth();
-			// const height = view.getHeight();
-			// const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
-			// const canvas = new android.graphics.Canvas(bitmap);
-			// view.layout(0, 0, width, height);
-			// view.draw(canvas);
-
-			view.setDrawingCacheEnabled(true);
-			const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
-			view.setDrawingCacheEnabled(false);
-
-			return bitmap;
 		}
 	}
 
@@ -285,7 +242,7 @@ function initializeNativeClasses() {
 	}
 
 	PagerAdapter = FragmentPagerAdapter;
-	appResources = getNativeApp<android.app.Application>().getApplicationContext().getResources();
+	appResources = getApplicationContext().getResources();
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
@@ -335,7 +292,7 @@ function getDefaultAccentColor(context: android.content.Context): number {
 }
 
 export class TabViewItem extends TabViewItemBase {
-	nativeViewProtected: android.widget.TextView;
+	declare nativeViewProtected: android.widget.TextView;
 	public tabItemSpec: org.nativescript.widgets.TabItemSpec;
 	public index: number;
 	private _defaultTransformationMethod: android.text.method.TransformationMethod;
@@ -353,14 +310,6 @@ export class TabViewItem extends TabViewItemBase {
 
 	public onLoaded(): void {
 		super.onLoaded();
-	}
-
-	public resetNativeView(): void {
-		super.resetNativeView();
-		if (this.nativeViewProtected) {
-			// We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-			this.nativeViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-		}
 	}
 
 	public disposeNativeView(): void {
@@ -463,7 +412,6 @@ export class TabView extends TabViewBase {
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
 	private _androidViewId = -1;
-	public _originalBackground: any;
 
 	constructor() {
 		super();
@@ -610,20 +558,14 @@ export class TabView extends TabViewBase {
 
 	public onLoaded(): void {
 		super.onLoaded();
-
-		if (this._originalBackground) {
-			this.backgroundColor = null;
-			this.backgroundColor = this._originalBackground;
-			this._originalBackground = null;
-		}
-
 		this.setAdapterItems(this.items);
 	}
 
 	public onUnloaded(): void {
-		super.onUnloaded();
-
+		// clear fragments before calling super to ensure the fragmentManager is the
+		// same as the one used during item instantiation
 		this.setAdapterItems(null);
+		super.onUnloaded();
 	}
 
 	public disposeNativeView() {

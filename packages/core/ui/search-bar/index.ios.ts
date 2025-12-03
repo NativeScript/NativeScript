@@ -69,7 +69,7 @@ class UISearchBarImpl extends UISearchBar {
 }
 
 export class SearchBar extends SearchBarBase {
-	nativeViewProtected: UISearchBar;
+	declare nativeViewProtected: UISearchBar;
 	private _delegate;
 	private _textField: UITextField;
 

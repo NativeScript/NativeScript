@@ -323,7 +323,7 @@ export class Frame extends FrameBase {
 						if (page && page.actionBarHidden !== undefined) {
 							newValue = !page.actionBarHidden;
 						} else {
-							newValue = this.ios.controller.viewControllers.count > 1 || (page && page.actionBar && !page.actionBar._isEmpty());
+							newValue = this.ios.controller.viewControllers.count > 1 || (page && page.hasActionBar && !page.actionBar._isEmpty());
 						}
 
 						newValue = !!newValue;
@@ -536,7 +536,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
 		const owner = this._owner?.deref?.();
-		if (owner && !owner.isLoaded && !owner.parent) {
+		if (owner && !owner.isLoaded) {
 			owner.callLoaded();
 		}
 	}
@@ -545,7 +545,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
 		const owner = this._owner?.deref?.();
-		if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
+		if (owner && owner.isLoaded && !this.presentedViewController) {
 			owner.callUnloaded();
 			owner._tearDownUI(true);
 		}

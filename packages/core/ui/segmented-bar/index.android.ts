@@ -5,6 +5,7 @@ import { colorProperty, fontInternalProperty, fontSizeProperty } from '../stylin
 import { Color } from '../../color';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
+import { VIEW_GONE } from '../core/view/index.android';
 import { Trace } from '../../trace';
 import { CoreTypes } from '../../core-types';
 
@@ -80,7 +81,7 @@ function initializeNativeClasses(): void {
 			// This is collapsed by default and made visible
 			// by android when TabItem becomes visible/selected.
 			// TODO: Try commenting visibility change.
-			tv.setVisibility(android.view.View.GONE);
+			tv.setVisibility(VIEW_GONE);
 			tv.setMaxLines(1);
 			tv.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 
@@ -107,7 +108,7 @@ function initializeNativeClasses(): void {
 }
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
-	nativeViewProtected: android.widget.TextView;
+	declare nativeViewProtected: android.widget.TextView;
 
 	public setupNativeView(tabIndex: number): void {
 		// TabHost.TabSpec.setIndicator DOES NOT WORK once the title has been set.
@@ -193,7 +194,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 }
 
 export class SegmentedBar extends SegmentedBarBase {
-	nativeViewProtected: android.widget.TabHost;
+	declare nativeViewProtected: android.widget.TabHost;
 	private _tabContentFactory: android.widget.TabHost.TabContentFactory;
 	private _addingTab: boolean;
 
@@ -216,7 +217,7 @@ export class SegmentedBar extends SegmentedBarBase {
 
 		const frame = new android.widget.FrameLayout(context);
 		frame.setId(R_ID_TABCONTENT);
-		frame.setVisibility(android.view.View.GONE);
+		frame.setVisibility(VIEW_GONE);
 		tabHostLayout.addView(frame);
 
 		nativeView.addView(tabHostLayout);

@@ -10,11 +10,6 @@ export class TextView extends TextViewBaseCommon {
 		editText.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
 	}
 
-	public resetNativeView(): void {
-		super.resetNativeView();
-		this.nativeTextViewProtected.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
-	}
-
 	public _onReturnPress() {
 		this.notify({ eventName: TextView.returnPressEvent, object: this });
 	}

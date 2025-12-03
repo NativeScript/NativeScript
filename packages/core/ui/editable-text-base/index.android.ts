@@ -1,4 +1,4 @@
-import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty } from './editable-text-base-common';
+import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty, selectableProperty } from './editable-text-base-common';
 import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
 import { ad } from '../../utils';
@@ -63,7 +63,7 @@ function initializeEditTextListeners(): void {
 			this.owner?.get()?.beforeTextChanged(text, start, count, after);
 		}
 
-		public onTextChanged(text: string, start: number, before: number, count: number): void {
+		public onTextChanged(text: any /* java.lang.CharSequence */, start: number, before: number, count: number): void {
 			this.owner?.get()?.onTextChanged(text, start, before, count);
 		}
 
@@ -106,6 +106,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 		const editText = this.nativeTextViewProtected;
+		editText.setTextIsSelectable(this.selectable);
 		this._configureEditText(editText);
 		initializeEditTextListeners();
 		const listeners = new EditTextListeners(new WeakRef(this));
@@ -168,7 +169,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		const nativeView = this.nativeTextViewProtected;
 		try {
 			this._changeFromCode = true;
-			nativeView.setInputType(parseInt(<any>inputType, 10));
+			nativeView.setInputType(this.editable ? parseInt(<any>inputType, 10) : 0);
 		} finally {
 			this._changeFromCode = false;
 		}
@@ -234,6 +235,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 			case 'integer':
 				newInputType = android.text.InputType.TYPE_CLASS_NUMBER;
+				break;
+
+			case 'decimal':
+				newInputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
 				break;
 
 			default: {
@@ -369,6 +374,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		}
 	}
 
+	[selectableProperty.getDefault](): boolean {
+		return true;
+	}
+	[selectableProperty.setNative](value: boolean) {
+		this.nativeViewProtected.setTextIsSelectable(value);
+	}
+
 	[autocapitalizationTypeProperty.getDefault](): 'none' | 'words' | 'sentences' | 'allcharacters' | string {
 		const inputType = this.nativeTextViewProtected.getInputType();
 		if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) {
@@ -498,11 +510,18 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		// called by android.text.TextWatcher
 	}
 
-	public onTextChanged(text: string, start: number, before: number, count: number): void {
+	public onTextChanged(text: any /* java.lang.CharSequence */, start: number, before: number, count: number): void {
+		if (text === <any>this.text) {
+			return;
+		}
 		// called by android.text.TextWatcher
 		if (this.valueFormatter) {
-			this.text = this.valueFormatter(text.toString());
-			this.android.setSelection((this.text || '').length);
+			const newValue = <any>this.text instanceof java.lang.CharSequence ? this.text : this.valueFormatter?.(text.toString()) || text.toString();
+			// prevent infinite loop
+			if (newValue !== this.text) {
+				this.text = newValue;
+				this.nativeTextViewProtected.setSelection((newValue || '').length);
+			}
 		}
 		// const owner = this.owner;
 		// let selectionStart = owner.android.getSelectionStart();

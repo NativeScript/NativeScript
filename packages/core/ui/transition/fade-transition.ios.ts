@@ -2,9 +2,9 @@
 import { Transition } from '.';
 
 export class FadeTransition extends Transition {
-	transitionController: FadeTransitionController;
-	presented: UIViewController;
-	presenting: UIViewController;
+	declare transitionController: FadeTransitionController;
+	declare presented: UIViewController;
+	declare presenting: UIViewController;
 	operation: number;
 
 	iosNavigatedController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {

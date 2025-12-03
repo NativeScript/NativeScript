@@ -1,6 +1,6 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontVariationSettings, FONTS_BASE_PATH } from './font-common';
+import { FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontVariationSettings, FONTS_BASE_PATH } from './font-common';
 import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
-import { getNativeApp } from '../../application/helpers-common';
+import { getApplicationContext } from '../../application/helpers.android';
 import { Trace } from '../../trace';
 import { SDK_VERSION } from '../../utils/constants';
 import * as fs from '../../file-system';
@@ -14,30 +14,6 @@ export class Font extends FontBase {
 	static default = new Font(undefined, undefined);
 
 	private _typeface: android.graphics.Typeface;
-
-	public withFontFamily(family: string): Font {
-		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, 1, this.fontVariationSettings);
-	}
-
-	public withFontStyle(style: FontStyleType): Font {
-		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, 1, this.fontVariationSettings);
-	}
-
-	public withFontWeight(weight: FontWeightType): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, 1, this.fontVariationSettings);
-	}
-
-	public withFontSize(size: number): Font {
-		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, 1, this.fontVariationSettings);
-	}
-
-	public withFontScale(scale: number): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, 1, this.fontVariationSettings);
-	}
-
-	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, 1, variationSettings);
-	}
 
 	getAndroidTypeface(): android.graphics.Typeface {
 		if (!this._typeface) {
@@ -60,7 +36,7 @@ function computeFontCacheKey(fontFamily: string, font: Font) {
 function loadFontFromFile(fontFamily: string, font: Font): android.graphics.Typeface {
 	const cacheKey = SDK_VERSION >= 26 ? computeFontCacheKey(fontFamily, font) : fontFamily;
 
-	appAssets = appAssets || getNativeApp<android.app.Application>().getApplicationContext().getAssets();
+	appAssets = appAssets || getApplicationContext().getAssets();
 	if (!appAssets) {
 		return null;
 	}

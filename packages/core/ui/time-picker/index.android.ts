@@ -38,7 +38,7 @@ function initializeTimeChangedListener(): void {
 }
 
 export class TimePicker extends TimePickerBase {
-	nativeViewProtected: android.widget.TimePicker;
+	declare nativeViewProtected: android.widget.TimePicker;
 	updatingNativeValue: boolean;
 
 	public createNativeView() {

@@ -23,7 +23,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 	static final String TAG = "NSLayout";
 	static int debuggable = -1;
 	private static final int NOT_SET = Integer.MIN_VALUE;
-	private static final StringBuilder sb = new StringBuilder();
+	private static StringBuilder debugSb = null;
 
 	public CommonLayoutParams() {
 		super(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, Gravity.FILL);
@@ -189,14 +189,14 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 				int widthMeasureSpec = MeasureSpec.makeMeasureSpec(canChangeWidth ? width : lp.width, MeasureSpec.EXACTLY);
 				int heightMeasureSpec = MeasureSpec.makeMeasureSpec(canChangeHeight ? height : lp.height, MeasureSpec.EXACTLY);
 				if (debuggable > 0) {
-					sb.setLength(0);
-					sb.append("remeasure ");
-					sb.append(child);
-					sb.append(" with ");
-					sb.append(MeasureSpec.toString(widthMeasureSpec));
-					sb.append(", ");
-					sb.append(MeasureSpec.toString(heightMeasureSpec));
-					log(TAG, sb.toString());
+					debugSb.setLength(0);
+					debugSb.append("remeasure ");
+					debugSb.append(child);
+					debugSb.append(" with ");
+					debugSb.append(MeasureSpec.toString(widthMeasureSpec));
+					debugSb.append(", ");
+					debugSb.append(MeasureSpec.toString(heightMeasureSpec));
+					Log.v(TAG, debugSb.toString());
 				}
 
 				child.measure(widthMeasureSpec, heightMeasureSpec);
@@ -204,19 +204,19 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 		}
 
 		if (debuggable > 0) {
-			sb.setLength(0);
-			sb.append(child.getParent().toString());
-			sb.append(" :layoutChild: ");
-			sb.append(child);
-			sb.append(" ");
-			sb.append(childLeft);
-			sb.append(", ");
-			sb.append(childTop);
-			sb.append(", ");
-			sb.append(childRight);
-			sb.append(", ");
-			sb.append(childBottom);
-			log(TAG, sb.toString());
+			debugSb.setLength(0);
+			debugSb.append(child.getParent().toString());
+			debugSb.append(" :layoutChild: ");
+			debugSb.append(child);
+			debugSb.append(" ");
+			debugSb.append(childLeft);
+			debugSb.append(", ");
+			debugSb.append(childTop);
+			debugSb.append(", ");
+			debugSb.append(childRight);
+			debugSb.append(", ");
+			debugSb.append(childBottom);
+			Log.v(TAG, debugSb.toString());
 		}
 
 		child.layout(childLeft, childTop, childRight, childBottom);
@@ -227,6 +227,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 			return;
 		}
 
+		// TODO: do we really need that code?
 		// Negative means not initialized.
 		if (debuggable < 0) {
 			try {
@@ -235,6 +236,9 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 				android.os.Bundle bundle = ai.metaData;
 				Boolean debugLayouts = bundle != null && bundle.getBoolean("debugLayouts", false);
 				debuggable = debugLayouts ? 1 : 0;
+				if (debuggable == 1) {
+					CommonLayoutParams.debugSb = new StringBuilder();
+				}
 			} catch (NameNotFoundException e) {
 				debuggable = 0;
 				Log.e(TAG, "Failed to load meta-data, NameNotFound: " + e.getMessage());
@@ -248,15 +252,15 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 		int childHeightMeasureSpec = getMeasureSpec(child, heightMeasureSpec, false);
 
 		if (debuggable > 0) {
-			sb.setLength(0);
-			sb.append(child.getParent().toString());
-			sb.append(" :measureChild: ");
-			sb.append(child);
-			sb.append(" ");
-			sb.append(MeasureSpec.toString(childWidthMeasureSpec));
-			sb.append(", ");
-			sb.append(MeasureSpec.toString(childHeightMeasureSpec));
-			log(TAG, sb.toString());
+			debugSb.setLength(0);
+			debugSb.append(child.getParent().toString());
+			debugSb.append(" :measureChild: ");
+			debugSb.append(child);
+			debugSb.append(" ");
+			debugSb.append(MeasureSpec.toString(childWidthMeasureSpec));
+			debugSb.append(", ");
+			debugSb.append(MeasureSpec.toString(childHeightMeasureSpec));
+			Log.v(TAG, debugSb.toString());
 		}
 
 		child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -386,13 +390,9 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 		}
 	}
 
-	static void log(String tag, String message) {
-		Log.v(tag, message);
-	}
-
 	static StringBuilder getStringBuilder() {
-		sb.setLength(0);
-		return sb;
+		debugSb.setLength(0);
+		return debugSb;
 	}
 
 	private static int getMeasureSpec(View view, int parentMeasureSpec, boolean horizontal) {

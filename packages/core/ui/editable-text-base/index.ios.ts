@@ -1,12 +1,12 @@
-import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, autocapitalizationTypeProperty, autocorrectProperty } from './editable-text-base-common';
+import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, autocapitalizationTypeProperty, autocorrectProperty, selectableProperty } from './editable-text-base-common';
 import { FormattedString } from '../text-base/formatted-string';
 import { CoreTypes } from '../../core-types';
 
 export * from './editable-text-base-common';
 
 export abstract class EditableTextBase extends EditableTextBaseCommon {
-	public nativeViewProtected: UITextField | UITextView;
-	public readonly nativeTextViewProtected: UITextField | UITextView;
+	public declare nativeViewProtected: UITextField | UITextView;
+	public declare readonly nativeTextViewProtected: UITextField | UITextView;
 	public dismissSoftInput() {
 		this.nativeTextViewProtected.resignFirstResponder();
 		this.notify({ eventName: EditableTextBase.blurEvent, object: this });
@@ -62,6 +62,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 			case 'integer':
 				newKeyboardType = UIKeyboardType.NumberPad;
+				break;
+
+			case 'decimal':
+				newKeyboardType = UIKeyboardType.DecimalPad;
 				break;
 
 			default: {
@@ -243,6 +247,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 		this.nativeTextViewProtected.autocorrectionType = newValue;
 		this.nativeTextViewProtected.spellCheckingType = spelling;
+	}
+
+	[selectableProperty.getDefault](): boolean {
+		return true;
+	}
+	[selectableProperty.setNative](value: boolean) {
+		this.nativeViewProtected['selectable'] = value;
 	}
 	public setSelection(start: number, stop?: number) {
 		const view = this.nativeTextViewProtected;

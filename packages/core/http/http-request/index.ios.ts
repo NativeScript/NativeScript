@@ -59,10 +59,12 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
 
 			return;
 		}
-
+		let debugRequest: domainDebugger.domains.network.NetworkRequest;
 		try {
-			const network = domainDebugger.getNetwork();
-			const debugRequest = network && network.create();
+			if (__DEV__) {
+				const network = domainDebugger.getNetwork();
+				debugRequest = network && network.create();
+			}
 
 			const urlRequest = NSMutableURLRequest.requestWithURL(NSURL.URLWithString(options.url));
 
@@ -76,7 +78,7 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
 				}
 			}
 
-			if (types.isString(options.content) || options.content instanceof FormData) {
+			if (types.isString(options.content) || (typeof FormData !== 'undefined' && options.content instanceof FormData)) {
 				urlRequest.HTTPBody = NSString.stringWithString(options.content.toString()).dataUsingEncoding(4);
 			} else if (options.content instanceof ArrayBuffer) {
 				const buffer = options.content as ArrayBuffer;

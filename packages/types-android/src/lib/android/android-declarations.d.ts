@@ -8,6 +8,12 @@ declare function long(num: number): any;
  */
 declare var gc: () => void;
 
+
+/**
+ * Returns the version of the runtime.
+ */
+declare const __runtimeVersion: string;
+
 /**
  * Releases the reference to the wrapped native object
  * @param object The Java object to release.

@@ -112,7 +112,6 @@ export class SlideTransition extends Transition {
 			animator.setDuration(duration);
 		}
 		animator.setInterpolator(this.getCurve());
-
 		const animatorSet = new android.animation.AnimatorSet();
 		animatorSet.play(animator);
 		return animatorSet;

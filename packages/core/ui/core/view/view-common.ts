@@ -10,8 +10,8 @@ import { Property, InheritedProperty, CssProperty } from '../properties';
 import { Style } from '../../styling/style';
 import { EventData } from '../../../data/observable';
 import { ViewHelper } from './view-helper';
-import { setupAccessibleView } from '../../../application/helpers';
 
+import { backgroundInternalProperty, fontInternalProperty } from '../../styling/style-properties';
 import { PercentLength } from '../../styling/length-shared';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, fromString as gestureFromString, toString as gestureToString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
@@ -24,7 +24,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 
 import { Animation } from '../../animation';
 import type { AnimationPromise } from '../../animation/animation-types';
-import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, getFontScale } from '../../../accessibility';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, getFontScale, setupAccessibleView } from '../../../accessibility';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent } from '../../../accessibility';
 import { ShadowCSSValues } from '../../styling/css-shadow';
@@ -76,6 +76,7 @@ export abstract class ViewCommon extends ViewBase {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
+	public static closingModallyEvent = 'closingModally';
 	public static accessibilityBlurEvent = accessibilityBlurEvent;
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
@@ -141,7 +142,7 @@ export abstract class ViewCommon extends ViewBase {
 
 	public readonly _gestureObservers = {} as Record<GestureTypes, Array<GesturesObserver>>;
 
-	_androidContentDescriptionUpdated?: boolean;
+	_androidContentDescriptionNeedsUpdate?: boolean;
 
 	get css(): string {
 		const scope = this._styleScope;
@@ -161,6 +162,9 @@ export abstract class ViewCommon extends ViewBase {
 	}
 
 	public changeCssFile(cssFileName: string): void {
+		if (this.disableCss) {
+			return;
+		}
 		const scope = this._styleScope;
 		if (scope && cssFileName) {
 			scope.changeCssFile(cssFileName);
@@ -169,6 +173,9 @@ export abstract class ViewCommon extends ViewBase {
 	}
 
 	public _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void {
+		if (this.disableCss) {
+			return;
+		}
 		let scope = this._styleScope;
 		if (!scope) {
 			scope = new StyleScope();
@@ -437,7 +444,7 @@ export abstract class ViewCommon extends ViewBase {
 		if (closeCallback) {
 			closeCallback(...args);
 		} else {
-			const parent = this.parent;
+			const parent = this._modalParent || this.parent;
 			if (parent) {
 				parent.closeModal(...args);
 			}
@@ -474,6 +481,11 @@ export abstract class ViewCommon extends ViewBase {
 			};
 
 			const whenClosedCallback = () => {
+				// if we are closing a modal which itself has modals we need
+				// to clean up and fire events
+				if (this._modal?._closeModalCallback) {
+					this._modal._closeModalCallback();
+				}
 				const transitionState = SharedTransition.getState(this.transitionId);
 				if (transitionState?.interactiveBegan) {
 					SharedTransition.updateState(this.transitionId, {
@@ -490,6 +502,7 @@ export abstract class ViewCommon extends ViewBase {
 					}
 
 					this._tearDownUI(true);
+					this.parent = null;
 				}
 			};
 
@@ -497,7 +510,6 @@ export abstract class ViewCommon extends ViewBase {
 			if (!transitionState?.interactiveBegan) {
 				cleanupModalViews();
 			}
-
 			this._hideNativeModalView(parent, whenClosedCallback);
 		};
 	}
@@ -528,6 +540,13 @@ export abstract class ViewCommon extends ViewBase {
 			object: this,
 			context: this._modalContext,
 			closeCallback: this._closeModalCallback,
+		};
+		this.notify(args);
+	}
+	protected _raiseClosingModallyEvent() {
+		const args: EventData = {
+			eventName: ViewCommon.closingModallyEvent,
+			object: this,
 		};
 		this.notify(args);
 	}
@@ -565,6 +584,20 @@ export abstract class ViewCommon extends ViewBase {
 		if (!observers.length) {
 			delete this._gestureObservers[type];
 		}
+	}
+
+	public onResumeNativeUpdates(): void {
+		// special handling of backgroundInternal property to prevent too many slow updates
+		const background = this.style.backgroundInternal;
+		if (background?.isDirty) {
+			this._suspendedUpdates?.set('backgroundInternal', backgroundInternalProperty);
+		}
+		// special handling of fontInternal property to prevent too many slow updates
+		const font = this.style.fontInternal;
+		if (font?.isDirty) {
+			this._suspendedUpdates?.set('fontInternal', fontInternalProperty);
+		}
+		super.onResumeNativeUpdates();
 	}
 
 	// START Style property shortcuts
@@ -1177,6 +1210,12 @@ export abstract class ViewCommon extends ViewBase {
 		return promise as AnimationPromise;
 	}
 
+	public cancelAllAnimations() {
+		if (this._localAnimations) {
+			this._localAnimations.forEach((a) => this._removeAnimation(a));
+		}
+	}
+
 	public createAnimation(animation: any): Animation {
 		if (!this._localAnimations) {
 			this._localAnimations = new Set();
@@ -1249,7 +1288,7 @@ export abstract class ViewCommon extends ViewBase {
 	public _redrawNativeBackground(value: any): void {
 		//
 	}
-	public _applyBackground(background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: android.graphics.drawable.Drawable) {
+	public _applyBackground(background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any, shouldClipToOutline: boolean) {
 		//
 	}
 

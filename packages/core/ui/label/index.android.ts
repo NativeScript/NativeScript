@@ -9,8 +9,8 @@ export * from '../text-base';
 
 @CSSType('Label')
 export class Label extends TextBase implements LabelDefinition {
-	nativeViewProtected: org.nativescript.widgets.StyleableTextView;
-	nativeTextViewProtected: org.nativescript.widgets.StyleableTextView;
+	declare nativeViewProtected: org.nativescript.widgets.StyleableTextView;
+	declare nativeTextViewProtected: org.nativescript.widgets.StyleableTextView;
 
 	get textWrap(): boolean {
 		return this.style.whiteSpace === 'normal';
@@ -45,6 +45,5 @@ export class Label extends TextBase implements LabelDefinition {
 	}
 }
 
-Label.prototype._isSingleLine = true;
 Label.prototype._isManualRtlTextStyleNeeded = true;
 Label.prototype.recycleNativeView = 'auto';

@@ -1,4 +1,4 @@
-import { Font as FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch, FONTS_BASE_PATH } from './font-common';
+import { FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch, FONTS_BASE_PATH } from './font-common';
 import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
 import { File, FileSystemEntity, Folder, knownFolders, path } from '../../file-system';
@@ -73,35 +73,11 @@ export class Font extends FontBase {
 		super(family, size, style, weight, scale, variationSettings);
 	}
 
-	public withFontFamily(family: string): Font {
-		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale, this.fontVariationSettings);
-	}
-
-	public withFontStyle(style: FontStyleType): Font {
-		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, this.fontScale, this.fontVariationSettings);
-	}
-
-	public withFontWeight(weight: FontWeightType): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, this.fontScale, this.fontVariationSettings);
-	}
-
-	public withFontSize(size: number): Font {
-		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, this.fontScale, this.fontVariationSettings);
-	}
-
-	public withFontScale(scale: number): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, scale, this.fontVariationSettings);
-	}
-
-	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale, variationSettings);
-	}
-
 	getUIFont(defaultFont: UIFont): UIFont {
 		return getUIFontCached({
 			fontFamily: parseFontFamily(this.fontFamily),
 			// Apply a11y scale and calculate proper font size (avoid applying multiplier to native point size as it's messing calculations)
-			fontSize: this.fontSize ? this.fontSize * this.fontScale : defaultFont.pointSize,
+			fontSize: this.fontSize ? this.fontSize * this.fontScale : defaultFont.pointSize * this.fontScale,
 			fontWeight: getNativeFontWeight(this.fontWeight),
 			fontVariationSettings: this.fontVariationSettings,
 			isBold: this.isBold,

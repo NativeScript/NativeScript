@@ -134,7 +134,10 @@ declare const __COMMONJS__: boolean;
 declare const __ANDROID__: boolean;
 declare const __IOS__: boolean;
 declare const __VISIONOS__: boolean;
+declare const __ACCESSIBILITY_DEFAULT_ENABLED__: boolean;
+declare const __ONLY_ALLOW_ROOT_VARIABLES__: boolean;
 declare const __APPLE__: boolean;
+declare const __CSS_USE_CSS_TOOLS__: boolean;
 
 declare function setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearTimeout(timeoutId: number): void;
@@ -210,7 +213,7 @@ declare type HeaderInit = Headers | Array<string>;
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
 
 // declare var console: Console;
-declare var require: NodeRequire;
+declare let require: NodeRequire;
 
 // Extend NodeRequire with the webpack's require context extension.
 interface RequireContext {
@@ -235,9 +238,9 @@ interface WeakRef<T extends object> {
 declare var __dirname: string;
 declare var __filename: string;
 
-declare var module: NodeModule;
+declare let module: NodeModule;
 // Same as module.exports
-declare var exports: any;
+declare let exports: any;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;

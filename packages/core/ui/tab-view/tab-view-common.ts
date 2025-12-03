@@ -2,6 +2,7 @@ import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, Sel
 import { View, AddArrayFromBuilder, AddChildFromBuilder, CSSType } from '../core/view';
 import { ViewBase, booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
+import { colorConverter } from '../styling/style-properties';
 import { EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { Property, CssProperty, CoercibleProperty } from '../core/properties';
@@ -308,7 +309,7 @@ export const tabTextColorProperty = new CssProperty<Style, Color>({
 	name: 'tabTextColor',
 	cssName: 'tab-text-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 tabTextColorProperty.register(Style);
 
@@ -322,7 +323,7 @@ export const tabBackgroundColorProperty = new CssProperty<Style, Color>({
 	name: 'tabBackgroundColor',
 	cssName: 'tab-background-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 tabBackgroundColorProperty.register(Style);
 
@@ -330,7 +331,7 @@ export const selectedTabTextColorProperty = new CssProperty<Style, Color>({
 	name: 'selectedTabTextColor',
 	cssName: 'selected-tab-text-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 selectedTabTextColorProperty.register(Style);
 
@@ -338,6 +339,6 @@ export const androidSelectedTabHighlightColorProperty = new CssProperty<Style, C
 	name: 'androidSelectedTabHighlightColor',
 	cssName: 'android-selected-tab-highlight-color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 androidSelectedTabHighlightColorProperty.register(Style);

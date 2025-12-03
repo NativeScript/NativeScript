@@ -1,15 +1,30 @@
-import { Font as FontDefinition } from './font';
+import { Font } from './font';
 import { ParsedFont, FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { makeValidator, makeParser } from '../core/properties';
 import { Trace } from '../../trace';
 
 export const FONTS_BASE_PATH = '/fonts';
 
-export abstract class Font implements FontDefinition {
+export abstract class FontBase implements Font {
 	public static default = undefined;
 	public readonly fontStyle: FontStyleType;
 	public readonly fontWeight: FontWeightType;
 	public readonly fontScale: number;
+
+	isDirty = false;
+
+	cloneOrDirty(force = true) {
+		let clone = <Font>this;
+		if (clone === Font.default || force) {
+			clone = new Font(undefined, undefined);
+			Object.assign(clone, this);
+		} else {
+			clone.isDirty = true;
+			// clear android cached typeface. need to find a better way
+			clone['_typeface'] = null;
+		}
+		return clone;
+	}
 
 	get isItalic(): boolean {
 		return this.fontStyle === FontStyle.ITALIC;
@@ -34,12 +49,46 @@ export abstract class Font implements FontDefinition {
 
 	public abstract getAndroidTypeface(): any; /* android.graphics.Typeface */
 	public abstract getUIFont(defaultFont: any /* UIFont */): any; /* UIFont */
-	public abstract withFontFamily(family: string): Font;
-	public abstract withFontStyle(style: FontStyleType): Font;
-	public abstract withFontWeight(weight: FontWeightType): Font;
-	public abstract withFontSize(size: number): Font;
-	public abstract withFontScale(scale: number): Font;
-	public abstract withFontVariationSettings(variationSettings: FontVariationSettingsType[]): Font;
+
+	public withFontFamily(family: string, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
+		clone.fontFamily = family;
+		return clone;
+	}
+
+	public withFontStyle(style: FontStyleType, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
+		clone.fontStyle = style;
+		return clone;
+	}
+
+	public withFontWeight(weight: FontWeightType, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
+		clone.fontWeight = weight;
+		return clone;
+	}
+
+	public withFontSize(size: number, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
+		clone.fontSize = size;
+		return clone;
+	}
+
+	public withFontScale(scale: number, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
+		clone.fontScale = scale;
+		return clone;
+	}
+
+	public withFontVariationSettings(variationSettings: Array<FontVariationSettingsType> | null, forceClone = true): Font {
+		const clone = this.cloneOrDirty(forceClone);
+		clone.fontVariationSettings = variationSettings;
+		return clone;
+	}
+
+	public isEqualToDefaultFont() {
+		return this === Font.default || (!this.fontFamily && this.fontScale === undefined && this.fontSize === undefined && !this.fontStyle && !this.fontWeight && !this.fontVariationSettings);
+	}
 
 	public static equals(value1: Font, value2: Font): boolean {
 		// both values are falsy

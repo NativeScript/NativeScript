@@ -51,7 +51,7 @@ export function createPage() {
 	//page.content = GridLayout;
 	page.content = StackLayout;
 	var x = 1;
-	btn1.on(button.Button.tapEvent, function () {
+	btn1.on(button.tapEvent, function () {
 		x++;
 		var gravity;
 		//btn1.android.setLayoutParams(new android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT));

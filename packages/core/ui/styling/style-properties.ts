@@ -18,6 +18,8 @@ import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
 import { parseCSSCommaSeparatedListOfValues } from './css-utils';
 
+export { Length, FixedLength, PercentLength } from './length-shared';
+
 interface ShorthandPositioning {
 	top: string;
 	right: string;
@@ -56,7 +58,7 @@ function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLength
 }
 
 function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
-	if (length == 'auto' || isCssWideKeyword(length)) {
+	if (length == 'auto' || length === null || length === undefined || isCssWideKeyword(length)) {
 		return 'auto';
 	}
 
@@ -73,14 +75,11 @@ function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentL
 }
 
 function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
-	if (length == 'auto' || isCssWideKeyword(length)) {
+	if (length == 'auto' || length === null || length === undefined || isCssWideKeyword(length)) {
 		return auto;
 	}
 	if (typeof length === 'number') {
 		return layout.round(layout.toDevicePixels(length));
-	}
-	if (!length) {
-		return auto;
 	}
 	// @ts-ignore
 	switch (length.unit) {
@@ -95,6 +94,13 @@ function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number 
 			// @ts-ignore
 			return layout.round(layout.toDevicePixels(length.value));
 	}
+}
+
+export function colorConverter(v: string | Color): Color {
+	if (!v || v instanceof Color) {
+		return v as Color;
+	}
+	return new Color(v);
 }
 
 function isNonNegativeFiniteNumber(value: number): boolean {
@@ -280,7 +286,7 @@ export const minWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minWidth',
 	cssName: 'min-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -298,7 +304,7 @@ export const minHeightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minHeight',
 	cssName: 'min-height',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -316,17 +322,9 @@ export const widthProperty = new CssAnimationProperty<Style, CoreTypes.PercentLe
 	name: 'width',
 	cssName: 'width',
 	defaultValue: 'auto',
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	// TODO: CSSAnimationProperty was needed for keyframe (copying other impls), but `affectsLayout` does not exist
-	//       on the animation property, so fake it here. x_x
-	valueChanged: (target, oldValue, newValue) => {
-		if (global.isIOS) {
-			const view = target.viewRef.get();
-			if (view) {
-				view.requestLayout();
-			}
-		}
-	},
+
 	valueConverter: PercentLength.parse,
 });
 widthProperty.register(Style);
@@ -336,16 +334,7 @@ export const heightProperty = new CssAnimationProperty<Style, CoreTypes.PercentL
 	cssName: 'height',
 	defaultValue: 'auto',
 	equalityComparer: Length.equals,
-	// TODO: CSSAnimationProperty was needed for keyframe (copying other impls), but `affectsLayout` does not exist
-	//       on the animation property, so fake it here. -_-
-	valueChanged: (target, oldValue, newValue) => {
-		if (global.isIOS) {
-			const view = target.viewRef.get();
-			if (view) {
-				view.requestLayout();
-			}
-		}
-	},
+	affectsLayout: __IOS__,
 	valueConverter: PercentLength.parse,
 });
 heightProperty.register(Style);
@@ -368,7 +357,7 @@ export const marginLeftProperty = new CssProperty<Style, CoreTypes.PercentLength
 	name: 'marginLeft',
 	cssName: 'margin-left',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -378,7 +367,7 @@ export const marginRightProperty = new CssProperty<Style, CoreTypes.PercentLengt
 	name: 'marginRight',
 	cssName: 'margin-right',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -388,7 +377,7 @@ export const marginTopProperty = new CssProperty<Style, CoreTypes.PercentLengthT
 	name: 'marginTop',
 	cssName: 'margin-top',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -398,7 +387,7 @@ export const marginBottomProperty = new CssProperty<Style, CoreTypes.PercentLeng
 	name: 'marginBottom',
 	cssName: 'margin-bottom',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -422,7 +411,7 @@ export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>(
 	name: 'paddingLeft',
 	cssName: 'padding-left',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -440,7 +429,7 @@ export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>
 	name: 'paddingRight',
 	cssName: 'padding-right',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -458,7 +447,7 @@ export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingTop',
 	cssName: 'padding-top',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -476,7 +465,7 @@ export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType
 	name: 'paddingBottom',
 	cssName: 'padding-bottom',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -494,17 +483,17 @@ export const horizontalAlignmentProperty = new CssProperty<Style, CoreTypes.Hori
 	name: 'horizontalAlignment',
 	cssName: 'horizontal-align',
 	defaultValue: CoreTypes.HorizontalAlignment.stretch,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: CoreTypes.HorizontalAlignment.parse,
 });
 horizontalAlignmentProperty.register(Style);
 
-export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.VerticalAlignmentTextType>({
+export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.VerticalAlignmentType>({
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
-	defaultValue: CoreTypes.VerticalAlignmentText.stretch,
-	affectsLayout: global.isIOS,
-	valueConverter: CoreTypes.VerticalAlignmentText.parse,
+	defaultValue: CoreTypes.VerticalAlignment.stretch,
+	affectsLayout: __IOS__,
+	valueConverter: CoreTypes.VerticalAlignment.parse,
 });
 verticalAlignmentProperty.register(Style);
 
@@ -618,15 +607,39 @@ export const backgroundInternalProperty = new CssProperty<Style, Background>({
 	name: 'backgroundInternal',
 	cssName: '_backgroundInternal',
 	defaultValue: Background.default,
+	equalityComparer: (value1: Background, value2: Background, target) => {
+		if (value1 === value2) {
+			const view = target.viewRef.get();
+
+			// if view layout or updates are suspended we will check the backgroundInternal at the end
+			if (value1.isDirty && !view._suspendNativeUpdatesCount) {
+				value1.isDirty = false;
+				return false;
+			}
+			return true;
+		}
+		return Background.equals(value1, value2);
+	},
 });
 backgroundInternalProperty.register(Style);
+
+function backgroundInternalSubPropertyValueChanged<T extends Style, U>(block: (target: T, oldValue: U, newValue: U) => Background) {
+	return function (target: T, oldValue: U, newValue: U) {
+		const newBackgroundInternal = block(target, oldValue, newValue);
+		const view = target.viewRef.get();
+		if (target.backgroundInternal !== newBackgroundInternal || !view._suspendNativeUpdatesCount) {
+			target.backgroundInternal = newBackgroundInternal;
+		} else {
+			// let s not go through another property set which takes time during batch updates
+			// we will check and update backgroundInternal once the update is done
+		}
+	};
+}
 
 export const backgroundImageProperty = new CssProperty<Style, string | LinearGradient>({
 	name: 'backgroundImage',
 	cssName: 'background-image',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withImage(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withImage(newValue)),
 	equalityComparer: (value1, value2) => {
 		if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
 			return LinearGradient.equals(value1, value2);
@@ -650,11 +663,9 @@ backgroundImageProperty.register(Style);
 export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 	name: 'backgroundColor',
 	cssName: 'background-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withColor(newValue, false)),
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 backgroundColorProperty.register(Style);
 
@@ -662,27 +673,21 @@ export const backgroundRepeatProperty = new CssProperty<Style, CoreTypes.Backgro
 	name: 'backgroundRepeat',
 	cssName: 'background-repeat',
 	valueConverter: CoreTypes.BackgroundRepeat.parse,
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withRepeat(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withRepeat(newValue, false)),
 });
 backgroundRepeatProperty.register(Style);
 
 export const backgroundSizeProperty = new CssProperty<Style, string>({
 	name: 'backgroundSize',
 	cssName: 'background-size',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withSize(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withSize(newValue, false)),
 });
 backgroundSizeProperty.register(Style);
 
 export const backgroundPositionProperty = new CssProperty<Style, string>({
 	name: 'backgroundPosition',
 	cssName: 'background-position',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withPosition(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withPosition(newValue, false)),
 });
 backgroundPositionProperty.register(Style);
 
@@ -722,44 +727,36 @@ borderColorProperty.register(Style);
 export const borderTopColorProperty = new CssProperty<Style, Color>({
 	name: 'borderTopColor',
 	cssName: 'border-top-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBorderTopColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderTopColor(newValue, false)),
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 borderTopColorProperty.register(Style);
 
 export const borderRightColorProperty = new CssProperty<Style, Color>({
 	name: 'borderRightColor',
 	cssName: 'border-right-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBorderRightColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderRightColor(newValue, false)),
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 borderRightColorProperty.register(Style);
 
 export const borderBottomColorProperty = new CssProperty<Style, Color>({
 	name: 'borderBottomColor',
 	cssName: 'border-bottom-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBorderBottomColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderBottomColor(newValue, false)),
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 borderBottomColorProperty.register(Style);
 
 export const borderLeftColorProperty = new CssProperty<Style, Color>({
 	name: 'borderLeftColor',
 	cssName: 'border-left-color',
-	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBorderLeftColor(newValue);
-	},
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => target.backgroundInternal.withBorderLeftColor(newValue, false)),
 	equalityComparer: Color.equals,
-	valueConverter: (value) => new Color(value),
+	valueConverter: colorConverter,
 });
 borderLeftColorProperty.register(Style);
 
@@ -800,12 +797,12 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 	name: 'borderTopWidth',
 	cssName: 'border-top-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 
 		const view = target.viewRef.get();
@@ -814,8 +811,8 @@ export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthTyp
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderTopWidth(value);
-	},
+		return target.backgroundInternal.withBorderTopWidth(value, false);
+	}),
 	valueConverter: Length.parse,
 });
 borderTopWidthProperty.register(Style);
@@ -824,12 +821,12 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 	name: 'borderRightWidth',
 	cssName: 'border-right-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 
 		const view = target.viewRef.get();
@@ -838,8 +835,8 @@ export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthT
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderRightWidth(value);
-	},
+		return target.backgroundInternal.withBorderRightWidth(value, false);
+	}),
 	valueConverter: Length.parse,
 });
 borderRightWidthProperty.register(Style);
@@ -848,12 +845,12 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 	name: 'borderBottomWidth',
 	cssName: 'border-bottom-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 
 		const view = target.viewRef.get();
@@ -862,8 +859,8 @@ export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.Length
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderBottomWidth(value);
-	},
+		return target.backgroundInternal.withBorderBottomWidth(value, false);
+	}),
 	valueConverter: Length.parse,
 });
 borderBottomWidthProperty.register(Style);
@@ -872,12 +869,12 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 	name: 'borderLeftWidth',
 	cssName: 'border-left-width',
 	defaultValue: CoreTypes.zeroLength,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
 
 		const view = target.viewRef.get();
@@ -886,8 +883,8 @@ export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthTy
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderLeftWidth(value);
-	},
+		return target.backgroundInternal.withBorderLeftWidth(value, false);
+	}),
 	valueConverter: Length.parse,
 });
 borderLeftWidthProperty.register(Style);
@@ -929,14 +926,14 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.Leng
 	name: 'borderTopLeftRadius',
 	cssName: 'border-top-left-radius',
 	defaultValue: 0,
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+	affectsLayout: __IOS__,
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-top-left-radius should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderTopLeftRadius(value);
-	},
+		return target.backgroundInternal.withBorderTopLeftRadius(value, false);
+	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
 });
@@ -946,14 +943,14 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.Len
 	name: 'borderTopRightRadius',
 	cssName: 'border-top-right-radius',
 	defaultValue: 0,
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+	affectsLayout: __IOS__,
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-top-right-radius should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderTopRightRadius(value);
-	},
+		return target.backgroundInternal.withBorderTopRightRadius(value, false);
+	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
 });
@@ -963,14 +960,14 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.
 	name: 'borderBottomRightRadius',
 	cssName: 'border-bottom-right-radius',
 	defaultValue: 0,
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+	affectsLayout: __IOS__,
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-bottom-right-radius should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderBottomRightRadius(value);
-	},
+		return target.backgroundInternal.withBorderBottomRightRadius(value, false);
+	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
 });
@@ -980,14 +977,14 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.L
 	name: 'borderBottomLeftRadius',
 	cssName: 'border-bottom-left-radius',
 	defaultValue: 0,
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		const value = Length.toDevicePixels(newValue, 0);
+	affectsLayout: __IOS__,
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
-			throw new Error(`border-bottom-left-radius should be Non-Negative Finite number. Value: ${value}`);
+			value = 0;
 		}
-		target.backgroundInternal = target.backgroundInternal.withBorderBottomLeftRadius(value);
-	},
+		return target.backgroundInternal.withBorderBottomLeftRadius(value, false);
+	}),
 	valueConverter: Length.parse,
 	equalityComparer: Length.equals,
 });
@@ -996,8 +993,8 @@ borderBottomLeftRadiusProperty.register(Style);
 const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
-	valueChanged: (target, _oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withBoxShadows(
+	valueChanged: backgroundInternalSubPropertyValueChanged((target, oldValue, newValue) => {
+		return target.backgroundInternal.withBoxShadows(
 			newValue?.length
 				? newValue.map((v) => {
 						return {
@@ -1009,9 +1006,9 @@ const boxShadowProperty = new CssProperty<Style, ShadowCSSValues[]>({
 							color: v.color,
 						};
 					})
-				: null,
+				: null, false
 		);
-	},
+	}),
 	valueConverter: (value) => {
 		const values = parseCSSCommaSeparatedListOfValues(value);
 		const result: ShadowCSSValues[] = [];
@@ -1033,7 +1030,7 @@ export const clipPathProperty = new CssProperty<Style, string | ClipPathFunction
 	name: 'clipPath',
 	cssName: 'clip-path',
 	valueChanged: (target, oldValue, newValue) => {
-		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue);
+		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue, false);
 	},
 	equalityComparer: (value1, value2) => {
 		if (value1 instanceof ClipPathFunction && value2 instanceof ClipPathFunction) {
@@ -1092,27 +1089,54 @@ export const colorProperty = new InheritedCssProperty<Style, Color>({
 	name: 'color',
 	cssName: 'color',
 	equalityComparer: Color.equals,
-	valueConverter: (v) => new Color(v),
+	valueConverter: colorConverter,
 });
 colorProperty.register(Style);
 
 export const fontInternalProperty = new CssProperty<Style, Font>({
 	name: 'fontInternal',
+	defaultValue: Font.default,
 	cssName: '_fontInternal',
+	equalityComparer: (value1: Font, value2: Font, target) => {
+		if (value1 === value2) {
+			const view = target.viewRef.get();
+
+			// if view layout or updates are suspended we will check the backgroundInternal at the end
+			if (value1.isDirty && !view._suspendNativeUpdatesCount) {
+				value1.isDirty = false;
+				return false;
+			}
+			return true;
+		}
+		return Font.equals(value1, value2);
+	},
 });
 fontInternalProperty.register(Style);
+
+function fontInternalSubPropertyValueChanged<T extends Style, U>(block: (target: T, oldValue: U, newValue: U) => Font, shouldIgnore?: Function) {
+	return function (target: T, oldValue: U, newValue: U) {
+		if (shouldIgnore?.(target, oldValue, newValue)) {
+			return;
+		}
+		let newFontInternal = block(target, oldValue, newValue);
+		if (newFontInternal.isEqualToDefaultFont()) {
+			newFontInternal = unsetValue;
+		}
+		const view = target.viewRef.get();
+		if (target.fontInternal !== newFontInternal || !view._suspendNativeUpdatesCount) {
+			target.fontInternal = newFontInternal;
+		} else {
+			// let s not go through another property set which takes time during batch updates
+			// we will check and update fontInternal once the update is done
+		}
+	};
+}
 
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	name: 'fontFamily',
 	cssName: 'font-family',
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontFamily !== newValue) {
-			const newFont = currentFont.withFontFamily(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	affectsLayout: __IOS__,
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontFamily(newValue, false)),
 });
 fontFamilyProperty.register(Style);
 
@@ -1120,24 +1144,18 @@ export const fontScaleInternalProperty = new InheritedCssProperty<Style, number>
 	name: 'fontScaleInternal',
 	cssName: '_fontScaleInternal',
 	defaultValue: 1.0,
-	valueConverter: (v) => parseFloat(v),
+	valueConverter: parseFloat,
 });
 fontScaleInternalProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
 	cssName: 'font-size',
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		if (target.viewRef['handleFontSize'] === true) {
-			return;
-		}
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontSize !== newValue) {
-			const newFont = currentFont.withFontSize(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	affectsLayout: __IOS__,
+	valueChanged: fontInternalSubPropertyValueChanged(
+		(target, oldValue, newValue) => target.fontInternal.withFontSize(newValue, false),
+		(target) => target.viewRef.get()?.['handleFontSize'] === true,
+	),
 	valueConverter: (v) => parseFloat(v),
 });
 fontSizeProperty.register(Style);
@@ -1145,32 +1163,21 @@ fontSizeProperty.register(Style);
 export const fontStyleProperty = new InheritedCssProperty<Style, FontStyleType>({
 	name: 'fontStyle',
 	cssName: 'font-style',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	defaultValue: FontStyle.NORMAL,
 	valueConverter: FontStyle.parse,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontStyle !== newValue) {
-			const newFont = currentFont.withFontStyle(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontStyle(newValue, false)),
 });
 fontStyleProperty.register(Style);
 
 export const fontWeightProperty = new InheritedCssProperty<Style, FontWeightType>({
 	name: 'fontWeight',
 	cssName: 'font-weight',
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	defaultValue: FontWeight.NORMAL,
 	valueConverter: FontWeight.parse,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontWeight !== newValue) {
-			const newFont = currentFont.withFontWeight(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontWeight(newValue, false)),
 });
 fontWeightProperty.register(Style);
 
@@ -1206,14 +1213,8 @@ fontProperty.register(Style);
 export const fontVariationSettingsProperty = new InheritedCssProperty<Style, FontVariationSettingsType[]>({
 	name: 'fontVariationSettings',
 	cssName: 'font-variation-settings',
-	affectsLayout: global.isIOS,
-	valueChanged: (target, oldValue, newValue) => {
-		const currentFont = target.fontInternal || Font.default;
-		if (currentFont.fontVariationSettings !== newValue) {
-			const newFont = currentFont.withFontVariationSettings(newValue);
-			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
-		}
-	},
+	affectsLayout: __IOS__,
+	valueChanged: fontInternalSubPropertyValueChanged((target, oldValue, newValue) => target.fontInternal.withFontVariationSettings(newValue, false)),
 	valueConverter: (value) => {
 		return FontVariationSettings.parse(value);
 	},
@@ -1224,12 +1225,12 @@ export const visibilityProperty = new CssProperty<Style, CoreTypes.VisibilityTyp
 	name: 'visibility',
 	cssName: 'visibility',
 	defaultValue: CoreTypes.Visibility.visible,
-	affectsLayout: global.isIOS,
+	affectsLayout: __IOS__,
 	valueConverter: CoreTypes.Visibility.parse,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.isCollapsed = newValue === CoreTypes.Visibility.collapse;
+			view.isCollapsed = newValue === CoreTypes.Visibility.collapse || newValue === CoreTypes.Visibility.collapsed;
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
