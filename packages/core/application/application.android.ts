@@ -1267,7 +1267,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 
 	accessibilityStateChangeListener = new android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener({
 		onAccessibilityStateChanged(enabled) {
-			updateAccessibilityState();
+			updateAccessibilityServiceState();
 
 			if (Trace.isEnabled()) {
 				Trace.write(`AccessibilityStateChangeListener state changed to: ${!!enabled}`, Trace.categories.Accessibility);
