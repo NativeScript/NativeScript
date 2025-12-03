@@ -1268,7 +1268,8 @@ export function isAccessibilityServiceEnabled(): boolean {
 	}
 
 	const accessibilityManager = getAndroidAccessibilityManager();
-	accessibilityStateChangeListener = new androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener({
+
+	accessibilityStateChangeListener = new android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener({
 		onAccessibilityStateChanged(enabled) {
 			updateAccessibilityServiceState();
 
@@ -1277,19 +1278,20 @@ export function isAccessibilityServiceEnabled(): boolean {
 			}
 		},
 	});
+	accessibilityManager.addAccessibilityStateChangeListener(accessibilityStateChangeListener);
 
-	touchExplorationStateChangeListener = new androidx.core.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener({
-		onTouchExplorationStateChanged(enabled) {
-			updateAccessibilityServiceState();
+	if (SDK_VERSION >= 19) {
+		touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
+			onTouchExplorationStateChanged(enabled) {
+				updateAccessibilityServiceState();
 
-			if (Trace.isEnabled()) {
-				Trace.write(`TouchExplorationStateChangeListener state changed to: ${!!enabled}`, Trace.categories.Accessibility);
-			}
-		},
-	});
-
-	androidx.core.view.accessibility.AccessibilityManagerCompat.addAccessibilityStateChangeListener(accessibilityManager, accessibilityStateChangeListener);
-	androidx.core.view.accessibility.AccessibilityManagerCompat.addTouchExplorationStateChangeListener(accessibilityManager, touchExplorationStateChangeListener);
+				if (Trace.isEnabled()) {
+					Trace.write(`TouchExplorationStateChangeListener state changed to: ${!!enabled}`, Trace.categories.Accessibility);
+				}
+			},
+		});
+		accessibilityManager.addTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
+	}
 
 	updateAccessibilityServiceState();
 
@@ -1302,11 +1304,11 @@ export function isAccessibilityServiceEnabled(): boolean {
 		const accessibilityManager = getAndroidAccessibilityManager();
 		if (accessibilityManager) {
 			if (accessibilityStateChangeListener) {
-				androidx.core.view.accessibility.AccessibilityManagerCompat.removeAccessibilityStateChangeListener(accessibilityManager, accessibilityStateChangeListener);
+				accessibilityManager.removeAccessibilityStateChangeListener(accessibilityStateChangeListener);
 			}
 
 			if (touchExplorationStateChangeListener) {
-				androidx.core.view.accessibility.AccessibilityManagerCompat.removeTouchExplorationStateChangeListener(accessibilityManager, touchExplorationStateChangeListener);
+				accessibilityManager.removeTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
 			}
 		}
 
