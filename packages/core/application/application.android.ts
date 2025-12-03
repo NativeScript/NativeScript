@@ -45,6 +45,7 @@ import { androidGetForegroundActivity, androidGetStartActivity, androidSetForegr
 import { getImageFetcher, getNativeApp, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import type { AndroidApplication as IAndroidApplication } from './application';
+import { enableEdgeToEdge } from '../utils/native-helper-for-android';
 import lazy from '../utils/lazy';
 
 declare class NativeScriptLifecycleCallbacks extends android.app.Application.ActivityLifecycleCallbacks {}
@@ -65,6 +66,9 @@ function initNativeScriptLifecycleCallbacks() {
 		public onActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle): void {
 			// console.log('NativeScriptLifecycleCallbacks onActivityCreated');
 			this.setThemeOnLaunch(activity);
+
+			// Make sure to call this after setThemeOnLaunch, otherwise it'll cause issues with window decoration
+			enableEdgeToEdge(activity);
 
 			if (!Application.android.startActivity) {
 				Application.android.setStartActivity(activity);
