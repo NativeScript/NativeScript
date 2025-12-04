@@ -1,3 +1,16 @@
+## 9.0.5 (2025-12-04)
+
+### 🩹 Fixes
+
+- **android:** invalid a11y listeners that crashed apps on exit ([#11000](https://github.com/NativeScript/NativeScript/pull/11000))
+- **android:** prevent splash screen from being shown during navigation ([#10999](https://github.com/NativeScript/NativeScript/pull/10999))
+- **ListView:** android sectioned data state to match ios for framework integrations ([e2fc18312](https://github.com/NativeScript/NativeScript/commit/e2fc18312))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Nathan Walker
+
 ## 9.0.4 (2025-11-28)
 
 ### 🩹 Fixes
