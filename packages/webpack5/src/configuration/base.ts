@@ -102,6 +102,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		env.commonjs = true;
 	}
 
+	if (env.hmr) {
+		// HMR webpack should use CommonJS
+		env.commonjs = true;
+	}
+
 	// config.stats({
 	// 	logging: 'verbose'
 	// })
