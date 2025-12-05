@@ -11,13 +11,13 @@
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
   },
   "devDependencies": {
-    "@nativescript/android": "alpha",
-    "@nativescript/ios": "alpha",
-    "@nativescript/visionos": "~8.9.0",
+    "@nativescript/android": "~9.0.0",
+    "@nativescript/ios": "~9.0.0",
+    "@nativescript/visionos": "~9.0.0",
     "@nativescript/vite": "file:../../dist/packages/vite",
     "@nativescript/webpack": "file:../../dist/packages/webpack5",
     "circular-dependency-plugin": "^5.2.2",
-    "typescript": "~5.8.0"
+    "typescript": "~5.9.3"
   },
   "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",
   "readme": "NativeScript Application"

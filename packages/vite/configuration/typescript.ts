@@ -154,7 +154,7 @@ function createXmlLoaderPlugin(): Plugin {
 }
 
 export const typescriptConfig = ({ mode }): UserConfig => {
-	return mergeConfig(baseConfig({ mode }), {
+	return mergeConfig(baseConfig({ mode, flavor: 'typescript' }), {
 		plugins: [createXmlLoaderPlugin(), createBundlerContextPlugin()],
 	});
 };

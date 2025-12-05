@@ -9,14 +9,15 @@
   "dependencies": {
     "@nativescript/core": "file:../../packages/core",
     "@nativescript/imagepicker": "^4.1.0",
-    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core"
+    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core",
+    "@valor/nativescript-websockets": "file:../../node_modules/@valor/nativescript-websockets"
   },
   "devDependencies": {
-    "@nativescript/android": "alpha",
-    "@nativescript/ios": "alpha",
-    "@nativescript/visionos": "~8.9.0",
+    "@nativescript/android": "~9.0.0",
+    "@nativescript/ios": "~9.0.0",
+    "@nativescript/visionos": "~9.0.0",
     "@nativescript/vite": "file:../../dist/packages/vite",
     "@nativescript/webpack": "file:../../dist/packages/webpack5",
-    "typescript": "~5.8.0"
+    "typescript": "~5.9.3"
   }
 }
