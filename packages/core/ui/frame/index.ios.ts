@@ -272,7 +272,7 @@ export class Frame extends FrameBase {
 	public _updateActionBar(page?: Page, disableNavBarAnimation = false): void {
 		super._updateActionBar(page);
 
-		if (page && this.currentPage && this.currentPage.modal === page) {
+		if (!this._ios || (page && this.currentPage && this.currentPage.modal === page)) {
 			return;
 		}
 
@@ -597,18 +597,23 @@ class UINavigationControllerImpl extends UINavigationController {
 
 	@profile
 	public setViewControllersAnimated(viewControllers: NSArray<any>, animated: boolean): void {
-		const viewController = viewControllers.lastObject;
-		const navigationTransition = <NavigationTransition>viewController[TRANSITION];
-		const owner = this._owner?.deref?.();
+		const viewController = viewControllers?.lastObject;
+		const navigationTransition = viewController ? <NavigationTransition>viewController[TRANSITION] : null;
 
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, true, owner?.direction);
-		if (!animated || !navigationTransition || !nativeTransition) {
+		if (!animated || !navigationTransition) {
 			super.setViewControllersAnimated(viewControllers, animated);
+			return;
+		}
 
+		const owner = this._owner?.deref?.();
+		const nativeTransition = _getNativeTransition(navigationTransition, true, owner?.direction);
+
+		if (!nativeTransition) {
+			super.setViewControllersAnimated(viewControllers, animated);
 			return;
 		}
 
