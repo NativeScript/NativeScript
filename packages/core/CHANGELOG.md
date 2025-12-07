@@ -1,3 +1,15 @@
+## 9.0.6 (2025-12-07)
+
+### 🩹 Fixes
+
+- **android:** edge to edge guards on activity type ([#11005](https://github.com/NativeScript/NativeScript/pull/11005))
+- **ios:** null-check for action bar updates ([#11003](https://github.com/NativeScript/NativeScript/pull/11003))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Nathan Walker
+
 ## 9.0.5 (2025-12-04)
 
 ### 🩹 Fixes
