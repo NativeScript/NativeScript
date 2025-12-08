@@ -17,7 +17,7 @@ import { AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData,
 import { Application } from '../../application/application';
 import { isEmbedded, setEmbeddedView } from '../embedding';
 import { CALLBACKS, FRAMEID, framesCache, setFragmentCallbacks } from './frame-helper-for-android';
-import { Device } from '../../platform';
+import { SDK_VERSION } from '../../utils';
 
 export * from './frame-common';
 export { setFragmentClass } from './fragment';
@@ -765,34 +765,28 @@ function startActivity(activity: androidx.appcompat.app.AppCompatActivity, frame
 
 let OnBackPressedCallback;
 
-if (parseInt(Device.sdkVersion) >= 33) {
+if (SDK_VERSION >= 33) {
 	OnBackPressedCallback = (<any>androidx.activity.OnBackPressedCallback).extend('com.tns.OnBackPressedCallback', {
 		handleOnBackPressed() {
 			if (Trace.isEnabled()) {
 				Trace.write('NativeScriptActivity.onBackPressed;', Trace.categories.NativeLifecycle);
 			}
 
-			const activity = this['_activity']?.get();
-
+			const activity = this['_activity']?.get() as androidx.appcompat.app.AppCompatActivity;
 			if (!activity) {
 				if (Trace.isEnabled()) {
 					Trace.write('NativeScriptActivity.onBackPressed; Activity is null, calling super', Trace.categories.NativeLifecycle);
 				}
 
 				this.setEnabled(false);
-
 				return;
 			}
 
 			const args = <AndroidActivityBackPressedEventData>{
 				eventName: 'activityBackPressed',
-
 				object: Application,
-
 				android: Application.android,
-
 				activity: activity,
-
 				cancel: false,
 			};
 
@@ -802,33 +796,32 @@ if (parseInt(Device.sdkVersion) >= 33) {
 				return;
 			}
 
-			const view = activity._rootView;
+			const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+			let callSuper: boolean = false;
 
-			let callSuper = false;
+			if (callbacks) {
+				const view = callbacks.getRootView();
 
-			const viewArgs = <AndroidActivityBackPressedEventData>{
-				eventName: 'activityBackPressed',
+				if (view) {
+					const viewArgs = <AndroidActivityBackPressedEventData>{
+						eventName: 'activityBackPressed',
+						object: view,
+						activity: activity,
+						cancel: false,
+					};
 
-				object: view,
+					view.notify(viewArgs);
 
-				activity: activity,
-
-				cancel: false,
-			};
-
-			view?.notify(viewArgs);
-
-			// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
-
-			if (!viewArgs.cancel && (view?.onBackPressed === Frame.prototype.onBackPressed || !view?.onBackPressed())) {
-				callSuper = view instanceof Frame ? !Frame.goBack() : true;
+					// In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
+					if (!viewArgs.cancel && (view.onBackPressed === Frame.prototype.onBackPressed || !view.onBackPressed())) {
+						callSuper = view instanceof Frame ? !Frame.goBack() : true;
+					}
+				}
 			}
 
 			if (callSuper) {
 				this.setEnabled(false);
-
 				activity.getOnBackPressedDispatcher().onBackPressed();
-
 				this.setEnabled(true);
 			}
 		},
