@@ -36,7 +36,8 @@
         </TabViewItem>
 
         <!-- Third tab -->
-        <TabViewItem title="Third" iconSource="font://&#x43;">
+        <!-- change role to 'search' to see different behavior on iOS -->
+        <TabViewItem title="Third" iconSource="font://&#x43;" role="none">
             <Label text="Third Tab Content" textAlignment="center" verticalAlignment="center" />
         </TabViewItem>
     </TabView>

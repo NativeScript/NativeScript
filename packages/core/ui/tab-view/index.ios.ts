@@ -252,22 +252,44 @@ export class TabViewItem extends TabViewItemBase {
 			const index = parent.items.indexOf(this);
 			const title = getTransformedText(this.title, this.style.textTransform);
 
-			const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
-			updateTitleAndIconPositions(this, tabBarItem, controller);
+			if (SDK_VERSION >= 18) {
+				// iOS 18+: use UITab instead of UITabBarItem.
+				// The UITab instances are created and managed at the TabView level,
+				// so here we just update the corresponding tab for this controller.
+				const identifier = `${index}`;
+				const tabController = parent.viewController as UITabBarController;
+				try {
+					const tab = tabController.tabForIdentifier(identifier);
+					if (tab) {
+						tab.title = title;
+						tab.image = icon;
+					}
+				} catch (e) {
+					// Fallback: if tabForIdentifier is not available for some reason,
+					// do not crash – rely on existing tab configuration.
+				}
+			} else {
+				// iOS < 18: keep using UITabBarItem-based configuration.
+				const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
+				updateTitleAndIconPositions(this, tabBarItem, controller);
 
-			// There is no need to request title styles update here in newer versions as styling is handled by bar appearance instance
-			if (!__VISIONOS__ && SDK_VERSION < 15) {
-				// TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
-				// Delete the repeating code.
-				const states = getTitleAttributesForStates(parent);
-				applyStatesToItem(tabBarItem, states);
+				// There is no need to request title styles update here in newer versions as styling is handled by bar appearance instance
+				if (!__VISIONOS__ && SDK_VERSION < 15) {
+					// TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
+					// Delete the repeating code.
+					const states = getTitleAttributesForStates(parent);
+					applyStatesToItem(tabBarItem, states);
+				}
+				controller.tabBarItem = tabBarItem;
 			}
-			controller.tabBarItem = tabBarItem;
 		}
 	}
 
 	public _updateTitleAndIconPositions() {
-		if (!this.__controller || !this.__controller.tabBarItem) {
+		// UITab-based configuration (iOS 18+) does not expose the same per-item
+		// title/icon positioning APIs as UITabBarItem, so we only adjust
+		// positions when using the legacy UITabBarItem setup.
+		if (SDK_VERSION >= 18 || !this.__controller || !this.__controller.tabBarItem) {
 			return;
 		}
 		updateTitleAndIconPositions(this, this.__controller.tabBarItem, this.__controller);
@@ -494,34 +516,78 @@ export class TabView extends TabViewBase {
 	private setViewControllers(items: TabViewItem[]) {
 		const length = items ? items.length : 0;
 		if (length === 0) {
-			this._ios.viewControllers = null;
+			if (SDK_VERSION >= 18) {
+				// Clear tabs on iOS 18+ when there are no items.
+				try {
+					this._ios.tabs = NSArray.arrayWithArray([]);
+				} catch (e) {
+					// Fallback if tabs API is unavailable for some reason.
+					this._ios.viewControllers = null;
+				}
+			} else {
+				this._ios.viewControllers = null;
+			}
 			return;
 		}
 
-		const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
-		const states = getTitleAttributesForStates(this);
+		if (SDK_VERSION >= 18) {
+			// iOS 18+: build UITab instances and assign them to the controller.
+			const tabs = [];
+			const controllers = [];
+			items.forEach((item, i) => {
+				const controller = this.getViewController(item);
+				controllers.push(controller);
+				const icon = this._getIcon(item);
+				const title = item.title || '';
+				const identifier = `${i}`;
+				let tab: UITab;
+				if (item.role === 'search') {
+					tab = UISearchTab.alloc().initWithTitleImageIdentifierViewControllerProvider(title, icon, identifier, (t) => {
+						return controller;
+					});
+				} else {
+					tab = UITab.alloc().initWithTitleImageIdentifierViewControllerProvider(title, icon, identifier, (t) => {
+						return controller;
+					});
+				}
 
-		items.forEach((item, i) => {
-			const controller = this.getViewController(item);
-			const icon = this._getIcon(item);
-			const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title || '', icon, i);
-			updateTitleAndIconPositions(item, tabBarItem, controller);
+				tabs.push(tab);
+				(<TabViewItemDefinition>item).canBeLoaded = true;
+			});
 
-			if (!__VISIONOS__ && SDK_VERSION < 15) {
-				applyStatesToItem(tabBarItem, states);
+			try {
+				// Prefer animated setter when available.
+				this._ios.tabs = NSArray.arrayWithArray(tabs);
+			} catch (e) {}
+			this._ios.viewControllers = NSArray.arrayWithArray(controllers);
+			this._ios.customizableViewControllers = null;
+		} else {
+			// iOS < 18: keep using UITabBarItem-based configuration.
+			const controllers = [];
+			const states = getTitleAttributesForStates(this);
+
+			items.forEach((item, i) => {
+				const controller = this.getViewController(item);
+				const icon = this._getIcon(item);
+				const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title || '', icon, i);
+				updateTitleAndIconPositions(item, tabBarItem, controller);
+
+				if (!__VISIONOS__ && SDK_VERSION < 15) {
+					applyStatesToItem(tabBarItem, states);
+				}
+
+				controller.tabBarItem = tabBarItem;
+				controllers.push(controller);
+				(<TabViewItemDefinition>item).canBeLoaded = true;
+			});
+
+			if (SDK_VERSION >= 15) {
+				this.updateBarItemAppearance(<UITabBar>this._ios.tabBar, states);
 			}
 
-			controller.tabBarItem = tabBarItem;
-			controllers.addObject(controller);
-			(<TabViewItemDefinition>item).canBeLoaded = true;
-		});
-
-		if (SDK_VERSION >= 15) {
-			this.updateBarItemAppearance(<UITabBar>this._ios.tabBar, states);
+			this._ios.viewControllers = NSArray.arrayWithArray(controllers);
+			this._ios.customizableViewControllers = null;
 		}
-
-		this._ios.viewControllers = controllers;
-		this._ios.customizableViewControllers = null;
 
 		// When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
 		this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
@@ -816,6 +882,13 @@ export class TabView extends TabViewBase {
 
 		const accessory = UITabAccessory.alloc().initWithContentView(container);
 		setAccessory(accessory);
+		// Work around UIKit occasionally caching accessory sizes too aggressively
+		// by explicitly triggering a layout pass on the tab bar.
+		const tabBar = this._ios?.tabBar;
+		if (tabBar) {
+			tabBar.setNeedsLayout();
+			tabBar.layoutIfNeeded();
+		}
 		// Keep references for later teardown
 		this._bottomAccessoryNsView = nsView;
 	}
@@ -825,9 +898,23 @@ export class TabView extends TabViewBase {
 class NSTabAccessoryContainer extends UIView {
 	_owner: WeakRef<View>;
 	static initWithOwner(owner: WeakRef<View>): NSTabAccessoryContainer {
-		const v = NSTabAccessoryContainer.new() as NSTabAccessoryContainer;
+		const v = NSTabAccessoryContainer.new() as unknown as NSTabAccessoryContainer;
 		v._owner = owner;
 		return v;
+	}
+
+	override traitCollectionDidChange(previousTraitCollection: UITraitCollection) {
+		super.traitCollectionDidChange(previousTraitCollection);
+		if (!previousTraitCollection) {
+			return;
+		}
+		// When size classes change (e.g., compact  regular),
+		// ask UIKit to recompute this accessory's intrinsic size.
+		if (this.traitCollection?.horizontalSizeClass !== previousTraitCollection.horizontalSizeClass) {
+			this.invalidateIntrinsicContentSize();
+			this.setNeedsLayout();
+			this.layoutIfNeeded();
+		}
 	}
 
 	override layoutSubviews() {
