@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/vite",
-  "version": "1.0.2",
+  "version": "1.0.5-rc.3",
   "description": "Vite for NativeScript",
   "main": "./index.js",
   "module": "./index.js",
@@ -25,6 +25,7 @@
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-replace": "^6.0.2",
     "@vitejs/plugin-vue": "^6.0.1",
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "@vitejs/plugin-vue-jsx": "^5.1.1",
     "@vue/compiler-sfc": "^3.4.38",
     "esbuild": "^0.25.0",

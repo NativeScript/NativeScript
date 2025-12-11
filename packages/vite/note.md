@@ -1,0 +1,1 @@
+Svelte 5 is needed for vite support due to transient svelte/vite plugin dependencies.

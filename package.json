@@ -45,6 +45,7 @@
 		"@rollup/plugin-alias": "^6.0.0",
 		"@rollup/plugin-commonjs": "^29.0.0",
 		"@rollup/plugin-replace": "^6.0.3",
+		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@swc-node/register": "~1.10.1",
 		"@swc/core": "~1.12.7",
 		"@swc/helpers": "~0.5.17",
