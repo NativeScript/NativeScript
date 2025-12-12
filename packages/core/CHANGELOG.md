@@ -1,3 +1,13 @@
+## 9.0.8 (2025-12-12)
+
+### 🚀 Features
+
+- **TabView:** use UITab with iOS 18+ and allow search role usage ([#11008](https://github.com/NativeScript/NativeScript/pull/11008))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 9.0.7 (2025-12-10)
 
 ### 🩹 Fixes
