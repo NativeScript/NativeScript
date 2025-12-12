@@ -898,7 +898,7 @@ export class TabView extends TabViewBase {
 class NSTabAccessoryContainer extends UIView {
 	_owner: WeakRef<View>;
 	static initWithOwner(owner: WeakRef<View>): NSTabAccessoryContainer {
-		const v = NSTabAccessoryContainer.new() as unknown as NSTabAccessoryContainer;
+		const v = NSTabAccessoryContainer.new() as NSTabAccessoryContainer;
 		v._owner = owner;
 		return v;
 	}
