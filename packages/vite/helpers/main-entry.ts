@@ -67,6 +67,14 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			if (opts.hmrActive) {
+				// Seed platform globals on the primary bundle realm using the same
+				// CLI-derived platform that drives global-defines.ts. This ensures
+				// HMR-delivered HTTP ESM modules can reliably read platform flags
+				imports += `globalThis.__DEV__ = ${opts.isDevMode ? 'true' : 'false'};\n`;
+				imports += `globalThis.__ANDROID__ = ${opts.platform === 'android' ? 'true' : 'false'};\n`;
+				imports += `globalThis.__IOS__ = ${opts.platform === 'ios' ? 'true' : 'false'};\n`;
+				imports += `globalThis.__VISIONOS__ = ${opts.platform === 'visionos' ? 'true' : 'false'};\n`;
+				imports += `globalThis.__APPLE__ = ${opts.platform === 'ios' || opts.platform === 'visionos' ? 'true' : 'false'};\n`;
 				// ---- Vendor manifest bootstrap ----
 				// Use single self-contained vendor module to avoid extra imports affecting chunking
 				imports += "import vendorManifest, { __nsVendorModuleMap } from '@nativescript/vendor';\n";
