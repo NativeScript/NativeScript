@@ -38,6 +38,11 @@ export class TabViewItem extends ViewBase {
 	public iconSource: string;
 
 	/**
+	 * Gets or sets the role of the TabViewItem.
+	 */
+	public role: string;
+
+	/**
 	 * Gets or sets the text transform of the tab titles.
 	 *
 	 * @nsProperty

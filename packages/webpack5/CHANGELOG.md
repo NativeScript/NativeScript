@@ -1,3 +1,13 @@
+## 5.0.28 (2025-12-05)
+
+### 🩹 Fixes
+
+- **webpack:** hmr handling ([#11002](https://github.com/NativeScript/NativeScript/pull/11002))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 5.0.27 (2025-11-28)
 
 ### 🩹 Fixes

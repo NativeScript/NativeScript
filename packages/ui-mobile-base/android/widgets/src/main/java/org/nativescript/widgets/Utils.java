@@ -1,5 +1,6 @@
 package org.nativescript.widgets;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
@@ -74,20 +75,40 @@ public class Utils {
 // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/res/remote_color_resources_res/values/colors.xml;l=67
 	static final int DefaultDarkScrim = Color.argb(0x80, 0x1b, 0x1b, 0x1b);
 
-	public static void enableEdgeToEdge(ComponentActivity activity) {
-		androidx.activity.EdgeToEdge.enable(activity);
+	public static void enableEdgeToEdge(Activity activity) {
+		if (activity instanceof ComponentActivity) {
+			androidx.activity.EdgeToEdge.enable((ComponentActivity) activity);
+		}
 	}
 
-	public static void enableEdgeToEdge(ComponentActivity activity, HandleDarkMode handleDarkMode) {
-		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)), SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources)));
+	public static void enableEdgeToEdge(Activity activity, HandleDarkMode handleDarkMode) {
+		if (activity instanceof ComponentActivity) {
+			ComponentActivity componentActivity = (ComponentActivity) activity;
+			androidx.activity.EdgeToEdge.enable(componentActivity,
+				SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)),
+				SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources))
+			);
+		}
 	}
 
-	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
-		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(statusBarLight, statusBarDark), SystemBarStyle.auto(navigationBarLight, navigationBarDark));
+	public static void enableEdgeToEdge(Activity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
+		if (activity instanceof ComponentActivity) {
+			ComponentActivity componentActivity = (ComponentActivity) activity;
+			androidx.activity.EdgeToEdge.enable(componentActivity,
+				SystemBarStyle.auto(statusBarLight, statusBarDark),
+				SystemBarStyle.auto(navigationBarLight, navigationBarDark)
+			);
+		}
 	}
 
-	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
-		androidx.activity.EdgeToEdge.enable(activity, SystemBarStyle.auto(statusBarLight, statusBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)), SystemBarStyle.auto(navigationBarLight, navigationBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources)));
+	public static void enableEdgeToEdge(Activity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
+		if (activity instanceof ComponentActivity) {
+			ComponentActivity componentActivity = (ComponentActivity) activity;
+			androidx.activity.EdgeToEdge.enable(componentActivity,
+				SystemBarStyle.auto(statusBarLight, statusBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)),
+				SystemBarStyle.auto(navigationBarLight, navigationBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources))
+			);
+		}
 	}
 
 	public static Drawable getDrawable(String uri, Context context) {

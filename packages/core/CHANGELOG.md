@@ -1,3 +1,49 @@
+## 9.0.8 (2025-12-12)
+
+### 🚀 Features
+
+- **TabView:** use UITab with iOS 18+ and allow search role usage ([#11008](https://github.com/NativeScript/NativeScript/pull/11008))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 9.0.7 (2025-12-10)
+
+### 🩹 Fixes
+
+- **android:** Android 16 back press navigation failure ([#11006](https://github.com/NativeScript/NativeScript/pull/11006))
+- **RootLayout:** close shade cover when topmost popup doesn't need it ([#11007](https://github.com/NativeScript/NativeScript/pull/11007))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+
+## 9.0.6 (2025-12-07)
+
+### 🩹 Fixes
+
+- **android:** edge to edge guards on activity type ([#11005](https://github.com/NativeScript/NativeScript/pull/11005))
+- **ios:** null-check for action bar updates ([#11003](https://github.com/NativeScript/NativeScript/pull/11003))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Nathan Walker
+
+## 9.0.5 (2025-12-04)
+
+### 🩹 Fixes
+
+- **android:** invalid a11y listeners that crashed apps on exit ([#11000](https://github.com/NativeScript/NativeScript/pull/11000))
+- **android:** prevent splash screen from being shown during navigation ([#10999](https://github.com/NativeScript/NativeScript/pull/10999))
+- **ListView:** android sectioned data state to match ios for framework integrations ([e2fc18312](https://github.com/NativeScript/NativeScript/commit/e2fc18312))
+
+### ❤️ Thank You
+
+- Dimitris-Rafail Katsampas @CatchABus
+- Nathan Walker
+
 ## 9.0.4 (2025-11-28)
 
 ### 🩹 Fixes
