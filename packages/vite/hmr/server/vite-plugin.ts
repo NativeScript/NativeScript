@@ -1,6 +1,7 @@
 import type { Plugin, ResolvedConfig } from 'vite';
 import { createRequire } from 'node:module';
 import path from 'path';
+import os from 'os';
 import { pathToFileURL } from 'url';
 const require = createRequire(import.meta.url);
 
@@ -9,6 +10,27 @@ const RESOLVED_ID = '\0' + VIRTUAL_ID;
 
 export function nsHmrClientVitePlugin(opts: { platform: string; verbose?: boolean }): Plugin {
 	let config: ResolvedConfig | undefined;
+
+	const guessLanHost = (): string | undefined => {
+		try {
+			const nets = os.networkInterfaces();
+			for (const name of Object.keys(nets)) {
+				const addrs = nets[name] || [];
+				for (const a of addrs) {
+					if (!a) continue;
+					// Node typings vary across versions; keep checks defensive
+					const family = (a as any).family;
+					const internal = !!(a as any).internal;
+					const address = String((a as any).address || '');
+					if (internal) continue;
+					if (family === 'IPv4' || family === 4) {
+						if (address && address !== '127.0.0.1') return address;
+					}
+				}
+			}
+		} catch {}
+		return undefined;
+	};
 
 	return {
 		name: 'ns-hmr-client',
@@ -55,11 +77,14 @@ export function nsHmrClientVitePlugin(opts: { platform: string; verbose?: boolea
 
 			// Build ws url from Vite server info
 			let host = process.env.NS_HMR_HOST || (config?.server?.host as any);
-			// Android emu special-case
-			if (opts.platform === 'android' && (host === '0.0.0.0' || !host || host === true)) {
-				host = '10.0.2.2';
+			// If Vite is bound to all interfaces, prefer a LAN IP so physical devices work.
+			// The HMR client will still try emulator/localhost fallbacks when needed.
+			const hostStr = typeof host === 'string' ? host : '';
+			const isWildcard = host === true || hostStr === '0.0.0.0' || hostStr === '::' || hostStr === '';
+			if (isWildcard) {
+				host = guessLanHost() || (opts.platform === 'android' ? '10.0.2.2' : 'localhost');
 			} else if (!host) {
-				host = 'localhost';
+				host = opts.platform === 'android' ? guessLanHost() || '10.0.2.2' : 'localhost';
 			}
 			const port = Number(config?.server?.port || 5173);
 			const secure = !!config?.server?.https;

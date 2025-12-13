@@ -1,5 +1,6 @@
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from './project.js';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
@@ -226,7 +227,25 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (opts.verbose) {
 					imports += `console.info('[ns-entry] including HTTP-only boot', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;
 				}
-				const defaultHost = opts.platform === 'android' ? '10.0.2.2' : 'localhost';
+				const guessLanHost = (): string | undefined => {
+					try {
+						const nets = os.networkInterfaces();
+						for (const name of Object.keys(nets)) {
+							const addrs = nets[name] || [];
+							for (const a of addrs) {
+								if (!a) continue;
+								const family = (a as any).family;
+								const internal = !!(a as any).internal;
+								const address = String((a as any).address || '');
+								if (internal) continue;
+								if ((family === 'IPv4' || family === 4) && address && address !== '127.0.0.1') return address;
+							}
+						}
+					} catch {}
+					return undefined;
+				};
+				// Prefer LAN IP so physical devices work by default; emulator will still be tried as a fallback.
+				const defaultHost = opts.platform === 'android' ? guessLanHost() || '10.0.2.2' : guessLanHost() || 'localhost';
 				imports += "import { startHttpOnlyBoot } from '@nativescript/vite/hmr/shared/runtime/http-only-boot.js';\n";
 				imports += `startHttpOnlyBoot(${JSON.stringify(opts.platform)}, ${JSON.stringify(mainEntryRelPosix)}, ${JSON.stringify((process.env.NS_HMR_HOST || '') as string) || JSON.stringify('')} || ${JSON.stringify(defaultHost)}, __nsVerboseLog);\n`;
 				if (opts.verbose) {
