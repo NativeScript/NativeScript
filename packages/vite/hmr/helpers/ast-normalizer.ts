@@ -103,6 +103,15 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 						// Keep other prebundles as-is; they may be fetchable directly from the dev server
 					}
 				} else if (isViteVirtual(src) || src === '@vite/client' || src === '/@vite/client') {
+					// Removing the Vite client import should also remove its declared locals from our
+					// `declared` set; otherwise later bridge rewrites may unnecessarily suffix names
+					// (e.g. `__vite__createHotContext_1`) while call sites still reference the original.
+					try {
+						for (const s of path.node.specifiers || []) {
+							const local = (s as any)?.local?.name;
+							if (typeof local === 'string' && local) declared.delete(local);
+						}
+					} catch {}
 					path.remove();
 					return;
 				}
