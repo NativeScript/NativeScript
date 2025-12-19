@@ -1,6 +1,4 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-  <ActionBar title="Supplementary View" class="action-bar">
-  </ActionBar>
   <!-- Supplementary column (detail) -->
   <StackLayout class="p-16">
     <Label text="Supplementary" marginBottom="12" fontSize="22" fontWeight="bold" />

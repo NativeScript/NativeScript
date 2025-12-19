@@ -1,6 +1,4 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-  <ActionBar title="Secondary View" class="action-bar">
-  </ActionBar>
   <!-- Secondary column (detail) -->
   <StackLayout class="p-16">
     <Label text="Secondary" marginBottom="12" fontSize="22" fontWeight="bold" />

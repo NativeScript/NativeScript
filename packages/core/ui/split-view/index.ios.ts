@@ -2,6 +2,7 @@ import { SplitViewBase, displayModeProperty, splitBehaviorProperty, preferredPri
 import { View } from '../core/view';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
+import { FrameBase } from '../frame/frame-common';
 import type { SplitRole } from '.';
 
 @NativeClass
@@ -91,6 +92,37 @@ export class SplitView extends SplitViewBase {
 		this._applyPreferences();
 
 		return this.viewController.view;
+	}
+
+	onLoaded(): void {
+		super.onLoaded();
+		// Ensure proper view controller containment
+		this._ensureViewControllerContainment();
+	}
+
+	private _ensureViewControllerContainment(): void {
+		if (!this.viewController) {
+			return;
+		}
+
+		const window = this.nativeViewProtected?.window;
+
+		if (!window) {
+			return;
+		}
+
+		const currentRootVC = window.rootViewController;
+
+		// If the window's rootViewController is not our SplitViewController,
+		// we need to set it up properly
+		if (currentRootVC !== this.viewController) {
+			// Check if we can become the root view controller
+			// or if we need to be added as a child
+			if (currentRootVC) {
+				currentRootVC.addChildViewController(this.viewController);
+				this.viewController.didMoveToParentViewController(currentRootVC);
+			}
+		}
 	}
 
 	disposeNativeView(): void {
@@ -256,6 +288,36 @@ export class SplitView extends SplitViewBase {
 		return wrapper;
 	}
 
+	private _attachSecondaryDisplayModeButton(): void {
+		const secondary = this._controllers.get('secondary');
+		if (!(secondary instanceof UINavigationController)) {
+			return;
+		}
+
+		const targetVC = secondary.topViewController;
+		if (!targetVC) {
+			// Subscribe to Frame's navigatedTo event to know when the first page is shown
+			const frameChild = this._children.get('secondary') as any;
+			if (frameChild && frameChild.on && !frameChild._splitViewSecondaryNavigatedHandler) {
+				frameChild._splitViewSecondaryNavigatedHandler = () => {
+					// Use setTimeout to ensure the navigation controller's topViewController is updated
+					setTimeout(() => this._attachSecondaryDisplayModeButton(), 0);
+				};
+				frameChild.on(FrameBase.navigatedToEvent, frameChild._splitViewSecondaryNavigatedHandler);
+			}
+			return;
+		}
+
+		// Avoid duplicates
+		if (targetVC.navigationItem.leftBarButtonItem) {
+			return;
+		}
+
+		// Set the displayModeButtonItem on the page's navigationItem
+		targetVC.navigationItem.leftBarButtonItem = this.viewController.displayModeButtonItem;
+		targetVC.navigationItem.leftItemsSupplementBackButton = true;
+	}
+
 	private _attachInspectorButton(): void {
 		const inspector = this._controllers.get('inspector');
 		if (!(inspector instanceof UINavigationController)) {
@@ -264,14 +326,14 @@ export class SplitView extends SplitViewBase {
 
 		const targetVC = inspector.topViewController;
 		if (!targetVC) {
-			// Subscribe to Frame event to know when the top VC is shown, then attach the button.
-			// Can only attach buttons once VC is available
+			// Subscribe to Frame's navigatedTo event to know when the first page is shown
 			const frameChild = this._children.get('inspector') as any;
-			if (frameChild && frameChild.on && !frameChild._inspectorVCShownHandler) {
-				frameChild._inspectorVCShownHandler = () => {
-					setTimeout(() => this._attachInspectorButton());
+			if (frameChild && frameChild.on && !frameChild._splitViewNavigatedHandler) {
+				frameChild._splitViewNavigatedHandler = () => {
+					// Use setTimeout to ensure the navigation controller's topViewController is updated
+					setTimeout(() => this._attachInspectorButton(), 0);
 				};
-				frameChild.on('viewControllerShown', frameChild._inspectorVCShownHandler.bind(this));
+				frameChild.on(FrameBase.navigatedToEvent, frameChild._splitViewNavigatedHandler);
 			}
 			return;
 		}
@@ -365,10 +427,10 @@ export class SplitView extends SplitViewBase {
 		const secondary = this._controllers.get('secondary');
 		const supplementary = this._controllers.get('supplementary');
 		const inspector = this._controllers.get('inspector');
-		if (secondary instanceof UINavigationController && secondary.navigationItem) {
-			// TODO: can add properties to customize this
-			secondary.navigationItem.leftBarButtonItem = this.viewController.displayModeButtonItem;
-			secondary.navigationItem.leftItemsSupplementBackButton = true;
+
+		// Attach displayModeButtonItem to the secondary column's first page
+		if (secondary instanceof UINavigationController) {
+			this._attachSecondaryDisplayModeButton();
 		}
 		if (supplementary) {
 			this.showSupplementary();
