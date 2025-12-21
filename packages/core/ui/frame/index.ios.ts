@@ -511,6 +511,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		if (owner) {
 			owner._onViewControllerShown(viewController);
 		}
+		IOSHelper.invalidateStatusBarAppearance(navigationController, 'navigationControllerDidShowViewControllerAnimated');
 	}
 }
 
@@ -587,12 +588,14 @@ class UINavigationControllerImpl extends UINavigationController {
 		const nativeTransition = _getNativeTransition(navigationTransition, true, owner?.direction);
 		if (!animated || !navigationTransition || !nativeTransition) {
 			super.pushViewControllerAnimated(viewController, animated);
+			IOSHelper.invalidateStatusBarAppearance(this, 'UINavigationControllerImpl.pushViewControllerAnimated');
 			return;
 		}
 
 		this.animateWithDuration(navigationTransition, nativeTransition, 'push', () => {
 			super.pushViewControllerAnimated(viewController, false);
 		});
+		IOSHelper.invalidateStatusBarAppearance(this, 'UINavigationControllerImpl.pushViewControllerAnimated');
 	}
 
 	@profile
@@ -606,6 +609,7 @@ class UINavigationControllerImpl extends UINavigationController {
 
 		if (!animated || !navigationTransition) {
 			super.setViewControllersAnimated(viewControllers, animated);
+			IOSHelper.invalidateStatusBarAppearance(this, 'UINavigationControllerImpl.setViewControllersAnimated');
 			return;
 		}
 
@@ -614,12 +618,14 @@ class UINavigationControllerImpl extends UINavigationController {
 
 		if (!nativeTransition) {
 			super.setViewControllersAnimated(viewControllers, animated);
+			IOSHelper.invalidateStatusBarAppearance(this, 'UINavigationControllerImpl.setViewControllersAnimated');
 			return;
 		}
 
 		this.animateWithDuration(navigationTransition, nativeTransition, 'set', () => {
 			super.setViewControllersAnimated(viewControllers, false);
 		});
+		IOSHelper.invalidateStatusBarAppearance(this, 'UINavigationControllerImpl.setViewControllersAnimated');
 	}
 
 	public popViewControllerAnimated(animated: boolean): UIViewController {
@@ -703,6 +709,12 @@ class UINavigationControllerImpl extends UINavigationController {
 	// @ts-ignore
 	public get childViewControllerForStatusBarStyle() {
 		return this.topViewController;
+	}
+
+	// @ts-ignore
+	public get preferredStatusBarStyle(): UIStatusBarStyle {
+		const top = this.topViewController;
+		return top?.preferredStatusBarStyle ?? UIStatusBarStyle.Default;
 	}
 }
 

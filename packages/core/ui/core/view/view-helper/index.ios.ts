@@ -6,6 +6,7 @@ import type { View } from '..';
 import { ViewHelper } from './view-helper-common';
 import { SDK_VERSION } from '../../../../utils/constants';
 import { layout, Trace } from './view-helper-shared';
+import { ios as iosUtils, getWindow } from '../../../../utils';
 
 export * from './view-helper-common';
 export const AndroidHelper = 0;
@@ -97,6 +98,9 @@ class UILayoutViewController extends UIViewController {
 			return;
 		}
 
+		// Ensure iOS re-queries `preferredStatusBarStyle` for this controller.
+		IOSHelper.invalidateStatusBarAppearance(this, 'UILayoutViewController.viewWillAppear');
+
 		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
 		if (!owner.isLoaded && !owner.parent) {
@@ -110,6 +114,14 @@ class UILayoutViewController extends UIViewController {
 		if (owner && owner.isLoaded && !owner.parent) {
 			owner.callUnloaded();
 		}
+	}
+
+	// Forward status bar appearance to our content controller when available.
+	// Without this, iOS may use this controller's own preferredStatusBarStyle,
+	// which can be unrelated to the currently shown Page.
+	// @ts-ignore
+	public get childViewControllerForStatusBarStyle(): UIViewController {
+		return this.presentedViewController || this.childViewControllers?.lastObject;
 	}
 
 	// Mind implementation for other controllers
@@ -211,6 +223,69 @@ export class IOSHelper {
 
 		// Note: Might return undefined if no parent with viewController is found
 		return view;
+	}
+
+	static invalidateStatusBarAppearance(controller?: UIViewController, reason = ''): void {
+		try {
+			if (!controller) {
+				const window = getWindow<UIWindow>?.();
+				const rootController = window?.rootViewController;
+				controller = rootController ? iosUtils.getVisibleViewController(rootController) : null;
+			}
+
+			if (!controller) {
+				if (Trace.isEnabled()) {
+					Trace.write(`[StatusBar] invalidate skipped (no controller) reason=${reason}`, Trace.categories.NativeLifecycle);
+				}
+				return;
+			}
+
+			const container = controller;
+			let child: UIViewController = null;
+			try {
+				child = container.childViewControllerForStatusBarStyle;
+			} catch {
+				child = null;
+			}
+			if (!child) {
+				if (container instanceof UINavigationController) {
+					child = container.topViewController;
+				} else if (container instanceof UITabBarController) {
+					child = container.selectedViewController;
+				}
+			}
+
+			// Always invalidate container and likely child.
+			container.setNeedsStatusBarAppearanceUpdate?.();
+			child?.setNeedsStatusBarAppearanceUpdate?.();
+
+			// Also invalidate nav container if present.
+			const nav = container instanceof UINavigationController ? container : container.navigationController;
+			nav?.setNeedsStatusBarAppearanceUpdate?.();
+			nav?.topViewController?.setNeedsStatusBarAppearanceUpdate?.();
+
+			// If the app disables VC-based status bar appearance, try the legacy UIApplication API.
+			try {
+				const vcBasedRaw = NSBundle.mainBundle.objectForInfoDictionaryKey('UIViewControllerBasedStatusBarAppearance');
+				// Missing key defaults to true.
+				const vcBasedEffective = vcBasedRaw === null || vcBasedRaw === undefined ? true : !(vcBasedRaw === false || vcBasedRaw === 0);
+				if (!vcBasedEffective) {
+					const maybeOwner = (child as any)?._owner?.deref?.() || (child as any)?.owner?.deref?.() || (container as any)?._owner?.deref?.() || (container as any)?.owner?.deref?.();
+					const ownerStyle = maybeOwner?.statusBarStyle;
+					if (ownerStyle) {
+						const legacyStyle = ownerStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+						const app = UIApplication.sharedApplication;
+						if (app?.setStatusBarStyleAnimated) {
+							app.setStatusBarStyleAnimated(legacyStyle, true);
+						}
+					}
+				}
+			} catch {
+				// ignore
+			}
+		} catch (e) {
+			Trace.write(`[StatusBar] invalidate error: ${e}`, Trace.categories.Error, Trace.messageType.warn);
+		}
 	}
 
 	static updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
