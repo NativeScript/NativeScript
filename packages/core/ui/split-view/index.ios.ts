@@ -1,8 +1,9 @@
-import { SplitViewBase, displayModeProperty, splitBehaviorProperty, preferredPrimaryColumnWidthFractionProperty, preferredSupplementaryColumnWidthFractionProperty, preferredInspectorColumnWidthFractionProperty } from './split-view-common';
+import { SplitViewBase, displayModeProperty, splitBehaviorProperty, preferredPrimaryColumnWidthFractionProperty, preferredSupplementaryColumnWidthFractionProperty, preferredInspectorColumnWidthFractionProperty, navigationBarTintColorProperty } from './split-view-common';
 import { View } from '../core/view';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { FrameBase } from '../frame/frame-common';
+import { Color } from '../../color';
 import type { SplitRole } from '.';
 
 @NativeClass
@@ -10,6 +11,7 @@ class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewC
 	public static ObjCProtocols = [UISplitViewControllerDelegate];
 	static ObjCExposedMethods = {
 		toggleInspector: { returns: interop.types.void, params: [] },
+		togglePrimary: { returns: interop.types.void, params: [] },
 	};
 	private _owner: WeakRef<SplitView>;
 
@@ -29,19 +31,44 @@ class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewC
 	}
 
 	splitViewControllerDidCollapse(svc: UISplitViewController): void {
-		// Can be used to notify owner if needed
+		const owner = this._owner.deref();
+		if (owner) {
+			owner._invalidateAllChildLayouts();
+		}
 	}
 
 	splitViewControllerDidExpand(svc: UISplitViewController): void {
-		// Can be used to notify owner if needed
+		const owner = this._owner.deref();
+		if (owner) {
+			owner._invalidateAllChildLayouts();
+		}
 	}
 
 	splitViewControllerDidHideColumn(svc: UISplitViewController, column: UISplitViewControllerColumn): void {
-		// Can be used to notify owner if needed
+		const owner = this._owner.deref();
+		if (owner) {
+			if (column === UISplitViewControllerColumn.Primary) {
+				owner.primaryButtonAttached = false;
+			} else if (column === UISplitViewControllerColumn.Inspector) {
+				owner.inspectorButtonAttached = false;
+			}
+			owner._invalidateAllChildLayouts();
+		}
 	}
 
 	splitViewControllerDidShowColumn(svc: UISplitViewController, column: UISplitViewControllerColumn): void {
-		// Can be used to notify owner if needed
+		const owner = this._owner.deref();
+		if (owner) {
+			owner._invalidateAllChildLayouts();
+			// Re-attach buttons when columns are shown (e.g., via gesture)
+			if (column === UISplitViewControllerColumn.Primary) {
+				owner.primaryShowing = true;
+				setTimeout(() => owner.attachPrimaryButton(), 100);
+			} else if (column === UISplitViewControllerColumn.Inspector) {
+				owner.inspectorShowing = true;
+				setTimeout(() => owner.attachInspectorButton(), 100);
+			}
+		}
 	}
 
 	splitViewControllerDisplayModeForExpandingToProposedDisplayMode(svc: UISplitViewController, proposedDisplayMode: UISplitViewControllerDisplayMode): UISplitViewControllerDisplayMode {
@@ -62,6 +89,19 @@ class UISplitViewControllerDelegateImpl extends NSObject implements UISplitViewC
 			}
 		}
 	}
+
+	togglePrimary(): void {
+		const owner = this._owner.deref();
+		if (owner) {
+			if (owner.primaryShowing) {
+				owner.hidePrimary();
+				owner.primaryShowing = false;
+			} else {
+				owner.showPrimary();
+				owner.primaryShowing = true;
+			}
+		}
+	}
 }
 
 export class SplitView extends SplitViewBase {
@@ -75,7 +115,10 @@ export class SplitView extends SplitViewBase {
 	// Keep role -> controller
 	private _controllers = new Map<SplitRole, UIViewController | UINavigationController>();
 	private _children = new Map<SplitRole, View>();
+	primaryButtonAttached = false;
+	inspectorButtonAttached = false;
 	inspectorShowing = false;
+	primaryShowing = true;
 
 	constructor() {
 		super();
@@ -87,6 +130,11 @@ export class SplitView extends SplitViewBase {
 		this._delegate = UISplitViewControllerDelegateImpl.initWithOwner(new WeakRef(this));
 		this.viewController.delegate = this._delegate;
 		this.viewController.presentsWithGesture = true;
+
+		// Disable automatic display mode button - we manage our own buttons
+		if (this.viewController.displayModeButtonVisibility !== undefined) {
+			this.viewController.displayModeButtonVisibility = UISplitViewControllerDisplayModeButtonVisibility.Never;
+		}
 
 		// Apply initial preferences
 		this._applyPreferences();
@@ -205,26 +253,34 @@ export class SplitView extends SplitViewBase {
 	showPrimary(): void {
 		if (!this.viewController) return;
 		this.viewController.showColumn(UISplitViewControllerColumn.Primary);
+		this._invalidateAllChildLayouts();
+		// Attach button after a short delay to ensure the column is visible
+		setTimeout(() => this.attachPrimaryButton(), 100);
 	}
 
 	hidePrimary(): void {
 		if (!this.viewController) return;
 		this.viewController.hideColumn(UISplitViewControllerColumn.Primary);
+		this.primaryButtonAttached = false;
+		this._invalidateAllChildLayouts();
 	}
 
 	showSecondary(): void {
 		if (!this.viewController) return;
 		this.viewController.showColumn(UISplitViewControllerColumn.Secondary);
+		this._invalidateAllChildLayouts();
 	}
 
 	hideSecondary(): void {
 		if (!this.viewController) return;
 		this.viewController.hideColumn(UISplitViewControllerColumn.Secondary);
+		this._invalidateAllChildLayouts();
 	}
 
 	showSupplementary(): void {
 		if (!this.viewController) return;
 		this.viewController.showColumn(UISplitViewControllerColumn.Supplementary);
+		this._invalidateAllChildLayouts();
 	}
 
 	showInspector(): void {
@@ -233,6 +289,9 @@ export class SplitView extends SplitViewBase {
 		if (this.viewController.preferredInspectorColumnWidthFraction !== undefined) {
 			this.viewController.showColumn(UISplitViewControllerColumn.Inspector);
 			this.notifyInspectorChange(true);
+			this._invalidateAllChildLayouts();
+			// Attach button after a short delay to ensure the column is visible
+			setTimeout(() => this.attachInspectorButton(), 100);
 		}
 	}
 
@@ -240,7 +299,9 @@ export class SplitView extends SplitViewBase {
 		if (!this.viewController) return;
 		if (this.viewController.preferredInspectorColumnWidthFraction !== undefined) {
 			this.viewController.hideColumn(UISplitViewControllerColumn.Inspector);
+			this.inspectorButtonAttached = false;
 			this.notifyInspectorChange(false);
+			this._invalidateAllChildLayouts();
 		}
 	}
 
@@ -251,6 +312,46 @@ export class SplitView extends SplitViewBase {
 			object: this,
 			data: { showing },
 		});
+	}
+
+	invalidateChildLayouts(delay: number = 0): void {
+		const refreshLayouts = () => {
+			for (const [role, child] of this._children.entries()) {
+				if (child && child.requestLayout) {
+					child.requestLayout();
+				}
+				// Also trigger layout on the native view
+				if (child && child.nativeViewProtected) {
+					child.nativeViewProtected.setNeedsLayout();
+					child.nativeViewProtected.layoutIfNeeded();
+				}
+				// If it's a Frame, also request layout on its current page
+				if ((child as FrameBase)?.currentPage?.requestLayout) {
+					(child as FrameBase).currentPage.requestLayout();
+					if ((child as FrameBase).currentPage.nativeViewProtected) {
+						(child as FrameBase).currentPage.nativeViewProtected.setNeedsLayout();
+						(child as FrameBase).currentPage.nativeViewProtected.layoutIfNeeded();
+					}
+				}
+			}
+			// Also request layout on the SplitView itself
+			this.requestLayout();
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.setNeedsLayout();
+				this.nativeViewProtected.layoutIfNeeded();
+			}
+		};
+
+		if (delay > 0) {
+			setTimeout(refreshLayouts, delay);
+		} else {
+			refreshLayouts();
+		}
+	}
+
+	_invalidateAllChildLayouts(): void {
+		// Call after animation typically completes to ensure native layout pass has finished
+		this.invalidateChildLayouts(350);
 	}
 
 	private _resolveRoleForChild(child: SplitViewBase, atIndex: number): SplitRole {
@@ -318,7 +419,52 @@ export class SplitView extends SplitViewBase {
 		targetVC.navigationItem.leftItemsSupplementBackButton = true;
 	}
 
-	private _attachInspectorButton(): void {
+	attachPrimaryButton(): void {
+		if (this.primaryButtonAttached) {
+			return;
+		}
+
+		const primary = this._controllers.get('primary');
+		if (!(primary instanceof UINavigationController)) {
+			return;
+		}
+
+		const targetVC = primary.topViewController;
+		if (!targetVC) {
+			// Subscribe to Frame's navigatedTo event to know when the first page is shown
+			const frameChild = this._children.get('primary') as any;
+			if (frameChild && frameChild.on && !frameChild._splitViewPrimaryNavigatedHandler) {
+				frameChild._splitViewPrimaryNavigatedHandler = () => {
+					// Use setTimeout to ensure the navigation controller's topViewController is updated
+					setTimeout(() => this.attachPrimaryButton(), 0);
+				};
+				frameChild.on(FrameBase.navigatedToEvent, frameChild._splitViewPrimaryNavigatedHandler);
+			}
+			return;
+		}
+
+		// Set the navigation bar tint color for the primary column
+		if (primary.navigationBar && this.navigationBarTintColor) {
+			primary.navigationBar.tintColor = this.navigationBarTintColor.ios;
+		}
+
+		// Add a sidebar button to primary column matching the inspector style
+		const cfg = UIImageSymbolConfiguration.configurationWithPointSizeWeightScale(18, UIImageSymbolWeight.Regular, UIImageSymbolScale.Medium);
+		const image = UIImage.systemImageNamedWithConfiguration('sidebar.leading', cfg);
+		const item = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, this._delegate, 'togglePrimary');
+		if (this.navigationBarTintColor) {
+			item.tintColor = this.navigationBarTintColor.ios;
+		}
+		// Use rightBarButtonItems array to ensure we control exactly what's shown
+		targetVC.navigationItem.rightBarButtonItems = NSArray.arrayWithObject(item);
+		this.primaryButtonAttached = true;
+	}
+
+	attachInspectorButton(): void {
+		if (this.inspectorButtonAttached) {
+			return;
+		}
+
 		const inspector = this._controllers.get('inspector');
 		if (!(inspector instanceof UINavigationController)) {
 			return;
@@ -331,23 +477,27 @@ export class SplitView extends SplitViewBase {
 			if (frameChild && frameChild.on && !frameChild._splitViewNavigatedHandler) {
 				frameChild._splitViewNavigatedHandler = () => {
 					// Use setTimeout to ensure the navigation controller's topViewController is updated
-					setTimeout(() => this._attachInspectorButton(), 0);
+					setTimeout(() => this.attachInspectorButton(), 100);
 				};
 				frameChild.on(FrameBase.navigatedToEvent, frameChild._splitViewNavigatedHandler);
 			}
 			return;
 		}
 
-		// Avoid duplicates
-		if (targetVC.navigationItem.rightBarButtonItem) {
-			return;
+		// Set the navigation bar tint color for the inspector column
+		if (inspector.navigationBar && this.navigationBarTintColor) {
+			inspector.navigationBar.tintColor = this.navigationBarTintColor.ios;
 		}
 
-		// TODO: can provide properties to customize this
+		// Note: could provide properties to customize this
 		const cfg = UIImageSymbolConfiguration.configurationWithPointSizeWeightScale(18, UIImageSymbolWeight.Regular, UIImageSymbolScale.Medium);
 		const image = UIImage.systemImageNamedWithConfiguration('sidebar.trailing', cfg);
 		const item = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, this._delegate, 'toggleInspector');
+		if (this.navigationBarTintColor) {
+			item.tintColor = this.navigationBarTintColor.ios;
+		}
 		targetVC.navigationItem.rightBarButtonItem = item;
+		this.inspectorButtonAttached = true;
 	}
 
 	private _syncControllers(): void {
@@ -428,17 +578,17 @@ export class SplitView extends SplitViewBase {
 		const supplementary = this._controllers.get('supplementary');
 		const inspector = this._controllers.get('inspector');
 
-		// Attach displayModeButtonItem to the secondary column's first page
 		if (secondary instanceof UINavigationController) {
 			this._attachSecondaryDisplayModeButton();
+		}
+		if (primary instanceof UINavigationController) {
+			this.attachPrimaryButton();
 		}
 		if (supplementary) {
 			this.showSupplementary();
 		}
 		if (inspector) {
 			this.showInspector();
-			// Ensure the inspector column gets its toggle button as soon as the first page is shown
-			this._attachInspectorButton();
 		}
 
 		// Width fractions
@@ -478,6 +628,10 @@ export class SplitView extends SplitViewBase {
 	}
 
 	[preferredInspectorColumnWidthFractionProperty.setNative](value: number) {
+		this._applyPreferences();
+	}
+
+	[navigationBarTintColorProperty.setNative](value: Color) {
 		this._applyPreferences();
 	}
 }

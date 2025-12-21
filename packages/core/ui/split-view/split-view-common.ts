@@ -1,6 +1,7 @@
 import { LayoutBase } from '../layouts/layout-base';
 import { View, CSSType } from '../core/view';
 import { Property, makeParser, makeValidator } from '../core/properties';
+import { Color } from '../../color';
 import type { SplitBehavior, SplitDisplayMode, SplitRole, SplitStyle } from '.';
 
 const splitRoleConverter = makeParser<SplitRole>(makeValidator<SplitRole>('primary', 'secondary', 'supplementary', 'inspector'));
@@ -35,6 +36,8 @@ export class SplitViewBase extends LayoutBase {
 	preferredSupplementaryColumnWidthFraction: number;
 	/** Inspector column width fraction (0..1, iOS 17+/18+ when Inspector column available) */
 	preferredInspectorColumnWidthFraction: number;
+	/** Navigation bar tint color for buttons */
+	navigationBarTintColor: Color;
 
 	/**
 	 * Get child role (primary, secondary, supplementary, inspector)
@@ -84,6 +87,16 @@ export class SplitViewBase extends LayoutBase {
 	}
 
 	hideInspector() {
+		// Platform-specific implementations may override
+	}
+
+	/**
+	 * Invalidate layouts for all child views in the SplitView.
+	 * Useful when columns change, orientation changes, or any scenario
+	 * requiring a full layout refresh of all split view children.
+	 * @param delay Optional delay in milliseconds (default 350ms to wait for animations)
+	 */
+	invalidateChildLayouts(delay: number = 0): void {
 		// Platform-specific implementations may override
 	}
 
@@ -147,3 +160,10 @@ export const preferredInspectorColumnWidthFractionProperty = new Property<SplitV
 	valueConverter: (v) => Math.max(0, Math.min(1, parseFloat(v))),
 });
 preferredInspectorColumnWidthFractionProperty.register(SplitViewBase);
+
+export const navigationBarTintColorProperty = new Property<SplitViewBase, Color>({
+	name: 'navigationBarTintColor',
+	equalityComparer: Color.equals,
+	valueConverter: (v) => new Color(v),
+});
+navigationBarTintColorProperty.register(SplitViewBase);
