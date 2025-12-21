@@ -1,3 +1,13 @@
+## 5.0.29 (2025-12-19)
+
+### 🩹 Fixes
+
+- **webpack:** sourceMap path when using CommonJS ([#11013](https://github.com/NativeScript/NativeScript/pull/11013))
+
+### ❤️ Thank You
+
+- Jason Cassidy @jcassidyav
+
 ## 5.0.28 (2025-12-05)
 
 ### 🩹 Fixes

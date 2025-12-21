@@ -965,20 +965,33 @@ export class View extends ViewCommon {
 	}
 	[statusBarStyleProperty.setNative](value: 'light' | 'dark') {
 		this.style.statusBarStyle = value;
-		const parent = this.parent;
-		if (parent) {
-			const ctrl = parent.ios?.controller;
-			if (ctrl && ctrl instanceof UINavigationController) {
-				const navigationBar = ctrl.navigationBar;
-				if (!navigationBar) return;
+		this.updateStatusBarStyle(value);
+	}
 
-				if (typeof value === 'string') {
-					navigationBar.barStyle = value === 'dark' ? UIBarStyle.Black : UIBarStyle.Default;
-				} else {
-					navigationBar.barStyle = value;
-				}
+	updateStatusBarStyle(value: 'dark' | 'light') {
+		// Keep UINavigationBar style aligned (affects legacy + some container defaults).
+		const parent = this.parent;
+		const ctrl = parent?.ios?.controller;
+		if (ctrl && ctrl instanceof UINavigationController) {
+			const navigationBar = ctrl.navigationBar;
+			if (navigationBar) {
+				navigationBar.barStyle = value === 'light' ? UIBarStyle.Black : UIBarStyle.Default;
 			}
 		}
+
+		// iOS requires a controller invalidation to re-evaluate `preferredStatusBarStyle`.
+		const ownerController = this.viewController || IOSHelper.getParentWithViewController(this as any)?.viewController;
+
+		// Force overrideUserInterfaceStyle if available (iOS 13+) to ensure status bar contrast.
+		if (SDK_VERSION >= 13 && ownerController) {
+			const style = value === 'light' ? UIUserInterfaceStyle.Dark : UIUserInterfaceStyle.Light;
+			ownerController.overrideUserInterfaceStyle = style;
+			if (ctrl && ctrl instanceof UINavigationController) {
+				ctrl.overrideUserInterfaceStyle = style;
+			}
+		}
+
+		IOSHelper.invalidateStatusBarAppearance(ownerController, `View.updateStatusBarStyle:${value}`);
 	}
 
 	[iosGlassEffectProperty.setNative](value: GlassEffectType) {
@@ -1229,7 +1242,7 @@ export class CustomLayoutView extends ContainerView {
 	nativeViewProtected: UIView;
 
 	createNativeView() {
-		const window = getWindow<UIWindow>();
+		const window = getWindow<UIWindow>?.();
 		return UIView.alloc().initWithFrame(window ? window.screen.bounds : UIScreen.mainScreen.bounds);
 	}
 

@@ -185,7 +185,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.devtool(sourceMapType);
 
 	// For ESM builds, fix the sourceMappingURL to use correct paths
-	if (!env.commonjs && sourceMapType && sourceMapType !== 'hidden-source-map') {
+	if (sourceMapType && sourceMapType !== 'hidden-source-map') {
 		config
 			.plugin('FixSourceMapUrlPlugin')
 			.use(FixSourceMapUrlPlugin as any, [{ outputPath }]);
