@@ -4,6 +4,8 @@ import { SliderBase, valueProperty, minValueProperty, maxValueProperty } from '.
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { AccessibilityDecrementEventData, AccessibilityIncrementEventData } from '.';
+import { LinearGradient } from '../styling/linear-gradient';
+import { Screen } from '../../platform';
 
 export * from './slider-common';
 
@@ -131,7 +133,106 @@ export class Slider extends SliderBase {
 		return null;
 	}
 	[backgroundInternalProperty.setNative](value: Background) {
-		//
+		if (value && value.image instanceof LinearGradient) {
+			this._applyGradientToTrack(value.image);
+		}
+	}
+
+	private _applyGradientToTrack(gradient: LinearGradient): void {
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+
+		// Create a gradient layer
+		const gradientLayer = CAGradientLayer.new();
+
+		// Set up colors from the gradient stops
+		const iosColors = NSMutableArray.alloc().initWithCapacity(gradient.colorStops.length);
+		const iosStops = NSMutableArray.alloc<number>().initWithCapacity(gradient.colorStops.length);
+		let hasStops = false;
+
+		gradient.colorStops.forEach((stop, index) => {
+			iosColors.addObject(stop.color.ios.CGColor);
+			if (stop.offset) {
+				iosStops.addObject(stop.offset.value);
+				hasStops = true;
+			} else {
+				// Default evenly distributed positions
+				iosStops.addObject(index / (gradient.colorStops.length - 1));
+			}
+		});
+
+		gradientLayer.colors = iosColors;
+		if (hasStops) {
+			gradientLayer.locations = iosStops;
+		}
+
+		// Calculate gradient direction based on angle
+		const alpha = gradient.angle / (Math.PI * 2);
+		const startX = Math.pow(Math.sin(Math.PI * (alpha + 0.75)), 2);
+		const startY = Math.pow(Math.sin(Math.PI * (alpha + 0.5)), 2);
+		const endX = Math.pow(Math.sin(Math.PI * (alpha + 0.25)), 2);
+		const endY = Math.pow(Math.sin(Math.PI * alpha), 2);
+
+		gradientLayer.startPoint = { x: startX, y: startY };
+		gradientLayer.endPoint = { x: endX, y: endY };
+
+		// Create track image from gradient
+		// Use a reasonable default size for the track
+		const trackWidth = 200;
+		const trackHeight = 4;
+
+		gradientLayer.frame = CGRectMake(0, 0, trackWidth, trackHeight);
+		gradientLayer.cornerRadius = trackHeight / 2;
+
+		// Render gradient to image
+		UIGraphicsBeginImageContextWithOptions(CGSizeMake(trackWidth, trackHeight), false, Screen.mainScreen.scale);
+		const context = UIGraphicsGetCurrentContext();
+		if (context) {
+			gradientLayer.renderInContext(context);
+			const gradientImage = UIGraphicsGetImageFromCurrentImageContext();
+			UIGraphicsEndImageContext();
+
+			if (gradientImage) {
+				// Create stretchable image for the track
+				const capInsets = new UIEdgeInsets({
+					top: 0,
+					left: trackHeight / 2,
+					bottom: 0,
+					right: trackHeight / 2,
+				});
+				const stretchableImage = gradientImage.resizableImageWithCapInsetsResizingMode(capInsets, UIImageResizingMode.Stretch);
+
+				// Set the gradient image for minimum track (filled portion)
+				nativeView.setMinimumTrackImageForState(stretchableImage, UIControlState.Normal);
+
+				// For maximum track, create a semi-transparent version
+				UIGraphicsBeginImageContextWithOptions(CGSizeMake(trackWidth, trackHeight), false, Screen.mainScreen.scale);
+				const maxContext = UIGraphicsGetCurrentContext();
+				if (maxContext) {
+					CGContextSetAlpha(maxContext, 0.3);
+					gradientLayer.renderInContext(maxContext);
+					const maxTrackImage = UIGraphicsGetImageFromCurrentImageContext();
+					UIGraphicsEndImageContext();
+
+					if (maxTrackImage) {
+						const maxCapInsets = new UIEdgeInsets({
+							top: 0,
+							left: trackHeight / 2,
+							bottom: 0,
+							right: trackHeight / 2,
+						});
+						const maxStretchableImage = maxTrackImage.resizableImageWithCapInsetsResizingMode(maxCapInsets, UIImageResizingMode.Stretch);
+						nativeView.setMaximumTrackImageForState(maxStretchableImage, UIControlState.Normal);
+					}
+				} else {
+					UIGraphicsEndImageContext();
+				}
+			}
+		} else {
+			UIGraphicsEndImageContext();
+		}
 	}
 
 	private getAccessibilityStep(): number {
