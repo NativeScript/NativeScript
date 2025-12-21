@@ -1,3 +1,15 @@
+## 9.0.9 (2025-12-21)
+
+### 🚀 Features
+
+- **ios:** statusBarStyle improvements for other edge cases ([15ae1514c](https://github.com/NativeScript/NativeScript/commit/15ae1514c))
+- **ios:** SplitView layout improvements ([edfa9b07c](https://github.com/NativeScript/NativeScript/commit/edfa9b07c))
+- **ios:** SplitView lifecycle improvements ([#11011](https://github.com/NativeScript/NativeScript/pull/11011))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 9.0.8 (2025-12-12)
 
 ### 🚀 Features
