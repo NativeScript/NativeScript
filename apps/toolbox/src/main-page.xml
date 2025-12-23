@@ -22,6 +22,7 @@
         <Button text="multiple-scenes" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="scroll-view" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="sliders" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="status-bar" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="switch" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="tabview" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
