@@ -117,6 +117,8 @@ class UIViewControllerImpl extends UIViewController {
 		// Pages in backstack are unloaded so raise loaded here.
 		if (!owner.isLoaded) {
 			owner.callLoaded();
+			// On first appearance, apply status bar style after the page is attached to the frame/nav stack.
+			owner.updateStatusBar();
 		} else {
 			// Note: Handle the case of canceled backstack navigation. (https://github.com/NativeScript/NativeScript/issues/7430)
 			// In this case viewWillAppear will be executed for the previous page and it will change the ActionBar
@@ -457,7 +459,16 @@ export class Page extends PageBase {
 			const navigationController: UINavigationController = frame.ios.controller;
 			const navigationBar = navigationController.navigationBar;
 
-			navigationBar.barStyle = value === 'dark' ? UIBarStyle.Black : UIBarStyle.Default;
+			navigationBar.barStyle = value === 'light' ? UIBarStyle.Black : UIBarStyle.Default;
+
+			// Force overrideUserInterfaceStyle on the navigation controller as well
+			if (SDK_VERSION >= 13) {
+				const style = value === 'light' ? UIUserInterfaceStyle.Dark : UIUserInterfaceStyle.Light;
+				navigationController.overrideUserInterfaceStyle = style;
+				navigationBar.overrideUserInterfaceStyle = style;
+			}
+
+			IOSHelper.invalidateStatusBarAppearance(navigationController, `Page._updateStatusBarStyle:${value}`);
 		}
 	}
 
