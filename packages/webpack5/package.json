@@ -70,7 +70,7 @@
 		"jest-matcher-utils": "~29.7.0",
 		"nativescript-vue-template-compiler": "2.9.3",
 		"ts-jest": "29.4.5",
-		"typescript": "~5.8.0"
+		"typescript": "~5.9.3"
 	},
 	"peerDependencies": {
 		"nativescript-vue-template-compiler": "^2.8.1"

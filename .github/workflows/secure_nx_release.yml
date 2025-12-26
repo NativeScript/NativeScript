@@ -282,7 +282,7 @@ jobs:
           npx nx release publish --tag "${{ steps.ctx.outputs.dist_tag }}" --access public --verbose --dry-run
 
       # Tag-triggered publishing: publish the single package referenced by the tag.
-      - name: nx release publish (tag)
+      - name: Build and Publish (tag)
         if: ${{ steps.ctx.outputs.mode == 'tag' && vars.USE_NPM_TOKEN != 'true' }}
         shell: bash
         env:
@@ -296,19 +296,39 @@ jobs:
             rm -f "$NPM_CONFIG_USERCONFIG" || true
           fi
 
-          npx nx release publish \
-            --projects "${{ steps.taginfo.outputs.project }}" \
-            --tag "${{ steps.taginfo.outputs.dist_tag }}" \
-            --access public \
-            --verbose
+          project="${{ steps.taginfo.outputs.project }}"
+          dist_tag="${{ steps.taginfo.outputs.dist_tag }}"
 
-      - name: nx release publish (tag, token)
+          echo "Building $project..."
+          npx nx build "$project" --skip-nx-cache
+
+          echo "Publishing from dist/packages/$project..."
+          cd "dist/packages/$project"
+
+          npm pack
+          tgz_file=$(ls *.tgz | head -n 1)
+          npm publish "$tgz_file" --tag "$dist_tag" --access public --verbose
+
+      - name: Build and Publish (tag, token)
         if: ${{ steps.ctx.outputs.mode == 'tag' && vars.USE_NPM_TOKEN == 'true' }}
+        shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
         run: |
-          npx nx release publish --projects "${{ steps.taginfo.outputs.project }}" --tag "${{ steps.taginfo.outputs.dist_tag }}" --access public --verbose
+          set -euo pipefail
+          project="${{ steps.taginfo.outputs.project }}"
+          dist_tag="${{ steps.taginfo.outputs.dist_tag }}"
+
+          echo "Building $project..."
+          npx nx build "$project" --skip-nx-cache
+
+          echo "Publishing from dist/packages/$project..."
+          cd "dist/packages/$project"
+
+          npm pack
+          tgz_file=$(ls *.tgz | head -n 1)
+          npm publish "$tgz_file" --tag "$dist_tag" --access public --verbose
 
       - name: Summary
         if: always()
