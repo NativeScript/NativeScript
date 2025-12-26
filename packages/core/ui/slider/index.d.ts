@@ -2,6 +2,7 @@
 import { Property, CoercibleProperty } from '../core/properties';
 import { EventData } from '../../data/observable';
 import type { SliderBase } from './slider-common';
+import type { LinearGradient } from '../styling/linear-gradient';
 
 /**
  * Represents a slider component.
@@ -66,6 +67,22 @@ export class Slider extends View {
 	 * @nsProperty
 	 */
 	accessibilityStep: number;
+
+	/**
+	 * Linear gradient used to paint the minimum/fill track (left of the thumb).
+	 * When set, it overrides minimum track tint behavior.
+	 *
+	 * @nsProperty
+	 */
+	minTrackGradient: LinearGradient | null;
+
+	/**
+	 * Linear gradient used to paint the maximum/unfilled track (right of the thumb).
+	 * When set, it overrides maximum track tint behavior.
+	 *
+	 * @nsProperty
+	 */
+	maxTrackGradient: LinearGradient | null;
 }
 
 /**
@@ -87,6 +104,12 @@ export const maxValueProperty: CoercibleProperty<Slider, number>;
  * Represents the observable property backing the accessibilityStep property of each Slider instance.
  */
 export const accessibilityStepProperty: Property<SliderBase, number>;
+
+/**
+ * Gradient properties backing each Slider instance.
+ */
+export const minTrackGradientProperty: Property<SliderBase, LinearGradient | null>;
+export const maxTrackGradientProperty: Property<SliderBase, LinearGradient | null>;
 
 interface AccessibilityIncrementEventData extends EventData {
 	object: Slider;
