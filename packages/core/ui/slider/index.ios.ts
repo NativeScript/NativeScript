@@ -5,7 +5,7 @@ import { colorProperty, backgroundColorProperty, backgroundInternalProperty } fr
 import { Color } from '../../color';
 import { AccessibilityDecrementEventData, AccessibilityIncrementEventData } from '.';
 import { LinearGradient } from '../styling/linear-gradient';
-import { Screen } from '../../platform';
+import { Screen } from '../../platform/screen';
 
 export * from './slider-common';
 
@@ -186,52 +186,48 @@ export class Slider extends SliderBase {
 		gradientLayer.frame = CGRectMake(0, 0, trackWidth, trackHeight);
 		gradientLayer.cornerRadius = trackHeight / 2;
 
-		// Render gradient to image
-		UIGraphicsBeginImageContextWithOptions(CGSizeMake(trackWidth, trackHeight), false, Screen.mainScreen.scale);
-		const context = UIGraphicsGetCurrentContext();
-		if (context) {
-			gradientLayer.renderInContext(context);
-			const gradientImage = UIGraphicsGetImageFromCurrentImageContext();
-			UIGraphicsEndImageContext();
+		// Create renderer format with proper scale
+		const format = UIGraphicsImageRendererFormat.defaultFormat();
+		format.scale = Screen.mainScreen.scale;
+		format.opaque = false;
 
-			if (gradientImage) {
-				// Create stretchable image for the track
-				const capInsets = new UIEdgeInsets({
+		const size = CGSizeMake(trackWidth, trackHeight);
+		const renderer = UIGraphicsImageRenderer.alloc().initWithSizeFormat(size, format);
+
+		// Render gradient to image
+		const gradientImage = renderer.imageWithActions((rendererContext) => {
+			gradientLayer.renderInContext(rendererContext.CGContext);
+		});
+
+		if (gradientImage) {
+			// Create stretchable image for the track
+			const capInsets = new UIEdgeInsets({
+				top: 0,
+				left: trackHeight / 2,
+				bottom: 0,
+				right: trackHeight / 2,
+			});
+			const stretchableImage = gradientImage.resizableImageWithCapInsetsResizingMode(capInsets, UIImageResizingMode.Stretch);
+
+			// Set the gradient image for minimum track (filled portion)
+			nativeView.setMinimumTrackImageForState(stretchableImage, UIControlState.Normal);
+
+			// For maximum track, create a semi-transparent version
+			const maxTrackImage = renderer.imageWithActions((rendererContext) => {
+				CGContextSetAlpha(rendererContext.CGContext, 0.3);
+				gradientLayer.renderInContext(rendererContext.CGContext);
+			});
+
+			if (maxTrackImage) {
+				const maxCapInsets = new UIEdgeInsets({
 					top: 0,
 					left: trackHeight / 2,
 					bottom: 0,
 					right: trackHeight / 2,
 				});
-				const stretchableImage = gradientImage.resizableImageWithCapInsetsResizingMode(capInsets, UIImageResizingMode.Stretch);
-
-				// Set the gradient image for minimum track (filled portion)
-				nativeView.setMinimumTrackImageForState(stretchableImage, UIControlState.Normal);
-
-				// For maximum track, create a semi-transparent version
-				UIGraphicsBeginImageContextWithOptions(CGSizeMake(trackWidth, trackHeight), false, Screen.mainScreen.scale);
-				const maxContext = UIGraphicsGetCurrentContext();
-				if (maxContext) {
-					CGContextSetAlpha(maxContext, 0.3);
-					gradientLayer.renderInContext(maxContext);
-					const maxTrackImage = UIGraphicsGetImageFromCurrentImageContext();
-					UIGraphicsEndImageContext();
-
-					if (maxTrackImage) {
-						const maxCapInsets = new UIEdgeInsets({
-							top: 0,
-							left: trackHeight / 2,
-							bottom: 0,
-							right: trackHeight / 2,
-						});
-						const maxStretchableImage = maxTrackImage.resizableImageWithCapInsetsResizingMode(maxCapInsets, UIImageResizingMode.Stretch);
-						nativeView.setMaximumTrackImageForState(maxStretchableImage, UIControlState.Normal);
-					}
-				} else {
-					UIGraphicsEndImageContext();
-				}
+				const maxStretchableImage = maxTrackImage.resizableImageWithCapInsetsResizingMode(maxCapInsets, UIImageResizingMode.Stretch);
+				nativeView.setMaximumTrackImageForState(maxStretchableImage, UIControlState.Normal);
 			}
-		} else {
-			UIGraphicsEndImageContext();
 		}
 	}
 
