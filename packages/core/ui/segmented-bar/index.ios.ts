@@ -78,6 +78,7 @@ export class SegmentedBar extends SegmentedBarBase {
 		} else {
 			this.ios.selectedSegmentTintColor = color;
 		}
+		this.setSelectedTextColor(this.ios);
 	}
 
 	[colorProperty.getDefault](): UIColor {

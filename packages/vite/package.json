@@ -1,43 +1,43 @@
 {
-  "name": "@nativescript/vite",
-  "version": "1.0.2",
-  "description": "Vite for NativeScript",
-  "main": "./index.js",
-  "module": "./index.js",
-  "types": "./index.d.ts",
-  "type": "module",
-  "bin": {
-    "nativescript-vite": "./bin/cli.cjs"
-  },
-  "keywords": [
-    "nativescript",
-    "vite"
-  ],
-  "dependencies": {
-    "@analogjs/vite-plugin-angular": "^2.0.0",
-    "@angular-devkit/build-angular": "^20.0.0",
-    "@angular/build": "^20.0.0",
-    "@babel/core": "^7.28.0",
-    "@babel/generator": "^7.28.0",
-    "@babel/parser": "^7.28.0",
-    "@babel/plugin-transform-typescript": "^7.28.0",
-    "@rollup/plugin-alias": "^6.0.0",
-    "@rollup/plugin-commonjs": "^29.0.0",
-    "@rollup/plugin-replace": "^6.0.2",
-    "@vitejs/plugin-vue": "^6.0.1",
-    "@vitejs/plugin-vue-jsx": "^5.1.1",
-    "@vue/compiler-sfc": "^3.4.38",
-    "esbuild": "^0.25.0",
-    "minimist": "^1.2.8",
-    "react-reconciler": "^0.32.0",
-    "sass": ">=1.70.0 <2",
-    "vite": "^7.2.0",
-    "vite-plugin-solid": "^2.11.8",
-    "vite-plugin-static-copy": "^3.1.0",
-    "ws": "^8.18.0"
-  },
-  "devDependencies": {
-    "@types/node": "^24.9.1",
-    "vitest": "^3.2.4"
-  }
+	"name": "@nativescript/vite",
+	"version": "1.0.4-next.0",
+	"description": "Vite for NativeScript",
+	"main": "./index.js",
+	"module": "./index.js",
+	"types": "./index.d.ts",
+	"type": "module",
+	"bin": {
+		"nativescript-vite": "./bin/cli.cjs"
+	},
+	"keywords": [
+		"nativescript",
+		"vite"
+	],
+	"dependencies": {
+		"@analogjs/vite-plugin-angular": "^2.0.0",
+		"@angular-devkit/build-angular": "^20.0.0",
+		"@angular/build": "^20.0.0",
+		"@babel/core": "^7.28.0",
+		"@babel/generator": "^7.28.0",
+		"@babel/parser": "^7.28.0",
+		"@babel/plugin-transform-typescript": "^7.28.0",
+		"@rollup/plugin-alias": "^6.0.0",
+		"@rollup/plugin-commonjs": "^29.0.0",
+		"@rollup/plugin-replace": "^6.0.2",
+		"@vitejs/plugin-vue": "^6.0.1",
+		"@vitejs/plugin-vue-jsx": "^5.1.1",
+		"@vue/compiler-sfc": "^3.4.38",
+		"esbuild": "^0.25.0",
+		"minimist": "^1.2.8",
+		"react-reconciler": "^0.32.0",
+		"sass": ">=1.70.0 <2",
+		"vite": "^7.2.0",
+		"vite-plugin-solid": "^2.11.8",
+		"vite-plugin-static-copy": "^3.1.0",
+		"ws": "^8.18.0"
+	},
+	"devDependencies": {
+		"@types/node": "^24.9.1",
+		"vitest": "^3.2.4"
+	}
 }
