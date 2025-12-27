@@ -113,9 +113,20 @@ jobs:
           base='${{ github.event.before }}'
           head='${{ github.sha }}'
 
+          # Handle edge cases where base commit doesn't exist (first push, force-push, etc.)
+          # Use HEAD~1 as fallback, or just compare against HEAD if no parent exists
+          if [[ "$base" == "0000000000000000000000000000000000000000" ]] || ! git cat-file -e "$base" 2>/dev/null; then
+            echo "Base commit not available, falling back to HEAD~1"
+            base="HEAD~1"
+            # If HEAD~1 doesn't exist (first commit), use empty tree
+            if ! git cat-file -e "$base" 2>/dev/null; then
+              base="$(git hash-object -t tree /dev/null)"
+            fi
+          fi
+
           # Only consider libs under packages/* and exclude items configured as non-releaseable.
           affected_json=$(npx nx show projects --affected --base "$base" --head "$head" --type lib --projects "packages/*" --exclude "ui-mobile-base,types-minimal,winter-tc,types,types-ios,types-android" --json)
-          affected_list=$(printf '%s' "$affected_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s||"[]");process.stdout.write(a.join(" "));});')
+          affected_list=$(printf '%s' "$affected_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s||"[]");process.stdout.write(a.join(","));});')
           affected_count=$(printf '%s' "$affected_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s||"[]");process.stdout.write(String(a.length));});')
 
           echo "projects=${affected_list}" >> "$GITHUB_OUTPUT"
@@ -176,7 +187,6 @@ jobs:
             --preid next \
             --projects "${{ steps.affected.outputs.projects }}" \
             --git-commit \
-            --git-tag \
             --git-push \
             --verbose
 
@@ -201,7 +211,6 @@ jobs:
             --preid "${{ steps.ctx.outputs.dist_tag }}" \
             "${projects_arg[@]}" \
             --git-commit \
-            --git-tag \
             --git-push \
             --verbose
 
