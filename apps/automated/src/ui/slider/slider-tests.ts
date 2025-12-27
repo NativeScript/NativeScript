@@ -6,6 +6,8 @@ import { BindingOptions, View, Page, Observable, EventData, PropertyChangeData, 
 import { Slider } from '@nativescript/core/ui/slider';
 // << article-require-slider
 
+import { LinearGradient } from '@nativescript/core/ui/styling/linear-gradient';
+
 // ### Binding the Progress and Slider value properties to a observable view-model property.
 
 // >> article-binding-slider-properties
@@ -119,6 +121,67 @@ export function test_set_backgroundColor() {
 
 		helper.buildUIAndRunTest(slider, testAction);
 	}
+}
+
+export function test_set_linear_gradient_background() {
+	const slider = new Slider();
+
+	// Create a linear gradient programmatically
+	const gradient = new LinearGradient();
+	gradient.angle = Math.PI / 2; // 90 degrees (left to right)
+	gradient.colorStops = [{ color: new Color('red') }, { color: new Color('green') }, { color: new Color('blue') }];
+
+	function testAction(views: Array<View>) {
+		// Set the gradient via the style's backgroundImage
+		slider.style.backgroundImage = gradient;
+
+		// Verify the slider was created and the gradient was applied
+		TKUnit.assertNotNull(slider, 'slider should not be null');
+
+		if (__APPLE__) {
+			// On iOS, verify that track images were set
+			const minTrackImage = slider.ios.minimumTrackImageForState(UIControlState.Normal);
+			const maxTrackImage = slider.ios.maximumTrackImageForState(UIControlState.Normal);
+			TKUnit.assertNotNull(minTrackImage, 'minimumTrackImage should be set after applying gradient');
+			TKUnit.assertNotNull(maxTrackImage, 'maximumTrackImage should be set after applying gradient');
+		} else if (__ANDROID__) {
+			// On Android, verify the progress drawable was modified
+			const progressDrawable = slider.android.getProgressDrawable();
+			TKUnit.assertNotNull(progressDrawable, 'progressDrawable should not be null');
+		}
+	}
+
+	helper.buildUIAndRunTest(slider, testAction);
+}
+
+export function test_set_linear_gradient_with_stops() {
+	const slider = new Slider();
+
+	// Create a linear gradient with explicit color stops
+	const gradient = new LinearGradient();
+	gradient.angle = 0; // 0 degrees (bottom to top)
+	gradient.colorStops = [
+		{ color: new Color('orangered'), offset: { unit: '%', value: 0 } },
+		{ color: new Color('green'), offset: { unit: '%', value: 0.5 } },
+		{ color: new Color('lightblue'), offset: { unit: '%', value: 1 } },
+	];
+
+	function testAction(views: Array<View>) {
+		slider.style.backgroundImage = gradient;
+
+		// Verify the slider was created
+		TKUnit.assertNotNull(slider, 'slider should not be null');
+
+		if (__APPLE__) {
+			const minTrackImage = slider.ios.minimumTrackImageForState(UIControlState.Normal);
+			TKUnit.assertNotNull(minTrackImage, 'minimumTrackImage should be set after applying gradient with stops');
+		} else if (__ANDROID__) {
+			const progressDrawable = slider.android.getProgressDrawable();
+			TKUnit.assertNotNull(progressDrawable, 'progressDrawable should not be null');
+		}
+	}
+
+	helper.buildUIAndRunTest(slider, testAction);
 }
 
 export function test_default_TNS_values() {
