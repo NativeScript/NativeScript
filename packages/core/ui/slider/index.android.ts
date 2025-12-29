@@ -1,10 +1,12 @@
 import { Background } from '../styling/background';
-import { SliderBase, valueProperty, minValueProperty, maxValueProperty } from './slider-common';
+import { SliderBase, valueProperty, minValueProperty, maxValueProperty, minTrackGradientProperty, maxTrackGradientProperty } from './index.shared';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { AndroidHelper } from '../core/view';
+import { LinearGradient } from '../styling/linear-gradient';
+import { GradientDrawable } from './gradient-drawable.android';
 
-export * from './slider-common';
+export * from './index.shared';
 
 interface OwnerSeekBar extends android.widget.SeekBar {
 	owner: Slider;
@@ -60,6 +62,8 @@ export class Slider extends SliderBase {
 
 		return new SeekBar(this._context);
 	}
+
+	private _defaultProgressDrawable: android.graphics.drawable.Drawable;
 
 	public initNativeView(): void {
 		super.initNativeView();
@@ -143,5 +147,30 @@ export class Slider extends SliderBase {
 	}
 	[backgroundInternalProperty.setNative](value: Background) {
 		//
+	}
+
+	[minTrackGradientProperty.setNative](value: LinearGradient | null) {
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+		if (!this._defaultProgressDrawable) {
+			this._defaultProgressDrawable = nativeView.getProgressDrawable();
+		}
+
+		if (!value) {
+			// restore original drawable
+			nativeView.setProgressDrawable(this._defaultProgressDrawable);
+			return;
+		}
+
+		// Create a new drawable with shader-based gradient
+		const drawable = new GradientDrawable(value, this._defaultProgressDrawable);
+		nativeView.setProgressDrawable(drawable);
+	}
+
+	[maxTrackGradientProperty.setNative](value: LinearGradient | null) {
+		// For now apply same drawable as min track as SeekBar uses a single progress drawable.
+		this[minTrackGradientProperty.setNative](value as any);
 	}
 }
