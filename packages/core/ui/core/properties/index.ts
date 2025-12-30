@@ -200,6 +200,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 		let affectsLayout: boolean = options.affectsLayout;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
+		let overrideConverter = false;
 
 		this.overrideHandlers = function (options: PropertyOptions<T, U>) {
 			if (typeof options.equalityComparer !== 'undefined') {
@@ -213,6 +214,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
+				overrideConverter = true;
 			}
 		};
 
@@ -229,7 +231,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 				value = wrapped ? WrappedValue.unwrap(boxedValue) : boxedValue;
 
 				if (valueConverter && typeof value === 'string') {
-					value = valueConverter(value);
+					value = overrideConverter ? valueConverter.call(this, value) : valueConverter(value);
 				}
 			}
 
@@ -372,7 +374,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
 		let coerceCallback = options.coerceValue;
-
+		let overrideConverter = false;
 		const property = this;
 
 		this.overrideHandlers = function (options: CoerciblePropertyOptions<T, U>) {
@@ -387,6 +389,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
+				overrideConverter = true;
 			}
 			if (typeof options.coerceValue !== 'undefined') {
 				coerceCallback = options.coerceValue;
@@ -411,7 +414,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 				value = wrapped ? WrappedValue.unwrap(boxedValue) : boxedValue;
 
 				if (valueConverter && typeof value === 'string') {
-					value = valueConverter(value);
+					value = overrideConverter ? valueConverter.call(this, value) : valueConverter(value);
 				}
 
 				this[coerceKey] = value;
@@ -615,6 +618,7 @@ export class CssProperty<T extends Style, U> {
 		let equalityComparer = options.equalityComparer;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
+		let overrideConverter = false;
 
 		this.overrideHandlers = function (options: CssPropertyOptions<T, U>) {
 			if (typeof options.equalityComparer !== 'undefined') {
@@ -628,6 +632,7 @@ export class CssProperty<T extends Style, U> {
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
+				overrideConverter = true;
 			}
 		};
 
@@ -649,7 +654,7 @@ export class CssProperty<T extends Style, U> {
 				delete this[sourceKey];
 			} else {
 				this[sourceKey] = ValueSource.Local;
-				value = valueConverter && typeof newValue === 'string' ? valueConverter(newValue) : <U>newValue;
+				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(view, newValue) : valueConverter(newValue)) : <U>newValue;
 			}
 
 			const oldValue = <U>(key in this ? this[key] : defaultValue);
@@ -732,7 +737,7 @@ export class CssProperty<T extends Style, U> {
 				value = defaultValue;
 				delete this[sourceKey];
 			} else {
-				value = valueConverter && typeof newValue === 'string' ? valueConverter(newValue) : <U>newValue;
+				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(view, newValue) : valueConverter(newValue)) : <U>newValue;
 				this[sourceKey] = ValueSource.Css;
 			}
 
@@ -1071,6 +1076,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 		let equalityComparer = options.equalityComparer;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
+		let overrideHandlers = false;
 
 		const property = this;
 
@@ -1086,6 +1092,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
+				overrideHandlers = true;
 			}
 		};
 
@@ -1132,7 +1139,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 				} else {
 					this[sourceKey] = valueSource;
 					if (valueConverter && typeof boxedValue === 'string') {
-						value = valueConverter(boxedValue);
+						value = overrideHandlers ? valueConverter.call(this, boxedValue) : valueConverter(boxedValue);
 					} else {
 						value = boxedValue;
 					}
