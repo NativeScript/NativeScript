@@ -65,7 +65,7 @@
 		"css-what": "^6.1.0",
 		"dotenv": "~16.4.0",
 		"dotenv-webpack": "^7.0.0",
-		"emoji-regex": "^10.3.0",
+		"emoji-regex": "^10.6.0",
 		"enhanced-resolve": "^5.18.3",
 		"eslint": "~8.57.0",
 		"eslint-config-prettier": "^10.0.0",
