@@ -654,7 +654,7 @@ export class CssProperty<T extends Style, U> {
 				delete this[sourceKey];
 			} else {
 				this[sourceKey] = ValueSource.Local;
-				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(view, newValue) : valueConverter(newValue)) : <U>newValue;
+				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(this, newValue) : valueConverter(newValue)) : <U>newValue;
 			}
 
 			const oldValue = <U>(key in this ? this[key] : defaultValue);
@@ -737,7 +737,7 @@ export class CssProperty<T extends Style, U> {
 				value = defaultValue;
 				delete this[sourceKey];
 			} else {
-				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(view, newValue) : valueConverter(newValue)) : <U>newValue;
+				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(this, newValue) : valueConverter(newValue)) : <U>newValue;
 				this[sourceKey] = ValueSource.Css;
 			}
 
@@ -948,7 +948,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 						}
 					} else {
 						if (options.valueConverter && typeof boxedValue === 'string') {
-							boxedValue = options.valueConverter(boxedValue);
+							boxedValue = options.valueConverter.call(this, boxedValue);
 						}
 						this[symbol] = boxedValue;
 						if (this[computedSource] <= propertySource) {
@@ -1076,7 +1076,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 		let equalityComparer = options.equalityComparer;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
-		let overrideHandlers = false;
+		let overrideConverter = false;
 
 		const property = this;
 
@@ -1092,7 +1092,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
-				overrideHandlers = true;
+				overrideConverter = true;
 			}
 		};
 
@@ -1139,7 +1139,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 				} else {
 					this[sourceKey] = valueSource;
 					if (valueConverter && typeof boxedValue === 'string') {
-						value = overrideHandlers ? valueConverter.call(this, boxedValue) : valueConverter(boxedValue);
+						value = overrideConverter ? valueConverter.call(this, boxedValue) : valueConverter(boxedValue);
 					} else {
 						value = boxedValue;
 					}
