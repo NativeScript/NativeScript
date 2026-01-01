@@ -115,7 +115,7 @@
 		"webpack-cli": "^4.0.0",
 		"webpack-merge": "^5.0.0",
 		"webpack-virtual-modules": "^0.4.0",
-		"zx": "^8.3.0"
+		"zx": "^8.8.5"
 	},
 	"overrides": {
 		"form-data": ">=4.0.4"
