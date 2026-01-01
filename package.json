@@ -34,7 +34,7 @@
 		"@nx/devkit": "22.0.2",
 		"@nx/eslint-plugin": "22.0.2",
 		"@nx/jest": "22.0.2",
-		"@nx/js": "22.0.2",
+		"@nx/js": "22.3.3",
 		"@nx/node": "22.0.2",
 		"@nx/plugin": "22.0.2",
 		"@nx/vite": "22.0.2",
