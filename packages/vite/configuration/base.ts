@@ -309,7 +309,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			}),
 			// Ensure explicit keep markers are honored
 			preserveImportsPlugin(),
-			hmrActive
+			// Disable vendor manifest plugin for Angular to avoid duplicate identifier issues
+			// when the Angular linker generates conflicting temporary variables (_c2, etc.)
+			// in the esbuild-bundled vendor output.
+			hmrActive && flavor !== 'angular'
 				? vendorManifestPlugin({
 						projectRoot,
 						platform,
@@ -465,7 +468,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 						// In HMR, avoid emitting a Rollup vendor chunk on disk. The dev server
 						// serves vendor over HTTP and we separately emit a single ns-vendor.mjs
 						// for Android SBG to scan via the vendorManifestPlugin above.
-						if (hmrActive) {
+						// Also disable chunking in dev mode to avoid circular dependency issues
+						// with Angular decorators during incremental rebuilds.
+						if (hmrActive || isDevMode) {
 							return undefined;
 						}
 						const normalizedId = id.split('?')[0].replace(/\\/g, '/');
@@ -475,7 +480,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 						}
 						if (id.includes('node_modules')) {
 							// Keep common dependencies in the main bundle
-							if (id.includes('@angular/') || id.includes('@nativescript/angular') || id.includes('@nativescript/core')) {
+							// tslib must stay with Angular to avoid circular dependency issues with decorators
+							if (id.includes('@angular/') || id.includes('@nativescript/angular') || id.includes('@nativescript/core') || id.includes('/tslib/')) {
 								return undefined; // Keep in main bundle
 							}
 							return 'vendor';

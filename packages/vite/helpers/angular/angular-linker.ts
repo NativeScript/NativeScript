@@ -148,8 +148,9 @@ export function angularLinkerVitePluginPost(projectRoot?: string): Plugin {
 		enforce: 'post',
 		async transform(code, id) {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
-			// Only JS/ESM files
-			if (!/\.(m?js)(\?|$)/.test(id)) return null;
+			// JS/ESM files and TypeScript files (after Angular transform, TS files contain JS with partial declarations)
+			// Also match virtual module IDs that may not have extensions
+			if (!/\.(m?js|ts|tsx)(\?|$)/.test(id) && !id.startsWith('\0')) return null;
 			if (!code || !containsRealNgDeclare(code)) return null;
 			const { babel, linkerPlugin } = await ensureSharedAngularLinker(projectRoot);
 			if (!babel || !linkerPlugin) return null;

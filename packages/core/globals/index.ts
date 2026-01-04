@@ -316,7 +316,9 @@ if (!global.NativeScriptHasPolyfilled) {
 		installPolyfills('text', ['TextDecoder', 'TextEncoder']);
 
 		global.registerModule('xhr', () => xhrImpl);
-		installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
+		// Blob and File are now provided by the runtime with a complete File API spec implementation
+		// Only install XMLHttpRequest, FormData, and FileReader from xhrImpl
+		installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'FileReader']);
 
 		global.registerModule('fetch', () => fetchPolyfill);
 		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
@@ -351,8 +353,8 @@ if (!global.NativeScriptHasPolyfilled) {
 		// xhr
 		glb.XMLHttpRequest = xhrImpl.XMLHttpRequest;
 		glb.FormData = xhrImpl.FormData;
-		glb.Blob = xhrImpl.Blob;
-		glb.File = xhrImpl.File;
+		// Blob and File are now provided by the runtime with a complete File API spec implementation
+		// Only install FileReader from xhrImpl (Blob and File come from the runtime)
 		glb.FileReader = xhrImpl.FileReader;
 
 		// fetch

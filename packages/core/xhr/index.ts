@@ -242,7 +242,7 @@ export class XMLHttpRequest {
 			this._options.content = (<FormData>data).toString();
 		} else if (data instanceof Blob) {
 			this.setRequestHeader('Content-Type', data.type);
-			this._options.content = Blob.InternalAccessor.getBuffer(data);
+			this._options.content = BlobInternalAccessor.getBuffer(data);
 		} else if (data instanceof ArrayBuffer) {
 			this._options.content = data;
 		}
@@ -375,113 +375,41 @@ export class FormData {
 	}
 }
 
-export class Blob {
-	// Note: only for use by XHR
-	public static InternalAccessor = class {
-		public static getBuffer(blob: Blob) {
-			return blob._buffer;
+// Blob and File are now provided by the runtime (Runtime.mm) with a complete
+// File API spec implementation. We just need a helper to access internal bytes
+// for XHR and FileReader operations.
+// The runtime stores blob data using a Symbol accessible via globalThis.__BLOB_INTERNALS__
+
+/**
+ * Helper to access internal Blob buffer for XHR and FileReader.
+ * Works with the runtime's Blob implementation which stores data
+ * using the __BLOB_INTERNALS__ symbol.
+ */
+export const BlobInternalAccessor = {
+	getBuffer(blob: Blob): Uint8Array {
+		// Access the runtime's internal symbol for Blob data
+		const internalsSymbol = (globalThis as any).__BLOB_INTERNALS__;
+		if (internalsSymbol && blob[internalsSymbol]) {
+			return blob[internalsSymbol].bytes;
 		}
+		// Fallback for any edge cases
+		return new Uint8Array(0);
+	},
+};
+
+// Re-export Blob and File from globalThis for backwards compatibility
+// These are defined by the runtime
+export const Blob = globalThis.Blob;
+export const File = globalThis.File;
+
+// Backwards compatibility: Add InternalAccessor to the exported Blob
+// Some code may still reference Blob.InternalAccessor
+if (Blob && !(Blob as any).InternalAccessor) {
+	(Blob as any).InternalAccessor = {
+		getBuffer(blob: Blob): Uint8Array {
+			return BlobInternalAccessor.getBuffer(blob);
+		},
 	};
-
-	private _buffer: Uint8Array;
-	private _size: number;
-	private _type: string;
-
-	public get size() {
-		return this._size;
-	}
-	public get type() {
-		return this._type;
-	}
-
-	constructor(chunks: Array<BufferSource | DataView | Blob | string> = [], opts: { type?: string } = {}) {
-		const dataChunks: Uint8Array[] = [];
-		for (const chunk of chunks) {
-			if (chunk instanceof Blob) {
-				dataChunks.push(chunk._buffer);
-			} else if (typeof chunk === 'string') {
-				const textEncoder = new TextEncoder();
-				dataChunks.push(textEncoder.encode(chunk));
-			} else if (chunk instanceof DataView) {
-				dataChunks.push(new Uint8Array(chunk.buffer.slice(0)));
-			} else if (chunk instanceof ArrayBuffer || ArrayBuffer.isView(chunk)) {
-				dataChunks.push(new Uint8Array(ArrayBuffer.isView(chunk) ? chunk.buffer.slice(0) : chunk.slice(0)));
-			} else {
-				const textEncoder = new TextEncoder();
-				dataChunks.push(textEncoder.encode(String(chunk)));
-			}
-		}
-
-		const size = dataChunks.reduce((size, chunk) => size + chunk.byteLength, 0);
-		const buffer = new Uint8Array(size);
-		let offset = 0;
-		for (let i = 0; i < dataChunks.length; i++) {
-			const chunk = dataChunks[i];
-			buffer.set(chunk, offset);
-			offset += chunk.byteLength;
-		}
-
-		this._buffer = buffer;
-		this._size = this._buffer.byteLength;
-
-		this._type = opts.type || '';
-		if (/[^\u0020-\u007E]/.test(this._type)) {
-			this._type = '';
-		} else {
-			this._type = this._type.toLowerCase();
-		}
-	}
-
-	public arrayBuffer() {
-		return Promise.resolve(this._buffer);
-	}
-
-	public text(): Promise<string> {
-		const textDecoder = new TextDecoder();
-
-		return Promise.resolve(textDecoder.decode(this._buffer));
-	}
-
-	public slice(start?: number, end?: number, type?: string): Blob {
-		const slice = this._buffer.slice(start || 0, end || this._buffer.length);
-
-		return new Blob([slice], { type: type });
-	}
-
-	public stream() {
-		throw new Error('stream is currently not supported');
-	}
-
-	public toString() {
-		return '[object Blob]';
-	}
-
-	[Symbol.toStringTag] = 'Blob';
-}
-
-export class File extends Blob {
-	private _name: string;
-	private _lastModified: number;
-
-	public get name() {
-		return this._name;
-	}
-
-	public get lastModified() {
-		return this._lastModified;
-	}
-
-	constructor(chunks: Array<BufferSource | DataView | Blob | string>, name: string, opts: { type?: string; lastModified?: number } = {}) {
-		super(chunks, opts);
-		this._name = name.replace(/\//g, ':');
-		this._lastModified = opts.lastModified ? new Date(opts.lastModified).valueOf() : Date.now();
-	}
-
-	public toString() {
-		return '[object File]';
-	}
-
-	[Symbol.toStringTag] = 'File';
 }
 
 export class FileReader {
@@ -587,18 +515,18 @@ export class FileReader {
 
 	public readAsDataURL(blob: Blob) {
 		this._read(blob, 'readAsDataURL');
-		this._result = `data:${blob.type};base64,${this._array2base64(Blob.InternalAccessor.getBuffer(blob))}`;
+		this._result = `data:${blob.type};base64,${this._array2base64(BlobInternalAccessor.getBuffer(blob))}`;
 	}
 
 	public readAsText(blob: Blob) {
 		this._read(blob, 'readAsText');
 		const textDecoder = new TextDecoder();
-		this._result = textDecoder.decode(Blob.InternalAccessor.getBuffer(blob));
+		this._result = textDecoder.decode(BlobInternalAccessor.getBuffer(blob));
 	}
 
 	public readAsArrayBuffer(blob: Blob) {
 		this._read(blob, 'readAsArrayBuffer');
-		this._result = Blob.InternalAccessor.getBuffer(blob).buffer.slice(0);
+		this._result = BlobInternalAccessor.getBuffer(blob).buffer.slice(0);
 	}
 
 	public abort() {

@@ -33,6 +33,7 @@ import { typescriptServerStrategy } from '../frameworks/typescript/server/strate
 import { buildInlineTemplateBlock, createProcessSfcCode, extractTemplateRender, processTemplateVariantMinimal } from '../frameworks/vue/server/sfc-transforms.js';
 import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
+import { transformAngularHmrCode, createAngularHmrMessage } from './angular-hmr-transformer.js';
 
 const { parse, compileTemplate, compileScript } = vueSfcCompiler;
 
@@ -117,6 +118,36 @@ function isLikelyNativeScriptPluginSpecifier(spec: string): boolean {
 	return true;
 }
 
+// Normalize Angular fesm2022 deep imports to their base package names.
+// This ensures imports like '@nativescript/angular/fesm2022/nativescript-angular.mjs'
+// are properly resolved through the vendor registry as '@nativescript/angular'.
+// Also handles full filesystem paths like '/node_modules/@nativescript/angular/fesm2022/...'
+function normalizeAngularDeepImport(spec: string): string {
+	if (!spec) return spec;
+
+	// Handle full filesystem paths with node_modules prefix
+	// Match: /...node_modules/@angular/xxx/fesm2022/*.mjs -> @angular/xxx
+	const fsAngularMatch = spec.match(/\/node_modules\/@angular\/([^/]+)\/fesm2022\/.*\.mjs$/);
+	if (fsAngularMatch) {
+		return `@angular/${fsAngularMatch[1]}`;
+	}
+	// Match: /...node_modules/@nativescript/angular/fesm2022/*.mjs -> @nativescript/angular
+	if (/\/node_modules\/@nativescript\/angular\/fesm2022\/.*\.mjs$/.test(spec)) {
+		return '@nativescript/angular';
+	}
+
+	// Match @angular/xxx/fesm2022/*.mjs -> @angular/xxx
+	const angularMatch = spec.match(/^@angular\/([^/]+)\/fesm2022\/.*\.mjs$/);
+	if (angularMatch) {
+		return `@angular/${angularMatch[1]}`;
+	}
+	// Match @nativescript/angular/fesm2022/*.mjs -> @nativescript/angular
+	if (/^@nativescript\/angular\/fesm2022\/.*\.mjs$/.test(spec)) {
+		return '@nativescript/angular';
+	}
+	return spec;
+}
+
 export function ensureNativeScriptModuleBindings(code: string): string {
 	// Proceed even if a vendor manifest isn't available; we'll still vendor-bind
 	// likely NativeScript plugin-style specifiers (e.g., 'pinia', '@scope/pkg')
@@ -174,7 +205,8 @@ export function ensureNativeScriptModuleBindings(code: string): string {
 			preservedImports.push(original);
 			return pfx || '';
 		}
-		const specifier = rawSpec.replace(PAT.QUERY_PATTERN, '');
+		// Normalize Angular fesm2022 deep imports to base package
+		const specifier = normalizeAngularDeepImport(rawSpec.replace(PAT.QUERY_PATTERN, ''));
 		let canonical = resolveVendorFromCandidate(specifier);
 		// If not found in vendor manifest, treat well-known NativeScript plugin-style packages
 		// as require() based modules so the device can resolve them from the app bundle or vendor.
@@ -224,7 +256,8 @@ export function ensureNativeScriptModuleBindings(code: string): string {
 	// Handle side-effect only imports: import 'x'
 	code = code.replace(sideEffectRegex, (full: string, _pfx: string, rawSpec: string) => {
 		const original = full.replace(/^\n/, '');
-		const specifier = rawSpec.replace(PAT.QUERY_PATTERN, '');
+		// Normalize Angular fesm2022 deep imports to base package
+		const specifier = normalizeAngularDeepImport(rawSpec.replace(PAT.QUERY_PATTERN, ''));
 		let canonical = resolveVendorFromCandidate(specifier);
 		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier)) {
 			canonical = specifier;
@@ -381,9 +414,25 @@ function normalizeNodeModulesSpecifier(spec: string): string | null {
 	return subPath.startsWith('/') ? subPath.slice(1) : subPath;
 }
 
+// Packages that are registered via the main-entry bootstrap code in Angular flavor
+// and should be recognized as vendor modules even if not in the manifest.
+const ANGULAR_BOOTSTRAP_VENDORS = new Set(['@nativescript/angular', '@angular/core', '@angular/common', '@angular/router', '@angular/forms', '@angular/platform-browser', '@angular/common/http', '@angular/animations', '@angular/animations/browser']);
+
 function resolveVendorFromCandidate(specifier: string | null | undefined): string | null {
 	if (!specifier) {
 		return null;
+	}
+
+	const cleaned = specifier.replace(PAT.QUERY_PATTERN, '');
+
+	// Check if this is an Angular vendor module registered via main-entry bootstrap
+	if (ANGULAR_BOOTSTRAP_VENDORS.has(cleaned)) {
+		return cleaned;
+	}
+	// Also check for @angular/* subpaths that should map to base package
+	const angularPkgMatch = cleaned.match(/^(@angular\/[^/]+)/);
+	if (angularPkgMatch && ANGULAR_BOOTSTRAP_VENDORS.has(angularPkgMatch[1])) {
+		return angularPkgMatch[1];
 	}
 
 	const manifest = getVendorManifest();
@@ -391,7 +440,6 @@ function resolveVendorFromCandidate(specifier: string | null | undefined): strin
 		return null;
 	}
 
-	const cleaned = specifier.replace(PAT.QUERY_PATTERN, '');
 	const direct = resolveVendorSpecifier(cleaned);
 	if (direct) {
 		return direct;
@@ -600,6 +648,42 @@ function stripViteDynamicImportVirtual(code: string): string {
 	}
 	if (code !== original) {
 		code = `// [hmr-sanitize] removed virtual dynamic-import-helper\n${code}`;
+	}
+	return code;
+}
+
+/**
+ * Rewrite Angular fesm2022 deep import paths to base package names.
+ * These deep paths are not resolvable on device - they need to go through the vendor registry.
+ * Examples:
+ *   @nativescript/angular/fesm2022/nativescript-angular.mjs -> @nativescript/angular
+ *   @angular/core/fesm2022/core.mjs -> @angular/core
+ *   @angular/router/fesm2022/router.mjs -> @angular/router
+ *   /node_modules/@nativescript/angular/fesm2022/... -> @nativescript/angular
+ *   /@fs/.../node_modules/@nativescript/angular/fesm2022/... -> @nativescript/angular
+ */
+function rewriteAngularFesm2022Paths(code: string): string {
+	if (!/\/fesm2022\/[^"']+\.mjs/.test(code) && !/@nativescript\/angular/.test(code)) {
+		return code;
+	}
+	const original = code;
+
+	// Handle full filesystem paths with node_modules (Vite /@fs/ or /node_modules/ prefixes)
+	// Match: "/@fs/.../node_modules/@nativescript/angular/fesm2022/..." or "/node_modules/@nativescript/angular/fesm2022/..."
+	code = code.replace(/(["'])((?:\/@fs)?[^"']*\/node_modules\/)@nativescript\/angular\/fesm2022\/[^"']+\.mjs\1/g, '$1@nativescript/angular$1');
+	code = code.replace(/(["'])((?:\/@fs)?[^"']*\/node_modules\/)@angular\/([^/]+)\/fesm2022\/[^"']+\.mjs\1/g, '$1@angular/$3$1');
+
+	// Rewrite @nativescript/angular/fesm2022/*.mjs -> @nativescript/angular
+	// Handle: import X from '...', export { X } from '...', export * from '...'
+	code = code.replace(/((?:from|import)\s*\(\s*['"]|from\s+['"])@nativescript\/angular\/fesm2022\/[^"']+\.mjs(['"])/g, '$1@nativescript/angular$2');
+	// Rewrite @angular/XXX/fesm2022/*.mjs -> @angular/XXX
+	code = code.replace(/((?:from|import)\s*\(\s*['"]|from\s+['"])@angular\/([^/]+)\/fesm2022\/[^"']+\.mjs(['"])/g, '$1@angular/$2$3');
+	// Also catch bare string literals that might be used for require() or other dynamic resolution
+	// Match: '@nativescript/angular/fesm2022/xxx.mjs' or "@nativescript/angular/fesm2022/xxx.mjs"
+	code = code.replace(/(['"])@nativescript\/angular\/fesm2022\/[^"']+\.mjs\1/g, '$1@nativescript/angular$1');
+	code = code.replace(/(['"])@angular\/([^/]+)\/fesm2022\/[^"']+\.mjs\1/g, '$1@angular/$2$1');
+	if (code !== original) {
+		code = `// [hmr-sanitize] rewrote Angular fesm2022 paths\n${code}`;
 	}
 	return code;
 }
@@ -1125,6 +1209,10 @@ function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, p
 
 function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
 	let result = code;
+
+	// Rewrite Angular fesm2022 deep paths to base package names FIRST
+	// These paths are not resolvable on device - they need to go through the vendor registry
+	result = rewriteAngularFesm2022Paths(result);
 
 	// Ensure Angular partial declarations are linked before any sanitizers run so runtime never hits the JIT path.
 	result = linkAngularPartialsIfNeeded(result);
@@ -1828,6 +1916,60 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 		});
 	} catch {}
 
+	// Normalize all @angular/core imports to the unified HTTP ESM angular-core bridge
+	// This ensures Angular's internal APIs (ɵɵdefineComponent, etc.) are available during HMR re-imports
+	try {
+		let angularCoreAliasIdx = 0;
+		const mkAngularAlias = () => `__NGC${angularCoreAliasIdx++}`;
+		const angularCoreUrl = (sub?: string) => {
+			const p = (sub || '').replace(/^\//, '');
+			return `${httpOriginSafe || ''}/ns/angular-core` + (p ? `?p=${p}` : '');
+		};
+		// Case 1: import * as i0 from '@angular/core[/sub]'
+		result = result.replace(/(^|\n)\s*import\s+\*\s+as\s+([A-Za-z_$][\w$]*)\s+from\s*["']@angular\/core([^"'\n]*)["'];?/g, (_m, pfx: string, nsName: string, sub: string) => {
+			const url = angularCoreUrl(sub || '');
+			return `${pfx}import * as ${nsName} from ${JSON.stringify(url)};`;
+		});
+		// Case 2: import { A, B } from '@angular/core[/sub]'
+		result = result.replace(/(^|\n)\s*import\s*\{\s*([^}]+?)\s*\}\s*from\s+["']@angular\/core([^"'\n]*)["'];?/g, (_m, pfx: string, names: string, sub: string) => {
+			const alias = mkAngularAlias();
+			const url = angularCoreUrl(sub || '');
+			const cleaned = names
+				.split(',')
+				.map((s) => s.trim())
+				.filter(Boolean)
+				.join(', ');
+			return `${pfx}import * as ${alias} from ${JSON.stringify(url)};\nconst { ${cleaned} } = ${alias};`;
+		});
+		// Case 3: import Default, { A, B } from '@angular/core[/sub]'
+		result = result.replace(/(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+?)\s*\}\s*from\s*["']@angular\/core([^"'\n]*)["'];?/g, (_m, pfx: string, defName: string, names: string, sub: string) => {
+			const alias = mkAngularAlias();
+			const url = angularCoreUrl(sub || '');
+			const cleaned = names
+				.split(',')
+				.map((s) => s.trim())
+				.filter(Boolean)
+				.join(', ');
+			return `${pfx}import * as ${alias} from ${JSON.stringify(url)};\nconst ${defName} = (${alias}.default || ${alias});\nconst { ${cleaned} } = ${alias};`;
+		});
+		// Case 4: import Default from '@angular/core[/sub]'
+		result = result.replace(/(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s+from\s*["']@angular\/core([^"'\n]*)["'];?/g, (_m, pfx: string, defName: string, sub: string) => {
+			const alias = mkAngularAlias();
+			const url = angularCoreUrl(sub || '');
+			return `${pfx}import * as ${alias} from ${JSON.stringify(url)};\nconst ${defName} = (${alias}.default || ${alias});`;
+		});
+		// Case 5: side-effect import '@angular/core[/sub]'
+		result = result.replace(/(^|\n)\s*import\s*["']@angular\/core([^"'\n]*)["'];?/g, (_m, pfx: string, sub: string) => {
+			const url = angularCoreUrl(sub || '');
+			return `${pfx}import ${JSON.stringify(url)};`;
+		});
+		// Case 6: dynamic import('@angular/core[/sub]')
+		result = result.replace(/import\(\s*["']@angular\/core([^"'\n]*)["']\s*\)/g, (_m, sub: string) => {
+			const url = angularCoreUrl(sub || '');
+			return `import(${JSON.stringify(url)})`;
+		});
+	} catch {}
+
 	// Inline JSON imports (package.json, config.json, etc.)
 	// This must happen BEFORE other rewrites because JSON imports get a ?import query added by Vite
 	result = result.replace(/import\s+(\w+)\s+from\s+["']([^"']+\.json(?:\?[^"']*)?)["'];?/g, (match, varName, jsonPath) => {
@@ -2454,6 +2596,129 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				try {
 					console.warn('[hmr-ws] server error:', err?.message || String(err));
 				} catch {}
+			});
+
+			// Listen for AnalogJS's Angular component HMR updates when liveReload is enabled.
+			// This intercepts the 'angular:component-update' message that AnalogJS sends via Vite's WS
+			// and forwards the HMR update code to device clients using the v2 transformer.
+			server.ws.on('angular:component-update', async (data: { id: string; timestamp: number }) => {
+				try {
+					if (verbose) {
+						console.log('[hmr-ws][angular-v2] Received component update:', data.id);
+					}
+
+					// Forward the angular:component-update event to device clients
+					// This allows Angular's native HMR mechanism (import.meta.hot.on) to work
+					const eventMsg = {
+						type: 'ns:hot-event',
+						event: 'angular:component-update',
+						data: { id: data.id, timestamp: data.timestamp },
+					};
+					wss!.clients.forEach((client) => {
+						if (client.readyState === client.OPEN) {
+							try {
+								client.send(JSON.stringify(eventMsg));
+								if (verbose) {
+									console.log('[hmr-ws] Forwarded angular:component-update to client');
+								}
+							} catch (sendErr) {
+								if (verbose) {
+									console.warn('[hmr-ws] Failed to forward event to client:', sendErr);
+								}
+							}
+						}
+					});
+
+					// Fetch the HMR update code from AnalogJS's live reload endpoint
+					// Format: /@ng/component?c=<componentId>
+					const componentUrl = `/@ng/component?c=${data.id}`;
+
+					try {
+						// Use Vite's transform to get the code
+						const result = await server.transformRequest(componentUrl);
+						let hmrCode = result?.code || '';
+
+						if (!hmrCode || hmrCode.trim().length === 0) {
+							// Sometimes the code comes empty initially, try middleware directly
+							if (verbose) {
+								console.log('[hmr-ws][angular-v2] No code from transform, trying fetch');
+							}
+
+							// Fetch via HTTP from the dev server
+							const origin = `http://localhost:${(server as any).config?.server?.port || 5173}`;
+							try {
+								const resp = await fetch(`${origin}${componentUrl}`);
+								if (resp.ok) {
+									hmrCode = await resp.text();
+								}
+							} catch (fetchErr) {
+								if (verbose) {
+									console.warn('[hmr-ws][angular-v2] Fetch failed:', fetchErr);
+								}
+							}
+						}
+
+						if (!hmrCode || hmrCode.trim().length === 0) {
+							if (verbose) {
+								console.log('[hmr-ws][angular-v2] No HMR code available, falling back to re-bootstrap');
+							}
+							// Fall back to regular angular update which triggers re-bootstrap
+							return;
+						}
+
+						if (verbose) {
+							console.log('[hmr-ws][angular-v2] Got HMR code, length:', hmrCode.length);
+							console.log('[hmr-ws][angular-v2] Raw code preview:', hmrCode.substring(0, 500));
+						}
+
+						// Extract just the file path from the id (format: path@ComponentName)
+						// e.g., "src/simple-test/simple-test.component.ts@SimpleTestComponent" -> "src/simple-test/simple-test.component.ts"
+						const componentPath = data.id.includes('@') ? data.id.split('@')[0] : data.id;
+
+						// Use the v2 transformer to analyze and prepare the HMR payload
+						const transformed = transformAngularHmrCode(hmrCode, componentPath, data.timestamp);
+
+						if (!transformed) {
+							if (verbose) {
+								console.warn('[hmr-ws][angular-v2] Transform failed: could not parse HMR code');
+							}
+							return;
+						}
+
+						// Create the message using the helper
+						const hmrMsg = createAngularHmrMessage(transformed);
+
+						wss!.clients.forEach((client) => {
+							if (client.readyState === client.OPEN) {
+								try {
+									client.send(JSON.stringify(hmrMsg));
+								} catch (sendErr) {
+									if (verbose) {
+										console.warn('[hmr-ws][angular-v2] Failed to send HMR payload to client:', sendErr);
+									}
+								}
+							}
+						});
+
+						if (verbose) {
+							console.log('[hmr-ws][angular-v2] Sent HMR payload to', wss!.clients.size, 'clients');
+							console.log('[hmr-ws][angular-v2] Payload summary:', {
+								componentName: transformed.metadata.componentName,
+								functionName: transformed.metadata.functionName,
+								namespaceCount: transformed.metadata.namespacesCount,
+								localDependencies: transformed.metadata.localDependencies.map((d) => d.name),
+							});
+						}
+					} catch (transformErr) {
+						if (verbose) {
+							console.warn('[hmr-ws][angular-v2] Failed to get HMR code:', transformErr);
+						}
+					}
+				} catch (err) {
+					if (verbose) {
+						console.warn('[hmr-ws][angular-v2] Error handling component update:', err);
+					}
+				}
 			});
 
 			// Dev-only HTTP ESM loader endpoint for device clients
@@ -3265,14 +3530,110 @@ export const piniaSymbol = p.piniaSymbol;
 					const sub = urlObj.searchParams.get('p') || '';
 					const key = sub ? `@nativescript/core/${sub}` : `@nativescript/core`;
 					// HTTP-only core bridge: do NOT use require/createRequire. Export a proxy that maps
-					// property access to globalThis first, then to any available vendor registry module.
+					// property access to the vendor registry, globalThis.__nativescriptCore (for Angular), or globalThis.
 					let code =
 						REQUIRE_GUARD_SNIPPET +
 						`// [ns-core-bridge][v${ver}] HTTP-only ESM bridge (default proxy only)\n` +
 						`const g = globalThis;\n` +
 						`const reg = (g.__nsVendorRegistry ||= new Map());\n` +
-						`const __getVendorCore = () => { try { const m = reg && reg.get ? (reg.get(${JSON.stringify(key)}) || reg.get('@nativescript/core')) : null; return (m && (m.__esModule && m.default ? m.default : (m.default || m))) || m || null; } catch { return null; } };\n` +
-						`const __core = new Proxy({}, { get(_t, p){ if (p === 'default') return __core; if (p === Symbol.toStringTag) return 'Module'; try { const v = g[p]; if (v !== undefined) return v; } catch {} try { const vc = __getVendorCore(); return vc ? vc[p] : undefined; } catch {} return undefined; } });\n` +
+						`const __getVendorCore = () => {\n` +
+						`  try {\n` +
+						`    // First try vendor registry\n` +
+						`    const m = reg && reg.get ? (reg.get(${JSON.stringify(key)}) || reg.get('@nativescript/core')) : null;\n` +
+						`    if (m) return (m && (m.__esModule && m.default ? m.default : (m.default || m))) || m;\n` +
+						`  } catch {}\n` +
+						`  // Fallback to Angular-style direct core registration\n` +
+						`  try {\n` +
+						`    const directCore = g.__nativescriptCore;\n` +
+						`    if (directCore) return directCore;\n` +
+						`  } catch {}\n` +
+						`  return null;\n` +
+						`};\n` +
+						`const __core = new Proxy({}, {\n` +
+						`  get(_t, p) {\n` +
+						`    if (p === 'default') return __core;\n` +
+						`    if (p === Symbol.toStringTag) return 'Module';\n` +
+						`    // First try vendor core module (most reliable)\n` +
+						`    try {\n` +
+						`      const vc = __getVendorCore();\n` +
+						`      if (vc && vc[p] !== undefined) return vc[p];\n` +
+						`    } catch {}\n` +
+						`    // Fallback to globalThis for things like Frame, Application, Page\n` +
+						`    try {\n` +
+						`      const v = g[p];\n` +
+						`      if (v !== undefined) return v;\n` +
+						`    } catch {}\n` +
+						`    return undefined;\n` +
+						`  }\n` +
+						`});\n` +
+						`// Default export: namespace-like proxy\n` +
+						`export default __core;\n`;
+					res.statusCode = 200;
+					res.end(code);
+				} catch (e) {
+					next();
+				}
+			});
+
+			// 2.6b) ESM bridge for @angular/core: GET /ns/angular-core[/<ver>][?p=sub/path]
+			// This ensures Angular's internal APIs (ɵɵdefineComponent, etc.) are available during HMR
+			server.middlewares.use(async (req, res, next) => {
+				try {
+					const urlObj = new URL(req.url || '', 'http://localhost');
+					if (!(urlObj.pathname === '/ns/angular-core' || /^\/ns\/angular-core\/[\d]+$/.test(urlObj.pathname))) return next();
+					res.setHeader('Access-Control-Allow-Origin', '*');
+					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+					res.setHeader('Pragma', 'no-cache');
+					res.setHeader('Expires', '0');
+					const verSeg = urlObj.pathname.replace(/^\/ns\/angular-core\/?/, '');
+					const ver = /^[0-9]+$/.test(verSeg) ? verSeg : String(graphVersion || 0);
+					const sub = urlObj.searchParams.get('p') || '';
+					const key = sub ? `@angular/core/${sub}` : `@angular/core`;
+					// HTTP-only Angular core bridge: export a proxy that maps property access to the vendor registry
+					// This is critical for Angular HMR because compiled components use internal APIs like ɵɵdefineComponent
+					let code =
+						REQUIRE_GUARD_SNIPPET +
+						`// [ns-angular-core-bridge][v${ver}] HTTP-only ESM bridge for @angular/core\n` +
+						`const g = globalThis;\n` +
+						`const reg = (g.__nsVendorRegistry ||= new Map());\n` +
+						`const __getAngularCore = () => {\n` +
+						`  try {\n` +
+						`    // First try vendor registry\n` +
+						`    const m = reg && reg.get ? (reg.get(${JSON.stringify(key)}) || reg.get('@angular/core')) : null;\n` +
+						`    if (m) return m;\n` +
+						`  } catch {}\n` +
+						`  // Fallback to globalThis.__angularCore (set by main-entry)\n` +
+						`  try {\n` +
+						`    const directCore = g.__angularCore;\n` +
+						`    if (directCore) return directCore;\n` +
+						`  } catch {}\n` +
+						`  return null;\n` +
+						`};\n` +
+						`const __angularCore = __getAngularCore();\n` +
+						`if (!__angularCore) {\n` +
+						`  console.error('[ns-angular-core-bridge] @angular/core not found in vendor registry or globalThis');\n` +
+						`}\n` +
+						`// Create a proxy that forwards all property access to the actual @angular/core module\n` +
+						`const __core = new Proxy({}, {\n` +
+						`  get(_t, p) {\n` +
+						`    if (p === 'default') return __core;\n` +
+						`    if (p === Symbol.toStringTag) return 'Module';\n` +
+						`    if (p === '__esModule') return true;\n` +
+						`    try {\n` +
+						`      const ac = __getAngularCore();\n` +
+						`      if (ac && ac[p] !== undefined) return ac[p];\n` +
+						`    } catch {}\n` +
+						`    return undefined;\n` +
+						`  },\n` +
+						`  has(_t, p) {\n` +
+						`    try {\n` +
+						`      const ac = __getAngularCore();\n` +
+						`      return ac && p in ac;\n` +
+						`    } catch {}\n` +
+						`    return false;\n` +
+						`  }\n` +
+						`});\n` +
 						`// Default export: namespace-like proxy\n` +
 						`export default __core;\n`;
 					res.statusCode = 200;
@@ -4934,18 +5295,23 @@ export const piniaSymbol = p.piniaSymbol;
 				return;
 			}
 			// Graph update for this file change (wrapped to avoid aborting rest of handler)
-			try {
-				const mod = server.moduleGraph.getModuleById(file) || server.moduleGraph.getModuleById(file + '?vue');
-				if (mod) {
-					const deps = Array.from(mod.importedModules)
-						.map((m) => (m.id || '').replace(/\?.*$/, ''))
-						.filter(Boolean);
-					const transformed = await server.transformRequest(mod.id!);
-					const code = transformed?.code || '';
-					upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps);
+			// Skip HTML files - they are Angular templates processed inline by the Angular compiler,
+			// not standalone JS modules. Attempting to transform them causes parse errors.
+			const isHtmlFile = file.endsWith('.html');
+			if (!isHtmlFile) {
+				try {
+					const mod = server.moduleGraph.getModuleById(file) || server.moduleGraph.getModuleById(file + '?vue');
+					if (mod) {
+						const deps = Array.from(mod.importedModules)
+							.map((m) => (m.id || '').replace(/\?.*$/, ''))
+							.filter(Boolean);
+						const transformed = await server.transformRequest(mod.id!);
+						const code = transformed?.code || '';
+						upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps);
+					}
+				} catch (e) {
+					if (verbose) console.warn('[hmr-ws][v2] failed graph update', e);
 				}
-			} catch (e) {
-				if (verbose) console.warn('[hmr-ws][v2] failed graph update', e);
 			}
 
 			const root = server.config.root || process.cwd();
@@ -4995,15 +5361,116 @@ export const piniaSymbol = p.piniaSymbol;
 				const isHtml = file.endsWith('.html');
 				const isTs = file.endsWith('.ts');
 				if (!(isHtml || isTs)) return;
+
+				const root = server.config.root || process.cwd();
+				const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+				const origin = getServerOrigin(server);
+				const timestamp = Date.now();
+
+				// Try to fetch HMR update code from AnalogJS's live reload plugin.
+				// This uses Angular's ɵɵreplaceMetadata to patch component definitions in place.
+				let hmrCode: string | null = null;
+
+				if (isTs) {
+					try {
+						// Wait a bit for AnalogJS to finish processing the file
+						await new Promise((resolve) => setTimeout(resolve, 150));
+
+						// Try to extract the component class name from the file
+						const fs = await import('fs');
+						const fileContent = fs.readFileSync(file, 'utf-8');
+						const classMatch = fileContent.match(/export\s+class\s+(\w+)/);
+						const className = classMatch ? classMatch[1] : null;
+
+						if (className && verbose) {
+							console.log('[hmr-ws][angular-v2] Detected component class:', className);
+						}
+
+						if (className) {
+							// The component ID format used by AnalogJS is: "relative/path.ts@ClassName"
+							const relPath = rel.replace(/^\//, '');
+							const componentId = encodeURIComponent(`${relPath}@${className}`);
+							const componentUrl = `/@ng/component?c=${componentId}`;
+
+							if (verbose) {
+								console.log('[hmr-ws][angular-v2] Trying to fetch HMR code from:', componentUrl);
+							}
+
+							// Fetch via HTTP from the dev server
+							const port = (server as any).config?.server?.port || 5173;
+							try {
+								const resp = await fetch(`http://localhost:${port}${componentUrl}`);
+								if (resp.ok) {
+									const code = await resp.text();
+									if (code && code.trim().length > 0 && !code.includes('<!DOCTYPE') && !code.includes('Cannot GET')) {
+										hmrCode = code;
+										if (verbose) {
+											console.log('[hmr-ws][angular-v2] Got HMR code, length:', hmrCode.length);
+											console.log('[hmr-ws][angular-v2] HMR code preview:', hmrCode.substring(0, 200));
+										}
+									}
+								} else if (verbose) {
+									console.log('[hmr-ws][angular-v2] HMR endpoint returned status:', resp.status);
+								}
+							} catch (fetchErr) {
+								if (verbose) {
+									console.log('[hmr-ws][angular-v2] Fetch HMR code failed:', fetchErr);
+								}
+							}
+						}
+
+						if (hmrCode) {
+							// Use the v2 transformer to analyze and prepare the HMR payload
+							const transformed = transformAngularHmrCode(hmrCode, rel, timestamp);
+
+							if (!transformed) {
+								if (verbose) {
+									console.warn('[hmr-ws][angular-v2] Transform failed: could not parse HMR code');
+								}
+								// Fall through to re-bootstrap
+							} else {
+								// Create the message using the helper
+								const hmrMsg = createAngularHmrMessage(transformed);
+
+								wss.clients.forEach((client) => {
+									if (client.readyState === client.OPEN) {
+										try {
+											client.send(JSON.stringify(hmrMsg));
+										} catch {}
+									}
+								});
+
+								if (verbose) {
+									console.log('[hmr-ws][angular-v2] Sent HMR payload to', wss.clients.size, 'clients');
+									console.log('[hmr-ws][angular-v2] Payload summary:', {
+										componentName: transformed.metadata.componentName,
+										functionName: transformed.metadata.functionName,
+										namespaceCount: transformed.metadata.namespacesCount,
+										localDependencies: transformed.metadata.localDependencies.map((d) => d.name),
+									});
+								}
+
+								// Don't send ns:angular-update - the HMR code will handle it
+								return;
+							}
+						}
+					} catch (err) {
+						if (verbose) {
+							console.log('[hmr-ws][angular-v2] HMR code fetch error:', err);
+						}
+					}
+				}
+
+				// Fallback: Send regular update message (triggers re-bootstrap)
 				try {
-					const root = server.config.root || process.cwd();
-					const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
-					const origin = getServerOrigin(server);
+					if (verbose) {
+						console.log('[hmr-ws][angular-v2] Falling back to re-bootstrap for:', rel);
+					}
 					const msg = {
 						type: 'ns:angular-update',
 						origin,
 						path: rel,
-						timestamp: Date.now(),
+						timestamp,
 					} as const;
 					wss.clients.forEach((client) => {
 						if (client.readyState === client.OPEN) {
@@ -5011,7 +5478,7 @@ export const piniaSymbol = p.piniaSymbol;
 						}
 					});
 				} catch (error) {
-					console.warn('[hmr-ws][angular] update failed:', error);
+					console.warn('[hmr-ws][angular-v2] update failed:', error);
 				}
 				return;
 			}

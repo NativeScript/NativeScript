@@ -117,10 +117,16 @@ if (!fs.existsSync(tsConfigAppPath) && fs.existsSync(tsConfigPath)) {
 	tsConfig = tsConfigPath;
 }
 
+// Track HTML template -> TS component relationships for watch mode rebuilds
+const templateToComponentMap = new Map<string, string>();
+// Track which TS files need recompilation due to HTML changes
+const pendingHtmlChanges = new Set<string>();
+
 const plugins = [
 	// Allow external html template changes to trigger hot reload: Make .ts files depend on their .html templates
 	{
 		name: 'angular-template-deps',
+		enforce: 'pre',
 		transform(code, id) {
 			// For .ts files that reference templateUrl, add the .html file as a dependency
 			if (id.endsWith('.ts') && code.includes('templateUrl')) {
@@ -129,9 +135,36 @@ const plugins = [
 					const htmlPath = path.resolve(path.dirname(id), templateUrlMatch[1]);
 					// Add the HTML file as a dependency so Vite watches it
 					this.addWatchFile(htmlPath);
+					// Track the relationship for build watch mode
+					templateToComponentMap.set(htmlPath, id);
 				}
 			}
 			return null;
+		},
+		// Handle file changes in build watch mode - queue TS files for recompilation
+		watchChange(id, change) {
+			// When an HTML template changes, mark the TS component for recompilation
+			if (id.endsWith('.html') && templateToComponentMap.has(id)) {
+				const tsPath = templateToComponentMap.get(id);
+				if (tsPath) {
+					pendingHtmlChanges.add(tsPath);
+				}
+			}
+		},
+		// On build start, touch any TS files that had HTML changes
+		buildStart() {
+			if (pendingHtmlChanges.size > 0) {
+				const now = new Date();
+				for (const tsPath of pendingHtmlChanges) {
+					try {
+						// Touch the TS file to force Angular to recompile it
+						fs.utimesSync(tsPath, now, now);
+					} catch (e) {
+						// Ignore errors
+					}
+				}
+				pendingHtmlChanges.clear();
+			}
 		},
 	},
 	// Transform Angular partial declarations in node_modules to avoid runtime JIT
@@ -140,7 +173,7 @@ const plugins = [
 	// Simplify: rely on Vite pre plugin (load/transform) for linking; Rollup safety net disabled unless re-enabled later
 	// angularRollupLinker(process.cwd()),
 	angular({
-		liveReload: false, // Disable live reload in favor of HMR
+		liveReload: true, // Enable live reload with ɵɵreplaceMetadata for component HMR
 		tsconfig: tsConfig,
 	}),
 	// Post-phase linker to catch any declarations introduced after other transforms (including project code)
@@ -194,21 +227,33 @@ export const angularConfig = ({ mode }): UserConfig => {
 		apply: 'build' as const,
 		enforce: 'post' as const,
 		async generateBundle(_options, bundle) {
+			const debug = process.env.VITE_DEBUG_LOGS === '1' || process.env.VITE_DEBUG_LOGS === 'true';
+			if (debug) {
+				console.log('[ns-angular-linker-post] generateBundle called with', Object.keys(bundle).length, 'files');
+			}
 			function isNsAngularPolyfillsChunk(chunk: any): boolean {
 				if (!chunk || !(chunk as any).modules) return false;
 				return Object.keys((chunk as any).modules).some((m) => m.includes('node_modules/@nativescript/angular/fesm2022/nativescript-angular-polyfills.mjs'));
 			}
 			const { babel, linkerPlugin } = await ensureSharedAngularLinker(process.cwd());
-			if (!babel || !linkerPlugin) return;
+			if (!babel || !linkerPlugin) {
+				if (debug) {
+					console.log('[ns-angular-linker-post] babel or linkerPlugin not available');
+				}
+				return;
+			}
 			const strict = process.env.NS_STRICT_NG_LINK === '1' || process.env.NS_STRICT_NG_LINK === 'true';
 			const enforceStrict = process.env.NS_STRICT_NG_LINK_ENFORCE === '1' || process.env.NS_STRICT_NG_LINK_ENFORCE === 'true';
-			const debug = process.env.VITE_DEBUG_LOGS === '1' || process.env.VITE_DEBUG_LOGS === 'true';
 			const unlinked: string[] = [];
 			for (const [fileName, chunk] of Object.entries(bundle)) {
 				if (!fileName.endsWith('.mjs') && !fileName.endsWith('.js')) continue;
 				if (chunk && (chunk as any).type === 'chunk') {
 					const code = (chunk as any).code as string;
 					if (!code) continue;
+					const hasNgDeclare = containsRealNgDeclare(code);
+					if (debug) {
+						console.log('[ns-angular-linker-post] checking', fileName, 'hasNgDeclare:', hasNgDeclare);
+					}
 					const isNsPolyfills = isNsAngularPolyfillsChunk(chunk);
 					try {
 						const res = await (babel as any).transformAsync(code, {
@@ -220,6 +265,10 @@ export const angularConfig = ({ mode }): UserConfig => {
 							plugins: [linkerPlugin],
 						});
 						const finalCode = res?.code && res.code !== code ? res.code : code;
+						const stillHasNgDeclare = containsRealNgDeclare(finalCode);
+						if (debug) {
+							console.log('[ns-angular-linker-post] after linking', fileName, 'changed:', finalCode !== code, 'stillHasNgDeclare:', stillHasNgDeclare);
+						}
 						if (finalCode !== code) {
 							(chunk as any).code = finalCode;
 							if (debug) {
@@ -228,10 +277,13 @@ export const angularConfig = ({ mode }): UserConfig => {
 								} catch {}
 							}
 						}
-						if (strict && !isNsPolyfills && containsRealNgDeclare(finalCode)) {
+						if (strict && !isNsPolyfills && stillHasNgDeclare) {
 							unlinked.push(fileName);
 						}
-					} catch {
+					} catch (err) {
+						if (debug) {
+							console.log('[ns-angular-linker-post] error linking', fileName, err);
+						}
 						if (strict) unlinked.push(fileName);
 					}
 				}
@@ -315,35 +367,33 @@ export const angularConfig = ({ mode }): UserConfig => {
 
 	const enableRollupLinker = process.env.NS_ENABLE_ROLLUP_LINKER === '1' || process.env.NS_ENABLE_ROLLUP_LINKER === 'true' || hmrActive;
 
+	// Build combined aliases
+	const resolveAlias: Array<{ find: RegExp | string; replacement: string }> = [
+		// Map Angular deep ESM paths to bare package ids - MUST be first for priority
+		{ find: /^@angular\/([^/]+)\/fesm2022\/.*\.mjs$/, replacement: '@angular/$1' },
+		{ find: /^@nativescript\/angular\/fesm2022\/.*\.mjs$/, replacement: '@nativescript/angular' },
+		// Note: RxJS 7.x uses dist/esm for modern builds; let Vite resolve via package.json exports
+	];
+	// Add animation shims if animations are disabled
+	if (disableAnimations) {
+		resolveAlias.push(
+			{
+				find: /^@angular\/animations(\/.+)?$/, // match subpaths too
+				replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+			},
+			{
+				find: /^@angular\/platform-browser\/animations(\/.+)?$/,
+				replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+			},
+		);
+	}
+
 	return mergeConfig(baseConfig({ mode, flavor: 'angular' }), {
 		plugins: [...plugins, ...(enableRollupLinker ? [angularRollupLinker(process.cwd())] : []), renderChunkLinker, postLinker],
 		// Always alias fesm2022 deep imports to package root so vendor bridge can externalize properly
 		resolve: {
-			alias: [
-				// Map Angular deep ESM paths to bare package ids
-				{ find: /^@angular\/([^/]+)\/fesm2022\/.*\.mjs$/, replacement: '@angular/$1' },
-				{ find: /^@nativescript\/angular\/fesm2022\/.*\.mjs$/, replacement: '@nativescript/angular' },
-				// Prefer modern RxJS builds; avoid esm5 which explodes module count and memory
-				{ find: /^rxjs\/dist\/esm5\/(.*)$/, replacement: 'rxjs/dist/esm2015/$1' },
-				{ find: /^rxjs\/operators$/, replacement: 'rxjs/dist/esm2015/operators/index.js' },
-				{ find: /^rxjs$/, replacement: 'rxjs/dist/esm2015/index.js' },
-				// Existing optional animations shims
-			],
+			alias: resolveAlias,
 		},
-		...(disableAnimations && {
-			resolve: {
-				alias: [
-					{
-						find: /^@angular\/animations(\/.+)?$/, // match subpaths too
-						replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
-					},
-					{
-						find: /^@angular\/platform-browser\/animations(\/.+)?$/,
-						replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
-					},
-				],
-			},
-		}),
 		// Disable dependency optimization entirely for NativeScript Angular HMR.
 		// Vite 5.1+: use noDiscovery with an empty include list (disabled was removed).
 		// The HTTP loader + vendor bridge manage dependencies; pre-bundling can OOM.

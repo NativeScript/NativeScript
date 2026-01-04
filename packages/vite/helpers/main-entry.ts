@@ -77,15 +77,44 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				imports += `globalThis.__VISIONOS__ = ${opts.platform === 'visionos' ? 'true' : 'false'};\n`;
 				imports += `globalThis.__APPLE__ = ${opts.platform === 'ios' || opts.platform === 'visionos' ? 'true' : 'false'};\n`;
 				// ---- Vendor manifest bootstrap ----
-				// Use single self-contained vendor module to avoid extra imports affecting chunking
-				imports += "import vendorManifest, { __nsVendorModuleMap } from '@nativescript/vendor';\n";
-				imports += "import { installVendorBootstrap } from '@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js';\n";
-				if (opts.verbose) {
-					imports += `console.info('[ns-entry] vendor manifest imported', { keys: Object.keys(vendorManifest||{}).length, hasMap: typeof __nsVendorModuleMap === 'object' });\n`;
-				}
-				imports += 'installVendorBootstrap(vendorManifest, __nsVendorModuleMap, __nsVerboseLog);\n';
-				if (opts.verbose) {
-					imports += `console.info('[ns-entry] vendor bootstrap installed');\n`;
+				// For Angular, skip the full vendor manifest plugin to avoid duplicate identifier issues
+				// with the esbuild-bundled vendor output, but still register @nativescript/core directly.
+				if (flavor === 'angular') {
+					// Angular-specific: register all core Angular/NativeScript modules in vendor registry
+					// for robust HMR dependency resolution
+					imports += "import * as __nsCore from '@nativescript/core';\n";
+					imports += "import * as __nsAngular from '@nativescript/angular';\n";
+					imports += "import * as __angularCore from '@angular/core';\n";
+					imports += "import * as __angularCommon from '@angular/common';\n";
+					imports += `(function __nsRegisterCoreForAngular() {
+  try {
+    const g = globalThis;
+    const registry = g.__nsVendorRegistry || (g.__nsVendorRegistry = new Map());
+    // Register @nativescript/core
+    registry.set('@nativescript/core', __nsCore);
+    g.__nativescriptCore = __nsCore;
+    // Register @nativescript/angular
+    registry.set('@nativescript/angular', __nsAngular);
+    g.__nativescriptAngular = __nsAngular;
+    // Register @angular/core
+    registry.set('@angular/core', __angularCore);
+    g.__angularCore = __angularCore;
+    // Register @angular/common
+    registry.set('@angular/common', __angularCommon);
+    ${opts.verbose ? "console.info('[ns-entry] Angular core modules exposed on globalThis for HMR');" : ''}
+  } catch (e) { try { console.error('[ns-entry] failed to register core for Angular', e); } catch {} }
+})();\n`;
+				} else {
+					// Non-Angular: use full vendor manifest bootstrap
+					imports += "import vendorManifest, { __nsVendorModuleMap } from '@nativescript/vendor';\n";
+					imports += "import { installVendorBootstrap } from '@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js';\n";
+					if (opts.verbose) {
+						imports += `console.info('[ns-entry] vendor manifest imported', { keys: Object.keys(vendorManifest||{}).length, hasMap: typeof __nsVendorModuleMap === 'object' });\n`;
+					}
+					imports += 'installVendorBootstrap(vendorManifest, __nsVendorModuleMap, __nsVerboseLog);\n';
+					if (opts.verbose) {
+						imports += `console.info('[ns-entry] vendor bootstrap installed');\n`;
+					}
 				}
 			}
 
@@ -222,7 +251,11 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			// ---- Application main entry ----
-			if (opts.hmrActive) {
+			// For Angular, skip HTTP-only boot because Angular modules can't be served via HTTP
+			// without vendor manifest (which causes duplicate identifier issues with esbuild).
+			// Angular HMR will use file watching + full rebuild instead of HTTP module loading.
+			const useHttpBoot = opts.hmrActive && flavor !== 'angular';
+			if (useHttpBoot) {
 				// HTTP-only dev boot: try to import the entire app over HTTP; if not reachable, keep retrying.
 				if (opts.verbose) {
 					imports += `console.info('[ns-entry] including HTTP-only boot', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;

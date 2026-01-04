@@ -82,6 +82,74 @@ export function getCore(name: 'Application' | 'Frame' | 'Page' | 'Label'): any {
 	return undefined;
 }
 
+/**
+ * Universal module resolver for HMR.
+ * Resolves any module by its specifier (e.g., '@angular/core', '@nativescript/angular').
+ * This is THE canonical way to access any dependency during HMR.
+ */
+export function requireModule(specifier: string): any {
+	const g: any = globalThis;
+
+	// 1) Vendor registry - the primary source of truth for all npm dependencies
+	try {
+		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
+		if (reg && typeof reg.get === 'function') {
+			const mod = reg.get(specifier);
+			if (mod) return mod;
+		}
+	} catch {}
+
+	// 2) Try __nsVendorRequire / __nsRequire - synchronous module resolution
+	try {
+		const req = g.__nsVendorRequire || g.__nsRequire || g.require;
+		if (typeof req === 'function') {
+			try {
+				const mod = req(specifier);
+				if (mod) return mod;
+			} catch {}
+		}
+	} catch {}
+
+	// 3) Try __nativeRequire for native module resolution
+	try {
+		const nativeReq = g.__nativeRequire;
+		if (typeof nativeReq === 'function') {
+			try {
+				const mod = nativeReq(specifier, '/');
+				if (mod) return mod;
+			} catch {}
+		}
+	} catch {}
+
+	return undefined;
+}
+
+/**
+ * Get a specific export from a module.
+ * @param specifier Module path (e.g., '@angular/core')
+ * @param exportName The export to get (e.g., 'Component')
+ * @returns The export value or undefined
+ */
+export function getModuleExport(specifier: string, exportName: string): any {
+	const mod = requireModule(specifier);
+	if (!mod) return undefined;
+
+	// Try direct access
+	if (mod[exportName] !== undefined) return mod[exportName];
+
+	// Try .default wrapper
+	if (mod.default && mod.default[exportName] !== undefined) {
+		return mod.default[exportName];
+	}
+
+	return undefined;
+}
+
+// Resolve Angular/NativeScript Angular modules for HMR - DEPRECATED, use requireModule
+export function getAngularModule(modulePath: string): any {
+	return requireModule(modulePath);
+}
+
 // last mounted app instance
 let CURRENT_APP: any | null = null;
 export function setCurrentApp(app: any | null) {

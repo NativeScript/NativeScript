@@ -6,7 +6,7 @@
  * The HMR client is evaluated via HTTP ESM on device; static imports would create secondary instances.
  */
 
-import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore } from './utils.js';
+import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore, requireModule } from './utils.js';
 import { handleCssUpdates } from './css-handler.js';
 
 // satisfied by define replacement
@@ -50,7 +50,8 @@ ensureCoreAliasesOnGlobalThis();
  * Flavor hooks
  */
 import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, ensurePiniaOnApp, addSfcMapping, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate } from '../frameworks/vue/client/index.js';
-import { handleAngularHotUpdateMessage, installAngularHmrClientHooks } from '../frameworks/angular/client/index.js';
+import { handleAngularHotUpdateMessage, handleAngularHmrCodeMessage, installAngularHmrClientHooks } from '../frameworks/angular/client/index.js';
+import { handleAngularHmrV2, isAngularHmrV2Message } from '../frameworks/angular/client/hmr-v2.js';
 switch (__NS_TARGET_FLAVOR__) {
 	case 'vue':
 		installNsVueDevShims();
@@ -562,7 +563,11 @@ try {
 
 async function processQueue(): Promise<void> {
 	if (!(globalThis as any).__NS_HMR_BOOT_COMPLETE__) {
-		if (VERBOSE) console.log('[hmr][gate] deferring HMR eval until boot complete');
+		// Only log once per batch to avoid spam
+		if (VERBOSE && !(globalThis as any).__NS_HMR_GATE_LOGGED__) {
+			console.log('[hmr][gate] waiting for boot complete...');
+			(globalThis as any).__NS_HMR_GATE_LOGGED__ = true;
+		}
 		setTimeout(() => {
 			try {
 				processQueue();
@@ -570,6 +575,8 @@ async function processQueue(): Promise<void> {
 		}, 150);
 		return Promise.resolve();
 	}
+	// Clear the gate log flag when boot completes
+	(globalThis as any).__NS_HMR_GATE_LOGGED__ = false;
 	if (processingQueue) return processingPromise || Promise.resolve();
 	processingQueue = true;
 	processingPromise = (async () => {
@@ -882,7 +889,29 @@ async function handleHmrMessage(ev: any) {
 			const deltaIds = Array.isArray(msg.changed) ? msg.changed.map((c: any) => c?.id).filter(Boolean) : [];
 			notifyAppHmrUpdate('delta', deltaIds);
 			return;
-		} else if (handleAngularHotUpdateMessage(msg, { getCore, verbose: VERBOSE })) {
+		} else if (isAngularHmrV2Message(msg)) {
+			// Angular component-level HMR v2 with pre-analyzed payload
+			try {
+				const success = await handleAngularHmrV2(msg, { getCore: requireModule, verbose: VERBOSE });
+				if (success) {
+					if (VERBOSE) {
+						console.log('[hmr-client] Angular HMR v2 completed successfully');
+					}
+				} else {
+					if (VERBOSE) {
+						console.warn('[hmr-client] Angular HMR v2 returned false, may need fallback');
+					}
+				}
+			} catch (error) {
+				if (VERBOSE) {
+					console.error('[hmr-client] Angular HMR v2 error:', error);
+				}
+			}
+			return;
+		} else if (handleAngularHmrCodeMessage(msg, { getCore: requireModule, verbose: VERBOSE })) {
+			// Angular component-level HMR with ɵɵreplaceMetadata code (legacy v1)
+			return;
+		} else if (handleAngularHotUpdateMessage(msg, { getCore: requireModule, verbose: VERBOSE })) {
 			return;
 		}
 	}
@@ -916,6 +945,27 @@ async function handleHmrMessage(ev: any) {
 			return;
 		} catch (e) {
 			console.warn('[hmr-client] CSS updates handling failed:', e);
+			return;
+		}
+	}
+	// Handle custom HMR events (e.g., angular:component-update)
+	// These are dispatched to listeners registered via import.meta.hot.on()
+	if (msg.type === 'ns:hot-event' && typeof msg.event === 'string') {
+		try {
+			const dispatchFn = (globalThis as any).__NS_DISPATCH_HOT_EVENT__;
+			if (typeof dispatchFn === 'function') {
+				const success = dispatchFn(msg.event, msg.data);
+				if (VERBOSE) {
+					console.log('[hmr-client] Dispatched hot event:', msg.event, 'success:', success);
+				}
+			} else if (VERBOSE) {
+				console.warn('[hmr-client] __NS_DISPATCH_HOT_EVENT__ not available');
+			}
+			return;
+		} catch (e) {
+			if (VERBOSE) {
+				console.warn('[hmr-client] Hot event dispatch failed:', e);
+			}
 			return;
 		}
 	}

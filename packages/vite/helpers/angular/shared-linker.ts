@@ -10,33 +10,31 @@ export async function ensureSharedAngularLinker(projectRoot?: string) {
 
 	const req = createRequire(projectRoot ? projectRoot + '/package.json' : import.meta.url);
 	let localBabel: typeof import('@babel/core') | null = null;
-	let createLinker: any = null;
+	let linkerPlugin: any = null;
 
 	try {
 		const babelPath = req.resolve('@babel/core');
 		const linkerPath = req.resolve('@angular/compiler-cli/linker/babel');
 		localBabel = (await import(babelPath)) as any;
 		const linkerMod: any = await import(linkerPath);
-		createLinker = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin || null;
+		// Use the default linker plugin which includes fileSystem and logger
+		linkerPlugin = linkerMod.default;
 	} catch {
 		try {
 			localBabel = (await import('@babel/core')) as any;
 		} catch {}
 		try {
 			const linkerMod: any = await import('@angular/compiler-cli/linker/babel');
-			createLinker = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin || null;
+			linkerPlugin = linkerMod.default;
 		} catch {}
 	}
 
-	if (!localBabel || !createLinker) {
+	if (!localBabel || !linkerPlugin) {
 		return { babel: null as any, linkerPlugin: null as any };
 	}
 
 	sharedBabel = localBabel;
-	sharedLinkerPlugin = createLinker({
-		sourceMapping: false,
-		linkPartialDeclaration: true,
-	} as any);
+	sharedLinkerPlugin = linkerPlugin;
 
 	return { babel: sharedBabel, linkerPlugin: sharedLinkerPlugin };
 }
