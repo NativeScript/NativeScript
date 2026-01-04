@@ -233,6 +233,23 @@ jobs:
             --verbose \
             --dry-run
 
+      # BUILD: Ensure projects are built before publishing
+      - name: Build affected projects (main)
+        if: ${{ steps.ctx.outputs.mode == 'main' && steps.affected.outputs.count != '0' }}
+        run: npx nx run-many -t build --projects "${{ steps.affected.outputs.projects }}" --verbose
+
+      - name: Build projects (dispatch)
+        if: ${{ steps.ctx.outputs.mode == 'dispatch' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          scope="${{ steps.ctx.outputs.scope }}"
+          if [[ -n "$scope" ]]; then
+            npx nx run-many -t build --projects "$scope" --verbose
+          else
+            npx nx run-many -t build --all --verbose
+          fi
+
       # PUBLISH: OIDC trusted publishing (default). Avoid any lingering token auth.
       - name: nx release publish (OIDC)
         if: ${{ steps.ctx.outputs.mode != 'tag' && steps.ctx.outputs.dry_run != 'true' && vars.USE_NPM_TOKEN != 'true' && (steps.ctx.outputs.mode != 'main' || steps.affected.outputs.count != '0') }}
@@ -291,6 +308,10 @@ jobs:
           npx nx release publish --tag "${{ steps.ctx.outputs.dist_tag }}" --access public --verbose --dry-run
 
       # Tag-triggered publishing: publish the single package referenced by the tag.
+      - name: Build project before publish (tag)
+        if: ${{ steps.ctx.outputs.mode == 'tag' }}
+        run: npx nx build "${{ steps.taginfo.outputs.project }}" --verbose
+
       - name: nx release publish (tag)
         if: ${{ steps.ctx.outputs.mode == 'tag' && vars.USE_NPM_TOKEN != 'true' }}
         shell: bash
