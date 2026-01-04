@@ -1,3 +1,22 @@
+## 9.0.11 (2026-01-04)
+
+### 🚀 Features
+
+- **config:** remote module security ([#11040](https://github.com/NativeScript/NativeScript/pull/11040))
+
+### 🩹 Fixes
+
+- **ios:** SegmentedBar update selected text color when selected background color changes ([#11016](https://github.com/NativeScript/NativeScript/pull/11016))
+
+### ❤️ Thank You
+
+- Jorge Cancino Oteíza @JorgeOteiza
+- Nathan Walker
+
+## 9.0.10 (2025-12-21)
+
+- CI workflow adjustments, same changes as 9.0.9
+
 ## 9.0.9 (2025-12-21)
 
 ### 🚀 Features
