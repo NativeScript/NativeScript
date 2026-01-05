@@ -19,7 +19,7 @@ export default function (context: ts.TransformationContext, ...args) {
 	return (sourceFile: ts.SourceFile) => {
 		if (sourceFile.isDeclarationFile) return sourceFile;
 		let mutated = false;
-		
+
 		// Minimal mutable shape
 		type MutableNode = ts.Node & {
 			flags?: ts.NodeFlags;
@@ -182,8 +182,8 @@ export default function (context: ts.TransformationContext, ...args) {
 		}
 
 		function visitNode(node: ts.Node): ts.Node {
-		// Do not traverse synthesized helper trees; leave them intact
-	if (((node as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized ) {
+			// Do not traverse synthesized helper trees; leave them intact
+			if (((node as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
 				return node;
 			}
 			if (ts.isSourceFile(node)) {
@@ -223,7 +223,9 @@ export default function (context: ts.TransformationContext, ...args) {
 			}
 			const result: ts.Statement[] = [];
 			for (const statement of statements) {
-				if (((statement as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized) {
+				if (
+					((statement as MutableNode).flags ?? 0) & ts.NodeFlags.Synthesized
+				) {
 					result.push(statement);
 					continue;
 				}
@@ -282,22 +284,6 @@ export default function (context: ts.TransformationContext, ...args) {
 			}
 			return [changed ? factory.createNodeArray(result) : statements, changed];
 		}
-
-
-		// we detect ts-patch
-		if (args.length) {
-			const statements= ts.visitNodes(sourceFile.statements, visitNode) as unknown as ts.Statement[];
-				if (!mutated) {
-					return sourceFile;
-				}
-			const updatedSource = factory.updateSourceFile(sourceFile, statements as unknown as ts.Statement[]);
-			// Do NOT clear or rebind the entire SourceFile here. Doing so can break TS's
-			// import usage analysis and lead to import elision. The factory/update API
-			// preserves parents/bindings for original nodes (like imports). We only
-			// synthesize/bind the newly inserted class replacement statements.
-			return updatedSource;
-		}
-		
 		const updated = ts.visitNode(sourceFile, visitNode) as ts.SourceFile;
 		if (!mutated) return sourceFile;
 		return updated;
