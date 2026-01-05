@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/vite",
-	"version": "1.0.4-next.2",
+	"version": "1.0.6-next.0",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
@@ -39,5 +39,14 @@
 	"devDependencies": {
 		"@types/node": "^24.9.1",
 		"vitest": "^3.2.4"
+	},
+	"homepage": "https://docs.nativescript.org/configuration/vite",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/NativeScript/NativeScript"
+	},
+	"author": {
+		"name": "NativeScript",
+		"email": "oss@nativescript.org"
 	}
 }
