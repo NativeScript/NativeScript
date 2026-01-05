@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.31-next.2",
+	"version": "5.0.30-next.0",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -12,8 +12,7 @@
 	"license": "Apache-2.0",
 	"scripts": {
 		"test": "jest",
-		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs",
-		"prepack": "npm run test && npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"
+		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs"
 	},
 	"dependencies": {
 		"@babel/core": "^7.0.0",
@@ -79,5 +78,14 @@
 		"nativescript-vue-template-compiler": {
 			"optional": true
 		}
+	},
+	"homepage": "https://docs.nativescript.org/configuration/webpack",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/NativeScript/NativeScript"
+	},
+	"author": {
+		"name": "NativeScript",
+		"email": "oss@nativescript.org"
 	}
 }

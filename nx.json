@@ -123,7 +123,7 @@
 	"useInferencePlugins": false,
 	"defaultBase": "master",
 	"release": {
-		"projects": ["packages/*", "!packages/ui-mobile-base", "!packages/types-minimal", "!packages/winter-tc"],
+		"projects": ["packages/*", "!packages/ui-mobile-base", "!packages/types-minimal", "!packages/winter-tc", "!packages/types", "!packages/types-ios", "!packages/types-android"],
 		"projectsRelationship": "independent",
 		"changelog": {
 			"workspaceChangelog": false,
