@@ -1,3 +1,7 @@
+## 5.0.31 (2026-01-06)
+
+- LICENSE and README.md are now included in the package assets.
+
 ## 5.0.30 (2026-01-06)
 
 ### 🩹 Fixes

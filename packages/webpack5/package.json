@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.31-next.1",
+	"version": "5.0.31",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -93,5 +93,13 @@
 			"name": "NativeScript",
 			"email": "oss@nativescript.org"
 		}
+	],
+	"keywords": [
+		"NativeScript",
+		"JavaScript",
+		"Android",
+		"iOS",
+		"TypeScript",
+		"webpack"
 	]
 }
