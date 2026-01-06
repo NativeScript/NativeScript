@@ -154,50 +154,77 @@ export class Slider extends SliderBase {
 			return;
 		}
 
+		// Get dimensions
+		const density = nativeView.getContext().getResources().getDisplayMetrics().density;
+		const width = nativeView.getWidth() || 1000;
+		const trackHeight = Math.round(3 * density); // 3dp track height to match iOS
+		const cornerRadius = trackHeight / 2;
+
 		// Create colors array from gradient stops
 		const colors = Array.create('int', gradient.colorStops.length);
 		gradient.colorStops.forEach((stop, index) => {
 			colors[index] = stop.color.android;
 		});
 
-		// Get width for gradient
-		const width = nativeView.getWidth() || 1000;
-
-		// Create LinearGradient shader (left to right)
-		const shader = new android.graphics.LinearGradient(0, 0, width, 0, colors, null, android.graphics.Shader.TileMode.CLAMP);
-
-		// Create ShapeDrawable with the gradient for the progress layer
-		const progressShape = new android.graphics.drawable.ShapeDrawable(new android.graphics.drawable.shapes.RectShape());
-		progressShape.getPaint().setShader(shader);
-
-		// Wrap in ClipDrawable so it clips based on progress level
-		const progressClip = new android.graphics.drawable.ClipDrawable(progressShape, android.view.Gravity.LEFT, android.graphics.drawable.ClipDrawable.HORIZONTAL);
-
-		// Create a semi-transparent version for the background track
+		// Create semi-transparent colors for background
 		const bgColors = Array.create('int', gradient.colorStops.length);
 		gradient.colorStops.forEach((stop, index) => {
-			// Make background 30% opacity
 			const color = stop.color;
 			const alpha = Math.round(color.a * 0.3);
 			bgColors[index] = android.graphics.Color.argb(alpha, color.r, color.g, color.b);
 		});
-		const bgShader = new android.graphics.LinearGradient(0, 0, width, 0, bgColors, null, android.graphics.Shader.TileMode.CLAMP);
-		const bgShape = new android.graphics.drawable.ShapeDrawable(new android.graphics.drawable.shapes.RectShape());
-		bgShape.getPaint().setShader(bgShader);
 
-		// Create LayerDrawable with background and progress layers
+		// Create rounded corner radii
+		const radii = Array.create('float', 8);
+		for (let i = 0; i < 8; i++) {
+			radii[i] = cornerRadius;
+		}
+
+		// Background track - use GradientDrawable for proper sizing
+		const bgDrawable = new android.graphics.drawable.GradientDrawable();
+		bgDrawable.setOrientation(android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT);
+		bgDrawable.setColors(bgColors);
+		bgDrawable.setCornerRadius(cornerRadius);
+		bgDrawable.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+
+		// Progress track - use GradientDrawable
+		const progressDrawable = new android.graphics.drawable.GradientDrawable();
+		progressDrawable.setOrientation(android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT);
+		progressDrawable.setColors(colors);
+		progressDrawable.setCornerRadius(cornerRadius);
+		progressDrawable.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
+
+		// Wrap progress in ClipDrawable for clipping based on progress
+		const progressClip = new android.graphics.drawable.ClipDrawable(progressDrawable, android.view.Gravity.LEFT, android.graphics.drawable.ClipDrawable.HORIZONTAL);
+
+		// Create LayerDrawable with both layers
 		const layers = Array.create(android.graphics.drawable.Drawable, 2);
-		layers[0] = bgShape;
+		layers[0] = bgDrawable;
 		layers[1] = progressClip;
 
 		const layerDrawable = new android.graphics.drawable.LayerDrawable(layers);
 		layerDrawable.setId(0, android.R.id.background);
 		layerDrawable.setId(1, android.R.id.progress);
 
+		// Set layer height using setLayerSize (API 23+) or setLayerInset
+		// Use setLayerHeight to constrain the actual drawable height
+		const thumbHeight = Math.round(20 * density); // Approximate thumb size
+		const verticalInset = Math.round((thumbHeight - trackHeight) / 2);
+
+		layerDrawable.setLayerInset(0, 0, verticalInset, 0, verticalInset);
+		layerDrawable.setLayerInset(1, 0, verticalInset, 0, verticalInset);
+
 		// Apply to slider
 		nativeView.setProgressDrawable(layerDrawable);
 
-		// Force refresh progress to apply clipping
+		// Disable split track to remove the gap behind thumb
+		nativeView.setSplitTrack(false);
+
+		// Set max height to constrain the SeekBar
+		nativeView.setMaxHeight(thumbHeight);
+		nativeView.setMinHeight(thumbHeight);
+
+		// Force refresh progress
 		const currentProgress = nativeView.getProgress();
 		nativeView.setProgress(0);
 		nativeView.setProgress(currentProgress);

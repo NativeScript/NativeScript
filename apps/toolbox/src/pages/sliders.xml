@@ -6,7 +6,7 @@
 
     <GridLayout class="sliders-demo-page">
       <ScrollView>
-          <StackLayout ios:padding="20" visionos:padding="40">
+          <StackLayout padding="20" visionos:padding="40">
 
             <Label text="Default Slider" class="h3" marginTop="24" />
             <Slider minValue="0" maxValue="100" value="50" marginTop="12" />
