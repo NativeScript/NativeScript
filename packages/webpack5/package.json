@@ -85,7 +85,13 @@
 		"url": "https://github.com/NativeScript/NativeScript"
 	},
 	"author": {
-		"name": "NativeScript",
-		"email": "oss@nativescript.org"
-	}
+		"name": "Igor Randjelovic",
+		"email": "rigor789@gmail.com"
+	},
+	"contributors": [
+		{
+			"name": "NativeScript",
+			"email": "oss@nativescript.org"
+		}
+	]
 }
