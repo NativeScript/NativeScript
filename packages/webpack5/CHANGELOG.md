@@ -1,3 +1,17 @@
+## 5.0.31 (2026-01-06)
+
+- LICENSE and README.md are now included in the package assets.
+
+## 5.0.30 (2026-01-06)
+
+### 🩹 Fixes
+
+- **webpack:** ts-patch transform ([#11041](https://github.com/NativeScript/NativeScript/pull/11041))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 5.0.29 (2025-12-19)
 
 ### 🩹 Fixes

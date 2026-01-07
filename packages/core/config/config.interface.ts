@@ -215,6 +215,26 @@ interface IConfigEmbed extends IConfigEmbedProps {
 	android?: IConfigEmbedProps;
 }
 
+interface ISecurityConfig {
+	/**
+	 * Enable remote ES module loading in production.
+	 * Default: false
+	 *
+	 * When false, any attempt to import("https://...") in production
+	 * will throw an error.
+	 */
+	allowRemoteModules: boolean;
+
+	/**
+	 * Restrict remote modules to specific URL prefixes.
+	 * Only used when allowRemoteModules is true.
+	 *
+	 * If empty or not provided, all HTTPS URLs are allowed
+	 * (not recommended for production).
+	 */
+	remoteModuleAllowlist?: string[];
+}
+
 type BundlerType = 'webpack' | 'vite';
 
 export interface NativeScriptConfig {
@@ -315,4 +335,9 @@ export interface NativeScriptConfig {
 	 * Set project persistent hooks to run
 	 */
 	hooks?: IConfigHook[];
+
+	/**
+	 * Security configurations
+	 */
+	security?: ISecurityConfig;
 }

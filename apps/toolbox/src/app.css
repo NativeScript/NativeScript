@@ -339,3 +339,32 @@ Button {
 .text-center {
     text-align: center;
 }
+
+/* Sliders Demo Page Styles */
+.sliders-demo-page Slider.gradient-slider {
+    background: linear-gradient(to right, orangered, green, lightblue);
+}
+
+.sliders-demo-page Slider.rainbow-slider {
+    background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+}
+
+.sliders-demo-page Slider.two-color-slider {
+    background: linear-gradient(to right, #ff6b6b, #4ecdc4);
+}
+
+.sliders-demo-page Slider.sunset-slider {
+    background: linear-gradient(to right, #f12711, #f5af19);
+}
+
+.sliders-demo-page Slider.ocean-slider {
+    background: linear-gradient(to right, #2193b0, #6dd5ed);
+}
+
+.sliders-demo-page Slider.purple-slider {
+    background: linear-gradient(to right, #8e2de2, #4a00e0);
+}
+
+.sliders-demo-page Slider.stops-slider {
+    background: linear-gradient(to right, red 0%, yellow 50%, green 100%);
+}

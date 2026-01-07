@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
         with:
           egress-policy: audit
 
@@ -113,9 +113,20 @@ jobs:
           base='${{ github.event.before }}'
           head='${{ github.sha }}'
 
+          # Handle edge cases where base commit doesn't exist (first push, force-push, etc.)
+          # Use HEAD~1 as fallback, or just compare against HEAD if no parent exists
+          if [[ "$base" == "0000000000000000000000000000000000000000" ]] || ! git cat-file -e "$base" 2>/dev/null; then
+            echo "Base commit not available, falling back to HEAD~1"
+            base="HEAD~1"
+            # If HEAD~1 doesn't exist (first commit), use empty tree
+            if ! git cat-file -e "$base" 2>/dev/null; then
+              base="$(git hash-object -t tree /dev/null)"
+            fi
+          fi
+
           # Only consider libs under packages/* and exclude items configured as non-releaseable.
           affected_json=$(npx nx show projects --affected --base "$base" --head "$head" --type lib --projects "packages/*" --exclude "ui-mobile-base,types-minimal,winter-tc,types,types-ios,types-android" --json)
-          affected_list=$(printf '%s' "$affected_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s||"[]");process.stdout.write(a.join(" "));});')
+          affected_list=$(printf '%s' "$affected_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s||"[]");process.stdout.write(a.join(","));});')
           affected_count=$(printf '%s' "$affected_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s||"[]");process.stdout.write(String(a.length));});')
 
           echo "projects=${affected_list}" >> "$GITHUB_OUTPUT"
@@ -176,7 +187,6 @@ jobs:
             --preid next \
             --projects "${{ steps.affected.outputs.projects }}" \
             --git-commit \
-            --git-tag \
             --git-push \
             --verbose
 
@@ -201,7 +211,6 @@ jobs:
             --preid "${{ steps.ctx.outputs.dist_tag }}" \
             "${projects_arg[@]}" \
             --git-commit \
-            --git-tag \
             --git-push \
             --verbose
 
@@ -224,9 +233,26 @@ jobs:
             --verbose \
             --dry-run
 
+      # BUILD: Ensure projects are built before publishing
+      - name: Build affected projects (main)
+        if: ${{ steps.ctx.outputs.mode == 'main' && steps.affected.outputs.count != '0' }}
+        run: npx nx run-many -t build --projects "${{ steps.affected.outputs.projects }}" --verbose
+
+      - name: Build projects (dispatch)
+        if: ${{ steps.ctx.outputs.mode == 'dispatch' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          scope="${{ steps.ctx.outputs.scope }}"
+          if [[ -n "$scope" ]]; then
+            npx nx run-many -t build --projects "$scope" --verbose
+          else
+            npx nx run-many -t build --all --verbose
+          fi
+
       # PUBLISH: OIDC trusted publishing (default). Avoid any lingering token auth.
-      - name: nx release publish (OIDC)
-        if: ${{ steps.ctx.outputs.mode != 'tag' && steps.ctx.outputs.dry_run != 'true' && vars.USE_NPM_TOKEN != 'true' && (steps.ctx.outputs.mode != 'main' || steps.affected.outputs.count != '0') }}
+      - name: nx release publish (OIDC, main)
+        if: ${{ steps.ctx.outputs.mode == 'main' && steps.affected.outputs.count != '0' && vars.USE_NPM_TOKEN != 'true' }}
         shell: bash
         env:
           NPM_CONFIG_PROVENANCE: true
@@ -240,11 +266,39 @@ jobs:
           fi
 
           npx nx release publish \
+            --projects "${{ steps.affected.outputs.projects }}" \
             --tag "${{ steps.ctx.outputs.dist_tag }}" \
             --access public \
             --verbose
 
-      - name: nx release publish (OIDC, dry-run)
+      - name: nx release publish (OIDC, dispatch)
+        if: ${{ steps.ctx.outputs.mode == 'dispatch' && steps.ctx.outputs.dry_run != 'true' && vars.USE_NPM_TOKEN != 'true' }}
+        shell: bash
+        env:
+          NPM_CONFIG_PROVENANCE: true
+          NODE_AUTH_TOKEN: ""
+        run: |
+          set -euo pipefail
+          unset NODE_AUTH_TOKEN
+          rm -f ~/.npmrc || true
+          if [[ -n "${NPM_CONFIG_USERCONFIG:-}" ]]; then
+            rm -f "$NPM_CONFIG_USERCONFIG" || true
+          fi
+
+          scope="${{ steps.ctx.outputs.scope }}"
+          if [[ -n "$scope" ]]; then
+            projects_arg="--projects $scope"
+          else
+            projects_arg=""
+          fi
+
+          npx nx release publish \
+            $projects_arg \
+            --tag "${{ steps.ctx.outputs.dist_tag }}" \
+            --access public \
+            --verbose
+
+      - name: nx release publish (OIDC, dispatch dry-run)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && inputs.dry-run && vars.USE_NPM_TOKEN != 'true' }}
         shell: bash
         env:
@@ -258,31 +312,67 @@ jobs:
             rm -f "$NPM_CONFIG_USERCONFIG" || true
           fi
 
+          scope="${{ steps.ctx.outputs.scope }}"
+          if [[ -n "$scope" ]]; then
+            projects_arg="--projects $scope"
+          else
+            projects_arg=""
+          fi
+
           npx nx release publish \
+            $projects_arg \
             --tag "${{ steps.ctx.outputs.dist_tag }}" \
             --access public \
             --verbose \
             --dry-run
 
       # PUBLISH: token fallback (only when explicitly enabled via repo/environment variable USE_NPM_TOKEN=true).
-      - name: nx release publish (token)
-        if: ${{ steps.ctx.outputs.mode != 'tag' && steps.ctx.outputs.dry_run != 'true' && vars.USE_NPM_TOKEN == 'true' && (steps.ctx.outputs.mode != 'main' || steps.affected.outputs.count != '0') }}
+      - name: nx release publish (token, main)
+        if: ${{ steps.ctx.outputs.mode == 'main' && steps.affected.outputs.count != '0' && vars.USE_NPM_TOKEN == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
         run: |
-          npx nx release publish --tag "${{ steps.ctx.outputs.dist_tag }}" --access public --verbose
+          npx nx release publish --projects "${{ steps.affected.outputs.projects }}" --tag "${{ steps.ctx.outputs.dist_tag }}" --access public --verbose
 
-      - name: nx release publish (token, dry-run)
-        if: ${{ steps.ctx.outputs.mode == 'dispatch' && inputs.dry-run && vars.USE_NPM_TOKEN == 'true' }}
+      - name: nx release publish (token, dispatch)
+        if: ${{ steps.ctx.outputs.mode == 'dispatch' && steps.ctx.outputs.dry_run != 'true' && vars.USE_NPM_TOKEN == 'true' }}
+        shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
         run: |
-          npx nx release publish --tag "${{ steps.ctx.outputs.dist_tag }}" --access public --verbose --dry-run
+          set -euo pipefail
+          scope="${{ steps.ctx.outputs.scope }}"
+          if [[ -n "$scope" ]]; then
+            projects_arg="--projects $scope"
+          else
+            projects_arg=""
+          fi
+          npx nx release publish $projects_arg --tag "${{ steps.ctx.outputs.dist_tag }}" --access public --verbose
+
+      - name: nx release publish (token, dispatch dry-run)
+        if: ${{ steps.ctx.outputs.mode == 'dispatch' && inputs.dry-run && vars.USE_NPM_TOKEN == 'true' }}
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+        run: |
+          set -euo pipefail
+          scope="${{ steps.ctx.outputs.scope }}"
+          if [[ -n "$scope" ]]; then
+            projects_arg="--projects $scope"
+          else
+            projects_arg=""
+          fi
+          npx nx release publish $projects_arg --tag "${{ steps.ctx.outputs.dist_tag }}" --access public --verbose --dry-run
 
       # Tag-triggered publishing: publish the single package referenced by the tag.
-      - name: Build and Publish (tag)
+      - name: Build project before publish (tag)
+        if: ${{ steps.ctx.outputs.mode == 'tag' }}
+        run: npx nx build "${{ steps.taginfo.outputs.project }}" --verbose
+
+      - name: nx release publish (tag)
         if: ${{ steps.ctx.outputs.mode == 'tag' && vars.USE_NPM_TOKEN != 'true' }}
         shell: bash
         env:
