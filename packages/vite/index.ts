@@ -6,6 +6,9 @@ export * from './configuration/vue.js';
 export * from './configuration/javascript.js';
 export * from './configuration/typescript.js';
 
+// App components plugin for custom Android Activity/Application classes
+export { appComponentsPlugin, type AppComponentsOptions } from './helpers/app-components.js';
+
 // Simple CLI entry to support `npx @nativescript/vite init`
 // This keeps the library export surface intact while allowing a
 // lightweight command for project bootstrapping.

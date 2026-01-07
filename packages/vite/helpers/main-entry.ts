@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
+import { getResolvedAppComponents } from './app-components.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -103,6 +104,24 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			if (flavor === 'typescript') {
 				// Statically import bundler context synchronously before app code
 				imports += "import 'virtual:ns-bundler-context';\n";
+			}
+
+			// ---- Custom App Components (Activity/Application) ----
+			// These must be loaded early so the JS class is registered before Android instantiates them
+			if (opts.platform === 'android') {
+				try {
+					const appComponents = getResolvedAppComponents('android');
+					for (const component of appComponents) {
+						// The appComponentsPlugin bundles these as separate .mjs entry points
+						// We must import the output file, not the source, since it's a separate entry
+						imports += `import "~/${component.outputName}.mjs";\n`;
+						if (opts.verbose) {
+							imports += `console.info('[ns-entry] app component loaded: ${component.outputName}');\n`;
+						}
+					}
+				} catch (err) {
+					console.error('[main-entry] Error resolving app components:', err);
+				}
 			}
 
 			// ---- Platform-specific always-needed modules ----
