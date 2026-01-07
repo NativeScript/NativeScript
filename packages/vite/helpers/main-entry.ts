@@ -128,6 +128,8 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			// ---- Platform-specific always-needed modules ----
+			// Track if we need to defer Android activity import (non-HMR only)
+			let needsAndroidActivityDefer = false;
 			if (opts.platform === 'android') {
 				if (opts.hmrActive) {
 					/**
@@ -164,26 +166,10 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					/**
 					 * Non-HMR: Defer activity lifecycle wiring until native Application is ready
 					 * to avoid "application is null" errors at production boot.
+					 * We set a flag here and emit the actual code after the static Application import
+					 * to avoid mixing dynamic and static imports of @nativescript/core.
 					 */
-					imports += `
-            (function __nsDeferAndroidActivityImport(){
-              const load = () => { try { import('@nativescript/core/ui/frame/activity.android.js?ns-keep'); } catch (e) { console.error('[ns-entry] failed to import android activity module', e); } };
-              try {
-                import('@nativescript/core').then(({ Application: __NS_Application }) => {
-                  try {
-                    const hasApp = !!(__NS_Application && __NS_Application.android && __NS_Application.android.nativeApp);
-                    if (hasApp) {
-                      ${opts.verbose ? "console.info('[ns-entry] android activity import: nativeApp present, loading now');" : ''}
-                      load();
-                    } else {
-                      ${opts.verbose ? "console.info('[ns-entry] android activity import: deferring until launch/nativeApp');" : ''}
-                      try { __NS_Application.on && __NS_Application.on(__NS_Application.launchEvent, load); } catch {}
-                      try { setTimeout(load, 0); } catch {}
-                    }
-                  } catch { try { setTimeout(load, 0); } catch {} }
-                }).catch(() => { try { setTimeout(load, 0); } catch {} });
-              } catch { try { setTimeout(load, 0); } catch {} }
-            })();\n`;
+					needsAndroidActivityDefer = true;
 				}
 			}
 
@@ -211,14 +197,41 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 			// ---- Global CSS injection (always-needed if file exists) ----
 			const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
-			if (fs.existsSync(appCssPath)) {
-				imports += `// Import and apply global CSS before app bootstrap\n`;
-				imports += `import appCssContent from './${appRootDir}/app.css?inline';\n`;
-				imports += `import { Application } from '@nativescript/core';\n`;
-				imports += `if (appCssContent) { try { Application.addCss(appCssContent); } catch (error) { console.error('Error applying CSS:', error); } }\n`;
-				if (opts.verbose) {
-					imports += `console.info('[ns-entry] app.css applied');\n`;
+			const hasAppCss = fs.existsSync(appCssPath);
+
+			// Import Application statically if needed for CSS or Android activity defer
+			if (hasAppCss || needsAndroidActivityDefer) {
+				if (hasAppCss) {
+					imports += `// Import and apply global CSS before app bootstrap\n`;
+					imports += `import appCssContent from './${appRootDir}/app.css?inline';\n`;
 				}
+				imports += `import { Application } from '@nativescript/core';\n`;
+				if (hasAppCss) {
+					imports += `if (appCssContent) { try { Application.addCss(appCssContent); } catch (error) { console.error('Error applying CSS:', error); } }\n`;
+					if (opts.verbose) {
+						imports += `console.info('[ns-entry] app.css applied');\n`;
+					}
+				}
+			}
+
+			// ---- Deferred Android activity import (non-HMR only) ----
+			// Uses the statically imported Application to avoid mixing dynamic and static imports
+			if (needsAndroidActivityDefer) {
+				imports += `
+            (function __nsDeferAndroidActivityImport(){
+              const load = () => { try { import('@nativescript/core/ui/frame/activity.android.js?ns-keep'); } catch (e) { console.error('[ns-entry] failed to import android activity module', e); } };
+              try {
+                const hasApp = !!(Application && Application.android && Application.android.nativeApp);
+                if (hasApp) {
+                  ${opts.verbose ? "console.info('[ns-entry] android activity import: nativeApp present, loading now');" : ''}
+                  load();
+                } else {
+                  ${opts.verbose ? "console.info('[ns-entry] android activity import: deferring until launch/nativeApp');" : ''}
+                  try { Application.on && Application.on(Application.launchEvent, load); } catch {}
+                  try { setTimeout(load, 0); } catch {}
+                }
+              } catch { try { setTimeout(load, 0); } catch {} }
+            })();\n`;
 			}
 
 			// ---- Application main entry ----
