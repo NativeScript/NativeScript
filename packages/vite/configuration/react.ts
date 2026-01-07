@@ -86,7 +86,7 @@ export default React;
 ];
 
 export const reactConfig = ({ mode }): UserConfig => {
-	return mergeConfig(baseConfig({ mode }), {
+	return mergeConfig(baseConfig({ mode, flavor: 'react' }), {
 		plugins,
 	});
 };

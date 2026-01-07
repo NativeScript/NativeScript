@@ -6,7 +6,7 @@
  * The HMR client is evaluated via HTTP ESM on device; static imports would create secondary instances.
  */
 
-import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore, attachDiagnosticsToFrame, logUiSnapshot } from './utils.js';
+import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore } from './utils.js';
 import { handleCssUpdates } from './css-handler.js';
 
 // satisfied by define replacement
@@ -22,13 +22,6 @@ const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}app.ts`;
 // Policy: by default, let the app's own main entry mount initially; HMR client handles updates/remounts only.
 // Flip this to true via global __NS_HMR_ALLOW_INITIAL_MOUNT__ if you need the client to perform the first mount.
 const ALLOW_INITIAL_MOUNT: boolean = !!globalThis.__NS_HMR_ALLOW_INITIAL_MOUNT__;
-// When verbose mode is enabled, also enable runtime nav diagnostics so /ns/rt logs are visible
-try {
-	if (VERBOSE) {
-		globalThis.__NS_DEV_LOGS__ = true;
-		globalThis.__NS_VERBOSE_RT_NAV__ = true;
-	}
-} catch {}
 
 // Ensure core aliases are present on globalThis early so that /ns/rt exports resolve to functions
 // before any SFCs are evaluated during HTTP-only dev boot.
@@ -48,44 +41,10 @@ function ensureCoreAliasesOnGlobalThis() {
 		try {
 			if (P && !g.Page) g.Page = P;
 		} catch {}
-		// Optional diagnostics: compare with vendor realm if available
-		if (VERBOSE) {
-			let vF: any, vA: any, vP: any;
-			try {
-				const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
-				const vmod = reg?.get ? reg.get('@nativescript/core') : undefined;
-				const vns = (vmod && (vmod.default || vmod)) || vmod;
-				vF = vns?.Frame;
-				vA = vns?.Application;
-				vP = vns?.Page;
-			} catch {}
-			try {
-				console.log('[hmr-client] core alias status', {
-					globalHas: { Frame: !!F, Application: !!A, Page: !!P },
-					globalMethods: {
-						FrameTopmost: typeof F?.topmost === 'function',
-						AppResetRoot: typeof A?.resetRootView === 'function',
-					},
-					sameRef: {
-						Frame: F && vF ? F === vF : undefined,
-						Application: A && vA ? A === vA : undefined,
-						Page: P && vP ? P === vP : undefined,
-					},
-					ctorNames: {
-						Frame: F?.name || F?.constructor?.name,
-						Application: A?.name || A?.constructor?.name,
-						Page: P?.name || P?.constructor?.name,
-					},
-				});
-			} catch {}
-		}
 	} catch {}
 }
 // Apply once on module evaluation
 ensureCoreAliasesOnGlobalThis();
-
-// Install low-level diagnostics for navigation and root replacement to trace duplicates and state
-installDeepDiagnostics();
 
 /**
  * Flavor hooks
@@ -94,188 +53,11 @@ import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSf
 import { handleAngularHotUpdateMessage, installAngularHmrClientHooks } from '../frameworks/angular/client/index.js';
 switch (__NS_TARGET_FLAVOR__) {
 	case 'vue':
-		if (VERBOSE) {
-			console.log('[hmr-client] installing nativescript-vue dev shims');
-		}
 		installNsVueDevShims();
 		break;
 	case 'angular':
-		if (VERBOSE) {
-			try {
-				console.log('[hmr-client] Initializing Angular HMR shims');
-			} catch {}
-		}
 		installAngularHmrClientHooks();
 		break;
-}
-
-// Global frame diagnostics: instrument Frame.navigate and Frame.topmost to detect
-// navigation against non-authoritative frames across the app (helps gray-screen cases)
-try {
-	const g: any = globalThis as any;
-	const F: any = getCore('Frame') || g.Frame;
-	if (F && F.prototype && !g.__NS_DEV_GLOBAL_FRAME_PATCHED__) {
-		const tag = (fr: any) => {
-			try {
-				if (!fr) return;
-				if (!fr.__ns_tag) fr.__ns_tag = Math.random().toString(36).slice(2);
-			} catch {}
-		};
-		const proto = F.prototype;
-		const origNav = proto.navigate;
-		if (typeof origNav === 'function') {
-			proto.navigate = function __ns_diag_nav(entry: any) {
-				try {
-					tag(this);
-					console.log('[diag][global][frame.navigate]', {
-						tag: (this as any).__ns_tag,
-						type: this?.constructor?.name,
-						hasCreate: !!entry?.create,
-						clearHistory: !!entry?.clearHistory,
-						animated: !!entry?.animated,
-					});
-				} catch {}
-				return origNav.apply(this, arguments as any);
-			} as any;
-		}
-		const origTop = typeof F.topmost === 'function' ? F.topmost.bind(F) : null;
-		if (origTop) {
-			F.topmost = function __ns_diag_topmost() {
-				const fr = origTop();
-				try {
-					tag(fr);
-					console.log('[diag][global][Frame.topmost]', {
-						tag: (fr as any)?.__ns_tag,
-						type: (fr as any)?.constructor?.name,
-					});
-				} catch {}
-				return fr;
-			} as any;
-		}
-		try {
-			g.__NS_DEV_GLOBAL_FRAME_PATCHED__ = true;
-		} catch {}
-	}
-} catch {}
-
-// --- Diagnostics helpers ----------------------------------------------------
-function summarizeNavEntry(entry: any) {
-	try {
-		if (!entry) return { kind: 'empty' };
-		if (typeof entry === 'string') return { kind: 'string', moduleName: entry };
-		const hasCreate = typeof (entry as any).create === 'function';
-		const moduleName = (entry as any).moduleName;
-		const clearHistory = !!(entry as any).clearHistory;
-		const animated = (entry as any).animated;
-		const backstackVisible = (entry as any).backstackVisible;
-		const contextKeys = Object.keys((entry as any).context || {});
-		return {
-			kind: 'entry',
-			hasCreate,
-			moduleName,
-			clearHistory,
-			animated,
-			backstackVisible,
-			contextKeys,
-		};
-	} catch {
-		return { kind: 'unknown' };
-	}
-}
-
-function classifyResetArg(arg: any) {
-	try {
-		const ctorName = String(arg?.constructor?.name || '').replace(/^_+/, '');
-		const keys = Object.keys(arg || {});
-		const hasCreate = typeof arg?.create === 'function';
-		const hasModuleName = typeof arg?.moduleName === 'string';
-		const isFrameLike = !!arg && (ctorName === 'Frame' || /^Frame(\$\d+)?$/.test(ctorName) || (typeof arg?.navigate === 'function' && typeof arg?.addChild === 'function'));
-		const isPageLike = !!arg && (ctorName === 'Page' || /^Page(\$\d+)?$/.test(ctorName) || (typeof arg?.content !== 'undefined' && typeof arg?.addChild === 'function'));
-		return {
-			ctorName,
-			keys,
-			hasCreate,
-			hasModuleName,
-			isFrameLike,
-			isPageLike,
-		};
-	} catch {
-		return { ctorName: 'unknown' };
-	}
-}
-
-function installDeepDiagnostics() {
-	if (!VERBOSE) return;
-	const g: any = globalThis as any;
-	try {
-		// Patch Frame.navigate to log calls and a short stack
-		const F = getCore('Frame') || g.Frame;
-		if (F?.prototype && !(F.prototype as any).__ns_diag_nav__) {
-			const orig = F.prototype.navigate;
-			if (typeof orig === 'function') {
-				(F.prototype as any).__ns_diag_nav__ = true;
-				// Simple duplicate navigation suppression in dev: if the same target is navigated twice within a short window, ignore the 2nd.
-				F.prototype.navigate = function (...args: any[]) {
-					try {
-						const entry = args[0];
-						const summary = summarizeNavEntry(entry);
-						const stack = (new Error().stack || '').split('\n').slice(2, 8).join('\n');
-						console.log('[diag][Frame.navigate]', {
-							frameCtor: this?.constructor?.name,
-							summary,
-							stack,
-						});
-						try {
-							const gAny: any = globalThis as any;
-							const key = JSON.stringify({
-								k: 'nav',
-								m: summary.moduleName || '',
-								c: !!summary.hasCreate,
-								ch: !!summary.clearHistory,
-								a: !!summary.animated,
-							});
-							const now = Date.now();
-							const last = gAny.__NS_DIAG_LAST_NAV__;
-							if (last && last.key === key && now - last.t < 300) {
-								console.warn('[diag][Frame.navigate] duplicate nav suppressed (dev)', { withinMs: now - last.t, key });
-								return; // suppress duplicate
-							}
-							gAny.__NS_DIAG_LAST_NAV__ = { key, t: now };
-						} catch {}
-					} catch {}
-					return orig.apply(this, args as any);
-				} as any;
-			}
-		}
-	} catch {}
-	try {
-		// Wrap Application.resetRootView to log argument classification and stack
-		const App = getCore('Application') || g.Application;
-		const proto = App && Object.getPrototypeOf(App);
-		const orig = (App && App.resetRootView) || (proto && proto.resetRootView);
-		if (typeof orig === 'function' && !(g as any).__NS_DIAG_RESET_WRAPPED__) {
-			const wrapped = function __ns_diag_resetRootView(this: any, entry: any) {
-				try {
-					const classification = classifyResetArg(entry);
-					const stack = (new Error().stack || '').split('\n').slice(2, 8).join('\n');
-					console.log('[diag][Application.resetRootView]', {
-						classification,
-						stack,
-					});
-				} catch {}
-				return orig.call(this, entry);
-			} as any;
-			try {
-				App.resetRootView = wrapped;
-			} catch {}
-			try {
-				if (proto && typeof proto === 'object') (proto as any).resetRootView = wrapped;
-			} catch {}
-			try {
-				(g as any).__NS_DIAG_RESET_WRAPPED__ = true;
-			} catch {}
-		}
-	} catch {}
 }
 
 // Track whether we've mounted an initial app root yet in HTTP-only boot
@@ -287,6 +69,7 @@ let tsModuleSet: Set<string> | null = null;
 let tsMainId: string | null = null;
 const changedQueue: any[] = [];
 let processingQueue = false;
+let processingPromise: Promise<void> | null = null;
 
 // Detect whether the early placeholder root is still active on screen
 function isPlaceholderActive(): boolean {
@@ -759,17 +542,7 @@ function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 					try {
 						(fr as any).navigate(navEntry);
 					} catch {}
-					try {
-						attachDiagnosticsToFrame(fr);
-					} catch {}
 					setRootFrame(fr);
-					try {
-						(getRootFrame() as any).__ns_tag ||= Math.random().toString(36).slice(2);
-						console.log('[diag][root] ROOT_FRAME set (app-nav)', {
-							tag: getRootFrame()?.__ns_tag,
-							type: getRootFrame()?.constructor?.name,
-						});
-					} catch {}
 					return fr;
 				},
 			} as any);
@@ -777,24 +550,8 @@ function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 		}
 		throw new Error('Application.resetRootView unavailable');
 	}
-	try {
-		attachDiagnosticsToFrame(frame);
-	} catch {}
 	const navEntry = { create: () => buildTarget(), ...(opts || {}) } as any;
-	try {
-		const summary = summarizeNavEntry(navEntry);
-		if (VERBOSE) console.log('[app-nav] navigate entry', summary);
-	} catch {}
 	(frame as any).navigate(navEntry);
-	try {
-		const top2 = (g.Frame && g.Frame.topmost && g.Frame.topmost()) || null;
-		const ctor2 = top2 && top2.constructor && top2.constructor.name;
-		if (VERBOSE)
-			console.log('[app-nav] after navigate', {
-				topCtor: ctor2,
-				hasTop: !!top2,
-			});
-	} catch {}
 	return undefined;
 }
 
@@ -803,7 +560,7 @@ try {
 	(globalThis as any).__nsNavigateUsingApp = __nsNavigateUsingApp;
 } catch {}
 
-async function processQueue() {
+async function processQueue(): Promise<void> {
 	if (!(globalThis as any).__NS_HMR_BOOT_COMPLETE__) {
 		if (VERBOSE) console.log('[hmr][gate] deferring HMR eval until boot complete');
 		setTimeout(() => {
@@ -811,64 +568,68 @@ async function processQueue() {
 				processQueue();
 			} catch {}
 		}, 150);
-		return;
+		return Promise.resolve();
 	}
-	if (processingQueue) return;
+	if (processingQueue) return processingPromise || Promise.resolve();
 	processingQueue = true;
-	try {
-		// Simple deterministic drain of the queue. We currently focus on TS flavor
-		// by re-importing changed modules (to refresh their HTTP ESM copies) and
-		// then performing a root reset so the UI reflects the new code.
-		const seen = new Set<string>();
-		const drained: string[] = [];
-		while (changedQueue.length) {
-			const id = changedQueue.shift();
-			if (!id || typeof id !== 'string') continue;
-			if (seen.has(id)) continue;
-			seen.add(id);
-			drained.push(id);
-		}
-		if (!drained.length) return;
-		if (VERBOSE) console.log('[hmr][queue] processing changed ids', drained);
-		// Evaluate changed modules best-effort; failures shouldn't completely break HMR.
-		for (const id of drained) {
-			try {
-				const spec = normalizeSpec(id);
-				const url = await requestModuleFromServer(spec);
-				if (!url) continue;
-				if (VERBOSE) console.log('[hmr][queue] re-import', { id, spec, url });
-				await import(/* @vite-ignore */ url);
-			} catch (e) {
-				if (VERBOSE) console.warn('[hmr][queue] re-import failed for', id, e);
+	processingPromise = (async () => {
+		try {
+			// Simple deterministic drain of the queue. We currently focus on TS flavor
+			// by re-importing changed modules (to refresh their HTTP ESM copies) and
+			// then performing a root reset so the UI reflects the new code.
+			const seen = new Set<string>();
+			const drained: string[] = [];
+			while (changedQueue.length) {
+				const id = changedQueue.shift();
+				if (!id || typeof id !== 'string') continue;
+				if (seen.has(id)) continue;
+				seen.add(id);
+				drained.push(id);
 			}
-		}
-		// After evaluating the batch, perform flavor-specific UI refresh.
-		switch (__NS_TARGET_FLAVOR__) {
-			case 'vue':
-				// Vue SFCs are handled via the registry update path; nothing to do here.
-				break;
-			case 'typescript': {
-				// For TS apps, always reset back to the conventional app root.
-				// This preserves the shell (Frame, ActionBar, etc.) that the app's
-				// own bootstrapping wires up via `Application.run`.
+			if (!drained.length) return;
+			if (VERBOSE) console.log('[hmr][queue] processing changed ids', drained);
+			// Evaluate changed modules best-effort; failures shouldn't completely break HMR.
+			for (const id of drained) {
 				try {
-					const g: any = globalThis as any;
-					const App = getCore('Application') || g.Application;
-					if (!App || typeof App.resetRootView !== 'function') {
-						if (VERBOSE) console.warn('[hmr][queue] TS flavor: Application.resetRootView unavailable; skipping UI refresh');
-						break;
-					}
-					if (VERBOSE) console.log('[hmr][queue] TS flavor: resetRootView(app-root) after changes');
-					App.resetRootView({ moduleName: 'app-root' } as any);
+					const spec = normalizeSpec(id);
+					const url = await requestModuleFromServer(spec);
+					if (!url) continue;
+					if (VERBOSE) console.log('[hmr][queue] re-import', { id, spec, url });
+					const mod: any = await import(/* @vite-ignore */ url);
 				} catch (e) {
-					console.warn('[hmr][queue] TS flavor: resetRootView(app-root) failed', e);
+					if (VERBOSE) console.warn('[hmr][queue] re-import failed for', id, e);
 				}
-				break;
 			}
+			// After evaluating the batch, perform flavor-specific UI refresh.
+			switch (__NS_TARGET_FLAVOR__) {
+				case 'vue':
+					// Vue SFCs are handled via the registry update path; nothing to do here.
+					break;
+				case 'typescript': {
+					// For TS apps, always reset back to the conventional app root.
+					// This preserves the shell (Frame, ActionBar, etc.) that the app's
+					// own bootstrapping wires up via `Application.run`.
+					try {
+						const g: any = globalThis as any;
+						const App = getCore('Application') || g.Application;
+						if (!App || typeof App.resetRootView !== 'function') {
+							if (VERBOSE) console.warn('[hmr][queue] TS flavor: Application.resetRootView unavailable; skipping UI refresh');
+							break;
+						}
+						if (VERBOSE) console.log('[hmr][queue] TS flavor: resetRootView(app-root) after changes');
+						App.resetRootView({ moduleName: 'app-root' } as any);
+					} catch (e) {
+						console.warn('[hmr][queue] TS flavor: resetRootView(app-root) failed', e);
+					}
+					break;
+				}
+			}
+		} finally {
+			processingQueue = false;
+			processingPromise = null;
 		}
-	} finally {
-		processingQueue = false;
-	}
+	})();
+	return processingPromise;
 }
 let hmrSocket: WebSocket | null = null;
 // Track server-announced batches for each version so we can import in-order client-side
@@ -1017,11 +778,65 @@ async function handleHmrMessage(ev: any) {
 	} catch {
 		return;
 	}
-	if (VERBOSE) console.log('[hmr-client] msg', msg);
+
+	// Notify optional app-level hook after an HMR batch is applied.
+	function notifyAppHmrUpdate(kind: 'full-graph' | 'delta', changedIds: string[] | undefined) {
+		try {
+			const hook = globalThis.__NS_HMR_ON_UPDATE__;
+			if (typeof hook === 'function') {
+				hook({ type: kind, version: getGraphVersion(), changedIds: changedIds || [], raw: msg });
+			}
+		} catch {}
+	}
+
 	if (msg) {
 		if (msg.type === 'ns:hmr-full-graph') {
+			// Bump a monotonic nonce so HTTP ESM imports can always be cache-busted per update.
+			try {
+				const g: any = globalThis as any;
+				g.__NS_HMR_IMPORT_NONCE__ = (typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
+			} catch {}
+			// Capture previous graph snapshot so we can infer which modules changed.
+			const prevGraph = new Map(graph);
 			setGraphVersion(Number(msg.version || getGraphVersion() || 0));
 			applyFullGraph(msg);
+			// In some cases (e.g. server chooses full-graph resync / page reload), we won't
+			// receive a delta queue to re-import changed TS modules. Without re-import,
+			// HTTP ESM caching means module bodies (and side effects) won't re-run.
+			try {
+				const inferredChanged: string[] = [];
+				try {
+					for (const [id, next] of graph.entries()) {
+						const prev = prevGraph.get(id);
+						if (!prev || prev.hash !== next.hash) inferredChanged.push(id);
+					}
+					// Removed modules are also "changed" but we don't import them.
+				} catch {}
+				// Best-effort: only re-import real source modules (avoid .vue registry pipeline and virtual ids)
+				const toReimport = inferredChanged.filter((id) => {
+					if (!id || typeof id !== 'string') return false;
+					if (/^\0|^\/\0/.test(id)) return false;
+					if (/plugin-vue:export-helper/.test(id)) return false;
+					if (/\.vue$/i.test(id)) return false;
+					if (id.endsWith(APP_MAIN_ENTRY_SPEC)) return false;
+					return true;
+				});
+				if (toReimport.length && VERBOSE) console.log('[hmr][full-graph] inferred changed modules; re-importing', toReimport);
+				for (const id of toReimport) {
+					try {
+						const spec = normalizeSpec(id);
+						const url = await requestModuleFromServer(spec);
+						if (!url) continue;
+						if (VERBOSE) console.log('[hmr][full-graph] re-import', { id, spec, url });
+						await import(/* @vite-ignore */ url);
+					} catch (e) {
+						if (VERBOSE) console.warn('[hmr][full-graph] re-import failed for', id, e);
+					}
+				}
+			} catch {}
+
+			const fullIds = Array.isArray(msg.modules) ? msg.modules.map((m: any) => m?.id).filter(Boolean) : [];
+			notifyAppHmrUpdate('full-graph', fullIds);
 			return;
 		}
 		if (msg.type === 'ns:ts-module-registry') {
@@ -1048,12 +863,24 @@ async function handleHmrMessage(ev: any) {
 			return;
 		}
 		if (msg.type === 'ns:hmr-delta') {
-			setGraphVersion(Number(msg.newVersion || getGraphVersion() || 0));
+			// Bump a monotonic nonce so HTTP ESM imports can always be cache-busted per update.
+			try {
+				const g: any = globalThis as any;
+				g.__NS_HMR_IMPORT_NONCE__ = (typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
+			} catch {}
 			try {
 				const ids = Array.isArray(msg.changed) ? msg.changed.map((c: any) => c?.id).filter(Boolean) : [];
 				if (ids.length) txnClientBatches.set(getGraphVersion(), ids);
 			} catch {}
 			applyDelta(msg);
+			// Ensure queued module re-imports complete before notifying app hooks.
+			// Otherwise app-level handlers can run against stale module bodies due to HTTP ESM caching.
+			try {
+				await processQueue();
+			} catch {}
+
+			const deltaIds = Array.isArray(msg.changed) ? msg.changed.map((c: any) => c?.id).filter(Boolean) : [];
+			notifyAppHmrUpdate('delta', deltaIds);
 			return;
 		} else if (handleAngularHotUpdateMessage(msg, { getCore, verbose: VERBOSE })) {
 			return;
@@ -1156,22 +983,6 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 	try {
 		ensureCoreAliasesOnGlobalThis();
 	} catch {}
-	try {
-		if (VERBOSE) logUiSnapshot('pre-performResetRoot');
-	} catch {}
-	if (VERBOSE) {
-		try {
-			const g: any = globalThis as any;
-			const vF = getCore('Frame');
-			console.log('[hmr-client] alias check before remount', {
-				globalFrameHasTopmost: typeof g?.Frame?.topmost === 'function',
-				vendorFrameHasTopmost: typeof vF?.topmost === 'function',
-				sameFrameRef: vF === g?.Frame,
-				appHasReset: typeof g?.Application?.resetRootView === 'function',
-				pageIsCtor: typeof g?.Page === 'function',
-			});
-		} catch {}
-	}
 	if (VERBOSE) {
 		console.log('[hmr-client] Single-path: replace current root Page');
 		console.log('[hmr-client] Component details:', {
@@ -1361,10 +1172,6 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 	const isAuthoritativeFrame = !!existingAppFrame && existingAppFrame !== placeholderFrame;
 	if (!hadPlaceholder && !isFrameRoot && isAuthoritativeFrame && typeof (existingAppFrame as any).navigate === 'function') {
 		try {
-			if (VERBOSE) console.log('[hmr-client] navigating authoritative app Frame to new Page (no placeholder, smooth swap)');
-			try {
-				attachDiagnosticsToFrame(existingAppFrame);
-			} catch {}
 			const navEntry = {
 				create: () => preparedRoot,
 				clearHistory: true,
@@ -1440,57 +1247,27 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 					} as any;
 					try {
 						(fr as any).navigate(navEntry);
-						if (VERBOSE) console.log('[hmr-client] resetRootView:create navigated Frame');
 					} catch (e) {
 						console.warn('[hmr-client] resetRootView:create navigate failed', e);
 					}
-					try {
-						attachDiagnosticsToFrame(fr);
-					} catch {}
 					setRootFrame(fr);
-					try {
-						(getRootFrame() as any).__ns_tag ||= Math.random().toString(36).slice(2);
-						console.log('[diag][root] ROOT_FRAME set (new)', {
-							tag: getRootFrame()?.__ns_tag,
-							type: getRootFrame()?.constructor?.name,
-						});
-					} catch {}
 					return fr;
 				} else {
 					const fr = preparedRoot;
-					if (VERBOSE) console.log('[hmr-client] resetRootView:create using provided Frame', { type: fr?.constructor?.name });
-					try {
-						attachDiagnosticsToFrame(fr);
-					} catch {}
 					setRootFrame(fr);
-					try {
-						(getRootFrame() as any).__ns_tag ||= Math.random().toString(36).slice(2);
-						console.log('[diag][root] ROOT_FRAME set (provided)', {
-							tag: getRootFrame()?.__ns_tag,
-							type: getRootFrame()?.constructor?.name,
-						});
-					} catch {}
 					return fr;
 				}
 			},
 		} as any;
-		if (VERBOSE) console.log('[hmr-client] invoking Application.resetRootView with entry (always)', { isFrameRoot, hadPlaceholder, isIOS });
 		// Always use an entry with a create() function to avoid cross‑realm instanceof checks on Android.
 		App2.resetRootView(entry as any);
 		// After authoritative reset, it's safe to detach the early placeholder launch handler
 		try {
 			const restore = (globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__;
 			if (typeof restore === 'function') {
-				if (VERBOSE) console.log('[hmr-client] restoring: detach early placeholder launch handler');
 				restore();
 			}
 		} catch {}
-		if (VERBOSE) {
-			logUiSnapshot('post-resetRootView');
-			console.log('[hmr-client] performResetRoot completed', {
-				elapsedMs: Date.now() - tStart,
-			});
-		}
 		return true;
 	} catch (e) {
 		console.warn('[hmr-client] resetRootView failed', e);
