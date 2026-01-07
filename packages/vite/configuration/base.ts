@@ -332,12 +332,12 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Simplified CommonJS handling - let Vite's optimizeDeps do the heavy lifting
 			commonjs({
 				include: [/node_modules/],
-				// Force specific problematic modules to be treated as CommonJS
+				// Let Rollup/Vite decide default mapping for CommonJS modules.
 				requireReturnsDefault: 'auto',
 				defaultIsModuleExports: 'auto',
 				transformMixedEsModules: true,
 				// Ignore optional dependencies that are meant to fail gracefully
-				ignore: ['@nativescript/android', '@nativescript/ios'],
+				ignore: ['@nativescript/android', '@nativescript/ios', '@nativescript/visionos'],
 			}),
 			nsConfigAsJsonPlugin(),
 			NativeScriptPlugin({ platform }),

@@ -81,7 +81,20 @@ export default async function startEntry(opts: EntryOpts) {
 		if (VERBOSE) console.info('[ns-entry] entry importing', MAIN_URL);
 		(globalThis as any).__NS_ENTRY_LAST_TARGET__ = MAIN_URL; // used by fetchCodeframe sanitized-vs-raw tag
 		const t_main = Date.now();
-		await importHttp(MAIN_URL);
+		let lastMainErr: any = null;
+		for (let attempt = 0; attempt < 6; attempt++) {
+			try {
+				const url = attempt === 0 ? MAIN_URL : MAIN_URL + '&r=' + String(Date.now());
+				await importHttp(url);
+				lastMainErr = null;
+				break;
+			} catch (e_main: any) {
+				lastMainErr = e_main;
+				// brief backoff; allows dev server and device network to settle
+				await new Promise((r) => setTimeout(r, 150 + attempt * 150));
+			}
+		}
+		if (lastMainErr) throw lastMainErr;
 		TRACE.main = { ok: true, ms: Date.now() - t_main, url: MAIN_URL };
 		(globalThis as any).__NS_ENTRY_OK__ = true;
 
@@ -122,6 +135,8 @@ export default async function startEntry(opts: EntryOpts) {
 			if (VERBOSE) console.info('[ns-entry][diag] Tip: append ?raw=1 to /ns/m, /ns/sfc, or /ns/asm URLs to compare raw vs sanitized output.');
 		} catch {}
 		(globalThis as any).__NS_ENTRY_OK__ = false;
+		// Re-throw so the HTTP bootloader can try other origin candidates.
+		throw e;
 	} finally {
 		try {
 			TRACE.t1 = Date.now();
