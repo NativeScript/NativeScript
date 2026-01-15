@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { resolve } from 'path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
@@ -8,7 +8,7 @@ export function getProjectRootPath(): string {
 }
 
 // Get current directory for ES modules (equivalent to __dirname)
-export const __dirname = dirname(new URL(import.meta.url).pathname);
+export const __dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
 
 interface IPackageJson {
 	name?: string;
