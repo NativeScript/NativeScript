@@ -8,7 +8,7 @@ export function getProjectRootPath(): string {
 }
 
 // Get current directory for ES modules (equivalent to __dirname)
-export const __dirname = typeof __dirname !== 'undefined' ? __dirname : import.meta.dirname;
+export const __dirname = import.meta.dirname;
 
 interface IPackageJson {
 	name?: string;
