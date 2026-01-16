@@ -21,7 +21,7 @@ export const vueConfig = ({ mode }): UserConfig => {
 	const isDevMode = targetMode === 'development';
 	const hmrActive = isDevMode && !!cliFlags.hmr;
 
-	return mergeConfig(baseConfig({ mode }), {
+	return mergeConfig(baseConfig({ mode, flavor: 'vue' }), {
 		plugins: [
 			{
 				...alias({

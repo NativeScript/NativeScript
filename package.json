@@ -17,6 +17,7 @@
 		"url": "https://github.com/NativeScript/NativeScript.git"
 	},
 	"dependencies": {
+		"@valor/nativescript-websockets": "^2.0.2",
 		"nativescript-theme-core": "^1.0.4"
 	},
 	"devDependencies": {
@@ -109,11 +110,9 @@
 		"vite-plugin-static-copy": "^3.1.4",
 		"vitest": "^3.2.4",
 		"vue-loader": "^15.0.0 <= 15.9.8",
-		"webpack": "^5.30.0 <= 5.50.0 || ^5.51.2",
-		"webpack-bundle-analyzer": "^4.0.0",
 		"webpack-chain": "^6.0.0",
-		"webpack-cli": "^4.0.0",
-		"webpack-merge": "^5.0.0",
+		"webpack-bundle-analyzer": "^4.0.0",
+		"webpack-merge": "^6.0.0",
 		"webpack-virtual-modules": "^0.4.0",
 		"zx": "^8.3.0"
 	},
