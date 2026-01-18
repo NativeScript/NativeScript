@@ -42,7 +42,7 @@ import {
 	setA11yEnabled,
 } from '../accessibility/accessibility-common';
 import { androidGetForegroundActivity, androidGetStartActivity, androidSetForegroundActivity, androidSetStartActivity, applyContentDescription } from './helpers';
-import { getImageFetcher, getNativeApp, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
+import { getImageFetcher, getNativeApp, getRootView, initImageCache, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setNativeApp, setRootView } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import type { AndroidApplication as IAndroidApplication } from './application';
 import { enableEdgeToEdge } from '../utils/native-helper-for-android';
@@ -1452,18 +1452,6 @@ function setAccessibilityDelegate(view: View): void {
 
 	androidView.setAccessibilityDelegate(TNSAccessibilityDelegate);
 }
-
-const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
-function toggleApplicationEventListeners(toAdd: boolean, callback: (args: ApplicationEventData) => void) {
-	for (const eventName of applicationEvents) {
-		if (toAdd) {
-			Application.on(eventName, callback);
-		} else {
-			Application.off(eventName, callback);
-		}
-	}
-}
-setToggleApplicationEventListenersCallback(toggleApplicationEventListeners);
 
 setApplicationPropertiesCallback(() => {
 	return {
