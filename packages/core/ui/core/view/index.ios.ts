@@ -774,7 +774,12 @@ export class View extends ViewCommon {
 		return this.nativeViewProtected.hidden;
 	}
 	[hiddenProperty.setNative](value: boolean) {
-		this.nativeViewProtected.hidden = value;
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+		nativeView.hidden = value;
+		// Apply visibility value to shadows as well
+		if (nativeView.outerShadowContainerLayer) {
+			nativeView.outerShadowContainerLayer.hidden = nativeView.hidden;
+		}
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
