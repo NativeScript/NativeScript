@@ -10,6 +10,12 @@ interface IConfigPlatform {
 	 * This can be very useful in production environments when you don't want your app to just crash if a developer forgot to guard against an unexpected JS level exception.
 	 */
 	discardUncaughtJsExceptions?: boolean;
+
+	/**
+	 * Log detailed platform runtime calls
+	 * This will reveal verbose platform runtime details handled in the NativeScript runtimes.
+	 */
+	logRuntimeDetail?: boolean;
 }
 
 interface IOSSPMPackageBase {
