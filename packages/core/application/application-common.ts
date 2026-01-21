@@ -12,6 +12,7 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
 import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, LayoutDirectionChangedEventData, UnhandledErrorEventData } from './application-interfaces';
+import { ApplicationEventNames, ApplicationEventNameType } from './application-event-names';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
@@ -179,26 +180,7 @@ interface ApplicationEvents {
 	on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any): void;
 }
 
-export class ApplicationCommon {
-	readonly launchEvent = 'launch';
-	readonly suspendEvent = 'suspend';
-	readonly displayedEvent = 'displayed';
-	readonly backgroundEvent = 'background';
-	readonly foregroundEvent = 'foreground';
-	readonly resumeEvent = 'resume';
-	readonly exitEvent = 'exit';
-	readonly lowMemoryEvent = 'lowMemory';
-	readonly uncaughtErrorEvent = 'uncaughtError';
-	readonly discardedErrorEvent = 'discardedError';
-	readonly orientationChangedEvent = 'orientationChanged';
-	readonly systemAppearanceChangedEvent = 'systemAppearanceChanged';
-	readonly layoutDirectionChangedEvent = 'layoutDirectionChanged';
-	readonly fontScaleChangedEvent = 'fontScaleChanged';
-	readonly livesyncEvent = 'livesync';
-	readonly loadAppCssEvent = 'loadAppCss';
-	readonly cssChangedEvent = 'cssChanged';
-	readonly initRootViewEvent = 'initRootView';
-
+export class ApplicationCommon implements ApplicationEventNameType {
 	// Expose statically for backwards compat on AndroidApplication.on etc.
 	/**
 	 * @deprecated Use `Application.android.on()` instead.
@@ -275,6 +257,78 @@ export class ApplicationCommon {
 			const rootView = this.getRootView();
 			this.livesync(rootView, context);
 		};
+	}
+
+	get launchEvent() {
+		return ApplicationEventNames.launchEvent;
+	}
+
+	get suspendEvent() {
+		return ApplicationEventNames.suspendEvent;
+	}
+
+	get displayedEvent() {
+		return ApplicationEventNames.displayedEvent;
+	}
+
+	get backgroundEvent() {
+		return ApplicationEventNames.backgroundEvent;
+	}
+
+	get foregroundEvent() {
+		return ApplicationEventNames.foregroundEvent;
+	}
+
+	get resumeEvent() {
+		return ApplicationEventNames.resumeEvent;
+	}
+
+	get exitEvent() {
+		return ApplicationEventNames.exitEvent;
+	}
+
+	get lowMemoryEvent() {
+		return ApplicationEventNames.lowMemoryEvent;
+	}
+
+	get uncaughtErrorEvent() {
+		return ApplicationEventNames.uncaughtErrorEvent;
+	}
+
+	get discardedErrorEvent() {
+		return ApplicationEventNames.discardedErrorEvent;
+	}
+
+	get orientationChangedEvent() {
+		return ApplicationEventNames.orientationChangedEvent;
+	}
+
+	get systemAppearanceChangedEvent() {
+		return ApplicationEventNames.systemAppearanceChangedEvent;
+	}
+
+	get layoutDirectionChangedEvent() {
+		return ApplicationEventNames.layoutDirectionChangedEvent;
+	}
+
+	get fontScaleChangedEvent() {
+		return ApplicationEventNames.fontScaleChangedEvent;
+	}
+
+	get livesyncEvent() {
+		return ApplicationEventNames.livesyncEvent;
+	}
+
+	get loadAppCssEvent() {
+		return ApplicationEventNames.loadAppCssEvent;
+	}
+
+	get cssChangedEvent() {
+		return ApplicationEventNames.cssChangedEvent;
+	}
+
+	get initRootViewEvent() {
+		return ApplicationEventNames.initRootViewEvent;
 	}
 
 	/**
