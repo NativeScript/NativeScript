@@ -31,7 +31,23 @@ export class ImageAsset extends ImageAssetBase {
 		this._ios = value;
 	}
 
-	public getImageAsync(callback: (image, error) => void) {
+	/**
+	 * Asynchronously loads an image and optionally resizes it.
+	 * Handles both string and number type dimensions by converting strings to numbers.
+	 *
+	 * @param {Function} callback - Callback function that receives (image, error)
+	 * @param {{ width?: number|string; height?: number|string }} [options] - Optional dimensions for the image
+	 */
+	public getImageAsync(callback: (image, error) => void, options?: { width?: number | string; height?: number | string }) {
+		if (options) {
+			if (typeof options.width === 'string') {
+				options.width = parseInt(options.width, 10);
+			}
+			if (typeof options.height === 'string') {
+				options.height = parseInt(options.height, 10);
+			}
+		}
+
 		if (!this.ios && !this.nativeImage) {
 			callback(null, 'Asset cannot be found.');
 		}
@@ -60,6 +76,14 @@ export class ImageAsset extends ImageAssetBase {
 		});
 	}
 
+	/**
+	 * Scales the image to the requested size while respecting device scale factor settings.
+	 *
+	 * @param {UIImage} image - The source UIImage to scale
+	 * @param {{ width: number; height: number }} requestedSize - Target dimensions
+	 * @returns {UIImage} Scaled image
+	 * @private
+	 */
 	private scaleImage(image: UIImage, requestedSize: { width: number; height: number }): UIImage {
 		return NativeScriptUtils.scaleImageWidthHeightScaleFactor(image, requestedSize.width, requestedSize.height, this.options?.autoScaleFactor === false ? 1.0 : 0.0);
 	}
