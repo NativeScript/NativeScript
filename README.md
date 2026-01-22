@@ -1,4 +1,6 @@
+This line was added to test pull request and merge workflow inside my own fork.
 [![NativeScript](./tools/graphics/cover.png)](https://nativescript.org)
+This is a test update to check pull request workflow.
 
 <p>
 
