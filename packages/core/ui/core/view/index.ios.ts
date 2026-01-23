@@ -53,6 +53,10 @@ export class View extends ViewCommon {
 	 */
 	_nativeBackgroundState: 'unset' | 'invalid' | 'drawn';
 
+	get nativeBackgroundState(): 'unset' | 'invalid' | 'drawn' {
+		return this._nativeBackgroundState;
+	}
+
 	/**
 	 * Glass effect configuration
 	 */

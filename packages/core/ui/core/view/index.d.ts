@@ -656,6 +656,11 @@ export abstract class View extends ViewCommon {
 	isLayoutValid: boolean;
 
 	/**
+	 * Native background states. This is a read-only property.
+	 */
+	nativeBackgroundState: 'unset' | 'invalid' | 'drawn';
+
+	/**
 	 * Gets the CSS fully qualified type name.
 	 * Using this as element type should allow for PascalCase and kebap-case selectors, when fully qualified, to match the element.
 	 */
