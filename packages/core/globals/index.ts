@@ -268,6 +268,10 @@ global.loadModule = function loadModule(name: string): any {
 	return null;
 };
 function registerOnGlobalContext(moduleName: string, exportName: string): void {
+	if (global[exportName]) {
+		// already registered
+		return;
+	}
 	Object.defineProperty(global, exportName, {
 		get: function () {
 			// We do not need to cache require() call since it is already cached in the runtime.
@@ -290,7 +294,7 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
 export function installPolyfills(moduleName: string, exportNames: string[]) {
 	if (global.__snapshot) {
 		const loadedModule = global.loadModule(moduleName);
-		exportNames.forEach((exportName) => (global[exportName] = loadedModule[exportName]));
+		installPolyfillsFromModule(loadedModule, exportNames as any);
 	} else {
 		exportNames.forEach((exportName) => registerOnGlobalContext(moduleName, exportName));
 	}
@@ -335,3 +339,4 @@ if (!global.NativeScriptHasPolyfilled) {
 
 // ensure the Application instance is initialized before any other module imports it.
 import '../application';
+import { installPolyfillsFromModule } from 'globals/polyfills/utils';
