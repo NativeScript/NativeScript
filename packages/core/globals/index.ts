@@ -1,4 +1,5 @@
 import tslib from 'tslib';
+import './polyfills/polyfill-xhr';
 import * as timer from '../timer';
 import * as animationFrame from '../animation-frame';
 import * as mediaQueryList from '../media-query-list';
@@ -298,77 +299,44 @@ export function installPolyfills(moduleName: string, exportNames: string[]) {
 if (!global.NativeScriptHasPolyfilled) {
 	global.NativeScriptHasPolyfilled = true;
 	// console.log('Installing polyfills...');
+	global.registerModule('timer', () => timer);
+	installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
 
-	// DOM api polyfills
-	const glb = global as any;
-	if (__COMMONJS__) {
-		global.registerModule('timer', () => timer);
-		installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
+	global.registerModule('animation', () => animationFrame);
+	installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
 
-		global.registerModule('animation', () => animationFrame);
-		installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
+	global.registerModule('media-query-list', () => mediaQueryList);
+	installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
 
-		global.registerModule('media-query-list', () => mediaQueryList);
-		installPolyfills('media-query-list', ['matchMedia', 'MediaQueryList']);
+	global.registerModule('text', () => text);
+	installPolyfills('text', ['TextDecoder', 'TextEncoder']);
 
-		global.registerModule('text', () => text);
-		installPolyfills('text', ['TextDecoder', 'TextEncoder']);
+	// TODO: fix this. This is currently being polyfilled by the polyfill-xhr.ts
+	// global.registerModule('xhr', () => xhrImpl);
+	// installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
 
-		global.registerModule('xhr', () => xhrImpl);
-		installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
+	global.registerModule('fetch', () => fetchPolyfill);
+	installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
 
-		global.registerModule('fetch', () => fetchPolyfill);
-		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+	global.registerModule('wgc', () => wgc);
+	installPolyfills('wgc', ['atob', 'btoa']);
 
-		global.registerModule('wgc', () => wgc);
-		installPolyfills('wgc', ['atob', 'btoa']);
+	global.registerModule('crypto', () => cryptoImpl);
+	installPolyfills('crypto', ['Crypto']);
 
-		global.registerModule('crypto', () => cryptoImpl);
-		installPolyfills('crypto', ['Crypto']);
+	global.registerModule('subtle', () => subtleCryptoImpl);
+	installPolyfills('subtle', ['SubtleCrypto']);
 
-		global.registerModule('subtle', () => subtleCryptoImpl);
-		installPolyfills('subtle-crypto', ['Subtle']);
-	} else {
-		// timers
-		glb.setTimeout = timer.setTimeout;
-		glb.clearTimeout = timer.clearTimeout;
-		glb.setInterval = timer.setInterval;
-		glb.clearInterval = timer.clearInterval;
+	global.crypto = new cryptoImpl.Crypto() as any;
 
-		// animation frame
-		glb.requestAnimationFrame = animationFrame.requestAnimationFrame;
-		glb.cancelAnimationFrame = animationFrame.cancelAnimationFrame;
-
-		// media query list
-		glb.matchMedia = mediaQueryList.matchMedia;
-		glb.MediaQueryList = mediaQueryList.MediaQueryList;
-
-		// text
-		glb.TextDecoder = text.TextDecoder;
-		glb.TextEncoder = text.TextEncoder;
-
-		// xhr
-		glb.XMLHttpRequest = xhrImpl.XMLHttpRequest;
-		glb.FormData = xhrImpl.FormData;
-		glb.Blob = xhrImpl.Blob;
-		glb.File = xhrImpl.File;
-		glb.FileReader = xhrImpl.FileReader;
-
-		// fetch
-		glb.fetch = fetchPolyfill.fetch;
-		glb.Headers = fetchPolyfill.Headers;
-		glb.Request = fetchPolyfill.Request;
-		glb.Response = fetchPolyfill.Response;
-
-		// wgc
-		glb.atob = wgc.atob;
-		glb.btoa = wgc.btoa;
-
-		// wgc
-		glb.SubtleCrypto = subtleCryptoImpl.SubtleCrypto;
-	}
-
-	glb.crypto = new cryptoImpl.Crypto();
+	setTimeout(async () => {
+		try {
+			const res = await fetch('https://httpbin.org/get');
+			console.log(await res.arrayBuffer());
+		} catch (e) {
+			console.log('Fetch test failed:', e);
+		}
+	}, 1000);
 
 	// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 	// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
