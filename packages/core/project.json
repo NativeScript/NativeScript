@@ -28,7 +28,11 @@
 					"{workspaceRoot}/LICENSE",
 					"{projectRoot}/README.md",
 					"{projectRoot}/global-types.d.ts",
-					"{projectRoot}/fetch/LICENSE",
+					{
+						"glob": "**/*",
+						"input": "{projectRoot}/fetch/",
+						"output": "./fetch/"
+					},
 					{
 						"glob": "**/*",
 						"input": "{projectRoot}/js-libs/",
