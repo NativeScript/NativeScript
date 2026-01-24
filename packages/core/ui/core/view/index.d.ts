@@ -658,7 +658,7 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Native background states. This is a read-only property.
 	 */
-	nativeBackgroundState: 'unset' | 'invalid' | 'drawn';
+	nativeBackgroundState?: 'unset' | 'invalid' | 'drawn';
 
 	/**
 	 * Gets the CSS fully qualified type name.
