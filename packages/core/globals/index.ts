@@ -1,4 +1,5 @@
 import tslib from 'tslib';
+import { installPolyfillsFromModule } from './polyfills/utils';
 import './polyfills/polyfill-xhr';
 import * as timer from '../timer';
 import * as animationFrame from '../animation-frame';
@@ -339,4 +340,3 @@ if (!global.NativeScriptHasPolyfilled) {
 
 // ensure the Application instance is initialized before any other module imports it.
 import '../application';
-import { installPolyfillsFromModule } from 'globals/polyfills/utils';
