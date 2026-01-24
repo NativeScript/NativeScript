@@ -329,15 +329,6 @@ if (!global.NativeScriptHasPolyfilled) {
 
 	global.crypto = new cryptoImpl.Crypto() as any;
 
-	setTimeout(async () => {
-		try {
-			const res = await fetch('https://httpbin.org/get');
-			console.log(await res.arrayBuffer());
-		} catch (e) {
-			console.log('Fetch test failed:', e);
-		}
-	}, 1000);
-
 	// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 	// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
 }
