@@ -52,10 +52,10 @@ function ensureScripts(pkg: PackageJson) {
 	pkg.scripts = pkg.scripts ?? {};
 	pkg.scripts['dev:ios'] = "concurrently -k -n vite,ns 'npm run dev:server:ios' 'wait-on tcp:5173 && npm run ios'";
 	pkg.scripts['dev:android'] = "concurrently -k -n vite,ns 'npm run dev:server:android' 'wait-on tcp:5173 && npm run android'";
-	pkg.scripts['dev:server:ios'] = 'VITE_DEBUG_LOGS=1 vite serve -- --env.ios --env.hmr';
-	pkg.scripts['dev:server:android'] = 'VITE_DEBUG_LOGS=1 vite serve -- --env.android --env.hmr';
-	pkg.scripts['ios'] = 'VITE_DEBUG_LOGS=1 ns debug ios';
-	pkg.scripts['android'] = 'VITE_DEBUG_LOGS=1 ns debug android';
+	pkg.scripts['dev:server:ios'] = 'vite serve -- --env.ios --env.hmr';
+	pkg.scripts['dev:server:android'] = 'vite serve -- --env.android --env.hmr';
+	pkg.scripts['ios'] = 'ns debug ios';
+	pkg.scripts['android'] = 'ns debug android';
 }
 
 function ensureGitignore() {
