@@ -30,26 +30,21 @@
 					"{projectRoot}/global-types.d.ts",
 					{
 						"glob": "**/*",
-						"input": "{projectRoot}/fetch/",
-						"output": "./fetch/"
-					},
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/js-libs/",
-						"output": "./js-libs/"
-					},
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/cli-hooks/",
-						"output": "./cli-hooks/"
-					},
-					{
-						"glob": "**/*",
 						"input": "{projectRoot}/platforms/",
 						"output": "./platforms/"
 					},
 					{
 						"glob": "**/*.d.ts",
+						"input": "{projectRoot}/",
+						"output": "./"
+					},
+					{
+						"glob": "**/*.(mjs|js)",
+						"input": "{projectRoot}/",
+						"output": "./"
+					},
+					{
+						"glob": "*/**/package.json",
 						"input": "{projectRoot}/",
 						"output": "./"
 					}
