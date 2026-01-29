@@ -128,9 +128,6 @@ public class Utils {
 
 
 				}
-
-
-				androidx.activity.EdgeToEdge.enable((ComponentActivity) activity);
 			}
 
 		}
