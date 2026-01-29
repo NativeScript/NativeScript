@@ -268,15 +268,15 @@ global.loadModule = function loadModule(name: string): any {
 	}
 	return null;
 };
-function registerOnGlobalContext(moduleName: string, exportName: string): void {
+function registerOnGlobalContext(moduleName: string, exportName: string, moduleRef?: any): void {
 	if (global[exportName]) {
 		// already registered
 		return;
 	}
 	Object.defineProperty(global, exportName, {
 		get: function () {
-			// We do not need to cache require() call since it is already cached in the runtime.
-			const m = global.loadModule(moduleName);
+			// Use pre-captured module reference if available, otherwise use loadModule
+			const m = moduleRef ?? global.loadModule(moduleName);
 
 			// Redefine the property to make sure the above code is executed only once.
 			const resolvedValue = m[exportName];
@@ -292,13 +292,13 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
 	});
 }
 
-export function installPolyfills(moduleName: string, exportNames: string[], options?: { eager?: boolean }) {
+export function installPolyfills(moduleName: string, exportNames: string[], options?: { eager?: boolean; moduleRef?: any }) {
 	const shouldInstallEagerly = global.__snapshot || options?.eager;
 	if (shouldInstallEagerly) {
-		const loadedModule = global.loadModule(moduleName);
+		const loadedModule = options?.moduleRef ?? global.loadModule(moduleName);
 		installPolyfillsFromModule(loadedModule, exportNames as any);
 	} else {
-		exportNames.forEach((exportName) => registerOnGlobalContext(moduleName, exportName));
+		exportNames.forEach((exportName) => registerOnGlobalContext(moduleName, exportName, options?.moduleRef));
 	}
 }
 
@@ -306,8 +306,8 @@ if (!global.NativeScriptHasPolyfilled) {
 	global.NativeScriptHasPolyfilled = true;
 	// console.log('Installing polyfills...');
 	global.registerModule('timer', () => timer);
-	// Timer polyfills are installed eagerly because they are fundamental APIs needed very early
-	installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'], { eager: true });
+	// Pass moduleRef to ensure timer functions resolve correctly even when accessed very early
+	installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'], { moduleRef: timer });
 
 	global.registerModule('animation', () => animationFrame);
 	installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
