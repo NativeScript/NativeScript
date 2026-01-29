@@ -442,3 +442,11 @@ export function enableEdgeToEdge(activity: androidx.appcompat.app.AppCompatActiv
 		}
 	}
 }
+
+export function getIgnoreEdgeToEdgeOnOlderDevices(): boolean {
+	return org.nativescript.widgets.Utils.ignoreEdgeToEdgeOnOlderDevices;
+}
+
+export function setIgnoreEdgeToEdgeOnOlderDevices(value: boolean) {
+	org.nativescript.widgets.Utils.ignoreEdgeToEdgeOnOlderDevices = value;
+}

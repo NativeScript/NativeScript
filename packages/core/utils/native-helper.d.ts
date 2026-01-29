@@ -154,6 +154,16 @@ export const android: {
 			handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
 		},
 	): void;
+
+	/**
+	 * Gets whether edge-to-edge is ignored on older devices (API 34 an older).
+	 */
+	getIgnoreEdgeToEdgeOnOlderDevices(): boolean;
+
+	/**
+	 * Sets whether to ignore edge-to-edge on older devices (API 34 an older).
+	 */
+	setIgnoreEdgeToEdgeOnOlderDevices(value: boolean): void;
 };
 
 /**

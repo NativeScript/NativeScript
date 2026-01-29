@@ -52,6 +52,8 @@ import java.util.concurrent.Executors;
 
 public class Utils {
 
+	public static boolean ignoreEdgeToEdgeOnOlderDevices = false;
+
 	public interface HandleDarkMode {
 		boolean onHandle(int bar, Resources resources);
 	}
@@ -86,6 +88,9 @@ public class Utils {
 
 	public static void enableEdgeToEdge(Activity activity, Window window, @Nullable HandleDarkMode handleDarkMode) {
 		if (activity instanceof ComponentActivity) {
+			if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+				return;
+			}
 			Window activityWindow = activity.getWindow();
 			WindowManager.LayoutParams attributes = new WindowManager.LayoutParams();
 
@@ -161,10 +166,16 @@ public class Utils {
 	}
 
 	public static void enableEdgeToEdge(ComponentActivity activity) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			return;
+		}
 		androidx.activity.EdgeToEdge.enable(activity);
 	}
 
 	public static void enableEdgeToEdge(ComponentActivity activity, HandleDarkMode handleDarkMode) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			return;
+		}
 		androidx.activity.EdgeToEdge.enable(activity,
 			SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)),
 			SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources))
@@ -172,6 +183,9 @@ public class Utils {
 	}
 
 	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			return;
+		}
 		androidx.activity.EdgeToEdge.enable(activity,
 			SystemBarStyle.auto(statusBarLight, statusBarDark),
 			SystemBarStyle.auto(navigationBarLight, navigationBarDark)
@@ -179,6 +193,9 @@ public class Utils {
 	}
 
 	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			return;
+		}
 		androidx.activity.EdgeToEdge.enable(activity,
 			SystemBarStyle.auto(statusBarLight, statusBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)),
 			SystemBarStyle.auto(navigationBarLight, navigationBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources))
