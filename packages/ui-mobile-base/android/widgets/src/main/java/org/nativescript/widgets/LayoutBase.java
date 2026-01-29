@@ -6,7 +6,6 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsets;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -271,10 +270,36 @@ public abstract class LayoutBase extends ViewGroup {
 					applyFlags[2] = (overflowEdge & OverflowEdgeRightDontConsume) == OverflowEdgeRightDontConsume;
 					applyFlags[3] = (overflowEdge & OverflowEdgeBottomDontConsume) == OverflowEdgeBottomDontConsume;
 
-					if ((overflowEdge & OverflowEdgeAllButLeft) == OverflowEdgeAllButLeft) { consumeFlags[0] = applyFlags[0] = false; for(int i=1;i<4;i++){ consumeFlags[i]=applyFlags[i]=true; } }
-					if ((overflowEdge & OverflowEdgeAllButTop) == OverflowEdgeAllButTop)   { consumeFlags[1] = applyFlags[1] = false; for(int i=0;i<4;i++){ if(i!=1){ consumeFlags[i]=applyFlags[i]=true; } } }
-					if ((overflowEdge & OverflowEdgeAllButRight) == OverflowEdgeAllButRight) { consumeFlags[2] = applyFlags[2] = false; for(int i=0;i<4;i++){ if(i!=2){ consumeFlags[i]=applyFlags[i]=true; } } }
-					if ((overflowEdge & OverflowEdgeAllButBottom) == OverflowEdgeAllButBottom) { consumeFlags[3] = applyFlags[3] = false; for(int i=0;i<4;i++){ if(i!=3){ consumeFlags[i]=applyFlags[i]=true; } } }
+					if ((overflowEdge & OverflowEdgeAllButLeft) == OverflowEdgeAllButLeft) {
+						consumeFlags[0] = applyFlags[0] = false;
+						for (int i = 1; i < 4; i++) {
+							consumeFlags[i] = applyFlags[i] = true;
+						}
+					}
+					if ((overflowEdge & OverflowEdgeAllButTop) == OverflowEdgeAllButTop) {
+						consumeFlags[1] = applyFlags[1] = false;
+						for (int i = 0; i < 4; i++) {
+							if (i != 1) {
+								consumeFlags[i] = applyFlags[i] = true;
+							}
+						}
+					}
+					if ((overflowEdge & OverflowEdgeAllButRight) == OverflowEdgeAllButRight) {
+						consumeFlags[2] = applyFlags[2] = false;
+						for (int i = 0; i < 4; i++) {
+							if (i != 2) {
+								consumeFlags[i] = applyFlags[i] = true;
+							}
+						}
+					}
+					if ((overflowEdge & OverflowEdgeAllButBottom) == OverflowEdgeAllButBottom) {
+						consumeFlags[3] = applyFlags[3] = false;
+						for (int i = 0; i < 4; i++) {
+							if (i != 3) {
+								consumeFlags[i] = applyFlags[i] = true;
+							}
+						}
+					}
 
 					int left = consumeFlags[0] ? 0 : mPaddingLeft + insetLeft;
 					int top = consumeFlags[1] ? 0 : mPaddingTop + statusBar.top;
@@ -288,10 +313,10 @@ public abstract class LayoutBase extends ViewGroup {
 
 
 					Insets returnInsets = Insets.of(
-						consumeFlags[0] ? 0 : insetLeft,
-						consumeFlags[1] ? 0 : statusBar.top,
-						consumeFlags[2] ? 0 : insetRight,
-						consumeFlags[3] ? 0 : insetBottom
+						applyFlags[0] ? insetLeft : 0,
+						applyFlags[1] ? statusBar.top : 0,
+						applyFlags[2] ? insetRight : 0,
+						applyFlags[3] ? insetBottom : 0
 					);
 
 					return new WindowInsetsCompat.Builder()
