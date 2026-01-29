@@ -19,33 +19,152 @@
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FNativeScript%2FNativeScript.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FNativeScript%2FNativeScript?ref=badge_large)
 
-## Quick Start
+## ✨ Features
 
-To get started with NativeScript, follow these steps:
+- **Cross-Platform Development**: Build truly native mobile apps for iOS, Android, and visionOS using JavaScript/TypeScript
+- **Native API Access**: Directly access all native platform APIs from JavaScript
+- **Framework Agnostic**: Works with Angular, React, Vue, Svelte, or plain JavaScript/TypeScript
+- **Native UI Components**: Use native UI components for maximum performance
+- **Hot Module Replacement**: See changes instantly with HMR during development
+- **Rich Plugin Ecosystem**: Extend functionality with community plugins
+- **TypeScript Support**: First-class TypeScript support out of the box
+- **CSS Styling**: Style your apps with CSS or SASS/SCSS
+- **CLI Tools**: Powerful command-line interface for development workflow
 
-1.  **Install the NativeScript CLI globally:**
-    ```bash
-    npm install -g nativescript
-    ```
+## 🚀 Quick Start
 
-2.  **Create a new project:**
-    ```bash
-    ns create my-app
-    ```
+### Prerequisites
 
-3.  **Navigate into your project directory:**
-    ```bash
-    cd my-app
-    ```
+- Node.js (LTS version recommended)
+- npm (comes with Node.js) or yarn
+- For iOS development: Xcode and CocoaPods (macOS only)
+- For Android development: Android Studio and Android SDK
 
-4.  **Run your app on an emulator or device:**
-    ```bash
-    ns run android
-    ```
-    or
-    ```bash
-    ns run ios
-    ```
+### UI Customization
+
+#### SearchBar Clear Button Color
+
+You can customize the clear button ("X") color in a SearchBar using platform-specific CSS:
+
+```xml
+<SearchBar hint="Search..." class="my-search-bar" />
+```
+
+```css
+/* For iOS */
+SearchBar.ios .search-bar-clear-icon {
+    color: #FF0000; /* Red color for the clear button */
+}
+
+/* For Android */
+SearchBar.android .search-bar-clear-icon {
+    tint-color: #FF0000; /* Red color for the clear button */
+}
+```
+
+Alternatively, you can set it programmatically:
+
+```typescript
+// For iOS
+if (isIOS) {
+    const searchBar = page.getViewById('mySearchBar');
+    const clearButton = searchBar.ios.searchBar.searchField.clearButton;
+    clearButton.tintColor = new Color('red').ios;
+}
+
+// For Android
+if (isAndroid) {
+    const searchBar = page.getViewById('mySearchBar');
+    const searchCloseIcon = searchBar.android.findViewById(androidx.appcompat.R.id.search_close_btn);
+    if (searchCloseIcon) {
+        searchCloseIcon.setColorFilter(
+            new Color('red').android,
+            android.graphics.PorterDuff.Mode.SRC_IN
+        );
+    }
+}
+```
+
+### CSS Properties
+
+NativeScript supports additional CSS properties for fine-grained control over view transformations:
+
+```css
+.my-view {
+  /* Control the x and y origin for transformations */
+  origin-x: 50%;  /* Can be percentage, px, or other length units */
+  origin-y: 50%;  /* Can be percentage, px, or other length units */
+  
+  /* Example with transform */
+  transform: rotate(45deg);  /* Rotation will be around the specified origin */
+}
+```
+
+### Installation
+
+1. **Install the NativeScript CLI globally:**
+   ```bash
+   npm install -g nativescript
+   ```
+
+2. **Verify installation:**
+   ```bash
+   ns --version
+   ```
+
+3. **Create a new project:**
+   ```bash
+   ns create my-app
+   # Follow the prompts to choose your preferred template (Angular, React, Vue, etc.)
+   ```
+
+4. **Navigate into your project directory:**
+   ```bash
+   cd my-app
+   ```
+
+5. **Run your app on an emulator or device:**
+   ```bash
+   # For Android
+   ns run android
+   
+   # For iOS (macOS only)
+   ns run ios
+   ```
+
+## 🏗️ Project Structure
+
+A typical NativeScript project structure looks like this:
+
+```
+my-app/
+├── app/                     # Your application code
+│   ├── app.(css|scss)       # Global styles
+│   ├── app.(js|ts)          # Application entry point
+│   ├── main-page.(xml|html) # Main page
+│   └── ...
+├── App_Resources/          # Platform-specific resources
+│   ├── Android/            # Android resources
+│   └── iOS/                # iOS resources
+├── node_modules/           # Dependencies
+├── platforms/              # Platform-specific builds
+├── package.json            # Project configuration
+└── webpack.config.js       # Webpack configuration
+```
+
+## 🧪 Running Tests
+
+NativeScript provides a robust testing environment. To run tests:
+
+```bash
+# Install testing dependencies
+npm install --save-dev @nativescript/core @nativescript/angular @nativescript/webpack
+
+# Run tests
+npm test
+```
+
+For more advanced testing scenarios, check out the [testing documentation](https://docs.nativescript.org/tooling/testing).
 
 ## Contribute
 
@@ -83,7 +202,15 @@ We love you and your pull requests 🤗. Please follow our [contributing guide](
 - [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/main/packages/webpack5)
   Webpack build utilities and configs used by NativeScript apps.
 
-## Quick Links
+## 🌟 Community and Support
+
+- Join our [Discord community](https://nativescript.org/discord) for real-time discussions
+- Follow [@NativeScript](https://twitter.com/NativeScript) on Twitter for updates
+- Check out [Stack Overflow](https://stackoverflow.com/questions/tagged/nativescript) for community Q&A
+- Report issues on [GitHub Issues](https://github.com/NativeScript/NativeScript/issues)
+- Contribute to the [documentation](https://github.com/NativeScript/docs)
+
+## 🔗 Quick Links
 
 - [NativeScript Home](https://nativescript.org)
 - [NativeScript Tutorials](https://docs.nativescript.org/tutorials/)
