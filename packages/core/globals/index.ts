@@ -292,8 +292,8 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
 	});
 }
 
-export function installPolyfills(moduleName: string, exportNames: string[], options?: { eager?: boolean }) {
-	const shouldInstallEagerly = global.__snapshot || options?.eager;
+export function installPolyfills(moduleName: string, exportNames: string[]) {
+	const shouldInstallEagerly = global.__snapshot || !__COMMONJS__;
 	if (shouldInstallEagerly) {
 		const loadedModule = global.loadModule(moduleName);
 		installPolyfillsFromModule(loadedModule, exportNames as any);
@@ -306,8 +306,7 @@ if (!global.NativeScriptHasPolyfilled) {
 	global.NativeScriptHasPolyfilled = true;
 	// console.log('Installing polyfills...');
 	global.registerModule('timer', () => timer);
-	// Timer polyfills are installed eagerly because they are fundamental APIs needed very early
-	installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'], { eager: true });
+	installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
 
 	global.registerModule('animation', () => animationFrame);
 	installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
