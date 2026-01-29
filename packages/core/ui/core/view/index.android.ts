@@ -76,7 +76,6 @@ let OnBackPressedCallback;
 if (SDK_VERSION >= 33) {
 	OnBackPressedCallback = (androidx.activity.OnBackPressedCallback as any).extend({
 		handleOnBackPressed() {
-			console.log('OnBackPressedCallback handleOnBackPressed called');
 			const dialog = this['_dialog']?.get();
 
 			if (!dialog) {
