@@ -268,6 +268,8 @@ function initializeDialogFragment() {
 
 			const dialog = new DialogImpl(this, this.getActivity(), theme);
 
+			Utils.android.enableEdgeToEdge(this.getActivity(), dialog.getWindow());
+
 			// do not override alignment unless fullscreen modal will be shown;
 			// otherwise we might break component-level layout:
 			// https://github.com/NativeScript/NativeScript/issues/5392

@@ -378,22 +378,31 @@ export function setDarkModeHandler(options?: { activity?: androidx.appcompat.app
 	}
 }
 
-export function enableEdgeToEdge(
-	activity: androidx.appcompat.app.AppCompatActivity,
-	options?: {
-		statusBarLightColor?: Color;
-		statusBarDarkColor?: Color;
-		navigationBarLightColor?: Color;
-		navigationBarDarkColor?: Color;
-		handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
-	},
-): void {
+export type EdgeToEdgeOptions = {
+	statusBarLightColor?: Color;
+	statusBarDarkColor?: Color;
+	navigationBarLightColor?: Color;
+	navigationBarDarkColor?: Color;
+	handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
+};
+
+export type WindowOrOptions = android.view.Window | EdgeToEdgeOptions;
+
+export function enableEdgeToEdge(activity: androidx.appcompat.app.AppCompatActivity, windowOrOptions?: WindowOrOptions, options?: EdgeToEdgeOptions): void {
 	let handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode;
 	let statusBarLight: number = 0;
 	let statusBarDark: number = 0;
 	let navigationBarLight: number = DefaultLightScrim.android;
 	let navigationBarDark: number = DefaultDarkScrim.android;
-	if (options) {
+	let opts: EdgeToEdgeOptions = windowOrOptions as never;
+	let isWindow = false;
+
+	if (windowOrOptions instanceof android.view.Window) {
+		opts = options;
+		isWindow = true;
+	}
+
+	if (opts) {
 		if (typeof options.handleDarkMode === 'function') {
 			handleDarkMode = new org.nativescript.widgets.Utils.HandleDarkMode({
 				onHandle(bar, resources) {
@@ -420,8 +429,16 @@ export function enableEdgeToEdge(
 	}
 
 	if (handleDarkMode) {
-		org.nativescript.widgets.Utils.enableEdgeToEdge(activity, java.lang.Integer.valueOf(statusBarLight), java.lang.Integer.valueOf(statusBarDark), java.lang.Integer.valueOf(navigationBarLight), java.lang.Integer.valueOf(navigationBarDark), handleDarkMode);
+		if (isWindow) {
+			org.nativescript.widgets.Utils.enableEdgeToEdge(activity, windowOrOptions as never, handleDarkMode);
+		} else {
+			org.nativescript.widgets.Utils.enableEdgeToEdge(activity, java.lang.Integer.valueOf(statusBarLight), java.lang.Integer.valueOf(statusBarDark), java.lang.Integer.valueOf(navigationBarLight), java.lang.Integer.valueOf(navigationBarDark), handleDarkMode);
+		}
 	} else {
-		org.nativescript.widgets.Utils.enableEdgeToEdge(activity, java.lang.Integer.valueOf(statusBarLight), java.lang.Integer.valueOf(statusBarDark), java.lang.Integer.valueOf(navigationBarLight), java.lang.Integer.valueOf(navigationBarDark));
+		if (isWindow) {
+			org.nativescript.widgets.Utils.enableEdgeToEdge(activity, windowOrOptions as never);
+		} else {
+			org.nativescript.widgets.Utils.enableEdgeToEdge(activity, java.lang.Integer.valueOf(statusBarLight), java.lang.Integer.valueOf(statusBarDark), java.lang.Integer.valueOf(navigationBarLight), java.lang.Integer.valueOf(navigationBarDark));
+		}
 	}
 }

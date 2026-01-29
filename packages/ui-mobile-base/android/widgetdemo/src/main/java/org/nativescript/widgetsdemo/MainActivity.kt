@@ -1,12 +1,15 @@
 package org.nativescript.widgetsdemo
 
+import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.widget.NestedScrollView
+import androidx.fragment.app.DialogFragment
 import org.nativescript.widgets.CommonLayoutParams
 import org.nativescript.widgets.ContentLayout
 import org.nativescript.widgets.GridLayout
@@ -15,6 +18,57 @@ import org.nativescript.widgets.StackLayout
 import org.nativescript.widgets.Utils
 
 class MainActivity : AppCompatActivity() {
+
+	class Frag : DialogFragment() {
+		override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+			val dialog = super.onCreateDialog(savedInstanceState)
+
+			val page = StackLayout(requireContext())
+			page.setBackgroundColor(Color.BLUE)
+			page.overflowEdge = LayoutBase.OverflowEdgeNone
+
+			val content = StackLayout(requireContext())
+			content.setBackgroundColor(Color.GREEN)
+			val params = CommonLayoutParams(
+				ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.MATCH_PARENT
+				)
+			)
+			page.overflowEdge = LayoutBase.OverflowEdgeBottom
+
+			params.widthPercent = 100f
+			params.heightPercent = 100f
+
+			content.layoutParams = params
+
+			val txt = TextView(requireContext())
+			txt.text = "Help"
+
+			content.addView(
+				txt
+			)
+			page.addView(
+				content
+			)
+
+			dialog.setContentView(
+				page, ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.MATCH_PARENT
+				)
+			)
+
+			dialog.window?.apply {
+				Utils.enableEdgeToEdge(requireActivity(), this)
+				setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+			}
+
+
+			return dialog
+		}
+	}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
@@ -40,7 +94,7 @@ class MainActivity : AppCompatActivity() {
 //		}
 
 		frame.setBackgroundColor(Color.BLUE)
-		frame.overflowEdge = LayoutBase.OverflowEdgeDontApply
+		//frame.overflowEdge = LayoutBase.OverflowEdgeDontApply
 		frame.layoutParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
@@ -65,7 +119,7 @@ class MainActivity : AppCompatActivity() {
 //			// insets.put(7, 1)
 //		}
 
-		svp.overflowEdge = StackLayout.OverflowEdgeAllButBottom
+		//	svp.overflowEdge = StackLayout.OverflowEdgeAllButBottom
 		val scrollView = NestedScrollView(this)
 		scrollView.layoutParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
@@ -77,7 +131,7 @@ class MainActivity : AppCompatActivity() {
 
 		val container = StackLayout(this)
 		container.setBackgroundColor(Color.RED)
-		container.overflowEdge = StackLayout.OverflowEdgeNone
+		//container.overflowEdge = StackLayout.OverflowEdgeNone
 
 		val text = TextView(this)
 		text.text = getString(R.string.ipsum)
@@ -99,6 +153,7 @@ class MainActivity : AppCompatActivity() {
 		params.width
 		btn.layoutParams = params
 		btn.setOnClickListener {
+			/*
 			val new_page = StackLayout(this)
 			new_page.setBackgroundColor(Color.BLUE)
 			new_page.layoutParams = CommonLayoutParams(
@@ -128,6 +183,15 @@ class MainActivity : AppCompatActivity() {
 
 				else -> LayoutBase.OverflowEdgeDontApply
 			}
+
+			*/
+
+
+			val frame = Frag()
+
+			frame.show(supportFragmentManager, "test")
+
+
 		}
 		page.addView(btn)
 		frame.addView(page)
