@@ -293,7 +293,8 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
 }
 
 export function installPolyfills(moduleName: string, exportNames: string[]) {
-	if (global.__snapshot) {
+	const shouldInstallEagerly = global.__snapshot || !__COMMONJS__;
+	if (shouldInstallEagerly) {
 		const loadedModule = global.loadModule(moduleName);
 		installPolyfillsFromModule(loadedModule, exportNames as any);
 	} else {
