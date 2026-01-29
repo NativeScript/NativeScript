@@ -10,7 +10,7 @@ export namespace CoreTypes {
 	type AndroidOverflowSingle = 'ignore' | 'none' | 'dont-apply';
 	type AndroidOverflowMultiple = 'left' | 'right' | 'top' | 'bottom' | 'left-dont-consume' | 'top-dont-consume' | 'right-dont-consume' | 'bottom-dont-consume' | 'all-but-left' | 'all-but-top' | 'all-but-right' | 'all-but-bottom';
 	type AndroidOverflowStacked = AndroidOverflowSingle | `${AndroidOverflowSingle},${AndroidOverflowMultiple}`;
-	export type AndroidOverflow = AndroidOverflowSingle | AndroidOverflowStacked;
+	export type AndroidOverflow = AndroidOverflowSingle | AndroidOverflowMultiple | AndroidOverflowStacked;
 	export type CSSWideKeywords = 'initial' | 'inherit' | 'unset' | 'revert';
 
 	/**
