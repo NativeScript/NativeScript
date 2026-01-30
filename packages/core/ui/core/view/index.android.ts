@@ -383,10 +383,12 @@ const INSET_LEFT = 0;
 const INSET_TOP = 4;
 const INSET_RIGHT = 8;
 const INSET_BOTTOM = 12;
+const INSET_BOTTOM_IME = 32;
 const INSET_LEFT_CONSUMED = 16;
 const INSET_TOP_CONSUMED = 20;
 const INSET_RIGHT_CONSUMED = 24;
 const INSET_BOTTOM_CONSUMED = 28;
+const INSET_BOTTOM_IME_CONSUMED = 36;
 
 const OverflowEdgeIgnore = -1;
 const OverflowEdgeNone: number = 0;
@@ -444,6 +446,14 @@ class Inset {
 		this.view.setInt32(INSET_BOTTOM, value, true);
 	}
 
+	public get ime(): number {
+		return this.view.getInt32(INSET_BOTTOM_IME, true);
+	}
+
+	public set ime(value: number) {
+		this.view.setInt32(INSET_BOTTOM, value, true);
+	}
+
 	public get leftConsumed(): boolean {
 		return this.view.getInt32(INSET_LEFT_CONSUMED, true) > 0;
 	}
@@ -474,6 +484,14 @@ class Inset {
 
 	public set bottomConsumed(value: boolean) {
 		this.view.setInt32(INSET_BOTTOM_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get imeBottomConsumed(): boolean {
+		return this.view.getInt32(INSET_BOTTOM_IME_CONSUMED, true) > 0;
+	}
+
+	public set imeBottomConsumed(value: boolean) {
+		this.view.setInt32(INSET_BOTTOM_IME_CONSUMED, value ? 1 : 0, true);
 	}
 
 	toString() {
@@ -565,7 +583,7 @@ export class View extends ViewCommon {
 							const inset = new Inset(param0);
 							const args = {
 								eventName: ViewCommon.androidOverflowInsetEvent,
-								object: this,
+								object: owner,
 								inset,
 							};
 							owner.notify(args);

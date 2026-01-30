@@ -7,6 +7,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -79,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 		Utils.enableEdgeToEdge(this)
 		val frame = ContentLayout(this)
 
-	//	frame.overflowEdge = LayoutBase.OverflowEdgeNone
+		frame.overflowEdge =  LayoutBase.OverflowEdgeDontApply
 
 		val page = GridLayout(this)
 
@@ -128,7 +129,12 @@ class MainActivity : AppCompatActivity() {
 
 
 		page.setBackgroundColor(Color.MAGENTA)
-		page.overflowEdge = LayoutBase.OverflowEdgeIgnore
+		page.overflowEdge = LayoutBase.OverflowEdgeDontApply
+
+		page.setInsetListener {
+			page.setPadding(0,0,0, it.getInt(32))
+			Log.d("com.test", "ime ${it.getInt(32)}")
+		}
 //		page.setInsetListener {
 //			val insets = it.asIntBuffer()
 //			insets.put(0,0)
@@ -176,12 +182,25 @@ class MainActivity : AppCompatActivity() {
 		svp.addView(scrollView)
 
 		val container = StackLayout(this)
+		container.setPadding(0,0,0,100)
 		container.setBackgroundColor(Color.RED)
 		val text = TextView(this)
 		text.text = getString(R.string.ipsum)
 		text.textSize = 40f
 		text.setTextColor(Color.WHITE)
 		container.addView(text)
+
+
+		val other = EditText(this)
+		other.hint = "Enter Text"
+		other.setTextColor(Color.WHITE)
+		container.addView(other, 0)
+
+
+		val input = EditText(this)
+		input.hint = "Enter Text"
+		input.setTextColor(Color.WHITE)
+		container.addView(input)
 		scrollView.addView(container)
 
 
@@ -244,9 +263,6 @@ class MainActivity : AppCompatActivity() {
 		frame.addView(page)
 		setContentView(frame)
 
-		frame.postDelayed(3000) {
-			page.overflowEdge = LayoutBase.OverflowEdgeNone
-		}
 
 	}
 }

@@ -45,21 +45,25 @@ public abstract class LayoutBase extends ViewGroup {
 	// 4  - top inset
 	// 8  - right inset
 	// 12 - bottom inset
+	// 32 - bottom ime inset
 	// 16 - left consumed (0/1)
 	// 20 - top consumed
 	// 24 - right consumed
 	// 28 - bottom consumed
+	// 36 - bottom ime consumed
 
 	public static final class BufferOffset {
 		public static final int INSET_LEFT = 0;
 		public static final int INSET_TOP = 4;
 		public static final int INSET_RIGHT = 8;
 		public static final int INSET_BOTTOM = 12;
+		public static final int INSET_BOTTOM_IME = 32;
 
 		public static final int INSET_LEFT_CONSUMED = 16;
 		public static final int INSET_TOP_CONSUMED = 20;
 		public static final int INSET_RIGHT_CONSUMED = 24;
 		public static final int INSET_BOTTOM_CONSUMED = 28;
+		public static final int INSET_BOTTOM_IME_CONSUMED = 36;
 	}
 
 	int mPaddingLeft = 0;
@@ -68,10 +72,11 @@ public abstract class LayoutBase extends ViewGroup {
 	int mPaddingBottom = 0;
 
 	Insets edgeInsets = Insets.NONE;
+	Insets imeInsets = Insets.NONE;
 
 	int overflowEdge = OverflowEdgeIgnore;
 
-	private final ByteBuffer insetBuffer = ByteBuffer.allocateDirect(32);
+	private final ByteBuffer insetBuffer = ByteBuffer.allocateDirect(40);
 
 	private WindowInsetListener insetListener = null;
 	private androidx.core.view.OnApplyWindowInsetsListener windowInsetsListener = null;
@@ -84,7 +89,7 @@ public abstract class LayoutBase extends ViewGroup {
 		void onApplyWindowInsets(ByteBuffer inset);
 	}
 
-	private static final byte[] EMPTY_INSETS = new byte[32];
+	private static final byte[] EMPTY_INSETS = new byte[40];
 
 
 	private boolean pendingInsetApply = false;
@@ -211,7 +216,7 @@ public abstract class LayoutBase extends ViewGroup {
 
 	private void resetInset() {
 		insetBuffer.position(0);
-		insetBuffer.put(EMPTY_INSETS, 0, 32);
+		insetBuffer.put(EMPTY_INSETS, 0, 40);
 	}
 
 	public void setOverflowEdge(int value) {
@@ -227,7 +232,10 @@ public abstract class LayoutBase extends ViewGroup {
 			windowInsetsListener = new androidx.core.view.OnApplyWindowInsetsListener() {
 				@NonNull
 				@Override
-				public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
+				public WindowInsetsCompat onApplyWindowInsets(
+					@NonNull View v,
+					@NonNull WindowInsetsCompat insets
+				) {
 					if (insets.isConsumed() || overflowEdge == OverflowEdgeIgnore) {
 						return insets;
 					}
@@ -235,95 +243,167 @@ public abstract class LayoutBase extends ViewGroup {
 					if (!(v instanceof LayoutBase)) return insets;
 					LayoutBase base = (LayoutBase) v;
 
-					Insets statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars());
-					Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
-					Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+					Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+					Insets ime        = insets.getInsets(WindowInsetsCompat.Type.ime());
 
-					int insetLeft = navBar.left;
-					int insetRight = navBar.right;
-					int insetBottom = Math.max(navBar.bottom, ime.bottom);
-
-					resetInset();
-
-					WindowInsetsCompat consumed = new WindowInsetsCompat.Builder()
-						.setInsets(WindowInsetsCompat.Type.systemBars(), Insets.NONE).build();
+					int insetLeft      = systemBars.left;
+					int insetRight     = systemBars.right;
+					int insetTop       = systemBars.top;
+					int insetNavBottom = systemBars.bottom;
+					int insetImeBottom = ime.bottom;
 
 					if (overflowEdge == OverflowEdgeNone) {
+						int bottom = mPaddingBottom + Math.max(insetNavBottom, insetImeBottom);
+
 						base.applyingEdges = true;
-						v.setPadding(mPaddingLeft + insetLeft, mPaddingTop + statusBar.top,
-							mPaddingRight + insetRight, mPaddingBottom + insetBottom);
-						edgeInsets = Insets.of(insetLeft, statusBar.top, insetRight, insetBottom);
+						v.setPadding(
+							mPaddingLeft   + insetLeft,
+							mPaddingTop    + insetTop,
+							mPaddingRight  + insetRight,
+							bottom
+						);
 						base.applyingEdges = false;
-						return consumed;
+
+						edgeInsets = Insets.of(insetLeft, insetTop, insetRight, insetNavBottom);
+						imeInsets  = Insets.of(0, 0, 0, insetImeBottom);
+
+						return new WindowInsetsCompat.Builder(insets)
+							.setInsets(WindowInsetsCompat.Type.systemBars(), Insets.NONE)
+							.setInsets(WindowInsetsCompat.Type.ime(), Insets.NONE)
+							.build();
 					}
 
-					boolean[] consumeFlags = new boolean[4];
-					boolean[] applyFlags = new boolean[4];
+					boolean[] apply   = new boolean[4];   // L T R B
+					boolean[] consume = new boolean[4];
 
-					consumeFlags[0] = (overflowEdge & OverflowEdgeLeft) == OverflowEdgeLeft;
-					consumeFlags[1] = (overflowEdge & OverflowEdgeTop) == OverflowEdgeTop;
-					consumeFlags[2] = (overflowEdge & OverflowEdgeRight) == OverflowEdgeRight;
-					consumeFlags[3] = (overflowEdge & OverflowEdgeBottom) == OverflowEdgeBottom;
+					consume[0] = (overflowEdge & OverflowEdgeLeft)   != 0;
+					consume[1] = (overflowEdge & OverflowEdgeTop)    != 0;
+					consume[2] = (overflowEdge & OverflowEdgeRight)  != 0;
+					consume[3] = (overflowEdge & OverflowEdgeBottom) != 0;
 
-					applyFlags[0] = (overflowEdge & OverflowEdgeLeftDontConsume) == OverflowEdgeLeftDontConsume;
-					applyFlags[1] = (overflowEdge & OverflowEdgeTopDontConsume) == OverflowEdgeTopDontConsume;
-					applyFlags[2] = (overflowEdge & OverflowEdgeRightDontConsume) == OverflowEdgeRightDontConsume;
-					applyFlags[3] = (overflowEdge & OverflowEdgeBottomDontConsume) == OverflowEdgeBottomDontConsume;
+					if ((overflowEdge & OverflowEdgeLeftDontConsume)   != 0) consume[0] = false;
+					if ((overflowEdge & OverflowEdgeTopDontConsume)    != 0) consume[1] = false;
+					if ((overflowEdge & OverflowEdgeRightDontConsume)  != 0) consume[2] = false;
+					if ((overflowEdge & OverflowEdgeBottomDontConsume) != 0) consume[3] = false;
 
-					if ((overflowEdge & OverflowEdgeAllButLeft) == OverflowEdgeAllButLeft) {
-						consumeFlags[0] = applyFlags[0] = false;
-						for (int i = 1; i < 4; i++) {
-							consumeFlags[i] = applyFlags[i] = true;
-						}
-					}
-					if ((overflowEdge & OverflowEdgeAllButTop) == OverflowEdgeAllButTop) {
-						consumeFlags[1] = applyFlags[1] = false;
+					apply[0] = !consume[0];
+					apply[1] = !consume[1];
+					apply[2] = !consume[2];
+					apply[3] = !consume[3];
+
+					if ((overflowEdge & OverflowEdgeAllButLeft) != 0) {
 						for (int i = 0; i < 4; i++) {
-							if (i != 1) {
-								consumeFlags[i] = applyFlags[i] = true;
-							}
+							consume[i] = true;
+							apply[i]   = false;
 						}
-					}
-					if ((overflowEdge & OverflowEdgeAllButRight) == OverflowEdgeAllButRight) {
-						consumeFlags[2] = applyFlags[2] = false;
-						for (int i = 0; i < 4; i++) {
-							if (i != 2) {
-								consumeFlags[i] = applyFlags[i] = true;
-							}
-						}
-					}
-					if ((overflowEdge & OverflowEdgeAllButBottom) == OverflowEdgeAllButBottom) {
-						consumeFlags[3] = applyFlags[3] = false;
-						for (int i = 0; i < 4; i++) {
-							if (i != 3) {
-								consumeFlags[i] = applyFlags[i] = true;
-							}
-						}
+						consume[0] = false;
+						apply[0]   = true;
 					}
 
-					int left = consumeFlags[0] ? 0 : mPaddingLeft + insetLeft;
-					int top = consumeFlags[1] ? 0 : mPaddingTop + statusBar.top;
-					int right = consumeFlags[2] ? 0 : mPaddingRight + insetRight;
-					int bottom = consumeFlags[3] ? 0 : mPaddingBottom + insetBottom;
+					if ((overflowEdge & OverflowEdgeAllButTop) != 0) {
+						for (int i = 0; i < 4; i++) {
+							consume[i] = true;
+							apply[i]   = false;
+						}
+						consume[1] = false;
+						apply[1]   = true;
+					}
 
-					edgeInsets = Insets.of(left, top, right, bottom);
+					if ((overflowEdge & OverflowEdgeAllButRight) != 0) {
+						for (int i = 0; i < 4; i++) {
+							consume[i] = true;
+							apply[i]   = false;
+						}
+						consume[2] = false;
+						apply[2]   = true;
+					}
+
+					if ((overflowEdge & OverflowEdgeAllButBottom) != 0) {
+						for (int i = 0; i < 4; i++) {
+							consume[i] = true;
+							apply[i]   = false;
+						}
+						consume[3] = false;
+						apply[3]   = true;
+					}
+
+					boolean consumeIme = consume[3];
+
+					if (overflowEdge == OverflowEdgeDontApply) {
+						resetInset();
+
+						putInset(BufferOffset.INSET_LEFT, insetLeft);
+						putInset(BufferOffset.INSET_TOP, insetTop);
+						putInset(BufferOffset.INSET_RIGHT, insetRight);
+						putInset(BufferOffset.INSET_BOTTOM, insetNavBottom);
+						putInset(BufferOffset.INSET_BOTTOM_IME, insetImeBottom);
+
+						putInset(BufferOffset.INSET_LEFT_CONSUMED, 0);
+						putInset(BufferOffset.INSET_TOP_CONSUMED, 0);
+						putInset(BufferOffset.INSET_RIGHT_CONSUMED, 0);
+						putInset(BufferOffset.INSET_BOTTOM_CONSUMED, 0);
+						putInset(BufferOffset.INSET_BOTTOM_IME_CONSUMED, 0);
+
+						if (base.insetListener != null) {
+							base.insetListener.onApplyWindowInsets(insetBuffer);
+						}
+
+						consume[0] |= getInset(BufferOffset.INSET_LEFT_CONSUMED) != 0;
+						consume[1] |= getInset(BufferOffset.INSET_TOP_CONSUMED) != 0;
+						consume[2] |= getInset(BufferOffset.INSET_RIGHT_CONSUMED) != 0;
+						consume[3] |= getInset(BufferOffset.INSET_BOTTOM_CONSUMED) != 0;
+						consumeIme |= getInset(BufferOffset.INSET_BOTTOM_IME_CONSUMED) != 0;
+
+						insetLeft      = getInset(BufferOffset.INSET_LEFT);
+						insetTop       = getInset(BufferOffset.INSET_TOP);
+						insetRight     = getInset(BufferOffset.INSET_RIGHT);
+						insetNavBottom = getInset(BufferOffset.INSET_BOTTOM);
+						insetImeBottom = getInset(BufferOffset.INSET_BOTTOM_IME);
+
+						apply[0] = apply[1] = apply[2] = apply[3] = false;
+					}
+
+
+					int left   = mPaddingLeft  + (apply[0] ? insetLeft : 0);
+					int top    = mPaddingTop   + (apply[1] ? insetTop : 0);
+					int right  = mPaddingRight + (apply[2] ? insetRight : 0);
+					int bottom = mPaddingBottom
+						+ (apply[3] ? insetNavBottom : 0)
+						+ (apply[3] ? insetImeBottom : 0);
+
+					edgeInsets = Insets.of(
+						apply[0] ? insetLeft : 0,
+						apply[1] ? insetTop : 0,
+						apply[2] ? insetRight : 0,
+						apply[3] ? insetNavBottom : 0
+					);
+
+					imeInsets = apply[3]
+						? Insets.of(0, 0, 0, insetImeBottom)
+						: Insets.NONE;
+
 					base.applyingEdges = true;
 					base.setPadding(left, top, right, bottom);
 					base.applyingEdges = false;
 
-
-					Insets returnInsets = Insets.of(
-						applyFlags[0] ? insetLeft : 0,
-						applyFlags[1] ? statusBar.top : 0,
-						applyFlags[2] ? insetRight : 0,
-						applyFlags[3] ? insetBottom : 0
+					Insets remainingSystemBars = Insets.of(
+						consume[0] ? 0 : insetLeft,
+						consume[1] ? 0 : insetTop,
+						consume[2] ? 0 : insetRight,
+						consume[3] ? 0 : insetNavBottom
 					);
 
-					return new WindowInsetsCompat.Builder()
-						.setInsets(WindowInsetsCompat.Type.systemBars(), returnInsets)
+					Insets remainingIme =
+						consumeIme ? Insets.NONE
+							: Insets.of(0, 0, 0, insetImeBottom);
+
+					return new WindowInsetsCompat.Builder(insets)
+						.setInsets(WindowInsetsCompat.Type.systemBars(), remainingSystemBars)
+						.setInsets(WindowInsetsCompat.Type.ime(), remainingIme)
 						.build();
 				}
 			};
+
 			ViewCompat.setOnApplyWindowInsetsListener(this, windowInsetsListener);
 		}
 
