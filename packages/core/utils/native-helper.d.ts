@@ -128,7 +128,7 @@ export const android: {
 	 * @param options Optional configuration for status and navigation bar colors.
 	 */
 	enableEdgeToEdge(
-		activity: androidx.appcompat.app.AppCompatActivity,
+		activityOrWindow: androidx.activity.ComponentActivity,
 		options?: {
 			statusBarLightColor?: Color;
 			statusBarDarkColor?: Color;
@@ -137,6 +137,33 @@ export const android: {
 			handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
 		},
 	): void;
+
+	/**
+	 * Enables edge-to-edge navigation for the provided Window.
+	 * @param activity The activity to enable edge-to-edge navigation for.
+	 * @param options Optional configuration for status and navigation bar colors.
+	 */
+	enableEdgeToEdge(
+		activity: androidx.activity.ComponentActivity,
+		window: android.view.Window,
+		options?: {
+			statusBarLightColor?: Color;
+			statusBarDarkColor?: Color;
+			navigationBarLightColor?: Color;
+			navigationBarDarkColor?: Color;
+			handleDarkMode?: (bar: 'status' | 'navigation', resources: android.content.res.Resources) => boolean;
+		},
+	): void;
+
+	/**
+	 * Gets whether edge-to-edge is ignored on older devices (API 34 an older).
+	 */
+	getIgnoreEdgeToEdgeOnOlderDevices(): boolean;
+
+	/**
+	 * Sets whether to ignore edge-to-edge on older devices (API 34 an older).
+	 */
+	setIgnoreEdgeToEdgeOnOlderDevices(value: boolean): void;
 };
 
 /**

@@ -1,34 +1,140 @@
 package org.nativescript.widgetsdemo
 
+import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
+import android.util.TypedValue
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.postDelayed
 import androidx.core.widget.NestedScrollView
+import androidx.fragment.app.DialogFragment
 import org.nativescript.widgets.CommonLayoutParams
 import org.nativescript.widgets.ContentLayout
 import org.nativescript.widgets.GridLayout
+import org.nativescript.widgets.GridUnitType
 import org.nativescript.widgets.LayoutBase
 import org.nativescript.widgets.StackLayout
 import org.nativescript.widgets.Utils
 
 class MainActivity : AppCompatActivity() {
+
+	class Frag : DialogFragment() {
+		override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+			val dialog = super.onCreateDialog(savedInstanceState)
+
+			val page = StackLayout(requireContext())
+			page.setBackgroundColor(Color.BLUE)
+			page.overflowEdge = LayoutBase.OverflowEdgeNone
+
+			val content = StackLayout(requireContext())
+			content.setBackgroundColor(Color.GREEN)
+			val params = CommonLayoutParams(
+				ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.MATCH_PARENT
+				)
+			)
+
+			params.widthPercent = 100f
+			params.heightPercent = 100f
+
+			content.layoutParams = params
+
+			val txt = TextView(requireContext())
+			txt.text = "Help"
+
+			content.addView(
+				txt
+			)
+			page.addView(
+				content
+			)
+
+			dialog.setContentView(
+				page, ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.MATCH_PARENT
+				)
+			)
+
+			dialog.window?.apply {
+				Utils.enableEdgeToEdge(requireActivity(), this)
+				setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+			}
+
+
+			return dialog
+		}
+	}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
 		Utils.enableEdgeToEdge(this)
 		val frame = ContentLayout(this)
+
+		frame.overflowEdge =  LayoutBase.OverflowEdgeDontApply
+
 		val page = GridLayout(this)
-		page.layoutParams = CommonLayoutParams(
+
+
+		val pageParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT
 			)
 		)
+		page.layoutParams = pageParams
+
+		page.addRow(
+			1, GridUnitType.auto
+		)
+
+		page.addRow(
+			1, GridUnitType.star
+		)
+
+
+		val height = TypedValue().let { tv ->
+			if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+				TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+			} else {
+				ViewGroup.LayoutParams.WRAP_CONTENT
+			}
+		}
+
+		val ab = Toolbar(this).apply {
+			layoutParams = ViewGroup.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				height
+			)
+			setBackgroundColor(Color.BLACK)   // REQUIRED or it's invisible
+			setTitleTextColor(Color.WHITE)    // REQUIRED to see the title
+		}
+
+
+		page.addView(ab)
+
+		setSupportActionBar(ab)
+
+		supportActionBar?.setDisplayShowTitleEnabled(true)
+		supportActionBar?.title = "???"
+
+
 		page.setBackgroundColor(Color.MAGENTA)
-		page.overflowEdge = LayoutBase.OverflowEdgeAllButTop
+		page.overflowEdge = LayoutBase.OverflowEdgeDontApply
+
+		page.setInsetListener {
+			page.setPadding(0,0,0, it.getInt(32))
+			Log.d("com.test", "ime ${it.getInt(32)}")
+		}
 //		page.setInsetListener {
 //			val insets = it.asIntBuffer()
 //			insets.put(0,0)
@@ -40,7 +146,6 @@ class MainActivity : AppCompatActivity() {
 //		}
 
 		frame.setBackgroundColor(Color.BLUE)
-		frame.overflowEdge = LayoutBase.OverflowEdgeDontApply
 		frame.layoutParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
@@ -50,12 +155,14 @@ class MainActivity : AppCompatActivity() {
 
 		val svp = StackLayout(this)
 //		svp.setBackgroundColor(Color.YELLOW)
-		svp.layoutParams = CommonLayoutParams(
+		val svParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT
 			)
 		)
+		svParams.row = 1
+		svp.layoutParams = svParams
 //		svp.setInsetListener {
 //			val insets = it.asIntBuffer()
 //			insets.put(0,0)
@@ -65,7 +172,6 @@ class MainActivity : AppCompatActivity() {
 //			// insets.put(7, 1)
 //		}
 
-		svp.overflowEdge = StackLayout.OverflowEdgeAllButBottom
 		val scrollView = NestedScrollView(this)
 		scrollView.layoutParams = CommonLayoutParams(
 			ViewGroup.LayoutParams(
@@ -76,15 +182,28 @@ class MainActivity : AppCompatActivity() {
 		svp.addView(scrollView)
 
 		val container = StackLayout(this)
+		container.setPadding(0,0,0,100)
 		container.setBackgroundColor(Color.RED)
-		container.overflowEdge = StackLayout.OverflowEdgeNone
-
 		val text = TextView(this)
 		text.text = getString(R.string.ipsum)
 		text.textSize = 40f
 		text.setTextColor(Color.WHITE)
 		container.addView(text)
+
+
+		val other = EditText(this)
+		other.hint = "Enter Text"
+		other.setTextColor(Color.WHITE)
+		container.addView(other, 0)
+
+
+		val input = EditText(this)
+		input.hint = "Enter Text"
+		input.setTextColor(Color.WHITE)
+		container.addView(input)
 		scrollView.addView(container)
+
+
 		page.addView(svp)
 		val btn = Button(this)
 		btn.text = "Toggle Overflow"
@@ -94,11 +213,13 @@ class MainActivity : AppCompatActivity() {
 				ViewGroup.LayoutParams.WRAP_CONTENT
 			)
 		)
+		params.row = 1
 		params.width = 300
 		params.height = 300
 		params.width
 		btn.layoutParams = params
 		btn.setOnClickListener {
+			/*
 			val new_page = StackLayout(this)
 			new_page.setBackgroundColor(Color.BLUE)
 			new_page.layoutParams = CommonLayoutParams(
@@ -128,9 +249,20 @@ class MainActivity : AppCompatActivity() {
 
 				else -> LayoutBase.OverflowEdgeDontApply
 			}
+
+			*/
+
+
+			val frame = Frag()
+
+			frame.show(supportFragmentManager, "test")
+
+
 		}
 		page.addView(btn)
 		frame.addView(page)
 		setContentView(frame)
+
+
 	}
 }

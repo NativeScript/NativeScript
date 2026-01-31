@@ -1,7 +1,7 @@
 import { platformCheck } from './platform-check';
 
 // importing this helper as a separate file avoids "android" symbol clash with the global android object
-import { resources, collections, getWindow, getApplication, getCurrentActivity, getApplicationContext, getResources, getPackageName, getInputMethodManager, showSoftInput, dismissSoftInput, enableEdgeToEdge, setDarkModeHandler, setNavigationBarColor, setStatusBarColor } from './native-helper-for-android';
+import { resources, collections, getWindow, getApplication, getCurrentActivity, getApplicationContext, getResources, getPackageName, getInputMethodManager, showSoftInput, dismissSoftInput, enableEdgeToEdge, setDarkModeHandler, setNavigationBarColor, setStatusBarColor, getIgnoreEdgeToEdgeOnOlderDevices, setIgnoreEdgeToEdgeOnOlderDevices } from './native-helper-for-android';
 export { dataSerialize, dataDeserialize } from './native-helper-for-android';
 
 export { getWindow } from './native-helper-for-android';
@@ -22,6 +22,8 @@ export const android = {
 	setStatusBarColor,
 	setNavigationBarColor,
 	setDarkModeHandler,
+	getIgnoreEdgeToEdgeOnOlderDevices,
+	setIgnoreEdgeToEdgeOnOlderDevices,
 };
 
 /**

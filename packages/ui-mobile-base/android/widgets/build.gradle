@@ -8,7 +8,7 @@ def computeCompileSdkVersion() {
 	if (project.hasProperty("compileSdk")) {
 		return compileSdk
 	} else {
-		return 35
+		return 36
 	}
 }
 
@@ -16,7 +16,7 @@ def computeBuildToolsVersion() {
 	if (project.hasProperty("buildToolsVersion")) {
 		return buildToolsVersion
 	} else {
-		return "35.0.0"
+		return "36.0.0"
 	}
 }
 
@@ -24,7 +24,7 @@ def computeTargetSdkVersion() {
 	if (project.hasProperty("targetSdk")) {
 		return targetSdk
 	} else {
-		return 35
+		return 36
 	}
 }
 
@@ -52,7 +52,7 @@ dependencies {
 		println "\t + using android X library androidx.viewpager2:viewpager2:$androidXViewPagerVersion"
 	}
 
-	def androidXFragmentVersion = "1.8.8"
+	def androidXFragmentVersion = "1.8.9"
 	if (project.hasProperty("androidXFragment")) {
 		androidXFragmentVersion = androidXFragment
 		outLogger.withStyle(Style.SuccessHeader).println "\t + using android X library androidx.fragment:fragment:$androidXFragmentVersion"
@@ -83,10 +83,16 @@ dependencies {
 		outLogger.withStyle(Style.SuccessHeader).println "\t + using android X library androidx.documentfile:documentfile:$androidXDocumentFileVersion"
 	}
 
-	def androidXActivityVersion = "1.10.1"
+	def androidXActivityVersion = "1.11.0"
 	if (project.hasProperty("androidXActivity")) {
 		androidXActivityVersion = androidXActivity
 		outLogger.withStyle(Style.SuccessHeader).println "\t + using android X library androidx.activity:activity:$androidXActivityVersion"
+	}
+
+	def androidXCoreVersion = "1.17.0"
+	if (project.hasProperty("androidXCore")) {
+		androidXCoreVersion = androidXCore
+		outLogger.withStyle(Style.SuccessHeader).println "\t + using android X library androidx.core:core:$androidXCoreVersion"
 	}
 
 
@@ -101,6 +107,7 @@ dependencies {
 	implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
 	implementation "androidx.documentfile:documentfile:$androidXDocumentFileVersion"
 	implementation "androidx.activity:activity:$androidXActivityVersion"
+	implementation "androidx.core:core:$androidXCoreVersion"
 }
 
 tasks.register('cleanBuildDir', Delete) {
