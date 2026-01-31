@@ -34,6 +34,7 @@ import { createNativeClassTransformerPlugin } from '../helpers/nativeclass-trans
 import { getThemeCoreGenericAliases, createEnsureHoistedThemeLinkPlugin, createThemeCoreCssFallbackPlugin } from '../helpers/theme-core-plugins.js';
 import { createPostCssConfig } from '../helpers/postcss-platform-config.js';
 import { getProjectAppPath, getProjectAppRelativePath } from '../helpers/utils.js';
+import { appComponentsPlugin } from '../helpers/app-components.js';
 // Load HMR plugins lazily to avoid compiling dev-only sources during library build
 // This prevents TypeScript from traversing the heavy HMR implementation graph when not needed
 // function getHMRPluginsSafe(opts: {
@@ -231,10 +232,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	const staticCopyTargets = [];
 	if (existsSync(assetsDir)) {
 		// Replace \ with / to avoid issues with glob in windows
-		staticCopyTargets.push({ src: `${assetsDir}/**/*`.replace(/\\/g,'/'), dest: 'assets' });
+		staticCopyTargets.push({ src: `${assetsDir}/**/*`.replace(/\\/g, '/'), dest: 'assets' });
 	}
 	if (existsSync(fontsDir)) {
-		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g,'/'), dest: 'fonts' });
+		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts' });
 	}
 
 	let disableOptimizeDeps = false;
@@ -332,17 +333,19 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Simplified CommonJS handling - let Vite's optimizeDeps do the heavy lifting
 			commonjs({
 				include: [/node_modules/],
-				// Force specific problematic modules to be treated as CommonJS
+				// Let Rollup/Vite decide default mapping for CommonJS modules.
 				requireReturnsDefault: 'auto',
 				defaultIsModuleExports: 'auto',
 				transformMixedEsModules: true,
 				// Ignore optional dependencies that are meant to fail gracefully
-				ignore: ['@nativescript/android', '@nativescript/ios'],
+				ignore: ['@nativescript/android', '@nativescript/ios', '@nativescript/visionos'],
 			}),
 			nsConfigAsJsonPlugin(),
 			NativeScriptPlugin({ platform }),
 			// Ensure globals and Android activity are included early via virtual entry
 			mainEntryPlugin({ platform, isDevMode, verbose, hmrActive }),
+			// Handle custom Android Activity/Application components (auto-detected or configured)
+			appComponentsPlugin({ platform, verbose }),
 			dynamicImportPlugin(),
 			// Transform Vite worker URLs to NativeScript format AFTER bundling
 			workerUrlPlugin(),
@@ -440,7 +443,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					// Preserve side effects for NativeScript core so classes/functions
 					// aren't tree-shaken out inadvertently. This does NOT cause cross‑chunk duplication;
 					// it only prevents Rollup from dropping modules it considers side‑effect free.
-					moduleSideEffects: (id) => /node_modules[\\\/]\@nativescript[\\\/]core[\\\/]/.test(id) || null,
+					// Also preserve side effects for .android and .ios files which may contain
+					// other decorated classes that register with the native runtime
+					moduleSideEffects: (id) => {
+						if (/node_modules[\\\/]\@nativescript[\\\/]core[\\\/]/.test(id)) return true;
+						// Activity and Application files have side effects (class registration)
+						if (/\.(android|ios)\.(ts|js)$/.test(id)) return true;
+						return null;
+					},
 				},
 				input: 'virtual:entry-with-polyfills',
 				output: {

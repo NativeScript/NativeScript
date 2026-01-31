@@ -1,22 +1,3 @@
-/*
-RAW BYPASS DIAGNOSTICS (added):
-  Purpose: Fetch original Vite transform output (unsanitized) for differential comparison with sanitized/device-processed output.
-  Endpoints supporting ?raw=1:
-  - /ns/asm[/(ver)]?path=/abs/or/@/alias/Comp.vue&raw=1
-      Returns either full compiled ?vue output (if available) or concatenated script/template variant transforms.
-  - /ns/sfc[/(ver)]?path=/abs/or/@/alias/Comp.vue[?vue&type=script|template]&raw=1
-      Returns direct transformRequest result (before cleanCode/processCodeForDevice/rewriteImports delegation).
-  Response markers:
-    - // [sfc-asm] <path> (raw bypass)
-    - // [sfc] raw bypass path=<spec>
-    - Hash banner: // [hash:<sha1>] bytes=<len> raw=1 <endpoint>
-    - X-NS-Source-Hash header mirrors hash for correlation with runtime compile logs.
-  Usage Workflow:
-    1. Fetch sanitized module normally (without raw=1) and note its hash banner and failing runtime log containing [http-esm][compile][v8-error].
-    2. Fetch same URL with &raw=1 (or ?raw=1 if no existing query) to obtain unsanitized baseline.
-    3. Diff raw vs sanitized focusing near reported line/column from v8-error log.
-    4. Identify sanitation regex introducing syntax issue; adjust in cleanCode/processCodeForDevice.
-*/
 import type { Plugin, ViteDevServer, TransformResult } from 'vite';
 import { createRequire } from 'node:module';
 import { normalizeStrayCoreStringLiterals, fixDanglingCoreFrom, normalizeAnyCoreSpecToBridge } from './core-sanitize.js';
@@ -1163,7 +1144,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
 		'const __ANDROID__ = globalThis.__ANDROID__ !== undefined ? globalThis.__ANDROID__ : false;',
 		'const __IOS__ = globalThis.__IOS__ !== undefined ? globalThis.__IOS__ : false;',
 		'const __VISIONOS__ = globalThis.__VISIONOS__ !== undefined ? globalThis.__VISIONOS__ : false;',
-		'const __APPLE__ = globalThis.__APPLE__ !== undefined ? globalThis.__APPLE__ : false;',
+		'const __APPLE__ = globalThis.__APPLE__ !== undefined ? globalThis.__APPLE__ : (__IOS__ || __VISIONOS__);',
 		'const __DEV__ = globalThis.__DEV__ !== undefined ? globalThis.__DEV__ : false;',
 		'const __COMMONJS__ = globalThis.__COMMONJS__ !== undefined ? globalThis.__COMMONJS__ : false;',
 		'const __NS_WEBPACK__ = globalThis.__NS_WEBPACK__ !== undefined ? globalThis.__NS_WEBPACK__ : true;',
@@ -1249,6 +1230,15 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
 	// This allows the rewriter to see and canonicalize '/node_modules/.vite/deps/*' specifiers back
 	// to their package ids (e.g., '@nativescript/firebase-core') and generate require-based bindings
 	// so named imports like `{ firebase }` are preserved as const bindings.
+	//
+	// Some upstream transforms can emit a multiline form:
+	//   import { x } from
+	//   "/node_modules/.vite/deps/...";
+	// If we don't normalize it, later stripping of naked string-only lines can leave
+	// an invalid `import ... from` statement.
+	try {
+		result = result.replace(/(^|\n)([\t ]*import\s+[^;]*?\s+from)\s*\n\s*("\/?node_modules\/\.vite\/deps\/[^"\n]+"\s*;?\s*)/gm, (_m, p1, p2, p3) => `${p1}${p2} ${p3}`);
+	} catch {}
 	result = ensureNativeScriptModuleBindings(result);
 
 	// Repair any accidental "import ... = expr" assignments that may have slipped in.
@@ -2651,6 +2641,15 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						return;
 					}
 					spec = spec.replace(/[?#].*$/, '');
+					// Accept path-based HMR cache-busting: /ns/m/__ns_hmr__/<tag>/<real-spec>
+					// The iOS HTTP ESM loader canonicalizes cache keys by stripping query params,
+					// so we must carry the cache-buster in the path.
+					try {
+						const m = spec.match(/^\/?__ns_hmr__\/[^\/]+(\/.*)?$/);
+						if (m) {
+							spec = m[1] || '/';
+						}
+					} catch {}
 					// Normalize absolute filesystem paths back to project-relative ids (e.g. /src/app.ts)
 					try {
 						const projectRoot = ((server as any).config?.root || process.cwd()) as string;
@@ -2728,35 +2727,34 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							} catch {}
 						}
 					}
-					// RAW BYPASS: allow fetching original Vite transform before sanitation for diffing/debugging
-					if (urlObj.searchParams.get('raw') === '1') {
-						const raw = transformed?.code || 'export {}\n';
-						try {
-							const h = createHash('sha1').update(raw).digest('hex');
-							res.setHeader('X-NS-Source-Hash', h);
-							res.statusCode = 200;
-							res.end(`// [hash:${h}] bytes=${raw.length} raw=1 m path=${spec}\n` + raw);
-						} catch {
-							res.statusCode = 200;
-							res.end(`// [raw=1] m path=${spec}\n` + raw);
-						}
-						return;
-					}
-					// Post-transform: inject cache-busting version for all internal /ns/m/* imports to avoid stale module reuse on device
+					// Post-transform: inject cache-busting version for all internal /ns/m/* imports to avoid stale module reuse on device.
+					// IMPORTANT: use PATH-based busting (not query) because the iOS HTTP ESM loader strips query params
+					// when computing module cache keys.
 					try {
 						if (transformed?.code) {
 							const ver = Number((global as any).graphVersion || graphVersion || 0);
 							let code = transformed.code;
+							const prefix = `/ns/m/__ns_hmr__/v${ver}`;
+							const rewrite = (p: string) => {
+								try {
+									if (!p || typeof p !== 'string') return p;
+									if (!p.startsWith('/ns/m/')) return p;
+									if (p.startsWith('/ns/m/__ns_hmr__/')) return p;
+									return prefix + p.slice('/ns/m'.length);
+								} catch {
+									return p;
+								}
+							};
 							// 1) Static imports: import ... from "/ns/m/..."
-							code = code.replace(/(from\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, `$1$2?v=${ver}$3`);
+							code = code.replace(/(from\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
 							// 2) Side-effect imports: import "/ns/m/..."
-							code = code.replace(/(import\s*(?!\()\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, `$1$2?v=${ver}$3`);
+							code = code.replace(/(import\s*(?!\()\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
 							// 3) Dynamic imports: import("/ns/m/...")
-							code = code.replace(/(import\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*\))/g, `$1$2?v=${ver}$3`);
+							code = code.replace(/(import\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*\))/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
 							// 4) new URL("/ns/m/...", import.meta.url)
-							code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\))/g, `$1$2?v=${ver}$3`);
+							code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\))/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
 							// 5) __ns_import(new URL('/ns/m/...', import.meta.url).href)
-							code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\)\.href)/g, `$1$2?v=${ver}$3`);
+							code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\)\.href)/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
 							transformed.code = code;
 							// TypeScript-specific graph population: when TS flavor is active
 							// and this is an application module under the virtual app root,
@@ -2879,15 +2877,10 @@ export const piniaSymbol = p.piniaSymbol;
 							} catch {}
 						}
 						if (!transformed?.code) {
-							// Enhanced diagnostics: emit a module that throws with context for easier on-device debugging
+							// Emit a module that throws with context for easier on-device debugging
 							try {
 								const tried = Array.from(new Set(candidates)).slice(0, 12);
-								let out = `// [ns:m] transform miss path=${spec} tried=${tried.length}\n` + `throw new Error(${JSON.stringify(`[ns/m] transform failed for ${spec} (tried ${tried.length} candidates). Use ?raw=1 to inspect Vite output.`)});\nexport {};\n`;
-								try {
-									const h = createHash('sha1').update(out).digest('hex');
-									res.setHeader('X-NS-Source-Hash', h);
-									out = `// [hash:${h}] bytes=${out.length}\n` + out;
-								} catch {}
+								const out = `// [ns:m] transform miss path=${spec} tried=${tried.length}\n` + `throw new Error(${JSON.stringify(`[ns/m] transform failed for ${spec} (tried ${tried.length} candidates).`)});\nexport {};\n`;
 								res.statusCode = 404;
 								res.end(out);
 								return;
@@ -3069,10 +3062,6 @@ export const piniaSymbol = p.piniaSymbol;
 							console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
 						} catch {}
 					}
-					try {
-						const h = createHash('sha1').update(code).digest('hex');
-						res.setHeader('X-NS-Source-Hash', h);
-					} catch {}
 					res.statusCode = 200;
 					res.end(code);
 				} catch (e) {
@@ -3205,9 +3194,9 @@ export const piniaSymbol = p.piniaSymbol;
 						`export const vShow = (__ensure().vShow);\n` +
 						`export const createApp = (...a) => (__ensure().createApp)(...a);\n` +
 						`export const registerElement = (...a) => (__ensure().registerElement)(...a);\n` +
-						`export const $navigateTo = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); if (g.__NS_VERBOSE_RT_NAV__ || g.__NS_DEV_LOGS__) console.log('[ns-rt] $navigateTo invoked'); try { if (!(g && g.Frame)) { const ns = (__ns_core_bridge && (__ns_core_bridge.__esModule && __ns_core_bridge.default ? __ns_core_bridge.default : (__ns_core_bridge.default || __ns_core_bridge))) || __ns_core_bridge || {}; if (ns) { if (!g.Frame && ns.Frame) g.Frame = ns.Frame; if (!g.Page && ns.Page) g.Page = ns.Page; if (!g.Application && (ns.Application||ns.app||ns.application)) g.Application = (ns.Application||ns.app||ns.application); } } } catch {} try { const hmrRealm = (g && g.__NS_HMR_REALM__) || 'unknown'; const hasTop = !!(g && g.Frame && g.Frame.topmost && g.Frame.topmost()); const top = hasTop ? g.Frame.topmost() : null; const ctor = top && top.constructor && top.constructor.name; if (g.__NS_VERBOSE_RT_NAV__ || g.__NS_DEV_LOGS__) { console.log('[ns-rt] $navigateTo(single-path)', { via: 'app', rtRealm: __RT_REALM_TAG, hmrRealm, hasTop, topCtor: ctor }); } } catch {} if (g && typeof g.__nsNavigateUsingApp === 'function') { try { return g.__nsNavigateUsingApp(...a); } catch (e) { try { console.error('[ns-rt] $navigateTo app navigator error', e); } catch {} throw e; } } try { console.error('[ns-rt] $navigateTo unavailable: app navigator missing'); } catch {} throw new Error('$navigateTo unavailable: app navigator missing'); } ;\n` +
-						`export const $navigateBack = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$navigateBack || (vm.default && vm.default.$navigateBack))) || (rt && (rt.$navigateBack || (rt.runtimeHelpers && rt.runtimeHelpers.navigateBack))); let res; try { const via = (impl && (impl === (vm && vm.$navigateBack) || impl === (vm && vm.default && vm.default.$navigateBack))) ? 'vm' : (impl ? 'rt' : 'none'); if (globalThis && (globalThis.__NS_VERBOSE_RT_NAV__ || globalThis.__NS_DEV_LOGS__)) { console.log('[ns-rt] $navigateBack', { via }); } } catch {} try { if (typeof impl === 'function') res = impl(...a); } catch {} try { const top = (g && g.Frame && g.Frame.topmost && g.Frame.topmost()); if (!res && top && top.canGoBack && top.canGoBack()) { res = top.goBack(); } } catch {} try { const hook = g && (g.__NS_HMR_ON_NAVIGATE_BACK || g.__NS_HMR_ON_BACK || g.__nsAttemptBackRemount); if (typeof hook === 'function') hook(); } catch {} return res; }\n` +
-						`export const $showModal = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$showModal || (vm.default && vm.default.$showModal))) || (rt && (rt.$showModal || (rt.runtimeHelpers && rt.runtimeHelpers.showModal))); try { if (typeof impl === 'function') return impl(...a); } catch (e) { try { if (g && (g.__NS_VERBOSE_RT_NAV__ || g.__NS_DEV_LOGS__)) { console.error('[ns-rt] $showModal error', e); } } catch {} } return undefined; }\n` +
+						`export const $navigateTo = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); try { if (!(g && g.Frame)) { const ns = (__ns_core_bridge && (__ns_core_bridge.__esModule && __ns_core_bridge.default ? __ns_core_bridge.default : (__ns_core_bridge.default || __ns_core_bridge))) || __ns_core_bridge || {}; if (ns) { if (!g.Frame && ns.Frame) g.Frame = ns.Frame; if (!g.Page && ns.Page) g.Page = ns.Page; if (!g.Application && (ns.Application||ns.app||ns.application)) g.Application = (ns.Application||ns.app||ns.application); } } } catch {} try { const hmrRealm = (g && g.__NS_HMR_REALM__) || 'unknown'; const hasTop = !!(g && g.Frame && g.Frame.topmost && g.Frame.topmost()); const top = hasTop ? g.Frame.topmost() : null; const ctor = top && top.constructor && top.constructor.name; } catch {} if (g && typeof g.__nsNavigateUsingApp === 'function') { try { return g.__nsNavigateUsingApp(...a); } catch (e) { try { console.error('[ns-rt] $navigateTo app navigator error', e); } catch {} throw e; } } try { console.error('[ns-rt] $navigateTo unavailable: app navigator missing'); } catch {} throw new Error('$navigateTo unavailable: app navigator missing'); } ;\n` +
+						`export const $navigateBack = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$navigateBack || (vm.default && vm.default.$navigateBack))) || (rt && (rt.$navigateBack || (rt.runtimeHelpers && rt.runtimeHelpers.navigateBack))); let res; try { const via = (impl && (impl === (vm && vm.$navigateBack) || impl === (vm && vm.default && vm.default.$navigateBack))) ? 'vm' : (impl ? 'rt' : 'none'); } catch {} try { if (typeof impl === 'function') res = impl(...a); } catch {} try { const top = (g && g.Frame && g.Frame.topmost && g.Frame.topmost()); if (!res && top && top.canGoBack && top.canGoBack()) { res = top.goBack(); } } catch {} try { const hook = g && (g.__NS_HMR_ON_NAVIGATE_BACK || g.__NS_HMR_ON_BACK || g.__nsAttemptBackRemount); if (typeof hook === 'function') hook(); } catch {} return res; }\n` +
+						`export const $showModal = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$showModal || (vm.default && vm.default.$showModal))) || (rt && (rt.$showModal || (rt.runtimeHelpers && rt.runtimeHelpers.showModal))); try { if (typeof impl === 'function') return impl(...a); } catch (e) { } return undefined; }\n` +
 						`export default {\n` +
 						`  defineComponent, resolveComponent, createVNode, createTextVNode, createCommentVNode,\n` +
 						`  Fragment, Teleport, Transition, TransitionGroup, KeepAlive, Suspense, withCtx, openBlock,\n` +
@@ -3286,11 +3275,6 @@ export const piniaSymbol = p.piniaSymbol;
 						`const __core = new Proxy({}, { get(_t, p){ if (p === 'default') return __core; if (p === Symbol.toStringTag) return 'Module'; try { const v = g[p]; if (v !== undefined) return v; } catch {} try { const vc = __getVendorCore(); return vc ? vc[p] : undefined; } catch {} return undefined; } });\n` +
 						`// Default export: namespace-like proxy\n` +
 						`export default __core;\n`;
-					try {
-						const h = createHash('sha1').update(code).digest('hex');
-						res.setHeader('X-NS-Source-Hash', h);
-						code = `// [hash:${h}] bytes=${code.length} core\n` + code;
-					} catch {}
 					res.statusCode = 200;
 					res.end(code);
 				} catch (e) {
@@ -3324,11 +3308,6 @@ export const piniaSymbol = p.piniaSymbol;
 					} catch (e) {
 						content = 'export default async function start(){ console.error("[/ns/entry-rt] not found"); }\n';
 					}
-					try {
-						const h = createHash('sha1').update(content).digest('hex');
-						res.setHeader('X-NS-Source-Hash', h);
-						content = `// [hash:${h}] bytes=${content.length} entry-rt\n` + content;
-					} catch {}
 					res.statusCode = 200;
 					res.end(content);
 				} catch (e) {
@@ -3394,17 +3373,7 @@ export const piniaSymbol = p.piniaSymbol;
 						`  const startEntry = (__mod && (__mod.default || __mod));\n` +
 						`  try { await startEntry({ origin, main, ver: __ns_graph_ver, verbose: !!__VERBOSE__ }); if (__VERBOSE__) console.info('[ns-entry][wrapper] startEntry() resolved'); } catch (e) { console.error('[ns-entry][wrapper] startEntry() failed', e && (e.message||e)); throw e; }\n` +
 						`})();\n`;
-					try {
-						const h = createHash('sha1').update(code).digest('hex');
-						res.setHeader('X-NS-Source-Hash', h);
-						const banner = `// [hash:${h}] bytes=${code.length} entry\n`;
-						if (verbose) {
-							try {
-								console.log('[hmr-http] reply /ns/entry hash', h, 'bytes', code.length);
-							} catch {}
-						}
-						code = banner + code + `\n//# sourceURL=${origin}/ns/entry`;
-					} catch {}
+					code = code + `\n//# sourceURL=${origin}/ns/entry`;
 					res.statusCode = 200;
 					res.end(code);
 				} catch (e) {
@@ -3544,12 +3513,7 @@ export const piniaSymbol = p.piniaSymbol;
 							// Emit an erroring module to surface the failure at import site with helpful hints
 							try {
 								const tried = candidates.slice(0, 8);
-								let out = `// [sfc] transform miss kind=full path=${fullSpec.replace(/\n/g, '')} tried=${tried.length}\n` + `throw new Error(${JSON.stringify('[ns/sfc] transform failed for full SFC: ' + fullSpec + ' (tried ' + tried.length + ')')});\nexport {}\n`;
-								try {
-									const h = createHash('sha1').update(out).digest('hex');
-									res.setHeader('X-NS-Source-Hash', h);
-									out = `// [hash:${h}] bytes=${out.length}\n` + out;
-								} catch {}
+								const out = `// [sfc] transform miss kind=full path=${fullSpec.replace(/\n/g, '')} tried=${tried.length}\n` + `throw new Error(${JSON.stringify('[ns/sfc] transform failed for full SFC: ' + fullSpec + ' (tried ' + tried.length + ')')});\nexport {}\n`;
 								res.statusCode = 404;
 								res.end(out);
 								return;
@@ -3565,12 +3529,7 @@ export const piniaSymbol = p.piniaSymbol;
 						} catch {}
 						if (!transformed?.code) {
 							try {
-								let out = `// [sfc] transform miss kind=variant path=${fullSpec.replace(/\n/g, '')}\n` + `throw new Error(${JSON.stringify('[ns/sfc] transform failed for variant: ' + fullSpec)});\nexport {}\n`;
-								try {
-									const h = createHash('sha1').update(out).digest('hex');
-									res.setHeader('X-NS-Source-Hash', h);
-									out = `// [hash:${h}] bytes=${out.length}\n` + out;
-								} catch {}
+								const out = `// [sfc] transform miss kind=variant path=${fullSpec.replace(/\n/g, '')}\n` + `throw new Error(${JSON.stringify('[ns/sfc] transform failed for variant: ' + fullSpec)});\nexport {}\n`;
 								res.statusCode = 404;
 								res.end(out);
 								return;
@@ -3588,29 +3547,6 @@ export const piniaSymbol = p.piniaSymbol;
 						res.statusCode = 200;
 						res.end(`${sig}export {}\n`);
 						return;
-					}
-
-					// RAW BYPASS: serve unsanitized transform output (or direct transform of candidate) when ?raw=1
-					const rawBypass = urlObj.searchParams.get('raw') === '1';
-					if (rawBypass) {
-						try {
-							let rawOut = transformed.code || 'export {}\n';
-							try {
-								const h = createHash('sha1').update(rawOut).digest('hex');
-								res.setHeader('X-NS-Source-Hash', h);
-								rawOut = `// [hash:${h}] bytes=${rawOut.length} raw=1 sfc kind=${isVariant ? 'variant' : 'full'}\n` + rawOut;
-							} catch {}
-							res.statusCode = 200;
-							res.end(`// [sfc] raw bypass path=${fullSpec.replace(/\n/g, '')}\n` + rawOut);
-							return;
-						} catch (eRaw) {
-							try {
-								console.warn('[sfc][raw] failed', fullSpec, (eRaw as any)?.message);
-							} catch {}
-							res.statusCode = 200;
-							res.end('// [sfc] raw bypass error\nexport {}\n');
-							return;
-						}
 					}
 
 					let code = transformed.code;
@@ -3919,28 +3855,6 @@ export const piniaSymbol = p.piniaSymbol;
 							code += `\nexport default (typeof __ns_sfc__ !== "undefined" ? __ns_sfc__ : (typeof _sfc_main !== "undefined" ? _sfc_main : undefined));`;
 						}
 					}
-					try {
-						const h = createHash('sha1').update(code).digest('hex');
-						res.setHeader('X-NS-Source-Hash', h);
-						code = `// [hash:${h}] bytes=${code.length}\n` + code;
-					} catch {}
-
-					// Diagnostic: when serving full SFCs, emit a short snippet and search for common compiled patterns
-					try {
-						if (!isVariant && verbose) {
-							const snippet = code.slice(0, 1024).replace(/\n/g, '\\n');
-							const hasExportHelper = /_export_sfc\s*\(/.test(code);
-							const hasSfcMain = /_sfc_main\b/.test(code);
-							const hasNsReal = /__ns_real__\b/.test(code);
-							console.log(`[sfc][serve][diag] ${fullSpec} snippet=${snippet}`);
-							console.log(`[sfc][serve][diag] patterns exportHelper=${hasExportHelper} sfcMain=${hasSfcMain} mergedVar=${hasNsReal}`);
-						}
-					} catch (e) {
-						try {
-							console.warn('[sfc][serve][diag] print failed', e);
-						} catch {}
-					}
-
 					res.statusCode = 200;
 					res.end(sig + code);
 				} catch (e) {
@@ -4075,43 +3989,6 @@ export const piniaSymbol = p.piniaSymbol;
 					const ver = String(verFromPath || graphVersion || Date.now());
 					const scriptUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=script`;
 					const templateCode = templateR?.code || '';
-
-					// RAW BYPASS: return unsanitized compiled SFC or script/template when ?raw=1 for differential debugging
-					const rawBypass = urlObj.searchParams.get('raw') === '1';
-					if (rawBypass) {
-						try {
-							let rawOut = '';
-							if (fullR?.code) {
-								rawOut = fullR.code;
-							} else if (scriptR?.code || templateR?.code) {
-								// Reconstruct minimal module if only variants available
-								const parts: string[] = [];
-								if (scriptR?.code) parts.push('// [raw][script]\n' + scriptR.code);
-								if (templateR?.code) parts.push('// [raw][template]\n' + templateR.code);
-								rawOut = parts.join('\n');
-							}
-							if (!rawOut) {
-								rawOut = 'export {}\n';
-							}
-							try {
-								const h = createHash('sha1').update(rawOut).digest('hex');
-								res.setHeader('X-NS-Source-Hash', h);
-								rawOut =
-									`// [hash:${h}] bytes=${rawOut.length} raw=1 asm
-` + rawOut;
-							} catch {}
-							res.statusCode = 200;
-							res.end(`// [sfc-asm] ${base} (raw bypass)\n` + rawOut);
-							return;
-						} catch (eRaw) {
-							try {
-								console.warn('[sfc-asm][raw] failed', base, (eRaw as any)?.message);
-							} catch {}
-							res.statusCode = 200;
-							res.end('// [sfc-asm] raw bypass error\nexport {}\n');
-							return;
-						}
-					}
 
 					// INLINE-FIRST assembler: compile SFC source into a self-contained ESM module (enhanced diagnostics)
 					try {
@@ -4645,11 +4522,6 @@ export const piniaSymbol = p.piniaSymbol;
 									inlineCode2 = inlineCode2.replace(/(^|[\n;])\s*var\s+__ns_sfc__\s*;?/g, '$1var __ns_sfc__ = {};');
 								} catch {}
 								if (!/export\s+default\s+__ns_sfc__/.test(inlineCode2) && /__ns_sfc__/.test(inlineCode2)) inlineCode2 += '\nexport default __ns_sfc__';
-								try {
-									const h = createHash('sha1').update(inlineCode2).digest('hex');
-									res.setHeader('X-NS-Source-Hash', h);
-									inlineCode2 = `// [hash:${h}] bytes=${inlineCode2.length}\n` + inlineCode2;
-								} catch {}
 								res.statusCode = 200;
 								res.end(inlineCode2);
 								return;

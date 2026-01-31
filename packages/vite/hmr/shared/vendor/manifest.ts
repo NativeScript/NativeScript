@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { createRequire } from 'node:module';
 import { registerVendorManifest, clearVendorManifest, getVendorManifest } from './registry.js';
+import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
 
 interface VendorManifestModuleEntry {
 	id: string;
@@ -23,6 +24,12 @@ interface VendorManifest {
 interface VendorBundleResult {
 	code: string;
 	manifest: VendorManifest;
+	entries: string[];
+}
+
+// Internal representation of resolved vendor inputs, including any metadata we
+// need during esbuild bundling
+interface CollectedVendorModules {
 	entries: string[];
 }
 
@@ -98,6 +105,7 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'vue-tsc',
 	'ws',
 	'@types/node',
+	'nativescript-theme-core',
 ]);
 
 const INDEX_ALIAS_SUFFIXES = ['/index', '/index.js', '/index.android.js', '/index.ios.js', '/index.visionos.js'];
@@ -266,10 +274,13 @@ export default vendorManifest;
 
 async function generateVendorBundle(options: GenerateVendorOptions): Promise<VendorBundleResult> {
 	const { projectRoot, platform, mode, flavor } = options;
-	const entries = collectVendorModules(projectRoot, platform, flavor);
-	const entryCode = createVendorEntry(entries);
+	const collected = collectVendorModules(projectRoot, platform, flavor);
+	const entryCode = createVendorEntry(collected.entries);
 
 	const plugins: esbuild.Plugin[] = [
+		// Apply NativeClass transformer to convert @NativeClass decorated classes to ES5 IIFE pattern.
+		// This MUST run before other plugins to ensure proper transformation.
+		createNativeClassEsbuildPlugin(platform as 'android' | 'ios' | 'visionos'),
 		// Resolve virtual modules and Angular shims used by the vendor entry.
 		createVendorEsbuildPlugin(projectRoot),
 	];
@@ -320,16 +331,16 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 
 	const vendorCode = buildResult.outputFiles[0].text;
 	const hash = createHash('sha1').update(vendorCode).digest('hex');
-	const manifest = buildManifest(entries, hash);
+	const manifest = buildManifest(collected.entries, hash);
 
 	return {
 		code: vendorCode,
 		manifest,
-		entries,
+		entries: collected.entries,
 	};
 }
 
-function collectVendorModules(projectRoot: string, platform: string, flavor?: string): string[] {
+function collectVendorModules(projectRoot: string, platform: string, flavor?: string): CollectedVendorModules {
 	const packageJsonPath = path.resolve(projectRoot, 'package.json');
 	const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 	const projectRequire = createRequire(packageJsonPath);
@@ -449,7 +460,9 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 		vendor.delete(name);
 	});
 
-	return Array.from(vendor).sort();
+	return {
+		entries: Array.from(vendor).sort(),
+	};
 }
 
 function shouldSkipDependency(name: string): boolean {

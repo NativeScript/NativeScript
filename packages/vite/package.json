@@ -1,11 +1,24 @@
 {
 	"name": "@nativescript/vite",
-	"version": "1.0.6-next.12",
+	"version": "1.0.6-rc.3",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
 	"types": "./index.d.ts",
 	"type": "module",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js",
+			"default": "./index.js"
+		},
+		"./hmr/client/index.js": "./hmr/client/index.js",
+		"./hmr/entry-runtime.js": "./hmr/entry-runtime.js",
+		"./hmr/shared/runtime/vendor-bootstrap.js": "./hmr/shared/runtime/vendor-bootstrap.js",
+		"./hmr/shared/runtime/root-placeholder.js": "./hmr/shared/runtime/root-placeholder.js",
+		"./hmr/shared/runtime/http-only-boot.js": "./hmr/shared/runtime/http-only-boot.js",
+		"./runtime/core-aliases-early.js": "./runtime/core-aliases-early.js"
+	},
 	"bin": {
 		"nativescript-vite": "./bin/cli.cjs"
 	},

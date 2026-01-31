@@ -46,10 +46,25 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 	const buildOrigins = () => {
 		const origins: string[] = [];
 		if ((globalThis as any)['__NS_HTTP_ORIGIN__']) origins.push((globalThis as any)['__NS_HTTP_ORIGIN__']);
-		const androidExtras = platform === 'android' ? ['10.0.2.2', 'localhost'] : ['localhost'];
-		const hostCandidates = Array.from(new Set([host, ...androidExtras]));
+		const hostCandidates: string[] = [];
+		// Only accept a concrete host string from the default; ignore wildcard bind addresses.
+		try {
+			const h = String(host || '');
+			if (h && h !== '0.0.0.0' && h !== '::' && h !== 'true') hostCandidates.push(h);
+		} catch {}
+		// Always try loopback variants
+		hostCandidates.push('localhost');
+		if (platform === 'android') {
+			// Physical device via `adb reverse` often works best with 127.0.0.1
+			hostCandidates.push('127.0.0.1');
+			// Stock Android emulator host loopback
+			hostCandidates.push('10.0.2.2');
+			// Genymotion host loopback
+			hostCandidates.push('10.0.3.2');
+		}
+		const dedupedHosts = Array.from(new Set(hostCandidates));
 		for (const p of protoCandidates) {
-			for (const h of hostCandidates) origins.push(p + '://' + h + ':' + port);
+			for (const h of dedupedHosts) origins.push(p + '://' + h + ':' + port);
 		}
 		return Array.from(new Set(origins));
 	};
