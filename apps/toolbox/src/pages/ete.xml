@@ -1,0 +1,15 @@
+<Page backgroundColor="{{ color }}"  xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" actionBarHidden="{{ !showActionBar}}">
+    <Page.actionBar>
+        <ActionBar title="Edge to Edge" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+    <ScrollView>
+      <StackLayout padding="{{ padding }}" backgroundColor="{{ viewColor }}">
+       <Button tap="{{togglePageOverflow}}" text="Disable Overflow" />
+       <Button tap="{{toggleActionBar}}" text="Toggle Action Bar" />
+       <Button tap="{{randomColor}}" text="Update BG to a random color" />
+       <Button tap="{{toggleOverflowTopBottom}}" text="Toggle Overflow Top and Bottom" />
+       <Button tap="{{toggleManualInsets}}" text="Toggle manual overflow handling" />
+      </StackLayout>
+    </ScrollView>
+</Page>
