@@ -28,17 +28,6 @@
 					"{workspaceRoot}/LICENSE",
 					"{projectRoot}/README.md",
 					"{projectRoot}/global-types.d.ts",
-					"{projectRoot}/fetch/LICENSE",
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/js-libs/",
-						"output": "./js-libs/"
-					},
-					{
-						"glob": "**/*",
-						"input": "{projectRoot}/cli-hooks/",
-						"output": "./cli-hooks/"
-					},
 					{
 						"glob": "**/*",
 						"input": "{projectRoot}/platforms/",
@@ -46,6 +35,16 @@
 					},
 					{
 						"glob": "**/*.d.ts",
+						"input": "{projectRoot}/",
+						"output": "./"
+					},
+					{
+						"glob": "**/*.(mjs|js)",
+						"input": "{projectRoot}/",
+						"output": "./"
+					},
+					{
+						"glob": "*/**/package.json",
 						"input": "{projectRoot}/",
 						"output": "./"
 					}

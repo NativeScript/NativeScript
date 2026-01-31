@@ -231,10 +231,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	const fontsDir = resolveFromAppRoot('fonts');
 	const staticCopyTargets = [];
 	if (existsSync(assetsDir)) {
-		staticCopyTargets.push({ src: `${assetsDir}/**/*`, dest: 'assets' });
+		// Replace \ with / to avoid issues with glob in windows
+		staticCopyTargets.push({ src: `${assetsDir}/**/*`.replace(/\\/g, '/'), dest: 'assets' });
 	}
 	if (existsSync(fontsDir)) {
-		staticCopyTargets.push({ src: `${fontsDir}/**/*`, dest: 'fonts' });
+		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts' });
 	}
 
 	let disableOptimizeDeps = false;

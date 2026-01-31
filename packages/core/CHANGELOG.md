@@ -1,3 +1,23 @@
+## 9.0.12 (2026-01-29)
+
+### 🚀 Features
+
+- **slider:** add linear-gradient support for track background ([#11015](https://github.com/NativeScript/NativeScript/pull/11015))
+
+### 🩹 Fixes
+
+- polyfills eager handling when not commonjs ([#11057](https://github.com/NativeScript/NativeScript/pull/11057))
+- **segmented-bar:** ios backgroundColor border radius on initial rendering ([#11054](https://github.com/NativeScript/NativeScript/pull/11054))
+- **ios:** apply hidden property to shadow layer ([#11051](https://github.com/NativeScript/NativeScript/pull/11051))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+- Jon Zgoda @jzgoda
+- Nathan Walker
+- Qazi Omair Ahmed @omairqazi29
+- Samuel Schultze
+
 ## 9.0.11 (2026-01-04)
 
 ### 🚀 Features

@@ -37,6 +37,15 @@ export class SegmentedBar extends SegmentedBarBase {
 		super.disposeNativeView();
 	}
 
+	onLoaded() {
+		super.onLoaded();
+		// Force background redraw to ensure border radius is applied.
+		// This fixes the visual glitch where backgroundColor initially has sharp corners.
+		if (this.nativeBackgroundState === 'invalid') {
+			this._redrawNativeBackground(this.style.backgroundInternal);
+		}
+	}
+
 	// @ts-ignore
 	get ios(): UISegmentedControl {
 		return this.nativeViewProtected;
