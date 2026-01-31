@@ -52,6 +52,8 @@ import java.util.concurrent.Executors;
 
 public class Utils {
 
+	static final int UPSIDE_DOWN_CAKE = 34;
+
 	public static boolean ignoreEdgeToEdgeOnOlderDevices = false;
 
 	public interface HandleDarkMode {
@@ -86,9 +88,10 @@ public class Utils {
 		enableEdgeToEdge(activity, window, null);
 	}
 
+	@SuppressWarnings("Deprecated")
 	public static void enableEdgeToEdge(Activity activity, Window window, @Nullable HandleDarkMode handleDarkMode) {
 		if (activity instanceof ComponentActivity) {
-			if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
 				return;
 			}
 			Window activityWindow = activity.getWindow();
@@ -168,14 +171,14 @@ public class Utils {
 	}
 
 	public static void enableEdgeToEdge(ComponentActivity activity) {
-		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
 			return;
 		}
 		androidx.activity.EdgeToEdge.enable(activity);
 	}
 
 	public static void enableEdgeToEdge(ComponentActivity activity, HandleDarkMode handleDarkMode) {
-		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
 			return;
 		}
 		androidx.activity.EdgeToEdge.enable(activity,
@@ -185,7 +188,7 @@ public class Utils {
 	}
 
 	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
-		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
 			return;
 		}
 		androidx.activity.EdgeToEdge.enable(activity,
@@ -195,7 +198,7 @@ public class Utils {
 	}
 
 	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
-		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
 			return;
 		}
 		androidx.activity.EdgeToEdge.enable(activity,
