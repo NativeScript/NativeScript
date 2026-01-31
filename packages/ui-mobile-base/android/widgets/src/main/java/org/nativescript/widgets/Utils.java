@@ -99,6 +99,8 @@ public class Utils {
 				attributes.type = window.getAttributes().type;
 				window.setAttributes(attributes);
 				WindowCompat.setDecorFitsSystemWindows(window, false);
+				window.setStatusBarColor(Color.TRANSPARENT);
+				window.setNavigationBarColor(Color.TRANSPARENT);
 
 				Context context = window.getContext();
 				if (context != null) {
