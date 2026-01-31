@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/devtools",
-	"version": "0.0.2-next.14",
+	"version": "0.0.2-next.15",
 	"private": true,
 	"files": [
 		"./dist/"
@@ -10,6 +10,6 @@
 		"prepack": "tsc || echo ok"
 	},
 	"devDependencies": {
-		"@nativescript/core": "9.0.13-next.2"
+		"@nativescript/core": "9.0.13-next.3"
 	}
 }
