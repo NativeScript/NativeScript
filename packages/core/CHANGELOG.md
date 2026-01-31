@@ -1,3 +1,21 @@
+## 9.0.13 (2026-01-31)
+
+### 🚀 Features
+
+- **core:** bind overridden value converters to the target ([#11018](https://github.com/NativeScript/NativeScript/pull/11018))
+
+### 🩹 Fixes
+
+- **segmented-bar:** selectedTextColor via CSS ([#11060](https://github.com/NativeScript/NativeScript/pull/11060))
+- **android:** improve edge to edge handling ([#11058](https://github.com/NativeScript/NativeScript/pull/11058))
+- **android:** protection when a11y callback fires early ([#11061](https://github.com/NativeScript/NativeScript/pull/11061))
+
+### ❤️ Thank You
+
+- Jon Zgoda @jzgoda
+- Osei Fortune @triniwiz
+- pichurichko @pichurichko
+
 ## 9.0.12 (2026-01-29)
 
 ### 🚀 Features

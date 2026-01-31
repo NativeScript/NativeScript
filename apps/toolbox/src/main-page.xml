@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" androidOverflowEdge="bottom" statusBarStyle="dark">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" androidOverflowEdge="bottom"  statusBarStyle="dark">
   <Page.actionBar>
     <ActionBar title="Dev Toolbox" icon="" class="action-bar">
     </ActionBar>
@@ -33,6 +33,7 @@
         <Button text="fs-helper" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="webview" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
         <Button text="winter-tc" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
+        <Button text="ete" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo" />
       </StackLayout>
     </ScrollView>
   </StackLayout>

@@ -764,6 +764,9 @@ declare module org {
                 public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
                 public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, statusBarLight: java.lang.Integer, statusBarDark: java.lang.Integer, navigationBarLight: java.lang.Integer, navigationBarDark: java.lang.Integer): void;
 				public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, statusBarLight: java.lang.Integer, statusBarDark: java.lang.Integer, navigationBarLight: java.lang.Integer, navigationBarDark: java.lang.Integer, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, window: android.view.Window, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, window: android.view.Window): void;
+                public static ignoreEdgeToEdgeOnOlderDevices: boolean;
 				public constructor();
 			}
 			export module Utils {

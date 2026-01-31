@@ -3,6 +3,7 @@ package org.nativescript.widgets;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -25,12 +26,16 @@ import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.activity.ComponentActivity;
 import androidx.activity.SystemBarStyle;
 import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.exifinterface.media.ExifInterface;
 
 import org.json.JSONException;
@@ -46,6 +51,10 @@ import java.util.concurrent.Executors;
 
 
 public class Utils {
+
+	static final int UPSIDE_DOWN_CAKE = 34;
+
+	public static boolean ignoreEdgeToEdgeOnOlderDevices = false;
 
 	public interface HandleDarkMode {
 		boolean onHandle(int bar, Resources resources);
@@ -75,41 +84,129 @@ public class Utils {
 // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/res/remote_color_resources_res/values/colors.xml;l=67
 	static final int DefaultDarkScrim = Color.argb(0x80, 0x1b, 0x1b, 0x1b);
 
+	public static void enableEdgeToEdge(Activity activity, Window window) {
+		enableEdgeToEdge(activity, window, null);
+	}
+
+	@SuppressWarnings("Deprecated")
+	public static void enableEdgeToEdge(Activity activity, Window window, @Nullable HandleDarkMode handleDarkMode) {
+		if (activity instanceof ComponentActivity) {
+			if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
+				return;
+			}
+			Window activityWindow = activity.getWindow();
+			WindowManager.LayoutParams attributes = new WindowManager.LayoutParams();
+
+			if (activityWindow != null) {
+				attributes.copyFrom(activityWindow.getAttributes());
+				attributes.type = window.getAttributes().type;
+				window.setAttributes(attributes);
+				WindowCompat.setDecorFitsSystemWindows(window, false);
+				window.setStatusBarColor(Color.TRANSPARENT);
+				window.setNavigationBarColor(Color.TRANSPARENT);
+
+				Context context = window.getContext();
+				if (context != null) {
+					Resources resources = context.getResources();
+					int uiMode = resources.getConfiguration().uiMode;
+					boolean useDarkMode = (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+					WindowInsetsControllerCompat ctrl = WindowCompat.getInsetsController(window, window.getDecorView());
+					if (handleDarkMode != null) {
+						ctrl.setAppearanceLightStatusBars(
+							!handleDarkMode.onHandle(
+								HandleDarkModeBar.status.mValue,
+								resources
+							)
+						);
+
+						ctrl.setAppearanceLightNavigationBars(
+							!handleDarkMode.onHandle(
+								HandleDarkModeBar.navigation.mValue,
+								resources
+							)
+						);
+					} else {
+						ctrl.setAppearanceLightStatusBars(
+							!useDarkMode
+						);
+
+						ctrl.setAppearanceLightNavigationBars(
+							!useDarkMode
+						);
+
+					}
+
+
+				}
+			}
+
+		}
+	}
+
 	public static void enableEdgeToEdge(Activity activity) {
 		if (activity instanceof ComponentActivity) {
-			androidx.activity.EdgeToEdge.enable((ComponentActivity) activity);
+			enableEdgeToEdge((ComponentActivity) activity);
 		}
 	}
 
 	public static void enableEdgeToEdge(Activity activity, HandleDarkMode handleDarkMode) {
 		if (activity instanceof ComponentActivity) {
 			ComponentActivity componentActivity = (ComponentActivity) activity;
-			androidx.activity.EdgeToEdge.enable(componentActivity,
-				SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)),
-				SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources))
-			);
+			enableEdgeToEdge(componentActivity, handleDarkMode);
 		}
 	}
 
 	public static void enableEdgeToEdge(Activity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
 		if (activity instanceof ComponentActivity) {
 			ComponentActivity componentActivity = (ComponentActivity) activity;
-			androidx.activity.EdgeToEdge.enable(componentActivity,
-				SystemBarStyle.auto(statusBarLight, statusBarDark),
-				SystemBarStyle.auto(navigationBarLight, navigationBarDark)
-			);
+			enableEdgeToEdge(componentActivity, statusBarLight, statusBarDark, navigationBarLight, navigationBarDark);
 		}
 	}
 
 	public static void enableEdgeToEdge(Activity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
 		if (activity instanceof ComponentActivity) {
 			ComponentActivity componentActivity = (ComponentActivity) activity;
-			androidx.activity.EdgeToEdge.enable(componentActivity,
-				SystemBarStyle.auto(statusBarLight, statusBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)),
-				SystemBarStyle.auto(navigationBarLight, navigationBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources))
-			);
+			enableEdgeToEdge(componentActivity, statusBarLight, statusBarDark, navigationBarLight, navigationBarDark, handleDarkMode);
 		}
 	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
+			return;
+		}
+		androidx.activity.EdgeToEdge.enable(activity);
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, HandleDarkMode handleDarkMode) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
+			return;
+		}
+		androidx.activity.EdgeToEdge.enable(activity,
+			SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)),
+			SystemBarStyle.auto(DefaultLightScrim, DefaultDarkScrim, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources))
+		);
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
+			return;
+		}
+		androidx.activity.EdgeToEdge.enable(activity,
+			SystemBarStyle.auto(statusBarLight, statusBarDark),
+			SystemBarStyle.auto(navigationBarLight, navigationBarDark)
+		);
+	}
+
+	public static void enableEdgeToEdge(ComponentActivity activity, @ColorInt Integer statusBarLight, @ColorInt Integer statusBarDark, @ColorInt Integer navigationBarLight, @ColorInt Integer navigationBarDark, HandleDarkMode handleDarkMode) {
+		if (Utils.ignoreEdgeToEdgeOnOlderDevices && Build.VERSION.SDK_INT <= UPSIDE_DOWN_CAKE) {
+			return;
+		}
+		androidx.activity.EdgeToEdge.enable(activity,
+			SystemBarStyle.auto(statusBarLight, statusBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.status.getValue(), resources)),
+			SystemBarStyle.auto(navigationBarLight, navigationBarDark, resources -> handleDarkMode.onHandle(HandleDarkModeBar.navigation.getValue(), resources))
+		);
+	}
+
 
 	public static Drawable getDrawable(String uri, Context context) {
 		int resId = 0;
