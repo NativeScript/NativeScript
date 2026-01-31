@@ -255,6 +255,10 @@ public abstract class LayoutBase extends ViewGroup {
 					Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 					Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 
+					if (systemBars == Insets.NONE && ime == Insets.NONE) {
+						return WindowInsetsCompat.CONSUMED;
+					}
+
 					int insetLeft = systemBars.left;
 					int insetRight = systemBars.right;
 					int insetTop = systemBars.top;
