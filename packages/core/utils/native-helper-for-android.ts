@@ -403,28 +403,28 @@ export function enableEdgeToEdge(activity: androidx.appcompat.app.AppCompatActiv
 	}
 
 	if (opts) {
-		if (typeof options.handleDarkMode === 'function') {
+		if (typeof opts.handleDarkMode === 'function') {
 			handleDarkMode = new org.nativescript.widgets.Utils.HandleDarkMode({
 				onHandle(bar, resources) {
 					if (bar === 0) {
-						return options.handleDarkMode('status', resources);
+						return opts.handleDarkMode('status', resources);
 					} else {
-						return options.handleDarkMode('navigation', resources);
+						return opts.handleDarkMode('navigation', resources);
 					}
 				},
 			});
 		}
-		if (options.statusBarLightColor instanceof Color) {
-			statusBarLight = options.statusBarLightColor.android;
+		if (opts.statusBarLightColor instanceof Color) {
+			statusBarLight = opts.statusBarLightColor.android;
 		}
-		if (options.statusBarDarkColor instanceof Color) {
-			statusBarDark = options.statusBarDarkColor.android;
+		if (opts.statusBarDarkColor instanceof Color) {
+			statusBarDark = opts.statusBarDarkColor.android;
 		}
-		if (options.navigationBarLightColor instanceof Color) {
-			navigationBarLight = options.navigationBarLightColor.android;
+		if (opts.navigationBarLightColor instanceof Color) {
+			navigationBarLight = opts.navigationBarLightColor.android;
 		}
-		if (options.navigationBarDarkColor instanceof Color) {
-			navigationBarDark = options.navigationBarDarkColor.android;
+		if (opts.navigationBarDarkColor instanceof Color) {
+			navigationBarDark = opts.navigationBarDarkColor.android;
 		}
 	}
 
