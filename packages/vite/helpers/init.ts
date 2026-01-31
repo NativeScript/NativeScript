@@ -50,8 +50,8 @@ function ensureDependencies(pkg: PackageJson) {
 
 function ensureScripts(pkg: PackageJson) {
 	pkg.scripts = pkg.scripts ?? {};
-	pkg.scripts['dev:ios'] = "concurrently -k -n vite,ns 'npm run dev:server:ios' 'wait-on tcp:5173 && npm run ios'";
-	pkg.scripts['dev:android'] = "concurrently -k -n vite,ns 'npm run dev:server:android' 'wait-on tcp:5173 && npm run android'";
+	pkg.scripts['dev:ios'] = 'concurrently -k -n vite,ns "npm run dev:server:ios" "wait-on tcp:5173 && npm run ios"';
+	pkg.scripts['dev:android'] = 'concurrently -k -n vite,ns "npm run dev:server:android" "wait-on tcp:5173 && npm run android"';
 	pkg.scripts['dev:server:ios'] = 'vite serve -- --env.ios --env.hmr';
 	pkg.scripts['dev:server:android'] = 'vite serve -- --env.android --env.hmr';
 	pkg.scripts['ios'] = 'ns debug ios';
