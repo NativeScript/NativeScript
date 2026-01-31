@@ -130,6 +130,17 @@ module.exports = {
 					description: '@nativescript/webpack(5): Unit tests'
 				},
 			},
+			// @nativescript/vite
+			vite: {
+				build: {
+					script: 'nx build vite',
+					description: '@nativescript/vite: Build'
+				},
+				test: {
+					script: 'nx test vite',
+					description: '@nativescript/vite: Unit tests'
+				},
+			},
     },
     "⚡": {
       script: `npx cowsay "Focus only on source you care about for efficiency ⚡"`,

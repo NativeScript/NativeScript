@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { createRequire } from 'node:module';
 import { registerVendorManifest, clearVendorManifest, getVendorManifest } from './registry.js';
+import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
 
 interface VendorManifestModuleEntry {
 	id: string;
@@ -277,6 +278,9 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	const entryCode = createVendorEntry(collected.entries);
 
 	const plugins: esbuild.Plugin[] = [
+		// Apply NativeClass transformer to convert @NativeClass decorated classes to ES5 IIFE pattern.
+		// This MUST run before other plugins to ensure proper transformation.
+		createNativeClassEsbuildPlugin(platform as 'android' | 'ios' | 'visionos'),
 		// Resolve virtual modules and Angular shims used by the vendor entry.
 		createVendorEsbuildPlugin(projectRoot),
 	];
