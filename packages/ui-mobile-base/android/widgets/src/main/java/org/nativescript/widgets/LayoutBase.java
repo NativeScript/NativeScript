@@ -72,7 +72,9 @@ public abstract class LayoutBase extends ViewGroup {
 	int mPaddingBottom = 0;
 
 	Insets edgeInsets = Insets.NONE;
+	Insets appliedInsets = Insets.NONE;
 	Insets imeInsets = Insets.NONE;
+
 
 	int overflowEdge = OverflowEdgeIgnore;
 
@@ -119,6 +121,10 @@ public abstract class LayoutBase extends ViewGroup {
 
 	public Insets getEdgeInsets() {
 		return edgeInsets;
+	}
+
+	public Insets getImeInsets() {
+		return imeInsets;
 	}
 
 	@Override
@@ -197,13 +203,22 @@ public abstract class LayoutBase extends ViewGroup {
 
 	@Override
 	public void setPadding(int left, int top, int right, int bottom) {
+		int appliedLeft = left;
+		int appliedTop = top;
+		int appliedRight = right;
+		int appliedBottom = bottom;
+
 		if (!applyingEdges) {
 			mPaddingLeft = left;
 			mPaddingTop = top;
 			mPaddingRight = right;
 			mPaddingBottom = bottom;
+			appliedLeft += edgeInsets.left;
+			appliedTop += edgeInsets.top;
+			appliedRight += edgeInsets.right;
+			appliedBottom += edgeInsets.bottom;
 		}
-		super.setPadding(left, top, right, bottom);
+		super.setPadding(appliedLeft, appliedTop, appliedRight, appliedBottom);
 	}
 
 	private void putInset(int offset, int value) {
@@ -222,12 +237,6 @@ public abstract class LayoutBase extends ViewGroup {
 	public void setOverflowEdge(int value) {
 		overflowEdge = value;
 
-		if (value == OverflowEdgeIgnore) {
-			ViewCompat.setOnApplyWindowInsetsListener(this, null);
-			ViewCompat.requestApplyInsets(this);
-			return;
-		}
-
 		if (windowInsetsListener == null) {
 			windowInsetsListener = new androidx.core.view.OnApplyWindowInsetsListener() {
 				@NonNull
@@ -244,11 +253,11 @@ public abstract class LayoutBase extends ViewGroup {
 					LayoutBase base = (LayoutBase) v;
 
 					Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-					Insets ime        = insets.getInsets(WindowInsetsCompat.Type.ime());
+					Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
 
-					int insetLeft      = systemBars.left;
-					int insetRight     = systemBars.right;
-					int insetTop       = systemBars.top;
+					int insetLeft = systemBars.left;
+					int insetRight = systemBars.right;
+					int insetTop = systemBars.top;
 					int insetNavBottom = systemBars.bottom;
 					int insetImeBottom = ime.bottom;
 
@@ -257,15 +266,15 @@ public abstract class LayoutBase extends ViewGroup {
 
 						base.applyingEdges = true;
 						v.setPadding(
-							mPaddingLeft   + insetLeft,
-							mPaddingTop    + insetTop,
-							mPaddingRight  + insetRight,
+							mPaddingLeft + insetLeft,
+							mPaddingTop + insetTop,
+							mPaddingRight + insetRight,
 							bottom
 						);
 						base.applyingEdges = false;
 
 						edgeInsets = Insets.of(insetLeft, insetTop, insetRight, insetNavBottom);
-						imeInsets  = Insets.of(0, 0, 0, insetImeBottom);
+						imeInsets = Insets.of(0, 0, 0, insetImeBottom);
 
 						return new WindowInsetsCompat.Builder(insets)
 							.setInsets(WindowInsetsCompat.Type.systemBars(), Insets.NONE)
@@ -273,18 +282,24 @@ public abstract class LayoutBase extends ViewGroup {
 							.build();
 					}
 
-					boolean[] apply   = new boolean[4];   // L T R B
+					boolean[] apply = new boolean[4];   // L T R B
 					boolean[] consume = new boolean[4];
+					boolean[] defaultConsume = new boolean[4];
+					defaultConsume[0] = defaultConsume[1] = defaultConsume[2] = defaultConsume[3] = true;
 
-					consume[0] = (overflowEdge & OverflowEdgeLeft)   != 0;
-					consume[1] = (overflowEdge & OverflowEdgeTop)    != 0;
-					consume[2] = (overflowEdge & OverflowEdgeRight)  != 0;
+					consume[0] = (overflowEdge & OverflowEdgeLeft) != 0;
+					consume[1] = (overflowEdge & OverflowEdgeTop) != 0;
+					consume[2] = (overflowEdge & OverflowEdgeRight) != 0;
 					consume[3] = (overflowEdge & OverflowEdgeBottom) != 0;
 
-					if ((overflowEdge & OverflowEdgeLeftDontConsume)   != 0) consume[0] = false;
-					if ((overflowEdge & OverflowEdgeTopDontConsume)    != 0) consume[1] = false;
-					if ((overflowEdge & OverflowEdgeRightDontConsume)  != 0) consume[2] = false;
-					if ((overflowEdge & OverflowEdgeBottomDontConsume) != 0) consume[3] = false;
+					if ((overflowEdge & OverflowEdgeLeftDontConsume) != 0)
+						defaultConsume[0] = consume[0] = false;
+					if ((overflowEdge & OverflowEdgeTopDontConsume) != 0)
+						defaultConsume[1] = consume[1] = false;
+					if ((overflowEdge & OverflowEdgeRightDontConsume) != 0)
+						defaultConsume[2] = consume[2] = false;
+					if ((overflowEdge & OverflowEdgeBottomDontConsume) != 0)
+						defaultConsume[3] = consume[3] = false;
 
 					apply[0] = !consume[0];
 					apply[1] = !consume[1];
@@ -294,37 +309,37 @@ public abstract class LayoutBase extends ViewGroup {
 					if ((overflowEdge & OverflowEdgeAllButLeft) != 0) {
 						for (int i = 0; i < 4; i++) {
 							consume[i] = true;
-							apply[i]   = false;
+							apply[i] = false;
 						}
-						consume[0] = false;
-						apply[0]   = true;
+						defaultConsume[0] = consume[0] = false;
+						apply[0] = true;
 					}
 
 					if ((overflowEdge & OverflowEdgeAllButTop) != 0) {
 						for (int i = 0; i < 4; i++) {
 							consume[i] = true;
-							apply[i]   = false;
+							apply[i] = false;
 						}
-						consume[1] = false;
-						apply[1]   = true;
+						defaultConsume[1] = consume[1] = false;
+						apply[1] = true;
 					}
 
 					if ((overflowEdge & OverflowEdgeAllButRight) != 0) {
 						for (int i = 0; i < 4; i++) {
 							consume[i] = true;
-							apply[i]   = false;
+							apply[i] = false;
 						}
-						consume[2] = false;
-						apply[2]   = true;
+						defaultConsume[2] = consume[2] = false;
+						apply[2] = true;
 					}
 
 					if ((overflowEdge & OverflowEdgeAllButBottom) != 0) {
 						for (int i = 0; i < 4; i++) {
 							consume[i] = true;
-							apply[i]   = false;
+							apply[i] = false;
 						}
-						consume[3] = false;
-						apply[3]   = true;
+						defaultConsume[3] = consume[3] = false;
+						apply[3] = true;
 					}
 
 					boolean consumeIme = consume[3];
@@ -348,25 +363,34 @@ public abstract class LayoutBase extends ViewGroup {
 							base.insetListener.onApplyWindowInsets(insetBuffer);
 						}
 
+						defaultConsume[0] = defaultConsume[1] = defaultConsume[2] = defaultConsume[3] = false;
+
 						consume[0] |= getInset(BufferOffset.INSET_LEFT_CONSUMED) != 0;
 						consume[1] |= getInset(BufferOffset.INSET_TOP_CONSUMED) != 0;
 						consume[2] |= getInset(BufferOffset.INSET_RIGHT_CONSUMED) != 0;
 						consume[3] |= getInset(BufferOffset.INSET_BOTTOM_CONSUMED) != 0;
 						consumeIme |= getInset(BufferOffset.INSET_BOTTOM_IME_CONSUMED) != 0;
 
-						insetLeft      = getInset(BufferOffset.INSET_LEFT);
-						insetTop       = getInset(BufferOffset.INSET_TOP);
-						insetRight     = getInset(BufferOffset.INSET_RIGHT);
+						insetLeft = getInset(BufferOffset.INSET_LEFT);
+						insetTop = getInset(BufferOffset.INSET_TOP);
+						insetRight = getInset(BufferOffset.INSET_RIGHT);
 						insetNavBottom = getInset(BufferOffset.INSET_BOTTOM);
 						insetImeBottom = getInset(BufferOffset.INSET_BOTTOM_IME);
+
+						defaultConsume[0] = consume[0];
+
+						defaultConsume[1] = consume[1];
+
+						defaultConsume[2] = consume[2];
+
+						defaultConsume[3] = consume[3];
 
 						apply[0] = apply[1] = apply[2] = apply[3] = false;
 					}
 
-
-					int left   = mPaddingLeft  + (apply[0] ? insetLeft : 0);
-					int top    = mPaddingTop   + (apply[1] ? insetTop : 0);
-					int right  = mPaddingRight + (apply[2] ? insetRight : 0);
+					int left = mPaddingLeft + (apply[0] ? insetLeft : 0);
+					int top = mPaddingTop + (apply[1] ? insetTop : 0);
+					int right = mPaddingRight + (apply[2] ? insetRight : 0);
 					int bottom = mPaddingBottom
 						+ (apply[3] ? insetNavBottom : 0)
 						+ (apply[3] ? insetImeBottom : 0);
@@ -387,10 +411,10 @@ public abstract class LayoutBase extends ViewGroup {
 					base.applyingEdges = false;
 
 					Insets remainingSystemBars = Insets.of(
-						consume[0] ? 0 : insetLeft,
-						consume[1] ? 0 : insetTop,
-						consume[2] ? 0 : insetRight,
-						consume[3] ? 0 : insetNavBottom
+						defaultConsume[0] ? 0 : insetLeft,
+						defaultConsume[1] ? 0 : insetTop,
+						defaultConsume[2] ? 0 : insetRight,
+						defaultConsume[3] ? 0 : insetNavBottom
 					);
 
 					Insets remainingIme =
