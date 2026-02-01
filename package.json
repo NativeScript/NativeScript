@@ -104,7 +104,7 @@
 		"tslib": "^2.6.0",
 		"typedoc": "^0.28.14",
 		"typescript": "5.9.3",
-		"vite": "7.2.2",
+		"vite": "7.3.1",
 		"vite-plugin-solid": "^2.11.10",
 		"vite-plugin-static-copy": "^3.1.4",
 		"vitest": "^3.2.4",
