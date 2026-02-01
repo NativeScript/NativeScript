@@ -446,12 +446,12 @@ class Inset {
 		this.view.setInt32(INSET_BOTTOM, value, true);
 	}
 
-	public get ime(): number {
+	public get imeBottom(): number {
 		return this.view.getInt32(INSET_BOTTOM_IME, true);
 	}
 
-	public set ime(value: number) {
-		this.view.setInt32(INSET_BOTTOM, value, true);
+	public set imeBottom(value: number) {
+		this.view.setInt32(INSET_BOTTOM_IME, value, true);
 	}
 
 	public get leftConsumed(): boolean {
