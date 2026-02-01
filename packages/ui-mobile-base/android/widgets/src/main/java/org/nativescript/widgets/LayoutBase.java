@@ -59,11 +59,22 @@ public abstract class LayoutBase extends ViewGroup {
 		public static final int INSET_BOTTOM = 12;
 		public static final int INSET_BOTTOM_IME = 32;
 
+		public static final int INSET_CUTOUT_LEFT = 40;
+		public static final int INSET_CUTOUT_TOP = 44;
+		public static final int INSET_CUTOUT_RIGHT = 48;
+		public static final int INSET_CUTOUT_BOTTOM = 52;
+
+
 		public static final int INSET_LEFT_CONSUMED = 16;
 		public static final int INSET_TOP_CONSUMED = 20;
 		public static final int INSET_RIGHT_CONSUMED = 24;
 		public static final int INSET_BOTTOM_CONSUMED = 28;
 		public static final int INSET_BOTTOM_IME_CONSUMED = 36;
+
+		public static final int INSET_CUTOUT_LEFT_CONSUMED = 56;
+		public static final int INSET_CUTOUT_TOP_CONSUMED = 60;
+		public static final int INSET_CUTOUT_RIGHT_CONSUMED = 64;
+		public static final int INSET_CUTOUT_BOTTOM_CONSUMED = 68;
 	}
 
 	int mPaddingLeft = 0;
@@ -72,13 +83,21 @@ public abstract class LayoutBase extends ViewGroup {
 	int mPaddingBottom = 0;
 
 	Insets edgeInsets = Insets.NONE;
-	Insets appliedInsets = Insets.NONE;
 	Insets imeInsets = Insets.NONE;
-
 
 	int overflowEdge = OverflowEdgeIgnore;
 
-	private final ByteBuffer insetBuffer = ByteBuffer.allocateDirect(40);
+	private static final byte[] EMPTY_INSETS = new byte[72];
+
+	private ByteBuffer mInsetBuffer;
+
+	private ByteBuffer getInsetBuffer() {
+		if (mInsetBuffer == null) {
+			mInsetBuffer = ByteBuffer.allocateDirect(72);
+			mInsetBuffer.order(ByteOrder.nativeOrder());
+		}
+		return mInsetBuffer;
+	}
 
 	private WindowInsetListener insetListener = null;
 	private androidx.core.view.OnApplyWindowInsetsListener windowInsetsListener = null;
@@ -90,8 +109,6 @@ public abstract class LayoutBase extends ViewGroup {
 	public interface WindowInsetListener {
 		void onApplyWindowInsets(ByteBuffer inset);
 	}
-
-	private static final byte[] EMPTY_INSETS = new byte[40];
 
 
 	private boolean pendingInsetApply = false;
@@ -112,7 +129,6 @@ public abstract class LayoutBase extends ViewGroup {
 
 	public LayoutBase(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-		insetBuffer.order(ByteOrder.nativeOrder());
 	}
 
 	public LayoutBase(Context context) {
@@ -222,16 +238,16 @@ public abstract class LayoutBase extends ViewGroup {
 	}
 
 	private void putInset(int offset, int value) {
-		insetBuffer.putInt(offset, value);
+		getInsetBuffer().putInt(offset, value);
 	}
 
 	private int getInset(int offset) {
-		return insetBuffer.getInt(offset);
+		return getInsetBuffer().getInt(offset);
 	}
 
 	private void resetInset() {
-		insetBuffer.position(0);
-		insetBuffer.put(EMPTY_INSETS, 0, 40);
+		getInsetBuffer().position(0);
+		getInsetBuffer().put(EMPTY_INSETS, 0, EMPTY_INSETS.length);
 	}
 
 	public void setOverflowEdge(int value) {
@@ -254,6 +270,7 @@ public abstract class LayoutBase extends ViewGroup {
 
 					Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 					Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+					Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
 
 					if (systemBars == Insets.NONE && ime == Insets.NONE) {
 						return WindowInsetsCompat.CONSUMED;
@@ -357,14 +374,24 @@ public abstract class LayoutBase extends ViewGroup {
 						putInset(BufferOffset.INSET_BOTTOM, insetNavBottom);
 						putInset(BufferOffset.INSET_BOTTOM_IME, insetImeBottom);
 
+						putInset(BufferOffset.INSET_CUTOUT_LEFT, cutout.left);
+						putInset(BufferOffset.INSET_CUTOUT_TOP, cutout.top);
+						putInset(BufferOffset.INSET_CUTOUT_RIGHT, cutout.right);
+						putInset(BufferOffset.INSET_CUTOUT_BOTTOM, cutout.bottom);
+
 						putInset(BufferOffset.INSET_LEFT_CONSUMED, 0);
 						putInset(BufferOffset.INSET_TOP_CONSUMED, 0);
 						putInset(BufferOffset.INSET_RIGHT_CONSUMED, 0);
 						putInset(BufferOffset.INSET_BOTTOM_CONSUMED, 0);
 						putInset(BufferOffset.INSET_BOTTOM_IME_CONSUMED, 0);
 
+						putInset(BufferOffset.INSET_CUTOUT_LEFT_CONSUMED, 0);
+						putInset(BufferOffset.INSET_CUTOUT_TOP_CONSUMED, 0);
+						putInset(BufferOffset.INSET_CUTOUT_RIGHT_CONSUMED, 0);
+						putInset(BufferOffset.INSET_CUTOUT_BOTTOM_CONSUMED, 0);
+
 						if (base.insetListener != null) {
-							base.insetListener.onApplyWindowInsets(insetBuffer);
+							base.insetListener.onApplyWindowInsets(getInsetBuffer());
 						}
 
 						defaultConsume[0] = defaultConsume[1] = defaultConsume[2] = defaultConsume[3] = false;

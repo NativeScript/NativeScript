@@ -389,6 +389,15 @@ const INSET_TOP_CONSUMED = 20;
 const INSET_RIGHT_CONSUMED = 24;
 const INSET_BOTTOM_CONSUMED = 28;
 const INSET_BOTTOM_IME_CONSUMED = 36;
+const INSET_CUTOUT_LEFT = 40;
+const INSET_CUTOUT_TOP = 44;
+const INSET_CUTOUT_RIGHT = 48;
+const INSET_CUTOUT_BOTTOM = 52;
+
+const INSET_CUTOUT_LEFT_CONSUMED = 56;
+const INSET_CUTOUT_TOP_CONSUMED = 60;
+const INSET_CUTOUT_RIGHT_CONSUMED = 64;
+const INSET_CUTOUT_BOTTOM_CONSUMED = 68;
 
 const OverflowEdgeIgnore = -1;
 const OverflowEdgeNone: number = 0;
@@ -494,8 +503,72 @@ class Inset {
 		this.view.setInt32(INSET_BOTTOM_IME_CONSUMED, value ? 1 : 0, true);
 	}
 
+	public get cutoutLeft(): number {
+		return this.view.getInt32(INSET_CUTOUT_LEFT, true);
+	}
+
+	public set cutoutLeft(value: number) {
+		this.view.setInt32(INSET_CUTOUT_LEFT, value, true);
+	}
+
+	public get cutoutTop(): number {
+		return this.view.getInt32(INSET_CUTOUT_TOP, true);
+	}
+
+	public set cutoutTop(value: number) {
+		this.view.setInt32(INSET_CUTOUT_TOP, value, true);
+	}
+
+	public get cutoutRight(): number {
+		return this.view.getInt32(INSET_CUTOUT_RIGHT, true);
+	}
+
+	public set cutoutRight(value: number) {
+		this.view.setInt32(INSET_CUTOUT_RIGHT, value, true);
+	}
+
+	public get cutoutBottom(): number {
+		return this.view.getInt32(INSET_CUTOUT_BOTTOM, true);
+	}
+
+	public set cutoutBottom(value: number) {
+		this.view.setInt32(INSET_CUTOUT_BOTTOM, value, true);
+	}
+
+	public get cutoutLeftConsumed(): boolean {
+		return this.view.getInt32(INSET_CUTOUT_LEFT_CONSUMED, true) > 0;
+	}
+
+	public set cutoutLeftConsumed(value: boolean) {
+		this.view.setInt32(INSET_CUTOUT_LEFT_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get cutoutTopConsumed(): boolean {
+		return this.view.getInt32(INSET_CUTOUT_TOP_CONSUMED, true) > 0;
+	}
+
+	public set cutoutTopConsumed(value: boolean) {
+		this.view.setInt32(INSET_CUTOUT_TOP_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get cutoutRightConsumed(): boolean {
+		return this.view.getInt32(INSET_CUTOUT_RIGHT_CONSUMED, true) > 0;
+	}
+
+	public set cutoutRightConsumed(value: boolean) {
+		this.view.setInt32(INSET_CUTOUT_RIGHT_CONSUMED, value ? 1 : 0, true);
+	}
+
+	public get cutoutBottomConsumed(): boolean {
+		return this.view.getInt32(INSET_CUTOUT_BOTTOM_CONSUMED, true) > 0;
+	}
+
+	public set cutoutBottomConsumed(value: boolean) {
+		this.view.setInt32(INSET_CUTOUT_BOTTOM_CONSUMED, value ? 1 : 0, true);
+	}
+
 	toString() {
-		return `Inset: left=${this.left}, top=${this.top}, right=${this.right}, bottom=${this.bottom}, ` + `leftConsumed=${this.leftConsumed}, topConsumed=${this.topConsumed}, ` + `rightConsumed=${this.rightConsumed}, bottomConsumed=${this.bottomConsumed}`;
+		return `Inset: left=${this.left}, top=${this.top}, right=${this.right}, bottom=${this.bottom}, ` + `leftConsumed=${this.leftConsumed}, topConsumed=${this.topConsumed}, ` + `rightConsumed=${this.rightConsumed}, bottomConsumed=${this.bottomConsumed}, ` + `cutoutLeft=${this.cutoutLeft}, cutoutTop=${this.cutoutTop}, cutoutRight=${this.cutoutRight}, cutoutBottom=${this.cutoutBottom}, ` + `cutoutLeftConsumed=${this.cutoutLeftConsumed}, cutoutTopConsumed=${this.cutoutTopConsumed}, ` + `cutoutRightConsumed=${this.cutoutRightConsumed}, cutoutBottomConsumed=${this.cutoutBottomConsumed}`;
 	}
 
 	toJSON() {
@@ -508,6 +581,14 @@ class Inset {
 			topConsumed: this.topConsumed,
 			rightConsumed: this.rightConsumed,
 			bottomConsumed: this.bottomConsumed,
+			cutoutLeft: this.cutoutLeft,
+			cutoutTop: this.cutoutTop,
+			cutoutRight: this.cutoutRight,
+			cutoutBottom: this.cutoutBottom,
+			cutoutLeftConsumed: this.cutoutLeftConsumed,
+			cutoutTopConsumed: this.cutoutTopConsumed,
+			cutoutRightConsumed: this.cutoutRightConsumed,
+			cutoutBottomConsumed: this.cutoutBottomConsumed,
 		};
 	}
 }
