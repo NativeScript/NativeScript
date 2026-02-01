@@ -53,7 +53,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout repository (full history for tagging)
-        uses: actions/checkout@v6.0.0
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
