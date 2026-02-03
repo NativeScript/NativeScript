@@ -330,16 +330,16 @@ function initializeDialogFragment() {
 
 		public onDismiss(dialog: android.content.DialogInterface): void {
 			super.onDismiss(dialog);
+			const owner = this.owner;
+			if (owner && owner.isLoaded) {
+				owner.callUnloaded();
+			}
+
 			const manager = this.getFragmentManager();
 			const activity = this.activity?.get();
 			if (manager && !activity?.isChangingConfigurations()) {
 				removeModal(this.owner._domId);
 				this._dismissCallback();
-			}
-
-			const owner = this.owner;
-			if (owner && owner.isLoaded) {
-				owner.callUnloaded();
 			}
 		}
 
