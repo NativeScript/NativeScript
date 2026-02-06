@@ -20,7 +20,7 @@
 		"nativescript-theme-core": "^1.0.4"
 	},
 	"devDependencies": {
-		"@analogjs/vite-plugin-angular": "^2.0.3",
+		"@analogjs/vite-plugin-angular": "^2.2.3",
 		"@angular/build": "^20.3.9",
 		"@angular/compiler-cli": "^20.3.10",
 		"@csstools/css-calc": "~2.1.2",
