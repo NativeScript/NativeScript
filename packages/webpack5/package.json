@@ -15,7 +15,7 @@
 		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs"
 	},
 	"dependencies": {
-		"@babel/core": "^7.0.0",
+		"@babel/core": "^7.29.0",
 		"@pmmmwh/react-refresh-webpack-plugin": "~0.6.1",
 		"@vue/compiler-sfc": "^3.5.17",
 		"acorn": "^8.0.0",
