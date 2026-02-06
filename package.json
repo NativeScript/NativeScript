@@ -78,7 +78,7 @@
 		"jest-util": "30.0.5",
 		"jiti": "2.4.2",
 		"jsdom": "~22.1.0",
-		"lint-staged": "^15.2.0",
+		"lint-staged": "^15.5.2",
 		"loader-utils": "^2.0.0 || ^3.0.0",
 		"module-alias": "^2.2.2",
 		"nativescript": "^9.0.0-alpha.14",
