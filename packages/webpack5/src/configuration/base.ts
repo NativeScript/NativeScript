@@ -209,12 +209,17 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// config.entry('globals').add('@nativescript/core/globals/index').end();
 
-	config
-		.entry('bundle')
+	const includeCoreGlobals = platform !== 'macos' || env.includeCore === true;
+	const bundleEntry = config.entry('bundle');
+
+	if (includeCoreGlobals) {
 		// ensure we load nativescript globals first
-		.add('@nativescript/core/globals/index')
-		.add('@nativescript/core/bundle-entry-points')
-		.add(entryPath);
+		bundleEntry
+			.add('@nativescript/core/globals/index')
+			.add('@nativescript/core/bundle-entry-points');
+	}
+
+	bundleEntry.add(entryPath);
 
 	// Add android app components to the bundle to SBG can generate the java classes
 	if (platform === 'android') {

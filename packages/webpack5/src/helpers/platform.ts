@@ -7,6 +7,7 @@ import { env } from '../';
 
 import AndroidPlatform from '../platforms/android';
 import iOSPlatform from '../platforms/ios';
+import macOSPlatform from '../platforms/macos';
 import visionOSPlatform from '../platforms/visionos';
 
 export interface INativeScriptPlatform {
@@ -22,6 +23,7 @@ const platforms: {
 } = {
 	android: AndroidPlatform,
 	ios: iOSPlatform,
+	macos: macOSPlatform,
 	visionos: visionOSPlatform,
 };
 
@@ -62,9 +64,13 @@ export function getPlatformName(): Platform {
 		return 'ios';
 	}
 
+	if (env?.macos) {
+		return 'macos';
+	}
+
 	if (env?.visionos || env?.vision) {
 		return 'visionos';
-	}
+	 }
 
 	// support custom platforms
 	if (env?.platform) {
@@ -86,7 +92,7 @@ export function getPlatformName(): Platform {
 
 		Available platforms: ${Object.keys(platforms).join(', ')}
 
-		Use --env.platform=<platform> or --env.android, --env.ios, --env.visionos to specify the target platform.
+		Use --env.platform=<platform> or --env.android, --env.ios, --env.macos, --env.visionos to specify the target platform.
 
 		Defaulting to "ios".
 	`,

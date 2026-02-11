@@ -33,6 +33,7 @@ export interface IWebpackEnv {
 
 	android?: boolean;
 	ios?: boolean;
+	macos?: boolean;
 	// for custom platforms
 	platform?: string;
 
@@ -52,6 +53,8 @@ export interface IWebpackEnv {
 
 	// enable commonjs modules (default: ES modules, esm)
 	commonjs?: boolean;
+	// skip core globals/bundle-entry-points for macos unless explicitly enabled
+	includeCore?: boolean;
 
 	// misc
 	replace?: string[] | string;

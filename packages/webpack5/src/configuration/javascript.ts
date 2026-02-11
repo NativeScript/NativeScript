@@ -1,6 +1,6 @@
 import Config from 'webpack-chain';
 
-import { getEntryPath, getEntryDirPath } from '../helpers/platform';
+import { getEntryPath, getEntryDirPath, getPlatformName } from '../helpers/platform';
 import { chainedSetAddAfter } from '../helpers/chain';
 import { env as _env, IWebpackEnv } from '../index';
 import { ContextExclusionPlugin } from 'webpack';
@@ -20,11 +20,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.plugin(`ContextExclusionPlugin|exclude_files`)
 		.use(ContextExclusionPlugin, [/\b_.+\./]);
 
-	chainedSetAddAfter(
-		config.entry('bundle'),
-		'@nativescript/core/globals/index',
-		virtualEntryPath
-	);
+	const includeCoreGlobals = getPlatformName() !== 'macos' || env.includeCore === true;
+	if (includeCoreGlobals) {
+		chainedSetAddAfter(
+			config.entry('bundle'),
+			'@nativescript/core/globals/index',
+			virtualEntryPath
+		);
+	}
 
 	config.when(env.hmr, (config) => {
 		// set up core HMR
