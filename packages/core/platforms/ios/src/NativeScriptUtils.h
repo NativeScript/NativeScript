@@ -2,6 +2,7 @@
 //  NativeScriptUtils.h
 //
 //  Created by Nathan Walker on 2/02/2022.
+#if __has_include(<UIKit/UIKit.h>)
 #include <UIKit/UIKit.h>
 
 @interface NativeScriptUtils : NSObject
@@ -14,3 +15,4 @@
 +(NSData*)getImageData:(UIImage*)image format:(NSString*)format quality:(CGFloat)quality;
 
 @end
+#endif

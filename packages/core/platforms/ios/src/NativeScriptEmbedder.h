@@ -4,6 +4,7 @@
 //
 //  Created by Teodor Dermendzhiev on 6/19/18.
 //
+#if __has_include(<UIKit/UIKit.h>)
 #include <UIKit/UIKit.h>
 
 // When embedding NativeScript application embedder needs to conform to this protocol
@@ -28,4 +29,4 @@
 
 
 @end
-
+#endif

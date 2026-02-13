@@ -1,3 +1,4 @@
+#if __has_include(<UIKit/UIKit.h>)
 #import <UIKit/UIKit.h>
 #import "UIView+NativeScript.h"
 #import "NativeScriptUtils.h"
@@ -146,3 +147,4 @@
     }
 }
 @end
+#endif

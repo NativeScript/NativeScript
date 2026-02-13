@@ -401,6 +401,21 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		config.resolve.extensions.clear().merge(newExtensions);
 	}
 
+	if (platform === 'macos') {
+		// macOS currently reuses many iOS-flavored JS modules in ecosystem packages.
+		// Resolve .ios.* as a fallback when .macos.* is missing.
+		const extensions = config.resolve.extensions.values();
+		const newExtensions = [];
+		extensions.forEach((ext) => {
+			newExtensions.push(ext);
+			if (ext.includes('macos')) {
+				newExtensions.push(ext.replace('macos', 'ios'));
+			}
+		});
+
+		config.resolve.extensions.clear().merge(newExtensions);
+	}
+
 	// base aliases
 	config.resolve.alias.set('~', getEntryDirPath()).set('@', getEntryDirPath());
 
@@ -668,7 +683,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				__ANDROID__: platform === 'android',
 				__IOS__: platform === 'ios',
 				__VISIONOS__: platform === 'visionos',
-				__APPLE__: platform === 'ios' || platform === 'visionos',
+				__APPLE__:
+					platform === 'ios' ||
+					platform === 'visionos' ||
+					platform === 'macos',
 				/* for compat only */ 'global.isAndroid': platform === 'android',
 				/* for compat only */ 'global.isIOS':
 					platform === 'ios' || platform === 'visionos',
