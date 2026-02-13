@@ -33,9 +33,30 @@ import {
 	getEntryPath,
 } from '../helpers/platform';
 
+function isApplePlatform(platform: string): boolean {
+	return platform === 'ios' || platform === 'visionos' || platform === 'macos';
+}
+
+function getPlatformResolutionExtensions(platform: string): string[] {
+	if (platform === 'visionos') {
+		return ['visionos', 'apple', 'ios'];
+	}
+
+	if (platform === 'macos') {
+		return ['macos', 'apple', 'ios'];
+	}
+
+	if (platform === 'ios') {
+		return ['ios', 'apple'];
+	}
+
+	return [platform];
+}
+
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatformName();
+	const platformResolutionExtensions = getPlatformResolutionExtensions(platform);
 	const outputPath = getAbsoluteDistPath();
 	const mode = env.production ? 'production' : 'development';
 
@@ -373,48 +394,30 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add(getProjectFilePath('node_modules'))
 		.add('node_modules');
 
-	config.resolve.extensions
-		.add(`.${platform}.ts`)
-		.add('.ts')
-		.add(`.${platform}.js`)
-		.add('.js')
-		.add(`.${platform}.mjs`)
-		.add('.mjs')
-		.add(`.${platform}.css`)
-		.add('.css')
-		.add(`.${platform}.scss`)
-		.add('.scss')
-		.add(`.${platform}.json`)
-		.add('.json');
-
-	if (platform === 'visionos') {
-		// visionOS allows for both .ios and .visionos extensions
-		const extensions = config.resolve.extensions.values();
-		const newExtensions = [];
-		extensions.forEach((ext) => {
-			newExtensions.push(ext);
-			if (ext.includes('visionos')) {
-				newExtensions.push(ext.replace('visionos', 'ios'));
-			}
-		});
-
-		config.resolve.extensions.clear().merge(newExtensions);
-	}
-
-	if (platform === 'macos') {
-		// macOS currently reuses many iOS-flavored JS modules in ecosystem packages.
-		// Resolve .ios.* as a fallback when .macos.* is missing.
-		const extensions = config.resolve.extensions.values();
-		const newExtensions = [];
-		extensions.forEach((ext) => {
-			newExtensions.push(ext);
-			if (ext.includes('macos')) {
-				newExtensions.push(ext.replace('macos', 'ios'));
-			}
-		});
-
-		config.resolve.extensions.clear().merge(newExtensions);
-	}
+	platformResolutionExtensions.forEach((platformTarget) => {
+		config.resolve.extensions.add(`.${platformTarget}.ts`);
+	});
+	config.resolve.extensions.add('.ts');
+	platformResolutionExtensions.forEach((platformTarget) => {
+		config.resolve.extensions.add(`.${platformTarget}.js`);
+	});
+	config.resolve.extensions.add('.js');
+	platformResolutionExtensions.forEach((platformTarget) => {
+		config.resolve.extensions.add(`.${platformTarget}.mjs`);
+	});
+	config.resolve.extensions.add('.mjs');
+	platformResolutionExtensions.forEach((platformTarget) => {
+		config.resolve.extensions.add(`.${platformTarget}.css`);
+	});
+	config.resolve.extensions.add('.css');
+	platformResolutionExtensions.forEach((platformTarget) => {
+		config.resolve.extensions.add(`.${platformTarget}.scss`);
+	});
+	config.resolve.extensions.add('.scss');
+	platformResolutionExtensions.forEach((platformTarget) => {
+		config.resolve.extensions.add(`.${platformTarget}.json`);
+	});
+	config.resolve.extensions.add('.json');
 
 	// base aliases
 	config.resolve.alias.set('~', getEntryDirPath()).set('@', getEntryDirPath());
@@ -546,9 +549,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 						// custom resolver to resolve platform extensions in @import statements
 						// ie. @import "foo.css" would import "foo.ios.css" if the platform is ios and it exists
 						resolve(id, baseDir, importOptions) {
-							const extensions =
-								platform === 'visionos' ? [platform, 'ios'] : [platform];
-							for (const platformTarget of extensions) {
+							for (const platformTarget of platformResolutionExtensions) {
 								const ext = extname(id);
 								const platformExt = ext ? `.${platformTarget}${ext}` : '';
 
@@ -628,7 +629,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{
-			extensions: platform === 'visionos' ? [platform, 'ios'] : [platform],
+			extensions: platformResolutionExtensions,
 		},
 	]);
 
@@ -640,9 +641,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// Makes sure that require.context will never include code from
 	// another platform (ie .android.ts when building for ios)
-	const otherPlatformsRE = getAvailablePlatforms()
-		.filter((platform) => platform !== getPlatformName())
-		.join('|');
+	const otherPlatforms = getAvailablePlatforms().filter(
+		(availablePlatform) => availablePlatform !== getPlatformName(),
+	);
+	if (!isApplePlatform(platform) && !otherPlatforms.includes('apple')) {
+		otherPlatforms.push('apple');
+	}
+	const otherPlatformsRE = otherPlatforms.join('|');
 
 	config
 		.plugin('ContextExclusionPlugin|Other_Platforms')
