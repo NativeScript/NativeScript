@@ -144,5 +144,8 @@
 			"pattern": "{version}-{projectName}"
 		}
 	},
-	"nxCloudId": "680a89d49c76d63ce41eb397"
+	"nxCloudId": "680a89d49c76d63ce41eb397",
+	"tui": {
+		"enabled": false
+	}
 }

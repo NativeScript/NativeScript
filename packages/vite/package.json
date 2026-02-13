@@ -1,11 +1,30 @@
 {
 	"name": "@nativescript/vite",
-	"version": "1.0.6-rc.3",
+	"version": "1.0.6-rc.5",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
 	"types": "./index.d.ts",
 	"type": "module",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js",
+			"default": "./index.js"
+		},
+		"./hmr/client/index.js": "./hmr/client/index.js",
+		"./hmr/entry-runtime.js": "./hmr/entry-runtime.js",
+		"./hmr/shared/runtime/vendor-bootstrap": "./hmr/shared/runtime/vendor-bootstrap.js",
+		"./hmr/shared/runtime/vendor-bootstrap.js": "./hmr/shared/runtime/vendor-bootstrap.js",
+		"./hmr/shared/runtime/root-placeholder": "./hmr/shared/runtime/root-placeholder.js",
+		"./hmr/shared/runtime/root-placeholder.js": "./hmr/shared/runtime/root-placeholder.js",
+		"./hmr/shared/runtime/http-only-boot": "./hmr/shared/runtime/http-only-boot.js",
+		"./hmr/shared/runtime/http-only-boot.js": "./hmr/shared/runtime/http-only-boot.js",
+		"./hmr/shared/runtime/hooks": "./hmr/shared/runtime/hooks.js",
+		"./hmr/shared/runtime/hooks.js": "./hmr/shared/runtime/hooks.js",
+		"./runtime/core-aliases-early": "./runtime/core-aliases-early.js",
+		"./runtime/core-aliases-early.js": "./runtime/core-aliases-early.js"
+	},
 	"bin": {
 		"nativescript-vite": "./bin/cli.cjs"
 	},
