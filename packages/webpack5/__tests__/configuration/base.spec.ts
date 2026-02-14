@@ -223,6 +223,22 @@ describe('base configuration', () => {
 		expect(config.get('devtool')).toBe('hidden-source-map');
 	});
 
+	it('does not resolve .ios files for macos builds', () => {
+		init({
+			macos: true,
+		});
+
+		const config = base(new Config());
+		const extensions = config.resolve.extensions.values();
+
+		expect(extensions).toContain('.macos.ts');
+		expect(extensions).toContain('.apple.ts');
+		expect(extensions).not.toContain('.ios.ts');
+		expect(extensions).toContain('.macos.js');
+		expect(extensions).toContain('.apple.js');
+		expect(extensions).not.toContain('.ios.js');
+	});
+
 	it('includes inspector_modules on android when @nativescript/core version is >= 8.7.0', () => {
 		const getDependencyVersionSpy = jest.spyOn(
 			dependenciesHelpers,

@@ -43,7 +43,7 @@ function getPlatformResolutionExtensions(platform: string): string[] {
 	}
 
 	if (platform === 'macos') {
-		return ['macos', 'apple', 'ios'];
+		return ['macos', 'apple'];
 	}
 
 	if (platform === 'ios') {
@@ -56,7 +56,8 @@ function getPlatformResolutionExtensions(platform: string): string[] {
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatformName();
-	const platformResolutionExtensions = getPlatformResolutionExtensions(platform);
+	const platformResolutionExtensions =
+		getPlatformResolutionExtensions(platform);
 	const outputPath = getAbsoluteDistPath();
 	const mode = env.production ? 'production' : 'development';
 
@@ -161,21 +162,21 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// but are required by some packages like css-tree
 	config.resolve.merge({
 		fallback: {
-			module: require.resolve('../polyfills/module.js'),
+			module: require.resolve('../polyfills/module'),
 		},
 		alias: {
 			// Mock mdn-data modules that css-tree tries to load
 			'mdn-data/css/properties.json': require.resolve(
-				'../polyfills/mdn-data-properties.js',
+				'../polyfills/mdn-data-properties',
 			),
 			'mdn-data/css/syntaxes.json': require.resolve(
-				'../polyfills/mdn-data-syntaxes.js',
+				'../polyfills/mdn-data-syntaxes',
 			),
 			'mdn-data/css/at-rules.json': require.resolve(
-				'../polyfills/mdn-data-at-rules.js',
+				'../polyfills/mdn-data-at-rules',
 			),
 			// Ensure imports of the Node 'module' builtin resolve to our polyfill
-			module: require.resolve('../polyfills/module.js'),
+			module: require.resolve('../polyfills/module'),
 		},
 		// Allow extension-less ESM imports (fixes "fully specified" errors)
 		// Example: '../timer' -> resolves to index.<platform>.js without requiring explicit extension
@@ -431,21 +432,23 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add(getProjectFilePath('node_modules'))
 		.add('node_modules');
 
-	config.module
-		.rule('bundle')
-		.enforce('post')
-		.test(entryPath)
-		.use('app-css-loader')
-		.loader('app-css-loader')
-		.options({
-			// TODO: allow both visionos and ios to resolve for css
-			// only resolve .ios css on visionOS for now
-			// platform: platform === 'visionos' ? 'ios' : platform,
-			platform,
-		})
-		.end();
+	if (platform !== 'macos') {
+		config.module
+			.rule('bundle')
+			.enforce('post')
+			.test(entryPath)
+			.use('app-css-loader')
+			.loader('app-css-loader')
+			.options({
+				// TODO: allow both visionos and ios to resolve for css
+				// only resolve .ios css on visionOS for now
+				// platform: platform === 'visionos' ? 'ios' : platform,
+				platform,
+			})
+			.end();
+	}
 
-	config.when(env.hmr, (config) => {
+	config.when(env.hmr && platform !== 'macos', (config) => {
 		config.module
 			.rule('bundle')
 			.use('nativescript-hot-loader')
@@ -689,9 +692,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				__IOS__: platform === 'ios',
 				__VISIONOS__: platform === 'visionos',
 				__APPLE__:
-					platform === 'ios' ||
-					platform === 'visionos' ||
-					platform === 'macos',
+					platform === 'ios' || platform === 'visionos' || platform === 'macos',
 				/* for compat only */ 'global.isAndroid': platform === 'android',
 				/* for compat only */ 'global.isIOS':
 					platform === 'ios' || platform === 'visionos',

@@ -44,6 +44,13 @@
 				],
 				"generatePackageJson": false
 			}
+		},
+		"test": {
+			"executor": "@nx/jest:jest",
+			"outputs": ["{workspaceRoot}/coverage/packages/webpack5"],
+			"options": {
+				"jestConfig": "{projectRoot}/jest.config.js"
+			}
 		}
 	}
 }

@@ -1,11 +1,12 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`base configuration for android 1`] = `
 "{
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json'
+    '~/package.json',
+    function () { /* omitted long function */ }
   ],
   externalsPresets: {
     node: false
@@ -30,8 +31,16 @@ exports[`base configuration for android 1`] = `
     clean: true
   },
   resolve: {
+    fallback: {
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+    },
+    fullySpecified: false,
     symlinks: true,
     alias: {
+      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src'
     },
@@ -63,6 +72,13 @@ exports[`base configuration for android 1`] = `
   },
   module: {
     rules: [
+      /* config.module.rule('esm-extensionless') */
+      {
+        test: /\\.(mjs|js|ts|tsx)$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
       /* config.module.rule('bundle') */
       {
         enforce: 'post',
@@ -105,6 +121,14 @@ exports[`base configuration for android 1`] = `
               },
               getCustomTransformers: function () { /* omitted long function */ }
             }
+          },
+          /* config.module.rule('ts').use('native-class-downlevel-loader') */
+          {
+            loader: 'native-class-downlevel-loader'
+          },
+          /* config.module.rule('ts').use('native-class-strip-loader') */
+          {
+            loader: 'native-class-strip-loader'
           }
         ]
       },
@@ -185,7 +209,655 @@ exports[`base configuration for android 1`] = `
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              implementation: {
+                load: function () { /* omitted long function */ },
+                compile: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                compileString: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                compileAsync: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                compileStringAsync: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                initCompiler: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                initAsyncCompiler: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                Compiler: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                AsyncCompiler: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                Value: function Value0() {
+                },
+                SassBoolean: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassArgumentList: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassCalculation: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                CalculationOperation: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                CalculationInterpolation: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassColor: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassFunction: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassMixin: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassList: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassMap: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassNumber: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassString: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                sassNull: {},
+                sassTrue: {
+                  value: true
+                },
+                sassFalse: {
+                  value: false
+                },
+                Exception: function () { /* omitted long function */ },
+                Logger: {
+                  silent: {
+                    warn: function () {
+                      return _call(f, Array.prototype.slice.apply(arguments));
+                    },
+                    debug: function () {
+                      return _call(f, Array.prototype.slice.apply(arguments));
+                    }
+                  }
+                },
+                NodePackageImporter: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                deprecations: {
+                  'call-string': {
+                    id: 'call-string',
+                    status: 'active',
+                    description: 'Passing a string directly to meta.call().',
+                    deprecatedIn: {
+                      major: 0,
+                      minor: 0,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '0.0.0'
+                    },
+                    obsoleteIn: {
+                      major: 0,
+                      minor: 0,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '0.0.0'
+                    }
+                  },
+                  elseif: {
+                    id: 'elseif',
+                    status: 'active',
+                    description: '@elseif.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 3,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.3.2'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 3,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.3.2'
+                    }
+                  },
+                  'moz-document': {
+                    id: 'moz-document',
+                    status: 'active',
+                    description: '@-moz-document.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 7,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.7.2'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 7,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.7.2'
+                    }
+                  },
+                  'relative-canonical': {
+                    id: 'relative-canonical',
+                    status: 'active',
+                    description: 'Imports using relative canonical URLs.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 14,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.14.2'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 14,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.14.2'
+                    }
+                  },
+                  'new-global': {
+                    id: 'new-global',
+                    status: 'active',
+                    description: 'Declaring new variables with !global.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 17,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.17.2'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 17,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.17.2'
+                    }
+                  },
+                  'color-module-compat': {
+                    id: 'color-module-compat',
+                    status: 'active',
+                    description: 'Using color module functions in place of plain CSS functions.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 23,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.23.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 23,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.23.0'
+                    }
+                  },
+                  'slash-div': {
+                    id: 'slash-div',
+                    status: 'active',
+                    description: '/ operator for division.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 33,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.33.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 33,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.33.0'
+                    }
+                  },
+                  'bogus-combinators': {
+                    id: 'bogus-combinators',
+                    status: 'active',
+                    description: 'Leading, trailing, and repeated combinators.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 54,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.54.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 54,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.54.0'
+                    }
+                  },
+                  'strict-unary': {
+                    id: 'strict-unary',
+                    status: 'active',
+                    description: 'Ambiguous + and - operators.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 55,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.55.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 55,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.55.0'
+                    }
+                  },
+                  'function-units': {
+                    id: 'function-units',
+                    status: 'active',
+                    description: 'Passing invalid units to built-in functions.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 56,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.56.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 56,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.56.0'
+                    }
+                  },
+                  'duplicate-var-flags': {
+                    id: 'duplicate-var-flags',
+                    status: 'active',
+                    description: 'Using !default or !global multiple times for one variable.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 62,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.62.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 62,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.62.0'
+                    }
+                  },
+                  'null-alpha': {
+                    id: 'null-alpha',
+                    status: 'active',
+                    description: 'Passing null as alpha in the JS API.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 62,
+                      patch: 3,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.62.3'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 62,
+                      patch: 3,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.62.3'
+                    }
+                  },
+                  'abs-percent': {
+                    id: 'abs-percent',
+                    status: 'active',
+                    description: 'Passing percentages to the Sass abs() function.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 65,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.65.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 65,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.65.0'
+                    }
+                  },
+                  'fs-importer-cwd': {
+                    id: 'fs-importer-cwd',
+                    status: 'active',
+                    description: 'Using the current working directory as an implicit load path.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 73,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.73.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 73,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.73.0'
+                    }
+                  },
+                  'css-function-mixin': {
+                    id: 'css-function-mixin',
+                    status: 'active',
+                    description: 'Function and mixin names beginning with --.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 76,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.76.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 76,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.76.0'
+                    }
+                  },
+                  'mixed-decls': {
+                    id: 'mixed-decls',
+                    status: 'active',
+                    description: 'Declarations after or between nested rules.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 77,
+                      patch: 7,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.77.7'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 77,
+                      patch: 7,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.77.7'
+                    }
+                  },
+                  'feature-exists': {
+                    id: 'feature-exists',
+                    status: 'active',
+                    description: 'meta.feature-exists',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 78,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.78.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 78,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.78.0'
+                    }
+                  },
+                  'color-4-api': {
+                    id: 'color-4-api',
+                    status: 'active',
+                    description: 'Certain uses of built-in sass:color functions.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    }
+                  },
+                  'color-functions': {
+                    id: 'color-functions',
+                    status: 'active',
+                    description: 'Using global color functions instead of sass:color.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    }
+                  },
+                  'legacy-js-api': {
+                    id: 'legacy-js-api',
+                    status: 'active',
+                    description: 'Legacy JS API.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    }
+                  },
+                  'import': {
+                    id: 'import',
+                    status: 'active',
+                    description: '@import rules.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 80,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.80.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 80,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.80.0'
+                    }
+                  },
+                  'global-builtin': {
+                    id: 'global-builtin',
+                    status: 'active',
+                    description: 'Global built-in functions that are available in sass: modules.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 80,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.80.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 80,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.80.0'
+                    }
+                  },
+                  'type-function': {
+                    id: 'type-function',
+                    status: 'active',
+                    description: 'Functions named "type".',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 86,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.86.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 86,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.86.0'
+                    }
+                  },
+                  'compile-string-relative-url': {
+                    id: 'compile-string-relative-url',
+                    status: 'active',
+                    description: 'Passing a relative url to compileString().',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 88,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.88.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 88,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.88.0'
+                    }
+                  },
+                  'user-authored': {
+                    id: 'user-authored',
+                    status: 'user',
+                    description: null,
+                    deprecatedIn: null,
+                    obsoleteIn: null
+                  }
+                },
+                Version: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                loadParserExports_: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                info: 'dart-sass\\t1.90.0\\t(Sass Compiler)\\t[Dart]\\ndart2js\\t3.8.3\\t(Dart Compiler)\\t[Dart]',
+                render: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                renderSync: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                types: {
+                  Boolean: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Color: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  List: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Map: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Null: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Number: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  String: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Error: function Error() { [native code] }
+                },
+                NULL: {},
+                TRUE: {
+                  value: true
+                },
+                FALSE: {
+                  value: false
+                },
+                cli_pkg_main_0_: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                }
+              }
+            }
           }
         ]
       }
@@ -228,6 +900,12 @@ exports[`base configuration for android 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('FixSourceMapUrlPlugin') */
+    new FixSourceMapUrlPlugin(
+      {
+        outputPath: '__jest__/platforms/android/app/src/main/assets/app'
+      }
+    ),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -251,10 +929,10 @@ exports[`base configuration for android 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(ios|visionos)\\.(\\w+)$/
+      /.(ios|macos|visionos|apple).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
-    new DefinePlugin(
+    new CompatDefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
@@ -263,6 +941,7 @@ exports[`base configuration for android 1`] = `
         __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
+        __COMMONJS__: true,
         __ANDROID__: true,
         __IOS__: false,
         __VISIONOS__: false,
@@ -333,7 +1012,8 @@ exports[`base configuration for ios 1`] = `
   mode: 'development',
   externals: [
     'package.json',
-    '~/package.json'
+    '~/package.json',
+    function () { /* omitted long function */ }
   ],
   externalsPresets: {
     node: false
@@ -358,23 +1038,37 @@ exports[`base configuration for ios 1`] = `
     clean: true
   },
   resolve: {
+    fallback: {
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+    },
+    fullySpecified: false,
     symlinks: true,
     alias: {
+      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src'
     },
     extensions: [
       '.ios.ts',
+      '.apple.ts',
       '.ts',
       '.ios.js',
+      '.apple.js',
       '.js',
       '.ios.mjs',
+      '.apple.mjs',
       '.mjs',
       '.ios.css',
+      '.apple.css',
       '.css',
       '.ios.scss',
+      '.apple.scss',
       '.scss',
       '.ios.json',
+      '.apple.json',
       '.json'
     ],
     modules: [
@@ -391,6 +1085,13 @@ exports[`base configuration for ios 1`] = `
   },
   module: {
     rules: [
+      /* config.module.rule('esm-extensionless') */
+      {
+        test: /\\.(mjs|js|ts|tsx)$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
       /* config.module.rule('bundle') */
       {
         enforce: 'post',
@@ -433,6 +1134,14 @@ exports[`base configuration for ios 1`] = `
               },
               getCustomTransformers: function () { /* omitted long function */ }
             }
+          },
+          /* config.module.rule('ts').use('native-class-downlevel-loader') */
+          {
+            loader: 'native-class-downlevel-loader'
+          },
+          /* config.module.rule('ts').use('native-class-strip-loader') */
+          {
+            loader: 'native-class-strip-loader'
           }
         ]
       },
@@ -513,7 +1222,655 @@ exports[`base configuration for ios 1`] = `
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              implementation: {
+                load: function () { /* omitted long function */ },
+                compile: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                compileString: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                compileAsync: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                compileStringAsync: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                initCompiler: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                initAsyncCompiler: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                Compiler: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                AsyncCompiler: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                Value: function Value0() {
+                },
+                SassBoolean: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassArgumentList: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassCalculation: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                CalculationOperation: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                CalculationInterpolation: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassColor: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassFunction: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassMixin: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassList: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassMap: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassNumber: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                SassString: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                sassNull: {},
+                sassTrue: {
+                  value: true
+                },
+                sassFalse: {
+                  value: false
+                },
+                Exception: function () { /* omitted long function */ },
+                Logger: {
+                  silent: {
+                    warn: function () {
+                      return _call(f, Array.prototype.slice.apply(arguments));
+                    },
+                    debug: function () {
+                      return _call(f, Array.prototype.slice.apply(arguments));
+                    }
+                  }
+                },
+                NodePackageImporter: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                deprecations: {
+                  'call-string': {
+                    id: 'call-string',
+                    status: 'active',
+                    description: 'Passing a string directly to meta.call().',
+                    deprecatedIn: {
+                      major: 0,
+                      minor: 0,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '0.0.0'
+                    },
+                    obsoleteIn: {
+                      major: 0,
+                      minor: 0,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '0.0.0'
+                    }
+                  },
+                  elseif: {
+                    id: 'elseif',
+                    status: 'active',
+                    description: '@elseif.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 3,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.3.2'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 3,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.3.2'
+                    }
+                  },
+                  'moz-document': {
+                    id: 'moz-document',
+                    status: 'active',
+                    description: '@-moz-document.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 7,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.7.2'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 7,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.7.2'
+                    }
+                  },
+                  'relative-canonical': {
+                    id: 'relative-canonical',
+                    status: 'active',
+                    description: 'Imports using relative canonical URLs.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 14,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.14.2'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 14,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.14.2'
+                    }
+                  },
+                  'new-global': {
+                    id: 'new-global',
+                    status: 'active',
+                    description: 'Declaring new variables with !global.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 17,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.17.2'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 17,
+                      patch: 2,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.17.2'
+                    }
+                  },
+                  'color-module-compat': {
+                    id: 'color-module-compat',
+                    status: 'active',
+                    description: 'Using color module functions in place of plain CSS functions.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 23,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.23.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 23,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.23.0'
+                    }
+                  },
+                  'slash-div': {
+                    id: 'slash-div',
+                    status: 'active',
+                    description: '/ operator for division.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 33,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.33.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 33,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.33.0'
+                    }
+                  },
+                  'bogus-combinators': {
+                    id: 'bogus-combinators',
+                    status: 'active',
+                    description: 'Leading, trailing, and repeated combinators.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 54,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.54.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 54,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.54.0'
+                    }
+                  },
+                  'strict-unary': {
+                    id: 'strict-unary',
+                    status: 'active',
+                    description: 'Ambiguous + and - operators.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 55,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.55.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 55,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.55.0'
+                    }
+                  },
+                  'function-units': {
+                    id: 'function-units',
+                    status: 'active',
+                    description: 'Passing invalid units to built-in functions.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 56,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.56.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 56,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.56.0'
+                    }
+                  },
+                  'duplicate-var-flags': {
+                    id: 'duplicate-var-flags',
+                    status: 'active',
+                    description: 'Using !default or !global multiple times for one variable.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 62,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.62.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 62,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.62.0'
+                    }
+                  },
+                  'null-alpha': {
+                    id: 'null-alpha',
+                    status: 'active',
+                    description: 'Passing null as alpha in the JS API.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 62,
+                      patch: 3,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.62.3'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 62,
+                      patch: 3,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.62.3'
+                    }
+                  },
+                  'abs-percent': {
+                    id: 'abs-percent',
+                    status: 'active',
+                    description: 'Passing percentages to the Sass abs() function.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 65,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.65.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 65,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.65.0'
+                    }
+                  },
+                  'fs-importer-cwd': {
+                    id: 'fs-importer-cwd',
+                    status: 'active',
+                    description: 'Using the current working directory as an implicit load path.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 73,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.73.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 73,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.73.0'
+                    }
+                  },
+                  'css-function-mixin': {
+                    id: 'css-function-mixin',
+                    status: 'active',
+                    description: 'Function and mixin names beginning with --.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 76,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.76.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 76,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.76.0'
+                    }
+                  },
+                  'mixed-decls': {
+                    id: 'mixed-decls',
+                    status: 'active',
+                    description: 'Declarations after or between nested rules.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 77,
+                      patch: 7,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.77.7'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 77,
+                      patch: 7,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.77.7'
+                    }
+                  },
+                  'feature-exists': {
+                    id: 'feature-exists',
+                    status: 'active',
+                    description: 'meta.feature-exists',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 78,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.78.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 78,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.78.0'
+                    }
+                  },
+                  'color-4-api': {
+                    id: 'color-4-api',
+                    status: 'active',
+                    description: 'Certain uses of built-in sass:color functions.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    }
+                  },
+                  'color-functions': {
+                    id: 'color-functions',
+                    status: 'active',
+                    description: 'Using global color functions instead of sass:color.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    }
+                  },
+                  'legacy-js-api': {
+                    id: 'legacy-js-api',
+                    status: 'active',
+                    description: 'Legacy JS API.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 79,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.79.0'
+                    }
+                  },
+                  'import': {
+                    id: 'import',
+                    status: 'active',
+                    description: '@import rules.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 80,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.80.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 80,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.80.0'
+                    }
+                  },
+                  'global-builtin': {
+                    id: 'global-builtin',
+                    status: 'active',
+                    description: 'Global built-in functions that are available in sass: modules.',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 80,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.80.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 80,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.80.0'
+                    }
+                  },
+                  'type-function': {
+                    id: 'type-function',
+                    status: 'active',
+                    description: 'Functions named "type".',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 86,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.86.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 86,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.86.0'
+                    }
+                  },
+                  'compile-string-relative-url': {
+                    id: 'compile-string-relative-url',
+                    status: 'active',
+                    description: 'Passing a relative url to compileString().',
+                    deprecatedIn: {
+                      major: 1,
+                      minor: 88,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.88.0'
+                    },
+                    obsoleteIn: {
+                      major: 1,
+                      minor: 88,
+                      patch: 0,
+                      preRelease: [],
+                      build: [],
+                      _version$_text: '1.88.0'
+                    }
+                  },
+                  'user-authored': {
+                    id: 'user-authored',
+                    status: 'user',
+                    description: null,
+                    deprecatedIn: null,
+                    obsoleteIn: null
+                  }
+                },
+                Version: function () {
+                  return _call(f, this, Array.prototype.slice.apply(arguments));
+                },
+                loadParserExports_: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                info: 'dart-sass\\t1.90.0\\t(Sass Compiler)\\t[Dart]\\ndart2js\\t3.8.3\\t(Dart Compiler)\\t[Dart]',
+                render: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                renderSync: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                },
+                types: {
+                  Boolean: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Color: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  List: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Map: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Null: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Number: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  String: function () {
+                    return _call(f, this, Array.prototype.slice.apply(arguments));
+                  },
+                  Error: function Error() { [native code] }
+                },
+                NULL: {},
+                TRUE: {
+                  value: true
+                },
+                FALSE: {
+                  value: false
+                },
+                cli_pkg_main_0_: function () {
+                  return _call(f, Array.prototype.slice.apply(arguments));
+                }
+              }
+            }
           }
         ]
       }
@@ -556,6 +1913,12 @@ exports[`base configuration for ios 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('FixSourceMapUrlPlugin') */
+    new FixSourceMapUrlPlugin(
+      {
+        outputPath: '__jest__/platforms/ios/jest/app'
+      }
+    ),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -569,7 +1932,8 @@ exports[`base configuration for ios 1`] = `
     new PlatformSuffixPlugin(
       {
         extensions: [
-          'ios'
+          'ios',
+          'apple'
         ]
       }
     ),
@@ -579,10 +1943,10 @@ exports[`base configuration for ios 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(android|visionos)\\.(\\w+)$/
+      /.(android|macos|visionos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
-    new DefinePlugin(
+    new CompatDefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
@@ -591,6 +1955,7 @@ exports[`base configuration for ios 1`] = `
         __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
+        __COMMONJS__: true,
         __ANDROID__: false,
         __IOS__: true,
         __VISIONOS__: false,
