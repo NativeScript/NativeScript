@@ -8,3 +8,4 @@
 /// <reference path="./platforms/ios/typings/objc!MaterialComponents.d.ts" />
 /// <reference path="./platforms/ios/typings/objc!NativeScriptUtils.d.ts" />
 /// <reference path="./global-types.d.ts" />
+/// <reference path="../../node_modules/@nativescript/macos-node-api/index.d.ts" />

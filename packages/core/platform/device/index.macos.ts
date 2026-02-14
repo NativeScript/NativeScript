@@ -21,7 +21,7 @@ class DeviceRef {
 
 	get model(): string {
 		if (!this._model) {
-			this._model = NSHost.currentHost.localizedName || 'Mac';
+			this._model = NSHost.currentHost.name || 'Mac';
 		}
 		return this._model;
 	}

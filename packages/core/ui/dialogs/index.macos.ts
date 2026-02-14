@@ -38,7 +38,7 @@ function normalizeDialogOptions(arg: any, defaults: Record<string, any>) {
 }
 
 function runModalAlert(title: string, message: string, buttons: string[]): number {
-	const alert = NSAlert.alloc().init();
+	const alert = NSAlert.alloc().init() as NSAlert;
 	alert.messageText = title || '';
 	alert.informativeText = message || '';
 	for (const button of buttons) {
@@ -74,13 +74,13 @@ export function prompt(arg: any): Promise<{ result: boolean; text: string }> {
 		defaultText: '',
 	});
 
-	const alert = NSAlert.alloc().init();
+	const alert = NSAlert.alloc().init() as NSAlert;
 	alert.messageText = options.title || '';
 	alert.informativeText = options.message || '';
 	alert.addButtonWithTitle(options.okButtonText);
 	alert.addButtonWithTitle(options.cancelButtonText);
 
-	const textField = NSTextField.alloc().initWithFrame(NSMakeRect(0, 0, 260, 24));
+	const textField = (NSTextField.alloc() as unknown as NSTextField).initWithFrame(NSMakeRect(0, 0, 260, 24));
 	textField.stringValue = options.defaultText || '';
 	alert.accessoryView = textField;
 
@@ -97,21 +97,21 @@ export function login(arg: any): Promise<{ result: boolean; userName: string; pa
 		password: '',
 	});
 
-	const alert = NSAlert.alloc().init();
+	const alert = NSAlert.alloc().init() as NSAlert;
 	alert.messageText = options.title || '';
 	alert.informativeText = options.message || '';
 	alert.addButtonWithTitle(options.okButtonText);
 	alert.addButtonWithTitle(options.cancelButtonText);
 
-	const container = NSStackView.alloc().initWithFrame(NSMakeRect(0, 0, 260, 52));
+	const container = (NSStackView.alloc() as unknown as NSStackView).initWithFrame(NSMakeRect(0, 0, 260, 52));
 	container.orientation = NSUserInterfaceLayoutOrientation.Vertical;
 	container.spacing = 8;
 
-	const userField = NSTextField.alloc().initWithFrame(NSMakeRect(0, 0, 260, 24));
+	const userField = (NSTextField.alloc() as unknown as NSTextField).initWithFrame(NSMakeRect(0, 0, 260, 24));
 	userField.placeholderString = options.userNameHint || '';
 	userField.stringValue = options.userName || '';
 
-	const passwordField = NSSecureTextField.alloc().initWithFrame(NSMakeRect(0, 0, 260, 24));
+	const passwordField = (NSSecureTextField.alloc() as unknown as NSSecureTextField).initWithFrame(NSMakeRect(0, 0, 260, 24));
 	passwordField.placeholderString = options.passwordHint || '';
 	passwordField.stringValue = options.password || '';
 

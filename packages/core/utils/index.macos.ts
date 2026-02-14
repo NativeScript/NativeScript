@@ -1,17 +1,16 @@
 import { platformCheck } from './platform-check';
-import { collections, getCurrentAppPath, getWindow, iOSNativeHelper, isRealDevice, joinPaths, getter } from './native-helper';
+import { ios as iosUtils, getWindow, iOSNativeHelper, isRealDevice } from './native-helper';
 
 export * from './types';
 export * from './utils-shared';
 export * from './native-helper';
 
 export const ios = {
-	collections,
-	getCurrentAppPath,
+	collections: iosUtils.collections,
+	getCurrentAppPath: iosUtils.getCurrentAppPath,
 	getWindow,
 	isRealDevice,
-	joinPaths,
-	getter,
+	joinPaths: iosUtils.joinPaths,
 };
 
 export const android = platformCheck('utils.android');
@@ -46,7 +45,7 @@ export function GC() {
 	}
 }
 
-let queuedGCHandle: number;
+let queuedGCHandle: NodeJS.Timeout;
 
 export function queueGC(delay = 900) {
 	clearTimeout(queuedGCHandle);
