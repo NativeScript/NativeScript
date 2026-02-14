@@ -116,6 +116,8 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 
 		this.setNativeView(titleTextView);
 		if (titleTextView) {
+			// Disable ALL CAPS transformation
+			titleTextView.setAllCaps(false);
 			if (this.titleDirty) {
 				this._update();
 			}
@@ -250,6 +252,11 @@ export class SegmentedBar extends SegmentedBarBase {
 		if (tabWidget) {
 			tabWidget.setEnabled(tabWidget.isEnabled());
 		}
+
+		// Apply initial tab colors and rounded corners
+		if (this.items?.length) {
+			this.setTabColor(this.selectedIndex >= 0 ? this.selectedIndex : 0);
+		}
 	}
 
 	private insertTab(tabItem: SegmentedBarItem, index: number): void {
@@ -294,26 +301,78 @@ export class SegmentedBar extends SegmentedBarBase {
 		try {
 			const tabWidget = this.nativeViewProtected?.getTabWidget();
 			if (tabWidget) {
+				// Remove dividers between tabs that can cover rounded corners
+				tabWidget.setDividerDrawable(null);
+				tabWidget.setShowDividers(android.widget.LinearLayout.SHOW_DIVIDER_NONE);
+				// Remove strip/underline from TabWidget
+				tabWidget.setStripEnabled(false);
+
 				const unselectedTextColor = this.getColorForAndroid(this.color ?? '#6e6e6e');
 				const selectedTextColor = this.getColorForAndroid(this?.selectedTextColor ?? '#000000');
 				const unselectedBackgroundColor = this.getColorForAndroid(this?.backgroundColor ?? '#dbdbdb');
 				const selectedBackgroundColor = this.getColorForAndroid(this?.selectedBackgroundColor ?? this?.backgroundColor ?? 'blue');
-				if (tabWidget) {
-					for (let i = 0; i < tabWidget.getTabCount(); i++) {
-						const view = tabWidget.getChildTabViewAt(i);
-						const item = this.items[i];
-						const textView = item?.nativeViewProtected;
-						view.setBackgroundColor(unselectedBackgroundColor);
-						if (textView) {
-							textView.setTextColor(unselectedTextColor);
-						}
-						if (index == i) {
-							view.setBackgroundColor(selectedBackgroundColor);
-							if (textView) {
-								textView.setTextColor(selectedTextColor);
-							}
-							continue;
-						}
+				const tabCount = tabWidget.getTabCount();
+				const cornerRadius = layout.toDevicePixels(8); // 8dp corner radius
+
+				// Create a rounded background for the entire TabWidget and clip children to it
+				if (SDK_VERSION >= 21) {
+					const tabWidgetDrawable = new android.graphics.drawable.GradientDrawable();
+					tabWidgetDrawable.setColor(unselectedBackgroundColor);
+					tabWidgetDrawable.setCornerRadius(cornerRadius);
+					tabWidget.setBackground(tabWidgetDrawable);
+					tabWidget.setClipToOutline(true);
+					tabWidget.setClipChildren(true);
+					tabWidget.setOutlineProvider(android.view.ViewOutlineProvider.BACKGROUND);
+				}
+
+				for (let i = 0; i < tabCount; i++) {
+					const view = tabWidget.getChildTabViewAt(i);
+					const item = this.items[i];
+					const textView = item?.nativeViewProtected;
+					const isSelected = index == i;
+					const bgColor = isSelected ? selectedBackgroundColor : unselectedBackgroundColor;
+
+					const isFirst = i === 0;
+					const isLast = i === tabCount - 1;
+
+					// Apply rounded corners to first and last tabs so selected state also has rounded corners
+					const drawable = new android.graphics.drawable.GradientDrawable();
+					drawable.setColor(bgColor);
+
+					if (isFirst && isLast) {
+						// Only one tab - round all corners
+						drawable.setCornerRadius(cornerRadius);
+					} else if (isFirst) {
+						// Round top-left and bottom-left corners
+						const radii = Array.create('float', 8);
+						radii[0] = cornerRadius;
+						radii[1] = cornerRadius; // top-left
+						radii[2] = 0;
+						radii[3] = 0; // top-right
+						radii[4] = 0;
+						radii[5] = 0; // bottom-right
+						radii[6] = cornerRadius;
+						radii[7] = cornerRadius; // bottom-left
+						drawable.setCornerRadii(radii);
+					} else if (isLast) {
+						// Round top-right and bottom-right corners
+						const radii = Array.create('float', 8);
+						radii[0] = 0;
+						radii[1] = 0; // top-left
+						radii[2] = cornerRadius;
+						radii[3] = cornerRadius; // top-right
+						radii[4] = cornerRadius;
+						radii[5] = cornerRadius; // bottom-right
+						radii[6] = 0;
+						radii[7] = 0; // bottom-left
+						drawable.setCornerRadii(radii);
+					}
+					// Middle tabs have no rounded corners
+
+					view.setBackground(drawable);
+
+					if (textView) {
+						textView.setTextColor(isSelected ? selectedTextColor : unselectedTextColor);
 					}
 				}
 			}
