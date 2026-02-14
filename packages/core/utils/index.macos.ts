@@ -1,16 +1,16 @@
 import { platformCheck } from './platform-check';
-import { ios as iosUtils, getWindow, iOSNativeHelper, isRealDevice } from './native-helper';
+import { collections, getCurrentAppPath, joinPaths, getWindow, iOSNativeHelper, isRealDevice } from './native-helper.macos';
 
 export * from './types';
 export * from './utils-shared';
 export * from './native-helper';
 
 export const ios = {
-	collections: iosUtils.collections,
-	getCurrentAppPath: iosUtils.getCurrentAppPath,
+	collections,
+	getCurrentAppPath,
 	getWindow,
 	isRealDevice,
-	joinPaths: iosUtils.joinPaths,
+	joinPaths,
 };
 
 export const android = platformCheck('utils.android');
