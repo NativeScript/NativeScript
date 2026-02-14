@@ -1,0 +1,225 @@
+diff --git a/node_modules/@nativescript/macos-node-api/types/Runtime.d.ts b/node_modules/@nativescript/macos-node-api/types/Runtime.d.ts
+index 4542385..1d8b68b 100644
+--- a/node_modules/@nativescript/macos-node-api/types/Runtime.d.ts
++++ b/node_modules/@nativescript/macos-node-api/types/Runtime.d.ts
+@@ -6635,16 +6635,12 @@ declare class list_xattrs_result {
+ declare class tss {
+   constructor(init?: tss);
+   oldtss: sel;
+-  : number;
+   esp0: number;
+   ss0: sel;
+-  : number;
+   esp1: number;
+   ss1: sel;
+-  : number;
+   esp2: number;
+   ss2: sel;
+-  : number;
+   cr3: number;
+   eip: number;
+   eflags: number;
+@@ -6657,21 +6653,13 @@ declare class tss {
+   esi: number;
+   edi: number;
+   es: sel;
+-  : number;
+   cs: sel;
+-  : number;
+   ss: sel;
+-  : number;
+   ds: sel;
+-  : number;
+   fs: sel;
+-  : number;
+   gs: sel;
+-  : number;
+   ldt: sel;
+-  : number;
+   t: number;
+-  : number;
+   io_bmap: number;
+ }
+ 
+@@ -6679,7 +6667,6 @@ declare class unnamed_4496508063133753178 {
+   constructor(init?: unnamed_4496508063133753178);
+   offset00: number;
+   seg: sel;
+-  : number;
+   type: number;
+   dpl: number;
+   present: number;
+@@ -6695,7 +6682,6 @@ declare class unnamed_7391634615231741349 {
+   dpl: number;
+   present: number;
+   limit16: number;
+-  : number;
+   stksz: number;
+   granular: number;
+   base24: number;
+@@ -7289,7 +7275,6 @@ declare class nextvend {
+   constructor(init?: nextvend);
+   nv_magic: unknown /* const array */;
+   nv_version: number;
+-  : number;
+   nv_U: unnamed_13354706086260099080;
+ }
+ 
+@@ -8292,7 +8277,6 @@ declare class unnamed_10851913189610803071 {
+   offset00: number;
+   seg: sel;
+   argcnt: number;
+-  : number;
+   type: number;
+   dpl: number;
+   present: number;
+@@ -8381,7 +8365,6 @@ declare class _Unwind_Control_Block {
+   barrier_cache: unnamed_1963453509088981222;
+   cleanup_cache: unnamed_2232855473343066318;
+   pr_cache: unnamed_11615304210804108409;
+-  : number;
+ }
+ 
+ declare class __socket {
+@@ -9179,7 +9162,6 @@ declare class tss_desc {
+   dpl: number;
+   present: number;
+   limit16: number;
+-  : number;
+   granular: number;
+   base24: number;
+ }
+@@ -9379,13 +9361,10 @@ declare class panel {
+ 
+ declare class task_gate {
+   constructor(init?: task_gate);
+-  : number;
+   tss: sel;
+-  : number;
+   type: number;
+   dpl: number;
+   present: number;
+-  : number;
+ }
+ 
+ declare class tagITEM {
+@@ -9816,7 +9795,6 @@ declare class unnamed_3095397964707882416 {
+   dpl: number;
+   present: number;
+   limit16: number;
+-  : number;
+   opsz: number;
+   granular: number;
+   base24: number;
+@@ -13977,10 +13955,8 @@ declare class unnamed_7545270049141253789 {
+   base00: number;
+   base16: number;
+   type: number;
+-  : number;
+   present: number;
+   limit16: number;
+-  : number;
+   granular: number;
+   base24: number;
+ }
+@@ -16140,7 +16116,6 @@ declare class unnamed_17581234035804441709 {
+   constructor(init?: unnamed_17581234035804441709);
+   offset00: number;
+   seg: sel;
+-  : number;
+   type: number;
+   dpl: number;
+   present: number;
+@@ -25574,7 +25549,7 @@ declare function asl_format(msg: interop.PointerConvertible, msg_fmt: string, ti
+ 
+ declare function asl_encode_buffer(buf: string, len: number): string;
+ 
+-declare function asl_decode_buffer(in: string, buf: interop.PointerConvertible, len: interop.PointerConvertible): number;
++declare function asl_decode_buffer(inarg: string, buf: interop.PointerConvertible, len: interop.PointerConvertible): number;
+ 
+ declare function asl_next(obj: interop.PointerConvertible): interop.Pointer;
+ 
+@@ -26164,9 +26139,9 @@ declare function httpUpdate(http: interop.PointerConvertible): interop.Enum<type
+ 
+ declare function httpWrite(http: interop.PointerConvertible, buffer: string, length: number): number;
+ 
+-declare function httpEncode64(out: string, in: string): string;
++declare function httpEncode64(out: string, inarg: string): string;
+ 
+-declare function httpDecode64(out: string, in: string): string;
++declare function httpDecode64(out: string, inarg: string): string;
+ 
+ declare function httpGetLength(http: interop.PointerConvertible): number;
+ 
+@@ -26184,9 +26159,9 @@ declare function httpSetCookie(http: interop.PointerConvertible, cookie: string)
+ 
+ declare function httpWait(http: interop.PointerConvertible, msec: number): number;
+ 
+-declare function httpDecode64_2(out: string, outlen: interop.PointerConvertible, in: string): string;
++declare function httpDecode64_2(out: string, outlen: interop.PointerConvertible, inarg: string): string;
+ 
+-declare function httpEncode64_2(out: string, outlen: number, in: string, inlen: number): string;
++declare function httpEncode64_2(out: string, outlen: number, inarg: string, inlen: number): string;
+ 
+ declare function httpSeparate2(uri: string, method: string, methodlen: number, username: string, usernamelen: number, host: string, hostlen: number, port: interop.PointerConvertible, resource: string, resourcelen: number): void;
+ 
+@@ -28070,9 +28045,9 @@ declare function krb5_encrypt_size(length: number, crypto: number): number;
+ 
+ declare function krb5_checksum_size(context: interop.PointerConvertible, ctype: number): number;
+ 
+-declare function krb5_calculate_checksum(context: interop.PointerConvertible, ctype: number, in: interop.PointerConvertible, in_length: number, seed: interop.PointerConvertible, seed_length: number, outcksum: interop.PointerConvertible): number;
++declare function krb5_calculate_checksum(context: interop.PointerConvertible, ctype: number, inarg: interop.PointerConvertible, in_length: number, seed: interop.PointerConvertible, seed_length: number, outcksum: interop.PointerConvertible): number;
+ 
+-declare function krb5_verify_checksum(context: interop.PointerConvertible, ctype: number, cksum: interop.PointerConvertible, in: interop.PointerConvertible, in_length: number, seed: interop.PointerConvertible, seed_length: number): number;
++declare function krb5_verify_checksum(context: interop.PointerConvertible, ctype: number, cksum: interop.PointerConvertible, inarg: interop.PointerConvertible, in_length: number, seed: interop.PointerConvertible, seed_length: number): number;
+ 
+ declare function krb5_cc_get_name(context: interop.PointerConvertible, cache: interop.PointerConvertible): string;
+ 
+@@ -29126,9 +29101,9 @@ declare function ber_next_element(ber: interop.PointerConvertible, len: interop.
+ 
+ declare function ber_scanf(ber: interop.PointerConvertible, fmt: string): number;
+ 
+-declare function ber_decode_oid(in: interop.PointerConvertible, out: interop.PointerConvertible): number;
++declare function ber_decode_oid(inarg: interop.PointerConvertible, out: interop.PointerConvertible): number;
+ 
+-declare function ber_encode_oid(in: interop.PointerConvertible, out: interop.PointerConvertible): number;
++declare function ber_encode_oid(inarg: interop.PointerConvertible, out: interop.PointerConvertible): number;
+ 
+ declare function ber_put_enum(ber: interop.PointerConvertible, num: number, tag: number): number;
+ 
+@@ -29434,7 +29409,7 @@ declare function ldap_rdn2bv(rdn: interop.PointerConvertible, bv: interop.Pointe
+ 
+ declare function ldap_rdn2str(rdn: interop.PointerConvertible, str: interop.PointerConvertible, flags: number): number;
+ 
+-declare function ldap_dn_normalize(in: string, iflags: number, out: interop.PointerConvertible, oflags: number): number;
++declare function ldap_dn_normalize(inarg: string, iflags: number, out: interop.PointerConvertible, oflags: number): number;
+ 
+ declare function ldap_dn2ufn(dn: string): string;
+ 
+@@ -29480,7 +29455,7 @@ declare function ldap_msgfree(lm: interop.PointerConvertible): number;
+ 
+ declare function ldap_msgdelete(ld: interop.PointerConvertible, msgid: number): number;
+ 
+-declare function ldap_bv2escaped_filter_value(in: interop.PointerConvertible, out: interop.PointerConvertible): number;
++declare function ldap_bv2escaped_filter_value(inarg: interop.PointerConvertible, out: interop.PointerConvertible): number;
+ 
+ declare function ldap_search_ext(ld: interop.PointerConvertible, base: string, scope: number, filter: string, attrs: interop.PointerConvertible, attrsonly: number, serverctrls: interop.PointerConvertible, clientctrls: interop.PointerConvertible, timeout: interop.PointerConvertible, sizelimit: number, msgidp: interop.PointerConvertible): number;
+ 
+@@ -30916,7 +30891,7 @@ declare function inflateMark(strm: interop.PointerConvertible): number;
+ 
+ declare function inflateGetHeader(strm: interop.PointerConvertible, head: interop.PointerConvertible): number;
+ 
+-declare function inflateBack(strm: interop.PointerConvertible, in: (p1: interop.PointerConvertible, p2: interop.PointerConvertible) => number, in_desc: interop.PointerConvertible, out: (p1: interop.PointerConvertible, p2: interop.PointerConvertible, p3: number) => number, out_desc: interop.PointerConvertible): number;
++declare function inflateBack(strm: interop.PointerConvertible, inarg: (p1: interop.PointerConvertible, p2: interop.PointerConvertible) => number, in_desc: interop.PointerConvertible, out: (p1: interop.PointerConvertible, p2: interop.PointerConvertible, p3: number) => number, out_desc: interop.PointerConvertible): number;
+ 
+ declare function inflateBackEnd(strm: interop.PointerConvertible): number;
+ 
+@@ -31742,7 +31717,7 @@ declare function uuid_generate_time(out: unknown /* const array */): void;
+ 
+ declare function uuid_is_null(uu: unknown /* const array */): number;
+ 
+-declare function uuid_parse(in: unknown /* const array */, uu: unknown /* const array */): number;
++declare function uuid_parse(inarg: unknown /* const array */, uu: unknown /* const array */): number;
+ 
+ declare function uuid_unparse(uu: unknown /* const array */, out: unknown /* const array */): void;
+ 

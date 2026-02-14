@@ -1,3 +1,6 @@
+// This file is iOS/visionOS-only. When plugins reuse `platforms/ios/src` for macOS,
+// the embedder module is not guaranteed to exist and UIKit is unavailable.
+#if canImport(UIKit) && canImport(NativeScriptEmbedder)
 import SwiftUI
 import NativeScriptEmbedder
 import UIKit
@@ -194,3 +197,4 @@ struct NativeScriptAppView: UIViewRepresentable {
     // allow NativeScript to override updateData for custom handling
     @objc public var updateData: ((_ data: NSMutableDictionary) -> Void)? = nil
 }
+#endif

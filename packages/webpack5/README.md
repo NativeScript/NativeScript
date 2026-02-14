@@ -68,7 +68,7 @@ Useful globally available variables in your app:
 | `global.isAndroid` / `__ANDROID__` | `true` when platform is Android |
 | `global.isIOS` / `__IOS__` | `true` when platform is iOS |
 | `global.isVisionOS` / `__VISIONOS__` | `true` when platform is visionOS |
-| `global.__APPLE__` | `true` when platform is iOS or visionOS |
+| `global.__APPLE__` | `true` when platform is iOS, visionOS, or macOS |
 
 ## 📚 API
 

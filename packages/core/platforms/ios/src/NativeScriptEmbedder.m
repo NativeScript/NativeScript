@@ -1,3 +1,4 @@
+#if __has_include(<UIKit/UIKit.h>)
 #import "NativeScriptEmbedder.h"
 
 @implementation NativeScriptEmbedder
@@ -41,3 +42,4 @@
 // End backwards compat
 
 @end
+#endif

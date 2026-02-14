@@ -81,4 +81,18 @@ describe('getDistPath', () => {
 
 		getValueMock.mockImplementation(getValueMockImpl);
 	});
+
+	it('is generated for macos', () => {
+		env.android = false;
+		env.ios = false;
+		env.visionos = false;
+		env.vision = false;
+		env.macos = true;
+
+		const distPath = getDistPath();
+
+		expect(distPath).toEqual('platforms/macos/jest/app');
+
+		env.macos = false;
+	});
 });

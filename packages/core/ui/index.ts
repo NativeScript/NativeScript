@@ -31,6 +31,7 @@ global.alert = uiDialogs.alert;
 global.confirm = uiDialogs.confirm;
 // @ts-ignore
 global.prompt = uiDialogs.prompt;
+// @ts-ignore
 global.login = uiDialogs.login;
 global.action = uiDialogs.action;
 // global.registerModule('ui-dialogs', () => uiDialogs);
