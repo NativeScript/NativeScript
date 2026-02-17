@@ -423,8 +423,7 @@ public abstract class LayoutBase extends ViewGroup {
 					int top = mPaddingTop + (apply[1] ? insetTop : 0);
 					int right = mPaddingRight + (apply[2] ? insetRight : 0);
 					int bottom = mPaddingBottom
-						+ (apply[3] ? insetNavBottom : 0)
-						+ (apply[3] ? insetImeBottom : 0);
+						+ (apply[3] ? Math.max(insetNavBottom, insetImeBottom) : 0);
 
 					edgeInsets = Insets.of(
 						apply[0] ? insetLeft : 0,
@@ -475,4 +474,7 @@ public abstract class LayoutBase extends ViewGroup {
 	public int getOverflowEdge() {
 		return overflowEdge;
 	}
+
+
+
 }
