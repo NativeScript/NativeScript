@@ -330,7 +330,7 @@ export class TextBase extends TextBaseCommon {
 				break;
 			case 'center':
 				if (supportsRtlTextAlign) {
-					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+					//	this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
 				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;

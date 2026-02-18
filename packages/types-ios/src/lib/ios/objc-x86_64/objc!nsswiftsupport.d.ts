@@ -42,3 +42,22 @@ declare class NativeScriptViewFactory extends NSObject implements NativeScriptEm
 
 	presentNativeScriptApp(vc: UIViewController): any;
 }
+
+declare class NSCCSSFilter extends NSObject {
+
+	static alloc(): NSCCSSFilter; // inherited from NSObject
+
+	static new(): NSCCSSFilter; // inherited from NSObject
+
+	readonly layer: CAMetalLayer;
+
+	applyTo(view: UIView): void;
+
+	parseWithCss(css: string): void;
+
+	reset(): void;
+
+	resizeLayerIfNeeded(): void;
+
+	invalidate(): void;
+}
