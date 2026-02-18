@@ -1609,10 +1609,11 @@ export class View extends ViewCommon {
 		return '';
 	}
 	[filterProperty.setNative](value: string) {
-		const nativeView = this.nativeViewProtected;
-		//@ts-ignore
-		if ('setFilter' in nativeView) {
-			// @ts-ignore
+		// LayoutBase, ImageView and StyleableTextView has the setFilter method implemented in the native view, so we need to check before call it.
+		const nativeView: globalAndroid.view.View & {
+			setFilter?: (value: string) => void;
+		} = this.nativeViewProtected;
+		if (typeof nativeView['setFilter'] === 'function') {
 			nativeView.setFilter(value);
 		}
 	}
