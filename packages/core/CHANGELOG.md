@@ -1,3 +1,17 @@
+## 9.0.14 (2026-02-18)
+
+### 🚀 Features
+
+- **android:** edge to edge cutout inset ([#11069](https://github.com/NativeScript/NativeScript/pull/11069))
+
+### 🩹 Fixes
+
+- **android:** edge to edge bottom was applied 2x ([#11090](https://github.com/NativeScript/NativeScript/pull/11090))
+
+### ❤️ Thank You
+
+- Osei Fortune @triniwiz
+
 ## 9.0.13 (2026-01-31)
 
 ### 🚀 Features
