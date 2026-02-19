@@ -164,8 +164,44 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	public createNativeView() {
-		return new androidx.appcompat.widget.Toolbar(this._context);
-	}
+    const toolbar = new androidx.appcompat.widget.Toolbar(this._context);
+
+    // --- PATCH: Fix ActionBar overlaying status bar on Android 16+ ---
+    try {
+        const apiLevel = android.os.Build.VERSION.SDK_INT;
+        if (apiLevel >= 29) {
+            toolbar.setFitsSystemWindows(true);
+
+            toolbar.setOnApplyWindowInsetsListener(
+                new android.view.View.OnApplyWindowInsetsListener({
+                    onApplyWindowInsets(view, insets) {
+                        try {
+                            const topInset = (typeof insets.getSystemWindowInsetTop === "function")
+                                ? insets.getSystemWindowInsetTop()
+                                : (insets.getInsets ? insets.getInsets(android.view.WindowInsets.Type.statusBars()).top : 0);
+
+                            view.setPadding(
+                                view.getPaddingLeft(),
+                                topInset,
+                                view.getPaddingRight(),
+                                view.getPaddingBottom()
+                            );
+                        } catch (e) {
+                            console.log("ActionBar inset patch error:", e);
+                        }
+                        return insets;
+                    }
+                })
+            );
+        }
+    } catch (err) {
+        console.log("Failed to apply ActionBar status bar fix:", err);
+    }
+    // --- END PATCH ---
+
+    return toolbar;
+}
+
 
 	public initNativeView(): void {
 		super.initNativeView();
