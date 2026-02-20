@@ -991,28 +991,8 @@ export class View extends ViewCommon {
 	}
 
 	updateStatusBarStyle(value: 'dark' | 'light') {
-		// Keep UINavigationBar style aligned (affects legacy + some container defaults).
-		const parent = this.parent;
-		const ctrl = parent?.ios?.controller;
-		if (ctrl && ctrl instanceof UINavigationController) {
-			const navigationBar = ctrl.navigationBar;
-			if (navigationBar) {
-				navigationBar.barStyle = value === 'light' ? UIBarStyle.Black : UIBarStyle.Default;
-			}
-		}
-
 		// iOS requires a controller invalidation to re-evaluate `preferredStatusBarStyle`.
 		const ownerController = this.viewController || IOSHelper.getParentWithViewController(this as any)?.viewController;
-
-		// Force overrideUserInterfaceStyle if available (iOS 13+) to ensure status bar contrast.
-		if (SDK_VERSION >= 13 && ownerController) {
-			const style = value === 'light' ? UIUserInterfaceStyle.Dark : UIUserInterfaceStyle.Light;
-			ownerController.overrideUserInterfaceStyle = style;
-			if (ctrl && ctrl instanceof UINavigationController) {
-				ctrl.overrideUserInterfaceStyle = style;
-			}
-		}
-
 		IOSHelper.invalidateStatusBarAppearance(ownerController, `View.updateStatusBarStyle:${value}`);
 	}
 
