@@ -2,7 +2,7 @@ import type { Point, Position } from './view-interfaces';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 import { getNativeScriptGlobals } from '../../../globals/global-utils';
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty, testIDProperty, AndroidHelper, androidOverflowEdgeProperty, statusBarStyleProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty, filterProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -1602,6 +1602,19 @@ export class View extends ViewCommon {
 			this.parent._setChildMinHeightNative(this, value);
 		} else {
 			this._setMinHeightNative(value);
+		}
+	}
+
+	[filterProperty.getDefault](): string {
+		return '';
+	}
+	[filterProperty.setNative](value: string) {
+		// LayoutBase, ImageView and StyleableTextView has the setFilter method implemented in the native view, so we need to check before call it.
+		const nativeView: globalAndroid.view.View & {
+			setFilter?: (value: string) => void;
+		} = this.nativeViewProtected;
+		if (typeof nativeView['setFilter'] === 'function') {
+			nativeView.setFilter(value);
 		}
 	}
 

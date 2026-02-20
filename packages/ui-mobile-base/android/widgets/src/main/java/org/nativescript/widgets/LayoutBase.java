@@ -1,6 +1,7 @@
 package org.nativescript.widgets;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -16,6 +17,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 /**
  * @author hhristov
@@ -476,5 +480,42 @@ public abstract class LayoutBase extends ViewGroup {
 	}
 
 
+	@Override
+	public void draw(@NonNull Canvas canvas) {
+		Object suppress = getTag(R.id.tag_suppress_ops);
+		if (suppress != null && (boolean) suppress) {
+			super.dispatchDraw(canvas);
+		} else {
+			super.draw(canvas);
+		}
+	}
 
+	@Override
+	protected void dispatchDraw(@NonNull Canvas canvas) {
+		ViewUtils.dispatchDraw(this, canvas, mFilter, new Function1<Canvas, Unit>() {
+			@Override
+			public Unit invoke(Canvas canvas) {
+				LayoutBase.super.dispatchDraw(canvas);
+				return null;
+			}
+		});
+	}
+
+	@Nullable
+	private CSSFilters.CSSFilter mFilter = null;
+
+	private String mFilterRaw = "";
+
+	public String getFilter() {
+		return mFilterRaw;
+	}
+
+	public void setFilter(String value) {
+		mFilterRaw = value;
+		boolean hadFilters = mFilter != null && !mFilter.getFilters().isEmpty();
+		mFilter = CSSFilters.parse(value);
+		if (!mFilter.getFilters().isEmpty() || (value.isEmpty() && hadFilters)) {
+			invalidate();
+		}
+	}
 }
