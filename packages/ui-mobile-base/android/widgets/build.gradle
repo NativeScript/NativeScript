@@ -3,6 +3,7 @@
 def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 
 apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 def computeCompileSdkVersion() {
 	if (project.hasProperty("compileSdk")) {
@@ -43,9 +44,17 @@ android {
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 		}
 	}
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
+	}
+	kotlinOptions {
+		jvmTarget = '17'
+	}
 }
 
 dependencies {
+	implementation 'androidx.core:core-ktx:1.17.0'
 	def androidXViewPagerVersion = "1.1.0"
 	if (project.hasProperty("androidXViewPager")) {
 		androidXViewPagerVersion = androidXViewPager
@@ -108,6 +117,12 @@ dependencies {
 	implementation "androidx.documentfile:documentfile:$androidXDocumentFileVersion"
 	implementation "androidx.activity:activity:$androidXActivityVersion"
 	implementation "androidx.core:core:$androidXCoreVersion"
+
+	def androidXWorkVersion = "2.10.0"
+	if (project.hasProperty("androidXWork")) {
+		androidXWorkVersion = androidXWork
+	}
+	implementation("androidx.work:work-runtime:$androidXWorkVersion")
 }
 
 tasks.register('cleanBuildDir', Delete) {

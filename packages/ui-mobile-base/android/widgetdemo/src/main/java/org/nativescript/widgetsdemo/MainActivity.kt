@@ -1,6 +1,9 @@
 package org.nativescript.widgetsdemo
 
 import android.app.Dialog
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -13,13 +16,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.postDelayed
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.DialogFragment
+import androidx.work.WorkerParameters
+import org.nativescript.widgets.AppWidgetManager
+import org.nativescript.widgets.AppWidgetWorker
 import org.nativescript.widgets.CommonLayoutParams
 import org.nativescript.widgets.ContentLayout
 import org.nativescript.widgets.GridLayout
 import org.nativescript.widgets.GridUnitType
 import org.nativescript.widgets.LayoutBase
+import org.nativescript.widgets.RemoteViewsManager
 import org.nativescript.widgets.StackLayout
 import org.nativescript.widgets.Utils
 
@@ -256,8 +262,12 @@ class MainActivity : AppCompatActivity() {
 				page.overflowEdge = mode
 				statusLabel.text = "Mode: $name"
 				page.postDelayed(100) {
-					paddingLabel.text = "paddingBottom: ${page.paddingBottom}  (edge=${page.edgeInsets.bottom}, ime=${page.imeInsets.bottom})"
-					Log.d(TAG, "Cycle -> $name: paddingBottom=${page.paddingBottom}, edge=${page.edgeInsets.bottom}, ime=${page.imeInsets.bottom}")
+					paddingLabel.text =
+						"paddingBottom: ${page.paddingBottom}  (edge=${page.edgeInsets.bottom}, ime=${page.imeInsets.bottom})"
+					Log.d(
+						TAG,
+						"Cycle -> $name: paddingBottom=${page.paddingBottom}, edge=${page.edgeInsets.bottom}, ime=${page.imeInsets.bottom}"
+					)
 				}
 			}
 
@@ -282,8 +292,88 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	class Worker(context: Context, params: WorkerParameters) : AppWidgetWorker(context, params) {
+		override fun doWork(): Result {
+			val widget = org.nativescript.widgets.RemoteViews.LinearLayout()
+			val btn = org.nativescript.widgets.RemoteViews.Button("button")
+			widget.addView(btn)
+			widget.setBackgroundColor(Color.RED)
+			val img = org.nativescript.widgets.RemoteViews.ImageView()
+			widget.addView(img)
+			img.setImageUrl("https://picsum.photos/seed/${System.currentTimeMillis()}/200/300")
+
+			for (id in widgetIds) {
+				(widget.findViewById("button") as? org.nativescript.widgets.RemoteViews.Button)?.let {
+					btn.setText("Nice View Widget $id")
+				}
+				val updated = widget.build(applicationContext.packageName)
+				updateWidget(id, updated)
+
+				widget.resolveRemoteResources()
+				updateWidget(id, widget.build(applicationContext.packageName))
+			}
+			return Result.success()
+		}
+	}
+
+	override fun onNewIntent(intent: Intent) {
+		super.onNewIntent(intent)
+		Log.d("com.test", "intent $intent")
+	}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+
+		AppWidgetManager.register(
+			"org.nativescript.widgetsdemo.DemoWidgetProvider",
+			object : AppWidgetManager.WidgetListener {
+				override fun onUpdateAsync(
+					context: Context,
+					provider: String,
+					appWidgetIds: IntArray,
+					manager: RemoteViewsManager,
+					widgetManager: android.appwidget.AppWidgetManager?
+				) {
+					//	AppWidgetWorker.enqueue<Worker>(context, provider, appWidgetIds)
+
+					val widget = org.nativescript.widgets.RemoteViews.LinearLayout()
+					val btn = org.nativescript.widgets.RemoteViews.Button("button")
+					btn.setSize(
+						40f,
+						TypedValue.COMPLEX_UNIT_DIP,
+						40f,
+						TypedValue.COMPLEX_UNIT_DIP,
+					)
+					widget.addView(btn)
+					widget.setBackgroundColor(Color.RED)
+					val img = org.nativescript.widgets.RemoteViews.ImageView()
+//					img.setImageResource(
+//						R.drawable.ic_launcher_background
+//					)
+					widget.addView(img)
+					for (id in appWidgetIds) {
+						(widget.findViewById("button") as? org.nativescript.widgets.RemoteViews.Button)?.let {
+							btn.setText("Nice View Widget $id")
+							val intent = PendingIntent.getActivity(
+								context,
+								0,
+								Intent(applicationContext, MainActivity::class.java),
+								PendingIntent.FLAG_IMMUTABLE
+							)
+							btn.setOnClickPendingIntent(
+								intent
+							)
+						}
+						val updated = widget.build(applicationContext.packageName)
+						widgetManager?.updateAppWidget(id, updated)
+
+						img.setImageUrl("https://picsum.photos/seed/${System.currentTimeMillis()}_$id/200/300")
+
+						widget.resolveRemoteResources()
+						widgetManager?.updateAppWidget(id, widget.build(applicationContext.packageName))
+					}
+				}
+			})
 
 		Utils.enableEdgeToEdge(this)
 		val frame = ContentLayout(this)
