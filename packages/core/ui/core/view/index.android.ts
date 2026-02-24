@@ -1329,22 +1329,24 @@ export class View extends ViewCommon {
 		const decorView = window.getDecorView();
 
 		// API 30+ path (preferred)
-		const controller = window.getInsetsController?.();
-		if (controller && SDK_VERSION >= 30) {
-			const APPEARANCE_LIGHT_STATUS_BARS = android.view.WindowInsetsController?.APPEARANCE_LIGHT_STATUS_BARS;
-
-			if (typeof value === 'string') {
-				this.style.statusBarStyle = value;
-				if (value === 'light') {
-					// light icons/text
-					controller.setSystemBarsAppearance(0, APPEARANCE_LIGHT_STATUS_BARS);
+		if (SDK_VERSION >= 30) {
+			const controller = window.getInsetsController?.();
+			if (controller) {
+				const APPEARANCE_LIGHT_STATUS_BARS = android.view.WindowInsetsController?.APPEARANCE_LIGHT_STATUS_BARS;
+	
+				if (typeof value === 'string') {
+					this.style.statusBarStyle = value;
+					if (value === 'light') {
+						// light icons/text
+						controller.setSystemBarsAppearance(0, APPEARANCE_LIGHT_STATUS_BARS);
+					} else {
+						// dark icons/text
+						controller.setSystemBarsAppearance(APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS);
+					}
 				} else {
-					// dark icons/text
-					controller.setSystemBarsAppearance(APPEARANCE_LIGHT_STATUS_BARS, APPEARANCE_LIGHT_STATUS_BARS);
+					if (value.color != null) window.setStatusBarColor(value.color);
+					// No direct passthrough for systemUiVisibility on API 30+, use appearances instead
 				}
-			} else {
-				if (value.color != null) window.setStatusBarColor(value.color);
-				// No direct passthrough for systemUiVisibility on API 30+, use appearances instead
 			}
 			return;
 		}
