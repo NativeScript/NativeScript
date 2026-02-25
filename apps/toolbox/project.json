@@ -49,6 +49,14 @@
 			"executor": "@nativescript/nx:clean",
 			"options": {}
 		},
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": ["vite serve -- --env.{args.platform} --env.hmr", "wait-on tcp:5173 && ns debug {args.platform}"],
+				"parallel": true,
+				"cwd": "apps/toolbox"
+			}
+		},
 		"lint": {
 			"executor": "@nx/eslint:lint",
 			"options": {

@@ -78,6 +78,16 @@ export function transformNativeClassSource(code: string, fileName: string) {
 		return `${prefix || '\n'}${stacked || ''}/*__NativeClass__*/`;
 	});
 
+	// Also handle cases where @NativeClass() is on its own line with parentheses
+	// Pattern: @NativeClass() followed by other decorators or class
+	if (!working.includes('/*__NativeClass__*/') && code.includes('@NativeClass')) {
+		// Simpler replacement: just replace @NativeClass() or @NativeClass with marker
+		working = code.replace(/@NativeClass\s*\(\s*\)\s*\n/g, '/*__NativeClass__*/\n');
+		if (!working.includes('/*__NativeClass__*/')) {
+			working = code.replace(/@NativeClass\s*\n/g, '/*__NativeClass__*/\n');
+		}
+	}
+
 	// If neither original nor marker is present, skip transform early.
 	if (!working.includes('@NativeClass') && !working.includes('/*__NativeClass__*/')) return null;
 	try {
@@ -92,6 +102,8 @@ export function transformNativeClassSource(code: string, fileName: string) {
 					const original = working.slice(fullStart, node.end);
 					const stripped = original.replace(/\/\*__NativeClass__\*\/\s*/g, '').replace(/^\s*@NativeClass(?:\([\s\S]*?\))?\s*$/gm, '');
 					const hadExport = /^\s*export\s+class\b/.test(stripped);
+					const className = (node as ts.ClassDeclaration).name?.text;
+
 					const down = ts
 						.transpileModule(stripped, {
 							compilerOptions: {
@@ -110,11 +122,76 @@ export function transformNativeClassSource(code: string, fileName: string) {
 							return `Object.defineProperty(${obj}, ${key}, {${body}})`;
 						});
 					let cleaned = down.replace(/export \{\};?\s*$/m, '');
-					if (hadExport) {
-						const name = (node as ts.ClassDeclaration).name?.text;
-						if (name && !new RegExp(`export\s*{\s*${name}\s*}`, 'm').test(cleaned)) {
-							cleaned += `\nexport { ${name} };\n`;
+
+					// Debug: log the transpileModule output
+					const debugNativeClass = process.env.NS_DEBUG_NATIVECLASS;
+					if (debugNativeClass) {
+						console.log('[NativeClass] fileName:', fileName);
+						console.log('[NativeClass] className:', className);
+						console.log('[NativeClass] stripped input (first 300 chars):', stripped.slice(0, 300));
+						console.log('[NativeClass] transpileModule output (first 300 chars):', cleaned.slice(0, 300));
+					}
+
+					// SBG (Static Binding Generator) expects the __decorate call to be INSIDE the IIFE.
+					// TypeScript's transpileModule already puts it inside correctly.
+					// The pattern should be:
+					//   var ClassName = (function(_super) {
+					//       __extends(ClassName, _super);
+					//       function ClassName() { ... }
+					//       // prototype methods...
+					//       ClassName = __decorate([...], ClassName);  <-- INSIDE the IIFE
+					//       return ClassName;
+					//   })(BaseClass);
+					// We do NOT move it outside - the IIFE pattern with __decorate inside is correct.
+
+					// Fix: If the transpiled output is just an IIFE expression (not assigned),
+					// we need to assign it to a variable so the class is properly registered.
+					// This happens when TypeScript transpiles a class declaration without assignment context.
+					if (className) {
+						// Check if the output is a bare IIFE without assignment
+						// The transpiled output can look like:
+						// (/** @class */ (function(_super){...})(Base));
+						// or: (function(_super){...})(Base);
+						// We need to assign it to a variable: var ClassName = ...
+						const trimmed = cleaned.trim();
+						// Pattern: starts with ( and contains IIFE extending a class
+						// Look for pattern that indicates an unassigned class expression
+						const startsWithParen = trimmed.startsWith('(');
+						const hasExtends = /__extends\s*\(/.test(trimmed) || /function\s*\(\s*_super\s*\)/.test(trimmed);
+						const notAssigned = !/^\s*var\s+\w+\s*=/.test(trimmed) && !/^\s*let\s+\w+\s*=/.test(trimmed) && !/^\s*const\s+\w+\s*=/.test(trimmed);
+
+						if (startsWithParen && hasExtends && notAssigned) {
+							// The output is a bare class expression, wrap it in assignment
+							// Simply prepend `var ClassName = ` and remove the trailing semicolon if present
+							// to avoid `var X = (...);` becoming `var X = (...);` (keep it clean)
+							let unwrapped = trimmed;
+
+							// Remove trailing semicolon for cleaner output, we'll add it back
+							if (unwrapped.endsWith(';')) {
+								unwrapped = unwrapped.slice(0, -1).trimEnd();
+							}
+
+							// If wrapped in outer parens that are just for grouping, we can keep them
+							// The result will be: var CustomActivity = (/** @class */ (function...));
+							cleaned = `var ${className} = ${unwrapped};`;
 						}
+					}
+
+					if (hadExport) {
+						if (className && !new RegExp(`export\\s*{\\s*${className}\\s*}`, 'm').test(cleaned)) {
+							cleaned += `\nexport { ${className} };\n`;
+						}
+					} else if (className) {
+						// For non-exported @NativeClass classes (like custom activities),
+						// we need to ensure they're not tree-shaken by Rollup.
+						// Register on global to create an unoptimizable side effect.
+						// Use a pattern that prevents inlining by Rollup.
+						cleaned += `\n;(function(c) { global.__nativeClasses = global.__nativeClasses || {}; global.__nativeClasses["${className}"] = c; })(${className});\n`;
+					}
+					// Ensure the transpiled output starts with a newline to properly separate
+					// from any preceding code (like import statements)
+					if (!cleaned.startsWith('\n')) {
+						cleaned = '\n' + cleaned;
 					}
 					edits.push({ start: fullStart, end: node.end, text: cleaned });
 				}
@@ -148,6 +225,15 @@ export function transformNativeClassSource(code: string, fileName: string) {
 				return true;
 			})
 			.join('\n');
+
+		// Debug: Final output
+		if (process.env.NS_DEBUG_NATIVECLASS === '1') {
+			console.log('[NativeClass] ===== FINAL OUTPUT =====');
+			console.log('[NativeClass] File:', fileName);
+			console.log('[NativeClass] Output:\n', output);
+			console.log('[NativeClass] ===== END FINAL OUTPUT =====');
+		}
+
 		return { code: output, map: null };
 	} catch {
 		return null;

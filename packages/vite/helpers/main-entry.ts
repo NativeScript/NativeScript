@@ -1,8 +1,10 @@
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from './project.js';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
+import { getResolvedAppComponents } from './app-components.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -22,8 +24,21 @@ const mainEntryRelPosix = (() => {
 const flavor = getProjectFlavor() as string;
 
 // Optional polyfills support (non-HMR specific but dev friendly)
-const polyfillsPath = getProjectFilePath(getProjectAppRelativePath('polyfills.ts'));
-const polyfillsExists = fs.existsSync(polyfillsPath);
+// Resolve polyfills relative to the main entry directory so it works both for standalone projects and monorepos/workspaces where the workspace root and app root differ.
+// We keep both the absolute filesystem path (for existsSync) and a project-root-relative POSIX path (for the import specifier used in Vite).
+const mainEntryDir = path.dirname(mainEntry);
+const polyfillsFsPath = path.resolve(mainEntryDir, 'polyfills.ts');
+const polyfillsExists = fs.existsSync(polyfillsFsPath);
+const polyfillsImportSpecifier = (() => {
+	try {
+		// Normalize to "/..." posix-style (similar to mainEntryRelPosix)
+		const rel = path.relative(projectRoot, polyfillsFsPath).replace(/\\/g, '/');
+		return ('/' + rel).replace(/\/+/g, '/');
+	} catch {
+		// Fallback to a simple relative specifier next to main entry
+		return './polyfills.ts';
+	}
+})();
 
 const VIRTUAL_ID = 'virtual:entry-with-polyfills';
 const RESOLVED = '\0' + VIRTUAL_ID;
@@ -54,6 +69,14 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			if (opts.hmrActive) {
+				// Seed platform globals on the primary bundle realm using the same
+				// CLI-derived platform that drives global-defines.ts. This ensures
+				// HMR-delivered HTTP ESM modules can reliably read platform flags
+				imports += `globalThis.__DEV__ = ${opts.isDevMode ? 'true' : 'false'};\n`;
+				imports += `globalThis.__ANDROID__ = ${opts.platform === 'android' ? 'true' : 'false'};\n`;
+				imports += `globalThis.__IOS__ = ${opts.platform === 'ios' ? 'true' : 'false'};\n`;
+				imports += `globalThis.__VISIONOS__ = ${opts.platform === 'visionos' ? 'true' : 'false'};\n`;
+				imports += `globalThis.__APPLE__ = ${opts.platform === 'ios' || opts.platform === 'visionos' ? 'true' : 'false'};\n`;
 				// ---- Vendor manifest bootstrap ----
 				// Use single self-contained vendor module to avoid extra imports affecting chunking
 				imports += "import vendorManifest, { __nsVendorModuleMap } from '@nativescript/vendor';\n";
@@ -105,7 +128,27 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				imports += "import 'virtual:ns-bundler-context';\n";
 			}
 
+			// ---- Custom App Components (Activity/Application) ----
+			// These must be loaded early so the JS class is registered before Android instantiates them
+			if (opts.platform === 'android') {
+				try {
+					const appComponents = getResolvedAppComponents('android');
+					for (const component of appComponents) {
+						// The appComponentsPlugin bundles these as separate .mjs entry points
+						// We must import the output file, not the source, since it's a separate entry
+						imports += `import "~/${component.outputName}.mjs";\n`;
+						if (opts.verbose) {
+							imports += `console.info('[ns-entry] app component loaded: ${component.outputName}');\n`;
+						}
+					}
+				} catch (err) {
+					console.error('[main-entry] Error resolving app components:', err);
+				}
+			}
+
 			// ---- Platform-specific always-needed modules ----
+			// Track if we need to defer Android activity import (non-HMR only)
+			let needsAndroidActivityDefer = false;
 			if (opts.platform === 'android') {
 				if (opts.hmrActive) {
 					/**
@@ -142,34 +185,18 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					/**
 					 * Non-HMR: Defer activity lifecycle wiring until native Application is ready
 					 * to avoid "application is null" errors at production boot.
+					 * We set a flag here and emit the actual code after the static Application import
+					 * to avoid mixing dynamic and static imports of @nativescript/core.
 					 */
-					imports += `
-            (function __nsDeferAndroidActivityImport(){
-              const load = () => { try { import('@nativescript/core/ui/frame/activity.android.js?ns-keep'); } catch (e) { console.error('[ns-entry] failed to import android activity module', e); } };
-              try {
-                import('@nativescript/core').then(({ Application: __NS_Application }) => {
-                  try {
-                    const hasApp = !!(__NS_Application && __NS_Application.android && __NS_Application.android.nativeApp);
-                    if (hasApp) {
-                      ${opts.verbose ? "console.info('[ns-entry] android activity import: nativeApp present, loading now');" : ''}
-                      load();
-                    } else {
-                      ${opts.verbose ? "console.info('[ns-entry] android activity import: deferring until launch/nativeApp');" : ''}
-                      try { __NS_Application.on && __NS_Application.on(__NS_Application.launchEvent, load); } catch {}
-                      try { setTimeout(load, 0); } catch {}
-                    }
-                  } catch { try { setTimeout(load, 0); } catch {} }
-                }).catch(() => { try { setTimeout(load, 0); } catch {} });
-              } catch { try { setTimeout(load, 0); } catch {} }
-            })();\n`;
+					needsAndroidActivityDefer = true;
 				}
 			}
 
 			// ---- Optional polyfills ----
 			if (polyfillsExists) {
-				imports += `import '${polyfillsPath}';\n`;
+				imports += `import '${polyfillsImportSpecifier}';\n`;
 				if (opts.verbose) {
-					imports += `console.info('[ns-entry] polyfills imported from', ${JSON.stringify(polyfillsPath)});\n`;
+					imports += `console.info('[ns-entry] polyfills imported from', ${JSON.stringify(polyfillsImportSpecifier)});\n`;
 				}
 			} else if (opts.verbose) {
 				imports += "console.info('[ns-entry] no polyfills file found');\n";
@@ -189,14 +216,41 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 			// ---- Global CSS injection (always-needed if file exists) ----
 			const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
-			if (fs.existsSync(appCssPath)) {
-				imports += `// Import and apply global CSS before app bootstrap\n`;
-				imports += `import appCssContent from './${appRootDir}/app.css?inline';\n`;
-				imports += `import { Application } from '@nativescript/core';\n`;
-				imports += `if (appCssContent) { try { Application.addCss(appCssContent); } catch (error) { console.error('Error applying CSS:', error); } }\n`;
-				if (opts.verbose) {
-					imports += `console.info('[ns-entry] app.css applied');\n`;
+			const hasAppCss = fs.existsSync(appCssPath);
+
+			// Import Application statically if needed for CSS or Android activity defer
+			if (hasAppCss || needsAndroidActivityDefer) {
+				if (hasAppCss) {
+					imports += `// Import and apply global CSS before app bootstrap\n`;
+					imports += `import appCssContent from './${appRootDir}/app.css?inline';\n`;
 				}
+				imports += `import { Application } from '@nativescript/core';\n`;
+				if (hasAppCss) {
+					imports += `if (appCssContent) { try { Application.addCss(appCssContent); } catch (error) { console.error('Error applying CSS:', error); } }\n`;
+					if (opts.verbose) {
+						imports += `console.info('[ns-entry] app.css applied');\n`;
+					}
+				}
+			}
+
+			// ---- Deferred Android activity import (non-HMR only) ----
+			// Uses the statically imported Application to avoid mixing dynamic and static imports
+			if (needsAndroidActivityDefer) {
+				imports += `
+            (function __nsDeferAndroidActivityImport(){
+              const load = () => { try { import('@nativescript/core/ui/frame/activity.android.js?ns-keep'); } catch (e) { console.error('[ns-entry] failed to import android activity module', e); } };
+              try {
+                const hasApp = !!(Application && Application.android && Application.android.nativeApp);
+                if (hasApp) {
+                  ${opts.verbose ? "console.info('[ns-entry] android activity import: nativeApp present, loading now');" : ''}
+                  load();
+                } else {
+                  ${opts.verbose ? "console.info('[ns-entry] android activity import: deferring until launch/nativeApp');" : ''}
+                  try { Application.on && Application.on(Application.launchEvent, load); } catch {}
+                  try { setTimeout(load, 0); } catch {}
+                }
+              } catch { try { setTimeout(load, 0); } catch {} }
+            })();\n`;
 			}
 
 			// ---- Application main entry ----
@@ -205,7 +259,25 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (opts.verbose) {
 					imports += `console.info('[ns-entry] including HTTP-only boot', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;
 				}
-				const defaultHost = opts.platform === 'android' ? '10.0.2.2' : 'localhost';
+				const guessLanHost = (): string | undefined => {
+					try {
+						const nets = os.networkInterfaces();
+						for (const name of Object.keys(nets)) {
+							const addrs = nets[name] || [];
+							for (const a of addrs) {
+								if (!a) continue;
+								const family = (a as any).family;
+								const internal = !!(a as any).internal;
+								const address = String((a as any).address || '');
+								if (internal) continue;
+								if ((family === 'IPv4' || family === 4) && address && address !== '127.0.0.1') return address;
+							}
+						}
+					} catch {}
+					return undefined;
+				};
+				// Prefer LAN IP so physical devices work by default; emulator will still be tried as a fallback.
+				const defaultHost = opts.platform === 'android' ? guessLanHost() || '10.0.2.2' : guessLanHost() || 'localhost';
 				imports += "import { startHttpOnlyBoot } from '@nativescript/vite/hmr/shared/runtime/http-only-boot.js';\n";
 				imports += `startHttpOnlyBoot(${JSON.stringify(opts.platform)}, ${JSON.stringify(mainEntryRelPosix)}, ${JSON.stringify((process.env.NS_HMR_HOST || '') as string) || JSON.stringify('')} || ${JSON.stringify(defaultHost)}, __nsVerboseLog);\n`;
 				if (opts.verbose) {

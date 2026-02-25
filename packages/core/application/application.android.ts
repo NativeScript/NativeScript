@@ -726,7 +726,7 @@ function updateAccessibilityState(): void {
 	if (!sharedA11YObservable) {
 		return;
 	}
-	
+
 	const accessibilityManager = getAndroidAccessibilityManager();
 	if (!accessibilityManager) {
 		sharedA11YObservable.set(accessibilityStateEnabledPropName, false);

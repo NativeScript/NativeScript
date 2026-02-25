@@ -17,6 +17,7 @@
 		"url": "https://github.com/NativeScript/NativeScript.git"
 	},
 	"dependencies": {
+		"@valor/nativescript-websockets": "^2.0.2",
 		"nativescript-theme-core": "^1.0.4"
 	},
 	"devDependencies": {
@@ -58,6 +59,7 @@
 		"@vue/compiler-sfc": "^3.5.24",
 		"acorn": "^8.15.0",
 		"acorn-stage3": "^4.0.0",
+		"concurrently": "^9.2.1",
 		"copy-webpack-plugin": "^13.0.0",
 		"copyfiles": "^2.4.0",
 		"css": "^3.0.0",
@@ -81,7 +83,7 @@
 		"lint-staged": "^15.2.0",
 		"loader-utils": "^2.0.0 || ^3.0.0",
 		"module-alias": "^2.2.2",
-		"nativescript": "^9.0.0-alpha.14",
+		"nativescript": "^9.0.3",
 		"nativescript-typedoc-theme": "1.1.0",
 		"nx": "22.0.2",
 		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
@@ -109,11 +111,10 @@
 		"vite-plugin-static-copy": "^3.1.4",
 		"vitest": "^3.2.4",
 		"vue-loader": "^15.0.0 <= 15.9.8",
-		"webpack": "^5.30.0 <= 5.50.0 || ^5.51.2",
+		"wait-on": "^9.0.3",
 		"webpack-bundle-analyzer": "^4.0.0",
 		"webpack-chain": "^6.0.0",
-		"webpack-cli": "^4.0.0",
-		"webpack-merge": "^5.0.0",
+		"webpack-merge": "^6.0.0",
 		"webpack-virtual-modules": "^0.4.0",
 		"zx": "^8.3.0"
 	},
