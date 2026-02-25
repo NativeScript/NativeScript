@@ -1,3 +1,13 @@
+## 9.0.16 (2026-02-25)
+
+### 🩹 Fixes
+
+- **android:** status bar style handling for API 30+ ([#11102](https://github.com/NativeScript/NativeScript/pull/11102))
+
+### ❤️ Thank You
+
+- darklight365
+
 ## 9.0.15 (2026-02-19)
 
 ### 🩹 Fixes
