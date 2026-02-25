@@ -359,15 +359,14 @@ class UIViewControllerImpl extends UIViewController {
 	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner?.deref();
-		if (owner) {
+		if (owner?.statusBarStyle) {
 			if (SDK_VERSION >= 13) {
 				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.DarkContent;
 			} else {
-				return owner.statusBarStyle === 'dark' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
 			}
-		} else {
-			return UIStatusBarStyle.Default;
 		}
+		return UIStatusBarStyle.Default;
 	}
 }
 
@@ -457,17 +456,6 @@ export class Page extends PageBase {
 		const frame = this.frame;
 		if (frame?.ios && value) {
 			const navigationController: UINavigationController = frame.ios.controller;
-			const navigationBar = navigationController.navigationBar;
-
-			navigationBar.barStyle = value === 'light' ? UIBarStyle.Black : UIBarStyle.Default;
-
-			// Force overrideUserInterfaceStyle on the navigation controller as well
-			if (SDK_VERSION >= 13) {
-				const style = value === 'light' ? UIUserInterfaceStyle.Dark : UIUserInterfaceStyle.Light;
-				navigationController.overrideUserInterfaceStyle = style;
-				navigationBar.overrideUserInterfaceStyle = style;
-			}
-
 			IOSHelper.invalidateStatusBarAppearance(navigationController, `Page._updateStatusBarStyle:${value}`);
 		}
 	}
