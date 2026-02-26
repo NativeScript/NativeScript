@@ -1250,3 +1250,9 @@ export const androidDynamicElevationOffsetProperty = new CssProperty<Style, numb
 	valueConverter: parseFloat,
 });
 androidDynamicElevationOffsetProperty.register(Style);
+
+export const filterProperty = new CssProperty<Style, string>({
+	name: 'filter',
+	cssName: 'filter',
+});
+filterProperty.register(Style);
