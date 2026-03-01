@@ -27,7 +27,7 @@
 		"@csstools/css-color-parser": "^3.0.8",
 		"@csstools/css-parser-algorithms": "^3.0.4",
 		"@csstools/css-tokenizer": "^3.0.3",
-		"@nativescript/hook": "^3.0.4",
+		"@nativescript/hook": "^3.0.5",
 		"@nativescript/nx": "^22.0.0",
 		"@nstudio/focus": "^20.0.2",
 		"@nstudio/nps-i": "~2.0.0",
