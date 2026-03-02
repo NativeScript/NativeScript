@@ -1,6 +1,9 @@
 [![NativeScript](./tools/graphics/cover.png)](https://nativescript.org)
 
-<p>
+<p><!---
+Javier111228/Javier111228 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+You can click the Preview link to take a look at your changes.
+--->
 
   [![Automated Android Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated_android.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated_android.yml)
   [![Automated iOS Tests Passing](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated_ios.yml/badge.svg)](https://github.com/NativeScript/NativeScript/actions/workflows/apps_automated_ios.yml)
