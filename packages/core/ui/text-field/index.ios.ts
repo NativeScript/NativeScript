@@ -13,7 +13,6 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	public static ObjCProtocols = [UITextFieldDelegate];
 
 	private _owner: WeakRef<TextField>;
-	private firstEdit: boolean;
 
 	public static initWithOwner(owner: WeakRef<TextField>): UITextFieldDelegateImpl {
 		const delegate = <UITextFieldDelegateImpl>UITextFieldDelegateImpl.new();
@@ -125,6 +124,7 @@ export class TextField extends TextFieldBase {
 		super.initNativeView();
 		this._delegate = UITextFieldDelegateImpl.initWithOwner(new WeakRef(this));
 		this.nativeViewProtected.delegate = this._delegate;
+		this._applySecureWithoutAutofillTraits(this.nativeViewProtected);
 	}
 
 	disposeNativeView() {
@@ -140,6 +140,7 @@ export class TextField extends TextFieldBase {
 
 	public textFieldShouldBeginEditing(textField: UITextField): boolean {
 		this._firstEdit = true;
+		this._applySecureWithoutAutofillTraits(textField);
 
 		return this.editable;
 	}
@@ -174,14 +175,7 @@ export class TextField extends TextFieldBase {
 	}
 
 	public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
-		if (this.secureWithoutAutofill && !textField.secureTextEntry) {
-			/**
-			 * Helps avoid iOS 12+ autofill strong password suggestion prompt
-			 * Discussed in several circles but for example:
-			 * https://github.com/expo/expo/issues/2571#issuecomment-473347380
-			 */
-			textField.secureTextEntry = true;
-		}
+		this._applySecureWithoutAutofillTraits(textField);
 		const delta = replacementString.length - range.length;
 		if (delta > 0) {
 			if (textField.text.length + delta > this.maxLength) {
@@ -243,6 +237,44 @@ export class TextField extends TextFieldBase {
 	}
 	[secureProperty.setNative](value: boolean) {
 		this.nativeTextViewProtected.secureTextEntry = value;
+		this._applySecureWithoutAutofillTraits(this.nativeTextViewProtected);
+	}
+
+	private _applySecureWithoutAutofillTraits(textField: UITextField): void {
+		if (!textField || !this.secureWithoutAutofill) {
+			return;
+		}
+
+		const nativeField = textField as any;
+
+		textField.secureTextEntry = true;
+
+		if (nativeField.textContentType !== undefined) {
+			nativeField.textContentType = typeof UITextContentTypeOneTimeCode !== 'undefined' ? UITextContentTypeOneTimeCode : '';
+		}
+
+		if (nativeField.autocorrectionType !== undefined) {
+			nativeField.autocorrectionType = UITextAutocorrectionType.No;
+		}
+		if (nativeField.spellCheckingType !== undefined) {
+			nativeField.spellCheckingType = UITextSpellCheckingType.No;
+		}
+		if (nativeField.smartDashesType !== undefined) {
+			nativeField.smartDashesType = UITextSmartDashesType.No;
+		}
+		if (nativeField.smartQuotesType !== undefined) {
+			nativeField.smartQuotesType = UITextSmartQuotesType.No;
+		}
+		if (nativeField.smartInsertDeleteType !== undefined) {
+			nativeField.smartInsertDeleteType = UITextSmartInsertDeleteType.No;
+		}
+		if (nativeField.passwordRules !== undefined) {
+			nativeField.passwordRules = null;
+		}
+
+		if (nativeField.reloadInputViews) {
+			nativeField.reloadInputViews();
+		}
 	}
 
 	[colorProperty.getDefault](): { textColor: UIColor; tintColor: UIColor } {
