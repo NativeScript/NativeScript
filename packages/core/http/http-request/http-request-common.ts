@@ -1,4 +1,6 @@
 import { knownFolders, path } from '../../file-system';
+import type { Headers } from '../http-interfaces';
+import { _addHeader } from '../http-request-internal';
 
 export function getFilenameFromUrl(url: string) {
 	const slashPos = url.lastIndexOf('/') + 1;
@@ -14,4 +16,19 @@ export function getFilenameFromUrl(url: string) {
 	const result = path.join(knownFolders.documents().path, actualFileName);
 
 	return result;
+}
+
+export function parseJSON(source: string): any {
+	const src = source.trim();
+	const lastIndex = src.lastIndexOf(')');
+
+	if (lastIndex === src.length - 1) {
+		return JSON.parse(src.substring(src.indexOf('(') + 1, lastIndex));
+	}
+
+	return JSON.parse(src);
+}
+
+export function addHeader(headers: Headers, key: string, value: string): void {
+	_addHeader(headers, key, value);
 }
