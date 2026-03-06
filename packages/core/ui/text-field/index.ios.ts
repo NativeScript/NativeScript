@@ -252,49 +252,34 @@ export class TextField extends TextFieldBase {
 			shouldReloadInputViews = true;
 		}
 
-		if (textField.textContentType !== undefined) {
-			const desiredTextContentType = typeof UITextContentTypeOneTimeCode !== 'undefined' ? UITextContentTypeOneTimeCode : '';
-			if (textField.textContentType !== desiredTextContentType) {
-				textField.textContentType = desiredTextContentType;
-				shouldReloadInputViews = true;
-			}
+		if (textField.textContentType !== undefined && textField.textContentType !== UITextContentTypeOneTimeCode) {
+			textField.textContentType = UITextContentTypeOneTimeCode;
+			shouldReloadInputViews = true;
 		}
 
-		if (textField.autocorrectionType !== undefined) {
-			if (textField.autocorrectionType !== UITextAutocorrectionType.No) {
-				textField.autocorrectionType = UITextAutocorrectionType.No;
-				shouldReloadInputViews = true;
-			}
+		if (textField.autocorrectionType !== undefined && textField.autocorrectionType !== UITextAutocorrectionType.No) {
+			textField.autocorrectionType = UITextAutocorrectionType.No;
+			shouldReloadInputViews = true;
 		}
-		if (textField.spellCheckingType !== undefined) {
-			if (textField.spellCheckingType !== UITextSpellCheckingType.No) {
-				textField.spellCheckingType = UITextSpellCheckingType.No;
-				shouldReloadInputViews = true;
-			}
+		if (textField.spellCheckingType !== undefined && textField.spellCheckingType !== UITextSpellCheckingType.No) {
+			textField.spellCheckingType = UITextSpellCheckingType.No;
+			shouldReloadInputViews = true;
 		}
-		if (textField.smartDashesType !== undefined) {
-			if (textField.smartDashesType !== UITextSmartDashesType.No) {
-				textField.smartDashesType = UITextSmartDashesType.No;
-				shouldReloadInputViews = true;
-			}
+		if (textField.smartDashesType !== undefined && textField.smartDashesType !== UITextSmartDashesType.No) {
+			textField.smartDashesType = UITextSmartDashesType.No;
+			shouldReloadInputViews = true;
 		}
-		if (textField.smartQuotesType !== undefined) {
-			if (textField.smartQuotesType !== UITextSmartQuotesType.No) {
-				textField.smartQuotesType = UITextSmartQuotesType.No;
-				shouldReloadInputViews = true;
-			}
+		if (textField.smartQuotesType !== undefined && textField.smartQuotesType !== UITextSmartQuotesType.No) {
+			textField.smartQuotesType = UITextSmartQuotesType.No;
+			shouldReloadInputViews = true;
 		}
-		if (textField.smartInsertDeleteType !== undefined) {
-			if (textField.smartInsertDeleteType !== UITextSmartInsertDeleteType.No) {
-				textField.smartInsertDeleteType = UITextSmartInsertDeleteType.No;
-				shouldReloadInputViews = true;
-			}
+		if (textField.smartInsertDeleteType !== undefined && textField.smartInsertDeleteType !== UITextSmartInsertDeleteType.No) {
+			textField.smartInsertDeleteType = UITextSmartInsertDeleteType.No;
+			shouldReloadInputViews = true;
 		}
-		if (textField.passwordRules !== undefined) {
-			if (textField.passwordRules !== null) {
-				textField.passwordRules = null;
-				shouldReloadInputViews = true;
-			}
+		if (textField.passwordRules !== undefined && textField.passwordRules !== null) {
+			textField.passwordRules = null;
+			shouldReloadInputViews = true;
 		}
 
 		if (shouldReloadInputViews && textField.isFirstResponder) {
