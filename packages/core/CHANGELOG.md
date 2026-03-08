@@ -1,3 +1,15 @@
+## 9.0.17 (2026-03-04)
+
+### 🩹 Fixes
+
+- **ios:** secureWithoutAutofill on TextField ([#11129](https://github.com/NativeScript/NativeScript/pull/11129))
+- **android:** inset props on interface ([#11103](https://github.com/NativeScript/NativeScript/pull/11103))
+
+### ❤️ Thank You
+
+- Nathan Walker
+- Osei Fortune @triniwiz
+
 ## 9.0.16 (2026-02-25)
 
 ### 🩹 Fixes

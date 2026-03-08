@@ -68,10 +68,20 @@ export interface Inset {
 	right: number;
 	bottom: number;
 	left: number;
+	imeBottom: number;
+	cutoutLeft: number;
+	cutoutTop: number;
+	cutoutRight: number;
+	cutoutBottom: number;
 	topConsumed: boolean;
 	rightConsumed: boolean;
 	bottomConsumed: boolean;
 	leftConsumed: boolean;
+	imeBottomConsumed: boolean;
+	cutoutLeftConsumed: boolean;
+	cutoutTopConsumed: boolean;
+	cutoutRightConsumed: boolean;
+	cutoutBottomConsumed: boolean;
 }
 
 /**
