@@ -47,7 +47,7 @@ import {
 	enforceArray,
 } from '../accessibility/accessibility-common';
 import { CoreTypes } from '../core-types';
-import { getiOSWindow, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setiOSWindow, setRootView, setToggleApplicationEventListenersCallback } from './helpers-common';
+import { getiOSWindow, setA11yUpdatePropertiesCallback, setApplicationPropertiesCallback, setAppMainEntry, setiOSWindow, setRootView } from './helpers-common';
 
 @NativeClass
 class NotificationObserver extends NSObject {
@@ -1753,18 +1753,6 @@ export function initAccessibilityCssHelper(): void {
 	accessibilityServiceObservable.on(AccessibilityServiceEnabledObservable.propertyChangeEvent, () => updateCurrentHelperClasses(applyRootCssClass));
 }
 setInitAccessibilityCssHelper(initAccessibilityCssHelper);
-
-const applicationEvents: string[] = [Application.orientationChangedEvent, Application.systemAppearanceChangedEvent];
-function toggleApplicationEventListeners(toAdd: boolean, callback: (args: ApplicationEventData) => void) {
-	for (const eventName of applicationEvents) {
-		if (toAdd) {
-			Application.on(eventName, callback);
-		} else {
-			Application.off(eventName, callback);
-		}
-	}
-}
-setToggleApplicationEventListenersCallback(toggleApplicationEventListeners);
 
 setApplicationPropertiesCallback(() => {
 	return {
