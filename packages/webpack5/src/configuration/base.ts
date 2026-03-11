@@ -129,21 +129,18 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// but are required by some packages like css-tree
 	config.resolve.merge({
 		fallback: {
-			module: require.resolve('../polyfills/module.js'),
+			module: require.resolve('../polyfills/module'),
 		},
 		alias: {
 			// Mock mdn-data modules that css-tree tries to load
-			'mdn-data/css/properties.json': require.resolve(
-				'../polyfills/mdn-data-properties.js',
-			),
-			'mdn-data/css/syntaxes.json': require.resolve(
-				'../polyfills/mdn-data-syntaxes.js',
-			),
-			'mdn-data/css/at-rules.json': require.resolve(
-				'../polyfills/mdn-data-at-rules.js',
-			),
+			'mdn-data/css/properties.json':
+				require.resolve('../polyfills/mdn-data-properties'),
+			'mdn-data/css/syntaxes.json':
+				require.resolve('../polyfills/mdn-data-syntaxes'),
+			'mdn-data/css/at-rules.json':
+				require.resolve('../polyfills/mdn-data-at-rules'),
 			// Ensure imports of the Node 'module' builtin resolve to our polyfill
-			module: require.resolve('../polyfills/module.js'),
+			module: require.resolve('../polyfills/module'),
 		},
 		// Allow extension-less ESM imports (fixes "fully specified" errors)
 		// Example: '../timer' -> resolves to index.<platform>.js without requiring explicit extension
