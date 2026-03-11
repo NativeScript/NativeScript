@@ -5,6 +5,59 @@ import ts from 'typescript';
 // import nativeClassTransformer from '../transformers/NativeClass/index.js';
 import { getCliFlags } from './cli-flags.js';
 
+function forceEnumerableDescriptors(code: string, fileName: string): string {
+	const sourceFile = ts.createSourceFile(`${fileName}.nativeclass.js`, code, ts.ScriptTarget.ES5, true, ts.ScriptKind.JS);
+	let mutated = false;
+	const transformDefineProperty: ts.TransformerFactory<ts.SourceFile> = (ctx) => {
+		const factory = ctx.factory ?? ts.factory;
+		const visit: ts.Visitor = (node) => {
+			if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+				const callee = node.expression;
+				const isObjectDefineProperty = ts.isIdentifier(callee.expression) && callee.expression.text === 'Object' && callee.name.text === 'defineProperty';
+				if (isObjectDefineProperty && node.arguments.length >= 3 && ts.isObjectLiteralExpression(node.arguments[2])) {
+					const descriptor = node.arguments[2];
+					const nextProperties = descriptor.properties.map((property) => {
+						if (!ts.isPropertyAssignment(property)) {
+							return property;
+						}
+
+						const name = property.name;
+						const isEnumerableProperty = (ts.isIdentifier(name) && name.text === 'enumerable') || (ts.isStringLiteral(name) && name.text === 'enumerable');
+
+						if (!isEnumerableProperty || property.initializer.kind !== ts.SyntaxKind.FalseKeyword) {
+							return property;
+						}
+
+						mutated = true;
+						return factory.updatePropertyAssignment(property, property.name, factory.createTrue());
+					});
+
+					if (mutated) {
+						const nextDescriptor = factory.updateObjectLiteralExpression(descriptor, nextProperties);
+						return factory.updateCallExpression(node, node.expression, node.typeArguments, [node.arguments[0], node.arguments[1], nextDescriptor, ...node.arguments.slice(3)]);
+					}
+				}
+			}
+
+			return ts.visitEachChild(node, visit, ctx);
+		};
+
+		return (node) => ts.visitNode(node, visit) as ts.SourceFile;
+	};
+
+	const result = ts.transform(sourceFile, [transformDefineProperty]);
+	const transformed = result.transformed[0];
+	if (!mutated) {
+		result.dispose();
+		return code;
+	}
+
+	const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+	const output = printer.printFile(transformed);
+	result.dispose();
+	return output;
+}
+
 /**
  * Apply the NativeClass transformer to a source string. Returns null if no change performed.
  */
@@ -104,24 +157,18 @@ export function transformNativeClassSource(code: string, fileName: string) {
 					const hadExport = /^\s*export\s+class\b/.test(stripped);
 					const className = (node as ts.ClassDeclaration).name?.text;
 
-					const down = ts
-						.transpileModule(stripped, {
-							compilerOptions: {
-								module: ts.ModuleKind.ESNext,
-								target: ts.ScriptTarget.ES5,
-								experimentalDecorators: true,
-								emitDecoratorMetadata: false,
-								noEmitHelpers: true,
-								useDefineForClassFields: false,
-							},
-						})
-						.outputText.replace(/Object\.defineProperty\(([^,]+),\s*(["'`][^"'`]+["'`]|[A-Za-z_$][A-Za-z0-9_$]*),\s*{([^}]*)}\)/g, (m, obj, key, body) => {
-							if (/enumerable:\s*false/.test(body)) {
-								body = body.replace(/enumerable:\s*false/, 'enumerable: true');
-							}
-							return `Object.defineProperty(${obj}, ${key}, {${body}})`;
-						});
-					let cleaned = down.replace(/export \{\};?\s*$/m, '');
+					const down = ts.transpileModule(stripped, {
+						compilerOptions: {
+							module: ts.ModuleKind.ESNext,
+							target: ts.ScriptTarget.ES5,
+							experimentalDecorators: true,
+							emitDecoratorMetadata: false,
+							noEmitHelpers: true,
+							useDefineForClassFields: false,
+						},
+					}).outputText;
+					const normalizedDown = forceEnumerableDescriptors(down, fileName);
+					let cleaned = normalizedDown.replace(/export \{\};?\s*$/m, '');
 
 					// Debug: log the transpileModule output
 					const debugNativeClass = process.env.NS_DEBUG_NATIVECLASS;
