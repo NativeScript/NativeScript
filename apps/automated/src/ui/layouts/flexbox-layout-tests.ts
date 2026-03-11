@@ -1765,7 +1765,8 @@ export const testLiquidGlassFlexboxLayout = test(activity_liquidglass_flexbox_la
 	isTopAlignedWith(text3, flexbox);
 
 	equal(width(flexbox), width(text1) + width(text2) + width(text3));
-	equal(height(flexbox), 300);
+	// Layout helpers report device pixels, so fixed XML DIP sizes must be converted too.
+	closeEnough(height(flexbox), dipToDp(300));
 });
 
 export const testLiquidGlassViews_do_not_crash_when_updating_iosGlassEffect = test(activity_liquidglass_flexbox_layout, noop, ({ root, text1, text2 }) => {
