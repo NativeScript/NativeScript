@@ -58,7 +58,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^24.9.1",
-		"vitest": "^3.2.4"
+		"vitest": "~4.0.9"
 	},
 	"homepage": "https://docs.nativescript.org/configuration/vite",
 	"repository": {
