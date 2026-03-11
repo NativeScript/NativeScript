@@ -1,7 +1,7 @@
 ﻿import { PageTransition, Transition } from '@nativescript/core';
 
 export class CustomTransition extends Transition {
-	constructor(duration: number, curve: any) {
+	constructor(duration?: number, curve?: any) {
 		super(duration, curve);
 	}
 

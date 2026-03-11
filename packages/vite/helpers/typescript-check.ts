@@ -62,6 +62,14 @@ function isProjectDiagnostic(diagnostic: ts.Diagnostic, projectRoot: string): bo
 	return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
 }
 
+function isPlatformRelevantDiagnostic(diagnostic: ts.Diagnostic, platform: PlatformType | undefined): boolean {
+	if (!diagnostic.file) {
+		return true;
+	}
+
+	return !shouldSkipFileForPlatform(diagnostic.file.fileName, platform);
+}
+
 function getParsedConfig(tsConfigPath: string, platform: PlatformType | undefined): ts.ParsedCommandLine {
 	const parsedConfig = ts.getParsedCommandLineOfConfigFile(
 		tsConfigPath,
@@ -85,6 +93,26 @@ function getParsedConfig(tsConfigPath: string, platform: PlatformType | undefine
 	return parsedConfig;
 }
 
+function shouldSkipFileForPlatform(fileName: string, platform: PlatformType | undefined): boolean {
+	const normalized = fileName.replace(/\\/g, '/');
+	const isAndroidTagged = /\.android\./.test(normalized);
+	const isIosTagged = /\.(ios|visionos)\./.test(normalized);
+
+	if (platform === 'android') {
+		return isIosTagged;
+	}
+
+	if (platform === 'ios') {
+		return isAndroidTagged || /\.visionos\./.test(normalized);
+	}
+
+	if (platform === 'visionos') {
+		return isAndroidTagged;
+	}
+
+	return false;
+}
+
 export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?: boolean }): Plugin {
 	return {
 		name: 'ns-typescript-check',
@@ -97,16 +125,17 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 
 			const projectRoot = path.resolve(process.cwd());
 			const parsedConfig = getParsedConfig(tsConfigPath, opts.platform);
+			const rootNames = parsedConfig.fileNames.filter((fileName) => !shouldSkipFileForPlatform(fileName, opts.platform));
 			const program = ts.createProgram({
-				rootNames: parsedConfig.fileNames,
+				rootNames,
 				options: parsedConfig.options,
 				projectReferences: parsedConfig.projectReferences,
 			});
-			const diagnostics = collectDiagnostics(program, parsedConfig).filter((diagnostic) => isProjectDiagnostic(diagnostic, projectRoot));
+			const diagnostics = collectDiagnostics(program, parsedConfig).filter((diagnostic) => isProjectDiagnostic(diagnostic, projectRoot) && isPlatformRelevantDiagnostic(diagnostic, opts.platform));
 
 			if (!diagnostics.length) {
 				if (opts.verbose) {
-					console.log(`[ns-vite] TypeScript check passed (${parsedConfig.fileNames.length} files).`);
+					console.log(`[ns-vite] TypeScript check passed (${rootNames.length} files).`);
 				}
 				return;
 			}

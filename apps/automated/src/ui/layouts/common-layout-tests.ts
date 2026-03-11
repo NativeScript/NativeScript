@@ -29,7 +29,7 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
 
 	test.waitUntilTestElementLayoutIsValid();
 
-	let lp = getNativeLayoutParams(btn.nativeViewProtected);
+	let lp = getNativeLayoutParams(btn.nativeViewProtected as any);
 	TKUnit.assertEqual(lp.width, 100, 'width');
 	TKUnit.assertEqual(lp.widthPercent, -1, 'widthPercent');
 	TKUnit.assertEqual(lp.height, 100, 'height');

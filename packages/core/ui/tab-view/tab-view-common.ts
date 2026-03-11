@@ -1,4 +1,4 @@
-import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from '.';
+import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition } from '.';
 import { View, AddArrayFromBuilder, AddChildFromBuilder, CSSType } from '../core/view';
 import { ViewBase, booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
@@ -7,6 +7,11 @@ import { Color } from '../../color';
 import { Property, CssProperty, CoercibleProperty } from '../core/properties';
 import { CoreTypes } from '../../core-types';
 import { Trace } from '../../trace';
+
+export interface SelectedIndexChangedEventData extends EventData {
+	oldIndex: number;
+	newIndex: number;
+}
 
 export const traceCategory = 'TabView';
 

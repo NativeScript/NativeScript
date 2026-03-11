@@ -194,7 +194,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 				isBelowWith(root, childFirst, insets.top);
 				isRightWith(childFirst, root, insets.right);
 
-				const scrollViewContentHeight = Math.round(dipToDp(root.nativeViewProtected.contentSize.height));
+				const scrollViewContentHeight = Math.round(dipToDp((root.nativeViewProtected as UIScrollView).contentSize.height));
 				const sumOfNestedLabelHeightsAndInsets = height(childFirst) * stack.getChildrenCount() + insets.top + insets.bottom;
 				equal(scrollViewContentHeight, sumOfNestedLabelHeightsAndInsets, `scroll view content height<${scrollViewContentHeight}> sum of nested label height and insets <${sumOfNestedLabelHeightsAndInsets}>`);
 			},

@@ -1,11 +1,11 @@
 import { Button, StackLayout, GridLayout } from '@nativescript/core';
 import * as utils from '@nativescript/core/utils';
 import * as TKUnit from '../../tk-unit';
-import * as def from './layout-helper';
+import type { MeasuredView } from './layout-helper-types';
 
 var DELTA = 0.1;
 
-export class MyGridLayout extends GridLayout implements def.MyGridLayout {
+export class MyGridLayout extends GridLayout {
 	public measureCount: number = 0;
 	public arrangeCount: number = 0;
 
@@ -65,7 +65,7 @@ export class MyGridLayout extends GridLayout implements def.MyGridLayout {
 	}
 }
 
-export class MyStackLayout extends StackLayout implements def.MyStackLayout {
+export class MyStackLayout extends StackLayout {
 	public measureCount: number = 0;
 	public arrangeCount: number = 0;
 
@@ -125,7 +125,7 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
 	}
 }
 
-export class MyButton extends Button implements def.MyButton {
+export class MyButton extends Button {
 	public measureCount: number = 0;
 	public arrangeCount: number = 0;
 
@@ -185,14 +185,14 @@ export class MyButton extends Button implements def.MyButton {
 	}
 }
 
-export function assertMeasure(view: def.MeasuredView, width: number, height: number, name?: string) {
+export function assertMeasure(view: MeasuredView, width: number, height: number, name?: string) {
 	name = name ? '[' + name + ']' : '';
 
 	TKUnit.assertAreClose(view.measureWidth, width, DELTA, name + 'width');
 	TKUnit.assertAreClose(view.measureHeight, height, DELTA, name + 'height');
 }
 
-export function assertLayout(view: def.MeasuredView, left: number, top: number, width: number, height: number, name?: string): void {
+export function assertLayout(view: MeasuredView, left: number, top: number, width: number, height: number, name?: string): void {
 	name = name ? '[' + name + ']' : '';
 
 	TKUnit.assertAreClose(view.layoutLeft, left, DELTA, name + 'left');

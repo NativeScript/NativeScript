@@ -368,14 +368,14 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
 	private getGridLayoutRowActualLength(view: GridLayout, index: number) {
 		if (__ANDROID__) {
-			return Math.round(layoutHelper.dp(view.nativeViewProtected.getRowActualLength(index)));
+			return Math.round(layoutHelper.dp((view.nativeViewProtected as any).getRowActualLength(index)));
 		} else {
 			return view.getRows()[index].actualLength;
 		}
 	}
 	private getGridLayoutColumnActualLength(view: GridLayout, index: number) {
 		if (__ANDROID__) {
-			return Math.round(layoutHelper.dp(view.nativeViewProtected.getColumnActualLength(index)));
+			return Math.round(layoutHelper.dp((view.nativeViewProtected as any).getColumnActualLength(index)));
 		} else {
 			return view.getColumns()[index].actualLength;
 		}

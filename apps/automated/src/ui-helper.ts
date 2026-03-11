@@ -199,7 +199,7 @@ export function waitUntilNavigatedTo(page: Page, action: Function) {
 	TKUnit.waitUntilReady(() => completed, 5);
 }
 
-export function waitUntilNavigatedFrom(action: Function, topFrame?: Frame) {
+export function waitUntilNavigatedFrom(action: Function, topFrame?: { currentPage: Page }) {
 	const currentPage = topFrame ? topFrame.currentPage : Frame.topmost().currentPage;
 	let completed = false;
 	function navigatedFrom(args) {
