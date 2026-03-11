@@ -1,4 +1,4 @@
-import { Application, EventData, Page, SceneEventData, SceneEvents, Utils } from '@nativescript/core';
+import { Application, EventData, Page, SceneEvents, Utils, SceneEventData } from '@nativescript/core';
 import { HelloWorldModel } from './main-view-model';
 
 let initSceneEvents = false;

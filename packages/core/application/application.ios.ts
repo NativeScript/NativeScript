@@ -1266,6 +1266,7 @@ global.__onLiveSyncCore = function (context?: ModuleContext) {
 };
 
 export * from './application-common';
+export * from './application-interfaces';
 export const Application = iosApp;
 export const AndroidApplication = undefined;
 
