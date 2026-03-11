@@ -73,7 +73,7 @@ function doWork(path: string) {
 }
 
 export function pickFiles() {
-	if (!global.isAndroid) {
+	if (!__ANDROID__) {
 		return;
 	}
 	const Intent = android.content.Intent;
@@ -154,7 +154,7 @@ function readFile(selected: string) {
 			},
 			(readAsyncRejected) => {
 				console.log('# readAsyncRejected: ', readAsyncRejected);
-			}
+			},
 		);
 	console.log('==== READ END =========');
 

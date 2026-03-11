@@ -6,10 +6,10 @@ import { join } from 'node:path';
 // and prefers the runtime implementation over vm to avoid cross-realm issues.
 
 describe('ns/rt $navigateTo implementation preference', () => {
-	it('uses single-path app navigator with diagnostics marker', () => {
+	it('uses the app navigator bridge with a missing-navigator diagnostic', () => {
 		const file = join(__dirname, 'websocket.ts');
 		const src = readFileSync(file, 'utf-8');
-		// Single-path marker in $navigateTo implementation
-		expect(src).toMatch(/\$navigateTo\(single-path\)/);
+		expect(src).toContain('__nsNavigateUsingApp');
+		expect(src).toContain('$navigateTo unavailable: app navigator missing');
 	});
 });

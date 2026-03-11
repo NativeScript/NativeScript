@@ -11,6 +11,7 @@ import generate from '@babel/generator';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { getCliFlags } from '../helpers/cli-flags.js';
+import { getTypeCheckPlugins } from '../helpers/typescript-check.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,6 +24,7 @@ export const vueConfig = ({ mode }): UserConfig => {
 
 	return mergeConfig(baseConfig({ mode, flavor: 'vue' }), {
 		plugins: [
+			...getTypeCheckPlugins('vue'),
 			{
 				...alias({
 					entries: {

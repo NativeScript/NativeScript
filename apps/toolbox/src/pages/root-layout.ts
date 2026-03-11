@@ -1,4 +1,4 @@
-import { EventData, Page, Observable, RootLayoutOptions, getRootLayout, StackLayout, View, CoreTypes } from '@nativescript/core';
+import { EventData, Page, Observable, RootLayoutOptions, getRootLayout, StackLayout, View, CoreTypes, Color } from '@nativescript/core';
 
 export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;
@@ -114,7 +114,7 @@ export class RootLayoutModel extends Observable {
 		layout.width = size;
 		layout.marginTop = offset;
 		layout.marginLeft = offset;
-		layout.backgroundColor = color;
+		layout.backgroundColor = new Color(color);
 		layout.borderRadius = 10;
 		return layout;
 	}

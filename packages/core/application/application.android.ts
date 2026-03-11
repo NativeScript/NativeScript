@@ -605,6 +605,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 }
 export * from './application-common';
+export * from './application-interfaces';
 export const Application = new AndroidApplication();
 export const iOSApplication = undefined;
 

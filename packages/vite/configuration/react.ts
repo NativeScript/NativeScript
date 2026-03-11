@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { mergeConfig, type UserConfig } from 'vite';
 import { baseConfig } from './base.js';
+import { getTypeCheckPlugins } from '../helpers/typescript-check.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -87,6 +88,6 @@ export default React;
 
 export const reactConfig = ({ mode }): UserConfig => {
 	return mergeConfig(baseConfig({ mode, flavor: 'react' }), {
-		plugins,
+		plugins: [...getTypeCheckPlugins('react'), ...plugins],
 	});
 };

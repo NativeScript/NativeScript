@@ -1,3 +1,4 @@
+import type { IOSNativeHelper } from './native-helper.types';
 import { platformCheck } from './platform-check';
 
 // importing this helper as a separate file avoids "android" symbol clash with the global android object
@@ -32,5 +33,5 @@ export const android = {
 export const ad = android;
 
 // these don't exist on Android.Stub them to empty functions.
-export const iOSNativeHelper = platformCheck('Utils.iOSNativeHelper');
-export const ios = platformCheck('Utils.ios');
+export const iOSNativeHelper = platformCheck<IOSNativeHelper>('Utils.iOSNativeHelper');
+export const ios = platformCheck<IOSNativeHelper>('Utils.ios');
