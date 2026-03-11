@@ -1,4 +1,5 @@
 import type { NativeScriptUIView } from '../../utils';
+import { supportsGlass } from '../../../utils/constants';
 import { GlassEffectType, iosGlassEffectProperty, View } from '../../core/view';
 import { LiquidGlassContainerCommon } from './liquid-glass-container-common';
 import { toUIGlassStyle } from '../liquid-glass';
@@ -9,11 +10,16 @@ export class LiquidGlassContainer extends LiquidGlassContainerCommon {
 	private _normalizing = false;
 
 	createNativeView() {
+		const glassSupported = supportsGlass();
 		// Keep UIVisualEffectView as the root to preserve interactive container effect
-		const effect = UIGlassContainerEffect.alloc().init();
-		effect.spacing = 8;
+		const effect = glassSupported ? UIGlassContainerEffect.alloc().init() : UIVisualEffect.new();
+		if (glassSupported) {
+			(effect as UIGlassContainerEffect).spacing = 8;
+		}
 		const effectView = UIVisualEffectView.alloc().initWithEffect(effect);
-		effectView.overrideUserInterfaceStyle = UIUserInterfaceStyle.Dark;
+		if (glassSupported) {
+			effectView.overrideUserInterfaceStyle = UIUserInterfaceStyle.Dark;
+		}
 		effectView.clipsToBounds = true;
 		effectView.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 

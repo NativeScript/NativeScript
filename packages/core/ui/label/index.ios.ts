@@ -5,6 +5,7 @@ import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
 import { CoreTypes } from '../../core-types';
 import { TextBase, whiteSpaceProperty, textOverflowProperty } from '../text-base';
+import { SDK_VERSION } from '../../utils/constants';
 import { layout } from '../../utils';
 
 import { ios } from '../styling/background';
@@ -52,12 +53,14 @@ export class Label extends TextBase implements LabelDefinition {
 	}
 
 	_requestLayoutOnTextChanged(): void {
-		if (this._fixedSize === FixedSize.BOTH) {
-			return;
-		}
-		if (this._fixedSize === FixedSize.WIDTH && !this.textWrap && this.getMeasuredHeight() > 0) {
-			// Single line label with fixed width will skip request layout on text change.
-			return;
+		if (SDK_VERSION < 18) {
+			if (this._fixedSize === FixedSize.BOTH) {
+				return;
+			}
+			if (this._fixedSize === FixedSize.WIDTH && !this.textWrap && this.getMeasuredHeight() > 0) {
+				// Single line label with fixed width will skip request layout on text change.
+				return;
+			}
 		}
 		super._requestLayoutOnTextChanged();
 	}

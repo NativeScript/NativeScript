@@ -1767,3 +1767,19 @@ export const testLiquidGlassFlexboxLayout = test(activity_liquidglass_flexbox_la
 	equal(width(flexbox), width(text1) + width(text2) + width(text3));
 	equal(height(flexbox), 300);
 });
+
+export const testLiquidGlassViews_do_not_crash_when_updating_iosGlassEffect = test(activity_liquidglass_flexbox_layout, noop, ({ root, text1, text2 }) => {
+	const liquidGlass = text1 as unknown as View;
+	const liquidGlassContainer = text2 as unknown as View;
+
+	TKUnit.assertTrue(liquidGlass.nativeViewProtected instanceof UIVisualEffectView, 'LiquidGlass should create a UIVisualEffectView host.');
+	TKUnit.assertTrue(liquidGlassContainer.nativeViewProtected instanceof UIVisualEffectView, 'LiquidGlassContainer should create a UIVisualEffectView host.');
+
+	liquidGlass.iosGlassEffect = 'regular';
+	liquidGlassContainer.iosGlassEffect = { variant: 'clear', spacing: 12 };
+	liquidGlass.iosGlassEffect = 'none';
+	liquidGlassContainer.iosGlassEffect = 'none';
+
+	waitUntilTestElementLayoutIsValid(root);
+	TKUnit.assertTrue(root.isLoaded, 'Liquid glass view tree should remain loaded after glass effect updates.');
+});

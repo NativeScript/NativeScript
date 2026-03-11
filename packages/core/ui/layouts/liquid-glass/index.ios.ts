@@ -8,9 +8,12 @@ export class LiquidGlass extends LiquidGlassCommon {
 	private _contentHost: UIView;
 
 	createNativeView() {
+		const glassSupported = supportsGlass();
 		// Use UIVisualEffectView as the root so interactive effects can track touches
-		const effect = UIGlassEffect.effectWithStyle(UIGlassEffectStyle.Clear);
-		effect.interactive = true;
+		const effect = glassSupported ? UIGlassEffect.effectWithStyle(toUIGlassStyle('clear')) : UIVisualEffect.new();
+		if (glassSupported) {
+			(effect as UIGlassEffect).interactive = true;
+		}
 		const effectView = UIVisualEffectView.alloc().initWithEffect(effect);
 		effectView.frame = CGRectMake(0, 0, 0, 0);
 		effectView.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
@@ -105,11 +108,12 @@ export class LiquidGlass extends LiquidGlassCommon {
 
 export function toUIGlassStyle(value?: GlassEffectVariant) {
 	if (supportsGlass()) {
+		const glassEffectStyle = (globalThis as any)?.UIGlassEffectStyle;
 		switch (value) {
 			case 'regular':
-				return UIGlassEffectStyle?.Regular ?? 0;
+				return glassEffectStyle?.Regular ?? 0;
 			case 'clear':
-				return UIGlassEffectStyle?.Clear ?? 1;
+				return glassEffectStyle?.Clear ?? 1;
 		}
 	}
 	return 1;
