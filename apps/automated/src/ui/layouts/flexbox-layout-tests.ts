@@ -1746,3 +1746,24 @@ export const testFlexboxLayout_does_not_crash_with_proxy_view_container = test(a
 // Omit testDivider_directionRow_verticalBeginning
 
 // Omit divider test family, we don't draw dividers
+
+let activity_liquidglass_flexbox_layout = () =>
+	getViews(
+		`<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="300" height="300" flexDirection="${FlexDirection.ROW}" backgroundColor="gray">
+        <LiquidGlass id="text1" width="100" height="100" />
+        <LiquidGlassContainer id="text2" width="100" height="100" />
+        <Label id="text3" width="100" height="100" text="3" />
+    </FlexboxLayout>`,
+	);
+
+export const testLiquidGlassFlexboxLayout = test(activity_liquidglass_flexbox_layout, noop, ({ flexbox, text1, text2, text3 }) => {
+	isTopAlignedWith(text1, flexbox);
+	isLeftAlignedWith(text1, flexbox);
+	isRightOf(text2, text1);
+	isTopAlignedWith(text2, flexbox);
+	isRightOf(text3, text2);
+	isTopAlignedWith(text3, flexbox);
+
+	equal(width(flexbox), width(text1) + width(text2) + width(text3));
+	equal(height(flexbox), 300);
+});
