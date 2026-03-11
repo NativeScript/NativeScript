@@ -418,6 +418,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			outDir: path.resolve(projectRoot, distOutputFolder),
 			target: 'esnext',
 			minify: !debug,
+			// NativeScript apps commonly produce larger single-file bundles than web apps.
+			// Keep the default threshold high, while still allowing standard Vite per-project override
+			// through `build.chunkSizeWarningLimit` in the app's vite.config.ts.
+			chunkSizeWarningLimit: 2000,
 			// Generate source maps for debugging
 			// External sourcemaps so DevTools loads small .mjs files and fetches maps on demand
 			sourcemap: debug,
@@ -433,7 +437,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			...(isDevMode && {
 				// Faster builds in development
 				reportCompressedSize: false,
-				chunkSizeWarningLimit: 2000,
 			}),
 			commonjsOptions: {
 				include: [/node_modules/],
