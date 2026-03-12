@@ -375,7 +375,7 @@ export function test_showing_native_viewcontroller_doesnt_throw_exception() {
 	TKUnit.assertEqual(0, navigatedFrom, 'navigatingTo');
 
 	let page = new Page();
-	let navcontroller = <UINavigationController>Frame.topmost().ios.controller;
+	let navcontroller = <UINavigationController>(Frame.topmost().ios as any).controller;
 
 	let completed = false;
 	navcontroller.presentViewControllerAnimatedCompletion(page.ios, false, () => (completed = true));

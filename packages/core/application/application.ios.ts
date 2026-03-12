@@ -304,8 +304,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		return this._rootView;
 	}
 
-	resetRootView(view?: View) {
-		super.resetRootView(view);
+	resetRootView(entry?: NavigationEntry | string) {
+		super.resetRootView(entry);
 		this.setWindowContent();
 	}
 

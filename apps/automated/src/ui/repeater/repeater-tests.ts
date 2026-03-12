@@ -136,7 +136,7 @@ export function test_set_itemsLayout_accepted() {
 	function testAction(views: Array<View>) {
 		repeater.items = FEW_ITEMS;
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
-		TKUnit.assert((<StackLayout>repeater.itemsLayout).orientation === 'horizontal', 'views count.');
+		TKUnit.assert((repeater.itemsLayout as unknown as StackLayout).orientation === 'horizontal', 'views count.');
 		TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, 'views count.');
 	}
 

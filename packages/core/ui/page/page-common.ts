@@ -14,7 +14,7 @@ import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
 import { PageEvents } from './events';
 
-interface NavigatedData extends EventData {
+export interface NavigatedData extends EventData {
 	context: any;
 	isBackNavigation: boolean;
 }

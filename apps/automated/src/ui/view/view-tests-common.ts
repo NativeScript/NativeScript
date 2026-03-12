@@ -198,7 +198,7 @@ export function test_addToNativeVisualTree_WillThrow_IfView_IsAlreadyAdded() {
 
 		let thrown = false;
 		try {
-			views[1]._addViewToNativeVisualTree(newButton);
+			views[1]._addViewToNativeVisualTree(newButton, 0);
 		} catch (e) {
 			thrown = true;
 			TKUnit.assert(e.message === 'Child already added to the native visual tree.');
@@ -354,7 +354,7 @@ class TestView extends LayoutBase {
 
 		return 'customViewPropertyDefaultValue';
 	}
-	[customViewProperty.setNative](value: string) {
+	[customViewProperty.setNative](value: any) {
 		this.viewPropCounter++;
 		this.viewPropNativeValue = value;
 	}
@@ -364,7 +364,7 @@ class TestView extends LayoutBase {
 
 		return 'customCssPropertyDefaultValue';
 	}
-	[customCssProperty.setNative](value: string) {
+	[customCssProperty.setNative](value: any) {
 		this.cssPropCounter++;
 		this.cssPropNativeValue = value;
 	}
@@ -374,7 +374,7 @@ class TestView extends LayoutBase {
 
 		return 'customCssAnimationPropertyDefaultValue';
 	}
-	[customCssAnimationProperty.setNative](value: string) {
+	[customCssAnimationProperty.setNative](value: any) {
 		this.cssAnimPropCounter++;
 		this.cssAnimPropNativeValue = value;
 	}

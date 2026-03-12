@@ -15,6 +15,8 @@ export interface ItemsSource {
 	getItem(index: number): any;
 }
 
+export type RepeaterItemsLayout = View & Pick<LayoutBase, 'addChild' | 'removeChildren' | 'getChildrenCount' | 'getChildAt'>;
+
 /**
  * Represents a UI Repeater component.
  *
@@ -62,7 +64,7 @@ export class Repeater extends CustomLayoutView {
 	/**
 	 * Gets or set the items layout of the Repeater. Default value is StackLayout with orientation="vertical".
 	 */
-	public itemsLayout: LayoutBase;
+	public itemsLayout: RepeaterItemsLayout;
 
 	get itemTemplateSelector(): string | ((item: any, index: number, items: any) => string) {
 		return this._itemTemplateSelector;
@@ -265,7 +267,7 @@ export const itemsProperty = new Property<Repeater, any[] | ItemsSource>({
 });
 itemsProperty.register(Repeater);
 
-export const itemsLayoutProperty = new Property<Repeater, LayoutBase>({
+export const itemsLayoutProperty = new Property<Repeater, RepeaterItemsLayout>({
 	name: 'itemsLayout',
 	affectsLayout: true,
 	valueChanged: (target, oldValue, newValue) => {
