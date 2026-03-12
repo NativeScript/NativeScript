@@ -6,7 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { getProjectRootPath } from '../helpers/project.js';
 import { mergeConfig, type UserConfig } from 'vite';
 import { baseConfig } from './base.js';
-import { getTypeCheckPlugins } from '../helpers/typescript-check.js';
+import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,8 +47,8 @@ const plugins = [
 	}),
 ];
 
-export const solidConfig = ({ mode }): UserConfig => {
+export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
 	return mergeConfig(baseConfig({ mode, flavor: 'solid' }), {
-		plugins: [...getTypeCheckPlugins('solid'), ...plugins],
+		plugins: [...getTypeCheckPlugins('solid', options.typeCheck), ...plugins],
 	});
 };

@@ -11,6 +11,30 @@ const require = createRequire(import.meta.url);
 export type PlatformType = 'android' | 'ios' | 'visionos';
 type TypeCheckFlavor = 'typescript' | 'react' | 'solid' | 'vue' | 'angular' | 'javascript';
 
+export type TypeCheckMode = 'off' | 'warn' | 'error';
+
+export type TypeCheckSetting =
+	| boolean
+	| TypeCheckMode
+	| {
+			enabled?: boolean;
+			failOnError?: boolean;
+			logDiagnostics?: boolean;
+			mode?: TypeCheckMode;
+	  };
+
+export interface TypeCheckControlOptions {
+	typeCheck?: TypeCheckSetting;
+}
+
+type ResolvedTypeCheckOptions = {
+	platform?: PlatformType;
+	verbose?: boolean;
+	enabled: boolean;
+	failOnError?: boolean;
+	logDiagnostics: boolean;
+};
+
 function getModuleSuffixes(platform: PlatformType | undefined): string[] {
 	if (platform === 'android') {
 		return ['.android', '.native', ''];
@@ -40,12 +64,138 @@ function getVueTscBinPath(): string {
 	return path.resolve(path.dirname(pkgPath), 'bin/vue-tsc.js');
 }
 
-function getTypeCheckOptions(): { platform?: PlatformType; verbose?: boolean } {
+function coerceBoolean(value: unknown): boolean | undefined {
+	if (typeof value === 'boolean') {
+		return value;
+	}
+
+	if (typeof value === 'string') {
+		switch (value.trim().toLowerCase()) {
+			case '1':
+			case 'true':
+			case 'yes':
+			case 'on':
+				return true;
+			case '0':
+			case 'false':
+			case 'no':
+			case 'off':
+				return false;
+		}
+	}
+
+	return undefined;
+}
+
+function coerceTypeCheckMode(value: unknown): TypeCheckMode | undefined {
+	if (typeof value !== 'string') {
+		return undefined;
+	}
+
+	switch (value.trim().toLowerCase()) {
+		case 'off':
+		case 'false':
+		case 'disabled':
+			return 'off';
+		case 'warn':
+		case 'warning':
+		case 'log':
+			return 'warn';
+		case 'error':
+		case 'strict':
+		case 'true':
+			return 'error';
+		default:
+			return undefined;
+	}
+}
+
+function applyTypeCheckMode(base: ResolvedTypeCheckOptions, mode: TypeCheckMode): ResolvedTypeCheckOptions {
+	switch (mode) {
+		case 'off':
+			return { ...base, enabled: false, failOnError: false };
+		case 'warn':
+			return { ...base, enabled: true, failOnError: false, logDiagnostics: true };
+		case 'error':
+		default:
+			return { ...base, enabled: true, failOnError: true, logDiagnostics: true };
+	}
+}
+
+function shouldFailOnTypeCheckError(opts: { failOnError?: boolean }, parsedConfig: ts.ParsedCommandLine): boolean {
+	if (typeof opts.failOnError === 'boolean') {
+		return opts.failOnError;
+	}
+
+	return parsedConfig.options.noEmitOnError === true;
+}
+
+function normalizeTypeCheckSetting(base: ResolvedTypeCheckOptions, setting?: TypeCheckSetting): ResolvedTypeCheckOptions {
+	if (typeof setting === 'undefined') {
+		return base;
+	}
+
+	if (typeof setting === 'boolean') {
+		return applyTypeCheckMode(base, setting ? 'error' : 'off');
+	}
+
+	if (typeof setting === 'string') {
+		const mode = coerceTypeCheckMode(setting);
+		return mode ? applyTypeCheckMode(base, mode) : base;
+	}
+
+	let next = { ...base };
+	if (setting.mode) {
+		next = applyTypeCheckMode(next, setting.mode);
+	}
+
+	if (typeof setting.enabled === 'boolean') {
+		next.enabled = setting.enabled;
+	}
+
+	if (typeof setting.failOnError === 'boolean') {
+		next.failOnError = setting.failOnError;
+	}
+
+	if (typeof setting.logDiagnostics === 'boolean') {
+		next.logDiagnostics = setting.logDiagnostics;
+	}
+
+	if (!next.enabled) {
+		next.failOnError = false;
+	}
+
+	return next;
+}
+
+function getTypeCheckOptions(setting?: TypeCheckSetting): ResolvedTypeCheckOptions {
 	const flags = getCliFlags();
 	const platform: PlatformType | undefined = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
 	const verbose = process.env.DEBUG === '1' || process.env.DEBUG === 'true';
+	const envMode = coerceTypeCheckMode(process.env.NS_VITE_TYPECHECK ?? process.env.NS_VITE_TYPE_CHECK);
+	const cliMode = coerceTypeCheckMode(flags.typecheck ?? flags['type-check'] ?? flags.typeCheck);
 
-	return { platform, verbose };
+	let resolved: ResolvedTypeCheckOptions = {
+		platform,
+		verbose,
+		enabled: true,
+		logDiagnostics: true,
+	};
+
+	resolved = normalizeTypeCheckSetting(resolved, setting);
+	if (envMode) {
+		resolved = applyTypeCheckMode(resolved, envMode);
+	}
+	if (cliMode) {
+		resolved = applyTypeCheckMode(resolved, cliMode);
+	}
+
+	const envLogDiagnostics = coerceBoolean(process.env.NS_VITE_TYPECHECK_LOG ?? process.env.NS_VITE_TYPE_CHECK_LOG);
+	if (typeof envLogDiagnostics === 'boolean') {
+		resolved.logDiagnostics = envLogDiagnostics;
+	}
+
+	return resolved;
 }
 
 function collectDiagnostics(program: ts.Program, parsedConfig: ts.ParsedCommandLine): readonly ts.Diagnostic[] {
@@ -113,7 +263,7 @@ function shouldSkipFileForPlatform(fileName: string, platform: PlatformType | un
 	return false;
 }
 
-export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?: boolean }): Plugin {
+export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?: boolean; failOnError?: boolean; logDiagnostics?: boolean }): Plugin {
 	return {
 		name: 'ns-typescript-check',
 		apply: 'build',
@@ -125,6 +275,7 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 
 			const projectRoot = path.resolve(process.cwd());
 			const parsedConfig = getParsedConfig(tsConfigPath, opts.platform);
+			const failOnError = shouldFailOnTypeCheckError(opts, parsedConfig);
 			const rootNames = parsedConfig.fileNames.filter((fileName) => !shouldSkipFileForPlatform(fileName, opts.platform));
 			const program = ts.createProgram({
 				rootNames,
@@ -140,14 +291,22 @@ export function typescriptCheckPlugin(opts: { platform?: PlatformType; verbose?:
 				return;
 			}
 
-			console.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, getFormatHost()));
+			if (opts.logDiagnostics !== false) {
+				const output = ts.formatDiagnosticsWithColorAndContext(diagnostics, getFormatHost());
+				(failOnError ? console.error : console.warn)(output);
+			}
 			const errorCount = diagnostics.length;
+			if (!failOnError) {
+				console.warn(`[ns-vite] TypeScript found ${errorCount} error${errorCount === 1 ? '' : 's'}; continuing build because tsconfig does not require failing on type errors.`);
+				return;
+			}
+
 			throw new Error(`[ns-vite] TypeScript found ${errorCount} error${errorCount === 1 ? '' : 's'}.`);
 		},
 	};
 }
 
-export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: boolean }): Plugin {
+export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: boolean; failOnError?: boolean; logDiagnostics?: boolean }): Plugin {
 	return {
 		name: 'ns-vue-tsc-check',
 		apply: 'build',
@@ -156,6 +315,9 @@ export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: bo
 			if (!tsConfigPath) {
 				return;
 			}
+
+			const parsedConfig = getParsedConfig(tsConfigPath, opts.platform);
+			const failOnError = shouldFailOnTypeCheckError(opts, parsedConfig);
 
 			const vueTscBinPath = getVueTscBinPath();
 			const moduleSuffixes = getModuleSuffixes(opts.platform).join(',');
@@ -177,17 +339,25 @@ export function vueTypeCheckPlugin(opts: { platform?: PlatformType; verbose?: bo
 			}
 
 			const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
-			if (output) {
-				console.error(output);
+			if (output && opts.logDiagnostics !== false) {
+				(failOnError ? console.error : console.warn)(output);
 			}
 
-			throw new Error(`[ns-vite] vue-tsc found ${result.status ?? 'unknown'} error${result.status === 1 ? '' : 's'}.`);
+			if (!failOnError) {
+				console.warn('[ns-vite] vue-tsc reported type errors; continuing build because tsconfig does not require failing on type errors.');
+				return;
+			}
+
+			throw new Error('[ns-vite] vue-tsc reported type errors.');
 		},
 	};
 }
 
-export function getTypeCheckPlugins(flavor: TypeCheckFlavor): Plugin[] {
-	const options = getTypeCheckOptions();
+export function getTypeCheckPlugins(flavor: TypeCheckFlavor, setting?: TypeCheckSetting): Plugin[] {
+	const options = getTypeCheckOptions(setting);
+	if (!options.enabled) {
+		return [];
+	}
 
 	switch (flavor) {
 		case 'typescript':
