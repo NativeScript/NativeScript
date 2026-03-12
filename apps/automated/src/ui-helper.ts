@@ -292,7 +292,7 @@ export function _generateFormattedString(): FormattedString {
 	return formattedString;
 }
 
-export function nativeView_recycling_test(createNew: () => View, createLayout?: () => LayoutBase, nativeGetters?: Map<string, (view) => any>, customSetters?: Map<string, any>) {
+export function nativeView_recycling_test(createNew: () => View, createLayout?: () => View, nativeGetters?: Map<string, (view) => any>, customSetters?: Map<string, any>) {
 	return;
 
 	// if (__APPLE__) {

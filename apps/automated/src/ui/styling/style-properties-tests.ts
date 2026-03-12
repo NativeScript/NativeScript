@@ -568,10 +568,11 @@ function test_font_shorthand_property(short: string, family: string, size: numbe
 export function test_setting_font_properties_sets_native_font() {
 	if (global.isIOS) {
 		const basePath = 'fonts';
-		fontModule.ios.registerFont(basePath + '/Roboto-Regular.ttf');
-		fontModule.ios.registerFont(basePath + '/Roboto-Bold.ttf');
-		fontModule.ios.registerFont(basePath + '/Roboto-BoldItalic.ttf');
-		fontModule.ios.registerFont(basePath + '/Roboto-Italic.ttf');
+		const iosFontModule = fontModule as typeof fontModule & { ios: { registerFont(fontFile: string): void } };
+		iosFontModule.ios.registerFont(basePath + '/Roboto-Regular.ttf');
+		iosFontModule.ios.registerFont(basePath + '/Roboto-Bold.ttf');
+		iosFontModule.ios.registerFont(basePath + '/Roboto-BoldItalic.ttf');
+		iosFontModule.ios.registerFont(basePath + '/Roboto-Italic.ttf');
 	}
 
 	test_native_font('normal', 'normal');

@@ -18,14 +18,14 @@ class RemovalTrackingGridLayout extends GridLayout {
 
 	// this trick wont work on android anymore as removeRows
 	// is done in one call and does not go through _onRowRemoved
-	public _onRowRemoved(itemSpec: ItemSpec, index: number) {
+	public _onRowRemoved(itemSpec: Parameters<GridLayout['_onRowRemoved']>[0], index: number) {
 		this.removedRows++;
 		super._onRowRemoved(itemSpec, index);
 	}
 
 	// this trick wont work on android anymore as removeColumns
 	// is done in one call and does not go through _onColumnRemoved
-	public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
+	public _onColumnRemoved(itemSpec: Parameters<GridLayout['_onColumnRemoved']>[0], index: number) {
 		this.removedCols++;
 		super._onColumnRemoved(itemSpec, index);
 	}
