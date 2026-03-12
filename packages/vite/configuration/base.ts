@@ -294,6 +294,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			},
 			// Keep target loosely aligned with tsconfig target (ES2020) to avoid reordering semantics
 			target: 'es2020',
+			// NativeScript relies on stable function/class names for profiling and some runtime type lookups.
+			keepNames: true,
 		},
 		plugins: [
 			createPlatformCssPlugin(platform),

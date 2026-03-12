@@ -38,7 +38,7 @@ class TestClass {
 	}
 }
 
-const testFunction1 = profile(function testFunction1() {
+const testFunction1 = profile('testFunction1', function testFunction1() {
 	// noop
 });
 const testFunction2 = profile('testFunction2', () => {
