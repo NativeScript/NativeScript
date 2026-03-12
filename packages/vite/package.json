@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/vite",
-	"version": "1.0.6-rc.5",
+	"version": "1.0.6-rc.7",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
@@ -11,6 +11,41 @@
 			"types": "./index.d.ts",
 			"import": "./index.js",
 			"default": "./index.js"
+		},
+		"./angular": {
+			"types": "./configuration/angular.d.ts",
+			"import": "./configuration/angular.js",
+			"default": "./configuration/angular.js"
+		},
+		"./react": {
+			"types": "./configuration/react.d.ts",
+			"import": "./configuration/react.js",
+			"default": "./configuration/react.js"
+		},
+		"./solid": {
+			"types": "./configuration/solid.d.ts",
+			"import": "./configuration/solid.js",
+			"default": "./configuration/solid.js"
+		},
+		"./vue": {
+			"types": "./configuration/vue.d.ts",
+			"import": "./configuration/vue.js",
+			"default": "./configuration/vue.js"
+		},
+		"./javascript": {
+			"types": "./configuration/javascript.d.ts",
+			"import": "./configuration/javascript.js",
+			"default": "./configuration/javascript.js"
+		},
+		"./typescript": {
+			"types": "./configuration/typescript.d.ts",
+			"import": "./configuration/typescript.js",
+			"default": "./configuration/typescript.js"
+		},
+		"./base": {
+			"types": "./configuration/base.d.ts",
+			"import": "./configuration/base.js",
+			"default": "./configuration/base.js"
 		},
 		"./hmr/client/index.js": "./hmr/client/index.js",
 		"./hmr/entry-runtime.js": "./hmr/entry-runtime.js",
