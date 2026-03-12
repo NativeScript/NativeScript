@@ -130,4 +130,19 @@
         ((UILabel*)self).attributedText = attrText;
     }
 }
+
+-(void)nativeScriptSetFormattedTextStroke:(CGFloat)width color:(UIColor*)color {
+    if (width > 0) {
+        NSMutableAttributedString *attrText = [[NSMutableAttributedString alloc] initWithAttributedString:((UILabel*)self).attributedText];
+        [attrText addAttribute:NSStrokeWidthAttributeName value:[NSNumber numberWithFloat:width] range:(NSRange){
+            0,
+            attrText.length
+        }];
+        [attrText addAttribute:NSStrokeColorAttributeName value:color range:(NSRange){
+            0,
+            attrText.length
+        }];
+        ((UILabel*)self).attributedText = attrText;
+    }
+}
 @end

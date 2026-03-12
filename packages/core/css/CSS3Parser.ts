@@ -1,4 +1,3 @@
-
 export interface Stylesheet {
 	rules: Rule[];
 }
@@ -124,7 +123,7 @@ export class CSS3Parser {
 	private reconsumedInputToken: InputToken;
 	private topLevelFlag: boolean;
 
-	constructor(private text: string) { }
+	constructor(private text: string) {}
 
 	/**
 	 * For testing purposes.

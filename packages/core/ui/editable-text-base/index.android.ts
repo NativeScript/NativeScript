@@ -4,11 +4,12 @@ import { Color } from '../../color';
 import { ad } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
+import * as timer from '../../timer';
 
 export * from './editable-text-base-common';
 
 //https://github.com/NativeScript/NativeScript/issues/2942
-export let dismissKeyboardTimeoutId: NodeJS.Timer;
+export let dismissKeyboardTimeoutId: number;
 
 interface EditTextListeners extends android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {}
 
@@ -29,7 +30,7 @@ function clearDismissTimer(): void {
 function dismissSoftInput(view: EditableTextBase): void {
 	clearDismissTimer();
 	if (!dismissKeyboardTimeoutId) {
-		dismissKeyboardTimeoutId = setTimeout(() => {
+		dismissKeyboardTimeoutId = timer.setTimeout(() => {
 			const activity = view._context as androidx.appcompat.app.AppCompatActivity;
 			dismissKeyboardTimeoutId = null;
 			const focused = activity && activity.getCurrentFocus();
@@ -83,12 +84,10 @@ function initializeEditTextListeners(): void {
 }
 
 export abstract class EditableTextBase extends EditableTextBaseCommon {
-	/* tslint:disable */
-	_dirtyTextAccumulator: string;
-	/* tslint:enable */
-
 	nativeViewProtected: android.widget.EditText;
 	nativeTextViewProtected: android.widget.EditText;
+
+	private _dirtyTextAccumulator: string;
 	private _keyListenerCache: android.text.method.KeyListener;
 	private _inputType: number;
 
@@ -119,12 +118,16 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 	public disposeNativeView(): void {
 		const editText = this.nativeTextViewProtected;
+
 		editText.removeTextChangedListener((<any>editText).listener);
 		editText.setOnFocusChangeListener(null);
 		editText.setOnEditorActionListener(null);
 		(<any>editText).listener.owner = null;
 		(<any>editText).listener = null;
 		this._keyListenerCache = null;
+		this._dirtyTextAccumulator = undefined;
+		this._inputType = 0;
+
 		super.disposeNativeView();
 	}
 
@@ -201,7 +204,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	[keyboardTypeProperty.getDefault](): number {
 		return this.nativeTextViewProtected.getInputType();
 	}
-	[keyboardTypeProperty.setNative](value: 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer' | number) {
+	[keyboardTypeProperty.setNative](value: 'datetime' | 'phone' | 'number' | 'decimal' | 'url' | 'email' | 'integer' | number) {
 		let newInputType;
 
 		switch (value) {
@@ -215,6 +218,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 			case 'number':
 				newInputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
+				break;
+
+			case 'decimal':
+				newInputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED;
 				break;
 
 			case 'url':

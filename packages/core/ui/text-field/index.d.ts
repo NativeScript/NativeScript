@@ -5,8 +5,15 @@ export const secureProperty: Property<TextField, boolean>;
 
 /**
  * Represents an editable text field.
+ *
+ * @nsView TextField
  */
 export class TextField extends EditableTextBase {
+	/**
+	 * String value used when hooking to the returnPress event.
+	 *
+	 * @nsEvent returnPress
+	 */
 	public static returnPressEvent: string;
 
 	/**
@@ -21,16 +28,22 @@ export class TextField extends EditableTextBase {
 
 	/**
 	 * Gets or sets if a text field is for password entry.
+	 *
+	 * @nsProperty
 	 */
 	secure: boolean;
 
 	/**
 	 * Gets or sets if a text field should dismiss on return.
+	 *
+	 * @nsProperty
 	 */
 	closeOnReturn: boolean;
 
 	/**
 	 * iOS only (to avoid 12+ auto suggested strong password handling)
+	 *
+	 * @nsProperty
 	 */
 	secureWithoutAutofill: boolean;
 

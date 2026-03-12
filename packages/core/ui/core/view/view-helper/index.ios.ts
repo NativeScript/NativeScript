@@ -1,12 +1,15 @@
 // Types
-import { View } from '..';
+import { Position } from '../view-interfaces';
+import type { View } from '..';
 
 // Requires
 import { ViewHelper } from './view-helper-common';
-import { ios as iOSUtils, layout } from '../../../../utils';
-import { Trace } from '../../../../trace';
+import { SDK_VERSION } from '../../../../utils/constants';
+import { layout, Trace } from './view-helper-shared';
+import { ios as iosUtils, getWindow } from '../../../../utils';
 
 export * from './view-helper-common';
+export const AndroidHelper = 0;
 
 @NativeClass
 class UILayoutViewController extends UIViewController {
@@ -39,7 +42,7 @@ class UILayoutViewController extends UIViewController {
 		super.viewDidLayoutSubviews();
 		const owner = this.owner?.deref();
 		if (owner) {
-			if (iOSUtils.MajorVersion >= 11) {
+			if (SDK_VERSION >= 11) {
 				// Handle nested UILayoutViewController safe area application.
 				// Currently, UILayoutViewController can be nested only in a TabView.
 				// The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
@@ -95,6 +98,9 @@ class UILayoutViewController extends UIViewController {
 			return;
 		}
 
+		// Ensure iOS re-queries `preferredStatusBarStyle` for this controller.
+		IOSHelper.invalidateStatusBarAppearance(this, 'UILayoutViewController.viewWillAppear');
+
 		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
 		if (!owner.isLoaded && !owner.parent) {
@@ -110,19 +116,49 @@ class UILayoutViewController extends UIViewController {
 		}
 	}
 
+	// Forward status bar appearance to our content controller when available.
+	// Without this, iOS may use this controller's own preferredStatusBarStyle,
+	// which can be unrelated to the currently shown Page.
+	// @ts-ignore
+	public get childViewControllerForStatusBarStyle(): UIViewController {
+		return this.presentedViewController || this.childViewControllers?.lastObject;
+	}
+
 	// Mind implementation for other controllers
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (iOSUtils.MajorVersion >= 13) {
-			const owner = this.owner?.deref();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this.owner?.deref();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
 		}
+	}
+
+	// @ts-ignore
+	public get preferredStatusBarStyle(): UIStatusBarStyle {
+		const owner = this.owner?.deref();
+		if (owner?.statusBarStyle) {
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.DarkContent;
+			} else {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
+		}
+		return UIStatusBarStyle.Default;
 	}
 }
 
@@ -130,8 +166,8 @@ class UILayoutViewController extends UIViewController {
 class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
 	public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
 
-	private owner: WeakRef<View>;
-	private closedCallback: Function;
+	owner: WeakRef<View>;
+	closedCallback: Function;
 
 	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
 		const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
@@ -153,8 +189,8 @@ class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UI
 class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
 	public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
 
-	private owner: WeakRef<View>;
-	private closedCallback: Function;
+	owner: WeakRef<View>;
+	closedCallback: Function;
 
 	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
 		const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
@@ -174,6 +210,7 @@ class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIP
 
 export class IOSHelper {
 	static traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
+	static traitCollectionLayoutDirectionChangedEvent = 'traitCollectionLayoutDirectionChanged';
 	static UILayoutViewController = UILayoutViewController;
 	static UIAdaptivePresentationControllerDelegateImp = UIAdaptivePresentationControllerDelegateImp;
 	static UIPopoverPresentationControllerDelegateImp = UIPopoverPresentationControllerDelegateImp;
@@ -187,8 +224,51 @@ export class IOSHelper {
 		return view;
 	}
 
+	static invalidateStatusBarAppearance(controller?: UIViewController, reason = ''): void {
+		try {
+			if (!controller) {
+				const window = getWindow<UIWindow>?.();
+				const rootController = window?.rootViewController;
+				controller = rootController ? iosUtils.getVisibleViewController(rootController) : null;
+			}
+
+			if (!controller) {
+				if (Trace.isEnabled()) {
+					Trace.write(`[StatusBar] invalidate skipped (no controller) reason=${reason}`, Trace.categories.NativeLifecycle);
+				}
+				return;
+			}
+
+			const container = controller;
+			let child: UIViewController = null;
+			try {
+				child = container.childViewControllerForStatusBarStyle;
+			} catch {
+				child = null;
+			}
+			if (!child) {
+				if (container instanceof UINavigationController) {
+					child = container.topViewController;
+				} else if (container instanceof UITabBarController) {
+					child = container.selectedViewController;
+				}
+			}
+
+			// Always invalidate container and likely child.
+			container.setNeedsStatusBarAppearanceUpdate?.();
+			child?.setNeedsStatusBarAppearanceUpdate?.();
+
+			// Also invalidate nav container if present.
+			const nav = container instanceof UINavigationController ? container : container.navigationController;
+			nav?.setNeedsStatusBarAppearanceUpdate?.();
+			nav?.topViewController?.setNeedsStatusBarAppearanceUpdate?.();
+		} catch (e) {
+			Trace.write(`[StatusBar] invalidate error: ${e}`, Trace.categories.Error, Trace.messageType.warn);
+		}
+	}
+
 	static updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
-		if (iOSUtils.MajorVersion <= 10) {
+		if (!__VISIONOS__ && SDK_VERSION <= 10) {
 			owner._automaticallyAdjustsScrollViewInsets = false;
 			// This API is deprecated, but has no alternative for <= iOS 10
 			// Defaults to true and results to appliyng the insets twice together with our logic
@@ -198,20 +278,38 @@ export class IOSHelper {
 		}
 	}
 
+	/**
+	 * This method simulates the iOS 11+ safeAreaLayoutGuide property and its constraints for older versions.
+	 *
+	 * @param controller
+	 * @param owner
+	 */
 	static updateConstraints(controller: UIViewController, owner: View): void {
-		if (iOSUtils.MajorVersion <= 10) {
-			const layoutGuide = IOSHelper.initLayoutGuide(controller);
-			(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
+		if (!__VISIONOS__ && SDK_VERSION <= 10) {
+			if (!controller.view.safeAreaLayoutGuide) {
+				IOSHelper.initLayoutGuide(controller);
+			}
 		}
 	}
 
-	static initLayoutGuide(controller: UIViewController) {
+	/**
+	 * This method simulates the iOS 11+ safeAreaLayoutGuide property for older versions.
+	 *
+	 * @param controller
+	 */
+	static initLayoutGuide(controller: UIViewController): UILayoutGuide {
 		const rootView = controller.view;
-		const layoutGuide = UILayoutGuide.new();
-		rootView.addLayoutGuide(layoutGuide);
-		NSLayoutConstraint.activateConstraints(<any>[layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
 
-		return layoutGuide;
+		if (!rootView.safeAreaLayoutGuide) {
+			const layoutGuide = UILayoutGuide.new();
+
+			rootView.addLayoutGuide(layoutGuide);
+			NSLayoutConstraint.activateConstraints([layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
+
+			(<any>rootView).safeAreaLayoutGuide = layoutGuide;
+		}
+
+		return rootView.safeAreaLayoutGuide;
 	}
 
 	static layoutView(controller: UIViewController, owner: View): void {
@@ -245,7 +343,7 @@ export class IOSHelper {
 		}
 	}
 
-	static getPositionFromFrame(frame: CGRect): { left; top; right; bottom } {
+	static getPositionFromFrame(frame: CGRect): Position {
 		const left = layout.round(layout.toDevicePixels(frame.origin.x));
 		const top = layout.round(layout.toDevicePixels(frame.origin.y));
 		const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
@@ -254,14 +352,19 @@ export class IOSHelper {
 		return { left, right, top, bottom };
 	}
 
-	static getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): CGRect {
+	static getFrameFromPosition(position: Position, insets?: Position): CGRect {
 		insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
 
 		const left = layout.toDeviceIndependentPixels(position.left + insets.left);
 		const top = layout.toDeviceIndependentPixels(position.top + insets.top);
-		const width = layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right);
-		const height = layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom);
-
+		let width = layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right);
+		let height = layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom);
+		if (width < 0) {
+			width = 0;
+		}
+		if (height < 0) {
+			height = 0;
+		}
 		return CGRectMake(left, top, width, height);
 	}
 

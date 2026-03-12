@@ -1,13 +1,12 @@
 // Types.
-import { CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition, Animation as AnimationBaseDefinition, Point3D } from '.';
-import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair, PropertyAnimation } from './animation-interfaces';
-
-// Requires.
+import { Point3D } from './animation-types';
+import { AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, Pair } from './animation-shared';
+import { PropertyAnimation } from './animation-shared';
 import { Color } from '../../color';
 import { Trace } from '../../trace';
-import { PercentLength } from '../styling/style-properties';
+import { PercentLength } from '../styling/length-shared';
 
-export * from './animation-interfaces';
+export * from './animation-shared';
 
 export namespace Properties {
 	export const opacity = 'opacity';
@@ -19,21 +18,7 @@ export namespace Properties {
 	export const width = 'width';
 }
 
-export class CubicBezierAnimationCurve implements CubicBezierAnimationCurveDefinition {
-	public x1: number;
-	public y1: number;
-	public x2: number;
-	public y2: number;
-
-	constructor(x1: number, y1: number, x2: number, y2: number) {
-		this.x1 = x1;
-		this.y1 = y1;
-		this.x2 = x2;
-		this.y2 = y2;
-	}
-}
-
-export abstract class AnimationBase implements AnimationBaseDefinition {
+export abstract class AnimationBase {
 	public _propertyAnimations: Array<PropertyAnimation>;
 	public _playSequentially: boolean;
 	private _isPlaying: boolean;

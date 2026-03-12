@@ -1,4 +1,5 @@
 import * as layoutCommon from './layout-helper-common';
+import { ios as iosUtils } from '../native-helper';
 
 export namespace layout {
 	// cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Objective C
@@ -28,19 +29,23 @@ export namespace layout {
 	}
 
 	export function makeMeasureSpec(size: number, mode: number): number {
-		return (Math.round(Math.max(0, size)) & ~layoutCommon.MODE_MASK) | (mode & layoutCommon.MODE_MASK);
+		return (Math.round(Math.max(0, size)) & ~MODE_MASK) | (mode & MODE_MASK);
+	}
+
+	export function hasRtlSupport(): boolean {
+		return true;
 	}
 
 	export function getDisplayDensity(): number {
-		return UIScreen.mainScreen.scale;
+		return iosUtils.getMainScreen().scale;
 	}
 
 	export function toDevicePixels(value: number): number {
-		return value * UIScreen.mainScreen.scale;
+		return value * iosUtils.getMainScreen().scale;
 	}
 
 	export function toDeviceIndependentPixels(value: number): number {
-		return value / UIScreen.mainScreen.scale;
+		return value / iosUtils.getMainScreen().scale;
 	}
 
 	export function round(value: number) {

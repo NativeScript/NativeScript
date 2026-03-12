@@ -297,10 +297,32 @@ public class Async {
 		private static final String HEAD_METHOD = "HEAD";
 		private static CookieManager cookieManager;
 
+		public static void setCookieManager(CookieManager manager) {
+			if(manager == null) return;
+
+			cookieManager = manager;
+			if (CookieHandler.getDefault() == null) {
+				CookieHandler.setDefault(manager);
+			}
+    }
+		
+		public static CookieManager initializeCookieManager() {
+			if (cookieManager == null) {
+				CookieHandler defaultHandler = CookieHandler.getDefault();
+				if (defaultHandler instanceof CookieManager) {
+					cookieManager = (CookieManager) defaultHandler;
+				} else {
+					cookieManager = new CookieManager();
+					CookieHandler.setDefault(cookieManager);
+				}
+			}
+
+			return cookieManager;
+    }
+
 		public static void MakeRequest(final RequestOptions options, final CompleteCallback callback, final Object context) {
 			if (cookieManager == null) {
-				cookieManager = new CookieManager();
-				CookieHandler.setDefault(cookieManager);
+				initializeCookieManager();
 			}
 
 			final android.os.Handler mHandler = new android.os.Handler(Looper.myLooper());
@@ -602,12 +624,17 @@ public class Async {
 	public static class File {
 
 		static void updateValue(Context context, Uri uri) {
-			ContentValues values = new ContentValues();
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-				context.getContentResolver().update(uri, values, null);
-			} else {
-				context.getContentResolver().update(uri, values, null, null);
+			try {
+				ContentValues values = new ContentValues();
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+					context.getContentResolver().update(uri, values, null);
+				} else {
+					context.getContentResolver().update(uri, values, null, null);
+				}
+			} catch (Exception exception){
+				Log.e(TAG, "Failed to updateValue: " + exception.getMessage());
 			}
+			
 		}
 
 		public static void append(final String path, final byte[] content, final CompleteCallback callback, final Object context) {

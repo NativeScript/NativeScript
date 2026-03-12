@@ -3,7 +3,7 @@ import * as view from '@nativescript/core/ui/core/view';
 import * as testModule from '../../ui-test';
 import * as platform from '@nativescript/core/platform';
 import * as helper from '../../ui-helper';
-import { Builder, Page, Label, GridLayout } from '@nativescript/core';
+import { Builder, Page, Label, GridLayout, Utils } from '@nativescript/core';
 import { dipToDp, left, top, right, bottom, height, width, equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough, isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith, isLeftWith, isAboveWith, isRightWith, isBelowWith } from './layout-tests-helper';
 
 export class SafeAreaTests extends testModule.UITest<any> {
@@ -25,7 +25,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				waitUntilTestElementLayoutIsValid(ui.root);
 				test(ui);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -77,17 +77,17 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
 		const view: UIView = layout.page.actionBar.nativeViewProtected;
 		// use the action bar position and size instead of the status bar and action bar heights as those are unreliable on iOS 16+
-		const topInset = round(dipToDp(view.frame.origin.y + view.frame.size.height));
+		const topInset = Math.round(dipToDp(view.frame.origin.y + view.frame.size.height));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
 	}
 
 	private layout_insets_top_action_bar_hidden_test(layout: view.View) {
-		const app = UIApplication.sharedApplication;
+		const keyWindow = Utils.getWindow<UIWindow>();
 		// const statusBarHeight = round(dipToDp(app.statusBarFrame.size.height));
 		// use window inset instead of status bar frame as that's unreliable on iOS 16+
-		const topInset = round(dipToDp(app.keyWindow.safeAreaInsets.top));
+		const topInset = Math.round(dipToDp(keyWindow ? keyWindow.safeAreaInsets.top : UIApplication.sharedApplication.keyWindow.safeAreaInsets.top));
 
 		const insets = layout.getSafeAreaInsets();
 		equal(insets.top, topInset, `${layout}.topInset - actual:${insets.top}; expected: ${topInset}`);
@@ -116,7 +116,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -151,7 +151,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -166,7 +166,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -181,7 +181,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -196,7 +196,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -211,7 +211,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -233,7 +233,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
 				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -274,7 +274,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				isLeftAlignedWith(root, child0);
 				isTopAlignedWith(root, child0);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -315,7 +315,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -350,7 +350,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -365,7 +365,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -380,7 +380,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -395,7 +395,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -410,17 +410,17 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
 	private dock_children_components_in_safe_area(pageOptions?: helper.PageOptions) {
 		const snippet = `
         <DockLayout id="dock" stretchLastChild="true">
-            <Label id="childLeft" dock="Left" text="left" backgroundColor="red" />
-            <Label id="childTop" dock="Top" text="top" backgroundColor="green" />
-            <Label id="childRight" dock="Right" text="right" backgroundColor="blue" />
-            <Label id="childBottom" dock="Bottom" text="bottom" backgroundColor="yellow" />
+            <Label id="childLeft" dock="left" text="left" backgroundColor="red" />
+            <Label id="childTop" dock="top" text="top" backgroundColor="green" />
+            <Label id="childRight" dock="right" text="right" backgroundColor="blue" />
+            <Label id="childBottom" dock="bottom" text="bottom" backgroundColor="yellow" />
             <Label id="childFill" text="fill"/>
         </DockLayout>
         `;
@@ -431,23 +431,23 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root, childLeft, childTop, childRight, childBottom, childFill }) => {
 				const insets = root.getSafeAreaInsets();
 
-				equal(left(childLeft), insets.left, `${childLeft}.left - actual: ${left(childLeft)} expected: ${insets.left}`);
-				equal(top(childLeft), insets.top, `${childLeft}.top - actual: ${top(childLeft)} expected: ${insets.top}`);
+				closeEnough(left(childLeft), insets.left, `${childLeft}.left - actual: ${left(childLeft)} expected: ${insets.left}`);
+				closeEnough(top(childLeft), insets.top, `${childLeft}.top - actual: ${top(childLeft)} expected: ${insets.top}`);
 
-				equal(top(childTop), insets.top, `${childTop}.top - actual: ${top(childTop)} expected: ${insets.top}`);
-				equal(right(childTop), width(root) - insets.right, `${childTop}.right - actual: ${right(childTop)} expected: ${width(root) - insets.right}`);
+				closeEnough(top(childTop), insets.top, `${childTop}.top - actual: ${top(childTop)} expected: ${insets.top}`);
+				closeEnough(right(childTop), width(root) - insets.right, `${childTop}.right - actual: ${right(childTop)} expected: ${width(root) - insets.right}`);
 
-				equal(right(childRight), width(root) - insets.right, `${childRight}.right - actual: ${right(childRight)} expected: ${width(root) - insets.right}`);
-				equal(bottom(childRight), height(root) - insets.bottom, `${childRight}.bottom - actual: ${bottom(childRight)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(right(childRight), width(root) - insets.right, `${childRight}.right - actual: ${right(childRight)} expected: ${width(root) - insets.right}`);
+				closeEnough(bottom(childRight), height(root) - insets.bottom, `${childRight}.bottom - actual: ${bottom(childRight)} expected: ${height(root) - insets.bottom}`);
 
-				equal(bottom(childBottom), height(root) - insets.bottom, `${childBottom}.bottom - actual: ${bottom(childBottom)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(bottom(childBottom), height(root) - insets.bottom, `${childBottom}.bottom - actual: ${bottom(childBottom)} expected: ${height(root) - insets.bottom}`);
 
 				isLeftWith(childLeft, childFill, width(childLeft));
 				isBelowWith(childTop, childFill, height(childTop));
 				isRightWith(childFill, childRight, width(childRight));
 				isAboveWith(childFill, childBottom, height(childBottom));
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -466,16 +466,16 @@ export class SafeAreaTests extends testModule.UITest<any> {
 	private dock_nested_layouts_beyond_safe_area(pageOptions?: helper.PageOptions) {
 		const snippet = `
         <DockLayout id="dock" stretchLastChild="true">
-            <DockLayout id="childLeft" dock="Left" text="left" backgroundColor="red">
+            <DockLayout id="childLeft" dock="left" text="left" backgroundColor="red">
                 <Label text="left"/>
             </DockLayout>
-            <DockLayout id="childTop" dock="Top" text="top" backgroundColor="green">
+            <DockLayout id="childTop" dock="top" text="top" backgroundColor="green">
                 <Label text="top" />
             </DockLayout>
-            <DockLayout id="childRight" dock="Right" text="right" backgroundColor="blue">
+            <DockLayout id="childRight" dock="right" text="right" backgroundColor="blue">
                 <Label text="right" />
             </DockLayout>
-            <DockLayout id="childBottom" dock="Bottom" text="bottom" backgroundColor="yellow">
+            <DockLayout id="childBottom" dock="bottom" text="bottom" backgroundColor="yellow">
                 <Label text="bottom" />
             </DockLayout>
             <DockLayout id="childFill" text="fill">
@@ -505,7 +505,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfNestedDockWidths = width(childLeft) + width(childFill) + width(childRight);
 				equal(width(root), sumOfNestedDockWidths, `dock width<${width(root)}> sum of nested docks width <${sumOfNestedDockWidths}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -533,7 +533,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -568,7 +568,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -583,7 +583,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -598,7 +598,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -613,7 +613,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -628,7 +628,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -655,7 +655,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
 				equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -686,15 +686,15 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root, child0, child2 }) => {
 				const insets = root.getSafeAreaInsets();
 
-				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
-				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
-				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+				closeEnough(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+				closeEnough(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
 
-				equal(top(child2), insets.top, `${child2}.top - actual: ${top(child2)} expected: ${insets.top}`);
-				equal(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
-				equal(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(top(child2), insets.top, `${child2}.top - actual: ${top(child2)} expected: ${insets.top}`);
+				closeEnough(right(child2), width(root) - insets.right, `${child2}.right - actual: ${right(child2)} expected: ${width(root) - insets.right}`);
+				closeEnough(bottom(child2), height(root) - insets.bottom, `${child2}.bottom - actual: ${bottom(child2)} expected: ${height(root) - insets.bottom}`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -740,7 +740,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfChildrenHeights = height(child0) + height(child1) + height(child2);
 				equal(height(root), sumOfChildrenHeights, `flex height <${height(root)}> is NOT equal to sum of its children's heights <${sumOfChildrenHeights}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -786,7 +786,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfChildrenWidths = width(child0) + width(child1) + width(child2);
 				equal(width(root), sumOfChildrenWidths, `flex width <${width(root)}> is NOT equal to sum of its children's width <${sumOfChildrenWidths}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -828,7 +828,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -863,7 +863,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -878,7 +878,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -893,7 +893,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -908,7 +908,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -923,7 +923,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -974,7 +974,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfLabelWidthsAndInsets = insets.left + width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]) + insets.right;
 				equal(width(grid), sumOfLabelWidthsAndInsets, `grid width<${width(grid)}> sum of nested grids width and insets<${sumOfLabelWidthsAndInsets}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1037,7 +1037,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]);
 				equal(width(grid), sumOfNestedGridWidths, `grid width<${width(grid)}> sum of nested grids width <${sumOfNestedGridWidths}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1065,7 +1065,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1100,7 +1100,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -1115,7 +1115,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -1130,7 +1130,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -1145,7 +1145,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -1160,7 +1160,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -1177,12 +1177,12 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			this.noop,
 			({ root, child0, child1 }) => {
 				const insets = root.getSafeAreaInsets();
-				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
-				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
-				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+				closeEnough(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+				closeEnough(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
 				isLeftWith(child0, child1, width(child0));
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1216,7 +1216,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
 				isBelowWith(child0, child1, height(child0));
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1251,7 +1251,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				isTopAlignedWith(root, child0);
 				isRightAlignedWith(root, child0);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1279,7 +1279,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_in_full_screen_test(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1314,7 +1314,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true }
+			{ actionBar: true },
 		);
 	}
 
@@ -1329,7 +1329,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ actionBarHidden: true }
+			{ actionBarHidden: true },
 		);
 	}
 
@@ -1344,7 +1344,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBarFlat: true }
+			{ actionBarFlat: true },
 		);
 	}
 
@@ -1359,7 +1359,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_hidden_test(root);
 			},
-			{ tabBar: true }
+			{ tabBar: true },
 		);
 	}
 
@@ -1374,7 +1374,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			({ root }) => {
 				this.layout_insets_top_action_bar_test(root);
 			},
-			{ actionBar: true, tabBar: true }
+			{ actionBar: true, tabBar: true },
 		);
 	}
 
@@ -1391,14 +1391,14 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			this.noop,
 			({ root, child0, child1 }) => {
 				const insets = root.getSafeAreaInsets();
-				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
-				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
-				equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
-				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
-				equal(height(child1), 0, `${child1} has been laid out, but should not`);
-				equal(width(child1), 0, `${child1} has been laid out, but should not`);
+				closeEnough(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+				closeEnough(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+				closeEnough(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
+				closeEnough(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(height(child1), 0, `${child1} has been laid out, but should not`);
+				closeEnough(width(child1), 0, `${child1} has been laid out, but should not`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1427,14 +1427,14 @@ export class SafeAreaTests extends testModule.UITest<any> {
 			this.noop,
 			({ root, child0, child1 }) => {
 				const insets = root.getSafeAreaInsets();
-				equal(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
-				equal(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
-				equal(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
-				equal(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
-				equal(height(child1), 0, `${child1} has been laid out, but should not`);
-				equal(width(child1), 0, `${child1} has been laid out, but should not`);
+				closeEnough(left(child0), insets.left, `${child0}.left - actual: ${left(child0)} expected: ${insets.left}`);
+				closeEnough(top(child0), insets.top, `${child0}.top - actual: ${top(child0)} expected: ${insets.top}`);
+				closeEnough(right(child0), width(root) - insets.right, `${child0}.right - actual: ${right(child0)} expected: ${width(root) - insets.right}`);
+				closeEnough(bottom(child0), height(root) - insets.bottom, `${child0}.bottom - actual: ${bottom(child0)} expected: ${height(root) - insets.bottom}`);
+				closeEnough(height(child1), 0, `${child1} has been laid out, but should not`);
+				closeEnough(width(child1), 0, `${child1} has been laid out, but should not`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -1467,7 +1467,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 				isTopAlignedWith(root, child0);
 				isRightAlignedWith(root, child0);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 

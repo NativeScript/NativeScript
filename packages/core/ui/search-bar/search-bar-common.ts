@@ -7,10 +7,12 @@ import { Color } from '../../color';
 export abstract class SearchBarBase extends View implements SearchBarDefinition {
 	public static submitEvent = 'submit';
 	public static clearEvent = 'clear';
+
 	public text: string;
 	public hint: string;
 	public textFieldBackgroundColor: Color;
 	public textFieldHintColor: Color;
+	public clearButtonColor: Color | string;
 
 	public abstract dismissSoftInput();
 }
@@ -20,7 +22,7 @@ SearchBarBase.prototype.recycleNativeView = 'auto';
 export const textProperty = new Property<SearchBarBase, string>({
 	name: 'text',
 	defaultValue: '',
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 });
 textProperty.register(SearchBarBase);
 
@@ -43,3 +45,11 @@ export const textFieldBackgroundColorProperty = new Property<SearchBarBase, Colo
 	valueConverter: (v) => new Color(v),
 });
 textFieldBackgroundColorProperty.register(SearchBarBase);
+
+// --- Added property for clear button color ---
+export const clearButtonColorProperty = new Property<SearchBarBase, Color>({
+	name: 'clearButtonColor',
+	equalityComparer: Color.equals,
+	valueConverter: (v) => new Color(v),
+});
+clearButtonColorProperty.register(SearchBarBase);

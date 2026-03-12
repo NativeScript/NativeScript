@@ -1,26 +1,30 @@
-import { extname, resolve } from 'path';
-import {
-	ContextExclusionPlugin,
-	DefinePlugin,
-	HotModuleReplacementPlugin,
-} from 'webpack';
+import { extname, relative, resolve } from 'path';
+import { ContextExclusionPlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
+import { satisfies } from 'semver';
+import { isVersionGteConsideringPrerelease } from '../helpers/dependencies';
 import { existsSync } from 'fs';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
+import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
+import {
+	getDependencyVersion,
+	hasDependency,
+	getResolvedDependencyVersionForCheck,
+} from '../helpers/dependencies';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { getProjectFilePath, getProjectTSConfigPath } from '../helpers/project';
-import { hasDependency } from '../helpers/dependencies';
+import { CompatDefinePlugin } from '../plugins/CompatDefinePlugin';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
 import { getIPS } from '../helpers/host';
+import FixSourceMapUrlPlugin from '../plugins/FixSourceMapUrlPlugin';
 import {
 	getAvailablePlatforms,
 	getAbsoluteDistPath,
@@ -32,10 +36,76 @@ import {
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatformName();
+	const outputPath = getAbsoluteDistPath();
 	const mode = env.production ? 'production' : 'development';
 
 	// set mode
 	config.mode(mode);
+
+	// use source map files by default with v9+
+	function useSourceMapFiles() {
+		if (mode === 'development') {
+			// in development we always use source-map files with v9+ runtimes
+			// they are parsed and mapped to display in-flight app error screens
+			env.sourceMap = 'source-map';
+		}
+	}
+	// determine target output by @nativescript/* runtime version
+	// v9+ supports ESM output, anything below uses CommonJS
+	if (
+		hasDependency('@nativescript/ios') ||
+		hasDependency('@nativescript/visionos') ||
+		hasDependency('@nativescript/android')
+	) {
+		const iosVersion = getDependencyVersion('@nativescript/ios');
+		const visionosVersion = getDependencyVersion('@nativescript/visionos');
+		const androidVersion = getDependencyVersion('@nativescript/android');
+
+		if (platform === 'ios') {
+			const iosResolved =
+				getResolvedDependencyVersionForCheck('@nativescript/ios', '9.0.0') ??
+				iosVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(iosResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
+		} else if (platform === 'visionos') {
+			const visionosResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/visionos',
+					'9.0.0',
+				) ??
+				visionosVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(visionosResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
+		} else if (platform === 'android') {
+			const androidResolved =
+				getResolvedDependencyVersionForCheck(
+					'@nativescript/android',
+					'9.0.0',
+				) ??
+				androidVersion ??
+				undefined;
+			if (isVersionGteConsideringPrerelease(androidResolved, '9.0.0')) {
+				useSourceMapFiles();
+			} else {
+				env.commonjs = true;
+			}
+		}
+	} else {
+		env.commonjs = true;
+	}
+
+	if (env.hmr) {
+		// HMR webpack should use CommonJS
+		env.commonjs = true;
+	}
 
 	// config.stats({
 	// 	logging: 'verbose'
@@ -54,6 +124,37 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.set('externalsPresets', {
 		node: false,
 	});
+
+	// Mock Node.js built-ins that are not available in NativeScript runtime
+	// but are required by some packages like css-tree
+	config.resolve.merge({
+		fallback: {
+			module: require.resolve('../polyfills/module.js'),
+		},
+		alias: {
+			// Mock mdn-data modules that css-tree tries to load
+			'mdn-data/css/properties.json': require.resolve(
+				'../polyfills/mdn-data-properties.js',
+			),
+			'mdn-data/css/syntaxes.json': require.resolve(
+				'../polyfills/mdn-data-syntaxes.js',
+			),
+			'mdn-data/css/at-rules.json': require.resolve(
+				'../polyfills/mdn-data-at-rules.js',
+			),
+			// Ensure imports of the Node 'module' builtin resolve to our polyfill
+			module: require.resolve('../polyfills/module.js'),
+		},
+		// Allow extension-less ESM imports (fixes "fully specified" errors)
+		// Example: '../timer' -> resolves to index.<platform>.js without requiring explicit extension
+		fullySpecified: false,
+	});
+
+	// As an extra guard, ensure rule-level resolve also allows extension-less imports
+	config.module
+		.rule('esm-extensionless')
+		.test(/\.(mjs|js|ts|tsx)$/)
+		.resolve.set('fullySpecified', false);
 
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
 		const defaultSourceMap = 'inline-source-map';
@@ -78,12 +179,35 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		return map as Config.DevTool;
 	};
 
-	config.devtool(getSourceMapType(env.sourceMap));
+	const sourceMapType = getSourceMapType(env.sourceMap);
+
+	// Use devtool for both CommonJS and ESM - let webpack handle source mapping properly
+	config.devtool(sourceMapType);
+
+	// For ESM builds, fix the sourceMappingURL to use correct paths
+	if (sourceMapType && sourceMapType !== 'hidden-source-map') {
+		config
+			.plugin('FixSourceMapUrlPlugin')
+			.use(FixSourceMapUrlPlugin as any, [{ outputPath }]);
+	}
+
+	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
+	if (env.sourceMap === 'hidden-source-map') {
+		const sourceMapAbsolutePath = getProjectFilePath(
+			`./${
+				env.buildPath ?? 'platforms'
+			}/${platform}-sourceMaps/[file].map[query]`,
+		);
+		const sourceMapRelativePath = relative(outputPath, sourceMapAbsolutePath);
+		config.output.sourceMapFilename(sourceMapRelativePath);
+	}
 
 	// todo: figure out easiest way to make "node" target work in ns
 	// rather than the custom ns target implementation that's hard to maintain
 	// appears to be working - but we still have to deal with HMR
 	config.target('node');
+
+	// config.entry('globals').add('@nativescript/core/globals/index').end();
 
 	config
 		.entry('bundle')
@@ -94,7 +218,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// Add android app components to the bundle to SBG can generate the java classes
 	if (platform === 'android') {
-		const appComponents = env.appComponents || [];
+		const appComponents = Array.isArray(env.appComponents)
+			? env.appComponents
+			: (env.appComponents && [env.appComponents]) || [];
 		appComponents.push('@nativescript/core/ui/frame');
 		appComponents.push('@nativescript/core/ui/frame/activity');
 		appComponents.map((component) => {
@@ -109,17 +235,43 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			.add('@nativescript/core/inspector_modules');
 	});
 
-	config.output
-		.path(getAbsoluteDistPath())
-		.pathinfo(false)
-		.publicPath('')
-		.libraryTarget('commonjs')
-		.globalObject('global')
-		.set('clean', true);
+	if (env.commonjs) {
+		// CommonJS output
+		config.output
+			.path(outputPath)
+			.pathinfo(false)
+			.publicPath('')
+			.libraryTarget('commonjs')
+			.globalObject('global')
+			.set('clean', true);
+		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
+			config.output.filename(`[name].${env.uniqueBundle}.js`);
+		}
+	} else {
+		// ESM output
+		config.merge({
+			experiments: {
+				// enable ES module syntax (import/exports)
+				outputModule: true,
+			},
+		});
+
+		config.output
+			.path(outputPath)
+			.pathinfo(false)
+			.publicPath('file:///app/')
+			.set('module', true)
+			.libraryTarget('module')
+			.globalObject('global')
+			.set('clean', true);
+		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
+			config.output.filename(`[name].${env.uniqueBundle}.mjs`);
+		}
+	}
 
 	config.watchOptions({
 		ignored: [
-			`${getProjectFilePath('platforms')}/**`,
+			`${getProjectFilePath(env.buildPath ?? 'platforms')}/**`,
 			`${getProjectFilePath(env.appResourcesPath ?? 'App_Resources')}/**`,
 		],
 	});
@@ -147,22 +299,52 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				},
 				keep_fnames: true,
 				keep_classnames: true,
+				format: {
+					keep_quoted_props: true,
+				},
 			},
 		},
 	]);
 
 	config.optimization.runtimeChunk('single');
 
-	config.optimization.splitChunks({
-		cacheGroups: {
-			defaultVendor: {
-				test: /[\\/]node_modules[\\/]/,
-				priority: -10,
-				name: 'vendor',
-				chunks: 'all',
+	if (env.commonjs) {
+		// Set up CommonJS output
+		config.optimization.splitChunks({
+			cacheGroups: {
+				defaultVendor: {
+					test: /[\\/]node_modules[\\/]/,
+					priority: -10,
+					name: 'vendor',
+					chunks: 'all',
+				},
 			},
-		},
-	});
+		});
+	} else {
+		// Set up ESM output
+		config.output.chunkFilename('[name].mjs');
+
+		// now re‑add exactly what you want:
+		config.optimization.splitChunks({
+			// only split out vendor from the main bundle…
+			chunks: 'initial',
+			cacheGroups: {
+				// no “default” group
+				default: false,
+
+				// only pull node_modules into vendor.js from the *initial* chunk
+				vendor: {
+					test: /[\\/]node_modules[\\/]/,
+					name: 'vendor',
+					chunks: 'initial',
+					priority: -10,
+					reuseExistingChunk: true,
+				},
+			},
+		});
+
+		config.optimization.set('moduleIds', 'named').set('chunkIds', 'named');
+	}
 
 	// look for loaders in
 	//  - node_modules/@nativescript/webpack/dist/loaders
@@ -189,6 +371,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add(`.${platform}.json`)
 		.add('.json');
 
+	if (platform === 'visionos') {
+		// visionOS allows for both .ios and .visionos extensions
+		const extensions = config.resolve.extensions.values();
+		const newExtensions = [];
+		extensions.forEach((ext) => {
+			newExtensions.push(ext);
+			if (ext.includes('visionos')) {
+				newExtensions.push(ext.replace('visionos', 'ios'));
+			}
+		});
+
+		config.resolve.extensions.clear().merge(newExtensions);
+	}
+
 	// base aliases
 	config.resolve.alias.set('~', getEntryDirPath()).set('@', getEntryDirPath());
 
@@ -208,6 +404,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('app-css-loader')
 		.loader('app-css-loader')
 		.options({
+			// TODO: allow both visionos and ios to resolve for css
+			// only resolve .ios css on visionOS for now
+			// platform: platform === 'visionos' ? 'ios' : platform,
 			platform,
 		})
 		.end();
@@ -238,7 +437,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const configFile = tsConfigPath
 		? {
 				configFile: tsConfigPath,
-		  }
+			}
 		: undefined;
 
 	// set up ts support
@@ -262,7 +461,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 					before: [require('../transformers/NativeClass').default],
 				};
 			},
-		});
+		})
+		.end()
+		// Ensure pre-loaders run BEFORE ts-loader (loaders execute right-to-left):
+		// order: [ts-loader, native-class-downlevel-loader, native-class-strip-loader]
+		// execution: strip -> downlevel -> ts-loader
+		.use('native-class-downlevel-loader')
+		.loader('native-class-downlevel-loader')
+		.end()
+		.use('native-class-strip-loader')
+		.loader('native-class-strip-loader');
 
 	// Use Fork TS Checker to do type checking in a separate non-blocking process
 	config.when(hasDependency('typescript'), (config) => {
@@ -307,22 +515,26 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 						// custom resolver to resolve platform extensions in @import statements
 						// ie. @import "foo.css" would import "foo.ios.css" if the platform is ios and it exists
 						resolve(id, baseDir, importOptions) {
-							const ext = extname(id);
-							const platformExt = ext ? `.${platform}${ext}` : '';
+							const extensions =
+								platform === 'visionos' ? [platform, 'ios'] : [platform];
+							for (const platformTarget of extensions) {
+								const ext = extname(id);
+								const platformExt = ext ? `.${platformTarget}${ext}` : '';
 
-							if (!id.includes(platformExt)) {
-								const platformRequest = id.replace(ext, platformExt);
-								const extPath = resolve(baseDir, platformRequest);
+								if (!id.includes(platformExt)) {
+									const platformRequest = id.replace(ext, platformExt);
+									const extPath = resolve(baseDir, platformRequest);
 
-								try {
-									return require.resolve(platformRequest, {
-										paths: [baseDir],
-									});
-								} catch {}
+									try {
+										return require.resolve(platformRequest, {
+											paths: [baseDir],
+										});
+									} catch {}
 
-								if (existsSync(extPath)) {
-									console.log(`resolving "${id}" to "${platformRequest}"`);
-									return extPath;
+									if (existsSync(extPath)) {
+										console.log(`resolving "${id}" to "${platformRequest}"`);
+										return extPath;
+									}
 								}
 							}
 
@@ -364,7 +576,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.options(postCSSOptions)
 		.end()
 		.use('sass-loader')
-		.loader('sass-loader');
+		.loader('sass-loader')
+		.options({
+			// helps ensure proper project compatibility
+			// particularly in cases of workspaces
+			// which may have different nested Sass implementations
+			// via transient dependencies
+			implementation: require('sass'),
+		});
 
 	// config.plugin('NormalModuleReplacementPlugin').use(NormalModuleReplacementPlugin, [
 	// 	/.*/,
@@ -378,7 +597,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{
-			platform,
+			extensions: platform === 'visionos' ? [platform, 'ios'] : [platform],
 		},
 	]);
 
@@ -397,7 +616,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config
 		.plugin('ContextExclusionPlugin|Other_Platforms')
 		.use(ContextExclusionPlugin, [
-			new RegExp(`\\.(${otherPlatformsRE})\\.(\\w+)$`),
+			new RegExp(`\.(${otherPlatformsRE})\.(\w+)$`),
 		]);
 
 	// Filter common undesirable warnings
@@ -413,33 +632,35 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/System.import\(\) is deprecated/,
-		])
+		]),
 	);
 
 	// todo: refine defaults
-	config.plugin('DefinePlugin').use(DefinePlugin, [
-		{
-			__DEV__: mode === 'development',
-			__NS_WEBPACK__: true,
-			__NS_ENV_VERBOSE__: !!env.verbose,
-			__NS_DEV_HOST_IPS__:
-				mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
-			__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
-			__UI_USE_XML_PARSER__: true,
-			__UI_USE_EXTERNAL_RENDERER__: false,
-			__ANDROID__: platform === 'android',
-			__IOS__: platform === 'ios',
-			/* for compat only */ 'global.isAndroid': platform === 'android',
-			/* for compat only */ 'global.isIOS': platform === 'ios',
-			process: 'global.process',
-
-			// enable testID when using --env.e2e
-			__USE_TEST_ID__: !!env.e2e,
-
-			// todo: ?!?!
-			// profile: '() => {}',
-		},
-	]);
+	config.plugin('DefinePlugin').use(
+		CompatDefinePlugin as any,
+		[
+			{
+				__DEV__: mode === 'development',
+				__NS_WEBPACK__: true,
+				__NS_ENV_VERBOSE__: !!env.verbose,
+				__NS_DEV_HOST_IPS__:
+					mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
+				__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
+				__UI_USE_XML_PARSER__: true,
+				__UI_USE_EXTERNAL_RENDERER__: false,
+				__COMMONJS__: !!env.commonjs,
+				__ANDROID__: platform === 'android',
+				__IOS__: platform === 'ios',
+				__VISIONOS__: platform === 'visionos',
+				__APPLE__: platform === 'ios' || platform === 'visionos',
+				/* for compat only */ 'global.isAndroid': platform === 'android',
+				/* for compat only */ 'global.isIOS':
+					platform === 'ios' || platform === 'visionos',
+				/* for compat only */ 'global.isVisionOS': platform === 'visionos',
+				process: 'global.process',
+			},
+		] as any,
+	);
 
 	// enable DotEnv
 	applyDotEnvPlugin(config);
@@ -477,7 +698,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 function shouldIncludeInspectorModules(): boolean {
 	const platform = getPlatformName();
-	// todo: check if core modules are external
-	// todo: check if we are testing
+	const coreVersion = getDependencyVersion('@nativescript/core');
+
+	if (coreVersion && satisfies(coreVersion, '>=8.7.0')) {
+		return platform === 'ios' || platform === 'android';
+	}
+
 	return platform === 'ios';
 }

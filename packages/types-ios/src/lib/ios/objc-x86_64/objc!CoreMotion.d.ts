@@ -1,4 +1,7 @@
 
+/**
+ * @since 15.0
+ */
 declare class CMAbsoluteAltitudeData extends CMLogItem {
 
 	static alloc(): CMAbsoluteAltitudeData; // inherited from NSObject
@@ -19,6 +22,9 @@ interface CMAcceleration {
 }
 declare var CMAcceleration: interop.StructType<CMAcceleration>;
 
+/**
+ * @since 4.0
+ */
 declare class CMAccelerometerData extends CMLogItem {
 
 	static alloc(): CMAccelerometerData; // inherited from NSObject
@@ -28,27 +34,45 @@ declare class CMAccelerometerData extends CMLogItem {
 	readonly acceleration: CMAcceleration;
 }
 
+/**
+ * @since 8.0
+ */
 declare class CMAltimeter extends NSObject {
 
 	static alloc(): CMAltimeter; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static authorizationStatus(): CMAuthorizationStatus;
 
+	/**
+	 * @since 15.0
+	 */
 	static isAbsoluteAltitudeAvailable(): boolean;
 
 	static isRelativeAltitudeAvailable(): boolean;
 
 	static new(): CMAltimeter; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	startAbsoluteAltitudeUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMAbsoluteAltitudeData, p2: NSError) => void): void;
 
 	startRelativeAltitudeUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMAltitudeData, p2: NSError) => void): void;
 
+	/**
+	 * @since 15.0
+	 */
 	stopAbsoluteAltitudeUpdates(): void;
 
 	stopRelativeAltitudeUpdates(): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class CMAltitudeData extends CMLogItem {
 
 	static alloc(): CMAltitudeData; // inherited from NSObject
@@ -60,6 +84,9 @@ declare class CMAltitudeData extends CMLogItem {
 	readonly relativeAltitude: number;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CMAmbientPressureData extends CMLogItem {
 
 	static alloc(): CMAmbientPressureData; // inherited from NSObject
@@ -71,6 +98,9 @@ declare class CMAmbientPressureData extends CMLogItem {
 	readonly temperature: NSMeasurement<NSUnitTemperature>;
 }
 
+/**
+ * @since 4.0
+ */
 declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMAttitude; // inherited from NSObject
@@ -111,6 +141,9 @@ declare const enum CMAttitudeReferenceFrame {
 	XTrueNorthZVertical = 8
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum CMAuthorizationStatus {
 
 	NotDetermined = 0,
@@ -122,12 +155,52 @@ declare const enum CMAuthorizationStatus {
 	Authorized = 3
 }
 
+declare class CMBatchedSensorManager extends NSObject {
+
+	static alloc(): CMBatchedSensorManager; // inherited from NSObject
+
+	static new(): CMBatchedSensorManager; // inherited from NSObject
+
+	readonly accelerometerActive: boolean;
+
+	readonly accelerometerBatch: NSArray<CMAccelerometerData>;
+
+	readonly accelerometerDataFrequency: number;
+
+	readonly deviceMotionActive: boolean;
+
+	readonly deviceMotionBatch: NSArray<CMDeviceMotion>;
+
+	readonly deviceMotionDataFrequency: number;
+
+	static readonly accelerometerSupported: boolean;
+
+	static readonly authorizationStatus: CMAuthorizationStatus;
+
+	static readonly deviceMotionSupported: boolean;
+
+	startAccelerometerUpdates(): void;
+
+	startAccelerometerUpdatesWithHandler(handler: (p1: NSArray<CMAccelerometerData>, p2: NSError) => void): void;
+
+	startDeviceMotionUpdates(): void;
+
+	startDeviceMotionUpdatesWithHandler(handler: (p1: NSArray<CMDeviceMotion>, p2: NSError) => void): void;
+
+	stopAccelerometerUpdates(): void;
+
+	stopDeviceMotionUpdates(): void;
+}
+
 interface CMCalibratedMagneticField {
 	field: CMMagneticField;
 	accuracy: CMMagneticFieldCalibrationAccuracy;
 }
 declare var CMCalibratedMagneticField: interop.StructType<CMCalibratedMagneticField>;
 
+/**
+ * @since 4.0
+ */
 declare class CMDeviceMotion extends CMLogItem {
 
 	static alloc(): CMDeviceMotion; // inherited from NSObject
@@ -138,12 +211,21 @@ declare class CMDeviceMotion extends CMLogItem {
 
 	readonly gravity: CMAcceleration;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly heading: number;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly magneticField: CMCalibratedMagneticField;
 
 	readonly rotationRate: CMRotationRate;
 
+	/**
+	 * @since 14.0
+	 */
 	readonly sensorLocation: CMDeviceMotionSensorLocation;
 
 	readonly userAcceleration: CMAcceleration;
@@ -158,6 +240,9 @@ declare const enum CMDeviceMotionSensorLocation {
 	HeadphoneRight = 2
 }
 
+/**
+ * @since 12.0
+ */
 declare class CMDyskineticSymptomResult extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMDyskineticSymptomResult; // inherited from NSObject
@@ -214,6 +299,9 @@ declare const enum CMError {
 	Size = 113
 }
 
+/**
+ * @since 4.0
+ */
 declare var CMErrorDomain: string;
 
 declare const enum CMFallDetectionEventUserResolution {
@@ -227,6 +315,9 @@ declare const enum CMFallDetectionEventUserResolution {
 	Unresponsive = 3
 }
 
+/**
+ * @since 4.0
+ */
 declare class CMGyroData extends CMLogItem {
 
 	static alloc(): CMGyroData; // inherited from NSObject
@@ -236,6 +327,44 @@ declare class CMGyroData extends CMLogItem {
 	readonly rotationRate: CMRotationRate;
 }
 
+/**
+ * @since 18.0
+ */
+declare class CMHeadphoneActivityManager extends NSObject {
+
+	static alloc(): CMHeadphoneActivityManager; // inherited from NSObject
+
+	static authorizationStatus(): CMAuthorizationStatus;
+
+	static new(): CMHeadphoneActivityManager; // inherited from NSObject
+
+	readonly activityActive: boolean;
+
+	readonly activityAvailable: boolean;
+
+	readonly statusActive: boolean;
+
+	readonly statusAvailable: boolean;
+
+	startActivityUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMMotionActivity, p2: NSError) => void): void;
+
+	startStatusUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMHeadphoneActivityStatus, p2: NSError) => void): void;
+
+	stopActivityUpdates(): void;
+
+	stopStatusUpdates(): void;
+}
+
+declare const enum CMHeadphoneActivityStatus {
+
+	Disconnected = 0,
+
+	Connected = 1
+}
+
+/**
+ * @since 14.0
+ */
 declare class CMHeadphoneMotionManager extends NSObject {
 
 	static alloc(): CMHeadphoneMotionManager; // inherited from NSObject
@@ -243,6 +372,8 @@ declare class CMHeadphoneMotionManager extends NSObject {
 	static authorizationStatus(): CMAuthorizationStatus;
 
 	static new(): CMHeadphoneMotionManager; // inherited from NSObject
+
+	readonly connectionStatusActive: boolean;
 
 	delegate: CMHeadphoneMotionManagerDelegate;
 
@@ -252,13 +383,20 @@ declare class CMHeadphoneMotionManager extends NSObject {
 
 	readonly deviceMotionAvailable: boolean;
 
+	startConnectionStatusUpdates(): void;
+
 	startDeviceMotionUpdates(): void;
 
 	startDeviceMotionUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMDeviceMotion, p2: NSError) => void): void;
 
+	stopConnectionStatusUpdates(): void;
+
 	stopDeviceMotionUpdates(): void;
 }
 
+/**
+ * @since 14.0
+ */
 interface CMHeadphoneMotionManagerDelegate extends NSObjectProtocol {
 
 	headphoneMotionManagerDidConnect?(manager: CMHeadphoneMotionManager): void;
@@ -270,6 +408,39 @@ declare var CMHeadphoneMotionManagerDelegate: {
 	prototype: CMHeadphoneMotionManagerDelegate;
 };
 
+/**
+ * @since 17.0
+ */
+declare class CMHighFrequencyHeartRateData extends CMLogItem {
+
+	static alloc(): CMHighFrequencyHeartRateData; // inherited from NSObject
+
+	static new(): CMHighFrequencyHeartRateData; // inherited from NSObject
+
+	readonly confidence: CMHighFrequencyHeartRateDataConfidence;
+
+	readonly date: Date;
+
+	readonly heartRate: number;
+}
+
+/**
+ * @since 17.0
+ */
+declare const enum CMHighFrequencyHeartRateDataConfidence {
+
+	Low = 0,
+
+	Medium = 1,
+
+	High = 2,
+
+	Highest = 3
+}
+
+/**
+ * @since 4.0
+ */
 declare class CMLogItem extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMLogItem; // inherited from NSObject
@@ -307,6 +478,9 @@ declare const enum CMMagneticFieldCalibrationAccuracy {
 	High = 2
 }
 
+/**
+ * @since 5.0
+ */
 declare class CMMagnetometerData extends CMLogItem {
 
 	static alloc(): CMMagnetometerData; // inherited from NSObject
@@ -316,6 +490,9 @@ declare class CMMagnetometerData extends CMLogItem {
 	readonly magneticField: CMMagneticField;
 }
 
+/**
+ * @since 7.0
+ */
 declare class CMMotionActivity extends CMLogItem {
 
 	static alloc(): CMMotionActivity; // inherited from NSObject
@@ -326,6 +503,9 @@ declare class CMMotionActivity extends CMLogItem {
 
 	readonly confidence: CMMotionActivityConfidence;
 
+	/**
+	 * @since 8.0
+	 */
 	readonly cycling: boolean;
 
 	readonly running: boolean;
@@ -348,10 +528,16 @@ declare const enum CMMotionActivityConfidence {
 	High = 2
 }
 
+/**
+ * @since 7.0
+ */
 declare class CMMotionActivityManager extends NSObject {
 
 	static alloc(): CMMotionActivityManager; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static authorizationStatus(): CMAuthorizationStatus;
 
 	static isActivityAvailable(): boolean;
@@ -365,10 +551,16 @@ declare class CMMotionActivityManager extends NSObject {
 	stopActivityUpdates(): void;
 }
 
+/**
+ * @since 4.0
+ */
 declare class CMMotionManager extends NSObject {
 
 	static alloc(): CMMotionManager; // inherited from NSObject
 
+	/**
+	 * @since 5.0
+	 */
 	static availableAttitudeReferenceFrames(): CMAttitudeReferenceFrame;
 
 	static new(): CMMotionManager; // inherited from NSObject
@@ -381,6 +573,9 @@ declare class CMMotionManager extends NSObject {
 
 	accelerometerUpdateInterval: number;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly attitudeReferenceFrame: CMAttitudeReferenceFrame;
 
 	readonly deviceMotion: CMDeviceMotion;
@@ -399,14 +594,29 @@ declare class CMMotionManager extends NSObject {
 
 	gyroUpdateInterval: number;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly magnetometerActive: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly magnetometerAvailable: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly magnetometerData: CMMagnetometerData;
 
+	/**
+	 * @since 5.0
+	 */
 	magnetometerUpdateInterval: number;
 
+	/**
+	 * @since 5.0
+	 */
 	showsDeviceMovementDisplay: boolean;
 
 	startAccelerometerUpdates(): void;
@@ -417,16 +627,28 @@ declare class CMMotionManager extends NSObject {
 
 	startDeviceMotionUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMDeviceMotion, p2: NSError) => void): void;
 
+	/**
+	 * @since 5.0
+	 */
 	startDeviceMotionUpdatesUsingReferenceFrame(referenceFrame: CMAttitudeReferenceFrame): void;
 
+	/**
+	 * @since 5.0
+	 */
 	startDeviceMotionUpdatesUsingReferenceFrameToQueueWithHandler(referenceFrame: CMAttitudeReferenceFrame, queue: NSOperationQueue, handler: (p1: CMDeviceMotion, p2: NSError) => void): void;
 
 	startGyroUpdates(): void;
 
 	startGyroUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMGyroData, p2: NSError) => void): void;
 
+	/**
+	 * @since 5.0
+	 */
 	startMagnetometerUpdates(): void;
 
+	/**
+	 * @since 5.0
+	 */
 	startMagnetometerUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMMagnetometerData, p2: NSError) => void): void;
 
 	stopAccelerometerUpdates(): void;
@@ -435,23 +657,127 @@ declare class CMMotionManager extends NSObject {
 
 	stopGyroUpdates(): void;
 
+	/**
+	 * @since 5.0
+	 */
 	stopMagnetometerUpdates(): void;
 }
 
+/**
+ * @since 8.0
+ */
+declare class CMOdometerData extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CMOdometerData; // inherited from NSObject
+
+	static new(): CMOdometerData; // inherited from NSObject
+
+	/**
+	 * @since 17.0
+	 */
+	readonly deltaAltitude: number;
+
+	/**
+	 * @since 17.0
+	 */
+	readonly deltaDistance: number;
+
+	/**
+	 * @since 17.0
+	 */
+	readonly deltaDistanceAccuracy: number;
+
+	readonly endDate: Date;
+
+	/**
+	 * @since 17.0
+	 */
+	readonly gpsDate: Date;
+
+	/**
+	 * @since 17.0
+	 */
+	readonly maxAbsSlope: number;
+
+	/**
+	 * @since 15.4
+	 */
+	readonly originDevice: CMOdometerOriginDevice;
+
+	/**
+	 * @since 17.0
+	 */
+	readonly slope: number;
+
+	/**
+	 * @since 17.0
+	 */
+	readonly speed: number;
+
+	/**
+	 * @since 17.0
+	 */
+	readonly speedAccuracy: number;
+
+	readonly startDate: Date;
+
+	/**
+	 * @since 17.0
+	 */
+	readonly verticalAccuracy: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 15.4
+ */
+declare const enum CMOdometerOriginDevice {
+
+	Unknown = 0,
+
+	Local = 1,
+
+	Remote = 2
+}
+
+/**
+ * @since 8.0
+ */
 declare class CMPedometer extends NSObject {
 
 	static alloc(): CMPedometer; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static authorizationStatus(): CMAuthorizationStatus;
 
+	/**
+	 * @since 9.0
+	 */
 	static isCadenceAvailable(): boolean;
 
 	static isDistanceAvailable(): boolean;
 
 	static isFloorCountingAvailable(): boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	static isPaceAvailable(): boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	static isPedometerEventTrackingAvailable(): boolean;
 
 	static isStepCountingAvailable(): boolean;
@@ -460,25 +786,43 @@ declare class CMPedometer extends NSObject {
 
 	queryPedometerDataFromDateToDateWithHandler(start: Date, end: Date, handler: (p1: CMPedometerData, p2: NSError) => void): void;
 
+	/**
+	 * @since 10.0
+	 */
 	startPedometerEventUpdatesWithHandler(handler: (p1: CMPedometerEvent, p2: NSError) => void): void;
 
 	startPedometerUpdatesFromDateWithHandler(start: Date, handler: (p1: CMPedometerData, p2: NSError) => void): void;
 
+	/**
+	 * @since 10.0
+	 */
 	stopPedometerEventUpdates(): void;
 
 	stopPedometerUpdates(): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMPedometerData; // inherited from NSObject
 
 	static new(): CMPedometerData; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	readonly averageActivePace: number;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly currentCadence: number;
 
+	/**
+	 * @since 9.0
+	 */
 	readonly currentPace: number;
 
 	readonly distance: number;
@@ -504,6 +848,9 @@ declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCod
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class CMPedometerEvent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMPedometerEvent; // inherited from NSObject
@@ -525,6 +872,9 @@ declare class CMPedometerEvent extends NSObject implements NSCopying, NSSecureCo
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum CMPedometerEventType {
 
 	Pause = 0,
@@ -540,6 +890,9 @@ interface CMQuaternion {
 }
 declare var CMQuaternion: interop.StructType<CMQuaternion>;
 
+/**
+ * @since 9.0
+ */
 declare class CMRecordedAccelerometerData extends CMAccelerometerData {
 
 	static alloc(): CMRecordedAccelerometerData; // inherited from NSObject
@@ -551,6 +904,9 @@ declare class CMRecordedAccelerometerData extends CMAccelerometerData {
 	readonly startDate: Date;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CMRecordedPressureData extends CMAmbientPressureData {
 
 	static alloc(): CMRecordedPressureData; // inherited from NSObject
@@ -562,6 +918,9 @@ declare class CMRecordedPressureData extends CMAmbientPressureData {
 	readonly startDate: Date;
 }
 
+/**
+ * @since 14.0
+ */
 declare class CMRecordedRotationRateData extends CMRotationRateData {
 
 	static alloc(): CMRecordedRotationRateData; // inherited from NSObject
@@ -591,6 +950,9 @@ interface CMRotationRate {
 }
 declare var CMRotationRate: interop.StructType<CMRotationRate>;
 
+/**
+ * @since 14.0
+ */
 declare class CMRotationRateData extends CMLogItem {
 
 	static alloc(): CMRotationRateData; // inherited from NSObject
@@ -600,6 +962,9 @@ declare class CMRotationRateData extends CMLogItem {
 	readonly rotationRate: CMRotationRate;
 }
 
+/**
+ * @since 9.0
+ */
 declare class CMSensorDataList extends NSObject implements NSFastEnumeration {
 
 	static alloc(): CMSensorDataList; // inherited from NSObject
@@ -608,14 +973,24 @@ declare class CMSensorDataList extends NSObject implements NSFastEnumeration {
 	[Symbol.iterator](): Iterator<any>;
 }
 
+/**
+ * @since 9.0
+ */
 declare class CMSensorRecorder extends NSObject {
 
 	static alloc(): CMSensorRecorder; // inherited from NSObject
 
+	/**
+	 * @since 11.0
+	 */
 	static authorizationStatus(): CMAuthorizationStatus;
 
 	static isAccelerometerRecordingAvailable(): boolean;
 
+	/**
+	 * @since 9.0
+	 * @deprecated 11.0
+	 */
 	static isAuthorizedForRecording(): boolean;
 
 	static new(): CMSensorRecorder; // inherited from NSObject
@@ -625,6 +1000,10 @@ declare class CMSensorRecorder extends NSObject {
 	recordAccelerometerForDuration(duration: number): void;
 }
 
+/**
+ * @since 7.0
+ * @deprecated 8.0
+ */
 declare class CMStepCounter extends NSObject {
 
 	static alloc(): CMStepCounter; // inherited from NSObject
@@ -640,6 +1019,9 @@ declare class CMStepCounter extends NSObject {
 	stopStepCountingUpdates(): void;
 }
 
+/**
+ * @since 12.0
+ */
 declare class CMTremorResult extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMTremorResult; // inherited from NSObject
@@ -690,6 +1072,9 @@ declare const enum CMWaterSubmersionDepthState {
 	SensorDepthError = 600
 }
 
+/**
+ * @since 16.0
+ */
 declare class CMWaterSubmersionEvent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMWaterSubmersionEvent; // inherited from NSObject
@@ -711,6 +1096,9 @@ declare class CMWaterSubmersionEvent extends NSObject implements NSCopying, NSSe
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class CMWaterSubmersionManager extends NSObject {
 
 	static alloc(): CMWaterSubmersionManager; // inherited from NSObject
@@ -719,11 +1107,16 @@ declare class CMWaterSubmersionManager extends NSObject {
 
 	delegate: CMWaterSubmersionManagerDelegate;
 
+	readonly maximumDepth: NSMeasurement<NSUnitLength>;
+
 	static readonly authorizationStatus: CMAuthorizationStatus;
 
 	static readonly waterSubmersionAvailable: boolean;
 }
 
+/**
+ * @since 16.0
+ */
 interface CMWaterSubmersionManagerDelegate extends NSObjectProtocol {
 
 	managerDidUpdateEvent(manager: CMWaterSubmersionManager, event: CMWaterSubmersionEvent): void;
@@ -739,6 +1132,9 @@ declare var CMWaterSubmersionManagerDelegate: {
 	prototype: CMWaterSubmersionManagerDelegate;
 };
 
+/**
+ * @since 16.0
+ */
 declare class CMWaterSubmersionMeasurement extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMWaterSubmersionMeasurement; // inherited from NSObject
@@ -775,6 +1171,9 @@ declare const enum CMWaterSubmersionState {
 	Submerged = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare class CMWaterTemperature extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CMWaterTemperature; // inherited from NSObject

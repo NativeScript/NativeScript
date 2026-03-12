@@ -1,5 +1,9 @@
 import { env } from '../../src/';
-import { addPlatform, getEntryPath } from '../../src/helpers/platform';
+import {
+	addPlatform,
+	getEntryPath,
+	getDistPath,
+} from '../../src/helpers/platform';
 
 import { getValue } from '../../src/helpers/config';
 
@@ -45,5 +49,36 @@ describe('getEntryPath', () => {
 		const res = getEntryPath();
 		// set in jest.setup.ts mock for package.json...
 		expect(res).toEqual('__jest__/src/app.js');
+	});
+});
+
+describe('getDistPath', () => {
+	it('is generated from working directory when no projectName setting in nativescript.config.ts', () => {
+		env.ios = true;
+
+		const distPath = getDistPath();
+
+		expect(distPath).toEqual('platforms/ios/jest/app');
+		env.ios = false;
+	});
+
+	it('is generated using projectName value from nativescript.config.ts when set', () => {
+		env.ios = true;
+
+		// mock getValue
+		const getValueMock = getValue as jest.Mock;
+		const getValueMockImpl = getValueMock.getMockImplementation();
+
+		getValueMock.mockImplementation((key) => {
+			if (key === 'projectName') {
+				return 'projectNameSpecified';
+			}
+		});
+
+		const distPath = getDistPath();
+
+		expect(distPath).toEqual('platforms/ios/projectNameSpecified/app');
+
+		getValueMock.mockImplementation(getValueMockImpl);
 	});
 });

@@ -2,12 +2,15 @@ import { LayoutBase } from '../layout-base';
 import { Style } from '../../styling/style';
 import { CssProperty } from '../../core/properties';
 import { View } from '../../core/view';
+import { CoreTypes } from '../../enums';
 
 export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
 export type FlexWrap = 'nowrap' | 'wrap' | 'wrap-reverse';
 export type JustifyContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around';
 export type AlignItems = 'flex-start' | 'flex-end' | 'center' | 'baseline' | 'stretch';
 export type AlignContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'stretch';
+export type FlexFlow = `${FlexDirection} ${FlexWrap}`;
+export type Flex = number | 'auto' | 'none' | `${FlexGrow} ${FlexShrink}` | CoreTypes.CSSWideKeywords;
 
 /**
  * A flex order integer.
@@ -31,11 +34,39 @@ export type FlexWrapBefore = boolean;
 
 export type AlignSelf = 'auto' | AlignItems;
 
+/**
+ * @nsView FlexboxLayout
+ */
 export class FlexboxLayout extends LayoutBase {
+	/**
+	 * Gets or set the direction of childern on the main axis.
+	 *
+	 * @nsProperty
+	 */
 	public flexDirection: FlexDirection;
+	/**
+	 * Gets or sets whether children can wrap into multiple lines
+	 *
+	 * @nsProperty
+	 */
 	public flexWrap: FlexWrap;
+	/**
+	 * Gets or sets alignment of childern on the main axis
+	 *
+	 * @nsProperty
+	 */
 	public justifyContent: JustifyContent;
+	/**
+	 * Gets or sets alignment of the childern on cross axis
+	 *
+	 * @nsProperty
+	 */
 	public alignItems: AlignItems;
+	/**
+	 * Gets or sets alignment of items along the cross axis
+	 *
+	 * @nsProperty
+	 */
 	public alignContent: AlignContent;
 
 	public static setOrder(view: View, order: number);
@@ -64,3 +95,5 @@ export const flexGrowProperty: CssProperty<Style, FlexGrow>;
 export const flexShrinkProperty: CssProperty<Style, FlexShrink>;
 export const flexWrapBeforeProperty: CssProperty<Style, FlexWrapBefore>;
 export const alignSelfProperty: CssProperty<Style, AlignSelf>;
+export const flexFlowProperty: CssProperty<Style, FlexFlow>;
+export const flexProperty: CssProperty<Style, Flex>;

@@ -1,10 +1,12 @@
 import { Font } from '../styling/font';
-import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty } from './segmented-bar-common';
-import { isEnabledProperty } from '../core/view';
+import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty, selectedTextColorProperty } from './segmented-bar-common';
+import { AndroidHelper, isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
+import { Trace } from '../../trace';
+import { CoreTypes } from '../../core-types';
 
 export * from './segmented-bar-common';
 
@@ -51,8 +53,13 @@ function initializeNativeClasses(): void {
 
 		onTabChanged(id: string): void {
 			const owner = this.owner;
-			if (owner.shouldChangeSelectedIndex()) {
-				owner.selectedIndex = parseInt(id);
+			if (owner) {
+				setTimeout(() => {
+					owner.setTabColor(id);
+				});
+				if (owner.shouldChangeSelectedIndex()) {
+					owner.selectedIndex = parseInt(id);
+				}
 			}
 		}
 	}
@@ -68,12 +75,14 @@ function initializeNativeClasses(): void {
 
 		createTabContent(tag: string): android.view.View {
 			const tv = new android.widget.TextView(this.owner._context);
+			const isRtl = this.owner.direction === CoreTypes.LayoutDirection.rtl;
+
 			// This is collapsed by default and made visible
 			// by android when TabItem becomes visible/selected.
 			// TODO: Try commenting visibility change.
 			tv.setVisibility(android.view.View.GONE);
 			tv.setMaxLines(1);
-			tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+			tv.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 
 			return tv;
 		}
@@ -164,8 +173,8 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 			const color = value.android;
 			const backgroundDrawable = viewGroup.getBackground();
 			if (SDK_VERSION > 21 && backgroundDrawable) {
-				const newDrawable = tryCloneDrawable(backgroundDrawable, nativeView.getResources());
-				newDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+				const newDrawable = AndroidHelper.getCopyOrDrawable(backgroundDrawable, nativeView.getResources());
+				AndroidHelper.setDrawableColor(color, newDrawable);
 				viewGroup.setBackground(newDrawable);
 			} else {
 				const stateDrawable = new android.graphics.drawable.StateListDrawable();
@@ -177,21 +186,10 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 				viewGroup.setBackground(stateDrawable);
 			}
 		} else {
-			const backgroundDrawable = tryCloneDrawable(value, nativeView.getResources());
+			const backgroundDrawable = AndroidHelper.getCopyOrDrawable(value, nativeView.getResources());
 			viewGroup.setBackground(backgroundDrawable);
 		}
 	}
-}
-
-function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
-	if (value) {
-		const constantState = value.getConstantState();
-		if (constantState) {
-			return constantState.newDrawable(resources);
-		}
-	}
-
-	return value;
 }
 
 export class SegmentedBar extends SegmentedBarBase {
@@ -290,6 +288,44 @@ export class SegmentedBar extends SegmentedBarBase {
 		const tabWidget = this.nativeViewProtected.getTabWidget();
 		if (tabWidget) {
 			tabWidget.setEnabled(value);
+		}
+	}
+	public setTabColor(index) {
+		try {
+			const tabWidget = this.nativeViewProtected?.getTabWidget();
+			if (tabWidget) {
+				const unselectedTextColor = this.getColorForAndroid(this.color ?? '#6e6e6e');
+				const selectedTextColor = this.getColorForAndroid(this?.selectedTextColor ?? '#000000');
+				const unselectedBackgroundColor = this.getColorForAndroid(this?.backgroundColor ?? '#dbdbdb');
+				const selectedBackgroundColor = this.getColorForAndroid(this?.selectedBackgroundColor ?? this?.backgroundColor ?? 'blue');
+				if (tabWidget) {
+					for (let i = 0; i < tabWidget.getTabCount(); i++) {
+						const view = tabWidget.getChildTabViewAt(i);
+						const item = this.items[i];
+						const textView = item?.nativeViewProtected;
+						view.setBackgroundColor(unselectedBackgroundColor);
+						if (textView) {
+							textView.setTextColor(unselectedTextColor);
+						}
+						if (index == i) {
+							view.setBackgroundColor(selectedBackgroundColor);
+							if (textView) {
+								textView.setTextColor(selectedTextColor);
+							}
+							continue;
+						}
+					}
+				}
+			}
+		} catch (e) {
+			Trace.error(e);
+		}
+	}
+	private getColorForAndroid(color: string | Color): number {
+		if (typeof color === 'string') {
+			return new Color(color).android;
+		} else if (color instanceof Color) {
+			return color.android;
 		}
 	}
 }

@@ -1,10 +1,7 @@
-import { View } from '@nativescript/core/ui/core/view';
-import { Button } from '@nativescript/core/ui/button';
-import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
-import { Color } from '@nativescript/core/color';
+import { View, Page, Button, GridLayout, Color, Utils } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import * as TKUnit from '../../tk-unit';
-import * as utils from '@nativescript/core/utils';
+import { _createBackgroundColorView, _createLabelWithBorder } from './view-tests-common';
 
 export * from './view-tests-common';
 
@@ -18,7 +15,7 @@ class MyGrid extends GridLayout {
 }
 
 export function getUniformNativeBorderWidth(v: View): number {
-	return utils.layout.toDevicePixels((<UIView>v.ios).layer.borderWidth);
+	return Utils.layout.toDevicePixels((<UIView>v.ios).layer.borderWidth);
 }
 
 export function checkUniformNativeBorderColor(v: View): boolean {
@@ -30,7 +27,42 @@ export function checkUniformNativeBorderColor(v: View): boolean {
 }
 
 export function getUniformNativeCornerRadius(v: View): number {
-	return utils.layout.toDevicePixels((<UIView>v.ios).layer.cornerRadius);
+	return Utils.layout.toDevicePixels((<UIView>v.ios).layer.cornerRadius);
+}
+
+export function testBackgroundColor() {
+	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
+		const lbl = views[0];
+		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+	});
+}
+
+export function testBackgroundBorderColor() {
+	helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
+		const lbl = views[0];
+		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+	});
+}
+export function testSetAndRemoveBackgroundColor() {
+	helper.buildUIAndRunTest(_createBackgroundColorView(), function (views: Array<View>) {
+		const lbl = views[0];
+		helper.waitUntilLayoutReady(lbl);
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+		lbl.backgroundColor = null;
+		TKUnit.assertEqual(checkNativeBackgroundColor(lbl), true, 'BackgroundColor not applied correctly!');
+	});
+}
+
+export function testBackgroundImage() {
+	const lbl = _createLabelWithBorder();
+	lbl.className = 'myClass';
+	helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
+		const page = <Page>views[1];
+		page.css = ".myClass { background-image: url('~/assets/logo.png') }";
+		TKUnit.assertEqual(checkNativeBackgroundImage(lbl), true, 'Style background-image not loaded correctly.');
+	});
 }
 
 export function checkNativeBackgroundColor(v: View): boolean {
@@ -75,17 +107,17 @@ export function testBackgroundInternalChangedOnceOnResize() {
 	layout.requestLayout();
 	layout.layout(0, 0, 200, 200);
 
-	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is layed-out on 0 0 200 200.');
+	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is laid-out on 0 0 200 200.');
 
 	layout.requestLayout();
 	layout.layout(50, 50, 250, 250);
 
-	TKUnit.assertEqual(trackCount(), 0, 'Expected background to NOT change when view is layed-out from 0 0 200 200 to 50 50 250 250.');
+	TKUnit.assertEqual(trackCount(), 0, 'Expected background to NOT change when view is laid-out from 0 0 200 200 to 50 50 250 250.');
 
 	layout.requestLayout();
 	layout.layout(0, 0, 250, 250);
 
-	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is layed-out from 50 50 250 250 to 0 0 250 250.');
+	TKUnit.assertEqual(trackCount(), 1, 'Expected background to be re-applied at most once when the view is laid-out from 50 50 250 250 to 0 0 250 250.');
 }
 
 export function test_automation_text_set_to_native() {

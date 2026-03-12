@@ -6,6 +6,7 @@ import { CSSType, View } from '../core/view';
 // TODO: Extract base Range class for slider and progress
 @CSSType('Slider')
 export class SliderBase extends View implements SliderDefinition {
+	static readonly valueChangeEvent = 'valueChange';
 	static readonly accessibilityIncrementEvent = 'accessibilityIncrement';
 	static readonly accessibilityDecrementEvent = 'accessibilityDecrement';
 
@@ -21,7 +22,6 @@ export class SliderBase extends View implements SliderDefinition {
 		this.style.accessibilityStep = value;
 	}
 
-	accessible = true;
 	accessibilityRole = AccessibilityRole.Adjustable;
 }
 
@@ -39,7 +39,7 @@ export const valueProperty = new CoercibleProperty<SliderBase, number>({
 
 		return value;
 	},
-	valueConverter: (v) => (global.isIOS ? parseFloat(v) : parseInt(v)),
+	valueConverter: (v) => (__APPLE__ ? parseFloat(v) : parseInt(v)),
 });
 valueProperty.register(SliderBase);
 
@@ -53,7 +53,7 @@ export const minValueProperty = new Property<SliderBase, number>({
 		maxValueProperty.coerce(target);
 		valueProperty.coerce(target);
 	},
-	valueConverter: (v) => (global.isIOS ? parseFloat(v) : parseInt(v)),
+	valueConverter: (v) => (__APPLE__ ? parseFloat(v) : parseInt(v)),
 });
 minValueProperty.register(SliderBase);
 
@@ -72,6 +72,6 @@ export const maxValueProperty = new CoercibleProperty<SliderBase, number>({
 		return value;
 	},
 	valueChanged: (target, oldValue, newValue) => valueProperty.coerce(target),
-	valueConverter: (v) => (global.isIOS ? parseFloat(v) : parseInt(v)),
+	valueConverter: (v) => (__APPLE__ ? parseFloat(v) : parseInt(v)),
 });
 maxValueProperty.register(SliderBase);

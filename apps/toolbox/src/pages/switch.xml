@@ -4,9 +4,9 @@
         </ActionBar>
     </Page.actionBar>
 
-    <GridLayout padding="20" class="switch-demo-page">   
+    <GridLayout class="switch-demo-page">   
       <ScrollView>
-          <StackLayout>
+          <StackLayout ios:padding="20" visionos:padding="40">
 
             <GridLayout columns="*, auto" marginTop="24">
                 <Label text="Default + Checked + Enabled" />

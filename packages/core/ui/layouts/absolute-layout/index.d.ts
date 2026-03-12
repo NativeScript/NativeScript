@@ -1,11 +1,13 @@
 ﻿import { LayoutBase } from '../layout-base';
 import { Property } from '../../core/properties';
 import { View } from '../../core/view';
-import { Length } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 import { CoreTypes } from '../../../core-types';
 
 /**
  *  A layout that lets you specify exact locations (left/top coordinates) of its children.
+ *
+ * @nsView AbsoluteLayout
  */
 export class AbsoluteLayout extends LayoutBase {
 	/**

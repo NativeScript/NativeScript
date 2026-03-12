@@ -1,12 +1,12 @@
 {
 	"root": true,
 	"ignorePatterns": ["**/*"],
-	"plugins": ["@nrwl/nx"],
+	"plugins": ["@nx"],
 	"overrides": [
 		{
 			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
 			"rules": {
-				"@nrwl/nx/enforce-module-boundaries": [
+				"@nx/enforce-module-boundaries": [
 					"error",
 					{
 						"enforceBuildableLibDependency": true,
@@ -23,7 +23,7 @@
 		},
 		{
 			"files": ["*.ts", "*.tsx"],
-			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:@nrwl/nx/typescript"],
+			"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:@nx/typescript"],
 			"rules": {
 				"no-empty": "off",
 				"no-useless-escape": "off",
@@ -38,19 +38,29 @@
 				"@typescript-eslint/no-explicit-any": "off",
 				"@typescript-eslint/no-this-alias": "warn",
 				"@typescript-eslint/no-namespace": "off",
-				"@typescript-eslint/no-inferrable-types": "off"
+				"@typescript-eslint/no-inferrable-types": "off",
+				"@typescript-eslint/no-extra-semi": "error",
+				"no-extra-semi": "off"
 			}
 		},
 		{
 			"files": ["*.js", "*.jsx"],
-			"extends": ["plugin:@nrwl/nx/javascript"],
-			"rules": {}
+			"extends": ["plugin:@nx/javascript"],
+			"rules": {
+				"@typescript-eslint/no-extra-semi": "error",
+				"no-extra-semi": "off"
+			}
 		},
 		{
 			"files": ["references.d.ts"],
 			"rules": {
 				"@typescript-eslint/triple-slash-reference": "off"
 			}
+		},
+		{
+			"files": "*.json",
+			"parser": "jsonc-eslint-parser",
+			"rules": {}
 		}
 	]
 }

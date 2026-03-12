@@ -34,7 +34,7 @@ export class LayoutBase extends CustomLayoutView {
 	 * @param view The view to be added to the end of the children array.
 	 * @param atIndex The insertion index.
 	 */
-	insertChild(child: View, atIndex: number): void;
+	insertChild(child: View, atIndex: number): boolean;
 
 	/**
 	 * Removes the specified view from the children array.
@@ -65,31 +65,43 @@ export class LayoutBase extends CustomLayoutView {
 
 	/**
 	 * Gets or sets padding style property.
+	 *
+	 * @nsProperty
 	 */
 	padding: string | CoreTypes.LengthType;
 
 	/**
 	 * Specify the bottom padding of this layout.
+	 *
+	 * @nsProperty
 	 */
 	paddingBottom: CoreTypes.LengthType;
 
 	/**
 	 * Specify the left padding of this layout.
+	 *
+	 * @nsProperty
 	 */
 	paddingLeft: CoreTypes.LengthType;
 
 	/**
 	 * Specify the right padding of this layout.
+	 *
+	 * @nsProperty
 	 */
 	paddingRight: CoreTypes.LengthType;
 
 	/**
 	 * Specify the top padding of this layout.
+	 *
+	 * @nsProperty
 	 */
 	paddingTop: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets a value indicating whether to clip the content of this layout.
+	 *
+	 * @nsProperty
 	 */
 	clipToBounds: boolean;
 
@@ -97,6 +109,8 @@ export class LayoutBase extends CustomLayoutView {
 	 * Gets or sets a value indicating whether touch event should pass through to a parent view of the
 	 * layout container in case an interactive child view did not handle it.
 	 * Default value of this property is false. This does not affect the appearance of the view.
+	 *
+	 * @nsProperty
 	 */
 	isPassThroughParentEnabled: boolean;
 }

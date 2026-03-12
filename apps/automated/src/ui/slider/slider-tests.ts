@@ -1,26 +1,22 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { View } from '@nativescript/core/ui/core/view';
-import { Page } from '@nativescript/core/ui/page';
-import { BindingOptions } from '@nativescript/core/ui/core/bindable';
-import { Observable, EventData, PropertyChangeData } from '@nativescript/core';
-import { Color } from '@nativescript/core/color';
-import { isIOS } from '@nativescript/core/platform';
+import { BindingOptions, View, Page, Observable, EventData, PropertyChangeData, Color } from '@nativescript/core';
 
 // >> article-require-slider
 import { Slider } from '@nativescript/core/ui/slider';
 // << article-require-slider
 
+import { LinearGradient } from '@nativescript/core/ui/styling/linear-gradient';
+
 // ### Binding the Progress and Slider value properties to a observable view-model property.
 
 // >> article-binding-slider-properties
-// function pageLoaded(args) {
+// export function pageLoaded(args) {
 //   var page = args.object;
 //   var obj = new Observable();
 //   obj.set("someProperty", 42);
 //   page.bindingContext = obj;
 // }
-// exports.pageLoaded = pageLoaded;
 // << article-binding-slider-properties
 
 interface SliderValues {
@@ -101,8 +97,8 @@ export function test_set_native_value_triggers_propertyChanged() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (isIOS) {
-	exports.test_set_color = function () {
+export function test_set_color() {
+	if (__APPLE__) {
 		const slider = new Slider();
 		slider.color = new Color('red');
 
@@ -111,9 +107,11 @@ if (isIOS) {
 		}
 
 		helper.buildUIAndRunTest(slider, testAction);
-	};
+	}
+}
 
-	exports.test_set_backgroundColor = function () {
+export function test_set_backgroundColor() {
+	if (__APPLE__) {
 		const slider = new Slider();
 		slider.backgroundColor = new Color('red');
 
@@ -122,7 +120,68 @@ if (isIOS) {
 		}
 
 		helper.buildUIAndRunTest(slider, testAction);
-	};
+	}
+}
+
+export function test_set_linear_gradient_background() {
+	const slider = new Slider();
+
+	// Create a linear gradient programmatically
+	const gradient = new LinearGradient();
+	gradient.angle = Math.PI / 2; // 90 degrees (left to right)
+	gradient.colorStops = [{ color: new Color('red') }, { color: new Color('green') }, { color: new Color('blue') }];
+
+	function testAction(views: Array<View>) {
+		// Set the gradient via the style's backgroundImage
+		slider.style.backgroundImage = gradient;
+
+		// Verify the slider was created and the gradient was applied
+		TKUnit.assertNotNull(slider, 'slider should not be null');
+
+		if (__APPLE__) {
+			// On iOS, verify that track images were set
+			const minTrackImage = slider.ios.minimumTrackImageForState(UIControlState.Normal);
+			const maxTrackImage = slider.ios.maximumTrackImageForState(UIControlState.Normal);
+			TKUnit.assertNotNull(minTrackImage, 'minimumTrackImage should be set after applying gradient');
+			TKUnit.assertNotNull(maxTrackImage, 'maximumTrackImage should be set after applying gradient');
+		} else if (__ANDROID__) {
+			// On Android, verify the progress drawable was modified
+			const progressDrawable = slider.android.getProgressDrawable();
+			TKUnit.assertNotNull(progressDrawable, 'progressDrawable should not be null');
+		}
+	}
+
+	helper.buildUIAndRunTest(slider, testAction);
+}
+
+export function test_set_linear_gradient_with_stops() {
+	const slider = new Slider();
+
+	// Create a linear gradient with explicit color stops
+	const gradient = new LinearGradient();
+	gradient.angle = 0; // 0 degrees (bottom to top)
+	gradient.colorStops = [
+		{ color: new Color('orangered'), offset: { unit: '%', value: 0 } },
+		{ color: new Color('green'), offset: { unit: '%', value: 0.5 } },
+		{ color: new Color('lightblue'), offset: { unit: '%', value: 1 } },
+	];
+
+	function testAction(views: Array<View>) {
+		slider.style.backgroundImage = gradient;
+
+		// Verify the slider was created
+		TKUnit.assertNotNull(slider, 'slider should not be null');
+
+		if (__APPLE__) {
+			const minTrackImage = slider.ios.minimumTrackImageForState(UIControlState.Normal);
+			TKUnit.assertNotNull(minTrackImage, 'minimumTrackImage should be set after applying gradient with stops');
+		} else if (__ANDROID__) {
+			const progressDrawable = slider.android.getProgressDrawable();
+			TKUnit.assertNotNull(progressDrawable, 'progressDrawable should not be null');
+		}
+	}
+
+	helper.buildUIAndRunTest(slider, testAction);
 }
 
 export function test_default_TNS_values() {
@@ -157,16 +216,16 @@ export function test_values_change_native_values() {
 		TKUnit.assertEqual(getNativeMaxValue(slider), 10, '2: Wrong native slider.maxValue');
 
 		slider.minValue = 10;
-		TKUnit.assertEqual(getNativeValue(slider), isIOS ? 10 : 0, '3: wrong native slider.value');
-		TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 10 : 0, '3: Wrong native slider.maxValue');
+		TKUnit.assertEqual(getNativeValue(slider), __APPLE__ ? 10 : 0, '3: wrong native slider.value');
+		TKUnit.assertEqual(getNativeMaxValue(slider), __APPLE__ ? 10 : 0, '3: Wrong native slider.maxValue');
 
 		slider.maxValue = 20;
-		TKUnit.assertEqual(getNativeValue(slider), isIOS ? 10 : 0, '4: wrong native slider.value');
-		TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, '4: Wrong native slider.maxValue');
+		TKUnit.assertEqual(getNativeValue(slider), __APPLE__ ? 10 : 0, '4: wrong native slider.value');
+		TKUnit.assertEqual(getNativeMaxValue(slider), __APPLE__ ? 20 : 10, '4: Wrong native slider.maxValue');
 
 		slider.value = 15;
-		TKUnit.assertEqual(getNativeValue(slider), isIOS ? 15 : 5, '5: wrong native slider.value');
-		TKUnit.assertEqual(getNativeMaxValue(slider), isIOS ? 20 : 10, '5: Wrong native slider.maxValue');
+		TKUnit.assertEqual(getNativeValue(slider), __APPLE__ ? 15 : 5, '5: wrong native slider.value');
+		TKUnit.assertEqual(getNativeMaxValue(slider), __APPLE__ ? 20 : 10, '5: Wrong native slider.maxValue');
 	}
 
 	helper.buildUIAndRunTest(slider, testAction);

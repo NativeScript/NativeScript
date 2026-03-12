@@ -8,9 +8,11 @@ import { ImageSource } from '../../image-source';
 import { Trace } from '../../trace';
 import { Color } from '../../color';
 import { fontSizeProperty, fontInternalProperty } from '../styling/style-properties';
-import { RESOURCE_PREFIX, ad, layout } from '../../utils';
+import { RESOURCE_PREFIX, android as androidUtils, layout } from '../../utils';
+import { FONT_PREFIX, isFontIconURI } from '../../utils/common';
 import { Frame } from '../frame';
-import { Application } from '../../application';
+import { getNativeApp } from '../../application/helpers-common';
+import { AndroidHelper } from '../core/view';
 
 export * from './tab-view-common';
 
@@ -283,7 +285,7 @@ function initializeNativeClasses() {
 	}
 
 	PagerAdapter = FragmentPagerAdapter;
-	appResources = Application.android.context.getResources();
+	appResources = getNativeApp<android.app.Application>().getApplicationContext().getResources();
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
@@ -291,19 +293,31 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
 	result.title = item.title;
 
 	if (item.iconSource) {
-		if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-			result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
-			if (result.iconId === 0) {
-				traceMissingIcon(item.iconSource);
-			}
-		} else {
-			const is = ImageSource.fromFileOrResourceSync(item.iconSource);
+		const addDrawable = (is: ImageSource) => {
 			if (is) {
 				// TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
 				result.iconDrawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
 			} else {
 				traceMissingIcon(item.iconSource);
 			}
+		};
+		if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+			result.iconId = androidUtils.resources.getDrawableId(item.iconSource.slice(RESOURCE_PREFIX.length));
+			if (result.iconId === 0) {
+				traceMissingIcon(item.iconSource);
+			}
+		} else if (isFontIconURI(item.iconSource)) {
+			// Allow specifying a separate font family for the icon via style.iconFontFamily.
+			let iconFont: any = item.style.fontInternal;
+			const iconFontFamily = item.iconFontFamily || item.style.iconFontFamily;
+			if (iconFontFamily) {
+				const baseFont = item.style.fontInternal || Font.default;
+				iconFont = baseFont.withFontFamily(iconFontFamily);
+			}
+			const is = ImageSource.fromFontIconCodeSync(item.iconSource.slice(FONT_PREFIX.length), iconFont, item.style.color);
+			addDrawable(is);
+		} else {
+			addDrawable(ImageSource.fromFileOrResourceSync(item.iconSource));
 		}
 	}
 
@@ -314,7 +328,7 @@ let defaultAccentColor: number = undefined;
 function getDefaultAccentColor(context: android.content.Context): number {
 	if (defaultAccentColor === undefined) {
 		//Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-		defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xff33b5e5;
+		defaultAccentColor = androidUtils.resources.getPaletteColor(ACCENT_COLOR, context) || 0xff33b5e5;
 	}
 
 	return defaultAccentColor;
@@ -483,24 +497,30 @@ export class TabView extends TabViewBase {
 		const viewPager = new org.nativescript.widgets.TabViewPager(context);
 		const tabLayout = new org.nativescript.widgets.TabLayout(context);
 		const lp = new org.nativescript.widgets.CommonLayoutParams();
-		const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
+		const primaryColor = androidUtils.resources.getPaletteColor(PRIMARY_COLOR, context);
 		let accentColor = getDefaultAccentColor(context);
 
 		lp.row = 1;
 
 		if (this.androidTabsPosition === 'top') {
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-
+			nativeView.addRowsFromJSON(
+				JSON.stringify([
+					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
+					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+				]),
+			);
 			viewPager.setLayoutParams(lp);
 
 			if (!this.androidSwipeEnabled) {
 				viewPager.setSwipePageEnabled(false);
 			}
 		} else {
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-			nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-
+			nativeView.addRowsFromJSON(
+				JSON.stringify([
+					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
+				]),
+			);
 			tabLayout.setLayoutParams(lp);
 			viewPager.setSwipePageEnabled(false);
 			// set completely transparent accent color for tab selected indicator.
@@ -757,7 +777,7 @@ export class TabView extends TabViewBase {
 		if (value instanceof Color) {
 			this._tabLayout.setBackgroundColor(value.android);
 		} else {
-			this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources()));
+			this._tabLayout.setBackground(AndroidHelper.getCopyOrDrawable(value, this.nativeViewProtected.getResources()));
 		}
 	}
 
@@ -796,15 +816,4 @@ export class TabView extends TabViewBase {
 		const color = value instanceof Color ? value.android : value;
 		tabLayout.setSelectedIndicatorColors([color]);
 	}
-}
-
-function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
-	if (value) {
-		const constantState = value.getConstantState();
-		if (constantState) {
-			return constantState.newDrawable(resources);
-		}
-	}
-
-	return value;
 }

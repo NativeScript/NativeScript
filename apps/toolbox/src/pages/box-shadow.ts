@@ -10,11 +10,10 @@ export class BoxShadowModel extends Observable {
 	private _selectedBackgroundType: string;
 	private _selectedBorderType: string;
 	private _selectedAnimation: string;
-	private _boxShadow: string = '0 0 2 2 rgba(200, 0, 0, 0.4)';
-	// private _boxShadow: string = '5 5 1 1 rgba(255, 0, 0, .9)';
-	// private _boxShadow: string = '5 5 5 10 rgba(255, 0, 0, .9)';
+	private _boxShadow: string = '-5 -5 5 5 rgba(200, 0, 0, 0.5), 5 5 5 5 rgba(0, 99, 0, 0.5)';
 
 	background: string;
+	borderColor: string;
 	borderWidth: number;
 	borderRadius: number;
 	appliedBoxShadow: string;
@@ -72,18 +71,23 @@ export class BoxShadowModel extends Observable {
 		this.notifyPropertyChange('selectedBorderType', value);
 		switch (value) {
 			case 'solid':
-				this.borderWidth = this.borderWidth ? 0 : 2;
+				this.borderWidth = this.borderWidth ? 0 : 5;
 				break;
 			case 'rounded':
 				this.borderRadius = this.borderRadius ? 0 : 10;
 				break;
+			case 'colorful':
+				this.borderColor = this.borderColor ? null : 'green blue pink yellow';
+				break;
 			case 'none':
+				this.borderColor = null;
 				this.borderRadius = 0;
 				this.borderWidth = 0;
 				break;
 			default:
 				break;
 		}
+		this.notifyPropertyChange('borderColor', this.borderColor);
 		this.notifyPropertyChange('borderRadius', this.borderRadius);
 		this.notifyPropertyChange('borderWidth', this.borderWidth);
 	}
@@ -130,7 +134,7 @@ export class BoxShadowModel extends Observable {
 					view.animate({
 						width: originalWidth,
 						duration: animationDuration,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);
@@ -146,7 +150,7 @@ export class BoxShadowModel extends Observable {
 					view.animate({
 						height: originalHeight,
 						duration: animationDuration,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);
@@ -167,7 +171,7 @@ export class BoxShadowModel extends Observable {
 						rotate: 0,
 						translate: { x: 0, y: 0 },
 						duration: 500,
-					})
+					}),
 				)
 				.catch((err) => {
 					console.error('animation error', err);

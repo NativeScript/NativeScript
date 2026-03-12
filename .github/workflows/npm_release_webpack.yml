@@ -1,4 +1,7 @@
 name: '@nativescript/webpack -> npm'
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   push:
@@ -14,10 +17,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a90bcbc6539c36a85cdfeb73f7e2f433735f215b # v2.15.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Setup
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       - name: Generate Version
         working-directory: packages/webpack
@@ -32,10 +40,10 @@ jobs:
         run: npx nx run webpack:build
 
       - name: Publish @nativescript/webpack
-        working-directory: dist/packages
+        working-directory: dist/packages/webpack5
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../../.npmrc
           echo "Publishing @nativescript/webpack@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          npm publish nativescript-webpack.tgz --tag $NPM_TAG --dry-run
+          npm publish --tag $NPM_TAG --dry-run

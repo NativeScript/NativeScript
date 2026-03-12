@@ -1,5 +1,5 @@
 import * as TKUnit from '../../tk-unit';
-import { Application, Button, Label, Page, StackLayout, WrapLayout, TabView, TabViewItem, View, Utils, Color, resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS, unsetValue, knownFolders } from '@nativescript/core';
+import { Application, Button, Label, Page, StackLayout, WrapLayout, TabView, TabViewItem, View, Utils, Color, resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS, unsetValue, knownFolders, Screen } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import { _evaluateCssCalcExpression } from '@nativescript/core/ui/core/properties';
 
@@ -278,6 +278,111 @@ export function test_id_selector() {
 	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
 }
 
+export function test_not_pseudo_class_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-not-pseudo-class-selector
+	page.css = 'Button:not(#myButton) { color: red; }';
+
+	//// Will be styled
+	btnWithNoId = new Button();
+	// << article-using-not-pseudo-class-selector
+
+	//// Won't be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithNoId);
+	stack.addChild(btnWithId);
+
+	helper.assertViewColor(btnWithNoId, '#FF0000');
+	TKUnit.assert(btnWithId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_is_pseudo_class_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-is-pseudo-class-selector
+	page.css = 'Button:is(#myButton) { color: red; }';
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-is-pseudo-class-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	helper.assertViewColor(btnWithId, '#FF0000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_where_pseudo_class_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-where-pseudo-class-selector
+	page.css = 'Button:where(#myButton) { color: red; }';
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-where-pseudo-class-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	helper.assertViewColor(btnWithId, '#FF0000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_where_pseudo_class_selector_zero_specificity() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-where-pseudo-class-selector-zero-specificity
+	page.css = '#myButton { color: green; } Button:where(#myButton) { color: red; }';
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-where-pseudo-class-selector-zero-specificity
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	// Pseudo-class :where() has zero specificity, therefore we expect the first rule to be applied
+	helper.assertViewColor(btnWithId, '#008000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
 // State selector tests
 export function test_state_selector() {
 	let page = helper.getClearCurrentPage();
@@ -359,6 +464,132 @@ export function test_id_and_state_selector() {
 	testButtonPressedStateIsRed(btn);
 }
 
+export function test_matching_media_query_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-matching-media-query-selector
+	page.css = `@media only screen and (max-width: ${Screen.mainScreen.widthDIPs}) {
+		Button#myButton {
+			color: red;
+		}
+	}`;
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-matching-media-query-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	helper.assertViewColor(btnWithId, '#FF0000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_non_matching_media_query_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-non-matching-media-query-selector
+	page.css = `@media only screen and (max-width: ${Screen.mainScreen.widthDIPs - 1}) {
+		Button#myButton {
+			color: red;
+		}
+	}`;
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-non-matching-media-query-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	TKUnit.assert(btnWithId.style.color === undefined, 'Color should not have a value');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_matching_nested_media_query_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-matching-nested-media-query-selector
+	page.css = `
+	@media only screen and (orientation: ${Application.orientation()}) {
+		@media only screen and (max-width: ${Screen.mainScreen.widthDIPs}) {
+			Button#myButton {
+				color: red;
+			}
+		}
+	}`;
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-matching-nested-media-query-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	helper.assertViewColor(btnWithId, '#FF0000');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
+export function test_non_matching_nested_media_query_selector() {
+	let page = helper.getClearCurrentPage();
+	page.style.color = unsetValue;
+	let btnWithId: Button;
+	let btnWithNoId: Button;
+
+	// >> article-using-non-matching-nested-media-query-selector
+	page.css = `
+	@media only screen and (orientation: ${Application.orientation()}) {
+		@media only screen and (max-width: ${Screen.mainScreen.widthDIPs - 1}) {
+			Button#myButton {
+				color: red;
+			}
+		}
+	}`;
+
+	//// Will be styled
+	btnWithId = new Button();
+	btnWithId.id = 'myButton';
+
+	//// Won't be styled
+	btnWithNoId = new Button();
+	// << article-using-non-matching-nested-media-query-selector
+
+	const stack = new StackLayout();
+	page.content = stack;
+	stack.addChild(btnWithId);
+	stack.addChild(btnWithNoId);
+
+	TKUnit.assert(btnWithId.style.color === undefined, 'Color should not have a value');
+	TKUnit.assert(btnWithNoId.style.color === undefined, 'Color should not have a value');
+}
+
 export function test_restore_original_values_when_state_is_changed() {
 	let page = helper.getClearCurrentPage();
 	page.style.color = unsetValue;
@@ -371,9 +602,9 @@ export function test_restore_original_values_when_state_is_changed() {
 	page.css = 'button { color: blue; } ' + 'button:pressed { color: red; } ';
 
 	helper.assertViewColor(btn, '#0000FF');
-	btn._goToVisualState('pressed');
+	btn._addVisualState('pressed');
 	helper.assertViewColor(btn, '#FF0000');
-	btn._goToVisualState('normal');
+	btn._removeVisualState('pressed');
 	helper.assertViewColor(btn, '#0000FF');
 }
 
@@ -424,9 +655,9 @@ export const test_composite_selector_type_class_state = function () {
 
 		// The button with no class should not react to state changes.
 		TKUnit.assertNull(btnWithNoClass.style.color, 'Color should not have a value.');
-		btnWithNoClass._goToVisualState('pressed');
+		btnWithNoClass._addVisualState('pressed');
 		TKUnit.assertNull(btnWithNoClass.style.color, 'Color should not have a value.');
-		btnWithNoClass._goToVisualState('normal');
+		btnWithNoClass._removeVisualState('pressed');
 		TKUnit.assertNull(btnWithNoClass.style.color, 'Color should not have a value.');
 
 		TKUnit.assertNull(lblWithClass.style.color, 'Color should not have a value');
@@ -633,11 +864,11 @@ function testSelectorsPrioritiesTemplate(css: string) {
 function testButtonPressedStateIsRed(btn: Button) {
 	TKUnit.assert(btn.style.color === undefined, 'Color should not have a value.');
 
-	btn._goToVisualState('pressed');
+	btn._addVisualState('pressed');
 
 	helper.assertViewColor(btn, '#FF0000');
 
-	btn._goToVisualState('normal');
+	btn._removeVisualState('pressed');
 
 	TKUnit.assert(btn.style.color === undefined, 'Color should not have a value after returned to normal state.');
 }
@@ -763,7 +994,7 @@ export function test_set_invalid_CSS_values_dont_cause_crash() {
 		(views: Array<View>) => {
 			TKUnit.assertEqual(30, testButton.style.fontSize);
 		},
-		{ pageCss: invalidCSS }
+		{ pageCss: invalidCSS },
 	);
 }
 
@@ -782,7 +1013,7 @@ export function test_set_mixed_CSS_cases_works() {
 			helper.assertViewBackgroundColor(testButton, '#FF0000');
 			helper.assertViewColor(testButton, '#0000FF');
 		},
-		{ pageCss: casedCSS }
+		{ pageCss: casedCSS },
 	);
 }
 
@@ -1477,18 +1708,18 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
 export function test_evaluateCssCalcExpression() {
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(1px + 1px)'), '2px', 'Simple calc (1)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(50px - (20px - 30px))'), '60px', 'Simple calc (2)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px - (100px - 100%))'), '100%', 'Simple calc (3)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px + (100px - 100%))'), 'calc(200px - 100%)', 'Simple calc (4)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% - 10px + 20px)'), 'calc(100% + 10px)', 'Simple calc (5)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% + 10px - 20px)'), 'calc(100% - 10px)', 'Simple calc (6)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(10.px + .0px)'), '10px', 'Simple calc (8)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px - (100px - 100%))'), 'calc(100px - (100px - 100%))', 'Simple calc (3)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100px + (100px - 100%))'), 'calc(100px + (100px - 100%))', 'Simple calc (4)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% - 10px + 20px)'), 'calc(100% - 10px + 20px)', 'Simple calc (5)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(100% + 10px - 20px)'), 'calc(100% + 10px - 20px)', 'Simple calc (6)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(10.px + .0px)'), 'calc(10.px + .0px)', 'Simple calc (8)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('a calc(1px + 1px)'), 'a 2px', 'Ignore value surrounding calc function (1)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(1px + 1px) a'), '2px a', 'Ignore value surrounding calc function (2)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('a calc(1px + 1px) b'), 'a 2px b', 'Ignore value surrounding calc function (3)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('a calc(1px + 1px) b calc(1em + 2em) c'), 'a 2px b 3em c', 'Ignore value surrounding calc function (4)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression(`calc(\n1px \n* 2 \n* 1.5)`), '3px', 'Handle new lines');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(1/100)'), '0.01', 'Handle precision correctly (1)');
-	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(5/1000000)'), '0.00001', 'Handle precision correctly (2)');
+	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(5/1000000)'), '0.000005', 'Handle precision correctly (2)');
 	TKUnit.assertEqual(_evaluateCssCalcExpression('calc(5/100000)'), '0.00005', 'Handle precision correctly (3)');
 }
 
@@ -1593,6 +1824,37 @@ export function test_nested_css_calc() {
 	(stack as any).style = `width: calc(100% * calc(1 / 2))`;
 
 	TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 0.5 }, 'Stack - width === 50%');
+}
+
+export function test_evaluateCssColorMixExpression() {
+	TKUnit.assertEqual(new Color('color-mix(in lch longer hue, hsl(200deg 50% 80%), coral)').toRgbString(), 'rgba(136, 202, 134, 1.00)', 'Color mix (1)');
+	TKUnit.assertEqual(new Color('color-mix(in hsl, hsl(200 50 80), coral 80%)').toRgbString(), 'rgba(247, 103, 149, 1.00)', 'Color mix (2)');
+	TKUnit.assertEqual(new Color('color-mix(in srgb, plum, #f00)').toRgbString(), 'rgba(238, 80, 110, 1.00)', 'Color mix (4)');
+	TKUnit.assertEqual(new Color('color-mix(in lab, plum 60%, #f00 50%)').toRgbString(), 'rgba(247, 112, 125, 1.00)', 'Color mix (5)');
+	TKUnit.assertEqual(new Color('color-mix(in --swop5c, red, blue)').toRgbString(), 'rgba(0, 0, 255, 0.00)', 'Color mix (6)');
+}
+
+export function test_nested_css_color_mix() {
+	const page = helper.getClearCurrentPage();
+
+	const stack = new StackLayout();
+	stack.css = `
+    StackLayout.coral {
+        background-color: color-mix(in hsl, hsl(200 50 80), coral 80%);
+    }
+    `;
+
+	const label = new Label();
+	page.content = stack;
+	stack.addChild(label);
+
+	stack.className = 'coral';
+
+	TKUnit.assertEqual((stack.backgroundColor as Color).toRgbString(), 'rgba(247, 103, 149, 1.00)', 'Stack - backgroundColor === color-mix(in hsl, hsl(200 50 80), coral 80%)');
+
+	(stack as any).style = `background-color: color-mix(in --swop5c, red, blue);`;
+
+	TKUnit.assertDeepEqual((stack.backgroundColor as Color).toRgbString(), 'rgba(0, 0, 255, 0.00)', 'Stack - backgroundColor === color-mix(in --swop5c, red, blue)');
 }
 
 export function test_css_variables() {

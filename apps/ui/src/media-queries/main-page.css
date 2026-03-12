@@ -1,0 +1,19 @@
+.orientation-btn {
+  background-color: yellow;
+}
+
+@media (orientation: landscape) {
+  .orientation-btn {
+    background-color: pink;
+  }
+}
+
+.theme-mode-btn {
+  background-color: yellow;
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-mode-btn {
+    background-color: pink;
+  }
+}

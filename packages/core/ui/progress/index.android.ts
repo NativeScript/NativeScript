@@ -1,6 +1,7 @@
 ﻿import { ProgressBase, valueProperty, maxValueProperty } from './progress-common';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
+import { AndroidHelper } from '../core/view';
 
 export * from './progress-common';
 
@@ -37,9 +38,9 @@ export class Progress extends ProgressBase {
 		}
 
 		if (value instanceof Color) {
-			progressDrawable.setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+			AndroidHelper.setDrawableColor(value.android, progressDrawable);
 		} else {
-			progressDrawable.clearColorFilter();
+			AndroidHelper.clearDrawableColor(progressDrawable);
 		}
 	}
 
@@ -56,9 +57,9 @@ export class Progress extends ProgressBase {
 			const backgroundDrawable = progressDrawable.getDrawable(0);
 			if (backgroundDrawable) {
 				if (value instanceof Color) {
-					backgroundDrawable.setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+					AndroidHelper.setDrawableColor(value.android, backgroundDrawable);
 				} else {
-					backgroundDrawable.clearColorFilter();
+					AndroidHelper.clearDrawableColor(backgroundDrawable);
 				}
 			}
 		}

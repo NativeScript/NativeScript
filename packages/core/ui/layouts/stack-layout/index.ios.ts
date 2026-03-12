@@ -1,6 +1,7 @@
 import { StackLayoutBase } from './stack-layout-common';
 import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
+import { Position } from '../../core/view/view-interfaces';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 
@@ -101,7 +102,7 @@ export class StackLayout extends StackLayoutBase {
 		}
 	}
 
-	private layoutVertical(left: number, top: number, right: number, bottom: number, insets: { left; top; right; bottom }): void {
+	private layoutVertical(left: number, top: number, right: number, bottom: number, insets: Position): void {
 		const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
 		const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
 		const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
@@ -135,7 +136,7 @@ export class StackLayout extends StackLayoutBase {
 		});
 	}
 
-	private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: { left; top; right; bottom }): void {
+	private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: Position): void {
 		const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
 		const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
 		const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
@@ -146,14 +147,18 @@ export class StackLayout extends StackLayoutBase {
 		const childBottom = bottom - top - paddingBottom;
 
 		switch (this.horizontalAlignment) {
+			case CoreTypes.HorizontalAlignment.start:
+				childLeft = this.direction === CoreTypes.LayoutDirection.rtl ? right - left - this._totalLength + paddingLeft : paddingLeft;
+				break;
 			case CoreTypes.HorizontalAlignment.center:
 				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
-
 			case CoreTypes.HorizontalAlignment.right:
 				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
-
+			case CoreTypes.HorizontalAlignment.end:
+				childLeft = this.direction === CoreTypes.LayoutDirection.rtl ? paddingLeft : right - left - this._totalLength + paddingLeft;
+				break;
 			case CoreTypes.HorizontalAlignment.left:
 			case CoreTypes.HorizontalAlignment.stretch:
 			default:

@@ -1,14 +1,15 @@
-import { ViewBase } from '../view-base';
-import { Property, InheritedProperty } from '../properties';
-import { EventData } from '../../../data/observable';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 import { Color } from '../../../color';
-import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
-import { GestureTypes, GesturesObserver } from '../../gestures';
-import { LinearGradient } from '../../styling/linear-gradient';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
 import { CoreTypes } from '../../../core-types';
-import { CSSShadow } from '../../styling/css-shadow';
-import { ViewCommon } from './view-common';
+import { EventData } from '../../../data/observable';
+import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
+import { GestureTypes, GesturesObserver, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
+import { ShadowCSSValues } from '../../styling/css-shadow';
+import { LinearGradient } from '../../styling/linear-gradient';
+import { InheritedProperty, Property } from '../properties';
+import { ViewBase } from '../view-base';
+import { GlassEffectType, ViewCommon } from './view-common';
+import type { Point, ShownModallyData, Size } from './view-interfaces';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -44,92 +45,64 @@ export function CSSType(type: string): ClassDecorator;
 export function viewMatchesModuleContext(view: View, context: ModuleContext, type: ModuleType[]): boolean;
 
 /**
- * The Point interface describes a two dimensional location.
- * It has two properties x and y, representing the x and y coordinate of the location.
- */
-export interface Point {
-	/**
-	 * Represents the x coordinate of the location.
-	 */
-	x: number;
-
-	/**
-	 * Represents the y coordinate of the location.
-	 */
-	y: number;
-
-	/**
-	 * Represents the z coordinate of the location.
-	 */
-	z?: number;
-}
-
-/**
- * The Size interface describes abstract dimensions in two dimensional space.
- * It has two properties width and height, representing the width and height values of the size.
- */
-export interface Size {
-	/**
-	 * Represents the width of the size.
-	 */
-	width: number;
-
-	/**
-	 * Represents the height of the size.
-	 */
-	height: number;
-}
-
-/**
- * Defines the data for the shownModally event.
- */
-export interface ShownModallyData extends EventData {
-	/**
-	 * The context (optional, may be undefined) passed to the view when shown modally.
-	 */
-	context?: any;
-
-	/**
-	 * A callback to call when you want to close the modally shown view.
-	 * Pass in any kind of arguments and you will receive when the callback parameter
-	 * of View.showModal is executed.
-	 */
-	closeCallback?: Function;
-}
-
-/**
  * This class is the base class for all UI components.
  * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within.
+ *
+ * @nsView View
  */
 export abstract class View extends ViewCommon {
 	/**
 	 * String value used when hooking to layoutChanged event.
+	 *
+	 * @nsEvent layoutChanged
 	 */
 	public static layoutChangedEvent: string;
 	/**
 	 * String value used when hooking to showingModally event.
+	 *
+	 * @nsEvent {ShownModallyData} showingModally
 	 */
 	public static showingModallyEvent: string;
 
 	/**
 	 * String value used when hooking to shownModally event.
+	 *
+	 * @nsEvent {ShownModallyData} shownModally
 	 */
 	public static shownModallyEvent: string;
 
 	/**
 	 * String value used when hooking to accessibilityBlur event.
+	 *
+	 * @nsEvent accessibilityBlur
 	 */
 	public static accessibilityBlurEvent: string;
 
 	/**
 	 * String value used when hooking to accessibilityFocus event.
+	 *
+	 * @nsEvent accessibilityFocus
 	 */
 	public static accessibilityFocusEvent: string;
 
 	/**
 	 * String value used when hooking to accessibilityFocusChanged event.
+	 *
+	 * @nsEvent {EventDataValue} accessibilityFocusChanged
 	 */
 	public static accessibilityFocusChangedEvent: string;
+
+	/**
+	 * String value used when hooking to androidOverflowInset event.
+	 *
+	 * @nsEvent {EventDataValue} androidOverflowInset
+	 */
+	public static androidOverflowInsetEvent: string;
+
+	/**
+	 * @private
+	 */
+	public static _hasRtlSupport: boolean;
 
 	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
@@ -145,96 +118,134 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
+	 *
+	 * @nsProperty
 	 */
 	bindingContext: any;
 
 	/**
 	 * Gets or sets the border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderColor: string | Color;
 
 	/**
 	 * Gets or sets the top border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderTopColor: Color;
 
 	/**
 	 * Gets or sets the right border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderRightColor: Color;
 
 	/**
 	 * Gets or sets the bottom border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderBottomColor: Color;
 
 	/**
 	 * Gets or sets the left border color of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderLeftColor: Color;
 
 	/**
 	 * Gets or sets the border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderWidth: string | CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderTopWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the right border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderRightWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderBottomWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the left border width of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderLeftWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderRadius: string | CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top left border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderTopLeftRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top right border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderTopRightRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom right border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderBottomRightRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom left border radius of the view.
+	 *
+	 * @nsProperty
 	 */
 	borderBottomLeftRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the color of the view.
+	 *
+	 * @nsProperty
 	 */
 	color: Color;
 
 	/**
 	 * If `true` the element is an accessibility element and all the children will be treated as a single selectable component.
+	 *
+	 * @nsProperty
 	 */
 	accessible: boolean;
 
 	/**
 	 * Hide the view and its children from the a11y service
+	 *
+	 * @nsProperty
 	 */
 	accessibilityHidden: boolean;
 
@@ -242,58 +253,92 @@ export abstract class View extends ViewCommon {
 	 * The view's unique accessibilityIdentifier.
 	 *
 	 * This is used for automated testing.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityIdentifier: string;
 
 	/**
 	 * Which role should this view be treated by the a11y service?
+	 *
+	 * @nsProperty
 	 */
 	accessibilityRole: AccessibilityRole;
 
 	/**
 	 * Which state should this view be treated as by the a11y service?
+	 *
+	 * @nsProperty
+	 *
 	 */
 	accessibilityState: AccessibilityState;
 
 	/**
 	 * Short description of the element, ideally one word.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityLabel: string;
 
 	/**
 	 * Current value of the element in a localized string.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityValue: string;
 
 	/**
 	 * A hint describes the elements behavior. Example: 'Tap change playback speed'
+	 *
+	 * @nsProperty
 	 */
 	accessibilityHint: string;
+
+	/**
+	 * When components dynamically change, we want TalkBack to alert the end user. This is made possible by the accessibilityLiveRegion property.
+	 *
+	 * @nsProperty
+	 */
 	accessibilityLiveRegion: AccessibilityLiveRegion;
 
 	/**
 	 * Sets the language in which to speak the element's label and value.
 	 * Accepts language ID tags that follows the "BCP 47" specification.
+	 *
+	 * @nsProperty
 	 */
 	accessibilityLanguage: string;
 
 	/**
 	 * This view starts a media session. Equivalent to trait = startsMedia
+	 *
+	 * @nsProperty
 	 */
 	accessibilityMediaSession: boolean;
 
 	/**
+	 * @nsProperty
+	 */
+	accessibilityIgnoresInvertColors: boolean;
+
+	/**
 	 * Defines whether accessibility font scale should affect font size.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityAdjustsFontSize: boolean;
 
 	/**
 	 * Gets or sets the minimum accessibility font scale.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityMinFontScale: number;
 
 	/**
 	 * Gets or sets the maximum accessibility font scale.
+	 *
+	 * @nsProperty
 	 */
 	iosAccessibilityMaxFontScale: number;
 
@@ -302,141 +347,206 @@ export abstract class View extends ViewCommon {
 	 */
 	_androidContentDescriptionUpdated?: boolean;
 
+	/**
+	 *
+	 * @nsProperty
+	 */
 	automationText: string;
 
 	/**
 	 * Gets or sets the elevation of the android view.
+	 *
+	 * @nsProperty
 	 */
 	androidElevation: number;
 
 	/**
 	 * Gets or sets the dynamic elevation offset of the android view.
+	 *
+	 * @nsProperty
 	 */
 	androidDynamicElevationOffset: number;
 
 	/**
 	 * Gets or sets the background style property.
+	 *
+	 * @nsProperty
 	 */
 	background: string;
 
 	/**
 	 * Gets or sets the background color of the view.
+	 *
+	 * @nsProperty
 	 */
 	backgroundColor: string | Color;
 
 	/**
 	 * Gets or sets the background image of the view.
+	 *
+	 * @nsProperty
 	 */
 	backgroundImage: string | LinearGradient;
 
 	/**
 	 * Gets or sets the box shadow of the view.
+	 *
+	 * @nsProperty
 	 */
-	boxShadow: string | CSSShadow;
+	boxShadow: string | ShadowCSSValues[];
+
+	/**
+	 * Gets or sets the layout direction of the view.
+	 *
+	 * @nsProperty
+	 */
+	direction: CoreTypes.LayoutDirectionType;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.
+	 *
+	 * @nsProperty
 	 */
 	minWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the minimum height the view may grow to.
+	 *
+	 * @nsProperty
 	 */
 	minHeight: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the desired width of the view.
+	 *
+	 * @nsProperty
 	 */
 	width: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the desired height of the view.
+	 *
+	 * @nsProperty
 	 */
 	height: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets margin style property.
+	 *
+	 * @nsProperty
 	 */
 	margin: string | CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the left side of this view.
+	 *
+	 * @nsProperty
 	 */
 	marginLeft: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the top side of this view.
+	 *
+	 * @nsProperty
 	 */
 	marginTop: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the right side of this view.
+	 *
+	 * @nsProperty
 	 */
 	marginRight: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the bottom side of this view.
+	 *
+	 * @nsProperty
 	 */
 	marginBottom: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Horizontal axis.
+	 *
+	 * @nsProperty
 	 */
 	horizontalAlignment: CoreTypes.HorizontalAlignmentType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Vertical axis.
+	 *
+	 * @nsProperty
 	 */
 	verticalAlignment: CoreTypes.VerticalAlignmentType;
 
 	/**
 	 * Gets or sets the visibility of the view.
+	 *
+	 * @nsProperty
 	 */
 	visibility: CoreTypes.VisibilityType;
 
 	/**
 	 * Gets or sets the opacity style property.
+	 *
+	 * @nsProperty
 	 */
 	opacity: number;
 
 	/**
 	 * Gets or sets the rotate affine transform of the view along the Z axis.
+	 *
+	 * @nsProperty
 	 */
 	rotate: number;
 
 	/**
 	 * Gets or sets the rotate affine transform of the view along the X axis.
+	 *
+	 * @nsProperty
 	 */
 	rotateX: number;
 
 	/**
 	 * Gets or sets the rotate affine transform of the view along the Y axis.
+	 *
+	 * @nsProperty
 	 */
 	rotateY: number;
 
 	/**
 	 * Gets or sets the distance of the camera form the view perspective.
 	 * Usually needed when rotating the view over the X or Y axis.
+	 *
+	 * @nsProperty
 	 */
 	perspective: number;
 
 	/**
 	 * Gets or sets the translateX affine transform of the view in device independent pixels.
+	 *
+	 * @nsProperty
 	 */
 	translateX: CoreTypes.dip;
 
 	/**
 	 * Gets or sets the translateY affine transform of the view in device independent pixels.
+	 *
+	 * @nsProperty
 	 */
 	translateY: CoreTypes.dip;
 
 	/**
 	 * Gets or sets the scaleX affine transform of the view.
+	 *
+	 * @nsProperty
 	 */
 	scaleX: number;
 
 	/**
 	 * Gets or sets the scaleY affine transform of the view.
+	 *
+	 * @nsProperty
 	 */
 	scaleY: number;
 
@@ -444,49 +554,133 @@ export abstract class View extends ViewCommon {
 
 	/**
 	 * Gets or sets the X component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
+	 *
+	 * @nsProperty
 	 */
 	originX: number;
 
 	/**
 	 * Gets or sets the Y component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
+	 *
+	 * @nsProperty
 	 */
 	originY: number;
 
 	/**
+	 * The flex-flow Shorthand property specifies the direction of a flex container, as well as its wrapping behavior.
+	 * @nsProperty
+	 */
+	flexFlow: FlexFlow;
+	/**
+	 * The flex shorthand property sets how a flex item will grow or shrink to fit the space available in its flex container.
+	 * @nsProperty
+	 */
+	flex: Flex;
+
+	/**
 	 * Gets or sets a value indicating whether the the view is enabled. This affects the appearance of the view.
+	 *
+	 * @nsProperty
 	 */
 	isEnabled: boolean;
 
 	/**
 	 * Gets or sets a value indicating whether the user can interact with the view. This does not affect the appearance of the view.
+	 *
+	 * @nsProperty
 	 */
 	isUserInteractionEnabled: boolean;
 
 	/**
 	 * Instruct container view to expand beyond the safe area. This property is iOS specific. Default value: false
+	 *
+	 * @nsProperty
 	 */
 	iosOverflowSafeArea: boolean;
 
 	/**
 	 * Enables or disables the iosOverflowSafeArea property for all children. This property is iOS specific. Default value: true
+	 *
+	 * @nsProperty
 	 */
 	iosOverflowSafeAreaEnabled: boolean;
 
 	/**
 	 * Gets or sets a value indicating whether the the view should totally ignore safe areas computation. This property is iOS specific. Default value: false
+	 *
+	 * @nsProperty
 	 */
 	iosIgnoreSafeArea: boolean;
 
 	/**
-	 * Gets is layout is valid. This is a read-only property.
+	 * visionOS only
+	 *
+	 * @nsProperty
+	 */
+	visionIgnoreHoverStyle: boolean;
+
+	/**
+	 * visionOS only
+	 *
+	 * @nsProperty
+	 */
+	visionHoverStyle: string | VisionHoverOptions;
+
+	/**
+	 * Set the iOS liquid glass effect style on the view.
+	 *
+	 * @nsProperty
+	 */
+	iosGlassEffect: GlassEffectType;
+
+	/**
+	 * @nsProperty
+	 */
+	public testID: string;
+	/**
+	 * @nsProperty
+	 */
+	public touchAnimation: boolean | TouchAnimationOptions;
+	/**
+	 * @nsProperty
+	 */
+	public ignoreTouchAnimation: boolean;
+	/**
+	 * @nsProperty
+	 */
+	public touchDelay: number;
+
+	/**
+	 * Gets if layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;
+
+	/**
+	 * Native background states. This is a read-only property.
+	 */
+	nativeBackgroundState?: 'unset' | 'invalid' | 'drawn';
 
 	/**
 	 * Gets the CSS fully qualified type name.
 	 * Using this as element type should allow for PascalCase and kebap-case selectors, when fully qualified, to match the element.
 	 */
 	cssType: string;
+
+	/**
+	 * Gets or sets the status bar style for this view.
+	 * Platform Notes:
+	 *   - Android: When using this property throughout navigations, ensure starting views have it set as well. Ensures it will reset on back navigation.
+	 *   - iOS: You must remove Info.plist key `UIViewControllerBasedStatusBarAppearance`
+	 * It defaults to true when not present: https://developer.apple.com/documentation/bundleresources/information-property-list/uiviewcontrollerbasedstatusbarappearance
+	 * Or you can explicitly set it to true:
+	 * <key>UIViewControllerBasedStatusBarAppearance</key>
+	 * <true/>
+	 *
+	 * False value will make this property have no effect.
+	 *
+	 * @nsProperty
+	 */
+	statusBarStyle: 'light' | 'dark';
 
 	cssClasses: Set<string>;
 	cssPseudoClasses: Set<string>;
@@ -592,23 +786,30 @@ export abstract class View extends ViewCommon {
 	 */
 	public focus(): boolean;
 
-	public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
+	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> | undefined;
 
 	/**
-	 * Removes listener(s) for the specified event name.
-	 * @param eventNames Comma delimited names of the events or gesture types the specified listener is associated with.
-	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
-	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
+	 * Removes the listener(s) for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback An optional specific event listener to remove (if omitted,
+	 * all event listeners by this name will be removed).
+	 * @param thisArg An optional parameter which, when set, will be used to
+	 * refine search of the correct event listener to be removed.
 	 */
-	off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
+	off(eventName: string, callback?: (args: EventData) => void, thisArg?: any);
 
 	/**
-	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change") or you can use gesture types.
-	 * @param callback - Callback function which will be executed when event is raised.
-	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * Adds a listener for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback The event listener to add. Will be called when an event of
+	 * the given name is raised.
+	 * @param thisArg An optional parameter which, when set, will be bound as the
+	 * `this` context when the callback is called. Falsy values will be not be
+	 * bound.
 	 */
-	on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
+	on(eventName: string, callback: (args: EventData) => void, thisArg?: any);
 
 	/**
 	 * Raised when a loaded event occurs.
@@ -637,6 +838,11 @@ export abstract class View extends ViewCommon {
 	on(event: 'shownModally', callback: (args: ShownModallyData) => void, thisArg?: any);
 
 	/**
+	 * Raised after the view is shown as a modal dialog.
+	 */
+	on(event: 'androidOverflowInset', callback: (args: ShownModallyData) => void, thisArg?: any);
+
+	/**
 	 * Returns the current modal view that this page is showing (is parent of), if any.
 	 */
 	modal: View;
@@ -654,7 +860,7 @@ export abstract class View extends ViewCommon {
 	/**
 	 * Returns the iOS safe area insets of this view.
 	 */
-	public getSafeAreaInsets(): { left; top; right; bottom };
+	public getSafeAreaInsets(): Position;
 
 	/**
 	 * Returns the location of this view in the window coordinate system.
@@ -782,6 +988,10 @@ export abstract class View extends ViewCommon {
 	/**
 	 * @private
 	 */
+	get needsNativeDrawableFill(): boolean;
+	/**
+	 * @private
+	 */
 	_gestureObservers: any;
 	/**
 	 * @private
@@ -806,16 +1016,24 @@ export abstract class View extends ViewCommon {
 	 * Return view bounds.
 	 * @private
 	 */
-	_getCurrentLayoutBounds(): {
-		left: number;
-		top: number;
-		right: number;
-		bottom: number;
-	};
+	_getCurrentLayoutBounds(): Position;
 	/**
 	 * @private
 	 */
+	_addVisualState(state: string): void;
+	/**
+	 * @private
+	 */
+	_removeVisualState(state: string): void;
+	/**
+	 * @deprecated Use View.addPseudoClass() and View.deletePseudoClass() instead.
+	 * @private
+	 */
 	_goToVisualState(state: string);
+	/**
+	 * @private
+	 */
+	_modifyNativeViewFrame(nativeView: any, frame: any): void;
 	/**
 	 * @private
 	 */
@@ -906,6 +1124,8 @@ export abstract class View extends ViewCommon {
 export class ContainerView extends View {
 	/**
 	 * Instruct container view to expand beyond the safe area. This property is iOS specific. Default value: true
+	 *
+	 * @nsProperty
 	 */
 	public iosOverflowSafeArea: boolean;
 }
@@ -988,3 +1208,9 @@ export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 export const iosOverflowSafeAreaProperty: Property<View, boolean>;
 export const iosOverflowSafeAreaEnabledProperty: InheritedProperty<View, boolean>;
+export const visionHoverStyleProperty: Property<View, string | VisionHoverOptions>;
+export const visionIgnoreHoverStyleProperty: Property<View, boolean>;
+export const touchAnimationProperty: Property<View, boolean | TouchAnimationOptions>;
+export const ignoreTouchAnimationProperty: Property<View, boolean>;
+export const touchDelayProperty: Property<View, number>;
+export const testIDProperty: Property<View, string>;

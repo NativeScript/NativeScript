@@ -1,7 +1,5 @@
 import { TextFieldBase, secureProperty } from './text-field-common';
-import { whiteSpaceProperty } from '../text-base';
 import { keyboardTypeProperty } from '../editable-text-base';
-import { CoreTypes } from '../../core-types';
 
 export * from './text-field-common';
 
@@ -80,6 +78,9 @@ export class TextField extends TextFieldBase {
 				case 'number':
 					inputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
 					break;
+				case 'decimal':
+					inputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED;
+					break;
 				case 'url':
 					inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI;
 					break;
@@ -95,13 +96,6 @@ export class TextField extends TextFieldBase {
 		}
 
 		this._setInputType(inputType);
-	}
-
-	[whiteSpaceProperty.getDefault](): CoreTypes.WhiteSpaceType {
-		return 'nowrap';
-	}
-	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
-		// Don't change it otherwise TextField will go to multiline mode.
 	}
 }
 

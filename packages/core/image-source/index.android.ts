@@ -1,12 +1,9 @@
-// Definitions.
-import { ImageSource as ImageSourceDefinition } from '.';
+import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
-import * as httpModule from '../http';
-
-// Types.
+import { getImage } from '../http';
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
-import { Application } from '../application';
+import { getNativeApp } from '../application/helpers-common';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 
@@ -14,30 +11,8 @@ import { getScaledDimensions } from './image-source-common';
 
 export { isFileOrResourcePath };
 
-let http: typeof httpModule;
-function ensureHttp() {
-	if (!http) {
-		http = require('../http');
-	}
-}
-
-let application: android.app.Application;
-let resources: android.content.res.Resources;
-
 function getApplication() {
-	if (!application) {
-		application = Application.android.getNativeApplication();
-	}
-
-	return application;
-}
-
-function getResources() {
-	if (!resources) {
-		resources = getApplication().getResources();
-	}
-
-	return resources;
+	return getNativeApp() as android.app.Application;
 }
 
 export class ImageSource implements ImageSourceDefinition {
@@ -69,7 +44,7 @@ export class ImageSource implements ImageSourceDefinition {
 		this._rotationAngle = value;
 	}
 
-	constructor(nativeSource?: any) {
+	constructor(nativeSource?: android.graphics.Bitmap | android.graphics.drawable.Drawable) {
 		if (nativeSource) {
 			this.setNativeSource(nativeSource);
 		}
@@ -87,14 +62,12 @@ export class ImageSource implements ImageSourceDefinition {
 		});
 	}
 
-	static fromUrl(url: string): Promise<ImageSourceDefinition> {
-		ensureHttp();
-
-		return http.getImage(url);
+	static fromUrl(url: string): Promise<ImageSource> {
+		return getImage(url) as Promise<ImageSource>;
 	}
 
 	static fromResourceSync(name: string): ImageSource {
-		const res = getResources();
+		const res = getApplication().getResources();
 		if (res) {
 			const identifier: number = res.getIdentifier(name, 'drawable', getApplication().getPackageName());
 			if (0 < identifier) {
@@ -149,6 +122,18 @@ export class ImageSource implements ImageSourceDefinition {
 		return ImageSource.fromFileSync(path);
 	}
 
+	static iosSymbolScaleFor(scale: iosSymbolScaleType): number {
+		return 0;
+	}
+
+	static fromSystemImageSync(name: string): ImageSource {
+		return ImageSource.fromResourceSync(name);
+	}
+
+	static fromSystemImage(name: string): Promise<ImageSource> {
+		return ImageSource.fromResource(name);
+	}
+
 	static fromDataSync(data: any): ImageSource {
 		const bitmap = android.graphics.BitmapFactory.decodeStream(data);
 
@@ -196,13 +181,14 @@ export class ImageSource implements ImageSourceDefinition {
 		const textBounds = new android.graphics.Rect();
 		paint.getTextBounds(source, 0, source.length, textBounds);
 
-		const textWidth = textBounds.width();
-		const textHeight = textBounds.height();
+		const padding = 1;
+		const textWidth = textBounds.width() + padding * 2;
+		const textHeight = textBounds.height() + padding * 2;
 		if (textWidth > 0 && textHeight > 0) {
 			const bitmap = android.graphics.Bitmap.createBitmap(textWidth, textHeight, android.graphics.Bitmap.Config.ARGB_8888);
 
 			const canvas = new android.graphics.Canvas(bitmap);
-			canvas.drawText(source, -textBounds.left, -textBounds.top, paint);
+			canvas.drawText(source, -textBounds.left + padding, -textBounds.top + padding, paint);
 
 			return new ImageSource(bitmap);
 		}
@@ -289,16 +275,20 @@ export class ImageSource implements ImageSourceDefinition {
 		return !!this.android;
 	}
 
-	public setNativeSource(source: any): void {
-		if (source && !(source instanceof android.graphics.Bitmap)) {
-			if (source instanceof android.graphics.drawable.Drawable) {
-				this.android = org.nativescript.widgets.Utils.getBitmapFromDrawable(source);
-				return;
-			}
+	public getNativeSource(): android.graphics.Bitmap | android.graphics.drawable.Drawable {
+		return this.android;
+	}
+
+	public setNativeSource(source: android.graphics.Bitmap | android.graphics.drawable.Drawable): void {
+		if (!source) {
+			this.android = null;
+		} else if (source instanceof android.graphics.Bitmap) {
+			this.android = source;
+		} else if (source instanceof android.graphics.drawable.Drawable) {
+			this.android = org.nativescript.widgets.Utils.getBitmapFromDrawable(source);
+		} else {
 			throw new Error('The method setNativeSource() expects an android.graphics.Bitmap or android.graphics.drawable.Drawable instance.');
 		}
-
-		this.android = source;
 	}
 
 	public saveToFile(path: string, format: 'png' | 'jpeg' | 'jpg', quality = 100): boolean {
@@ -335,7 +325,7 @@ export class ImageSource implements ImageSourceDefinition {
 							reject();
 						}
 					},
-				})
+				}),
 			);
 		});
 	}
@@ -375,7 +365,7 @@ export class ImageSource implements ImageSourceDefinition {
 							reject();
 						}
 					},
-				})
+				}),
 			);
 		});
 	}
@@ -404,7 +394,7 @@ export class ImageSource implements ImageSourceDefinition {
 							reject();
 						}
 					},
-				})
+				}),
 			);
 		});
 	}

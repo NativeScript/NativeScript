@@ -672,7 +672,29 @@ declare const enum UBlockCode {
 
 	LOCK_NAG_MUNDARI = 327,
 
-	LOCK_COUNT = 328,
+	LOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_I = 328,
+
+	LOCK_EGYPTIAN_HIEROGLYPHS_EXTENDED_A = 329,
+
+	LOCK_GARAY = 330,
+
+	LOCK_GURUNG_KHEMA = 331,
+
+	LOCK_KIRAT_RAI = 332,
+
+	LOCK_MYANMAR_EXTENDED_C = 333,
+
+	LOCK_OL_ONAL = 334,
+
+	LOCK_SUNUWAR = 335,
+
+	LOCK_SYMBOLS_FOR_LEGACY_COMPUTING_SUPPLEMENT = 336,
+
+	LOCK_TODHRI = 337,
+
+	LOCK_TULU_TIGALARI = 338,
+
+	LOCK_COUNT = 339,
 
 	LOCK_INVALID_CODE = -1
 }
@@ -1116,7 +1138,31 @@ declare const enum UErrorCode {
 
 	U_NUMBER_SKELETON_SYNTAX_ERROR = 65811,
 
-	U_FMT_PARSE_ERROR_LIMIT = 65812,
+	U_MF_UNRESOLVED_VARIABLE_ERROR = 65812,
+
+	U_MF_SYNTAX_ERROR = 65813,
+
+	U_MF_UNKNOWN_FUNCTION_ERROR = 65814,
+
+	U_MF_VARIANT_KEY_MISMATCH_ERROR = 65815,
+
+	U_MF_FORMATTING_ERROR = 65816,
+
+	U_MF_NONEXHAUSTIVE_PATTERN_ERROR = 65817,
+
+	U_MF_DUPLICATE_OPTION_NAME_ERROR = 65818,
+
+	U_MF_SELECTOR_ERROR = 65819,
+
+	U_MF_MISSING_SELECTOR_ANNOTATION_ERROR = 65820,
+
+	U_MF_DUPLICATE_DECLARATION_ERROR = 65821,
+
+	U_MF_OPERAND_MISMATCH_ERROR = 65822,
+
+	U_MF_DUPLICATE_VARIANT_ERROR = 65823,
+
+	U_FMT_PARSE_ERROR_LIMIT = 65824,
 
 	U_BRK_INTERNAL_ERROR = 66048,
 
@@ -1353,6 +1399,51 @@ declare const UIDNA_USE_STD3_RULES: number;
 
 declare const UITER_UNKNOWN_INDEX: number;
 
+declare const enum UIdentifierStatus {
+
+	U_ID_STATUS_RESTRICTED = 0,
+
+	U_ID_STATUS_ALLOWED = 1
+}
+
+declare const enum UIdentifierType {
+
+	U_ID_TYPE_NOT_CHARACTER = 0,
+
+	U_ID_TYPE_DEPRECATED = 1,
+
+	U_ID_TYPE_DEFAULT_IGNORABLE = 2,
+
+	U_ID_TYPE_NOT_NFKC = 3,
+
+	U_ID_TYPE_NOT_XID = 4,
+
+	U_ID_TYPE_EXCLUSION = 5,
+
+	U_ID_TYPE_OBSOLETE = 6,
+
+	U_ID_TYPE_TECHNICAL = 7,
+
+	U_ID_TYPE_UNCOMMON_USE = 8,
+
+	U_ID_TYPE_LIMITED_USE = 9,
+
+	U_ID_TYPE_INCLUSION = 10,
+
+	U_ID_TYPE_RECOMMENDED = 11
+}
+
+declare const enum UIndicConjunctBreak {
+
+	U_INCB_NONE = 0,
+
+	U_INCB_CONSONANT = 1,
+
+	U_INCB_EXTEND = 2,
+
+	U_INCB_LINKER = 3
+}
+
 declare const enum UIndicPositionalCategory {
 
 	U_INPC_NA = 0,
@@ -1460,7 +1551,9 @@ declare const enum UIndicSyllabicCategory {
 
 	U_INSC_VOWEL_DEPENDENT = 34,
 
-	U_INSC_VOWEL_INDEPENDENT = 35
+	U_INSC_VOWEL_INDEPENDENT = 35,
+
+	U_INSC_REORDERING_KILLER = 36
 }
 
 declare const enum UJoiningGroup {
@@ -1675,7 +1768,9 @@ declare const enum UJoiningGroup {
 
 	U_JG_VERTICAL_TAIL = 103,
 
-	U_JG_COUNT = 104
+	U_JG_KASHMIRI_YEH = 104,
+
+	U_JG_COUNT = 105
 }
 
 declare const enum UJoiningType {
@@ -1785,7 +1880,17 @@ declare const enum ULineBreak {
 
 	U_LB_ZWJ = 42,
 
-	U_LB_COUNT = 43
+	U_LB_AKSARA = 43,
+
+	U_LB_AKSARA_PREBASE = 44,
+
+	U_LB_AKSARA_START = 45,
+
+	U_LB_VIRAMA_FINAL = 46,
+
+	U_LB_VIRAMA = 47,
+
+	U_LB_COUNT = 48
 }
 
 declare const enum UNumericType {
@@ -1957,7 +2062,15 @@ declare const enum UProperty {
 
 	CHAR_RGI_EMOJI = 71,
 
-	CHAR_BINARY_LIMIT = 72,
+	CHAR_IDS_UNARY_OPERATOR = 72,
+
+	CHAR_ID_COMPAT_MATH_START = 73,
+
+	CHAR_ID_COMPAT_MATH_CONTINUE = 74,
+
+	CHAR_MODIFIER_COMBINING_MARK = 75,
+
+	CHAR_BINARY_LIMIT = 76,
 
 	CHAR_BIDI_CLASS = 4096,
 
@@ -2011,7 +2124,11 @@ declare const enum UProperty {
 
 	CHAR_VERTICAL_ORIENTATION = 4120,
 
-	CHAR_INT_LIMIT = 4121,
+	CHAR_IDENTIFIER_STATUS = 4121,
+
+	CHAR_INDIC_CONJUNCT_BREAK = 4122,
+
+	CHAR_INT_LIMIT = 4123,
 
 	CHAR_GENERAL_CATEGORY_MASK = 8192,
 
@@ -2061,7 +2178,9 @@ declare const enum UProperty {
 
 	CHAR_OTHER_PROPERTY_START = 28672,
 
-	CHAR_OTHER_PROPERTY_LIMIT = 28673,
+	CHAR_IDENTIFIER_TYPE = 28673,
+
+	CHAR_OTHER_PROPERTY_LIMIT = 28674,
 
 	CHAR_INVALID_CODE = -1
 }
@@ -2257,9 +2376,9 @@ declare const U_PARSE_CONTEXT_LEN: number;
 
 declare function u_UCharsToChars(us: interop.Pointer | interop.Reference<number>, cs: string | interop.Pointer | interop.Reference<any>, length: number): void;
 
-declare function u_austrcpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>): string;
+declare function u_austrcpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function u_austrncpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>, n: number): string;
+declare function u_austrncpy(dst: string | interop.Pointer | interop.Reference<any>, src: interop.Pointer | interop.Reference<number>, n: number): interop.Pointer | interop.Reference<any>;
 
 declare function u_charAge(c: number, versionArray: interop.Reference<number>): void;
 
@@ -2281,11 +2400,11 @@ declare function u_countChar32(s: interop.Pointer | interop.Reference<number>, l
 
 declare function u_digit(ch: number, radix: number): number;
 
-declare function u_enumCharNames(start: number, limit: number, fn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: UCharNameChoice, p4: string, p5: number) => number>>, context: interop.Pointer | interop.Reference<any>, nameChoice: UCharNameChoice, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): void;
+declare function u_enumCharNames(start: number, limit: number, fn: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: UCharNameChoice, p4: interop.Pointer | interop.Reference<any>, p5: number) => number>>, context: interop.Pointer | interop.Reference<any>, nameChoice: UCharNameChoice, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): void;
 
 declare function u_enumCharTypes(enumRange: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: number, p4: UCharCategory) => number>>, context: interop.Pointer | interop.Reference<any>): void;
 
-declare function u_errorName(code: UErrorCode): string;
+declare function u_errorName(code: UErrorCode): interop.Pointer | interop.Reference<any>;
 
 declare function u_foldCase(c: number, options: number): number;
 
@@ -2297,9 +2416,11 @@ declare function u_getBinaryPropertySet(property: UProperty, pErrorCode: interop
 
 declare function u_getCombiningClass(c: number): number;
 
-declare function u_getDataDirectory(): string;
+declare function u_getDataDirectory(): interop.Pointer | interop.Reference<any>;
 
 declare function u_getFC_NFKC_Closure(c: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function u_getIDTypes(c: number, types: interop.Pointer | interop.Reference<UIdentifierType>, capacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 
 declare function u_getISOComment(c: number, dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 
@@ -2315,19 +2436,21 @@ declare function u_getNumericValue(c: number): number;
 
 declare function u_getPropertyEnum(alias: string | interop.Pointer | interop.Reference<any>): UProperty;
 
-declare function u_getPropertyName(property: UProperty, nameChoice: UPropertyNameChoice): string;
+declare function u_getPropertyName(property: UProperty, nameChoice: UPropertyNameChoice): interop.Pointer | interop.Reference<any>;
 
 declare function u_getPropertyValueEnum(property: UProperty, alias: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function u_getPropertyValueName(property: UProperty, value: number, nameChoice: UPropertyNameChoice): string;
+declare function u_getPropertyValueName(property: UProperty, value: number, nameChoice: UPropertyNameChoice): interop.Pointer | interop.Reference<any>;
 
-declare function u_getTimeZoneFilesDirectory(status: interop.Pointer | interop.Reference<UErrorCode>): string;
+declare function u_getTimeZoneFilesDirectory(status: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
 declare function u_getUnicodeVersion(versionArray: interop.Reference<number>): void;
 
 declare function u_getVersion(versionArray: interop.Reference<number>): void;
 
 declare function u_hasBinaryProperty(c: number, which: UProperty): number;
+
+declare function u_hasIDType(c: number, type: UIdentifierType): boolean;
 
 declare function u_isIDIgnorable(c: number): number;
 
@@ -2439,7 +2562,7 @@ declare function u_strHasMoreChar32Than(s: interop.Pointer | interop.Reference<n
 
 declare function u_strIsWellFormed(s: interop.Pointer | interop.Reference<number>, length: number): number;
 
-declare function u_strToJavaModifiedUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): string;
+declare function u_strToJavaModifiedUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
 declare function u_strToLower(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, src: interop.Pointer | interop.Reference<number>, srcLength: number, locale: string | interop.Pointer | interop.Reference<any>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 
@@ -2449,9 +2572,9 @@ declare function u_strToUTF32(dest: interop.Pointer | interop.Reference<number>,
 
 declare function u_strToUTF32WithSub(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<number>;
 
-declare function u_strToUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): string;
+declare function u_strToUTF8(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
-declare function u_strToUTF8WithSub(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): string;
+declare function u_strToUTF8WithSub(dest: string | interop.Pointer | interop.Reference<any>, destCapacity: number, pDestLength: interop.Pointer | interop.Reference<number>, src: interop.Pointer | interop.Reference<number>, srcLength: number, subchar: number, pNumSubstitutions: interop.Pointer | interop.Reference<number>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
 declare function u_strToUpper(dest: interop.Pointer | interop.Reference<number>, destCapacity: number, src: interop.Pointer | interop.Reference<number>, srcLength: number, locale: string | interop.Pointer | interop.Reference<any>, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 

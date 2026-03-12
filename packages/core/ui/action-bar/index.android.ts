@@ -1,13 +1,13 @@
 import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from '.';
+import { isAccessibilityServiceEnabled } from '../../application';
+import { updateContentDescription } from '../../application/helpers';
 import { ActionItemBase, ActionBarBase, isVisible, flatProperty, traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty } from './action-bar-common';
-import { View } from '../core/view';
+import { AndroidHelper, View } from '../core/view';
 import { Color } from '../../color';
 import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
-import { Application } from '../../application';
-import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
-import type { Background } from '../styling/background';
+import { getNativeApp } from '../../application/helpers-common';
 import { SDK_VERSION } from '../../utils/constants';
 
 export * from './action-bar-common';
@@ -80,7 +80,7 @@ function initializeMenuItemClickListener(): void {
 	}
 
 	MenuItemClickListener = MenuItemClickListenerImpl;
-	appResources = Application.android.context.getResources();
+	appResources = getNativeApp<android.app.Application>().getApplicationContext().getResources();
 }
 
 export class ActionItem extends ActionItemBase {
@@ -188,6 +188,10 @@ export class ActionBar extends ActionBarBase {
 		this.update();
 	}
 
+	override get needsNativeDrawableFill(): boolean {
+		return true;
+	}
+
 	public update() {
 		if (!this.nativeViewProtected) {
 			return;
@@ -214,32 +218,6 @@ export class ActionBar extends ActionBarBase {
 
 		// Set navigation button
 		this._updateNavigationButton();
-	}
-
-	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
-		const nativeView = this.nativeViewProtected;
-		if (backgroundDrawable && onlyColor && SDK_VERSION >= 21) {
-			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
-				backgroundDrawable = (<any>nativeView)._cachedDrawable;
-				// we need to duplicate the drawable or we lose the "default" cached drawable
-				const constantState = backgroundDrawable.getConstantState();
-				if (constantState) {
-					try {
-						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
-						// eslint-disable-next-line no-empty
-					} catch {}
-				}
-				nativeView.setBackground(backgroundDrawable);
-			}
-
-			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
-			backgroundDrawable.mutate();
-			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
-			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
-			(<any>backgroundDrawable).backgroundColor = backgroundColor;
-		} else {
-			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
-		}
 	}
 
 	public _onAndroidItemSelected(itemId: number): boolean {
@@ -298,7 +276,7 @@ export class ActionBar extends ActionBarBase {
 							owner._raiseTap();
 						}
 					},
-				})
+				}),
 			);
 		} else {
 			this.nativeViewProtected.setNavigationIcon(null);
@@ -317,7 +295,7 @@ export class ActionBar extends ActionBarBase {
 					traceMissingIcon(icon);
 				}
 			} else {
-				const defaultIcon = Application.android.nativeApp.getApplicationInfo().icon;
+				const defaultIcon = (getNativeApp() as android.app.Application).getApplicationInfo().icon;
 				this.nativeViewProtected.setLogo(defaultIcon);
 			}
 		} else {
@@ -332,7 +310,7 @@ export class ActionBar extends ActionBarBase {
 			if (title !== undefined) {
 				this.nativeViewProtected.setTitle(title);
 			} else {
-				const appContext = Application.android.context;
+				const appContext = getNativeApp<android.app.Application>().getApplicationContext();
 				const appInfo = appContext.getApplicationInfo();
 				const appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
 				if (appLabel) {
@@ -387,7 +365,7 @@ export class ActionBar extends ActionBarBase {
 						owner._raiseTap();
 					}
 				},
-			})
+			}),
 		);
 	}
 
@@ -569,7 +547,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
 	let result = null;
 	if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', Application.android.packageName);
+		const resourceId: number = resources.getIdentifier(icon.substring(RESOURCE_PREFIX.length), 'drawable', getNativeApp<android.app.Application>().getApplicationContext().getPackageName());
 		if (resourceId > 0) {
 			result = resourceId;
 		}

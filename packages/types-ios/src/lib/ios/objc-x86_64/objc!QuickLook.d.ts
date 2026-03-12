@@ -1,4 +1,63 @@
 
+/**
+ * @since 13.0
+ */
+declare class ARQuickLookPreviewItem extends NSObject implements QLPreviewItem {
+
+	static alloc(): ARQuickLookPreviewItem; // inherited from NSObject
+
+	static new(): ARQuickLookPreviewItem; // inherited from NSObject
+
+	allowsContentScaling: boolean;
+
+	canonicalWebPageURL: NSURL;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly previewItemTitle: string; // inherited from QLPreviewItem
+
+	readonly previewItemURL: NSURL; // inherited from QLPreviewItem
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { fileAtURL: NSURL; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithFileAtURL(url: NSURL): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+/**
+ * @since 15.0
+ */
 declare class QLFilePreviewRequest extends NSObject {
 
 	static alloc(): QLFilePreviewRequest; // inherited from NSObject
@@ -8,6 +67,9 @@ declare class QLFilePreviewRequest extends NSObject {
 	readonly fileURL: NSURL;
 }
 
+/**
+ * @since 4.0
+ */
 declare class QLPreviewController extends UIViewController {
 
 	static alloc(): QLPreviewController; // inherited from NSObject
@@ -44,10 +106,19 @@ interface QLPreviewControllerDelegate extends NSObjectProtocol {
 
 	previewControllerDidDismiss?(controller: QLPreviewController): void;
 
+	/**
+	 * @since 13.0
+	 */
 	previewControllerDidSaveEditedCopyOfPreviewItemAtURL?(controller: QLPreviewController, previewItem: QLPreviewItem, modifiedContentsURL: NSURL): void;
 
+	/**
+	 * @since 13.0
+	 */
 	previewControllerDidUpdateContentsOfPreviewItem?(controller: QLPreviewController, previewItem: QLPreviewItem): void;
 
+	/**
+	 * @since 13.0
+	 */
 	previewControllerEditingModeForPreviewItem?(controller: QLPreviewController, previewItem: QLPreviewItem): QLPreviewItemEditingMode;
 
 	previewControllerFrameForPreviewItemInSourceView?(controller: QLPreviewController, item: QLPreviewItem, view: interop.Pointer | interop.Reference<UIView>): CGRect;
@@ -56,6 +127,9 @@ interface QLPreviewControllerDelegate extends NSObjectProtocol {
 
 	previewControllerTransitionImageForPreviewItemContentRect?(controller: QLPreviewController, item: QLPreviewItem, contentRect: interop.Pointer | interop.Reference<CGRect>): UIImage;
 
+	/**
+	 * @since 10.0
+	 */
 	previewControllerTransitionViewForPreviewItem?(controller: QLPreviewController, item: QLPreviewItem): UIView;
 
 	previewControllerWillDismiss?(controller: QLPreviewController): void;
@@ -76,6 +150,9 @@ declare var QLPreviewItem: {
 	prototype: QLPreviewItem;
 };
 
+/**
+ * @since 13.0
+ */
 declare const enum QLPreviewItemEditingMode {
 
 	Disabled = 0,
@@ -85,6 +162,9 @@ declare const enum QLPreviewItemEditingMode {
 	CreateCopy = 2
 }
 
+/**
+ * @since 15.0
+ */
 declare class QLPreviewProvider extends NSObject implements NSExtensionRequestHandling {
 
 	static alloc(): QLPreviewProvider; // inherited from NSObject
@@ -128,6 +208,9 @@ declare class QLPreviewProvider extends NSObject implements NSExtensionRequestHa
 	self(): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class QLPreviewReply extends NSObject {
 
 	static alloc(): QLPreviewReply; // inherited from NSObject
@@ -157,6 +240,9 @@ declare class QLPreviewReply extends NSObject {
 	initWithFileURL(fileURL: NSURL): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class QLPreviewReplyAttachment extends NSObject {
 
 	static alloc(): QLPreviewReplyAttachment; // inherited from NSObject
@@ -172,6 +258,9 @@ declare class QLPreviewReplyAttachment extends NSObject {
 	initWithDataContentType(data: NSData, contentType: UTType): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class QLPreviewSceneActivationConfiguration extends UIWindowSceneActivationConfiguration {
 
 	static alloc(): QLPreviewSceneActivationConfiguration; // inherited from NSObject
@@ -183,6 +272,9 @@ declare class QLPreviewSceneActivationConfiguration extends UIWindowSceneActivat
 	initWithItemsAtURLsOptions(urls: NSArray<NSURL> | NSURL[], options: QLPreviewSceneOptions): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class QLPreviewSceneOptions extends NSObject {
 
 	static alloc(): QLPreviewSceneOptions; // inherited from NSObject

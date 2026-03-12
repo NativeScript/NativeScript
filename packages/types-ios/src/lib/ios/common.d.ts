@@ -15,6 +15,7 @@
 /// <reference path="objc-x86_64/objc!MediaPlayer.d.ts" />
 /// <reference path="objc-x86_64/objc!MessageUI.d.ts" />
 /// <reference path="objc-x86_64/objc!NativeScriptEmbedder.d.ts" />
+/// <reference path="objc-x86_64/objc!nsswiftsupport.d.ts" />
 /// <reference path="objc-x86_64/objc!ObjectiveC.d.ts" />
 /// <reference path="objc-x86_64/objc!Photos.d.ts" />
 /// <reference path="objc-x86_64/objc!PhotosUI.d.ts" />

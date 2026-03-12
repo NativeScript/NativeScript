@@ -24,7 +24,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 				waitUntilTestElementLayoutIsValid(ui.root);
 				test(ui);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -70,7 +70,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 			({ root }) => {
 				this.scroll_view_in_full_screen(root, pageOptions);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -194,11 +194,11 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 				isBelowWith(root, childFirst, insets.top);
 				isRightWith(childFirst, root, insets.right);
 
-				const scrollViewContentHeight = round(dipToDp(root.nativeViewProtected.contentSize.height));
+				const scrollViewContentHeight = Math.round(dipToDp(root.nativeViewProtected.contentSize.height));
 				const sumOfNestedLabelHeightsAndInsets = height(childFirst) * stack.getChildrenCount() + insets.top + insets.bottom;
 				equal(scrollViewContentHeight, sumOfNestedLabelHeightsAndInsets, `scroll view content height<${scrollViewContentHeight}> sum of nested label height and insets <${sumOfNestedLabelHeightsAndInsets}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 
@@ -426,7 +426,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 				const sumOfNestedScrollViewWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]);
 				equal(width(grid), sumOfNestedScrollViewWidths, `grid width<${width(grid)}> sum of nested scroll views width <${sumOfNestedScrollViewWidths}>`);
 			},
-			pageOptions
+			pageOptions,
 		);
 	}
 

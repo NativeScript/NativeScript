@@ -4,7 +4,7 @@
 		"noEmitOnError": true,
 		"noEmitHelpers": true,
 		"declaration": true,
-		"noImplicitUseStrict": true,
+		"ignoreDeprecations": "5.0",
 		"removeComments": false,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
@@ -12,15 +12,8 @@
 		"sourceMap": true,
 		"inlineSourceMap": false,
 		"baseUrl": ".",
-		"outDir": "../../dist",
-		"types": ["node"],
-		"plugins": [
-			{
-				"transform": "../webpack5/src/transformers/NativeClass/index.ts",
-				"type": "raw"
-			}
-		]
+		"types": ["node"]
 	},
-	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__", "jest.config.ts", "jest.setup.ts"],
+	"exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "__tests__", "vite.config.ts", "vitest.setup.ts"],
 	"include": ["**/*.ts", "./references.d.ts"]
 }

@@ -1,43 +1,39 @@
-// Definitions.
-import { View as ViewDefinition, Point, Size, ShownModallyData } from '.';
-
+import type { View as ViewType } from '.';
+import { Point, Size, ShownModallyData, Position } from './view-interfaces';
 import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
 import { layout } from '../../../utils';
 import { isObject } from '../../../utils/types';
 import { sanitizeModuleName } from '../../../utils/common';
 import { Color } from '../../../color';
-import { Property, InheritedProperty } from '../properties';
+import { Property, InheritedProperty, CssProperty } from '../properties';
+import { Style } from '../../styling/style';
 import { EventData } from '../../../data/observable';
-import { Trace } from '../../../trace';
-import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
+import { setupAccessibleView } from '../../../application/helpers';
 
-import { PercentLength } from '../../styling/style-properties';
+import { PercentLength } from '../../styling/length-shared';
 
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString, TouchManager, TouchAnimationOptions } from '../../gestures';
+import { observe as gestureObserve, GesturesObserver, GestureTypes, fromString as gestureFromString, toString as gestureToString, TouchManager, TouchAnimationOptions, VisionHoverOptions } from '../../gestures';
+import type { GestureEventData } from '../../gestures/gestures-types';
 
 import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
-import * as am from '../../animation';
-import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
+import { Animation } from '../../animation';
+import type { AnimationPromise } from '../../animation/animation-types';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, getFontScale } from '../../../accessibility';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
-import { CSSShadow } from '../../styling/css-shadow';
+import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent } from '../../../accessibility';
+import { ShadowCSSValues } from '../../styling/css-shadow';
 import { SharedTransition, SharedTransitionInteractiveOptions } from '../../transition/shared-transition';
+import { Flex, FlexFlow } from '../../layouts/flexbox-layout';
+import { CoreTypes, Trace } from '../../styling/styling-shared';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
-
-let animationModule: typeof am;
-function ensureAnimationModule() {
-	if (!animationModule) {
-		animationModule = require('../../animation');
-	}
-}
 
 export function CSSType(type: string): ClassDecorator {
 	return (cls) => {
@@ -45,25 +41,27 @@ export function CSSType(type: string): ClassDecorator {
 	};
 }
 
-export function viewMatchesModuleContext(view: ViewDefinition, context: ModuleContext, types: ModuleType[]): boolean {
+export function viewMatchesModuleContext(view: ViewCommon, context: ModuleContext, types: ModuleType[]): boolean {
 	return context && view._moduleName && context.type && types.some((type) => type === context.type) && context.path && context.path.includes(view._moduleName);
 }
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
 	const stateEventNames = pseudoClasses.map((s) => ':' + s);
-	const listeners = Symbol('listeners');
 
-	return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
-		function update(change: number) {
-			const prev = this[listeners] || 0;
-			const next = prev + change;
-			if (prev <= 0 && next > 0) {
-				this[propertyKey](true);
-			} else if (prev > 0 && next <= 0) {
-				this[propertyKey](false);
+	return <T>(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) => {
+		// This will help keep track of pseudo-class subscription changes
+		const subscribeKey = Symbol(propertyKey + '_flag');
+
+		function onSubscribe(subscribe: boolean) {
+			if (subscribe != !!this[subscribeKey]) {
+				this[subscribeKey] = subscribe;
+				this[propertyKey](subscribe);
 			}
 		}
-		stateEventNames.forEach((s) => (target[s] = update));
+
+		for (const eventName of stateEventNames) {
+			target[eventName] = onSubscribe;
+		}
 	};
 }
 
@@ -71,7 +69,10 @@ export const _rootModalViews = new Array<ViewBase>();
 
 type InteractiveTransitionState = { began?: boolean; cancelled?: boolean; options?: SharedTransitionInteractiveOptions };
 
-export abstract class ViewCommon extends ViewBase implements ViewDefinition {
+// TODO: remove once we fully switch to the new event system
+const warnedEvent = new Set<string>();
+
+export abstract class ViewCommon extends ViewBase {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
@@ -79,11 +80,22 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
 	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+	public static androidOverflowInsetEvent = 'androidOverflowInset';
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
 	public accessibilityValue: string;
 	public accessibilityHint: string;
+	public accessibilityIgnoresInvertColors: boolean;
+
+	public originX: number;
+	public originY: number;
+	public isEnabled: boolean;
+	public isUserInteractionEnabled: boolean;
+	public iosOverflowSafeArea: boolean;
+	public iosOverflowSafeAreaEnabled: boolean;
+	public iosIgnoreSafeArea: boolean;
+	public androidOverflowEdge: CoreTypes.AndroidOverflow;
 
 	public testID: string;
 
@@ -91,9 +103,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public ignoreTouchAnimation: boolean;
 	public touchDelay: number;
 
+	/**
+	 * visionOS only
+	 */
+	public visionHoverStyle: string | VisionHoverOptions;
+	public visionIgnoreHoverStyle: boolean;
+
+	/**
+	 * iOS 26+ Glass
+	 */
+	iosGlassEffect: GlassEffectType;
+
 	protected _closeModalCallback: Function;
 	public _manager: any;
-	public _modalParent: ViewCommon;
+	public _modalParent?: ViewCommon;
 	private _modalContext: any;
 	private _modal: ViewCommon;
 
@@ -108,7 +131,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	protected _isLayoutValid: boolean;
 	private _cssType: string;
 
-	private _localAnimations: Set<am.Animation>;
+	private _localAnimations: Set<Animation>;
 
 	_currentWidthMeasureSpec: number;
 	_currentHeightMeasureSpec: number;
@@ -116,7 +139,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	_setMinWidthNative: (value: CoreTypes.LengthType) => void;
 	_setMinHeightNative: (value: CoreTypes.LengthType) => void;
 
-	public _gestureObservers = {};
+	public readonly _gestureObservers = {} as Record<GestureTypes, Array<GesturesObserver>>;
 
 	_androidContentDescriptionUpdated?: boolean;
 
@@ -170,13 +193,28 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	onLoaded() {
 		if (!this.isLoaded) {
-			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && (this.hasListeners('tap') || this.hasListeners('tapChange') || this.getGestureObservers(GestureTypes.tap));
+			const hasTap = this.hasListeners('tap') || this.hasListeners('tapChange') || !!this.getGestureObservers(GestureTypes.tap);
+			const enableTapAnimations = TouchManager.enableGlobalTapAnimations && hasTap;
 			if (!this.ignoreTouchAnimation && (this.touchAnimation || enableTapAnimations)) {
-				// console.log('view:', Object.keys((<any>this)._observers));
 				TouchManager.addAnimations(this);
+			}
+
+			if (__VISIONOS__) {
+				const enableHoverStyle = TouchManager.enableGlobalHoverWhereTap && hasTap;
+				if (!this.visionIgnoreHoverStyle && (this.visionHoverStyle || enableHoverStyle)) {
+					TouchManager.addHoverStyle(this);
+				}
 			}
 		}
 		super.onLoaded();
+
+		setupAccessibleView(this);
+
+		if (this.statusBarStyle) {
+			// reapply status bar style on load
+			// helps back navigation cases to restore if overridden
+			this.updateStatusBarStyle(this.statusBarStyle);
+		}
 	}
 
 	public _closeAllModalViewsInternal(): boolean {
@@ -261,7 +299,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+	protected _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+		thisArg = thisArg || undefined;
+
+		if (this._gestureObservers[type]?.find((observer) => observer.callback === callback && observer.context === thisArg)) {
+			// Already added.
+			return;
+		}
+
 		if (!this._gestureObservers[type]) {
 			this._gestureObservers[type] = [];
 		}
@@ -269,62 +314,68 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this._gestureObservers[type].push(gestureObserve(this, type, callback, thisArg));
 	}
 
-	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
+	public getGestureObservers(type: GestureTypes): Array<GesturesObserver> | undefined {
 		return this._gestureObservers[type];
 	}
 
-	public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'string') {
-			arg = getEventOrGestureName(arg);
+	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean) {
+		thisArg = thisArg || undefined;
 
-			const gesture = gestureFromString(arg);
-			if (gesture && !this._isEvent(arg)) {
-				this._observe(gesture, callback, thisArg);
-			} else {
-				const events = arg.split(',');
-				if (events.length > 0) {
-					for (let i = 0; i < events.length; i++) {
-						const evt = events[i].trim();
-						const gst = gestureFromString(evt);
-						if (gst && !this._isEvent(arg)) {
-							this._observe(gst, callback, thisArg);
-						} else {
-							super.addEventListener(evt, callback, thisArg);
-						}
-					}
-				} else {
-					super.addEventListener(arg, callback, thisArg);
-				}
+		// TODO: Remove this once we fully switch to the new event system
+		if (typeof eventNames === 'number') {
+			// likely a gesture type from a plugin
+			const gestureName = gestureToString(eventNames);
+			if (!warnedEvent.has(gestureName)) {
+				console.warn(`Using a gesture type (${gestureName}) as an event name is deprecated. Please use the event name instead.`);
+				warnedEvent.add(gestureName);
 			}
-		} else if (typeof arg === 'number') {
-			this._observe(<GestureTypes>arg, callback, thisArg);
+			eventNames = gestureName;
 		}
+
+		// Normalize "ontap" -> "tap"
+		const normalizedName = getEventOrGestureName(eventNames);
+
+		// Coerce "tap" -> GestureTypes.tap
+		// Coerce "loaded" -> undefined
+		const gestureType: GestureTypes | undefined = gestureFromString(normalizedName);
+
+		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
+		if (gestureType && !this._isEvent(normalizedName)) {
+			this._observe(gestureType, callback, thisArg);
+			return;
+		}
+
+		super.addEventListener(normalizedName, callback, thisArg, once);
 	}
 
-	public removeEventListener(arg: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any) {
-		if (typeof arg === 'string') {
-			const gesture = gestureFromString(arg);
-			if (gesture && !this._isEvent(arg)) {
-				this._disconnectGestureObservers(gesture);
-			} else {
-				const events = arg.split(',');
-				if (events.length > 0) {
-					for (let i = 0; i < events.length; i++) {
-						const evt = events[i].trim();
-						const gst = gestureFromString(evt);
-						if (gst && !this._isEvent(arg)) {
-							this._disconnectGestureObservers(gst);
-						} else {
-							super.removeEventListener(evt, callback, thisArg);
-						}
-					}
-				} else {
-					super.removeEventListener(arg, callback, thisArg);
-				}
+	public removeEventListener(eventNames: string, callback?: (data: EventData) => void, thisArg?: any) {
+		thisArg = thisArg || undefined;
+
+		// TODO: Remove this once we fully switch to the new event system
+		if (typeof eventNames === 'number') {
+			// likely a gesture type from a plugin
+			const gestureName = gestureToString(eventNames);
+			if (!warnedEvent.has(gestureName)) {
+				console.warn(`Using a gesture type (${gestureName}) as an event name is deprecated. Please use the event name instead.`);
+				warnedEvent.add(gestureName);
 			}
-		} else if (typeof arg === 'number') {
-			this._disconnectGestureObservers(<GestureTypes>arg);
+			eventNames = gestureName;
 		}
+
+		// Normalize "ontap" -> "tap"
+		const normalizedName = getEventOrGestureName(eventNames);
+
+		// Coerce "tap" -> GestureTypes.tap
+		// Coerce "loaded" -> undefined
+		const gestureType: GestureTypes | undefined = gestureFromString(normalizedName);
+
+		// If it's a gesture (and this Observable declares e.g. `static tapEvent`)
+		if (gestureType && !this._isEvent(normalizedName)) {
+			this._disconnectGestureObservers(gestureType, callback, thisArg);
+			return;
+		}
+
+		super.removeEventListener(normalizedName, callback, thisArg);
 	}
 
 	public onBackPressed(): boolean {
@@ -362,13 +413,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 			const firstArgument = args[0];
 			const view = firstArgument instanceof ViewCommon ? firstArgument : <ViewCommon>Builder.createViewFromEntry({
 							moduleName: firstArgument,
-					  });
+						});
 
 			return { view, options };
 		}
 	}
 
-	public showModal(...args): ViewDefinition {
+	public showModal(...args): ViewType {
 		const { view, options } = this.getModalOptions(args);
 		if (options.transition?.instance) {
 			SharedTransition.updateState(options.transition?.instance.id, {
@@ -405,13 +456,16 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;
-		this.style.fontScaleInternal = getCurrentFontScale();
+		this.style.fontScaleInternal = getFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
 		this._closeModalCallback = (...originalArgs) => {
 			const cleanupModalViews = () => {
 				const modalIndex = _rootModalViews.indexOf(this);
-				_rootModalViews.splice(modalIndex);
+				if (modalIndex > -1) {
+					_rootModalViews.splice(modalIndex, 1);
+				}
+
 				this._modalParent = null;
 				this._modalContext = null;
 				this._closeModalCallback = null;
@@ -482,16 +536,54 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return this.constructor && `${name}Event` in this.constructor;
 	}
 
-	private _disconnectGestureObservers(type: GestureTypes): void {
+	private _disconnectGestureObservers(type: GestureTypes, callback?: (data: EventData) => void, thisArg?: any): void {
+		// Largely mirrors the implementation of Observable.innerRemoveEventListener().
+
 		const observers = this.getGestureObservers(type);
-		if (observers) {
-			for (let i = 0; i < observers.length; i++) {
-				observers[i].disconnect();
+		if (!observers) {
+			return;
+		}
+
+		for (let i = 0; i < observers.length; i++) {
+			const observer = observers[i];
+
+			// If we have a `thisArg`, refine on both `callback` and `thisArg`.
+			if (thisArg && (observer.callback !== callback || observer.context !== thisArg)) {
+				continue;
 			}
+
+			// If we don't have a `thisArg`, refine only on `callback`.
+			if (callback && observer.callback !== callback) {
+				continue;
+			}
+
+			observer.disconnect();
+			observers.splice(i, 1);
+			i--;
+		}
+
+		if (!observers.length) {
+			delete this._gestureObservers[type];
 		}
 	}
 
 	// START Style property shortcuts
+	get flexFlow(): FlexFlow {
+		return this.style.flexFlow;
+	}
+
+	set flexFlow(value: FlexFlow) {
+		this.style.flexFlow = value;
+	}
+
+	get flex(): Flex {
+		return this.style.flex;
+	}
+
+	set flex(value: Flex) {
+		this.style.flex = value;
+	}
+
 	get borderColor(): string | Color {
 		return this.style.borderColor;
 	}
@@ -646,17 +738,23 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundRepeat = value;
 	}
 
-	get boxShadow(): CSSShadow {
+	get boxShadow(): string | ShadowCSSValues[] {
 		return this.style.boxShadow;
 	}
-	set boxShadow(value: CSSShadow) {
+	set boxShadow(value: string | ShadowCSSValues[]) {
 		this.style.boxShadow = value;
+	}
+
+	get direction(): CoreTypes.LayoutDirectionType {
+		return this.style.direction;
+	}
+	set direction(value: CoreTypes.LayoutDirectionType) {
+		this.style.direction = value;
 	}
 
 	get minWidth(): CoreTypes.LengthType {
 		return this.style.minWidth;
 	}
-
 	set minWidth(value: CoreTypes.LengthType) {
 		this.style.minWidth = value;
 	}
@@ -810,11 +908,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	get accessible(): boolean {
 		return this.style.accessible;
-		// return this._accessible;
 	}
 	set accessible(value: boolean) {
 		this.style.accessible = value;
-		// this._accessible = value;
 	}
 
 	get accessibilityHidden(): boolean {
@@ -902,15 +998,15 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.androidDynamicElevationOffset = value;
 	}
 
-	//END Style property shortcuts
+	/**
+	 * (Android only) Gets closest window parent considering modals.
+	 */
+	getClosestWindow(): android.view.Window {
+		// platform impl
+		return null;
+	}
 
-	public originX: number;
-	public originY: number;
-	public isEnabled: boolean;
-	public isUserInteractionEnabled: boolean;
-	public iosOverflowSafeArea: boolean;
-	public iosOverflowSafeAreaEnabled: boolean;
-	public iosIgnoreSafeArea: boolean;
+	//END Style property shortcuts
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
@@ -927,8 +1023,23 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this._cssType = type.toLowerCase();
 	}
 
+	get statusBarStyle(): 'light' | 'dark' {
+		return this.style.statusBarStyle;
+	}
+	set statusBarStyle(value: 'light' | 'dark') {
+		this.style.statusBarStyle = value;
+	}
+
+	updateStatusBarStyle(value: 'dark' | 'light') {
+		// platform specific impl
+	}
+
 	get isLayoutRequired(): boolean {
 		return true;
+	}
+
+	get needsNativeDrawableFill(): boolean {
+		return false;
 	}
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -976,7 +1087,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return ViewHelper.combineMeasuredStates(curState, newState);
 	}
 
-	public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame = true): void {
+	public static layoutChild(parent: ViewCommon, child: ViewCommon, left: number, top: number, right: number, bottom: number, setFrame = true): void {
 		ViewHelper.layoutChild(parent, child, left, top, right, bottom);
 	}
 
@@ -992,12 +1103,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return changed;
 	}
 
-	_getCurrentLayoutBounds(): {
-		left: number;
-		top: number;
-		right: number;
-		bottom: number;
-	} {
+	_getCurrentLayoutBounds(): Position {
 		return { left: 0, top: 0, right: 0, bottom: 0 };
 	}
 
@@ -1020,7 +1126,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.eachChildView(<any>callback);
 	}
 
-	public eachChildView(callback: (view: ViewDefinition) => boolean) {
+	public eachChildView(callback: (view: ViewCommon) => boolean) {
 		//
 	}
 
@@ -1036,7 +1142,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return undefined;
 	}
 
-	public getSafeAreaInsets(): { left; top; right; bottom } {
+	public getSafeAreaInsets(): Position {
 		return { left: 0, top: 0, right: 0, bottom: 0 };
 	}
 
@@ -1048,7 +1154,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return undefined;
 	}
 
-	public getLocationRelativeTo(otherView: ViewDefinition): Point {
+	public getLocationRelativeTo(otherView: ViewCommon): Point {
 		return undefined;
 	}
 
@@ -1064,23 +1170,25 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		};
 	}
 
-	public animate(animation: any): am.AnimationPromise {
-		return this.createAnimation(animation).play();
+	public animate(animation: any): AnimationPromise {
+		const animationInstance = this.createAnimation(animation);
+		const promise = animationInstance.play();
+		(promise as AnimationPromise).cancel = () => animationInstance.cancel();
+		return promise as AnimationPromise;
 	}
 
-	public createAnimation(animation: any): am.Animation {
-		ensureAnimationModule();
+	public createAnimation(animation: any): Animation {
 		if (!this._localAnimations) {
 			this._localAnimations = new Set();
 		}
 		animation.target = this;
-		const anim = new animationModule.Animation([animation]);
+		const anim = new Animation([animation]);
 		this._localAnimations.add(anim);
 
 		return anim;
 	}
 
-	public _removeAnimation(animation: am.Animation): boolean {
+	public _removeAnimation(animation: Animation): boolean {
 		const localAnimations = this._localAnimations;
 		if (localAnimations && localAnimations.has(animation)) {
 			localAnimations.delete(animation);
@@ -1100,6 +1208,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 
 		super.resetNativeView();
+	}
+
+	public _modifyNativeViewFrame(nativeView: any, frame: any) {
+		//
 	}
 
 	public _setNativeViewFrame(nativeView: any, frame: any) {
@@ -1137,7 +1249,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _redrawNativeBackground(value: any): void {
 		//
 	}
-	public _applyBackground(background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any) {
+	public _applyBackground(background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: android.graphics.drawable.Drawable) {
 		//
 	}
 
@@ -1149,16 +1261,42 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		//
 	}
 
-	_hasAncestorView(ancestorView: ViewDefinition): boolean {
-		const matcher = (view: ViewDefinition) => view === ancestorView;
+	_hasAncestorView(ancestorView: ViewCommon): boolean {
+		const matcher = (view: ViewCommon) => view === ancestorView;
 
 		for (let parent = this.parent; parent != null; parent = parent.parent) {
-			if (matcher(<ViewDefinition>parent)) {
+			if (matcher(<ViewCommon>parent)) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Shared helper method for applying glass effects to views.
+	 * This method can be used by View and its subclasses (LiquidGlass, LiquidGlassContainer, etc.)
+	 * iOS only at the moment but could be applied to others once supported in other platforms.
+	 *
+	 * @param value - The glass effect configuration
+	 * @param options - Configuration options for different glass effect behaviors
+	 * @param options.effectType - Type of effect to create: 'glass' | 'container'
+	 * @param options.targetView - The UIVisualEffectView to apply the effect to (if updating existing view)
+	 * @param options.toGlassStyleFn - Custom function to convert variant to UIGlassEffectStyle
+	 * @param options.onCreate - Callback when a new effect view is created (for initial setup)
+	 * @param options.onUpdate - Callback when an existing effect view is updated
+	 */
+	protected _applyGlassEffect(
+		value: GlassEffectType,
+		options: {
+			effectType: 'glass' | 'container';
+			targetView?: UIVisualEffectView;
+			toGlassStyleFn?: (variant?: GlassEffectVariant) => number;
+			onCreate?: (effectView: UIVisualEffectView, effect: UIVisualEffect) => void;
+			onUpdate?: (effectView: UIVisualEffectView, effect: UIVisualEffect, duration: number) => void;
+		},
+	): UIVisualEffectView | undefined {
+		return undefined;
 	}
 
 	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
@@ -1173,7 +1311,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return;
 	}
 
-	public setTestID(view: any, value: string) {
+	public setAccessibilityIdentifier(view: any, value: string) {
 		return;
 	}
 }
@@ -1197,7 +1335,13 @@ export const isEnabledProperty = new Property<ViewCommon, boolean>({
 	defaultValue: true,
 	valueConverter: booleanConverter,
 	valueChanged(this: void, target, oldValue, newValue): void {
-		target._goToVisualState(newValue ? 'normal' : 'disabled');
+		const state = 'disabled';
+
+		if (newValue) {
+			target._removeVisualState(state);
+		} else {
+			target._addVisualState(state);
+		}
 	},
 });
 isEnabledProperty.register(ViewCommon);
@@ -1209,6 +1353,16 @@ export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean
 });
 isUserInteractionEnabledProperty.register(ViewCommon);
 
+/**
+ * Property backing statusBarStyle.
+ */
+export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
+	name: 'statusBarStyle',
+	cssName: 'status-bar-style',
+});
+statusBarStyleProperty.register(Style);
+
+// Apple only
 export const iosOverflowSafeAreaProperty = new Property<ViewCommon, boolean>({
 	name: 'iosOverflowSafeArea',
 	defaultValue: false,
@@ -1228,6 +1382,53 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+
+export const androidOverflowEdgeProperty = new Property<ViewCommon, CoreTypes.AndroidOverflow>({
+	name: 'androidOverflowEdge',
+	defaultValue: 'ignore',
+});
+androidOverflowEdgeProperty.register(ViewCommon);
+
+/**
+ * Glass effects
+ */
+export type GlassEffectVariant = 'regular' | 'clear' | 'identity' | 'none';
+export type GlassEffectConfig = {
+	variant?: GlassEffectVariant;
+	interactive?: boolean;
+	tint?: string | Color;
+	/**
+	 * (LiquidGlassContainer only) spacing between child elements (default is 8)
+	 */
+	spacing?: number;
+	/**
+	 * Duration in milliseconds to animate effect changes (default is 300ms)
+	 */
+	animateChangeDuration?: number;
+};
+export type GlassEffectType = GlassEffectVariant | GlassEffectConfig;
+export const iosGlassEffectProperty = new Property<ViewCommon, GlassEffectType>({
+	name: 'iosGlassEffect',
+});
+iosGlassEffectProperty.register(ViewCommon);
+
+export const visionHoverStyleProperty = new Property<ViewCommon, string | VisionHoverOptions>({
+	name: 'visionHoverStyle',
+	valueChanged(view, oldValue, newValue) {
+		view.visionHoverStyle = newValue;
+	},
+});
+visionHoverStyleProperty.register(ViewCommon);
+
+const visionIgnoreHoverStyleProperty = new Property<ViewCommon, boolean>({
+	name: 'visionIgnoreHoverStyle',
+	valueChanged(view, oldValue, newValue) {
+		view.visionIgnoreHoverStyle = newValue;
+	},
+	valueConverter: booleanConverter,
+});
+visionIgnoreHoverStyleProperty.register(ViewCommon);
+// Apple only end
 
 const touchAnimationProperty = new Property<ViewCommon, boolean | TouchAnimationOptions>({
 	name: 'touchAnimation',

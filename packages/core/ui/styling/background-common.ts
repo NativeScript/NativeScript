@@ -1,8 +1,8 @@
 import { CoreTypes } from '../../core-types';
 import { LinearGradient } from './linear-gradient';
-// Types.
 import { Color } from '../../color';
-import { CSSShadow } from './css-shadow';
+import { BoxShadow } from './box-shadow';
+import { ClipPathFunction } from './clip-path-function';
 
 /**
  * Flags used to hint the background handler if it has to clear a specific property
@@ -39,8 +39,8 @@ export class Background {
 	public borderTopRightRadius = 0;
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
-	public clipPath: string;
-	public boxShadow: CSSShadow;
+	public clipPath: string | ClipPathFunction;
+	public boxShadows: BoxShadow[];
 	public clearFlags: number = BackgroundClearFlags.NONE;
 
 	private clone(): Background {
@@ -64,7 +64,7 @@ export class Background {
 		clone.borderBottomRightRadius = this.borderBottomRightRadius;
 		clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
 		clone.clipPath = this.clipPath;
-		clone.boxShadow = this.boxShadow;
+		clone.boxShadows = this.boxShadows;
 		clone.clearFlags = this.clearFlags;
 
 		return clone;
@@ -192,17 +192,17 @@ export class Background {
 		return clone;
 	}
 
-	public withClipPath(value: string): Background {
+	public withClipPath(value: string | ClipPathFunction): Background {
 		const clone = this.clone();
 		clone.clipPath = value;
 
 		return clone;
 	}
 
-	public withBoxShadow(value: CSSShadow): Background {
+	public withBoxShadows(value: BoxShadow[]): Background {
 		const clone = this.clone();
-		clone.boxShadow = value;
-		if (!value) {
+		clone.boxShadows = value;
+		if (!value?.length) {
 			clone.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
 		}
 
@@ -224,16 +224,23 @@ export class Background {
 			return false;
 		}
 
-		let imagesEqual = false;
+		let isImageEqual = false;
 		if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
-			imagesEqual = LinearGradient.equals(value1, value2);
+			isImageEqual = LinearGradient.equals(value1, value2);
 		} else {
-			imagesEqual = value1.image === value2.image;
+			isImageEqual = value1.image === value2.image;
+		}
+
+		let isClipPathEqual = false;
+		if (value1.clipPath instanceof ClipPathFunction && value2.clipPath instanceof ClipPathFunction) {
+			isClipPathEqual = ClipPathFunction.equals(value1.clipPath, value2.clipPath);
+		} else {
+			isClipPathEqual = value1.clipPath === value2.clipPath;
 		}
 
 		return (
 			Color.equals(value1.color, value2.color) &&
-			imagesEqual &&
+			isImageEqual &&
 			value1.position === value2.position &&
 			value1.repeat === value2.repeat &&
 			value1.size === value2.size &&
@@ -249,7 +256,7 @@ export class Background {
 			value1.borderTopRightRadius === value2.borderTopRightRadius &&
 			value1.borderBottomRightRadius === value2.borderBottomRightRadius &&
 			value1.borderBottomLeftRadius === value2.borderBottomLeftRadius &&
-			value1.clipPath === value2.clipPath
+			isClipPathEqual
 			// && value1.clearFlags === value2.clearFlags
 		);
 	}
@@ -264,6 +271,10 @@ export class Background {
 
 	public hasBorderRadius(): boolean {
 		return this.borderTopLeftRadius > 0 || this.borderTopRightRadius > 0 || this.borderBottomRightRadius > 0 || this.borderBottomLeftRadius > 0;
+	}
+
+	public hasBorder(): boolean {
+		return (this.hasBorderColor() && this.hasBorderWidth()) || this.hasBorderRadius();
 	}
 
 	public hasUniformBorderColor(): boolean {
@@ -306,12 +317,12 @@ export class Background {
 		return 0;
 	}
 
-	public hasBoxShadow(): boolean {
-		return !!this.boxShadow;
+	public hasBoxShadows(): boolean {
+		return this.boxShadows?.length > 0;
 	}
 
-	public getBoxShadow(): CSSShadow {
-		return this.boxShadow;
+	public getBoxShadows(): BoxShadow[] {
+		return this.boxShadows;
 	}
 
 	public toString(): string {

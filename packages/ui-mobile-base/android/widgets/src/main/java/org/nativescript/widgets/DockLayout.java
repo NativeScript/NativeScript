@@ -5,6 +5,7 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.view.View;
+import android.util.AttributeSet;
 
 /**
  * @author hhristov
@@ -15,7 +16,13 @@ public class DockLayout extends LayoutBase {
 	private boolean _stretchLastChild = true;
 
 	public DockLayout(Context context) {
-		super(context);
+		this(context, null);
+	}
+	public DockLayout(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
+	}
+	public DockLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
 	}
 
 	public boolean getStretchLastChild() {

@@ -1,3 +1,5 @@
+// @ts-ignore apps resolve this at runtime with path alias in project bundlers
+import appConfig from '~/package.json';
 /* eslint-disable prefer-rest-params */
 declare let __startCPUProfiler: any;
 declare let __stopCPUProfiler: any;
@@ -110,8 +112,7 @@ function countersProfileFunctionFactory<F extends Function>(fn: F, name: string,
 }
 
 function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
-	return type === MemberType.Instance
-		? <any>function () {
+	return type === MemberType.Instance ? <any>function () {
 				const start = time();
 				try {
 					return fn.apply(this, arguments);
@@ -119,8 +120,7 @@ function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string,
 					const end = time();
 					console.log(`Timeline: Modules: ${name} ${this}  (${start}ms. - ${end}ms.)`);
 				}
-		  }
-		: function () {
+			} : <any>function () {
 				const start = time();
 				try {
 					return fn.apply(this, arguments);
@@ -128,7 +128,7 @@ function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string,
 					const end = time();
 					console.log(`Timeline: Modules: ${name}  (${start}ms. - ${end}ms.)`);
 				}
-		  };
+			};
 }
 
 const enum MemberType {
@@ -160,7 +160,6 @@ export function enable(mode: InstrumentationMode = 'counters') {
 }
 
 try {
-	const appConfig = require('~/package.json');
 	if (appConfig && appConfig.profiling) {
 		enable(appConfig.profiling);
 	}
@@ -177,10 +176,10 @@ export function disable() {
 }
 
 function profileFunction<F extends Function>(fn: F, customName?: string): F {
-	return profileFunctionFactory(fn, customName || fn.name);
+	return profileFunctionFactory<F>(fn, customName || fn.name);
 }
 
-const profileMethodUnnamed = (target, key, descriptor) => {
+const profileMethodUnnamed = (target: Object, key: symbol | string, descriptor) => {
 	// save a reference to the original method this way we keep the values currently in the
 	// descriptor and don't overwrite what another decorator might have done to the descriptor.
 	if (descriptor === undefined) {
@@ -193,7 +192,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 		className = target.constructor.name + '.';
 	}
 
-	const name = className + key;
+	const name = className + key?.toString();
 
 	//editing the descriptor/value parameter
 	descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Instance);
@@ -202,7 +201,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 	return descriptor;
 };
 
-const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
+const profileStaticMethodUnnamed = <F extends Function>(ctor: F, key: symbol | string, descriptor) => {
 	// save a reference to the original method this way we keep the values currently in the
 	// descriptor and don't overwrite what another decorator might have done to the descriptor.
 	if (descriptor === undefined) {
@@ -214,7 +213,7 @@ const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
 	if (ctor && ctor.name) {
 		className = ctor.name + '.';
 	}
-	const name = className + key;
+	const name = className + key?.toString();
 
 	//editing the descriptor/value parameter
 	descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Static);

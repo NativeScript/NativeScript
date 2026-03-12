@@ -1,0 +1,11 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" backgroundColor="black" statusBarStyle="light">
+  <!-- Note we set statusBarStyle="light" to explicitly contrast it against our black background -->
+  <Page.actionBar>
+    <ActionBar title="Status Bar" color="white">
+    </ActionBar>
+  </Page.actionBar>
+  <GridLayout rows="*,auto,auto,*">
+    <Label row="1" text="Note status bar color, then Open Modal" fontSize="12" class="text-center c-white" />
+    <Button row="2" text="Open Modal" tap="{{ onOpenModal }}" class="btn btn-primary btn-view-demo" marginTop="20" />
+  </GridLayout>
+</Page>

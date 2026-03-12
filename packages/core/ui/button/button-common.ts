@@ -8,7 +8,6 @@ import { AccessibilityRole } from '../../accessibility';
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {
 	public static tapEvent = 'tap';
 
-	accessible = true;
 	accessibilityRole = AccessibilityRole.Button;
 
 	get textWrap(): boolean {

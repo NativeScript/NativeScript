@@ -1,31 +1,22 @@
-﻿// imported for definition purposes only
-import * as httpRequestModule from '../../http/http-request';
-
+﻿import { request as httpRequest } from '../../http/http-request';
 import * as common from './image-cache-common';
 import { Trace } from '../../trace';
-import * as utils from '../../utils';
-
-let httpRequest: typeof httpRequestModule;
-function ensureHttpRequest() {
-	if (!httpRequest) {
-		httpRequest = require('../../http/http-request');
-	}
-}
+import { GC } from '../../utils';
 
 @NativeClass
-class MemmoryWarningHandler extends NSObject {
-	static new(): MemmoryWarningHandler {
-		return <MemmoryWarningHandler>super.new();
+class MemoryWarningHandler extends NSObject {
+	static new(): MemoryWarningHandler {
+		return <MemoryWarningHandler>super.new();
 	}
 
 	private _cache: NSCache<any, any>;
 
-	public initWithCache(cache: NSCache<any, any>): MemmoryWarningHandler {
+	public initWithCache(cache: NSCache<any, any>): MemoryWarningHandler {
 		this._cache = cache;
 
 		NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(this, 'clearCache', 'UIApplicationDidReceiveMemoryWarningNotification', null);
 		if (Trace.isEnabled()) {
-			Trace.write('[MemmoryWarningHandler] Added low memory observer.', Trace.categories.Debug);
+			Trace.write('[MemoryWarningHandler] Added low memory observer.', Trace.categories.Debug);
 		}
 
 		return this;
@@ -34,17 +25,17 @@ class MemmoryWarningHandler extends NSObject {
 	public dealloc(): void {
 		NSNotificationCenter.defaultCenter.removeObserverNameObject(this, 'UIApplicationDidReceiveMemoryWarningNotification', null);
 		if (Trace.isEnabled()) {
-			Trace.write('[MemmoryWarningHandler] Removed low memory observer.', Trace.categories.Debug);
+			Trace.write('[MemoryWarningHandler] Removed low memory observer.', Trace.categories.Debug);
 		}
 		super.dealloc();
 	}
 
 	public clearCache(): void {
 		if (Trace.isEnabled()) {
-			Trace.write('[MemmoryWarningHandler] Clearing Image Cache.', Trace.categories.Debug);
+			Trace.write('[MemoryWarningHandler] Clearing Image Cache.', Trace.categories.Debug);
 		}
 		this._cache.removeAllObjects();
-		utils.GC();
+		GC();
 	}
 
 	public static ObjCExposedMethods = {
@@ -56,20 +47,18 @@ export class Cache extends common.Cache {
 	private _cache: NSCache<any, any>;
 
 	//@ts-ignore
-	private _memoryWarningHandler: MemmoryWarningHandler;
+	private _memoryWarningHandler: MemoryWarningHandler;
 
 	constructor() {
 		super();
 
 		this._cache = new NSCache<any, any>();
 
-		this._memoryWarningHandler = MemmoryWarningHandler.new().initWithCache(this._cache);
+		this._memoryWarningHandler = MemoryWarningHandler.new().initWithCache(this._cache);
 	}
 
 	public _downloadCore(request: common.DownloadRequest) {
-		ensureHttpRequest();
-
-		httpRequest.request({ url: request.url, method: 'GET' }).then(
+		httpRequest({ url: request.url, method: 'GET' }).then(
 			(response) => {
 				try {
 					const image = UIImage.alloc().initWithData(response.content.raw);
@@ -84,7 +73,7 @@ export class Cache extends common.Cache {
 			},
 			(err) => {
 				this._onDownloadError(request.key, err);
-			}
+			},
 		);
 	}
 
@@ -102,6 +91,6 @@ export class Cache extends common.Cache {
 
 	public clear() {
 		this._cache.removeAllObjects();
-		utils.GC();
+		GC();
 	}
 }

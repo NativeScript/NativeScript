@@ -1,4 +1,4 @@
-import { defaultConfigs } from '@nativescript/webpack';
+import { defaultConfigs } from '..';
 import { getAllDependencies } from './dependencies';
 import { error } from './log';
 
@@ -21,7 +21,10 @@ export function determineProjectFlavor(): keyof typeof defaultConfigs | false {
 		return 'react';
 	}
 
-	if (dependencies.includes('svelte-native')) {
+	if (
+		dependencies.includes('svelte-native') ||
+		dependencies.includes('@nativescript-community/svelte-native')
+	) {
 		return 'svelte';
 	}
 

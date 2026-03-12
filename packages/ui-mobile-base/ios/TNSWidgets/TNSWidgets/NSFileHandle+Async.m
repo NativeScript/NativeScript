@@ -3,7 +3,7 @@
 //  TNSWidgets
 //
 //  Created by Osei Fortune on 03/05/2023.
-//  Copyright © 2023 Telerik A D. All rights reserved.
+//  Copyright © 2023 NativeScript. All rights reserved.
 //
 
 #import "NSFileHandle+Async.h"

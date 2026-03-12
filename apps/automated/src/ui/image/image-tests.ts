@@ -1,7 +1,7 @@
 import { Image } from '@nativescript/core/ui/image';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
-import { PropertyChangeData } from '@nativescript/core';
+import { PropertyChangeData, Utils } from '@nativescript/core';
 import * as utils from '@nativescript/core/utils';
 import * as TKUnit from '../../tk-unit';
 import { getColor } from '../../ui-helper';
@@ -15,7 +15,7 @@ import { ImageSource } from '@nativescript/core/image-source';
 import * as ViewModule from '@nativescript/core/ui/core/view';
 import * as helper from '../../ui-helper';
 import * as color from '@nativescript/core/color';
-import * as backgroundModule from '@nativescript/core/ui/styling/background';
+import * as appHelpers from '@nativescript/core/application/helpers-common';
 import { Application } from '@nativescript/core';
 const imagePath = '~/assets/logo.png';
 
@@ -23,9 +23,11 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(() => new Image());
 }
 
-if (global.isAndroid) {
-	(<any>backgroundModule).initImageCache(Application.android.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
+if (__ANDROID__) {
+	appHelpers.initImageCache(Application.android.startActivity, appHelpers.CacheMode.memory); // use memory cache only.
 }
+
+const expectLayoutRequest = __APPLE__ && Utils.SDK_VERSION >= 18;
 
 export const test_Image_Members = function () {
 	const image = new ImageModule.Image();
@@ -63,7 +65,7 @@ function runImageTestSync(image: ImageModule.Image, src: string) {
 
 	image.src = src;
 
-	let imageSourceAvailable = global.isIOS ? !!image.imageSource : true;
+	let imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
 	TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 	TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 }
@@ -76,7 +78,7 @@ function runImageTestAsync(image: ImageModule.Image, src: string, done: (e: any)
 		image.off(IMAGE_LOADED_EVENT, handler);
 
 		try {
-			let imageSourceAvailable = global.isIOS ? !!image.imageSource : true;
+			let imageSourceAvailable = __APPLE__ ? !!image.imageSource : true;
 			TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 			TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 			done(null);
@@ -253,7 +255,7 @@ export const test_SettingStretch_none = function () {
 };
 
 function ios<T>(func: T): T {
-	return global.isIOS ? func : undefined;
+	return __APPLE__ ? func : undefined;
 }
 
 export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(() => {
@@ -273,7 +275,11 @@ export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(
 	image.requestLayout = () => (called = true);
 	image.src = '~/assets/logo.png';
 
-	TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
+	if (expectLayoutRequest) {
+		TKUnit.assertTrue(called, 'image.requestLayout should be called.');
+	} else {
+		TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
+	}
 });
 
 export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout = ios(() => {
@@ -291,7 +297,11 @@ export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout 
 	image.requestLayout = () => (called = true);
 	image.src = '~/assets/logo.png';
 
-	TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
+	if (expectLayoutRequest) {
+		TKUnit.assertTrue(called, 'image.requestLayout should be called.');
+	} else {
+		TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
+	}
 });
 
 export const test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() => {

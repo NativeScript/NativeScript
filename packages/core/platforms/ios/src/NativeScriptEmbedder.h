@@ -16,10 +16,15 @@
 @interface NativeScriptEmbedder : NSObject
 
 @property(nonatomic, retain, readonly) id<NativeScriptEmbedderDelegate> delegate;
+@property(nonatomic, retain, readonly) UIWindowScene* windowScene;
 
 + (NativeScriptEmbedder *)sharedInstance;
 
 - (void)setDelegate:(id <NativeScriptEmbedderDelegate>)aDelegate;
+- (void)setWindowScene:(UIWindowScene *)windowScene;
+
++ (void)setup;
++ (void)boot;
 
 
 @end

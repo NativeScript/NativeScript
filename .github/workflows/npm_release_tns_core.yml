@@ -1,4 +1,7 @@
 name: 'tns-core-modules -> npm'
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   push:
@@ -15,10 +18,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@a90bcbc6539c36a85cdfeb73f7e2f433735f215b # v2.15.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Setup
-        run: npm install --legacy-peer-deps
+        run: npm install
 
       - name: Generate Version
         run: |

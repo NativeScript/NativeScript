@@ -119,6 +119,7 @@ export namespace Trace {
 		export const Transition = 'Transition';
 		export const Livesync = 'Livesync';
 		export const ModuleNameResolver = 'ModuleNameResolver';
+		export const MediaQuery = 'MediaQuery';
 
 		export const separator = ',';
 		export const All: string;

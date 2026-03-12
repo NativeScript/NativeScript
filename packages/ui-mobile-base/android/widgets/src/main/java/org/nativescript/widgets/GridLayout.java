@@ -1,9 +1,15 @@
 package org.nativescript.widgets;
 
 import android.content.Context;
+import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.MeasureSpec;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +18,7 @@ import java.util.HashMap;
  * @author hhristov
  */
 public class GridLayout extends LayoutBase {
+	protected final static String TAG = "GridLayout";
 
 	private final MeasureHelper helper = new MeasureHelper(this);
 
@@ -22,7 +29,25 @@ public class GridLayout extends LayoutBase {
 	private final HashMap<View, MeasureSpecs> map = new HashMap<>();
 
 	public GridLayout(Context context) {
-		super(context);
+		this(context, (AttributeSet) null);
+	}
+
+	public GridLayout(Context context, AttributeSet attrs) {
+		this(context, attrs, 0);
+	}
+
+	public GridLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+		super(context, attrs, defStyleAttr);
+	}
+
+	public GridLayout(Context context, String rows) {
+		this(context);
+		this.addRowsFromJSON(rows);
+	}
+
+	public GridLayout(Context context, String rows, String columns) {
+		this(context, rows);
+		this.addColumnsFromJSON(rows);
 	}
 
 	private static void validateItemSpec(ItemSpec itemSpec) {
@@ -46,6 +71,10 @@ public class GridLayout extends LayoutBase {
 		this.requestLayout();
 	}
 
+	public void addRow(int value, GridUnitType type) {
+		addRow(new ItemSpec(value, type));
+	}
+
 	public void addColumn(ItemSpec itemSpec) {
 		validateItemSpec(itemSpec);
 		itemSpec.owner = this;
@@ -57,37 +86,53 @@ public class GridLayout extends LayoutBase {
 		this.requestLayout();
 	}
 
-	public void removeColumn(ItemSpec itemSpec) {
-		if (itemSpec == null) {
-			throw new Error("itemSpec is null.");
-		}
-
-		int index = this._cols.indexOf(itemSpec);
-		if (itemSpec.owner != this || index < 0) {
-			throw new Error("itemSpec is not child of this GridLayout");
-		}
-
-		this.removeColumnAt(index);
+	public void addColumn(int value, GridUnitType type) {
+		addColumn(new ItemSpec(value, type));
 	}
+
+	public void addRowsFromJSON(String value) {
+		try {
+			if (value == null) {
+				return;
+			}
+			JSONArray rows = new JSONArray(value);
+			for (int i = 0; i < rows.length(); i++) {
+				JSONObject row = rows.getJSONObject(i);
+				addRow(row.getInt("value"), GridUnitType.values()[row.getInt("type")]);
+			}
+		} catch (JSONException exception) {
+			Log.e(TAG, "Caught JSONException...");
+			exception.printStackTrace();
+		}
+	}
+
+	public void addColumnsFromJSON(String value) {
+		try {
+			if (value == null) {
+				return;
+			}
+			JSONArray columns = new JSONArray(value);
+			for (int i = 0; i < columns.length(); i++) {
+				JSONObject column = columns.getJSONObject(i);
+				addColumn(column.getInt("value"), GridUnitType.values()[column.getInt("type")]);
+			}
+		} catch (JSONException exception) {
+			Log.e(TAG, "Caught JSONException...");
+			exception.printStackTrace();
+		}
+	}
+
+	public void addRowsAndColumnsFromJSON(String rowsString, String jsonString) {
+		addRowsFromJSON(rowsString);
+		addColumnsFromJSON(jsonString);
+	}
+
 
 	public void removeColumnAt(int index) {
 		this._cols.remove(index);
 		this.helper.columns.get(index).children.clear();
 		this.helper.columns.remove(index);
 		this.requestLayout();
-	}
-
-	public void removeRow(ItemSpec itemSpec) {
-		if (itemSpec == null) {
-			throw new Error("itemSpec is null.");
-		}
-
-		int index = this._rows.indexOf(itemSpec);
-		if (itemSpec.owner != this || index < 0) {
-			throw new Error("itemSpec is not child of this GridLayout");
-		}
-
-		this.removeRowAt(index);
 	}
 
 	public void removeRowAt(int index) {
@@ -107,6 +152,30 @@ public class GridLayout extends LayoutBase {
 		ItemSpec[] copy = new ItemSpec[this._rows.size()];
 		copy = this._rows.toArray(copy);
 		return copy;
+	}
+
+	public void reset() {
+		clearRows();
+		clearColumns();
+	}
+
+
+	public void clearRows() {
+		this._rows.clear();
+		for (int i = 0; i < this.helper.rows.size(); i++) {
+			this.helper.rows.get(i).children.clear();
+		}
+		this.helper.rows.clear();
+		this.requestLayout();
+	}
+
+	public void clearColumns() {
+		this._cols.clear();
+		for (int i = 0; i < this.helper.columns.size(); i++) {
+			this.helper.columns.get(i).children.clear();
+		}
+		this.helper.columns.clear();
+		this.requestLayout();
 	}
 
 	@Override
@@ -160,7 +229,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	private ItemSpec getColumnSpec(CommonLayoutParams lp) {
-		if (this._cols.size() == 0) {
+		if (this._cols.isEmpty()) {
 			return this.helper.singleColumn;
 		}
 
@@ -169,7 +238,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	private ItemSpec getRowSpec(CommonLayoutParams lp) {
-		if (this._rows.size() == 0) {
+		if (this._rows.isEmpty()) {
 			return this.helper.singleRow;
 		}
 
@@ -178,7 +247,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	private int getColumnSpan(CommonLayoutParams lp, int columnIndex) {
-		if (this._cols.size() == 0) {
+		if (this._cols.isEmpty()) {
 			return 1;
 		}
 
@@ -186,7 +255,7 @@ public class GridLayout extends LayoutBase {
 	}
 
 	private int getRowSpan(CommonLayoutParams lp, int rowIndex) {
-		if (this._rows.size() == 0) {
+		if (this._rows.isEmpty()) {
 			return 1;
 		}
 
@@ -226,6 +295,16 @@ public class GridLayout extends LayoutBase {
 		if (this.map.containsKey(child)) {
 			this.map.remove(child).child = null;
 		}
+	}
+
+	/* only used for N tests */
+	public float getRowActualLength(int index) {
+		return this.helper.rows.get(index).rowOrColumn._actualLength;
+	}
+
+	/* only used for N tests */
+	public float getColumnActualLength(int index) {
+		return this.helper.columns.get(index).rowOrColumn._actualLength;
 	}
 
 	@Override
@@ -271,8 +350,10 @@ public class GridLayout extends LayoutBase {
 			}
 
 			MeasureSpecs measureSpecs = this.map.get(child);
-			this.updateMeasureSpecs(child, measureSpecs);
-			this.helper.addMeasureSpec(measureSpecs);
+			if (measureSpecs != null) {
+				this.updateMeasureSpecs(child, measureSpecs);
+				this.helper.addMeasureSpec(measureSpecs);
+			}
 		}
 
 		this.helper.measure();
@@ -816,7 +897,6 @@ class MeasureHelper {
 				this.measureChild(measureSpec, false);
 			}
 		}
-
 		// try fix stars!
 		boolean fixColumns = canFix(this.columns);
 		boolean fixRows = canFix(this.rows);
@@ -1073,7 +1153,7 @@ class MeasureHelper {
 			}
 
 			if (remainingSpace > 0) {
-				this.minRowStarValue = Math.max(remainingSpace / measureSpec.starRowsCount, this.minRowStarValue);
+				this.minRowStarValue = Math.max((float) remainingSpace / measureSpec.starRowsCount, this.minRowStarValue);
 			}
 		}
 	}
@@ -1093,7 +1173,7 @@ class MeasureHelper {
 			}
 
 			if (remainingSpace > 0) {
-				this.minColumnStarValue = Math.max(remainingSpace / measureSpec.starColumnsCount, this.minColumnStarValue);
+				this.minColumnStarValue = Math.max((float) remainingSpace / measureSpec.starColumnsCount, this.minColumnStarValue);
 			}
 		}
 	}

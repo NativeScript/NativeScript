@@ -5,6 +5,8 @@ import { CoreTypes } from '../../../core-types';
 
 /**
  * A Layout that arranges its children at its outer edges, and allows its last child to take up the remaining space.
+ *
+ * @nsView DockLayout
  */
 export class DockLayout extends LayoutBase {
 	/**
@@ -20,6 +22,8 @@ export class DockLayout extends LayoutBase {
 	/**
 	 * Gets or sets a value that indicates whether the last child element within a DockLayout stretches to fill the remaining available space.
 	 * The default value is true.
+	 *
+	 * @nsProperty
 	 */
 	stretchLastChild: boolean;
 }
@@ -27,7 +31,7 @@ export class DockLayout extends LayoutBase {
 /**
  * Represents the observable property backing the dock property.
  */
-export const dockProperty: Property<DockLayout, CoreTypes.DockType>;
+export const dockProperty: Property<View, CoreTypes.DockType>;
 
 /**
  * Represents the observable property backing the stretchLastChild property of each DockLayout instance.

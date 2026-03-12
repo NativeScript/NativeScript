@@ -1,16 +1,17 @@
-import { Style as StyleDefinition } from '.';
 import { Color } from '../../../color';
-import { Font, FontStyleType, FontWeightType } from '../font';
+import { Font, FontStyleType, FontWeightType, FontVariationSettingsType } from '../font';
 import { Background } from '../background';
 import { ViewBase } from '../../core/view-base';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { Observable } from '../../../data/observable';
 
-import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
+import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf, FlexFlow, Flex } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
 import { CoreTypes } from '../../../core-types';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
-import { CSSShadow } from '../css-shadow';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility';
+import { ShadowCSSValues } from '../css-shadow';
+import { StrokeCSSValues } from '../css-stroke';
+import { ClipPathFunction } from '../clip-path-function';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -33,7 +34,7 @@ export interface CommonLayoutParams {
 	verticalAlignment: CoreTypes.VerticalAlignmentType;
 }
 
-export class Style extends Observable implements StyleDefinition {
+export class Style extends Observable {
 	private unscopedCssVariables = new Map<string, string>();
 	private scopedCssVariables = new Map<string, string>();
 
@@ -41,7 +42,7 @@ export class Style extends Observable implements StyleDefinition {
 		super();
 
 		// HACK: Could not find better way for cross platform WeakRef type checking.
-		if (ownerView.constructor.toString().indexOf('[native code]') !== -1) {
+		if (ownerView.constructor.toString().indexOf('[native code]') !== -1 || ownerView.toString() == '[object WeakRef]') {
 			this.viewRef = <WeakRef<ViewBase>>ownerView;
 		} else {
 			this.viewRef = new WeakRef(<ViewBase>ownerView);
@@ -105,6 +106,7 @@ export class Style extends Observable implements StyleDefinition {
 	}
 
 	public fontInternal: Font;
+	public iconFontFamily: string;
 	/**
 	 * This property ensures inheritance of a11y scale among views.
 	 */
@@ -121,7 +123,7 @@ export class Style extends Observable implements StyleDefinition {
 	public translateX: CoreTypes.dip;
 	public translateY: CoreTypes.dip;
 
-	public clipPath: string;
+	public clipPath: string | ClipPathFunction;
 	public color: Color;
 	public tintColor: Color;
 	public placeholderColor: Color;
@@ -149,12 +151,15 @@ export class Style extends Observable implements StyleDefinition {
 	public borderBottomRightRadius: CoreTypes.LengthType;
 	public borderBottomLeftRadius: CoreTypes.LengthType;
 
-	public boxShadow: CSSShadow;
+	public boxShadow: string | ShadowCSSValues[];
+
+	public direction: CoreTypes.LayoutDirectionType;
 
 	public fontSize: number;
 	public fontFamily: string;
 	public fontStyle: FontStyleType;
 	public fontWeight: FontWeightType;
+	public fontVariationSettings: FontVariationSettingsType[];
 	public font: string;
 
 	public maxLines: CoreTypes.MaxLinesType;
@@ -170,8 +175,10 @@ export class Style extends Observable implements StyleDefinition {
 	public textAlignment: CoreTypes.TextAlignmentType;
 	public textDecoration: CoreTypes.TextDecorationType;
 	public textTransform: CoreTypes.TextTransformType;
-	public textShadow: CSSShadow;
+	public textShadow: ShadowCSSValues;
+	public textStroke: StrokeCSSValues;
 	public whiteSpace: CoreTypes.WhiteSpaceType;
+	public textOverflow: CoreTypes.TextOverflowType;
 
 	public minWidth: CoreTypes.LengthType;
 	public minHeight: CoreTypes.LengthType;
@@ -202,6 +209,7 @@ export class Style extends Observable implements StyleDefinition {
 
 	//SegmentedBar-specific props
 	public selectedBackgroundColor: Color;
+	public selectedTextColor: Color;
 
 	// Page-specific props
 	public statusBarStyle: 'light' | 'dark';
@@ -223,6 +231,8 @@ export class Style extends Observable implements StyleDefinition {
 	public flexShrink: FlexShrink;
 	public flexWrapBefore: FlexWrapBefore;
 	public alignSelf: AlignSelf;
+	public flexFlow: FlexFlow;
+	public flex: Flex;
 
 	// Accessibility properties
 	public accessible: boolean;

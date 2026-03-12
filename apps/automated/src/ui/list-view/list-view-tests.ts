@@ -1,17 +1,16 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
 import { UITest } from '../../ui-test';
-import { isAndroid, isIOS, Page, View, KeyedTemplate, Utils, Observable, EventData, ObservableArray, Label, Application, ListView, ItemEventData } from '@nativescript/core';
+import { isAndroid, Page, View, KeyedTemplate, Utils, Observable, EventData, ObservableArray, Label, Application, ListView, ItemEventData, StackLayout } from '@nativescript/core';
 import { MyButton, MyStackLayout } from '../layouts/layout-helper';
 
 // >> article-item-tap
-function listViewItemTap(args) {
+export function listViewItemTap(args) {
 	var itemIndex = args.index;
 	// >> (hide)
 	console.log(itemIndex);
 	// << (hide)
 }
-exports.listViewItemTap = listViewItemTap;
 // << article-item-tap
 
 // >> article-load-items
@@ -20,10 +19,9 @@ function listViewLoadMoreItems(args) {
 }
 // << article-load-items
 listViewLoadMoreItems('test');
-// function loaded(args) {
+// export function loaded(args) {
 //   args.object.bindingContext = { items: [1,2,3,4,5] };
 // }
-// exports.loaded = loaded;
 
 var FEW_ITEMS = [0, 1, 2];
 var MANY_ITEMS = new Array<number>(100);
@@ -68,7 +66,7 @@ export class ListViewTest extends UITest<ListView> {
 				try {
 					if (isAndroid) {
 						TKUnit.assert(listView.android instanceof android.widget.ListView, 'android property is android.widget.ListView');
-					} else if (isIOS) {
+					} else if (__APPLE__) {
 						TKUnit.assert(listView.ios instanceof UITableView, 'ios property is UITableView');
 					}
 
@@ -136,13 +134,13 @@ export class ListViewTest extends UITest<ListView> {
 		const indexes = [];
 		const colors = ['red', 'green', 'blue'];
 		listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
-			indexes[args.index] = isIOS ? args.ios : args.android;
+			indexes[args.index] = __APPLE__ ? args.ios : args.android;
 		});
 		listView.items = colors;
 		TKUnit.waitUntilReady(() => indexes.length === 3);
 
 		for (var item in indexes) {
-			if (isIOS) {
+			if (__APPLE__) {
 				TKUnit.assertTrue(indexes[item] instanceof UITableViewCell, 'itemLoading not called for index ' + item);
 			} else if (isAndroid) {
 				TKUnit.assertTrue(indexes[item] instanceof android.view.ViewGroup, 'itemLoading not called for index ' + item);
@@ -151,13 +149,13 @@ export class ListViewTest extends UITest<ListView> {
 	}
 
 	public test_cell_selection_ios() {
-		if (isIOS) {
+		if (__APPLE__) {
 			const listView = this.testView;
 
 			const indexes = [];
 			const colors = ['red', 'green', 'blue'];
 			listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
-				indexes[args.index] = isIOS ? args.ios : args.android;
+				indexes[args.index] = __APPLE__ ? args.ios : args.android;
 			});
 			listView.items = colors;
 			TKUnit.waitUntilReady(() => indexes.length === 3);
@@ -371,9 +369,10 @@ export class ListViewTest extends UITest<ListView> {
 	}
 
 	public test_loadMoreItems_raised_when_showing_few_items() {
-		var listView = this.testView;
+		this.setUp();
+		const listView = this.testView;
 
-		var loadMoreItemsCount = 0;
+		let loadMoreItemsCount = 0;
 		listView.items = FEW_ITEMS;
 		listView.on(ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 		// >> article-loadmoreitems-event
@@ -390,7 +389,7 @@ export class ListViewTest extends UITest<ListView> {
 	}
 
 	public test_loadMoreItems_not_raised_when_showing_many_items() {
-		if (isIOS) {
+		if (__APPLE__) {
 			return;
 		}
 		var listView = this.testView;
@@ -719,7 +718,7 @@ export class ListViewTest extends UITest<ListView> {
 		this.testView.items = [1];
 		this.waitUntilListViewReady();
 
-		if (isIOS) {
+		if (__APPLE__) {
 			//Could cause GC on the next call.
 			//    NOTE: Don't replace this with forceGC();
 			let array = new ArrayBuffer(4 * 1024 * 1024);
@@ -753,8 +752,134 @@ export class ListViewTest extends UITest<ListView> {
 		listView.scrollToIndex(10000);
 	}
 
+	// Sticky header sanity tests
+	public test_stickyHeader_iOS_sectioned_headers_basic() {
+		if (!__APPLE__) {
+			return;
+		}
+
+		this.setUp();
+
+		const listView = this.testView;
+		listView.sectioned = true;
+		listView.stickyHeader = true;
+		listView.stickyHeaderTemplate = "<Label id='headerLabel' text='{{ title }}' />";
+
+		const items = [
+			{ title: 'Section A', items: [1, 2, 3] },
+			{ title: 'Section B', items: [4, 5] },
+		];
+		listView.items = items;
+
+		// Ensure layout
+		this.waitUntilTestElementIsLoaded();
+		this.waitUntilTestElementLayoutIsValid();
+
+		const table = <UITableView>listView.ios;
+		TKUnit.assertEqual(table.numberOfSections, 2, 'iOS sticky headers should use sections');
+
+		// Default auto height is ~44; ensure > 0
+		const rect0 = table.rectForHeaderInSection(0);
+		TKUnit.assert(rect0.size.height > 0, 'header height > 0');
+
+		// Template binding sanity: force-create header view via delegate and read label text
+		const header0 = (<any>table.delegate).tableViewViewForHeaderInSection(table, 0);
+		const headerText0 = this.getTextFromNativeHeaderForSection(listView, header0);
+		TKUnit.assertEqual(headerText0, 'Section A', 'iOS header 0 text');
+
+		// Respect explicit stickyHeaderHeight
+		listView.stickyHeaderHeight = 60;
+		listView.refresh();
+		TKUnit.wait(0.05);
+		const rect0b = table.rectForHeaderInSection(0);
+		// iOS reports in points; allow small variance
+		TKUnit.assert(Math.abs(rect0b.size.height - 60) <= 1, 'explicit header height ~60');
+	}
+
+	public test_stickyHeader_Android_header_updates_and_padding() {
+		if (!isAndroid) {
+			return;
+		}
+
+		this.setUp();
+
+		const listView = this.testView;
+		listView.sectioned = true;
+		listView.stickyHeader = true;
+		listView.stickyHeaderTemplate = "<Label id='headerLabel' text='{{ title }}' />";
+		listView.items = [
+			{ title: 'First', items: ['a', 'b', 'c'] },
+			{ title: 'Second', items: ['d', 'e'] },
+		];
+
+		this.waitUntilTestElementIsLoaded();
+		this.waitUntilTestElementLayoutIsValid();
+		TKUnit.waitUntilReady(() => !!(<any>listView)._stickyHeaderView);
+
+		// Sticky header view exists and binds
+		const sticky = (<any>listView)._stickyHeaderView;
+		TKUnit.assert(!!sticky, 'sticky header view exists');
+		const text0 = this.getStickyHeaderTextAndroid(listView);
+		TKUnit.assertEqual(text0, 'First', 'Android sticky header initial text');
+
+		// ListView should have top padding to avoid content under header
+		const topPad = (<android.widget.ListView>listView.android).getPaddingTop();
+		TKUnit.assert(topPad > 0, 'ListView has top padding for sticky header');
+
+		// Update header to next section (simulate scroll)
+		if ((<any>listView)._updateStickyHeader) {
+			(<any>listView)._updateStickyHeader(1);
+			TKUnit.wait(0.05);
+			const text1 = this.getStickyHeaderTextAndroid(listView);
+			TKUnit.assertEqual(text1, 'Second', 'Android sticky header updated text');
+		}
+	}
+
 	private checkItemVisibleAtIndex(listView: ListView, index: number): boolean {
 		return listView.isItemAtIndexVisible(index);
+	}
+
+	private getTextFromNativeHeaderForSection(listView: ListView, headerView: any): string {
+		if (__APPLE__ && headerView && headerView.contentView && headerView.contentView.subviews) {
+			// subviews can be function or array-like depending on runtime bridge
+			try {
+				if (Utils.isFunction(headerView.contentView.subviews)) {
+					const sv = headerView.contentView.subviews();
+					return sv && sv.length ? sv[0].text + '' : '';
+				} else {
+					return headerView.contentView.subviews[0].text + '';
+				}
+			} catch (e) {
+				return '';
+			}
+		}
+
+		return '';
+	}
+
+	private getStickyHeaderTextAndroid(listView: ListView): string {
+		if (isAndroid) {
+			const headerView = (<any>listView)._stickyHeaderView as StackLayout;
+			if (!headerView) {
+				return '';
+			}
+			if (headerView instanceof Label) {
+				return headerView.text + '';
+			}
+			if (headerView.getChildAt) {
+				const child = headerView.getChildAt(0) as StackLayout;
+				if (child instanceof Label) {
+					return child.text + '';
+				}
+				if (child?.getChildAt) {
+					const gchild = child.getChildAt(0);
+					if (gchild instanceof Label) {
+						return gchild.text + '';
+					}
+				}
+			}
+		}
+		return '';
 	}
 
 	private assertNoMemoryLeak(weakRef: WeakRef<ListView>) {
@@ -764,7 +889,7 @@ export class ListViewTest extends UITest<ListView> {
 		// which does not guarantee releases after a GC pass.
 		//
 		// TKUnit.waitUntilReady(() => {
-		// 	if (isIOS) {
+		// 	if (__APPLE__) {
 		// 		/* tslint:disable:no-unused-expression */
 		// 		// Could cause GC on the next call.
 		// 		// NOTE: Don't replace this with forceGC();

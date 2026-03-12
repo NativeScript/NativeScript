@@ -1,6 +1,6 @@
 import { IFileSystemAccess, FileSystemAccess, FileSystemAccess29 } from './file-system-access';
-import { SDK_VERSION } from '../utils';
-import { Application } from '../application';
+import { SDK_VERSION } from '../utils/constants';
+import { getNativeApp } from '../application/helpers-common';
 
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: IFileSystemAccess;
@@ -11,7 +11,7 @@ let fileAccess: IFileSystemAccess;
  */
 export function getFileAccess(): IFileSystemAccess {
 	if (!fileAccess) {
-		if (global.isAndroid && SDK_VERSION >= 29) {
+		if (__ANDROID__ && SDK_VERSION >= 29) {
 			fileAccess = new FileSystemAccess29();
 		} else {
 			fileAccess = new FileSystemAccess();
@@ -182,15 +182,6 @@ export class FileSystemEntity {
 	}
 }
 
-let applicationContext;
-function getApplicationContext() {
-	if (!applicationContext) {
-		applicationContext = Application.android.getNativeApplication().getApplicationContext();
-	}
-
-	return applicationContext;
-}
-
 export enum AndroidDirectory {
 	ALARMS = 'alarms',
 	AUDIOBOOKS = 'audiobooks',
@@ -275,11 +266,11 @@ function getAndroidDirectory(value: AndroidDirectory): { path: string; column: a
 
 class Android {
 	createFile(options: { relativePath?: string; name: string; mime: string; directory: AndroidDirectory }): File {
-		if (!global.isAndroid) {
+		if (!__ANDROID__) {
 			throw new Error(`createFile is available on Android only!`);
 		}
 
-		const context = getApplicationContext() as android.content.Context;
+		const context = getNativeApp<android.app.Application>().getApplicationContext() as android.content.Context;
 
 		const meta = new android.content.ContentValues();
 		meta.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, options.name);
@@ -326,13 +317,13 @@ export class File extends FileSystemEntity {
 			throw error;
 		};
 
-		if (global.isAndroid && copy) {
+		if (__ANDROID__ && copy) {
 			if (path.startsWith('content:')) {
 				const fileInfo = getFileAccess().getFile(path, onError);
 				// falls back to creating a temp file without a known extension.
 				if (!fileInfo) {
 					const tempFile = `${knownFolders.temp().path}/${java.util.UUID.randomUUID().toString()}`;
-					org.nativescript.widgets.Async.File.copySync(path, tempFile, getApplicationContext());
+					org.nativescript.widgets.Async.File.copySync(path, tempFile, getNativeApp<android.app.Application>().getApplicationContext());
 					path = tempFile;
 				} else {
 					const ext = fileInfo.extension;
@@ -391,7 +382,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -438,7 +429,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -485,7 +476,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -532,7 +523,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -579,7 +570,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -626,7 +617,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -672,7 +663,7 @@ export class File extends FileSystemEntity {
 					(error) => {
 						reject(error);
 						this._locked = false;
-					}
+					},
 				);
 		});
 	}
@@ -897,7 +888,7 @@ export namespace knownFolders {
 
 	export namespace ios {
 		function _checkPlatform(knownFolderName: string) {
-			if (!global.isIOS) {
+			if (!__APPLE__) {
 				throw new Error(`The "${knownFolderName}" known folder is available on iOS only!`);
 			}
 		}

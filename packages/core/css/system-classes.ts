@@ -12,7 +12,10 @@ export namespace CSSUtils {
 	}
 
 	export function pushToSystemCssClasses(value: string): number {
-		cssClasses.push(value);
+		const index = cssClasses.indexOf(value);
+		if (index == -1) {
+			cssClasses.push(value);
+		}
 
 		return cssClasses.length;
 	}

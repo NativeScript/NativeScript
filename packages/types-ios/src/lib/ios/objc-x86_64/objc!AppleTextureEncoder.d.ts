@@ -24,6 +24,9 @@ interface at_block_buffer_t {
 }
 declare var at_block_buffer_t: interop.StructType<at_block_buffer_t>;
 
+/**
+ * @since 13.2.2
+ */
 declare function at_block_format_convert_to_MTLPixelFormat(blockFormat: at_block_format_t, flags: at_flags_t): number;
 
 declare const enum at_block_format_t {
@@ -111,33 +114,75 @@ declare const enum at_block_format_t {
 
 declare function at_block_format_to_MTLPixelFormat(blockFormat: at_block_format_t): number;
 
-declare function at_encoder_compress_texels(encoder: NSObject, src: interop.Pointer | interop.Reference<at_texel_region_t>, dest: interop.Pointer | interop.Reference<at_block_buffer_t>, errorThreshold: number, flags: at_flags_t): number;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_compress_texels(encoder: NSObject & OS_at_encoder, src: interop.Pointer | interop.Reference<at_texel_region_t>, dest: interop.Pointer | interop.Reference<at_block_buffer_t>, errorThreshold: number, flags: at_flags_t): number;
 
-declare function at_encoder_create(texelType: at_texel_format_t, texelAlphaType: at_alpha_t, blockType: at_block_format_t, blockAlphaType: at_alpha_t, backgroundColor: interop.Pointer | interop.Reference<number>): NSObject;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_create(texelType: at_texel_format_t, texelAlphaType: at_alpha_t, blockType: at_block_format_t, blockAlphaType: at_alpha_t, backgroundColor: interop.Pointer | interop.Reference<number>): NSObject & OS_at_encoder;
 
-declare function at_encoder_decompress_texels(encoder: NSObject, src: interop.Pointer | interop.Reference<at_block_buffer_t>, dest: interop.Pointer | interop.Reference<at_texel_region_t>, flags: at_flags_t): at_error_t;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_decompress_texels(encoder: NSObject & OS_at_encoder, src: interop.Pointer | interop.Reference<at_block_buffer_t>, dest: interop.Pointer | interop.Reference<at_texel_region_t>, flags: at_flags_t): at_error_t;
 
-declare function at_encoder_get_block_address(encoder: NSObject, texelPosition: at_size_t, imageSize: at_size_t, blockInfo: interop.Pointer | interop.Reference<at_block_buffer_t>): interop.Pointer | interop.Reference<any>;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_get_block_address(encoder: NSObject & OS_at_encoder, texelPosition: at_size_t, imageSize: at_size_t, blockInfo: interop.Pointer | interop.Reference<at_block_buffer_t>): interop.Pointer | interop.Reference<any>;
 
-declare function at_encoder_get_block_alpha(encoder: NSObject): at_alpha_t;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_get_block_alpha(encoder: NSObject & OS_at_encoder): at_alpha_t;
 
-declare function at_encoder_get_block_counts(encoder: NSObject, imageSize: at_size_t): at_size_t;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_get_block_counts(encoder: NSObject & OS_at_encoder, imageSize: at_size_t): at_size_t;
 
-declare function at_encoder_get_block_dimensions(encoder: NSObject): at_size_t;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_get_block_dimensions(encoder: NSObject & OS_at_encoder): at_size_t;
 
-declare function at_encoder_get_block_format(encoder: NSObject): at_block_format_t;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_get_block_format(encoder: NSObject & OS_at_encoder): at_block_format_t;
 
-declare function at_encoder_get_block_size(encoder: NSObject): number;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_get_block_size(encoder: NSObject & OS_at_encoder): number;
 
-declare function at_encoder_get_texel_alpha(encoder: NSObject): at_alpha_t;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_get_texel_alpha(encoder: NSObject & OS_at_encoder): at_alpha_t;
 
-declare function at_encoder_get_texel_format(encoder: NSObject): at_texel_format_t;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_get_texel_format(encoder: NSObject & OS_at_encoder): at_texel_format_t;
 
+/**
+ * @since 10.0
+ */
 declare function at_encoder_get_version(): number;
 
-declare function at_encoder_is_compression_monolithic(encoder: NSObject, flags: at_flags_t): boolean;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_is_compression_monolithic(encoder: NSObject & OS_at_encoder, flags: at_flags_t): boolean;
 
-declare function at_encoder_is_decompression_monolithic(encoder: NSObject, flags: at_flags_t): boolean;
+/**
+ * @since 10.0
+ */
+declare function at_encoder_is_decompression_monolithic(encoder: NSObject & OS_at_encoder, flags: at_flags_t): boolean;
 
 declare const enum at_error_t {
 

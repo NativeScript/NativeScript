@@ -1,9 +1,10 @@
-﻿import { NavigationTransition, BackstackEntry } from '.';
+import { NavigationTransition, BackstackEntry, TransitionState } from '.';
+import { CoreTypes } from '../enums';
 
 /**
  * @private
  */
-export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: BackstackEntry, newEntry: BackstackEntry, frameId: number, fragmentTransaction: any, isNestedDefaultTransition?: boolean): void;
+export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: BackstackEntry, newEntry: BackstackEntry, frameId: number, fragmentTransaction: any, layoutDirection: CoreTypes.LayoutDirectionType, isNestedDefaultTransition?: boolean): void;
 /**
  * @private
  */
@@ -20,6 +21,14 @@ export function _updateTransitions(entry: BackstackEntry): void;
  * Reverse transitions from entry to fragment if any.
  */
 export function _reverseTransitions(previousEntry: BackstackEntry, currentEntry: BackstackEntry): boolean;
+/**
+ * @private
+ */
+export function _getTransitionState(entry: BackstackEntry): TransitionState;
+/**
+ * @private
+ */
+export function _restoreTransitionState(snapshot: TransitionState): void;
 /**
  * @private
  * Called when entry is removed from backstack (either back navigation or

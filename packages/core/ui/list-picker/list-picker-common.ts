@@ -8,6 +8,8 @@ export interface ItemsSource {
 
 @CSSType('ListPicker')
 export class ListPickerBase extends View {
+	public static selectedIndexChangeEvent = 'selectedIndexChange';
+
 	public selectedIndex: number;
 	public items: any[] | ItemsSource;
 	public isItemsSource: boolean;

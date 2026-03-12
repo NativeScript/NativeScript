@@ -24,6 +24,10 @@ rm -rf ios-typings-prj
 ns create --template @nativescript/template-blank@latest ios-typings-prj
 ns platform add ios@$IOS_RUNTIME_VERSION --path ios-typings-prj/
 
+# For iOS 26
+echo "FRAMEWORK_SEARCH_PATHS = \$(inherited) \$(SDKDIR)/System/Library/SubFrameworks" >> ios-typings-prj/App_Resources/iOS/build.xcconfig
+
+
 if [ -n "$METADATA_GENERATOR_PATH" ]
 then
     echo "Replacing metadata generator binary with: $METADATA_GENERATOR_PATH"
@@ -36,7 +40,7 @@ echo "Building project and generating typings..."
 TNS_TYPESCRIPT_DECLARATIONS_PATH=$(pwd)/ios-typings-prj/typings ns build ios --debug --path ios-typings-prj/
 
 echo "Deleting old ios typings (ios/objc-x86_64)..."
-rm packages/types-ios/src/lib/ios/objc-x86_64/*
+rm -f packages/types-ios/src/lib/ios/objc-x86_64/*
 
 # echo "Deleting Material Components typings..."
 # rm ios-typings-prj/typings/x86_64/objc\!MaterialComponents.d.ts

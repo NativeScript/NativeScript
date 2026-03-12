@@ -1,6 +1,11 @@
 @import 'nativescript-theme-core/css/core.light.css';
 @import './_app-platform.css';
 
+/** define shared global variables to test in toolbox */
+* {
+    --color-black: black;
+}
+
 /*
 The following CSS rule changes the font size of all UI
 components that have the btn class name.
@@ -8,9 +13,23 @@ components that have the btn class name.
 Button {
     text-transform: none;
 }
+
+.calc-padding {
+    padding: calc(4 * 6);
+}
+
+.colormix {
+    background-color: color-mix(in oklab, var(--color-black) 50%, transparent);
+    /* background-color: color-mix(in lch longer hue, hsl(200deg 50% 80%), coral); */
+    /* background-color: color-mix(in hsl, hsl(200 50 80), coral 80%); */
+    /* background-color: color-mix(in srgb, plum, #f00); */
+    /* background-color: color-mix(in lab, plum 60%, #f00 50%); */
+    /* background-color: color-mix(in --swop5c, red, blue); */
+}
+
 .btn-view-demo {
-  background-color: #65ADF1;
-  border-radius: 5;
+  /* background-color: #65ADF1; */
+  border-radius: 8;
   font-size: 17;
   padding: 15;
   font-weight: bold;
@@ -221,4 +240,131 @@ Button {
 .switch-demo-page Switch.custom-switch:disabled:checked {
     color: #ddd;
     background-color: #777;
+}
+
+.ns-visionos Page {
+    background-color: transparent;
+}
+
+.ns-visionos Label, TextField, TextView {
+    font-size: 24;
+    padding: 12
+}
+
+.ns-visionos Button {
+    padding: 12;
+    font-size: 24;
+    background-color: transparent;
+    width: 400;
+}
+
+.no-shadow {
+    box-shadow: none;
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Multiple Scenes Demo Styles */
+
+.card {
+    background-color: #f8f9fa;
+    border-radius: 12;
+    border-width: 1;
+    border-color: #e9ecef;
+    margin-bottom: 15;
+}
+
+.code-block {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    padding: 15;
+    border-radius: 8;
+    font-family: "Courier New", monospace;
+    font-size: 12;
+}
+
+.event-item {
+    background-color: #f1f3f4;
+    border-radius: 6;
+    margin-bottom: 5;
+}
+
+.event-item:nth-child(even) {
+    background-color: #e8eaed;
+}
+
+.border {
+    border-width: 1;
+    border-color: #dee2e6;
+    border-radius: 8;
+    background-color: white;
+}
+
+.btn {
+    border-radius: 8;
+    font-weight: bold;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: #007bff;
+    border-width: 2;
+    border-color: #007bff;
+}
+
+.h3 {
+    font-size: 18;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.body {
+    font-size: 14;
+    color: #495057;
+}
+
+.caption {
+    font-size: 12;
+    color: #6c757d;
+}
+
+.font-weight-bold {
+    font-weight: bold;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Sliders Demo Page Styles */
+.sliders-demo-page Slider.gradient-slider {
+    background: linear-gradient(to right, orangered, green, lightblue);
+}
+
+.sliders-demo-page Slider.rainbow-slider {
+    background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+}
+
+.sliders-demo-page Slider.two-color-slider {
+    background: linear-gradient(to right, #ff6b6b, #4ecdc4);
+}
+
+.sliders-demo-page Slider.sunset-slider {
+    background: linear-gradient(to right, #f12711, #f5af19);
+}
+
+.sliders-demo-page Slider.ocean-slider {
+    background: linear-gradient(to right, #2193b0, #6dd5ed);
+}
+
+.sliders-demo-page Slider.purple-slider {
+    background: linear-gradient(to right, #8e2de2, #4a00e0);
+}
+
+.sliders-demo-page Slider.stops-slider {
+    background: linear-gradient(to right, red 0%, yellow 50%, green 100%);
 }

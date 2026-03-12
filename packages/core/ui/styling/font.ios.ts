@@ -1,7 +1,7 @@
-import { Font as FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch } from './font-common';
+import { Font as FontBase, parseFontFamily, FontWeight, FontVariationSettings, fuzzySearch, FONTS_BASE_PATH } from './font-common';
 import { FontStyleType, FontWeightType, FontVariationSettingsType } from './font-interfaces';
 import { Trace } from '../../trace';
-import * as fs from '../../file-system';
+import { File, FileSystemEntity, Folder, knownFolders, path } from '../../file-system';
 export { FontStyle, FontWeight, FontVariationSettings, parseFont } from './font-common';
 
 interface FontDescriptor {
@@ -12,6 +12,8 @@ interface FontDescriptor {
 	isBold: boolean;
 	isItalic: boolean;
 }
+
+type FontVariationAxisType = 'kCGFontVariationAxisDefaultValue' | 'kCGFontVariationAxisMaxValue' | 'kCGFontVariationAxisMinValue' | 'kCGFontVariationAxisName';
 
 const uiFontCache = new Map<string, UIFont>();
 
@@ -33,20 +35,27 @@ function getUIFontCached(fontDescriptor: FontDescriptor) {
 	let uiFont = NativeScriptUtils.createUIFont(fontDescriptor as any);
 	if (fontDescriptor.fontVariationSettings?.length) {
 		let font = CGFontCreateWithFontName(uiFont.fontName);
-		const variationAxes: NSArray<NSDictionary<'kCGFontVariationAxisDefaultValue' | 'kCGFontVariationAxisMaxValue' | 'kCGFontVariationAxisMinValue' | 'kCGFontVariationAxisName', string | number>> = CGFontCopyVariationAxes(font);
-		const variationAxesNames: string[] = [];
-		for (const axis of variationAxes) {
-			variationAxesNames.push(String(axis.objectForKey('kCGFontVariationAxisName')));
-		}
-		const variationSettings = {};
-		for (const variationSetting of fontDescriptor.fontVariationSettings) {
-			const axisName = fuzzySearch(variationSetting.axis, variationAxesNames);
-			if (axisName?.length) {
-				variationSettings[axisName[0]] = variationSetting.value;
+		const variationAxes: NSArray<NSDictionary<FontVariationAxisType, string | number>> = CGFontCopyVariationAxes(font);
+		// This can be null if font doesn't support axes
+		if (variationAxes?.count) {
+			const variationSettings = NSMutableDictionary.new();
+			const variationAxesCount = variationAxes.count;
+			const variationAxesNames: string[] = [];
+
+			for (let i = 0, length = variationAxes.count; i < length; i++) {
+				variationAxesNames.push(String(variationAxes[i].objectForKey('kCGFontVariationAxisName')));
 			}
+
+			for (const variationSetting of fontDescriptor.fontVariationSettings) {
+				const axisName = fuzzySearch(variationSetting.axis, variationAxesNames);
+				if (axisName?.length) {
+					variationSettings.setValueForKey(variationSetting.value, axisName[0]);
+				}
+			}
+
+			font = CGFontCreateCopyWithVariations(font, variationSettings);
+			uiFont = CTFontCreateWithGraphicsFont(font, fontDescriptor.fontSize, null, null);
 		}
-		font = CGFontCreateCopyWithVariations(font, variationSettings as any);
-		uiFont = CTFontCreateWithGraphicsFont(font, fontDescriptor.fontSize, null, null);
 	}
 
 	uiFontCache.set(cacheKey, uiFont);
@@ -100,16 +109,15 @@ export class Font extends FontBase {
 		});
 	}
 
-	getAndroidTypeface(): android.graphics.Typeface {
+	getAndroidTypeface(): any {
 		return undefined;
 	}
 }
 
 function getNativeFontWeight(fontWeight: FontWeightType): number {
-	if (typeof fontWeight === 'number') {
-		fontWeight = (fontWeight + '') as any;
-	}
-	switch (fontWeight) {
+	const value = typeof fontWeight === 'number' ? fontWeight + '' : fontWeight;
+
+	switch (value) {
 		case FontWeight.THIN:
 			return UIFontWeightUltraLight;
 		case FontWeight.EXTRA_LIGHT:
@@ -139,9 +147,9 @@ function getNativeFontWeight(fontWeight: FontWeightType): number {
 
 export namespace ios {
 	export function registerFont(fontFile: string) {
-		let filePath = fs.path.join(fs.knownFolders.currentApp().path, 'fonts', fontFile);
-		if (!fs.File.exists(filePath)) {
-			filePath = fs.path.join(fs.knownFolders.currentApp().path, fontFile);
+		let filePath = path.join(knownFolders.currentApp().path, FONTS_BASE_PATH, fontFile);
+		if (!File.exists(filePath)) {
+			filePath = path.join(knownFolders.currentApp().path, fontFile);
 		}
 		const fontData = NSFileManager.defaultManager.contentsAtPath(filePath);
 		if (!fontData) {
@@ -164,13 +172,14 @@ export namespace ios {
 }
 
 function registerFontsInFolder(fontsFolderPath) {
-	const fontsFolder = fs.Folder.fromPath(fontsFolderPath);
+	const fontsFolder = Folder.fromPath(fontsFolderPath);
 
-	fontsFolder.eachEntity((fileEntity: fs.FileSystemEntity) => {
-		if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
+	fontsFolder.eachEntity((fileEntity: FileSystemEntity) => {
+		if (Folder.exists(path.join(fontsFolderPath, fileEntity.name))) {
 			return true;
 		}
-		if (fileEntity instanceof fs.File && ((<fs.File>fileEntity).extension === '.ttf' || (<fs.File>fileEntity).extension === '.otf')) {
+
+		if (fileEntity instanceof File && (fileEntity.extension === 'ttf' || fileEntity.extension === 'otf')) {
 			ios.registerFont(fileEntity.name);
 		}
 
@@ -179,9 +188,9 @@ function registerFontsInFolder(fontsFolderPath) {
 }
 
 function registerCustomFonts() {
-	const appDir = fs.knownFolders.currentApp().path;
-	const fontsDir = fs.path.join(appDir, 'fonts');
-	if (fs.Folder.exists(fontsDir)) {
+	const appDir = knownFolders.currentApp().path;
+	const fontsDir = path.join(appDir, FONTS_BASE_PATH);
+	if (Folder.exists(fontsDir)) {
 		registerFontsInFolder(fontsDir);
 	}
 }

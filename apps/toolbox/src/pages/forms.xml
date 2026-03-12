@@ -5,20 +5,32 @@
   </Page.actionBar>
   <ScrollView>
     <StackLayout padding="20">
-      <Label text="TextField:" fontWeight="bold" />
+      <Label text="TextField secureWithoutAutofill" fontWeight="bold" />
+      <TextField marginTop="6" backgroundColor="#efefef" padding="8" fontSize="18" secure="true" secureWithoutAutofill="true">
+      </TextField>
+
+      <Label text="TextField" fontWeight="bold" marginTop="12" />
       <TextField textChange="{{ textChange }}" marginTop="6" backgroundColor="#efefef" padding="8" fontSize="18" keyboardType="url" />
 
       <Label text="{{ textInput }}" marginTop="6" />
 
-      <Label text="SSN Formatted input:" fontWeight="bold" marginTop="12" />
+      <Label text="SSN Formatted input" fontWeight="bold" marginTop="12" />
       <TextField hint="XXX-XX-XXXX" style.placeholderColor="silver" textChange="{{textChangeSSN}}" keyboardType="number" color="black" width="80%" borderColor="silver" borderWidth="1" height="40" textAlignment="center" borderRadius="4" valueFormatter="{{valueFormatterSSN}}" padding="5" maxLength="11">
       </TextField>
       <Label text="{{ formattedSSNInput }}" marginTop="6" />
 
-      <Label text="Phone Formatted input:" fontWeight="bold" marginTop="12" />
+      <Label text="Phone Formatted input" fontWeight="bold" marginTop="12" />
       <TextField hint="XXX-XXX-XXXX" style.placeholderColor="silver" textChange="{{textChangePhone}}" keyboardType="number" color="black" width="80%" borderColor="silver" borderWidth="1" height="40" textAlignment="center" borderRadius="4" valueFormatter="{{valueFormatterPhone}}" padding="5" maxLength="12">
       </TextField>
       <Label text="{{ formattedPhoneInput }}" marginTop="6" />
+
+      <Label text="TextView" fontWeight="bold" marginTop="12" />
+      <TextView hint="Type text..." style.placeholderColor="silver" textChange="{{textChangeArea}}" color="black" width="80%" borderColor="silver" borderWidth="1" height="125" borderRadius="4" fontSize="14">
+      </TextView>
+
+      <Label text="TextField white-space + text-overflow" fontWeight="bold" marginTop="12" />
+      <TextField text="https://a.very.long.url.that.needs.to.be.truncated.com/" class="truncate" marginTop="6" backgroundColor="#efefef" padding="8" fontSize="18" height="60">
+      </TextField>
 
     </StackLayout>
   </ScrollView>

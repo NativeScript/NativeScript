@@ -49,8 +49,8 @@ export function test_set_TNS_value_updates_native_value() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (platform.Device.os === platform.platformNames.ios) {
-	exports.test_set_color = function () {
+export function test_set_color() {
+	if (__APPLE__) {
 		var ai = new activityIndicatorModule.ActivityIndicator();
 		ai.color = new color.Color('red');
 
@@ -59,7 +59,7 @@ if (platform.Device.os === platform.platformNames.ios) {
 		}
 
 		helper.buildUIAndRunTest(ai, testAction);
-	};
+	}
 }
 
 // This method is only for the code snippet
@@ -79,7 +79,7 @@ function binding_busy_to_image() {
 			sourceProperty: 'isLoading',
 			targetProperty: 'busy',
 		},
-		image
+		image,
 	);
 	// << activity-indicator-loading
 }

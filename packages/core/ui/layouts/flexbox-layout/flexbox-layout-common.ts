@@ -1,6 +1,7 @@
 import { LayoutBase } from '../layout-base';
 import { View, CSSType } from '../../core/view';
-import { CssProperty, ShorthandProperty, makeParser, makeValidator, unsetValue } from '../../core/properties';
+import { CssProperty, ShorthandProperty, makeParser, makeValidator } from '../../core/properties';
+import { unsetValue } from '../../core/properties/property-shared';
 import { Style } from '../../styling/style';
 
 export type Basis = 'auto' | number;
@@ -222,7 +223,7 @@ export const flexDirectionProperty = new CssProperty<Style, FlexDirection>({
 	name: 'flexDirection',
 	cssName: 'flex-direction',
 	defaultValue: FlexDirection.ROW,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: FlexDirection.parse,
 });
 flexDirectionProperty.register(Style);
@@ -231,7 +232,7 @@ export const flexWrapProperty = new CssProperty<Style, FlexWrap>({
 	name: 'flexWrap',
 	cssName: 'flex-wrap',
 	defaultValue: 'nowrap',
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: FlexWrap.parse,
 });
 flexWrapProperty.register(Style);
@@ -240,7 +241,7 @@ export const justifyContentProperty = new CssProperty<Style, JustifyContent>({
 	name: 'justifyContent',
 	cssName: 'justify-content',
 	defaultValue: JustifyContent.FLEX_START,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: JustifyContent.parse,
 });
 justifyContentProperty.register(Style);
@@ -249,7 +250,7 @@ export const alignItemsProperty = new CssProperty<Style, AlignItems>({
 	name: 'alignItems',
 	cssName: 'align-items',
 	defaultValue: AlignItems.STRETCH,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: AlignItems.parse,
 });
 alignItemsProperty.register(Style);
@@ -258,7 +259,7 @@ export const alignContentProperty = new CssProperty<Style, AlignContent>({
 	name: 'alignContent',
 	cssName: 'align-content',
 	defaultValue: AlignContent.STRETCH,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: AlignContent.parse,
 });
 alignContentProperty.register(Style);

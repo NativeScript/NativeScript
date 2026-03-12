@@ -1,14 +1,15 @@
 // Definitions.
-import { NavigationType } from './frame-common';
+import { NavigationType, TransitionState } from './frame-common';
 import { NavigationTransition, BackstackEntry } from '.';
 
 // Types.
 import { Transition } from '../transition';
 import { FlipTransition } from '../transition/flip-transition';
 import { _resolveAnimationCurve } from '../animation';
+import { CoreTypes } from '../enums';
 import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
-import { SharedTransition, SharedTransitionEventData, SharedTransitionAnimationType } from '../transition/shared-transition';
+import { SharedTransition, SharedTransitionAnimationType } from '../transition/shared-transition';
 
 interface TransitionListener {
 	new (entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;
@@ -55,7 +56,7 @@ export interface ExpandedEntry extends BackstackEntry {
 	isAnimationRunning: boolean;
 }
 
-export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, isNestedDefaultTransition?: boolean): void {
+export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, layoutDirection: CoreTypes.LayoutDirectionType, isNestedDefaultTransition?: boolean): void {
 	const currentFragment: androidx.fragment.app.Fragment = currentEntry ? currentEntry.fragment : null;
 	const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 	const entries = waitingQueue.get(frameId);
@@ -119,7 +120,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 				curve: transition.getCurve(),
 			},
 			newEntry,
-			transition
+			transition,
 		);
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentCustomTransition(
@@ -128,7 +129,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 					curve: transition.getCurve(),
 				},
 				currentEntry,
-				transition
+				transition,
 			);
 		}
 	} else if (name === 'default') {
@@ -137,9 +138,12 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 			setupCurrentFragmentFadeTransition({ duration: 150, curve: null }, currentEntry);
 		}
 	} else if (name.indexOf('slide') === 0) {
-		setupNewFragmentSlideTransition(navigationTransition, newEntry, name);
+		const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'right' : 'left';
+		const direction = name.substring('slide'.length) || defaultDirection; // Extract the direction from the string
+
+		setupNewFragmentSlideTransition(navigationTransition, newEntry, direction);
 		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentSlideTransition(navigationTransition, currentEntry, name);
+			setupCurrentFragmentSlideTransition(navigationTransition, currentEntry, direction);
 		}
 	} else if (name === 'fade') {
 		setupNewFragmentFadeTransition(navigationTransition, newEntry);
@@ -152,7 +156,8 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 			setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
 		}
 	} else if (name.indexOf('flip') === 0) {
-		const direction = name.substr('flip'.length) || 'right'; //Extract the direction from the string
+		const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'left' : 'right';
+		const direction = name.substring('flip'.length) || defaultDirection; // Extract the direction from the string
 		const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
 
 		setupNewFragmentCustomTransition(navigationTransition, newEntry, flipTransition);
@@ -282,23 +287,28 @@ export function _getAnimatedEntries(frameId: number): Set<BackstackEntry> {
 
 export function _updateTransitions(entry: ExpandedEntry): void {
 	const fragment = entry.fragment;
+
+	if (!fragment) {
+		return;
+	}
+
 	const enterTransitionListener = entry.enterTransitionListener;
-	if (enterTransitionListener && fragment) {
+	if (enterTransitionListener) {
 		fragment.setEnterTransition(enterTransitionListener.transition);
 	}
 
 	const exitTransitionListener = entry.exitTransitionListener;
-	if (exitTransitionListener && fragment) {
+	if (exitTransitionListener) {
 		fragment.setExitTransition(exitTransitionListener.transition);
 	}
 
 	const reenterTransitionListener = entry.reenterTransitionListener;
-	if (reenterTransitionListener && fragment) {
+	if (reenterTransitionListener) {
 		fragment.setReenterTransition(reenterTransitionListener.transition);
 	}
 
 	const returnTransitionListener = entry.returnTransitionListener;
-	if (returnTransitionListener && fragment) {
+	if (returnTransitionListener) {
 		fragment.setReturnTransition(returnTransitionListener.transition);
 	}
 }
@@ -356,7 +366,10 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 		@Interfaces([(<any>androidx).transition.Transition.TransitionListener])
 		class TransitionListenerImpl extends java.lang.Object implements androidx.transition.Transition.TransitionListener {
 			public backEntry?: BackstackEntry;
-			constructor(public entry: ExpandedEntry, public transition: androidx.transition.Transition) {
+			constructor(
+				public entry: ExpandedEntry,
+				public transition: androidx.transition.Transition,
+			) {
 				super();
 
 				return global.__native(this);
@@ -425,6 +438,16 @@ function addToWaitingQueue(entry: ExpandedEntry): void {
 	entries.add(entry);
 }
 
+function cloneExpandedTransitionListener(expandedTransitionListener: ExpandedTransitionListener) {
+	if (!expandedTransitionListener) {
+		return null;
+	}
+
+	const cloneTransition = expandedTransitionListener.transition.clone();
+
+	return addNativeTransitionListener(expandedTransitionListener.entry, cloneTransition);
+}
+
 function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: boolean): void {
 	const fragment: androidx.fragment.app.Fragment = entry.fragment;
 	const exitListener = entry.exitTransitionListener;
@@ -466,15 +489,56 @@ function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: bo
 	}
 }
 
+export function _getTransitionState(entry: ExpandedEntry): TransitionState {
+	let transitionState: TransitionState;
+
+	if (entry.enterTransitionListener && entry.exitTransitionListener) {
+		transitionState = {
+			enterTransitionListener: cloneExpandedTransitionListener(entry.enterTransitionListener),
+			exitTransitionListener: cloneExpandedTransitionListener(entry.exitTransitionListener),
+			reenterTransitionListener: cloneExpandedTransitionListener(entry.reenterTransitionListener),
+			returnTransitionListener: cloneExpandedTransitionListener(entry.returnTransitionListener),
+			transitionName: entry.transitionName,
+			entry,
+		};
+	} else {
+		transitionState = null;
+	}
+
+	return transitionState;
+}
+
+export function _restoreTransitionState(snapshot: TransitionState): void {
+	const entry = snapshot.entry as ExpandedEntry;
+
+	if (snapshot.enterTransitionListener) {
+		entry.enterTransitionListener = snapshot.enterTransitionListener;
+	}
+
+	if (snapshot.exitTransitionListener) {
+		entry.exitTransitionListener = snapshot.exitTransitionListener;
+	}
+
+	if (snapshot.reenterTransitionListener) {
+		entry.reenterTransitionListener = snapshot.reenterTransitionListener;
+	}
+
+	if (snapshot.returnTransitionListener) {
+		entry.returnTransitionListener = snapshot.returnTransitionListener;
+	}
+
+	entry.transitionName = snapshot.transitionName;
+}
+
 export function _clearFragment(entry: ExpandedEntry): void {
-	clearEntry(entry, false);
+	clearTransitions(entry, false);
 }
 
 export function _clearEntry(entry: ExpandedEntry): void {
-	clearEntry(entry, true);
+	clearTransitions(entry, true);
 }
 
-function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
+function clearTransitions(entry: ExpandedEntry, removeListener: boolean): void {
 	clearExitAndReenterTransitions(entry, removeListener);
 
 	const fragment: androidx.fragment.app.Fragment = entry.fragment;
@@ -564,9 +628,9 @@ function setReturnTransition(navigationTransition: NavigationTransition, entry: 
 	fragment.setReturnTransition(transition);
 }
 
-function setupNewFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, name: string): void {
-	setupCurrentFragmentSlideTransition(navTransition, entry, name);
-	const direction = name.substr('slide'.length) || 'left'; //Extract the direction from the string
+function setupNewFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, direction: string): void {
+	setupCurrentFragmentSlideTransition(navTransition, entry, direction);
+
 	switch (direction) {
 		case 'left':
 			setEnterTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.RIGHT));
@@ -590,8 +654,7 @@ function setupNewFragmentSlideTransition(navTransition: NavigationTransition, en
 	}
 }
 
-function setupCurrentFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, name: string): void {
-	const direction = name.substr('slide'.length) || 'left'; //Extract the direction from the string
+function setupCurrentFragmentSlideTransition(navTransition: NavigationTransition, entry: ExpandedEntry, direction: string): void {
 	switch (direction) {
 		case 'left':
 			setExitTransition(navTransition, entry, new androidx.transition.Slide(android.view.Gravity.LEFT));
@@ -702,7 +765,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 	if (entries.size === 0) {
 		// We have 0 or 1 entry per frameId in completedEntries
 		// So there is no need to make it to Set like waitingQueue
-		const previousCompletedAnimationEntry = completedEntries.get(frameId);
+		const previousCompletedEntry = completedEntries.get(frameId);
 		completedEntries.delete(frameId);
 		waitingQueue.delete(frameId);
 
@@ -716,8 +779,8 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 		const navigationContext = frame._executingContext || {
 			navigationType: NavigationType.back,
 		};
-		let current = frame.isCurrent(entry) ? previousCompletedAnimationEntry : entry;
-		current = current || entry;
+		const current = frame.isCurrent(entry) && previousCompletedEntry ? previousCompletedEntry : entry;
+
 		// Will be null if Frame is shown modally...
 		// transitionOrAnimationCompleted fires again (probably bug in android).
 		if (current) {

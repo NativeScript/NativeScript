@@ -7,7 +7,20 @@
 				<SegmentedBarItem title="Item 3" />
 			</SegmentedBar.items>
 		</SegmentedBar>
-		<SegmentedBar selectedIndex="2" style="margin: 5; color: blue; background-color: yellow; font-weight: bold; font-size: 20; font-style: italic; font-family: monospace; height: 72; border-width: 2; border-radius: 7; border-color:green; selected-background-color: red;">
+		<SegmentedBar selectedIndex="2" style="margin: 5; color: blue; background-color: yellow; font-weight: bold; font-size: 20; font-style: italic; font-family: monospace; height: 72; border-width: 2; border-radius: 7; border-color:green; selected-background-color: red;selected-text-color: green">
+			<SegmentedBar.items>
+				<SegmentedBarItem title="Item 1" />
+				<SegmentedBarItem title="Item 2" />
+				<SegmentedBarItem title="Item 3" />
+			</SegmentedBar.items>
+		</SegmentedBar>
+        <SegmentedBar selectedIndex="2" 
+            selectedTextColor="#00ffd9" 
+            color="red" 
+            android:backgroundColor="#A8A8A8" 
+            selectedBackgroundColor="blue" 
+            android:borderRadius="6" 
+        >
 			<SegmentedBar.items>
 				<SegmentedBarItem title="Item 1" />
 				<SegmentedBarItem title="Item 2" />

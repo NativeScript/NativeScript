@@ -49,10 +49,14 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		this._registerLayoutChild(child);
 	}
 
-	public insertChild(child: View, atIndex: number): void {
-		this._subViews.splice(atIndex, 0, child);
-		this._addView(child, atIndex);
-		this._registerLayoutChild(child);
+	public insertChild(child: View, atIndex: number): boolean {
+		if (atIndex > -1) {
+			this._subViews.splice(atIndex, 0, child);
+			this._addView(child, atIndex);
+			this._registerLayoutChild(child);
+			return true;
+		}
+		return false;
 	}
 
 	public removeChild(child: View): void {
@@ -60,8 +64,10 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 
 		// TODO: consider caching the index on the child.
 		const index = this._subViews.indexOf(child);
-		this._subViews.splice(index, 1);
-		this._unregisterLayoutChild(child);
+		if (index > -1) {
+			this._subViews.splice(index, 1);
+			this._unregisterLayoutChild(child);
+		}
 	}
 
 	public removeChildren(): void {

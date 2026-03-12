@@ -1,4 +1,4 @@
-import { View } from '..';
+import { Position, View } from '..';
 
 export class ViewHelper {
 	/**
@@ -34,6 +34,16 @@ export class ViewHelper {
 }
 
 /**
+ * Various Android view helper methods
+ */
+export namespace AndroidHelper {
+	export function getDrawableColor(drawable: any /* android.graphics.drawable.Drawable */): Color;
+	export function setDrawableColor(color: number, drawable: any /* android.graphics.drawable.Drawable */, blendMode?: any /* androidx.core.graphics.BlendModeCompat */): void;
+	export function clearDrawableColor(drawable: any /* android.graphics.drawable.Drawable */): void;
+	export function getCopyOrDrawable(drawable: any /* android.graphics.drawable.Drawable */, resources?: any /* android.content.res.Resources */): any; /* android.graphics.drawable.Drawable */
+}
+
+/**
  * Various iOS view helper methods
  */
 export namespace IOSHelper {
@@ -43,15 +53,21 @@ export namespace IOSHelper {
 	export const traitCollectionColorAppearanceChangedEvent: string;
 
 	/**
+	 * String value used when hooking to traitCollectionLayoutDirectionChangedEvent event.
+	 */
+	export const traitCollectionLayoutDirectionChangedEvent: string;
+
+	/**
 	 * Returns a view with viewController or undefined if no such found along the view's parent chain.
 	 * @param view The view form which to start the search.
 	 */
 	export function getParentWithViewController(view: View): View;
+	export function invalidateStatusBarAppearance(controller?: any /* UIViewController */, reason?: string): void;
 	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
 	export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
 	export function layoutView(controller: any /* UIViewController */, owner: View): void;
-	export function getPositionFromFrame(frame: any /* CGRect */): { left; top; right; bottom };
-	export function getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): any; /* CGRect */
+	export function getPositionFromFrame(frame: any /* CGRect */): Position;
+	export function getFrameFromPosition(position: Position, insets?: Position): any; /* CGRect */
 	export function shrinkToSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
 	export function expandBeyondSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
 	export class UILayoutViewController {

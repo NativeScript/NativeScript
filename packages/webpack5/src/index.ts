@@ -26,6 +26,7 @@ export interface IWebpackEnv {
 
 	appPath?: string;
 	appResourcesPath?: string;
+	buildPath?: string;
 	appComponents?: string[];
 
 	nativescriptLibPath?: string | boolean;
@@ -49,10 +50,12 @@ export interface IWebpackEnv {
 	// print webpack stats (default: true)
 	stats?: boolean;
 
+	// enable commonjs modules (default: ES modules, esm)
+	commonjs?: boolean;
+
 	// misc
 	replace?: string[] | string;
 	watchNodeModules?: boolean;
-	e2e?: boolean;
 }
 
 interface IChainEntry {
@@ -66,6 +69,7 @@ let webpackMerges: any[] = [];
 let explicitUseConfig = false;
 let hasInitialized = false;
 let currentPlugin: string | undefined;
+
 /**
  * @internal
  */
@@ -86,6 +90,7 @@ export function clearCurrentPlugin() {
 }
 
 ////// PUBLIC API
+
 /**
  * The default flavor specific configs
  */
@@ -141,7 +146,7 @@ export function useConfig(config: keyof typeof defaultConfigs | false) {
  */
 export function chainWebpack(
 	chainFn: (config: Config, env: IWebpackEnv) => any,
-	options?: { order?: number }
+	options?: { order?: number },
 ) {
 	webpackChains.push({
 		order: options?.order || 0,
@@ -156,10 +161,9 @@ export function chainWebpack(
  * @param mergeFn An object or a function that optionally returns an object (can mutate the object directly and return nothing)
  */
 export function mergeWebpack(
-	mergeFn: (
-		config: Partial<webpack.Configuration>,
-		env: IWebpackEnv
-	) => any | Partial<webpack.Configuration>
+	mergeFn:
+		| ((config: Partial<webpack.Configuration>, env: IWebpackEnv) => any)
+		| Partial<webpack.Configuration>,
 ) {
 	webpackMerges.push(mergeFn);
 }
@@ -215,7 +219,7 @@ export function resolveChainableConfig(): Config {
  * @param chainableConfig Optional chain config to use.
  */
 export function resolveConfig(
-	chainableConfig = resolveChainableConfig()
+	chainableConfig = resolveChainableConfig(),
 ): webpack.Configuration {
 	if (!hasInitialized) {
 		throw error('resolveConfig() must be called after init()');

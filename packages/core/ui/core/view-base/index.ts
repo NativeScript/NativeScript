@@ -1,12 +1,11 @@
-import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
+import { AlignSelf, Flex, FlexFlow, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../layouts/flexbox-layout';
 import { Page } from '../../page';
-import { CoreTypes } from '../../../core-types';
+import { CoreTypes, Trace } from '../../styling/styling-shared';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
-import { setupAccessibleView } from '../../../accessibility';
 import { CSSUtils } from '../../../css/system-classes';
-import { Source } from '../../../utils/debug';
-import { Binding, BindingOptions } from '../bindable';
-import { Trace } from '../../../trace';
+import { Source } from '../../../utils/debug-source';
+import { Binding } from '../bindable';
+import { BindingOptions } from '../bindable/bindable-types';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
 import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
@@ -14,27 +13,15 @@ import type { ModalTransition } from '../../transition/modal-transition';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
+import { unsetValue } from '../properties/property-shared';
 
 import { profile } from '../../../profiling';
 
-import * as dnm from '../../../debugger/dom-node';
-import * as ssm from '../../styling/style-scope';
-import { ViewBase as ViewBaseDefinition } from '.';
+import { DOMNode } from '../../../debugger/dom-types';
+import { applyInlineStyle, CssState, StyleScope } from '../../styling/style-scope';
+import { booleanConverter } from './utils';
 
-let domNodeModule: typeof dnm;
-
-function ensuredomNodeModule(): void {
-	if (!domNodeModule) {
-		domNodeModule = require('../../../debugger/dom-node');
-	}
-}
-
-let styleScopeModule: typeof ssm;
-function ensureStyleScopeModule() {
-	if (!styleScopeModule) {
-		styleScopeModule = require('../../styling/style-scope');
-	}
-}
+export { booleanConverter } from './utils';
 
 const defaultBindingSource = {};
 
@@ -92,6 +79,10 @@ export interface ShowModalOptions {
 		 * height of the popup dialog
 		 */
 		height?: number;
+		/**
+		 * The preferred status bar style for the modal view
+		 */
+		statusBarStyle?: 'light' | 'dark';
 	};
 	android?: {
 		/**
@@ -118,12 +109,13 @@ export interface ShowModalOptions {
  * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getAncestor(view: ViewBaseDefinition, criterion: string | { new () }): ViewBaseDefinition {
-	let matcher: (view: ViewBaseDefinition) => boolean = null;
+export function getAncestor<T extends ViewBase = ViewBase>(view: T, criterion: string | { new () }): T {
+	let matcher: (view: ViewBase) => view is T;
+
 	if (typeof criterion === 'string') {
-		matcher = (view: ViewBaseDefinition) => view.typeName === criterion;
+		matcher = (view: ViewBase): view is T => view.typeName === criterion;
 	} else {
-		matcher = (view: ViewBaseDefinition) => view instanceof criterion;
+		matcher = (view: ViewBase): view is T => view instanceof criterion;
 	}
 
 	for (let parent = view.parent; parent != null; parent = parent.parent) {
@@ -141,7 +133,7 @@ export function getAncestor(view: ViewBaseDefinition, criterion: string | { new 
  * @param id - The id of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefinition {
+export function getViewById(view: ViewBase, id: string): ViewBase {
 	if (!view) {
 		return undefined;
 	}
@@ -150,8 +142,8 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
 		return view;
 	}
 
-	let retVal: ViewBaseDefinition;
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	let retVal: ViewBase;
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (child.id === id) {
 			retVal = child;
 
@@ -173,7 +165,7 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
  * @param domId - The id of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBaseDefinition {
+export function getViewByDomId(view: ViewBase, domId: number): ViewBase {
 	if (!view) {
 		return undefined;
 	}
@@ -182,8 +174,8 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
 		return view;
 	}
 
-	let retVal: ViewBaseDefinition;
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	let retVal: ViewBase;
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (view._domId === domId) {
 			retVal = child;
 
@@ -206,17 +198,17 @@ export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBas
  * @param selector - The selector of the view to look for.
  * Returns an instance of a view (if found), otherwise undefined.
  */
-export function querySelectorAll(view: ViewBaseDefinition, selector: string): Array<ViewBaseDefinition> {
+export function querySelectorAll(view: ViewBase, selector: string): Array<ViewBase> {
 	if (!view) {
 		return [];
 	}
 
-	const retVal: Array<ViewBaseDefinition> = [];
+	const retVal: Array<ViewBase> = [];
 	if (view[selector]) {
 		retVal.push(view);
 	}
 
-	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+	const descendantsCallback = function (child: ViewBase): boolean {
 		if (child[selector]) {
 			retVal.push(child);
 		}
@@ -234,13 +226,13 @@ export function querySelectorAll(view: ViewBaseDefinition, selector: string): Ar
  * @param view - Starting view (parent container).
  * @param callback - A function to execute on every child. If function returns false it breaks the iteration.
  */
-export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewBaseDefinition) => boolean) {
+export function eachDescendant(view: ViewBase, callback: (child: ViewBase) => boolean) {
 	if (!callback || !view) {
 		return;
 	}
 
 	let continueIteration: boolean;
-	const localCallback = function (child: ViewBaseDefinition): boolean {
+	const localCallback = function (child: ViewBase): boolean {
 		continueIteration = callback(child);
 		if (continueIteration) {
 			child.eachChild(localCallback);
@@ -308,21 +300,35 @@ namespace SuspendType {
 	}
 }
 
-export abstract class ViewBase extends Observable implements ViewBaseDefinition {
+const DEFAULT_VIEW_PADDINGS: Map<string, any> = new Map();
+
+/**
+ *
+ * @nsView ViewBase
+ */
+export abstract class ViewBase extends Observable {
 	/**
 	 * String value used when hooking to loaded event.
+	 *
+	 * @nsEvent loaded
 	 */
 	public static loadedEvent = 'loaded';
 	/**
 	 * String value used when hooking to unloaded event.
+	 *
+	 * @nsEvent unloaded
 	 */
 	public static unloadedEvent = 'unloaded';
 	/**
 	 * String value used when hooking to creation event
+	 *
+	 * @nsEvent created
 	 */
 	public static createdEvent = 'created';
 	/**
 	 * String value used when hooking to disposeNativeView event
+	 *
+	 * @nsEvent disposeNativeView
 	 */
 	public static disposeNativeViewEvent = 'disposeNativeView';
 
@@ -332,18 +338,26 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	private _androidView: Object;
 	private _style: Style;
 	private _isLoaded: boolean;
+
+	/**
+	 * @deprecated
+	 */
 	private _visualState: string;
+
 	private _templateParent: ViewBase;
 	private __nativeView: any;
 	// private _disableNativeViewRecycling: boolean;
 
-	public domNode: dnm.DOMNode;
+	public domNode: DOMNode;
 
 	public recycleNativeView: 'always' | 'never' | 'auto';
 	/**
 	 * returns the native UIViewController.
 	 */
 	public viewController: any;
+	/**
+	 * @nsProperty
+	 */
 	public bindingContext: any;
 	/**
 	 * read-only. If you want to set out-of-band the nativeView use the setNativeView method.
@@ -362,26 +376,47 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	/**
 	 * Gets or sets the id for this view.
+	 *
+	 * @nsProperty
 	 */
 	public id: string;
 	/**
 	 * Gets or sets the CSS class name for this view.
+	 *
+	 * @nsProperty
 	 */
 	public className: string;
+
+	/**
+	 * Gets or sets the visual state of the view.
+	 * @nsProperty
+	 */
+	public hidden: boolean;
 	/**
 	 * Gets or sets the shared transition tag for animated view transitions
+	 *
+	 * @nsProperty
 	 */
 	public sharedTransitionTag: string;
 	/**
 	 * Opt out of shared transition under different binding conditions
+	 *
+	 * @nsProperty
 	 */
 	public sharedTransitionIgnore: boolean;
+
+	/**
+	 * Default visual state, defaults to 'normal'
+	 *
+	 * @nsProperty
+	 */
+	public defaultVisualState: string = 'normal';
 
 	public _domId: number;
 	public _context: any /* android.content.Context */;
 	public _isAddedToNativeVisualTree: boolean;
-	/* "ui/styling/style-scope" */ public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
-	public _styleScope: ssm.StyleScope;
+	/* "ui/styling/style-scope" */ public _cssState: CssState = new CssState(new WeakRef(this));
+	public _styleScope: StyleScope;
 	/**
 	 * A property bag holding suspended native updates.
 	 * Native setters that had to execute while there was no native view,
@@ -405,22 +440,77 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _automaticallyAdjustsScrollViewInsets: boolean;
 
 	// Dynamic properties.
+	/**
+	 * Gets or sets the distance, in pixels, between the left edge of the child and the left edge of its parent.
+	 * @nsProperty
+	 */
 	left: CoreTypes.LengthType;
+	/**
+	 * Gets or sets the distance, in pixels, between the top edge of the child and the top edge of its parent.
+	 * @nsProperty
+	 */
 	top: CoreTypes.LengthType;
 	effectiveLeft: number;
 	effectiveTop: number;
+	/**
+	 * Dock position of the view within its parent.
+	 * @nsProperty
+	 */
 	dock: 'left' | 'top' | 'right' | 'bottom';
+	/**
+	 * The row for the element. The rows are 0-indexed, so the first row is indicated by 0.
+	 *
+	 * @nsProperty
+	 */
 	row: number;
+	/**
+	 * The column for the element. The columns are 0-indexed, so the first column is indicated by 0.
+	 * @nsProperty
+	 */
 	col: number;
+	/**
+	 * The column for the element. The columns are 0-indexed, so the first column is indicated by 0.
+	 * @nsProperty
+	 */
 	column: number; // synonym for "col"
+	/**
+	 * The number of rows for the element to span across.
+	 * @nsProperty
+	 */
 	rowSpan: number;
+	/**
+	 * The number of columns for the element to span across.
+	 * @nsProperty
+	 */
 	colSpan: number;
+	/**
+	 * @nsProperty
+	 */
 	columnSpan: number; // synonym for "columnSpan"
-
+	/**
+	 * Sets the order in which child elements inside a Flex appear in relation to one another.
+	 * @nsProperty
+	 */
 	order: Order;
+	/**
+	 * Indicates that the child should grow in size, if necessary. Sets how much the child will grow in proportion to the rest of the child elements in the flex container.
+	 * @nsProperty
+	 */
 	flexGrow: FlexGrow;
+	/**
+	 * Indicates that the child should shrink when the row runs out of space. Sets how much the flex item will shrink in proportion to the rest of the child elements in the flex container. When not specified, its value is set to 1.
+	 * @nsProperty
+	 */
 	flexShrink: FlexShrink;
+	/**
+	 * When true, forces the item to wrap onto a new line.
+	 * @nsProperty
+	 */
 	flexWrapBefore: FlexWrapBefore;
+	/**
+	 * (Android-only) Overrides the alignItems value for the child.
+	 * @nsProperty
+	 */
 	alignSelf: AlignSelf;
 
 	_oldLeft: number;
@@ -459,15 +549,24 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _moduleName: string;
 
 	/**
-	 * Gets or sets if the view is reusable.
-	 * Reusable views are not automatically destroyed when removed from the View tree.
+	 * Gets or sets if the view is reusable. Reusable views are not automatically destroyed when removed from the View tree.
+	 *
+	 * @nsProperty
 	 */
 	public reusable: boolean;
+
+	public readonly cssClasses: Set<string>;
+	public readonly cssPseudoClasses: Set<string>;
 
 	constructor() {
 		super();
 		this._domId = viewIdCounter++;
 		this._style = new Style(new WeakRef(this));
+		this.cssClasses = new Set();
+		this.cssPseudoClasses = new Set();
+
+		this.cssPseudoClasses.add(this.defaultVisualState);
+
 		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });
 	}
 
@@ -504,6 +603,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	get style(): Style {
 		return this._style;
 	}
+
+	/**
+	 *
+	 * @nsProperty
+	 */
 	set style(inlineStyle: Style /* | string */) {
 		if (typeof inlineStyle === 'string') {
 			this.setInlineStyle(inlineStyle);
@@ -536,14 +640,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	/**
 	 * Returns the child view with the specified id.
 	 */
-	getViewById<T extends ViewBaseDefinition>(id: string): T {
+	getViewById<T extends ViewBase>(id: string): T {
 		return <T>getViewById(this, id);
 	}
 
 	/**
 	 * Returns the child view with the specified domId.
 	 */
-	getViewByDomId<T extends ViewBaseDefinition>(domId: number): T {
+	getViewByDomId<T extends ViewBase>(domId: number): T {
 		return <T>getViewByDomId(this, domId);
 	}
 
@@ -564,8 +668,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 */
 	public ensureDomNode() {
 		if (!this.domNode) {
-			ensuredomNodeModule();
-			this.domNode = new domNodeModule.DOMNode(this);
+			this.domNode = new DOMNode(this);
 		}
 	}
 
@@ -591,7 +694,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 			return true;
 		});
-		setupAccessibleView(<any>this);
 
 		this._emit('loaded');
 	}
@@ -703,14 +805,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		highlighted: ['active', 'pressed'],
 	};
 
-	public cssClasses: Set<string> = new Set();
-	public cssPseudoClasses: Set<string> = new Set();
+	private getAllAliasedStates(name: string): string[] {
+		const allStates: string[] = [name];
 
-	private getAllAliasedStates(name: string): Array<string> {
-		const allStates = [];
-		allStates.push(name);
 		if (name in this.pseudoClassAliases) {
-			for (let i = 0; i < this.pseudoClassAliases[name].length; i++) {
+			for (let i = 0, length = this.pseudoClassAliases[name].length; i < length; i++) {
 				allStates.push(this.pseudoClassAliases[name][i]);
 			}
 		}
@@ -726,7 +825,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	@profile
 	public addPseudoClass(name: string): void {
 		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0; i < allStates.length; i++) {
+		for (let i = 0, length = allStates.length; i < length; i++) {
 			if (!this.cssPseudoClasses.has(allStates[i])) {
 				this.cssPseudoClasses.add(allStates[i]);
 				this.notifyPseudoClassChanged(allStates[i]);
@@ -742,7 +841,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	@profile
 	public deletePseudoClass(name: string): void {
 		const allStates = this.getAllAliasedStates(name);
-		for (let i = 0; i < allStates.length; i++) {
+		for (let i = 0, length = allStates.length; i < length; i++) {
 			if (this.cssPseudoClasses.has(allStates[i])) {
 				this.cssPseudoClasses.delete(allStates[i]);
 				this.notifyPseudoClassChanged(allStates[i]);
@@ -842,6 +941,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//
 	}
 
+	public _inheritStyles(view: ViewBase): void {
+		propagateInheritableProperties(this, view);
+		view._inheritStyleScope(this._styleScope);
+		propagateInheritableCssProperties(this.style, view.style);
+	}
+
 	@profile
 	public _addView(view: ViewBase, atIndex?: number) {
 		if (Trace.isEnabled()) {
@@ -871,9 +976,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Method is intended to be overridden by inheritors and used as "protected"
 	 */
 	public _addViewCore(view: ViewBase, atIndex?: number) {
-		propagateInheritableProperties(this, view);
-		view._inheritStyleScope(this._styleScope);
-		propagateInheritableCssProperties(this.style, view.style);
+		this._inheritStyles(view);
 
 		if (this._context) {
 			view._setupUI(this._context, atIndex);
@@ -956,6 +1059,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	 * Clean up references to the native view.
 	 */
 	public disposeNativeView() {
+		// Unset these values so that view checks for resize the next time it's added back to view tree
+		this._oldLeft = 0;
+		this._oldTop = 0;
+		this._oldRight = 0;
+		this._oldBottom = 0;
+
 		this.notify({
 			eventName: ViewBase.disposeNativeViewEvent,
 			object: this,
@@ -978,7 +1087,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	private resetNativeViewInternal(): void {
 		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && global.isAndroid) {
+		// if (nativeView && __ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
 		//         resetNativeView(this);
@@ -995,8 +1104,17 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		// }
 	}
 
+	/**
+	 * if _setupAsRootView is called it means it is not supposed to be
+	 * added to a parent. However parent can be set before for the purpose
+	 * of CSS variables/classes. That variable ensures that _addViewToNativeVisualTree
+	 * is not called in _setupAsRootView
+	 */
+	mIsRootView = false;
 	_setupAsRootView(context: any): void {
+		this.mIsRootView = true;
 		this._setupUI(context);
+		this.mIsRootView = false;
 	}
 
 	/**
@@ -1009,7 +1127,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			// this check is unnecessary as this function should never be called when this._context === context as it means the view was somehow detached,
 			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
 			if (this.reusable) {
-				if (this.parent && !this._isAddedToNativeVisualTree) {
+				if (!this.mIsRootView && this.parent && !this._isAddedToNativeVisualTree) {
 					const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
 					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 				}
@@ -1025,7 +1143,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		// or for backward compatibility - set before _setupUI in iOS constructor.
 		let nativeView = this.nativeViewProtected;
 
-		// if (global.isAndroid) {
+		// if (__ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     if (recycle === "always" || (recycle === "auto" && !this._disableNativeViewRecycling)) {
 		//         nativeView = <android.view.View>getNativeView(context, this.typeName);
@@ -1035,20 +1153,27 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			nativeView = this.createNativeView();
 		}
 
-		if (global.isAndroid) {
+		if (__ANDROID__) {
 			// this check is also unecessary as this code should never be reached with _androidView != null unless reusable = true
 			// also adding this check for feature flag safety
 			if (this._androidView !== nativeView || !this.reusable) {
 				this._androidView = nativeView;
 				if (nativeView) {
+					const className = this.constructor.name;
+
 					if (this._isPaddingRelative === undefined) {
 						this._isPaddingRelative = nativeView.isPaddingRelative();
 					}
 
-					let result: any /* android.graphics.Rect */ = (<any>nativeView).defaultPaddings;
+					let result: any /* android.graphics.Rect */ = DEFAULT_VIEW_PADDINGS.get(className) || (<any>nativeView).defaultPaddings;
 					if (result === undefined) {
-						result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
-						(<any>nativeView).defaultPaddings = result;
+						DEFAULT_VIEW_PADDINGS.set(className, org.nativescript.widgets.ViewHelper.getPadding(nativeView));
+						(<any>nativeView).defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
+						result = DEFAULT_VIEW_PADDINGS.get(className);
+					}
+
+					if (!nativeView.defaultPaddings) {
+						nativeView.defaultPaddings = DEFAULT_VIEW_PADDINGS.get(className);
 					}
 
 					this._defaultPaddingTop = result.top;
@@ -1077,7 +1202,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 		this.setNativeView(nativeView);
 
-		if (this.parent) {
+		if (!this.mIsRootView && this.parent) {
 			const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
 			this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
 		}
@@ -1152,7 +1277,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 
 		// const nativeView = this.nativeViewProtected;
-		// if (nativeView && global.isAndroid) {
+		// if (nativeView && __ANDROID__) {
 		//     const recycle = this.recycleNativeView;
 		//     let shouldRecycle = false;
 		//     if (recycle === "always") {
@@ -1162,7 +1287,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//         shouldRecycle = propertiesSet <= this.recyclePropertyCounter;
 		//     }
 
-		//     // const nativeParent = global.isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+		//     // const nativeParent = __ANDROID__ ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
 		//     const nativeParent = (<android.view.View>nativeView).getParent();
 		//     const animation = (<android.view.View>nativeView).getAnimation();
 		//     if (shouldRecycle && !nativeParent && !animation) {
@@ -1211,7 +1336,32 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		view._isAddedToNativeVisualTree = false;
 	}
 
+	/**
+	 * @deprecated
+	 */
+	public get visualState() {
+		return this._visualState;
+	}
+
+	public _addVisualState(state: string): void {
+		this.deletePseudoClass(this.defaultVisualState);
+		this.addPseudoClass(state);
+	}
+
+	public _removeVisualState(state: string): void {
+		this.deletePseudoClass(state);
+
+		if (!this.cssPseudoClasses.size) {
+			this.addPseudoClass(this.defaultVisualState);
+		}
+	}
+
+	/**
+	 * @deprecated Use View._addVisualState() and View._removeVisualState() instead.
+	 */
 	public _goToVisualState(state: string) {
+		console.log('_goToVisualState() is deprecated. Use View._addVisualState() and View._removeVisualState() instead.');
+
 		if (Trace.isEnabled()) {
 			Trace.write(this + ' going to state: ' + state, Trace.categories.Style);
 		}
@@ -1248,8 +1398,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			throw new Error('Parameter should be valid CSS string!');
 		}
 
-		ensureStyleScopeModule();
-		styleScopeModule.applyInlineStyle(this, style, undefined);
+		applyInlineStyle(this, style, undefined);
 	}
 
 	public _parentChanged(oldParent: ViewBase): void {
@@ -1301,7 +1450,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 	}
 
-	_inheritStyleScope(styleScope: ssm.StyleScope): void {
+	_inheritStyleScope(styleScope: StyleScope): void {
 		// If we are styleScope don't inherit parent stylescope.
 		// TODO: Consider adding parent scope and merge selectors.
 		if (this._isStyleScopeHost) {
@@ -1413,7 +1562,7 @@ bindingContextProperty.register(ViewBase);
 export const hiddenProperty = new Property<ViewBase, boolean>({
 	name: 'hidden',
 	defaultValue: false,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: booleanConverter,
 	valueChanged: (target, oldValue, newValue) => {
 		if (target) {
@@ -1457,13 +1606,17 @@ export const idProperty = new Property<ViewBase, string>({
 });
 idProperty.register(ViewBase);
 
-export function booleanConverter(v: string | boolean): boolean {
-	const lowercase = (v + '').toLowerCase();
-	if (lowercase === 'true') {
-		return true;
-	} else if (lowercase === 'false') {
-		return false;
-	}
+export const defaultVisualStateProperty = new Property<ViewBase, string>({
+	name: 'defaultVisualState',
+	defaultValue: 'normal',
+	valueChanged(this: void, target, oldValue, newValue): void {
+		const value = newValue || 'normal';
 
-	throw new Error(`Invalid boolean: ${v}`);
-}
+		// Append new default if old one is currently applied
+		if (target.cssPseudoClasses && target.cssPseudoClasses.has(oldValue)) {
+			target.deletePseudoClass(oldValue);
+			target.addPseudoClass(newValue);
+		}
+	},
+});
+defaultVisualStateProperty.register(ViewBase);

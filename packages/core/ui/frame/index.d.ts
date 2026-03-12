@@ -1,22 +1,56 @@
-﻿import { NavigationType, FrameBase } from './frame-common';
-import { NavigatedData, Page } from '../page';
-import { Observable, EventData } from '../../data/observable';
-import { View } from '../core/view';
-import { Transition } from '../transition';
+import type { NavigationType, FrameBase } from './frame-common';
+import type { NavigatedData, Page } from '../page';
+import type { Observable, EventData } from '../../data/observable';
+import type { Property, View } from '../core/view';
+import type { Transition } from '../transition';
+import type { BackstackEntry, NavigationData } from './frame-interfaces';
 
 export * from './frame-interfaces';
-
-export interface NavigationData extends EventData {
-	entry?: NavigationEntry;
-	fromEntry?: NavigationEntry;
-	isBack?: boolean;
-}
 
 /**
  * Represents the logical View unit that is responsible for navigation within an application.
  * Nested frames are supported, enabling hierarchical navigation scenarios.
+ *
+ * @nsView Frame
  */
 export class Frame extends FrameBase {
+	/**
+	 * String value used when hooking to OptionSelected event.
+	 *
+	 * @nsEvent optionSelected
+	 */
+	public static androidOptionSelectedEvent: string;
+
+	/**
+	 * String value used when hooking to navigatingTo event.
+	 *
+	 * @nsEvent {NavigationData} navigatingTo
+	 */
+	public static navigatingToEvent: string;
+
+	/**
+	 * String value used when hooking to navigatedTo event.
+	 *
+	 * @nsEvent {NavigationData} navigatedTo
+	 */
+	public static navigatedToEvent: string;
+
+	/**
+	 * @nsProperty
+	 */
+
+	public defaultPage?: string;
+
+	/**
+	 * @private
+	 */
+	_originalBackground?: any;
+
+	/**
+	 * @private
+	 */
+	_saveFragmentsState?();
+
 	/**
 	 * Gets a frame by id.
 	 */
@@ -81,6 +115,8 @@ export class Frame extends FrameBase {
 
 	/**
 	 * Used to control the visibility the Navigation Bar in iOS and the Action Bar in Android.
+	 *
+	 * @nsProperty
 	 */
 	public actionBarVisibility: 'auto' | 'never' | 'always';
 
@@ -93,7 +129,6 @@ export class Frame extends FrameBase {
 	/**
 	 * Gets the Page instance the Frame is currently navigated to.
 	 */
-	// @ts-ignore
 	currentPage: Page;
 
 	/**
@@ -134,6 +169,19 @@ export class Frame extends FrameBase {
 	 */
 	ios: iOSFrame;
 
+	/**
+	 * Specify a custom UINavigationBar class (iOS only)
+	 *
+	 * @nsProperty
+	 */
+	iosNavigationBarClass: any;
+	/**
+	 * Specify a custom UIToolbar class (iOS only)
+	 *
+	 * @nsProperty
+	 */
+	iosToolBarClass: any;
+
 	//@private
 	/**
 	 * @private
@@ -147,6 +195,10 @@ export class Frame extends FrameBase {
 	 * @param navigationType
 	 */
 	setCurrent(entry: BackstackEntry, navigationType: NavigationType): void;
+	/**
+	 * @private
+	 */
+	getNavigationQueueContextByEntry(entry: BackstackEntry): NavigationContext;
 	/**
 	 * @private
 	 */
@@ -204,6 +256,10 @@ export class Frame extends FrameBase {
 	/**
 	 * @private
 	 */
+	_isFrameStackEmpty(): boolean;
+	/**
+	 * @private
+	 */
 	_pushInFrameStack();
 	/**
 	 * @private
@@ -216,12 +272,16 @@ export class Frame extends FrameBase {
 	//@endprivate
 
 	/**
-	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
-	 * @param callback - Callback function which will be executed when event is raised.
-	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * Adds a listener for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback The event listener to add. Will be called when an event of
+	 * the given name is raised.
+	 * @param thisArg An optional parameter which, when set, will be bound as the
+	 * `this` context when the callback is called. Falsy values will be not be
+	 * bound.
 	 */
-	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (args: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has started.
@@ -234,6 +294,9 @@ export class Frame extends FrameBase {
 	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any): void;
 }
 
+export const defaultPageProperty: Property<Frame, string>;
+export const actionBarVisibilityProperty: Property<Frame, 'auto' | 'never' | 'always'>;
+
 /**
  * Sets the extended androidx.fragment.app.Fragment class to the Frame and navigation routine. An instance of this class will be created to represent the Page currently visible on the srceen. This method is available only for the Android platform.
  */
@@ -245,6 +308,12 @@ export function setFragmentClass(clazz: any): void;
  * Gets a frame by id.
  */
 export function getFrameById(id: string): Frame;
+
+/**
+ *
+ * (Android Only) Gets a frame by internally tracked id.
+ */
+export function getFrameByNumberId(frameId: number): Frame;
 
 /**
  * @deprecated Use Frame.topmost() instead.
@@ -334,7 +403,10 @@ export interface NavigationEntry extends ViewEntry {
  * Represents a context passed to navigation methods.
  */
 export interface NavigationContext {
-	entry: BackstackEntry;
+	entry?: BackstackEntry;
+	/**
+	 * @deprecated Use navigationType instead.
+	 */
 	isBackNavigation: boolean;
 	navigationType: NavigationType;
 }
@@ -379,46 +451,13 @@ export interface NavigationTransition {
 }
 
 /**
- * Represents an entry in the back stack of a Frame object.
- */
-export interface BackstackEntry {
-	entry: NavigationEntry;
-	resolvedPage: Page;
-
-	//@private
-	/**
-	 * @private
-	 */
-	navDepth: number;
-	/**
-	 * @private
-	 */
-	fragmentTag: string;
-	/**
-	 * @private
-	 */
-	fragment?: any;
-	/**
-	 * @private
-	 */
-	viewSavedState?: any;
-	/**
-	 * @private
-	 */
-	frameId?: number;
-	/**
-	 * @private
-	 */
-	recreated?: boolean;
-	//@endprivate
-}
-
-/**
  * Represents the Android-specific Frame object, aggregated within the common Frame one.
  * In Android there are two types of navigation - using new Activity instances or using Fragments within the main Activity.
  * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
  */
 export interface AndroidFrame extends Observable {
+	frameId?: any;
+
 	/**
 	 * Gets the native [android ViewGroup](http://developer.android.com/reference/android/view/ViewGroup.html) instance that represents the root layout part of the Frame.
 	 */
@@ -449,6 +488,19 @@ export interface AndroidFrame extends Observable {
 	 * @param page The Page instance to search for.
 	 */
 	fragmentForPage(entry: BackstackEntry): any;
+
+	// common properties
+	_resolvedPage?: Page;
+	_currentEntry?: BackstackEntry;
+	_executingContext?: NavigationContext;
+	_inheritStyles?(page: Page): void;
+	isLoaded?: boolean;
+	_styleScope?: any;
+	_addView?(view: View): void;
+	nativeViewProtected?: any /* android.view.View */;
+	_originalBackground?: any /* android.graphics.drawable.Drawable */;
+	backgroundColor?: any;
+	owner?: any;
 }
 
 export interface AndroidActivityCallbacks {
@@ -465,20 +517,6 @@ export interface AndroidActivityCallbacks {
 	onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<string>, grantResults: Array<number>, superFunc: Function): void;
 	onActivityResult(activity: any, requestCode: number, resultCode: number, data: any, superFunc: Function);
 	onNewIntent(activity: any, intent: any, superSetIntentFunc: Function, superFunc: Function): void;
-}
-
-export interface AndroidFragmentCallbacks {
-	onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
-	onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
-	onCreate(fragment: any, savedInstanceState: any, superFunc: Function): void;
-	onCreateView(fragment: any, inflater: any, container: any, savedInstanceState: any, superFunc: Function): any;
-	onSaveInstanceState(fragment: any, outState: any, superFunc: Function): void;
-	onDestroyView(fragment: any, superFunc: Function): void;
-	onDestroy(fragment: any, superFunc: Function): void;
-	onPause(fragment: any, superFunc: Function): void;
-	onResume(fragment: any, superFunc: Function): void;
-	onStop(fragment: any, superFunc: Function): void;
-	toStringOverride(fragment: any, superFunc: Function): string;
 }
 
 /* tslint:disable */

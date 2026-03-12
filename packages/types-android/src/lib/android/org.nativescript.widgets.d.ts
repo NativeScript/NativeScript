@@ -1,11 +1,11 @@
 ﻿declare module org {
     module nativescript {
         module widgets {
-						export class BoxShadowDrawable {
-								public constructor(drawable: android.graphics.drawable.Drawable, value: string);
-								public getWrappedDrawable(): android.graphics.drawable.Drawable;
-								public toString(): string;
-						}
+            export class BoxShadowDrawable {
+                public constructor(drawable: android.graphics.drawable.Drawable, values: number[]);
+                public getWrappedDrawable(): android.graphics.drawable.Drawable;
+                public toString(): string;
+            }
 
             export class CustomTransition extends androidx.transition.Visibility {
                 constructor(animatorSet: android.animation.AnimatorSet, transitionName: string);
@@ -73,6 +73,8 @@
                         public error: java.lang.Exception;
                     }
 
+                    export function setCookieManager(cookieManager: java.net.CookieManager): void;
+                    export function initializeCookieManager(): java.net.CookieManager;
                     export function MakeRequest(options: RequestOptions, callback: CompleteCallback, context: any);
                 }
             }
@@ -244,8 +246,36 @@
             }
 
             export class LayoutBase extends android.view.ViewGroup {
+                public static OverflowEdgeNone: number;
+                public static OverflowEdgeLeft: number;
+                public static OverflowEdgeTop: number;
+                public static OverflowEdgeRight: number;
+                public static OverflowEdgeBottom: number;
+                public static OverflowEdgeDontApply: number;
+                public static OverflowEdgeLeftDontConsume: number;
+                public static OverflowEdgeTopDontConsume: number;
+                public static OverflowEdgeRightDontConsume: number;
+                public static OverflowEdgeBottomDontConsume: number;
+                public static OverflowEdgeAllButLeft: number;
+                public static OverflowEdgeAllButTop: number;
+                public static OverflowEdgeAllButRight: number;
+                public static OverflowEdgeAllButBottom: number;
                 constructor(context: android.content.Context);
+                public getOverflowEdge(): number;
+                public setOverflowEdge(value: number): void;
             }
+
+            export module LayoutBase {
+                	export class WindowInsetListener {
+					public constructor(implementation: {
+						onApplyWindowInsets(param0: java.nio.ByteBuffer): void;
+					});
+					public constructor();
+					public onApplyWindowInsets(param0: java.nio.ByteBuffer): void;
+				}
+            }
+
+            
 
             export class AbsoluteLayout extends LayoutBase {
                 constructor(context: android.content.Context);
@@ -292,17 +322,26 @@
             export class GridLayout extends LayoutBase {
                 constructor(context: android.content.Context);
 
-                public addRow(itemSpec: ItemSpec): void;
+								public addRow(itemSpec: ItemSpec): void;
                 public addColumn(itemSpec: ItemSpec): void;
-
-                public removeRow(itemSpec: ItemSpec): void;
-                public removeColumn(itemSpec: ItemSpec): void;
+                public addRow(value: number, type: org.nativescript.widgets.GridUnitType): void;
+                public addColumn(value: number, type: org.nativescript.widgets.GridUnitType): void;
 
                 public removeRowAt(index: number): void;
                 public removeColumnAt(index: number): void;
 
                 public getColumns(): Array<ItemSpec>;
                 public getRows(): Array<ItemSpec>;
+
+                public clearRows();
+		        public clearColumns();
+                public reset();
+
+                public addRowsFromJSON(value: string);
+                public addColumnsFromJSON(value: string);
+                public addRowsAndColumnsFromJSON(rows: string, columns: string);
+                public getRowActualLength(index: number): number; // for testing purpose
+                public getColumnActualLength(index: number): number; // for testing purpose
             }
 
             export class FlexboxLayout extends LayoutBase {
@@ -403,6 +442,13 @@
                 setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
+            export class StyleableTextView extends android.widget.TextView {
+                public static class: java.lang.Class<org.nativescript.widgets.StyleableTextView>;
+                public onDraw(param0: globalAndroid.graphics.Canvas): void;
+                public setTextStroke(param0: number, param1: number, param2: number): void;
+                public constructor(param0: globalAndroid.content.Context);
+            }
+           
             export enum TabIconRenderingMode {
                 original,
                 template
@@ -638,7 +684,7 @@
             }
 
             export class CustomTypefaceSpan extends android.text.style.TypefaceSpan {
-                constructor(family: string, typeface: android.graphics.Typeface);
+                constructor(typeface: android.graphics.Typeface);
             }
         }
     }
@@ -709,10 +755,18 @@ declare module org {
                 public static getBitmapFromDrawable(param0: globalAndroid.graphics.drawable.Drawable): globalAndroid.graphics.Bitmap;
                 public static getBitmapFromView(param0: globalAndroid.view.View): globalAndroid.graphics.Bitmap;
 				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: number, param4: number, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
-				public static drawBoxShadow(param0: globalAndroid.view.View, param1: string): void;
+                public static clipCanvasOutPath(param0: globalAndroid.graphics.Canvas, param1: globalAndroid.graphics.Path): void;
+				public static drawBoxShadow(param0: globalAndroid.view.View, param1: number[]): void;
                 public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static toBase64StringAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: number, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
                 public static resizeAsync(param0: globalAndroid.graphics.Bitmap, param1: number, param2: string, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, statusBarLight: java.lang.Integer, statusBarDark: java.lang.Integer, navigationBarLight: java.lang.Integer, navigationBarDark: java.lang.Integer): void;
+				public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, statusBarLight: java.lang.Integer, statusBarDark: java.lang.Integer, navigationBarLight: java.lang.Integer, navigationBarDark: java.lang.Integer, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, window: android.view.Window, handleDarkMode: org.nativescript.widgets.Utils.HandleDarkMode): void;
+                public static enableEdgeToEdge(activity: androidx.activity.ComponentActivity, window: android.view.Window): void;
+                public static ignoreEdgeToEdgeOnOlderDevices: boolean;
 				public constructor();
 			}
 			export module Utils {
@@ -728,6 +782,25 @@ declare module org {
 					public constructor();
 					public onSuccess(param0: any): void;
 					public onError(param0: java.lang.Exception): void;
+				}
+                export class HandleDarkMode {
+                    public static class: java.lang.Class<org.nativescript.widgets.Utils.HandleDarkMode>;
+                    /**
+                     * Constructs a new instance of the org.nativescript.widgets.Utils$HandleDarkMode interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+                     */
+                    public constructor(implementation: {
+                        onHandle(param0: number, param1: globalAndroid.content.res.Resources): boolean;
+                    });
+                    public constructor();
+                    public onHandle(param0: number, param1: globalAndroid.content.res.Resources): boolean;
+                }
+                export class HandleDarkModeBar {
+					public static class: java.lang.Class<org.nativescript.widgets.Utils.HandleDarkModeBar>;
+					public static status: org.nativescript.widgets.Utils.HandleDarkModeBar;
+					public static navigation: org.nativescript.widgets.Utils.HandleDarkModeBar;
+					public static valueOf(name: string): org.nativescript.widgets.Utils.HandleDarkModeBar;
+					public static values(): androidNative.Array<org.nativescript.widgets.Utils.HandleDarkModeBar>;
+					public getValue(): number;
 				}
 				export class ImageAssetOptions {
 					public static class: java.lang.Class<org.nativescript.widgets.Utils.ImageAssetOptions>;

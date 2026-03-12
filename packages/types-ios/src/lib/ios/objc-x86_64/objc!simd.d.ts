@@ -1153,16 +1153,34 @@ declare function _simd_tgamma_d2(x: interop.Reference<number>): interop.Referenc
 
 declare function _simd_tgamma_f4(x: interop.Reference<number>): interop.Reference<number>;
 
+/**
+ * @since 8.0
+ */
 declare var matrix_identity_double2x2: simd_double2x2;
 
+/**
+ * @since 8.0
+ */
 declare var matrix_identity_double3x3: simd_double3x3;
 
+/**
+ * @since 8.0
+ */
 declare var matrix_identity_double4x4: simd_double4x4;
 
+/**
+ * @since 8.0
+ */
 declare var matrix_identity_float2x2: simd_float2x2;
 
+/**
+ * @since 8.0
+ */
 declare var matrix_identity_float3x3: simd_float3x3;
 
+/**
+ * @since 8.0
+ */
 declare var matrix_identity_float4x4: simd_float4x4;
 
 declare function simd_abs(x: interop.Reference<number>): interop.Reference<number>;
@@ -2689,16 +2707,34 @@ declare function simd_int_satFunction8(__x: interop.Reference<number>): interop.
 
 declare function simd_int_satFunction9(__x: interop.Reference<number>): interop.Reference<number>;
 
+/**
+ * @since 8.0
+ */
 declare function simd_inverse(__x: simd_float2x2): simd_float2x2;
 
+/**
+ * @since 8.0
+ */
 declare function simd_inverseFunction(__x: simd_float3x3): simd_float3x3;
 
+/**
+ * @since 8.0
+ */
 declare function simd_inverseFunction2(__x: simd_float4x4): simd_float4x4;
 
+/**
+ * @since 8.0
+ */
 declare function simd_inverseFunction3(__x: simd_double2x2): simd_double2x2;
 
+/**
+ * @since 8.0
+ */
 declare function simd_inverseFunction4(__x: simd_double3x3): simd_double3x3;
 
+/**
+ * @since 8.0
+ */
 declare function simd_inverseFunction5(__x: simd_double4x4): simd_double4x4;
 
 declare function simd_inverseFunction6(q: simd_quatf): simd_quatf;
@@ -4831,6 +4867,16 @@ declare function simd_uintFunction8(__x: interop.Reference<number>): interop.Ref
 
 declare function simd_uintFunction9(__x: interop.Reference<number>): interop.Reference<number>;
 
+declare function simd_uint_rte(__x: interop.Reference<number>): interop.Reference<number>;
+
+declare function simd_uint_rteFunction(__x: interop.Reference<number>): interop.Reference<number>;
+
+declare function simd_uint_rteFunction2(__x: interop.Reference<number>): interop.Reference<number>;
+
+declare function simd_uint_rteFunction3(__x: interop.Reference<number>): interop.Reference<number>;
+
+declare function simd_uint_rteFunction4(__x: interop.Reference<number>): interop.Reference<number>;
+
 declare function simd_uint_sat(__x: interop.Reference<number>): interop.Reference<number>;
 
 declare function simd_uint_satFunction(__x: interop.Reference<number>): interop.Reference<number>;
@@ -5004,6 +5050,14 @@ declare function simd_ulongFunction7(__x: interop.Reference<number>): interop.Re
 declare function simd_ulongFunction8(__x: interop.Reference<number>): interop.Reference<number>;
 
 declare function simd_ulongFunction9(__x: interop.Reference<number>): interop.Reference<number>;
+
+declare function simd_ulong_rte(__x: interop.Reference<number>): interop.Reference<number>;
+
+declare function simd_ulong_rteFunction(__x: interop.Reference<number>): interop.Reference<number>;
+
+declare function simd_ulong_rteFunction2(__x: interop.Reference<number>): interop.Reference<number>;
+
+declare function simd_ulong_rteFunction3(__x: interop.Reference<number>): interop.Reference<number>;
 
 declare function simd_ulong_sat(__x: interop.Reference<number>): interop.Reference<number>;
 

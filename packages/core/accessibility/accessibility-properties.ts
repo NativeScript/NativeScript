@@ -1,8 +1,8 @@
 import { CssProperty, InheritedCssProperty, Property } from '../ui/core/properties';
 import type { View } from '../ui/core/view';
-import { booleanConverter } from '../ui/core/view-base';
+import { booleanConverter } from '../ui/core/view-base/utils';
 import { Style } from '../ui/styling/style';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-common';
 
 function makePropertyEnumConverter<T>(enumValues) {
 	return (value: string): T | null => {
@@ -55,7 +55,7 @@ export const iosAccessibilityMaxFontScaleProperty = new InheritedCssProperty<Sty
 });
 iosAccessibilityMaxFontScaleProperty.register(Style);
 
-export const accessibilityHiddenProperty = new (global.isIOS ? InheritedCssProperty : CssProperty)({
+export const accessibilityHiddenProperty = new (__APPLE__ ? InheritedCssProperty : CssProperty)({
 	name: 'accessibilityHidden',
 	cssName: 'a11y-hidden',
 	valueConverter: booleanConverter,

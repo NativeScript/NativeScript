@@ -62,6 +62,9 @@ declare const enum EKEventEditViewAction {
 	Cancelled = 0
 }
 
+/**
+ * @since 4.0
+ */
 declare class EKEventEditViewController extends UINavigationController {
 
 	static alloc(): EKEventEditViewController; // inherited from NSObject
@@ -97,6 +100,9 @@ declare const enum EKEventViewAction {
 	Deleted = 2
 }
 
+/**
+ * @since 4.0
+ */
 declare class EKEventViewController extends UIViewController {
 
 	static alloc(): EKEventViewController; // inherited from NSObject
@@ -107,6 +113,9 @@ declare class EKEventViewController extends UIViewController {
 
 	allowsEditing: boolean;
 
+	/**
+	 * @since 4.2
+	 */
 	delegate: EKEventViewDelegate;
 
 	event: EKEvent;
@@ -114,6 +123,9 @@ declare class EKEventViewController extends UIViewController {
 
 interface EKEventViewDelegate extends NSObjectProtocol {
 
+	/**
+	 * @since 4.2
+	 */
 	eventViewControllerDidCompleteWithAction(controller: EKEventViewController, action: EKEventViewAction): void;
 }
 declare var EKEventViewDelegate: {

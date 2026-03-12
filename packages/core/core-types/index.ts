@@ -3,10 +3,16 @@
  */
 
 // imported for definition purposes only
-import * as animationModule from '../ui/animation';
-import { makeValidator, makeParser } from '../ui/core/properties';
+import { makeValidator, makeParser } from './validators';
+import { CubicBezierAnimationCurve } from './animation-types';
 
 export namespace CoreTypes {
+	type AndroidOverflowSingle = 'ignore' | 'none' | 'dont-apply';
+	type AndroidOverflowMultiple = 'left' | 'right' | 'top' | 'bottom' | 'left-dont-consume' | 'top-dont-consume' | 'right-dont-consume' | 'bottom-dont-consume' | 'all-but-left' | 'all-but-top' | 'all-but-right' | 'all-but-bottom';
+	type AndroidOverflowStacked = AndroidOverflowSingle | `${AndroidOverflowSingle},${AndroidOverflowSingle}` | `${AndroidOverflowSingle},${AndroidOverflowMultiple}` | `${AndroidOverflowMultiple},${AndroidOverflowSingle}` | `${AndroidOverflowMultiple},${AndroidOverflowMultiple}`;
+	export type AndroidOverflow = AndroidOverflowSingle | AndroidOverflowMultiple | AndroidOverflowStacked;
+	export type CSSWideKeywords = 'initial' | 'inherit' | 'unset' | 'revert';
+
 	/**
 	 * Denotes a length number that is in device independent pixel units.
 	 */
@@ -29,19 +35,21 @@ export namespace CoreTypes {
 	export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
 	export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
 
-	export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
-	export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
+	export type FixedLengthType = dip | LengthDipUnit | LengthPxUnit | CSSWideKeywords;
+	export type LengthType = 'auto' | FixedLengthType;
+	export type PercentLengthType = 'auto' | FixedLengthType | LengthPercentUnit;
 
 	export const zeroLength: LengthType = {
 		value: 0,
 		unit: 'px',
 	};
 
-	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
+	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'decimal' | 'url' | 'email' | 'integer';
 	export namespace KeyboardType {
 		export const datetime = 'datetime';
 		export const phone = 'phone';
 		export const number = 'number';
+		export const decimal = 'decimal';
 		export const url = 'url';
 		export const email = 'email';
 		export const integer = 'integer';
@@ -65,7 +73,7 @@ export namespace CoreTypes {
 		export const send = 'send';
 	}
 
-	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right' | 'justify';
+	export type TextAlignmentType = 'left' | 'center' | 'right' | 'justify' | CSSWideKeywords;
 	export namespace TextAlignment {
 		export const left = 'left';
 		export const center = 'center';
@@ -73,14 +81,14 @@ export namespace CoreTypes {
 		export const justify = 'justify';
 	}
 
-	export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';
+	export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through' | CSSWideKeywords;
 	export namespace TextDecoration {
 		export const none = 'none';
 		export const underline = 'underline';
 		export const lineThrough = 'line-through';
 	}
 
-	export type TextTransformType = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+	export type TextTransformType = 'none' | 'capitalize' | 'uppercase' | 'lowercase' | CSSWideKeywords;
 	export namespace TextTransform {
 		export const none = 'none';
 		export const capitalize = 'capitalize';
@@ -88,10 +96,17 @@ export namespace CoreTypes {
 		export const lowercase = 'lowercase';
 	}
 
-	export type WhiteSpaceType = 'initial' | 'normal' | 'nowrap';
+	export type WhiteSpaceType = 'normal' | 'nowrap' | 'wrap' | CSSWideKeywords;
 	export namespace WhiteSpace {
 		export const normal = 'normal';
 		export const nowrap = 'nowrap';
+		export const wrap = 'wrap';
+	}
+
+	export type TextOverflowType = 'clip' | 'ellipsis' | CSSWideKeywords;
+	export namespace TextOverflow {
+		export const clip = 'clip';
+		export const ellipsis = 'ellipsis';
 	}
 
 	export type MaxLinesType = number;
@@ -109,17 +124,19 @@ export namespace CoreTypes {
 		export const unknown = 'unknown';
 	}
 
-	export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch';
+	export type HorizontalAlignmentType = 'start' | 'left' | 'center' | 'right' | 'end' | 'stretch' | CSSWideKeywords;
 	export namespace HorizontalAlignment {
+		export const start = 'start';
 		export const left = 'left';
 		export const center = 'center';
 		export const right = 'right';
+		export const end = 'end';
 		export const stretch = 'stretch';
-		export const isValid = makeValidator<HorizontalAlignmentType>(left, center, right, stretch);
+		export const isValid = makeValidator<HorizontalAlignmentType>(start, left, center, right, end, stretch);
 		export const parse = makeParser<HorizontalAlignmentType>(isValid);
 	}
 
-	export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch';
+	export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch' | CSSWideKeywords;
 	export namespace VerticalAlignment {
 		export const top = 'top';
 		export const middle = 'middle';
@@ -137,7 +154,7 @@ export namespace CoreTypes {
 		export const sup = 'sup';
 		export const sub = 'sub';
 		export const baseline = 'baseline';
-		export const isValid = makeValidator<VerticalAlignmentTextType>(top, middle, bottom, stretch, texttop, textbottom, sup, sub, baseline);
+		export const isValid = makeValidator<CoreTypes.VerticalAlignmentTextType>(top, middle, bottom, stretch, texttop, textbottom, sup, sub, baseline);
 		export const parse = (value: string) => (value.toLowerCase() === 'center' ? middle : parseStrict(value));
 		const parseStrict = makeParser<CoreTypes.VerticalAlignmentTextType>(isValid);
 	}
@@ -150,7 +167,7 @@ export namespace CoreTypes {
 		export const fill: ImageStretchType = 'fill';
 	}
 
-	export type VisibilityType = 'visible' | 'hidden' | 'collapse' | 'collapsed';
+	export type VisibilityType = 'visible' | 'hidden' | 'collapse' | 'collapsed' | CSSWideKeywords;
 	export namespace Visibility {
 		export const visible: VisibilityType = 'visible';
 		export const collapse: VisibilityType = 'collapse';
@@ -245,7 +262,7 @@ export namespace CoreTypes {
 		export const black: string = '900';
 	}
 
-	export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
+	export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat' | CSSWideKeywords;
 	export namespace BackgroundRepeat {
 		export const repeat: BackgroundRepeatType = 'repeat';
 		export const repeatX: BackgroundRepeatType = 'repeat-x';
@@ -255,8 +272,6 @@ export namespace CoreTypes {
 		export const parse = makeParser<BackgroundRepeatType>(isValid);
 	}
 
-	let animation: typeof animationModule;
-
 	export namespace AnimationCurve {
 		export const ease = 'ease';
 		export const easeIn = 'easeIn';
@@ -265,9 +280,7 @@ export namespace CoreTypes {
 		export const linear = 'linear';
 		export const spring = 'spring';
 		export function cubicBezier(x1: number, y1: number, x2: number, y2: number) {
-			animation = animation || require('../ui/animation');
-
-			return new animation.CubicBezierAnimationCurve(x1, y1, x2, y2);
+			return new CubicBezierAnimationCurve(x1, y1, x2, y2);
 		}
 	}
 
@@ -279,6 +292,12 @@ export namespace CoreTypes {
 	export namespace SystemAppearance {
 		export const light = 'light';
 		export const dark = 'dark';
+	}
+
+	export type LayoutDirectionType = 'ltr' | 'rtl';
+	export namespace LayoutDirection {
+		export const ltr = 'ltr';
+		export const rtl = 'rtl';
 	}
 }
 
@@ -364,6 +383,7 @@ export const Enums = {
 	StatusBarStyle: CoreTypes.StatusBarStyle,
 	Stretch: CoreTypes.ImageStretch,
 	SystemAppearance: CoreTypes.SystemAppearance,
+	LayoutDirection: CoreTypes.LayoutDirection,
 	TextAlignment: CoreTypes.TextAlignment,
 	TextDecoration: CoreTypes.TextDecoration,
 	TextTransform: CoreTypes.TextTransform,

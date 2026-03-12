@@ -1,4 +1,5 @@
 import { TextField, Color, Utils, CoreTypes } from '@nativescript/core';
+import { AndroidHelper } from '@nativescript/core/ui/core/view';
 
 export function getNativeText(textField: TextField): string {
 	return textField.android.getText().toString();
@@ -29,15 +30,7 @@ export function getNativePlaceholderColor(textField: TextField): Color {
 }
 
 export function getNativeBackgroundColor(textField: TextField): Color {
-	let bg = <any>textField.android.getBackground();
-	if (bg instanceof org.nativescript.widgets.BorderDrawable) {
-		return new Color(bg.getBackgroundColor());
-	} else if (bg instanceof android.graphics.drawable.ColorDrawable) {
-		console.log(bg);
-		return new Color(bg.getColor());
-	} else {
-		return new Color(bg.backgroundColor);
-	}
+	return AndroidHelper.getDrawableColor(textField.android.getBackground());
 }
 
 export function getNativeTextAlignment(textField: TextField): string {

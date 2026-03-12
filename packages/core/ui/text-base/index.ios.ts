@@ -1,23 +1,23 @@
 // Types
 import { getClosestPropertyValue } from './text-base-common';
-import { CSSShadow } from '../styling/css-shadow';
+import { ShadowCSSValues } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
 import { iosAccessibilityAdjustsFontSizeProperty, iosAccessibilityMaxFontScaleProperty, iosAccessibilityMinFontScaleProperty } from '../../accessibility/accessibility-properties';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, lineHeightProperty, maxLinesProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, fontScaleInternalProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, fontScaleInternalProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
+import { StrokeCSSValues } from '../styling/css-stroke';
 import { isString, isNullOrUndefined } from '../../utils/types';
-import { iOSNativeHelper } from '../../utils';
-import { Trace } from '../../trace';
+import { layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { CoreTypes } from '../../core-types';
 
 export * from './text-base-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class UILabelClickHandlerImpl extends NSObject {
@@ -33,7 +33,7 @@ class UILabelClickHandlerImpl extends NSObject {
 	public linkTap(tapGesture: UITapGestureRecognizer) {
 		const owner = this._owner?.deref();
 		if (owner) {
-			const label = <UILabel>owner.nativeTextViewProtected;
+			const nativeView = owner.nativeTextViewProtected instanceof UIButton ? owner.nativeTextViewProtected.titleLabel : owner.nativeTextViewProtected;
 
 			// This offset along with setting paragraph style alignment will achieve perfect horizontal alignment for NSTextContainer
 			let offsetXMultiplier: number;
@@ -52,18 +52,27 @@ class UILabelClickHandlerImpl extends NSObject {
 
 			const layoutManager = NSLayoutManager.alloc().init();
 			const textContainer = NSTextContainer.alloc().initWithSize(CGSizeZero);
-			const textStorage = NSTextStorage.alloc().initWithAttributedString(owner.nativeTextViewProtected['attributedText']);
+			const textStorage = NSTextStorage.alloc().initWithAttributedString(nativeView.attributedText);
 
 			layoutManager.addTextContainer(textContainer);
 			textStorage.addLayoutManager(layoutManager);
 
 			textContainer.lineFragmentPadding = 0;
-			textContainer.lineBreakMode = label.lineBreakMode;
-			textContainer.maximumNumberOfLines = label.numberOfLines;
-			const labelSize = label.bounds.size;
+
+			if (nativeView instanceof UITextView) {
+				textContainer.lineBreakMode = nativeView.textContainer.lineBreakMode;
+				textContainer.maximumNumberOfLines = nativeView.textContainer.maximumNumberOfLines;
+			} else {
+				if (!(nativeView instanceof UITextField)) {
+					textContainer.lineBreakMode = nativeView.lineBreakMode;
+					textContainer.maximumNumberOfLines = nativeView.numberOfLines;
+				}
+			}
+
+			const labelSize = nativeView.bounds.size;
 			textContainer.size = labelSize;
 
-			const locationOfTouchInLabel = tapGesture.locationInView(label);
+			const locationOfTouchInLabel = tapGesture.locationInView(nativeView);
 			const textBoundingBox = layoutManager.usedRectForTextContainer(textContainer);
 
 			const textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * offsetXMultiplier - textBoundingBox.origin.x, (labelSize.height - textBoundingBox.size.height) * offsetYMultiplier - textBoundingBox.origin.y);
@@ -81,7 +90,7 @@ class UILabelClickHandlerImpl extends NSObject {
 						location: glyphIndex,
 						length: 1,
 					},
-					textContainer
+					textContainer,
 				);
 
 				// Ensure that an actual glyph was tapped
@@ -116,31 +125,46 @@ class UILabelClickHandlerImpl extends NSObject {
 
 export class TextBase extends TextBaseCommon {
 	public nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
-	// @ts-ignore
-	public nativeTextViewProtected: UITextField | UITextView | UILabel | UIButton;
-	private _tappable = false;
-	private _tapGestureRecognizer: UITapGestureRecognizer;
 	public _spanRanges: NSRange[];
+
+	private _tappable = false;
+	private _linkTapHandler: UILabelClickHandlerImpl;
+	private _tapGestureRecognizer: UITapGestureRecognizer;
+
+	get nativeTextViewProtected(): UITextField | UITextView | UILabel | UIButton {
+		return super.nativeTextViewProtected;
+	}
 
 	public initNativeView(): void {
 		super.initNativeView();
 		this._setTappableState(false);
 	}
 
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+
+		this._tappable = false;
+		this._linkTapHandler = null;
+		this._tapGestureRecognizer = null;
+	}
+
 	_setTappableState(tappable: boolean) {
 		if (this._tappable !== tappable) {
+			const nativeTextView = this.nativeTextViewProtected;
+
 			this._tappable = tappable;
 			if (this._tappable) {
 				const tapHandler = UILabelClickHandlerImpl.initWithOwner(new WeakRef(this));
-				// associate handler with menuItem or it will get collected by JSC.
-				(<any>this).handler = tapHandler;
+				// Associate handler with menuItem or it will get collected by JSC
+				this._linkTapHandler = tapHandler;
 
-				this._tapGestureRecognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, 'linkTap');
-				this.nativeViewProtected.userInteractionEnabled = true;
-				this.nativeViewProtected.addGestureRecognizer(this._tapGestureRecognizer);
+				this._tapGestureRecognizer = UITapGestureRecognizer.alloc().initWithTargetAction(this._linkTapHandler, 'linkTap');
+				nativeTextView.addGestureRecognizer(this._tapGestureRecognizer);
 			} else {
-				this.nativeViewProtected.userInteractionEnabled = false;
-				this.nativeViewProtected.removeGestureRecognizer(this._tapGestureRecognizer);
+				nativeTextView.removeGestureRecognizer(this._tapGestureRecognizer);
+
+				this._linkTapHandler = null;
+				this._tapGestureRecognizer = null;
 			}
 		}
 	}
@@ -223,7 +247,6 @@ export class TextBase extends TextBaseCommon {
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const nativeView = <UITextField | UITextView | UILabel>this.nativeTextViewProtected;
 		switch (value) {
-			case 'initial':
 			case 'left':
 				nativeView.textAlignment = NSTextAlignment.Left;
 				break;
@@ -236,6 +259,9 @@ export class TextBase extends TextBaseCommon {
 			case 'justify':
 				nativeView.textAlignment = NSTextAlignment.Justified;
 				break;
+			default:
+				nativeView.textAlignment = NSTextAlignment.Natural;
+				break;
 		}
 	}
 
@@ -247,6 +273,10 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
+	[textStrokeProperty.setNative](value: StrokeCSSValues) {
+		this._setNativeText();
+	}
+
 	[letterSpacingProperty.setNative](value: number) {
 		this._setNativeText();
 	}
@@ -255,24 +285,26 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[textShadowProperty.setNative](value: CSSShadow) {
+	[textShadowProperty.setNative](value: ShadowCSSValues) {
 		this._setShadow(value);
 	}
 
 	[maxLinesProperty.setNative](value: CoreTypes.MaxLinesType) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
 		const numberOfLines = this.whiteSpace !== CoreTypes.WhiteSpace.nowrap ? value : 1;
+		const ellipsisType = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+
 		if (nativeTextViewProtected instanceof UITextView) {
 			nativeTextViewProtected.textContainer.maximumNumberOfLines = numberOfLines;
 
 			if (value !== 0) {
-				nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+				nativeTextViewProtected.textContainer.lineBreakMode = ellipsisType;
 			} else {
 				nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 			}
 		} else if (nativeTextViewProtected instanceof UILabel) {
 			nativeTextViewProtected.numberOfLines = numberOfLines;
-			nativeTextViewProtected.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+			nativeTextViewProtected.lineBreakMode = ellipsisType;
 		} else if (nativeTextViewProtected instanceof UIButton) {
 			nativeTextViewProtected.titleLabel.numberOfLines = numberOfLines;
 		}
@@ -286,36 +318,49 @@ export class TextBase extends TextBaseCommon {
 			this.nativeTextViewProtected.textColor = color;
 		}
 	}
+	_animationWrap(fn: () => void) {
+		const shouldAnimate = this.iosTextAnimation === 'inherit' ? TextBase.iosTextAnimationFallback : this.iosTextAnimation;
+		if (shouldAnimate) {
+			fn();
+		} else {
+			UIView.performWithoutAnimation(fn);
+		}
+	}
 
 	_setNativeText(reset = false): void {
-		if (reset) {
-			const nativeView = this.nativeTextViewProtected;
-			if (nativeView instanceof UIButton) {
-				// Clear attributedText or title won't be affected.
-				nativeView.setAttributedTitleForState(null, UIControlState.Normal);
-				nativeView.setTitleForState(null, UIControlState.Normal);
+		this._animationWrap(() => {
+			if (reset) {
+				const nativeView = this.nativeTextViewProtected;
+				if (nativeView instanceof UIButton) {
+					// Clear attributedText or title won't be affected.
+					nativeView.setAttributedTitleForState(null, UIControlState.Normal);
+					nativeView.setTitleForState(null, UIControlState.Normal);
+				} else {
+					// Clear attributedText or text won't be affected.
+					nativeView.attributedText = null;
+					nativeView.text = null;
+				}
+
+				return;
+			}
+
+			const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
+			const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
+			if (this.formattedText) {
+				this.nativeTextViewProtected.nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText) as any, letterSpacing, lineHeight);
 			} else {
-				// Clear attributedText or text won't be affected.
-				nativeView.attributedText = null;
-				nativeView.text = null;
+				// console.log('setTextDecorationAndTransform...')
+				const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
+				this.nativeTextViewProtected.nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
+
+				if (!this.style?.color && SDK_VERSION >= 13 && UIColor.labelColor) {
+					this._setColor(UIColor.labelColor);
+				}
 			}
-
-			return;
-		}
-
-		const letterSpacing = this.style.letterSpacing ? this.style.letterSpacing : 0;
-		const lineHeight = this.style.lineHeight ? this.style.lineHeight : 0;
-		if (this.formattedText) {
-			(<any>this.nativeTextViewProtected).nativeScriptSetFormattedTextDecorationAndTransformLetterSpacingLineHeight(this.getFormattedStringDetails(this.formattedText), letterSpacing, lineHeight);
-		} else {
-			// console.log('setTextDecorationAndTransform...')
-			const text = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
-			(<any>this.nativeTextViewProtected).nativeScriptSetTextDecorationAndTransformTextDecorationLetterSpacingLineHeight(text, this.style.textDecoration || '', letterSpacing, lineHeight);
-
-			if (!this.style?.color && majorVersion >= 13 && UIColor.labelColor) {
-				this._setColor(UIColor.labelColor);
+			if (this.style?.textStroke) {
+				this.nativeTextViewProtected.nativeScriptSetFormattedTextStrokeColor(Length.toDevicePixels(this.style.textStroke.width, 0), this.style.textStroke.color.ios);
 			}
-		}
+		});
 	}
 
 	createFormattedTextNative(value: FormattedString) {
@@ -350,10 +395,11 @@ export class TextBase extends TextBaseCommon {
 
 	createMutableStringDetails(span: Span, text: string, index?: number): any {
 		const fontScale = adjustMinMaxFontScale(span.style.fontScaleInternal, span);
-		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale);
+		const font = new Font(span.style.fontFamily, span.style.fontSize, span.style.fontStyle, span.style.fontWeight, fontScale, span.style.fontVariationSettings);
 		const iosFont = font.getUIFont(this.nativeTextViewProtected.font);
+		// Use span or formatted string color
+		const backgroundColor = span.style.backgroundColor || span.parent.backgroundColor;
 
-		const backgroundColor = <Color>(span.style.backgroundColor || (<FormattedString>span.parent).backgroundColor || (<TextBase>span.parent.parent).backgroundColor);
 		return {
 			text,
 			iosFont,
@@ -404,12 +450,8 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setShadow(value: CSSShadow): void {
-		const layer = iOSNativeHelper.getShadowLayer(this.nativeTextViewProtected, 'ns-text-shadow');
-		if (!layer) {
-			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
-			return;
-		}
+	_setShadow(value: ShadowCSSValues): void {
+		const layer: CALayer = this.nativeTextViewProtected.layer;
 
 		if (isNullOrUndefined(value)) {
 			// clear the text shadow
@@ -421,14 +463,14 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		// shadow opacity is handled on the shadow's color instance
-		layer.shadowOpacity = value.color?.a ? value.color?.a / 255 : 1;
+		layer.shadowOpacity = value.color?.a ? value.color.a / 255 : 1;
 		layer.shadowColor = value.color.ios.CGColor;
-		layer.shadowRadius = Length.toDevicePixels(value.blurRadius, 0.0);
+		layer.shadowRadius = layout.toDeviceIndependentPixels(Length.toDevicePixels(value.blurRadius, 0));
 
 		// prettier-ignore
 		layer.shadowOffset = CGSizeMake(
-			Length.toDevicePixels(value.offsetX, 0.0),
-			Length.toDevicePixels(value.offsetY, 0.0)
+			layout.toDeviceIndependentPixels(Length.toDevicePixels(value.offsetX, 0)),
+			layout.toDeviceIndependentPixels(Length.toDevicePixels(value.offsetY, 0))
 		);
 
 		layer.masksToBounds = false;

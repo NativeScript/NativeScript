@@ -1,7 +1,8 @@
 import type { Transition, TransitionNavigationType, SharedTransitionTagPropertiesToMatch } from '.';
 import { Observable } from '../../data/observable';
 import { Screen } from '../../platform';
-import { isNumber, CORE_ANIMATION_DEFAULTS } from '../../utils';
+import { isNumber } from '../../utils/types';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 import { querySelectorAll, ViewBase } from '../core/view-base';
 import type { View } from '../core/view';
 import type { PanGestureEventData } from '../gestures';
@@ -104,13 +105,17 @@ export interface SharedTransitionConfig {
 		dismiss?: SharedTransitionInteractiveOptions;
 	};
 	/**
-	 * View settings to start your transition with.
+	 * View settings applied to the incoming page to start your transition with.
 	 */
 	pageStart?: SharedTransitionPageProperties;
 	/**
-	 * View settings to end your transition with.
+	 * View settings applied to the incoming page to end your transition with.
 	 */
 	pageEnd?: SharedTransitionPageWithDurationProperties;
+	/**
+	 * View settings applied to the outgoing page in your transition.
+	 */
+	pageOut?: SharedTransitionPageWithDurationProperties;
 	/**
 	 * View settings to return to the original page with.
 	 */
@@ -173,7 +178,7 @@ export class SharedTransition {
 		if (isNumber(pageEnd?.duration)) {
 			// Android uses milliseconds/iOS uses seconds
 			// users pass in milliseconds
-			transition.setDuration(global.isIOS ? pageEnd?.duration / 1000 : pageEnd?.duration);
+			transition.setDuration(__APPLE__ ? pageEnd?.duration / 1000 : pageEnd?.duration);
 		}
 		return { instance: transition };
 	}
@@ -282,7 +287,7 @@ export class SharedTransition {
 	 */
 	static getSharedElements(
 		fromPage: ViewBase,
-		toPage: ViewBase
+		toPage: ViewBase,
 	): {
 		sharedElements: Array<View>;
 		presented: Array<View>;
@@ -361,9 +366,9 @@ export function getPageStartDefaultsForType(type: TransitionNavigationType) {
 }
 
 function getPlatformWidth() {
-	return global.isAndroid ? Screen.mainScreen.widthPixels : Screen.mainScreen.widthDIPs;
+	return __ANDROID__ ? Screen.mainScreen.widthPixels : Screen.mainScreen.widthDIPs;
 }
 
 function getPlatformHeight() {
-	return global.isAndroid ? Screen.mainScreen.heightPixels : Screen.mainScreen.heightDIPs;
+	return __ANDROID__ ? Screen.mainScreen.heightPixels : Screen.mainScreen.heightDIPs;
 }

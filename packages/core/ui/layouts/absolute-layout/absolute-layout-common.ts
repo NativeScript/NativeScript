@@ -3,7 +3,7 @@ import { LayoutBase } from '../layout-base';
 import { CoreTypes } from '../../../core-types';
 import { View, CSSType } from '../../core/view';
 import { Property } from '../../core/properties';
-import { Length } from '../../styling/style-properties';
+import { Length } from '../../styling/length-shared';
 
 export * from '../layout-base';
 
@@ -61,7 +61,8 @@ export const leftProperty = new Property<View, CoreTypes.LengthType>({
 			layout.onLeftChanged(target, oldValue, newValue);
 		}
 	},
-	valueConverter: (v) => Length.parse(v),
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
 });
 leftProperty.register(View);
 
@@ -75,6 +76,7 @@ export const topProperty = new Property<View, CoreTypes.LengthType>({
 			layout.onTopChanged(target, oldValue, newValue);
 		}
 	},
-	valueConverter: (v) => Length.parse(v),
+	equalityComparer: Length.equals,
+	valueConverter: Length.parse,
 });
 topProperty.register(View);

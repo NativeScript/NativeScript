@@ -1,2 +1,3 @@
-<Frame defaultPage="main-page">
-</Frame>
+<Page loaded="onLoaded">
+	<Label text="Preparing tests..." />
+</Page>

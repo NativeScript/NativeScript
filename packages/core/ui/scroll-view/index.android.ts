@@ -9,7 +9,6 @@ export class ScrollView extends ScrollViewBase {
 	nativeViewProtected: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
 	private _androidViewId = -1;
 	private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
-	private scrollChangeHandler: androidx.core.widget.NestedScrollView.OnScrollChangeListener;
 
 	get horizontalOffset(): number {
 		const nativeView = this.nativeViewProtected;
@@ -130,10 +129,10 @@ export class ScrollView extends ScrollViewBase {
 
 	protected attachNative() {
 		if (!this.handler) {
-			const that = new WeakRef(this);
+			const viewRef = new WeakRef(this);
 			this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
 				onScrollChanged: function () {
-					const owner: ScrollView = that.get();
+					const owner: ScrollView = viewRef.get();
 					if (owner) {
 						owner._onScrollChanged();
 					}
@@ -166,9 +165,13 @@ export class ScrollView extends ScrollViewBase {
 		}
 	}
 
-	protected dettachNative() {
-		this.nativeViewProtected.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
-		this.handler = null;
+	protected detachNative() {
+		if (this.handler) {
+			if (this.nativeViewProtected) {
+				this.nativeViewProtected.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
+			}
+			this.handler = null;
+		}
 	}
 }
 

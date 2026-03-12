@@ -1,6 +1,7 @@
 ﻿import { ImageAsset } from '../image-asset';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
+import type { ImageBase } from '../ui/image/image-common';
 /**
  * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
  */
@@ -53,6 +54,24 @@ export class ImageSource {
 	 * @param name The name of the resource (without its extension).
 	 */
 	static fromResource(name: string): Promise<ImageSource>;
+
+	/**
+	 * (iOS only) Get system symbol scale
+	 * @param scale symbol scale type
+	 */
+	static iosSymbolScaleFor(scale: iosSymbolScaleType): number;
+
+	/**
+	 * Loads this instance from the specified system image name.
+	 * @param name the name of the system image
+	 */
+	static fromSystemImageSync(name: string, instance?: ImageBase): ImageSource;
+
+	/**
+	 * Loads this instance from the specified system image name asynchronously.
+	 * @param name the name of the system image
+	 */
+	static fromSystemImage(name: string, instance?: ImageBase): Promise<ImageSource>;
 
 	/**
 	 * Loads this instance from the specified file.
@@ -184,6 +203,11 @@ export class ImageSource {
 	loadFromFontIconCode(source: string, font: Font, color: Color): boolean;
 
 	/**
+	 * Gets the native source object (typically a Bitmap or a UIImage).
+	 */
+	getNativeSource(): any;
+
+	/**
 	 * Sets the provided native source object (typically a Bitmap or a UIImage).
 	 * This will update either the android or ios properties, depending on the target os.
 	 * @param nativeSource The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
@@ -246,6 +270,12 @@ export class ImageSource {
 	 */
 	resizeAsync(maxSize: number, options?: any): Promise<ImageSource>;
 }
+
+/**
+ * iOS only
+ * SF Symbol scale
+ */
+export type iosSymbolScaleType = 'default' | 'small' | 'medium' | 'large';
 
 /**
  * @deprecated Use ImageSource.fromAsset() instead.

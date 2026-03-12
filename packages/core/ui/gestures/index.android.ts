@@ -1,17 +1,19 @@
 // Definitions.
-import { GestureEventData, TapGestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, GestureEventDataWithState } from '.';
-import { View } from '../core/view';
+import type { GestureEventData, TapGestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, GestureEventDataWithState } from './gestures-types';
+import type { View } from '../core/view';
 import { EventData } from '../../data/observable';
 
 // Types.
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, GestureEvents } from './gestures-common';
 
 // Import layout from utils directly to avoid circular references
-import { layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
 
 import * as timer from '../../timer';
 
 export * from './gestures-common';
+export * from './gestures-types';
+export * from './touch-manager';
 
 interface TapAndDoubleTapGestureListener {
 	new (observer: GesturesObserver, target: View, type: number): android.view.GestureDetector.SimpleOnGestureListener;
@@ -27,14 +29,14 @@ function initializeTapAndDoubleTapGestureListener() {
 	class TapAndDoubleTapGestureListenerImpl extends android.view.GestureDetector.SimpleOnGestureListener {
 		private _observer: GesturesObserver;
 		private _target: View;
-		private _type: number;
+		private _type: GestureTypes;
 
 		private _lastUpTime = 0;
 		private _tapTimeoutId: number;
 
 		private static DoubleTapTimeout = android.view.ViewConfiguration.getDoubleTapTimeout();
 
-		constructor(observer: GesturesObserver, target: View, type: number) {
+		constructor(observer: GesturesObserver, target: View, type: GestureTypes) {
 			super();
 
 			this._observer = observer;
@@ -61,7 +63,7 @@ function initializeTapAndDoubleTapGestureListener() {
 		}
 
 		public onLongPress(motionEvent: android.view.MotionEvent): void {
-			if (this._type & GestureTypes.longPress) {
+			if (this._type === GestureTypes.longPress) {
 				const args = _getLongPressArgs(GestureTypes.longPress, this._target, GestureStateTypes.began, motionEvent);
 				_executeCallback(this._observer, args);
 			}
@@ -70,14 +72,14 @@ function initializeTapAndDoubleTapGestureListener() {
 		private _handleSingleTap(motionEvent: android.view.MotionEvent): void {
 			if (this._target.getGestureObservers(GestureTypes.doubleTap)) {
 				this._tapTimeoutId = timer.setTimeout(() => {
-					if (this._type & GestureTypes.tap) {
+					if (this._type === GestureTypes.tap) {
 						const args = _getTapArgs(GestureTypes.tap, this._target, motionEvent);
 						_executeCallback(this._observer, args);
 					}
 					timer.clearTimeout(this._tapTimeoutId);
 				}, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
 			} else {
-				if (this._type & GestureTypes.tap) {
+				if (this._type === GestureTypes.tap) {
 					const args = _getTapArgs(GestureTypes.tap, this._target, motionEvent);
 					_executeCallback(this._observer, args);
 				}
@@ -88,7 +90,7 @@ function initializeTapAndDoubleTapGestureListener() {
 			if (this._tapTimeoutId) {
 				timer.clearTimeout(this._tapTimeoutId);
 			}
-			if (this._type & GestureTypes.doubleTap) {
+			if (this._type === GestureTypes.doubleTap) {
 				const args = _getTapArgs(GestureTypes.doubleTap, this._target, motionEvent);
 				_executeCallback(this._observer, args);
 			}
@@ -252,21 +254,24 @@ export class GesturesObserver extends GesturesObserverBase {
 	private _onTargetUnloaded: (data: EventData) => void;
 
 	public observe(type: GestureTypes) {
-		if (this.target) {
-			this.type = type;
-			this._onTargetLoaded = (args) => {
-				this._attach(this.target, type);
-			};
-			this._onTargetUnloaded = (args) => {
-				this._detach();
-			};
+		this.type = type;
 
-			this.target.on('loaded', this._onTargetLoaded);
-			this.target.on('unloaded', this._onTargetUnloaded);
+		if (!this.target) {
+			return;
+		}
 
-			if (this.target.isLoaded) {
-				this._attach(this.target, type);
-			}
+		this._onTargetLoaded = () => {
+			this._attach(this.target, type);
+		};
+		this._onTargetUnloaded = () => {
+			this._detach();
+		};
+
+		this.target.on('loaded', this._onTargetLoaded);
+		this.target.on('unloaded', this._onTargetUnloaded);
+
+		if (this.target.isLoaded) {
+			this._attach(this.target, type);
 		}
 	}
 
@@ -280,6 +285,7 @@ export class GesturesObserver extends GesturesObserverBase {
 			this._onTargetLoaded = null;
 			this._onTargetUnloaded = null;
 		}
+
 		// clears target, context and callback references
 		super.disconnect();
 	}
@@ -297,42 +303,56 @@ export class GesturesObserver extends GesturesObserverBase {
 	private _attach(target: View, type: GestureTypes) {
 		this._detach();
 
-		let recognizer;
+		let recognizer: unknown;
 
-		if (type & GestureTypes.tap || type & GestureTypes.doubleTap || type & GestureTypes.longPress) {
-			initializeTapAndDoubleTapGestureListener();
-			recognizer = this._simpleGestureDetector = <any>new androidx.core.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));
+		switch (type) {
+			// Whether it's a tap, doubleTap, or longPress, we handle with the same
+			// listener. It'll listen for all three of these gesture types, but only
+			// notify if the type it was registered with matched the relevant gesture.
+			case GestureTypes.tap:
+			case GestureTypes.doubleTap:
+			case GestureTypes.longPress: {
+				initializeTapAndDoubleTapGestureListener();
+				recognizer = this._simpleGestureDetector = <any>new androidx.core.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));
+				break;
+			}
+			case GestureTypes.pinch: {
+				initializePinchGestureListener();
+				recognizer = this._scaleGestureDetector = new android.view.ScaleGestureDetector(target._context, new PinchGestureListener(this, this.target));
+				break;
+			}
+
+			case GestureTypes.swipe: {
+				initializeSwipeGestureListener();
+				recognizer = this._swipeGestureDetector = <any>new androidx.core.view.GestureDetectorCompat(target._context, new SwipeGestureListener(this, this.target));
+				break;
+			}
+
+			case GestureTypes.pan: {
+				recognizer = this._panGestureDetector = new CustomPanGestureDetector(this, this.target);
+				break;
+			}
+
+			case GestureTypes.rotation: {
+				recognizer = this._rotateGestureDetector = new CustomRotateGestureDetector(this, this.target);
+				break;
+			}
+
+			case GestureTypes.touch: {
+				this._notifyTouch = true;
+				// For touch events, return early rather than breaking from the switch
+				// statement.
+				return;
+			}
 		}
 
-		if (type & GestureTypes.pinch) {
-			initializePinchGestureListener();
-			recognizer = this._scaleGestureDetector = new android.view.ScaleGestureDetector(target._context, new PinchGestureListener(this, this.target));
-		}
-
-		if (type & GestureTypes.swipe) {
-			initializeSwipeGestureListener();
-			recognizer = this._swipeGestureDetector = <any>new androidx.core.view.GestureDetectorCompat(target._context, new SwipeGestureListener(this, this.target));
-		}
-
-		if (type & GestureTypes.pan) {
-			recognizer = this._panGestureDetector = new CustomPanGestureDetector(this, this.target);
-		}
-
-		if (type & GestureTypes.rotation) {
-			recognizer = this._rotateGestureDetector = new CustomRotateGestureDetector(this, this.target);
-		}
-
-		if (type & GestureTypes.touch) {
-			this._notifyTouch = true;
-		} else {
-			this.target.notify({
-				eventName: GestureEvents.gestureAttached,
-				object: this.target,
-				type,
-				view: this.target,
-				android: recognizer,
-			});
-		}
+		this.target.notify({
+			eventName: GestureEvents.gestureAttached,
+			object: this.target,
+			type: type,
+			view: this.target,
+			android: recognizer,
+		});
 	}
 
 	public androidOnTouchEvent(motionEvent: android.view.MotionEvent) {
@@ -421,7 +441,7 @@ function _getPanArgs(deltaX: number, deltaY: number, view: View, state: GestureS
 
 function _executeCallback(observer: GesturesObserver, args: GestureEventData) {
 	if (observer && observer.callback) {
-		observer.callback.call((<any>observer)._context, args);
+		observer.callback.call(observer.context, args);
 	}
 }
 
@@ -430,7 +450,13 @@ class PinchGestureEventData implements PinchGestureEventData {
 	public eventName = toString(GestureTypes.pinch);
 	public ios;
 
-	constructor(public view: View, public android: android.view.ScaleGestureDetector, public scale: number, public object: any, public state: GestureStateTypes) {}
+	constructor(
+		public view: View,
+		public android: android.view.ScaleGestureDetector,
+		public scale: number,
+		public object: any,
+		public state: GestureStateTypes,
+	) {}
 
 	getFocusX(): number {
 		return this.android.getFocusX() / layout.getDisplayDensity();
@@ -665,11 +691,14 @@ class CustomRotateGestureDetector {
 	}
 }
 
-class Pointer implements Pointer {
+class Pointer {
 	public android: number;
 	public ios: any = undefined;
 
-	constructor(id: number, private event: android.view.MotionEvent) {
+	constructor(
+		id: number,
+		private event: android.view.MotionEvent,
+	) {
 		this.android = id;
 	}
 
@@ -682,7 +711,7 @@ class Pointer implements Pointer {
 	}
 }
 
-class TouchGestureEventData implements TouchGestureEventData {
+export class TouchGestureEventData {
 	eventName: string = toString(GestureTypes.touch);
 	type: GestureTypes = GestureTypes.touch;
 	ios: any = undefined;

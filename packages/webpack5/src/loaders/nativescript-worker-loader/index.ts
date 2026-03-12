@@ -21,12 +21,12 @@ WorkerDependency.Template.prototype.apply = function apply(
 ) {
 	const { chunkGraph, moduleGraph, runtimeRequirements } = templateContext;
 	const dep = /** @type {WorkerDependency} */ dependency;
-	const block = /** @type {AsyncDependenciesBlock} */ moduleGraph.getParentBlock(
-		dependency
-	);
-	const entrypoint = /** @type {Entrypoint} */ chunkGraph.getBlockChunkGroup(
-		block
-	);
+	const block =
+		/** @type {AsyncDependenciesBlock} */ moduleGraph.getParentBlock(
+			dependency
+		);
+	const entrypoint =
+		/** @type {Entrypoint} */ chunkGraph.getBlockChunkGroup(block);
 	const chunk = entrypoint.getEntrypointChunk();
 
 	// runtimeRequirements.add(RuntimeGlobals.publicPath);

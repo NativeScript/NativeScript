@@ -3,7 +3,7 @@ import { CssAnimationProperty } from '../core/properties';
 import { KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo, UnparsedKeyframe } from '../animation/keyframe-animation';
 import { timeConverter, animationTimingFunctionConverter } from '../styling/converters';
 
-import { transformConverter } from '../styling/style-properties';
+import { transformConverter } from '../styling/css-transform';
 import { cleanupImportantFlags } from './css-utils';
 
 const ANIMATION_PROPERTY_HANDLERS = Object.freeze({

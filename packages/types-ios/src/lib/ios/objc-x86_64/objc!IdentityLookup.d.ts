@@ -1,4 +1,7 @@
 
+/**
+ * @since 12.0
+ */
 declare class ILCallClassificationRequest extends ILClassificationRequest implements NSSecureCoding {
 
 	static alloc(): ILCallClassificationRequest; // inherited from NSObject
@@ -16,6 +19,9 @@ declare class ILCallClassificationRequest extends ILClassificationRequest implem
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class ILCallCommunication extends ILCommunication {
 
 	static alloc(): ILCallCommunication; // inherited from NSObject
@@ -25,6 +31,9 @@ declare class ILCallCommunication extends ILCommunication {
 	isEqualToCallCommunication(communication: ILCallCommunication): boolean;
 }
 
+/**
+ * @since 12.0
+ */
 declare const enum ILClassificationAction {
 
 	None = 0,
@@ -36,6 +45,9 @@ declare const enum ILClassificationAction {
 	ReportJunkAndBlockSender = 3
 }
 
+/**
+ * @since 12.0
+ */
 declare class ILClassificationRequest extends NSObject implements NSSecureCoding {
 
 	static alloc(): ILClassificationRequest; // inherited from NSObject
@@ -51,6 +63,9 @@ declare class ILClassificationRequest extends NSObject implements NSSecureCoding
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class ILClassificationResponse extends NSObject implements NSSecureCoding {
 
 	static alloc(): ILClassificationResponse; // inherited from NSObject
@@ -61,6 +76,9 @@ declare class ILClassificationResponse extends NSObject implements NSSecureCodin
 
 	userInfo: NSDictionary<string, any>;
 
+	/**
+	 * @since 12.1
+	 */
 	userString: string;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -76,6 +94,9 @@ declare class ILClassificationResponse extends NSObject implements NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class ILCommunication extends NSObject implements NSSecureCoding {
 
 	static alloc(): ILCommunication; // inherited from NSObject
@@ -97,6 +118,9 @@ declare class ILCommunication extends NSObject implements NSSecureCoding {
 	isEqualToCommunication(communication: ILCommunication): boolean;
 }
 
+/**
+ * @since 12.0
+ */
 declare class ILMessageClassificationRequest extends ILClassificationRequest implements NSSecureCoding {
 
 	static alloc(): ILMessageClassificationRequest; // inherited from NSObject
@@ -114,6 +138,9 @@ declare class ILMessageClassificationRequest extends ILClassificationRequest imp
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 12.0
+ */
 declare class ILMessageCommunication extends ILCommunication {
 
 	static alloc(): ILMessageCommunication; // inherited from NSObject
@@ -125,6 +152,9 @@ declare class ILMessageCommunication extends ILCommunication {
 	isEqualToMessageCommunication(communication: ILMessageCommunication): boolean;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum ILMessageFilterAction {
 
 	None = 0,
@@ -140,6 +170,9 @@ declare const enum ILMessageFilterAction {
 	Transaction = 4
 }
 
+/**
+ * @since 16.0
+ */
 interface ILMessageFilterCapabilitiesQueryHandling extends NSObjectProtocol {
 
 	handleCapabilitiesQueryRequestContextCompletion(capabilitiesQueryRequest: ILMessageFilterCapabilitiesQueryRequest, context: ILMessageFilterExtensionContext, completion: (p1: ILMessageFilterCapabilitiesQueryResponse) => void): void;
@@ -149,6 +182,9 @@ declare var ILMessageFilterCapabilitiesQueryHandling: {
 	prototype: ILMessageFilterCapabilitiesQueryHandling;
 };
 
+/**
+ * @since 16.0
+ */
 declare class ILMessageFilterCapabilitiesQueryRequest extends NSObject implements NSSecureCoding {
 
 	static alloc(): ILMessageFilterCapabilitiesQueryRequest; // inherited from NSObject
@@ -164,6 +200,9 @@ declare class ILMessageFilterCapabilitiesQueryRequest extends NSObject implement
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class ILMessageFilterCapabilitiesQueryResponse extends NSObject implements NSSecureCoding {
 
 	static alloc(): ILMessageFilterCapabilitiesQueryResponse; // inherited from NSObject
@@ -183,6 +222,9 @@ declare class ILMessageFilterCapabilitiesQueryResponse extends NSObject implemen
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum ILMessageFilterError {
 
 	System = 1,
@@ -196,8 +238,14 @@ declare const enum ILMessageFilterError {
 	RedundantNetworkDeferral = 5
 }
 
+/**
+ * @since 11.0
+ */
 declare var ILMessageFilterErrorDomain: string;
 
+/**
+ * @since 11.0
+ */
 declare class ILMessageFilterExtension extends NSObject {
 
 	static alloc(): ILMessageFilterExtension; // inherited from NSObject
@@ -205,6 +253,9 @@ declare class ILMessageFilterExtension extends NSObject {
 	static new(): ILMessageFilterExtension; // inherited from NSObject
 }
 
+/**
+ * @since 11.0
+ */
 declare class ILMessageFilterExtensionContext extends NSExtensionContext {
 
 	static alloc(): ILMessageFilterExtensionContext; // inherited from NSObject
@@ -214,6 +265,9 @@ declare class ILMessageFilterExtensionContext extends NSExtensionContext {
 	deferQueryRequestToNetworkWithCompletion(completion: (p1: ILNetworkResponse, p2: NSError) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 interface ILMessageFilterQueryHandling extends NSObjectProtocol {
 
 	handleQueryRequestContextCompletion(queryRequest: ILMessageFilterQueryRequest, context: ILMessageFilterExtensionContext, completion: (p1: ILMessageFilterQueryResponse) => void): void;
@@ -223,6 +277,9 @@ declare var ILMessageFilterQueryHandling: {
 	prototype: ILMessageFilterQueryHandling;
 };
 
+/**
+ * @since 11.0
+ */
 declare class ILMessageFilterQueryRequest extends NSObject implements NSSecureCoding {
 
 	static alloc(): ILMessageFilterQueryRequest; // inherited from NSObject
@@ -231,6 +288,9 @@ declare class ILMessageFilterQueryRequest extends NSObject implements NSSecureCo
 
 	readonly messageBody: string;
 
+	/**
+	 * @since 16.0
+	 */
 	readonly receiverISOCountryCode: string;
 
 	readonly sender: string;
@@ -244,6 +304,9 @@ declare class ILMessageFilterQueryRequest extends NSObject implements NSSecureCo
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class ILMessageFilterQueryResponse extends NSObject implements NSSecureCoding {
 
 	static alloc(): ILMessageFilterQueryResponse; // inherited from NSObject
@@ -252,6 +315,9 @@ declare class ILMessageFilterQueryResponse extends NSObject implements NSSecureC
 
 	action: ILMessageFilterAction;
 
+	/**
+	 * @since 16.0
+	 */
 	subAction: ILMessageFilterSubAction;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -263,6 +329,9 @@ declare class ILMessageFilterQueryResponse extends NSObject implements NSSecureC
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum ILMessageFilterSubAction {
 
 	None = 0,
@@ -292,6 +361,9 @@ declare const enum ILMessageFilterSubAction {
 	PromotionalCoupons = 20002
 }
 
+/**
+ * @since 11.0
+ */
 declare class ILNetworkResponse extends NSObject implements NSSecureCoding {
 
 	static alloc(): ILNetworkResponse; // inherited from NSObject

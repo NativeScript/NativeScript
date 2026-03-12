@@ -1,5 +1,7 @@
-﻿export type FontStyleType = 'normal' | 'italic';
-export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number;
+﻿import { CoreTypes } from '../enums';
+
+export type FontStyleType = 'normal' | 'italic' | CoreTypes.CSSWideKeywords;
+export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900' | number | CoreTypes.CSSWideKeywords;
 
 export interface ParsedFont {
 	fontStyle?: FontStyleType;
@@ -8,7 +10,7 @@ export interface ParsedFont {
 	lineHeight?: string;
 	fontSize?: string;
 	fontFamily?: string;
-	fontVariationSettings?: Array<FontVariationSettingsType>;
+	fontVariationSettings?: FontVariationSettingsType[];
 }
 
 export type FontVariationSettingsType = {

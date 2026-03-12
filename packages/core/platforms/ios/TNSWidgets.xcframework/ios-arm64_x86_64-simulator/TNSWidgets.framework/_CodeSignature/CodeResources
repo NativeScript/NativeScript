@@ -10,7 +10,7 @@
 		</data>
 		<key>Headers/NSFileHandle+Async.h</key>
 		<data>
-		iQtzsDHw/VTnFG27yW+QvGCeXGw=
+		rRe3BF9E0tZ9uKb/qQaeizpf00k=
 		</data>
 		<key>Headers/NSString+Async.h</key>
 		<data>
@@ -38,11 +38,11 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		myeIggkwNuTIqt7xlMgf8VGsKZ8=
+		Bs8o38T7YIg2Atjpfe4/QbN1vTM=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
-		ANIiDnbrCY8YCOtOm1xDrUyt8do=
+		/tkvRfxHVxmNhD1JzeHL7QIyPq0=
 		</data>
 		<key>PrivateHeaders/NSObject+Swizzling.h</key>
 		<data>
@@ -66,7 +66,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			1IqS81dD1dbKccHZ0lYPMMF1zBPdp3InM+rdOFjBo+k=
+			2T5kVM+Hg6kj426PPiCsCw+SsFz2+kqJkOSpwDcNPZ0=
 			</data>
 		</dict>
 		<key>Headers/NSString+Async.h</key>
@@ -115,7 +115,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			geXwbECY3V3psdekq89Ia+2j4/OludM5UatqEk+xhhc=
+			WpsCv2W1QB16vBBWGv6a8wyc4IjYUnJ+SSaY3j42OP4=
 			</data>
 		</dict>
 		<key>PrivateHeaders/NSObject+Swizzling.h</key>

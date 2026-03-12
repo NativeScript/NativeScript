@@ -70,6 +70,9 @@ public class FlexLine {
 	 */
 	int mItemCount;
 
+	/** Holds the count of the views whose visibilities are gone */
+	int mGoneItemCount;
+
 	/**
 	 * @see {@link #getTotalFlexGrow()}
 	 */
@@ -149,6 +152,13 @@ public class FlexLine {
 	 */
 	public int getItemCount() {
 		return mItemCount;
+	}
+
+	/**
+	 * @return the count of the views whose visibilities are not gone in this flex line.
+	 */
+	public int getLayoutVisibleItemCount() {
+			return mItemCount - mGoneItemCount;
 	}
 
 	/**

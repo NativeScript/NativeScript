@@ -1,20 +1,22 @@
 //Types
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from '.';
+import { iOSFrame as iOSFrameDefinition, NavigationTransition } from '.';
 import { FrameBase, NavigationType } from './frame-common';
-import { Page } from '../page';
+import type { BackstackEntry } from './frame-interfaces';
+import type { Page } from '../page';
+import { CoreTypes } from '../enums';
 import { View } from '../core/view';
 import { IOSHelper } from '../core/view/view-helper';
 import { profile } from '../../profiling';
-import { CORE_ANIMATION_DEFAULTS, ios as iOSUtils, layout } from '../../utils';
+import { layout } from '../../utils/layout-helper';
+import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
+import { SDK_VERSION } from '../../utils/constants';
 import { Trace } from '../../trace';
-import type { PageTransition } from '../transition/page-transition';
 import { SlideTransition } from '../transition/slide-transition';
 import { FadeTransition } from '../transition/fade-transition';
 import { SharedTransition } from '../transition/shared-transition';
+import type { Transition } from '../transition';
 
 export * from './frame-common';
-
-const majorVersion = iOSUtils.MajorVersion;
 
 const ENTRY = '_entry';
 const DELEGATE = '_delegate';
@@ -22,12 +24,15 @@ const NAV_DEPTH = '_navDepth';
 const TRANSITION = '_transition';
 const NON_ANIMATED_TRANSITION = 'non-animated';
 
-let navDepth = -1;
+let navDepth: number = -1;
+let navControllerDelegate: UINavigationControllerDelegate = null;
 
 export class Frame extends FrameBase {
 	viewController: UINavigationControllerImpl;
-	_animatedDelegate: UINavigationControllerDelegate;
-	public _ios: iOSFrame;
+	iosNavigationBarClass: typeof NSObject;
+	iosToolbarClass: typeof NSObject;
+
+	private _ios: iOSFrame;
 
 	constructor() {
 		super();
@@ -36,13 +41,50 @@ export class Frame extends FrameBase {
 	}
 
 	createNativeView() {
-		return this.viewController.view;
+		// Push frame back in frame stack since it was removed in disposeNativeView() method.
+		if (this._currentEntry) {
+			this._pushInFrameStack();
+		}
+
+		// View controller can be disposed during view disposal, so make sure to create a new one if not defined
+		if (!this._ios) {
+			this._ios = new iOSFrame(this);
+			this.viewController = this._ios.controller;
+		}
+
+		return this._ios.controller.view;
 	}
 
 	public disposeNativeView() {
+		const current = this._currentEntry;
+		const executingEntry = this._executingContext ? this._executingContext.entry : null;
+
+		if (executingEntry) {
+			this._disposeBackstackEntry(executingEntry);
+		}
+
+		this.backStack.forEach((entry) => {
+			if (entry !== executingEntry) {
+				this._disposeBackstackEntry(entry);
+			}
+		});
+
+		if (current) {
+			this._disposeBackstackEntry(current);
+		}
+
 		this._removeFromFrameStack();
-		this.viewController = null;
-		this._animatedDelegate = null;
+
+		if (this.viewController) {
+			this.viewController.lastExecutingTransition = null;
+			this.viewController = null;
+		}
+
+		// This was the last frame so we can get rid of the controller delegate reference
+		if (this._isFrameStackEmpty()) {
+			navControllerDelegate = null;
+		}
+
 		if (this._ios) {
 			this._ios.controller = null;
 			this._ios = null;
@@ -69,7 +111,7 @@ export class Frame extends FrameBase {
 	// !!! THIS PROFILE DECORATOR CREATES A CIRCULAR DEPENDENCY
 	// !!! BECAUSE THE PARAMETER TYPE IS EVALUATED WITH TYPEOF
 	@profile
-	public _navigateCore(backstackEntry: any) {
+	public _navigateCore(backstackEntry: BackstackEntry) {
 		super._navigateCore(backstackEntry);
 
 		const viewController: UIViewController = backstackEntry.resolvedPage.ios;
@@ -99,13 +141,15 @@ export class Frame extends FrameBase {
 			viewController[TRANSITION] = { name: NON_ANIMATED_TRANSITION };
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, true);
+		if (!navControllerDelegate) {
+			navControllerDelegate = UINavigationControllerDelegateImpl.new();
+		}
+
+		this._ios.controller.delegate = navControllerDelegate;
+		viewController[DELEGATE] = navControllerDelegate;
+
+		const nativeTransition = _getNativeTransition(navigationTransition, true, this.direction);
 		if (!nativeTransition && navigationTransition) {
-			if (!this._animatedDelegate) {
-				this._animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.initWithOwner(new WeakRef(this));
-			}
-			this._ios.controller.delegate = this._animatedDelegate;
-			viewController[DELEGATE] = this._animatedDelegate;
 			if (navigationTransition.instance) {
 				this.transitionId = navigationTransition.instance.id;
 				const transitionState = SharedTransition.getState(this.transitionId);
@@ -117,15 +161,12 @@ export class Frame extends FrameBase {
 					}, this);
 				}
 			}
-		} else {
-			viewController[DELEGATE] = null;
-			this._ios.controller.delegate = null;
 		}
 
 		backstackEntry[NAV_DEPTH] = navDepth;
 		viewController[ENTRY] = backstackEntry;
 
-		if (!animated && majorVersion > 10) {
+		if (!animated && SDK_VERSION > 10) {
 			// Reset back button title before pushing view controller to prevent
 			// displaying default 'back' title (when NavigaitonButton custom title is set).
 			const barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction('', UIBarButtonItemStyle.Plain, null, null);
@@ -231,7 +272,7 @@ export class Frame extends FrameBase {
 	public _updateActionBar(page?: Page, disableNavBarAnimation = false): void {
 		super._updateActionBar(page);
 
-		if (page && this.currentPage && this.currentPage.modal === page) {
+		if (!this._ios || (page && this.currentPage && this.currentPage.modal === page)) {
 			return;
 		}
 
@@ -328,16 +369,14 @@ export class Frame extends FrameBase {
 		//
 	}
 
-	public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
-		// for now to not break iOS events chain (calling navigation events from controller delegates)
-		// we dont call super(which would also trigger events) but only notify the frame of the navigation
-		// though it means events are not triggered at the same time (lifecycle) on iOS / Android
+	// Emits an event whenever the UINavigationController shows a view controller.
+	// Consumers can subscribe to 'viewControllerShown'
+	// to safely interact with the visible controller/navigationItem once it exists.
+	public _onViewControllerShown(viewController: UIViewController): void {
 		this.notify({
-			eventName: Page.navigatingToEvent,
+			eventName: 'viewControllerShown',
 			object: this,
-			isBack,
-			entry: backstackEntry,
-			fromEntry: this._currentEntry,
+			viewController,
 		});
 	}
 }
@@ -392,18 +431,10 @@ class TransitionDelegate extends NSObject {
 }
 
 @NativeClass
-class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
+class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
-	owner: WeakRef<Frame>;
-	transition: PageTransition;
 
-	static initWithOwner(owner: WeakRef<Frame>) {
-		const delegate = <UINavigationControllerAnimatedDelegate>UINavigationControllerAnimatedDelegate.new();
-		delegate.owner = owner;
-		return delegate;
-	}
-
-	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+	navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationControllerImpl, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
 		let viewController: UIViewController;
 		switch (operation) {
 			case UINavigationControllerOperation.Push:
@@ -423,32 +454,43 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 			return null;
 		}
 
+		const layoutDirection: CoreTypes.LayoutDirectionType = navigationController.owner?.direction;
+
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
-		this.transition = navigationTransition.instance;
 
-		if (!this.transition) {
+		let transition = navigationTransition.instance;
+
+		if (!transition) {
 			if (navigationTransition.name) {
 				const curve = _getNativeCurve(navigationTransition);
 				const name = navigationTransition.name.toLowerCase();
-				if (name.indexOf('slide') === 0) {
-					const direction = name.substring('slide'.length) || 'left'; //Extract the direction from the string
-					this.transition = new SlideTransition(direction, navigationTransition.duration, curve);
+				const type = 'slide';
+				const defaultDirection = layoutDirection === CoreTypes.LayoutDirection.rtl ? 'right' : 'left';
+
+				if (name.indexOf(type) === 0) {
+					// Extract the direction from the string
+					const direction = name === type ? defaultDirection : name.substring(type.length);
+
+					transition = new SlideTransition(direction, navigationTransition.duration, curve);
 				} else if (name === 'fade') {
-					this.transition = new FadeTransition(navigationTransition.duration, curve);
+					transition = new FadeTransition(navigationTransition.duration, curve);
 				}
 			}
 		}
 
-		if (this.transition?.iosNavigatedController) {
-			return this.transition.iosNavigatedController(navigationController, operation, fromVC, toVC);
+		// Keep a strong reference of the last executing transition to prevent gc from collecting it
+		navigationController.lastExecutingTransition = transition;
+
+		if (transition?.iosNavigatedController) {
+			return transition.iosNavigatedController(navigationController, operation, fromVC, toVC);
 		}
 		return null;
 	}
 
-	navigationControllerInteractionControllerForAnimationController(navigationController: UINavigationController, animationController: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
-		const owner = this.owner?.deref();
+	navigationControllerInteractionControllerForAnimationController(navigationController: UINavigationControllerImpl, animationController: UIViewControllerAnimatedTransitioning): UIViewControllerInteractiveTransitioning {
+		const owner = navigationController.owner;
 		if (owner) {
 			const state = SharedTransition.getState(owner.transitionId);
 			if (state?.instance?.iosInteractionDismiss) {
@@ -460,14 +502,28 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 
 		return null;
 	}
+
+	navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationControllerImpl, viewController: UIViewController, animated: boolean): void {
+		if (Trace.isEnabled()) {
+			Trace.write('Frame.navigationController.DID_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
+		}
+		const owner = navigationController.owner;
+		if (owner) {
+			owner._onViewControllerShown(viewController);
+		}
+		IOSHelper.invalidateStatusBarAppearance(navigationController, 'navigationControllerDidShowViewControllerAnimated');
+	}
 }
 
 @NativeClass
 class UINavigationControllerImpl extends UINavigationController {
 	private _owner: WeakRef<Frame>;
+	public lastExecutingTransition: Transition;
 
 	public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerImpl {
-		const controller = <UINavigationControllerImpl>UINavigationControllerImpl.new();
+		const navigationBarClass = owner.deref()?.iosNavigationBarClass ?? null;
+		const toolbarClass = owner.deref()?.iosToolbarClass ?? null;
+		const controller = navigationBarClass || toolbarClass ? <UINavigationControllerImpl>UINavigationControllerImpl.alloc().initWithNavigationBarClassToolbarClass(navigationBarClass, toolbarClass) : <UINavigationControllerImpl>UINavigationControllerImpl.new();
 		controller._owner = owner;
 
 		return controller;
@@ -496,7 +552,7 @@ class UINavigationControllerImpl extends UINavigationController {
 		}
 	}
 
-	private animateWithDuration(navigationTransition: NavigationTransition, nativeTransition: UIViewAnimationTransition, transitionType: string, baseCallback: Function): void {
+	private animateWithDuration(navigationTransition: NavigationTransition, nativeTransition: UIViewAnimationTransition, transitionType: string, baseCallback: () => void): void {
 		const duration = navigationTransition.duration ? navigationTransition.duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 		const curve = _getNativeCurve(navigationTransition);
 
@@ -523,46 +579,62 @@ class UINavigationControllerImpl extends UINavigationController {
 	@profile
 	public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
 		const navigationTransition = <NavigationTransition>viewController[TRANSITION];
+		const owner = this._owner?.deref?.();
+
+		const logTag = 'UINavigationControllerImpl.pushViewControllerAnimated';
 		if (Trace.isEnabled()) {
-			Trace.write(`UINavigationControllerImpl.pushViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
+			Trace.write(`${logTag}(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, true);
+		const nativeTransition = _getNativeTransition(navigationTransition, true, owner?.direction);
 		if (!animated || !navigationTransition || !nativeTransition) {
 			super.pushViewControllerAnimated(viewController, animated);
-
+			IOSHelper.invalidateStatusBarAppearance(this, logTag);
 			return;
 		}
 
 		this.animateWithDuration(navigationTransition, nativeTransition, 'push', () => {
 			super.pushViewControllerAnimated(viewController, false);
 		});
+		IOSHelper.invalidateStatusBarAppearance(this, logTag);
 	}
 
 	@profile
 	public setViewControllersAnimated(viewControllers: NSArray<any>, animated: boolean): void {
-		const viewController = viewControllers.lastObject;
-		const navigationTransition = <NavigationTransition>viewController[TRANSITION];
+		const viewController = viewControllers?.lastObject;
+		const navigationTransition = viewController ? <NavigationTransition>viewController[TRANSITION] : null;
 
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, true);
-		if (!animated || !navigationTransition || !nativeTransition) {
-			super.setViewControllersAnimated(viewControllers, animated);
+		const logTag = 'UINavigationControllerImpl.setViewControllersAnimated';
 
+		if (!animated || !navigationTransition) {
+			super.setViewControllersAnimated(viewControllers, animated);
+			IOSHelper.invalidateStatusBarAppearance(this, logTag);
+			return;
+		}
+
+		const owner = this._owner?.deref?.();
+		const nativeTransition = _getNativeTransition(navigationTransition, true, owner?.direction);
+
+		if (!nativeTransition) {
+			super.setViewControllersAnimated(viewControllers, animated);
+			IOSHelper.invalidateStatusBarAppearance(this, logTag);
 			return;
 		}
 
 		this.animateWithDuration(navigationTransition, nativeTransition, 'set', () => {
 			super.setViewControllersAnimated(viewControllers, false);
 		});
+		IOSHelper.invalidateStatusBarAppearance(this, logTag);
 	}
 
 	public popViewControllerAnimated(animated: boolean): UIViewController {
 		const lastViewController = this.viewControllers.lastObject;
 		const navigationTransition = <NavigationTransition>lastViewController[TRANSITION];
+
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
@@ -572,7 +644,9 @@ class UINavigationControllerImpl extends UINavigationController {
 			return super.popViewControllerAnimated(false);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, false);
+		const owner = this._owner?.deref?.();
+
+		const nativeTransition = _getNativeTransition(navigationTransition, false, owner?.direction);
 		if (!animated || !navigationTransition || !nativeTransition) {
 			return super.popViewControllerAnimated(animated);
 		}
@@ -587,6 +661,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	public popToViewControllerAnimated(viewController: UIViewController, animated: boolean): NSArray<UIViewController> {
 		const lastViewController = this.viewControllers.lastObject;
 		const navigationTransition = <NavigationTransition>lastViewController[TRANSITION];
+
 		if (Trace.isEnabled()) {
 			Trace.write(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, Trace.categories.NativeLifecycle);
 		}
@@ -596,7 +671,9 @@ class UINavigationControllerImpl extends UINavigationController {
 			return super.popToViewControllerAnimated(viewController, false);
 		}
 
-		const nativeTransition = _getNativeTransition(navigationTransition, false);
+		const owner = this._owner?.deref?.();
+
+		const nativeTransition = _getNativeTransition(navigationTransition, false, owner?.direction);
 		if (!animated || !navigationTransition || !nativeTransition) {
 			return super.popToViewControllerAnimated(viewController, animated);
 		}
@@ -612,15 +689,35 @@ class UINavigationControllerImpl extends UINavigationController {
 	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
 		super.traitCollectionDidChange(previousTraitCollection);
 
-		if (majorVersion >= 13) {
-			const owner = this._owner?.deref?.();
-			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+		const owner = this._owner?.deref?.();
+		if (owner) {
+			if (SDK_VERSION >= 13) {
+				if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+					owner.notify({
+						eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+						object: owner,
+					});
+				}
+			}
+
+			if (this.traitCollection.layoutDirection !== previousTraitCollection.layoutDirection) {
 				owner.notify({
-					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionLayoutDirectionChangedEvent,
 					object: owner,
 				});
 			}
 		}
+	}
+
+	// @ts-ignore
+	public get childViewControllerForStatusBarStyle() {
+		return this.topViewController;
+	}
+
+	// @ts-ignore
+	public get preferredStatusBarStyle(): UIStatusBarStyle {
+		const top = this.topViewController;
+		return top?.preferredStatusBarStyle ?? UIStatusBarStyle.Default;
 	}
 }
 
@@ -647,10 +744,14 @@ function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitio
 	return `${name} ${transitionType}`;
 }
 
-function _getNativeTransition(navigationTransition: NavigationTransition, push: boolean): UIViewAnimationTransition {
+function _getNativeTransition(navigationTransition: NavigationTransition, push: boolean, direction: CoreTypes.LayoutDirectionType): UIViewAnimationTransition {
 	if (navigationTransition && navigationTransition.name) {
 		switch (navigationTransition.name.toLowerCase()) {
 			case 'flip':
+				if (direction === CoreTypes.LayoutDirection.rtl) {
+					return push ? UIViewAnimationTransition.FlipFromLeft : UIViewAnimationTransition.FlipFromRight;
+				}
+				return push ? UIViewAnimationTransition.FlipFromRight : UIViewAnimationTransition.FlipFromLeft;
 			case 'flipright':
 				return push ? UIViewAnimationTransition.FlipFromRight : UIViewAnimationTransition.FlipFromLeft;
 			case 'flipleft':
@@ -709,9 +810,7 @@ export function _getNativeCurve(transition: NavigationTransition): UIViewAnimati
 	return UIViewAnimationCurve.EaseInOut;
 }
 
-/* tslint:disable */
 class iOSFrame implements iOSFrameDefinition {
-	/* tslint:enable */
 	private _controller: UINavigationControllerImpl;
 	private _showNavigationBar: boolean;
 	private _navBarVisibility: 'auto' | 'never' | 'always' = 'auto';

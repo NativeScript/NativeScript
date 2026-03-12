@@ -2,7 +2,7 @@
 import * as TKUnit from './tk-unit';
 import './ui-test';
 
-import { isIOS, isAndroid, Application, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils } from '@nativescript/core';
+import { isAndroid, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils, Color } from '@nativescript/core';
 Frame.defaultAnimatedNavigation = false;
 
 export function isRunningOnEmulator(): boolean {
@@ -16,7 +16,7 @@ export function isRunningOnEmulator(): boolean {
 			android.os.Build.PRODUCT.toLocaleLowerCase().indexOf('sdk') > -1 ||
 			android.os.Build.PRODUCT.toLocaleLowerCase().indexOf('emulator') > -1
 		); // VS Emulator
-	} else if (Device.os === platformNames.ios) {
+	} else if (__APPLE__) {
 		return __dirname.search('Simulator') > -1;
 	}
 }
@@ -147,7 +147,7 @@ import * as scrollViewSafeAreaTests from './ui/scroll-view/scroll-view-safe-area
 import * as repeaterSafeAreaTests from './ui/repeater/repeater-safe-area-tests';
 import * as webViewSafeAreaTests from './ui/web-view/web-view-safe-area-tests';
 
-if (isIOS && Utils.ios.MajorVersion > 10) {
+if (__APPLE__ && Utils.SDK_VERSION > 10) {
 	allTests['SAFEAREALAYOUT'] = safeAreaLayoutTests;
 	allTests['SAFEAREA-LISTVIEW'] = safeAreaListViewtTests;
 	allTests['SAFEAREA-SCROLL-VIEW'] = scrollViewSafeAreaTests;
@@ -175,6 +175,9 @@ allTests['STYLE'] = styleTests;
 
 import * as visualStateTests from './ui/styling/visual-state-tests';
 allTests['VISUAL-STATE'] = visualStateTests;
+
+import * as cssKeywordsTests from './ui/styling/css-keywords-tests';
+allTests['CSS-KEYWORDS'] = cssKeywordsTests;
 
 import * as valueSourceTests from './ui/styling/value-source-tests';
 allTests['VALUE-SOURCE'] = valueSourceTests;
@@ -218,8 +221,8 @@ allTests['PROGRESS'] = progressTests;
 import * as placeholderTests from './ui/placeholder/placeholder-tests';
 allTests['PLACEHOLDER'] = placeholderTests;
 
-// import * as pageTests from './ui/page/page-tests';
-// allTests['PAGE'] = pageTests;
+import * as pageTests from './ui/page/page-tests';
+allTests['PAGE'] = pageTests;
 
 import * as listViewTests from './ui/list-view/list-view-tests';
 allTests['LISTVIEW'] = listViewTests;
@@ -245,6 +248,7 @@ allTests['DATE-PICKER'] = datePickerTests;
 import * as timePickerTests from './ui/time-picker/time-picker-tests';
 allTests['TIME-PICKER'] = timePickerTests;
 
+// TODO: followup on 3 assertions here -
 // import * as webViewTests from './ui/web-view/web-view-tests';
 // allTests['WEB-VIEW'] = webViewTests;
 
@@ -347,6 +351,8 @@ function printRunTestStats() {
 
 	let finalMessage = `\n` + `=== ALL TESTS COMPLETE ===\n` + `${allTests.length - failedTestCount} OK, ${failedTestCount} failed\n` + `DURATION: ${totalTime} ms\n` + `=== END OF TESTS ===\n`;
 
+	Trace.setCategories(Trace.categories.Test);
+	Trace.enable();
 	TKUnit.write(finalMessage, Trace.messageType.info);
 
 	failedTestInfo.forEach((message, i, arr) => {
@@ -397,12 +403,23 @@ function showReportPage(finalMessage: string) {
 	messageContainer.text = finalMessage;
 	stack.addChild(messageContainer);
 
+	if (__VISIONOS__) {
+		// just helps make the results screen more clear on Vision Pro
+		btn.style.fontSize = 22;
+		stack.style.padding = 20;
+		stack.style.marginTop = 20;
+		messageContainer.style.fontSize = 22;
+		messageContainer.style.color = new Color('#fff');
+	}
+
 	Frame.topmost().navigate({
 		create: () => {
 			const page = new Page();
 			page.content = stack;
 			messageContainer.focus();
-			page.style.fontSize = 11;
+			if (!__VISIONOS__) {
+				page.style.fontSize = 11;
+			}
 			if (isAndroid) {
 				page.on('navigatedTo', () => {
 					messageContainer.focus();
@@ -473,7 +490,7 @@ export function runAll(testSelector?: string) {
 		new TestInfo(() => {
 			running = true;
 			startTime = TKUnit.time();
-		})
+		}),
 	);
 	for (const name in allTests) {
 		if (singleModuleName && singleModuleName !== name.toLowerCase()) {
@@ -482,7 +499,11 @@ export function runAll(testSelector?: string) {
 
 		const testModule = allTests[name];
 
-		const test = testModule.createTestCase ? testModule.createTestCase() : testModule;
+		// In ESM environments (like Vite), module namespace objects are not extensible.
+		// Some tests expect to set arbitrary properties like `name` on the test instance.
+		// If a module doesn't provide `createTestCase()`, wrap its exports in a plain
+		// mutable object to safely attach metadata without mutating the namespace object.
+		const test = testModule.createTestCase ? testModule.createTestCase() : ({ ...testModule } as any);
 		test.name = name;
 
 		testsQueue.push(new TestInfo(startLog, test));
@@ -519,7 +540,7 @@ export function runAll(testSelector?: string) {
 		new TestInfo(function () {
 			testsQueue = [];
 			running = false;
-		})
+		}),
 	);
 
 	TKUnit.runTests(testsQueue, 0);

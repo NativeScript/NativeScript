@@ -61,6 +61,39 @@
 				<Button isEnabled="false" text="But I am!"/>
 			</StackLayout>
 
+			<StackLayout class="general-sibling--type">
+				<Label text="General sibling test by type"/>
+				<Label class="sibling-test-label" text="I'm not!"/>
+				<Button text="I'm the ref"/>
+				<Label class="sibling-test-label" text="I'm a general sibling!"/>
+				<Label class="sibling-test-label" text="Me too!"/>
+			</StackLayout>
+
+			<StackLayout class="general-sibling--class">
+				<Label text="General sibling test by class"/>
+				<Button class="test-child-2" text="I'm not!"/>
+				<Button class="test-child" text="I'm the ref"/>
+				<Button class="test-child-2" text="I'm a general sibling!"/>
+				<Button class="test-child-2" text="Me too!"/>
+			</StackLayout>
+
+			<StackLayout class="general-sibling--attribute">
+				<Label text="General sibling test by attribute"/>
+				<Button data="test-child-2" text="I'm not!"/>
+				<Button data="test-child" text="I'm the ref"/>
+				<Button data="test-child-2" text="I'm a general sibling!"/>
+				<Button data="test-child-2" text="Me too!"/>
+			</StackLayout>
+
+			<StackLayout class="general-sibling--pseudo-selector">
+				<Label text="General sibling test by pseudo-selector"/>
+				<Button text="I'm not!"/>
+				<Button isEnabled="false" text="I'm not either!"/>
+				<Button class="ref" text="I'm the ref"/>
+				<Button isEnabled="false" text="I'm a general sibling!"/>
+				<Button isEnabled="false" text="Me too!"/>
+			</StackLayout>
+
 		</StackLayout>
 	</ScrollView>
 </Page>

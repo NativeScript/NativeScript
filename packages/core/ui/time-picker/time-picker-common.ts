@@ -90,6 +90,7 @@ function getErrorMessage(picker: TimePickerDefinition, propertyName: string, new
 
 @CSSType('TimePicker')
 export abstract class TimePickerBase extends View implements TimePickerDefinition {
+	public static timeChangeEvent: string = 'timeChange';
 	public hour: number;
 	public minute: number;
 	public time: Date;
@@ -165,8 +166,11 @@ minuteIntervalProperty.register(TimePickerBase);
 
 export const minuteProperty = new Property<TimePickerBase, number>({
 	name: 'minute',
-	defaultValue: 0,
+	// avoid defaultValue of 0 because it will prevent valueChanged from firing to initialize value due to it already matching defaultValue to start
+	// sometimes user needs to set 0: https://github.com/NativeScript/NativeScript/issues/10457
+	defaultValue: null,
 	valueChanged: (picker, oldValue, newValue) => {
+		newValue = newValue || 0;
 		if (!isMinuteValid(newValue) || !isValidTime(picker)) {
 			throw new Error(getErrorMessage(picker, 'minute', newValue));
 		}
@@ -179,8 +183,11 @@ minuteProperty.register(TimePickerBase);
 
 export const hourProperty = new Property<TimePickerBase, number>({
 	name: 'hour',
-	defaultValue: 0,
+	// avoid defaultValue of 0 because it will prevent valueChanged from firing to initialize value due to it already matching defaultValue to start
+	// sometimes user needs to set 0: https://github.com/NativeScript/NativeScript/issues/10457
+	defaultValue: null,
 	valueChanged: (picker, oldValue, newValue) => {
+		newValue = newValue || 0;
 		if (!isHourValid(newValue) || !isValidTime(picker)) {
 			throw new Error(getErrorMessage(picker, 'Hour', newValue));
 		}

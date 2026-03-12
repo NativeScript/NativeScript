@@ -3,6 +3,19 @@ import type { KeyframeAnimationInfo, KeyframeInfo } from '../animation';
 import { CssAnimationParser, keyframeAnimationsFromCSSProperty } from './css-animation-parser';
 import { cssTreeParse } from '../../css/css-tree-parser';
 
+function getCurves() {
+	return {
+		ease: CoreTypes.AnimationCurve.ease,
+		linear: CoreTypes.AnimationCurve.linear,
+		'ease-in': CoreTypes.AnimationCurve.easeIn,
+		'ease-out': CoreTypes.AnimationCurve.easeOut,
+		'ease-in-out': CoreTypes.AnimationCurve.easeInOut,
+		spring: CoreTypes.AnimationCurve.spring,
+		'cubic-bezier(0.1, 1.0, 0.5, 0.5)': CoreTypes.AnimationCurve.cubicBezier(0.1, 1.0, 0.5, 0.5),
+		'cubic-bezier(0.42, 0.0, 1.0, 1.0);': CoreTypes.AnimationCurve.cubicBezier(0.42, 0.0, 1.0, 1.0),
+	};
+}
+
 describe('css-animation-parser', () => {
 	describe('shorthand-property-parser', () => {
 		// helper functions
@@ -36,17 +49,6 @@ describe('css-animation-parser', () => {
 			'3s': 3000,
 		};
 
-		const curves = {
-			ease: CoreTypes.AnimationCurve.ease,
-			linear: CoreTypes.AnimationCurve.linear,
-			'ease-in': CoreTypes.AnimationCurve.easeIn,
-			'ease-out': CoreTypes.AnimationCurve.easeOut,
-			'ease-in-out': CoreTypes.AnimationCurve.easeInOut,
-			spring: CoreTypes.AnimationCurve.spring,
-			'cubic-bezier(0.1, 1.0, 0.5, 0.5)': CoreTypes.AnimationCurve.cubicBezier(0.1, 1.0, 0.5, 0.5),
-			'cubic-bezier(0.42, 0.0, 1.0, 1.0);': CoreTypes.AnimationCurve.cubicBezier(0.42, 0.0, 1.0, 1.0),
-		};
-
 		it('parses duration', () => {
 			Object.entries(times).forEach(([timeString, ms]) => {
 				expect(testSingleAnimation(`${timeString}`).duration).toBe(ms);
@@ -70,6 +72,7 @@ describe('css-animation-parser', () => {
 		});
 
 		it('parses curve', () => {
+			const curves = getCurves();
 			Object.entries(curves).forEach(([curveString, curve]) => {
 				const animation = testSingleAnimation(`${curveString}`);
 				expect(animation.curve).toEqual(curve);
@@ -77,6 +80,7 @@ describe('css-animation-parser', () => {
 		});
 
 		it('parses duration, curve and delay', () => {
+			const curves = getCurves();
 			Object.entries(curves).forEach(([curveString, curve]) => {
 				const animation1 = testSingleAnimation(`225ms 300ms ${curveString}`);
 				expect(animation1.duration).toBe(225);
@@ -259,7 +263,7 @@ describe('css-animation-parser', () => {
 				`@keyframes fade {
 					from { opacity: 0; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(1);
@@ -276,7 +280,7 @@ describe('css-animation-parser', () => {
 				`@keyframes fade {
 					to { opacity: 1; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(1);
@@ -294,7 +298,7 @@ describe('css-animation-parser', () => {
 					from { opacity: 0; }
 					to { opacity: 1; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(2);
@@ -316,7 +320,7 @@ describe('css-animation-parser', () => {
 				`@keyframes fade {
 					0% { opacity: 0; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(1);
@@ -333,7 +337,7 @@ describe('css-animation-parser', () => {
 				`@keyframes fade {
 					100% { opacity: 1; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(1);
@@ -351,7 +355,7 @@ describe('css-animation-parser', () => {
 					0% { opacity: 0; }
 					100% { opacity: 1; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(2);
@@ -373,7 +377,7 @@ describe('css-animation-parser', () => {
 				`@keyframes fade {
 					50% { opacity: 0.5; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(1);
@@ -392,7 +396,7 @@ describe('css-animation-parser', () => {
 					50% { opacity: 0.5; }
 					100% { opacity: 1; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(3);
@@ -421,7 +425,7 @@ describe('css-animation-parser', () => {
 					50% { opacity: 0.5; }
 					to { opacity: 1; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(3);
@@ -451,7 +455,7 @@ describe('css-animation-parser', () => {
 					50% { translateX: 100; }
 					100% { opacity: 1; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(3);
@@ -481,7 +485,7 @@ describe('css-animation-parser', () => {
 					from { opacity: 0; animation-timing-function: ease-in; }
 					to { opacity: 1; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(2);
@@ -498,7 +502,7 @@ describe('css-animation-parser', () => {
 					0% { opacity: 0; }
 					50% { opacity: 0.5; }
 				}`,
-				'fade'
+				'fade',
 			);
 
 			expect(res.length).toBe(3);

@@ -1,8 +1,6 @@
-// Types
-import { ViewBase } from '../view-base';
-
-// Requires
-import { unsetValue } from '../properties';
+import type { ViewBase } from '../view-base';
+import type { BindingOptions } from './bindable-types';
+import { unsetValue } from '../properties/property-shared';
 import { Observable, PropertyChangeData } from '../../../data/observable';
 import { addWeakEventListener, removeWeakEventListener } from '../weak-event-listener';
 import { bindingConstants, parentsRegex } from '../../builder/binding-builder';
@@ -49,63 +47,44 @@ function getProperties(property: string): Array<string> {
 }
 
 /**
- * The options object used in the Bindable.bind method.
+ * Normalizes "ontap" to "tap", and "ondoubletap" to "ondoubletap".
+ *
+ * Removes the leading "on" from an event gesture name, for example:
+ * - "ontap" -> "tap"
+ * - "ondoubletap" -> "doubletap"
+ * - "onTap" -> "Tap"
+ *
+ * Be warned that, as event/gesture names in NativeScript are case-sensitive,
+ * this may produce an invalid event/gesture name (i.e. "doubletap" would fail
+ * to match the "doubleTap" gesture name), and so it is up to the consumer to
+ * handle the output properly.
  */
-export interface BindingOptions {
-	/**
-	 * The property name of the source object (typically the ViewModel) to bind to.
-	 */
-	sourceProperty: string;
-	/**
-	 * The property name of the target object (that is the Bindable instance) to bind the source property to.
-	 */
-	targetProperty: string;
-	/**
-	 * True to establish a two-way binding, false otherwise. A two-way binding will synchronize both the source and the target property values regardless of which one initiated the change.
-	 */
-	twoWay?: boolean;
-	/**
-	 * An expression used for calculations (convertions) based on the value of the property.
-	 */
-	expression?: string;
-}
-
-/**
- * An interface which defines methods need to create binding value converter.
- */
-export interface ValueConverter {
-	/**
-	 * A method that will be executed when a value (of the binding property) should be converted to the observable model.
-	 * For example: user types in a text field, but our business logic requires to store data in a different manner (e.g. in lower case).
-	 * @param params - An array of parameters where first element is the value of the property and next elements are parameters send to converter.
-	 */
-	toModel: (...params: any[]) => any;
-	/**
-	 * A method that will be executed when a value should be converted to the UI view. For example we have a date object which should be displayed to the end user in a specific date format.
-	 * @param params - An array of parameters where first element is the value of the property and next elements are parameters send to converter.
-	 */
-	toView: (...params: any[]) => any;
-}
-
 export function getEventOrGestureName(name: string): string {
-	return name.indexOf('on') === 0 ? name.substr(2, name.length - 2) : name;
+	return name.indexOf('on') === 0 ? name.slice(2) : name;
 }
 
-// NOTE: method fromString from "ui/gestures";
 export function isGesture(eventOrGestureName: string): boolean {
+	// Not sure whether this trimming and lowercasing is still needed in practice
+	// (all Core tests pass without it), so worth revisiting in future. I think
+	// this is used exclusively by the XML flavour, and my best guess is that
+	// maybe it's to handle how getEventOrGestureName("onTap") might pass "Tap"
+	// into this.
 	const t = eventOrGestureName.trim().toLowerCase();
 
+	// Would be nice to have a convenience function for getting all GestureState
+	// names in `gestures-common.ts`, but when I tried introducing it, it created
+	// a circular dependency that crashed the automated tests app.
 	return t === 'tap' || t === 'doubletap' || t === 'pinch' || t === 'pan' || t === 'swipe' || t === 'rotation' || t === 'longpress' || t === 'touch';
 }
 
-// TODO: Make this instance function so that we dont need public statc tapEvent = "tap"
+// TODO: Make this instance function so that we dont need public static tapEvent = "tap"
 // in controls. They will just override this one and provide their own event support.
 export function isEventOrGesture(name: string, view: ViewBase): boolean {
 	if (typeof name === 'string') {
 		const eventOrGestureName = getEventOrGestureName(name);
 		const evt = `${eventOrGestureName}Event`;
 
-		return (view.constructor && evt in view.constructor) || isGesture(eventOrGestureName.toLowerCase());
+		return (view.constructor && evt in view.constructor) || isGesture(eventOrGestureName);
 	}
 
 	return false;
@@ -635,8 +614,9 @@ export class Binding {
 
 		try {
 			if (isEventOrGesture(options.property, <any>optionsInstance) && types.isFunction(value)) {
-				// calling off method with null as handler will remove all handlers for options.property event
-				optionsInstance.off(options.property, null, optionsInstance.bindingContext);
+				// Calling Observable.prototype.off() with just the event name will
+				// remove all handlers under that event name.
+				optionsInstance.off(options.property);
 				optionsInstance.on(options.property, value, optionsInstance.bindingContext);
 			} else if (optionsInstance instanceof Observable) {
 				optionsInstance.set(options.property, value);

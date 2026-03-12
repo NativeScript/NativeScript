@@ -4,10 +4,10 @@
 /dist
 /tmp
 /out-tsc
+.ns-vite-build
 
 # dependencies
 **/node_modules
-**/package-lock.json
 **/yarn.lock
 **/pnpm-lock.yaml
 .npmrc
@@ -41,6 +41,7 @@ apps/**/*/*.js
 apps/**/*/*.map
 apps/**/*/platforms
 apps/**/*/webpack.*.js
+apps/**/package-lock.json
 *.tgz
 .npmrc
 **/**/*.log
@@ -55,3 +56,10 @@ Thumbs.db
 
 # types
 ios-typings-prj
+
+.nx/cache
+.nx/workspace-data
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

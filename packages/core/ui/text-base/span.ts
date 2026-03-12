@@ -1,15 +1,19 @@
 ﻿import { Color } from '../../color';
 import { Span as SpanDefinition } from './span';
 import { ViewBase } from '../core/view-base';
-import { FontStyleType, FontWeightType } from '../styling/font';
+import { FontStyleType, FontVariationSettingsType, FontWeightType } from '../styling/font';
 import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
 import { isNullOrUndefined, isString } from '../../utils/types';
+import type { FormattedString } from './formatted-string';
 
 export class Span extends ViewBase implements SpanDefinition {
-	static linkTapEvent = 'linkTap';
+	public static linkTapEvent = 'linkTap';
+
 	private _text: string;
 	private _tappable = false;
+
+	declare parent: FormattedString;
 
 	get fontFamily(): string {
 		return this.style.fontFamily;
@@ -39,6 +43,13 @@ export class Span extends ViewBase implements SpanDefinition {
 	}
 	set fontWeight(value: FontWeightType) {
 		this.style.fontWeight = value;
+	}
+
+	get fontVariationSettings(): FontVariationSettingsType[] {
+		return this.style.fontVariationSettings;
+	}
+	set fontVariationSettings(value: FontVariationSettingsType[]) {
+		this.style.fontVariationSettings = value;
 	}
 
 	get textDecoration(): CoreTypes.TextDecorationType {
@@ -102,8 +113,8 @@ export class Span extends ViewBase implements SpanDefinition {
 		return this._tappable;
 	}
 
-	addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any): void {
-		super.addEventListener(arg, callback, thisArg);
+	addEventListener(arg: string, callback: (data: EventData) => void, thisArg?: any, once?: boolean): void {
+		super.addEventListener(arg, callback, thisArg, once);
 		this._setTappable(this.hasListeners(Span.linkTapEvent));
 	}
 

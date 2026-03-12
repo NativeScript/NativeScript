@@ -1,4 +1,8 @@
 
+/**
+ * @since 6.0
+ * @deprecated 15.0
+ */
 declare class ACAccount extends NSObject {
 
 	static alloc(): ACAccount; // inherited from NSObject
@@ -13,6 +17,9 @@ declare class ACAccount extends NSObject {
 
 	readonly identifier: string;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly userFullName: string;
 
 	username: string;
@@ -22,6 +29,10 @@ declare class ACAccount extends NSObject {
 	initWithAccountType(type: ACAccountType): this;
 }
 
+/**
+ * @since 6.0
+ * @deprecated 15.0
+ */
 declare class ACAccountCredential extends NSObject {
 
 	static alloc(): ACAccountCredential; // inherited from NSObject
@@ -48,6 +59,10 @@ declare const enum ACAccountCredentialRenewResult {
 	Failed = 2
 }
 
+/**
+ * @since 6.0
+ * @deprecated 15.0
+ */
 declare class ACAccountStore extends NSObject {
 
 	static alloc(): ACAccountStore; // inherited from NSObject
@@ -68,13 +83,25 @@ declare class ACAccountStore extends NSObject {
 
 	requestAccessToAccountsWithTypeOptionsCompletion(accountType: ACAccountType, options: NSDictionary<any, any>, completion: (p1: boolean, p2: NSError) => void): void;
 
+	/**
+	 * @since 5.0
+	 * @deprecated 6.0
+	 */
 	requestAccessToAccountsWithTypeWithCompletionHandler(accountType: ACAccountType, handler: (p1: boolean, p2: NSError) => void): void;
 
 	saveAccountWithCompletionHandler(account: ACAccount, completionHandler: (p1: boolean, p2: NSError) => void): void;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 14.0
+ */
 declare var ACAccountStoreDidChangeNotification: string;
 
+/**
+ * @since 6.0
+ * @deprecated 15.0
+ */
 declare class ACAccountType extends NSObject {
 
 	static alloc(): ACAccountType; // inherited from NSObject
@@ -88,12 +115,28 @@ declare class ACAccountType extends NSObject {
 	readonly identifier: string;
 }
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var ACAccountTypeIdentifierFacebook: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var ACAccountTypeIdentifierSinaWeibo: string;
 
+/**
+ * @since 7.0
+ * @deprecated 11.0
+ */
 declare var ACAccountTypeIdentifierTencentWeibo: string;
 
+/**
+ * @since 5.0
+ * @deprecated 11.0
+ */
 declare var ACAccountTypeIdentifierTwitter: string;
 
 declare const enum ACErrorCode {
@@ -145,18 +188,49 @@ declare const enum ACErrorCode {
 	CredentialItemNotExpired = 23
 }
 
+/**
+ * @since 5.0
+ */
 declare var ACErrorDomain: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var ACFacebookAppIdKey: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var ACFacebookAudienceEveryone: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var ACFacebookAudienceFriends: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var ACFacebookAudienceKey: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var ACFacebookAudienceOnlyMe: string;
 
+/**
+ * @since 6.0
+ * @deprecated 11.0
+ */
 declare var ACFacebookPermissionsKey: string;
 
+/**
+ * @since 7.0
+ * @deprecated 11.0
+ */
 declare var ACTencentWeiboAppIdKey: string;

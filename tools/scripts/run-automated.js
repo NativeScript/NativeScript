@@ -8,21 +8,21 @@ const spawn = require('child_process').spawn
 const kill = require('tree-kill');
 const path = require('path');
 
-const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
-const workspaceDir = path.resolve(__dirname, '../..');
+const TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes (is Github CI this slow to boot AVDs?)
+const automatedAppPath = path.resolve(__dirname, '../../apps/automated');
 const platform = process.argv[2];
 const spawned_process = spawn(
-	"npx",
+	"ns",
 	[
-		"nx",
-		"run",
-		`apps-automated:${platform}`,
+		"debug",
+		platform,
+		"--no-hmr",
 		// "--log=trace",
 		// `--flags="--log=trace"`,
-		"--timeout=600" // 10 minutes, booting avds on CI is very slow...
+		`--timeout=${TIMEOUT_MS}`
 	],
 	{
-		cwd: workspaceDir,
+		cwd: automatedAppPath,
 		stdio: ["inherit", "pipe", "pipe"],
 	}
 );

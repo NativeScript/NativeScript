@@ -46,7 +46,7 @@ export class WatchStatePlugin {
 
 			env.stats &&
 				console.log(
-					isWatchMode ? messages.startWatching : messages.compilationComplete
+					isWatchMode ? messages.startWatching : messages.compilationComplete,
 				);
 
 			const stats = compilation.getStats();
@@ -100,6 +100,7 @@ function notify(message: any) {
 		return;
 	}
 
+	// @ts-ignore
 	process.send(message, (error) => {
 		if (error) {
 			console.error(`[${id}] Process Send Error: `, error);

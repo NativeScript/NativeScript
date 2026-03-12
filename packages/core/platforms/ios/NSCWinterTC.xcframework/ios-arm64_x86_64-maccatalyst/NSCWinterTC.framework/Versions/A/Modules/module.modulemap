@@ -1,0 +1,6 @@
+framework module NSCWinterTC {
+  umbrella header "NSCWinterTC.h"
+  export *
+
+  module * { export * }
+}

@@ -1,4 +1,7 @@
 
+/**
+ * @since 16.0
+ */
 declare class PTChannelDescriptor extends NSObject {
 
 	static alloc(): PTChannelDescriptor; // inherited from NSObject
@@ -14,6 +17,9 @@ declare class PTChannelDescriptor extends NSObject {
 	initWithNameImage(name: string, image: UIImage): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum PTChannelError {
 
 	Unknown = 0,
@@ -37,8 +43,14 @@ declare const enum PTChannelError {
 	TransmissionNotAllowed = 9
 }
 
+/**
+ * @since 16.0
+ */
 declare var PTChannelErrorDomain: string;
 
+/**
+ * @since 16.0
+ */
 declare const enum PTChannelJoinReason {
 
 	DeveloperRequest = 0,
@@ -46,6 +58,9 @@ declare const enum PTChannelJoinReason {
 	ChannelRestoration = 1
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum PTChannelLeaveReason {
 
 	Unknown = 0,
@@ -57,6 +72,9 @@ declare const enum PTChannelLeaveReason {
 	SystemPolicy = 3
 }
 
+/**
+ * @since 16.0
+ */
 declare class PTChannelManager extends NSObject {
 
 	static alloc(): PTChannelManager; // inherited from NSObject
@@ -73,6 +91,11 @@ declare class PTChannelManager extends NSObject {
 
 	requestJoinChannelWithUUIDDescriptor(channelUUID: NSUUID, descriptor: PTChannelDescriptor): void;
 
+	/**
+	 * @since 17.0
+	 */
+	setAccessoryButtonEventsEnabledForChannelUUIDCompletionHandler(enabled: boolean, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
+
 	setActiveRemoteParticipantForChannelUUIDCompletionHandler(participant: PTParticipant, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
 
 	setChannelDescriptorForChannelUUIDCompletionHandler(channelDescriptor: PTChannelDescriptor, channelUUID: NSUUID, completionHandler: (p1: NSError) => void): void;
@@ -84,6 +107,9 @@ declare class PTChannelManager extends NSObject {
 	stopTransmittingWithChannelUUID(channelUUID: NSUUID): void;
 }
 
+/**
+ * @since 16.0
+ */
 interface PTChannelManagerDelegate extends NSObjectProtocol {
 
 	channelManagerChannelUUIDDidBeginTransmittingFromSource(channelManager: PTChannelManager, channelUUID: NSUUID, source: PTChannelTransmitRequestSource): void;
@@ -109,12 +135,20 @@ interface PTChannelManagerDelegate extends NSObjectProtocol {
 	channelManagerReceivedEphemeralPushToken(channelManager: PTChannelManager, pushToken: NSData): void;
 
 	incomingPushResultForChannelManagerChannelUUIDPushPayload(channelManager: PTChannelManager, channelUUID: NSUUID, pushPayload: NSDictionary<string, any>): PTPushResult;
+
+	/**
+	 * @since 17.2
+	 */
+	incomingServiceUpdatePushForChannelManagerChannelUUIDPushPayloadIsHighPriorityRemainingHighPriorityBudgetWithCompletionHandler?(channelManager: PTChannelManager, channelUUID: NSUUID, pushPayload: NSDictionary<string, any>, isHighPriority: boolean, remainingHighPriorityBudget: number, completion: () => void): void;
 }
 declare var PTChannelManagerDelegate: {
 
 	prototype: PTChannelManagerDelegate;
 };
 
+/**
+ * @since 16.0
+ */
 interface PTChannelRestorationDelegate extends NSObjectProtocol {
 
 	channelDescriptorForRestoredChannelUUID(channelUUID: NSUUID): PTChannelDescriptor;
@@ -124,6 +158,9 @@ declare var PTChannelRestorationDelegate: {
 	prototype: PTChannelRestorationDelegate;
 };
 
+/**
+ * @since 16.0
+ */
 declare const enum PTChannelTransmitRequestSource {
 
 	Unknown = 0,
@@ -135,6 +172,9 @@ declare const enum PTChannelTransmitRequestSource {
 	HandsfreeButton = 3
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum PTInstantiationError {
 
 	Unknown = 0,
@@ -150,8 +190,14 @@ declare const enum PTInstantiationError {
 	InstantiationAlreadyInProgress = 5
 }
 
+/**
+ * @since 16.0
+ */
 declare var PTInstantiationErrorDomain: string;
 
+/**
+ * @since 16.0
+ */
 declare class PTParticipant extends NSObject {
 
 	static alloc(): PTParticipant; // inherited from NSObject
@@ -167,6 +213,9 @@ declare class PTParticipant extends NSObject {
 	initWithNameImage(name: string, image: UIImage): this;
 }
 
+/**
+ * @since 16.0
+ */
 declare class PTPushResult extends NSObject {
 
 	static alloc(): PTPushResult; // inherited from NSObject
@@ -178,6 +227,9 @@ declare class PTPushResult extends NSObject {
 	static readonly leaveChannelPushResult: PTPushResult;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum PTServiceStatus {
 
 	Ready = 0,
@@ -187,6 +239,9 @@ declare const enum PTServiceStatus {
 	Unavailable = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum PTTransmissionMode {
 
 	FullDuplex = 0,

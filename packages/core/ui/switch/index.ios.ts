@@ -1,11 +1,9 @@
 import { SwitchBase, checkedProperty, offBackgroundColorProperty } from './switch-common';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { iOSNativeHelper, layout } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 
 export * from './switch-common';
-
-const majorVersion = iOSNativeHelper.MajorVersion;
 
 @NativeClass
 class SwitchChangeHandlerImpl extends NSObject {
@@ -30,15 +28,14 @@ class SwitchChangeHandlerImpl extends NSObject {
 	};
 }
 
-const zeroSize = { width: 0, height: 0 };
 export class Switch extends SwitchBase {
 	nativeViewProtected: UISwitch;
 	private _handler: NSObject;
+	// Defer color updates while iOS 26+ "glass" toggle animation runs
+	private _toggleColorTimer: NodeJS.Timeout | null = null;
 
 	constructor() {
 		super();
-		this.width = 51;
-		this.height = 31;
 	}
 
 	public createNativeView() {
@@ -54,20 +51,57 @@ export class Switch extends SwitchBase {
 
 	public disposeNativeView() {
 		this._handler = null;
+		if (this._toggleColorTimer) {
+			clearTimeout(this._toggleColorTimer);
+			this._toggleColorTimer = null;
+		}
 		super.disposeNativeView();
 	}
 
 	private setNativeBackgroundColor(value: UIColor | Color) {
+		const native = this.nativeViewProtected;
 		if (value) {
-			this.nativeViewProtected.onTintColor = value instanceof Color ? value.ios : value;
-			this.nativeViewProtected.tintColor = value instanceof Color ? value.ios : value;
-			this.nativeViewProtected.backgroundColor = value instanceof Color ? value.ios : value;
-			this.nativeViewProtected.layer.cornerRadius = this.nativeViewProtected.frame.size.height / 2;
+			const nativeValue = value instanceof Color ? value.ios : value;
+			// Keep the legacy behavior for on/off colors
+			native.onTintColor = nativeValue;
+			native.tintColor = nativeValue;
+			native.backgroundColor = nativeValue;
+
+			// Since iOS 16+ the control no longer clips its background by default.
+			// Ensure the track-shaped background doesn't bleed outside the control bounds.
+			if (SDK_VERSION >= 16) {
+				native.clipsToBounds = true;
+				native.layer.masksToBounds = true;
+			}
+
+			// Corner radius must be based on the final laid out size; use bounds first,
+			// then fall back to frame. If size isn't known yet, update on the next tick.
+			const height = native.bounds?.size?.height || native.frame?.size?.height || 0;
+			if (height > 0) {
+				native.layer.cornerRadius = height / 2;
+			} else {
+				// Defer until after layout
+				setTimeout(() => {
+					const n = this.nativeViewProtected;
+					if (!n) {
+						return;
+					}
+					const h = n.bounds?.size?.height || n.frame?.size?.height || 0;
+					if (h > 0) {
+						n.layer.cornerRadius = h / 2;
+					}
+				}, 0);
+			}
 		} else {
-			this.nativeViewProtected.onTintColor = null;
-			this.nativeViewProtected.tintColor = null;
-			this.nativeViewProtected.backgroundColor = null;
-			this.nativeViewProtected.layer.cornerRadius = 0;
+			native.onTintColor = null;
+			native.tintColor = null;
+			native.backgroundColor = null;
+			native.layer.cornerRadius = 0;
+			if (SDK_VERSION >= 16) {
+				// Restore default clipping behavior
+				native.clipsToBounds = false;
+				native.layer.masksToBounds = false;
+			}
 		}
 	}
 
@@ -75,14 +109,27 @@ export class Switch extends SwitchBase {
 		// only add :checked pseudo handling on supported iOS versions
 		// ios <13 works but causes glitchy animations when toggling
 		// so we decided to keep the old behavior on older versions.
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			super._onCheckedPropertyChanged(newValue);
 
 			if (this.offBackgroundColor) {
-				if (!newValue) {
-					this.setNativeBackgroundColor(this.offBackgroundColor);
+				const nextColor = !newValue ? this.offBackgroundColor : this.backgroundColor instanceof Color ? this.backgroundColor : new Color(this.backgroundColor);
+
+				// On iOS 26+, coordinate with the system's switch animation:
+				// delay applying track color until the toggle animation finishes to avoid a janky mid-animation recolor.
+				if (SDK_VERSION >= 26) {
+					if (this._toggleColorTimer) {
+						clearTimeout(this._toggleColorTimer);
+					}
+					this._toggleColorTimer = setTimeout(() => {
+						const ANIMATION_DELAY_MS = 0.26; // approx. system toggle duration
+						UIView.animateWithDurationAnimations(ANIMATION_DELAY_MS, () => {
+							this._toggleColorTimer = null;
+							this.setNativeBackgroundColor(nextColor);
+						});
+					}, 0);
 				} else {
-					this.setNativeBackgroundColor(this.backgroundColor instanceof Color ? this.backgroundColor : new Color(this.backgroundColor));
+					this.setNativeBackgroundColor(nextColor);
 				}
 			}
 		}
@@ -91,17 +138,6 @@ export class Switch extends SwitchBase {
 	// @ts-ignore
 	get ios(): UISwitch {
 		return this.nativeViewProtected;
-	}
-
-	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		// It can't be anything different from 51x31
-		const nativeSize = this.nativeViewProtected.sizeThatFits(zeroSize);
-		this.width = nativeSize.width;
-		this.height = nativeSize.height;
-
-		const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), layout.toDevicePixels(51), layout.EXACTLY, 0);
-		const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), layout.toDevicePixels(31), layout.EXACTLY, 0);
-		this.setMeasuredDimension(widthAndState, heightAndState);
 	}
 
 	[checkedProperty.getDefault](): boolean {
@@ -130,7 +166,7 @@ export class Switch extends SwitchBase {
 		return this.nativeViewProtected.onTintColor;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			if (!this.offBackgroundColor || this.checked) {
 				this.setNativeBackgroundColor(value);
 			}
@@ -151,7 +187,7 @@ export class Switch extends SwitchBase {
 		return this.nativeViewProtected.backgroundColor;
 	}
 	[offBackgroundColorProperty.setNative](value: Color | UIColor) {
-		if (majorVersion >= 13) {
+		if (SDK_VERSION >= 13) {
 			if (!this.checked) {
 				this.setNativeBackgroundColor(value);
 			}

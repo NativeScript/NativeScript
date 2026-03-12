@@ -40,10 +40,19 @@ interface os_workgroup_attr_opaque_s {
 }
 declare var os_workgroup_attr_opaque_s: interop.StructType<os_workgroup_attr_opaque_s>;
 
+/**
+ * @since 14.0
+ */
 declare function os_workgroup_cancel(wg: OS_os_workgroup): void;
 
+/**
+ * @since 14.0
+ */
 declare function os_workgroup_create_with_workgroup(name: string | interop.Pointer | interop.Reference<any>, wg: OS_os_workgroup): OS_os_workgroup;
 
+/**
+ * @since 14.0
+ */
 declare function os_workgroup_get_working_arena(wg: OS_os_workgroup, index_out: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
 interface os_workgroup_interval_data_opaque_s {
@@ -52,12 +61,24 @@ interface os_workgroup_interval_data_opaque_s {
 }
 declare var os_workgroup_interval_data_opaque_s: interop.StructType<os_workgroup_interval_data_opaque_s>;
 
-declare function os_workgroup_interval_finish(wg: OS_os_workgroup, data: interop.Pointer | interop.Reference<os_workgroup_interval_data_opaque_s>): number;
+/**
+ * @since 14.0
+ */
+declare function os_workgroup_interval_finish(wg: OS_os_workgroup & OS_os_workgroup_intervalProtocol, data: interop.Pointer | interop.Reference<os_workgroup_interval_data_opaque_s>): number;
 
-declare function os_workgroup_interval_start(wg: OS_os_workgroup, start: number, deadline: number, data: interop.Pointer | interop.Reference<os_workgroup_interval_data_opaque_s>): number;
+/**
+ * @since 14.0
+ */
+declare function os_workgroup_interval_start(wg: OS_os_workgroup & OS_os_workgroup_intervalProtocol, start: number, deadline: number, data: interop.Pointer | interop.Reference<os_workgroup_interval_data_opaque_s>): number;
 
-declare function os_workgroup_interval_update(wg: OS_os_workgroup, deadline: number, data: interop.Pointer | interop.Reference<os_workgroup_interval_data_opaque_s>): number;
+/**
+ * @since 14.0
+ */
+declare function os_workgroup_interval_update(wg: OS_os_workgroup & OS_os_workgroup_intervalProtocol, deadline: number, data: interop.Pointer | interop.Reference<os_workgroup_interval_data_opaque_s>): number;
 
+/**
+ * @since 14.0
+ */
 declare function os_workgroup_join(wg: OS_os_workgroup, token_out: interop.Pointer | interop.Reference<os_workgroup_join_token_opaque_s>): number;
 
 interface os_workgroup_join_token_opaque_s {
@@ -66,12 +87,27 @@ interface os_workgroup_join_token_opaque_s {
 }
 declare var os_workgroup_join_token_opaque_s: interop.StructType<os_workgroup_join_token_opaque_s>;
 
+/**
+ * @since 14.0
+ */
 declare function os_workgroup_leave(wg: OS_os_workgroup, token: interop.Pointer | interop.Reference<os_workgroup_join_token_opaque_s>): void;
 
+/**
+ * @since 14.0
+ */
 declare function os_workgroup_max_parallel_threads(wg: OS_os_workgroup, attr: interop.Pointer | interop.Reference<any>): number;
 
-declare function os_workgroup_parallel_create(name: string | interop.Pointer | interop.Reference<any>, attr: interop.Pointer | interop.Reference<os_workgroup_attr_opaque_s>): OS_os_workgroup;
+/**
+ * @since 14.0
+ */
+declare function os_workgroup_parallel_create(name: string | interop.Pointer | interop.Reference<any>, attr: interop.Pointer | interop.Reference<os_workgroup_attr_opaque_s>): OS_os_workgroup & OS_os_workgroup_parallelProtocol;
 
+/**
+ * @since 14.0
+ */
 declare function os_workgroup_set_working_arena(wg: OS_os_workgroup, arena: interop.Pointer | interop.Reference<any>, max_workers: number, destructor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
 
+/**
+ * @since 14.0
+ */
 declare function os_workgroup_testcancel(wg: OS_os_workgroup): boolean;

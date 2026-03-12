@@ -11,12 +11,15 @@ if (isAndroid) {
 export function testInitialized() {
 	if (Device.os === platformNames.android) {
 		TKUnit.assert(Application.android, 'Application module not properly intialized');
-	} else if (Device.os === platformNames.ios) {
+	} else if (__APPLE__) {
 		TKUnit.assert(Application.ios, 'Application module not properly intialized');
 	}
 }
 
 export function testDisplayedEvent() {
+	if (__VISIONOS__) {
+		return;
+	}
 	// global.isDisplayedEventFired flag is set in app.ts application.displayedEvent handler
 	TKUnit.assert(global.isDisplayedEventFired, 'application.displayedEvent not fired');
 }

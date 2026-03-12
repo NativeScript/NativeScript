@@ -4,9 +4,9 @@
         </ActionBar>
     </Page.actionBar>
 
-    <GridLayout padding="20" class="a11y-demo-page">   
+    <GridLayout class="a11y-demo-page">   
       <ScrollView>
-          <StackLayout>
+          <StackLayout padding="20">
             <Button testID="openModalPageButton" text="Open Modal Page" class="view-item" tap="{{openModal}}" />
             <Button testID="openNormalPageButton" text="Open Normal Page" class="view-item" tap="{{openNormal}}" />
 

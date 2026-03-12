@@ -1,4 +1,4 @@
-import { ShownModallyData, Frame, isIOS, TabView } from '@nativescript/core';
+import { ShownModallyData, Frame, TabView } from '@nativescript/core';
 import * as TKUnit from '../../tk-unit';
 
 export function onShownModally(args: ShownModallyData) {
@@ -13,7 +13,7 @@ export function onShownModally(args: ShownModallyData) {
 	TKUnit.assertEqual(hostFrame.currentPage.modal, tabView, 'hostFrame.currentPage.modal should be equal to the tabView instance on tabView.shownModally event handler.');
 
 	// shownModally raised after page.NavigatedTo on iOS
-	if (isIOS) {
+	if (__APPLE__) {
 		args.closeCallback('return value');
 	}
 }

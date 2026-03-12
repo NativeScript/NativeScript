@@ -1,14 +1,12 @@
 import { ButtonBase } from './button-common';
 import { PseudoClassHandler } from '../core/view';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { textAlignmentProperty } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
-import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
-import { Device } from '../../platform';
+import { TouchGestureEventData, TouchAction, GestureTypes } from '../gestures';
 import { SDK_VERSION } from '../../utils/constants';
-import lazy from '../../utils/lazy';
-import type { Background } from '../styling/background';
 
 export * from './button-common';
 
@@ -44,37 +42,24 @@ function initializeClickListener(): void {
 	ClickListener = ClickListenerImpl;
 }
 
+function onButtonStateChange(args: TouchGestureEventData) {
+	const button = args.object as Button;
+
+	switch (args.action) {
+		case TouchAction.up:
+		case TouchAction.cancel:
+			button._removeVisualState('highlighted');
+			break;
+		case TouchAction.down:
+			button._addVisualState('highlighted');
+			break;
+	}
+}
+
 export class Button extends ButtonBase {
 	nativeViewProtected: android.widget.Button;
 
 	private _stateListAnimator: any;
-	private _highlightedHandler: (args: TouchGestureEventData) => void;
-
-	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
-		const nativeView = this.nativeViewProtected;
-		if (backgroundDrawable && onlyColor) {
-			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
-				backgroundDrawable = (<any>nativeView)._cachedDrawable;
-				// we need to duplicate the drawable or we lose the "default" cached drawable
-				const constantState = backgroundDrawable.getConstantState();
-				if (constantState) {
-					try {
-						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
-						// eslint-disable-next-line no-empty
-					} catch {}
-				}
-				nativeView.setBackground(backgroundDrawable);
-			}
-
-			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
-			backgroundDrawable.mutate();
-			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
-			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
-			(<any>backgroundDrawable).backgroundColor = backgroundColor;
-		} else {
-			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
-		}
-	}
 
 	@profile
 	public createNativeView() {
@@ -88,6 +73,8 @@ export class Button extends ButtonBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		const nativeView = this.nativeViewProtected;
+		// make consistent with iOS, easier on users given css styling
+		nativeView.setAllCaps(false);
 		initializeClickListener();
 		const clickListener = new ClickListener(this);
 		nativeView.setOnClickListener(clickListener);
@@ -105,7 +92,7 @@ export class Button extends ButtonBase {
 		super.resetNativeView();
 
 		if (this._stateListAnimator && SDK_VERSION >= 21) {
-			(<any>this.nativeViewProtected).setStateListAnimator(this._stateListAnimator);
+			this.nativeViewProtected.setStateListAnimator(this._stateListAnimator);
 			this._stateListAnimator = undefined;
 		}
 	}
@@ -113,23 +100,15 @@ export class Button extends ButtonBase {
 	@PseudoClassHandler('normal', 'highlighted', 'pressed', 'active')
 	_updateButtonStateChangeHandler(subscribe: boolean) {
 		if (subscribe) {
-			this._highlightedHandler =
-				this._highlightedHandler ||
-				((args: TouchGestureEventData) => {
-					switch (args.action) {
-						case TouchAction.up:
-						case TouchAction.cancel:
-							this._goToVisualState('normal');
-							break;
-						case TouchAction.down:
-							this._goToVisualState('highlighted');
-							break;
-					}
-				});
-			this.on(GestureTypes.touch, this._highlightedHandler);
+			this.on(GestureTypes[GestureTypes.touch], onButtonStateChange);
 		} else {
-			this.off(GestureTypes.touch, this._highlightedHandler);
+			this.off(GestureTypes[GestureTypes.touch], onButtonStateChange);
+			this._removeVisualState('highlighted');
 		}
+	}
+
+	override get needsNativeDrawableFill(): boolean {
+		return true;
 	}
 
 	[minWidthProperty.getDefault](): CoreTypes.LengthType {
@@ -185,7 +164,7 @@ export class Button extends ButtonBase {
 	}
 
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
-		// Button initial value is center.
+		// Button initial value is center
 		const newValue = value === 'initial' ? 'center' : value;
 		super[textAlignmentProperty.setNative](newValue);
 	}

@@ -1,6 +1,6 @@
 // Types
 import { PropertyChangeData } from '../../data/observable';
-import { ViewBase } from '../core/view-base';
+import { ViewBase, booleanConverter } from '../core/view-base';
 import { FontStyleType, FontWeightType } from '../styling/font-interfaces';
 
 // Requires.
@@ -12,17 +12,21 @@ import { Style } from '../styling/style';
 import { Observable } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
-import { Color } from '../../color';
-import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
+import { ShadowCSSValues, parseCSSShadow } from '../styling/css-shadow';
+import { StrokeCSSValues, parseCSSStroke } from '../styling/css-stroke';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
 const CHILD_FORMATTED_STRING = 'FormattedString';
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
+	public static iosTextAnimationFallback = true;
+
 	public _isSingleLine: boolean;
+	public _isManualRtlTextStyleNeeded: boolean;
 	public text: string;
 	public formattedText: FormattedString;
+	public iosTextAnimation: 'inherit' | boolean;
 
 	/***
 	 * In the NativeScript Core; by default the nativeTextViewProtected points to the same value as nativeViewProtected.
@@ -118,11 +122,19 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.textTransform = value;
 	}
 
-	get textShadow(): CSSShadow {
+	get textShadow(): ShadowCSSValues {
 		return this.style.textShadow;
 	}
-	set textShadow(value: CSSShadow) {
+	set textShadow(value: ShadowCSSValues) {
 		this.style.textShadow = value;
+	}
+
+	get textStroke(): StrokeCSSValues {
+		return this.style.textStroke;
+	}
+
+	set textStroke(value: StrokeCSSValues) {
+		this.style.textStroke = value;
 	}
 
 	get whiteSpace(): CoreTypes.WhiteSpaceType {
@@ -130,6 +142,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 	set whiteSpace(value: CoreTypes.WhiteSpaceType) {
 		this.style.whiteSpace = value;
+	}
+
+	get textOverflow(): CoreTypes.TextOverflowType {
+		return this.style.textOverflow;
+	}
+	set textOverflow(value: CoreTypes.TextOverflowType) {
+		this.style.textOverflow = value;
 	}
 
 	get padding(): string | CoreTypes.LengthType {
@@ -205,15 +224,12 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 }
 
 TextBaseCommon.prototype._isSingleLine = false;
-
-export function isBold(fontWeight: FontWeightType): boolean {
-	return fontWeight === 'bold' || fontWeight === '700' || fontWeight === '800' || fontWeight === '900';
-}
+TextBaseCommon.prototype._isManualRtlTextStyleNeeded = false;
 
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',
 	defaultValue: '',
-	affectsLayout: global.isAndroid,
+	affectsLayout: __ANDROID__,
 });
 textProperty.register(TextBaseCommon);
 
@@ -223,6 +239,20 @@ export const formattedTextProperty = new Property<TextBaseCommon, FormattedStrin
 	valueChanged: onFormattedTextPropertyChanged,
 });
 formattedTextProperty.register(TextBaseCommon);
+
+export const iosTextAnimationProperty = new Property<TextBaseCommon, 'inherit' | boolean>({
+	name: 'iosTextAnimation',
+	defaultValue: 'inherit',
+	affectsLayout: false,
+	valueConverter(value: string) {
+		try {
+			return booleanConverter(value);
+		} catch (e) {
+			return 'inherit';
+		}
+	},
+});
+iosTextAnimationProperty.register(TextBaseCommon);
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
 	if (oldValue) {
@@ -253,7 +283,7 @@ export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: 
 	}
 }
 
-const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('initial', 'left', 'center', 'right', 'justify'));
+const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('left', 'center', 'right', 'justify'));
 export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.TextAlignmentType>({
 	name: 'textAlignment',
 	cssName: 'text-align',
@@ -262,8 +292,8 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.T
 });
 textAlignmentProperty.register(Style);
 
-const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValidator<CoreTypes.TextTransformType>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
-export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransformType>({
+const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValidator<CoreTypes.TextTransformType>('none', 'capitalize', 'uppercase', 'lowercase'));
+export const textTransformProperty = new InheritedCssProperty<Style, CoreTypes.TextTransformType>({
 	name: 'textTransform',
 	cssName: 'text-transform',
 	defaultValue: 'initial',
@@ -271,25 +301,45 @@ export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransf
 });
 textTransformProperty.register(Style);
 
-export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
+export const textShadowProperty = new InheritedCssProperty<Style, string | ShadowCSSValues>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: (value) => {
 		return parseCSSShadow(value);
 	},
 });
 textShadowProperty.register(Style);
 
-const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('initial', 'normal', 'nowrap'));
-export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceType>({
+export const textStrokeProperty = new InheritedCssProperty<Style, string | StrokeCSSValues>({
+	name: 'textStroke',
+	cssName: 'text-stroke',
+	affectsLayout: __APPLE__,
+	valueConverter: (value) => {
+		return parseCSSStroke(value);
+	},
+});
+textStrokeProperty.register(Style);
+
+const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('normal', 'nowrap', 'wrap'));
+export const whiteSpaceProperty = new InheritedCssProperty<Style, CoreTypes.WhiteSpaceType>({
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: whiteSpaceConverter,
 });
 whiteSpaceProperty.register(Style);
+
+const textOverflowConverter = makeParser<CoreTypes.TextOverflowType>(makeValidator<CoreTypes.TextOverflowType>('clip', 'ellipsis'));
+export const textOverflowProperty = new CssProperty<Style, CoreTypes.TextOverflowType>({
+	name: 'textOverflow',
+	cssName: 'text-overflow',
+	defaultValue: 'initial',
+	affectsLayout: __APPLE__,
+	valueConverter: textOverflowConverter,
+});
+textOverflowProperty.register(Style);
 
 const textDecorationConverter = makeParser<CoreTypes.TextDecorationType>(makeValidator<CoreTypes.TextDecorationType>('none', 'underline', 'line-through', 'underline line-through'));
 export const textDecorationProperty = new CssProperty<Style, CoreTypes.TextDecorationType>({
@@ -304,7 +354,7 @@ export const letterSpacingProperty = new InheritedCssProperty<Style, number>({
 	name: 'letterSpacing',
 	cssName: 'letter-spacing',
 	defaultValue: 0,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: (v) => parseFloat(v),
 });
 letterSpacingProperty.register(Style);
@@ -312,7 +362,7 @@ letterSpacingProperty.register(Style);
 export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	name: 'lineHeight',
 	cssName: 'line-height',
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);

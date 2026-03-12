@@ -1,9 +1,10 @@
 import { Font } from '../styling/font';
-import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty } from './search-bar-common';
+import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, clearButtonColorProperty } from './search-bar-common';
 import { isUserInteractionEnabledProperty, isEnabledProperty } from '../core/view';
 import { ad } from '../../utils';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
+import { Background } from '../styling/background';
 
 export * from './search-bar-common';
 
@@ -32,6 +33,7 @@ function initializeNativeClasses(): void {
 		constructor(private owner: SearchBar) {
 			super();
 
+			// @ts-ignore
 			return global.__native(this);
 		}
 
@@ -69,6 +71,7 @@ function initializeNativeClasses(): void {
 		constructor(private owner: SearchBar) {
 			super();
 
+			// @ts-ignore
 			return global.__native(this);
 		}
 
@@ -121,8 +124,15 @@ export class SearchBar extends SearchBarBase {
 
 	public focus(): boolean {
 		const result = super.focus();
+
 		if (result) {
-			ad.showSoftInput(this.nativeViewProtected);
+			if (this.nativeViewProtected) {
+				// Android search view is a view consisted of multiple views, so get the focused view
+				const focusedNativeView = this.nativeViewProtected.findFocus();
+				if (focusedNativeView) {
+					ad.showSoftInput(focusedNativeView);
+				}
+			}
 		}
 
 		return result;
@@ -220,7 +230,7 @@ export class SearchBar extends SearchBarBase {
 	[backgroundInternalProperty.getDefault](): any {
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: any) {
+	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
 		//
 	}
 
@@ -263,6 +273,25 @@ export class SearchBar extends SearchBarBase {
 		const textView = this._getTextView();
 		const color = value instanceof Color ? value.android : value;
 		textView.setHintTextColor(color);
+	}
+	[clearButtonColorProperty.setNative](value: Color) {
+		if (!this.nativeViewProtected || !value) {
+			return;
+		}
+
+		try {
+			// The close (clear) button inside the SearchView can be found by its resource ID
+			const closeButtonId = this.nativeViewProtected.getContext().getResources().getIdentifier('android:id/search_close_btn', null, null);
+			const closeButton = this.nativeViewProtected.findViewById(closeButtonId) as android.widget.ImageView;
+
+			const color = value instanceof Color ? value.android : new Color(value).android;
+
+			if (closeButton) {
+				closeButton.setColorFilter(color);
+			}
+		} catch (err) {
+			console.log('Error setting clear button color:', err);
+		}
 	}
 
 	private _getTextView(): android.widget.TextView {

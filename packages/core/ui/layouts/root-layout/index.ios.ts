@@ -8,16 +8,19 @@ import { parseLinearGradient } from '../../../css/parser';
 export * from './root-layout-common';
 
 export class RootLayout extends RootLayoutBase {
+	nativeViewProtected: UIView;
+
 	// perf optimization: only create and insert gradients if settings change
 	private _currentGradient: string;
 	private _gradientLayer: CAGradientLayer;
 
-	constructor() {
-		super();
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+		this._cleanupPlatformShadeCover();
 	}
 
 	protected _bringToFront(view: View) {
-		(<UIView>this.nativeViewProtected).bringSubviewToFront(view.nativeViewProtected);
+		this.nativeViewProtected.bringSubviewToFront(view.nativeViewProtected);
 	}
 
 	protected _initShadeCover(view: View, shadeOptions: ShadeCoverOptions): void {
@@ -41,9 +44,16 @@ export class RootLayout extends RootLayoutBase {
 					if (options.color !== this._currentGradient) {
 						this._currentGradient = options.color;
 						const parsedGradient = parseLinearGradient(options.color);
-						this._gradientLayer = iosViewUtils.drawGradient(view.nativeViewProtected, LinearGradient.parse(parsedGradient.value), 0);
+
+						this._gradientLayer = CAGradientLayer.new();
+						iosViewUtils.drawGradient(view.nativeViewProtected, this._gradientLayer, LinearGradient.parse(parsedGradient.value));
+						view.nativeViewProtected.layer.insertSublayerAtIndex(this._gradientLayer, 0);
 					}
+				} else {
+					// Dispose gradient if new color is null or a plain color
+					this._cleanupPlatformShadeCover();
 				}
+
 				UIView.animateWithDurationAnimationsCompletion(
 					duration,
 					() => {
@@ -63,7 +73,7 @@ export class RootLayout extends RootLayoutBase {
 					},
 					(completed: boolean) => {
 						resolve();
-					}
+					},
 				);
 			}
 		});
@@ -84,7 +94,7 @@ export class RootLayout extends RootLayoutBase {
 					},
 					(completed: boolean) => {
 						resolve();
-					}
+					},
 				);
 			}
 		});
@@ -92,7 +102,11 @@ export class RootLayout extends RootLayoutBase {
 
 	protected _cleanupPlatformShadeCover(): void {
 		this._currentGradient = null;
-		this._gradientLayer = null;
+
+		if (this._gradientLayer != null) {
+			this._gradientLayer.removeFromSuperlayer();
+			this._gradientLayer = null;
+		}
 	}
 
 	private _applyAnimationProperties(view: View, shadeCoverAnimation: TransitionAnimation): void {

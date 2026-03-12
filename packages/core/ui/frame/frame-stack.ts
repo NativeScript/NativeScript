@@ -1,4 +1,3 @@
-// Types.
 import { FrameBase } from './frame-common';
 
 export const frameStack: Array<FrameBase> = [];
@@ -9,6 +8,10 @@ export function topmost(): FrameBase {
 	}
 
 	return undefined;
+}
+
+export function _isFrameStackEmpty(): boolean {
+	return frameStack.length === 0;
 }
 
 export function _pushInFrameStack(frame: FrameBase): void {

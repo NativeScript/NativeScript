@@ -1,13 +1,14 @@
 import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
-import { backgroundColorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
-import { textAlignmentProperty, whiteSpaceProperty } from '../text-base';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../styling/style-properties';
+import { textAlignmentProperty, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 import { CoreTypes } from '../../core-types';
-import { Color } from '../../color';
 
 export * from './button-common';
+
+const observableVisualStates = ['highlighted']; // States like :disabled are handled elsewhere
 
 export class Button extends ButtonBase {
 	public nativeViewProtected: UIButton;
@@ -16,7 +17,13 @@ export class Button extends ButtonBase {
 	private _stateChangedHandler: ControlStateChangeListener;
 
 	createNativeView() {
-		return UIButton.buttonWithType(UIButtonType.System);
+		const nativeView = UIButton.buttonWithType(UIButtonType.System);
+
+		// This is the default for both platforms
+		if (nativeView.titleLabel) {
+			nativeView.titleLabel.textAlignment = NSTextAlignment.Center;
+		}
+		return nativeView;
 	}
 
 	public initNativeView(): void {
@@ -27,6 +34,12 @@ export class Button extends ButtonBase {
 
 	public disposeNativeView(): void {
 		this._tapHandler = null;
+
+		if (this._stateChangedHandler) {
+			this._stateChangedHandler.stop();
+			this._stateChangedHandler = null;
+		}
+
 		super.disposeNativeView();
 	}
 
@@ -35,33 +48,33 @@ export class Button extends ButtonBase {
 		return this.nativeViewProtected;
 	}
 
-	public onUnloaded() {
-		super.onUnloaded();
-		if (this._stateChangedHandler) {
-			this._stateChangedHandler.stop();
-		}
-	}
-
 	@PseudoClassHandler('normal', 'highlighted', 'pressed', 'active')
 	_updateButtonStateChangeHandler(subscribe: boolean) {
 		if (subscribe) {
 			if (!this._stateChangedHandler) {
-				this._stateChangedHandler = new ControlStateChangeListener(this.nativeViewProtected, (s: string) => {
-					this._goToVisualState(s);
+				const viewRef = new WeakRef<Button>(this);
+
+				this._stateChangedHandler = new ControlStateChangeListener(this.nativeViewProtected, observableVisualStates, (state: string, add: boolean) => {
+					const view = viewRef?.deref?.();
+
+					if (view) {
+						if (add) {
+							view._addVisualState(state);
+						} else {
+							view._removeVisualState(state);
+						}
+					}
 				});
 			}
 			this._stateChangedHandler.start();
 		} else {
 			this._stateChangedHandler.stop();
+
+			// Remove any possible pseudo-class leftovers
+			for (const state of observableVisualStates) {
+				this._removeVisualState(state);
+			}
 		}
-	}
-
-	[backgroundColorProperty.getDefault](): UIColor {
-		return this.nativeViewProtected.backgroundColor;
-	}
-
-	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		this.nativeViewProtected.backgroundColor = value instanceof Color ? value.ios : value;
 	}
 
 	[borderTopWidthProperty.getDefault](): CoreTypes.LengthType {
@@ -206,29 +219,68 @@ export class Button extends ButtonBase {
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Left;
 				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
 				break;
-			case 'initial':
-			case 'center':
-				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Center;
-				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
-				break;
 			case 'right':
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Right;
 				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
+				break;
+			case 'justify':
+				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Justified;
+				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
+				break;
+			default:
+				// initial | center
+				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Center;
+				this.nativeViewProtected.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
 				break;
 		}
 	}
 
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
+		this.adjustLineBreak();
+	}
+
+	[textOverflowProperty.setNative](value: CoreTypes.TextOverflowType) {
+		this.adjustLineBreak();
+	}
+
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		// Handle text ellipsis
+		if (this.textOverflow === 'ellipsis' || this.maxLines > 0) {
+			const nativeTextView = this.nativeViewProtected.titleLabel;
+			nativeTextView.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+		}
+		super[directionProperty.setNative](value);
+	}
+
+	private adjustLineBreak() {
+		const whiteSpace = this.whiteSpace;
+		const textOverflow = this.textOverflow;
 		const nativeView = this.nativeViewProtected.titleLabel;
-		switch (value) {
+		switch (whiteSpace) {
+			case 'wrap':
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 				nativeView.numberOfLines = this.maxLines;
 				break;
-			case 'nowrap':
 			case 'initial':
 				nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
 				nativeView.numberOfLines = 1;
+				break;
+			case 'nowrap':
+				switch (textOverflow) {
+					case 'clip':
+						nativeView.lineBreakMode = NSLineBreakMode.ByClipping;
+						nativeView.numberOfLines = this.maxLines;
+						break;
+					case 'ellipsis':
+						nativeView.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+						nativeView.numberOfLines = 1;
+						break;
+					default:
+						nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
+						nativeView.numberOfLines = 1;
+						break;
+				}
 				break;
 		}
 	}

@@ -1,0 +1,8 @@
+{
+	"migrations": [
+		{ "version": "22.0.0-beta.1", "description": "Updates release version config based on the breaking changes in Nx v22", "implementation": "./src/migrations/update-22-0-0/release-version-config-changes", "package": "nx", "name": "22-0-0-release-version-config-changes" },
+		{ "version": "22.0.0-beta.2", "description": "Consolidates releaseTag* options into nested releaseTag object structure", "implementation": "./src/migrations/update-22-0-0/consolidate-release-tag-config", "package": "nx", "name": "22-0-0-consolidate-release-tag-config" },
+		{ "version": "21.5.0-beta.2", "description": "Migrate the legacy 'development' custom condition to a workspace-unique custom condition name.", "factory": "./src/migrations/update-21-5-0/migrate-development-custom-condition", "package": "@nx/js", "name": "migrate-development-custom-condition" },
+		{ "version": "22.0.0-beta.0", "description": "Remove the deprecated `external` and `externalBuildTargets` options from the `@nx/js:swc` and `@nx/js:tsc` executors.", "factory": "./src/migrations/update-22-0-0/remove-external-options-from-js-executors", "package": "@nx/js", "name": "remove-external-options-from-js-executors" }
+	]
+}

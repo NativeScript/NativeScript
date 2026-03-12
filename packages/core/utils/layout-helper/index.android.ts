@@ -1,5 +1,5 @@
 import * as layoutCommon from './layout-helper-common';
-import { android as AndroidUtils } from '../native-helper';
+import { android as androidUtils } from '../native-helper';
 
 // export * from './layout-helper-common';
 
@@ -7,6 +7,7 @@ let density: number;
 
 let sdkVersion: number;
 let useOldMeasureSpec = false;
+let supportsRtl: boolean;
 
 export namespace layout {
 	// cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Java
@@ -38,7 +39,7 @@ export namespace layout {
 	export function makeMeasureSpec(size: number, mode: number): number {
 		if (sdkVersion === undefined) {
 			// check whether the old layout is needed
-			sdkVersion = AndroidUtils.getApplicationContext().getApplicationInfo().targetSdkVersion;
+			sdkVersion = androidUtils.getApplicationContext().getApplicationInfo().targetSdkVersion;
 			useOldMeasureSpec = sdkVersion <= 17;
 		}
 
@@ -46,12 +47,21 @@ export namespace layout {
 			return size + mode;
 		}
 
-		return (size & ~layoutCommon.MODE_MASK) | (mode & layoutCommon.MODE_MASK);
+		return (size & ~MODE_MASK) | (mode & MODE_MASK);
+	}
+
+	export function hasRtlSupport(): boolean {
+		if (supportsRtl === undefined) {
+			const FLAG_SUPPORTS_RTL = android.content.pm.ApplicationInfo.FLAG_SUPPORTS_RTL;
+			supportsRtl = (androidUtils.getApplicationContext().getApplicationInfo().flags & FLAG_SUPPORTS_RTL) == FLAG_SUPPORTS_RTL;
+		}
+
+		return supportsRtl;
 	}
 
 	export function getDisplayDensity(): number {
 		if (density === undefined) {
-			density = AndroidUtils.getResources().getDisplayMetrics().density;
+			density = androidUtils.getResources().getDisplayMetrics().density;
 		}
 
 		return density;

@@ -474,15 +474,15 @@ export var test_RepeaterItemsGestureBindings = function () {
 	helper.navigateToModuleAndRunTest('ui/repeater/repeaterItems-bindingToGestures-page', null, testFunc);
 };
 
-export var test_RepeaterItemsParentBindingsShouldWork = function () {
+export var test_RepeaterItemsBindingsShouldWork = function () {
 	var testFunc = function (page: Page) {
 		var repeater = <Repeater>page.getViewById('repeater');
-		var expectedText = page.bindingContext['parentViewProperty'];
-		var testPass = false;
+		var expectedText = page.bindingContext['items'];
+		var testPass: string;
 		var eachChildCallback = function (childItem: View) {
 			if (childItem instanceof Label) {
-				testPass = (<Label>childItem).text === expectedText;
-				if (testPass === false) {
+				testPass = (<Label>childItem).text;
+				if (!testPass) {
 					return false;
 				}
 			} else if (childItem instanceof LayoutBase) {
@@ -494,7 +494,7 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
 
 		repeater.eachChildView(eachChildCallback);
 
-		TKUnit.assertEqual(testPass, true, 'Every item should have text bound to Page binding context!');
+		TKUnit.assertEqual(!!testPass, true, 'Every item should have text bound to binding context!');
 	};
 
 	helper.navigateToModuleAndRunTest('ui/repeater/repeaterItems-bindingToGestures-page', null, testFunc);

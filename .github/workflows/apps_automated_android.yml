@@ -1,0 +1,72 @@
+name: 'apps/automated/android'
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - main
+      - 'ci/**'
+  pull_request:
+  workflow_dispatch:
+
+env:
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+
+
+      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: 23.5.0
+
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@826660b82addbef3abff5fa871492ebad618c9e1 # v4.3.3
+        with:
+          main-branch-name: 'main'
+          
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: '3'
+
+      - name: Install NativeScript
+        run: |
+          python3 -m pip install --upgrade pip six
+          npm i -g nativescript --ignore-scripts
+          ns usage-reporting disable
+          ns error-reporting disable
+
+      - name: Setup
+        run: npm run setup
+
+      - name: Unit Tests
+        run: npx nx run-many --target=test --configuration=ci --projects=core
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run tests on Android Emulator
+        uses: reactivecircus/android-emulator-runner@b530d96654c385303d652368551fb075bc2f0b6b # v2.35.0
+        with:
+          api-level: 35
+          arch: x86_64
+          script: npx nx test apps-automated -c=android

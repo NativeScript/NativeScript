@@ -1,16 +1,23 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from '.';
-import { ActionItemBase, ActionBarBase, isVisible, flatProperty, iosIconRenderingModeProperty, traceMissingIcon } from './action-bar-common';
+import { ActionItemBase, ActionBarBase, isVisible, flatProperty, iosIconRenderingModeProperty, traceMissingIcon, iosShadowProperty, iosLargeTitleProperty } from './action-bar-common';
 import { View } from '../core/view';
 import { Color } from '../../color';
-import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
+import { ios as iosBackground } from '../styling/background';
+import { LinearGradient } from '../styling/linear-gradient';
+import { colorProperty, backgroundInternalProperty, backgroundColorProperty, backgroundImageProperty } from '../styling/style-properties';
+import { ios as iosViewUtils } from '../utils';
 import { ImageSource } from '../../image-source';
-import { layout, iOSNativeHelper, isFontIconURI } from '../../utils';
+import { layout, isFontIconURI } from '../../utils';
+import { SDK_VERSION } from '../../utils/constants';
 import { accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityValueProperty } from '../../accessibility/accessibility-properties';
 
 export * from './action-bar-common';
 
-const majorVersion = iOSNativeHelper.MajorVersion;
 const UNSPECIFIED = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
+
+interface NSUINavigationBar extends UINavigationBar {
+	gradientLayer?: CAGradientLayer;
+}
 
 function loadActionIcon(item: ActionItemDefinition): any /* UIImage */ {
 	let is = null;
@@ -140,6 +147,15 @@ export class ActionBar extends ActionBarBase {
 		return this.ios;
 	}
 
+	public disposeNativeView() {
+		const navBar = this.navBar as NSUINavigationBar;
+		if (navBar?.gradientLayer) {
+			navBar.gradientLayer = null;
+		}
+
+		super.disposeNativeView();
+	}
+
 	public _addChildFromBuilder(name: string, value: any) {
 		if (value instanceof NavigationButton) {
 			this.navigationButton = value;
@@ -151,12 +167,12 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	public get _getActualSize(): { width: number; height: number } {
-		const navBar = this.ios;
-		if (!navBar) {
+		const nativeView = this.ios;
+		if (!nativeView) {
 			return { width: 0, height: 0 };
 		}
 
-		const frame = navBar.frame;
+		const frame = nativeView.frame;
 		const size = frame.size;
 		const width = layout.toDevicePixels(size.width);
 		const height = layout.toDevicePixels(size.height);
@@ -204,6 +220,10 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		const viewController = <UIViewController>page.ios;
+		// visionOS may init with different nav stack setup
+		if (!viewController) {
+			return;
+		}
 		const navigationItem: UINavigationItem = viewController.navigationItem;
 		const navController = <UINavigationController>viewController.navigationController;
 
@@ -250,7 +270,7 @@ export class ActionBar extends ActionBarBase {
 		// show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
 		// Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
 		const image = img ? img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal) : null;
-		if (majorVersion >= 15) {
+		if (SDK_VERSION >= 15) {
 			const appearance = this._getAppearance(navigationBar);
 			appearance.setBackIndicatorImageTransitionMaskImage(image, image);
 			this._updateAppearance(navigationBar, appearance);
@@ -269,7 +289,7 @@ export class ActionBar extends ActionBarBase {
 		this.populateMenuItems(navigationItem);
 
 		// update colors explicitly - they may have to be cleared form a previous page
-		this.updateColors(navigationBar);
+		this.updateFills(navigationBar);
 
 		// the 'flat' property may have changed in between pages
 		this.updateFlatness(navigationBar);
@@ -283,6 +303,9 @@ export class ActionBar extends ActionBarBase {
 		navigationItem.accessibilityLabel = this.accessibilityLabel;
 		navigationItem.accessibilityLanguage = this.accessibilityLanguage;
 		navigationItem.accessibilityHint = this.accessibilityHint;
+
+		// Configure large title support for this navigation item
+		this.checkLargeTitleSupport(navigationItem);
 	}
 
 	private populateMenuItems(navigationItem: UINavigationItem) {
@@ -341,12 +364,14 @@ export class ActionBar extends ActionBarBase {
 		return barButtonItem;
 	}
 
-	private updateColors(navBar: UINavigationBar) {
+	private updateFills(navBar: UINavigationBar) {
 		const color = this.color;
 		this.setColor(navBar, color);
 
-		const bgColor = <Color>this.backgroundColor;
-		this.setBackgroundColor(navBar, bgColor);
+		this._setBackgroundColor(navBar, this.style.backgroundColor);
+		this._createBackgroundUIImage(navBar, this.style.backgroundImage, (image: UIImage) => {
+			this._setBackgroundImage(navBar, image);
+		});
 	}
 
 	private setColor(navBar: UINavigationBar, color?: Color) {
@@ -355,7 +380,7 @@ export class ActionBar extends ActionBarBase {
 		}
 		if (color) {
 			const titleTextColor = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
-			if (majorVersion >= 15) {
+			if (SDK_VERSION >= 15) {
 				const appearance = this._getAppearance(navBar);
 				appearance.titleTextAttributes = titleTextColor;
 			}
@@ -369,20 +394,112 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-	private setBackgroundColor(navBar: UINavigationBar, color?: UIColor | Color) {
+	private _setBackgroundColor(navBar: UINavigationBar, color?: UIColor | Color) {
 		if (!navBar) {
 			return;
 		}
 
-		const color_ = color instanceof Color ? color.ios : color;
-		if (majorVersion >= 15) {
+		const nativeColor = color instanceof Color ? color.ios : color;
+		if (__VISIONOS__ || SDK_VERSION >= 15) {
 			const appearance = this._getAppearance(navBar);
 			// appearance.configureWithOpaqueBackground();
-			appearance.backgroundColor = color_;
+			appearance.backgroundColor = nativeColor;
 			this._updateAppearance(navBar, appearance);
 		} else {
 			// legacy styling
-			navBar.barTintColor = color_;
+			navBar.barTintColor = nativeColor;
+		}
+	}
+
+	private _getBackgroundColor(navBar: UINavigationBar) {
+		if (!navBar) {
+			return null;
+		}
+
+		let color: UIColor;
+
+		if (__VISIONOS__ || SDK_VERSION >= 15) {
+			const appearance = this._getAppearance(navBar);
+			color = appearance.backgroundColor;
+		} else {
+			// legacy styling
+			color = navBar.barTintColor;
+		}
+
+		return color;
+	}
+
+	private _setBackgroundImage(navBar: UINavigationBar, image: UIImage) {
+		if (!navBar) {
+			return;
+		}
+
+		if (__VISIONOS__ || SDK_VERSION >= 15) {
+			const appearance = this._getAppearance(navBar);
+			// appearance.configureWithOpaqueBackground();
+			appearance.backgroundImage = image;
+			this._updateAppearance(navBar, appearance);
+		} else {
+			// legacy styling
+
+			// Set a blank image in case image is null and flatness is enabled
+			if (this.flat && !image) {
+				image = UIImage.new();
+			}
+
+			navBar.setBackgroundImageForBarMetrics(image, UIBarMetrics.Default);
+		}
+	}
+
+	private _getBackgroundImage(navBar: UINavigationBar) {
+		if (!navBar) {
+			return null;
+		}
+
+		let image: UIImage;
+
+		if (__VISIONOS__ || SDK_VERSION >= 15) {
+			const appearance = this._getAppearance(navBar);
+			image = appearance.backgroundImage;
+		} else {
+			// legacy styling
+			image = navBar.backgroundImageForBarMetrics(UIBarMetrics.Default);
+		}
+
+		return image;
+	}
+
+	private _createBackgroundUIImage(navBar: NSUINavigationBar, value: string | LinearGradient, callback: (image: UIImage) => void): void {
+		if (!navBar) {
+			return;
+		}
+
+		if (value) {
+			if (value instanceof LinearGradient) {
+				if (!navBar.gradientLayer) {
+					navBar.gradientLayer = CAGradientLayer.new();
+				}
+
+				iosViewUtils.drawGradient(navBar, navBar.gradientLayer, value);
+
+				const renderer = UIGraphicsImageRenderer.alloc().initWithSize(navBar.bounds.size);
+				const img = renderer.imageWithActions((context: UIGraphicsRendererContext) => {
+					navBar.gradientLayer.renderInContext(context.CGContext);
+				});
+
+				callback(img);
+				// Return here to avoid unnecessary cleanups
+				return;
+			}
+
+			// Background image
+			iosBackground.createUIImageFromURI(this, value, false, callback);
+		} else {
+			callback(null);
+		}
+
+		if (navBar.gradientLayer) {
+			navBar.gradientLayer = null;
 		}
 	}
 
@@ -392,8 +509,10 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 
+		console.log('ActionBar._onTitlePropertyChanged', this.title);
+
 		if (page.frame) {
-			page.frame._updateActionBar();
+			page.frame._updateActionBar(page);
 		}
 
 		const navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
@@ -402,25 +521,32 @@ export class ActionBar extends ActionBarBase {
 
 	private updateFlatness(navBar: UINavigationBar) {
 		if (this.flat) {
-			if (majorVersion >= 15) {
+			if (SDK_VERSION >= 15) {
 				const appearance = this._getAppearance(navBar);
 				appearance.shadowColor = UIColor.clearColor;
 				this._updateAppearance(navBar, appearance);
 			} else {
-				navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
+				// Do not apply blank image if background image is already set
+				if (!this.backgroundImage) {
+					navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
+				}
 				navBar.shadowImage = UIImage.new();
 				navBar.translucent = false;
 			}
 		} else {
-			if (majorVersion >= 15) {
+			if (SDK_VERSION >= 15) {
 				if (navBar.standardAppearance) {
 					// Not flat and never been set do nothing.
 					const appearance = navBar.standardAppearance;
-					appearance.shadowColor = UINavigationBarAppearance.new().shadowColor;
+					appearance.shadowColor = this.iosShadow ? UINavigationBarAppearance.new().shadowColor : UIColor.clearColor;
 					this._updateAppearance(navBar, appearance);
 				}
 			} else {
-				navBar.setBackgroundImageForBarMetrics(null, null);
+				// Do not apply blank image if background image is already set
+				if (!this.backgroundImage) {
+					// Bar metrics is needed even when unsetting the image
+					navBar.setBackgroundImageForBarMetrics(null, UIBarMetrics.Default);
+				}
 				navBar.shadowImage = null;
 				navBar.translucent = true;
 			}
@@ -459,7 +585,7 @@ export class ActionBar extends ActionBarBase {
 	public onLayout(left: number, top: number, right: number, bottom: number) {
 		const titleView = this.titleView;
 		if (titleView) {
-			if (majorVersion > 10) {
+			if (SDK_VERSION > 10) {
 				// On iOS 11 titleView is wrapped in another view that is centered with constraints.
 				View.layoutChild(this, titleView, 0, 0, titleView.getMeasuredWidth(), titleView.getMeasuredHeight());
 			} else {
@@ -489,9 +615,9 @@ export class ActionBar extends ActionBarBase {
 		// Page should be attached to frame to update the action bar.
 		if (this.page?.frame?.ios?.controller) {
 			return (<UINavigationController>this.page.frame.ios.controller).navigationBar;
-		} else {
-			return undefined;
 		}
+
+		return null;
 	}
 
 	[colorProperty.getDefault](): UIColor {
@@ -503,24 +629,30 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	[backgroundColorProperty.getDefault](): UIColor {
-		// This getter is never called.
-		// CssAnimationProperty use default value form their constructor.
-		return null;
+		return this._getBackgroundColor(this.navBar);
 	}
 	[backgroundColorProperty.setNative](color: UIColor | Color) {
+		this._setBackgroundColor(this.navBar, color);
+	}
+
+	[backgroundImageProperty.getDefault](): UIImage {
+		return this._getBackgroundImage(this.navBar);
+	}
+	[backgroundImageProperty.setNative](value: string | LinearGradient) {
 		const navBar = this.navBar;
-		this.setBackgroundColor(navBar, color);
+
+		this._createBackgroundUIImage(navBar, value, (image: UIImage) => {
+			this._setBackgroundImage(navBar, image);
+		});
 	}
 
 	[backgroundInternalProperty.getDefault](): UIColor {
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: UIColor) {
-		// tslint:disable-line
-	}
+	// @ts-ignore
+	[backgroundInternalProperty.setNative](value: UIColor) {}
 
 	[flatProperty.setNative](value: boolean) {
-		// tslint:disable-line
 		const navBar = this.navBar;
 		if (navBar) {
 			this.updateFlatness(navBar);
@@ -532,5 +664,36 @@ export class ActionBar extends ActionBarBase {
 	}
 	[iosIconRenderingModeProperty.setNative](value: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate') {
 		this.update();
+	}
+
+	[iosLargeTitleProperty.setNative](value: boolean) {
+		if (!this.navBar) {
+			return;
+		}
+		if (SDK_VERSION >= 11) {
+			this.navBar.prefersLargeTitles = value;
+		}
+	}
+
+	private checkLargeTitleSupport(navigationItem: UINavigationItem) {
+		const navBar = this.navBar;
+		if (!navBar) {
+			return;
+		}
+		// Configure large title display mode only when not using a custom titleView
+		if (SDK_VERSION >= 11) {
+			if (this.iosLargeTitle) {
+				// Always show large title for this navigation item when large titles are enabled
+				navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Always;
+			} else {
+				if (SDK_VERSION >= 26) {
+					// Explicitly disable large titles for this navigation item
+					// Due to overlapping title issue in iOS 26
+					navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Never;
+				} else {
+					navigationItem.largeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Automatic;
+				}
+			}
+		}
 	}
 }

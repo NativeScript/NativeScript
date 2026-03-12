@@ -1,14 +1,29 @@
 import * as types from './types';
 import { dispatchToMainThread, dispatchToUIThread, isMainThread } from './mainthread-helper';
-import emojiRegex from 'emoji-regex';
+import * as emojiRegexModule from 'emoji-regex';
 
-import { GC } from './index';
+// Normalize emoji-regex CommonJS / ESM shapes into a callable function.
+// Some bundlers expose it as module.exports, others as module.exports.default.
+const emojiRegex: (input: string) => RegExp = (() => {
+	const mod: any = emojiRegexModule;
+	if (mod && typeof mod.default === 'function') {
+		return mod.default;
+	}
+	if (typeof mod === 'function') {
+		return mod;
+	}
+	// Fallback: minimal safe regex that never throws.
+	return () => /./g;
+})();
 
 export * from './mainthread-helper';
 export * from './macrotask-scheduler';
+export * from './utils-shared';
 
-export const RESOURCE_PREFIX = 'res://';
 export const FILE_PREFIX = 'file:///';
+export const FONT_PREFIX = 'font://';
+export const RESOURCE_PREFIX = 'res://';
+export const SYSTEM_PREFIX = 'sys://';
 
 export function escapeRegexSymbols(source: string): string {
 	const escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
@@ -59,7 +74,7 @@ export function sanitizeModuleName(moduleName: string, removeExtension = true): 
 	}
 
 	if (removeExtension) {
-		const extToRemove = ['js', 'ts', 'xml', 'html', 'css', 'scss'];
+		const extToRemove = ['js', 'mjs', 'ts', 'xml', 'html', 'css', 'scss'];
 		const extensionRegEx = new RegExp(`(.*)\\.(?:${extToRemove.join('|')})`, 'i');
 		moduleName = moduleName.replace(extensionRegEx, '$1');
 	}
@@ -75,7 +90,8 @@ export function isFileOrResourcePath(path: string): boolean {
 	return (
 		path.indexOf('~/') === 0 || // relative to AppRoot
 		path.indexOf('/') === 0 || // absolute path
-		path.indexOf(RESOURCE_PREFIX) === 0
+		path.indexOf(RESOURCE_PREFIX) === 0 ||
+		path.indexOf(SYSTEM_PREFIX) === 0
 	); // resource
 }
 
@@ -83,10 +99,14 @@ export function isFontIconURI(uri: string): boolean {
 	if (!types.isString(uri)) {
 		return false;
 	}
+	return uri.trim().startsWith(FONT_PREFIX);
+}
 
-	const firstSegment = uri.trim().split('//')[0];
-
-	return firstSegment && firstSegment.indexOf('font:') === 0;
+export function isSystemURI(uri: string): boolean {
+	if (!types.isString(uri)) {
+		return false;
+	}
+	return uri.trim().startsWith(SYSTEM_PREFIX);
 }
 
 export function isDataURI(uri: string): boolean {
@@ -97,20 +117,6 @@ export function isDataURI(uri: string): boolean {
 	const firstSegment = uri.trim().split(',')[0];
 
 	return firstSegment && firstSegment.indexOf('data:') === 0 && firstSegment.indexOf('base64') >= 0;
-}
-
-/**
- * Get file extension from file path
- * @param path file path
- * @returns file extension
- */
-export function getFileExtension(path: string): string {
-	const dotIndex = path.lastIndexOf('.');
-	if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
-		return path.substring(dotIndex);
-	}
-
-	return '';
 }
 
 export function mergeSort(arr, compareFunc) {
@@ -173,116 +179,8 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
 	};
 }
 
-export function debounce(fn: any, delay = 300) {
-	let timer: NodeJS.Timeout;
-	return (...args: Array<any>) => {
-		clearTimeout(timer);
-		timer = setTimeout(() => {
-			fn.apply(this, args);
-		}, delay);
-	};
-}
-
-export function throttle(fn: Function, delay = 300) {
-	let waiting = false;
-	return function (...args) {
-		if (!waiting) {
-			fn.apply(this, args);
-			waiting = true;
-			setTimeout(function () {
-				waiting = false;
-			}, delay);
-		}
-	};
-}
-
-let throttledGC: Map<number, () => void>;
-let debouncedGC: Map<number, () => void>;
-
-export function queueGC(delay = 900, useThrottle?: boolean) {
-	/**
-	 * developers can use different queueGC settings to optimize their own apps
-	 * each setting is stored in a Map to reuse each time app calls it
-	 */
-	if (useThrottle) {
-		if (!throttledGC) {
-			throttledGC = new Map();
-		}
-		if (!throttledGC.get(delay)) {
-			throttledGC.set(
-				delay,
-				throttle(() => GC(), delay)
-			);
-		}
-		throttledGC.get(delay)();
-	} else {
-		if (!debouncedGC) {
-			debouncedGC = new Map();
-		}
-		if (!debouncedGC.get(delay)) {
-			debouncedGC.set(
-				delay,
-				debounce(() => GC(), delay)
-			);
-		}
-		debouncedGC.get(delay)();
-	}
-}
-
 export function isEmoji(value: string): boolean {
 	// TODO: In a future runtime update, we can switch to using Unicode Property Escapes:
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes
-	return emojiRegex().test(value);
-}
-
-/**
- * Default animation values used throughout core
- */
-export const CORE_ANIMATION_DEFAULTS = {
-	duration: 0.35,
-	spring: {
-		tension: 140,
-		friction: 10,
-		mass: 1,
-		velocity: 0,
-	},
-};
-
-/**
- * Get a duration with damping value from various spring related settings.
- * Helpful when needing to convert spring settings to isolated duration value.
- * @param springSettings various spring settings
- * @returns calculated duration with damping from spring settings
- */
-export function getDurationWithDampingFromSpring(springSettings?: { tension?: number; friction?: number; mass?: number; velocity?: number }) {
-	// for convenience, default spring settings are provided
-	const opt = {
-		...CORE_ANIMATION_DEFAULTS.spring,
-		...(springSettings || {}),
-	};
-	const damping = opt.friction / Math.sqrt(2 * opt.tension);
-	const undampedFrequency = Math.sqrt(opt.tension / opt.mass);
-
-	// console.log({
-	// 	damping,
-	// 	undampedFrequency
-	// })
-
-	const epsilon = 0.001;
-	let duration = 0;
-
-	if (damping < 1) {
-		// console.log('damping < 1');
-		const a = Math.sqrt(1 - Math.pow(damping, 2));
-		const b = opt.velocity / (a * undampedFrequency);
-		const c = damping / a;
-		const d = -((b - c) / epsilon);
-		if (d > 0) {
-			duration = Math.log(d) / (damping * undampedFrequency);
-		}
-	}
-	return {
-		duration,
-		damping,
-	};
+	return emojiRegex(value).test(value);
 }

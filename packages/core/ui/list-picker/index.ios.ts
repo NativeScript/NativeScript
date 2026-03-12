@@ -1,6 +1,6 @@
 import { ListPickerBase, selectedIndexProperty, itemsProperty, ItemsSource } from './list-picker-common';
 import { Color } from '../../color';
-import { backgroundColorProperty, colorProperty } from '../styling/style-properties';
+import { colorProperty } from '../styling/style-properties';
 import { profile } from '../../profiling';
 
 export * from './list-picker-common';
@@ -50,13 +50,6 @@ export class ListPicker extends ListPickerBase {
 
 		// Coerce selected index after we have set items to native view.
 		selectedIndexProperty.coerce(this);
-	}
-
-	[backgroundColorProperty.getDefault](): UIColor {
-		return this.ios.backgroundColor;
-	}
-	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		this.ios.backgroundColor = value instanceof Color ? value.ios : value;
 	}
 
 	[colorProperty.getDefault](): UIColor {

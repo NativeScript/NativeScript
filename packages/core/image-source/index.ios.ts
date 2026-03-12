@@ -1,25 +1,15 @@
-// Definitions.
-import { ImageSource as ImageSourceDefinition } from '.';
+import { ImageSource as ImageSourceDefinition, iosSymbolScaleType } from '.';
 import { ImageAsset } from '../image-asset';
-import * as httpModule from '../http';
+import type { ImageBase } from '../ui/image/image-common';
 import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 import { Trace } from '../trace';
-
-// Types.
 import { path as fsPath, knownFolders } from '../file-system';
-import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject } from '../utils';
-
+import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject, SYSTEM_PREFIX } from '../utils';
 import { getScaledDimensions } from './image-source-common';
+import { getImage } from '../http';
 
 export { isFileOrResourcePath };
-
-let http: typeof httpModule;
-function ensureHttp() {
-	if (!http) {
-		http = require('../http');
-	}
-}
 
 export class ImageSource implements ImageSourceDefinition {
 	public android: android.graphics.Bitmap;
@@ -49,7 +39,7 @@ export class ImageSource implements ImageSourceDefinition {
 		// compatibility with Android
 	}
 
-	constructor(nativeSource?: any) {
+	constructor(nativeSource?: UIImage) {
 		if (nativeSource) {
 			this.setNativeSource(nativeSource);
 		}
@@ -68,9 +58,57 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromUrl(url: string): Promise<ImageSource> {
-		ensureHttp();
+		return getImage(url) as Promise<ImageSource>;
+	}
 
-		return http.getImage(url);
+	static iosSystemScaleFor(scale: iosSymbolScaleType) {
+		switch (scale) {
+			case 'small':
+				return UIImageSymbolScale.Small;
+			case 'medium':
+				return UIImageSymbolScale.Medium;
+			case 'large':
+				return UIImageSymbolScale.Large;
+			default:
+				return UIImageSymbolScale.Default;
+		}
+	}
+
+	static fromSystemImageSync(name: string, instance?: ImageBase): ImageSource {
+		if (instance?.iosSymbolScale) {
+			const image = ImageSource.systemImageWithConfig(name, instance);
+			return image ? new ImageSource(image) : null;
+		} else {
+			const image = UIImage.systemImageNamed(name);
+
+			return image ? new ImageSource(image) : null;
+		}
+	}
+
+	static fromSystemImage(name: string, instance?: ImageBase): Promise<ImageSource> {
+		return new Promise<ImageSource>((resolve, reject) => {
+			try {
+				let image: UIImage;
+				if (instance?.iosSymbolScale) {
+					image = ImageSource.systemImageWithConfig(name, instance);
+				} else {
+					image = UIImage.systemImageNamed(name);
+				}
+				if (image) {
+					resolve(new ImageSource(image));
+				} else {
+					reject(new Error(`Failed to load system icon with name: ${name}`));
+				}
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
+	static systemImageWithConfig(name: string, instance?: ImageBase) {
+		const fontSize = instance.style.fontSize;
+		const fontWeight = instance.style.fontWeight;
+		return UIImage.systemImageNamedWithConfiguration(name, fontSize ? UIImageSymbolConfiguration.configurationWithPointSizeWeightScale(fontSize, fontWeight === 'bold' ? UIImageSymbolWeight.Bold : UIImageSymbolWeight.Regular, ImageSource.iosSystemScaleFor(instance.iosSymbolScale)) : UIImageSymbolConfiguration.configurationWithScale(ImageSource.iosSystemScaleFor(instance.iosSymbolScale)));
 	}
 
 	static fromResourceSync(name: string): ImageSource {
@@ -126,7 +164,10 @@ export class ImageSource implements ImageSourceDefinition {
 		}
 
 		if (path.indexOf(RESOURCE_PREFIX) === 0) {
-			return ImageSource.fromResourceSync(path.substr(RESOURCE_PREFIX.length));
+			return ImageSource.fromResourceSync(path.slice(RESOURCE_PREFIX.length));
+		}
+		if (path.indexOf(SYSTEM_PREFIX) === 0) {
+			return ImageSource.fromSystemImageSync(path.slice(SYSTEM_PREFIX.length));
 		}
 
 		return ImageSource.fromFileSync(path);
@@ -296,14 +337,20 @@ export class ImageSource implements ImageSourceDefinition {
 		return !!this.ios;
 	}
 
-	public setNativeSource(source: any): void {
-		if (source && !(source instanceof UIImage)) {
+	public getNativeSource(): UIImage {
+		return this.ios;
+	}
+
+	public setNativeSource(source: UIImage): void {
+		if (!source) {
+			this.ios = null;
+		} else if (source instanceof UIImage) {
+			this.ios = source;
+		} else {
 			if (Trace.isEnabled()) {
 				Trace.write('The method setNativeSource() expects UIImage instance.', Trace.categories.Binding, Trace.messageType.error);
 			}
-			return;
 		}
-		this.ios = source;
 	}
 
 	public saveToFile(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): boolean {

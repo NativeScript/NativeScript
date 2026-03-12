@@ -1,16 +1,12 @@
-// imported for definition purposes only
-import * as httpModule from '../../http';
-import * as imageSourceModule from '../../image-source';
-import * as fsModule from '../../file-system';
-
+import { SDK_VERSION } from '../../utils/constants';
+import { isRealDevice } from '../../utils/native-helper';
 import * as types from '../../utils/types';
 import * as domainDebugger from '../../debugger';
 import { getFilenameFromUrl } from './http-request-common';
-
-export enum HttpResponseEncoding {
-	UTF8,
-	GBK,
-}
+import { ImageSource } from '../../image-source';
+import { File } from '../../file-system';
+import type { HttpRequestOptions, HttpResponse, Headers } from '../http-interfaces';
+import { HttpResponseEncoding } from '../http-interfaces';
 
 const currentDevice = UIDevice.currentDevice;
 const device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? 'Phone' : 'Pad';
@@ -19,7 +15,9 @@ const osVersion = currentDevice.systemVersion;
 const GET = 'GET';
 const USER_AGENT_HEADER = 'User-Agent';
 const USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace('.', '_')} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
-const sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration;
+// mitigate iOS 18.4 simulator regression
+// https://developer.apple.com/forums/thread/777999
+const sessionConfig = SDK_VERSION === 18.4 && !isRealDevice() ? NSURLSessionConfiguration.ephemeralSessionConfiguration : NSURLSessionConfiguration.defaultSessionConfiguration;
 const queue = NSOperationQueue.mainQueue;
 
 function parseJSON(source: string): any {
@@ -54,22 +52,8 @@ function ensureSessionNotFollowingRedirects() {
 	}
 }
 
-let imageSource: typeof imageSourceModule;
-function ensureImageSource() {
-	if (!imageSource) {
-		imageSource = require('../../image-source');
-	}
-}
-
-let fs: typeof fsModule;
-function ensureFileSystem() {
-	if (!fs) {
-		fs = require('../../file-system');
-	}
-}
-
-export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
-	return new Promise<httpModule.HttpResponse>((resolve, reject) => {
+export function request(options: HttpRequestOptions): Promise<HttpResponse> {
+	return new Promise<HttpResponse>((resolve, reject) => {
 		if (!options.url) {
 			reject(new Error('Request url was empty.'));
 
@@ -112,11 +96,12 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 				session = defaultSession;
 			}
 
+			let timestamp = -1;
 			const dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest, function (data: NSData, response: NSHTTPURLResponse, error: NSError) {
 				if (error) {
 					reject(new Error(error.localizedDescription));
 				} else {
-					const headers: httpModule.Headers = {};
+					const headers: Headers = {};
 					if (response && response.allHeaderFields) {
 						const headerFields = response.allHeaderFields;
 
@@ -135,6 +120,24 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 							headers: headers,
 							mimeType: response.MIMEType,
 							fromDiskCache: false,
+							timing: {
+								requestTime: timestamp,
+								proxyStart: -1,
+								proxyEnd: -1,
+								dnsStart: -1,
+								dnsEnd: -1,
+								connectStart: -1,
+								connectEnd: -1,
+								sslStart: -1,
+								sslEnd: -1,
+								serviceWorkerFetchStart: -1,
+								serviceWorkerFetchReady: -1,
+								serviceWorkerFetchEnd: -1,
+								sendStart: -1,
+								sendEnd: -1,
+								receiveHeadersEnd: -1,
+							},
+							headersSize: headers?.length ?? -1,
 						};
 						debugRequest.responseReceived(debugResponse);
 						debugRequest.loadingFinished();
@@ -154,12 +157,10 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 							},
 							toJSON: (encoding?: any) => parseJSON(NSDataToString(data, encoding)),
 							toImage: () => {
-								ensureImageSource();
-
 								return new Promise((resolve, reject) => {
 									(<any>UIImage).tns_decodeImageWithDataCompletion(data, (image) => {
 										if (image) {
-											resolve(new imageSource.ImageSource(image));
+											resolve(new ImageSource(image));
 										} else {
 											reject(new Error('Response content may not be converted to an Image'));
 										}
@@ -167,14 +168,12 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 								});
 							},
 							toFile: (destinationFilePath?: string) => {
-								ensureFileSystem();
-
 								if (!destinationFilePath) {
 									destinationFilePath = getFilenameFromUrl(options.url);
 								}
 								if (data instanceof NSData) {
 									// ensure destination path exists by creating any missing parent directories
-									const file = fs.File.fromPath(destinationFilePath);
+									const file = File.fromPath(destinationFilePath);
 
 									data.writeToFileAtomically(destinationFilePath, true);
 
@@ -191,10 +190,13 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 			});
 
 			if (options.url && debugRequest) {
+				timestamp = Date.now() / 1000;
 				const request = {
 					url: options.url,
 					method: 'GET',
 					headers: options.headers,
+					timestamp,
+					headersSize: options?.headers?.length ?? -1,
 				};
 				debugRequest.requestWillBeSent(request);
 			}
@@ -224,7 +226,7 @@ function NSDataToString(data: any, encoding?: HttpResponseEncoding): string {
 	return encodedString.toString();
 }
 
-export function addHeader(headers: httpModule.Headers, key: string, value: string): void {
+export function addHeader(headers: Headers, key: string, value: string): void {
 	if (!headers[key]) {
 		headers[key] = value;
 	} else if (Array.isArray(headers[key])) {

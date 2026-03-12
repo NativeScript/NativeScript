@@ -2,7 +2,6 @@ import { ListPickerBase, selectedIndexProperty, itemsProperty, ItemsSource } fro
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { Device } from '../../platform';
-import lazy from '../../utils/lazy';
 
 export * from './list-picker-common';
 

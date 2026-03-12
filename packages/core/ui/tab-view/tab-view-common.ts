@@ -12,9 +12,11 @@ export const traceCategory = 'TabView';
 
 @CSSType('TabViewItem')
 export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
+	role: string;
 	private _title = '';
 	private _view: View;
 	private _iconSource: string;
+	iconFontFamily: string;
 
 	get textTransform(): CoreTypes.TextTransformType {
 		return this.style.textTransform;
@@ -94,6 +96,16 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 	public androidSwipeEnabled: boolean;
 	public iosIconRenderingMode: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate';
 	public androidIconRenderingMode: 'alwaysOriginal' | 'alwaysTemplate';
+	/**
+	 * iOS 26+: Optional bottom accessory view that appears beneath the tab bar.
+	 * Provide a NativeScript View instance. On platforms < iOS 26 this is ignored.
+	 */
+	public iosBottomAccessory: View;
+
+	/**
+	 * iOS 26+: Controls tab bar minimize behavior. One of: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp'.
+	 */
+	public iosTabBarMinimizeBehavior: 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp';
 
 	get androidSelectedTabHighlightColor(): Color {
 		return this.style.androidSelectedTabHighlightColor;
@@ -216,7 +228,7 @@ export function traceMissingIcon(icon: string) {
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
 	name: 'selectedIndex',
 	defaultValue: -1,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueChanged: (target, oldValue, newValue) => {
 		target.onSelectedIndexChanged(oldValue, newValue);
 	},
@@ -257,7 +269,7 @@ androidIconRenderingModeProperty.register(TabViewBase);
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
 	name: 'androidOffscreenTabLimit',
 	defaultValue: 1,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: (v) => parseInt(v),
 });
 androidOffscreenTabLimitProperty.register(TabViewBase);
@@ -271,6 +283,20 @@ export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 androidSwipeEnabledProperty.register(TabViewBase);
+
+// iOS 26 bottom accessory support
+export const iosBottomAccessoryProperty = new Property<TabViewBase, View>({
+	name: 'iosBottomAccessory',
+});
+iosBottomAccessoryProperty.register(TabViewBase);
+
+// iOS 26 tab bar minimize behavior
+export type TabBarMinimizeType = 'automatic' | 'never' | 'onScrollDown' | 'onScrollUp';
+export const iosTabBarMinimizeBehaviorProperty = new Property<TabViewBase, TabBarMinimizeType>({
+	name: 'iosTabBarMinimizeBehavior',
+	defaultValue: 'automatic',
+});
+iosTabBarMinimizeBehaviorProperty.register(TabViewBase);
 
 export const tabTextFontSizeProperty = new CssProperty<Style, number>({
 	name: 'tabTextFontSize',
@@ -286,6 +312,12 @@ export const tabTextColorProperty = new CssProperty<Style, Color>({
 	valueConverter: (v) => new Color(v),
 });
 tabTextColorProperty.register(Style);
+
+export const iconFontFamilyProperty = new CssProperty<Style, string>({
+	name: 'iconFontFamily',
+	cssName: 'icon-font-family',
+});
+iconFontFamilyProperty.register(Style);
 
 export const tabBackgroundColorProperty = new CssProperty<Style, Color>({
 	name: 'tabBackgroundColor',

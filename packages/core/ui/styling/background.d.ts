@@ -1,8 +1,10 @@
 import { Color } from '../../color';
 import { View } from '../core/view';
 import { BackgroundRepeat } from '../../css/parser';
-import { LinearGradient } from '../styling/linear-gradient';
-import { CSSShadow } from './css-shadow';
+import { LinearGradient } from './linear-gradient';
+import { ClipPathFunction } from './clip-path-function';
+import { BoxShadow } from './box-shadow';
+import { Background as BackgroundDefinition } from './background-common';
 
 export * from './background-common';
 
@@ -31,8 +33,7 @@ export enum CacheMode {
 // 	public borderTopRightRadius: number;
 // 	public borderBottomRightRadius: number;
 // 	public borderBottomLeftRadius: number;
-// 	public clipPath: string;
-// 	public boxShadow: string | CSSShadow;
+// 	public clipPath: string | ClipPathFunction;
 // 	public clearFlags: number;
 
 // 	public withColor(value: Color): Background;
@@ -53,7 +54,7 @@ export enum CacheMode {
 // 	public withBorderBottomRightRadius(value: number): Background;
 // 	public withBorderBottomLeftRadius(value: number): Background;
 // 	public withClipPath(value: string): Background;
-// 	public withBoxShadow(value: CSSShadow): Background;
+// 	public withBoxShadow(value: BoxShadow): Background;
 
 // 	public isEmpty(): boolean;
 
@@ -62,6 +63,7 @@ export enum CacheMode {
 // 	public hasBorderColor(): boolean;
 // 	public hasBorderWidth(): boolean;
 // 	public hasBorderRadius(): boolean;
+//	public hasBorder(): boolean;
 // 	public hasUniformBorderColor(): boolean;
 // 	public hasUniformBorderWidth(): boolean;
 // 	public hasUniformBorderRadius(): boolean;
@@ -69,12 +71,19 @@ export enum CacheMode {
 // 	public getUniformBorderColor(): Color;
 // 	public getUniformBorderWidth(): number;
 // 	public getUniformBorderRadius(): number;
-// 	public hasBoxShadow(): boolean;
-// 	public getBoxShadow(): CSSShadow;
 // }
 
 export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
+	export function drawBackgroundVisualEffects(view: View): void;
+	export function clearBackgroundVisualEffects(view: View): void;
+	export function createUIImageFromURI(view: View, imageURI: string, flip: boolean, callback: (image: any) => void): void;
+	export function generateClipPath(view: View, bounds: any /* CGRect */): any;
+	export function generateShadowLayerPaths(view: View, bounds: any /* CGRect */): { maskPath: any; shadowPath: any };
+	export function getUniformBorderRadius(view: View, bounds: any /* CGRect */): number;
+	export function generateNonUniformBorderInnerClipRoundedPath(view: View, bounds: any /* CGRect */): any;
+	export function generateNonUniformBorderOuterClipRoundedPath(view: View, bounds: any /* CGRect */): any;
+	export function generateNonUniformMultiColorBorderRoundedPaths(view: View, bounds: any /* CGRect */): Array<any>;
 }
 
 export namespace ad {

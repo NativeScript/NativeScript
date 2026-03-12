@@ -128,7 +128,7 @@ export const on = Application.on.bind(Application);
  * Application.orientation()
  * ```
  */
-export const orientation = Application.orientation.bind(Application)
+export const orientation = Application.orientation.bind(Application);
 
 /**
  * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
@@ -219,6 +219,26 @@ export const systemAppearance = Application.systemAppearance.bind(Application);
  * ```
  */
 export const systemAppearanceChanged = Application.systemAppearanceChanged.bind(Application);
+
+/**
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
+ * Use the `Application` class imported from "@nativescript/core" instead:
+ * ```ts
+ * import { Application } from "@nativescript/core";
+ * Application.layoutDirection()
+ * ```
+ */
+export const layoutDirection = Application.layoutDirection.bind(Application);
+
+/**
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
+ * Use the `Application` class imported from "@nativescript/core" instead:
+ * ```ts
+ * import { Application } from "@nativescript/core";
+ * Application.layoutDirectionChanged()
+ * ```
+ */
+export const layoutDirectionChanged = Application.layoutDirectionChanged.bind(Application);
 
 /**
  * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
@@ -329,6 +349,16 @@ export const suspendEvent = Application.suspendEvent;
  * ```
  */
 export const systemAppearanceChangedEvent = Application.systemAppearanceChangedEvent;
+
+/**
+ * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.
+ * Use the `Application` class imported from "@nativescript/core" instead:
+ * ```ts
+ * import { Application } from "@nativescript/core";
+ * Application.layoutDirectionChangedEvent
+ * ```
+ */
+export const layoutDirectionChangedEvent = Application.layoutDirectionChangedEvent;
 
 /**
  * @deprecated Deep imports into the Application module are deprecated and will be removed in a future release.

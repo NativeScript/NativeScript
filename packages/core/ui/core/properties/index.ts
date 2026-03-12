@@ -1,57 +1,37 @@
 import { ViewBase } from '../view-base';
-
-// Types.
 import { PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Trace } from '../../../trace';
 
 import { Style } from '../../styling/style';
 
 import { profile } from '../../../profiling';
+import { unsetValue, PropertyOptions, CoerciblePropertyOptions, CssPropertyOptions, ShorthandPropertyOptions, CssAnimationPropertyOptions, isCssWideKeyword, isCssUnsetValue, isResetValue } from './property-shared';
+import { calc } from '@csstools/css-calc';
 
-/**
- * Value specifying that Property should be set to its initial value.
- */
-export const unsetValue: any = new Object();
-
-export interface PropertyOptions<T, U> {
-	readonly name: string;
-	readonly defaultValue?: U;
-	readonly affectsLayout?: boolean;
-	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
-	readonly valueConverter?: (value: string) => U;
-}
-
-export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
-	readonly coerceValue: (t: T, u: U) => U;
-}
-
-export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
-	readonly cssName: string;
-}
-
-export interface ShorthandPropertyOptions<P> {
-	readonly name: string;
-	readonly cssName: string;
-	readonly converter: (value: string | P) => [CssProperty<any, any> | CssAnimationProperty<any, any>, any][];
-	readonly getter: (this: Style) => string | P;
-}
-
-export interface CssAnimationPropertyOptions<T, U> {
-	readonly name: string;
-	readonly cssName?: string;
-	readonly defaultValue?: U;
-	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
-	readonly valueConverter?: (value: string) => U;
-}
+// Backwards compatibility
+export { unsetValue } from './property-shared';
 
 const cssPropertyNames: string[] = [];
+const HAS_OWN = Object.prototype.hasOwnProperty;
 const symbolPropertyMap = {};
 const cssSymbolPropertyMap = {};
 
+// Hoisted regex/constants for hot paths to avoid re-allocation
+const CSS_VARIABLE_NAME_RE = /^--[^,\s]+?$/;
+const DIP_RE = /([0-9]+(\.[0-9]+)?)dip\b/g;
+const UNSET_RE = /unset/g;
+const INFINITY_RE = /infinity/g;
+
 const inheritableProperties = new Array<InheritedProperty<any, any>>();
 const inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
+
+const enum ValueSource {
+	Default = 0,
+	Inherited = 1,
+	Css = 2,
+	Local = 3,
+	Keyframe = 4,
+}
 
 function print(map) {
 	const symbols = Object.getOwnPropertySymbols(map);
@@ -68,14 +48,6 @@ export function _printUnregisteredProperties(): void {
 	print(cssSymbolPropertyMap);
 }
 
-const enum ValueSource {
-	Default = 0,
-	Inherited = 1,
-	Css = 2,
-	Local = 3,
-	Keyframe = 4,
-}
-
 export function _getProperties(): Property<any, any>[] {
 	return getPropertiesFromMap(symbolPropertyMap) as Property<any, any>[];
 }
@@ -85,7 +57,7 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 }
 
 export function isCssVariable(property: string) {
-	return /^--[^,\s]+?$/.test(property);
+	return CSS_VARIABLE_NAME_RE.test(property);
 }
 
 export function isCssCalcExpression(value: string) {
@@ -150,17 +122,35 @@ export function _evaluateCssCalcExpression(value: string) {
 	}
 
 	if (isCssCalcExpression(value)) {
-		// WORKAROUND: reduce-css-calc can't handle the dip-unit.
-		return require('reduce-css-calc')(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1'));
+		return calc(_replaceKeywordsWithValues(_replaceDip(value)));
 	} else {
 		return value;
 	}
+	return value;
+}
+
+function _replaceDip(value: string) {
+	return value.replace(DIP_RE, '$1');
+}
+
+function _replaceKeywordsWithValues(value: string) {
+	let cssValue = value;
+	if (cssValue.includes('unset')) {
+		cssValue = cssValue.replace(UNSET_RE, '0');
+	}
+	if (cssValue.includes('infinity')) {
+		cssValue = cssValue.replace(INFINITY_RE, '999999');
+	}
+	return cssValue;
 }
 
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
-	const props = [];
-	Object.getOwnPropertySymbols(map).forEach((symbol) => props.push(map[symbol]));
-
+	const symbols = Object.getOwnPropertySymbols(map);
+	const len = symbols.length;
+	const props = new Array(len);
+	for (let i = 0; i < len; i++) {
+		props[i] = map[symbols[i]];
+	}
 	return props;
 }
 
@@ -210,6 +200,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 		let affectsLayout: boolean = options.affectsLayout;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
+		let overrideConverter = false;
 
 		this.overrideHandlers = function (options: PropertyOptions<T, U>) {
 			if (typeof options.equalityComparer !== 'undefined') {
@@ -223,13 +214,14 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
+				overrideConverter = true;
 			}
 		};
 
 		const property = this;
 
 		this.set = function (this: T, boxedValue: U): void {
-			const reset = boxedValue === unsetValue;
+			const reset = isResetValue(boxedValue);
 			let value: U;
 			let wrapped: boolean;
 			if (reset) {
@@ -239,7 +231,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 				value = wrapped ? WrappedValue.unwrap(boxedValue) : boxedValue;
 
 				if (valueConverter && typeof value === 'string') {
-					value = valueConverter(value);
+					value = overrideConverter ? valueConverter.call(this, value) : valueConverter(value);
 				}
 			}
 
@@ -261,13 +253,11 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 							if (this._suspendedUpdates) {
 								this._suspendedUpdates[propertyName] = property;
 							}
+						} else if (defaultValueKey in this) {
+							this[setNative](this[defaultValueKey]);
+							delete this[defaultValueKey];
 						} else {
-							if (defaultValueKey in this) {
-								this[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								this[setNative](defaultValue);
-							}
+							this[setNative](defaultValue);
 						}
 					}
 				} else {
@@ -384,7 +374,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
 		let coerceCallback = options.coerceValue;
-
+		let overrideConverter = false;
 		const property = this;
 
 		this.overrideHandlers = function (options: CoerciblePropertyOptions<T, U>) {
@@ -399,6 +389,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
+				overrideConverter = true;
 			}
 			if (typeof options.coerceValue !== 'undefined') {
 				coerceCallback = options.coerceValue;
@@ -412,7 +403,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 		};
 
 		this.set = function (this: T, boxedValue: U): void {
-			const reset = boxedValue === unsetValue;
+			const reset = isResetValue(boxedValue);
 			let value: U;
 			let wrapped: boolean;
 			if (reset) {
@@ -423,7 +414,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 				value = wrapped ? WrappedValue.unwrap(boxedValue) : boxedValue;
 
 				if (valueConverter && typeof value === 'string') {
-					value = valueConverter(value);
+					value = overrideConverter ? valueConverter.call(this, value) : valueConverter(value);
 				}
 
 				this[coerceKey] = value;
@@ -445,13 +436,11 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 							if (this._suspendedUpdates) {
 								this._suspendedUpdates[propertyName] = property;
 							}
+						} else if (defaultValueKey in this) {
+							this[setNative](this[defaultValueKey]);
+							delete this[defaultValueKey];
 						} else {
-							if (defaultValueKey in this) {
-								this[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								this[setNative](defaultValue);
-							}
+							this[setNative](defaultValue);
 						}
 					}
 				} else {
@@ -521,11 +510,11 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 				let unboxedValue: U;
 				let newValueSource: number;
 
-				if (value === unsetValue) {
-					// If unsetValue - we want to reset the property.
+				if (isResetValue(value)) {
 					const parent: ViewBase = that.parent;
-					// If we have parent and it has non-default value we use as our inherited value.
-					if (parent && parent[sourceKey] !== ValueSource.Default) {
+
+					// If value is not initial or unset and view has a parent that has non-default value, use it as the reset value.
+					if (value !== 'initial' && parent && parent[sourceKey] !== ValueSource.Default) {
 						unboxedValue = parent[name];
 						newValueSource = ValueSource.Inherited;
 					} else {
@@ -573,7 +562,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 	}
 }
 
-export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
+export class CssProperty<T extends Style, U> {
 	private registered: boolean;
 
 	public readonly name: string;
@@ -598,7 +587,10 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 		const propertyName = options.name;
 		this.name = propertyName;
 
-		cssPropertyNames.push(options.cssName);
+		// Guard against undefined cssName
+		if (options.cssName) {
+			cssPropertyNames.push(options.cssName);
+		}
 
 		this.cssName = `css:${options.cssName}`;
 		this.cssLocalName = options.cssName;
@@ -626,6 +618,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 		let equalityComparer = options.equalityComparer;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
+		let overrideConverter = false;
 
 		this.overrideHandlers = function (options: CssPropertyOptions<T, U>) {
 			if (typeof options.equalityComparer !== 'undefined') {
@@ -639,6 +632,7 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
+				overrideConverter = true;
 			}
 		};
 
@@ -652,14 +646,15 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 				return;
 			}
 
-			const reset = newValue === unsetValue || newValue === '';
+			const reset = isResetValue(newValue) || newValue === '';
 			let value: U;
+
 			if (reset) {
 				value = defaultValue;
 				delete this[sourceKey];
 			} else {
 				this[sourceKey] = ValueSource.Local;
-				value = valueConverter && typeof newValue === 'string' ? valueConverter(newValue) : <U>newValue;
+				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(this, newValue) : valueConverter(newValue)) : <U>newValue;
 			}
 
 			const oldValue = <U>(key in this ? this[key] : defaultValue);
@@ -677,13 +672,11 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 							if (view._suspendedUpdates) {
 								view._suspendedUpdates[propertyName] = property;
 							}
+						} else if (defaultValueKey in this) {
+							view[setNative](this[defaultValueKey]);
+							delete this[defaultValueKey];
 						} else {
-							if (defaultValueKey in this) {
-								view[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								view[setNative](defaultValue);
-							}
+							view[setNative](defaultValue);
 						}
 					}
 				} else {
@@ -737,13 +730,14 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 				return;
 			}
 
-			const reset = newValue === unsetValue || newValue === '';
+			const reset = isResetValue(newValue) || newValue === '';
 			let value: U;
+
 			if (reset) {
 				value = defaultValue;
 				delete this[sourceKey];
 			} else {
-				value = valueConverter && typeof newValue === 'string' ? valueConverter(newValue) : <U>newValue;
+				value = valueConverter && typeof newValue === 'string' ? (overrideConverter ? valueConverter.call(this, newValue) : valueConverter(newValue)) : <U>newValue;
 				this[sourceKey] = ValueSource.Css;
 			}
 
@@ -762,13 +756,11 @@ export class CssProperty<T extends Style, U> implements CssProperty<T, U> {
 							if (view._suspendedUpdates) {
 								view._suspendedUpdates[propertyName] = property;
 							}
+						} else if (defaultValueKey in this) {
+							view[setNative](this[defaultValueKey]);
+							delete this[defaultValueKey];
 						} else {
-							if (defaultValueKey in this) {
-								view[setNative](this[defaultValueKey]);
-								delete this[defaultValueKey];
-							} else {
-								view[setNative](defaultValue);
-							}
+							view[setNative](defaultValue);
 						}
 					}
 				} else {
@@ -875,7 +867,9 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 		const propertyName = options.name;
 		this.name = propertyName;
 
-		cssPropertyNames.push(options.cssName);
+		if (options.cssName) {
+			cssPropertyNames.push(options.cssName);
+		}
 
 		CssAnimationProperty.properties[propertyName] = this;
 		if (options.cssName && options.cssName !== propertyName) {
@@ -920,10 +914,10 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 				get: getsComputed
 					? function (this: T) {
 							return this[computedValue];
-					  }
+						}
 					: function (this: T) {
 							return this[symbol];
-					  },
+						},
 				set(this: T, boxedValue: U | string) {
 					const view = this.viewRef.get();
 					if (!view) {
@@ -935,16 +929,16 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 					const oldValue = this[computedValue];
 					const oldSource = this[computedSource];
 					const wasSet = oldSource !== ValueSource.Default;
-					const reset = boxedValue === unsetValue || boxedValue === '';
+					const reset = isResetValue(boxedValue) || boxedValue === '';
 
 					if (reset) {
-						this[symbol] = unsetValue;
+						this[symbol] = boxedValue;
 						if (this[computedSource] === propertySource) {
 							// Fallback to lower value source.
-							if (this[styleValue] !== unsetValue) {
+							if (!isResetValue(this[styleValue])) {
 								this[computedSource] = ValueSource.Local;
 								this[computedValue] = this[styleValue];
-							} else if (this[cssValue] !== unsetValue) {
+							} else if (!isResetValue(this[cssValue])) {
 								this[computedSource] = ValueSource.Css;
 								this[computedValue] = this[cssValue];
 							} else {
@@ -954,7 +948,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 						}
 					} else {
 						if (options.valueConverter && typeof boxedValue === 'string') {
-							boxedValue = options.valueConverter(boxedValue);
+							boxedValue = options.valueConverter.call(this, boxedValue);
 						}
 						this[symbol] = boxedValue;
 						if (this[computedSource] <= propertySource) {
@@ -1075,13 +1069,14 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 		const getDefault = this.getDefault;
 		const setNative = this.setNative;
 		const defaultValueKey = this.defaultValueKey;
-
 		const eventName = propertyName + 'Change';
-		let defaultValue: U = options.defaultValue;
+		const defaultValue: U = options.defaultValue;
+
 		let affectsLayout: boolean = options.affectsLayout;
 		let equalityComparer = options.equalityComparer;
 		let valueChanged = options.valueChanged;
 		let valueConverter = options.valueConverter;
+		let overrideConverter = false;
 
 		const property = this;
 
@@ -1097,6 +1092,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			}
 			if (typeof options.valueConverter !== 'undefined') {
 				valueConverter = options.valueConverter;
+				overrideConverter = true;
 			}
 		};
 
@@ -1105,12 +1101,12 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 				const view = this.viewRef.get();
 				if (!view) {
 					Trace.write(`${boxedValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
-
 					return;
 				}
 
-				const reset = boxedValue === unsetValue || boxedValue === '';
+				const reset = isResetValue(boxedValue) || boxedValue === '';
 				const currentValueSource: number = this[sourceKey] || ValueSource.Default;
+
 				if (reset) {
 					// If we want to reset cssValue and we have localValue - return;
 					if (valueSource === ValueSource.Css && currentValueSource === ValueSource.Local) {
@@ -1125,13 +1121,13 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 				const oldValue: U = key in this ? this[key] : defaultValue;
 				let value: U;
 				let unsetNativeValue = false;
+
 				if (reset) {
-					// If unsetValue - we want to reset this property.
-					const parent = view.parent;
-					const style = parent ? parent.style : null;
-					// If we have parent and it has non-default value we use as our inherited value.
-					if (style && style[sourceKey] > ValueSource.Default) {
-						value = style[propertyName];
+					const parentStyle = view.parent ? view.parent.style : null;
+
+					// If value is not initial or unset and view has a parent that has non-default value, use it as the reset value.
+					if (boxedValue !== 'initial' && parentStyle && parentStyle[sourceKey] > ValueSource.Default) {
+						value = parentStyle[propertyName];
 						this[sourceKey] = ValueSource.Inherited;
 						this[key] = value;
 					} else {
@@ -1143,7 +1139,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 				} else {
 					this[sourceKey] = valueSource;
 					if (valueConverter && typeof boxedValue === 'string') {
-						value = valueConverter(boxedValue);
+						value = overrideConverter ? valueConverter.call(this, boxedValue) : valueConverter(boxedValue);
 					} else {
 						value = boxedValue;
 					}
@@ -1162,21 +1158,19 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 							if (view._suspendedUpdates) {
 								view._suspendedUpdates[propertyName] = property;
 							}
-						} else {
-							if (unsetNativeValue) {
-								if (defaultValueKey in this) {
-									view[setNative](this[defaultValueKey]);
-									delete this[defaultValueKey];
-								} else {
-									view[setNative](defaultValue);
-								}
+						} else if (unsetNativeValue) {
+							if (defaultValueKey in this) {
+								view[setNative](this[defaultValueKey]);
+								delete this[defaultValueKey];
 							} else {
-								if (!(defaultValueKey in this)) {
-									this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
-								}
-
-								view[setNative](value);
+								view[setNative](defaultValue);
 							}
+						} else {
+							if (!(defaultValueKey in this)) {
+								this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+							}
+
+							view[setNative](value);
 						}
 					}
 
@@ -1321,6 +1315,8 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 	}
 }
 
+export { makeValidator, makeParser } from '../../../core-types/validators';
+
 function inheritablePropertyValuesOn(view: ViewBase): Array<{ property: InheritedProperty<any, any>; value: any }> {
 	const array = new Array<{
 		property: InheritedProperty<any, any>;
@@ -1373,6 +1369,7 @@ export function applyPendingNativeSetters(view: ViewBase): void {
 	// TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
 	const suspendedUpdates = view._suspendedUpdates;
 	for (const propertyName in suspendedUpdates) {
+		if (!HAS_OWN.call(suspendedUpdates, propertyName)) continue;
 		const property = <PropertyInterface>suspendedUpdates[propertyName];
 		const setNative = property.setNative;
 		if (view[setNative]) {
@@ -1537,35 +1534,14 @@ export function propagateInheritableCssProperties(parentStyle: Style, childStyle
 	}
 }
 
-export function makeValidator<T>(...values: T[]): (value: any) => value is T {
-	const set = new Set(values);
-
-	return (value: any): value is T => set.has(value);
-}
-
-export function makeParser<T>(isValid: (value: any) => boolean, allowNumbers = false): (value: any) => T {
-	return (value) => {
-		const lower = value && value.toLowerCase();
-		if (isValid(lower)) {
-			return lower;
-		} else {
-			if (allowNumbers) {
-				const convNumber = +value;
-				if (!isNaN(convNumber)) {
-					return value;
-				}
-			}
-			throw new Error('Invalid value: ' + value);
-		}
-	};
-}
-
 export function getSetProperties(view: ViewBase): [string, any][] {
 	const result = [];
 
-	Object.getOwnPropertyNames(view).forEach((prop) => {
+	const ownProps = Object.getOwnPropertyNames(view);
+	for (let i = 0; i < ownProps.length; i++) {
+		const prop = ownProps[i];
 		result.push([prop, view[prop]]);
-	});
+	}
 
 	const symbols = Object.getOwnPropertySymbols(view);
 	for (const symbol of symbols) {
@@ -1585,7 +1561,9 @@ export function getComputedCssValues(view: ViewBase): [string, any][] {
 	const result = [];
 	const style = view.style;
 	for (const prop of cssPropertyNames) {
-		result.push([prop, style[prop]]);
+		if (prop !== undefined && prop !== null) {
+			result.push([prop, style[prop]]);
+		}
 	}
 
 	// Add these to enable box model in chrome-devtools styles tab

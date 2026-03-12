@@ -1,10 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as segmentedBarTestsNative from './segmented-bar-tests-native';
 import { buildUIAndRunTest } from '../../ui-helper';
-import { View } from '@nativescript/core/ui/core/view';
-import { BindingOptions } from '@nativescript/core/ui/core/bindable';
-import { Observable } from '@nativescript/core/data/observable';
-import { Color } from '@nativescript/core/color';
+import { Color, Observable, BindingOptions, View } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 
 // >> article-require-segmentedbar-module
@@ -276,3 +273,21 @@ export function test_SettingNumberAsTitleFromXML_DoesNotThrow() {
 		TKUnit.assertEqual(item.title, '1');
 	});
 }
+
+/*export function testBackgroundColorUpdatedAfterItemSelected() {
+    let segmentedBar = new segmentedBarModule.SegmentedBar();
+	let item1 = new segmentedBarModule.SegmentedBarItem();
+	(<any>item1).title = 1;
+	let item2 = new segmentedBarModule.SegmentedBarItem();
+	(<any>item2).title = 2;
+	let item3 = new segmentedBarModule.SegmentedBarItem();
+	(<any>item3).title = 3;
+	let item4 = new segmentedBarModule.SegmentedBarItem();
+	(<any>item4).title = 4;
+
+	segmentedBar.items = [item1, item2, item3, item4];
+
+    buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
+		TKUnit.assertTrue(segmentedBarTestsNative.checkBackgroundColorUpdatedAfterItemSelected(segmentedBar));
+	});
+}*/

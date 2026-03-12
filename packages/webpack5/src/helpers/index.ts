@@ -10,6 +10,7 @@ import { applyFileReplacements } from './fileReplacements';
 import { addCopyRule, removeCopyRule } from './copyRules';
 import { error, info, warn, warnOnce } from './log';
 import { determineProjectFlavor } from './flavor';
+import { readTsConfig } from './typescript';
 import { getValue } from './config';
 import { getIPS } from './host';
 import {
@@ -26,7 +27,6 @@ import {
 	getPlatform,
 	getPlatformName,
 } from './platform';
-import { readTsConfig } from './typescript';
 
 // intentionally populated manually
 // as this generates nicer typings

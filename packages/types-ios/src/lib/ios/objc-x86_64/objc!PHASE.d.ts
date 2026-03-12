@@ -1,4 +1,7 @@
 
+/**
+ * @since 15.0
+ */
 declare class PHASEAmbientMixerDefinition extends PHASEMixerDefinition {
 
 	static alloc(): PHASEAmbientMixerDefinition; // inherited from NSObject
@@ -18,6 +21,9 @@ declare class PHASEAmbientMixerDefinition extends PHASEMixerDefinition {
 	initWithChannelLayoutOrientationIdentifier(layout: AVAudioChannelLayout, orientation: simd_quatf, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEAsset extends NSObject {
 
 	static alloc(): PHASEAsset; // inherited from NSObject
@@ -44,6 +50,9 @@ declare const enum PHASEAssetError {
 
 declare var PHASEAssetErrorDomain: string;
 
+/**
+ * @since 15.0
+ */
 declare class PHASEAssetRegistry extends NSObject {
 
 	static alloc(): PHASEAssetRegistry; // inherited from NSObject
@@ -54,13 +63,13 @@ declare class PHASEAssetRegistry extends NSObject {
 
 	assetForIdentifier(identifier: string): PHASEAsset;
 
-	registerGlobalMetaParameterError(metaParameterDefinition: PHASEMetaParameterDefinition): PHASEGlobalMetaParameterAsset;
+	registerGlobalMetaParameterError(metaParameterDefinition: PHASEMetaParameterDefinition, error?: interop.Reference<NSError>): PHASEGlobalMetaParameterAsset;
 
-	registerSoundAssetAtURLIdentifierAssetTypeChannelLayoutNormalizationModeError(url: NSURL, identifier: string, assetType: PHASEAssetType, channelLayout: AVAudioChannelLayout, normalizationMode: PHASENormalizationMode): PHASESoundAsset;
+	registerSoundAssetAtURLIdentifierAssetTypeChannelLayoutNormalizationModeError(url: NSURL, identifier: string, assetType: PHASEAssetType, channelLayout: AVAudioChannelLayout, normalizationMode: PHASENormalizationMode, error?: interop.Reference<NSError>): PHASESoundAsset;
 
-	registerSoundAssetWithDataIdentifierFormatNormalizationModeError(data: NSData, identifier: string, format: AVAudioFormat, normalizationMode: PHASENormalizationMode): PHASESoundAsset;
+	registerSoundAssetWithDataIdentifierFormatNormalizationModeError(data: NSData, identifier: string, format: AVAudioFormat, normalizationMode: PHASENormalizationMode, error?: interop.Reference<NSError>): PHASESoundAsset;
 
-	registerSoundEventAssetWithRootNodeIdentifierError(rootNode: PHASESoundEventNodeDefinition, identifier: string): PHASESoundEventNodeAsset;
+	registerSoundEventAssetWithRootNodeIdentifierError(rootNode: PHASESoundEventNodeDefinition, identifier: string, error?: interop.Reference<NSError>): PHASESoundEventNodeAsset;
 
 	unregisterAssetWithIdentifierCompletion(identifier: string, handler: (p1: boolean) => void): void;
 }
@@ -72,6 +81,19 @@ declare const enum PHASEAssetType {
 	Streamed = 1
 }
 
+/**
+ * @since 18.0
+ */
+declare const enum PHASEAutomaticHeadTrackingFlags {
+
+	Orientation = 1,
+
+	Position = 2
+}
+
+/**
+ * @since 15.0
+ */
 declare class PHASEBlendNodeDefinition extends PHASESoundEventNodeDefinition {
 
 	static alloc(): PHASEBlendNodeDefinition; // inherited from NSObject
@@ -116,6 +138,9 @@ declare const enum PHASECalibrationMode {
 	AbsoluteSpl = 2
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASECardioidDirectivityModelParameters extends PHASEDirectivityModelParameters {
 
 	static alloc(): PHASECardioidDirectivityModelParameters; // inherited from NSObject
@@ -129,6 +154,9 @@ declare class PHASECardioidDirectivityModelParameters extends PHASEDirectivityMo
 	initWithSubbandParameters(subbandParameters: NSArray<PHASECardioidDirectivityModelSubbandParameters> | PHASECardioidDirectivityModelSubbandParameters[]): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASECardioidDirectivityModelSubbandParameters extends NSObject {
 
 	static alloc(): PHASECardioidDirectivityModelSubbandParameters; // inherited from NSObject
@@ -142,6 +170,9 @@ declare class PHASECardioidDirectivityModelSubbandParameters extends NSObject {
 	sharpness: number;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEChannelMixerDefinition extends PHASEMixerDefinition {
 
 	static alloc(): PHASEChannelMixerDefinition; // inherited from NSObject
@@ -159,6 +190,9 @@ declare class PHASEChannelMixerDefinition extends PHASEMixerDefinition {
 	initWithChannelLayoutIdentifier(layout: AVAudioChannelLayout, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEConeDirectivityModelParameters extends PHASEDirectivityModelParameters {
 
 	static alloc(): PHASEConeDirectivityModelParameters; // inherited from NSObject
@@ -172,6 +206,9 @@ declare class PHASEConeDirectivityModelParameters extends PHASEDirectivityModelP
 	initWithSubbandParameters(subbandParameters: NSArray<PHASEConeDirectivityModelSubbandParameters> | PHASEConeDirectivityModelSubbandParameters[]): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEConeDirectivityModelSubbandParameters extends NSObject {
 
 	static alloc(): PHASEConeDirectivityModelSubbandParameters; // inherited from NSObject
@@ -189,6 +226,9 @@ declare class PHASEConeDirectivityModelSubbandParameters extends NSObject {
 	setInnerAngleOuterAngle(innerAngle: number, outerAngle: number): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEContainerNodeDefinition extends PHASESoundEventNodeDefinition {
 
 	static alloc(): PHASEContainerNodeDefinition; // inherited from NSObject
@@ -240,6 +280,9 @@ declare const enum PHASECurveType {
 	JumpToEndValue = 1668434501
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEDefinition extends NSObject {
 
 	static alloc(): PHASEDefinition; // inherited from NSObject
@@ -249,6 +292,9 @@ declare class PHASEDefinition extends NSObject {
 	readonly identifier: string;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEDirectivityModelParameters extends NSObject {
 
 	static alloc(): PHASEDirectivityModelParameters; // inherited from NSObject
@@ -256,6 +302,9 @@ declare class PHASEDirectivityModelParameters extends NSObject {
 	static new(): PHASEDirectivityModelParameters; // inherited from NSObject
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEDistanceModelFadeOutParameters extends NSObject {
 
 	static alloc(): PHASEDistanceModelFadeOutParameters; // inherited from NSObject
@@ -269,6 +318,9 @@ declare class PHASEDistanceModelFadeOutParameters extends NSObject {
 	initWithCullDistance(cullDistance: number): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEDistanceModelParameters extends NSObject {
 
 	static alloc(): PHASEDistanceModelParameters; // inherited from NSObject
@@ -278,6 +330,9 @@ declare class PHASEDistanceModelParameters extends NSObject {
 	fadeOutParameters: PHASEDistanceModelFadeOutParameters;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEDucker extends NSObject {
 
 	static alloc(): PHASEDucker; // inherited from NSObject
@@ -311,6 +366,9 @@ declare class PHASEDucker extends NSObject {
 	initWithEngineSourceGroupsTargetGroupsGainAttackTimeReleaseTimeAttackCurveReleaseCurve(engine: PHASEEngine, sourceGroups: NSSet<PHASEGroup>, targetGroups: NSSet<PHASEGroup>, gain: number, attackTime: number, releaseTime: number, attackCurve: PHASECurveType, releaseCurve: PHASECurveType): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEEngine extends NSObject {
 
 	static alloc(): PHASEEngine; // inherited from NSObject
@@ -328,6 +386,11 @@ declare class PHASEEngine extends NSObject {
 	readonly duckers: NSArray<PHASEDucker>;
 
 	readonly groups: NSDictionary<string, PHASEGroup>;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly lastRenderTime: AVAudioTime;
 
 	outputSpatializationMode: PHASESpatializationMode;
 
@@ -347,13 +410,16 @@ declare class PHASEEngine extends NSObject {
 
 	pause(): void;
 
-	startAndReturnError(): boolean;
+	startAndReturnError(error?: interop.Reference<NSError>): boolean;
 
 	stop(): void;
 
 	update(): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEEnvelope extends NSObject {
 
 	static alloc(): PHASEEnvelope; // inherited from NSObject
@@ -375,6 +441,9 @@ declare class PHASEEnvelope extends NSObject {
 	initWithStartPointSegments(startPoint: interop.Reference<number>, segments: NSArray<PHASEEnvelopeSegment> | PHASEEnvelopeSegment[]): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEEnvelopeDistanceModelParameters extends PHASEDistanceModelParameters {
 
 	static alloc(): PHASEEnvelopeDistanceModelParameters; // inherited from NSObject
@@ -388,6 +457,9 @@ declare class PHASEEnvelopeDistanceModelParameters extends PHASEDistanceModelPar
 	initWithEnvelope(envelope: PHASEEnvelope): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEEnvelopeSegment extends NSObject {
 
 	static alloc(): PHASEEnvelopeSegment; // inherited from NSObject
@@ -412,6 +484,9 @@ declare const enum PHASEError {
 
 declare var PHASEErrorDomain: string;
 
+/**
+ * @since 15.0
+ */
 declare class PHASEGeneratorNodeDefinition extends PHASESoundEventNodeDefinition {
 
 	static alloc(): PHASEGeneratorNodeDefinition; // inherited from NSObject
@@ -435,17 +510,9 @@ declare class PHASEGeneratorNodeDefinition extends PHASESoundEventNodeDefinition
 	setCalibrationModeLevel(calibrationMode: PHASECalibrationMode, level: number): void;
 }
 
-declare class PHASEGeneratorParameters extends NSObject {
-
-	static alloc(): PHASEGeneratorParameters; // inherited from NSObject
-
-	static new(): PHASEGeneratorParameters; // inherited from NSObject
-
-	gain: number;
-
-	rate: number;
-}
-
+/**
+ * @since 15.0
+ */
 declare class PHASEGeometricSpreadingDistanceModelParameters extends PHASEDistanceModelParameters {
 
 	static alloc(): PHASEGeometricSpreadingDistanceModelParameters; // inherited from NSObject
@@ -455,6 +522,9 @@ declare class PHASEGeometricSpreadingDistanceModelParameters extends PHASEDistan
 	rolloffFactor: number;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEGlobalMetaParameterAsset extends PHASEAsset {
 
 	static alloc(): PHASEGlobalMetaParameterAsset; // inherited from NSObject
@@ -462,6 +532,9 @@ declare class PHASEGlobalMetaParameterAsset extends PHASEAsset {
 	static new(): PHASEGlobalMetaParameterAsset; // inherited from NSObject
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEGroup extends NSObject {
 
 	static alloc(): PHASEGroup; // inherited from NSObject
@@ -499,6 +572,9 @@ declare class PHASEGroup extends NSObject {
 	unsolo(): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEGroupPreset extends NSObject {
 
 	static alloc(): PHASEGroupPreset; // inherited from NSObject
@@ -524,6 +600,9 @@ declare class PHASEGroupPreset extends NSObject {
 	initWithEngineSettingsTimeToTargetTimeToReset(engine: PHASEEngine, settings: NSDictionary<string, PHASEGroupPresetSetting>, timeToTarget: number, timeToReset: number): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEGroupPresetSetting extends NSObject {
 
 	static alloc(): PHASEGroupPresetSetting; // inherited from NSObject
@@ -543,15 +622,26 @@ declare class PHASEGroupPresetSetting extends NSObject {
 	initWithGainRateGainCurveTypeRateCurveType(gain: number, rate: number, gainCurveType: PHASECurveType, rateCurveType: PHASECurveType): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEListener extends PHASEObject {
 
 	static alloc(): PHASEListener; // inherited from NSObject
 
 	static new(): PHASEListener; // inherited from NSObject
 
+	/**
+	 * @since 18.0
+	 */
+	automaticHeadTrackingFlags: PHASEAutomaticHeadTrackingFlags;
+
 	gain: number;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEMappedMetaParameterDefinition extends PHASENumberMetaParameterDefinition {
 
 	static alloc(): PHASEMappedMetaParameterDefinition; // inherited from NSObject
@@ -571,6 +661,9 @@ declare class PHASEMappedMetaParameterDefinition extends PHASENumberMetaParamete
 	initWithInputMetaParameterDefinitionEnvelopeIdentifier(inputMetaParameterDefinition: PHASENumberMetaParameterDefinition, envelope: PHASEEnvelope, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEMaterial extends NSObject {
 
 	static alloc(): PHASEMaterial; // inherited from NSObject
@@ -597,6 +690,9 @@ declare const enum PHASEMaterialPreset {
 	Wood = 1834448228
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEMedium extends NSObject {
 
 	static alloc(): PHASEMedium; // inherited from NSObject
@@ -613,6 +709,9 @@ declare const enum PHASEMediumPreset {
 	Air = 1835286898
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEMetaParameter extends NSObject {
 
 	static alloc(): PHASEMetaParameter; // inherited from NSObject
@@ -624,6 +723,9 @@ declare class PHASEMetaParameter extends NSObject {
 	value: any;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEMetaParameterDefinition extends PHASEDefinition {
 
 	static alloc(): PHASEMetaParameterDefinition; // inherited from NSObject
@@ -633,6 +735,9 @@ declare class PHASEMetaParameterDefinition extends PHASEDefinition {
 	readonly value: any;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEMixer extends NSObject {
 
 	static alloc(): PHASEMixer; // inherited from NSObject
@@ -646,6 +751,9 @@ declare class PHASEMixer extends NSObject {
 	readonly identifier: string;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEMixerDefinition extends PHASEDefinition {
 
 	static alloc(): PHASEMixerDefinition; // inherited from NSObject
@@ -657,6 +765,9 @@ declare class PHASEMixerDefinition extends PHASEDefinition {
 	gainMetaParameterDefinition: PHASENumberMetaParameterDefinition;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEMixerParameters extends NSObject {
 
 	static alloc(): PHASEMixerParameters; // inherited from NSObject
@@ -675,6 +786,9 @@ declare const enum PHASENormalizationMode {
 	Dynamic = 1
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASENumberMetaParameter extends PHASEMetaParameter {
 
 	static alloc(): PHASENumberMetaParameter; // inherited from NSObject
@@ -688,6 +802,9 @@ declare class PHASENumberMetaParameter extends PHASEMetaParameter {
 	fadeToValueDuration(value: number, duration: number): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASENumberMetaParameterDefinition extends PHASEMetaParameterDefinition {
 
 	static alloc(): PHASENumberMetaParameterDefinition; // inherited from NSObject
@@ -715,6 +832,9 @@ declare class PHASENumberMetaParameterDefinition extends PHASEMetaParameterDefin
 	initWithValueMinimumMaximumIdentifier(value: number, minimum: number, maximum: number, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASENumericPair extends NSObject {
 
 	static alloc(): PHASENumericPair; // inherited from NSObject
@@ -730,6 +850,9 @@ declare class PHASENumericPair extends NSObject {
 	initWithFirstValueSecondValue(first: number, second: number): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEObject extends NSObject implements NSCopying {
 
 	static alloc(): PHASEObject; // inherited from NSObject
@@ -752,7 +875,7 @@ declare class PHASEObject extends NSObject implements NSCopying {
 
 	constructor(o: { engine: PHASEEngine; });
 
-	addChildError(child: PHASEObject): boolean;
+	addChildError(child: PHASEObject, error?: interop.Reference<NSError>): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -763,6 +886,9 @@ declare class PHASEObject extends NSObject implements NSCopying {
 	removeChildren(): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEOccluder extends PHASEObject {
 
 	static alloc(): PHASEOccluder; // inherited from NSObject
@@ -783,6 +909,40 @@ declare const enum PHASEPlaybackMode {
 	Looping = 1
 }
 
+/**
+ * @since 18.0
+ */
+declare class PHASEPullStreamNode extends PHASEStreamNode {
+
+	static alloc(): PHASEPullStreamNode; // inherited from NSObject
+
+	static new(): PHASEPullStreamNode; // inherited from NSObject
+
+	renderBlock: (p1: interop.Pointer | interop.Reference<boolean>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: interop.Pointer | interop.Reference<AudioBufferList>) => number;
+}
+
+/**
+ * @since 18.0
+ */
+declare class PHASEPullStreamNodeDefinition extends PHASEGeneratorNodeDefinition {
+
+	static alloc(): PHASEPullStreamNodeDefinition; // inherited from NSObject
+
+	static new(): PHASEPullStreamNodeDefinition; // inherited from NSObject
+
+	readonly format: AVAudioFormat;
+
+	normalize: boolean;
+
+	constructor(o: { mixerDefinition: PHASEMixerDefinition; format: AVAudioFormat; });
+
+	constructor(o: { mixerDefinition: PHASEMixerDefinition; format: AVAudioFormat; identifier: string; });
+
+	initWithMixerDefinitionFormat(mixerDefinition: PHASEMixerDefinition, format: AVAudioFormat): this;
+
+	initWithMixerDefinitionFormatIdentifier(mixerDefinition: PHASEMixerDefinition, format: AVAudioFormat, identifier: string): this;
+}
+
 declare const enum PHASEPushStreamBufferOptions {
 
 	Default = 1,
@@ -799,19 +959,14 @@ declare const enum PHASEPushStreamCompletionCallbackCondition {
 	DataRendered = 0
 }
 
-declare class PHASEPushStreamNode extends NSObject {
+/**
+ * @since 15.0
+ */
+declare class PHASEPushStreamNode extends PHASEStreamNode {
 
 	static alloc(): PHASEPushStreamNode; // inherited from NSObject
 
 	static new(): PHASEPushStreamNode; // inherited from NSObject
-
-	readonly format: AVAudioFormat;
-
-	readonly gainMetaParameter: PHASENumberMetaParameter;
-
-	readonly mixer: PHASEMixer;
-
-	readonly rateMetaParameter: PHASENumberMetaParameter;
 
 	scheduleBuffer(buffer: AVAudioPCMBuffer): void;
 
@@ -822,6 +977,9 @@ declare class PHASEPushStreamNode extends NSObject {
 	scheduleBufferCompletionCallbackTypeCompletionHandler(buffer: AVAudioPCMBuffer, completionCallbackType: PHASEPushStreamCompletionCallbackCondition, completionHandler: (p1: PHASEPushStreamCompletionCallbackCondition) => void): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEPushStreamNodeDefinition extends PHASEGeneratorNodeDefinition {
 
 	static alloc(): PHASEPushStreamNodeDefinition; // inherited from NSObject
@@ -841,6 +999,9 @@ declare class PHASEPushStreamNodeDefinition extends PHASEGeneratorNodeDefinition
 	initWithMixerDefinitionFormatIdentifier(mixerDefinition: PHASEMixerDefinition, format: AVAudioFormat, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASERandomNodeDefinition extends PHASESoundEventNodeDefinition {
 
 	static alloc(): PHASERandomNodeDefinition; // inherited from NSObject
@@ -894,6 +1055,9 @@ declare const enum PHASEReverbPreset {
 	Cathedral = 1917023336
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASESamplerNodeDefinition extends PHASEGeneratorNodeDefinition {
 
 	static alloc(): PHASESamplerNodeDefinition; // inherited from NSObject
@@ -915,6 +1079,9 @@ declare class PHASESamplerNodeDefinition extends PHASEGeneratorNodeDefinition {
 	initWithSoundAssetIdentifierMixerDefinitionIdentifier(soundAssetIdentifier: string, mixerDefinition: PHASEMixerDefinition, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEShape extends NSObject implements NSCopying {
 
 	static alloc(): PHASEShape; // inherited from NSObject
@@ -934,6 +1101,9 @@ declare class PHASEShape extends NSObject implements NSCopying {
 	initWithEngineMeshMaterials(engine: PHASEEngine, mesh: MDLMesh, materials: NSArray<PHASEMaterial> | PHASEMaterial[]): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEShapeElement extends NSObject {
 
 	static alloc(): PHASEShapeElement; // inherited from NSObject
@@ -943,6 +1113,9 @@ declare class PHASEShapeElement extends NSObject {
 	material: PHASEMaterial;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASESoundAsset extends PHASEAsset {
 
 	static alloc(): PHASESoundAsset; // inherited from NSObject
@@ -956,6 +1129,9 @@ declare class PHASESoundAsset extends PHASEAsset {
 	readonly url: NSURL;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASESoundEvent extends NSObject {
 
 	static alloc(): PHASESoundEvent; // inherited from NSObject
@@ -970,6 +1146,11 @@ declare class PHASESoundEvent extends NSObject {
 
 	readonly prepareState: PHASESoundEventPrepareState;
 
+	/**
+	 * @since 18.0
+	 */
+	readonly pullStreamNodes: NSDictionary<string, PHASEPullStreamNode>;
+
 	readonly pushStreamNodes: NSDictionary<string, PHASEPushStreamNode>;
 
 	readonly renderingState: PHASERenderingState;
@@ -978,9 +1159,9 @@ declare class PHASESoundEvent extends NSObject {
 
 	constructor(o: { engine: PHASEEngine; assetIdentifier: string; mixerParameters: PHASEMixerParameters; });
 
-	initWithEngineAssetIdentifierError(engine: PHASEEngine, assetIdentifier: string): this;
+	initWithEngineAssetIdentifierError(engine: PHASEEngine, assetIdentifier: string, error?: interop.Reference<NSError>): this;
 
-	initWithEngineAssetIdentifierMixerParametersError(engine: PHASEEngine, assetIdentifier: string, mixerParameters: PHASEMixerParameters): this;
+	initWithEngineAssetIdentifierMixerParametersError(engine: PHASEEngine, assetIdentifier: string, mixerParameters: PHASEMixerParameters, error?: interop.Reference<NSError>): this;
 
 	pause(): void;
 
@@ -988,7 +1169,22 @@ declare class PHASESoundEvent extends NSObject {
 
 	resume(): void;
 
+	/**
+	 * @since 26.0
+	 */
+	resumeAtTime(time: AVAudioTime): void;
+
 	seekToTimeCompletion(time: number, handler: (p1: PHASESoundEventSeekHandlerReason) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	seekToTimeResumeAtEngineTimeCompletion(time: number, engineTime: AVAudioTime, handler: (p1: PHASESoundEventSeekHandlerReason) => void): void;
+
+	/**
+	 * @since 26.0
+	 */
+	startAtTimeCompletion(when: AVAudioTime, handler: (p1: PHASESoundEventStartHandlerReason) => void): void;
 
 	startWithCompletion(handler: (p1: PHASESoundEventStartHandlerReason) => void): void;
 
@@ -1012,6 +1208,9 @@ declare const enum PHASESoundEventError {
 
 declare var PHASESoundEventErrorDomain: string;
 
+/**
+ * @since 15.0
+ */
 declare class PHASESoundEventNodeAsset extends PHASEAsset {
 
 	static alloc(): PHASESoundEventNodeAsset; // inherited from NSObject
@@ -1019,6 +1218,9 @@ declare class PHASESoundEventNodeAsset extends PHASEAsset {
 	static new(): PHASESoundEventNodeAsset; // inherited from NSObject
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASESoundEventNodeDefinition extends PHASEDefinition {
 
 	static alloc(): PHASESoundEventNodeDefinition; // inherited from NSObject
@@ -1064,6 +1266,9 @@ declare const enum PHASESoundEventStartHandlerReason {
 	Terminated = 2
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASESource extends PHASEObject {
 
 	static alloc(): PHASESource; // inherited from NSObject
@@ -1085,6 +1290,9 @@ declare var PHASESpatialCategoryEarlyReflections: string;
 
 declare var PHASESpatialCategoryLateReverb: string;
 
+/**
+ * @since 15.0
+ */
 declare class PHASESpatialMixerDefinition extends PHASEMixerDefinition {
 
 	static alloc(): PHASESpatialMixerDefinition; // inherited from NSObject
@@ -1108,6 +1316,9 @@ declare class PHASESpatialMixerDefinition extends PHASEMixerDefinition {
 	initWithSpatialPipelineIdentifier(spatialPipeline: PHASESpatialPipeline, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASESpatialPipeline extends NSObject {
 
 	static alloc(): PHASESpatialPipeline; // inherited from NSObject
@@ -1123,6 +1334,9 @@ declare class PHASESpatialPipeline extends NSObject {
 	initWithFlags(flags: PHASESpatialPipelineFlags): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASESpatialPipelineEntry extends NSObject {
 
 	static alloc(): PHASESpatialPipelineEntry; // inherited from NSObject
@@ -1152,6 +1366,27 @@ declare const enum PHASESpatializationMode {
 	AlwaysUseChannelBased = 2
 }
 
+/**
+ * @since 18.0
+ */
+declare class PHASEStreamNode extends NSObject {
+
+	static alloc(): PHASEStreamNode; // inherited from NSObject
+
+	static new(): PHASEStreamNode; // inherited from NSObject
+
+	readonly format: AVAudioFormat;
+
+	readonly gainMetaParameter: PHASENumberMetaParameter;
+
+	readonly mixer: PHASEMixer;
+
+	readonly rateMetaParameter: PHASENumberMetaParameter;
+}
+
+/**
+ * @since 15.0
+ */
 declare class PHASEStringMetaParameter extends PHASEMetaParameter {
 
 	static alloc(): PHASEStringMetaParameter; // inherited from NSObject
@@ -1159,6 +1394,9 @@ declare class PHASEStringMetaParameter extends PHASEMetaParameter {
 	static new(): PHASEStringMetaParameter; // inherited from NSObject
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASEStringMetaParameterDefinition extends PHASEMetaParameterDefinition {
 
 	static alloc(): PHASEStringMetaParameterDefinition; // inherited from NSObject
@@ -1174,6 +1412,9 @@ declare class PHASEStringMetaParameterDefinition extends PHASEMetaParameterDefin
 	initWithValueIdentifier(value: string, identifier: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class PHASESwitchNodeDefinition extends PHASESoundEventNodeDefinition {
 
 	static alloc(): PHASESwitchNodeDefinition; // inherited from NSObject

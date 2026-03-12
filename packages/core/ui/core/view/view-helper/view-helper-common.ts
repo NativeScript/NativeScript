@@ -1,10 +1,7 @@
 // Types
 import { View as ViewDefinition } from '..';
 import { CoreTypes } from '../../../../core-types';
-
-// Requires
-import { layout } from '../../../../utils';
-import { Trace } from '../../../../trace';
+import { layout, Trace } from './view-helper-shared';
 
 export class ViewHelper {
 	public static measureChild(parent: ViewDefinition, child: ViewDefinition, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
@@ -82,6 +79,9 @@ export class ViewHelper {
 			default:
 				childTop = top + effectiveMarginTop;
 				childHeight = bottom - top - (effectiveMarginTop + effectiveMarginBottom);
+				if (childHeight < 0) {
+					childHeight = 0;
+				}
 				break;
 		}
 
@@ -96,22 +96,28 @@ export class ViewHelper {
 		}
 
 		switch (hAlignment) {
+			case 'start':
+				childLeft = child.direction === CoreTypes.LayoutDirection.rtl ? right - childWidth - effectiveMarginRight : left + effectiveMarginLeft;
+				break;
 			case 'left':
 				childLeft = left + effectiveMarginLeft;
 				break;
-
 			case 'center':
 				childLeft = left + (right - left - childWidth + (effectiveMarginLeft - effectiveMarginRight)) / 2;
 				break;
-
 			case 'right':
 				childLeft = right - childWidth - effectiveMarginRight;
 				break;
-
+			case 'end':
+				childLeft = child.direction === CoreTypes.LayoutDirection.rtl ? left + effectiveMarginLeft : right - childWidth - effectiveMarginRight;
+				break;
 			case 'stretch':
 			default:
 				childLeft = left + effectiveMarginLeft;
 				childWidth = right - left - (effectiveMarginLeft + effectiveMarginRight);
+				if (childWidth < 0) {
+					childWidth = 0;
+				}
 				break;
 		}
 

@@ -1,4 +1,5 @@
 export { clearInterval, clearTimeout, setInterval, setTimeout } from '../timer';
+export * from './animation-helpers';
 export * from './common';
 export * from './constants';
 export * from './debug';
@@ -6,6 +7,7 @@ export * from './layout-helper';
 export * from './macrotask-scheduler';
 export * from './mainthread-helper';
 export * from './native-helper';
+export * from './shared';
 export * from './types';
 
 export const RESOURCE_PREFIX: string;
@@ -32,20 +34,6 @@ export function GC();
  * @param useThrottle Instead of default debounce strategy, use throttling
  */
 export function queueGC(delay?: number, useThrottle?: boolean);
-
-/**
- * A simple throttle utility
- * @param fn Function to throttle
- * @param delay Customize the delay (default is 300ms)
- */
-export function throttle(fn: any, delay?: number);
-
-/**
- * A simple debounce utility
- * @param fn Function to debounce
- * @param delay Customize the delay (default is 300ms)
- */
-export function debounce(fn: any, delay?: number);
 
 /**
  * Releases the reference to the wrapped native object
@@ -88,6 +76,12 @@ export function mainThreadify(func: Function): (...args: any[]) => void;
 export function isFontIconURI(uri: string): boolean;
 
 /**
+ * Returns true if the specified URI is a system URI like "sys://...".
+ * @param uri The URI.
+ */
+export function isSystemURI(uri: string): boolean;
+
+/**
  * Returns true if the specified path points to a resource or local file.
  * @param path The path.
  */
@@ -111,6 +105,12 @@ export function isDataURI(uri: string): boolean;
  * @param url The url.
  */
 export function openUrl(url: string): boolean;
+
+/**
+ * Opens url asynchronously.
+ * @param url The url.
+ */
+export function openUrlAsync(url: string): Promise<boolean>;
 
 /**
  * Opens file.

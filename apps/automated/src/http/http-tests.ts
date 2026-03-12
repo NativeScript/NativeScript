@@ -17,7 +17,7 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -67,7 +67,7 @@ export var test_getJSON = function (done) {
 			//// Argument (e) is Error!
 			//console.log(e);
 			done(e);
-		}
+		},
 	);
 };
 
@@ -115,7 +115,7 @@ export var test_getJSONP = function (done) {
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -156,7 +156,7 @@ export var test_gzip_request_explicit = function (done) {
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -180,7 +180,7 @@ export var test_gzip_request_implicit = function (done) {
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -205,7 +205,7 @@ export var test_getImage = function (done) {
 		(err) => {
 			// Argument (e) is Error!
 			done(err);
-		}
+		},
 	);
 };
 
@@ -258,7 +258,7 @@ export var test_getFile = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -280,7 +280,7 @@ export var test_getContentAsFile = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -347,7 +347,7 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -363,7 +363,7 @@ export var test_headRequest_responseStatusCodeShouldBeDefined = function (done) 
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -387,7 +387,7 @@ export var test_request_responseHeadersShouldBeDefined = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -409,7 +409,7 @@ export var test_request_responseContentShouldBeDefined = function (done) {
 		function (e) {
 			//// Argument (e) is Error!
 			done(e);
-		}
+		},
 	);
 };
 
@@ -428,7 +428,7 @@ export var test_request_responseContentToStringShouldReturnString = function (do
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -447,7 +447,7 @@ export var test_request_responseContentToJSONShouldReturnJSON = function (done) 
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -468,7 +468,7 @@ export var test_request_responseContentToImageShouldReturnCorrectImage = functio
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -487,7 +487,7 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFile = fu
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 export var test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCreateDirPathIfNecesary = function (done) {
@@ -507,7 +507,7 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFileAndCr
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -526,7 +526,7 @@ export var test_request_responseContentToFileFromContentShouldReturnCorrectFile 
 		},
 		function (e) {
 			done(e);
-		}
+		},
 	);
 };
 
@@ -551,7 +551,7 @@ export var test_request_headersSentAndReceivedProperly = function (done) {
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -597,7 +597,7 @@ export var test_request_contentSentAndReceivedProperly = function (done) {
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -627,7 +627,7 @@ export var test_request_FormDataContentSentAndReceivedProperly = function (done)
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -655,7 +655,7 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
 			},
 			function (e) {
 				done(e);
-			}
+			},
 		);
 };
 
@@ -684,12 +684,12 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
 			function (e) {
 				done(e);
 				// console.log("Error occurred " + e);
-			}
+			},
 		);
 };
 
 export var test_getString_WorksProperlyInWorker = function (done) {
-	const worker = new Worker('./http-string-worker');
+	const worker = new Worker(new URL('./http-string-worker', import.meta.url));
 	console.log('Worker Created');
 	worker.onmessage = function (msg) {
 		console.log('Message received');

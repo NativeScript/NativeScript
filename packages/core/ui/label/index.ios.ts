@@ -1,10 +1,10 @@
 import { Label as LabelDefinition } from '.';
 import { Background } from '../styling/background';
-import { Length, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, directionProperty } from '../styling/style-properties';
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
 import { CoreTypes } from '../../core-types';
-import { TextBase, whiteSpaceProperty } from '../text-base';
+import { TextBase, whiteSpaceProperty, textOverflowProperty } from '../text-base';
 import { layout } from '../../utils';
 
 import { ios } from '../styling/background';
@@ -19,6 +19,8 @@ enum FixedSize {
 @CSSType('Label')
 export class Label extends TextBase implements LabelDefinition {
 	nativeViewProtected: TNSLabel;
+	nativeTextViewProtected: TNSLabel;
+
 	private _fixedSize: FixedSize;
 
 	public createNativeView() {
@@ -26,6 +28,11 @@ export class Label extends TextBase implements LabelDefinition {
 		view.userInteractionEnabled = true;
 
 		return view;
+	}
+
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+		this._fixedSize = null;
 	}
 
 	// @ts-ignore
@@ -102,7 +109,7 @@ export class Label extends TextBase implements LabelDefinition {
 	}
 
 	private _measureNativeView(width: number, widthMode: number, height: number, heightMode: number): { width: number; height: number } {
-		const view = <UILabel>this.nativeTextViewProtected;
+		const view = this.nativeTextViewProtected;
 
 		const nativeSize = view.textRectForBoundsLimitedToNumberOfLines(CGRectMake(0, 0, widthMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(width), heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : layout.toDeviceIndependentPixels(height)), view.numberOfLines).size;
 
@@ -113,30 +120,65 @@ export class Label extends TextBase implements LabelDefinition {
 	}
 
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
+		this.adjustLineBreak();
+	}
+
+	[textOverflowProperty.setNative](value: CoreTypes.TextOverflowType) {
+		this.adjustLineBreak();
+	}
+
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		// Handle text ellipsis
+		if ((this.whiteSpace === 'nowrap' && this.textOverflow !== 'clip') || this.maxLines > 0) {
+			const nativeTextView = this.nativeTextViewProtected;
+			nativeTextView.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+		}
+		super[directionProperty.setNative](value);
+	}
+
+	private adjustLineBreak() {
+		const whiteSpace = this.whiteSpace;
+		const textOverflow = this.textOverflow;
 		const nativeView = this.nativeTextViewProtected;
-		switch (value) {
+
+		switch (whiteSpace) {
+			case 'wrap':
 			case 'normal':
 				nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
 				nativeView.numberOfLines = this.maxLines;
 				break;
-			case 'nowrap':
 			case 'initial':
 				nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
 				nativeView.numberOfLines = 1;
+				break;
+			case 'nowrap':
+				switch (textOverflow) {
+					case 'clip':
+						nativeView.lineBreakMode = NSLineBreakMode.ByClipping;
+						nativeView.numberOfLines = this.maxLines;
+						break;
+					default:
+						nativeView.lineBreakMode = this.direction === CoreTypes.LayoutDirection.rtl ? NSLineBreakMode.ByTruncatingHead : NSLineBreakMode.ByTruncatingTail;
+						nativeView.numberOfLines = 1;
+						break;
+				}
 				break;
 		}
 	}
 
 	_redrawNativeBackground(value: UIColor | Background): void {
 		if (value instanceof Background) {
-			ios.createBackgroundUIColor(
-				this,
-				(color: UIColor) => {
-					const cgColor = color ? color.CGColor : null;
-					this.nativeTextViewProtected.layer.backgroundColor = cgColor;
-				},
-				true
-			);
+			const nativeView = this.nativeTextViewProtected;
+			if (nativeView) {
+				ios.createBackgroundUIColor(
+					this,
+					(color: UIColor) => {
+						const cgColor = color ? color.CGColor : null;
+						nativeView.layer.backgroundColor = cgColor;
+					},
+					true,
+				);
+			}
 		}
 
 		this._setNativeClipToBounds();

@@ -1,13 +1,31 @@
 
+/**
+ * @since 16.0
+ */
 declare class DDDevice extends NSObject {
 
 	static alloc(): DDDevice; // inherited from NSObject
 
 	static new(): DDDevice; // inherited from NSObject
 
+	/**
+	 * @since 18.0
+	 */
+	SSID: string;
+
 	bluetoothIdentifier: NSUUID;
 
 	category: DDDeviceCategory;
+
+	/**
+	 * @since 18.0
+	 */
+	deviceSupports: DDDeviceSupports;
+
+	/**
+	 * @since 18.0
+	 */
+	displayImageName: string;
 
 	displayName: string;
 
@@ -19,7 +37,7 @@ declare class DDDevice extends NSObject {
 
 	mediaPlaybackState: DDDeviceMediaPlaybackState;
 
-	networkEndpoint: NSObject;
+	networkEndpoint: NSObject & OS_nw_endpoint;
 
 	protocol: DDDeviceProtocol;
 
@@ -27,9 +45,34 @@ declare class DDDevice extends NSObject {
 
 	state: DDDeviceState;
 
+	/**
+	 * @since 17.0
+	 */
+	supportsGrouping: boolean;
+
 	txtRecordData: NSData;
 
 	url: NSURL;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareModelName: string;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareServiceName: string;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareServiceRole: DDDeviceWiFiAwareServiceRole;
+
+	/**
+	 * @since 26.0
+	 */
+	wifiAwareVendorName: string;
 
 	constructor(o: { displayName: string; category: DDDeviceCategory; protocolType: UTType; identifier: string; });
 
@@ -48,11 +91,19 @@ declare const enum DDDeviceCategory {
 
 	LaptopComputer = 4,
 
-	DesktopComputer = 5
+	DesktopComputer = 5,
+
+	AccessorySetup = 6
 }
 
+/**
+ * @since 16.0
+ */
 declare function DDDeviceCategoryToString(inValue: DDDeviceCategory): string;
 
+/**
+ * @since 16.0
+ */
 declare class DDDeviceEvent extends NSObject {
 
 	static alloc(): DDDeviceEvent; // inherited from NSObject
@@ -77,6 +128,9 @@ declare const enum DDDeviceMediaPlaybackState {
 	Playing = 2
 }
 
+/**
+ * @since 16.0
+ */
 declare function DDDeviceMediaPlaybackStateToString(inValue: DDDeviceMediaPlaybackState): string;
 
 declare const enum DDDeviceProtocol {
@@ -86,10 +140,19 @@ declare const enum DDDeviceProtocol {
 	DIAL = 1
 }
 
+/**
+ * @since 16.0
+ */
 declare var DDDeviceProtocolStringDIAL: string;
 
+/**
+ * @since 16.0
+ */
 declare var DDDeviceProtocolStringInvalid: string;
 
+/**
+ * @since 16.0
+ */
 declare function DDDeviceProtocolToString(inValue: DDDeviceProtocol): string;
 
 declare const enum DDDeviceState {
@@ -105,7 +168,26 @@ declare const enum DDDeviceState {
 	Invalidating = 30
 }
 
+/**
+ * @since 16.0
+ */
 declare function DDDeviceStateToString(inValue: DDDeviceState): string;
+
+declare const enum DDDeviceSupports {
+
+	BluetoothPairingLE = 2,
+
+	BluetoothTransportBridging = 4,
+
+	BluetoothHID = 8
+}
+
+declare const enum DDDeviceWiFiAwareServiceRole {
+
+	Subscriber = 10,
+
+	Publisher = 20
+}
 
 declare class DDDiscoverySession extends NSObject {
 
@@ -116,6 +198,9 @@ declare class DDDiscoverySession extends NSObject {
 	reportEvent(inEvent: DDDeviceEvent): void;
 }
 
+/**
+ * @since 16.0
+ */
 declare const enum DDErrorCode {
 
 	Success = 0,
@@ -137,6 +222,9 @@ declare const enum DDErrorCode {
 	Next = 350007
 }
 
+/**
+ * @since 16.0
+ */
 declare var DDErrorDomain: string;
 
 declare const enum DDEventType {
@@ -150,4 +238,7 @@ declare const enum DDEventType {
 	DeviceChanged = 42
 }
 
+/**
+ * @since 16.0
+ */
 declare function DDEventTypeToString(inValue: DDEventType): string;

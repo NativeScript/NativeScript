@@ -1,16 +1,11 @@
 // imported for definition purposes only
-import * as httpModule from '../../http';
-import * as imageSourceModule from '../../image-source';
-import { Screen } from '../../platform';
-import * as fsModule from '../../file-system';
-
+import type { Headers, HttpResponse, HttpRequestOptions } from '../../http';
+import { ImageSource } from '../../image-source';
+import { Screen } from '../../platform/screen';
+import { File } from '../../file-system';
+import { HttpResponseEncoding } from '../http-interfaces';
 import { getFilenameFromUrl } from './http-request-common';
-import { NetworkAgent } from '../../debugger';
-
-export enum HttpResponseEncoding {
-	UTF8,
-	GBK,
-}
+import * as domainDebugger from '../../debugger';
 
 function parseJSON(source: string): any {
 	const src = source.trim();
@@ -24,20 +19,10 @@ function parseJSON(source: string): any {
 let requestIdCounter = 0;
 const pendingRequests = {};
 
-let imageSource: typeof imageSourceModule;
-function ensureImageSource() {
-	if (!imageSource) {
-		imageSource = require('../../image-source');
-	}
+let debugRequests: Map<number, { debugRequest: domainDebugger.domains.network.NetworkRequest; timestamp: number }>;
+if (__DEV__) {
+	debugRequests = new Map();
 }
-
-let fs: typeof fsModule;
-function ensureFileSystem() {
-	if (!fs) {
-		fs = require('../../file-system');
-	}
-}
-
 let completeCallback: org.nativescript.widgets.Async.CompleteCallback;
 function ensureCompleteCallback() {
 	if (completeCallback) {
@@ -66,7 +51,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 	}
 
 	// read the headers
-	const headers: httpModule.Headers = {};
+	const headers: Headers = {};
 	if (result.headers) {
 		const jHeaders = result.headers;
 		const length = jHeaders.size();
@@ -77,9 +62,47 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 		}
 	}
 
-	// send response data (for requestId) to network debugger
-	if (global.__inspector && global.__inspector.isConnected) {
-		NetworkAgent.responseReceived(requestId, result, headers);
+	if (__DEV__) {
+		const debugRequestInfo = debugRequests.get(requestId);
+
+		if (debugRequestInfo) {
+			const debugRequest = debugRequestInfo.debugRequest;
+			let mime = (headers['Content-Type'] ?? 'text/plain') as string;
+			if (typeof mime === 'string') {
+				mime = mime.split(';')[0] ?? 'text/plain';
+			}
+
+			debugRequest.mimeType = mime;
+			debugRequest.data = result.raw;
+			const debugResponse = {
+				url: result.url,
+				status: result.statusCode,
+				statusText: result.statusText,
+				headers: headers,
+				mimeType: mime,
+				fromDiskCache: false,
+				timing: {
+					requestTime: debugRequestInfo.timestamp,
+					proxyStart: -1,
+					proxyEnd: -1,
+					dnsStart: -1,
+					dnsEnd: -1,
+					connectStart: -1,
+					connectEnd: -1,
+					sslStart: -1,
+					sslEnd: -1,
+					serviceWorkerFetchStart: -1,
+					serviceWorkerFetchReady: -1,
+					serviceWorkerFetchEnd: -1,
+					sendStart: -1,
+					sendEnd: -1,
+					receiveHeadersEnd: -1,
+				},
+			};
+			debugRequest.responseReceived(debugResponse);
+			debugRequest.loadingFinished();
+			debugRequests.delete(requestId);
+		}
 	}
 
 	callbacks.resolveCallback({
@@ -110,26 +133,22 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 				return parseJSON(str);
 			},
 			toImage: () => {
-				ensureImageSource();
-
 				return new Promise<any>((resolveImage, rejectImage) => {
 					if (result.responseAsImage != null) {
-						resolveImage(new imageSource.ImageSource(result.responseAsImage));
+						resolveImage(new ImageSource(result.responseAsImage));
 					} else {
 						rejectImage(new Error('Response content may not be converted to an Image'));
 					}
 				});
 			},
 			toFile: (destinationFilePath: string) => {
-				ensureFileSystem();
-
 				if (!destinationFilePath) {
 					destinationFilePath = getFilenameFromUrl(callbacks.url);
 				}
 				let stream: java.io.FileOutputStream;
 				try {
 					// ensure destination path exists by creating any missing parent directories
-					const file = fs.File.fromPath(destinationFilePath);
+					const file = File.fromPath(destinationFilePath);
 
 					const javaFile = new java.io.File(destinationFilePath);
 					stream = new java.io.FileOutputStream(javaFile);
@@ -158,7 +177,7 @@ function onRequestError(error: string, requestId: number) {
 	}
 }
 
-function buildJavaOptions(options: httpModule.HttpRequestOptions) {
+function buildJavaOptions(options: HttpRequestOptions) {
 	if (typeof options.url !== 'string') {
 		throw new Error('Http request must provide a valid url.');
 	}
@@ -205,20 +224,40 @@ function buildJavaOptions(options: httpModule.HttpRequestOptions) {
 	return javaOptions;
 }
 
-export function request(options: httpModule.HttpRequestOptions): Promise<httpModule.HttpResponse> {
+export function request(options: HttpRequestOptions): Promise<HttpResponse> {
 	if (options === undefined || options === null) {
 		// TODO: Shouldn't we throw an error here - defensive programming
 		return;
 	}
 
-	return new Promise<httpModule.HttpResponse>((resolve, reject) => {
+	return new Promise<HttpResponse>((resolve, reject) => {
 		try {
 			// initialize the options
 			const javaOptions = buildJavaOptions(options);
 
-			// send request data to network debugger
-			if (global.__inspector && global.__inspector.isConnected) {
-				NetworkAgent.requestWillBeSent(requestIdCounter, options);
+			// // send request data to network debugger
+			// if (global.__inspector && global.__inspector.isConnected) {
+			// 	NetworkAgent.requestWillBeSent(requestIdCounter, options);
+			// }
+
+			if (__DEV__) {
+				const network = domainDebugger.getNetwork();
+				const debugRequest = network && network.create();
+
+				if (options.url && debugRequest) {
+					const timestamp = Date.now() / 1000;
+					debugRequests.set(requestIdCounter, {
+						debugRequest,
+						timestamp,
+					});
+					const request = {
+						url: options.url,
+						method: 'GET',
+						headers: options.headers,
+						timestamp,
+					};
+					debugRequest.requestWillBeSent(request);
+				}
 			}
 
 			// remember the callbacks so that we can use them when the CompleteCallback is called
@@ -250,7 +289,7 @@ function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
 	return raw.toString(charsetName);
 }
 
-export function addHeader(headers: httpModule.Headers, key: string, value: string): void {
+export function addHeader(headers: Headers, key: string, value: string): void {
 	if (!headers[key]) {
 		headers[key] = value;
 	} else if (Array.isArray(headers[key])) {

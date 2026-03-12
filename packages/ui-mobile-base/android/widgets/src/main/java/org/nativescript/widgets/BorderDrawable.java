@@ -273,10 +273,11 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			Fetcher fetcher = Fetcher.getInstance(context);
 			// TODO: Implement option to pass load-mode like in ImageView class.
 			boolean loadAsync = backgroundImageUri.startsWith("http");
-			fetcher.loadImage(backgroundImageUri, this, 0, 0, false, true, loadAsync, null);
+
+			// Maintain aspect ratio for background images by default and size will be handled by border drawable
+			fetcher.loadImage(backgroundImageUri, this, 0, 0, true, true, loadAsync, null);
 		}
 	}
-
 
 	RectF backgroundBoundsF = new RectF();
 	Path backgroundPath = new Path();
@@ -527,7 +528,6 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			}
 
 			if (this.borderRightWidth > 0) {
-
 				rightBorderPaint.reset();
 				rightBorderPaint.setColor(this.borderRightColor);
 				rightBorderPaint.setAntiAlias(true);
@@ -543,7 +543,6 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 			}
 
 			if (this.borderBottomWidth > 0) {
-
 				bottomBorderPaint.reset();
 				bottomBorderPaint.setColor(this.borderBottomColor);
 				bottomBorderPaint.setAntiAlias(true);
@@ -896,24 +895,29 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
 	@Override
 	public void getOutline(@NonNull Outline outline) {
 		if (android.os.Build.VERSION.SDK_INT >= 21) {
-			outlineBackgroundPath.reset();
-			float[] backgroundRadii = {
-				Math.max(0, borderTopLeftRadius), Math.max(0, borderTopLeftRadius),
-				Math.max(0, borderTopRightRadius), Math.max(0, borderTopRightRadius),
-				Math.max(0, borderBottomRightRadius), Math.max(0, borderBottomRightRadius),
-				Math.max(0, borderBottomLeftRadius), Math.max(0, borderBottomLeftRadius)
-			};
 			outlineRectF.setEmpty();
 			outlineRectF.set(getBounds());
-			outlineBackgroundPath.addRoundRect(outlineRectF, backgroundRadii, Path.Direction.CW);
-
-			if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-				// see setConvexPath notes
-				outline.setPath(outlineBackgroundPath);
+			if (hasUniformBorderRadius()) {
+				outline.setRoundRect(getBounds(), borderTopLeftRadius);
 			} else {
-				outline.setConvexPath(outlineBackgroundPath);
-			}
+				// cliping with path is only support on API >= 33
+				// before it only works for rectangle, circle, or round rect
+				outlineBackgroundPath.reset();
+				float[] backgroundRadii = {
+					Math.max(0, borderTopLeftRadius), Math.max(0, borderTopLeftRadius),
+					Math.max(0, borderTopRightRadius), Math.max(0, borderTopRightRadius),
+					Math.max(0, borderBottomRightRadius), Math.max(0, borderBottomRightRadius),
+					Math.max(0, borderBottomLeftRadius), Math.max(0, borderBottomLeftRadius)
+				};
+				outlineBackgroundPath.addRoundRect(outlineRectF, backgroundRadii, Path.Direction.CW);
 
+				if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+					// see setConvexPath notes
+					outline.setPath(outlineBackgroundPath);
+				} else {
+					outline.setConvexPath(outlineBackgroundPath);
+				}
+			}
 		} else {
 			throw new IllegalStateException("Method supported on API 21 or higher");
 		}

@@ -1,6 +1,7 @@
 import { Page as PageDefinition } from '.';
 import { ContentView } from '../content-view';
-import { View, CSSType, ShownModallyData } from '../core/view';
+import { View, CSSType } from '../core/view';
+import { ShownModallyData } from '../core/view/view-interfaces';
 import { booleanConverter } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
 import { Style } from '../styling/style';
@@ -11,6 +12,7 @@ import { isFrame } from '../frame/frame-helpers';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
+import { PageEvents } from './events';
 
 interface NavigatedData extends EventData {
 	context: any;
@@ -19,15 +21,13 @@ interface NavigatedData extends EventData {
 
 @CSSType('Page')
 export class PageBase extends ContentView {
-	public static navigatingToEvent = 'navigatingTo';
-	public static navigatedToEvent = 'navigatedTo';
-	public static navigatingFromEvent = 'navigatingFrom';
-	public static navigatedFromEvent = 'navigatedFrom';
+	public static navigatingToEvent = PageEvents.navigatingToEvent;
+	public static navigatedToEvent = PageEvents.navigatedToEvent;
+	public static navigatingFromEvent = PageEvents.navigatingFromEvent;
+	public static navigatedFromEvent = PageEvents.navigatedFromEvent;
 
 	private _navigationContext: any;
 	private _actionBar: ActionBar;
-
-	public _frame: Frame;
 
 	public actionBarHidden: boolean;
 	public enableSwipeBackNavigation: boolean;
@@ -63,13 +63,6 @@ export class PageBase extends ContentView {
 		}
 	}
 
-	get statusBarStyle(): 'light' | 'dark' {
-		return this.style.statusBarStyle;
-	}
-	set statusBarStyle(value: 'light' | 'dark') {
-		this.style.statusBarStyle = value;
-	}
-
 	public get androidStatusBarBackground(): Color {
 		return this.style.androidStatusBarBackground;
 	}
@@ -79,6 +72,15 @@ export class PageBase extends ContentView {
 
 	get page(): PageDefinition {
 		return this;
+	}
+
+	public _parentChanged(oldParent: View): void {
+		const newParent = this.parent;
+		if (newParent && !isFrame(newParent)) {
+			throw new Error(`Page can only be nested inside Frame. New parent: ${newParent}`);
+		}
+
+		super._parentChanged(oldParent);
 	}
 
 	public _addChildFromBuilder(name: string, value: any) {
@@ -94,9 +96,7 @@ export class PageBase extends ContentView {
 	}
 
 	get frame(): Frame {
-		const parent = this.parent;
-
-		return isFrame(parent) ? (parent as Frame) : undefined;
+		return <Frame>this.parent;
 	}
 
 	private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
@@ -180,7 +180,7 @@ export interface PageBase {
  */
 export const actionBarHiddenProperty = new Property<PageBase, boolean>({
 	name: 'actionBarHidden',
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: booleanConverter,
 });
 actionBarHiddenProperty.register(PageBase);
@@ -191,7 +191,7 @@ actionBarHiddenProperty.register(PageBase);
 export const backgroundSpanUnderStatusBarProperty = new Property<PageBase, boolean>({
 	name: 'backgroundSpanUnderStatusBar',
 	defaultValue: false,
-	affectsLayout: global.isIOS,
+	affectsLayout: __APPLE__,
 	valueConverter: booleanConverter,
 });
 backgroundSpanUnderStatusBarProperty.register(PageBase);
@@ -206,15 +206,6 @@ export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>
 	valueConverter: booleanConverter,
 });
 enableSwipeBackNavigationProperty.register(PageBase);
-
-/**
- * Property backing statusBarStyle.
- */
-export const statusBarStyleProperty = new CssProperty<Style, 'light' | 'dark'>({
-	name: 'statusBarStyle',
-	cssName: 'status-bar-style',
-});
-statusBarStyleProperty.register(Style);
 
 /**
  * Property backing androidStatusBarBackground.

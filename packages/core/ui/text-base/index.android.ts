@@ -1,13 +1,11 @@
-// Types
-import { getClosestPropertyValue, maxLinesProperty } from './text-base-common';
-import { CSSShadow } from '../styling/css-shadow';
-
-// Requires
+import { getClosestPropertyValue, maxLinesProperty, textOverflowProperty } from './text-base-common';
+import { ShadowCSSValues } from '../styling/css-shadow';
 import { Font } from '../styling/font';
-import { backgroundColorProperty } from '../styling/style-properties';
-import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
+import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
+import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { CoreTypes } from '../../core-types';
@@ -15,15 +13,15 @@ import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
-import * as Utils from '../../utils';
-import { testIDProperty } from '../../ui/core/view';
+import { testIDProperty } from '../core/view';
+import { isCssWideKeyword } from '../core/properties/property-shared';
 
 export * from './text-base-common';
 
 let TextTransformation: TextTransformation;
 
 export interface TextTransformation {
-	new (owner: TextBase): any /* android.text.method.TransformationMethod */;
+	new (owner: TextBase): android.text.method.TransformationMethod;
 }
 
 function initializeTextTransformation(): void {
@@ -169,9 +167,8 @@ function initializeBaselineAdjustedSpan(): void {
 }
 
 export class TextBase extends TextBaseCommon {
-	nativeViewProtected: android.widget.TextView;
-	// @ts-ignore
-	nativeTextViewProtected: android.widget.TextView;
+	public nativeViewProtected: org.nativescript.widgets.StyleableTextView;
+
 	private _defaultTransformationMethod: android.text.method.TransformationMethod;
 	private _paintFlags: number;
 	private _minHeight: number;
@@ -181,16 +178,44 @@ export class TextBase extends TextBaseCommon {
 	private _tappable = false;
 	private _defaultMovementMethod: android.text.method.MovementMethod;
 
+	get nativeTextViewProtected(): org.nativescript.widgets.StyleableTextView {
+		return super.nativeTextViewProtected;
+	}
+
 	public initNativeView(): void {
 		super.initNativeView();
 		initializeTextTransformation();
+
 		const nativeView = this.nativeTextViewProtected;
+
+		// Fix for custom font over-height issue on Android
+		// Disable font padding to prevent extra spacing around text
+		nativeView.setIncludeFontPadding(false);
+
 		this._defaultTransformationMethod = nativeView.getTransformationMethod();
 		this._defaultMovementMethod = nativeView.getMovementMethod();
 		this._minHeight = nativeView.getMinHeight();
 		this._maxHeight = nativeView.getMaxHeight();
 		this._minLines = nativeView.getMinLines();
 		this._maxLines = nativeView.getMaxLines();
+
+		if (layout.hasRtlSupport() && this._isManualRtlTextStyleNeeded) {
+			// This is a default to match iOS layout direction behaviour
+			nativeView.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
+		}
+	}
+
+	public disposeNativeView(): void {
+		super.disposeNativeView();
+
+		this._tappable = false;
+		this._defaultTransformationMethod = null;
+		this._defaultMovementMethod = null;
+		this._paintFlags = 0;
+		this._minHeight = 0;
+		this._maxHeight = 0;
+		this._minLines = 0;
+		this._maxLines = 0;
 	}
 
 	public resetNativeView(): void {
@@ -237,6 +262,9 @@ export class TextBase extends TextBaseCommon {
 
 		this._setNativeText(reset);
 	}
+	[textStrokeProperty.setNative](value: StrokeCSSValues) {
+		this._setNativeText();
+	}
 	createFormattedTextNative(value: FormattedString) {
 		return createSpannableStringBuilder(value, this.style.fontSize);
 	}
@@ -270,7 +298,6 @@ export class TextBase extends TextBaseCommon {
 	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		if (value === 'initial') {
 			this.nativeTextViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-
 			return;
 		}
 
@@ -286,19 +313,42 @@ export class TextBase extends TextBaseCommon {
 		return 'initial';
 	}
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
+		// TextAlignment API has no effect unless app has rtl support defined in manifest
+		const supportsRtlTextAlign = layout.hasRtlSupport() && this._isManualRtlTextStyleNeeded;
 		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+
+		// In the cases of left and right, use gravity alignment as TEXT_ALIGNMENT_TEXT_START
+		// and TEXT_ALIGNMENT_TEXT_END are affected by text direction
+		// Also, gravity start seem to affect text direction based on language, so use gravity left and right respectively
 		switch (value) {
+			case 'left':
+			case 'justify':
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_GRAVITY);
+				}
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.LEFT | verticalGravity);
+				break;
 			case 'center':
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_CENTER);
+				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;
 			case 'right':
-				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_GRAVITY);
+				}
+				this.nativeTextViewProtected.setGravity(android.view.Gravity.RIGHT | verticalGravity);
 				break;
 			default:
-				// initial | left | justify
+				// initial
+				if (supportsRtlTextAlign) {
+					this.nativeTextViewProtected.setTextAlignment(android.view.View.TEXT_ALIGNMENT_VIEW_START);
+				}
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
 		}
+
 		if (SDK_VERSION >= 26) {
 			if (value === 'justify') {
 				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD);
@@ -311,17 +361,47 @@ export class TextBase extends TextBaseCommon {
 	// Overridden in TextField because setSingleLine(false) will remove methodTransformation.
 	// and we don't want to allow TextField to be multiline
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
+		this.adjustLineBreak();
+	}
+
+	[textOverflowProperty.setNative](value: CoreTypes.TextOverflowType) {
+		this.adjustLineBreak();
+	}
+
+	[directionProperty.setNative](value: CoreTypes.LayoutDirectionType) {
+		// Handle text ellipsis
+		if (this.whiteSpace === 'nowrap' || this.maxLines > 0) {
+			this.nativeTextViewProtected.setEllipsize(value === CoreTypes.LayoutDirection.rtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
+		}
+		super[directionProperty.setNative](value);
+	}
+
+	private adjustLineBreak() {
+		const whiteSpace = this.whiteSpace;
+		const textOverflow = this.textOverflow;
 		const nativeView = this.nativeTextViewProtected;
-		switch (value) {
+		switch (whiteSpace) {
 			case 'initial':
 			case 'normal':
+			case 'wrap':
 				nativeView.setSingleLine(false);
 				nativeView.setEllipsize(null);
 				break;
-			case 'nowrap':
-				nativeView.setSingleLine(true);
-				nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+			case 'nowrap': {
+				const isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
+
+				switch (textOverflow) {
+					case 'initial':
+					case 'ellipsis':
+						nativeView.setSingleLine(true);
+						break;
+					default:
+						nativeView.setSingleLine(false);
+						break;
+				}
+				nativeView.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 				break;
+			}
 		}
 	}
 
@@ -351,13 +431,6 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[lineHeightProperty.getDefault](): number {
-		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
-	}
-	[lineHeightProperty.setNative](value: number) {
-		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
-	}
-
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
 		return this.nativeTextViewProtected.getTypeface();
 	}
@@ -367,15 +440,12 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textDecorationProperty.getDefault](value: number) {
+	[textDecorationProperty.getDefault]() {
 		return (this._paintFlags = this.nativeTextViewProtected.getPaintFlags());
 	}
 
 	[textDecorationProperty.setNative](value: number | CoreTypes.TextDecorationType) {
 		switch (value) {
-			case 'none':
-				this.nativeTextViewProtected.setPaintFlags(0);
-				break;
 			case 'underline':
 				this.nativeTextViewProtected.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG);
 				break;
@@ -386,12 +456,16 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
 				break;
 			default:
-				this.nativeTextViewProtected.setPaintFlags(value);
+				if (value === 'none' || isCssWideKeyword(value)) {
+					this.nativeTextViewProtected.setPaintFlags(0);
+				} else {
+					this.nativeTextViewProtected.setPaintFlags(value as number);
+				}
 				break;
 		}
 	}
 
-	[textShadowProperty.getDefault](value: number) {
+	[textShadowProperty.getDefault]() {
 		return {
 			radius: this.nativeTextViewProtected.getShadowRadius(),
 			offsetX: this.nativeTextViewProtected.getShadowDx(),
@@ -400,7 +474,7 @@ export class TextBase extends TextBaseCommon {
 		};
 	}
 
-	[textShadowProperty.setNative](value: CSSShadow) {
+	[textShadowProperty.setNative](value: ShadowCSSValues) {
 		// prettier-ignore
 		this.nativeTextViewProtected.setShadowLayer(
 			Length.toDevicePixels(value.blurRadius, java.lang.Float.MIN_VALUE),
@@ -408,13 +482,6 @@ export class TextBase extends TextBaseCommon {
 			Length.toDevicePixels(value.offsetY, 0),
 			value.color.android
 		);
-	}
-
-	[letterSpacingProperty.getDefault](): number {
-		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
-	}
-	[letterSpacingProperty.setNative](value: number) {
-		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
 	}
 
 	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
@@ -445,31 +512,37 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
+	[lineHeightProperty.getDefault](): number {
+		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
+	}
+	[lineHeightProperty.setNative](value: number) {
+		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
+	}
+
+	[letterSpacingProperty.getDefault](): number {
+		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
+	}
+	[letterSpacingProperty.setNative](value: number) {
+		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
+	}
+
 	[testIDProperty.setNative](value: string): void {
-		this.setTestID(this.nativeTextViewProtected, value);
+		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
 
 	[accessibilityIdentifierProperty.setNative](value: string): void {
-		if (typeof __USE_TEST_ID__ !== 'undefined' && __USE_TEST_ID__ && this.testID) {
-			// ignore when using testID;
-		} else {
-			// we override the default setter to apply it on nativeTextViewProtected
-			const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
-
-			if (id) {
-				this.nativeTextViewProtected.setTag(id, value);
-				this.nativeTextViewProtected.setTag(value);
-			}
-		}
+		this.setAccessibilityIdentifier(this.nativeTextViewProtected, value);
 	}
 
-	[maxLinesProperty.setNative](value: number) {
+	[maxLinesProperty.setNative](value: CoreTypes.MaxLinesType) {
 		const nativeTextViewProtected = this.nativeTextViewProtected;
 		if (value <= 0) {
 			nativeTextViewProtected.setMaxLines(Number.MAX_SAFE_INTEGER);
 		} else {
+			const isRtl = this.direction === CoreTypes.LayoutDirection.rtl;
+
 			nativeTextViewProtected.setMaxLines(typeof value === 'string' ? parseInt(value, 10) : value);
-			nativeTextViewProtected.setEllipsize(android.text.TextUtils.TruncateAt.END);
+			nativeTextViewProtected.setEllipsize(isRtl ? android.text.TextUtils.TruncateAt.START : android.text.TextUtils.TruncateAt.END);
 		}
 	}
 
@@ -489,7 +562,14 @@ export class TextBase extends TextBaseCommon {
 			transformedText = getTransformedText(stringValue, this.textTransform);
 		}
 
-		this.nativeTextViewProtected.setText(<any>transformedText);
+		if (this.style?.textStroke) {
+			this.nativeTextViewProtected.setTextStroke(Length.toDevicePixels(this.style.textStroke.width), this.style.textStroke.color.android, this.style.color.android);
+		} else if (this.nativeTextViewProtected.setTextStroke) {
+			// reset
+			this.nativeTextViewProtected.setTextStroke(0, 0, 0);
+		}
+
+		this.nativeTextViewProtected.setText(transformedText);
 	}
 
 	_setTappableState(tappable: boolean) {
@@ -574,38 +654,23 @@ function createSpannableStringBuilder(formattedString: FormattedString, defaultF
 
 function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, start: number, end: number, defaultFontSize: number): void {
 	const spanStyle = span.style;
-	const bold = isBold(spanStyle.fontWeight);
-	const italic = spanStyle.fontStyle === 'italic';
 	const align = spanStyle.verticalAlignment;
 
-	if (bold && italic) {
-		ssb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD_ITALIC), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-	} else if (bold) {
-		ssb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-	} else if (italic) {
-		ssb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.ITALIC), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+	const font = new Font(spanStyle.fontFamily, spanStyle.fontSize, spanStyle.fontStyle, spanStyle.fontWeight, spanStyle.fontScaleInternal, spanStyle.fontVariationSettings);
+	const typefaceSpan = new org.nativescript.widgets.CustomTypefaceSpan(font.getAndroidTypeface());
+	ssb.setSpan(typefaceSpan, start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+	if (spanStyle.fontSize) {
+		ssb.setSpan(new android.text.style.AbsoluteSizeSpan(layout.toDevicePixels(spanStyle.fontSize)), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
-	const fontFamily = span.fontFamily;
-	if (fontFamily) {
-		const font = new Font(fontFamily, 0, italic ? 'italic' : 'normal', bold ? 'bold' : 'normal');
-		const typeface = font.getAndroidTypeface() || android.graphics.Typeface.create(fontFamily, 0);
-		const typefaceSpan: android.text.style.TypefaceSpan = new org.nativescript.widgets.CustomTypefaceSpan(fontFamily, typeface);
-		ssb.setSpan(typefaceSpan, start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-	}
-
-	const realFontSize = span.fontSize;
-	if (realFontSize) {
-		ssb.setSpan(new android.text.style.AbsoluteSizeSpan(realFontSize * layout.getDisplayDensity()), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-	}
-
-	const color = span.color;
+	const color = spanStyle.color;
 	if (color) {
 		ssb.setSpan(new android.text.style.ForegroundColorSpan(color.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
-	const backgroundColor: Color = getClosestPropertyValue(<any>backgroundColorProperty, span);
-
+	// Use span or formatted string color
+	const backgroundColor = spanStyle.backgroundColor || span.parent.backgroundColor;
 	if (backgroundColor) {
 		ssb.setSpan(new android.text.style.BackgroundColorSpan(backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
@@ -626,7 +691,7 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 
 	if (align) {
 		initializeBaselineAdjustedSpan();
-		ssb.setSpan(new BaselineAdjustedSpan(defaultFontSize * layout.getDisplayDensity(), align), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		ssb.setSpan(new BaselineAdjustedSpan(layout.toDevicePixels(defaultFontSize), align), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
 	const tappable = span.tappable;

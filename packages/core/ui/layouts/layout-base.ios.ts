@@ -11,9 +11,12 @@ export class LayoutBase extends LayoutBaseCommon {
 		this.requestLayout();
 	}
 
-	public insertChild(child: View, atIndex: number): void {
-		super.insertChild(child, atIndex);
-		this.requestLayout();
+	public insertChild(child: View, atIndex: number): boolean {
+		if (super.insertChild(child, atIndex)) {
+			this.requestLayout();
+			return true;
+		}
+		return false;
 	}
 
 	public removeChild(child: View): void {

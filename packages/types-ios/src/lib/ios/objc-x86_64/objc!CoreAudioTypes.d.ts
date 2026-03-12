@@ -171,6 +171,14 @@ interface AudioStreamBasicDescription {
 }
 declare var AudioStreamBasicDescription: interop.StructType<AudioStreamBasicDescription>;
 
+interface AudioStreamPacketDependencyDescription {
+	mIsIndependentlyDecodable: number;
+	mPreRollCount: number;
+	mFlags: number;
+	mReserved: number;
+}
+declare var AudioStreamPacketDependencyDescription: interop.StructType<AudioStreamPacketDependencyDescription>;
+
 interface AudioStreamPacketDescription {
 	mStartOffset: number;
 	mVariableFramesInPacket: number;
@@ -848,6 +856,8 @@ declare const kAudioChannelLayoutTag_MPEG_5_0_C: number;
 
 declare const kAudioChannelLayoutTag_MPEG_5_0_D: number;
 
+declare const kAudioChannelLayoutTag_MPEG_5_0_E: number;
+
 declare const kAudioChannelLayoutTag_MPEG_5_1_A: number;
 
 declare const kAudioChannelLayoutTag_MPEG_5_1_B: number;
@@ -856,13 +866,19 @@ declare const kAudioChannelLayoutTag_MPEG_5_1_C: number;
 
 declare const kAudioChannelLayoutTag_MPEG_5_1_D: number;
 
+declare const kAudioChannelLayoutTag_MPEG_5_1_E: number;
+
 declare const kAudioChannelLayoutTag_MPEG_6_1_A: number;
+
+declare const kAudioChannelLayoutTag_MPEG_6_1_B: number;
 
 declare const kAudioChannelLayoutTag_MPEG_7_1_A: number;
 
 declare const kAudioChannelLayoutTag_MPEG_7_1_B: number;
 
 declare const kAudioChannelLayoutTag_MPEG_7_1_C: number;
+
+declare const kAudioChannelLayoutTag_MPEG_7_1_D: number;
 
 declare const kAudioChannelLayoutTag_MatrixStereo: number;
 
@@ -871,6 +887,18 @@ declare const kAudioChannelLayoutTag_MidSide: number;
 declare const kAudioChannelLayoutTag_Mono: number;
 
 declare const kAudioChannelLayoutTag_Octagonal: number;
+
+declare const kAudioChannelLayoutTag_Ogg_3_0: number;
+
+declare const kAudioChannelLayoutTag_Ogg_4_0: number;
+
+declare const kAudioChannelLayoutTag_Ogg_5_0: number;
+
+declare const kAudioChannelLayoutTag_Ogg_5_1: number;
+
+declare const kAudioChannelLayoutTag_Ogg_6_1: number;
+
+declare const kAudioChannelLayoutTag_Ogg_7_1: number;
 
 declare const kAudioChannelLayoutTag_Pentagonal: number;
 
@@ -925,6 +953,8 @@ declare const kAudioFormatALaw: number;
 declare const kAudioFormatAMR: number;
 
 declare const kAudioFormatAMR_WB: number;
+
+declare const kAudioFormatAPAC: number;
 
 declare const kAudioFormatAppleIMA4: number;
 
@@ -1027,6 +1057,8 @@ declare const kAudio_FileNotFoundError: number;
 declare const kAudio_FilePermissionError: number;
 
 declare const kAudio_MemFullError: number;
+
+declare const kAudio_NoError: number;
 
 declare const kAudio_ParamError: number;
 

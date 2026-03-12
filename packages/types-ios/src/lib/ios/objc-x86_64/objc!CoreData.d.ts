@@ -1,10 +1,22 @@
 
+/**
+ * @since 3.0
+ */
 declare var NSAddedPersistentStoresKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSAffectedObjectsErrorKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSAffectedStoresErrorKey: string;
 
+/**
+ * @since 8.0
+ */
 declare class NSAsynchronousFetchRequest<ResultType> extends NSPersistentStoreRequest {
 
 	static alloc<ResultType>(): NSAsynchronousFetchRequest<ResultType>; // inherited from NSObject
@@ -15,24 +27,30 @@ declare class NSAsynchronousFetchRequest<ResultType> extends NSPersistentStoreRe
 
 	estimatedResultCount: number;
 
-	readonly fetchRequest: NSFetchRequest<ResultType>;
+	readonly fetchRequest: NSFetchRequest<NSFetchRequestResult>;
 
-	constructor(o: { fetchRequest: NSFetchRequest<ResultType>; completionBlock: (p1: NSAsynchronousFetchResult<ResultType>) => void; });
+	constructor(o: { fetchRequest: NSFetchRequest<NSFetchRequestResult>; completionBlock: (p1: NSAsynchronousFetchResult<NSFetchRequestResult>) => void; });
 
-	initWithFetchRequestCompletionBlock(request: NSFetchRequest<ResultType>, blk: (p1: NSAsynchronousFetchResult<ResultType>) => void): this;
+	initWithFetchRequestCompletionBlock(request: NSFetchRequest<NSFetchRequestResult>, blk: (p1: NSAsynchronousFetchResult<NSFetchRequestResult>) => void): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare class NSAsynchronousFetchResult<ResultType> extends NSPersistentStoreAsynchronousResult {
 
 	static alloc<ResultType>(): NSAsynchronousFetchResult<ResultType>; // inherited from NSObject
 
 	static new<ResultType>(): NSAsynchronousFetchResult<ResultType>; // inherited from NSObject
 
-	readonly fetchRequest: NSAsynchronousFetchRequest<ResultType>;
+	readonly fetchRequest: NSAsynchronousFetchRequest<NSFetchRequestResult>;
 
-	readonly finalResult: NSArray<ResultType>;
+	readonly finalResult: NSArray<NSFetchRequestResult>;
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSAtomicStore extends NSPersistentStore {
 
 	static alloc(): NSAtomicStore; // inherited from NSObject
@@ -45,7 +63,7 @@ declare class NSAtomicStore extends NSPersistentStore {
 
 	cacheNodes(): NSSet<NSAtomicStoreCacheNode>;
 
-	load(): boolean;
+	load(error?: interop.Reference<NSError>): boolean;
 
 	newCacheNodeForManagedObject(managedObject: NSManagedObject): NSAtomicStoreCacheNode;
 
@@ -55,13 +73,16 @@ declare class NSAtomicStore extends NSPersistentStore {
 
 	referenceObjectForObjectID(objectID: NSManagedObjectID): any;
 
-	save(): boolean;
+	save(error?: interop.Reference<NSError>): boolean;
 
 	updateCacheNodeFromManagedObject(node: NSAtomicStoreCacheNode, managedObject: NSManagedObject): void;
 
 	willRemoveCacheNodes(cacheNodes: NSSet<NSAtomicStoreCacheNode>): void;
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSAtomicStoreCacheNode extends NSObject {
 
 	static alloc(): NSAtomicStoreCacheNode; // inherited from NSObject
@@ -77,14 +98,23 @@ declare class NSAtomicStoreCacheNode extends NSObject {
 	initWithObjectID(moid: NSManagedObjectID): this;
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSAttributeDescription extends NSPropertyDescription {
 
 	static alloc(): NSAttributeDescription; // inherited from NSObject
 
 	static new(): NSAttributeDescription; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	allowsCloudEncryption: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	allowsExternalBinaryDataStorage: boolean;
 
 	attributeType: NSAttributeType;
@@ -93,8 +123,14 @@ declare class NSAttributeDescription extends NSPropertyDescription {
 
 	defaultValue: any;
 
+	/**
+	 * @since 13.0
+	 */
 	preservesValueInHistoryOnDeletion: boolean;
 
+	/**
+	 * @since 3.0
+	 */
 	valueTransformerName: string;
 }
 
@@ -128,9 +164,14 @@ declare const enum NSAttributeType {
 
 	TransformableAttributeType = 1800,
 
-	ObjectIDAttributeType = 2000
+	ObjectIDAttributeType = 2000,
+
+	CompositeAttributeType = 2100
 }
 
+/**
+ * @since 9.0
+ */
 declare class NSBatchDeleteRequest extends NSPersistentStoreRequest {
 
 	static alloc(): NSBatchDeleteRequest; // inherited from NSObject
@@ -150,6 +191,9 @@ declare class NSBatchDeleteRequest extends NSPersistentStoreRequest {
 	initWithObjectIDs(objects: NSArray<NSManagedObjectID> | NSManagedObjectID[]): this;
 }
 
+/**
+ * @since 9.0
+ */
 declare const enum NSBatchDeleteRequestResultType {
 
 	ResultTypeStatusOnly = 0,
@@ -159,6 +203,9 @@ declare const enum NSBatchDeleteRequestResultType {
 	ResultTypeCount = 2
 }
 
+/**
+ * @since 9.0
+ */
 declare class NSBatchDeleteResult extends NSPersistentStoreResult {
 
 	static alloc(): NSBatchDeleteResult; // inherited from NSObject
@@ -170,48 +217,87 @@ declare class NSBatchDeleteResult extends NSPersistentStoreResult {
 	readonly resultType: NSBatchDeleteRequestResultType;
 }
 
+/**
+ * @since 13.0
+ */
 declare class NSBatchInsertRequest extends NSPersistentStoreRequest {
 
 	static alloc(): NSBatchInsertRequest; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	static batchInsertRequestWithEntityNameDictionaryHandler(entityName: string, handler: (p1: NSMutableDictionary<string, any>) => boolean): NSBatchInsertRequest;
 
+	/**
+	 * @since 14.0
+	 */
 	static batchInsertRequestWithEntityNameManagedObjectHandler(entityName: string, handler: (p1: NSManagedObject) => boolean): NSBatchInsertRequest;
 
 	static batchInsertRequestWithEntityNameObjects(entityName: string, dictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): NSBatchInsertRequest;
 
 	static new(): NSBatchInsertRequest; // inherited from NSObject
 
+	/**
+	 * @since 14.0
+	 */
 	dictionaryHandler: (p1: NSMutableDictionary<string, any>) => boolean;
 
 	readonly entity: NSEntityDescription;
 
 	readonly entityName: string;
 
+	/**
+	 * @since 14.0
+	 */
 	managedObjectHandler: (p1: NSManagedObject) => boolean;
 
 	objectsToInsert: NSArray<NSDictionary<string, any>>;
 
 	resultType: NSBatchInsertRequestResultType;
 
+	/**
+	 * @since 14.0
+	 */
 	constructor(o: { entity: NSEntityDescription; dictionaryHandler: (p1: NSMutableDictionary<string, any>) => boolean; });
 
+	/**
+	 * @since 14.0
+	 */
 	constructor(o: { entity: NSEntityDescription; managedObjectHandler: (p1: NSManagedObject) => boolean; });
 
+	/**
+	 * @since 14.0
+	 */
 	constructor(o: { entityName: string; dictionaryHandler: (p1: NSMutableDictionary<string, any>) => boolean; });
 
+	/**
+	 * @since 14.0
+	 */
 	constructor(o: { entityName: string; managedObjectHandler: (p1: NSManagedObject) => boolean; });
 
 	constructor(o: { entityName: string; objects: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]; });
 
 	constructor(o: { entity: NSEntityDescription; objects: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]; });
 
+	/**
+	 * @since 14.0
+	 */
 	initWithEntityDictionaryHandler(entity: NSEntityDescription, handler: (p1: NSMutableDictionary<string, any>) => boolean): this;
 
+	/**
+	 * @since 14.0
+	 */
 	initWithEntityManagedObjectHandler(entity: NSEntityDescription, handler: (p1: NSManagedObject) => boolean): this;
 
+	/**
+	 * @since 14.0
+	 */
 	initWithEntityNameDictionaryHandler(entityName: string, handler: (p1: NSMutableDictionary<string, any>) => boolean): this;
 
+	/**
+	 * @since 14.0
+	 */
 	initWithEntityNameManagedObjectHandler(entityName: string, handler: (p1: NSManagedObject) => boolean): this;
 
 	initWithEntityNameObjects(entityName: string, dictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): this;
@@ -219,6 +305,9 @@ declare class NSBatchInsertRequest extends NSPersistentStoreRequest {
 	initWithEntityObjects(entity: NSEntityDescription, dictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): this;
 }
 
+/**
+ * @since 13.0
+ */
 declare const enum NSBatchInsertRequestResultType {
 
 	StatusOnly = 0,
@@ -228,6 +317,9 @@ declare const enum NSBatchInsertRequestResultType {
 	Count = 2
 }
 
+/**
+ * @since 13.0
+ */
 declare class NSBatchInsertResult extends NSPersistentStoreResult {
 
 	static alloc(): NSBatchInsertResult; // inherited from NSObject
@@ -239,6 +331,9 @@ declare class NSBatchInsertResult extends NSPersistentStoreResult {
 	readonly resultType: NSBatchInsertRequestResultType;
 }
 
+/**
+ * @since 8.0
+ */
 declare class NSBatchUpdateRequest extends NSPersistentStoreRequest {
 
 	static alloc(): NSBatchUpdateRequest; // inherited from NSObject
@@ -268,6 +363,9 @@ declare class NSBatchUpdateRequest extends NSPersistentStoreRequest {
 	initWithEntityName(entityName: string): this;
 }
 
+/**
+ * @since 8.0
+ */
 declare const enum NSBatchUpdateRequestResultType {
 
 	StatusOnlyResultType = 0,
@@ -277,6 +375,9 @@ declare const enum NSBatchUpdateRequestResultType {
 	UpdatedObjectsCountResultType = 2
 }
 
+/**
+ * @since 8.0
+ */
 declare class NSBatchUpdateResult extends NSPersistentStoreResult {
 
 	static alloc(): NSBatchUpdateResult; // inherited from NSObject
@@ -288,12 +389,36 @@ declare class NSBatchUpdateResult extends NSPersistentStoreResult {
 	readonly resultType: NSBatchUpdateRequestResultType;
 }
 
+/**
+ * @since 11.0
+ */
 declare var NSBinaryStoreInsecureDecodingCompatibilityOption: string;
 
+/**
+ * @since 11.0
+ */
 declare var NSBinaryStoreSecureDecodingClasses: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSBinaryStoreType: string;
 
+/**
+ * @since 17.0
+ */
+declare class NSCompositeAttributeDescription extends NSAttributeDescription {
+
+	static alloc(): NSCompositeAttributeDescription; // inherited from NSObject
+
+	static new(): NSCompositeAttributeDescription; // inherited from NSObject
+
+	elements: NSArray<NSAttributeDescription>;
+}
+
+/**
+ * @since 9.0
+ */
 declare class NSConstraintConflict extends NSObject {
 
 	static alloc(): NSConstraintConflict; // inherited from NSObject
@@ -317,46 +442,103 @@ declare class NSConstraintConflict extends NSObject {
 	initWithConstraintDatabaseObjectDatabaseSnapshotConflictingObjectsConflictingSnapshots(contraint: NSArray<string> | string[], databaseObject: NSManagedObject, databaseSnapshot: NSDictionary<any, any>, conflictingObjects: NSArray<NSManagedObject> | NSManagedObject[], conflictingSnapshots: NSArray<any> | any[]): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class NSCoreDataCoreSpotlightDelegate extends NSObject {
 
 	static alloc(): NSCoreDataCoreSpotlightDelegate; // inherited from NSObject
 
 	static new(): NSCoreDataCoreSpotlightDelegate; // inherited from NSObject
 
+	/**
+	 * @since 15.0
+	 */
 	readonly indexingEnabled: boolean;
 
+	/**
+	 * @since 13.0
+	 */
 	constructor(o: { forStoreWithDescription: NSPersistentStoreDescription; coordinator: NSPersistentStoreCoordinator; });
 
+	/**
+	 * @since 11.0
+	 * @deprecated 15.0
+	 */
 	constructor(o: { forStoreWithDescription: NSPersistentStoreDescription; model: NSManagedObjectModel; });
 
 	attributeSetForObject(object: NSManagedObject): CSSearchableItemAttributeSet;
 
+	/**
+	 * @since 14.0
+	 */
 	deleteSpotlightIndexWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	domainIdentifier(): string;
 
 	indexName(): string;
 
+	/**
+	 * @since 13.0
+	 */
 	initForStoreWithDescriptionCoordinator(description: NSPersistentStoreDescription, psc: NSPersistentStoreCoordinator): this;
 
+	/**
+	 * @since 11.0
+	 * @deprecated 15.0
+	 */
 	initForStoreWithDescriptionModel(description: NSPersistentStoreDescription, model: NSManagedObjectModel): this;
 
 	searchableIndexReindexAllSearchableItemsWithAcknowledgementHandler(searchableIndex: CSSearchableIndex, acknowledgementHandler: () => void): void;
 
 	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string> | string[], acknowledgementHandler: () => void): void;
 
+	/**
+	 * @since 13.0
+	 */
 	startSpotlightIndexing(): void;
 
+	/**
+	 * @since 13.0
+	 */
 	stopSpotlightIndexing(): void;
 }
 
+/**
+ * @since 14.0
+ */
 declare var NSCoreDataCoreSpotlightDelegateIndexDidUpdateNotification: string;
 
+/**
+ * @since 11.0
+ */
 declare var NSCoreDataCoreSpotlightExporter: string;
 
 declare const NSCoreDataError: number;
 
 declare var NSCoreDataVersionNumber: number;
+
+/**
+ * @since 17.0
+ */
+declare class NSCustomMigrationStage extends NSMigrationStage {
+
+	static alloc(): NSCustomMigrationStage; // inherited from NSObject
+
+	static new(): NSCustomMigrationStage; // inherited from NSObject
+
+	readonly currentModel: NSManagedObjectModelReference;
+
+	didMigrateHandler: (p1: NSStagedMigrationManager, p2: NSCustomMigrationStage, p3: interop.Pointer | interop.Reference<NSError>) => boolean;
+
+	readonly nextModel: NSManagedObjectModelReference;
+
+	willMigrateHandler: (p1: NSStagedMigrationManager, p2: NSCustomMigrationStage, p3: interop.Pointer | interop.Reference<NSError>) => boolean;
+
+	constructor(o: { currentModelReference: NSManagedObjectModelReference; nextModelReference: NSManagedObjectModelReference; });
+
+	initWithCurrentModelReferenceNextModelReference(currentModel: NSManagedObjectModelReference, nextModel: NSManagedObjectModelReference): this;
+}
 
 declare const enum NSDeleteRule {
 
@@ -369,10 +551,19 @@ declare const enum NSDeleteRule {
 	DenyDeleteRule = 3
 }
 
+/**
+ * @since 10.3
+ */
 declare var NSDeletedObjectIDsKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSDeletedObjectsKey: string;
 
+/**
+ * @since 13.0
+ */
 declare class NSDerivedAttributeDescription extends NSAttributeDescription {
 
 	static alloc(): NSDerivedAttributeDescription; // inherited from NSObject
@@ -382,8 +573,14 @@ declare class NSDerivedAttributeDescription extends NSAttributeDescription {
 	derivationExpression: NSExpression;
 }
 
+/**
+ * @since 3.0
+ */
 declare var NSDetailedErrorsKey: string;
 
+/**
+ * @since 3.0
+ */
 declare class NSEntityDescription extends NSObject implements NSCoding, NSCopying, NSFastEnumeration {
 
 	static alloc(): NSEntityDescription; // inherited from NSObject
@@ -398,10 +595,20 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 
 	readonly attributesByName: NSDictionary<string, NSAttributeDescription>;
 
+	/**
+	 * @since 3.0
+	 * @deprecated 11.0
+	 */
 	compoundIndexes: NSArray<NSArray<any>>;
 
+	/**
+	 * @since 11.0
+	 */
 	coreSpotlightDisplayNameExpression: NSExpression;
 
+	/**
+	 * @since 11.0
+	 */
 	indexes: NSArray<NSFetchIndexDescription>;
 
 	managedObjectClassName: string;
@@ -416,6 +623,9 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 
 	readonly relationshipsByName: NSDictionary<string, NSRelationshipDescription>;
 
+	/**
+	 * @since 3.0
+	 */
 	renamingIdentifier: string;
 
 	subentities: NSArray<NSEntityDescription>;
@@ -424,12 +634,21 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 
 	readonly superentity: NSEntityDescription;
 
+	/**
+	 * @since 9.0
+	 */
 	uniquenessConstraints: NSArray<NSArray<any>>;
 
 	userInfo: NSDictionary<any, any>;
 
+	/**
+	 * @since 3.0
+	 */
 	readonly versionHash: NSData;
 
+	/**
+	 * @since 3.0
+	 */
 	versionHashModifier: string;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -441,11 +660,17 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 3.0
+	 */
 	isKindOfEntity(entity: NSEntityDescription): boolean;
 
 	relationshipsWithDestinationEntity(entity: NSEntityDescription): NSArray<NSRelationshipDescription>;
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSEntityMapping extends NSObject {
 
 	static alloc(): NSEntityMapping; // inherited from NSObject
@@ -490,33 +715,45 @@ declare const enum NSEntityMappingType {
 	TransformEntityMappingType = 5
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSEntityMigrationPolicy extends NSObject {
 
 	static alloc(): NSEntityMigrationPolicy; // inherited from NSObject
 
 	static new(): NSEntityMigrationPolicy; // inherited from NSObject
 
-	beginEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager): boolean;
+	beginEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager, error?: interop.Reference<NSError>): boolean;
 
-	createDestinationInstancesForSourceInstanceEntityMappingManagerError(sInstance: NSManagedObject, mapping: NSEntityMapping, manager: NSMigrationManager): boolean;
+	createDestinationInstancesForSourceInstanceEntityMappingManagerError(sInstance: NSManagedObject, mapping: NSEntityMapping, manager: NSMigrationManager, error?: interop.Reference<NSError>): boolean;
 
-	createRelationshipsForDestinationInstanceEntityMappingManagerError(dInstance: NSManagedObject, mapping: NSEntityMapping, manager: NSMigrationManager): boolean;
+	createRelationshipsForDestinationInstanceEntityMappingManagerError(dInstance: NSManagedObject, mapping: NSEntityMapping, manager: NSMigrationManager, error?: interop.Reference<NSError>): boolean;
 
-	endEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager): boolean;
+	endEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager, error?: interop.Reference<NSError>): boolean;
 
-	endInstanceCreationForEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager): boolean;
+	endInstanceCreationForEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager, error?: interop.Reference<NSError>): boolean;
 
-	endRelationshipCreationForEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager): boolean;
+	endRelationshipCreationForEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager, error?: interop.Reference<NSError>): boolean;
 
-	performCustomValidationForEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager): boolean;
+	performCustomValidationForEntityMappingManagerError(mapping: NSEntityMapping, manager: NSMigrationManager, error?: interop.Reference<NSError>): boolean;
 }
 
 declare const NSEntityMigrationPolicyError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSErrorMergePolicy: any;
 
+/**
+ * @since 3.0
+ */
 declare var NSErrorMergePolicyVar: any;
 
+/**
+ * @since 3.0
+ */
 declare class NSExpressionDescription extends NSPropertyDescription {
 
 	static alloc(): NSExpressionDescription; // inherited from NSObject
@@ -530,6 +767,9 @@ declare class NSExpressionDescription extends NSPropertyDescription {
 
 declare const NSExternalRecordImportError: number;
 
+/**
+ * @since 11.0
+ */
 declare class NSFetchIndexDescription extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): NSFetchIndexDescription; // inherited from NSObject
@@ -557,6 +797,9 @@ declare class NSFetchIndexDescription extends NSObject implements NSCoding, NSCo
 	initWithNameElements(name: string, elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare class NSFetchIndexElementDescription extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): NSFetchIndexElementDescription; // inherited from NSObject
@@ -586,6 +829,9 @@ declare class NSFetchIndexElementDescription extends NSObject implements NSCodin
 	initWithPropertyCollationType(property: NSPropertyDescription, collationType: NSFetchIndexElementType): this;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum NSFetchIndexElementType {
 
 	Binary = 0,
@@ -593,65 +839,125 @@ declare const enum NSFetchIndexElementType {
 	RTree = 1
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implements NSCoding, NSCopying {
 
 	static alloc<ResultType>(): NSFetchRequest<ResultType>; // inherited from NSObject
 
+	/**
+	 * @since 4.0
+	 */
 	static fetchRequestWithEntityName<ResultType>(entityName: string): NSFetchRequest<ResultType>;
 
 	static new<ResultType>(): NSFetchRequest<ResultType>; // inherited from NSObject
 
 	entity: NSEntityDescription;
 
+	/**
+	 * @since 4.0
+	 */
 	readonly entityName: string;
 
+	/**
+	 * @since 3.0
+	 */
 	fetchBatchSize: number;
 
 	fetchLimit: number;
 
+	/**
+	 * @since 3.0
+	 */
 	fetchOffset: number;
 
+	/**
+	 * @since 5.0
+	 */
 	havingPredicate: NSPredicate;
 
+	/**
+	 * @since 3.0
+	 */
 	includesPendingChanges: boolean;
 
+	/**
+	 * @since 3.0
+	 */
 	includesPropertyValues: boolean;
 
+	/**
+	 * @since 3.0
+	 */
 	includesSubentities: boolean;
 
 	predicate: NSPredicate;
 
+	/**
+	 * @since 3.0
+	 */
 	propertiesToFetch: NSArray<any>;
 
+	/**
+	 * @since 5.0
+	 */
 	propertiesToGroupBy: NSArray<any>;
 
+	/**
+	 * @since 3.0
+	 */
 	relationshipKeyPathsForPrefetching: NSArray<string>;
 
+	/**
+	 * @since 3.0
+	 */
 	resultType: NSFetchRequestResultType;
 
+	/**
+	 * @since 3.0
+	 */
 	returnsDistinctResults: boolean;
 
+	/**
+	 * @since 3.0
+	 */
 	returnsObjectsAsFaults: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	shouldRefreshRefetchedObjects: boolean;
 
 	sortDescriptors: NSArray<NSSortDescriptor>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 4.0
+	 */
 	constructor(o: { entityName: string; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	execute(): NSArray<ResultType>;
+	/**
+	 * @since 10.0
+	 */
+	execute(error?: interop.Reference<NSError>): NSArray<NSFetchRequestResult>;
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 4.0
+	 */
 	initWithEntityName(entityName: string): this;
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSFetchRequestExpression extends NSExpression {
 
 	static alloc(): NSFetchRequestExpression; // inherited from NSObject
@@ -687,6 +993,9 @@ declare const enum NSFetchRequestResultType {
 	CountResultType = 4
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSFetchedPropertyDescription extends NSPropertyDescription {
 
 	static alloc(): NSFetchedPropertyDescription; // inherited from NSObject
@@ -696,6 +1005,9 @@ declare class NSFetchedPropertyDescription extends NSPropertyDescription {
 	fetchRequest: NSFetchRequest<any>;
 }
 
+/**
+ * @since 3.0
+ */
 declare const enum NSFetchedResultsChangeType {
 
 	Insert = 1,
@@ -707,6 +1019,9 @@ declare const enum NSFetchedResultsChangeType {
 	Update = 4
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSFetchedResultsController<ResultType> extends NSObject {
 
 	static alloc<ResultType>(): NSFetchedResultsController<ResultType>; // inherited from NSObject
@@ -719,9 +1034,9 @@ declare class NSFetchedResultsController<ResultType> extends NSObject {
 
 	delegate: NSFetchedResultsControllerDelegate;
 
-	readonly fetchRequest: NSFetchRequest<ResultType>;
+	readonly fetchRequest: NSFetchRequest<NSFetchRequestResult>;
 
-	readonly fetchedObjects: NSArray<ResultType>;
+	readonly fetchedObjects: NSArray<NSFetchRequestResult>;
 
 	readonly managedObjectContext: NSManagedObjectContext;
 
@@ -731,15 +1046,15 @@ declare class NSFetchedResultsController<ResultType> extends NSObject {
 
 	readonly sections: NSArray<NSFetchedResultsSectionInfo>;
 
-	constructor(o: { fetchRequest: NSFetchRequest<ResultType>; managedObjectContext: NSManagedObjectContext; sectionNameKeyPath: string; cacheName: string; });
+	constructor(o: { fetchRequest: NSFetchRequest<NSFetchRequestResult>; managedObjectContext: NSManagedObjectContext; sectionNameKeyPath: string; cacheName: string; });
 
-	indexPathForObject(object: ResultType): NSIndexPath;
+	indexPathForObject(object: NSFetchRequestResult): NSIndexPath;
 
-	initWithFetchRequestManagedObjectContextSectionNameKeyPathCacheName(fetchRequest: NSFetchRequest<ResultType>, context: NSManagedObjectContext, sectionNameKeyPath: string, name: string): this;
+	initWithFetchRequestManagedObjectContextSectionNameKeyPathCacheName(fetchRequest: NSFetchRequest<NSFetchRequestResult>, context: NSManagedObjectContext, sectionNameKeyPath: string, name: string): this;
 
-	objectAtIndexPath(indexPath: NSIndexPath): ResultType;
+	objectAtIndexPath(indexPath: NSIndexPath): NSFetchRequestResult;
 
-	performFetch(): boolean;
+	performFetch(error?: interop.Reference<NSError>): boolean;
 
 	sectionForSectionIndexTitleAtIndex(title: string, sectionIndex: number): number;
 
@@ -750,14 +1065,23 @@ interface NSFetchedResultsControllerDelegate extends NSObjectProtocol {
 
 	controllerDidChangeContent?(controller: NSFetchedResultsController<any>): void;
 
+	/**
+	 * @since 13.0
+	 */
 	controllerDidChangeContentWithDifference?(controller: NSFetchedResultsController<any>, diff: NSOrderedCollectionDifference<NSManagedObjectID>): void;
 
+	/**
+	 * @since 13.0
+	 */
 	controllerDidChangeContentWithSnapshot?(controller: NSFetchedResultsController<any>, snapshot: NSDiffableDataSourceSnapshot<string, NSManagedObjectID>): void;
 
 	controllerDidChangeObjectAtIndexPathForChangeTypeNewIndexPath?(controller: NSFetchedResultsController<any>, anObject: any, indexPath: NSIndexPath, type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath): void;
 
 	controllerDidChangeSectionAtIndexForChangeType?(controller: NSFetchedResultsController<any>, sectionInfo: NSFetchedResultsSectionInfo, sectionIndex: number, type: NSFetchedResultsChangeType): void;
 
+	/**
+	 * @since 4.0
+	 */
 	controllerSectionIndexTitleForSectionName?(controller: NSFetchedResultsController<any>, sectionName: string): string;
 
 	controllerWillChangeContent?(controller: NSFetchedResultsController<any>): void;
@@ -782,10 +1106,19 @@ declare var NSFetchedResultsSectionInfo: {
 	prototype: NSFetchedResultsSectionInfo;
 };
 
+/**
+ * @since 3.0
+ */
 declare var NSIgnorePersistentStoreVersioningOption: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSInMemoryStoreType: string;
 
+/**
+ * @since 5.0
+ */
 declare class NSIncrementalStore extends NSPersistentStore {
 
 	static alloc(): NSIncrementalStore; // inherited from NSObject
@@ -794,7 +1127,7 @@ declare class NSIncrementalStore extends NSPersistentStore {
 
 	static new(): NSIncrementalStore; // inherited from NSObject
 
-	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext): any;
+	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext, error?: interop.Reference<NSError>): any;
 
 	managedObjectContextDidRegisterObjectsWithIDs(objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): void;
 
@@ -802,15 +1135,18 @@ declare class NSIncrementalStore extends NSPersistentStore {
 
 	newObjectIDForEntityReferenceObject(entity: NSEntityDescription, data: any): NSManagedObjectID;
 
-	newValueForRelationshipForObjectWithIDWithContextError(relationship: NSRelationshipDescription, objectID: NSManagedObjectID, context: NSManagedObjectContext): any;
+	newValueForRelationshipForObjectWithIDWithContextError(relationship: NSRelationshipDescription, objectID: NSManagedObjectID, context: NSManagedObjectContext, error?: interop.Reference<NSError>): any;
 
-	newValuesForObjectWithIDWithContextError(objectID: NSManagedObjectID, context: NSManagedObjectContext): NSIncrementalStoreNode;
+	newValuesForObjectWithIDWithContextError(objectID: NSManagedObjectID, context: NSManagedObjectContext, error?: interop.Reference<NSError>): NSIncrementalStoreNode;
 
-	obtainPermanentIDsForObjectsError(array: NSArray<NSManagedObject> | NSManagedObject[]): NSArray<NSManagedObjectID>;
+	obtainPermanentIDsForObjectsError(array: NSArray<NSManagedObject> | NSManagedObject[], error?: interop.Reference<NSError>): NSArray<NSManagedObjectID>;
 
 	referenceObjectForObjectID(objectID: NSManagedObjectID): any;
 }
 
+/**
+ * @since 5.0
+ */
 declare class NSIncrementalStoreNode extends NSObject {
 
 	static alloc(): NSIncrementalStoreNode; // inherited from NSObject
@@ -830,26 +1166,69 @@ declare class NSIncrementalStoreNode extends NSObject {
 	valueForPropertyDescription(prop: NSPropertyDescription): any;
 }
 
+/**
+ * @since 3.0
+ */
 declare var NSInferMappingModelAutomaticallyOption: string;
 
 declare const NSInferredMappingModelError: number;
 
+/**
+ * @since 10.3
+ */
 declare var NSInsertedObjectIDsKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSInsertedObjectsKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSInvalidatedAllObjectsKey: string;
 
+/**
+ * @since 10.3
+ */
 declare var NSInvalidatedObjectIDsKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSInvalidatedObjectsKey: string;
 
+/**
+ * @since 17.0
+ */
+declare class NSLightweightMigrationStage extends NSMigrationStage {
+
+	static alloc(): NSLightweightMigrationStage; // inherited from NSObject
+
+	static new(): NSLightweightMigrationStage; // inherited from NSObject
+
+	readonly versionChecksums: NSArray<string>;
+
+	constructor(o: { versionChecksums: NSArray<string> | string[]; });
+
+	initWithVersionChecksums(versionChecksums: NSArray<string> | string[]): this;
+}
+
+/**
+ * @since 3.0
+ */
 declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	static alloc(): NSManagedObject; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	static entity(): NSEntityDescription;
 
+	/**
+	 * @since 10.0
+	 */
 	static fetchRequest(): NSFetchRequest<any>;
 
 	static new(): NSManagedObject; // inherited from NSObject
@@ -860,10 +1239,19 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	readonly fault: boolean;
 
+	/**
+	 * @since 3.0
+	 */
 	readonly faultingState: number;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly hasChanges: boolean;
 
+	/**
+	 * @since 7.0
+	 */
 	readonly hasPersistentChangedValues: boolean;
 
 	readonly inserted: boolean;
@@ -874,6 +1262,9 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	readonly updated: boolean;
 
+	/**
+	 * @since 3.0
+	 */
 	static readonly contextShouldIgnoreUnmodeledPropertyChanges: boolean;
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -888,6 +1279,9 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	readonly  // inherited from NSObjectProtocol
 
+	/**
+	 * @since 10.0
+	 */
 	constructor(o: { context: NSManagedObjectContext; });
 
 	constructor(o: { entity: NSEntityDescription; insertIntoManagedObjectContext: NSManagedObjectContext; });
@@ -896,10 +1290,16 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	awakeFromInsert(): void;
 
+	/**
+	 * @since 3.0
+	 */
 	awakeFromSnapshotEvents(flags: NSSnapshotEventType): void;
 
 	changedValues(): NSDictionary<string, any>;
 
+	/**
+	 * @since 5.0
+	 */
 	changedValuesForCurrentEvent(): NSDictionary<string, any>;
 
 	class(): typeof NSObject;
@@ -914,8 +1314,14 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	didTurnIntoFault(): void;
 
+	/**
+	 * @since 3.0
+	 */
 	hasFaultForRelationshipNamed(key: string): boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	initWithContext(moc: NSManagedObjectContext): this;
 
 	initWithEntityInsertIntoManagedObjectContext(entity: NSEntityDescription, context: NSManagedObjectContext): this;
@@ -926,6 +1332,9 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	/**
+	 * @since 8.3
+	 */
 	objectIDsForRelationshipNamed(key: string): NSArray<NSManagedObjectID>;
 
 	performSelector(aSelector: string): any;
@@ -934,6 +1343,9 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
+	/**
+	 * @since 3.0
+	 */
 	prepareForDeletion(): void;
 
 	primitiveValueForKey(key: string): any;
@@ -946,16 +1358,19 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	setPrimitiveValueForKey(value: any, key: string): void;
 
-	validateForDelete(): boolean;
+	validateForDelete(error?: interop.Reference<NSError>): boolean;
 
-	validateForInsert(): boolean;
+	validateForInsert(error?: interop.Reference<NSError>): boolean;
 
-	validateForUpdate(): boolean;
+	validateForUpdate(error?: interop.Reference<NSError>): boolean;
 
 	willAccessValueForKey(key: string): void;
 
 	willSave(): void;
 
+	/**
+	 * @since 3.0
+	 */
 	willTurnIntoFault(): void;
 }
 
@@ -963,16 +1378,28 @@ declare const NSManagedObjectConstraintMergeError: number;
 
 declare const NSManagedObjectConstraintValidationError: number;
 
+/**
+ * @since 3.0
+ */
 declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLocking {
 
 	static alloc(): NSManagedObjectContext; // inherited from NSObject
 
+	/**
+	 * @since 9.0
+	 */
 	static mergeChangesFromRemoteContextSaveIntoContexts(changeNotificationData: NSDictionary<any, any>, contexts: NSArray<NSManagedObjectContext> | NSManagedObjectContext[]): void;
 
 	static new(): NSManagedObjectContext; // inherited from NSObject
 
+	/**
+	 * @since 10.0
+	 */
 	automaticallyMergesChangesFromParent: boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly concurrencyType: NSManagedObjectContextConcurrencyType;
 
 	readonly deletedObjects: NSSet<NSManagedObject>;
@@ -983,39 +1410,63 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	mergePolicy: any;
 
+	/**
+	 * @since 8.0
+	 */
 	name: string;
 
+	/**
+	 * @since 5.0
+	 */
 	parentContext: NSManagedObjectContext;
 
 	persistentStoreCoordinator: NSPersistentStoreCoordinator;
 
 	propagatesDeletesAtEndOfEvent: boolean;
 
+	/**
+	 * @since 10.0
+	 */
 	readonly queryGenerationToken: NSQueryGenerationToken;
 
 	readonly registeredObjects: NSSet<NSManagedObject>;
 
 	retainsRegisteredObjects: boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	shouldDeleteInaccessibleFaults: boolean;
 
 	stalenessInterval: number;
 
+	/**
+	 * @since 11.0
+	 */
 	transactionAuthor: string;
 
 	undoManager: NSUndoManager;
 
 	readonly updatedObjects: NSSet<NSManagedObject>;
 
+	/**
+	 * @since 5.0
+	 */
 	readonly userInfo: NSMutableDictionary<any, any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	/**
+	 * @since 5.0
+	 */
 	constructor(o: { concurrencyType: NSManagedObjectContextConcurrencyType; });
 
 	assignObjectToPersistentStore(object: any, store: NSPersistentStore): void;
 
-	countForFetchRequestError(request: NSFetchRequest<any>): number;
+	/**
+	 * @since 3.0
+	 */
+	countForFetchRequestError(request: NSFetchRequest<any>, error?: interop.Reference<NSError>): number;
 
 	deleteObject(object: NSManagedObject): void;
 
@@ -1023,36 +1474,60 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	encodeWithCoder(coder: NSCoder): void;
 
-	executeFetchRequestError(request: NSFetchRequest<any>): NSArray<any>;
+	executeFetchRequestError(request: NSFetchRequest<any>, error?: interop.Reference<NSError>): NSArray<any>;
 
-	executeRequestError(request: NSPersistentStoreRequest): NSPersistentStoreResult;
+	/**
+	 * @since 8.0
+	 */
+	executeRequestError(request: NSPersistentStoreRequest, error?: interop.Reference<NSError>): NSPersistentStoreResult;
 
-	existingObjectWithIDError(objectID: NSManagedObjectID): NSManagedObject;
+	/**
+	 * @since 3.0
+	 */
+	existingObjectWithIDError(objectID: NSManagedObjectID, error?: interop.Reference<NSError>): NSManagedObject;
 
 	initWithCoder(coder: NSCoder): this;
 
+	/**
+	 * @since 5.0
+	 */
 	initWithConcurrencyType(ct: NSManagedObjectContextConcurrencyType): this;
 
 	insertObject(object: NSManagedObject): void;
 
 	lock(): void;
 
+	/**
+	 * @since 3.0
+	 */
 	mergeChangesFromContextDidSaveNotification(notification: NSNotification): void;
 
 	objectRegisteredForID(objectID: NSManagedObjectID): NSManagedObject;
 
 	objectWithID(objectID: NSManagedObjectID): NSManagedObject;
 
-	obtainPermanentIDsForObjectsError(objects: NSArray<NSManagedObject> | NSManagedObject[]): boolean;
+	/**
+	 * @since 3.0
+	 */
+	obtainPermanentIDsForObjectsError(objects: NSArray<NSManagedObject> | NSManagedObject[], error?: interop.Reference<NSError>): boolean;
 
+	/**
+	 * @since 5.0
+	 */
 	performBlock(block: () => void): void;
 
+	/**
+	 * @since 5.0
+	 */
 	performBlockAndWait(block: () => void): void;
 
 	processPendingChanges(): void;
 
 	redo(): void;
 
+	/**
+	 * @since 8.3
+	 */
 	refreshAllObjects(): void;
 
 	refreshObjectMergeChanges(object: NSManagedObject, flag: boolean): void;
@@ -1061,12 +1536,22 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	rollback(): void;
 
-	save(): boolean;
+	save(error?: interop.Reference<NSError>): boolean;
 
-	setQueryGenerationFromTokenError(generation: NSQueryGenerationToken): boolean;
+	/**
+	 * @since 10.0
+	 */
+	setQueryGenerationFromTokenError(generation: NSQueryGenerationToken, error?: interop.Reference<NSError>): boolean;
 
+	/**
+	 * @since 9.0
+	 */
 	shouldHandleInaccessibleFaultForObjectIDTriggeredByProperty(fault: NSManagedObject, oid: NSManagedObjectID, property: NSPropertyDescription): boolean;
 
+	/**
+	 * @since 3.0
+	 * @deprecated 8.0
+	 */
 	tryLock(): boolean;
 
 	undo(): void;
@@ -1074,6 +1559,9 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 	unlock(): void;
 }
 
+/**
+ * @since 5.0
+ */
 declare const enum NSManagedObjectContextConcurrencyType {
 
 	ConfinementConcurrencyType = 0,
@@ -1083,22 +1571,43 @@ declare const enum NSManagedObjectContextConcurrencyType {
 	MainQueueConcurrencyType = 2
 }
 
+/**
+ * @since 10.3
+ */
 declare var NSManagedObjectContextDidMergeChangesObjectIDsNotification: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSManagedObjectContextDidSaveNotification: string;
 
+/**
+ * @since 10.3
+ */
 declare var NSManagedObjectContextDidSaveObjectIDsNotification: string;
 
 declare const NSManagedObjectContextLockingError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSManagedObjectContextObjectsDidChangeNotification: string;
 
+/**
+ * @since 10.0
+ */
 declare var NSManagedObjectContextQueryGenerationKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSManagedObjectContextWillSaveNotification: string;
 
 declare const NSManagedObjectExternalRelationshipError: number;
 
+/**
+ * @since 3.0
+ */
 declare class NSManagedObjectID extends NSObject implements NSCopying, NSFetchRequestResult {
 
 	static alloc(): NSManagedObjectID; // inherited from NSObject
@@ -1152,16 +1661,30 @@ declare class NSManagedObjectID extends NSObject implements NSCopying, NSFetchRe
 
 declare const NSManagedObjectMergeError: number;
 
+/**
+ * @since 3.0
+ */
 declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopying, NSFastEnumeration {
 
 	static alloc(): NSManagedObjectModel; // inherited from NSObject
 
+	/**
+	 * @since 17.0
+	 */
+	static checksumsForVersionedModelAtURLError(modelURL: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, string>;
+
 	static mergedModelFromBundles(bundles: NSArray<NSBundle> | NSBundle[]): NSManagedObjectModel;
 
+	/**
+	 * @since 3.0
+	 */
 	static mergedModelFromBundlesForStoreMetadata(bundles: NSArray<NSBundle> | NSBundle[], metadata: NSDictionary<string, any>): NSManagedObjectModel;
 
 	static modelByMergingModels(models: NSArray<NSManagedObjectModel> | NSManagedObjectModel[]): NSManagedObjectModel;
 
+	/**
+	 * @since 3.0
+	 */
 	static modelByMergingModelsForStoreMetadata(models: NSArray<NSManagedObjectModel> | NSManagedObjectModel[], metadata: NSDictionary<string, any>): NSManagedObjectModel;
 
 	static new(): NSManagedObjectModel; // inherited from NSObject
@@ -1172,12 +1695,26 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	readonly entitiesByName: NSDictionary<string, NSEntityDescription>;
 
+	/**
+	 * @since 3.0
+	 */
 	readonly entityVersionHashesByName: NSDictionary<string, NSData>;
 
+	/**
+	 * @since 3.0
+	 */
 	readonly fetchRequestTemplatesByName: NSDictionary<string, NSFetchRequest<any>>;
 
 	localizationDictionary: NSDictionary<string, string>;
 
+	/**
+	 * @since 17.0
+	 */
+	readonly versionChecksum: string;
+
+	/**
+	 * @since 3.0
+	 */
 	versionIdentifiers: NSSet<any>;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -1199,6 +1736,9 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	initWithContentsOfURL(url: NSURL): this;
 
+	/**
+	 * @since 3.0
+	 */
 	isConfigurationCompatibleWithStoreMetadata(configuration: string, metadata: NSDictionary<string, any>): boolean;
 
 	setEntitiesForConfiguration(entities: NSArray<NSEntityDescription> | NSEntityDescription[], configuration: string): void;
@@ -1206,15 +1746,53 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 	setFetchRequestTemplateForName(fetchRequestTemplate: NSFetchRequest<any>, name: string): void;
 }
 
+/**
+ * @since 17.0
+ */
+declare class NSManagedObjectModelReference extends NSObject {
+
+	static alloc(): NSManagedObjectModelReference; // inherited from NSObject
+
+	static new(): NSManagedObjectModelReference; // inherited from NSObject
+
+	readonly resolvedModel: NSManagedObjectModel;
+
+	readonly versionChecksum: string;
+
+	constructor(o: { entityVersionHashes: NSDictionary<any, any>; inBundle: NSBundle; versionChecksum: string; });
+
+	constructor(o: { fileURL: NSURL; versionChecksum: string; });
+
+	constructor(o: { model: NSManagedObjectModel; versionChecksum: string; });
+
+	constructor(o: { name: string; inBundle: NSBundle; versionChecksum: string; });
+
+	initWithEntityVersionHashesInBundleVersionChecksum(versionHash: NSDictionary<any, any>, bundle: NSBundle, versionChecksum: string): this;
+
+	initWithFileURLVersionChecksum(fileURL: NSURL, versionChecksum: string): this;
+
+	initWithModelVersionChecksum(model: NSManagedObjectModel, versionChecksum: string): this;
+
+	initWithNameInBundleVersionChecksum(modelName: string, bundle: NSBundle, versionChecksum: string): this;
+}
+
+declare const NSManagedObjectModelReferenceNotFoundError: number;
+
 declare const NSManagedObjectReferentialIntegrityError: number;
 
 declare const NSManagedObjectValidationError: number;
 
+/**
+ * @since 3.0
+ */
 declare class NSMappingModel extends NSObject {
 
 	static alloc(): NSMappingModel; // inherited from NSObject
 
-	static inferredMappingModelForSourceModelDestinationModelError(sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): NSMappingModel;
+	/**
+	 * @since 3.0
+	 */
+	static inferredMappingModelForSourceModelDestinationModelError(sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel, error?: interop.Reference<NSError>): NSMappingModel;
 
 	static mappingModelFromBundlesForSourceModelDestinationModel(bundles: NSArray<NSBundle> | NSBundle[], sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): NSMappingModel;
 
@@ -1229,14 +1807,29 @@ declare class NSMappingModel extends NSObject {
 	initWithContentsOfURL(url: NSURL): this;
 }
 
+/**
+ * @since 3.0
+ */
 declare var NSMergeByPropertyObjectTrumpMergePolicy: any;
 
+/**
+ * @since 3.0
+ */
 declare var NSMergeByPropertyObjectTrumpMergePolicyVar: any;
 
+/**
+ * @since 3.0
+ */
 declare var NSMergeByPropertyStoreTrumpMergePolicy: any;
 
+/**
+ * @since 3.0
+ */
 declare var NSMergeByPropertyStoreTrumpMergePolicyVar: any;
 
+/**
+ * @since 5.0
+ */
 declare class NSMergeConflict extends NSObject {
 
 	static alloc(): NSMergeConflict; // inherited from NSObject
@@ -1260,6 +1853,9 @@ declare class NSMergeConflict extends NSObject {
 	initWithSourceNewVersionOldVersionCachedSnapshotPersistedSnapshot(srcObject: NSManagedObject, newvers: number, oldvers: number, cachesnap: NSDictionary<string, any>, persnap: NSDictionary<string, any>): this;
 }
 
+/**
+ * @since 5.0
+ */
 declare class NSMergePolicy extends NSObject {
 
 	static alloc(): NSMergePolicy; // inherited from NSObject
@@ -1268,25 +1864,46 @@ declare class NSMergePolicy extends NSObject {
 
 	readonly mergeType: NSMergePolicyType;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly errorMergePolicy: NSMergePolicy;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly mergeByPropertyObjectTrumpMergePolicy: NSMergePolicy;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly mergeByPropertyStoreTrumpMergePolicy: NSMergePolicy;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly overwriteMergePolicy: NSMergePolicy;
 
+	/**
+	 * @since 10.0
+	 */
 	static readonly rollbackMergePolicy: NSMergePolicy;
 
 	constructor(o: { mergeType: NSMergePolicyType; });
 
 	initWithMergeType(ty: NSMergePolicyType): this;
 
-	resolveConflictsError(list: NSArray<any> | any[]): boolean;
+	resolveConflictsError(list: NSArray<any> | any[], error?: interop.Reference<NSError>): boolean;
 
-	resolveConstraintConflictsError(list: NSArray<NSConstraintConflict> | NSConstraintConflict[]): boolean;
+	/**
+	 * @since 9.0
+	 */
+	resolveConstraintConflictsError(list: NSArray<NSConstraintConflict> | NSConstraintConflict[], error?: interop.Reference<NSError>): boolean;
 
-	resolveOptimisticLockingVersionConflictsError(list: NSArray<NSMergeConflict> | NSMergeConflict[]): boolean;
+	/**
+	 * @since 9.0
+	 */
+	resolveOptimisticLockingVersionConflictsError(list: NSArray<NSMergeConflict> | NSMergeConflict[], error?: interop.Reference<NSError>): boolean;
 }
 
 declare const enum NSMergePolicyType {
@@ -1302,20 +1919,35 @@ declare const enum NSMergePolicyType {
 	RollbackMergePolicyType = 4
 }
 
+/**
+ * @since 3.0
+ */
 declare var NSMigratePersistentStoresAutomaticallyOption: string;
 
 declare const NSMigrationCancelledError: number;
 
 declare const NSMigrationConstraintViolationError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSMigrationDestinationObjectKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSMigrationEntityMappingKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSMigrationEntityPolicyKey: string;
 
 declare const NSMigrationError: number;
 
+/**
+ * @since 3.0
+ */
 declare class NSMigrationManager extends NSObject {
 
 	static alloc(): NSMigrationManager; // inherited from NSObject
@@ -1338,6 +1970,9 @@ declare class NSMigrationManager extends NSObject {
 
 	userInfo: NSDictionary<any, any>;
 
+	/**
+	 * @since 5.0
+	 */
 	usesStoreSpecificMigrationManager: boolean;
 
 	constructor(o: { sourceModel: NSManagedObjectModel; destinationModel: NSManagedObjectModel; });
@@ -1352,7 +1987,7 @@ declare class NSMigrationManager extends NSObject {
 
 	initWithSourceModelDestinationModel(sourceModel: NSManagedObjectModel, destinationModel: NSManagedObjectModel): this;
 
-	migrateStoreFromURLTypeOptionsWithMappingModelToDestinationURLDestinationTypeDestinationOptionsError(sourceURL: NSURL, sStoreType: string, sOptions: NSDictionary<any, any>, mappings: NSMappingModel, dURL: NSURL, dStoreType: string, dOptions: NSDictionary<any, any>): boolean;
+	migrateStoreFromURLTypeOptionsWithMappingModelToDestinationURLDestinationTypeDestinationOptionsError(sourceURL: NSURL, sStoreType: string, sOptions: NSDictionary<any, any>, mappings: NSMappingModel, dURL: NSURL, dStoreType: string, dOptions: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
 
 	reset(): void;
 
@@ -1363,6 +1998,9 @@ declare class NSMigrationManager extends NSObject {
 
 declare const NSMigrationManagerDestinationStoreError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSMigrationManagerKey: string;
 
 declare const NSMigrationManagerSourceStoreError: number;
@@ -1371,14 +2009,41 @@ declare const NSMigrationMissingMappingModelError: number;
 
 declare const NSMigrationMissingSourceModelError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSMigrationPropertyMappingKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSMigrationSourceObjectKey: string;
 
+/**
+ * @since 17.0
+ */
+declare class NSMigrationStage extends NSObject {
+
+	static alloc(): NSMigrationStage; // inherited from NSObject
+
+	static new(): NSMigrationStage; // inherited from NSObject
+
+	label: string;
+}
+
+/**
+ * @since 3.0
+ */
 declare var NSOverwriteMergePolicy: any;
 
+/**
+ * @since 3.0
+ */
 declare var NSOverwriteMergePolicyVar: any;
 
+/**
+ * @since 13.0
+ */
 declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
 
 	static alloc(): NSPersistentCloudKitContainer; // inherited from NSObject
@@ -1389,24 +2054,51 @@ declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
 
 	static persistentContainerWithNameManagedObjectModel(name: string, model: NSManagedObjectModel): NSPersistentCloudKitContainer; // inherited from NSPersistentContainer
 
+	/**
+	 * @since 15.0
+	 */
 	acceptShareInvitationsFromMetadataIntoPersistentStoreCompletion(metadata: NSArray<CKShareMetadata> | CKShareMetadata[], persistentStore: NSPersistentStore, completion: (p1: NSArray<CKShareMetadata>, p2: NSError) => void): void;
 
+	/**
+	 * @since 14.0
+	 */
 	canDeleteRecordForManagedObjectWithID(objectID: NSManagedObjectID): boolean;
 
+	/**
+	 * @since 14.0
+	 */
 	canModifyManagedObjectsInStore(store: NSPersistentStore): boolean;
 
+	/**
+	 * @since 14.0
+	 */
 	canUpdateRecordForManagedObjectWithID(objectID: NSManagedObjectID): boolean;
 
+	/**
+	 * @since 15.0
+	 */
 	fetchParticipantsMatchingLookupInfosIntoPersistentStoreCompletion(lookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[], persistentStore: NSPersistentStore, completion: (p1: NSArray<CKShareParticipant>, p2: NSError) => void): void;
 
-	fetchSharesInPersistentStoreError(persistentStore: NSPersistentStore): NSArray<CKShare>;
+	/**
+	 * @since 15.0
+	 */
+	fetchSharesInPersistentStoreError(persistentStore: NSPersistentStore, error?: interop.Reference<NSError>): NSArray<CKShare>;
 
-	fetchSharesMatchingObjectIDsError(objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): NSDictionary<NSManagedObjectID, CKShare>;
+	/**
+	 * @since 15.0
+	 */
+	fetchSharesMatchingObjectIDsError(objectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[], error?: interop.Reference<NSError>): NSDictionary<NSManagedObjectID, CKShare>;
 
-	initializeCloudKitSchemaWithOptionsError(options: NSPersistentCloudKitContainerSchemaInitializationOptions): boolean;
+	initializeCloudKitSchemaWithOptionsError(options: NSPersistentCloudKitContainerSchemaInitializationOptions, error?: interop.Reference<NSError>): boolean;
 
+	/**
+	 * @since 15.0
+	 */
 	persistUpdatedShareInPersistentStoreCompletion(share: CKShare, persistentStore: NSPersistentStore, completion: (p1: CKShare, p2: NSError) => void): void;
 
+	/**
+	 * @since 15.0
+	 */
 	purgeObjectsAndRecordsInZoneWithIDInPersistentStoreCompletion(zoneID: CKRecordZoneID, persistentStore: NSPersistentStore, completion: (p1: CKRecordZoneID, p2: NSError) => void): void;
 
 	recordForManagedObjectID(managedObjectID: NSManagedObjectID): CKRecord;
@@ -1417,9 +2109,15 @@ declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
 
 	recordsForManagedObjectIDs(managedObjectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): NSDictionary<NSManagedObjectID, CKRecord>;
 
+	/**
+	 * @since 15.0
+	 */
 	shareManagedObjectsToShareCompletion(managedObjects: NSArray<NSManagedObject> | NSManagedObject[], share: CKShare, completion: (p1: NSSet<NSManagedObjectID>, p2: CKShare, p3: CKContainer, p4: NSError) => void): void;
 }
 
+/**
+ * @since 14.0
+ */
 declare class NSPersistentCloudKitContainerEvent extends NSObject implements NSCopying {
 
 	static alloc(): NSPersistentCloudKitContainerEvent; // inherited from NSObject
@@ -1443,8 +2141,14 @@ declare class NSPersistentCloudKitContainerEvent extends NSObject implements NSC
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 14.0
+ */
 declare var NSPersistentCloudKitContainerEventChangedNotification: string;
 
+/**
+ * @since 14.0
+ */
 declare class NSPersistentCloudKitContainerEventRequest extends NSPersistentStoreRequest {
 
 	static alloc(): NSPersistentCloudKitContainerEventRequest; // inherited from NSObject
@@ -1462,6 +2166,9 @@ declare class NSPersistentCloudKitContainerEventRequest extends NSPersistentStor
 	resultType: NSPersistentCloudKitContainerEventResultType;
 }
 
+/**
+ * @since 14.0
+ */
 declare class NSPersistentCloudKitContainerEventResult extends NSPersistentStoreResult {
 
 	static alloc(): NSPersistentCloudKitContainerEventResult; // inherited from NSObject
@@ -1473,6 +2180,9 @@ declare class NSPersistentCloudKitContainerEventResult extends NSPersistentStore
 	readonly resultType: NSPersistentCloudKitContainerEventResultType;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum NSPersistentCloudKitContainerEventResultType {
 
 	Events = 0,
@@ -1480,6 +2190,9 @@ declare const enum NSPersistentCloudKitContainerEventResultType {
 	CountEvents = 1
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum NSPersistentCloudKitContainerEventType {
 
 	Setup = 0,
@@ -1489,8 +2202,14 @@ declare const enum NSPersistentCloudKitContainerEventType {
 	Export = 2
 }
 
+/**
+ * @since 14.0
+ */
 declare var NSPersistentCloudKitContainerEventUserInfoKey: string;
 
+/**
+ * @since 13.0
+ */
 declare class NSPersistentCloudKitContainerOptions extends NSObject {
 
 	static alloc(): NSPersistentCloudKitContainerOptions; // inherited from NSObject
@@ -1499,6 +2218,9 @@ declare class NSPersistentCloudKitContainerOptions extends NSObject {
 
 	readonly containerIdentifier: string;
 
+	/**
+	 * @since 14.0
+	 */
 	databaseScope: CKDatabaseScope;
 
 	constructor(o: { containerIdentifier: string; });
@@ -1515,6 +2237,9 @@ declare const enum NSPersistentCloudKitContainerSchemaInitializationOptions {
 	PrintSchema = 4
 }
 
+/**
+ * @since 10.0
+ */
 declare class NSPersistentContainer extends NSObject {
 
 	static alloc(): NSPersistentContainer; // inherited from NSObject
@@ -1552,10 +2277,16 @@ declare class NSPersistentContainer extends NSObject {
 	performBackgroundTask(block: (p1: NSManagedObjectContext) => void): void;
 }
 
+/**
+ * @since 11.0
+ */
 declare class NSPersistentHistoryChange extends NSObject implements NSCopying {
 
 	static alloc(): NSPersistentHistoryChange; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	static entityDescriptionWithContext(context: NSManagedObjectContext): NSEntityDescription;
 
 	static new(): NSPersistentHistoryChange; // inherited from NSObject
@@ -1572,13 +2303,22 @@ declare class NSPersistentHistoryChange extends NSObject implements NSCopying {
 
 	readonly updatedProperties: NSSet<NSPropertyDescription>;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly entityDescription: NSEntityDescription;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly fetchRequest: NSFetchRequest<any>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 11.0
+ */
 declare class NSPersistentHistoryChangeRequest extends NSPersistentStoreRequest {
 
 	static alloc(): NSPersistentHistoryChangeRequest; // inherited from NSObject
@@ -1595,10 +2335,16 @@ declare class NSPersistentHistoryChangeRequest extends NSPersistentStoreRequest 
 
 	static fetchHistoryAfterTransaction(transaction: NSPersistentHistoryTransaction): NSPersistentHistoryChangeRequest;
 
+	/**
+	 * @since 13.0
+	 */
 	static fetchHistoryWithFetchRequest(fetchRequest: NSFetchRequest<any>): NSPersistentHistoryChangeRequest;
 
 	static new(): NSPersistentHistoryChangeRequest; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	fetchRequest: NSFetchRequest<any>;
 
 	resultType: NSPersistentHistoryResultType;
@@ -1606,6 +2352,9 @@ declare class NSPersistentHistoryChangeRequest extends NSPersistentStoreRequest 
 	readonly token: NSPersistentHistoryToken;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum NSPersistentHistoryChangeType {
 
 	Insert = 0,
@@ -1615,6 +2364,9 @@ declare const enum NSPersistentHistoryChangeType {
 	Delete = 2
 }
 
+/**
+ * @since 11.0
+ */
 declare class NSPersistentHistoryResult extends NSPersistentStoreResult {
 
 	static alloc(): NSPersistentHistoryResult; // inherited from NSObject
@@ -1626,6 +2378,9 @@ declare class NSPersistentHistoryResult extends NSPersistentStoreResult {
 	readonly resultType: NSPersistentHistoryResultType;
 }
 
+/**
+ * @since 11.0
+ */
 declare const enum NSPersistentHistoryResultType {
 
 	StatusOnly = 0,
@@ -1641,6 +2396,9 @@ declare const enum NSPersistentHistoryResultType {
 	TransactionsAndChanges = 5
 }
 
+/**
+ * @since 11.0
+ */
 declare class NSPersistentHistoryToken extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSPersistentHistoryToken; // inherited from NSObject
@@ -1660,14 +2418,26 @@ declare class NSPersistentHistoryToken extends NSObject implements NSCopying, NS
 
 declare const NSPersistentHistoryTokenExpiredError: number;
 
+/**
+ * @since 12.0
+ */
 declare var NSPersistentHistoryTokenKey: string;
 
+/**
+ * @since 11.0
+ */
 declare var NSPersistentHistoryTrackingKey: string;
 
+/**
+ * @since 11.0
+ */
 declare class NSPersistentHistoryTransaction extends NSObject implements NSCopying {
 
 	static alloc(): NSPersistentHistoryTransaction; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 */
 	static entityDescriptionWithContext(context: NSManagedObjectContext): NSEntityDescription;
 
 	static new(): NSPersistentHistoryTransaction; // inherited from NSObject
@@ -1690,8 +2460,14 @@ declare class NSPersistentHistoryTransaction extends NSObject implements NSCopyi
 
 	readonly transactionNumber: number;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly entityDescription: NSEntityDescription;
 
+	/**
+	 * @since 13.0
+	 */
 	static readonly fetchRequest: NSFetchRequest<any>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -1699,22 +2475,31 @@ declare class NSPersistentHistoryTransaction extends NSObject implements NSCopyi
 	objectIDNotification(): NSNotification;
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSPersistentStore extends NSObject {
 
 	static alloc(): NSPersistentStore; // inherited from NSObject
 
-	static metadataForPersistentStoreWithURLError(url: NSURL): NSDictionary<string, any>;
+	static metadataForPersistentStoreWithURLError(url: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
+	/**
+	 * @since 3.0
+	 */
 	static migrationManagerClass(): typeof NSObject;
 
 	static new(): NSPersistentStore; // inherited from NSObject
 
-	static setMetadataForPersistentStoreWithURLError(metadata: NSDictionary<string, any>, url: NSURL): boolean;
+	static setMetadataForPersistentStoreWithURLError(metadata: NSDictionary<string, any>, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
 	URL: NSURL;
 
 	readonly configurationName: string;
 
+	/**
+	 * @since 11.0
+	 */
 	readonly coreSpotlightExporter: NSCoreDataCoreSpotlightDelegate;
 
 	identifier: string;
@@ -1735,11 +2520,14 @@ declare class NSPersistentStore extends NSObject {
 
 	initWithPersistentStoreCoordinatorConfigurationNameURLOptions(root: NSPersistentStoreCoordinator, name: string, url: NSURL, options: NSDictionary<any, any>): this;
 
-	loadMetadata(): boolean;
+	loadMetadata(error?: interop.Reference<NSError>): boolean;
 
 	willRemoveFromPersistentStoreCoordinator(coordinator: NSPersistentStoreCoordinator): void;
 }
 
+/**
+ * @since 8.0
+ */
 declare class NSPersistentStoreAsynchronousResult extends NSPersistentStoreResult {
 
 	static alloc(): NSPersistentStoreAsynchronousResult; // inherited from NSObject
@@ -1755,47 +2543,102 @@ declare class NSPersistentStoreAsynchronousResult extends NSPersistentStoreResul
 	cancel(): void;
 }
 
+/**
+ * @since 10.0
+ */
 declare var NSPersistentStoreConnectionPoolMaxSizeKey: string;
 
+/**
+ * @since 3.0
+ */
 declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking {
 
 	static alloc(): NSPersistentStoreCoordinator; // inherited from NSObject
 
-	static metadataForPersistentStoreOfTypeURLError(storeType: string, url: NSURL): NSDictionary<string, any>;
+	/**
+	 * @since 3.0
+	 * @deprecated 9.0
+	 */
+	static metadataForPersistentStoreOfTypeURLError(storeType: string, url: NSURL, error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
-	static metadataForPersistentStoreOfTypeURLOptionsError(storeType: string, url: NSURL, options: NSDictionary<any, any>): NSDictionary<string, any>;
+	/**
+	 * @since 7.0
+	 */
+	static metadataForPersistentStoreOfTypeURLOptionsError(storeType: string, url: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): NSDictionary<string, any>;
 
 	static new(): NSPersistentStoreCoordinator; // inherited from NSObject
 
+	/**
+	 * @since 3.0
+	 */
 	static registerStoreClassForStoreType(storeClass: typeof NSObject, storeType: string): void;
 
-	static removeUbiquitousContentAndPersistentStoreAtURLOptionsError(storeURL: NSURL, options: NSDictionary<any, any>): boolean;
+	/**
+	 * @since 5.0
+	 * @deprecated 10.0
+	 */
+	static removeUbiquitousContentAndPersistentStoreAtURLOptionsError(storeURL: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
 
-	static setMetadataForPersistentStoreOfTypeURLError(metadata: NSDictionary<string, any>, storeType: string, url: NSURL): boolean;
+	/**
+	 * @since 3.0
+	 * @deprecated 9.0
+	 */
+	static setMetadataForPersistentStoreOfTypeURLError(metadata: NSDictionary<string, any>, storeType: string, url: NSURL, error?: interop.Reference<NSError>): boolean;
 
-	static setMetadataForPersistentStoreOfTypeURLOptionsError(metadata: NSDictionary<string, any>, storeType: string, url: NSURL, options: NSDictionary<any, any>): boolean;
+	/**
+	 * @since 7.0
+	 */
+	static setMetadataForPersistentStoreOfTypeURLOptionsError(metadata: NSDictionary<string, any>, storeType: string, url: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
 
 	readonly managedObjectModel: NSManagedObjectModel;
 
+	/**
+	 * @since 8.0
+	 */
 	name: string;
 
 	readonly persistentStores: NSArray<NSPersistentStore>;
 
+	/**
+	 * @since 3.0
+	 */
 	static readonly registeredStoreTypes: NSDictionary<string, NSValue>;
 
 	constructor(o: { managedObjectModel: NSManagedObjectModel; });
 
 	URLForPersistentStore(store: NSPersistentStore): NSURL;
 
+	/**
+	 * @since 10.0
+	 */
 	addPersistentStoreWithDescriptionCompletionHandler(storeDescription: NSPersistentStoreDescription, block: (p1: NSPersistentStoreDescription, p2: NSError) => void): void;
 
-	addPersistentStoreWithTypeConfigurationURLOptionsError(storeType: string, configuration: string, storeURL: NSURL, options: NSDictionary<any, any>): NSPersistentStore;
+	addPersistentStoreWithTypeConfigurationURLOptionsError(storeType: string, configuration: string, storeURL: NSURL, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): NSPersistentStore;
 
+	/**
+	 * @since 12.0
+	 */
 	currentPersistentHistoryTokenFromStores(stores: NSArray<any> | any[]): NSPersistentHistoryToken;
 
-	destroyPersistentStoreAtURLWithTypeOptionsError(url: NSURL, storeType: string, options: NSDictionary<any, any>): boolean;
+	/**
+	 * @since 9.0
+	 */
+	destroyPersistentStoreAtURLWithTypeOptionsError(url: NSURL, storeType: string, options: NSDictionary<any, any>, error?: interop.Reference<NSError>): boolean;
 
-	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext): any;
+	/**
+	 * @since 5.0
+	 */
+	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext, error?: interop.Reference<NSError>): any;
+
+	/**
+	 * @since 14.0
+	 */
+	finishDeferredLightweightMigration(error?: interop.Reference<NSError>): boolean;
+
+	/**
+	 * @since 14.0
+	 */
+	finishDeferredLightweightMigrationTask(error?: interop.Reference<NSError>): boolean;
 
 	initWithManagedObjectModel(model: NSManagedObjectModel): this;
 
@@ -1803,24 +2646,45 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 
 	managedObjectIDForURIRepresentation(url: NSURL): NSManagedObjectID;
 
+	/**
+	 * @since 5.0
+	 */
+	managedObjectIDFromUTF8StringLength(utf8string: string | interop.Pointer | interop.Reference<any>, len: number): NSManagedObjectID;
+
 	metadataForPersistentStore(store: NSPersistentStore): NSDictionary<string, any>;
 
-	migratePersistentStoreToURLOptionsWithTypeError(store: NSPersistentStore, URL: NSURL, options: NSDictionary<any, any>, storeType: string): NSPersistentStore;
+	migratePersistentStoreToURLOptionsWithTypeError(store: NSPersistentStore, URL: NSURL, options: NSDictionary<any, any>, storeType: string, error?: interop.Reference<NSError>): NSPersistentStore;
 
+	/**
+	 * @since 8.0
+	 */
 	performBlock(block: () => void): void;
 
+	/**
+	 * @since 8.0
+	 */
 	performBlockAndWait(block: () => void): void;
 
 	persistentStoreForURL(URL: NSURL): NSPersistentStore;
 
-	removePersistentStoreError(store: NSPersistentStore): boolean;
+	removePersistentStoreError(store: NSPersistentStore, error?: interop.Reference<NSError>): boolean;
 
-	replacePersistentStoreAtURLDestinationOptionsWithPersistentStoreFromURLSourceOptionsStoreTypeError(destinationURL: NSURL, destinationOptions: NSDictionary<any, any>, sourceURL: NSURL, sourceOptions: NSDictionary<any, any>, storeType: string): boolean;
+	/**
+	 * @since 9.0
+	 */
+	replacePersistentStoreAtURLDestinationOptionsWithPersistentStoreFromURLSourceOptionsStoreTypeError(destinationURL: NSURL, destinationOptions: NSDictionary<any, any>, sourceURL: NSURL, sourceOptions: NSDictionary<any, any>, storeType: string, error?: interop.Reference<NSError>): boolean;
 
 	setMetadataForPersistentStore(metadata: NSDictionary<string, any>, store: NSPersistentStore): void;
 
+	/**
+	 * @since 3.0
+	 */
 	setURLForPersistentStore(url: NSURL, store: NSPersistentStore): boolean;
 
+	/**
+	 * @since 3.0
+	 * @deprecated 8.0
+	 */
 	tryLock(): boolean;
 
 	unlock(): void;
@@ -1828,12 +2692,29 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 
 declare const NSPersistentStoreCoordinatorLockingError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSPersistentStoreCoordinatorStoresDidChangeNotification: string;
 
+/**
+ * @since 7.0
+ */
 declare var NSPersistentStoreCoordinatorStoresWillChangeNotification: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSPersistentStoreCoordinatorWillRemoveStoreNotification: string;
 
+/**
+ * @since 14.0
+ */
+declare var NSPersistentStoreDeferredLightweightMigrationOptionKey: string;
+
+/**
+ * @since 10.0
+ */
 declare class NSPersistentStoreDescription extends NSObject implements NSCopying {
 
 	static alloc(): NSPersistentStoreDescription; // inherited from NSObject
@@ -1844,6 +2725,9 @@ declare class NSPersistentStoreDescription extends NSObject implements NSCopying
 
 	URL: NSURL;
 
+	/**
+	 * @since 13.0
+	 */
 	cloudKitContainerOptions: NSPersistentCloudKitContainerOptions;
 
 	configuration: string;
@@ -1875,10 +2759,20 @@ declare class NSPersistentStoreDescription extends NSObject implements NSCopying
 	setValueForPragmaNamed(value: NSObject, name: string): void;
 }
 
+/**
+ * @since 5.0
+ * @deprecated 10.0
+ */
 declare var NSPersistentStoreDidImportUbiquitousContentChangesNotification: string;
 
+/**
+ * @since 5.0
+ */
 declare var NSPersistentStoreFileProtectionKey: string;
 
+/**
+ * @since 6.0
+ */
 declare var NSPersistentStoreForceDestroyOption: string;
 
 declare const NSPersistentStoreIncompatibleSchemaError: number;
@@ -1889,20 +2783,45 @@ declare const NSPersistentStoreIncompleteSaveError: number;
 
 declare const NSPersistentStoreInvalidTypeError: number;
 
+/**
+ * @since 18.0
+ */
+declare var NSPersistentStoreModelVersionChecksumKey: string;
+
+/**
+ * @since 3.0
+ */
 declare var NSPersistentStoreOSCompatibility: string;
 
 declare const NSPersistentStoreOpenError: number;
 
 declare const NSPersistentStoreOperationError: number;
 
+/**
+ * @since 7.0
+ * @deprecated 10.0
+ */
 declare var NSPersistentStoreRebuildFromUbiquitousContentOption: string;
 
+/**
+ * @since 12.0
+ */
 declare var NSPersistentStoreRemoteChangeNotification: string;
 
+/**
+ * @since 13.0
+ */
 declare var NSPersistentStoreRemoteChangeNotificationPostOptionKey: string;
 
+/**
+ * @since 7.0
+ * @deprecated 10.0
+ */
 declare var NSPersistentStoreRemoveUbiquitousMetadataOption: string;
 
+/**
+ * @since 5.0
+ */
 declare class NSPersistentStoreRequest extends NSObject implements NSCopying {
 
 	static alloc(): NSPersistentStoreRequest; // inherited from NSObject
@@ -1929,6 +2848,9 @@ declare const enum NSPersistentStoreRequestType {
 	BatchDeleteRequestType = 7
 }
 
+/**
+ * @since 8.0
+ */
 declare class NSPersistentStoreResult extends NSObject {
 
 	static alloc(): NSPersistentStoreResult; // inherited from NSObject
@@ -1938,26 +2860,60 @@ declare class NSPersistentStoreResult extends NSObject {
 
 declare const NSPersistentStoreSaveConflictsError: number;
 
+/**
+ * @since 5.0
+ */
 declare var NSPersistentStoreSaveConflictsErrorKey: string;
 
 declare const NSPersistentStoreSaveError: number;
 
+/**
+ * @since 17.0
+ */
+declare var NSPersistentStoreStagedMigrationManagerOptionKey: string;
+
 declare const NSPersistentStoreTimeoutError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSPersistentStoreTimeoutOption: string;
 
 declare const NSPersistentStoreTypeMismatchError: number;
 
+/**
+ * @since 12.0
+ */
 declare var NSPersistentStoreURLKey: string;
 
+/**
+ * @since 7.0
+ * @deprecated 10.0
+ */
 declare var NSPersistentStoreUbiquitousContainerIdentifierKey: string;
 
+/**
+ * @since 5.0
+ * @deprecated 10.0
+ */
 declare var NSPersistentStoreUbiquitousContentNameKey: string;
 
+/**
+ * @since 5.0
+ * @deprecated 10.0
+ */
 declare var NSPersistentStoreUbiquitousContentURLKey: string;
 
+/**
+ * @since 7.0
+ * @deprecated 10.0
+ */
 declare var NSPersistentStoreUbiquitousPeerTokenOption: string;
 
+/**
+ * @since 7.0
+ * @deprecated 10.0
+ */
 declare const enum NSPersistentStoreUbiquitousTransitionType {
 
 	AccountAdded = 1,
@@ -1969,10 +2925,17 @@ declare const enum NSPersistentStoreUbiquitousTransitionType {
 	InitialImportCompleted = 4
 }
 
+/**
+ * @since 7.0
+ * @deprecated 10.0
+ */
 declare var NSPersistentStoreUbiquitousTransitionTypeKey: string;
 
 declare const NSPersistentStoreUnsupportedRequestTypeError: number;
 
+/**
+ * @since 3.0
+ */
 declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): NSPropertyDescription; // inherited from NSObject
@@ -1981,16 +2944,30 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 
 	readonly entity: NSEntityDescription;
 
+	/**
+	 * @since 3.0
+	 * @deprecated 11.0
+	 */
 	indexed: boolean;
 
+	/**
+	 * @since 3.0
+	 */
 	indexedBySpotlight: boolean;
 
 	name: string;
 
 	optional: boolean;
 
+	/**
+	 * @since 3.0
+	 */
 	renamingIdentifier: string;
 
+	/**
+	 * @since 3.0
+	 * @deprecated 11.0
+	 */
 	storedInExternalRecord: boolean;
 
 	transient: boolean;
@@ -2001,8 +2978,14 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 
 	readonly validationWarnings: NSArray<any>;
 
+	/**
+	 * @since 3.0
+	 */
 	readonly versionHash: NSData;
 
+	/**
+	 * @since 3.0
+	 */
 	versionHashModifier: string;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -2016,6 +2999,9 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 	setValidationPredicatesWithValidationWarnings(validationPredicates: NSArray<NSPredicate> | NSPredicate[], validationWarnings: NSArray<string> | string[]): void;
 }
 
+/**
+ * @since 3.0
+ */
 declare class NSPropertyMapping extends NSObject {
 
 	static alloc(): NSPropertyMapping; // inherited from NSObject
@@ -2029,6 +3015,9 @@ declare class NSPropertyMapping extends NSObject {
 	valueExpression: NSExpression;
 }
 
+/**
+ * @since 10.0
+ */
 declare class NSQueryGenerationToken extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSQueryGenerationToken; // inherited from NSObject
@@ -2048,12 +3037,24 @@ declare class NSQueryGenerationToken extends NSObject implements NSCopying, NSSe
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 3.0
+ */
 declare var NSReadOnlyPersistentStoreOption: string;
 
+/**
+ * @since 10.3
+ */
 declare var NSRefreshedObjectIDsKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSRefreshedObjectsKey: string;
 
+/**
+ * @since 3.0
+ */
 declare class NSRelationshipDescription extends NSPropertyDescription {
 
 	static alloc(): NSRelationshipDescription; // inherited from NSObject
@@ -2070,29 +3071,59 @@ declare class NSRelationshipDescription extends NSPropertyDescription {
 
 	minCount: number;
 
+	/**
+	 * @since 5.0
+	 */
 	ordered: boolean;
 
 	readonly toMany: boolean;
 }
 
+/**
+ * @since 3.0
+ */
 declare var NSRemovedPersistentStoresKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSRollbackMergePolicy: any;
 
+/**
+ * @since 3.0
+ */
 declare var NSRollbackMergePolicyVar: any;
 
+/**
+ * @since 3.0
+ */
 declare var NSSQLiteAnalyzeOption: string;
 
 declare const NSSQLiteError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSSQLiteErrorDomain: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSSQLiteManualVacuumOption: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSSQLitePragmasOption: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSSQLiteStoreType: string;
 
+/**
+ * @since 5.0
+ */
 declare class NSSaveChangesRequest extends NSPersistentStoreRequest {
 
 	static alloc(): NSSaveChangesRequest; // inherited from NSObject
@@ -2127,18 +3158,61 @@ declare const enum NSSnapshotEventType {
 	MergePolicy = 64
 }
 
+declare const NSStagedMigrationBackwardMigrationError: number;
+
+declare const NSStagedMigrationFrameworkVersionMismatchError: number;
+
+/**
+ * @since 17.0
+ */
+declare class NSStagedMigrationManager extends NSObject {
+
+	static alloc(): NSStagedMigrationManager; // inherited from NSObject
+
+	static new(): NSStagedMigrationManager; // inherited from NSObject
+
+	readonly container: NSPersistentContainer;
+
+	readonly stages: NSArray<NSMigrationStage>;
+
+	constructor(o: { migrationStages: NSArray<NSMigrationStage> | NSMigrationStage[]; });
+
+	initWithMigrationStages(stages: NSArray<NSMigrationStage> | NSMigrationStage[]): this;
+}
+
+/**
+ * @since 3.0
+ */
 declare var NSStoreModelVersionHashesKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSStoreModelVersionIdentifiersKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSStoreTypeKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSStoreUUIDKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSUUIDChangedPersistentStoresKey: string;
 
+/**
+ * @since 10.3
+ */
 declare var NSUpdatedObjectIDsKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSUpdatedObjectsKey: string;
 
 declare const NSValidationDateTooLateError: number;
@@ -2149,6 +3223,9 @@ declare const NSValidationInvalidDateError: number;
 
 declare const NSValidationInvalidURIError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSValidationKeyErrorKey: string;
 
 declare const NSValidationMissingMandatoryPropertyError: number;
@@ -2159,8 +3236,14 @@ declare const NSValidationNumberTooLargeError: number;
 
 declare const NSValidationNumberTooSmallError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSValidationObjectErrorKey: string;
 
+/**
+ * @since 3.0
+ */
 declare var NSValidationPredicateErrorKey: string;
 
 declare const NSValidationRelationshipDeniedDeleteError: number;
@@ -2175,4 +3258,7 @@ declare const NSValidationStringTooLongError: number;
 
 declare const NSValidationStringTooShortError: number;
 
+/**
+ * @since 3.0
+ */
 declare var NSValidationValueErrorKey: string;

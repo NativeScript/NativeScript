@@ -1,4 +1,22 @@
 
+/**
+ * @since 17.0
+ */
+declare function AXAnimatedImagesEnabled(): boolean;
+
+/**
+ * @since 17.0
+ */
+declare var AXAnimatedImagesEnabledDidChangeNotification: string;
+
+/**
+ * @since 18.0
+ */
+declare function AXAssistiveAccessEnabled(): boolean;
+
+/**
+ * @since 15.2
+ */
 declare class AXBrailleMap extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): AXBrailleMap; // inherited from NSObject
@@ -26,8 +44,14 @@ declare class AXBrailleMap extends NSObject implements NSCopying, NSSecureCoding
 
 interface AXBrailleMapRenderer extends NSObjectProtocol {
 
+	/**
+	 * @since 15.2
+	 */
 	accessibilityBrailleMapRenderRegion?: CGRect;
 
+	/**
+	 * @since 15.2
+	 */
 	accessibilityBrailleMapRenderer?: (p1: AXBrailleMap) => void;
 }
 declare var AXBrailleMapRenderer: {
@@ -35,6 +59,93 @@ declare var AXBrailleMapRenderer: {
 	prototype: AXBrailleMapRenderer;
 };
 
+/**
+ * @since 26.0
+ */
+declare class AXBrailleTable extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): AXBrailleTable; // inherited from NSObject
+
+	static defaultTableForLocale(locale: NSLocale): AXBrailleTable;
+
+	static languageAgnosticTables(): NSSet<AXBrailleTable>;
+
+	static new(): AXBrailleTable; // inherited from NSObject
+
+	static supportedLocales(): NSSet<NSLocale>;
+
+	static tablesForLocale(locale: NSLocale): NSSet<AXBrailleTable>;
+
+	readonly identifier: string;
+
+	readonly isEightDot: boolean;
+
+	readonly language: string;
+
+	readonly locales: NSSet<NSLocale>;
+
+	readonly localizedName: string;
+
+	readonly localizedProviderName: string;
+
+	readonly providerIdentifier: string;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { identifier: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithIdentifier(identifier: string): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class AXBrailleTranslationResult extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): AXBrailleTranslationResult; // inherited from NSObject
+
+	static new(): AXBrailleTranslationResult; // inherited from NSObject
+
+	readonly locationMap: NSArray<number>;
+
+	readonly resultString: string;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 26.0
+ */
+declare class AXBrailleTranslator extends NSObject {
+
+	static alloc(): AXBrailleTranslator; // inherited from NSObject
+
+	static new(): AXBrailleTranslator; // inherited from NSObject
+
+	constructor(o: { brailleTable: AXBrailleTable; });
+
+	backTranslateBraille(braille: string): AXBrailleTranslationResult;
+
+	initWithBrailleTable(brailleTable: AXBrailleTable): this;
+
+	translatePrintText(printText: string): AXBrailleTranslationResult;
+}
+
+/**
+ * @since 15.0
+ */
 declare class AXCategoricalDataAxisDescriptor extends NSObject implements AXDataAxisDescriptor {
 
 	static alloc(): AXCategoricalDataAxisDescriptor; // inherited from NSObject
@@ -58,6 +169,9 @@ declare class AXCategoricalDataAxisDescriptor extends NSObject implements AXData
 	initWithTitleCategoryOrder(title: string, categoryOrder: NSArray<string> | string[]): this;
 }
 
+/**
+ * @since 15.0
+ */
 interface AXChart extends NSObjectProtocol {
 
 	accessibilityChartDescriptor: AXChartDescriptor;
@@ -67,6 +181,9 @@ declare var AXChart: {
 	prototype: AXChart;
 };
 
+/**
+ * @since 15.0
+ */
 declare class AXChartDescriptor extends NSObject implements NSCopying {
 
 	static alloc(): AXChartDescriptor; // inherited from NSObject
@@ -125,6 +242,9 @@ declare const enum AXChartDescriptorContentDirection {
 	ContentDirectionRadialCounterClockwise = 5
 }
 
+/**
+ * @since 14.0
+ */
 declare class AXCustomContent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): AXCustomContent; // inherited from NSObject
@@ -156,6 +276,9 @@ declare class AXCustomContent extends NSObject implements NSCopying, NSSecureCod
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 14.0
+ */
 declare const enum AXCustomContentImportance {
 
 	Default = 0,
@@ -163,15 +286,26 @@ declare const enum AXCustomContentImportance {
 	High = 1
 }
 
+/**
+ * @since 14.0
+ */
 interface AXCustomContentProvider extends NSObjectProtocol {
 
 	accessibilityCustomContent: NSArray<AXCustomContent>;
+
+	/**
+	 * @since 17.0
+	 */
+	accessibilityCustomContentBlock?: () => NSArray<AXCustomContent>;
 }
 declare var AXCustomContentProvider: {
 
 	prototype: AXCustomContentProvider;
 };
 
+/**
+ * @since 15.0
+ */
 interface AXDataAxisDescriptor extends NSCopying {
 
 	attributedTitle: NSAttributedString;
@@ -183,6 +317,9 @@ declare var AXDataAxisDescriptor: {
 	prototype: AXDataAxisDescriptor;
 };
 
+/**
+ * @since 15.0
+ */
 declare class AXDataPoint extends NSObject implements NSCopying {
 
 	static alloc(): AXDataPoint; // inherited from NSObject
@@ -214,6 +351,9 @@ declare class AXDataPoint extends NSObject implements NSCopying {
 	initWithXYAdditionalValuesLabel(xValue: AXDataPointValue, yValue: AXDataPointValue, additionalValues: NSArray<AXDataPointValue> | AXDataPointValue[], label: string): this;
 }
 
+/**
+ * @since 15.0
+ */
 declare class AXDataPointValue extends NSObject implements NSCopying {
 
 	static alloc(): AXDataPointValue; // inherited from NSObject
@@ -231,6 +371,9 @@ declare class AXDataPointValue extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+/**
+ * @since 15.0
+ */
 declare class AXDataSeriesDescriptor extends NSObject implements NSCopying {
 
 	static alloc(): AXDataSeriesDescriptor; // inherited from NSObject
@@ -256,6 +399,64 @@ declare class AXDataSeriesDescriptor extends NSObject implements NSCopying {
 	initWithNameIsContinuousDataPoints(name: string, isContinuous: boolean, dataPoints: NSArray<AXDataPoint> | AXDataPoint[]): this;
 }
 
+/**
+ * @since 18.2
+ */
+declare class AXFeatureOverrideSession extends NSObject {
+
+	static alloc(): AXFeatureOverrideSession; // inherited from NSObject
+
+	static new(): AXFeatureOverrideSession; // inherited from NSObject
+}
+
+declare const enum AXFeatureOverrideSessionError {
+
+	Undefined = 0,
+
+	AppNotEntitled = 1,
+
+	OverrideIsAlreadyActive = 2,
+
+	OverrideNotFoundForUUID = 3
+}
+
+/**
+ * @since 18.2
+ */
+declare var AXFeatureOverrideSessionErrorDomain: string;
+
+/**
+ * @since 18.2
+ */
+declare class AXFeatureOverrideSessionManager extends NSObject {
+
+	static alloc(): AXFeatureOverrideSessionManager; // inherited from NSObject
+
+	static new(): AXFeatureOverrideSessionManager; // inherited from NSObject
+
+	static readonly sharedInstance: AXFeatureOverrideSessionManager;
+
+	beginOverrideSessionEnablingOptionsDisablingOptionsError(enableOptions: AXFeatureOverrideSessionOptions, disableOptions: AXFeatureOverrideSessionOptions, error?: interop.Reference<NSError>): AXFeatureOverrideSession;
+
+	endOverrideSessionError(session: AXFeatureOverrideSession, error?: interop.Reference<NSError>): boolean;
+}
+
+declare const enum AXFeatureOverrideSessionOptions {
+
+	Grayscale = 1,
+
+	InvertColors = 2,
+
+	VoiceControl = 4,
+
+	VoiceOver = 8,
+
+	Zoom = 16
+}
+
+/**
+ * @since 15.0
+ */
 declare const enum AXHearingDeviceEar {
 
 	None = 0,
@@ -267,6 +468,9 @@ declare const enum AXHearingDeviceEar {
 	Both = 6
 }
 
+/**
+ * @since 15.0
+ */
 declare class AXLiveAudioGraph extends NSObject {
 
 	static alloc(): AXLiveAudioGraph; // inherited from NSObject
@@ -280,16 +484,300 @@ declare class AXLiveAudioGraph extends NSObject {
 	static updateValue(value: number): void;
 }
 
+/**
+ * @since 15.0
+ */
 declare function AXMFiHearingDevicePairedUUIDs(): NSArray<NSUUID>;
 
+/**
+ * @since 15.0
+ */
 declare var AXMFiHearingDevicePairedUUIDsDidChangeNotification: string;
 
+/**
+ * @since 15.0
+ */
 declare function AXMFiHearingDeviceStreamingEar(): AXHearingDeviceEar;
 
+/**
+ * @since 15.0
+ */
 declare var AXMFiHearingDeviceStreamingEarDidChangeNotification: string;
 
+/**
+ * @since 18.2
+ */
+declare class AXMathExpression extends NSObject {
+
+	static alloc(): AXMathExpression; // inherited from NSObject
+
+	static new(): AXMathExpression; // inherited from NSObject
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionFenced extends AXMathExpression {
+
+	static alloc(): AXMathExpressionFenced; // inherited from NSObject
+
+	static new(): AXMathExpressionFenced; // inherited from NSObject
+
+	readonly closeString: string;
+
+	readonly expressions: NSArray<AXMathExpression>;
+
+	readonly openString: string;
+
+	constructor(o: { expressions: NSArray<AXMathExpression> | AXMathExpression[]; openString: string; closeString: string; });
+
+	initWithExpressionsOpenStringCloseString(expressions: NSArray<AXMathExpression> | AXMathExpression[], openString: string, closeString: string): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionFraction extends AXMathExpression {
+
+	static alloc(): AXMathExpressionFraction; // inherited from NSObject
+
+	static new(): AXMathExpressionFraction; // inherited from NSObject
+
+	readonly denimonatorExpression: AXMathExpression;
+
+	readonly numeratorExpression: AXMathExpression;
+
+	constructor(o: { numeratorExpression: AXMathExpression; denimonatorExpression: AXMathExpression; });
+
+	initWithNumeratorExpressionDenimonatorExpression(numeratorExpression: AXMathExpression, denimonatorExpression: AXMathExpression): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionIdentifier extends AXMathExpression {
+
+	static alloc(): AXMathExpressionIdentifier; // inherited from NSObject
+
+	static new(): AXMathExpressionIdentifier; // inherited from NSObject
+
+	readonly content: string;
+
+	constructor(o: { content: string; });
+
+	initWithContent(content: string): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionMultiscript extends AXMathExpression {
+
+	static alloc(): AXMathExpressionMultiscript; // inherited from NSObject
+
+	static new(): AXMathExpressionMultiscript; // inherited from NSObject
+
+	readonly baseExpression: AXMathExpression;
+
+	readonly postscriptExpressions: NSArray<AXMathExpressionSubSuperscript>;
+
+	readonly prescriptExpressions: NSArray<AXMathExpressionSubSuperscript>;
+
+	constructor(o: { baseExpression: AXMathExpression; prescriptExpressions: NSArray<AXMathExpressionSubSuperscript> | AXMathExpressionSubSuperscript[]; postscriptExpressions: NSArray<AXMathExpressionSubSuperscript> | AXMathExpressionSubSuperscript[]; });
+
+	initWithBaseExpressionPrescriptExpressionsPostscriptExpressions(baseExpression: AXMathExpression, prescriptExpressions: NSArray<AXMathExpressionSubSuperscript> | AXMathExpressionSubSuperscript[], postscriptExpressions: NSArray<AXMathExpressionSubSuperscript> | AXMathExpressionSubSuperscript[]): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionNumber extends AXMathExpression {
+
+	static alloc(): AXMathExpressionNumber; // inherited from NSObject
+
+	static new(): AXMathExpressionNumber; // inherited from NSObject
+
+	readonly content: string;
+
+	constructor(o: { content: string; });
+
+	initWithContent(content: string): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionOperator extends AXMathExpression {
+
+	static alloc(): AXMathExpressionOperator; // inherited from NSObject
+
+	static new(): AXMathExpressionOperator; // inherited from NSObject
+
+	readonly content: string;
+
+	constructor(o: { content: string; });
+
+	initWithContent(content: string): this;
+}
+
+interface AXMathExpressionProvider extends NSObjectProtocol {
+
+	/**
+	 * @since 18.2
+	 */
+	accessibilityMathExpression(): AXMathExpression;
+}
+declare var AXMathExpressionProvider: {
+
+	prototype: AXMathExpressionProvider;
+};
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionRoot extends AXMathExpression {
+
+	static alloc(): AXMathExpressionRoot; // inherited from NSObject
+
+	static new(): AXMathExpressionRoot; // inherited from NSObject
+
+	readonly radicandExpressions: NSArray<AXMathExpression>;
+
+	readonly rootIndexExpression: AXMathExpression;
+
+	constructor(o: { radicandExpressions: NSArray<AXMathExpression> | AXMathExpression[]; rootIndexExpression: AXMathExpression; });
+
+	initWithRadicandExpressionsRootIndexExpression(radicandExpressions: NSArray<AXMathExpression> | AXMathExpression[], rootIndexExpression: AXMathExpression): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionRow extends AXMathExpression {
+
+	static alloc(): AXMathExpressionRow; // inherited from NSObject
+
+	static new(): AXMathExpressionRow; // inherited from NSObject
+
+	readonly expressions: NSArray<AXMathExpression>;
+
+	constructor(o: { expressions: NSArray<AXMathExpression> | AXMathExpression[]; });
+
+	initWithExpressions(expressions: NSArray<AXMathExpression> | AXMathExpression[]): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionSubSuperscript extends AXMathExpression {
+
+	static alloc(): AXMathExpressionSubSuperscript; // inherited from NSObject
+
+	static new(): AXMathExpressionSubSuperscript; // inherited from NSObject
+
+	readonly baseExpression: AXMathExpression;
+
+	readonly subscriptExpressions: NSArray<AXMathExpression>;
+
+	readonly superscriptExpressions: NSArray<AXMathExpression>;
+
+	constructor(o: { baseExpression: NSArray<AXMathExpression> | AXMathExpression[]; subscriptExpressions: NSArray<AXMathExpression> | AXMathExpression[]; superscriptExpressions: NSArray<AXMathExpression> | AXMathExpression[]; });
+
+	initWithBaseExpressionSubscriptExpressionsSuperscriptExpressions(baseExpression: NSArray<AXMathExpression> | AXMathExpression[], subscriptExpressions: NSArray<AXMathExpression> | AXMathExpression[], superscriptExpressions: NSArray<AXMathExpression> | AXMathExpression[]): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionTable extends AXMathExpression {
+
+	static alloc(): AXMathExpressionTable; // inherited from NSObject
+
+	static new(): AXMathExpressionTable; // inherited from NSObject
+
+	readonly expressions: NSArray<AXMathExpression>;
+
+	constructor(o: { expressions: NSArray<AXMathExpression> | AXMathExpression[]; });
+
+	initWithExpressions(expressions: NSArray<AXMathExpression> | AXMathExpression[]): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionTableCell extends AXMathExpression {
+
+	static alloc(): AXMathExpressionTableCell; // inherited from NSObject
+
+	static new(): AXMathExpressionTableCell; // inherited from NSObject
+
+	readonly expressions: NSArray<AXMathExpression>;
+
+	constructor(o: { expressions: NSArray<AXMathExpression> | AXMathExpression[]; });
+
+	initWithExpressions(expressions: NSArray<AXMathExpression> | AXMathExpression[]): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionTableRow extends AXMathExpression {
+
+	static alloc(): AXMathExpressionTableRow; // inherited from NSObject
+
+	static new(): AXMathExpressionTableRow; // inherited from NSObject
+
+	readonly expressions: NSArray<AXMathExpression>;
+
+	constructor(o: { expressions: NSArray<AXMathExpression> | AXMathExpression[]; });
+
+	initWithExpressions(expressions: NSArray<AXMathExpression> | AXMathExpression[]): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionText extends AXMathExpression {
+
+	static alloc(): AXMathExpressionText; // inherited from NSObject
+
+	static new(): AXMathExpressionText; // inherited from NSObject
+
+	readonly content: string;
+
+	constructor(o: { content: string; });
+
+	initWithContent(content: string): this;
+}
+
+/**
+ * @since 18.2
+ */
+declare class AXMathExpressionUnderOver extends AXMathExpression {
+
+	static alloc(): AXMathExpressionUnderOver; // inherited from NSObject
+
+	static new(): AXMathExpressionUnderOver; // inherited from NSObject
+
+	readonly baseExpression: AXMathExpression;
+
+	readonly overExpression: AXMathExpression;
+
+	readonly underExpression: AXMathExpression;
+
+	constructor(o: { baseExpression: AXMathExpression; underExpression: AXMathExpression; overExpression: AXMathExpression; });
+
+	initWithBaseExpressionUnderExpressionOverExpression(baseExpression: AXMathExpression, underExpression: AXMathExpression, overExpression: AXMathExpression): this;
+}
+
+/**
+ * @since 14.0
+ */
 declare function AXNameFromColor(color: any): string;
 
+/**
+ * @since 15.0
+ */
 declare class AXNumericDataAxisDescriptor extends NSObject implements AXDataAxisDescriptor {
 
 	static alloc(): AXNumericDataAxisDescriptor; // inherited from NSObject
@@ -330,4 +818,112 @@ declare const enum AXNumericDataAxisDescriptorScale {
 	ScaleTypeLn = 2
 }
 
+/**
+ * @since 18.0
+ */
+declare function AXOpenSettingsFeature(feature: AXSettingsFeature, completionHandler: (p1: NSError) => void): void;
+
+/**
+ * @since 17.0
+ */
+declare function AXPrefersHorizontalTextLayout(): boolean;
+
+/**
+ * @since 17.0
+ */
+declare var AXPrefersHorizontalTextLayoutDidChangeNotification: string;
+
+/**
+ * @since 18.0
+ */
+declare function AXPrefersNonBlinkingTextInsertionIndicator(): boolean;
+
+/**
+ * @since 18.0
+ */
+declare var AXPrefersNonBlinkingTextInsertionIndicatorDidChangeNotification: string;
+
+/**
+ * @since 18.0
+ */
+declare class AXRequest extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): AXRequest; // inherited from NSObject
+
+	static new(): AXRequest; // inherited from NSObject
+
+	readonly technology: string;
+
+	static readonly currentRequest: AXRequest;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+/**
+ * @since 18.0
+ */
+declare const enum AXSettingsFeature {
+
+	PersonalVoiceAllowAppsToRequestToUse = 1,
+
+	AllowAppsToAddAudioToCalls = 2,
+
+	AssistiveTouch = 3,
+
+	AssistiveTouchDevices = 4,
+
+	DwellControl = 5
+}
+
+/**
+ * @since 15.0
+ */
 declare function AXSupportsBidirectionalAXMFiHearingDeviceStreaming(): boolean;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyAutomation: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyFullKeyboardAccess: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyHoverText: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologySpeakScreen: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologySwitchControl: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyVoiceControl: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyVoiceOver: string;
+
+/**
+ * @since 18.0
+ */
+declare var AXTechnologyZoom: string;

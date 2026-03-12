@@ -1,15 +1,15 @@
 import type { View } from '../core/view';
-import { ViewBase } from '../core/view-base';
-import { BackstackEntry } from '../frame';
+import type { ViewBase } from '../core/view-base';
+import type { BackstackEntry } from '../frame';
 import { isNumber } from '../../utils/types';
-import { FadeTransition } from './fade-transition';
 import { Transition } from '.';
-import { getPageStartDefaultsForType, getRectFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionEventData } from './shared-transition';
+import { getRectFromProps, SharedTransition, SharedTransitionAnimationType, SharedTransitionEventData } from './shared-transition';
 import { ImageSource } from '../../image-source';
 import { ContentView } from '../content-view';
 import { GridLayout } from '../layouts/grid-layout';
-import { ad } from '../../utils';
-import { Screen } from '../../platform';
+import { Screen } from '../../platform/screen';
+import { ExpandedEntry } from '../frame/fragment.transitions.android';
+import { android as androidUtils } from '../../utils/native-helper';
 // import { Image } from '../image';
 
 @NativeClass
@@ -77,7 +77,11 @@ function setTransitionName(view: ViewBase) {
 }
 
 export class PageTransition extends Transition {
-	constructor(duration?: number, curve?: any) {
+	constructor(
+		duration?: number,
+		curve?: any,
+		private pageLoadedTimeout: number = 0,
+	) {
 		// disable custom curves until we can fix the issue with the animation not completing
 		if (curve) {
 			console.warn('PageTransition does not support custom curves at the moment. The passed in curve will be ignored.');
@@ -171,19 +175,25 @@ export class PageTransition extends Transition {
 		return animationSet;
 	}
 
-	androidFragmentTransactionCallback(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: BackstackEntry, newEntry: BackstackEntry) {
+	androidFragmentTransactionCallback(fragmentTransaction: androidx.fragment.app.FragmentTransaction, currentEntry: ExpandedEntry, newEntry: BackstackEntry) {
 		const fromPage = currentEntry.resolvedPage;
 		const toPage = newEntry.resolvedPage;
 		const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 		const state = SharedTransition.getState(this.id);
+		if (!state) {
+			// when navigating transition is set on the currentEntry but never cleaned up
+			// which means that on a next navigation forward (without transition) and back
+			// we will go here with an empty state!
+			currentEntry.transition = null;
+			return;
+		}
+
 		const pageEnd = state.pageEnd;
 
-		const { sharedElements, presented, presenting } = SharedTransition.getSharedElements(fromPage, toPage);
-		const sharedElementTags = sharedElements.map((v) => v.sharedTransitionTag);
-		if (SharedTransition.DEBUG) {
-			console.log(`  Page: ${state.activeType === SharedTransitionAnimationType.present ? 'Present' : 'Dismiss'}`);
-			console.log(`1. Found sharedTransitionTags to animate:`, sharedElementTags);
-		}
+		//we can't look for presented right now as the toPage might not be loaded
+		// and thus some views like ListView/Pager... might not have loaded their "children"
+		// presented will be handled in loaded event of toPage
+		const { presenting } = SharedTransition.getSharedElements(fromPage, toPage);
 
 		// Note: we can enhance android more over time with element targeting across different screens
 		// const pageStart = state.pageStart;
@@ -215,16 +225,15 @@ export class PageTransition extends Transition {
 		// 		independentView.opacity = 0;
 		// 	}
 		// }
-
-		toPage.once('loaded', () => {
-			presented.filter((v) => sharedElementTags.includes(v.sharedTransitionTag)).forEach(setTransitionName);
-			newFragment.startPostponedEnterTransition();
-		});
-
-		sharedElements.forEach((v) => {
-			setTransitionName(v);
-			fragmentTransaction.addSharedElement(v.nativeView, v.sharedTransitionTag);
-		});
+		const onPageLoaded = () => {
+			// add a timeout so that Views like ListView / CollectionView can have their children instantiated
+			setTimeout(() => {
+				const { presented } = SharedTransition.getSharedElements(fromPage, toPage);
+				// const sharedElementTags = sharedElements.map((v) => v.sharedTransitionTag);
+				presented.forEach(setTransitionName);
+				newFragment.startPostponedEnterTransition();
+			}, this.pageLoadedTimeout);
+		};
 
 		fragmentTransaction.setReorderingAllowed(true);
 
@@ -252,6 +261,29 @@ export class PageTransition extends Transition {
 		newFragment.postponeEnterTransition();
 		newFragment.setSharedElementEnterTransition(transitionSet);
 		newFragment.setSharedElementReturnTransition(transitionSet);
+
+		// Guard against duplicate shared element names being added to the same transaction
+		const addedSharedElementNames = new Set();
+		presenting.forEach((v) => {
+			const name = v?.sharedTransitionTag;
+			const nativeView = v?.nativeView;
+			if (!name || !nativeView || addedSharedElementNames.has(name)) {
+				// prevent duplicates or invalid items
+				return;
+			}
+			setTransitionName(v);
+			try {
+				fragmentTransaction.addSharedElement(nativeView, name);
+				addedSharedElementNames.add(name);
+			} catch (err) {
+				// ignore duplicates or issues adding shared element to avoid crashing
+			}
+		});
+		if (toPage.isLoaded) {
+			onPageLoaded();
+		} else {
+			toPage.once('loaded', onPageLoaded);
+		}
 	}
 }
 
@@ -270,10 +302,10 @@ function loadViewInBackground(view: View) {
 	hiddenHost.content = hostView;
 	hiddenHost.visibility = 'collapse';
 	hostView.addChild(view);
-	hiddenHost._setupAsRootView(ad.getApplicationContext());
+	hiddenHost._setupAsRootView(androidUtils.getApplicationContext());
 	hiddenHost.callLoaded();
 
-	ad.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
+	androidUtils.getCurrentActivity().addContentView(hiddenHost.android, new android.view.ViewGroup.LayoutParams(0, 0));
 
 	return {
 		hiddenHost,

@@ -1,5 +1,5 @@
 import { cssTreeParse } from './css-tree-parser';
-import { parse as reworkCssParse } from './reworkcss';
+import { parse as reworkCssParse } from './reworkcss.js';
 
 describe('CssTreeParser', () => {
 	it('basic selector', () => {

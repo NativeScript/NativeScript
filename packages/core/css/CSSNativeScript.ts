@@ -50,7 +50,7 @@ export class CSSNativeScript {
 		};
 	}
 
-	private ruleBlockToDeclarations(declarationsInputTokens: InputToken[]): { type: 'declaration'; property: string; value: string; }[] {
+	private ruleBlockToDeclarations(declarationsInputTokens: InputToken[]): { type: 'declaration'; property: string; value: string }[] {
 		// return <any>declarationsInputTokens;
 		const declarations: {
 			type: 'declaration';

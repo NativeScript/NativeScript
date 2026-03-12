@@ -11,43 +11,67 @@
 	"targets": {
 		"build": {
 			"executor": "@nativescript/nx:build",
+			"inputs": ["default", "^production"],
 			"options": {
 				"noHmr": true,
 				"production": true,
 				"uglify": true,
 				"release": true,
 				"forDevice": true
-			}
+			},
+			"configurations": {},
+			"dependsOn": ["^build"]
 		},
-		"ios": {
-			"executor": "@nativescript/nx:build",
+		"debug": {
+			"executor": "@nativescript/nx:debug",
 			"inputs": ["default", "^production"],
-			"outputs": [],
 			"options": {
 				"noHmr": true,
-				"platform": "ios"
-			}
+				"debug": false,
+				"uglify": false,
+				"release": false,
+				"forDevice": false,
+				"prepare": false
+			},
+			"dependsOn": ["^build"]
 		},
-		"android": {
-			"executor": "@nativescript/nx:build",
+		"prepare": {
+			"executor": "@nativescript/nx:prepare",
 			"inputs": ["default", "^production"],
-			"outputs": [],
 			"options": {
 				"noHmr": true,
-				"platform": "android"
-			}
+				"production": true,
+				"uglify": true,
+				"release": true,
+				"forDevice": true,
+				"prepare": true
+			},
+			"configurations": {},
+			"dependsOn": ["^build"]
+		},
+		"test": {
+			"executor": "nx:run-commands",
+			"defaultConfiguration": "ios",
+			"configurations": {
+				"ios": {
+					"commands": ["node tools/scripts/run-automated.js ios"]
+				},
+				"android": {
+					"commands": ["node tools/scripts/run-automated.js android"]
+				}
+			},
+			"dependsOn": ["^build"]
 		},
 		"clean": {
-			"executor": "@nativescript/nx:build",
-			"options": {
-				"clean": true
-			}
+			"executor": "@nativescript/nx:clean",
+			"options": {}
 		},
 		"lint": {
-			"executor": "@nrwl/linter:eslint",
+			"executor": "@nx/eslint:lint",
 			"options": {
 				"lintFilePatterns": ["apps/automated/**/*.ts", "apps/automated/src/**/*.html"]
 			}
 		}
-	}
+	},
+	"implicitDependencies": ["webpack5", "vite"]
 }

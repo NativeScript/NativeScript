@@ -8,6 +8,7 @@ const dateComparer = (x: Date, y: Date): boolean => x <= y && x >= y;
 
 @CSSType('DatePicker')
 export class DatePickerBase extends View implements DatePickerDefinition {
+	public static dateChangeEvent: string = 'dateChange';
 	public year: number;
 	public month: number;
 	public day: number;

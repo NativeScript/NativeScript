@@ -1,4 +1,7 @@
 
+/**
+ * @since 13
+ */
 declare class SFAcousticFeature extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SFAcousticFeature; // inherited from NSObject
@@ -20,6 +23,9 @@ declare class SFAcousticFeature extends NSObject implements NSCopying, NSSecureC
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SFSpeechAudioBufferRecognitionRequest extends SFSpeechRecognitionRequest {
 
 	static alloc(): SFSpeechAudioBufferRecognitionRequest; // inherited from NSObject
@@ -35,6 +41,105 @@ declare class SFSpeechAudioBufferRecognitionRequest extends SFSpeechRecognitionR
 	endAudio(): void;
 }
 
+/**
+ * @since 17
+ */
+declare const enum SFSpeechErrorCode {
+
+	InternalServiceError = 1,
+
+	AudioReadFailed = 2,
+
+	UndefinedTemplateClassName = 7,
+
+	MalformedSupplementalModel = 8,
+
+	Timeout = 12,
+
+	MissingParameter = 13
+}
+
+/**
+ * @since 17
+ */
+declare var SFSpeechErrorDomain: string;
+
+/**
+ * @since 17
+ */
+declare class SFSpeechLanguageModel extends NSObject {
+
+	static alloc(): SFSpeechLanguageModel; // inherited from NSObject
+
+	static new(): SFSpeechLanguageModel; // inherited from NSObject
+
+	/**
+	 * @since 17
+	 * @deprecated 26.0
+	 */
+	static prepareCustomLanguageModelForUrlClientIdentifierConfigurationCompletion(asset: NSURL, clientIdentifier: string, configuration: SFSpeechLanguageModelConfiguration, completion: (p1: NSError) => void): void;
+
+	/**
+	 * @since 17
+	 * @deprecated 26.0
+	 */
+	static prepareCustomLanguageModelForUrlClientIdentifierConfigurationIgnoresCacheCompletion(asset: NSURL, clientIdentifier: string, configuration: SFSpeechLanguageModelConfiguration, ignoresCache: boolean, completion: (p1: NSError) => void): void;
+
+	static prepareCustomLanguageModelForUrlConfigurationCompletion(asset: NSURL, configuration: SFSpeechLanguageModelConfiguration, completion: (p1: NSError) => void): void;
+
+	static prepareCustomLanguageModelForUrlConfigurationIgnoresCacheCompletion(asset: NSURL, configuration: SFSpeechLanguageModelConfiguration, ignoresCache: boolean, completion: (p1: NSError) => void): void;
+}
+
+/**
+ * @since 17
+ */
+declare class SFSpeechLanguageModelConfiguration extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SFSpeechLanguageModelConfiguration; // inherited from NSObject
+
+	static new(): SFSpeechLanguageModelConfiguration; // inherited from NSObject
+
+	readonly languageModel: NSURL;
+
+	readonly vocabulary: NSURL;
+
+	/**
+	 * @since 26.0
+	 */
+	readonly weight: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { languageModel: NSURL; });
+
+	constructor(o: { languageModel: NSURL; vocabulary: NSURL; });
+
+	/**
+	 * @since 26.0
+	 */
+	constructor(o: { languageModel: NSURL; vocabulary: NSURL; weight: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithLanguageModel(languageModel: NSURL): this;
+
+	initWithLanguageModelVocabulary(languageModel: NSURL, vocabulary: NSURL): this;
+
+	/**
+	 * @since 26.0
+	 */
+	initWithLanguageModelVocabularyWeight(languageModel: NSURL, vocabulary: NSURL, weight: number): this;
+}
+
+/**
+ * @since 14.5
+ */
 declare class SFSpeechRecognitionMetadata extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SFSpeechRecognitionMetadata; // inherited from NSObject
@@ -62,18 +167,36 @@ declare class SFSpeechRecognitionMetadata extends NSObject implements NSCopying,
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SFSpeechRecognitionRequest extends NSObject {
 
 	static alloc(): SFSpeechRecognitionRequest; // inherited from NSObject
 
 	static new(): SFSpeechRecognitionRequest; // inherited from NSObject
 
+	/**
+	 * @since 16
+	 */
 	addsPunctuation: boolean;
 
 	contextualStrings: NSArray<string>;
 
+	/**
+	 * @since 17
+	 */
+	customizedLanguageModel: SFSpeechLanguageModelConfiguration;
+
+	/**
+	 * @since 10.0
+	 * @deprecated 15.0
+	 */
 	interactionIdentifier: string;
 
+	/**
+	 * @since 13
+	 */
 	requiresOnDeviceRecognition: boolean;
 
 	shouldReportPartialResults: boolean;
@@ -81,6 +204,9 @@ declare class SFSpeechRecognitionRequest extends NSObject {
 	taskHint: SFSpeechRecognitionTaskHint;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SFSpeechRecognitionResult extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SFSpeechRecognitionResult; // inherited from NSObject
@@ -91,6 +217,9 @@ declare class SFSpeechRecognitionResult extends NSObject implements NSCopying, N
 
 	readonly final: boolean;
 
+	/**
+	 * @since 14.0
+	 */
 	readonly speechRecognitionMetadata: SFSpeechRecognitionMetadata;
 
 	readonly transcriptions: NSArray<SFTranscription>;
@@ -106,6 +235,9 @@ declare class SFSpeechRecognitionResult extends NSObject implements NSCopying, N
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SFSpeechRecognitionTask extends NSObject {
 
 	static alloc(): SFSpeechRecognitionTask; // inherited from NSObject
@@ -125,6 +257,9 @@ declare class SFSpeechRecognitionTask extends NSObject {
 	finish(): void;
 }
 
+/**
+ * @since 10.0
+ */
 interface SFSpeechRecognitionTaskDelegate extends NSObjectProtocol {
 
 	speechRecognitionDidDetectSpeech?(task: SFSpeechRecognitionTask): void;
@@ -135,6 +270,11 @@ interface SFSpeechRecognitionTaskDelegate extends NSObjectProtocol {
 
 	speechRecognitionTaskDidHypothesizeTranscription?(task: SFSpeechRecognitionTask, transcription: SFTranscription): void;
 
+	/**
+	 * @since 10.0
+	 */
+	speechRecognitionTaskDidProcessAudioDuration?(task: SFSpeechRecognitionTask, duration: number): void;
+
 	speechRecognitionTaskFinishedReadingAudio?(task: SFSpeechRecognitionTask): void;
 
 	speechRecognitionTaskWasCancelled?(task: SFSpeechRecognitionTask): void;
@@ -144,6 +284,9 @@ declare var SFSpeechRecognitionTaskDelegate: {
 	prototype: SFSpeechRecognitionTaskDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare const enum SFSpeechRecognitionTaskHint {
 
 	Unspecified = 0,
@@ -155,6 +298,9 @@ declare const enum SFSpeechRecognitionTaskHint {
 	Confirmation = 3
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum SFSpeechRecognitionTaskState {
 
 	Starting = 0,
@@ -168,6 +314,9 @@ declare const enum SFSpeechRecognitionTaskState {
 	Completed = 4
 }
 
+/**
+ * @since 10.0
+ */
 declare class SFSpeechRecognizer extends NSObject {
 
 	static alloc(): SFSpeechRecognizer; // inherited from NSObject
@@ -190,6 +339,9 @@ declare class SFSpeechRecognizer extends NSObject {
 
 	queue: NSOperationQueue;
 
+	/**
+	 * @since 13
+	 */
 	supportsOnDeviceRecognition: boolean;
 
 	constructor(o: { locale: NSLocale; });
@@ -201,6 +353,9 @@ declare class SFSpeechRecognizer extends NSObject {
 	recognitionTaskWithRequestResultHandler(request: SFSpeechRecognitionRequest, resultHandler: (p1: SFSpeechRecognitionResult, p2: NSError) => void): SFSpeechRecognitionTask;
 }
 
+/**
+ * @since 10.0
+ */
 declare const enum SFSpeechRecognizerAuthorizationStatus {
 
 	NotDetermined = 0,
@@ -212,6 +367,9 @@ declare const enum SFSpeechRecognizerAuthorizationStatus {
 	Authorized = 3
 }
 
+/**
+ * @since 10.0
+ */
 interface SFSpeechRecognizerDelegate extends NSObjectProtocol {
 
 	speechRecognizerAvailabilityDidChange?(speechRecognizer: SFSpeechRecognizer, available: boolean): void;
@@ -221,6 +379,9 @@ declare var SFSpeechRecognizerDelegate: {
 	prototype: SFSpeechRecognizerDelegate;
 };
 
+/**
+ * @since 10.0
+ */
 declare class SFSpeechURLRecognitionRequest extends SFSpeechRecognitionRequest {
 
 	static alloc(): SFSpeechURLRecognitionRequest; // inherited from NSObject
@@ -234,18 +395,29 @@ declare class SFSpeechURLRecognitionRequest extends SFSpeechRecognitionRequest {
 	initWithURL(URL: NSURL): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SFTranscription extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SFTranscription; // inherited from NSObject
 
 	static new(): SFTranscription; // inherited from NSObject
 
+	/**
+	 * @since 13.0
+	 * @deprecated 14.5
+	 */
 	readonly averagePauseDuration: number;
 
 	readonly formattedString: string;
 
 	readonly segments: NSArray<SFTranscriptionSegment>;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 14.5
+	 */
 	readonly speakingRate: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -259,6 +431,9 @@ declare class SFTranscription extends NSObject implements NSCopying, NSSecureCod
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 10.0
+ */
 declare class SFTranscriptionSegment extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SFTranscriptionSegment; // inherited from NSObject
@@ -277,6 +452,10 @@ declare class SFTranscriptionSegment extends NSObject implements NSCopying, NSSe
 
 	readonly timestamp: number;
 
+	/**
+	 * @since 13.0
+	 * @deprecated 14.5
+	 */
 	readonly voiceAnalytics: SFVoiceAnalytics;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -290,6 +469,9 @@ declare class SFTranscriptionSegment extends NSObject implements NSCopying, NSSe
 	initWithCoder(coder: NSCoder): this;
 }
 
+/**
+ * @since 13
+ */
 declare class SFVoiceAnalytics extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): SFVoiceAnalytics; // inherited from NSObject

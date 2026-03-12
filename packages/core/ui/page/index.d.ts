@@ -2,7 +2,7 @@
 import { CssProperty, Property } from '../core/properties';
 import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
-import { Frame } from '../frame';
+import type { Frame } from '../frame';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { Color } from '../../color';
@@ -26,53 +26,68 @@ export interface NavigatedData extends EventData {
 
 /**
  * Represents a logical unit for navigation (inside Frame).
+ *
+ * @nsView Page
  */
 export declare class Page extends PageBase {
 	/**
 	 * String value used when hooking to navigatingTo event.
+	 *
+	 * @nsEvent {NavigatedData} navigatingTo
 	 */
-	public static navigatingToEvent: string;
+	public static readonly navigatingToEvent = 'navigatingTo';
 
 	/**
 	 * String value used when hooking to navigatedTo event.
+	 *
+	 * @nsEvent {NavigatedData} navigatedTo
 	 */
-	public static navigatedToEvent: string;
+	public static readonly navigatedToEvent = 'navigatedTo';
 
 	/**
 	 * String value used when hooking to navigatingFrom event.
+	 *
+	 * @nsEvent {NavigatedData} navigatingFrom
 	 */
-	public static navigatingFromEvent: string;
+	public static readonly navigatingFromEvent = 'navigatingFrom';
 
 	/**
 	 * String value used when hooking to navigatedFrom event.
+	 *
+	 * @nsEvent {NavigatedData} navigatedFrom
 	 */
-	public static navigatedFromEvent: string;
+	public static readonly navigatedFromEvent = 'navigatedFrom';
 
 	/**
 	 * Gets or sets whether page background spans under status bar.
+	 *
+	 * @nsProperty
 	 */
 	public backgroundSpanUnderStatusBar: boolean;
 
 	/**
-	 * Gets or sets the style of the status bar.
-	 */
-	// @ts-ignore
-	public statusBarStyle: 'light' | 'dark';
-
-	/**
 	 * Gets or sets the color of the status bar in Android.
+	 *
+	 * @nsProperty
 	 */
 	// @ts-ignore
 	public androidStatusBarBackground: Color;
 
 	/**
 	 * Used to hide the Navigation Bar in iOS and the Action Bar in Android.
+	 *
+	 * @nsProperty
 	 */
 	// @ts-ignore
 	public actionBarHidden: boolean;
 
 	/**
-	 * Used to control if swipe back navigation in iOS is enabled. This property is iOS specific. Default value: true
+	 * Used to control if swipe back navigation in iOS is enabled.
+	 *
+	 * This property is iOS specific.
+	 * Default value: true
+	 *
+	 * @nsProperty
 	 */
 	public enableSwipeBackNavigation: boolean;
 
@@ -83,6 +98,8 @@ export declare class Page extends PageBase {
 
 	/**
 	 * A property that is used to pass a data from another page (while navigate to).
+	 *
+	 * @nsProperty
 	 */
 	// @ts-ignore
 	public navigationContext: any;
@@ -102,21 +119,29 @@ export declare class Page extends PageBase {
 	/**
 	 * iOS Only
 	 * Perform an action when user performans the "escape" gesture
+	 *
+	 * @nsProperty
 	 */
 	public onAccessibilityPerformEscape?: () => boolean;
 
 	/**
-	 * Should page changed be annnounced to the screen reader.
+	 * Should page changed be announced to the screen reader.
+	 *
+	 * @nsProperty
 	 */
 	public accessibilityAnnouncePageEnabled: boolean;
 
 	/**
-	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
-	 * @param callback - Callback function which will be executed when event is raised.
-	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 * Adds a listener for the specified event name.
+	 *
+	 * @param eventName The name of the event.
+	 * @param callback The event listener to add. Will be called when an event of
+	 * the given name is raised.
+	 * @param thisArg An optional parameter which, when set, will be bound as the
+	 * `this` context when the callback is called. Falsy values will be not be
+	 * bound.
 	 */
-	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+	public on(eventName: string, callback: (data: EventData) => void, thisArg?: any): void;
 
 	/**
 	 * Raised when navigation to the page has started.
@@ -143,10 +168,6 @@ export declare class Page extends PageBase {
 	 * @private
 	 */
 	hasActionBar: boolean;
-	/**
-	 * @private
-	 */
-	_frame: Frame;
 
 	/**
 	 * A method called before navigating to the page.

@@ -6,26 +6,38 @@
     </Page.actionBar>
 
     <StackLayout>
-        <StackLayout class="p-10" row="0">
+        <StackLayout class="p-10">
             <Label text="Default style = scrolls out of container" class="body m-b-10" />
             <TextView hint="Add your comment..." />
         </StackLayout>
 
-        <StackLayout class="p-10" row="1">
+        <StackLayout class="p-10">
             <Label text="Adding border changes the height but fixes scrolling" textWrap="true" class="body m-b-10" />
             <TextView hint="Add your comment..." class="bordered" />
         </StackLayout>
 
-        <StackLayout class="p-10" row="2">
+        <StackLayout class="p-10">
             <TextView hint="bordered fixed-height border-radius" class="bordered fixed-height border-radius" />
         </StackLayout>
 
-        <StackLayout class="p-10" row="2">
+        <StackLayout class="p-10">
             <TextView hint="bordered fixed-height border-radius-nonuniform" class="bordered fixed-height border-radius-nonuniform" />
         </StackLayout>
 
-        <StackLayout class="p-10" row="3">
+        <StackLayout class="p-10">
             <TextView hint="bordered-nonuniform fixed-height" class="bordered-nonuniform fixed-height" />
+        </StackLayout>
+
+        <StackLayout class="p-10">
+            <TextView hint="bordered-nonuniform fixed-height border-radius" class="bordered-nonuniform fixed-height border-radius" />
+        </StackLayout>
+
+        <StackLayout class="p-10">
+            <TextView hint="fixed-height gradient" class="fixed-height gradient" />
+        </StackLayout>
+
+        <StackLayout class="p-10">
+            <TextView hint="fixed-height shadow" class="fixed-height shadow" />
         </StackLayout>
 
     </StackLayout>
