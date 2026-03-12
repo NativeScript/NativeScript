@@ -83,16 +83,18 @@ export class LiquidGlassContainer extends LiquidGlassContainerCommon {
 		this.effectiveBorderTopWidth = 0;
 		this.effectiveBorderBottomWidth = 0;
 
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-		this.effectivePaddingLeft = pl;
-		this.effectivePaddingRight = pr;
-		this.effectivePaddingTop = pt;
-		this.effectivePaddingBottom = pb;
-		this.effectiveBorderLeftWidth = bl;
-		this.effectiveBorderRightWidth = br;
-		this.effectiveBorderTopWidth = bt;
-		this.effectiveBorderBottomWidth = bb;
+		try {
+			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		} finally {
+			this.effectivePaddingLeft = pl;
+			this.effectivePaddingRight = pr;
+			this.effectivePaddingTop = pt;
+			this.effectivePaddingBottom = pb;
+			this.effectiveBorderLeftWidth = bl;
+			this.effectiveBorderRightWidth = br;
+			this.effectiveBorderTopWidth = bt;
+			this.effectiveBorderBottomWidth = bb;
+		}
 	}
 
 	// When children animate with translate (layer transform), UIVisualEffectView-based

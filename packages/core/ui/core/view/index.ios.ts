@@ -1082,12 +1082,11 @@ export class View extends ViewCommon {
 
 	public toUIGlassStyle(value?: GlassEffectVariant) {
 		if (supportsGlass()) {
-			const glassEffectStyle = (globalThis as any)?.UIGlassEffectStyle;
 			switch (value) {
 				case 'regular':
-					return glassEffectStyle?.Regular ?? 0;
+					return UIGlassEffectStyle.Regular;
 				case 'clear':
-					return glassEffectStyle?.Clear ?? 1;
+					return UIGlassEffectStyle.Clear;
 			}
 		}
 		return 1;

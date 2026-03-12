@@ -76,16 +76,18 @@ export class LiquidGlass extends LiquidGlassCommon {
 		this.effectiveBorderTopWidth = 0;
 		this.effectiveBorderBottomWidth = 0;
 
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-		this.effectivePaddingLeft = pl;
-		this.effectivePaddingRight = pr;
-		this.effectivePaddingTop = pt;
-		this.effectivePaddingBottom = pb;
-		this.effectiveBorderLeftWidth = bl;
-		this.effectiveBorderRightWidth = br;
-		this.effectiveBorderTopWidth = bt;
-		this.effectiveBorderBottomWidth = bb;
+		try {
+			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		} finally {
+			this.effectivePaddingLeft = pl;
+			this.effectivePaddingRight = pr;
+			this.effectivePaddingTop = pt;
+			this.effectivePaddingBottom = pb;
+			this.effectiveBorderLeftWidth = bl;
+			this.effectiveBorderRightWidth = br;
+			this.effectiveBorderTopWidth = bt;
+			this.effectiveBorderBottomWidth = bb;
+		}
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
@@ -108,12 +110,11 @@ export class LiquidGlass extends LiquidGlassCommon {
 
 export function toUIGlassStyle(value?: GlassEffectVariant) {
 	if (supportsGlass()) {
-		const glassEffectStyle = (globalThis as any)?.UIGlassEffectStyle;
 		switch (value) {
 			case 'regular':
-				return glassEffectStyle?.Regular ?? 0;
+				return UIGlassEffectStyle.Regular;
 			case 'clear':
-				return glassEffectStyle?.Clear ?? 1;
+				return UIGlassEffectStyle.Clear;
 		}
 	}
 	return 1;
