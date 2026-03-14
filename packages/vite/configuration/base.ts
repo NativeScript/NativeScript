@@ -3,7 +3,6 @@ import path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
-import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import ts from 'typescript';
@@ -342,17 +341,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 
 			// Platform-specific package resolver - MUST come before commonjs plugin
 			nativescriptPackageResolver(platform),
-			// Simplified CommonJS handling - let Vite's optimizeDeps do the heavy lifting
-			commonjs({
-				include: [/node_modules/],
-				exclude: [/node_modules[\\/]source-map-js[\\/]/],
-				// Let Rollup/Vite decide default mapping for CommonJS modules.
-				requireReturnsDefault: 'auto',
-				defaultIsModuleExports: 'auto',
-				transformMixedEsModules: true,
-				// Ignore optional dependencies that are meant to fail gracefully
-				ignore: ['@nativescript/android', '@nativescript/ios', '@nativescript/visionos'],
-			}),
 			nsConfigAsJsonPlugin(),
 			NativeScriptPlugin({ platform }),
 			// Ensure globals and Android activity are included early via virtual entry
