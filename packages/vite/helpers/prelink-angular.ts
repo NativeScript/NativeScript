@@ -95,7 +95,7 @@ export function createAngularPrelinkPlugin(projectRoot?: string): Plugin {
 			done = true;
 			const alias = [
 				{ find: /^@angular\//, replacement: path.join(cacheRoot, '@angular') + '/' },
-				{ find: /^@nativescript\/angular(\/.*)?$/, replacement: (_: string, sub: string) => path.join(cacheRoot, '@nativescript', 'angular') + (sub || '') },
+				{ find: /^@nativescript\/angular(\/.*)?$/, replacement: path.join(cacheRoot, '@nativescript', 'angular') + '$1' },
 			] as any;
 			return { resolve: { alias } };
 		},

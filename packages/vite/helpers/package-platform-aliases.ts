@@ -1,25 +1,30 @@
 import path from 'path';
 import fs from 'fs';
+import type { Plugin } from 'vite';
 import { findPackageInNodeModules } from './module-resolution.js';
 import { getProjectRootPath } from './project.js';
 
 const projectRoot = getProjectRootPath();
 
-export function packagePlatformAliases(opts: { tsConfig: { paths?: Record<string, string[]> } | null; verbose?: boolean; platform: string }) {
+export function packagePlatformResolverPlugin(opts: { tsConfig: { paths?: Record<string, string[]> } | null; verbose?: boolean; platform: string }): Plugin {
 	// packages used via core transient dependencies and other vite support
 	const commonSkips = ['source-map-js', 'html-entities', 'fast-xml-parser', '@valor/nativescript-websockets'];
 	return {
-		find: /^(@[^/]+\/[^@/]+|[^@/]+)$/,
-		replacement: (id) => {
+		name: 'ns-package-platform-resolver',
+		enforce: 'pre',
+		resolveId(id) {
+			if (!/^(@[^/]+\/[^@/]+|[^@/]+)$/.test(id)) {
+				return null;
+			}
 			// Skip packages that have custom plugins
 			if (commonSkips.includes(id)) {
-				return id; // Let the plugins handle these
+				return null;
 			}
 
 			// Skip if this ID is already handled by tsconfig paths
 			// Check if this matches any of our tsconfig path aliases
 			if (opts.tsConfig?.paths && opts.tsConfig.paths[id]) {
-				return id; // Let tsconfig aliases handle this
+				return null;
 			}
 
 			// Only handle packages that exist in node_modules (real npm packages)
@@ -81,8 +86,7 @@ export function packagePlatformAliases(opts: { tsConfig: { paths?: Record<string
 				}
 			}
 
-			// Return original if no resolution needed
-			return id;
+			return null;
 		},
 	};
 }

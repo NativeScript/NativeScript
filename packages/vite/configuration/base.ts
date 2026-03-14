@@ -12,10 +12,9 @@ import NativeScriptPlugin from '../helpers/resolver.js';
 import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
 import { getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
-import { packagePlatformAliases } from '../helpers/package-platform-aliases.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
 import { getWorkerPlugins, workerUrlPlugin } from '../helpers/workers.js';
-import { getTsConfigData } from '../helpers/ts-config-paths.js';
+import { createTsConfigPathsResolver, getTsConfigData } from '../helpers/ts-config-paths.js';
 import { commonjsPlugins } from '../helpers/commonjs-plugins.js';
 import { nativescriptPackageResolver } from '../helpers/nativescript-package-resolver.js';
 import { cliPlugin } from '../helpers/ns-cli-plugins.js';
@@ -23,11 +22,12 @@ import { dynamicImportPlugin } from '../helpers/dynamic-import-plugin.js';
 import { mainEntryPlugin } from '../helpers/main-entry.js';
 import { getProjectFlavor } from '../helpers/flavor.js';
 import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
-import { esbuildPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
+import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
 import { vendorManifestPlugin } from '../hmr/shared/vendor/manifest.js';
 import { resolveVerboseFlag, createFilteredViteLogger } from '../helpers/logging.js';
 import { externalConfigMerges, applyExternalConfigs } from '../helpers/external-configs.js';
 import { getHMRPlugins } from '../hmr/server/index.js';
+import { packagePlatformResolverPlugin } from '../helpers/package-platform-aliases.js';
 import { findPackageInNodeModules } from '../helpers/module-resolution.js';
 import { createPlatformCssPlugin } from '../helpers/css-platform-plugin.js';
 import { createNativeClassTransformerPlugin } from '../helpers/nativeclass-transformer-plugin.js';
@@ -138,6 +138,12 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 
 	// Create TypeScript aliases with platform support
 	const tsConfig = getTsConfigData({ platform, verbose });
+	const tsConfigResolver = createTsConfigPathsResolver({
+		paths: tsConfig.paths,
+		baseUrl: tsConfig.baseUrl,
+		platform,
+		verbose,
+	});
 
 	// Common resolve configuration for both main and worker builds
 	// Build platform-aware extension preference order and exclude the opposite platform
@@ -176,7 +182,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Canonicalize trailing /index subpath imports so '@nativescript/core/foo' and '@nativescript/core/foo/index'
 			// resolve to the exact same module id. This prevents duplicate evaluation of core submodules (profiling, layouts)
 			// which can break timers, decorators and alignment tests under Vite.
-			{ find: /^@nativescript\/core\/(.+)\/index$/, replacement: (m: string, sub: string) => `${NS_CORE_ROOT}/${sub}` },
+			{ find: /^@nativescript\/core\/(.+)\/index$/, replacement: `${NS_CORE_ROOT}/$1` },
 			{ find: /^@nativescript\/core$/, replacement: NS_CORE_ROOT },
 			{
 				find: /^@nativescript\/core\/(.*)$/,
@@ -204,10 +210,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			...aliasCssTree,
 			// 1) Catch exactly `~/package.json` → virtual module (MUST be first!)
 			{ find: /^~\/package\.json$/, replacement: '~/package.json' },
-			// TypeScript path aliases from tsconfig.json
-			...tsConfig.aliases,
-			// Generic platform resolution for any npm package
-			packagePlatformAliases({ tsConfig, platform, verbose }),
 			// 2) Catch everything else under "~/" → your src/
 			{ find: /^~\/(.*)$/, replacement: path.resolve(projectRoot, `${appSourceDir}/$1`) },
 			// optional: "@" → src/
@@ -246,6 +248,46 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			break;
 	}
 
+	const optimizeDepsExclude = ['@nativescript/core', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'];
+	const optimizeDepsConditions = ['module', 'react-native', 'import', 'browser', 'default'];
+	const optimizeDepsConfig = disableOptimizeDeps
+		? {
+				noDiscovery: true,
+				include: [],
+				entries: [],
+				exclude: [...optimizeDepsExclude, 'rxjs'],
+				rolldownOptions: {
+					resolve: {
+						conditionNames: optimizeDepsConditions,
+						extensions: platformExtensions as any,
+					},
+					transform: {
+						define: {
+							global: 'globalThis',
+							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
+						},
+					},
+					plugins: [],
+				},
+			}
+		: {
+				include: [],
+				exclude: optimizeDepsExclude,
+				rolldownOptions: {
+					resolve: {
+						conditionNames: optimizeDepsConditions,
+						extensions: platformExtensions as any,
+					},
+					transform: {
+						define: {
+							global: 'globalThis',
+							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
+						},
+					},
+					plugins: [optimizeDepsPlatformResolver({ platform, verbose })],
+				},
+			};
+
 	let baseViteConfig = {
 		// Suppress logs during HMR development if desired:
 		// ...(hmrActive ? { logLevel: "warn" as const } : {}),
@@ -253,41 +295,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		customLogger: filteredLogger,
 		resolve: resolveConfig,
 		define: defineConfig,
-		// Vite's built-in solution for CommonJS/ESM compatibility issues
-		optimizeDeps: disableOptimizeDeps
-			? {
-					noDiscovery: true,
-					include: [],
-					entries: [],
-					// Ensure rxjs and core are never treated as entries for pre-bundling
-					exclude: ['@nativescript/core', 'rxjs', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'],
-					esbuildOptions: {
-						conditions: ['module', 'react-native', 'import', 'browser', 'default'],
-						resolveExtensions: platformExtensions as any,
-						define: {
-							global: 'globalThis',
-							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
-						},
-						target: 'es2020',
-						// Do not install the platform resolver inside optimizeDeps to avoid crawling node_modules
-						plugins: [],
-					},
-				}
-			: {
-					// Force pre-bundling of problematic CommonJS packages (kept empty by default)
-					include: [],
-					esbuildOptions: {
-						conditions: ['module', 'react-native', 'import', 'browser', 'default'],
-						resolveExtensions: platformExtensions as any,
-						define: {
-							global: 'globalThis',
-							'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
-						},
-						target: 'es2020',
-						plugins: [esbuildPlatformResolver({ platform, verbose })],
-					},
-					exclude: ['@nativescript/core', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'],
-				},
+		optimizeDeps: optimizeDepsConfig,
 		esbuild: {
 			define: {
 				'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
@@ -329,12 +337,15 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// TODO: make flavor plugins dynamic
 			// ...flavorPlugins,
 			...commonjsPlugins,
+			tsConfigResolver,
+			packagePlatformResolverPlugin({ tsConfig, platform, verbose }),
 
 			// Platform-specific package resolver - MUST come before commonjs plugin
 			nativescriptPackageResolver(platform),
 			// Simplified CommonJS handling - let Vite's optimizeDeps do the heavy lifting
 			commonjs({
 				include: [/node_modules/],
+				exclude: [/node_modules[\\/]source-map-js[\\/]/],
 				// Let Rollup/Vite decide default mapping for CommonJS modules.
 				requireReturnsDefault: 'auto',
 				defaultIsModuleExports: 'auto',
@@ -406,7 +417,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		worker: {
 			format: 'es',
 			plugins: () => getWorkerPlugins(platform),
-			rollupOptions: {
+			rolldownOptions: {
 				// Don't externalize anything - bundle everything into the worker
 				external: [],
 				output: {
@@ -440,10 +451,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				// Faster builds in development
 				reportCompressedSize: false,
 			}),
-			commonjsOptions: {
-				include: [/node_modules/],
-			},
-			rollupOptions: {
+			rolldownOptions: {
 				treeshake: {
 					// Preserve side effects for NativeScript core so classes/functions
 					// aren't tree-shaken out inadvertently. This does NOT cause cross‑chunk duplication;

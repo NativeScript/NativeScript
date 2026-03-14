@@ -16,7 +16,10 @@ export function getWorkerPlugins(platform: string) {
 				if (id === '\0worker:nsconfig-json') {
 					const configObject = nsConfigToJson();
 					// Return the NativeScript config as a JavaScript module
-					return `export default ${JSON.stringify(configObject, null, 2)};`;
+					return {
+						code: `export default ${JSON.stringify(configObject, null, 2)};`,
+						moduleType: 'js',
+					};
 				}
 				return null;
 			},

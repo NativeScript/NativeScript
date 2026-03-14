@@ -24,7 +24,10 @@ export default function nsConfigAsJsonPlugin(): Plugin {
 				configObject = nsConfigToJson();
 
 				// c) Return an ESM wrapper so Vite can import it at build‑time
-				return `export default ${JSON.stringify(configObject)};`;
+				return {
+					code: `export default ${JSON.stringify(configObject)};`,
+					moduleType: 'js',
+				};
 			}
 			return null;
 		},

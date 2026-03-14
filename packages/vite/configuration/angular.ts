@@ -161,8 +161,8 @@ const plugins = [
 					entries: [],
 					include: [],
 					exclude: Array.from(exclude),
-					esbuildOptions: {
-						...(od.esbuildOptions || {}),
+					rolldownOptions: {
+						...(od.rolldownOptions || {}),
 						plugins: [],
 					},
 				},
@@ -176,8 +176,8 @@ const plugins = [
 			const exclude = new Set<string>(Array.isArray(deps.exclude) ? deps.exclude : []);
 			['@nativescript/core', 'rxjs', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'].forEach((x) => exclude.add(x));
 			deps.exclude = Array.from(exclude);
-			const esbuildOptions = (deps.esbuildOptions ||= {});
-			esbuildOptions.plugins = [];
+			const rolldownOptions = (deps.rolldownOptions ||= {});
+			rolldownOptions.plugins = [];
 		},
 	},
 ];
@@ -352,7 +352,7 @@ export const angularConfig = ({ mode }): UserConfig => {
 			include: [],
 			entries: [],
 			exclude: ['@nativescript/core', 'rxjs'],
-			esbuildOptions: { plugins: [] },
+			rolldownOptions: { plugins: [] },
 		},
 	});
 };

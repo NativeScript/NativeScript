@@ -93,11 +93,14 @@ export function nsHmrClientVitePlugin(opts: { platform: string; verbose?: boolea
 
 			// Import client and start it with explicit ws URL
 			const banner = opts.verbose ? `console.log('[ns-hmr-client] starting client -> ${wsUrl} (HTTP loader enabled via __NS_HTTP_ORIGIN__)');` : '';
-			return `
+			return {
+				code: `
 import startViteHMR from "${clientImport}";
 ${banner}
 startViteHMR({ wsUrl: ${JSON.stringify(wsUrl)} });
-`;
+`,
+				moduleType: 'js',
+			};
 		},
 	};
 }

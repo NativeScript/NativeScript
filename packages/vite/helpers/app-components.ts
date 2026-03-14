@@ -191,7 +191,7 @@ export function appComponentsPlugin(options: AppComponentsOptions): Plugin {
 			// We need to modify the output.entryFileNames to handle multiple entries
 			return {
 				build: {
-					rollupOptions: {
+					rolldownOptions: {
 						output: {
 							// Use a function to determine entry file names
 							entryFileNames: (chunkInfo: { name: string }) => {
@@ -240,24 +240,6 @@ export function appComponentsPlugin(options: AppComponentsOptions): Plugin {
 			}
 
 			return { ...inputOptions, input: newInput };
-		},
-
-		// Adjust output file names for app components (fallback in case entryFileNames doesn't work)
-		generateBundle(options, bundle) {
-			for (const [fileName, chunk] of Object.entries(bundle)) {
-				if (chunk.type !== 'chunk') continue;
-
-				// Check if this is an app component entry
-				if (componentOutputNames.has(chunk.name)) {
-					// Rename to .mjs (SBG requires .mjs for ES module parsing)
-					const newFileName = `${chunk.name}.mjs`;
-					if (fileName !== newFileName) {
-						chunk.fileName = newFileName;
-						delete bundle[fileName];
-						bundle[newFileName] = chunk;
-					}
-				}
-			}
 		},
 
 		// Post-process app component chunks to fix Rollup's internal variable renaming.

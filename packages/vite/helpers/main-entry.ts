@@ -302,7 +302,10 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				imports += `console.info('[ns-entry] end', { time: new Date().toISOString() });\n`;
 			}
 
-			return imports;
+			return {
+				code: imports,
+				moduleType: 'js',
+			};
 		},
 	};
 }

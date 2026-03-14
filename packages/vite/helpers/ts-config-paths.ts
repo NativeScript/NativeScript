@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import type { Plugin } from 'vite';
 import { getProjectFilePath, getProjectRootPath } from './project.js';
 
 let tsConfigPath: string;
@@ -103,9 +104,70 @@ function getTsConfigPaths(debugViteLogs: boolean = false) {
 	}
 }
 
-// Function to create TypeScript aliases with platform support
-function createTsConfigAliases(opts: { paths: any; baseUrl: string; platform: string; verbose?: boolean }) {
-	const aliases = [];
+type TsConfigResolverEntry =
+	| {
+			type: 'exact';
+			pattern: string;
+			resolvedDestination: string;
+	  }
+	| {
+			type: 'wildcard';
+			pattern: string;
+			regex: RegExp;
+			resolvedDestination: string;
+	  };
+
+function resolveTsConfigPath(fullPath: string, platform: string, verbose?: boolean, debugId?: string): string {
+	if (verbose && debugId) {
+		console.log(`📁 TypeScript path candidate: ${debugId} -> ${fullPath}`);
+	}
+
+	if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+		const platformIndexPatterns = [`index.${platform}.ts`, `index.${platform}.js`, `index.${platform}.mjs`];
+		for (const indexFile of platformIndexPatterns) {
+			const indexPath = path.join(fullPath, indexFile);
+			if (fs.existsSync(indexPath)) {
+				if (verbose) {
+					console.log(`📁 Found platform-specific directory index: ${indexPath}`);
+				}
+				return indexPath;
+			}
+		}
+
+		for (const indexFile of ['index.ts', 'index.js', 'index.mjs']) {
+			const indexPath = path.join(fullPath, indexFile);
+			if (fs.existsSync(indexPath)) {
+				if (verbose) {
+					console.log(`📁 Found directory index: ${indexPath}`);
+				}
+				return indexPath;
+			}
+		}
+	}
+
+	for (const ext of ['.ts', '.js', '.mjs']) {
+		const platformPath = `${fullPath}.${platform}${ext}`;
+		if (fs.existsSync(platformPath)) {
+			if (verbose) {
+				console.log(`📁 Found platform-specific file: ${platformPath}`);
+			}
+			return platformPath;
+		}
+
+		const basePath = `${fullPath}${ext}`;
+		if (fs.existsSync(basePath)) {
+			if (verbose) {
+				console.log(`📁 Found base file: ${basePath}`);
+			}
+			return basePath;
+		}
+	}
+
+	return fullPath;
+}
+
+function createTsConfigResolvers(opts: { paths: any; baseUrl: string; platform: string; verbose?: boolean }) {
+	const resolvers: TsConfigResolverEntry[] = [];
 
 	// Process patterns in order: wildcards first, then exact matches
 	const sortedPatterns = Object.entries(opts.paths).sort(([a], [b]) => {
@@ -121,97 +183,65 @@ function createTsConfigAliases(opts: { paths: any; baseUrl: string; platform: st
 	for (const [pattern, destinations] of sortedPatterns) {
 		if (Array.isArray(destinations) && destinations.length > 0) {
 			if (pattern.includes('*')) {
-				// Handle wildcard patterns (like "@scope/plugins/*")
 				const aliasKey = pattern.replace(/\/\*$/, '');
 				const destination = destinations[0].replace(/\/\*$/, '');
-
-				// Check if destination is already absolute (resolved by tsconfig chain)
 				const resolvedDestination = path.isAbsolute(destination) ? destination : path.resolve(projectRoot, opts.baseUrl, destination);
-
-				// console.log(
-				//   `📁 Creating wildcard alias: ${aliasKey} -> ${resolvedDestination}`,
-				// );
-
-				aliases.push({
-					find: new RegExp(`^${aliasKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/(.*))?$`),
-					replacement: (match, subpath) => {
-						const fullPath = subpath ? path.join(resolvedDestination, subpath) : resolvedDestination;
-						if (opts.verbose) {
-							console.log(`📁 TypeScript wildcard alias: ${match} -> ${fullPath}`);
-						}
-
-						// Check if this resolves to a directory, and if so, try to find index files
-						if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
-							// Try platform-specific index files first
-							const platformIndexPatterns = [`index.${opts.platform}.ts`, `index.${opts.platform}.js`, `index.${opts.platform}.mjs`];
-							for (const indexFile of platformIndexPatterns) {
-								const indexPath = path.join(fullPath, indexFile);
-								if (fs.existsSync(indexPath)) {
-									if (opts.verbose) {
-										console.log(`📁 Found platform-specific directory index: ${indexPath}`);
-									}
-									return indexPath;
-								}
-							}
-
-							// Try standard index files
-							const indexPatterns = ['index.ts', 'index.js', 'index.mjs'];
-							for (const indexFile of indexPatterns) {
-								const indexPath = path.join(fullPath, indexFile);
-								if (fs.existsSync(indexPath)) {
-									if (opts.verbose) {
-										console.log(`📁 Found directory index: ${indexPath}`);
-									}
-									return indexPath;
-								}
-							}
-						}
-
-						// If not a directory or no index found, try platform-specific resolution
-						const extensions = ['.ts', '.js', '.mjs'];
-						for (const ext of extensions) {
-							const basePath = fullPath + ext;
-
-							// Try platform-specific file first
-							const platformPath = fullPath + `.${opts.platform}` + ext;
-							if (fs.existsSync(platformPath)) {
-								if (opts.verbose) {
-									console.log(`📁 Found platform-specific file: ${platformPath}`);
-								}
-								return platformPath;
-							}
-
-							// Try base file
-							if (fs.existsSync(basePath)) {
-								if (opts.verbose) {
-									console.log(`📁 Found base file: ${basePath}`);
-								}
-								return basePath;
-							}
-						}
-
-						return fullPath;
-					},
+				resolvers.push({
+					type: 'wildcard',
+					pattern,
+					regex: new RegExp(`^${aliasKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/(.*))?$`),
+					resolvedDestination,
 				});
 			} else {
-				// Handle exact matches (like "@scope/anything/anywhere")
-				// Use regex to ensure exact match only
-
-				// Check if destination is already absolute (resolved by tsconfig chain)
 				const resolvedDestination = path.isAbsolute(destinations[0]) ? destinations[0] : path.resolve(projectRoot, opts.baseUrl, destinations[0]);
 				if (opts.verbose) {
 					console.log(`📁 Creating exact alias: ${pattern} -> ${resolvedDestination}`);
 				}
 
-				aliases.push({
-					find: new RegExp(`^${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
-					replacement: resolvedDestination,
+				resolvers.push({
+					type: 'exact',
+					pattern,
+					resolvedDestination,
 				});
 			}
 		}
 	}
 
-	return aliases;
+	return resolvers;
+}
+
+export function createTsConfigPathsResolver(opts: { paths: Record<string, string[]>; baseUrl: string; platform: string; verbose?: boolean }): Plugin | undefined {
+	const resolvers = createTsConfigResolvers(opts);
+	if (!resolvers.length) {
+		return undefined;
+	}
+
+	return {
+		name: 'ns-tsconfig-paths-resolver',
+		enforce: 'pre',
+		resolveId(source) {
+			if (source === '~/package.json') {
+				return null;
+			}
+			for (const resolver of resolvers) {
+				if (resolver.type === 'exact') {
+					if (source !== resolver.pattern) {
+						continue;
+					}
+					return resolveTsConfigPath(resolver.resolvedDestination, opts.platform, opts.verbose, source);
+				}
+
+				const match = resolver.regex.exec(source);
+				if (!match) {
+					continue;
+				}
+				const subpath = match[1];
+				const fullPath = subpath ? path.join(resolver.resolvedDestination, subpath) : resolver.resolvedDestination;
+				return resolveTsConfigPath(fullPath, opts.platform, opts.verbose, source);
+			}
+			return null;
+		},
+	};
 }
 
 // Get TypeScript path configuration
@@ -245,20 +275,8 @@ export const getTsConfigData = (options: TsConfigOptions) => {
 		}
 	}
 
-	const aliases = createTsConfigAliases({
-		paths: cachedConfig.paths,
-		baseUrl: cachedConfig.baseUrl,
-		platform: options.platform,
-		verbose,
-	});
-
-	if (aliases.length > 0 && verbose) {
-		console.log('📁 Created TypeScript path aliases:', aliases.length);
-	}
-
 	return {
 		paths: cachedConfig.paths,
 		baseUrl: cachedConfig.baseUrl,
-		aliases,
 	};
 };

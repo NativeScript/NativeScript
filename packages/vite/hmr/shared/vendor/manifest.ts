@@ -227,7 +227,10 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 		async load(id) {
 			if (id === VENDOR_MANIFEST_VIRTUAL_ID) {
 				const result = await ensureResult('load-manifest');
-				return `export default ${JSON.stringify(result.manifest)};`;
+				return {
+					code: `export default ${JSON.stringify(result.manifest)};`,
+					moduleType: 'js',
+				};
 			}
 			if (id === VENDOR_BUNDLE_VIRTUAL_ID) {
 				const result = await ensureResult('load-bundle');
@@ -235,10 +238,13 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 				// and the vendor manifest to avoid extra imports that can influence chunking.
 				// - result.code exports `__nsVendorModuleMap`
 				// - we append an inline manifest export
-				return `${result.code}
+				return {
+					code: `${result.code}
 export const vendorManifest = ${JSON.stringify(result.manifest)};
 export default vendorManifest;
-`;
+`,
+					moduleType: 'js',
+				};
 			}
 			return null;
 		},
