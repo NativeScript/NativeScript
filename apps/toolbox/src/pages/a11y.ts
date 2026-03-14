@@ -5,6 +5,7 @@ let page: Page;
 export function navigatingTo(args: EventData) {
 	page = <Page>args.object;
 	page.bindingContext = new AccessibilityModel();
+	// @ts-ignore
 	page.onAccessibilityPerformEscape = () => {
 		console.log('onAccessibilityPerformEscape');
 		return true;
