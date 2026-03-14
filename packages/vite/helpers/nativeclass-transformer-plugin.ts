@@ -18,16 +18,23 @@ export function createNativeClassTransformerPlugin(): Plugin {
 			const isVueTSBlock = !isTSFile && /[?&]lang\.(ts|tsx)\b/.test(id);
 			if (!isTSFile && !isVueTSBlock && !isJSFile) return null;
 
-			// Check if this file has @NativeClass BEFORE transforming (for debug)
-			const hasNativeClass = code.includes('@NativeClass') || code.includes('NativeClass');
-			if (verbose && hasNativeClass) {
+			const hasDecoratorSyntax = code.includes('@NativeClass');
+			const hasNativeClassIdentifier = code.includes('NativeClass');
+			const hasDecorateCall = isJSFile && code.includes('__decorate');
+
+			// Most modules never contain NativeClass decorations.
+			// Skip the heavier TS-based helper unless the source has one of the patterns it can actually rewrite.
+			if (!hasDecoratorSyntax && !hasNativeClassIdentifier && !hasDecorateCall) {
+				return null;
+			}
+
+			if (verbose && (hasDecoratorSyntax || hasNativeClassIdentifier)) {
 				console.log(`[ns-nativeclass] Processing file with NativeClass: ${bareId}`);
 			}
 
 			const res = transformNativeClassSource(code, bareId);
 
-			// Verify the transform removed NativeClass
-			if (verbose && hasNativeClass) {
+			if (verbose && (hasDecoratorSyntax || hasNativeClassIdentifier)) {
 				if (res) {
 					const stillHas = /\bNativeClass\b/.test(res.code);
 					if (stillHas) {
@@ -40,7 +47,7 @@ export function createNativeClassTransformerPlugin(): Plugin {
 				}
 			}
 
-			return res; // may be null if no @NativeClass present
+			return res;
 		},
 	};
 }
