@@ -7,7 +7,7 @@ import { Page } from '@nativescript/core/ui/page';
 import * as TKUnit from '../../tk-unit';
 
 const NAV_WAIT = 15;
-function emptyNavigationQueue(frame: Frame) {
+function emptyNavigationQueue(frame: { navigationQueueIsEmpty(): boolean }) {
 	TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty(), NAV_WAIT);
 }
 
@@ -242,8 +242,8 @@ export function test_frame_retrieval_API_when_navigating() {
 	const initialTopmost = Frame.topmost();
 	const initialFrameById = Frame.getFrameById('initialFrame');
 
-	TKUnit.assertEqual(initialTopmost, initialFrame);
-	TKUnit.assertEqual(initialFrameById, initialFrame);
+	TKUnit.assertEqual(initialTopmost as any, initialFrame as any);
+	TKUnit.assertEqual(initialFrameById as any, initialFrame as any);
 
 	const newFrame = new Frame();
 	newFrame.id = 'newFrame';
@@ -252,16 +252,16 @@ export function test_frame_retrieval_API_when_navigating() {
 	const newTopmost = Frame.topmost();
 	const newFrameById = Frame.getFrameById('newFrame');
 
-	TKUnit.assertEqual(newTopmost, newFrame);
-	TKUnit.assertEqual(newFrameById, newFrame);
+	TKUnit.assertEqual(newTopmost as any, newFrame as any);
+	TKUnit.assertEqual(newFrameById as any, newFrame as any);
 
 	initialFrame.navigate(() => new Page());
 
 	const previousTopmost = Frame.topmost();
 	const previousFrameById = Frame.getFrameById('initialFrame');
 
-	TKUnit.assertEqual(previousTopmost, initialFrame);
-	TKUnit.assertEqual(previousFrameById, initialFrame);
+	TKUnit.assertEqual(previousTopmost as any, initialFrame as any);
+	TKUnit.assertEqual(previousFrameById as any, initialFrame as any);
 
 	// clean up the frame stack
 	initialFrame._removeFromFrameStack();

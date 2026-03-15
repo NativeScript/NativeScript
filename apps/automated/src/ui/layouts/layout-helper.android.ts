@@ -1,13 +1,16 @@
 import { Button, StackLayout, GridLayout, Utils } from '@nativescript/core';
 
 import * as TKUnit from '../../tk-unit';
-import * as def from './layout-helper';
+import type { MeasuredView } from './layout-helper-types';
 
 var DELTA = 0.1;
 
 @NativeClass
 class NativeButton extends android.widget.Button {
-	constructor(context: android.content.Context, public owner: def.MeasuredView) {
+	constructor(
+		context: android.content.Context,
+		public owner: MeasuredView,
+	) {
 		super(context);
 
 		return global.__native(this);
@@ -28,7 +31,10 @@ class NativeButton extends android.widget.Button {
 
 @NativeClass
 class NativeStackLayout extends org.nativescript.widgets.StackLayout {
-	constructor(context: android.content.Context, public owner: def.MeasuredView) {
+	constructor(
+		context: android.content.Context,
+		public owner: MeasuredView,
+	) {
 		super(context);
 
 		return global.__native(this);
@@ -49,7 +55,10 @@ class NativeStackLayout extends org.nativescript.widgets.StackLayout {
 
 @NativeClass
 class NativeGridLayout extends org.nativescript.widgets.GridLayout {
-	constructor(context: android.content.Context, public owner: def.MeasuredView) {
+	constructor(
+		context: android.content.Context,
+		public owner: MeasuredView,
+	) {
 		super(context);
 
 		return global.__native(this);
@@ -68,7 +77,7 @@ class NativeGridLayout extends org.nativescript.widgets.GridLayout {
 	}
 }
 
-export class MyButton extends Button implements def.MyButton {
+export class MyButton extends Button {
 	nativeViewProtected: NativeButton;
 
 	public createNativeView() {
@@ -121,7 +130,7 @@ export class MyButton extends Button implements def.MyButton {
 	}
 }
 
-export class MyStackLayout extends StackLayout implements def.MyStackLayout {
+export class MyStackLayout extends StackLayout {
 	nativeViewProtected: NativeStackLayout;
 
 	public createNativeView() {
@@ -174,7 +183,7 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
 	}
 }
 
-export class MyGridLayout extends GridLayout implements def.MyGridLayout {
+export class MyGridLayout extends GridLayout {
 	nativeViewProtected: NativeGridLayout;
 
 	public createNativeView() {
@@ -227,14 +236,14 @@ export class MyGridLayout extends GridLayout implements def.MyGridLayout {
 	}
 }
 
-export function assertMeasure(view: def.MeasuredView, width: number, height: number, name?: string) {
+export function assertMeasure(view: MeasuredView, width: number, height: number, name?: string) {
 	name = name ? '[' + name + ']' : '';
 
 	TKUnit.assertAreClose(view.measureWidth, width, DELTA, name + 'width');
 	TKUnit.assertAreClose(view.measureHeight, height, DELTA, name + 'height');
 }
 
-export function assertLayout(view: def.MeasuredView, left: number, top: number, width: number, height: number, name?: string): void {
+export function assertLayout(view: MeasuredView, left: number, top: number, width: number, height: number, name?: string): void {
 	name = name ? '[' + name + ']' : '';
 
 	TKUnit.assertAreClose(view.layoutLeft, left, DELTA, name + 'left');

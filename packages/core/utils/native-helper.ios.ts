@@ -1,3 +1,4 @@
+import type { AndroidNativeHelper } from './native-helper.types';
 import { platformCheck } from './platform-check';
 import { getClass, isNullOrUndefined, numberHasDecimals, numberIs64Bit } from './types';
 import { Color } from '../color';
@@ -355,8 +356,8 @@ function animateWithSpring(options?: { tension?: number; friction?: number; mass
 }
 
 // these don't exist on iOS. Stub them to empty functions.
-export const ad = platformCheck('Utils.ad');
-export const android = platformCheck('Utils.android');
+export const ad = platformCheck<AndroidNativeHelper>('Utils.ad');
+export const android = platformCheck<AndroidNativeHelper>('Utils.android');
 
 export const ios = {
 	collections,

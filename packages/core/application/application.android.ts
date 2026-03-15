@@ -605,6 +605,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 }
 export * from './application-common';
+export * from './application-interfaces';
 export const Application = new AndroidApplication();
 export const iOSApplication = undefined;
 
@@ -726,7 +727,7 @@ function updateAccessibilityState(): void {
 	if (!sharedA11YObservable) {
 		return;
 	}
-	
+
 	const accessibilityManager = getAndroidAccessibilityManager();
 	if (!accessibilityManager) {
 		sharedA11YObservable.set(accessibilityStateEnabledPropName, false);

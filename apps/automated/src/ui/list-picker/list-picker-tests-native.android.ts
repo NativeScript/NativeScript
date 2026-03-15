@@ -12,6 +12,9 @@ export function getNativeItemsCount(listPicker: listPickerModule.ListPicker): nu
 
 export function selectNativeItem(listPicker: listPickerModule.ListPicker, index: number): void {
 	var oldIndex = listPicker.selectedIndex;
-	listPicker.nativeViewProtected.setValue(index);
-	listPicker.nativeViewProtected.valueChangedListener.onValueChange(listPicker.android, oldIndex, index);
+	const nativeView = listPicker.nativeViewProtected as android.widget.NumberPicker & {
+		valueChangedListener: android.widget.NumberPicker.OnValueChangeListener;
+	};
+	nativeView.setValue(index);
+	nativeView.valueChangedListener.onValueChange(nativeView, oldIndex, index);
 }

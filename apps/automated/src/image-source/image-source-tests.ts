@@ -33,7 +33,7 @@ export function testDrawableSetNativeSource() {
 
 		// >> imagesource-setNativeSource
 		const img = new ImageSource();
-		img.setNativeSource(icon);
+		img.setNativeSource(icon as any);
 		// << imagesource-setNativeSource
 
 		TKUnit.assert(img.height > 0, `image ${type} setNativeSource failed`);
@@ -41,7 +41,7 @@ export function testDrawableSetNativeSource() {
 		type = splashScreen?.getClass?.().toString?.() ?? '';
 
 		// >> imagesource-setNativeSource
-		img.setNativeSource(splashScreen);
+		img.setNativeSource(splashScreen as any);
 		// << imagesource-setNativeSource
 
 		TKUnit.assert(img.height > 0, `image ${type} setNativeSource failed`);
@@ -69,7 +69,7 @@ export function testFromUrl(done) {
 			// console.log("Error loading image: " + error);
 			//completed = true;
 			done(error);
-		}
+		},
 	);
 }
 
@@ -123,7 +123,7 @@ export function testFromAssetFileNotFound(done) {
 		(error) => {
 			TKUnit.assertNotNull(error);
 			done();
-		}
+		},
 	);
 }
 
@@ -143,7 +143,7 @@ export function testFromAssetSimple(done) {
 		},
 		(error) => {
 			done(error);
-		}
+		},
 	);
 }
 
@@ -181,7 +181,7 @@ export function testFromAssetWithExactScaling(done) {
 		},
 		(error) => {
 			done(error);
-		}
+		},
 	);
 }
 
@@ -203,7 +203,7 @@ export function testFromAssetWithScalingAndAspectRatio(done) {
 		},
 		(error) => {
 			done(error);
-		}
+		},
 	);
 }
 
@@ -222,7 +222,7 @@ export function testFromAssetWithScalingAndDefaultAspectRatio(done) {
 		},
 		(error) => {
 			done(error);
-		}
+		},
 	);
 }
 
@@ -244,7 +244,7 @@ export function testFromAssetWithBiggerScaling(done) {
 		},
 		(error) => {
 			done(error);
-		}
+		},
 	);
 }
 

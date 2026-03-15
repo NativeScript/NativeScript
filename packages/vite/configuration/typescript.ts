@@ -5,6 +5,7 @@ import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from '../helpers/project.js';
 import { getProjectAppPath } from '../helpers/utils.js';
+import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
 
 /**
  * TypeScript + XML NativeScript Vite configuration.
@@ -153,8 +154,8 @@ function createXmlLoaderPlugin(): Plugin {
 	};
 }
 
-export const typescriptConfig = ({ mode }): UserConfig => {
-	return mergeConfig(baseConfig({ mode }), {
-		plugins: [createXmlLoaderPlugin(), createBundlerContextPlugin()],
+export const typescriptConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
+	return mergeConfig(baseConfig({ mode, flavor: 'typescript' }), {
+		plugins: [...getTypeCheckPlugins('typescript', options.typeCheck), createXmlLoaderPlugin(), createBundlerContextPlugin()],
 	});
 };

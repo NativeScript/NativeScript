@@ -5,6 +5,11 @@ import { booleanConverter } from '../core/view-base';
 import { EventData } from '../../data/observable';
 import { CoreTypes } from '../../core-types';
 
+export interface ScrollEventData extends EventData {
+	scrollX: number;
+	scrollY: number;
+}
+
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView {
 	public static scrollEvent = 'scroll';

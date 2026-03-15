@@ -1101,7 +1101,7 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 	return importSourceParts.join(path.separator);
 }
 
-export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
+export const applyInlineStyle = profile('applyInlineStyle', function applyInlineStyle(view: ViewBase, styleStr: string) {
 	const localStyle = `local { ${styleStr} }`;
 	const inlineRuleSet = CSSSource.fromSource(localStyle).selectors;
 

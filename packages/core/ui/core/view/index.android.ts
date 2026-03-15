@@ -1333,7 +1333,7 @@ export class View extends ViewCommon {
 			const controller = window.getInsetsController?.();
 			if (controller) {
 				const APPEARANCE_LIGHT_STATUS_BARS = android.view.WindowInsetsController?.APPEARANCE_LIGHT_STATUS_BARS;
-	
+
 				if (typeof value === 'string') {
 					this.style.statusBarStyle = value;
 					if (value === 'light') {

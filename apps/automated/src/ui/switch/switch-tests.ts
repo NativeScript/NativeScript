@@ -137,7 +137,7 @@ export function test_binding_value_to_model() {
 
 function getNativeValue(mySwitch: Switch): boolean {
 	if (__ANDROID__) {
-		const nativeView: android.widget.Switch = mySwitch.nativeViewProtected;
+		const nativeView = mySwitch.nativeViewProtected as unknown as android.widget.Switch;
 
 		return nativeView.isChecked();
 	} else if (mySwitch.ios) {
@@ -147,7 +147,7 @@ function getNativeValue(mySwitch: Switch): boolean {
 
 function setNativeValue(mySwitch: Switch, value: boolean) {
 	if (__ANDROID__) {
-		const nativeView: android.widget.Switch = mySwitch.nativeViewProtected;
+		const nativeView = mySwitch.nativeViewProtected as unknown as android.widget.Switch;
 		nativeView.setChecked(value);
 	} else if (mySwitch.ios) {
 		mySwitch.ios.on = value;

@@ -44,7 +44,7 @@ npx nativescript-vite init
 
 This will:
 
-- Generate a `vite.config.ts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript) and the corresponding helper from `@nativescript/vite`.
+- Generate a `vite.config.ts` using the detected project flavor (Angular, Vue, React, Solid, TypeScript, or JavaScript) and the corresponding helper subpath from `@nativescript/vite`.
 - Add (or update) the following npm scripts in your app `package.json`:
 	- `dev:ios`
 	- `dev:android`
@@ -77,11 +77,20 @@ ns debug android --no-hmr
 
 ```ts
 import { defineConfig, mergeConfig, UserConfig } from 'vite';
-import { typescriptConfig } from '@nativescript/vite';
+import { typescriptConfig } from '@nativescript/vite/typescript';
 
 export default defineConfig(({ mode }): UserConfig => {
 	return mergeConfig(typescriptConfig({ mode }), {});
 });
+```
+
+Framework-specific configs should be imported from their matching subpaths to avoid loading unrelated framework tooling:
+
+```ts
+import { angularConfig } from '@nativescript/vite/angular';
+import { reactConfig } from '@nativescript/vite/react';
+import { solidConfig } from '@nativescript/vite/solid';
+import { vueConfig } from '@nativescript/vite/vue';
 ```
 
 2) Update `nativescript.config.ts`:

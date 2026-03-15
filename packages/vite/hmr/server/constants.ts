@@ -19,7 +19,10 @@ export const VUE_FILE_IMPORT = /(?:^|\n)(\s*import\s+[^'";]*?\s+from\s+["'])([^"
 
 // Vite/HMR noise cleanup
 export const VITE_CLIENT_IMPORT = /(?:^|\n)\s*import\s+['"](?:\/@vite\/client|@vite\/client)['"];?/g;
-export const IMPORT_META_HOT_ASSIGNMENT = /(?:^|\n)\s*import\.meta\.hot\s*=\s*[^;\n]+;?/g;
+// Strip Vite's injected `import.meta.hot = __vite__createHotContext(...)` assignment.
+// Important: it may appear mid-line after other tokens/spaces in sanitized HTTP output,
+// so we cannot rely on it starting at BOL.
+export const IMPORT_META_HOT_ASSIGNMENT = /\bimport\.meta\.hot\s*=\s*[^;\n]+;?/g;
 export const IMPORT_META_HOT_CALLS = /(?:^|\n)\s*import\.meta\.hot\.[A-Za-z_$][\w$]*\([^)]*\);?\s*/g;
 
 // Remove only Vue style virtual imports; keep script/template variants
