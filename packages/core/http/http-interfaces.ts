@@ -94,4 +94,4 @@ export interface HttpContentHandler {
 /**
  * Encapsulates the content of an HttpResponse.
  */
-export interface HttpContent extends HttpContentHandler, BaseHttpContent<any> {}
+export interface HttpContent extends HttpContentHandler, BaseHttpContent {}

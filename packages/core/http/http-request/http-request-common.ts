@@ -1,6 +1,4 @@
 import { knownFolders, path } from '../../file-system';
-import type { Headers } from '../http-interfaces';
-import { _addHeader } from '../http-request-internal';
 
 export function getFilenameFromUrl(url: string) {
 	const slashPos = url.lastIndexOf('/') + 1;
@@ -27,8 +25,4 @@ export function parseJSON(source: string): any {
 	}
 
 	return JSON.parse(src);
-}
-
-export function addHeader(headers: Headers, key: string, value: string): void {
-	_addHeader(headers, key, value);
 }

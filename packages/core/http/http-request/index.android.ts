@@ -5,15 +5,12 @@ import { File } from '../../file-system';
 import { HttpResponseEncoding } from '../http-interfaces';
 import { BaseHttpContent, requestInternal } from '../http-request-internal';
 import { getFilenameFromUrl, parseJSON } from './http-request-common';
-export { addHeader } from './http-request-common';
-
-type AndroidHttpContent = BaseHttpContent<java.io.ByteArrayOutputStream>;
 
 const contentHandler: HttpContentHandler = {
-	toArrayBuffer(this: AndroidHttpContent) {
+	toArrayBuffer(this: BaseHttpContent) {
 		return Uint8Array.from(this.raw.toByteArray()).buffer;
 	},
-	toString(this: AndroidHttpContent, encoding?: HttpResponseEncoding) {
+	toString(this: BaseHttpContent, encoding?: HttpResponseEncoding) {
 		let str: string;
 		if (encoding) {
 			str = decodeResponse(this.raw, encoding);
@@ -26,7 +23,7 @@ const contentHandler: HttpContentHandler = {
 			throw new Error('Response content may not be converted to string');
 		}
 	},
-	toJSON(this: AndroidHttpContent, encoding?: HttpResponseEncoding) {
+	toJSON(this: BaseHttpContent, encoding?: HttpResponseEncoding) {
 		let str: string;
 		if (encoding) {
 			str = decodeResponse(this.raw, encoding);
@@ -36,10 +33,10 @@ const contentHandler: HttpContentHandler = {
 
 		return parseJSON(str);
 	},
-	toImage(this: AndroidHttpContent) {
+	toImage(this: BaseHttpContent) {
 		return this.toNativeImage().then((value) => new ImageSource(value));
 	},
-	toFile(this: AndroidHttpContent, destinationFilePath: string) {
+	toFile(this: BaseHttpContent, destinationFilePath: string) {
 		if (!destinationFilePath) {
 			destinationFilePath = getFilenameFromUrl(this.requestURL);
 		}
@@ -50,7 +47,7 @@ const contentHandler: HttpContentHandler = {
 
 			const javaFile = new java.io.File(destinationFilePath);
 			stream = new java.io.FileOutputStream(javaFile);
-			stream.write(this.raw.toByteArray());
+			stream.write((this.raw as java.io.ByteArrayOutputStream).toByteArray());
 
 			return file;
 		} catch (exception) {

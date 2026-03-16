@@ -1,10 +1,10 @@
 ﻿import { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContentHandler } from '../http-interfaces';
 
-export interface BaseHttpContent<T> {
+export interface BaseHttpContent {
 	/**
 	 * Gets the response body as raw data.
 	 */
-	raw: T;
+	raw: any;
 	/**
 	 * Gets the request options URL.
 	 */
@@ -24,5 +24,5 @@ export interface BaseHttpContent<T> {
  * @param options An object that specifies various request options.
  * @param contentHandler An object that specifies various functions to parse raw response content.
  */
-export function requestInternal<T extends HttpContentHandler>(options: HttpRequestOptions, contentHandler?: T): Promise<HttpResponse<BaseHttpContent<any> & T>>;
-export function _addHeader(headers: Headers, key: string, value: string): void;
+export function requestInternal<T extends object>(options: HttpRequestOptions, contentHandler?: T): Promise<HttpResponse<BaseHttpContent & T>>;
+export function addHeader(headers: Headers, key: string, value: string): void;

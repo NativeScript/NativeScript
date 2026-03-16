@@ -1,16 +1,16 @@
 // imported for definition purposes only
-import type { Headers, HttpResponse, HttpRequestOptions, HttpContentHandler } from '../../http';
+import type { Headers, HttpResponse, HttpRequestOptions } from '../../http';
 import { Screen } from '../../platform/screen';
 import * as domainDebugger from '../../debugger';
 import { isObject } from '../../utils';
 import { BaseHttpContent } from '.';
-import { _addHeader } from './http-request-internal-common';
-export { _addHeader } from './http-request-internal-common';
+import { addHeader } from './http-request-internal-common';
+export { addHeader } from './http-request-internal-common';
 
 interface PendingRequest {
 	url: string;
-	contentHandler?: HttpContentHandler;
-	resolveCallback: (value: HttpResponse<BaseHttpContent<java.io.ByteArrayOutputStream>> | PromiseLike<HttpResponse<BaseHttpContent<java.io.ByteArrayOutputStream>>>) => void;
+	contentHandler?: object;
+	resolveCallback: (value: HttpResponse<BaseHttpContent> | PromiseLike<HttpResponse<BaseHttpContent>>) => void;
 	rejectCallback: (reason?: any) => void;
 }
 
@@ -55,7 +55,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 		let pair: org.nativescript.widgets.Async.Http.KeyValuePair;
 		for (let i = 0; i < length; i++) {
 			pair = jHeaders.get(i);
-			_addHeader(headers, pair.key, pair.value);
+			addHeader(headers, pair.key, pair.value);
 		}
 	}
 
@@ -184,13 +184,13 @@ function buildJavaOptions(options: HttpRequestOptions) {
 	return javaOptions;
 }
 
-export function requestInternal<T extends HttpContentHandler>(options: HttpRequestOptions, contentHandler?: T): Promise<HttpResponse<BaseHttpContent<java.io.ByteArrayOutputStream> & T>> {
+export function requestInternal<T extends object>(options: HttpRequestOptions, contentHandler?: T): Promise<HttpResponse<BaseHttpContent & T>> {
 	if (options === undefined || options === null) {
 		// TODO: Shouldn't we throw an error here - defensive programming
 		return;
 	}
 
-	return new Promise<HttpResponse<BaseHttpContent<java.io.ByteArrayOutputStream> & T>>((resolve, reject) => {
+	return new Promise<HttpResponse<BaseHttpContent & T>>((resolve, reject) => {
 		try {
 			// initialize the options
 			const javaOptions = buildJavaOptions(options);

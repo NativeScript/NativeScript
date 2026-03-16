@@ -4,15 +4,12 @@ import type { HttpRequestOptions, HttpResponse, HttpContentHandler } from '../ht
 import type { HttpResponseEncoding } from '../http-interfaces';
 import { requestInternal, BaseHttpContent } from '../http-request-internal';
 import { getFilenameFromUrl, parseJSON } from './http-request-common';
-export { addHeader } from './http-request-common';
-
-type iOSHttpContent = BaseHttpContent<NSData>;
 
 const contentHandler: HttpContentHandler = {
-	toArrayBuffer(this: iOSHttpContent) {
+	toArrayBuffer(this: BaseHttpContent) {
 		return interop.bufferFromData(this.raw);
 	},
-	toString(this: iOSHttpContent, encoding?: HttpResponseEncoding) {
+	toString(this: BaseHttpContent, encoding?: HttpResponseEncoding) {
 		const str = this.toNativeString(encoding);
 		if (typeof str === 'string') {
 			return str;
@@ -20,13 +17,13 @@ const contentHandler: HttpContentHandler = {
 			throw new Error('Response content may not be converted to string');
 		}
 	},
-	toJSON(this: iOSHttpContent, encoding?: HttpResponseEncoding) {
+	toJSON(this: BaseHttpContent, encoding?: HttpResponseEncoding) {
 		return parseJSON(this.toNativeString(encoding));
 	},
-	toImage(this: iOSHttpContent) {
+	toImage(this: BaseHttpContent) {
 		return this.toNativeImage().then((value) => new ImageSource(value));
 	},
-	toFile(this: iOSHttpContent, destinationFilePath?: string) {
+	toFile(this: BaseHttpContent, destinationFilePath?: string) {
 		if (!destinationFilePath) {
 			destinationFilePath = getFilenameFromUrl(this.requestURL);
 		}

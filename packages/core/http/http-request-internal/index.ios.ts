@@ -2,11 +2,11 @@ import { SDK_VERSION } from '../../utils/constants';
 import { isRealDevice } from '../../utils/native-helper';
 import * as types from '../../utils/types';
 import * as domainDebugger from '../../debugger';
-import type { HttpRequestOptions, HttpResponse, Headers, HttpContentHandler } from '../http-interfaces';
+import type { HttpRequestOptions, HttpResponse, Headers } from '../http-interfaces';
 import { HttpResponseEncoding } from '../http-interfaces';
 import { BaseHttpContent } from '.';
-import { _addHeader } from './http-request-internal-common';
-export { _addHeader } from './http-request-internal-common';
+import { addHeader } from './http-request-internal-common';
+export { addHeader } from './http-request-internal-common';
 
 const currentDevice = UIDevice.currentDevice;
 const device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? 'Phone' : 'Pad';
@@ -43,8 +43,8 @@ function ensureSessionNotFollowingRedirects() {
 	}
 }
 
-export function requestInternal<T extends HttpContentHandler>(options: HttpRequestOptions, contentHandler?: T): Promise<HttpResponse<BaseHttpContent<NSData> & T>> {
-	return new Promise<HttpResponse<BaseHttpContent<NSData> & T>>((resolve, reject) => {
+export function requestInternal<T extends object>(options: HttpRequestOptions, contentHandler?: T): Promise<HttpResponse<BaseHttpContent & T>> {
+	return new Promise<HttpResponse<BaseHttpContent & T>>((resolve, reject) => {
 		if (!options.url) {
 			reject(new Error('Request url was empty.'));
 			return;
@@ -96,7 +96,7 @@ export function requestInternal<T extends HttpContentHandler>(options: HttpReque
 						const headerFields = response.allHeaderFields;
 
 						headerFields.enumerateKeysAndObjectsUsingBlock((key, value, stop) => {
-							_addHeader(headers, key, value);
+							addHeader(headers, key, value);
 						});
 					}
 
@@ -138,7 +138,7 @@ export function requestInternal<T extends HttpContentHandler>(options: HttpReque
 						requestURL: options.url,
 						toNativeImage: () => {
 							return new Promise((resolveImage, rejectImage) => {
-								UIImage.tns_decodeImageWithDataCompletion(this.raw, (image) => {
+								UIImage.tns_decodeImageWithDataCompletion(data, (image) => {
 									if (image) {
 										resolveImage(image);
 									} else {
@@ -147,7 +147,7 @@ export function requestInternal<T extends HttpContentHandler>(options: HttpReque
 								});
 							});
 						},
-						toNativeString: (encoding?: HttpResponseEncoding) => NSDataToString(this.raw, encoding),
+						toNativeString: (encoding?: HttpResponseEncoding) => NSDataToString(data, encoding),
 					};
 
 					if (contentHandler != null && types.isObject(contentHandler) && !Array.isArray(contentHandler)) {
@@ -155,7 +155,7 @@ export function requestInternal<T extends HttpContentHandler>(options: HttpReque
 					}
 
 					resolve({
-						content: content as BaseHttpContent<NSData> & T,
+						content: content as BaseHttpContent & T,
 						statusCode: response.statusCode,
 						headers: headers,
 					});
