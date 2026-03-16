@@ -279,8 +279,15 @@ export default function (context: ts.TransformationContext, ...args) {
 					result.push(updated);
 					continue;
 				}
-				// No deep traversal for unrelated nodes
-				result.push(statement);
+				// iterate over children as there might be a NativeClass inside of functions, blocks, etc
+				const visited = ts.visitEachChild(statement, visitNode, context);
+				if (visited !== statement) {
+					mutated = true;
+					changed = true;
+				}
+				if (visited) {
+					result.push(visited);
+				}
 			}
 			return [changed ? factory.createNodeArray(result) : statements, changed];
 		}
