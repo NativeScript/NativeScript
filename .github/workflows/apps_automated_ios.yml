@@ -55,7 +55,6 @@ jobs:
         uses: futureware-tech/simulator-action@dab10d813144ef59b48d401cd95da151222ef8cd # v4
         with:
           model: 'iPhone 16 Pro'
-          os_version: '18.4'
 
       - name: Run tests on iOS Simulator
         run: npx nx test apps-automated -c=ios
