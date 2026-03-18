@@ -1,3 +1,13 @@
+## 5.0.32 (2026-03-18)
+
+### 🩹 Fixes
+
+- **webpack:** enable traversal of child nodes for NativeClass detection ([#11137](https://github.com/NativeScript/NativeScript/pull/11137))
+
+### ❤️ Thank You
+
+- Eduardo Speroni @edusperoni
+
 ## 5.0.31 (2026-01-06)
 
 - LICENSE and README.md are now included in the package assets.
