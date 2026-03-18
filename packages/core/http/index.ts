@@ -1,5 +1,5 @@
 import { request } from './http-request';
-import { ImageSource } from '../image-source';
+import type { ImageSource } from '../image-source';
 export { request } from './http-request';
 export * from './http-interfaces';
 
