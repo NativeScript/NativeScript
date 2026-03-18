@@ -8,12 +8,12 @@ import { getFilenameFromUrl, parseJSON } from './http-request-common';
 
 const contentHandler: HttpContentHandler = {
 	toArrayBuffer(this: BaseHttpContent) {
-		return Uint8Array.from(this.raw.toByteArray()).buffer;
+		return Uint8Array.from((this.raw as java.io.ByteArrayOutputStream).toByteArray()).buffer;
 	},
 	toString(this: BaseHttpContent, encoding?: HttpResponseEncoding) {
 		let str: string;
 		if (encoding) {
-			str = decodeResponse(this.raw, encoding);
+			str = decodeResponse(this.raw as java.io.ByteArrayOutputStream, encoding);
 		} else {
 			str = this.toNativeString(encoding);
 		}
@@ -26,7 +26,7 @@ const contentHandler: HttpContentHandler = {
 	toJSON(this: BaseHttpContent, encoding?: HttpResponseEncoding) {
 		let str: string;
 		if (encoding) {
-			str = decodeResponse(this.raw, encoding);
+			str = decodeResponse(this.raw as java.io.ByteArrayOutputStream, encoding);
 		} else {
 			str = this.toNativeString(encoding);
 		}
@@ -64,7 +64,7 @@ export function request(options: HttpRequestOptions): Promise<HttpResponse> {
 	return requestInternal(options, contentHandler);
 }
 
-function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
+function decodeResponse(raw: java.io.ByteArrayOutputStream, encoding?: HttpResponseEncoding) {
 	const charsetName = encoding === HttpResponseEncoding.GBK ? 'GBK' : 'UTF-8';
 	return raw.toString(charsetName);
 }
