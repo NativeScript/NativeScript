@@ -259,15 +259,12 @@ function initializeDialogFragment() {
 			this._windowSoftInputMode = options.windowSoftInputMode;
 			this.setStyle(androidx.fragment.app.DialogFragment.STYLE_NO_TITLE, 0);
 
-			let theme = this.getTheme();
-			if (this._fullscreen) {
-				// In fullscreen mode, get the application's theme.
-				theme = this.getActivity().getApplicationInfo().theme;
-			}
-
+			const theme = this._fullscreen ? this.getActivity().getApplicationInfo().theme : this.getTheme();
 			const dialog = new DialogImpl(this, this.getActivity(), theme);
 
-			Utils.android.enableEdgeToEdge(this.getActivity(), dialog.getWindow());
+			if (this._fullscreen) {
+				Utils.android.enableEdgeToEdge(this.getActivity(), dialog.getWindow());
+			}
 
 			// do not override alignment unless fullscreen modal will be shown;
 			// otherwise we might break component-level layout:
