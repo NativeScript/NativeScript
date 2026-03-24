@@ -5,9 +5,9 @@ import { Font } from '../ui/styling/font';
 import { Color } from '../color';
 import { Trace } from '../trace';
 import { path as fsPath, knownFolders } from '../file-system';
-import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject, SYSTEM_PREFIX } from '../utils';
+import { requestInternal as httpRequest } from '../http/http-request-internal';
+import { isFileOrResourcePath, RESOURCE_PREFIX, SYSTEM_PREFIX } from '../utils';
 import { getScaledDimensions } from './image-source-common';
-import { getImage } from '../http';
 
 export { isFileOrResourcePath };
 
@@ -58,7 +58,7 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromUrl(url: string): Promise<ImageSource> {
-		return getImage(url) as Promise<ImageSource>;
+		return httpRequest({ url, method: 'GET' }).then((response) => response.content.toNativeImage().then((value) => new ImageSource(value)));
 	}
 
 	static iosSystemScaleFor(scale: iosSymbolScaleType) {
@@ -112,18 +112,18 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromResourceSync(name: string): ImageSource {
-		const nativeSource = (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
+		const nativeSource = UIImage.tns_safeImageNamed(name) || UIImage.tns_safeImageNamed(`${name}.jpg`);
 
 		return nativeSource ? new ImageSource(nativeSource) : null;
 	}
 	static fromResource(name: string): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				(<any>UIImage).tns_safeDecodeImageNamedCompletion(name, (image) => {
+				UIImage.tns_safeDecodeImageNamedCompletion(name, (image) => {
 					if (image) {
 						resolve(new ImageSource(image));
 					} else {
-						(<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (img) => {
+						UIImage.tns_safeDecodeImageNamedCompletion(`${name}.jpg`, (img) => {
 							if (img) {
 								resolve(new ImageSource(img));
 							}
@@ -144,7 +144,7 @@ export class ImageSource implements ImageSourceDefinition {
 	static fromFile(path: string): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				(<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), (uiImage) => {
+				UIImage.tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), (uiImage) => {
 					if (uiImage) {
 						resolve(new ImageSource(uiImage));
 					}
@@ -181,7 +181,7 @@ export class ImageSource implements ImageSourceDefinition {
 	static fromData(data: any): Promise<ImageSource> {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
-				(<any>UIImage).tns_decodeImageWithDataCompletion(data, (uiImage) => {
+				UIImage.tns_decodeImageWithDataCompletion(data, (uiImage) => {
 					if (uiImage) {
 						resolve(new ImageSource(uiImage));
 					}

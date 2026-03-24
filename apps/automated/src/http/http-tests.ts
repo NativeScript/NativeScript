@@ -2,7 +2,7 @@ import { ImageSource } from '@nativescript/core';
 import * as TKUnit from '../tk-unit';
 import * as http from '@nativescript/core/http';
 import * as fs from '@nativescript/core/file-system';
-import { addHeader } from '@nativescript/core/http/http-request';
+import { requestInternal, addHeader, BaseHttpContent } from '@nativescript/core/http/http-request-internal';
 
 export var test_getString_isDefined = function () {
 	TKUnit.assert(typeof http.getString !== 'undefined', 'Method http.getString() should be defined!');
@@ -327,6 +327,89 @@ export var test_request_requestShouldTimeout = function (done) {
 			done(err);
 		}
 	});
+};
+
+export var test_requestInternal_responseStatusCodeShouldBeDefined = function (done) {
+	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
+		function (response) {
+			//// Argument (response) is HttpResponse!
+			var statusCode = response.statusCode;
+			try {
+				TKUnit.assert(typeof statusCode !== 'undefined', 'response.statusCode should be defined!');
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		},
+		function (e) {
+			//// Argument (e) is Error!
+			done(e);
+		},
+	);
+};
+
+export var test_requestInternal_responseContentShouldExposeNativeContentFunctions = function (done) {
+	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }).then(
+		function (response) {
+			try {
+				TKUnit.assert(typeof response.content.toNativeImage === 'function' && typeof response.content.toNativeString === 'function', `response.content should expose native content functions!`);
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		},
+		function (e) {
+			//// Argument (e) is Error!
+			done(e);
+		},
+	);
+};
+
+export var test_requestInternal_responseContentShouldExposeHandlerFunctions = function (done) {
+	const responseHandler = {
+		toDummy1: () => 'dummy1',
+		toDummy2: () => 'dummy2',
+	};
+
+	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }, responseHandler).then(
+		function (response) {
+			try {
+				TKUnit.assert(typeof response.content.toDummy1 === 'function' && typeof response.content.toDummy2 === 'function', `response.content should expose content handler functions!`);
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		},
+		function (e) {
+			//// Argument (e) is Error!
+			done(e);
+		},
+	);
+};
+
+export var test_requestInternal_responseHandlerShouldBeAvailable = function (done) {
+	const suffix = '-nsformatted';
+	const responseHandler = {
+		toFormattedString: function (this: BaseHttpContent) {
+			return this.toNativeString() + suffix;
+		},
+	};
+
+	requestInternal({ url: 'https://http-echo.nativescript.org/get', method: 'GET' }, responseHandler).then(
+		function (response) {
+			const value = response.content.toFormattedString();
+			try {
+				TKUnit.assert(typeof value === 'string' && value.endsWith(suffix), `response.content.toFormattedString should return the response string appended with ${suffix} at the end!`);
+				done(null);
+			} catch (err) {
+				done(err);
+			}
+		},
+		function (e) {
+			//// Argument (e) is Error!
+			done(e);
+		},
+	);
 };
 
 export var test_request_responseStatusCodeShouldBeDefined = function (done) {

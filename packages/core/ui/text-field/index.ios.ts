@@ -241,7 +241,7 @@ export class TextField extends TextFieldBase {
 	}
 
 	private _applySecureWithoutAutofillTraits(textField: UITextField): void {
-		if (!textField || !this.secureWithoutAutofill) {
+		if (!textField || !this.secureWithoutAutofill || !this.secure) {
 			return;
 		}
 
