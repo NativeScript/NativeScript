@@ -37,6 +37,9 @@ function initializeImageLoadedListener() {
 			const owner = this.owner;
 			if (owner) {
 				owner.isLoading = false;
+				if (success) {
+					owner._reapplyTintColor();
+				}
 			}
 		}
 	}
@@ -76,6 +79,13 @@ export class Image extends ImageBase {
 	public resetNativeView(): void {
 		super.resetNativeView();
 		this.nativeViewProtected.setImageMatrix(new android.graphics.Matrix());
+	}
+
+	public _reapplyTintColor(): void {
+		const tintColor = this.style?.tintColor;
+		if (tintColor && this.nativeViewProtected) {
+			this.nativeViewProtected.setColorFilter(tintColor.android);
+		}
 	}
 
 	public _createImageSourceFromSrc(value: string | ImageSource | ImageAsset) {
@@ -181,6 +191,7 @@ export class Image extends ImageBase {
 			nativeView.setRotationAngle(0);
 			nativeView.setImageBitmap(null);
 		}
+		this._reapplyTintColor();
 	}
 
 	[srcProperty.getDefault](): any {

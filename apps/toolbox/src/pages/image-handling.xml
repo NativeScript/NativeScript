@@ -6,6 +6,19 @@
 
     <StackLayout class="p-20">
 
+        <Label text="tintColor + dynamic src" class="h2" />
+        <Label text="Tap the image to swap src between icon and add_to_fav. The red tint should persist after each swap." textWrap="true" />
+        <GridLayout columns="auto, *, auto" rows="auto" class="m-t-10 m-b-10">
+            <Image col="0" src="{{ tintTestSrc }}" tintColor="#E53935" width="80" height="80" tap="{{ toggleTintTestSrc }}" stretch="aspectFit" />
+            <StackLayout col="1" verticalAlignment="center" class="m-l-10">
+                <Label text="{{ 'src: ' + tintTestSrc }}" textWrap="true" />
+                <Label text="tintColor: #E53935" />
+                <Label text="(tap image to toggle)" class="footnote" />
+            </StackLayout>
+        </GridLayout>
+
+        <ContentView height="1" width="100%" backgroundColor="#efefef" margin="10" />
+
         <Label text="Test Memory leaks with image picking and saving to device. Best to profile from platform IDE like Xcode." textWrap="true" />
 
         <Button text="Pick and Save Image" tap="{{ pickImage }}" />
