@@ -64,6 +64,10 @@ switch (__NS_TARGET_FLAVOR__) {
 let initialMounted = !!(globalThis as any).__NS_HMR_BOOT_COMPLETE__;
 // Prevent duplicate initial-mount scheduling across rapid full-graph broadcasts and re-evaluations
 let initialMounting = !!(globalThis as any).__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__;
+// Track whether the first full-graph has been received. Before the full-graph,
+// delta messages are just the server discovering modules during initial boot —
+// NOT actual code changes. Re-imports must be gated behind this flag.
+let hasReceivedFullGraph = false;
 // TypeScript flavor: track registry modules and inferred main id
 let tsModuleSet: Set<string> | null = null;
 let tsMainId: string | null = null;
@@ -391,6 +395,15 @@ function applyDelta(payload: any) {
 	if (VERBOSE) console.log('[hmr][graph] delta applied newVersion', getGraphVersion(), 'changed=', (payload.changed || []).length, 'removed=', (payload.removed || []).length, 'baseVersion=', payload.baseVersion);
 	// Queue evaluation of changed modules (placeholder pipeline)
 	if (payload.changed?.length) {
+		// Gate: Before the first full-graph is received, delta messages are the server
+		// discovering modules during initial boot — NOT actual code changes. The entry-runtime
+		// already loaded all modules; re-importing them would cause duplicate Application.run(),
+		// router initialization, and modal conflicts. Only queue re-imports after the first
+		// full-graph confirms the graph is synced and subsequent deltas are real changes.
+		if (!hasReceivedFullGraph) {
+			if (VERBOSE) console.log('[hmr][delta] skipping re-import queue (initial graph build, no full-graph yet)');
+			return;
+		}
 		// HARD SUPPRESS: the very first delta (baseVersion 0) commonly includes the app main entry which is already evaluated during bootstrap.
 		// Importing it again with a cache-bust often produces a spurious module-not-found (timestamp param treated as distinct file).
 		const isInitial = payload.baseVersion === 0;
@@ -800,6 +813,34 @@ async function handleHmrMessage(ev: any) {
 			const prevGraph = new Map(graph);
 			setGraphVersion(Number(msg.version || getGraphVersion() || 0));
 			applyFullGraph(msg);
+			hasReceivedFullGraph = true;
+
+			// Gate: On first boot, the entry-runtime handles all initial module loading
+			// (with the import map already configured). Don't re-import here — the graph
+			// is stored above for future HMR delta comparisons, but modules are already
+			// loaded correctly via the entry-runtime boot sequence.
+			//
+			// Two cases to catch:
+			// 1. Boot still in progress (__NS_HMR_BOOT_COMPLETE__ is false)
+			// 2. Boot already finished but this is the FIRST full-graph (prevGraph was
+			//    empty). The WebSocket often connects after entry-runtime finishes, so
+			//    boot is "complete" but we still shouldn't re-import — all modules were
+			//    just loaded fresh. Only re-import on subsequent full-graphs (reconnect
+			//    scenarios) where prevGraph already has entries.
+			if (!(globalThis as any).__NS_HMR_BOOT_COMPLETE__) {
+				if (VERBOSE) console.info('[hmr][full-graph] skipping initial re-import (boot in progress)');
+				const fullIds = Array.isArray(msg.modules) ? msg.modules.map((m: any) => m?.id).filter(Boolean) : [];
+				notifyAppHmrUpdate('full-graph', fullIds);
+				return;
+			}
+			if (prevGraph.size === 0) {
+				if (VERBOSE) console.info('[hmr][full-graph] skipping re-import on first graph after boot (modules already fresh)');
+				const fullIds = Array.isArray(msg.modules) ? msg.modules.map((m: any) => m?.id).filter(Boolean) : [];
+				notifyAppHmrUpdate('full-graph', fullIds);
+				return;
+			}
+
+			// Reconnect / resync case — re-import changed modules as normal.
 			// In some cases (e.g. server chooses full-graph resync / page reload), we won't
 			// receive a delta queue to re-import changed TS modules. Without re-import,
 			// HTTP ESM caching means module bodies (and side effects) won't re-run.
@@ -1295,7 +1336,23 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 	}
 	g.__NS_HMR_CLIENT_ACTIVE__ = true;
 	ensureCoreAliasesOnGlobalThis();
-	connectHmr();
+	// Defer WebSocket connection until boot completes to avoid native V8 crashes
+	// caused by concurrent WebSocket message handling + HTTP fetch during early startup.
+	// The WebSocket is only needed for HMR updates, not the initial boot sequence.
+	if (g.__NS_HMR_BOOT_COMPLETE__) {
+		connectHmr();
+	} else {
+		const waitForBoot = () => {
+			if ((globalThis as any).__NS_HMR_BOOT_COMPLETE__) {
+				if (VERBOSE) console.log('[hmr-client] boot complete, connecting HMR WebSocket');
+				connectHmr();
+			} else {
+				setTimeout(waitForBoot, 100);
+			}
+		};
+		if (VERBOSE) console.log('[hmr-client] deferring WebSocket connection until boot completes');
+		setTimeout(waitForBoot, 100);
+	}
 	// Best-effort: install back wrapper even before first remount; original root may be captured later
 	switch (__NS_TARGET_FLAVOR__) {
 		case 'vue':

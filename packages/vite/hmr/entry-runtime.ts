@@ -52,7 +52,7 @@ export default async function startEntry(opts: EntryOpts) {
 	} catch {}
 
 	// Module-local trace snapshot
-	const TRACE: any = { version: VER, origin: ORIGIN, mainPath: MAIN, t0: Date.now(), preload: { rt: {}, core: {} }, main: {} };
+	const TRACE: any = { version: VER, origin: ORIGIN, mainPath: MAIN, t0: Date.now(), preload: { rt: {}, core: {} }, main: {}, importMap: {} };
 
 	// Native HTTP ESM import only.
 	// Ensure a single canonical module realm.
@@ -61,6 +61,34 @@ export default async function startEntry(opts: EntryOpts) {
 	};
 
 	try {
+		// Configure runtime with import map before loading any modules.
+		// This enables the native runtime to resolve bare specifiers through the
+		// import map instead of relying on Vite-side import rewriting.
+		const configureRuntime = (globalThis as any).__nsConfigureRuntime;
+		if (typeof configureRuntime === 'function') {
+			const t_imap = Date.now();
+			try {
+				const imapRes = await fetch(ORIGIN + '/ns/import-map.json');
+				if (imapRes.ok) {
+					const config = await imapRes.json();
+					configureRuntime({
+						importMap: config.importMap,
+						volatilePatterns: config.volatilePatterns,
+					});
+					TRACE.importMap = { ok: true, ms: Date.now() - t_imap, entries: Object.keys(config.importMap?.imports || {}).length };
+					if (VERBOSE) console.info('[ns-entry] import map configured with', TRACE.importMap.entries, 'entries');
+				} else {
+					TRACE.importMap = { ok: false, ms: Date.now() - t_imap, status: imapRes.status };
+					if (VERBOSE) console.warn('[ns-entry] import map fetch failed:', imapRes.status);
+				}
+			} catch (e_imap: any) {
+				TRACE.importMap = { ok: false, ms: Date.now() - t_imap, err: String(e_imap && (e_imap.message || e_imap)) };
+				if (VERBOSE) console.warn('[ns-entry] import map error:', e_imap?.message);
+			}
+		} else if (VERBOSE) {
+			console.info('[ns-entry] __nsConfigureRuntime not available (older runtime); skipping import map');
+		}
+
 		// Preload runtime bridge and core bridge
 		const t_rt = Date.now();
 		try {
@@ -97,21 +125,26 @@ export default async function startEntry(opts: EntryOpts) {
 		if (lastMainErr) throw lastMainErr;
 		TRACE.main = { ok: true, ms: Date.now() - t_main, url: MAIN_URL };
 		(globalThis as any).__NS_ENTRY_OK__ = true;
+		// Signal to the HMR client that boot is complete and the import map is
+		// configured. The full-graph handler is gated behind this flag so it
+		// won't re-import modules before the import map is ready.
+		(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = true;
 
-		// Detect whether the early placeholder was installed; defer restoration until after a safe reset
-		let hadPlaceholder = false;
+		// The placeholder patches Application.run() → resetRootView(), so the
+		// app's Application.run() call in the main module transparently replaced
+		// the placeholder with the real app UI. Restore original run() now.
 		try {
 			const g: any = globalThis as any;
-			hadPlaceholder = !!(g && g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__);
+			if (typeof g.__NS_DEV_ORIGINAL_APP_RUN__ === 'function') {
+				// Restore original Application.run for any future use
+				const Application = g.Application || (g.__nsVendorRegistry?.get?.('@nativescript/core') || {}).Application;
+				if (Application) {
+					(Application as any).run = g.__NS_DEV_ORIGINAL_APP_RUN__;
+				}
+				delete g.__NS_DEV_ORIGINAL_APP_RUN__;
+				if (VERBOSE) console.info('[ns-entry] restored original Application.run');
+			}
 		} catch {}
-
-		// Placeholder detected: delegate root replacement to the HMR client.
-		// Keep entry-runtime hands-off to avoid contention and duplicated logic.
-		if (!hadPlaceholder) {
-			if (VERBOSE) console.info('[ns-entry] no placeholder root detected; nothing to handoff');
-		} else {
-			if (VERBOSE) console.info('[ns-entry] placeholder present; delegating root reset to HMR client');
-		}
 	} catch (e: any) {
 		const errInfo = { message: String(e && (e.message || e)), stack: e && e.stack ? String(e.stack) : '' };
 		const loc = parseStackUrlLineCol(e);

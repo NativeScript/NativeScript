@@ -73,20 +73,35 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 	let loaded = false;
 	let lastErr: any = null;
 
+	// Use fetch+eval to load the entry runtime, bypassing native ESM import
+	// which can cause hard V8 crashes on iOS when importing HTTP modules.
+	async function __ns_fetch_eval_entry(url: string): Promise<(...args: any[]) => any> {
+		const r = await fetch(url);
+		if (!r.ok) throw new Error(`entry-rt fetch failed: ${r.status}`);
+		let src = await r.text();
+		if (verbose) console.info('[ns-entry] entry-rt fetched bytes', src?.length || 0);
+		// Transform ESM default export into a global assignment for eval
+		src = src.replace(/export\s+default\s+async\s+function\s+([A-Za-z0-9_$]+)?/, 'globalThis.__NS_START_ENTRY__=async function $1').replace(/export\s+default\s+function\s+([A-Za-z0-9_$]+)?/, 'globalThis.__NS_START_ENTRY__=function $1');
+		if (src.indexOf('__NS_START_ENTRY__') === -1) {
+			src = 'globalThis.__NS_START_ENTRY__=' + src.replace(/export\s+default\s*/, '');
+		}
+		(0, eval)(src);
+		const fn = (globalThis as any).__NS_START_ENTRY__;
+		if (typeof fn !== 'function') throw new Error('entry-rt missing __NS_START_ENTRY__ after eval');
+		return fn;
+	}
+
 	const tryLoad = async () => {
 		for (const origin of originCandidates) {
 			try {
 				const __rtUrl = origin + '/ns/entry-rt';
 				if (verbose) console.info('[ns-entry] trying', __rtUrl);
-				const __mod = await import(/* @vite-ignore */ __rtUrl);
-				const __start = __mod && (__mod.default || __mod);
-				if (typeof __start !== 'function') {
-					throw new Error('entry-rt missing default export');
-				}
+				const __start = await __ns_fetch_eval_entry(__rtUrl);
 				await __start({ origin, main: mainEntryRelPosix, ver: String(Date.now()), verbose: !!verbose });
 				loaded = true;
 				break;
-			} catch (e) {
+			} catch (e: any) {
+				if (verbose) console.warn('[ns-entry] entry-rt failed for', origin, e?.message || e);
 				lastErr = e;
 			}
 		}

@@ -74,10 +74,11 @@ export function optimizeDepsPlatformResolver(opts?: { platform: string; verbose?
 				return null;
 			}
 			if (opts?.verbose) {
-				try {
-					const relImporter = importer.split('node_modules').pop();
-					console.log(`ns-optimize-deps-resolver: ${relImporter ?? importer} -> ${source} => ${path.relative(process.cwd(), resolved)}`);
-				} catch {}
+				// Note: very verbose, even for verbose mode, but can uncomment this if needed for debugging resolution issues
+				// try {
+				// 	const relImporter = importer.split('node_modules').pop();
+				// 	console.log(`ns-optimize-deps-resolver: ${relImporter ?? importer} -> ${source} => ${path.relative(process.cwd(), resolved)}`);
+				// } catch {}
 			}
 			return resolved;
 		},

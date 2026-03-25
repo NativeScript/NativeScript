@@ -88,6 +88,9 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'bufferutil',
 	'utf-8-validate',
 	'node-gyp-build',
+	// All @babel/* and babel-* packages are build-time tools, never runtime deps.
+	// They get pulled in as peer deps of packages like @nativescript-community/solid-js
+	// but should never be in the vendor bundle (they require 'fs', 'path', etc.).
 	'@babel/core',
 	'@babel/helper-plugin-utils',
 	'@babel/generator',
@@ -96,7 +99,11 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'@babel/parser',
 	'@babel/plugin-syntax-typescript',
 	'@babel/plugin-transform-typescript',
+	'@babel/preset-typescript',
+	'@babel/preset-env',
 	'@babel/types',
+	'babel-preset-solid',
+	'babel-plugin-jsx-dom-expressions',
 	// Heavy dependency not needed in vendor dev bundle; fetch via HTTP loader instead
 	'rxjs',
 	'nativescript',
@@ -106,6 +113,34 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'ws',
 	'@types/node',
 	'nativescript-theme-core',
+	// Build-time tools that get pulled in as transitive dependencies but should
+	// never be in the device vendor bundle (they require Node built-ins like fs,
+	// path, child_process, etc.). Now that we collect transitive runtime deps,
+	// these need explicit exclusion.
+	'esbuild',
+	'prettier',
+	'acorn',
+	'recast',
+	'source-map',
+	'source-map-js',
+	'tsx',
+	'diff',
+	'esprima',
+	// TanStack build-time router tooling (code generation, file-based routing)
+	'@tanstack/router-plugin',
+	'@tanstack/router-generator',
+	'@tanstack/router-utils',
+	'@tanstack/virtual-file-routes',
+	// File system / glob utilities — build-time only, require Node fs
+	'fdir',
+	'picomatch',
+	'tinyglobby',
+	// SSR-only library (bot detection) — not needed on device
+	'isbot',
+	// Type-only packages with no runtime JavaScript
+	'csstype',
+	// NativeScript CLI hook system — build-time only, requires Node os/path
+	'@nativescript/hook',
 ]);
 
 const INDEX_ALIAS_SUFFIXES = ['/index', '/index.js', '/index.android.js', '/index.ios.js', '/index.visionos.js'];
@@ -297,6 +332,14 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	if (flavor === 'angular') {
 		plugins.push(angularLinkerEsbuildPlugin(projectRoot));
 	}
+	// Solid packages (e.g. solid-navigation) may ship raw .jsx/.tsx source
+	// files instead of pre-compiled .js. esbuild's default JSX transform
+	// targets React (React.createElement), which crashes at runtime with
+	// "React is not defined". Add a plugin that compiles .jsx/.tsx through
+	// babel-preset-solid so the vendor bundle gets proper Solid output.
+	if (flavor === 'solid') {
+		plugins.push(createSolidJsxEsbuildPlugin(projectRoot));
+	}
 
 	const buildResult = await esbuild.build({
 		stdin: {
@@ -328,7 +371,108 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 			'process.env.NODE_ENV': JSON.stringify(mode),
 		},
 		plugins,
-		external: ['fs', 'fs/promises', 'path', 'url', 'module', 'node:fs', 'node:fs/promises', 'node:path', 'node:url', 'node:module', 'assert', 'process', 'v8', 'util'],
+		// Externalize ALL Node built-in modules. The vendor bundle runs on the
+		// NativeScript device runtime, not Node, so any Node API reference must
+		// be external. Using both bare and 'node:' prefixed forms.
+		external: [
+			'assert',
+			'async_hooks',
+			'buffer',
+			'child_process',
+			'cluster',
+			'console',
+			'constants',
+			'crypto',
+			'dgram',
+			'diagnostics_channel',
+			'dns',
+			'domain',
+			'events',
+			'fs',
+			'fs/promises',
+			'http',
+			'http2',
+			'https',
+			'inspector',
+			'module',
+			'net',
+			'os',
+			'path',
+			'path/posix',
+			'path/win32',
+			'perf_hooks',
+			'process',
+			'punycode',
+			'querystring',
+			'readline',
+			'repl',
+			'stream',
+			'stream/web',
+			'stream/promises',
+			'string_decoder',
+			'sys',
+			'timers',
+			'timers/promises',
+			'tls',
+			'trace_events',
+			'tty',
+			'url',
+			'util',
+			'v8',
+			'vm',
+			'wasi',
+			'worker_threads',
+			'zlib',
+			// node: prefixed variants
+			'node:assert',
+			'node:async_hooks',
+			'node:buffer',
+			'node:child_process',
+			'node:cluster',
+			'node:console',
+			'node:constants',
+			'node:crypto',
+			'node:dgram',
+			'node:diagnostics_channel',
+			'node:dns',
+			'node:domain',
+			'node:events',
+			'node:fs',
+			'node:fs/promises',
+			'node:http',
+			'node:http2',
+			'node:https',
+			'node:inspector',
+			'node:module',
+			'node:net',
+			'node:os',
+			'node:path',
+			'node:path/posix',
+			'node:path/win32',
+			'node:perf_hooks',
+			'node:process',
+			'node:punycode',
+			'node:querystring',
+			'node:readline',
+			'node:repl',
+			'node:stream',
+			'node:stream/web',
+			'node:stream/promises',
+			'node:string_decoder',
+			'node:sys',
+			'node:timers',
+			'node:timers/promises',
+			'node:tls',
+			'node:trace_events',
+			'node:tty',
+			'node:url',
+			'node:util',
+			'node:v8',
+			'node:vm',
+			'node:wasi',
+			'node:worker_threads',
+			'node:zlib',
+		],
 	});
 
 	if (!buildResult.outputFiles?.length) {
@@ -378,12 +522,14 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 		if (!isAngularFlavor && (name === '@angular/compiler' || name.startsWith('@angular/'))) {
 			return;
 		}
-		const isRoot = isPackageRootSpecifier(name);
-		if (!visited.has(name)) {
-			visited.add(name);
+		// Skip already-visited packages to avoid redundant queue processing
+		if (visited.has(name)) {
+			return;
 		}
+		visited.add(name);
 		vendor.add(name);
-		// Only traverse peer deps for package roots; subpaths should not attempt package.json resolution
+		const isRoot = isPackageRootSpecifier(name);
+		// Only traverse deps for package roots; subpaths should not attempt package.json resolution
 		if (isRoot) {
 			queue.push(name);
 		}
@@ -436,6 +582,22 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 		}
 	}
 
+	// SolidJS / TanStack Router: when @nativescript/tanstack-router is a dependency,
+	// its runtime deps (@tanstack/solid-router, @tanstack/router-core, @tanstack/history)
+	// MUST be in the vendor bundle. These packages:
+	// 1. Use browser APIs (window.dispatchEvent) that don't exist in NativeScript — they
+	//    must be bundled where the NativeScript wrapper intercepts those calls
+	// 2. Contain JSX source that needs Solid compilation (dist/source/*.jsx) — the HTTP
+	//    fallback can't compile node_modules JSX since vite-plugin-solid skips it
+	// 3. Import solid-js internally — loading via HTTP creates a separate solid-js instance
+	// esbuild uses the 'import' condition (not 'solid'), resolving to pre-compiled
+	// dist/esm/*.js which avoids all three issues.
+	if (pkg.dependencies?.['@nativescript/tanstack-router']) {
+		addCandidate('@tanstack/solid-router');
+		addCandidate('@tanstack/router-core');
+		addCandidate('@tanstack/history');
+	}
+
 	parseEnvList(process.env.NS_VENDOR_INCLUDE).forEach(addCandidate);
 
 	const projectDeps = {
@@ -460,6 +622,13 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 				addCandidate(peer);
 			}
 		}
+
+		// NOTE: We intentionally do NOT collect transitive runtime dependencies
+		// here. The import map + runtime specifier normalization handles non-vendor
+		// packages by routing them through HTTP to the Vite dev server. This avoids
+		// the fragility of trying to esbuild-bundle every transitive dep (which can
+		// fail due to Node built-ins, type-only packages, duplicate module instances,
+		// etc.). Only direct project dependencies go into the vendor bundle.
 	}
 
 	parseEnvList(process.env.NS_VENDOR_EXCLUDE).forEach((name) => {
@@ -476,6 +645,18 @@ function shouldSkipDependency(name: string): boolean {
 		return true;
 	}
 	if (ALWAYS_EXCLUDE.has(name)) {
+		return true;
+	}
+	// All Babel packages are build tools — never bundle into device runtime.
+	// They require Node built-ins (fs, path, url) that don't exist on device.
+	if (name.startsWith('@babel/') || name.startsWith('babel-')) {
+		return true;
+	}
+	// Dev tools and type-only packages — not needed on device
+	if (name.startsWith('@solid-devtools/')) {
+		return true;
+	}
+	if (name.startsWith('@types/')) {
 		return true;
 	}
 	if (name.startsWith('.')) {
@@ -705,6 +886,63 @@ function createVendorEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 				].join('\n'),
 				loader: 'js',
 			}));
+		},
+	};
+}
+
+/**
+ * esbuild plugin to compile .jsx/.tsx files from Solid packages through
+ * babel-preset-solid. Without this, esbuild uses its default React JSX
+ * transform, producing React.createElement calls that crash at runtime.
+ *
+ * Only applied to files inside node_modules that have .jsx or .tsx extension.
+ */
+function createSolidJsxEsbuildPlugin(projectRoot: string): esbuild.Plugin {
+	// Lazy-load Babel and the Solid preset so they're only required when
+	// the Solid flavor is active.
+	let babel: any;
+	let solidPreset: any;
+	return {
+		name: 'ns-vendor-solid-jsx',
+		setup(build) {
+			// Intercept .jsx and .tsx files from node_modules
+			build.onLoad({ filter: /node_modules\/.*\.[jt]sx$/ }, async (args) => {
+				try {
+					if (!babel) {
+						babel = await import('@babel/core');
+						// babel-preset-solid is the standard Solid JSX transform
+						solidPreset = (await import('babel-preset-solid')).default;
+					}
+					const source = await readFile(args.path, 'utf-8');
+					const result = await babel.transformAsync(source, {
+						filename: args.path,
+						presets: [
+							[
+								solidPreset,
+								{
+									generate: 'universal',
+									hydratable: false,
+									moduleName: '@nativescript-community/solid-js',
+								},
+							],
+						],
+						parserOpts: {
+							plugins: ['jsx', ...(args.path.endsWith('.tsx') ? ['typescript'] : [])],
+						},
+						ast: false,
+						sourceMaps: false,
+						configFile: false,
+						babelrc: false,
+					});
+					if (result?.code) {
+						return { contents: result.code, loader: 'js' };
+					}
+				} catch (e: any) {
+					console.warn(`[ns-vendor-solid-jsx] failed to transform ${args.path}:`, e?.message || e);
+				}
+				// Fall through to esbuild's default handling
+				return undefined;
+			});
 		},
 	};
 }

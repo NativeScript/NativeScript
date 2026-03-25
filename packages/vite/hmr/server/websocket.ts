@@ -33,6 +33,7 @@ import { typescriptServerStrategy } from '../frameworks/typescript/server/strate
 import { buildInlineTemplateBlock, createProcessSfcCode, extractTemplateRender, processTemplateVariantMinimal } from '../frameworks/vue/server/sfc-transforms.js';
 import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
+import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 
 const { parse, compileTemplate, compileScript } = vueSfcCompiler;
 
@@ -351,7 +352,7 @@ function normalizeNativeScriptCoreSpecifier(spec: string): string {
 	return normalized;
 }
 
-function normalizeNodeModulesSpecifier(spec: string): string | null {
+export function normalizeNodeModulesSpecifier(spec: string): string | null {
 	if (!spec) {
 		return null;
 	}
@@ -381,7 +382,7 @@ function normalizeNodeModulesSpecifier(spec: string): string | null {
 	return subPath.startsWith('/') ? subPath.slice(1) : subPath;
 }
 
-function resolveVendorFromCandidate(specifier: string | null | undefined): string | null {
+export function resolveVendorFromCandidate(specifier: string | null | undefined): string | null {
 	if (!specifier) {
 		return null;
 	}
@@ -405,8 +406,26 @@ function resolveVendorFromCandidate(specifier: string | null | undefined): strin
 			return flatMatch;
 		}
 		for (const [flatKey, canonical] of flattenedMap.entries()) {
-			if (flattenedId === flatKey || flattenedId.startsWith(`${flatKey}_`)) {
+			if (flattenedId === flatKey) {
 				return canonical;
+			}
+			if (flattenedId.startsWith(`${flatKey}_`)) {
+				// The suffix after the flat key represents a subpath.
+				// Convert it back: e.g., "_solid" → "solid", "_store_dist_x" → "store/dist/x"
+				// Only resolve to the root vendor module if it's a file/dist subpath.
+				// Entry-point subpaths (e.g., _solid, _store) have different exports
+				// and must NOT be collapsed to the root.
+				const flatSuffix = flattenedId.slice(flatKey.length + 1);
+				const subpath = flatSuffix.replace(/_/g, '/');
+				if (isFileDistSubpath(subpath)) {
+					return canonical;
+				}
+				// Check if there's an alias for this subpath entry
+				const aliasKey = `${canonical}/${subpath.split('/')[0]}`;
+				if (manifest.aliases?.[aliasKey] && manifest.modules[manifest.aliases[aliasKey]]) {
+					return manifest.aliases[aliasKey];
+				}
+				// Entry-point subpath — don't collapse to root
 			}
 		}
 		const guessedId = flattenedId.replace(/__/g, '.').replace(/_/g, '/');
@@ -451,14 +470,88 @@ function resolveVendorFromCandidate(specifier: string | null | undefined): strin
 }
 
 function findVendorPrefix(specifier: string, manifest: NonNullable<ReturnType<typeof getVendorManifest>>): string | null {
-	const { modules } = manifest;
+	const { modules, aliases } = manifest;
 	const keys = Object.keys(modules || {});
 	for (const key of keys) {
-		if (specifier === key || specifier.startsWith(`${key}/`)) {
+		if (specifier === key) {
 			return key;
+		}
+		if (specifier.startsWith(`${key}/`)) {
+			const subpath = specifier.slice(key.length + 1);
+			// Only match file/dist subpaths (e.g., solid-js/dist/dev.js → solid-js).
+			// Entry-point subpaths (e.g., solid-js/store) are separate packages
+			// and must NOT be collapsed to the root vendor module.
+			if (isFileDistSubpath(subpath)) {
+				return key;
+			}
+			// Check if there's an explicit alias for this subpath
+			const aliasKey = `${key}/${subpath.split('/')[0]}`;
+			if (aliases?.[aliasKey] && modules[aliases[aliasKey]]) {
+				return aliases[aliasKey];
+			}
+			// Entry-point subpath with no alias — don't vendor-resolve
+			continue;
 		}
 	}
 	return null;
+}
+
+/**
+ * Convert a Vite .vite/deps/ filename back to a bare specifier with subpath,
+ * using the vendor manifest to determine where the package name ends and the
+ * subpath begins.
+ *
+ * e.g., "@nativescript_tanstack-router_solid.js" → "@nativescript/tanstack-router/solid"
+ *       "solid-js.js" → "solid-js"
+ *
+ * Returns null if no known package prefix matches.
+ */
+function viteDepsPathToBareSpecifier(depPath: string): string | null {
+	const manifest = getVendorManifest();
+	if (!manifest) return null;
+
+	const flatId = extractVitePrebundleId(`.vite/deps/${depPath}`);
+	if (!flatId) return null;
+
+	const flatMap = getFlattenedManifestMap(manifest);
+
+	// Try exact match first
+	if (flatMap.has(flatId)) {
+		return flatMap.get(flatId)!;
+	}
+
+	// Try prefix match: find the longest matching vendor flat key
+	let bestKey = '';
+	let bestCanonical = '';
+	for (const [flatKey, canonical] of flatMap.entries()) {
+		if (flatId.startsWith(`${flatKey}_`) && flatKey.length > bestKey.length) {
+			bestKey = flatKey;
+			bestCanonical = canonical;
+		}
+	}
+
+	if (bestKey && bestCanonical) {
+		// Convert the suffix back to a subpath
+		const flatSuffix = flatId.slice(bestKey.length + 1);
+		const subpath = flatSuffix.replace(/_/g, '/');
+		return `${bestCanonical}/${subpath}`;
+	}
+
+	return null;
+}
+
+function isFileDistSubpath(subpath: string): boolean {
+	const firstSegment = subpath.split('/')[0];
+	// Starts with a known build/dist directory segment → file path
+	const FILE_DIST_DIRS = new Set(['dist', 'src', 'lib', 'build', 'esm', 'cjs', 'es', 'umd', 'module', 'bundle', 'output', '_esm', '_cjs']);
+	if (FILE_DIST_DIRS.has(firstSegment)) {
+		return true;
+	}
+	// Single segment with file extension → file path (e.g., "index.js")
+	if (!subpath.includes('/') && /\.[a-zA-Z0-9]+$/.test(subpath)) {
+		return true;
+	}
+	return false;
 }
 
 // ----------------------------------------------------------------------------
@@ -883,63 +976,15 @@ function cleanCode(code: string): string {
 	result = ACTIVE_STRATEGY.rewriteFrameworkImports(result);
 
 	// Vendor manifest-driven import rewrites
+	// NOTE: Static and side-effect vendor imports are intentionally NOT rewritten here.
+	// They are left as import statements so that ensureNativeScriptModuleBindings()
+	// (called later in processCodeForDevice) can transform them using the robust
+	// __nsVendorRequire + __nsPick pattern that works on device.
+	// Only dynamic imports are handled here since ensureNativeScriptModuleBindings
+	// does not process dynamic import() calls.
 	try {
 		const manifest = getVendorManifest();
 		if (manifest) {
-			// Pattern: capture full import statement (static) with optional bindings
-			// import X from 'pkg'; | import {a,b as c} from "pkg"; | import * as ns from 'pkg';
-			const staticImportRE = /(import\s+([^;]*?)\s+from\s*["'])([^"']+)(["'];?)/g;
-			result = result.replace(staticImportRE, (full, pre, bindings, spec, post) => {
-				// Do not vendor-rewrite @nativescript/core — handled by the unified HTTP bridge later
-				if (isNativeScriptCoreModule(spec)) return full;
-				const resolved = resolveVendorSpecifier(spec);
-				if (!resolved || /^@nativescript\/core(\b|\/)/i.test(resolved)) return full; // not vendor or is core
-				// Determine binding style
-				const trimmed = (bindings || '').trim();
-				let injected = '';
-				if (!trimmed || trimmed === '') {
-					// Side-effect import: import 'pkg'; -> we drop it (vendor already evaluated)
-					return `/* vendor side-effect dropped: ${spec} */`;
-				}
-				// Default + named or default only
-				// Examples of trimmed:
-				//   defaultExport
-				//   { a, b as c }
-				//   * as ns
-				//   defaultExport, { a, b }
-				const globalAccessor = `globalThis.__nsVendor && globalThis.__nsVendor(${JSON.stringify(resolved)})`;
-				const ensureHelper = `globalThis.__nsVendor=require? (globalThis.__nsVendor|| (globalThis.__nsVendor=(id)=>{const m=(globalThis.__NS_VENDOR_MANIFEST__?globalThis.__NS_VENDOR_MANIFEST__.modules[id]:null);return (globalThis.__nsModules && globalThis.__nsModules.get? (globalThis.__nsModules.get(id)||globalThis.__nsModules.get(m?.id||id)):undefined);})):globalThis.__nsVendor`;
-				if (trimmed.startsWith('{')) {
-					// Named only
-					injected = `${ensureHelper}; const ${trimmed} = ${globalAccessor} || {};`;
-				} else if (trimmed.startsWith('*')) {
-					// Namespace import: * as ns
-					const m = /\*\s+as\s+(\w+)/.exec(trimmed);
-					if (m) {
-						injected = `${ensureHelper}; const ${m[1]} = ${globalAccessor} || {};`;
-					}
-				} else if (trimmed.includes(',')) {
-					// default plus named
-					const parts = trimmed.split(',');
-					const def = parts[0].trim();
-					const named = parts.slice(1).join(',').trim();
-					injected = `${ensureHelper}; const __vmod = ${globalAccessor} || {}; const ${def} = __vmod.default || __vmod; const ${named} = __vmod;`;
-				} else {
-					// default only
-					injected = `${ensureHelper}; const ${trimmed} = (${globalAccessor}||{}).default || ${globalAccessor};`;
-				}
-				return injected;
-			});
-
-			// Bare side-effect imports: import 'pkg';
-			const sideEffectRE = /(import\s*["'])([^"']+)(["'];?)/g;
-			result = result.replace(sideEffectRE, (full, pre, spec, post) => {
-				if (isNativeScriptCoreModule(spec)) return full;
-				const resolved = resolveVendorSpecifier(spec);
-				if (!resolved || /^@nativescript\/core(\b|\/)/i.test(resolved)) return full;
-				return `/* vendor side-effect skipped: ${spec} */`;
-			});
-
 			// Dynamic import rewrites: import('pkg') -> Promise.resolve(__nsVendor('id'))
 			const dynImportRE = /(import\(\s*["'])([^"']+)(["']\s*\))/g;
 			result = result.replace(dynImportRE, (full, pre, spec, post) => {
@@ -1123,7 +1168,7 @@ function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, p
  * Process code for device: inject globals, remove framework imports
  */
 
-function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
+function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveVendorImports: boolean = false): string {
 	let result = code;
 
 	// Ensure Angular partial declarations are linked before any sanitizers run so runtime never hits the JIT path.
@@ -1239,7 +1284,13 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
 	try {
 		result = result.replace(/(^|\n)([\t ]*import\s+[^;]*?\s+from)\s*\n\s*("\/?node_modules\/\.vite\/deps\/[^"\n]+"\s*;?\s*)/gm, (_m, p1, p2, p3) => `${p1}${p2} ${p3}`);
 	} catch {}
-	result = ensureNativeScriptModuleBindings(result);
+	// When preserveVendorImports is true (HMR /ns/m/ endpoint), skip the
+	// __nsVendorRequire + __nsPick rewrite. Vendor imports stay as bare
+	// specifiers so the device-side import map resolves them via V8's native
+	// module system, which correctly handles export * re-exports.
+	if (!preserveVendorImports) {
+		result = ensureNativeScriptModuleBindings(result);
+	}
 
 	// Repair any accidental "import ... = expr" assignments that may have slipped in.
 	try {
@@ -1249,10 +1300,42 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
 	// Strip Vite prebundle deps imports (both named and side-effect) and any malformed const string artifacts
 	// Example problematic line observed: const "/node_modules/.vite/deps/@nativescript_firebase-messaging.js?v=...";
 	if (/node_modules\/\.vite\/deps\//.test(result)) {
-		// Named imports from prebundle deps
-		result = result.replace(/^[\t ]*import\s+[^;]*from\s+["']\/?node_modules\/\.vite\/deps\/[^"']+["'];?\s*$/gm, '');
-		// Side-effect only imports from prebundle deps
-		result = result.replace(/^[\t ]*import\s+["']\/?node_modules\/\.vite\/deps\/[^"']+["'];?\s*$/gm, '');
+		if (preserveVendorImports) {
+			// When preserveVendorImports is true, vendor .vite/deps/ imports must be
+			// rewritten to bare specifiers (not stripped!) so the device-side import map
+			// can resolve them. Non-vendor .vite/deps/ imports are still stripped.
+			// Named imports: import { X } from "/node_modules/.vite/deps/pkg.js?v=..."
+			result = result.replace(/^([\t ]*import\s+[^;]*from\s+["'])\/?node_modules\/\.vite\/deps\/([^"']+)(["'];?\s*)$/gm, (_m, pre, depPath, post) => {
+				const canonical = resolveVendorFromCandidate(`.vite/deps/${depPath}`);
+				if (canonical) {
+					return `${pre}${canonical}${post}`;
+				}
+				// Not a vendor root — try to reconstruct bare specifier for subpath entries.
+				// e.g., @nativescript_tanstack-router_solid.js → @nativescript/tanstack-router/solid
+				const bareSpecifier = viteDepsPathToBareSpecifier(depPath);
+				if (bareSpecifier) {
+					return `${pre}${bareSpecifier}${post}`;
+				}
+				return ''; // strip non-vendor
+			});
+			// Side-effect only: import "/node_modules/.vite/deps/pkg.js?v=..."
+			result = result.replace(/^([\t ]*import\s+["'])\/?node_modules\/\.vite\/deps\/([^"']+)(["'];?\s*)$/gm, (_m, pre, depPath, post) => {
+				const canonical = resolveVendorFromCandidate(`.vite/deps/${depPath}`);
+				if (canonical) {
+					return `${pre}${canonical}${post}`;
+				}
+				const bareSpecifier = viteDepsPathToBareSpecifier(depPath);
+				if (bareSpecifier) {
+					return `${pre}${bareSpecifier}${post}`;
+				}
+				return ''; // strip non-vendor
+			});
+		} else {
+			// Named imports from prebundle deps
+			result = result.replace(/^[\t ]*import\s+[^;]*from\s+["']\/?node_modules\/\.vite\/deps\/[^"']+["'];?\s*$/gm, '');
+			// Side-effect only imports from prebundle deps
+			result = result.replace(/^[\t ]*import\s+["']\/?node_modules\/\.vite\/deps\/[^"']+["'];?\s*$/gm, '');
+		}
 		// Malformed const string lines accidentally produced by upstream transforms
 		result = result.replace(/^[\t ]*const\s+["']\/?node_modules\/\.vite\/deps\/[^"']+["'];?\s*$/gm, '// [hmr-sanitize] stripped malformed const prebundle ref\n');
 		// Naked string-only lines pointing at prebundle deps
@@ -1333,7 +1416,9 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean): string {
 
 	// Ensure vendor bindings also apply after potential wrapper injections above
 	// (idempotent: second pass will be a no-op if imports already consumed).
-	result = ensureNativeScriptModuleBindings(result);
+	if (!preserveVendorImports) {
+		result = ensureNativeScriptModuleBindings(result);
+	}
 	try {
 		result = repairImportEqualsAssignments(result);
 	} catch {}
@@ -1638,6 +1723,7 @@ function assertNoOptimizedArtifacts(code: string, contextLabel: string): void {
 function ensureDestructureCoreImports(code: string): string {
 	try {
 		let result = code;
+		let coreImportCounter = 0;
 		const toDestructure = (specList: string) =>
 			specList
 				.split(',')
@@ -1651,7 +1737,8 @@ function ensureDestructureCoreImports(code: string): string {
 		// import { A, B } from '/ns/core[/ver][?p=...]'
 		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
 		result = result.replace(reNamed, (_full, pfx: string, specList: string, src: string) => {
-			const tmp = `__ns_core_ns_re`; // temp binding name is not reused elsewhere after hoist
+			const tmp = `__ns_core_ns_re${coreImportCounter > 0 ? `_${coreImportCounter}` : ''}`;
+			coreImportCounter++;
 			const decl = `const { ${toDestructure(specList)} } = ${tmp};`;
 			return `${pfx}import ${tmp} from ${JSON.stringify(src)};\n${decl}\n`;
 		});
@@ -1921,6 +2008,17 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 
 		spec = normalizeNativeScriptCoreSpecifier(spec);
 
+		// Route Vite virtual modules (/@solid-refresh, etc.) through /ns/m/ so their
+		// internal imports (e.g. solid-js) get vendor-rewritten by our pipeline.
+		// Skip known Vite internals (/@vite/, /@id/, /@fs/) which are handled elsewhere.
+		if (spec.startsWith('/@') && !/^\/@(?:vite|id|fs)\//.test(spec)) {
+			const out = `/ns/m${spec}`;
+			if (httpOriginSafe) {
+				return `${prefix}${httpOriginSafe}${out}${suffix}`;
+			}
+			return `${prefix}${out}${suffix}`;
+		}
+
 		// Route internal NS endpoints to absolute HTTP origin for device
 		if (spec.startsWith('/ns/')) {
 			if (httpOriginSafe) {
@@ -1936,22 +2034,42 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 		const nodeModulesSpecifier = normalizeNodeModulesSpecifier(spec);
 		const candidateNativeScriptSpec = nodeModulesSpecifier ?? spec;
 
-		const vendorCanonical = resolveVendorFromCandidate(nodeModulesSpecifier ?? spec);
-
-		if (vendorCanonical) {
-			if (nodeModulesSpecifier) {
-				return `${prefix}${nodeModulesSpecifier.replace(PAT.QUERY_PATTERN, '')}${suffix}`;
-			}
-			return `${prefix}${spec.replace(PAT.QUERY_PATTERN, '')}${suffix}`;
-		}
-
+		// IMPORTANT: Check NativeScript plugin modules BEFORE vendor lookup.
+		// @nativescript/ plugins (e.g., @nativescript/tanstack-router/solid) must be
+		// served via HTTP, not resolved as vendor modules. The vendor lookup calls
+		// normalizeSpecifier which strips subpaths (e.g., /solid → main entry),
+		// causing the wrong entry point to load (main doesn't export Link, etc.).
 		if (isNativeScriptPluginModule(candidateNativeScriptSpec)) {
 			const bareSpecifier = candidateNativeScriptSpec.replace(PAT.QUERY_PATTERN, '');
+			// Route through /ns/m/ for HTTP serving when we have a node_modules path
+			if (nodeModulesSpecifier) {
+				const httpSpec = `/ns/m/node_modules/${bareSpecifier}`;
+				if (httpOriginSafe) {
+					return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
+				}
+				return `${prefix}${httpSpec}${suffix}`;
+			}
 			return `${prefix}${bareSpecifier}${suffix}`;
 		}
 
+		const vendorCanonical = resolveVendorFromCandidate(nodeModulesSpecifier ?? spec);
+
+		if (vendorCanonical) {
+			// Use the canonical bare package name (e.g., "solid-js" not "solid-js/dist/dev.js")
+			// so the device-side import map can resolve it to ns-vendor://
+			return `${prefix}${vendorCanonical}${suffix}`;
+		}
+
 		if (nodeModulesSpecifier) {
-			return `${prefix}${nodeModulesSpecifier}${suffix}`;
+			// Non-vendor node_modules: serve via HTTP from Vite dev server.
+			// The device cannot resolve bare node_modules specifiers on the
+			// filesystem; route through /ns/m/ so the dev server transforms
+			// and serves the module (including JSX compilation, etc.).
+			const httpSpec = `/ns/m/node_modules/${nodeModulesSpecifier}`;
+			if (httpOriginSafe) {
+				return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
+			}
+			return `${prefix}${httpSpec}${suffix}`;
 		}
 
 		// Handle .vue imports
@@ -2456,6 +2574,49 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				} catch {}
 			});
 
+			// Import map endpoint: GET /ns/import-map.json
+			// Returns the import map + runtime config for __nsConfigureRuntime()
+			server.middlewares.use(async (req, res, next) => {
+				try {
+					const urlObj = new URL(req.url || '', 'http://localhost');
+					if (urlObj.pathname !== '/ns/import-map.json') return next();
+
+					res.setHeader('Access-Control-Allow-Origin', '*');
+					res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+					if (req.method === 'OPTIONS') {
+						res.statusCode = 204;
+						res.end();
+						return;
+					}
+
+					// Determine origin from request headers or server config
+					const host = req.headers.host || 'localhost:5173';
+					const protocol = 'http';
+					const origin = `${protocol}://${host}`;
+
+					const runtimeConfig = buildRuntimeConfig({
+						origin,
+						flavor: ACTIVE_STRATEGY?.flavor || 'typescript',
+					});
+
+					res.setHeader('Content-Type', 'application/json');
+					res.end(
+						JSON.stringify(
+							{
+								importMap: JSON.parse(runtimeConfig.importMap),
+								volatilePatterns: runtimeConfig.volatilePatterns,
+							},
+							null,
+							2,
+						),
+					);
+				} catch (err: any) {
+					console.error('[import-map] error generating import map:', err?.message || err);
+					res.statusCode = 500;
+					res.end(JSON.stringify({ error: 'Failed to generate import map' }));
+				}
+			});
+
 			// Dev-only HTTP ESM loader endpoint for device clients
 			// 1) Legacy JSON module endpoint (kept temporarily): GET /ns-module?path=/abs -> { path, code, additionalFiles }
 			server.middlewares.use(async (req, res, next) => {
@@ -2514,7 +2675,10 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					code = REQUIRE_GUARD_SNIPPET + code;
 					// Apply same sanitation/rewrite pipeline used for WS path
 					code = cleanCode(code);
-					code = processCodeForDevice(code, false);
+					// preserveVendorImports=true: vendor imports stay as bare specifiers
+					// for the device-side import map (ns-vendor://) instead of being
+					// transformed to __nsVendorRequire calls with fragile __nsPick lookups.
+					code = processCodeForDevice(code, false, true);
 					code = rewriteImports(code, spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 					code = ensureVariableDynamicImportHelper(code);
 					// Enforce upstream guarantee: no optimized deps or virtual ids remain
@@ -2578,7 +2742,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							if (depTrans?.code && depResolved) {
 								let depCode = depTrans.code;
 								depCode = cleanCode(depCode);
-								depCode = processCodeForDevice(depCode, false);
+								depCode = processCodeForDevice(depCode, false, true);
 								depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 								depCode = ensureVariableDynamicImportHelper(depCode);
 								try {
@@ -2699,6 +2863,26 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							}
 						} catch {}
 					}
+					// Fallback 1b: if spec is a /node_modules/ path, extract bare specifier
+					// and try resolveId with that. This handles package.json "exports" field
+					// resolution (e.g., solid-js/jsx-runtime → solid-js/dist/solid.js).
+					if (!transformed?.code && spec.includes('/node_modules/')) {
+						try {
+							const nmIdx = spec.lastIndexOf('/node_modules/');
+							const bare = spec.slice(nmIdx + '/node_modules/'.length);
+							if (bare && !bare.startsWith('.')) {
+								const rid = await (server as any).pluginContainer?.resolveId?.(bare, undefined);
+								const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
+								if (ridStr) {
+									const r = await server.transformRequest(ridStr);
+									if (r?.code) {
+										transformed = r;
+										resolvedCandidate = ridStr;
+									}
+								}
+							}
+						} catch {}
+					}
 					// Fallback 2: try /@fs absolute path under project root (Vite file system alias)
 					if (!transformed?.code) {
 						try {
@@ -2727,6 +2911,21 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							} catch {}
 						}
 					}
+					// Solid HMR: patch @@solid-refresh's $$refreshESM to do inline patching
+					// during module re-evaluation instead of deferring to hot.accept() callback.
+					// In NativeScript's HTTP ESM environment, accept callbacks are registered
+					// but not invoked by the HMR client. By adding a direct patchRegistry()
+					// call when hot.data already has a stored registry, component updates
+					// apply immediately when the module re-evaluates.
+					try {
+						if (transformed?.code && ACTIVE_STRATEGY?.flavor === 'solid' && (resolvedCandidate || spec || '').includes('@solid-refresh')) {
+							const marker = 'hot.data[SOLID_REFRESH] = hot.data[SOLID_REFRESH] || registry;';
+							if (transformed.code.includes(marker)) {
+								transformed.code = transformed.code.replace(marker, `if (hot.data[SOLID_REFRESH]) { patchRegistry(hot.data[SOLID_REFRESH], registry); }\n    ${marker}`);
+								if (verbose) console.log('[hmr-ws][solid] patched @@solid-refresh for inline HMR');
+							}
+						}
+					} catch {}
 					// Post-transform: inject cache-busting version for all internal /ns/m/* imports to avoid stale module reuse on device.
 					// IMPORTANT: use PATH-based busting (not query) because the iOS HTTP ESM loader strips query params
 					// when computing module cache keys.
@@ -2895,7 +3094,7 @@ export const piniaSymbol = p.piniaSymbol;
 					// Prepend guard to capture any URL-based require attempts
 					code = REQUIRE_GUARD_SNIPPET + code;
 					code = cleanCode(code);
-					code = processCodeForDevice(code, false);
+					code = processCodeForDevice(code, false, true);
 					code = rewriteImports(code, resolvedCandidate || spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 					// Dedupe any /ns/rt named imports that duplicate destructured bindings off default /ns/rt
 					try {
@@ -3301,16 +3500,36 @@ export const piniaSymbol = p.piniaSymbol;
 					res.setHeader('Expires', '0');
 					let content = '';
 					try {
-						const req = createRequire(import.meta.url);
-						const entryRtPath = req.resolve('@nativescript/vite/hmr/entry-runtime.js');
-						const fs = req('fs') as typeof import('fs');
-						content = fs.readFileSync(entryRtPath, 'utf-8');
+						const _req = createRequire(import.meta.url);
+						const entryRtPath = _req.resolve('@nativescript/vite/hmr/entry-runtime.js');
+						content = readFileSync(entryRtPath, 'utf-8');
 					} catch (e) {
-						content = 'export default async function start(){ console.error("[/ns/entry-rt] not found"); }\n';
+						// .js not found (source tree without build) — transform .ts on the fly
+						try {
+							const tsPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', 'entry-runtime.ts');
+							if (existsSync(tsPath)) {
+								const tsSource = readFileSync(tsPath, 'utf-8');
+								const result = babelCore.transformSync(tsSource, {
+									filename: tsPath,
+									plugins: [[pluginTransformTypescript, { isTSX: false, allowDeclareFields: true }]],
+									sourceType: 'module',
+								});
+								if (result?.code) {
+									content = result.code;
+								}
+							}
+						} catch (e2) {
+							if (verbose) console.warn('[hmr-http] entry-runtime.ts transform failed', e2);
+						}
+						if (!content) {
+							content = 'export default async function start(){ console.error("[/ns/entry-rt] not found"); }\n';
+						}
 					}
+					console.log('[hmr-http] /ns/entry-rt serving', content.length, 'bytes');
 					res.statusCode = 200;
 					res.end(content);
 				} catch (e) {
+					console.warn('[hmr-http] /ns/entry-rt error', e);
 					next();
 				}
 			});
@@ -3724,7 +3943,7 @@ export const piniaSymbol = p.piniaSymbol;
 							code = outCode;
 						} catch {}
 
-						code = processCodeForDevice(code, false);
+						code = processCodeForDevice(code, false, true);
 						// Transform static .vue imports into static imports from the assembler (no TLA) via AST
 						try {
 							const importerPath = fullSpec.replace(/[?#].*$/, '');
@@ -4242,7 +4461,7 @@ export const piniaSymbol = p.piniaSymbol;
 							parts.push(`export function render(){ const f = (typeof __ns_getRender==='function' ? __ns_getRender() : (__ns_sfc__ && __ns_sfc__.render)); return typeof f==='function' ? f.apply(this, arguments) : undefined; }`);
 							parts.push(`export default __ns_sfc__`);
 							let inlineCode = parts.filter(Boolean).join('\n');
-							inlineCode = processCodeForDevice(inlineCode, false);
+							inlineCode = processCodeForDevice(inlineCode, false, true);
 							try {
 								inlineCode = ensureVersionedCoreImports(inlineCode, getServerOrigin(server), Number(ver));
 							} catch {}
@@ -4310,7 +4529,7 @@ export const piniaSymbol = p.piniaSymbol;
 								outParts.push('export function render(){ const f = (typeof __ns_getRender==="function" ? __ns_getRender() : (typeof __ns_render==="function" ? __ns_render : (__ns_sfc__ && __ns_sfc__.render))); return typeof f === "function" ? f.apply(this, arguments) : undefined; }');
 								outParts.push('export default __ns_sfc__');
 								let inlineCode2 = outParts.filter(Boolean).join('\n');
-								inlineCode2 = processCodeForDevice(inlineCode2, false);
+								inlineCode2 = processCodeForDevice(inlineCode2, false, true);
 								try {
 									inlineCode2 = ensureVersionedCoreImports(inlineCode2, getServerOrigin(server), Number(ver));
 								} catch {}
@@ -4597,7 +4816,7 @@ export const piniaSymbol = p.piniaSymbol;
 					}
 					// Run full device processing so helper aliasing and globals are consistent in this path too
 					let code = REQUIRE_GUARD_SNIPPET + asm;
-					code = processCodeForDevice(code, false);
+					code = processCodeForDevice(code, false, true);
 					try {
 						code = ensureVersionedCoreImports(code, getServerOrigin(server), Number(ver));
 					} catch {}
@@ -4767,7 +4986,7 @@ export const piniaSymbol = p.piniaSymbol;
 									let code = transformed.code;
 									// Reuse existing sanitation chain (lightweight)
 									code = cleanCode(code);
-									code = processCodeForDevice(code, false);
+									code = processCodeForDevice(code, false, true);
 									try {
 										code = ensureVersionedCoreImports(code, getServerOrigin(server), graphVersion);
 									} catch {}
@@ -4815,7 +5034,7 @@ export const piniaSymbol = p.piniaSymbol;
 											if (depTrans?.code && depResolved) {
 												let depCode = depTrans.code;
 												depCode = cleanCode(depCode);
-												depCode = processCodeForDevice(depCode, false);
+												depCode = processCodeForDevice(depCode, false, true);
 												try {
 													depCode = ensureVersionedCoreImports(depCode, getServerOrigin(server), graphVersion);
 												} catch {}
