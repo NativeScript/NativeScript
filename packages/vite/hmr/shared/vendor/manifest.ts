@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { createRequire } from 'node:module';
 import { registerVendorManifest, clearVendorManifest, getVendorManifest } from './registry.js';
+import { generatePlatformPolyfills } from '../runtime/platform-polyfills.js';
 import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
 
 interface VendorManifestModuleEntry {
@@ -360,7 +361,20 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		// that Rollup warns it "cannot interpret due to the position of the comment".
 		// This preserves license text while preventing noisy warnings.
 		legalComments: 'eof',
-		conditions: ['module', 'import', platform, mode],
+		// NativeScript is always a client environment — never server-side. The conditions
+		// must include 'browser' so packages with conditional exports (e.g.,
+		// @tanstack/router-core/isServer) resolve to client-side variants.
+		//
+		// 'development'/'production' (mode) is intentionally excluded: esbuild resolves
+		// conditions in the order they appear in the package.json exports object, and
+		// many packages list 'development' before 'browser'. Including it would cause
+		// environment-ambiguous stubs (e.g., isServer = undefined) to win over the
+		// correct client-side value (isServer = false). The 'import' condition already
+		// provides the correct ESM entry points, and process.env.NODE_ENV (set via
+		// define below) handles dev/prod branching at runtime.
+		//
+		// This aligns with the non-HMR Vite build: ['module', 'react-native', 'import', 'browser', 'default'].
+		conditions: ['module', 'import', 'browser', platform],
 		mainFields: ['module', 'browser', 'main'],
 		resolveExtensions: resolveExtensionsForPlatform(platform),
 		loader: {
@@ -479,7 +493,14 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		throw new Error('Vendor bundle generation produced no output');
 	}
 
-	const vendorCode = buildResult.outputFiles[0].text;
+	const rawVendorCode = buildResult.outputFiles[0].text;
+
+	// Prepend platform polyfills so they run BEFORE any vendor module code.
+	// This ensures globals like AbortController and self are available when
+	// frameworks (TanStack Router, etc.) first execute inside the bundle.
+	const polyfillPrelude = generatePlatformPolyfills();
+	const vendorCode = polyfillPrelude + rawVendorCode;
+
 	const hash = createHash('sha1').update(vendorCode).digest('hex');
 	const manifest = buildManifest(collected.entries, hash);
 

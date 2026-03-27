@@ -618,6 +618,14 @@ async function processQueue(): Promise<void> {
 				case 'vue':
 					// Vue SFCs are handled via the registry update path; nothing to do here.
 					break;
+				case 'solid':
+					// Solid components are updated reactively via solid-refresh's
+					// patchRegistry() — the re-import above triggered the module
+					// to re-evaluate, which called $$refresh() → patchRegistry()
+					// → signal update → createMemo re-evaluates → UI updates.
+					// No coarse-grained UI refresh needed.
+					if (VERBOSE) console.log('[hmr][queue] Solid: modules re-imported, solid-refresh handles reactive update', drained);
+					break;
 				case 'typescript': {
 					// For TS apps, always reset back to the conventional app root.
 					// This preserves the shell (Frame, ActionBar, etc.) that the app's

@@ -16,6 +16,10 @@ const solidPath = path.resolve(projectRoot, 'node_modules/solid-js');
 
 const prod = !!process.env.production;
 
+// Built-in JSX runtime shim — maps automatic JSX transform's jsx() to
+// Solid's createComponent() without pulling in the web renderer (solid-js/h).
+const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'solid-jsx-runtime.js');
+
 const plugins = [
 	{
 		...alias({
@@ -25,6 +29,10 @@ const plugins = [
 				// Alias solid-js modules to proper locations
 				'solid-js/universal': resolve(solidPath, `universal/dist/${prod ? 'universal' : 'dev'}.js`),
 				'solid-js/store': resolve(solidPath, `store/dist/${prod ? 'store' : 'dev'}.js`),
+				// Automatic JSX transform runtime — must come before the catch-all
+				// 'solid-js' entry to avoid prefix-matching to solid-js/dist/dev.js
+				'solid-js/jsx-runtime': jsxRuntimeShimPath,
+				'solid-js/jsx-dev-runtime': jsxRuntimeShimPath,
 				'solid-js': resolve(solidPath, `dist/${prod ? 'solid' : 'dev'}.js`),
 			},
 		}),

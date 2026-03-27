@@ -2919,10 +2919,53 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// apply immediately when the module re-evaluates.
 					try {
 						if (transformed?.code && ACTIVE_STRATEGY?.flavor === 'solid' && (resolvedCandidate || spec || '').includes('@solid-refresh')) {
-							const marker = 'hot.data[SOLID_REFRESH] = hot.data[SOLID_REFRESH] || registry;';
-							if (transformed.code.includes(marker)) {
-								transformed.code = transformed.code.replace(marker, `if (hot.data[SOLID_REFRESH]) { patchRegistry(hot.data[SOLID_REFRESH], registry); }\n    ${marker}`);
-								if (verbose) console.log('[hmr-ws][solid] patched @@solid-refresh for inline HMR');
+							const PATCH_SENTINEL = '/* __ns_solid_refresh_patched__ */';
+							const alreadyPatched = transformed.code.includes(PATCH_SENTINEL);
+							console.log('[hmr-ws][solid] @solid-refresh patch check:', { spec: resolvedCandidate || spec, alreadyPatched, codeLen: transformed.code.length });
+							if (!alreadyPatched) {
+								let patchedCode = transformed.code;
+
+								// Patch 1: Bypass shouldWarnAndDecline() — the vendor-bundled solid-js
+								// may not have the 'development' condition active, making DEV empty/undefined.
+								// In NativeScript HMR mode we are always in dev, so force it to return false.
+								const declineCheck = 'function shouldWarnAndDecline() {';
+								if (patchedCode.includes(declineCheck)) {
+									patchedCode = patchedCode.replace(declineCheck, `${PATCH_SENTINEL}\nfunction shouldWarnAndDecline() { return false; /* NS HMR: always allow refresh */ }\nfunction __original_shouldWarnAndDecline() {`);
+									console.log('[hmr-ws][solid] bypassed shouldWarnAndDecline() for NativeScript HMR');
+								}
+
+								// Patch 2: Force createMemo path in createProxy.
+								// Without the 'development' condition, $DEVCOMP is not set on components,
+								// so createProxy falls through to `return s(props)` — a direct call with
+								// no reactive subscription. When patchComponent fires update() (the signal
+								// setter), nobody is listening. By forcing the createMemo path, HMRComp
+								// subscribes to the signal and re-renders when the component changes.
+								const proxyCondition = 'if (!s || $DEVCOMP in s) {';
+								if (patchedCode.includes(proxyCondition)) {
+									patchedCode = patchedCode.replace(proxyCondition, 'if (true) { /* NS HMR: always use createMemo for reactive HMR updates */');
+									console.log('[hmr-ws][solid] forced createMemo path in createProxy for NativeScript HMR');
+								}
+
+								// Patch 3: Inline patchRegistry call so updates apply immediately
+								// on module re-evaluation (accept callbacks are not invoked by the HMR client).
+								const marker = 'hot.data[SOLID_REFRESH] = hot.data[SOLID_REFRESH] || registry;';
+								if (patchedCode.includes(marker)) {
+									const patchCode = [
+										`console.log('[solid-refresh][$$refreshESM] hot.data keys=', hot.data ? Object.keys(hot.data) : 'no-data', 'has=', !!(hot.data && hot.data[SOLID_REFRESH]));`,
+										`if (hot.data[SOLID_REFRESH]) {`,
+										`  console.log('[solid-refresh][$$refreshESM] patching: oldComponents=', hot.data[SOLID_REFRESH].components ? hot.data[SOLID_REFRESH].components.size : 0, 'newComponents=', registry.components ? registry.components.size : 0);`,
+										`  var _shouldInvalidate = patchRegistry(hot.data[SOLID_REFRESH], registry);`,
+										`  console.log('[solid-refresh][$$refreshESM] patchRegistry result: shouldInvalidate=', _shouldInvalidate);`,
+										`} else {`,
+										`  console.log('[solid-refresh][$$refreshESM] first load — creating registry, components=', registry.components ? registry.components.size : 0);`,
+										`}`,
+									].join('\n    ');
+									patchedCode = patchedCode.replace(marker, `${patchCode}\n    ${marker}`);
+									console.log('[hmr-ws][solid] added inline patchRegistry for NativeScript HMR');
+								}
+
+								// Work on a copy to avoid mutating Vite's cached TransformResult
+								transformed = { ...transformed, code: patchedCode };
 							}
 						}
 					} catch {}
@@ -3095,6 +3138,20 @@ export const piniaSymbol = p.piniaSymbol;
 					code = REQUIRE_GUARD_SNIPPET + code;
 					code = cleanCode(code);
 					code = processCodeForDevice(code, false, true);
+					// Solid HMR: The NativeScript iOS/Android runtime provides import.meta.hot
+					// natively (via InitializeImportMetaHot in HMRSupport.mm) with C++-backed
+					// persistent hot.data that survives across module re-evaluations.
+					// cleanCode() strips Vite's __vite__createHotContext assignment, which is
+					// correct — the runtime's native hot context is better.
+					// We inject a diagnostic log to trace hot.data state during development.
+					try {
+						if (ACTIVE_STRATEGY?.flavor === 'solid' && /\.(tsx|jsx)$/i.test(resolvedCandidate || spec)) {
+							const moduleId = (resolvedCandidate || spec).replace(/[?#].*$/, '');
+							// Diagnostic: log import.meta.hot state on device to trace solid-refresh flow
+							code = `try{if(typeof import.meta!=='undefined'&&import.meta.hot){var _hd=import.meta.hot.data;var _sr=_hd&&_hd['solid-refresh'];console.log('[solid-hmr][native-hot]',${JSON.stringify(moduleId)},'hasHot=true','hasData=',!!_hd,'hasSolidRefresh=',!!_sr,'dataKeys=',_hd?Object.keys(_hd):[]);}else{console.log('[solid-hmr][native-hot]',${JSON.stringify(moduleId)},'hasHot=',!!(typeof import.meta!=='undefined'&&import.meta.hot));}}catch(e){console.log('[solid-hmr][native-hot] error',e);}\n` + code;
+							console.log('[hmr-ws][solid] diagnostic injected for', moduleId, '(using runtime native import.meta.hot)');
+						}
+					} catch {}
 					code = rewriteImports(code, resolvedCandidate || spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 					// Dedupe any /ns/rt named imports that duplicate destructured bindings off default /ns/rt
 					try {
@@ -3261,6 +3318,15 @@ export const piniaSymbol = p.piniaSymbol;
 							console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
 						} catch {}
 					}
+					// Diagnostic: dump served code to terminal when ?__diag=1 is in the original URL
+					try {
+						if (urlObj?.searchParams?.get('__diag') === '1') {
+							const specId = resolvedCandidate || spec;
+							console.log(`\n${'='.repeat(80)}\n[ns:m][DIAG] ${specId}\n${'='.repeat(80)}`);
+							console.log(code);
+							console.log(`${'='.repeat(80)}\n[ns:m][DIAG] END ${specId}\n${'='.repeat(80)}\n`);
+						}
+					} catch {}
 					res.statusCode = 200;
 					res.end(code);
 				} catch (e) {
@@ -5248,6 +5314,39 @@ export const piniaSymbol = p.piniaSymbol;
 					if (gm) emitDelta([gm], []);
 				} catch (e) {
 					if (verbose) console.warn('[hmr-ws][ts] failed to emit delta for', file, e);
+				}
+				return;
+			}
+
+			// Solid flavor: emit graph delta for app TSX/TS/JSX file changes.
+			// The common graph-update block above (moduleGraph lookup) may have
+			// already emitted a delta if the file was in Vite's module graph.
+			// This handler ensures a delta is emitted even if the module wasn't
+			// found (e.g. new file, or moduleGraph mismatch), and provides
+			// Solid-specific logging.
+			if (ACTIVE_STRATEGY.flavor === 'solid') {
+				const isSolidFile = /\.(tsx?|jsx?)$/i.test(file);
+				if (!isSolidFile) return;
+				try {
+					const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+					if (verbose) console.log('[hmr-ws][solid] app file hot update', { file, rel });
+					// If the common block already upserted (hash changed), this will
+					// detect unchanged hash and no-op. If the common block missed it
+					// (module not in Vite's graph), this forces the delta emission.
+					const normalizedId = normalizeGraphId(rel);
+					const existing = graph.get(normalizedId);
+					if (!existing) {
+						// Module not in graph yet — force upsert with timestamp-based
+						// hash so the client sees a change.
+						upsertGraphModule(rel, `/* solid-hmr ${Date.now()} */`, []);
+					}
+					// Log what we're sending so devs can trace the flow on the server side.
+					if (verbose) {
+						const gm = graph.get(normalizedId);
+						console.log('[hmr-ws][solid] delta module', { id: gm?.id, hash: gm?.hash });
+					}
+				} catch (e) {
+					if (verbose) console.warn('[hmr-ws][solid] failed to handle hot update for', file, e);
 				}
 				return;
 			}
