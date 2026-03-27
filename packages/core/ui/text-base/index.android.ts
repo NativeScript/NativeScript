@@ -412,7 +412,7 @@ export class TextBase extends TextBaseCommon {
 		if (!this.formattedText || !(value instanceof Color)) {
 			if (value instanceof Color) {
 				this.nativeTextViewProtected.setTextColor(value.android);
-			} else {
+			} else if (value) {
 				this.nativeTextViewProtected.setTextColor(value);
 			}
 		}
