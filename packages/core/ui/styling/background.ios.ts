@@ -185,9 +185,9 @@ export namespace ios {
 
 		if (imageURI) {
 			if (typeof imageURI !== 'string') {
-                callback(null);
-                return;
-            }
+				callback(null);
+				return;
+			}
 			const match = imageURI.match(uriPattern);
 			if (match && match[2]) {
 				imageURI = match[2];
