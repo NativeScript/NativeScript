@@ -618,14 +618,137 @@ async function processQueue(): Promise<void> {
 				case 'vue':
 					// Vue SFCs are handled via the registry update path; nothing to do here.
 					break;
-				case 'solid':
-					// Solid components are updated reactively via solid-refresh's
-					// patchRegistry() — the re-import above triggered the module
-					// to re-evaluate, which called $$refresh() → patchRegistry()
-					// → signal update → createMemo re-evaluates → UI updates.
-					// No coarse-grained UI refresh needed.
-					if (VERBOSE) console.log('[hmr][queue] Solid: modules re-imported, solid-refresh handles reactive update', drained);
+				case 'solid': {
+					// Solid .tsx components are self-accepting via solid-refresh's inline
+					// patchRegistry — re-importing them is sufficient. For non-component
+					// .ts utility modules, we must propagate up the import graph to find
+					// the .tsx/.jsx component boundaries and re-import those so their
+					// solid-refresh proxies pick up the new dependency values.
+					try {
+						// Build reverse index: dep id → list of importer ids
+						const reverseIndex = new Map<string, string[]>();
+						for (const [id, mod] of graph) {
+							for (const dep of mod.deps) {
+								let arr = reverseIndex.get(dep);
+								if (!arr) {
+									arr = [];
+									reverseIndex.set(dep, arr);
+								}
+								arr.push(id);
+							}
+						}
+						// BFS from each non-tsx changed module up to tsx/jsx boundaries
+						const boundaries = new Set<string>();
+						for (const id of drained) {
+							if (/\.(tsx|jsx)$/i.test(id)) continue; // already self-accepting
+							const visited = new Set<string>();
+							const queue = [id];
+							while (queue.length) {
+								const cur = queue.shift()!;
+								if (visited.has(cur)) continue;
+								visited.add(cur);
+								const importers = reverseIndex.get(cur);
+								if (!importers) continue;
+								for (const imp of importers) {
+									if (/\.(tsx|jsx)$/i.test(imp)) {
+										boundaries.add(imp);
+									} else {
+										queue.push(imp);
+									}
+								}
+							}
+						}
+						// Re-import each boundary so solid-refresh patchRegistry fires.
+						// For route files (TanStack Router), capture the new Route export
+						// and patch the router's existing route with the fresh loader.
+						let routesPatchCount = 0;
+						let discoveredRouter: any = null;
+						// Discover router: try __ns_router global (set by createNativeScriptRouter),
+						// then scan globalThis for any router-shaped object with routesById.
+						const findRouter = (): any => {
+							if (discoveredRouter) return discoveredRouter;
+							const g = globalThis as any;
+							if (g.__ns_router?.routesById) return (discoveredRouter = g.__ns_router);
+							// Fallback: scan common global keys for router
+							for (const key of ['__ns_router', 'router', '__router']) {
+								if (g[key]?.routesById && g[key]?.invalidate) return (discoveredRouter = g[key]);
+							}
+							return null;
+						};
+						// Convert boundary file path to TanStack Router fullPath.
+						// e.g. /src/routes/posts.$postId.tsx → /posts/$postId
+						const boundaryToFullPath = (bid: string): string | null => {
+							const m = bid.match(/\/src\/routes\/(.+)\.(tsx|jsx|ts|js)$/i);
+							if (!m) return null;
+							let p = m[1];
+							// Replace dots between segments with slashes (posts.$postId → posts/$postId)
+							p = p.replace(/\./g, '/');
+							// Handle index files
+							if (p === 'index') return '/';
+							if (p.endsWith('/index')) p = p.slice(0, -6);
+							// Strip leading - (TanStack pathless layout convention)
+							p = p.replace(/(^|\/)-([\w])/g, '$1$2');
+							return '/' + p;
+						};
+						// Find existing route by fullPath (since new Route has no id yet)
+						const findRouteByFullPath = (router: any, fp: string): any => {
+							if (!router?.routesById) return null;
+							for (const rid of Object.keys(router.routesById)) {
+								const r = router.routesById[rid];
+								if (r?.fullPath === fp) return r;
+							}
+							return null;
+						};
+						for (const id of boundaries) {
+							if (seen.has(id)) continue;
+							try {
+								const spec = normalizeSpec(id);
+								const url = await requestModuleFromServer(spec);
+								if (!url) continue;
+								if (VERBOSE) console.log('[hmr][solid] propagated to boundary', { id, url });
+								const mod: any = await import(/* @vite-ignore */ url);
+								// Patch TanStack Router route loaders
+								try {
+									const newRoute = mod?.Route;
+									if (newRoute?.options?.loader) {
+										const router = findRouter();
+										const fullPath = boundaryToFullPath(id);
+										if (VERBOSE) console.log('[hmr][solid][diag] route patch attempt', { id, fullPath, hasRouter: !!router, routesByIdKeys: router?.routesById ? Object.keys(router.routesById) : 'none' });
+										const existingRoute = fullPath && router ? findRouteByFullPath(router, fullPath) : null;
+										if (existingRoute?.options) {
+											existingRoute.options.loader = newRoute.options.loader;
+											if (newRoute.options.component) existingRoute.options.component = newRoute.options.component;
+											routesPatchCount++;
+											if (VERBOSE) console.log('[hmr][solid] patched route loader', existingRoute.id, 'fullPath=', fullPath);
+										} else if (VERBOSE) {
+											console.log('[hmr][solid] no matching route for fullPath', fullPath);
+										}
+									}
+								} catch (e) {
+									if (VERBOSE) console.warn('[hmr][solid] route patch error', id, e);
+								}
+							} catch (e) {
+								if (VERBOSE) console.warn('[hmr][solid] boundary re-import failed', id, e);
+							}
+						}
+						// Route loaders were patched with fresh closures. The data is
+						// correct in router.state.matches[].loaderData (confirmed via
+						// diagnostics), but the currently visible page doesn't re-render
+						// because the NativeScriptRouterProvider's Solid store flush only
+						// fires through history.subscribe. TODO: find the right mechanism
+						// to trigger a Solid reactive update for the active match stores.
+						if (routesPatchCount > 0 && VERBOSE) {
+							console.log('[hmr][solid] patched', routesPatchCount, 'route loaders (data correct in match state, pending UI refresh mechanism)');
+						}
+						if (VERBOSE) {
+							if (boundaries.size) console.log('[hmr][solid] propagated non-component change to', boundaries.size, 'boundaries', Array.from(boundaries));
+							console.log('[hmr][queue] Solid: modules re-imported, solid-refresh handles reactive update', drained);
+						}
+					} catch (e) {
+						if (VERBOSE) console.warn('[hmr][solid] propagation failed', e);
+					}
 					break;
+				}
 				case 'typescript': {
 					// For TS apps, always reset back to the conventional app root.
 					// This preserves the shell (Frame, ActionBar, etc.) that the app's

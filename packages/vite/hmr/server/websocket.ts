@@ -2969,35 +2969,12 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							}
 						}
 					} catch {}
-					// Post-transform: inject cache-busting version for all internal /ns/m/* imports to avoid stale module reuse on device.
-					// IMPORTANT: use PATH-based busting (not query) because the iOS HTTP ESM loader strips query params
-					// when computing module cache keys.
+					// NOTE: Path-based cache busting for /ns/m/* imports is applied in the
+					// finalize step below (after rewriteImports adds the /ns/m/ prefix).
+					// The block here only handles TypeScript-specific graph population.
 					try {
 						if (transformed?.code) {
-							const ver = Number((global as any).graphVersion || graphVersion || 0);
-							let code = transformed.code;
-							const prefix = `/ns/m/__ns_hmr__/v${ver}`;
-							const rewrite = (p: string) => {
-								try {
-									if (!p || typeof p !== 'string') return p;
-									if (!p.startsWith('/ns/m/')) return p;
-									if (p.startsWith('/ns/m/__ns_hmr__/')) return p;
-									return prefix + p.slice('/ns/m'.length);
-								} catch {
-									return p;
-								}
-							};
-							// 1) Static imports: import ... from "/ns/m/..."
-							code = code.replace(/(from\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
-							// 2) Side-effect imports: import "/ns/m/..."
-							code = code.replace(/(import\s*(?!\()\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
-							// 3) Dynamic imports: import("/ns/m/...")
-							code = code.replace(/(import\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*\))/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
-							// 4) new URL("/ns/m/...", import.meta.url)
-							code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\))/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
-							// 5) __ns_import(new URL('/ns/m/...', import.meta.url).href)
-							code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\)\.href)/g, (_m, a, p, b) => `${a}${rewrite(p)}${b}`);
-							transformed.code = code;
+							const code = transformed.code;
 							// TypeScript-specific graph population: when TS flavor is active
 							// and this is an application module under the virtual app root,
 							// upsert it into the HMR graph so ns:hmr-full-graph is non-empty.
@@ -3200,23 +3177,31 @@ export const piniaSymbol = p.piniaSymbol;
 						code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), verNum);
 						code = ensureVersionedCoreImports(code, getServerOrigin(server), verNum);
 					} catch {}
-					// Finalize: also stamp all internal /ns/m imports with ?v=<ver> after all rewrites
+					// Finalize: stamp all internal /ns/m imports with PATH-based cache busting.
+					// IMPORTANT: use path prefix (not ?v= query) because the iOS HTTP ESM loader
+					// strips query params when computing module cache keys, so ?v= doesn't bust the V8 cache.
 					try {
 						const ver = String(forcedVer || graphVersion || 0);
 						const origin = getServerOrigin(server);
+						const hmrPrefix = `/ns/m/__ns_hmr__/v${ver}`;
+						const rewritePath = (p: string) => {
+							if (!p || !p.startsWith('/ns/m/')) return p;
+							if (p.startsWith('/ns/m/__ns_hmr__/')) return p; // already prefixed
+							return hmrPrefix + p.slice('/ns/m'.length);
+						};
 						// 1) Static imports: import ... from "/ns/m/..."
-						code = code.replace(/(from\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, `$1$2?v=${ver}$3`);
+						code = code.replace(/(from\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
 						// 2) Side-effect imports: import "/ns/m/..."
-						code = code.replace(/(import\s*(?!\()\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, `$1$2?v=${ver}$3`);
+						code = code.replace(/(import\s*(?!\()\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
 						// 3) Dynamic imports: import("/ns/m/...")
-						code = code.replace(/(import\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*\))/g, `$1$2?v=${ver}$3`);
+						code = code.replace(/(import\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*\))/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
 						// 4) new URL("/ns/m/...", import.meta.url)
-						code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\))/g, `$1$2?v=${ver}$3`);
+						code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\))/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
 						// 5) __ns_import(new URL('/ns/m/...', import.meta.url).href)
-						code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\)\.href)/g, `$1$2?v=${ver}$3`);
-						// 6) Force absolute HTTP for new URL('/ns/m/...', import.meta.url).href → "${origin}/ns/m/..."
+						code = code.replace(/(new\s+URL\(\s*["'])(\/ns\/m\/[^"'?]+)(["']\s*,\s*import\.meta\.url\s*\)\.href)/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
+						// 6) Force absolute HTTP for new URL('/ns/m/...', import.meta.url).href → "${origin}/ns/m/__ns_hmr__/..."
 						try {
-							code = code.replace(/new\s+URL\(\s*["'](\/ns\/m\/[^"'?]+)(?:\?[^"']*)?["']\s*,\s*import\.meta\.url\s*\)\.href/g, (_m: string, p1: string) => `${JSON.stringify(`${origin}${p1}?v=${ver}`)}`);
+							code = code.replace(/new\s+URL\(\s*["'](\/ns\/m\/[^"'?]+)(?:\?[^"']*)?["']\s*,\s*import\.meta\.url\s*\)\.href/g, (_m: string, p1: string) => `${JSON.stringify(`${origin}${rewritePath(p1)}`)}`);
 						} catch {}
 						// 7) Also fix SFC new URL('/ns/sfc/...', import.meta.url).href → "${origin}/ns/sfc/<ver>/..."
 						try {
@@ -5323,7 +5308,8 @@ export const piniaSymbol = p.piniaSymbol;
 			// already emitted a delta if the file was in Vite's module graph.
 			// This handler ensures a delta is emitted even if the module wasn't
 			// found (e.g. new file, or moduleGraph mismatch), and provides
-			// Solid-specific logging.
+			// Solid-specific logging. The client-side processQueue handles
+			// propagation from non-component .ts files to .tsx component boundaries.
 			if (ACTIVE_STRATEGY.flavor === 'solid') {
 				const isSolidFile = /\.(tsx?|jsx?)$/i.test(file);
 				if (!isSolidFile) return;
