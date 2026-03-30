@@ -15,13 +15,13 @@
 
                     <Button row="2" text="Toggle Glass" tap="{{toggleGlassEffect}}" horizontalAlignment="center" verticalAlignment="middle" class="c-white font-weight-bold m-y-20 p-4" fontSize="22" borderRadius="32" width="300" height="100" touchAnimation="{{touchAnimation}}" iosGlassEffect="{{currentEffect}}"/>
 
-                    <LiquidGlass row="3" width="300" height="100" borderRadius="32" iosGlassEffect="{{iosGlassEffectInteractive}}" >
+                    <LiquidGlass row="3" width="300" height="100" borderRadius="32" iosGlassEffect="{{iosGlassEffectInteractive}}">
 
                         <Label text="Glass Interactive" fontSize="22" class="font-weight-bold text-center c-white" />
 
                     </LiquidGlass>
 
-                    
+
                     <LiquidGlassContainer row="4" tap="{{toggleMergeGlass}}" horizontalAlignment="left" verticalAlignment="middle" class="m-t-20" width="300" height="100" columns="*">
                         <LiquidGlass id="glass1" loaded="{{loadedGlass}}" borderRadius="50" width="100" height="100">
                             <Label id="share" text="Share" fontSize="22" class="font-weight-bold text-center" width="100" height="100" loaded="{{loadedGlassLabels}}" />
@@ -30,6 +30,28 @@
                             <Label id="like" text="Like" fontSize="22" class="font-weight-bold text-center" loaded="{{loadedGlassLabels}}" />
                         </LiquidGlass>
                     </LiquidGlassContainer>
+                </GridLayout>
+
+                <GridLayout rows="auto,auto" marginTop="20">
+                    <Label text="Inside FlexboxLayout:" fontSize="22" class="font-weight-bold text-center c-white" />
+                    <FlexboxLayout row="1" marginTop="12" alignment="center" justifyContent="center" flexDirection="column" width="350">
+
+                        <LiquidGlass row="3" width="300" height="100" borderRadius="32" iosGlassEffect="{{iosGlassEffectInteractive}}">
+
+                            <Label text="Glass Interactive" fontSize="22" class="font-weight-bold text-center c-white" />
+
+                        </LiquidGlass>
+
+                        <!-- Can try containers as well -->
+                        <!-- <LiquidGlassContainer row="4" tap="{{toggleMergeGlass}}" horizontalAlignment="left" verticalAlignment="middle" class="m-t-20" width="300" height="100" columns="*">
+                            <LiquidGlass id="glass1" loaded="{{loadedGlass}}" borderRadius="50" width="100" height="100">
+                                <Label id="share" text="Share" fontSize="22" class="font-weight-bold text-center" width="100" height="100" loaded="{{loadedGlassLabels}}" />
+                            </LiquidGlass>
+                            <LiquidGlass id="glass2" loaded="{{loadedGlass}}" borderRadius="50" width="100" height="100">
+                                <Label id="like" text="Like" fontSize="22" class="font-weight-bold text-center" loaded="{{loadedGlassLabels}}" />
+                            </LiquidGlass>
+                        </LiquidGlassContainer> -->
+                    </FlexboxLayout>
                 </GridLayout>
 
                 <GridLayout rows="*,auto,auto,auto,*" class="m-t-10">

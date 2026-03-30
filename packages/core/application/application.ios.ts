@@ -186,6 +186,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			return;
 		}
 
+		const isFirstScene = !Application.ios.getPrimaryScene() && !Application.hasLaunched();
+
 		this._scene = scene;
 
 		// Create window for this scene
@@ -221,7 +223,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		}
 
 		// If this is the first scene, trigger app startup
-		if (!Application.ios.getPrimaryScene()) {
+		if (isFirstScene) {
 			Application.ios._notifySceneAppStarted();
 		}
 	}
@@ -905,8 +907,11 @@ export class iOSApplication extends ApplicationCommon {
 				setiOSWindow(window);
 			}
 
-			// Set up the window content for the primary scene
-			this.setWindowContent();
+			// During initial scene startup we must wait for launch to be notified first.
+			// Some frameworks provide root content from launch handlers.
+			if (this.hasLaunched()) {
+				this.setWindowContent();
+			}
 		}
 	}
 

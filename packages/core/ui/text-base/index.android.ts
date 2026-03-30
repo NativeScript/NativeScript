@@ -408,11 +408,11 @@ export class TextBase extends TextBaseCommon {
 	[colorProperty.getDefault](): android.content.res.ColorStateList {
 		return this.nativeTextViewProtected.getTextColors();
 	}
-	[colorProperty.setNative](value: Color | android.content.res.ColorStateList) {
+	[colorProperty.setNative](value: Color | android.content.res.ColorStateList | null | undefined) {
 		if (!this.formattedText || !(value instanceof Color)) {
 			if (value instanceof Color) {
 				this.nativeTextViewProtected.setTextColor(value.android);
-			} else {
+			} else if (value != null) {
 				this.nativeTextViewProtected.setTextColor(value);
 			}
 		}
