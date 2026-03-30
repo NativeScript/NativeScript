@@ -45,6 +45,7 @@ jobs:
     env:
       # Optional: provide Nx Cloud token if used in this repo
       NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+      NEXT_PRERELEASE_PROJECT_ALLOWLIST: core,webpack5
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -124,8 +125,8 @@ jobs:
             fi
           fi
 
-          # Only consider libs under packages/* and exclude items configured as non-releaseable.
-          affected_json=$(npx nx show projects --affected --base "$base" --head "$head" --type lib --projects "packages/*" --exclude "ui-mobile-base,types-minimal,winter-tc,types,types-ios,types-android" --json)
+          # Only consider main-branch prerelease libraries allowed for automatic next publishes.
+          affected_json=$(npx nx show projects --affected --base "$base" --head "$head" --type lib --projects "$NEXT_PRERELEASE_PROJECT_ALLOWLIST" --json)
           affected_list=$(printf '%s' "$affected_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s||"[]");process.stdout.write(a.join(","));});')
           affected_count=$(printf '%s' "$affected_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const a=JSON.parse(s||"[]");process.stdout.write(String(a.length));});')
 
@@ -337,7 +338,6 @@ jobs:
 
       - name: nx release publish (token, dispatch)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && steps.ctx.outputs.dry_run != 'true' && vars.USE_NPM_TOKEN == 'true' }}
-        shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
@@ -353,7 +353,6 @@ jobs:
 
       - name: nx release publish (token, dispatch dry-run)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && inputs.dry-run && vars.USE_NPM_TOKEN == 'true' }}
-        shell: bash
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
@@ -403,9 +402,23 @@ jobs:
       - name: Summary
         if: always()
         run: |
+          mode="${{ steps.ctx.outputs.mode }}"
+
           echo "Nx Release completed."
-          echo "- mode: ${{ steps.ctx.outputs.mode }}"
+          echo "- mode: ${mode}"
           echo "- dist-tag: ${{ steps.ctx.outputs.mode == 'tag' && steps.taginfo.outputs.dist_tag || steps.ctx.outputs.dist_tag }}"
           echo "- scope: '${{ steps.ctx.outputs.scope }}'"
+          echo "- next-prerelease-allowlist: ${NEXT_PRERELEASE_PROJECT_ALLOWLIST}"
+          if [[ "$mode" == "main" ]]; then
+            echo "- projects: ${{ steps.affected.outputs.projects }}"
+          elif [[ "$mode" == "dispatch" ]]; then
+            if [[ -n "${{ steps.ctx.outputs.scope }}" ]]; then
+              echo "- projects: ${{ steps.ctx.outputs.scope }}"
+            else
+              echo "- projects: all configured release projects"
+            fi
+          else
+            echo "- project: ${{ steps.taginfo.outputs.project }}"
+          fi
           echo "- dry-run: ${{ steps.ctx.outputs.dry_run }}"
           echo "- use-token: ${{ vars.USE_NPM_TOKEN == 'true' }}"
