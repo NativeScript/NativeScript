@@ -186,6 +186,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			return;
 		}
 
+		const isFirstScene = !Application.ios.getPrimaryScene() && !Application.hasLaunched();
+
 		this._scene = scene;
 
 		// Create window for this scene
@@ -221,7 +223,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		}
 
 		// If this is the first scene, trigger app startup
-		if (!Application.ios.getPrimaryScene()) {
+		if (isFirstScene) {
 			Application.ios._notifySceneAppStarted();
 		}
 	}
