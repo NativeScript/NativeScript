@@ -267,12 +267,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
 			config.output.filename(`[name].${env.uniqueBundle}.mjs`);
 		}
-		// Prevent webpack from polyfilling __dirname via `import {fileURLToPath} from "node:url"`.
-		// In ESM output mode, webpack auto-generates this import whenever bundled code references
-		// __dirname — but iOS's node:url does not export fileURLToPath, crashing workers.
-		// NativeScript's runtime already provides __dirname as a global, and
-		// @nativescript/core/globals/index.js handles the ESM case via import.meta.dirname,
-		// so webpack's polyfill is both redundant and broken on iOS.
+		// Prevent webpack from generating Node-style ESM shims for __dirname/__filename.
+		// For output modules, webpack defaults these to a fileURLToPath(import.meta.url) helper
+		// imported from bare "url", which does not match the NativeScript iOS runtime contract.
+		// The runtime already provides import.meta.dirname and initializes global.__dirname,
+		// so webpack's helper is redundant and can misresolve in bundle/worker contexts.
+		// ESM app or dependency code should use import.meta.dirname/import.meta.url instead
+		// of expecting webpack to synthesize __dirname/__filename.
 		config.node.set('__dirname', false);
 		config.node.set('__filename', false);
 	}
