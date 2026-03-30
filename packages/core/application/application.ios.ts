@@ -907,8 +907,11 @@ export class iOSApplication extends ApplicationCommon {
 				setiOSWindow(window);
 			}
 
-			// Set up the window content for the primary scene
-			this.setWindowContent();
+			// During initial scene startup we must wait for launch to be notified first.
+			// Some frameworks provide root content from launch handlers.
+			if (this.hasLaunched()) {
+				this.setWindowContent();
+			}
 		}
 	}
 
