@@ -8,7 +8,7 @@ import { layout, ios as iosUtils, getWindow } from '../../../utils';
 import { SDK_VERSION, supportsGlass } from '../../../utils/constants';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty, filterProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
@@ -901,6 +901,113 @@ export class View extends ViewCommon {
 		if (nativeView.outerShadowContainerLayer) {
 			nativeView.outerShadowContainerLayer.zPosition = value;
 		}
+	}
+
+	[filterProperty.getDefault](): any[] {
+		return [];
+	}
+
+	[filterProperty.setNative](value: any[]) {
+		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
+		if (!value || value.length === 0) {
+			nativeView.layer.filters = null;
+			// Also clear drop-shadow if any
+			nativeView.layer.shadowColor = null;
+			nativeView.layer.shadowOffset = CGSizeMake(0, 0);
+			nativeView.layer.shadowRadius = 0;
+			nativeView.layer.shadowOpacity = 0;
+			return;
+		}
+
+		const filters: any[] = [];
+		for (const filter of value) {
+			const type = filter.type;
+			const val = filter.value;
+
+			switch (type) {
+				case 'drop-shadow':
+					// Apply directly to layer
+					this.applyDropShadowToLayer(nativeView.layer, val);
+					break;
+				case 'opacity':
+					// Set alpha directly (note: may conflict with opacity property)
+					nativeView.alpha = val;
+					break;
+				default:
+					const ciFilter = this.createCIFilter(filter);
+					if (ciFilter) {
+						filters.push(ciFilter);
+					}
+			}
+		}
+		nativeView.layer.filters = filters;
+	}
+
+	private createCIFilter(filter: any): any {
+		const type = filter.type;
+		const val = filter.value;
+		let ciFilter: any = null;
+
+		switch (type) {
+			case 'blur':
+				ciFilter = CIFilter.filterWithName('CIGaussianBlur');
+				ciFilter.setValue(val, 'inputRadius');
+				break;
+			case 'brightness':
+				ciFilter = CIFilter.filterWithName('CIColorControls');
+				ciFilter.setValue(val, 'inputBrightness');
+				break;
+			case 'contrast':
+				ciFilter = CIFilter.filterWithName('CIColorControls');
+				ciFilter.setValue(val, 'inputContrast');
+				break;
+			case 'saturate':
+				ciFilter = CIFilter.filterWithName('CIColorControls');
+				ciFilter.setValue(val, 'inputSaturation');
+				break;
+			case 'grayscale':
+				ciFilter = CIFilter.filterWithName('CIColorControls');
+				const saturation = 1 - val;
+				ciFilter.setValue(saturation, 'inputSaturation');
+				break;
+			case 'invert':
+				ciFilter = CIFilter.filterWithName('CIColorInvert');
+				break;
+			case 'sepia':
+				ciFilter = CIFilter.filterWithName('CISepiaTone');
+				ciFilter.setValue(val, 'inputIntensity');
+				break;
+			case 'hue-rotate':
+				ciFilter = CIFilter.filterWithName('CIHueAdjust');
+				// Convert degrees to radians
+				const radians = val * Math.PI / 180;
+				ciFilter.setValue(radians, 'inputAngle');
+				break;
+			default:
+				break;
+		}
+		return ciFilter;
+	}
+
+	private applyDropShadowToLayer(layer: any, params: any) {
+		if (!params) return;
+		const { h, v, blur = 0, color } = params;
+		if (color) {
+			const c = new Color(color);
+			// @ts-ignore
+			layer.shadowColor = c.ios.CGColor;
+		} else {
+			layer.shadowColor = UIColor.blackColor.CGColor;
+		}
+		layer.shadowOffset = CGSizeMake(h, v);
+		layer.shadowRadius = blur;
+		if (color) {
+			const c = new Color(color);
+			layer.shadowOpacity = c.alpha;
+		} else {
+			layer.shadowOpacity = 1;
+		}
+		layer.masksToBounds = false;
 	}
 
 	[backgroundInternalProperty.getDefault](): UIColor {

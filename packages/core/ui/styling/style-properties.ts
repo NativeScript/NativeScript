@@ -17,6 +17,7 @@ import { parseCSSShadow, ShadowCSSValues } from './css-shadow';
 import { transformConverter } from './css-transform';
 import { ClipPathFunction } from './clip-path-function';
 import { parseCSSCommaSeparatedListOfValues } from './css-utils';
+import { parseFilter, FilterFunction } from './filter-parser';
 
 interface ShorthandPositioning {
 	top: string;
@@ -1250,3 +1251,20 @@ export const androidDynamicElevationOffsetProperty = new CssProperty<Style, numb
 	valueConverter: parseFloat,
 });
 androidDynamicElevationOffsetProperty.register(Style);
+
+export const filterProperty = new CssProperty<Style, FilterFunction[]>({
+	name: 'filter',
+	cssName: 'filter',
+	defaultValue: [],
+	equalityComparer: (a, b) => {
+		if (a.length !== b.length) return false;
+		for (let i = 0; i < a.length; i++) {
+			if (JSON.stringify(a[i]) !== JSON.stringify(b[i])) return false;
+		}
+		return true;
+	},
+	valueConverter: (value: string): FilterFunction[] => {
+		return parseFilter(value);
+	},
+});
+filterProperty.register(Style);
