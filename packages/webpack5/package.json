@@ -32,7 +32,7 @@
 		"loader-utils": "^2.0.0 || ^3.0.0",
 		"lodash.get": "^4.0.0",
 		"micromatch": "^4.0.0",
-		"postcss": "^8.0.0",
+		"postcss": "^8.5.8",
 		"postcss-import": "^16.0.0",
 		"postcss-loader": "^8.0.0",
 		"raw-loader": "^4.0.0",
