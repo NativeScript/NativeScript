@@ -24,6 +24,7 @@ import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, 
 import * as Utils from '../../../utils';
 import { SDK_VERSION } from '../../../utils/constants';
 import { BoxShadow } from '../../styling/box-shadow';
+import { FilterFunction } from '../../styling/filter-parser';
 import { NativeScriptAndroidView } from '../../utils';
 
 export * from './view-common';
@@ -1580,11 +1581,11 @@ export class View extends ViewCommon {
 		org.nativescript.widgets.ViewHelper.setZIndex(this.nativeViewProtected, value);
 	}
 
-	[filterProperty.getDefault](): any[] {
+	[filterProperty.getDefault](): FilterFunction[] {
 		return [];
 	}
 
-	[filterProperty.setNative](value: any[]) {
+	[filterProperty.setNative](value: FilterFunction[]) {
 		const nativeView = this.nativeViewProtected;
 		if (!value || value.length === 0) {
 			nativeView.setRenderEffect(null);
@@ -1600,7 +1601,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	private applyFilterToRenderEffect(effect: any, filter: any): any {
+	private applyFilterToRenderEffect(effect: android.graphics.RenderEffect | null, filter: FilterFunction): android.graphics.RenderEffect | null {
 		const type = filter.type;
 		const val = filter.value;
 
@@ -1636,7 +1637,7 @@ export class View extends ViewCommon {
 		return effect;
 	}
 
-	private getColorMatrixForFilter(type: string, val: number): android.graphics.ColorMatrix {
+	private getColorMatrixForFilter(type: string, val: number): android.graphics.ColorMatrix | null {
 		const cm = new android.graphics.ColorMatrix();
 		const a = val; // for percentages, val is fraction
 

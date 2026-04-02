@@ -17,6 +17,7 @@ import type { ModalTransition } from '../../transition/modal-transition';
 import { SharedTransition } from '../../transition/shared-transition';
 import { NativeScriptUIView } from '../../utils';
 import { Color } from '../../../color';
+import { FilterFunction, DropShadowValue } from '../../styling/filter-parser';
 
 export * from './view-common';
 export * from './view-helper';
@@ -903,11 +904,11 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[filterProperty.getDefault](): any[] {
+	[filterProperty.getDefault](): FilterFunction[] {
 		return [];
 	}
 
-	[filterProperty.setNative](value: any[]) {
+	[filterProperty.setNative](value: FilterFunction[]) {
 		const nativeView: NativeScriptUIView = <NativeScriptUIView>this.nativeViewProtected;
 		if (!value || value.length === 0) {
 			nativeView.layer.filters = null;
@@ -919,7 +920,7 @@ export class View extends ViewCommon {
 			return;
 		}
 
-		const filters: any[] = [];
+		const filters: CIFilter[] = [];
 		for (const filter of value) {
 			const type = filter.type;
 			const val = filter.value;
@@ -943,10 +944,10 @@ export class View extends ViewCommon {
 		nativeView.layer.filters = filters;
 	}
 
-	private createCIFilter(filter: any): any {
+	private createCIFilter(filter: FilterFunction): CIFilter | null {
 		const type = filter.type;
 		const val = filter.value;
-		let ciFilter: any = null;
+		let ciFilter: CIFilter | null = null;
 
 		switch (type) {
 			case 'blur':
@@ -989,7 +990,7 @@ export class View extends ViewCommon {
 		return ciFilter;
 	}
 
-	private applyDropShadowToLayer(layer: any, params: any) {
+	private applyDropShadowToLayer(layer: CALayer, params: DropShadowValue) {
 		if (!params) return;
 		const { h, v, blur = 0, color } = params;
 		if (color) {
