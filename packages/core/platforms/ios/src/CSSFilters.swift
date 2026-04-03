@@ -2,8 +2,6 @@
 //  CSSFilters.swift
 //  NativeScript
 //
-//  Created by Osei Fortune on 17/02/2026.
-//
 
 import UIKit
 import CoreImage
