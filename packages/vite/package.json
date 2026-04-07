@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/vite",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
