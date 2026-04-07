@@ -1,7 +1,7 @@
 import { Image } from '@nativescript/core/ui/image';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
-import { PropertyChangeData, Utils } from '@nativescript/core';
+import { PropertyChangeData } from '@nativescript/core';
 import * as utils from '@nativescript/core/utils';
 import * as TKUnit from '../../tk-unit';
 import { getColor } from '../../ui-helper';
@@ -26,8 +26,6 @@ export function test_recycling() {
 if (__ANDROID__) {
 	appHelpers.initImageCache(Application.android.startActivity, appHelpers.CacheMode.memory); // use memory cache only.
 }
-
-const expectLayoutRequest = __APPLE__ && Utils.SDK_VERSION >= 18;
 
 export const test_Image_Members = function () {
 	const image = new ImageModule.Image();
@@ -269,17 +267,17 @@ export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(
 
 	let mainPage = helper.getCurrentPage();
 	mainPage.content = host;
-	TKUnit.waitUntilReady(() => host.isLoaded);
+
+	const nativeHostView = host.nativeViewProtected as UIView;
+
+	// Check if native view layer is still marked as dirty before proceeding
+	TKUnit.waitUntilReady(() => host.isLoaded && nativeHostView?.layer && !nativeHostView.layer.needsLayout());
 
 	let called = false;
 	image.requestLayout = () => (called = true);
 	image.src = '~/assets/logo.png';
 
-	if (expectLayoutRequest) {
-		TKUnit.assertTrue(called, 'image.requestLayout should be called.');
-	} else {
-		TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
-	}
+	TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
 });
 
 export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout = ios(() => {
@@ -291,17 +289,17 @@ export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout 
 
 	let mainPage = helper.getCurrentPage();
 	mainPage.content = host;
-	TKUnit.waitUntilReady(() => host.isLoaded);
+
+	const nativeHostView = host.nativeViewProtected as UIView;
+
+	// Check if native view layer is still marked as dirty before proceeding
+	TKUnit.waitUntilReady(() => host.isLoaded && nativeHostView?.layer && !nativeHostView.layer.needsLayout());
 
 	let called = false;
 	image.requestLayout = () => (called = true);
 	image.src = '~/assets/logo.png';
 
-	if (expectLayoutRequest) {
-		TKUnit.assertTrue(called, 'image.requestLayout should be called.');
-	} else {
-		TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
-	}
+	TKUnit.assertFalse(called, 'image.requestLayout should not be called.');
 });
 
 export const test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() => {

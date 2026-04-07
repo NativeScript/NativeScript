@@ -927,13 +927,11 @@ export class View extends ViewCommon {
 		const variant = config ? config.variant : (value as GlassEffectVariant);
 		const defaultDuration = 0.3;
 		const duration = config ? (config.animateChangeDuration ?? defaultDuration) : defaultDuration;
-
-		let effect: UIGlassEffect | UIGlassContainerEffect | UIVisualEffect;
+		const glassSupported = supportsGlass();
+		let effect: UIVisualEffect = UIVisualEffect.new();
 
 		// Create the appropriate effect based on type and variant
-		if (!value || ['identity', 'none'].includes(variant)) {
-			effect = UIVisualEffect.new();
-		} else {
+		if (value && !['identity', 'none'].includes(variant) && glassSupported) {
 			if (options.effectType === 'glass') {
 				const styleFn = options.toGlassStyleFn || this.toUIGlassStyle.bind(this);
 				effect = UIGlassEffect.effectWithStyle(styleFn(variant));
@@ -1086,9 +1084,9 @@ export class View extends ViewCommon {
 		if (supportsGlass()) {
 			switch (value) {
 				case 'regular':
-					return UIGlassEffectStyle?.Regular ?? 0;
+					return UIGlassEffectStyle.Regular;
 				case 'clear':
-					return UIGlassEffectStyle?.Clear ?? 1;
+					return UIGlassEffectStyle.Clear;
 			}
 		}
 		return 1;

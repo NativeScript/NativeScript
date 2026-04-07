@@ -267,6 +267,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		if (env === null || env === void 0 ? void 0 : env.uniqueBundle) {
 			config.output.filename(`[name].${env.uniqueBundle}.mjs`);
 		}
+		// Prevent webpack from generating Node-style ESM shims for __dirname/__filename.
+		// For output modules, webpack defaults these to a fileURLToPath(import.meta.url) helper
+		// imported from bare "url", which does not match the NativeScript iOS runtime contract.
+		// The runtime already provides import.meta.dirname and initializes global.__dirname,
+		// so webpack's helper is redundant and can misresolve in bundle/worker contexts.
+		// ESM app or dependency code should use import.meta.dirname/import.meta.url instead
+		// of expecting webpack to synthesize __dirname/__filename.
+		config.node.set('__dirname', false);
+		config.node.set('__filename', false);
 	}
 
 	config.watchOptions({
