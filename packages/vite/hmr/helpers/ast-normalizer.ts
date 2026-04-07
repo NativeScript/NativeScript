@@ -485,20 +485,21 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 							if (rtNames.has(initName) || /^__ns_rt_ns(?:\d+|_re)$/.test(initName)) {
 								for (const p of d.id.properties) {
 									if (t.isObjectProperty(p)) {
-										const key = (p.key as any).name || String(p.key as any);
+										const key = (p.key as any).name || (p.key as any).value || String(p.key as any);
 										if (key === '$navigateTo' || key === '$navigateBack') continue;
 										// Skip internal core bridge sentinel(s) to avoid duplicate locals like __ns_core_ns_1/__ns_core_ns_2
 										if (/^ns_core_ns_\d+$/.test(key)) continue;
 										// Skip any accidental runtime sentinel property mappings (e.g., ns_rt_ns_1)
 										if (/^ns_rt_ns_\d+$/.test(key)) continue;
-										const localId = (p.value as any).name || String(p.value as any);
+										const localId = (p.value as any).name || (p.value as any).value || String(p.value as any);
 										// Never collect bindings that shadow the default import local
 										if (localId === defaultLocal || key === defaultLocal) continue;
 										if (/^__ns_rt_ns(?:\d+|_re)$/.test(localId) || /^__ns_rt_ns(?:\d+|_re)$/.test(key)) continue;
 										// Also skip any locals that look like core bridge internals to prevent shadowing
 										if (/^__ns_core_ns(?:\d+|_re)$/.test(localId) || /^__ns_core_ns(?:\d+|_re)$/.test(key)) continue;
 										if (!collected.has(localId)) {
-											collected.set(localId, t.objectProperty(t.identifier(key), t.identifier(localId)));
+											// Preserve original key node (may be StringLiteral for reserved words like 'extends')
+											collected.set(localId, t.objectProperty(p.key, t.identifier(localId), false, false));
 										}
 									}
 								}
@@ -536,7 +537,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 					if (!t.isObjectPattern(id) || !t.isIdentifier(init)) return;
 					const initName = init.name;
 					if (!(initName && (/^__ns_rt_ns(?:\d+|_re)$/.test(initName) || initName === existingRtDefaultLocal))) return;
-					const props = id.properties.filter((p: any) => !(t.isObjectProperty(p) && /^ns_core_ns_\d+$/.test(((p.key as any).name || String(p.key as any)) as string)));
+					const props = id.properties.filter((p: any) => !(t.isObjectProperty(p) && /^ns_core_ns_\d+$/.test(((p.key as any).name || (p.key as any).value || String(p.key as any)) as string)));
 					if (props.length === 0) {
 						path.remove();
 					} else if (props.length !== id.properties.length) {

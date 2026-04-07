@@ -48,9 +48,8 @@ export function installRootPlaceholder(verbose?: boolean) {
 		const Page = getCore('Page');
 		const Label = getCore('Label');
 		if (!Application || !Frame || !Page || !Label) {
-			try {
-				console.warn('[ns-entry] (early) core classes unavailable for placeholder');
-			} catch {}
+			if (verbose) console.warn('[ns-placeholder] core classes unavailable');
+			return;
 		}
 
 		let handlerFired = false;
@@ -59,7 +58,6 @@ export function installRootPlaceholder(verbose?: boolean) {
 		const __ns_launch_handler = (args?: any) => {
 			try {
 				const prev = args?.root;
-				if (verbose) console.info('[ns-entry] (early) launchEvent fired; existing root:', !!prev);
 				if (!prev && Frame && Page && Label) {
 					const page = new Page();
 					page.actionBarHidden = true;
@@ -76,18 +74,11 @@ export function installRootPlaceholder(verbose?: boolean) {
 						g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] = frame;
 					} catch {}
 					if (args) args.root = frame;
-					if (verbose) console.info('[ns-entry] (early) temporary root provided via launch args');
 				}
 			} catch (e) {
-				try {
-					console.error('[ns-entry] (early) temp root error', e);
-				} catch {}
+				console.error('[ns-placeholder] root error', e);
 			}
 
-			// After the root is set, patch Application.run for the app module.
-			// NOTE: Do NOT remove this handler — iOS fires launchEvent multiple
-			// times (multi-window/scene). The handler is idempotent (only sets
-			// root when none exists), so it's safe to keep attached.
 			if (!handlerFired) {
 				handlerFired = true;
 
@@ -95,12 +86,14 @@ export function installRootPlaceholder(verbose?: boolean) {
 				// The app lifecycle is now running — a second run() is undefined
 				// behavior, but resetRootView() is the documented API for
 				// replacing the root of a running app.
+				//
+				// Patch on ALL possible references. The vendor-registry Application,
+				// globalThis.Application, and the prototype may be different objects.
 				try {
 					if (Application && typeof (Application as any).run === 'function') {
 						const _originalRun = (Application as any).run.bind(Application);
 						g['__NS_DEV_ORIGINAL_APP_RUN__'] = _originalRun;
-						(Application as any).run = function __ns_dev_patched_run(entry?: any) {
-							if (verbose) console.info('[ns-entry] (patched) Application.run() intercepted');
+						const __ns_dev_patched_run = function __ns_dev_patched_run(entry?: any) {
 							try {
 								// Clean up: remove launchEvent handler and placeholder references
 								try {
@@ -108,94 +101,65 @@ export function installRootPlaceholder(verbose?: boolean) {
 										(Application as any).off((Application as any).launchEvent, __ns_launch_handler);
 									}
 								} catch {}
-								try {
-									delete g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
-								} catch {}
-								try {
-									delete g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'];
-								} catch {}
+								delete g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
+								delete g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'];
 
-								// Clear _rootView so setWindowContent won't call
-								// _onRootViewReset on the placeholder.
-								try {
-									(Application as any)._rootView = null;
-								} catch {}
-
-								// Key insight: Frame.navigate() is called during render(),
-								// which happens inside entry.create(). If the Frame isn't
-								// in the native view hierarchy when navigate runs, the
-								// UINavigationController push doesn't display.
-								//
-								// Solution: get the dominative document (which is a singleton
-								// ContentView), set it as root FIRST (empty), then call
-								// entry.create() which renders into the now-attached document.
-								// This way Frame.onLoaded() fires after it's in the window.
-								try {
-									// Import the dominative document singleton.
-									// The app's create() does: render(App, document.body); return document;
-									// We need that same document reference.
-									const domModule =
-										g.__nsVendorRegistry?.get?.('dominative') ||
-										(typeof require === 'function'
-											? (() => {
-													try {
-														return require('dominative');
-													} catch {
-														return null;
-													}
-												})()
-											: null);
-									const doc = domModule?.document;
-
-									if (doc && typeof (Application as any).resetRootView === 'function') {
-										// Set the empty document as root.
-										// This attaches the native view hierarchy to the window.
-										if (verbose) console.info('[ns-entry] (patched) setting empty document as root');
-										(Application as any).resetRootView({ create: () => doc });
-
-										// Call the app's create() which renders into
-										// the now-attached document. Frame.navigate() will work
-										// because the Frame's UINavigationController is already
-										// in the window's view hierarchy.
-										if (verbose) console.info('[ns-entry] (patched) calling entry.create() to render app');
-										if (entry && typeof entry.create === 'function') {
-											const result = entry.create();
-											if (verbose) console.info('[ns-entry] (patched) entry.create() returned', result ? typeof result : 'falsy', result?.constructor?.name || '');
-										}
-										if (verbose) console.info('[ns-entry] (patched) app render complete');
-									} else {
-										// Fallback: no dominative document accessible, use standard resetRootView
-										if (verbose) console.warn('[ns-entry] (patched) dominative document not found, falling back to standard resetRootView');
-										if (typeof (Application as any).resetRootView === 'function') {
-											(Application as any).resetRootView(entry);
-										}
+								const isModuleNameEntry = entry && entry.moduleName && !entry.create;
+								if (isModuleNameEntry) {
+									if (typeof (Application as any).resetRootView === 'function') {
+										(Application as any).resetRootView(entry);
 									}
-								} catch (e2: any) {
-									console.warn('[ns-entry] (patched) two-phase boot failed:', e2?.message || e2);
+								} else {
+									// Framework path: two-phase boot with dominative document
+									(Application as any)._rootView = null;
+
 									try {
-										console.warn('[ns-entry] (patched) two-phase stack:', e2?.stack || '(no stack)');
-									} catch {}
-									// Fallback: skip two-phase, use direct resetRootView.
-									// We must still attempt the fallback so the app can render.
-									try {
-										if (typeof (Application as any).resetRootView === 'function') {
-											if (verbose) console.info('[ns-entry] (patched) fallback: resetRootView(entry)');
-											(Application as any).resetRootView(entry);
-											if (verbose) console.info('[ns-entry] (patched) fallback: resetRootView complete');
+										const domModule =
+											g.__nsVendorRegistry?.get?.('dominative') ||
+											(typeof require === 'function'
+												? (() => {
+														try {
+															return require('dominative');
+														} catch {
+															return null;
+														}
+													})()
+												: null);
+										const doc = domModule?.document;
+
+										if (doc && typeof (Application as any).resetRootView === 'function') {
+											(Application as any).resetRootView({ create: () => doc });
+											if (entry && typeof entry.create === 'function') {
+												entry.create();
+											}
+										} else {
+											if (typeof (Application as any).resetRootView === 'function') {
+												(Application as any).resetRootView(entry);
+											}
 										}
-									} catch (e3: any) {
-										console.error('[ns-entry] (patched) fallback also failed:', e3?.message || e3);
+									} catch (e2: any) {
+										if (verbose) console.warn('[ns-placeholder] two-phase boot failed:', e2?.message || e2);
 										try {
-											console.error('[ns-entry] (patched) fallback stack:', e3?.stack || '(no stack)');
+											if (typeof (Application as any).resetRootView === 'function') {
+												(Application as any).resetRootView(entry);
+											}
 										} catch {}
 									}
 								}
 							} catch (e) {
-								try {
-									console.warn('[ns-entry] (patched) Application.run() error:', e);
-								} catch {}
+								console.warn('[ns-placeholder] patched run() error:', e);
 							}
 						};
+						(Application as any).run = __ns_dev_patched_run;
+						if (g.Application && g.Application !== Application) {
+							g.Application.run = __ns_dev_patched_run;
+						}
+						try {
+							const proto = Object.getPrototypeOf(Application);
+							if (proto && typeof proto.run === 'function' && proto.run !== __ns_dev_patched_run) {
+								proto.run = __ns_dev_patched_run;
+							}
+						} catch {}
 					}
 				} catch {}
 			}
@@ -207,23 +171,25 @@ export function installRootPlaceholder(verbose?: boolean) {
 			}
 		} catch {}
 
-		// Start the native app lifecycle with the placeholder root.
-		// iOS requires a root view controller immediately or terminates.
-		// The launchEvent fires during this call (via didFinishLaunchingWithOptions),
-		// which triggers __ns_launch_handler to set the root and patch Application.run.
+		// Determine boot path
 		try {
 			if (Application && typeof (Application as any).run === 'function') {
-				if (verbose) console.info('[ns-entry] (early) calling Application.run() for placeholder');
-				(Application as any).run();
+				const nativeApp = (Application as any).nativeApp;
+				const iosNativeApp = (Application as any).ios?.nativeApp;
+				if (nativeApp || iosNativeApp) {
+					// App already running (v9 runtime) — skip Application.run() to avoid
+					// runAsEmbeddedApp's modal presentViewController.
+					try {
+						__ns_launch_handler();
+					} catch {}
+				} else {
+					(Application as any).run();
+				}
 			}
 		} catch (e) {
-			try {
-				if (verbose) console.warn('[ns-entry] (early) Application.run() placeholder error', e);
-			} catch {}
+			console.warn('[ns-placeholder] boot error', e);
 		}
 	} catch (e) {
-		try {
-			console.error('[ns-entry] (early) failed to install placeholder', e);
-		} catch {}
+		console.error('[ns-placeholder] install failed', e);
 	}
 }

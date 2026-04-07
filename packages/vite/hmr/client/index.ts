@@ -98,10 +98,14 @@ function applyFullGraph(payload: any) {
 	if (VERBOSE) console.log('[hmr][graph] full graph applied version', getGraphVersion(), 'modules=', graph.size);
 	// Guarded initial mount rescue: if app hasn't replaced the placeholder shortly after graph arrives,
 	// perform a one-time mount. This waits briefly to let the app's main entry start() run first to avoid double mounts.
+	// TypeScript flavor: skip the rescue entirely. The HTTP boot will load main.ts which
+	// calls Application.run() (patched to resetRootView) — the rescue is redundant and
+	// causes a double-mount race (rescue fires at 450ms, then main.ts fires ~1s later,
+	// causing a visual flash and leaving the app in an inconsistent state).
 	try {
 		const g: any = globalThis as any;
 		const bootDone = !!g.__NS_HMR_BOOT_COMPLETE__;
-		if (!bootDone && !initialMounted && !initialMounting && !g.__NS_HMR_RESCUE_SCHEDULED__) {
+		if (!bootDone && !initialMounted && !initialMounting && !g.__NS_HMR_RESCUE_SCHEDULED__ && __NS_TARGET_FLAVOR__ !== 'typescript') {
 			// simple snapshot helpers
 			const getTopmost = () => {
 				try {
@@ -760,8 +764,109 @@ async function processQueue(): Promise<void> {
 							if (VERBOSE) console.warn('[hmr][queue] TS flavor: Application.resetRootView unavailable; skipping UI refresh');
 							break;
 						}
-						if (VERBOSE) console.log('[hmr][queue] TS flavor: resetRootView(app-root) after changes');
-						App.resetRootView({ moduleName: 'app-root' } as any);
+						// Re-fetch changed XML/CSS files and update the bundled module registry
+						// so Builder.createViewFromEntry picks up fresh content.
+						const rawAssetIds = drained.filter((id) => /\.(xml|css|scss|sass|less)$/i.test(id));
+						if (rawAssetIds.length && typeof g.registerModule === 'function') {
+							const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
+							if (origin) {
+								for (const id of rawAssetIds) {
+									try {
+										const spec = normalizeSpec(id);
+										// Fetch the raw file content directly from Vite's dev server.
+										// Use the project-relative path which Vite serves as static files.
+										const fetchUrl = origin + (spec.startsWith('/') ? spec : '/' + spec);
+										if (VERBOSE) console.log('[hmr][queue] fetching raw asset', { id, fetchUrl });
+										const resp = await fetch(fetchUrl);
+										if (resp.ok) {
+											const rawContent = await resp.text();
+											// Register under all nickname variants the module registry uses.
+											// The bundler context registers XML as e.g., './main-page.xml' and 'main-page.xml'
+											const appVirtual = APP_VIRTUAL_WITH_SLASH.replace(/^\//, '');
+											let relPath = spec.startsWith('/') ? spec.slice(1) : spec;
+											if (relPath.startsWith(appVirtual)) relPath = relPath.slice(appVirtual.length);
+											const nicknames = ['./' + relPath, relPath];
+											// Also add without extension for CSS
+											const extIdx = relPath.lastIndexOf('.');
+											if (extIdx > 0) {
+												const baseName = relPath.slice(0, extIdx);
+												if (!relPath.endsWith('.xml')) nicknames.push(baseName, './' + baseName);
+											}
+											for (const name of nicknames) {
+												if (VERBOSE) console.log('[hmr][queue] re-registering module', name);
+												g.registerModule(name, () => rawContent);
+											}
+										} else if (VERBOSE) {
+											console.warn('[hmr][queue] raw asset fetch failed', id, resp.status);
+										}
+									} catch (e) {
+										if (VERBOSE) console.warn('[hmr][queue] raw asset refresh failed for', id, e);
+									}
+								}
+							}
+						}
+						// Determine if we can navigate in-place to a changed page
+						// instead of resetting all the way back to app-root.
+						// This keeps the user on the page they're editing for faster iteration.
+						const changedXmlPages = drained
+							.filter((id) => /\.xml$/i.test(id))
+							.map((id) => {
+								const spec = normalizeSpec(id);
+								const appVirtual = APP_VIRTUAL_WITH_SLASH.replace(/^\//, '');
+								let relPath = spec.startsWith('/') ? spec.slice(1) : spec;
+								if (relPath.startsWith(appVirtual)) relPath = relPath.slice(appVirtual.length);
+								// Strip .xml extension to get the moduleName (e.g., 'pages/status-bar')
+								return relPath.replace(/\.xml$/i, '');
+							})
+							.filter((m) => m && m !== 'app-root');
+
+						// Resolve the topmost Frame from the bundled realm.
+						// Frame.topmost() relies on an internal frameStack array, so we must
+						// call it on the bundled-realm class. Multiple strategies to find it:
+						const FrameClass = getCore('Frame') || g.Frame;
+						let topFrame: any = null;
+						// 1) Try the vendor-realm static topmost()
+						try {
+							topFrame = FrameClass?.topmost?.();
+						} catch {}
+						// 2) Try getting the root view from Application — if it's a Frame, use it
+						if (!topFrame) {
+							try {
+								const rootView = App.getRootView?.() || (App as any)._rootView;
+								if (rootView) {
+									// rootView could be a Frame itself, or contain a Frame
+									const isFrame = rootView.constructor?.name === 'Frame' || rootView.navigate;
+									if (isFrame) {
+										topFrame = rootView;
+									} else if (rootView.getChildAt) {
+										// Walk direct children looking for a Frame
+										for (let i = 0; i < (rootView.getChildrenCount?.() || 0); i++) {
+											const child = rootView.getChildAt(i);
+											if (child?.constructor?.name === 'Frame' || child?.navigate) {
+												topFrame = child;
+												break;
+											}
+										}
+									}
+								}
+							} catch {}
+						}
+						if (VERBOSE) console.log('[hmr][queue] TS: changedXmlPages=', changedXmlPages, 'topFrame=', !!topFrame);
+						if (changedXmlPages.length > 0 && topFrame) {
+							// Navigate the current frame to the changed page directly.
+							// Use the last changed XML page (most specific).
+							const moduleName = changedXmlPages[changedXmlPages.length - 1];
+							if (VERBOSE) console.log('[hmr][queue] TS: navigating in-place to', moduleName);
+							try {
+								topFrame.navigate({ moduleName, clearHistory: false, animated: false });
+							} catch (navErr) {
+								console.warn('[hmr][queue] TS flavor: in-place navigate failed, falling back to resetRootView', navErr);
+								App.resetRootView({ moduleName: 'app-root' } as any);
+							}
+						} else {
+							if (VERBOSE) console.log('[hmr][queue] TS flavor: resetRootView(app-root) after changes');
+							App.resetRootView({ moduleName: 'app-root' } as any);
+						}
 					} catch (e) {
 						console.warn('[hmr][queue] TS flavor: resetRootView(app-root) failed', e);
 					}

@@ -69,14 +69,23 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			if (opts.hmrActive) {
-				// Seed platform globals on the primary bundle realm using the same
-				// CLI-derived platform that drives global-defines.ts. This ensures
-				// HMR-delivered HTTP ESM modules can reliably read platform flags
+				// Seed ALL compile-time defines on globalThis so that every execution
+				// context — the primary bundle, HTTP ESM modules, and cross-realm
+				// calls — can reliably access them. The per-module injection in
+				// processCodeForDevice() reads from globalThis as the source of truth;
+				// these seeds ensure the values are always available.
 				imports += `globalThis.__DEV__ = ${opts.isDevMode ? 'true' : 'false'};\n`;
 				imports += `globalThis.__ANDROID__ = ${opts.platform === 'android' ? 'true' : 'false'};\n`;
 				imports += `globalThis.__IOS__ = ${opts.platform === 'ios' ? 'true' : 'false'};\n`;
 				imports += `globalThis.__VISIONOS__ = ${opts.platform === 'visionos' ? 'true' : 'false'};\n`;
 				imports += `globalThis.__APPLE__ = ${opts.platform === 'ios' || opts.platform === 'visionos' ? 'true' : 'false'};\n`;
+				imports += `globalThis.__COMMONJS__ = false;\n`;
+				imports += `globalThis.__NS_WEBPACK__ = false;\n`;
+				imports += `globalThis.__NS_ENV_VERBOSE__ = ${opts.verbose ? 'true' : 'false'};\n`;
+				imports += `globalThis.__UI_USE_XML_PARSER__ = true;\n`;
+				imports += `globalThis.__UI_USE_EXTERNAL_RENDERER__ = false;\n`;
+				imports += `globalThis.__CSS_PARSER__ = 'css-tree';\n`;
+				imports += `globalThis.__TEST__ = false;\n`;
 				// ---- Vendor manifest bootstrap ----
 				// Use single self-contained vendor module to avoid extra imports affecting chunking
 				imports += "import vendorManifest, { __nsVendorModuleMap } from '@nativescript/vendor';\n";
@@ -126,6 +135,14 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			if (flavor === 'typescript') {
 				// Statically import bundler context synchronously before app code
 				imports += "import 'virtual:ns-bundler-context';\n";
+				if (opts.hmrActive) {
+					// Snapshot original module registry functions for HMR diagnostics
+					imports += `(function() {
+  globalThis.__NS_ORIG_GET_REGISTERED_MODULES__ = globalThis.getRegisteredModules;
+  globalThis.__NS_ORIG_MODULE_EXISTS__ = globalThis.moduleExists;
+  globalThis.__NS_ORIG_LOAD_MODULE__ = globalThis.loadModule;
+})();\n`;
+				}
 			}
 
 			// ---- Custom App Components (Activity/Application) ----

@@ -308,6 +308,35 @@ export class iOSApplication extends ApplicationCommon {
 		this.started = true;
 
 		if (this.nativeApp) {
+			// During Vite HMR dev boot, the placeholder has already started
+			// the app lifecycle. A second run() with an entry should replace
+			// the placeholder root, NOT present a modal via runAsEmbeddedApp.
+			// The HTTP ESM realm creates a separate @nativescript/core instance,
+			// so JS-level patching of Application.run can't intercept this call.
+			// Detect HMR mode via the placeholder's global flag and use
+			// setWindowContent on the PRIMARY Application singleton (bundled realm)
+			// which has the actual window and root view hierarchy.
+			const g = globalThis as any;
+			if (entry && (g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__ || g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__)) {
+				// Defer to next run loop tick so resetRootView executes outside the
+				// HTTP ESM import context. Direct calls can fail with
+				// "ReferenceError: __COMMONJS__ is not defined" because the JS
+				// execution stack is in the HTTP realm when Builder loads modules.
+				const resolvedEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+				setTimeout(() => {
+					try {
+						const primaryApp = g.Application;
+						if (primaryApp && typeof primaryApp.resetRootView === 'function') {
+							primaryApp.resetRootView(resolvedEntry);
+						}
+					} catch (e) {
+						if (__DEV__) console.warn('[app-ios] deferred resetRootView failed:', e);
+					}
+					delete g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
+					delete g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
+				}, 0);
+				return;
+			}
 			this.runAsEmbeddedApp();
 		} else {
 			this.runAsMainApp();
@@ -909,7 +938,13 @@ export class iOSApplication extends ApplicationCommon {
 
 			// During initial scene startup we must wait for launch to be notified first.
 			// Some frameworks provide root content from launch handlers.
-			if (this.hasLaunched()) {
+			// Guard: skip setWindowContent when no main entry is configured yet.
+			// During Vite HMR dev boot, the placeholder calls Application.run() with
+			// no entry; the real entry is set later when the HTTP-loaded main module
+			// calls Application.run({ moduleName: ... }). Without this guard the
+			// scene handler would throw "Main entry is missing" and leave the window
+			// in a broken state (root view reset but no replacement created).
+			if (this.hasLaunched() && this.getMainEntry()) {
 				this.setWindowContent();
 			}
 		}

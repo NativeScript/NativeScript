@@ -374,7 +374,7 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		// define below) handles dev/prod branching at runtime.
 		//
 		// This aligns with the non-HMR Vite build: ['module', 'react-native', 'import', 'browser', 'default'].
-		conditions: ['module', 'import', 'browser', platform],
+		conditions: ['module', 'react-native', 'import', 'browser', 'default'],
 		mainFields: ['module', 'browser', 'main'],
 		resolveExtensions: resolveExtensionsForPlatform(platform),
 		loader: {

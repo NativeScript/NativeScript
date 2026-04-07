@@ -33,19 +33,21 @@ async function fetchCodeframe(u: string, line?: number) {
 			const num = String(i).padStart(4, ' ');
 			context += `${mark}${num}: ${lines[i - 1]}\n`;
 		}
-		console.warn('[ns-entry][diag]', u === (globalThis as any).__NS_ENTRY_LAST_TARGET__ ? 'sanitized' : 'raw', hash ? `(hash ${hash})` : '', '\n' + context);
+		if ((globalThis as any).__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag]', u === (globalThis as any).__NS_ENTRY_LAST_TARGET__ ? 'sanitized' : 'raw', hash ? `(hash ${hash})` : '', '\n' + context);
 	} catch (fe: any) {
 		try {
-			console.warn('[ns-entry][diag] fetch failed', u, fe && (fe.message || fe));
+			if ((globalThis as any).__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag] fetch failed', u, fe && (fe.message || fe));
 		} catch {}
 	}
 }
 
 export default async function startEntry(opts: EntryOpts) {
+	const D = '[entry-rt-diag]';
 	const ORIGIN = String(opts.origin || '');
 	const MAIN = String(opts.main || `${__NS_APP_ROOT_VIRTUAL__}/app.ts`);
 	const VER = String(opts.ver || '0');
 	const VERBOSE = !!opts.verbose;
+	if (VERBOSE) console.log(D, 'startEntry called', { origin: ORIGIN, main: MAIN, ver: VER });
 	// Announce chosen origin globally for any consumers (e.g., HMR client or helpers)
 	try {
 		(globalThis as any).__NS_HTTP_ORIGIN__ = ORIGIN;
@@ -106,18 +108,21 @@ export default async function startEntry(opts: EntryOpts) {
 		}
 
 		const MAIN_URL = ORIGIN + '/ns/m' + MAIN + '?v=' + VER;
-		if (VERBOSE) console.info('[ns-entry] entry importing', MAIN_URL);
+		if (VERBOSE) console.log(D, 'importing main module:', MAIN_URL);
 		(globalThis as any).__NS_ENTRY_LAST_TARGET__ = MAIN_URL; // used by fetchCodeframe sanitized-vs-raw tag
 		const t_main = Date.now();
 		let lastMainErr: any = null;
 		for (let attempt = 0; attempt < 6; attempt++) {
 			try {
 				const url = attempt === 0 ? MAIN_URL : MAIN_URL + '&r=' + String(Date.now());
+				if (VERBOSE) console.log(D, 'import attempt', attempt, url);
 				await importHttp(url);
+				if (VERBOSE) console.log(D, 'import succeeded on attempt', attempt, 'took', Date.now() - t_main, 'ms');
 				lastMainErr = null;
 				break;
 			} catch (e_main: any) {
 				lastMainErr = e_main;
+				if (VERBOSE) console.log(D, 'import attempt', attempt, 'FAILED:', e_main?.message || e_main);
 				// brief backoff; allows dev server and device network to settle
 				await new Promise((r) => setTimeout(r, 150 + attempt * 150));
 			}
@@ -125,9 +130,7 @@ export default async function startEntry(opts: EntryOpts) {
 		if (lastMainErr) throw lastMainErr;
 		TRACE.main = { ok: true, ms: Date.now() - t_main, url: MAIN_URL };
 		(globalThis as any).__NS_ENTRY_OK__ = true;
-		// Signal to the HMR client that boot is complete and the import map is
-		// configured. The full-graph handler is gated behind this flag so it
-		// won't re-import modules before the import map is ready.
+		if (VERBOSE) console.log(D, '__NS_HMR_BOOT_COMPLETE__ = true');
 		(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = true;
 
 		// The placeholder patches Application.run() → resetRootView(), so the
@@ -136,13 +139,27 @@ export default async function startEntry(opts: EntryOpts) {
 		try {
 			const g: any = globalThis as any;
 			if (typeof g.__NS_DEV_ORIGINAL_APP_RUN__ === 'function') {
-				// Restore original Application.run for any future use
+				// Restore original Application.run on ALL targets (mirrors placeholder patching)
+				const origRun = g.__NS_DEV_ORIGINAL_APP_RUN__;
 				const Application = g.Application || (g.__nsVendorRegistry?.get?.('@nativescript/core') || {}).Application;
 				if (Application) {
-					(Application as any).run = g.__NS_DEV_ORIGINAL_APP_RUN__;
+					(Application as any).run = origRun;
+					try {
+						const proto = Object.getPrototypeOf(Application);
+						if (proto && proto.run !== origRun) proto.run = origRun;
+					} catch {}
 				}
+				// Also restore on vendor-registry Application if different
+				try {
+					const reg = g.__nsVendorRegistry;
+					const vendorMod = reg?.get?.('@nativescript/core');
+					const vendorApp = vendorMod?.Application || vendorMod?.default?.Application;
+					if (vendorApp && vendorApp !== Application && vendorApp.run !== origRun) {
+						vendorApp.run = origRun;
+					}
+				} catch {}
 				delete g.__NS_DEV_ORIGINAL_APP_RUN__;
-				if (VERBOSE) console.info('[ns-entry] restored original Application.run');
+				if (VERBOSE) console.log(D, 'restored original Application.run');
 			}
 		} catch {}
 	} catch (e: any) {
