@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import ts from 'typescript';
 import { transformNativeClassSource } from '../helpers/nativeclass-transform.js';
+import { postCleanupNativeClass } from '../helpers/nativeclass-transformer-plugin.js';
 import nativeClassTransformer from '../transformers/NativeClass/index.js';
 
 const SAMPLE_TS = `
@@ -150,6 +151,55 @@ describe('NativeClass transformer helper', () => {
 	it('returns null for sources without @NativeClass', () => {
 		const res = transformNativeClassSource(NO_DECORATOR_TS, '/app/src/none.ts');
 		expect(res).toBeNull();
+	});
+
+	it('post-phase: downlevels ES6 class with __decorate([NativeClass()]) to ES5 with __extends', () => {
+		// Simulate what Angular's compiler produces after the pre-phase already ran:
+		// An ES6 class expression assigned to a var, with __decorate([NativeClass()], X) after it.
+		const angularOutput = `
+var AppDelegate = class AppDelegate extends UIResponder {
+  applicationDidFinishLaunchingWithOptions(application, launchOptions) {
+    return true;
+  }
+  applicationDidBecomeActive(application) {}
+};
+AppDelegate.ObjCProtocols = [UIApplicationDelegate];
+AppDelegate = __decorate([NativeClass()], AppDelegate);
+`;
+		const result = postCleanupNativeClass(angularOutput, '/app/src/app-delegate.ios.ts');
+		expect(result).toBeTruthy();
+		const code = result!.code;
+		// Should NOT contain ES6 class syntax anymore
+		expect(code).not.toContain('class AppDelegate extends');
+		// Should NOT contain __decorate NativeClass
+		expect(code).not.toContain('__decorate');
+		expect(code).not.toMatch(/\bNativeClass\b/);
+		// Should contain __extends for native class registration
+		expect(code).toContain('__extends(AppDelegate');
+		// Should still have the ObjCProtocols assignment
+		expect(code).toContain('AppDelegate.ObjCProtocols');
+		// Should be a function-based ES5 pattern
+		expect(code).toContain('function AppDelegate');
+	});
+
+	it('post-phase: downlevels ES6 class with alias (e.g. _1 pattern) and __decorate', () => {
+		const angularOutputWithAlias = `
+var PDFViewDelegateImpl = PDFViewDelegateImpl_1 = class PDFViewDelegateImpl extends NSObject {
+  static initWithOwner(owner) { return PDFViewDelegateImpl_1.new(); }
+};
+PDFViewDelegateImpl.ObjCProtocols = [PDFViewDelegate];
+PDFViewDelegateImpl = PDFViewDelegateImpl_1 = __decorate([NativeClass()], PDFViewDelegateImpl);
+var PDFViewDelegateImpl_1;
+`;
+		const result = postCleanupNativeClass(angularOutputWithAlias, '/app/src/pdf-view-delegate.ts');
+		expect(result).toBeTruthy();
+		const code = result!.code;
+		// Should NOT contain ES6 class syntax anymore
+		expect(code).not.toContain('class PDFViewDelegateImpl extends');
+		// Should contain __extends for native class registration
+		expect(code).toContain('__extends(PDFViewDelegateImpl');
+		// Should preserve the _1 alias assignment
+		expect(code).toContain('PDFViewDelegateImpl_1 =');
 	});
 
 	it('handles Android-style constructor returning global.__native(this) without leaking top-level return', () => {

@@ -230,13 +230,21 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	// Default static copy: copy/merge assets and fonts when present
 	const assetsDir = resolveFromAppRoot('assets');
 	const fontsDir = resolveFromAppRoot('fonts');
-	const staticCopyTargets = [];
+	const staticCopyTargets: any[] = [];
+	// vite-plugin-static-copy v4 preserves directory structure relative to the glob match.
+	// Since our src globs resolve to absolute paths (e.g. /abs/src/assets/**/*),
+	// matched paths include the app-relative prefix (e.g. src/assets/images/file.png).
+	// Use rename.stripBase with the exact segment count of that prefix to strip it
+	// while preserving any subdirectory structure within the source folder itself.
+	// e.g. src/assets/images/foo.png → strip 2 ("src","assets") → images/foo.png → dest: assets/images/foo.png
+	const assetsStripBase = getProjectAppRelativePath('assets').replace(/\\/g, '/').split('/').length;
+	const fontsStripBase = getProjectAppRelativePath('fonts').replace(/\\/g, '/').split('/').length;
 	if (existsSync(assetsDir)) {
 		// Replace \ with / to avoid issues with glob in windows
-		staticCopyTargets.push({ src: `${assetsDir}/**/*`.replace(/\\/g, '/'), dest: 'assets' });
+		staticCopyTargets.push({ src: `${assetsDir}/**/*`.replace(/\\/g, '/'), dest: 'assets', rename: { stripBase: assetsStripBase } });
 	}
 	if (existsSync(fontsDir)) {
-		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts' });
+		staticCopyTargets.push({ src: `${fontsDir}/**/*`.replace(/\\/g, '/'), dest: 'fonts', rename: { stripBase: fontsStripBase } });
 	}
 
 	let disableOptimizeDeps = false;
@@ -295,20 +303,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		resolve: resolveConfig,
 		define: defineConfig,
 		optimizeDeps: optimizeDepsConfig,
-		esbuild: {
-			define: {
-				'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production'),
-			},
-			// Keep target loosely aligned with tsconfig target (ES2020) to avoid reordering semantics
-			target: 'es2020',
-			// NativeScript relies on stable function/class names for profiling and some runtime type lookups.
-			keepNames: true,
-		},
 		plugins: [
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
 			createEnsureHoistedThemeLinkPlugin(THEME_CORE_ROOT, projectRoot, platform),
-			createNativeClassTransformerPlugin(),
+			...createNativeClassTransformerPlugin(),
 			createThemeCoreCssFallbackPlugin(THEME_CORE_ROOT, projectRoot, platform),
 			// Redirect fragment.android to a single virtual id before other resolvers
 			// androidBootRedirectPlugin(),
@@ -489,6 +488,12 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 							// Keep common dependencies in the main bundle
 							if (id.includes('@angular/') || id.includes('@nativescript/angular') || id.includes('@nativescript/core')) {
 								return undefined; // Keep in main bundle
+							}
+							// Zone.js and NativeScript zone patches must stay in the main bundle
+							// because they depend on @nativescript/core/globals polyfills (XMLHttpRequest, etc.)
+							// which are only available after the main entry imports them.
+							if (id.includes('zone.js') || id.includes('@nativescript/zone-js')) {
+								return undefined;
 							}
 							return 'vendor';
 						}

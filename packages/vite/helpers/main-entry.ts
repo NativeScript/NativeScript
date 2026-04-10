@@ -2,6 +2,7 @@ import { getPackageJson, getProjectFilePath, getProjectRootPath } from './projec
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { preprocessCSS, type ResolvedConfig } from 'vite';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
@@ -43,14 +44,51 @@ const polyfillsImportSpecifier = (() => {
 const VIRTUAL_ID = 'virtual:entry-with-polyfills';
 const RESOLVED = '\0' + VIRTUAL_ID;
 
+const APP_CSS_VIRTUAL_ID = 'virtual:ns-app-css';
+const APP_CSS_RESOLVED = '\0' + APP_CSS_VIRTUAL_ID;
+
+// Virtual module that installs the XHR polyfill from @nativescript/core/xhr.
+// Rolldown tree-shakes the polyfill-xhr.ts side-effect import from @nativescript/core/globals,
+// so XMLHttpRequest never gets registered as a global. This dedicated module ensures the XHR
+// polyfill is installed during module evaluation (before zone.js patches run).
+const XHR_POLYFILL_VIRTUAL_ID = 'virtual:ns-xhr-polyfill';
+const XHR_POLYFILL_RESOLVED = '\0' + XHR_POLYFILL_VIRTUAL_ID;
+
 export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean }) {
+	let resolvedConfig: ResolvedConfig;
 	return {
 		name: 'main-entry',
+		configResolved(config: ResolvedConfig) {
+			resolvedConfig = config;
+		},
 		resolveId(id: string) {
 			if (id === VIRTUAL_ID) return RESOLVED;
+			if (id === APP_CSS_VIRTUAL_ID) return APP_CSS_RESOLVED;
+			if (id === XHR_POLYFILL_VIRTUAL_ID) return XHR_POLYFILL_RESOLVED;
 			return null;
 		},
-		load(id: string) {
+		async load(id: string) {
+			// Virtual module that processes app.css through PostCSS/Tailwind and returns as a JS string.
+			// This avoids using ?inline which conflicts with @analogjs/vite-plugin-angular's CSS
+			// interception in Vite 8 — the Angular plugin converts ?inline CSS to JS via its load hook
+			// but doesn't set moduleType:'js', so vite:css still tries to run PostCSS on the JS output.
+			if (id === APP_CSS_RESOLVED) {
+				const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
+				const code = fs.readFileSync(appCssPath, 'utf-8');
+				const result = await preprocessCSS(code, appCssPath, resolvedConfig);
+				return {
+					code: `export default ${JSON.stringify(result.code)};`,
+					moduleType: 'js',
+				};
+			}
+			// Virtual module that installs XHR polyfill. Its module body runs during import evaluation,
+			// guaranteeing XMLHttpRequest is on globalThis before zone.js or any other code accesses it.
+			if (id === XHR_POLYFILL_RESOLVED) {
+				return {
+					code: ["import * as xhrImpl from '@nativescript/core/xhr';", "var polyfills = ['XMLHttpRequest','FormData','Blob','File','FileReader'];", 'for (var i = 0; i < polyfills.length; i++) {', '  var n = polyfills[i];', '  if (!(n in globalThis) && xhrImpl[n]) globalThis[n] = xhrImpl[n];', '}'].join('\n'),
+					moduleType: 'js',
+				};
+			}
 			if (id !== RESOLVED) return null;
 
 			// consistent verbose flag to easily reference below
@@ -100,6 +138,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			// ---- Core runtime globals (always-needed) ----
+			// Install XHR polyfill FIRST — its virtual module body runs during import evaluation,
+			// before any subsequent import (like zone.js) can reference XMLHttpRequest.
+			imports += `import '${XHR_POLYFILL_VIRTUAL_ID}';\n`;
 			// Load globals early
 			imports += "import '@nativescript/core/globals/index';\n";
 			if (opts.verbose) {
@@ -239,7 +280,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			if (hasAppCss || needsAndroidActivityDefer) {
 				if (hasAppCss) {
 					imports += `// Import and apply global CSS before app bootstrap\n`;
-					imports += `import appCssContent from './${appRootDir}/app.css?inline';\n`;
+					imports += `import appCssContent from '${APP_CSS_VIRTUAL_ID}';\n`;
 				}
 				imports += `import { Application } from '@nativescript/core';\n`;
 				if (hasAppCss) {
