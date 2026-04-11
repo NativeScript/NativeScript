@@ -7,12 +7,45 @@ const ANGULAR_PARTIAL_RE = /\u0275\u0275ngDeclare|ɵɵngDeclare|ngDeclare/;
 interface AngularLinkerDeps {
 	babel: typeof import('@babel/core');
 	createLinkerPlugin: (options?: Record<string, unknown>) => any;
+	fileSystem?: any;
 }
 
 let cachedDeps: AngularLinkerDeps | null = null;
 let triedLoad = false;
 let warnedMissing = false;
 const projectRoot = getProjectRootPath();
+
+/**
+ * Resolve the Angular NodeJSFileSystem required by Angular 21+ linker.
+ * Without it, the Babel transform throws "Cannot read properties of undefined (reading 'resolve')".
+ */
+function resolveFileSystem(requireBase: ReturnType<typeof createRequire>): any {
+	try {
+		const cliMod = requireBase('@angular/compiler-cli');
+		if (cliMod.NodeJSFileSystem) {
+			return new cliMod.NodeJSFileSystem();
+		}
+	} catch {}
+	// Fallback: minimal fileSystem that satisfies the linker
+	return {
+		resolve: (...paths: string[]) => path.resolve(...paths),
+		dirname: (p: string) => path.dirname(p),
+		join: (...paths: string[]) => path.join(...paths),
+		isRooted: (p: string) => path.isAbsolute(p),
+		exists: (p: string) => {
+			try {
+				const fs = requireBase('fs');
+				return fs.existsSync(p);
+			} catch {
+				return false;
+			}
+		},
+		readFile: (p: string) => {
+			const fs = requireBase('fs');
+			return fs.readFileSync(p, 'utf8');
+		},
+	};
+}
 
 function attemptLoad(requireBase: ReturnType<typeof createRequire> | null): AngularLinkerDeps | null {
 	if (!requireBase) return null;
@@ -21,7 +54,8 @@ function attemptLoad(requireBase: ReturnType<typeof createRequire> | null): Angu
 		const linkerMod = requireBase('@angular/compiler-cli/linker/babel');
 		const createLinkerPlugin = (linkerMod && (linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin)) || null;
 		if (babel && createLinkerPlugin) {
-			return { babel, createLinkerPlugin };
+			const fileSystem = resolveFileSystem(requireBase);
+			return { babel, createLinkerPlugin, fileSystem };
 		}
 	} catch {}
 	return null;
@@ -76,7 +110,7 @@ export function linkAngularPartialsIfNeeded(code: string, filename = 'hmr-inline
 		return code;
 	}
 	try {
-		const plugin = deps.createLinkerPlugin({ sourceMapping: false });
+		const plugin = deps.createLinkerPlugin({ sourceMapping: false, ...(deps.fileSystem ? { fileSystem: deps.fileSystem } : {}) });
 		const result = deps.babel.transformSync(code, {
 			filename,
 			configFile: false,

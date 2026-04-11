@@ -1165,14 +1165,113 @@ function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, p
 }
 
 /**
+ * After the Angular linker runs on code that Vite has already resolved (bare
+ * specifiers → full URLs), the linker injects NEW import statements with bare
+ * specifiers (e.g. `import {Component} from '@angular/core'`).  These cause:
+ *   1. Duplicate-identifier SyntaxErrors (the name was already imported via URL)
+ *   2. Unresolvable bare specifiers at runtime on device
+ *
+ * This function:
+ *   • builds a map  packageName → resolvedURL  from existing resolved imports
+ *   • collects all binding names already imported per package
+ *   • for each bare-specifier import, removes duplicate bindings
+ *   • rewrites any genuinely-new bindings to use the resolved URL
+ */
+function deduplicateLinkerImports(code: string): string {
+	if (!code) return code;
+	try {
+		// ── Step 1: collect resolved imports already in the file ──────────
+		const pkgUrlMap = new Map<string, string>();
+		const pkgBindings = new Map<string, Set<string>>();
+
+		const resolvedRe = /import\s+(?:\{([^}]*)\}|\*\s+as\s+\w+)\s+from\s+["']((?:https?:\/\/|\/)[^"']+)["']/g;
+		let m: RegExpExecArray | null;
+		while ((m = resolvedRe.exec(code)) !== null) {
+			const url = m[2];
+			const nmIdx = url.lastIndexOf('/node_modules/');
+			if (nmIdx === -1) continue;
+
+			const afterNm = url.substring(nmIdx + '/node_modules/'.length);
+			const parts = afterNm.split('/');
+			const pkg = parts[0].startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+
+			if (!pkgUrlMap.has(pkg)) pkgUrlMap.set(pkg, url);
+
+			if (m[1]) {
+				if (!pkgBindings.has(pkg)) pkgBindings.set(pkg, new Set());
+				const names = m[1].split(',');
+				for (const n of names) {
+					const name = n
+						.trim()
+						.split(/\s+as\s+/)[0]
+						.trim();
+					if (name) pkgBindings.get(pkg)!.add(name);
+				}
+			}
+		}
+
+		if (pkgUrlMap.size === 0) return code;
+
+		// ── Step 2: rewrite bare-specifier imports ───────────────────────
+		return code.replace(/^([ \t]*)import\s+\{([^}]+)\}\s+from\s+['"]([^"']+)['"];?\s*$/gm, (full, indent: string, bindingsStr: string, specifier: string) => {
+			// Only process bare specifiers (not already resolved)
+			if (specifier.startsWith('/') || specifier.startsWith('.') || specifier.startsWith('http')) {
+				return full;
+			}
+
+			const parts = specifier.split('/');
+			const pkg = specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
+
+			const url = pkgUrlMap.get(pkg);
+			if (!url) return full;
+
+			const existing = pkgBindings.get(pkg) || new Set();
+			const bindings = bindingsStr
+				.split(',')
+				.map((b: string) => b.trim())
+				.filter(Boolean);
+			const newBindings = bindings.filter((b: string) => {
+				const name = b.split(/\s+as\s+/)[0].trim();
+				return !existing.has(name);
+			});
+
+			if (newBindings.length === 0) {
+				return ''; // all duplicates — remove line
+			}
+
+			if (newBindings.length === bindings.length) {
+				// ZERO duplicates — this is NOT a linker artifact. It's an
+				// intentional bare specifier (e.g., vendor bridge). Leave it
+				// as-is; rewriting would route to the wrong subpath URL
+				// (e.g., package root → angular subpath).
+				return full;
+			}
+
+			// Track newly added bindings
+			for (const b of newBindings) {
+				const name = b.split(/\s+as\s+/)[0].trim();
+				existing.add(name);
+			}
+
+			return `${indent}import { ${newBindings.join(', ')} } from "${url}";`;
+		});
+	} catch {
+		return code;
+	}
+}
+
+/**
  * Process code for device: inject globals, remove framework imports
  */
 
-function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveVendorImports: boolean = false): string {
+function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveVendorImports: boolean = false, isNodeModule: boolean = false): string {
 	let result = code;
 
 	// Ensure Angular partial declarations are linked before any sanitizers run so runtime never hits the JIT path.
 	result = linkAngularPartialsIfNeeded(result);
+
+	// Post-linker: deduplicate/resolve imports the Angular linker injected with bare specifiers
+	result = deduplicateLinkerImports(result);
 
 	// First: aggressively strip any lingering virtual dynamic-import-helper before anything else.
 	// Doing this up-front prevents downstream dependency collection from seeing the virtual id.
@@ -1201,19 +1300,25 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	];
 	result = allGlobals.join('\n') + '\n' + result;
 
-	// Prefer AST-based normalization for imports and helper aliases; fallback regex if parsing fails
-	try {
-		result = astNormalizeModuleImportsAndHelpers(result);
-	} catch {}
+	// AST normalization: inject /ns/rt helper aliases for underscore-prefixed identifiers.
+	// ONLY for app source files — library code in node_modules should be served as-is.
+	// Running the normalizer on libraries like tslib injects harmful destructures
+	// (e.g., `const { SuppressedError } = __ns_rt_ns_1`) that shadow globals.
+	if (!isNodeModule) {
+		try {
+			result = astNormalizeModuleImportsAndHelpers(result);
+		} catch {}
 
-	// Verify there are no duplicate top-level const/let bindings after AST normalization
-	try {
-		result = astVerifyAndAnnotateDuplicates(result);
-	} catch {}
+		// Verify there are no duplicate top-level const/let bindings after AST normalization
+		try {
+			result = astVerifyAndAnnotateDuplicates(result);
+		} catch {}
+	}
 
-	// If AST marker present, skip regex-based helper alias injection to avoid duplicates
-	// Accept both line and block comment markers emitted by the normalizer
-	if (!/^\s*(?:\/\/|\/\*) \[ast-normalized\]/m.test(result)) {
+	// If AST marker present OR this is a node_modules file, skip regex-based helper
+	// alias injection. Library code should NOT get /ns/rt destructures injected —
+	// underscore-prefixed identifiers in libraries are internal variables, not NS helpers.
+	if (!isNodeModule && !/^\s*(?:\/\/|\/\*) \[ast-normalized\]/m.test(result)) {
 		try {
 			const underscored = new Set<string>();
 			const re = /(^|[^.\w$])_([A-Za-z]\w*)\b/g;
@@ -1507,8 +1612,11 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		// Keep a single semicolon before the import to avoid generating ';;'
 		result = result.replace(/;\s*import\s+/g, ';\nimport ');
 		result = result.replace(/}\s*import\s+/g, '}\nimport ');
-		// Fallback: ensure any static import that isn't at start of line gets a newline before it
-		result = result.replace(/([^\n])\s*(import\s+[^;\n]*\s+from\s*["'][^"']+["'])/g, '$1\n$2');
+		// Fallback: ensure any static import that isn't at start of line gets a newline before it.
+		// Only match after statement-ending characters (;, }, ), ], quotes) — NOT after `*` or
+		// spaces inside JSDoc comment blocks, which would accidentally extract example imports
+		// from documentation comments and hoist them as real code.
+		result = result.replace(/([;}\)\]'"`])\s*(import\s+[^;\n]*\s+from\s*["'][^"']+["'])/g, '$1\n$2');
 	} catch {}
 
 	// Collapse duplicate destructuring from the same temp namespace var (e.g., multiple const { x } = __ns_rt_ns1)
@@ -1555,9 +1663,9 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	} catch {}
 
 	// Final safety: normalize any lingering named imports from /ns/rt into default+destructure
-	// Skip when AST normalization marker present to avoid introducing duplicate temp imports
+	// Skip for node_modules (no /ns/rt helpers needed) and when AST marker present
 	try {
-		if (!/^\s*\/\* \[ast-normalized\] \*\//m.test(result)) {
+		if (!isNodeModule && !/^\s*\/\* \[ast-normalized\] \*\//m.test(result)) {
 			result = ensureDestructureRtImports(result);
 		}
 	} catch {}
@@ -1700,6 +1808,13 @@ function assertNoOptimizedArtifacts(code: string, contextLabel: string): void {
 				}
 			}
 			if (localCore.test(ln)) {
+				// Comments can never cause split-realm risk at runtime — skip them.
+				// Library authors commonly reference @nativescript/core in comments
+				// (e.g. TSDoc /// <reference> directives, module resolution notes).
+				const trimmed = ln.trimStart();
+				if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
+					continue;
+				}
 				offenders.push(`${i + 1}: ${ln.substring(0, 200)} [local-core-path]`);
 			}
 			if (offenders.length >= 10) break;
@@ -1853,7 +1968,7 @@ function dedupeRtNamedImportsAgainstDestructures(code: string): string {
 /**
  * THE SINGLE REWRITE FUNCTION - used everywhere for consistency
  */
-function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string): string {
+function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
 	let result = code;
 	const httpOriginSafe = httpOrigin;
 	const importerDir = path.posix.dirname(importerPath);
@@ -2055,8 +2170,48 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 		const vendorCanonical = resolveVendorFromCandidate(nodeModulesSpecifier ?? spec);
 
 		if (vendorCanonical) {
-			// Use the canonical bare package name (e.g., "solid-js" not "solid-js/dist/dev.js")
-			// so the device-side import map can resolve it to ns-vendor://
+			// Decide: vendor bridge (bare specifier) vs HTTP (full path).
+			//
+			// The vendor bridge can ONLY resolve the package's main entry as
+			// bundled by esbuild. It CANNOT handle:
+			//   1. Platform-specific files (.ios.js, .android.js) — esbuild doesn't
+			//      have NativeScript's platform resolver
+			//   2. Subpath imports (e.g., "@pkg/common.js") — the vendor bridge
+			//      only maps the bare package name to the main entry
+			//
+			// Rule: use vendor bridge ONLY for non-platform main entries.
+			let useVendorBridge = true;
+			if (nodeModulesSpecifier) {
+				// Platform-specific files always need HTTP — vendor bundle doesn't have them
+				const isPlatformSpecific = /\.(ios|android)\.(js|ts|mjs|mts)$/.test(nodeModulesSpecifier);
+				if (isPlatformSpecific) {
+					useVendorBridge = false;
+				} else if (nodeModulesSpecifier !== vendorCanonical) {
+					// Check if this is a subpath import vs main entry.
+					// The vendor bridge only maps bare package names → main entry.
+					// fileName = base name with last extension stripped:
+					//   "index.js" → "index", "moment.js" → "moment",
+					//   "tslib.es6.mjs" → "tslib.es6", "index.common.js" → "index.common"
+					const afterCanonical = nodeModulesSpecifier.slice(vendorCanonical.length);
+					const pkgName = vendorCanonical.split('/').pop()!;
+					const fileName = afterCanonical.replace(/^\//, '').replace(/\.[^.]+$/, '');
+					// Main entry: fileName is exactly "index" or matches the package name.
+					// "index.common" is NOT "index" — it's a separate shared module.
+					const isMainEntry = !afterCanonical || fileName === 'index' || fileName === pkgName || fileName.startsWith(pkgName + '.');
+					if (!isMainEntry) {
+						useVendorBridge = false;
+					}
+				}
+			}
+			if (!useVendorBridge && nodeModulesSpecifier) {
+				// Platform-specific or subpath — serve via HTTP with exact path.
+				const httpSpec = `/ns/m/node_modules/${nodeModulesSpecifier}`;
+				if (httpOriginSafe) {
+					return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
+				}
+				return `${prefix}${httpSpec}${suffix}`;
+			}
+			// Main entry — use the canonical bare package name for the vendor bridge
 			return `${prefix}${vendorCanonical}${suffix}`;
 		}
 
@@ -2170,6 +2325,9 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 	result = result.replace(PAT.IMPORT_PATTERN_2, replaceVueImport);
 	result = result.replace(PAT.EXPORT_PATTERN, replaceVueImport);
 	result = result.replace(PAT.IMPORT_PATTERN_3, replaceVueImport);
+	// Side-effect imports (import "spec") — must run AFTER named-import patterns
+	// since IMPORT_PATTERN_1 already handles `import ... from "spec"`.
+	result = result.replace(PAT.IMPORT_PATTERN_SIDE_EFFECT, replaceVueImport);
 
 	// Extra guard: map any lingering dynamic import('@') to a safe stub module path
 	// to prevent device runtime normalization errors.
@@ -3114,7 +3272,8 @@ export const piniaSymbol = p.piniaSymbol;
 					// Prepend guard to capture any URL-based require attempts
 					code = REQUIRE_GUARD_SNIPPET + code;
 					code = cleanCode(code);
-					code = processCodeForDevice(code, false, true);
+					const isNodeMod = /(?:^|\/)node_modules\//.test(resolvedCandidate || spec || '');
+					code = processCodeForDevice(code, false, true, isNodeMod);
 					// Solid HMR: The NativeScript iOS/Android runtime provides import.meta.hot
 					// natively (via InitializeImportMetaHot in HMRSupport.mm) with C++-backed
 					// persistent hot.data that survives across module re-evaluations.
@@ -3129,7 +3288,7 @@ export const piniaSymbol = p.piniaSymbol;
 							console.log('[hmr-ws][solid] diagnostic injected for', moduleId, '(using runtime native import.meta.hot)');
 						}
 					} catch {}
-					code = rewriteImports(code, resolvedCandidate || spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
+					code = rewriteImports(code, resolvedCandidate || spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server), true);
 					// Dedupe any /ns/rt named imports that duplicate destructured bindings off default /ns/rt
 					try {
 						code = dedupeRtNamedImportsAgainstDestructures(code);
@@ -3151,6 +3310,58 @@ export const piniaSymbol = p.piniaSymbol;
 						code = normalizeAnyCoreSpecToBridge(code);
 						if (code !== __before) {
 							code = `// [hmr-sanitize] core-literal->bridge\n` + code;
+						}
+					} catch {}
+					// Final pass: deduplicate/resolve any bare-specifier imports that slipped
+					// through the pipeline (e.g., extracted from JSDoc comments by import-splitting
+					// regexes, or injected by the Angular linker on already-resolved code).
+					try {
+						code = deduplicateLinkerImports(code);
+					} catch {}
+					// CJS/UMD wrapping: if a module uses module.exports but has no ESM export default,
+					// wrap it with CJS shims so the device HTTP ESM loader can consume it.
+					// This handles npm packages that use CommonJS but aren't pre-bundled by Vite.
+					//
+					// Key constraints this must handle:
+					//  - CJS modules often declare local vars with the same names as their exports
+					//    (e.g. `function createLTTB() {...}; exports.createLTTB = createLTTB;`)
+					//    so `export var { createLTTB }` would cause a duplicate declaration.
+					//  - UMD modules reference `this` at top level (undefined in ESM) but
+					//    typically fall back to `self` or `globalThis`.
+					//  - `module`, `exports` must be shims since they don't exist in ESM.
+					try {
+						const hasExportDefault = /\bexport\s+default\b/.test(code) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(code);
+						const hasNamedExports = /\bexport\s+(?:const|let|var|function|class|async)\b/.test(code) || /\bexport\s*\{/.test(code);
+						const hasCjsExports = /\bmodule\s*\.\s*exports\b/.test(code) || /\bexports\s*\.\s*\w/.test(code);
+						if (!hasExportDefault && !hasNamedExports && hasCjsExports) {
+							// Extract named export identifiers from exports.xxx = patterns
+							const namedExports = new Set<string>();
+							const exportsRe = /\bexports\s*\.\s*([A-Za-z_$][\w$]*)\s*=/g;
+							let em: RegExpExecArray | null;
+							while ((em = exportsRe.exec(code)) !== null) {
+								const name = em[1];
+								if (name !== '__esModule' && name !== 'default') {
+									namedExports.add(name);
+								}
+							}
+							// Also check Object.defineProperty(exports, 'name', ...)
+							const defPropRe = /Object\s*\.\s*defineProperty\s*\(\s*exports\s*,\s*['"]([^'"]+)['"]/g;
+							while ((em = defPropRe.exec(code)) !== null) {
+								const name = em[1];
+								if (name !== '__esModule' && name !== 'default') {
+									namedExports.add(name);
+								}
+							}
+							// Build suffix: default export + named re-exports using collision-proof
+							// temp names (__cjs_e0, __cjs_e1, ...) to avoid clashing with CJS locals.
+							let suffix = `\nvar __cjs_mod = module.exports;\nexport default __cjs_mod;\n`;
+							if (namedExports.size) {
+								const entries = Array.from(namedExports);
+								const temps = entries.map((name, i) => `var __cjs_e${i} = __cjs_mod[${JSON.stringify(name)}];`);
+								const reExports = entries.map((name, i) => `__cjs_e${i} as ${name}`);
+								suffix += `${temps.join(' ')}\nexport { ${reExports.join(', ')} };\n`;
+							}
+							code = `var module = { exports: {} }; var exports = module.exports;\n${code}${suffix}`;
 						}
 					} catch {}
 					try {
@@ -3289,6 +3500,15 @@ export const piniaSymbol = p.piniaSymbol;
 									if (!targetCode) continue;
 									const hasDefault = /\bexport\s+default\b/.test(targetCode) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(targetCode);
 									if (!hasDefault) {
+										// CJS/UMD modules won't have `export default` — they get CJS-wrapped
+										// by the serving pipeline. Only warn, don't fatally block the importer.
+										const hasCjsPattern = /\bmodule\s*\.\s*exports\b/.test(targetCode) || /\bexports\s*\.\s*\w/.test(targetCode);
+										if (hasCjsPattern) {
+											try {
+												console.warn(`[ns:m][link-check] CJS module without export default: ${u.pathname} (will be CJS-wrapped at serve time)`);
+											} catch {}
+											continue;
+										}
 										const msg = `[link-check] Missing default export in ${u.pathname}${u.search} (imported by ${resolvedCandidate || spec})`;
 										// Emit a module that throws to surface the exact offender
 										res.statusCode = 200;
@@ -3504,16 +3724,70 @@ export const piniaSymbol = p.piniaSymbol;
 			server.middlewares.use(async (req, res, next) => {
 				try {
 					const urlObj = new URL(req.url || '', 'http://localhost');
-					if (!(urlObj.pathname === '/ns/core' || /^\/ns\/core\/[\d]+$/.test(urlObj.pathname))) return next();
+					// Match /ns/core, /ns/core/<ver>, and /ns/core/<subpath> (path-based deep imports)
+					if (!urlObj.pathname.startsWith('/ns/core')) return next();
 					res.setHeader('Access-Control-Allow-Origin', '*');
 					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
 					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 					res.setHeader('Pragma', 'no-cache');
 					res.setHeader('Expires', '0');
-					const verSeg = urlObj.pathname.replace(/^\/ns\/core\/?/, '');
-					const ver = /^[0-9]+$/.test(verSeg) ? verSeg : String(graphVersion || 0);
-					const sub = urlObj.searchParams.get('p') || '';
+					const afterCore = urlObj.pathname.replace(/^\/ns\/core\/?/, '');
+					const ver = /^[0-9]+$/.test(afterCore) ? afterCore : String(graphVersion || 0);
+					// Support both query-based (?p=data/observable/index.js) and
+					// path-based (/ns/core/data/observable/index.js) subpath formats.
+					// The device's HTTP ESM loader may use either depending on the import map.
+					const sub = urlObj.searchParams.get('p') || (afterCore && !/^[0-9]+$/.test(afterCore) ? afterCore : '');
 					const key = sub ? `@nativescript/core/${sub}` : `@nativescript/core`;
+
+					// Deep subpath imports (e.g., accessibility/accessibility-properties.js)
+					// are NOT in the vendor bundle's top-level exports. Serve the actual
+					// module content via Vite's transform pipeline instead of the proxy.
+					if (sub && sub.includes('/')) {
+						try {
+							const modulePath = `/node_modules/@nativescript/core/${sub}`;
+							const transformed = await server.transformRequest(modulePath);
+							if (transformed?.code) {
+								let moduleCode = transformed.code;
+								moduleCode = REQUIRE_GUARD_SNIPPET + moduleCode;
+								moduleCode = cleanCode(moduleCode);
+								moduleCode = processCodeForDevice(moduleCode, false, true, true);
+								moduleCode = rewriteImports(moduleCode, modulePath, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server), true);
+								try {
+									moduleCode = deduplicateLinkerImports(moduleCode);
+								} catch {}
+								try {
+									const hasExportDefault = /\bexport\s+default\b/.test(moduleCode) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(moduleCode);
+									const hasNamedExports = /\bexport\s+(?:const|let|var|function|class|async)\b/.test(moduleCode) || /\bexport\s*\{/.test(moduleCode);
+									const hasCjsExports = /\bmodule\s*\.\s*exports\b/.test(moduleCode) || /\bexports\s*\.\s*\w/.test(moduleCode);
+									if (!hasExportDefault && !hasNamedExports && hasCjsExports) {
+										const namedExports = new Set<string>();
+										let em: RegExpExecArray | null;
+										const exportsRe = /\bexports\s*\.\s*([A-Za-z_$][\w$]*)\s*=/g;
+										while ((em = exportsRe.exec(moduleCode)) !== null) {
+											if (em[1] !== '__esModule' && em[1] !== 'default') namedExports.add(em[1]);
+										}
+										let suffix = `\nvar __cjs_mod = module.exports;\nexport default __cjs_mod;\n`;
+										if (namedExports.size) {
+											const entries = Array.from(namedExports);
+											const temps = entries.map((name, i) => `var __cjs_e${i} = __cjs_mod[${JSON.stringify(name)}];`);
+											const reExports = entries.map((name, i) => `__cjs_e${i} as ${name}`);
+											suffix += `${temps.join(' ')}\nexport { ${reExports.join(', ')} };\n`;
+										}
+										moduleCode = `var module = { exports: {} }; var exports = module.exports;\n${moduleCode}${suffix}`;
+									}
+								} catch {}
+								res.statusCode = 200;
+								res.end(moduleCode);
+								return;
+							}
+						} catch (e) {
+							try {
+								console.warn('[ns-core-bridge] deep subpath serve failed:', sub, (e as any)?.message);
+							} catch {}
+						}
+					}
+
+					// Main entry or shallow subpath: use proxy bridge
 					// HTTP-only core bridge: do NOT use require/createRequire. Export a proxy that maps
 					// property access to globalThis first, then to any available vendor registry module.
 					let code =

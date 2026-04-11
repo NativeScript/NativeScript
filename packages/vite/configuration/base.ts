@@ -439,6 +439,15 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				reportCompressedSize: false,
 			}),
 			rolldownOptions: {
+				onwarn(warning, defaultHandler) {
+					// Suppress COMMONJS_VARIABLE_IN_ESM from the vendor virtual module.
+					// The esbuild-bundled vendor code may contain CommonJS `exports` references
+					// inside ESM wrapper code which Rolldown flags but is harmless at runtime.
+					if (warning.code === 'COMMONJS_VARIABLE_IN_ESM' && (warning.id?.includes('@nativescript/vendor') || warning.message?.includes('@nativescript/vendor'))) {
+						return;
+					}
+					defaultHandler(warning);
+				},
 				treeshake: {
 					// Preserve side effects for NativeScript core so classes/functions
 					// aren't tree-shaken out inadvertently. This does NOT cause cross‑chunk duplication;

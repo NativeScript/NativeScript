@@ -12,6 +12,8 @@ export const IMPORT_PATTERN_1 = /(?:^|\n)(\s*import\s+[^'";]*?\s+from\s+["'])([^
 export const IMPORT_PATTERN_2 = /(?:^|\n)(\s*export\s+[^'";]*?\s+from\s+["'])([^"']+)(["'];?)/g;
 export const EXPORT_PATTERN = IMPORT_PATTERN_2;
 export const IMPORT_PATTERN_3 = /(import\(\s*["'])([^"']+)(["']\s*\))/g;
+// Side-effect imports: import "spec" / import 'spec' (no `from`, no bindings)
+export const IMPORT_PATTERN_SIDE_EFFECT = /(?:^|\n)(\s*import\s+["'])([^"']+)(["'];?)/g;
 
 // Vue-specific patterns
 export const VUE_FILE_PATTERN = /\.vue(?:\?[^"']*)?$/;

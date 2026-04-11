@@ -142,6 +142,26 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	'csstype',
 	// NativeScript CLI hook system — build-time only, requires Node os/path
 	'@nativescript/hook',
+	// Test runner uses webpack's require.context API which doesn't exist in Vite.
+	// Including it in the vendor bundle causes __require.context crashes at runtime.
+	'@nativescript/unit-test-runner',
+	'nativescript-unit-test-runner',
+	// CSS build tools — postcss, tailwindcss, and related tooling are exclusively
+	// build-time processors. They require Node APIs (process, fs, path) and must
+	// never run on device. esbuild bundles their transitive deps (picocolors,
+	// nanoid, etc.) which reference `process` and crash at runtime.
+	'tailwindcss',
+	'@nativescript/tailwind',
+	'postcss',
+	'autoprefixer',
+	'postcss-import',
+	'postcss-url',
+	'postcss-nested',
+	'picocolors',
+	'nanoid',
+	// Server-side SDKs that require Node networking APIs (net, tls, dns, crypto).
+	// These are backend tools, not device-side.
+	'mongodb',
 ]);
 
 const INDEX_ALIAS_SUFFIXES = ['/index', '/index.js', '/index.android.js', '/index.ios.js', '/index.visionos.js'];
@@ -680,6 +700,22 @@ function shouldSkipDependency(name: string): boolean {
 	if (name.startsWith('@types/')) {
 		return true;
 	}
+	// PostCSS ecosystem — all build-time CSS processing
+	if (name === 'postcss' || name.startsWith('postcss-')) {
+		return true;
+	}
+	// Tailwind ecosystem — build-time only CSS framework
+	if (name.includes('tailwind')) {
+		return true;
+	}
+	// Test runners and frameworks — never needed on device
+	if (name.includes('test-runner') || name.includes('unit-test')) {
+		return true;
+	}
+	// Linters and formatters — build-time tools
+	if (name.includes('eslint') || name.includes('stylelint')) {
+		return true;
+	}
 	if (name.startsWith('.')) {
 		return true;
 	}
@@ -977,6 +1013,7 @@ function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 	// Lazily resolve Babel and Angular linker from the project to avoid hard deps
 	let babel: typeof import('@babel/core') | null = null;
 	let createLinker: any = null;
+	let angularFileSystem: any = null;
 
 	async function ensureDeps() {
 		if (babel && createLinker) return;
@@ -997,6 +1034,38 @@ function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 				const linkerMod = await import('@angular/compiler-cli/linker/babel');
 				createLinker = (linkerMod as any).createLinkerPlugin || (linkerMod as any).createEs2015LinkerPlugin || null;
 			} catch {}
+		}
+		// Angular 21+ requires a fileSystem for the linker plugin
+		if (!angularFileSystem) {
+			try {
+				const req = createRequire(projectRoot + '/package.json');
+				const cliPath = req.resolve('@angular/compiler-cli');
+				const cliMod: any = await import(cliPath);
+				if (cliMod.NodeJSFileSystem) {
+					angularFileSystem = new cliMod.NodeJSFileSystem();
+				}
+			} catch {}
+			if (!angularFileSystem) {
+				try {
+					const cliMod: any = await import('@angular/compiler-cli');
+					if (cliMod.NodeJSFileSystem) {
+						angularFileSystem = new cliMod.NodeJSFileSystem();
+					}
+				} catch {}
+			}
+			if (!angularFileSystem) {
+				// Minimal fallback
+				const nodePath = await import('node:path');
+				const nodeFs = await import('node:fs');
+				angularFileSystem = {
+					resolve: (...paths: string[]) => nodePath.resolve(...paths),
+					dirname: (p: string) => nodePath.dirname(p),
+					join: (...paths: string[]) => nodePath.join(...paths),
+					isRooted: (p: string) => nodePath.isAbsolute(p),
+					exists: (p: string) => nodeFs.existsSync(p),
+					readFile: (p: string) => nodeFs.readFileSync(p, 'utf8'),
+				};
+			}
 		}
 	}
 
@@ -1020,9 +1089,8 @@ function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 						return { contents: source, loader: 'js' };
 					}
 					const plugin = createLinker({
-						// Link everything the filter captures; plugin will no-op otherwise
-						// shouldLink is inferred by plugin when left unset for Babel version
 						sourceMapping: false,
+						fileSystem: angularFileSystem,
 					});
 					if (debug) {
 						try {

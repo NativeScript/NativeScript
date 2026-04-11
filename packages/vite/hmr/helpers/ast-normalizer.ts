@@ -19,13 +19,17 @@ const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 // - A marker comment '/* [ast-normalized] */' is injected at the top
 export function astNormalizeModuleImportsAndHelpers(code: string): string {
 	try {
-		// Pre-scan for underscored helper usages to inform aliasing during import rewrite
+		// Pre-scan for underscored helper usages to inform aliasing during import rewrite.
+		// The regex captures the part AFTER the leading `_`, so `_arguments` → `arguments`.
+		// Filter strict-mode reserved words to prevent invalid generated code.
 		const needAlias = new Set<string>();
 		try {
+			const _STRICT_PRE = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
 			const re = /(^|[^.\w$])_([A-Za-z]\w*)\b/g;
 			let m: RegExpExecArray | null;
 			while ((m = re.exec(code))) {
 				const base = m[2].replace(/^_+/, '');
+				if (_STRICT_PRE.has(base)) continue;
 				if (!/(^|_)(ctx|cache)$/.test(base) && !/^(hoisted_|component_|directive_|sfc_main|ns_sfc__|ns_sfc|sfc)/.test(base)) {
 					needAlias.add(base);
 				}
@@ -365,15 +369,18 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 			});
 		} catch {}
 
-		// Fallback: if traversal didn't detect underscored helper uses, do a conservative text scan
+		// Fallback: if traversal didn't detect underscored helper uses, do a conservative text scan.
+		// NOTE: this scan captures m[2] (the part AFTER the leading underscore), so a source-level
+		// `_arguments` becomes `arguments` in the set — which is a strict-mode reserved word.
+		// Filter those out here to avoid generating invalid destructures like `const { arguments }`.
 		if (!underscoreUses.size) {
 			try {
+				const _STRICT_RESERVED_FB = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
 				const re = /(^|[^.\w$])_([A-Za-z]\w*)\b/g;
 				let m: RegExpExecArray | null;
 				while ((m = re.exec(code))) {
 					const name = m[2];
-					// Never consider `_this` as a helper alias
-					if (name === 'this') continue;
+					if (_STRICT_RESERVED_FB.has(name)) continue;
 					if (/(^|_)(ctx|cache)$/.test(name)) continue;
 					if (/^(hoisted_|component_|directive_|sfc_main|ns_sfc__|ns_sfc|sfc)/.test(name)) continue;
 					underscoreUses.add(name);
@@ -395,13 +402,16 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 					existingRtDefaultLocal = defLocal;
 				}
 			}
+			// Words that cannot be used as variable names in strict mode (ESM is always strict).
+			// Covers keywords, future-reserved words, and restricted identifiers.
+			const STRICT_RESERVED = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
 			const props: t.ObjectProperty[] = [];
 			for (const underscored of underscoreUses) {
 				// Never alias our own generated internals
 				if (/^__ns_(?:rt|core)_ns(?:\d+|_re)$/.test(underscored)) continue;
 				const base = underscored.replace(/^_+/, '');
-				// Do not attempt to destructure a property named 'this' from /ns/rt
-				if (base === 'this') continue;
+				// Skip reserved/restricted words — they cannot be used as binding names in strict mode
+				if (STRICT_RESERVED.has(base) || STRICT_RESERVED.has(underscored)) continue;
 				// Ensure local binding is a valid, non-reserved identifier
 				let localName = underscored;
 				if (!t.isIdentifier(t.identifier(localName)) || localName === 'this') {

@@ -99,7 +99,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// to resolve Node built-ins like 'fs' or 'path' on device. These modules
 			// are not used at runtime for NativeScript apps, so we safely return an
 			// empty object from a global require shim when present.
-			imports += "try { if (typeof globalThis !== 'undefined') { globalThis.require = function () { return {}; }; } } catch {}\n";
+			imports += "try { if (typeof globalThis !== 'undefined') { var _nsReq = function () { return {}; }; _nsReq.context = function() { var _c = { keys: function() { return []; } }; _c.__esModule = true; return _c; }; globalThis.require = _nsReq; } } catch {}\n";
 
 			// Banner diagnostics for visibility at runtime
 			if (opts.verbose) {

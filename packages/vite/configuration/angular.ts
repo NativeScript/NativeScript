@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import angular from '@analogjs/vite-plugin-angular';
 import { angularLinkerVitePlugin, angularLinkerVitePluginPost } from '../helpers/angular/angular-linker.js';
-import { ensureSharedAngularLinker } from '../helpers/angular/shared-linker.js';
+import { ensureSharedAngularLinker, resolveAngularFileSystem } from '../helpers/angular/shared-linker.js';
 import { containsRealNgDeclare } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
@@ -13,6 +13,7 @@ import { getCliFlags } from '../helpers/cli-flags.js';
 function angularRollupLinker(projectRoot?: string): Plugin {
 	let babel: any = null;
 	let createLinker: any = null;
+	let angularFileSystem: any = null;
 	const FILTER = /node_modules\/(?:@angular|@nativescript\/angular)\/.*\.[mc]?js$/;
 
 	async function ensureDeps() {
@@ -34,6 +35,9 @@ function angularRollupLinker(projectRoot?: string): Plugin {
 				createLinker = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin;
 			} catch {}
 		}
+		if (!angularFileSystem) {
+			angularFileSystem = await resolveAngularFileSystem(projectRoot);
+		}
 	}
 
 	return {
@@ -52,7 +56,7 @@ function angularRollupLinker(projectRoot?: string): Plugin {
 				const forceLink = cleanId.includes('/node_modules/@nativescript/angular/') && cleanId.includes('polyfills');
 				if (!code) return null;
 				if (!forceLink && code.indexOf('\u0275\u0275ngDeclare') === -1 && code.indexOf('ɵɵngDeclare') === -1 && code.indexOf('ngDeclare') === -1) return null;
-				const plugin = createLinker({ sourceMapping: false });
+				const plugin = createLinker({ sourceMapping: false, fileSystem: angularFileSystem });
 				if (debug) {
 					try {
 						console.log('[ns-angular-linker][rollup-load] linking', cleanId);
@@ -82,7 +86,7 @@ function angularRollupLinker(projectRoot?: string): Plugin {
 			await ensureDeps();
 			if (!babel || !createLinker) return null;
 			try {
-				const plugin = createLinker({ sourceMapping: false });
+				const plugin = createLinker({ sourceMapping: false, fileSystem: angularFileSystem });
 				if (debug) {
 					try {
 						console.log('[ns-angular-linker][rollup] linking', cleanId);
@@ -315,35 +319,39 @@ export const angularConfig = ({ mode }): UserConfig => {
 
 	const enableRollupLinker = process.env.NS_ENABLE_ROLLUP_LINKER === '1' || process.env.NS_ENABLE_ROLLUP_LINKER === 'true' || hmrActive;
 
+	// Build a single merged alias array to avoid property override conflicts.
+	// Previously the disableAnimations spread added a second `resolve` key
+	// that silently clobbered the fesm2022 and RxJS aliases.
+	const angularAliases: { find: RegExp; replacement: string }[] = [
+		// Map Angular deep ESM paths to bare package ids
+		{ find: /^@angular\/([^/]+)\/fesm2022\/.*\.mjs$/, replacement: '@angular/$1' },
+		{ find: /^@nativescript\/angular\/fesm2022\/.*\.mjs$/, replacement: '@nativescript/angular' },
+		// RxJS esm5 → esm redirects removed: Vite 8 enforces the rxjs `exports` field,
+		// blocking deep path aliases. Instead, the `es2015` resolve condition is added
+		// below so rxjs resolves to its modern ESM builds via the exports map.
+	];
+	if (disableAnimations) {
+		angularAliases.push(
+			{
+				find: /^@angular\/animations(\/.+)?$/, // match subpaths too
+				replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+			},
+			{
+				find: /^@angular\/platform-browser\/animations(\/.+)?$/,
+				replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+			},
+		);
+	}
+
 	return mergeConfig(baseConfig({ mode, flavor: 'angular' }), {
 		plugins: [...plugins, ...(enableRollupLinker ? [angularRollupLinker(process.cwd())] : []), renderChunkLinker, postLinker],
-		// Always alias fesm2022 deep imports to package root so vendor bridge can externalize properly
 		resolve: {
-			alias: [
-				// Map Angular deep ESM paths to bare package ids
-				{ find: /^@angular\/([^/]+)\/fesm2022\/.*\.mjs$/, replacement: '@angular/$1' },
-				{ find: /^@nativescript\/angular\/fesm2022\/.*\.mjs$/, replacement: '@nativescript/angular' },
-				// Prefer modern RxJS builds; avoid esm5 which explodes module count and memory
-				{ find: /^rxjs\/dist\/esm5\/(.*)$/, replacement: 'rxjs/dist/esm2015/$1' },
-				{ find: /^rxjs\/operators$/, replacement: 'rxjs/dist/esm2015/operators/index.js' },
-				{ find: /^rxjs$/, replacement: 'rxjs/dist/esm2015/index.js' },
-				// Existing optional animations shims
-			],
+			alias: angularAliases,
+			// Add 'es2015' condition so RxJS resolves to dist/esm (modern ESM) rather
+			// than dist/esm5 via the 'default' condition. This avoids the esm5 module
+			// explosion and OOM while respecting the package's exports field in Vite 8.
+			conditions: ['es2015'],
 		},
-		...(disableAnimations && {
-			resolve: {
-				alias: [
-					{
-						find: /^@angular\/animations(\/.+)?$/, // match subpaths too
-						replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
-					},
-					{
-						find: /^@angular\/platform-browser\/animations(\/.+)?$/,
-						replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
-					},
-				],
-			},
-		}),
 		// Disable dependency optimization entirely for NativeScript Angular HMR.
 		// Vite 5.1+: use noDiscovery with an empty include list (disabled was removed).
 		// The HTTP loader + vendor bridge manage dependencies; pre-bundling can OOM.

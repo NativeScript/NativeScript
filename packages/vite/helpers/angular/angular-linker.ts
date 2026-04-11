@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite';
 import { createRequire } from 'node:module';
-import { ensureSharedAngularLinker } from './shared-linker.js';
+import { ensureSharedAngularLinker, resolveAngularFileSystem } from './shared-linker.js';
 import { containsRealNgDeclare } from './util.js';
 
 /**
@@ -13,6 +13,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 	const req = createRequire(projectRoot ? projectRoot + '/package.json' : import.meta.url);
 	let babel: typeof import('@babel/core') | null = null;
 	let createLinker: any = null;
+	let angularFileSystem: any = null;
 
 	async function ensureDeps() {
 		if (babel && createLinker) return;
@@ -31,6 +32,9 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 				const linkerMod = await import('@angular/compiler-cli/linker/babel');
 				createLinker = (linkerMod as any).createLinkerPlugin || (linkerMod as any).createEs2015LinkerPlugin || null;
 			} catch {}
+		}
+		if (!angularFileSystem) {
+			angularFileSystem = await resolveAngularFileSystem(projectRoot);
 		}
 	}
 
@@ -90,7 +94,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 			await ensureDeps();
 			if (!babel || !createLinker) return null;
 			try {
-				const plugin = createLinker({ sourceMapping: false });
+				const plugin = createLinker({ sourceMapping: false, fileSystem: angularFileSystem });
 				if (debug) {
 					try {
 						console.log('[ns-angular-linker][vite] linking', cleanId);
@@ -120,29 +124,6 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
  * including in project source, after other plugins have run.
  */
 export function angularLinkerVitePluginPost(projectRoot?: string): Plugin {
-	const req = createRequire(projectRoot ? projectRoot + '/package.json' : import.meta.url);
-	let babel: typeof import('@babel/core') | null = null;
-	let createLinker: any = null;
-
-	async function ensureDeps() {
-		if (babel && createLinker) return;
-		try {
-			const babelPath = req.resolve('@babel/core');
-			const linkerPath = req.resolve('@angular/compiler-cli/linker/babel');
-			babel = (await import(babelPath)) as any;
-			const linkerMod = await import(linkerPath);
-			createLinker = (linkerMod as any).createLinkerPlugin || (linkerMod as any).createEs2015LinkerPlugin || null;
-		} catch {
-			try {
-				babel = (await import('@babel/core')) as any;
-			} catch {}
-			try {
-				const linkerMod = await import('@angular/compiler-cli/linker/babel');
-				createLinker = (linkerMod as any).createLinkerPlugin || (linkerMod as any).createEs2015LinkerPlugin || null;
-			} catch {}
-		}
-	}
-
 	return {
 		name: 'ns-angular-linker-vite-post',
 		enforce: 'post',
@@ -154,6 +135,11 @@ export function angularLinkerVitePluginPost(projectRoot?: string): Plugin {
 			const { babel, linkerPlugin } = await ensureSharedAngularLinker(projectRoot);
 			if (!babel || !linkerPlugin) return null;
 			try {
+				if (debug) {
+					try {
+						console.log('[ns-angular-linker][vite-post] linking', id.split('?', 1)[0]);
+					} catch {}
+				}
 				const result = await (babel as any).transformAsync(code, {
 					filename: id.split('?', 1)[0],
 					configFile: false,
