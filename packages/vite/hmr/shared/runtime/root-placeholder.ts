@@ -104,6 +104,14 @@ export function installRootPlaceholder(verbose?: boolean) {
 								delete g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
 								delete g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'];
 
+								// When entry is undefined/null, the calling framework (e.g. Angular)
+								// manages root views itself via launch events and resetRootView().
+								// Don't attempt resetRootView(undefined) which throws "Main entry is missing".
+								if (!entry) {
+									if (verbose) console.info('[ns-placeholder] patched run() called with no entry; framework manages root view');
+									return;
+								}
+
 								const isModuleNameEntry = entry && entry.moduleName && !entry.create;
 								if (isModuleNameEntry) {
 									if (typeof (Application as any).resetRootView === 'function') {

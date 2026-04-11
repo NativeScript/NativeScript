@@ -390,14 +390,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 						path: '/vite-hmr',
 					},
 					cors: true,
-					// watch: {
-					//   ignored: [
-					//     '**/.DS_Store',
-					//     '**/Documents/**',
-					//     '**/hooks/**',
-					//     '**/platforms/**'
-					//   ]
-					// }
+					watch: {
+						ignored: ['**/.DS_Store', '**/Documents/**', '**/hooks/**', '**/platforms/**'],
+					},
 				}
 			: {},
 		// Configure worker builds to bundle everything into standalone workers

@@ -1,6 +1,6 @@
 import type { Plugin, ViteDevServer, TransformResult } from 'vite';
 import { createRequire } from 'node:module';
-import { normalizeStrayCoreStringLiterals, fixDanglingCoreFrom, normalizeAnyCoreSpecToBridge } from './core-sanitize.js';
+import { normalizeStrayCoreStringLiterals, fixDanglingCoreFrom, normalizeAnyCoreSpecToBridge, isDeepCoreSubpath, rewriteSpecifiersForDevice } from './core-sanitize.js';
 // AST tooling for robust transformations
 import { parse as babelParse } from '@babel/parser';
 import { genCode } from '../helpers/babel.js';
@@ -34,6 +34,21 @@ import { buildInlineTemplateBlock, createProcessSfcCode, extractTemplateRender, 
 import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 import { buildRuntimeConfig, generateImportMap } from './import-map.js';
+import { getCliFlags } from '../../helpers/cli-flags.js';
+
+// Build a serialized process.env object from CLI --env.* flags.
+// This is injected into every HTTP-served module so app code referencing
+// process.env.TEST_ENV (etc.) works on device in HMR dev mode.
+const __processEnvEntries: Record<string, string> = { NODE_ENV: 'development' };
+try {
+	const flags = getCliFlags();
+	for (const [k, v] of Object.entries(flags)) {
+		// Skip internal NativeScript build flags
+		if (['ios', 'android', 'visionos', 'platform', 'hmr', 'verbose'].includes(k)) continue;
+		__processEnvEntries[k] = String(v);
+	}
+} catch {}
+const __processEnvJson = JSON.stringify(__processEnvEntries);
 
 const { parse, compileTemplate, compileScript } = vueSfcCompiler;
 
@@ -552,6 +567,160 @@ function isFileDistSubpath(subpath: string): boolean {
 		return true;
 	}
 	return false;
+}
+
+// ── Package exports reverse map ──────────────────────────────────────────────
+// Resolves Vite's resolved file paths back to original bare specifiers using
+// the package's own package.json exports field. This eliminates the fragile
+// heuristic that tried to guess main entry vs. subpath from file paths.
+
+const _exportsReverseMapCache = new Map<string, Map<string, string>>();
+
+/**
+ * Resolve the concrete file path from a package.json exports condition value.
+ * Handles nested condition objects: { "esm2022": { "default": "./file.mjs" } }
+ */
+function resolveExportConditionValue(conditions: unknown): string | null {
+	if (typeof conditions === 'string') return conditions;
+	if (typeof conditions !== 'object' || conditions === null) return null;
+	const obj = conditions as Record<string, unknown>;
+	for (const key of ['esm2022', 'esm', 'esm2015', 'import', 'module', 'default']) {
+		if (key in obj) {
+			const result = resolveExportConditionValue(obj[key]);
+			if (result) return result;
+		}
+	}
+	for (const val of Object.values(obj)) {
+		if (typeof val === 'string') return val;
+	}
+	return null;
+}
+
+/**
+ * Build a reverse map from file paths → bare specifiers for a package.
+ *
+ * Example for @angular/common:
+ *   "fesm2022/common.mjs" → "@angular/common"        (exports["."])
+ *   "fesm2022/http.mjs"   → "@angular/common/http"   (exports["./http"])
+ *
+ * For packages without exports field, uses main/module fields.
+ */
+function getExportsReverseMap(pkgName: string, projectRoot: string): Map<string, string> {
+	const cached = _exportsReverseMapCache.get(pkgName);
+	if (cached) return cached;
+
+	const map = new Map<string, string>();
+	try {
+		const pkgJsonPath = path.join(projectRoot, 'node_modules', pkgName, 'package.json');
+		const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+
+		if (pkgJson.exports && typeof pkgJson.exports === 'object') {
+			for (const [entryPoint, conditions] of Object.entries(pkgJson.exports)) {
+				// Skip wildcard patterns (./locales/*, etc.) and non-JS exports
+				if (entryPoint.includes('*') || entryPoint.endsWith('.json')) continue;
+
+				const resolvedPath = resolveExportConditionValue(conditions);
+				if (resolvedPath && typeof resolvedPath === 'string') {
+					const normalized = resolvedPath.replace(/^\.\//, '');
+					const bareSpec = entryPoint === '.' ? pkgName : `${pkgName}/${entryPoint.replace(/^\.\//, '')}`;
+					map.set(normalized, bareSpec);
+				}
+			}
+		}
+
+		// Fallback: main/module field for packages without exports
+		if (map.size === 0) {
+			for (const field of ['module', 'main'] as const) {
+				const value = pkgJson[field];
+				if (value && typeof value === 'string') {
+					const normalized = value.replace(/^\.\//, '');
+					map.set(normalized, pkgName);
+					// Also store without extension for NativeScript platform resolution
+					const withoutExt = normalized.replace(/\.[^.]+$/, '');
+					if (withoutExt !== normalized) {
+						map.set(withoutExt, pkgName);
+					}
+					break;
+				}
+			}
+		}
+	} catch {
+		// Package.json not found or unreadable
+	}
+
+	_exportsReverseMapCache.set(pkgName, map);
+	return map;
+}
+
+/**
+ * Extract the root package name from a node_modules specifier.
+ * "@angular/common/fesm2022/http.mjs" → "@angular/common"
+ * "tslib/tslib.es6.mjs" → "tslib"
+ */
+function extractRootPackageName(spec: string): string {
+	if (spec.startsWith('@')) {
+		const parts = spec.split('/');
+		return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : spec;
+	}
+	return spec.split('/')[0];
+}
+
+/**
+ * Determine whether a vendor package import should go through the vendor bridge
+ * (bare specifier) or HTTP (full URL), using the package's exports map.
+ *
+ * Returns:
+ *   { route: 'vendor', bareSpec: string }  — use vendor bridge with this bare specifier
+ *   { route: 'http' }                      — serve via HTTP
+ *   null                                   — not a vendor package
+ */
+function resolveVendorRouting(nodeModulesSpec: string, projectRoot: string): { route: 'vendor'; bareSpec: string } | { route: 'http' } | null {
+	const pkgName = extractRootPackageName(nodeModulesSpec);
+
+	// Check if this package is in the vendor manifest
+	const manifest = getVendorManifest();
+	if (!manifest?.modules?.[pkgName]) {
+		return null;
+	}
+
+	// Platform-specific files always go via HTTP — the vendor bundle
+	// (built by esbuild without NS platform resolver) doesn't have them
+	if (/\.(ios|android)\.(js|ts|mjs|mts)$/.test(nodeModulesSpec)) {
+		return { route: 'http' };
+	}
+
+	// Extract the subpath within the package
+	const subpath = nodeModulesSpec.slice(pkgName.length).replace(/^\//, '');
+
+	// No subpath → bare package specifier → vendor bridge
+	if (!subpath) {
+		return { route: 'vendor', bareSpec: pkgName };
+	}
+
+	// Use exports reverse map to detect subpath entries — these MUST go to HTTP
+	// to avoid collapsing e.g. @angular/common/http → @angular/common
+	const reverseMap = getExportsReverseMap(pkgName, projectRoot);
+	const originalSpec = reverseMap.get(subpath);
+	if (originalSpec && originalSpec !== pkgName) {
+		// Subpath entry (e.g., fesm2022/http.mjs → @angular/common/http) → HTTP
+		return { route: 'http' };
+	}
+
+	// For vendor routing, only use the vendor bridge for root-level main entries
+	// (single-segment paths like "index.js", "tslib.es6.mjs"). Multi-segment
+	// build output paths (fesm2022/core.mjs, dist/index.js) go to HTTP even if
+	// they ARE the main entry — the ns-vendor:// protocol in HMR mode does not
+	// reliably serve all named ES exports for complex packages.
+	if (!subpath.includes('/')) {
+		const lastSegment = subpath.replace(/\.[^.]+$/, '');
+		const pkgBaseName = pkgName.split('/').pop() || '';
+		if (lastSegment === 'index' || lastSegment === pkgBaseName || lastSegment.startsWith(pkgBaseName + '.')) {
+			return { route: 'vendor', bareSpec: pkgName };
+		}
+	}
+
+	// Default: HTTP — safe for all module types and preserves all named exports
+	return { route: 'http' };
 }
 
 // ----------------------------------------------------------------------------
@@ -1285,6 +1454,10 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	// Inject ALL NativeScript/build globals at the top (matching global-defines.ts)
 	// This ensures any code using __DEV__, __ANDROID__, __IOS__, etc. works correctly
 	const allGlobals = [
+		// Minimal process shim — populated with CLI --env.* flags at module load time.
+		// In production builds, Vite/Rollup replaces process.env.* statically.
+		// In HMR dev mode the code runs as-is on device, so we need the shim.
+		`if (typeof process === "undefined") { globalThis.process = { env: ${__processEnvJson} }; } else if (!process.env) { process.env = ${__processEnvJson}; }`,
 		'const __ANDROID__ = globalThis.__ANDROID__ !== undefined ? globalThis.__ANDROID__ : false;',
 		'const __IOS__ = globalThis.__IOS__ !== undefined ? globalThis.__IOS__ : false;',
 		'const __VISIONOS__ = globalThis.__VISIONOS__ !== undefined ? globalThis.__VISIONOS__ : false;',
@@ -1592,6 +1765,8 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 					.join(', ');
 			const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
 			result = result.replace(reNamed, (_full, pfx: string, specList: string, src: string) => {
+				// Deep subpath URLs serve actual ESM with real named exports — skip.
+				if (isDeepCoreSubpath(src)) return _full;
 				__core_ns_seq++;
 				const tmp = `__ns_core_ns${__core_ns_seq}`;
 				const decl = `const { ${toDestructureCore(specList)} } = ${tmp};`;
@@ -1599,6 +1774,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 			});
 			const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
 			result = result.replace(reMixed, (_full, pfx: string, defName: string, specList: string, src: string) => {
+				if (isDeepCoreSubpath(src)) return _full;
 				const decl = `const { ${toDestructureCore(specList)} } = ${defName};`;
 				return `${pfx}import ${defName} from ${JSON.stringify(src)};\n${decl}\n`;
 			});
@@ -1852,6 +2028,8 @@ function ensureDestructureCoreImports(code: string): string {
 		// import { A, B } from '/ns/core[/ver][?p=...]'
 		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
 		result = result.replace(reNamed, (_full, pfx: string, specList: string, src: string) => {
+			// Deep subpath URLs serve actual ESM with real named exports — skip.
+			if (isDeepCoreSubpath(src)) return _full;
 			const tmp = `__ns_core_ns_re${coreImportCounter > 0 ? `_${coreImportCounter}` : ''}`;
 			coreImportCounter++;
 			const decl = `const { ${toDestructure(specList)} } = ${tmp};`;
@@ -1860,6 +2038,7 @@ function ensureDestructureCoreImports(code: string): string {
 		// import Default, { A, B } from '/ns/core[...]'
 		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
 		result = result.replace(reMixed, (_full, pfx: string, defName: string, specList: string, src: string) => {
+			if (isDeepCoreSubpath(src)) return _full;
 			const decl = `const { ${toDestructure(specList)} } = ${defName};`;
 			return `${pfx}import ${defName} from ${JSON.stringify(src)};\n${decl}\n`;
 		});
@@ -2149,77 +2328,25 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 		const nodeModulesSpecifier = normalizeNodeModulesSpecifier(spec);
 		const candidateNativeScriptSpec = nodeModulesSpecifier ?? spec;
 
-		// IMPORTANT: Check NativeScript plugin modules BEFORE vendor lookup.
-		// @nativescript/ plugins (e.g., @nativescript/tanstack-router/solid) must be
-		// served via HTTP, not resolved as vendor modules. The vendor lookup calls
-		// normalizeSpecifier which strips subpaths (e.g., /solid → main entry),
-		// causing the wrong entry point to load (main doesn't export Link, etc.).
-		if (isNativeScriptPluginModule(candidateNativeScriptSpec)) {
-			const bareSpecifier = candidateNativeScriptSpec.replace(PAT.QUERY_PATTERN, '');
-			// Route through /ns/m/ for HTTP serving when we have a node_modules path
-			if (nodeModulesSpecifier) {
-				const httpSpec = `/ns/m/node_modules/${bareSpecifier}`;
-				if (httpOriginSafe) {
-					return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
+		// ── Node modules routing ──────────────────────────────────────
+		// Uses the package's own package.json exports field to determine
+		// whether an import is the main entry (→ vendor bridge) or a
+		// subpath entry (→ HTTP). This replaces the old heuristic-based
+		// approach that tried to guess from file paths.
+		if (nodeModulesSpecifier) {
+			const vendorRouting = resolveVendorRouting(nodeModulesSpecifier, projectRoot);
+			if (vendorRouting) {
+				if (vendorRouting.route === 'vendor') {
+					return `${prefix}${vendorRouting.bareSpec}${suffix}`;
 				}
-				return `${prefix}${httpSpec}${suffix}`;
-			}
-			return `${prefix}${bareSpecifier}${suffix}`;
-		}
-
-		const vendorCanonical = resolveVendorFromCandidate(nodeModulesSpecifier ?? spec);
-
-		if (vendorCanonical) {
-			// Decide: vendor bridge (bare specifier) vs HTTP (full path).
-			//
-			// The vendor bridge can ONLY resolve the package's main entry as
-			// bundled by esbuild. It CANNOT handle:
-			//   1. Platform-specific files (.ios.js, .android.js) — esbuild doesn't
-			//      have NativeScript's platform resolver
-			//   2. Subpath imports (e.g., "@pkg/common.js") — the vendor bridge
-			//      only maps the bare package name to the main entry
-			//
-			// Rule: use vendor bridge ONLY for non-platform main entries.
-			let useVendorBridge = true;
-			if (nodeModulesSpecifier) {
-				// Platform-specific files always need HTTP — vendor bundle doesn't have them
-				const isPlatformSpecific = /\.(ios|android)\.(js|ts|mjs|mts)$/.test(nodeModulesSpecifier);
-				if (isPlatformSpecific) {
-					useVendorBridge = false;
-				} else if (nodeModulesSpecifier !== vendorCanonical) {
-					// Check if this is a subpath import vs main entry.
-					// The vendor bridge only maps bare package names → main entry.
-					// fileName = base name with last extension stripped:
-					//   "index.js" → "index", "moment.js" → "moment",
-					//   "tslib.es6.mjs" → "tslib.es6", "index.common.js" → "index.common"
-					const afterCanonical = nodeModulesSpecifier.slice(vendorCanonical.length);
-					const pkgName = vendorCanonical.split('/').pop()!;
-					const fileName = afterCanonical.replace(/^\//, '').replace(/\.[^.]+$/, '');
-					// Main entry: fileName is exactly "index" or matches the package name.
-					// "index.common" is NOT "index" — it's a separate shared module.
-					const isMainEntry = !afterCanonical || fileName === 'index' || fileName === pkgName || fileName.startsWith(pkgName + '.');
-					if (!isMainEntry) {
-						useVendorBridge = false;
-					}
-				}
-			}
-			if (!useVendorBridge && nodeModulesSpecifier) {
-				// Platform-specific or subpath — serve via HTTP with exact path.
+				// Vendor package but subpath/platform-specific → HTTP
 				const httpSpec = `/ns/m/node_modules/${nodeModulesSpecifier}`;
 				if (httpOriginSafe) {
 					return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
 				}
 				return `${prefix}${httpSpec}${suffix}`;
 			}
-			// Main entry — use the canonical bare package name for the vendor bridge
-			return `${prefix}${vendorCanonical}${suffix}`;
-		}
-
-		if (nodeModulesSpecifier) {
-			// Non-vendor node_modules: serve via HTTP from Vite dev server.
-			// The device cannot resolve bare node_modules specifiers on the
-			// filesystem; route through /ns/m/ so the dev server transforms
-			// and serves the module (including JSX compilation, etc.).
+			// Not a vendor package → serve via HTTP from Vite dev server
 			const httpSpec = `/ns/m/node_modules/${nodeModulesSpecifier}`;
 			if (httpOriginSafe) {
 				return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
@@ -2989,6 +3116,34 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							}
 						}
 					} catch {}
+					// Serve Vite virtual modules (/@id/ prefix). These are internal
+					// virtual modules (e.g., \0nsvite:nsconfig-json for ~/package.json)
+					// that don't exist on disk. Decode the ID and load via plugin container.
+					if (spec.startsWith('/@id/')) {
+						try {
+							// First try Vite's transform pipeline directly
+							const vr = await server.transformRequest(spec);
+							if (vr?.code) {
+								res.statusCode = 200;
+								res.end(vr.code);
+								return;
+							}
+						} catch {}
+						try {
+							// Fallback: decode the virtual module ID (__x00__ → \0) and
+							// load through the plugin container directly
+							const rawId = spec.slice('/@id/'.length).replace(/__x00__/g, '\0');
+							const loadResult = await (server as any).pluginContainer.load(rawId);
+							if (loadResult) {
+								const code = typeof loadResult === 'string' ? loadResult : loadResult.code;
+								if (code) {
+									res.statusCode = 200;
+									res.end(code);
+									return;
+								}
+							}
+						} catch {}
+					}
 					if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
 					if (spec.startsWith('./')) spec = spec.slice(1);
 					if (!spec.startsWith('/')) spec = '/' + spec;
@@ -3747,35 +3902,12 @@ export const piniaSymbol = p.piniaSymbol;
 							const modulePath = `/node_modules/@nativescript/core/${sub}`;
 							const transformed = await server.transformRequest(modulePath);
 							if (transformed?.code) {
-								let moduleCode = transformed.code;
-								moduleCode = REQUIRE_GUARD_SNIPPET + moduleCode;
-								moduleCode = cleanCode(moduleCode);
-								moduleCode = processCodeForDevice(moduleCode, false, true, true);
-								moduleCode = rewriteImports(moduleCode, modulePath, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server), true);
-								try {
-									moduleCode = deduplicateLinkerImports(moduleCode);
-								} catch {}
-								try {
-									const hasExportDefault = /\bexport\s+default\b/.test(moduleCode) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(moduleCode);
-									const hasNamedExports = /\bexport\s+(?:const|let|var|function|class|async)\b/.test(moduleCode) || /\bexport\s*\{/.test(moduleCode);
-									const hasCjsExports = /\bmodule\s*\.\s*exports\b/.test(moduleCode) || /\bexports\s*\.\s*\w/.test(moduleCode);
-									if (!hasExportDefault && !hasNamedExports && hasCjsExports) {
-										const namedExports = new Set<string>();
-										let em: RegExpExecArray | null;
-										const exportsRe = /\bexports\s*\.\s*([A-Za-z_$][\w$]*)\s*=/g;
-										while ((em = exportsRe.exec(moduleCode)) !== null) {
-											if (em[1] !== '__esModule' && em[1] !== 'default') namedExports.add(em[1]);
-										}
-										let suffix = `\nvar __cjs_mod = module.exports;\nexport default __cjs_mod;\n`;
-										if (namedExports.size) {
-											const entries = Array.from(namedExports);
-											const temps = entries.map((name, i) => `var __cjs_e${i} = __cjs_mod[${JSON.stringify(name)}];`);
-											const reExports = entries.map((name, i) => `__cjs_e${i} as ${name}`);
-											suffix += `${temps.join(' ')}\nexport { ${reExports.join(', ')} };\n`;
-										}
-										moduleCode = `var module = { exports: {} }; var exports = module.exports;\n${moduleCode}${suffix}`;
-									}
-								} catch {}
+								// Minimal pipeline: Vite already produces correct ESM.
+								// ONLY rewrite specifier strings to device-fetchable URLs.
+								// Do NOT run processCodeForDevice, rewriteImports, or any
+								// other heavy transform — those mangle newlines, eat exports,
+								// and cause cascading "does not provide an export" failures.
+								const moduleCode = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(ver));
 								res.statusCode = 200;
 								res.end(moduleCode);
 								return;
