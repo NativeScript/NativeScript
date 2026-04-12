@@ -49,7 +49,7 @@ ensureCoreAliasesOnGlobalThis();
 /**
  * Flavor hooks
  */
-import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, ensurePiniaOnApp, addSfcMapping, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate } from '../frameworks/vue/client/index.js';
+import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, ensurePiniaOnApp, addSfcMapping, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate, sfcArtifactMap } from '../frameworks/vue/client/index.js';
 import { handleAngularHotUpdateMessage, installAngularHmrClientHooks } from '../frameworks/angular/client/index.js';
 switch (__NS_TARGET_FLAVOR__) {
 	case 'vue':
@@ -201,6 +201,18 @@ function applyFullGraph(payload: any) {
 									}
 								}
 							}
+							// Fallback: when the module graph is empty (Vite 7+ may not populate it
+							// before the first full-graph broadcast), check the SFC artifact registry
+							// which is populated from the ns:vue-sfc-registry message.
+							if (!candidate && sfcArtifactMap.size > 0) {
+								for (const id of sfcArtifactMap.keys()) {
+									if (/\.vue$/i.test(id)) {
+										candidate = id;
+										if (VERBOSE) console.log('[hmr][init] rescue candidate from SFC registry:', id);
+										break;
+									}
+								}
+							}
 							break;
 						}
 					}
@@ -261,6 +273,16 @@ function applyFullGraph(payload: any) {
 						for (const id of graph.keys()) {
 							if (/\.vue$/i.test(id)) {
 								candidate = id;
+								break;
+							}
+						}
+					}
+					// Fallback: SFC registry (same as rescue mount above)
+					if (!candidate && sfcArtifactMap.size > 0) {
+						for (const id of sfcArtifactMap.keys()) {
+							if (/\.vue$/i.test(id)) {
+								candidate = id;
+								if (VERBOSE) console.log('[hmr][init] initial mount candidate from SFC registry:', id);
 								break;
 							}
 						}

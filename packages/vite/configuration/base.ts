@@ -274,8 +274,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					},
 				}
 			: {
-					// Force pre-bundling of problematic CommonJS packages (kept empty by default)
-					include: [],
+					// Force upfront pre-bundling of framework packages so Vite 7+
+					// does not lazily discover them mid-request and block transformRequest.
+					include: flavor === 'vue' ? ['nativescript-vue'] : [],
 					esbuildOptions: {
 						conditions: ['module', 'react-native', 'import', 'browser', 'default'],
 						resolveExtensions: platformExtensions as any,

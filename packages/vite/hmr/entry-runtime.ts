@@ -68,6 +68,9 @@ export default async function startEntry(opts: EntryOpts) {
 			TRACE.preload.rt = { ok: true, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER };
 		} catch (e_rt: any) {
 			TRACE.preload.rt = { ok: false, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER, err: String(e_rt && (e_rt.message || e_rt)) };
+			try {
+				console.warn('[ns-entry] /ns/rt preload failed:', e_rt && (e_rt.message || e_rt));
+			} catch {}
 		}
 		const t_core = Date.now();
 		try {
@@ -75,6 +78,9 @@ export default async function startEntry(opts: EntryOpts) {
 			TRACE.preload.core = { ok: true, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER };
 		} catch (e_core: any) {
 			TRACE.preload.core = { ok: false, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER, err: String(e_core && (e_core.message || e_core)) };
+			try {
+				console.warn('[ns-entry] /ns/core preload failed:', e_core && (e_core.message || e_core));
+			} catch {}
 		}
 
 		const MAIN_URL = ORIGIN + '/ns/m' + MAIN + '?v=' + VER;
@@ -90,6 +96,9 @@ export default async function startEntry(opts: EntryOpts) {
 				break;
 			} catch (e_main: any) {
 				lastMainErr = e_main;
+				try {
+					console.warn('[ns-entry] main entry attempt', attempt, 'failed:', e_main && (e_main.message || e_main));
+				} catch {}
 				// brief backoff; allows dev server and device network to settle
 				await new Promise((r) => setTimeout(r, 150 + attempt * 150));
 			}
