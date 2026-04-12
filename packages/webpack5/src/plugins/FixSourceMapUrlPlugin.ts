@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+import { pathToFileURL } from 'url';
 import type { Compiler } from 'webpack';
 import { sources } from 'webpack';
 
@@ -18,7 +20,15 @@ export default class FixSourceMapUrlPlugin {
 			!!wp?.Compilation?.PROCESS_ASSETS_STAGE_DEV_TOOLING &&
 			!!(compiler as any).hooks?.thisCompilation;
 
-		const leadingCharacter = process.platform === 'win32' ? '/' : '';
+		const getSourceMapUrl = (sourceMapPath: string): string => {
+			if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(sourceMapPath)) {
+				return sourceMapPath;
+			}
+
+			return pathToFileURL(
+				resolve(this.options.outputPath, sourceMapPath),
+			).toString();
+		};
 
 		const toStringContent = (content: any): string => {
 			if (typeof content === 'string') return content;
@@ -65,8 +75,9 @@ export default class FixSourceMapUrlPlugin {
 			let source = toStringContent(rawSource);
 			// Replace sourceMappingURL to use file:// protocol pointing to actual location
 			source = source.replace(
-				/\/\/\# sourceMappingURL=(.+\.map)/g,
-				`//# sourceMappingURL=file://${leadingCharacter}${this.options.outputPath}/$1`,
+				/\/\/\# sourceMappingURL=(.+\.map(?:\?[^\s]*)?)/g,
+				(_match, sourceMapPath: string) =>
+					`//# sourceMappingURL=${getSourceMapUrl(sourceMapPath)}`,
 			);
 
 			// Prefer Webpack 5 updateAsset with RawSource when available

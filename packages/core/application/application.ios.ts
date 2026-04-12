@@ -9,6 +9,7 @@ import { ios as iosUtils, dataSerialize } from '../utils/native-helper';
 import { ApplicationCommon, initializeSdkVersionClass, SceneEvents } from './application-common';
 import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
+import type { iOSApplication as IiOSApplication } from './application';
 import { Trace } from '../trace';
 import {
 	AccessibilityServiceEnabledPropName,
@@ -186,6 +187,8 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			return;
 		}
 
+		const isFirstScene = !Application.ios.getPrimaryScene() && !Application.hasLaunched();
+
 		this._scene = scene;
 
 		// Create window for this scene
@@ -221,7 +224,7 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		}
 
 		// If this is the first scene, trigger app startup
-		if (!Application.ios.getPrimaryScene()) {
+		if (isFirstScene) {
 			Application.ios._notifySceneAppStarted();
 		}
 	}
@@ -254,10 +257,11 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 // ensure available globally
 global.SceneDelegate = SceneDelegate;
 
-export class iOSApplication extends ApplicationCommon {
+export class iOSApplication extends ApplicationCommon implements IiOSApplication {
 	private _delegate: UIApplicationDelegate;
 	private _delegateHandlers = new Map<string, Array<Function>>();
 	private _rootView: View;
+	private launchEventCalled = false;
 	private _sceneDelegate: UIWindowSceneDelegate;
 	private _windowSceneMap = new Map<UIScene, UIWindow>();
 	private _primaryScene: UIWindowScene | null = null;
@@ -268,6 +272,8 @@ export class iOSApplication extends ApplicationCommon {
 	displayedOnce = false;
 	displayedLinkTarget: CADisplayLinkTarget;
 	displayedLink: CADisplayLink;
+
+	shouldDelayLaunchEvent = false;
 
 	/**
 	 * @internal - should not be constructed by the user.
@@ -583,6 +589,7 @@ export class iOSApplication extends ApplicationCommon {
 	}
 
 	private notifyAppStarted(notification?: NSNotification) {
+		this.launchEventCalled = true;
 		const root = this.notifyLaunch({
 			ios: notification?.userInfo?.objectForKey('UIApplicationLaunchOptionsLocalNotificationKey') ?? null,
 		});
@@ -691,7 +698,10 @@ export class iOSApplication extends ApplicationCommon {
 				this.window.backgroundColor = SDK_VERSION <= 12 || !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 			}
 
-			this.notifyAppStarted(notification);
+			this.launchEventCalled = false;
+			if (!this.shouldDelayLaunchEvent) {
+				this.notifyAppStarted();
+			}
 		} else {
 			// Scene-based app - window creation will happen in scene delegate
 		}
@@ -699,6 +709,9 @@ export class iOSApplication extends ApplicationCommon {
 
 	@profile
 	private didBecomeActive(notification: NSNotification) {
+		if (!this.launchEventCalled) {
+			this.notifyAppStarted(notification);
+		}
 		const additionalData = {
 			ios: UIApplication.sharedApplication,
 		};
@@ -905,8 +918,11 @@ export class iOSApplication extends ApplicationCommon {
 				setiOSWindow(window);
 			}
 
-			// Set up the window content for the primary scene
-			this.setWindowContent();
+			// During initial scene startup we must wait for launch to be notified first.
+			// Some frameworks provide root content from launch handlers.
+			if (this.hasLaunched()) {
+				this.setWindowContent();
+			}
 		}
 	}
 

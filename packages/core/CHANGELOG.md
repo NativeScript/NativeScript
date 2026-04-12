@@ -1,3 +1,29 @@
+## 9.0.18 (2026-03-30)
+
+### 🩹 Fixes
+
+- **ios:** liquid glass flexbox ([#11134](https://github.com/NativeScript/NativeScript/pull/11134))
+- **ios:** guard against non-string imageURI in createUIImageFromURI ([#11144](https://github.com/NativeScript/NativeScript/pull/11144))
+- **ios:** scene notify first launch ([#11149](https://github.com/NativeScript/NativeScript/pull/11149))
+- **android:** setTextColor is non-nullable, prevent null exception ([#11147](https://github.com/NativeScript/NativeScript/pull/11147))
+- **TextField:** allow toggling of secure when secureWithoutAutofill is present ([65503ba3f](https://github.com/NativeScript/NativeScript/commit/65503ba3f))
+- **core:** split http module to solve circular refs ([#11141](https://github.com/NativeScript/NativeScript/pull/11141))
+- **android:** enable edge-to-edge only for fullscreen modals ([#11140](https://github.com/NativeScript/NativeScript/pull/11140))
+- **core:** size export in View object ([#11132](https://github.com/NativeScript/NativeScript/pull/11132))
+
+### 🔥 Performance
+
+- **TextField:** optimize secureWithoutAutofill ([#11131](https://github.com/NativeScript/NativeScript/pull/11131))
+
+### ❤️ Thank You
+
+- Abdelkarim Ait Bourich @VeinDevTtv
+- Dimitris-Rafail Katsampas @CatchABus
+- felixkrautschuk
+- Juan de Dios Martínez Vallejo
+- Nathan Walker
+- xieweilyg
+
 ## 9.0.17 (2026-03-04)
 
 ### 🩹 Fixes

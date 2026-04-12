@@ -1,3 +1,13 @@
+## 5.0.33 (2026-03-30)
+
+### 🩹 Fixes
+
+- **webpack:** disable __dirname & __filename webpack polyfills for esm builds ([#11146](https://github.com/NativeScript/NativeScript/pull/11146))
+
+### ❤️ Thank You
+
+- Daniel Grima @dangrima90
+
 ## 5.0.32 (2026-03-18)
 
 ### 🩹 Fixes

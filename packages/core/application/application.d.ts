@@ -265,6 +265,12 @@ export class iOSApplication extends ApplicationCommon {
 	 * Get the current one or set a custom one.
 	 */
 	sceneDelegate: UIWindowSceneDelegate;
+
+	/**
+	 * Flag to be set when the launch event should be delayed until the application has become active.
+	 * This is useful when you want to process notifications or data in the background without creating the UI.
+	 */
+	shouldDelayLaunchEvent: boolean;
 }
 
 export const VALID_FONT_SCALES: number[];

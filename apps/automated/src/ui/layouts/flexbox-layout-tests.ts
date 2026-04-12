@@ -1,4 +1,4 @@
-import { FlexboxLayout, Button, View, unsetValue, Length, PercentLength, Label, Builder } from '@nativescript/core';
+import { FlexboxLayout, Button, View, unsetValue, Length, PercentLength, Label, Builder, isIOS } from '@nativescript/core';
 
 export namespace FlexDirection {
 	export const ROW: 'row' = 'row';
@@ -1746,3 +1746,45 @@ export const testFlexboxLayout_does_not_crash_with_proxy_view_container = test(a
 // Omit testDivider_directionRow_verticalBeginning
 
 // Omit divider test family, we don't draw dividers
+
+let activity_liquidglass_flexbox_layout = () =>
+	getViews(
+		`<FlexboxLayout iosOverflowSafeArea="false" id="flexbox" width="300" height="300" flexDirection="${FlexDirection.ROW}" backgroundColor="gray">
+        <LiquidGlass id="text1" width="100" height="100" />
+        <LiquidGlassContainer id="text2" width="100" height="100" />
+        <Label id="text3" width="100" height="100" text="3" />
+    </FlexboxLayout>`,
+	);
+
+export const testLiquidGlassFlexboxLayout = isIOS
+	? test(activity_liquidglass_flexbox_layout, noop, ({ flexbox, text1, text2, text3 }) => {
+			isTopAlignedWith(text1, flexbox);
+			isLeftAlignedWith(text1, flexbox);
+			isRightOf(text2, text1);
+			isTopAlignedWith(text2, flexbox);
+			isRightOf(text3, text2);
+			isTopAlignedWith(text3, flexbox);
+
+			equal(width(flexbox), width(text1) + width(text2) + width(text3));
+			// Layout helpers report device pixels, so fixed XML DIP sizes must be converted too.
+			closeEnough(height(flexbox), dipToDp(300));
+		})
+	: undefined;
+
+export const testLiquidGlassViews_do_not_crash_when_updating_iosGlassEffect = isIOS
+	? test(activity_liquidglass_flexbox_layout, noop, ({ root, text1, text2 }) => {
+			const liquidGlass = text1 as unknown as View;
+			const liquidGlassContainer = text2 as unknown as View;
+
+			TKUnit.assertTrue(liquidGlass.nativeViewProtected instanceof UIVisualEffectView, 'LiquidGlass should create a UIVisualEffectView host.');
+			TKUnit.assertTrue(liquidGlassContainer.nativeViewProtected instanceof UIVisualEffectView, 'LiquidGlassContainer should create a UIVisualEffectView host.');
+
+			liquidGlass.iosGlassEffect = 'regular';
+			liquidGlassContainer.iosGlassEffect = { variant: 'clear', spacing: 12 };
+			liquidGlass.iosGlassEffect = 'none';
+			liquidGlassContainer.iosGlassEffect = 'none';
+
+			waitUntilTestElementLayoutIsValid(root);
+			TKUnit.assertTrue(root.isLoaded, 'Liquid glass view tree should remain loaded after glass effect updates.');
+		})
+	: undefined;
