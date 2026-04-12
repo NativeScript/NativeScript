@@ -26,30 +26,32 @@ export function handleAngularHotUpdateMessage(msg: any, options: AngularUpdateOp
 	}
 	try {
 		const g: any = globalThis;
-		const App = options.getCore('Application') || g.Application;
-		const bootstrap = g.__NS_ANGULAR_BOOTSTRAP__;
-		if (typeof App?.resetRootView === 'function' && typeof bootstrap === 'function') {
+
+		// Prefer __reboot_ng_modules__ — it properly disposes existing modules,
+		// re-bootstraps Angular inside NgZone, and sets the root view internally.
+		// __NS_ANGULAR_BOOTSTRAP__ is exposed as a secondary signal that the
+		// Angular HMR system is ready, but __reboot_ng_modules__ is the
+		// canonical reboot entry point.
+		const reboot = g.__reboot_ng_modules__;
+		if (typeof reboot === 'function') {
 			if (options.verbose && __NS_ENV_VERBOSE__) {
-				console.log('[hmr-angular] resetting root view via captured bootstrap');
+				console.log('[hmr-angular] rebooting Angular modules via __reboot_ng_modules__');
 			}
 			try {
 				g.__NS_DEV_RESET_IN_PROGRESS__ = true;
 			} catch {}
-			App.resetRootView({
-				create: () => {
-					try {
-						return bootstrap();
-					} finally {
-						try {
-							g.__NS_DEV_RESET_IN_PROGRESS__ = false;
-						} catch {}
-					}
-				},
-			});
+			try {
+				reboot(false);
+			} finally {
+				try {
+					g.__NS_DEV_RESET_IN_PROGRESS__ = false;
+				} catch {}
+			}
 			return true;
 		}
+
 		if (options.verbose && __NS_ENV_VERBOSE__) {
-			console.warn('[hmr-angular] Missing global __NS_ANGULAR_BOOTSTRAP__ factory. Set it in your main.ts to enable HMR resets.');
+			console.warn('[hmr-angular] No Angular HMR handler found. Ensure runNativeScriptAngularApp() has been called.');
 		}
 	} catch (error) {
 		if (options.verbose) {

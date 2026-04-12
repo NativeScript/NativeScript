@@ -4,10 +4,32 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import angular from '@analogjs/vite-plugin-angular';
 import { angularLinkerVitePlugin, angularLinkerVitePluginPost } from '../helpers/angular/angular-linker.js';
+import { synthesizeMissingInjectableFactories } from '../helpers/angular/synthesize-injectable-factories.js';
 import { ensureSharedAngularLinker, resolveAngularFileSystem } from '../helpers/angular/shared-linker.js';
+import { inlineDecoratorComponentTemplates } from '../helpers/angular/inline-decorator-component-templates.js';
+import { synthesizeDecoratorCtorParameters } from '../helpers/angular/synthesize-decorator-ctor-parameters.js';
 import { containsRealNgDeclare } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
+
+// Lazily import the Angular linker factory function. Used by chunk-level linkers
+// to create FRESH plugin instances per invocation (avoiding stale state in watch mode).
+let _cachedLinkerFactory: any = null;
+async function importLinkerFactory(): Promise<any> {
+	if (_cachedLinkerFactory) return _cachedLinkerFactory;
+	const req = createRequire(process.cwd() + '/package.json');
+	try {
+		const linkerPath = req.resolve('@angular/compiler-cli/linker/babel');
+		const linkerMod: any = await import(linkerPath);
+		_cachedLinkerFactory = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin || null;
+	} catch {
+		try {
+			const linkerMod: any = await import('@angular/compiler-cli/linker/babel');
+			_cachedLinkerFactory = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin || null;
+		} catch {}
+	}
+	return _cachedLinkerFactory;
+}
 
 // Rollup-level linker to guarantee Angular libraries are linked when included in the bundle graph.
 function angularRollupLinker(projectRoot?: string): Plugin {
@@ -121,72 +143,76 @@ if (!fs.existsSync(tsConfigAppPath) && fs.existsSync(tsConfigPath)) {
 	tsConfig = tsConfigPath;
 }
 
-const plugins = [
-	// Allow external html template changes to trigger hot reload: Make .ts files depend on their .html templates
-	{
-		name: 'angular-template-deps',
-		transform(code, id) {
-			// For .ts files that reference templateUrl, add the .html file as a dependency
-			if (id.endsWith('.ts') && code.includes('templateUrl')) {
-				const templateUrlMatch = code.match(/templateUrl:\s*['"]\.\/(.*?\.html)['"]/);
-				if (templateUrlMatch) {
-					const htmlPath = path.resolve(path.dirname(id), templateUrlMatch[1]);
-					// Add the HTML file as a dependency so Vite watches it
-					this.addWatchFile(htmlPath);
+function createAngularPlugins(): Plugin[] {
+	return [
+		// Allow external html template changes to trigger hot reload: Make .ts files depend on their .html templates
+		{
+			name: 'angular-template-deps',
+			transform(code, id) {
+				// For .ts files that reference templateUrl, add the .html file as a dependency
+				if (id.endsWith('.ts') && code.includes('templateUrl')) {
+					const templateUrlMatch = code.match(/templateUrl:\s*['"]\.\/(.*?\.html)['"]/);
+					if (templateUrlMatch) {
+						const htmlPath = path.resolve(path.dirname(id), templateUrlMatch[1]);
+						// Add the HTML file as a dependency so Vite watches it
+						this.addWatchFile(htmlPath);
+					}
 				}
-			}
-			return null;
+				return null;
+			},
 		},
-	},
-	// Transform Angular partial declarations in node_modules to avoid runtime JIT
-	// Pass the project root so linker deps resolve from the app, not the plugin package.
-	angularLinkerVitePlugin(process.cwd()),
-	// Simplify: rely on Vite pre plugin (load/transform) for linking; Rollup safety net disabled unless re-enabled later
-	// angularRollupLinker(process.cwd()),
-	angular({
-		liveReload: false, // Disable live reload in favor of HMR
-		tsconfig: tsConfig,
-	}),
-	// Post-phase linker to catch any declarations introduced after other transforms (including project code)
-	angularLinkerVitePluginPost(process.cwd()),
-	// Enforce: fully disable dependency optimization during serve to avoid rxjs esm5 crawling and OOM
-	{
-		name: 'ns-disable-optimize-deps',
-		enforce: 'post',
-		apply: 'serve',
-		config(userConfig) {
-			const od = (userConfig as any)?.optimizeDeps || {};
-			const prevExclude: string[] = Array.isArray(od.exclude) ? od.exclude : [];
-			const exclude = new Set<string>(prevExclude);
-			['@nativescript/core', 'rxjs', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'].forEach((x) => exclude.add(x));
-			return {
-				optimizeDeps: {
-					noDiscovery: true,
-					entries: [],
-					include: [],
-					exclude: Array.from(exclude),
-					rolldownOptions: {
-						...(od.rolldownOptions || {}),
-						plugins: [],
+		// Transform Angular partial declarations in node_modules to avoid runtime JIT
+		// Pass the project root so linker deps resolve from the app, not the plugin package.
+		angularLinkerVitePlugin(process.cwd()),
+		// Simplify: rely on Vite pre plugin (load/transform) for linking; Rollup safety net disabled unless re-enabled later
+		// angularRollupLinker(process.cwd()),
+		...angular({
+			liveReload: false, // Disable live reload in favor of HMR
+			tsconfig: tsConfig,
+		}),
+		// Post-phase linker to catch any declarations introduced after other transforms (including project code)
+		angularLinkerVitePluginPost(process.cwd()),
+		// Enforce: fully disable dependency optimization during serve to avoid rxjs esm5 crawling and OOM
+		{
+			name: 'ns-disable-optimize-deps',
+			enforce: 'post',
+			apply: 'serve',
+			config(userConfig) {
+				const od = (userConfig as any)?.optimizeDeps || {};
+				const prevExclude: string[] = Array.isArray(od.exclude) ? od.exclude : [];
+				const exclude = new Set<string>(prevExclude);
+				['@nativescript/core', 'rxjs', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'].forEach((x) => exclude.add(x));
+				return {
+					optimizeDeps: {
+						noDiscovery: true,
+						entries: [],
+						include: [],
+						exclude: Array.from(exclude),
+						rolldownOptions: {
+							...(od.rolldownOptions || {}),
+							plugins: [],
+						},
 					},
-				},
-			} as any;
+				} as any;
+			},
+			configResolved(resolved) {
+				const resolvedConfig = resolved as any;
+				const deps = (resolvedConfig.optimizeDeps ||= {} as any);
+				deps.noDiscovery = true;
+				deps.entries = [];
+				deps.include = [];
+				const exclude = new Set<string>(Array.isArray(deps.exclude) ? deps.exclude : []);
+				['@nativescript/core', 'rxjs', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'].forEach((x) => exclude.add(x));
+				deps.exclude = Array.from(exclude);
+				const rolldownOptions = (deps.rolldownOptions ||= {});
+				rolldownOptions.plugins = [];
+			},
 		},
-		configResolved(resolved) {
-			const deps = (resolved.optimizeDeps ||= {} as any);
-			deps.noDiscovery = true;
-			deps.entries = [];
-			deps.include = [];
-			const exclude = new Set<string>(Array.isArray(deps.exclude) ? deps.exclude : []);
-			['@nativescript/core', 'rxjs', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'].forEach((x) => exclude.add(x));
-			deps.exclude = Array.from(exclude);
-			const rolldownOptions = (deps.rolldownOptions ||= {});
-			rolldownOptions.plugins = [];
-		},
-	},
-];
+	];
+}
 
 export const angularConfig = ({ mode }): UserConfig => {
+	const plugins = createAngularPlugins();
 	const disableAnimations = true;
 	//process.env.NS_DISABLE_NG_ANIMATIONS === "1" ||
 	//process.env.NS_DISABLE_NG_ANIMATIONS === "true";
@@ -202,12 +228,20 @@ export const angularConfig = ({ mode }): UserConfig => {
 				if (!chunk || !(chunk as any).modules) return false;
 				return Object.keys((chunk as any).modules).some((m) => m.includes('node_modules/@nativescript/angular/fesm2022/nativescript-angular-polyfills.mjs'));
 			}
-			const { babel, linkerPlugin } = await ensureSharedAngularLinker(process.cwd());
-			if (!babel || !linkerPlugin) return;
+			const { babel } = await ensureSharedAngularLinker(process.cwd());
+			if (!babel) return;
+			const fileSystem = await resolveAngularFileSystem(process.cwd());
+			const linkerFactory = await importLinkerFactory();
+			if (!linkerFactory) return;
 			const strict = process.env.NS_STRICT_NG_LINK === '1' || process.env.NS_STRICT_NG_LINK === 'true';
 			const enforceStrict = process.env.NS_STRICT_NG_LINK_ENFORCE === '1' || process.env.NS_STRICT_NG_LINK_ENFORCE === 'true';
 			const debug = process.env.VITE_DEBUG_LOGS === '1' || process.env.VITE_DEBUG_LOGS === 'true';
 			const unlinked: string[] = [];
+			const vendorInjectExport = (() => {
+				const vendorChunk = Object.entries(bundle).find(([name, value]) => value && (value as any).type === 'chunk' && /(^|\/)vendor\.mjs$/.test(name));
+				const vendorCode = vendorChunk ? ((vendorChunk[1] as any).code as string | undefined) : undefined;
+				return vendorCode?.match(/\binject as ([A-Za-z_$][\w$]*)/)?.[1];
+			})();
 			for (const [fileName, chunk] of Object.entries(bundle)) {
 				if (!fileName.endsWith('.mjs') && !fileName.endsWith('.js')) continue;
 				if (chunk && (chunk as any).type === 'chunk') {
@@ -215,15 +249,25 @@ export const angularConfig = ({ mode }): UserConfig => {
 					if (!code) continue;
 					const isNsPolyfills = isNsAngularPolyfillsChunk(chunk);
 					try {
+						// Create a FRESH linker plugin per chunk — the linker may have
+						// internal state that becomes stale across watch-mode rebuild cycles.
+						const freshPlugin = linkerFactory({ sourceMapping: false, fileSystem } as any);
 						const res = await (babel as any).transformAsync(code, {
 							filename: fileName,
 							configFile: false,
 							babelrc: false,
 							sourceMaps: false,
 							compact: false,
-							plugins: [linkerPlugin],
+							plugins: [freshPlugin],
 						});
-						const finalCode = res?.code && res.code !== code ? res.code : code;
+						const linkedCode = res?.code && res.code !== code ? res.code : code;
+						const codeWithInjectables = synthesizeMissingInjectableFactories(linkedCode, {
+							vendorInjectExport,
+						});
+						const codeWithCtorParameters = synthesizeDecoratorCtorParameters(codeWithInjectables);
+						const finalCode = inlineDecoratorComponentTemplates(codeWithCtorParameters, {
+							projectRoot: process.cwd(),
+						});
 						if (finalCode !== code) {
 							(chunk as any).code = finalCode;
 							if (debug) {
@@ -235,7 +279,8 @@ export const angularConfig = ({ mode }): UserConfig => {
 						if (strict && !isNsPolyfills && containsRealNgDeclare(finalCode)) {
 							unlinked.push(fileName);
 						}
-					} catch {
+					} catch (e: any) {
+						console.warn(`[ns-angular-linker][post] linking FAILED for ${fileName}:`, e?.message || e);
 						if (strict) unlinked.push(fileName);
 					}
 				}
@@ -276,19 +321,25 @@ export const angularConfig = ({ mode }): UserConfig => {
 		},
 	};
 
-	// Safety net: transform each rendered chunk to link any remaining ɵɵngDeclare* call sites
+	// Safety net: transform each rendered chunk to link any remaining ɵɵngDeclare* call sites.
+	// IMPORTANT: create a FRESH linker plugin per invocation — the shared instance may have
+	// stale internal state from a prior build cycle, causing silent failures in watch-mode rebuilds.
 	const renderChunkLinker = {
 		name: 'ns-angular-linker-render',
 		apply: 'build' as const,
 		enforce: 'post' as const,
 		async renderChunk(code: string, chunk: any) {
+			if (!code) return null;
+			if (!containsRealNgDeclare(code)) return null;
+			const filename = chunk.fileName || chunk.name || 'chunk.mjs';
+			const debug = process.env.VITE_DEBUG_LOGS === '1' || process.env.VITE_DEBUG_LOGS === 'true';
 			try {
-				if (!code) return null;
-				if (!containsRealNgDeclare(code)) return null;
-				const { babel, linkerPlugin } = await ensureSharedAngularLinker(process.cwd());
-				if (!babel || !linkerPlugin) return null;
-				const filename = chunk.fileName || chunk.name || 'chunk.mjs';
-				const debug = process.env.VITE_DEBUG_LOGS === '1' || process.env.VITE_DEBUG_LOGS === 'true';
+				const { babel } = await ensureSharedAngularLinker(process.cwd());
+				if (!babel) return null;
+				const fileSystem = await resolveAngularFileSystem(process.cwd());
+				// Fresh plugin per chunk — avoids stale linker state across watch-mode rebuilds
+				const freshPlugin = (await importLinkerFactory())?.({ sourceMapping: false, fileSystem } as any);
+				if (!freshPlugin) return null;
 				const runLink = async (input: string) => {
 					const result = await (babel as any).transformAsync(input, {
 						filename,
@@ -296,7 +347,7 @@ export const angularConfig = ({ mode }): UserConfig => {
 						babelrc: false,
 						sourceMaps: false,
 						compact: false,
-						plugins: [linkerPlugin],
+						plugins: [freshPlugin],
 					});
 					return result?.code ?? input;
 				};
@@ -312,7 +363,9 @@ export const angularConfig = ({ mode }): UserConfig => {
 					}
 					return { code: transformed, map: null };
 				}
-			} catch {}
+			} catch (e: any) {
+				console.warn(`[ns-angular-linker][render] linking FAILED for ${filename}:`, e?.message || e);
+			}
 			return null;
 		},
 	};

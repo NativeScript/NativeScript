@@ -88,7 +88,7 @@
 		"sass": ">=1.70.0 <2",
 		"vite": "^8.0.0",
 		"vite-plugin-solid": "^2.11.11",
-		"vite-plugin-static-copy": "^3.3.0",
+		"vite-plugin-static-copy": "^4.0.1",
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {

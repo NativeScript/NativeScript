@@ -147,6 +147,18 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				imports += `console.info('[ns-entry] core globals loaded');\n`;
 			}
 
+			// In dev mode for Angular apps, ensure @angular/compiler (JIT) is loaded.
+			// With experimentalDecorators:true, TypeScript emits __decorate patterns.
+			// On watch-mode rebuilds the Angular compiler may not re-emit ɵfac for
+			// cached files, so the JIT compiler must be available as a fallback.
+			if (opts.isDevMode && flavor === 'angular') {
+				imports += "import { publishFacade as __nsPublishAngularCompilerFacade } from '@angular/compiler';\n";
+				imports += '__nsPublishAngularCompilerFacade(globalThis);\n';
+				if (opts.verbose) {
+					imports += `console.info('[ns-entry] @angular/compiler (JIT) loaded for dev mode');\n`;
+				}
+			}
+
 			/**
 			 * Ensure the canonical @nativescript/core classes are available on globalThis
 			 * before any other framework modules execute (like bundle-entry-points) to avoid duplicate realms

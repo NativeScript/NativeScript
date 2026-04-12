@@ -40,6 +40,11 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 
 	// Base filter: Angular framework libraries + NativeScript Angular + its polyfills bundle.
 	const FILTER = /node_modules\/(?:@angular|@nativescript\/angular)\/.*\.[mc]?js$|nativescript-angular-polyfills\.mjs$/;
+	// Extended filter: ANY node_modules .js/.mjs file. Used to catch Angular
+	// ecosystem packages (ngrx, etc.) that contain ɵɵngDeclare* partial
+	// declarations. In Vite 8 watch-mode rebuilds, chunk-level linker fallbacks
+	// may not re-run for cached chunks, so we must link at the transform level.
+	const NODE_MODULES_FILTER = /node_modules\/.*\.[mc]?js$/;
 	// When NS_STRICT_NG_LINK_ALL=1 we aggressively try to link **any** JS/ESM
 	// file that contains a real ɵɵngDeclare* call site, not just node_modules.
 	// This is primarily for NativeScript strict / HMR flows so that no partial
@@ -52,8 +57,19 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 		async load(id) {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 			const cleanId = id.split('?', 1)[0];
-			// In non-strict mode we only ever touch Angular framework libraries.
-			if (!strictAll && !FILTER.test(cleanId)) return null;
+			// Always process Angular framework libraries. For other node_modules,
+			// check if they contain ɵɵngDeclare* (catches @ngrx, etc.).
+			if (!strictAll && !FILTER.test(cleanId)) {
+				if (!NODE_MODULES_FILTER.test(cleanId)) return null;
+				// For non-framework node_modules, peek at the file to see if it has partials
+				try {
+					const fs = await import('node:fs/promises');
+					const peek = await fs.readFile(cleanId, 'utf8');
+					if (!peek || !containsRealNgDeclare(peek)) return null;
+				} catch {
+					return null;
+				}
+			}
 			try {
 				const fs = await import('node:fs/promises');
 				const code = await fs.readFile(cleanId, 'utf8');
@@ -86,9 +102,11 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 			// Strip Vite/Rollup query strings before testing
 			const cleanId = id.split('?', 1)[0];
-			// Same policy as load(): in strictAll we allow any file that actually
-			// contains a real ngDeclare call; otherwise we restrict to framework libs.
-			if (!strictAll && !FILTER.test(cleanId)) return null;
+			// Always process Angular framework libraries. For other node_modules,
+			// only link if they contain ɵɵngDeclare* (catches @ngrx, etc.).
+			if (!strictAll && !FILTER.test(cleanId)) {
+				if (!NODE_MODULES_FILTER.test(cleanId) || !code || !containsRealNgDeclare(code)) return null;
+			}
 			if (!code) return null;
 			if (strictAll && !FILTER.test(cleanId) && !containsRealNgDeclare(code)) return null;
 			await ensureDeps();

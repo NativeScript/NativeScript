@@ -683,9 +683,11 @@ function resolveVendorRouting(nodeModulesSpec: string, projectRoot: string): { r
 		return null;
 	}
 
-	// Platform-specific files always go via HTTP — the vendor bundle
-	// (built by esbuild without NS platform resolver) doesn't have them
-	if (/\.(ios|android)\.(js|ts|mjs|mts)$/.test(nodeModulesSpec)) {
+	// Platform-specific files always go via HTTP — the ns-vendor:// protocol
+	// does not reliably serve named ES module exports, so packages with
+	// platform-specific main entries (e.g., index.ios.js) must be served
+	// individually over HTTP where the full ESM export surface is preserved.
+	if (/\.(ios|android|visionos)\.(js|ts|mjs|mts)$/.test(nodeModulesSpec)) {
 		return { route: 'http' };
 	}
 
@@ -789,6 +791,112 @@ function ensureGuardPlainDynamicImports(code: string, origin: string): string {
 	} catch {
 		return code;
 	}
+}
+
+/**
+ * Expand `export * from "url"` into explicit named re-exports.
+ *
+ * NativeScript's HTTP ESM loader on iOS/Android may not correctly propagate
+ * `export * from` re-exports across HTTP module boundaries — the importing
+ * module's namespace object gets only direct exports, missing re-exported
+ * names. This function resolves each `export * from` by fetching the target
+ * module, scanning for its named exports, and replacing the star export with
+ * explicit `export { name1, name2, ... } from "url"`.
+ *
+ * Only expands star exports pointing to node_modules HTTP URLs to avoid
+ * unnecessary work for app source files (which are typically not re-exported).
+ */
+async function expandStarExports(code: string, server: any, projectRoot: string, verbose?: boolean): Promise<string> {
+	const STAR_RE = /^[ \t]*(export\s+\*\s+from\s+["'])([^"']+)(["'];?)[ \t]*$/gm;
+	let match: RegExpExecArray | null;
+	const replacements: Array<{ full: string; url: string; prefix: string; suffix: string }> = [];
+
+	while ((match = STAR_RE.exec(code)) !== null) {
+		const url = match[2];
+		// Only expand node_modules star exports served over HTTP
+		if (!url.includes('/node_modules/')) continue;
+		replacements.push({ full: match[0], url, prefix: match[1], suffix: match[3] });
+	}
+
+	if (!replacements.length) return code;
+
+	for (const rep of replacements) {
+		try {
+			// Strip HTTP origin to get a Vite-resolvable path
+			let vitePath = rep.url.replace(/^https?:\/\/[^/]+/, '');
+			// Strip /ns/m/ prefix to get the node_modules path
+			vitePath = vitePath.replace(/^\/ns\/m\//, '/');
+			// Strip HMR cache-busting path segments
+			vitePath = vitePath.replace(/\/__ns_hmr__\/[^/]+/, '');
+
+			const r = await server.transformRequest(vitePath);
+			if (!r?.code) continue;
+
+			const names = extractExportedNames(r.code);
+			if (!names.length) continue;
+
+			// Replace `export * from "url"` with explicit named re-exports
+			const explicit = `export { ${names.join(', ')} } from ${JSON.stringify(rep.url)};`;
+			code = code.replace(rep.full, explicit);
+			if (verbose) {
+				console.log(`[ns/m] expanded export* → ${names.length} names from ${vitePath}`);
+			}
+		} catch {}
+	}
+
+	return code;
+}
+
+/**
+ * Extract named export identifiers from a module's source code.
+ * Handles: export function/class/const/let/var NAME, export { NAME },
+ * export { NAME as ALIAS }, and export * from (recursive marker).
+ * Does NOT follow `export * from` chains — only direct exports.
+ */
+function extractExportedNames(code: string): string[] {
+	const names = new Set<string>();
+
+	// export function NAME / export class NAME / export async function NAME
+	const declRe = /\bexport\s+(?:async\s+)?(?:function|class)\s+([A-Za-z_$][\w$]*)/g;
+	let m: RegExpExecArray | null;
+	while ((m = declRe.exec(code)) !== null) {
+		names.add(m[1]);
+	}
+
+	// export const/let/var NAME (handles destructuring and multiple declarators)
+	const varRe = /\bexport\s+(?:const|let|var)\s+([^=;{]+)/g;
+	while ((m = varRe.exec(code)) !== null) {
+		// Simple case: `export const foo = ...`
+		const decl = m[1].trim();
+		// Could be `{ a, b }` (destructuring) or `foo, bar` (multiple) or just `foo`
+		if (decl.startsWith('{')) {
+			const inner = decl.replace(/^\{|\}$/g, '');
+			for (const part of inner.split(',')) {
+				const name = part.split(':')[0].trim(); // handle { orig: alias }
+				if (/^[A-Za-z_$][\w$]*$/.test(name)) names.add(name);
+			}
+		} else {
+			const name = decl.split(/[\s,=]/)[0].trim();
+			if (/^[A-Za-z_$][\w$]*$/.test(name)) names.add(name);
+		}
+	}
+
+	// export { NAME, NAME as ALIAS, ... } (without `from`)
+	// and export { NAME, ... } from "..." (re-exports)
+	const braceRe = /\bexport\s*\{([^}]+)\}/g;
+	while ((m = braceRe.exec(code)) !== null) {
+		for (const part of m[1].split(',')) {
+			const trimmed = part.trim();
+			// `name as alias` → use alias; `name` → use name
+			const asMatch = trimmed.match(/\S+\s+as\s+(\S+)/);
+			const name = asMatch ? asMatch[1] : trimmed.split(/\s/)[0];
+			if (name && /^[A-Za-z_$][\w$]*$/.test(name) && name !== 'default') {
+				names.add(name);
+			}
+		}
+	}
+
+	return Array.from(names);
 }
 
 // Heal accidental "import ... = expr" assignments produced by upstream transforms.
@@ -3444,6 +3552,18 @@ export const piniaSymbol = p.piniaSymbol;
 						}
 					} catch {}
 					code = rewriteImports(code, resolvedCandidate || spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server), true);
+
+					// Expand `export * from "url"` into explicit named re-exports.
+					// NativeScript's HTTP ESM loader may not propagate star-re-exports across
+					// HTTP module boundaries (the namespace object gets direct exports but
+					// misses re-exported names). By expanding to `export { a, b } from "url"`,
+					// the engine sees explicit named exports and resolves them correctly.
+					try {
+						code = await expandStarExports(code, server, (server as any).config?.root || process.cwd(), verbose);
+					} catch (e: any) {
+						if (verbose) console.warn('[ns/m] export* expansion failed:', e?.message);
+					}
+
 					// Dedupe any /ns/rt named imports that duplicate destructured bindings off default /ns/rt
 					try {
 						code = dedupeRtNamedImportsAgainstDestructures(code);
@@ -3928,7 +4048,7 @@ export const piniaSymbol = p.piniaSymbol;
 						`const g = globalThis;\n` +
 						`const reg = (g.__nsVendorRegistry ||= new Map());\n` +
 						`const __getVendorCore = () => { try { const m = reg && reg.get ? (reg.get(${JSON.stringify(key)}) || reg.get('@nativescript/core')) : null; return (m && (m.__esModule && m.default ? m.default : (m.default || m))) || m || null; } catch { return null; } };\n` +
-						`const __core = new Proxy({}, { get(_t, p){ if (p === 'default') return __core; if (p === Symbol.toStringTag) return 'Module'; try { const v = g[p]; if (v !== undefined) return v; } catch {} try { const vc = __getVendorCore(); return vc ? vc[p] : undefined; } catch {} return undefined; } });\n` +
+						`const __core = new Proxy({}, { get(_t, p){ if (p === 'default') return __core; if (p === Symbol.toStringTag) return 'Module'; try { const vc = __getVendorCore(); if (vc) { const vv = vc[p]; if (vv !== undefined) return vv; } } catch {} try { const v = g[p]; if (v !== undefined) return v; } catch {} return undefined; } });\n` +
 						`// Default export: namespace-like proxy\n` +
 						`export default __core;\n`;
 					res.statusCode = 200;

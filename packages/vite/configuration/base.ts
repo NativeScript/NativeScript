@@ -489,9 +489,16 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 							return 'vendor';
 						}
 						if (id.includes('node_modules')) {
-							// Keep common dependencies in the main bundle
+							// Keep Angular, NativeScript core, and Angular ecosystem packages
+							// (ngrx, etc.) in the main bundle. These contain ɵɵngDeclare*
+							// partial declarations that must be linked by the Angular linker.
+							// Splitting them into a separate vendor chunk can cause the linker
+							// to miss them during watch-mode rebuilds.
 							if (id.includes('@angular/') || id.includes('@nativescript/angular') || id.includes('@nativescript/core')) {
 								return undefined; // Keep in main bundle
+							}
+							if (id.includes('@ngrx/')) {
+								return undefined; // Keep in main bundle — has ɵɵngDeclare* partials
 							}
 							// Zone.js and NativeScript zone patches must stay in the main bundle
 							// because they depend on @nativescript/core/globals polyfills (XMLHttpRequest, etc.)
