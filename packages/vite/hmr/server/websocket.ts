@@ -3260,9 +3260,24 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					const candidates = [...(hasExt ? [spec] : []), baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs'];
 					let transformed: TransformResult | null = null;
 					let resolvedCandidate: string | null = null;
+					// Wrap transformRequest with a timeout to prevent Vite 7+ optimizeDeps
+					// discovery from blocking the HTTP ESM pipeline indefinitely.
+					const transformWithTimeout = (url: string, timeoutMs = 30000): Promise<TransformResult | null> => {
+						return Promise.race([
+							server.transformRequest(url),
+							new Promise<null>((resolve) => {
+								setTimeout(() => {
+									try {
+										console.warn('[ns:m] transformRequest timeout for', url, '(' + timeoutMs + 'ms)');
+									} catch {}
+									resolve(null);
+								}, timeoutMs);
+							}),
+						]);
+					};
 					for (const cand of candidates) {
 						try {
-							const r = await server.transformRequest(cand);
+							const r = await transformWithTimeout(cand);
 							if (r?.code) {
 								transformed = r;
 								resolvedCandidate = cand;
@@ -3276,7 +3291,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							const rid = await (server as any).pluginContainer?.resolveId?.(spec, undefined);
 							const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
 							if (ridStr) {
-								const r = await server.transformRequest(ridStr);
+								const r = await transformWithTimeout(ridStr);
 								if (r?.code) {
 									transformed = r;
 									resolvedCandidate = ridStr;
@@ -3312,7 +3327,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							const rootPosix = toPosix(projectRoot).replace(/\/$/, '');
 							const absPosix = `${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
 							const fsId = `/@fs${absPosix}`;
-							const r = await server.transformRequest(fsId);
+							const r = await transformWithTimeout(fsId);
 							if (r?.code) {
 								transformed = r;
 								resolvedCandidate = fsId;
@@ -3323,7 +3338,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					if (!transformed?.code) {
 						for (const cand of candidates) {
 							try {
-								const r = await server.transformRequest(`${cand}${cand.includes('?') ? '&' : '?'}import`);
+								const r = await transformWithTimeout(`${cand}${cand.includes('?') ? '&' : '?'}import`);
 								if (r?.code) {
 									transformed = r;
 									resolvedCandidate = `${cand}?import`;
@@ -5679,31 +5694,32 @@ export const piniaSymbol = p.piniaSymbol;
 				} catch (e) {
 					if (verbose) console.warn('[hmr-ws][graph] initial population failed', e);
 				}
-				// Send SFC registry on first connection
-				if (!registrySent) {
-					try {
-						await ACTIVE_STRATEGY.buildRegistry({
-							server,
-							sfcFileMap,
-							depFileMap,
-							wss: wss!,
-							verbose,
-							helpers: {
-								cleanCode,
-								collectImportDependencies,
-								isCoreGlobalsReference,
-								isNativeScriptCoreModule,
-								isNativeScriptPluginModule,
-								resolveVendorFromCandidate,
-								createHash: (value: string) => createHash('md5').update(value).digest('hex'),
-								rewriteImports,
-								processSfcCode,
-							},
-						});
-						registrySent = true;
-					} catch (error) {
-						console.warn('[hmr-ws] Failed to send registry:', error);
-					}
+				// Send SFC registry on every connection (not just the first).
+				// When the NativeScript app restarts (e.g. CLI auto-reload), the new
+				// JS context has an empty sfcArtifactMap. Without the registry the
+				// rescue-mount cannot find the root .vue component.
+				try {
+					await ACTIVE_STRATEGY.buildRegistry({
+						server,
+						sfcFileMap,
+						depFileMap,
+						wss: wss!,
+						verbose,
+						helpers: {
+							cleanCode,
+							collectImportDependencies,
+							isCoreGlobalsReference,
+							isNativeScriptCoreModule,
+							isNativeScriptPluginModule,
+							resolveVendorFromCandidate,
+							createHash: (value: string) => createHash('md5').update(value).digest('hex'),
+							rewriteImports,
+							processSfcCode,
+						},
+					});
+					registrySent = true;
+				} catch (error) {
+					console.warn('[hmr-ws] Failed to send registry:', error);
 				}
 				emitFullGraph(ws as any);
 

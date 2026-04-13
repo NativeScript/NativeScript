@@ -6,6 +6,7 @@ import { preprocessCSS, type ResolvedConfig } from 'vite';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
+import { toStaticImportSpecifier } from './import-specifier.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -22,6 +23,7 @@ const mainEntryRelPosix = (() => {
 		return getProjectAppVirtualPath('app.ts');
 	}
 })();
+const mainEntryImportSpecifier = toStaticImportSpecifier(projectRoot, mainEntry);
 const flavor = getProjectFlavor() as string;
 
 // Optional polyfills support (non-HMR specific but dev friendly)
@@ -206,7 +208,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					for (const component of appComponents) {
 						// The appComponentsPlugin bundles these as separate .mjs entry points
 						// We must import the output file, not the source, since it's a separate entry
-						imports += `import "~/${component.outputName}.mjs";\n`;
+						imports += `import ${JSON.stringify(`~/${component.outputName}.mjs`)};\n`;
 						if (opts.verbose) {
 							imports += `console.info('[ns-entry] app component loaded: ${component.outputName}');\n`;
 						}
@@ -264,7 +266,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 			// ---- Optional polyfills ----
 			if (polyfillsExists) {
-				imports += `import '${polyfillsImportSpecifier}';\n`;
+				imports += `import ${JSON.stringify(polyfillsImportSpecifier)};\n`;
 				if (opts.verbose) {
 					imports += `console.info('[ns-entry] polyfills imported from', ${JSON.stringify(polyfillsImportSpecifier)});\n`;
 				}
@@ -355,9 +357,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				}
 			} else {
 				if (opts.verbose) {
-					imports += `console.info('[ns-entry] Importing main entry', '${mainEntry}');\n`;
+					imports += `console.info('[ns-entry] Importing main entry', ${JSON.stringify(mainEntryImportSpecifier)});\n`;
 				}
-				imports += `import '${mainEntry}';\n`;
+				imports += `import ${JSON.stringify(mainEntryImportSpecifier)};\n`;
 			}
 
 			if (opts.isDevMode) {

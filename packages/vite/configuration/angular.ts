@@ -11,6 +11,7 @@ import { synthesizeDecoratorCtorParameters } from '../helpers/angular/synthesize
 import { containsRealNgDeclare } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
+import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 
 // Lazily import the Angular linker factory function. Used by chunk-level linkers
 // to create FRESH plugin instances per invocation (avoiding stale state in watch mode).
@@ -387,11 +388,11 @@ export const angularConfig = ({ mode }): UserConfig => {
 		angularAliases.push(
 			{
 				find: /^@angular\/animations(\/.+)?$/, // match subpaths too
-				replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+				replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/angular-animations-stub.js'),
 			},
 			{
 				find: /^@angular\/platform-browser\/animations(\/.+)?$/,
-				replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+				replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/angular-animations-stub.js'),
 			},
 		);
 	}

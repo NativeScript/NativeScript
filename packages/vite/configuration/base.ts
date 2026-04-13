@@ -34,6 +34,7 @@ import { getThemeCoreGenericAliases, createEnsureHoistedThemeLinkPlugin, createT
 import { createPostCssConfig } from '../helpers/postcss-platform-config.js';
 import { getProjectAppPath, getProjectAppRelativePath } from '../helpers/utils.js';
 import { appComponentsPlugin } from '../helpers/app-components.js';
+import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 // Load HMR plugins lazily to avoid compiling dev-only sources during library build
 // This prevents TypeScript from traversing the heavy HMR implementation graph when not needed
 // function getHMRPluginsSafe(opts: {
@@ -104,7 +105,7 @@ type PlatformType = 'android' | 'ios' | 'visionos';
 export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }): UserConfig => {
 	const targetMode = mode === 'development' ? 'development' : 'production';
 
-	const cliFlags = getCliFlags();
+	const cliFlags = getCliFlags()!;
 	const verbose = resolveVerboseFlag({ env: process.env, cliFlags });
 	// console.log("cliFlags:", cliFlags);
 	const isDevMode = targetMode === 'development';
@@ -199,10 +200,10 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Provide a shim for node:module to avoid runtime crashes in NS
 			{
 				find: /^node:module$/,
-				replacement: path.resolve(path.dirname(new URL(import.meta.url).pathname), '../shims/node-module.js'),
+				replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/node-module.js'),
 			},
 			// Ensure set-value resolves to an absolute shim to avoid alias warnings and duplication
-			{ find: /^set-value$/, replacement: path.resolve(path.dirname(new URL(import.meta.url).pathname), '../shims/set-value.js') },
+			{ find: /^set-value$/, replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/set-value.js') },
 			// nativescript-theme-core root + deep paths (hoisted resolution)
 			// Generic theme css -> platform specific variant
 			...themeGenericAliases,

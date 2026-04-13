@@ -602,7 +602,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		let mainPage = helper.getCurrentPage();
 		mainPage.content = host;
 
-		const nativeHostView = host.nativeViewProtected as UIView;
+		const nativeHostView = host.nativeViewProtected as unknown as UIView;
 
 		// Check if native view layer is still marked as dirty before proceeding
 		TKUnit.waitUntilReady(() => host.isLoaded && nativeHostView?.layer && !nativeHostView.layer.needsLayout());

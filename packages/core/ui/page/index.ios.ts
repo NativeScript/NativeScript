@@ -341,20 +341,15 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
-	// TODO: a11y
-	// public accessibilityPerformEscape() {
-	// 	const owner = this._owner.get();
-	// 	if (!owner) {
-	// 		return false;
-	// 	}
-	// 	console.log('page accessibilityPerformEscape');
-	// 	if (owner.onAccessibilityPerformEscape) {
-	// 		const result = owner.onAccessibilityPerformEscape();
-	// 		return result;
-	// 	} else {
-	// 		return false;
-	// 	}
-	// }
+	public accessibilityPerformEscape() {
+		const owner = this._owner?.deref();
+		if (owner?.onAccessibilityPerformEscape) {
+			const result = owner.onAccessibilityPerformEscape();
+			return result;
+		} else {
+			return false;
+		}
+	}
 
 	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {

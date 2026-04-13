@@ -15,7 +15,7 @@ export interface ItemsSource {
 	getItem(index: number): any;
 }
 
-export type RepeaterItemsLayout = View & Pick<LayoutBase, 'addChild' | 'removeChildren' | 'getChildrenCount' | 'getChildAt'>;
+export type RepeaterItemsLayout = LayoutBase;
 
 /**
  * Represents a UI Repeater component.
