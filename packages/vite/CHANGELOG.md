@@ -1,3 +1,9 @@
+## 2.0.3 (2026-04-12)
+
+### Fixes
+
+- Cross platform path resolutions (mac, windows)
+
 ## 2.0.1 (2026-04-12)
 
 ### 🚀 Features
