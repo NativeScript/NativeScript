@@ -8,6 +8,7 @@ import { ensureSharedAngularLinker } from '../helpers/angular/shared-linker.js';
 import { containsRealNgDeclare } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
+import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 
 // Rollup-level linker to guarantee Angular libraries are linked when included in the bundle graph.
 function angularRollupLinker(projectRoot?: string): Plugin {
@@ -335,11 +336,11 @@ export const angularConfig = ({ mode }): UserConfig => {
 				alias: [
 					{
 						find: /^@angular\/animations(\/.+)?$/, // match subpaths too
-						replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+						replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/angular-animations-stub.js'),
 					},
 					{
 						find: /^@angular\/platform-browser\/animations(\/.+)?$/,
-						replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+						replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/angular-animations-stub.js'),
 					},
 				],
 			},

@@ -106,10 +106,10 @@ function createBundlerContextPlugin(): Plugin {
 			function pushImport(abs: string, raw: boolean) {
 				const idLocal = `__m${index++}`;
 				const spec = toImportSpecifier(abs) + (raw ? '?raw' : '');
-				importLines.push(`import ${raw ? idLocal : `* as ${idLocal}`} from '${spec}';`);
+				importLines.push(`import ${raw ? idLocal : `* as ${idLocal}`} from ${JSON.stringify(spec)};`);
 				const cleaned = spec.replace(/\?raw$/, '');
-				registryEntries.push(`registry.set('${toCtxKey(abs)}','${cleaned}');`);
-				moduleMapLines.push(`all['${cleaned}'] = ${idLocal};`);
+				registryEntries.push(`registry.set(${JSON.stringify(toCtxKey(abs))}, ${JSON.stringify(cleaned)});`);
+				moduleMapLines.push(`all[${JSON.stringify(cleaned)}] = ${idLocal};`);
 			}
 			xmlFiles.forEach((f) => pushImport(f, true));
 			styleFiles.forEach((f) => pushImport(f, true));
