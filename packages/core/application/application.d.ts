@@ -1,5 +1,6 @@
 ﻿import { ApplicationCommon } from './application-common';
 import { FontScaleCategory } from '../accessibility/font-scale-common';
+import type { NativeWindowCommon } from '../native-window/native-window-common';
 
 export * from './application-common';
 export * from './application-interfaces';
@@ -147,6 +148,16 @@ export class AndroidApplication extends ApplicationCommon {
 	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
 	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
 	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+
+	/**
+	 * Get the primary NativeWindow.
+	 */
+	get primaryWindow(): NativeWindowCommon | undefined;
+
+	/**
+	 * Get all active NativeWindows.
+	 */
+	getWindows(): NativeWindowCommon[];
 }
 
 export class iOSApplication extends ApplicationCommon {
@@ -230,28 +241,33 @@ export class iOSApplication extends ApplicationCommon {
 
 	/**
 	 * Gets all windows for the application.
+	 * @deprecated Use `getWindows()` instead.
 	 */
 	getAllWindows(): UIWindow[];
 
 	/**
 	 * Gets all scenes for the application.
+	 * @deprecated Use `getWindows()` instead.
 	 */
 	getAllScenes(): UIScene[];
 
 	/**
 	 * Gets all window scenes for the application.
+	 * @deprecated Use `getWindows()` instead.
 	 */
 	getWindowScenes(): UIWindowScene[];
 
 	/**
 	 * Gets the primary window for the application.
+	 * @deprecated Use `primaryWindow?.iosWindow?.window` instead.
 	 */
 	getPrimaryWindow(): UIWindow;
 
 	/**
 	 * Gets the primary scene for the application.
+	 * @deprecated Use `primaryWindow?.iosWindow?.scene` instead.
 	 */
-	getPrimaryScene(): UIWindowScene;
+	getPrimaryScene(): UIWindowScene | null;
 
 	/**
 	 * Sets the root view for a specific window.
@@ -265,6 +281,40 @@ export class iOSApplication extends ApplicationCommon {
 	 * Get the current one or set a custom one.
 	 */
 	sceneDelegate: UIWindowSceneDelegate;
+
+	/**
+	 * Register a callback to intercept scene configuration.
+	 *
+	 * Called for every new scene session. Return a `UISceneConfiguration` to handle
+	 * the scene yourself (e.g. CarPlay, external display), or return `null`/`undefined`
+	 * to let NativeScript handle it with the default SceneDelegate.
+	 *
+	 * NativeScript only auto-manages `UIWindowSceneSessionRoleApplication` scenes.
+	 * All other scene roles are ignored unless you provide a configuration here.
+	 *
+	 * @example
+	 * ```ts
+	 * Application.ios.onSceneConfiguration = (app, session, options) => {
+	 *   if (session.role === CPTemplateApplicationSceneSessionRoleApplication) {
+	 *     const config = UISceneConfiguration.configurationWithNameSessionRole('CarPlay', session.role);
+	 *     config.delegateClass = MyCarPlaySceneDelegate;
+	 *     return config;
+	 *   }
+	 *   return null;
+	 * };
+	 * ```
+	 */
+	onSceneConfiguration: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null;
+
+	/**
+	 * Get the primary NativeWindow.
+	 */
+	get primaryWindow(): NativeWindowCommon | undefined;
+
+	/**
+	 * Get all active NativeWindows.
+	 */
+	getWindows(): NativeWindowCommon[];
 
 	/**
 	 * Flag to be set when the launch event should be delayed until the application has become active.
