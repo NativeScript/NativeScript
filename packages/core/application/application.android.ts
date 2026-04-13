@@ -8,6 +8,8 @@ import { ApplicationCommon, initializeSdkVersionClass } from './application-comm
 import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
+import { NativeWindow } from '../native-window/native-window.android';
+import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
 import {
 	CommonA11YServiceEnabledObservable,
 	SharedA11YObservable,
@@ -78,6 +80,12 @@ function initNativeScriptLifecycleCallbacks() {
 				this.nativescriptActivity = activity;
 			}
 
+			// Create and register NativeWindow for this activity
+			const isPrimary = Application.android._getWindows().length === 0;
+			const nativeWindowId = NativeWindow.getActivityId(activity);
+			const nativeWindow = new NativeWindow(activity, nativeWindowId, isPrimary);
+			Application.android._registerWindow(nativeWindow);
+
 			this.notifyActivityCreated(activity, savedInstanceState);
 
 			if (Application.hasListeners(Application.displayedEvent)) {
@@ -105,6 +113,13 @@ function initNativeScriptLifecycleCallbacks() {
 				}
 			}
 
+			// Unregister NativeWindow for this activity
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.close);
+				Application.android._unregisterWindow(nativeWindow);
+			}
+
 			Application.android.notify({
 				eventName: Application.android.activityDestroyedEvent,
 				object: Application.android,
@@ -126,6 +141,11 @@ function initNativeScriptLifecycleCallbacks() {
 				});
 			}
 
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.deactivate);
+			}
+
 			Application.android.notify({
 				eventName: Application.android.activityPausedEvent,
 				object: Application.android,
@@ -137,6 +157,11 @@ function initNativeScriptLifecycleCallbacks() {
 		public onActivityResumed(activity: androidx.appcompat.app.AppCompatActivity): void {
 			// console.log('NativeScriptLifecycleCallbacks onActivityResumed');
 			Application.android.setForegroundActivity(activity);
+
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.activate);
+			}
 
 			// NOTE: setSuspended(false) is called in frame/index.android.ts inside onPostResume
 			// This is done to ensure proper timing for the event to be raised
@@ -173,6 +198,11 @@ function initNativeScriptLifecycleCallbacks() {
 				});
 			}
 
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.foreground);
+			}
+
 			Application.android.notify({
 				eventName: Application.android.activityStartedEvent,
 				object: Application.android,
@@ -190,6 +220,11 @@ function initNativeScriptLifecycleCallbacks() {
 					android: activity,
 					activity,
 				});
+			}
+
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow._notifyEvent(NativeWindowEvents.background);
 			}
 
 			Application.android.notify({
@@ -517,6 +552,78 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		}
 		return [];
 	}
+
+	// --- NativeWindow registry ---
+	private _windows: NativeWindow[] = [];
+
+	/**
+	 * @internal - Register a NativeWindow created by the lifecycle callbacks.
+	 */
+	_registerWindow(nativeWindow: NativeWindow): void {
+		this._windows.push(nativeWindow);
+		this.notify(<any>{
+			eventName: WindowEvents.windowOpen,
+			object: this,
+			window: nativeWindow,
+		});
+	}
+
+	/**
+	 * @internal - Unregister a NativeWindow when its activity is destroyed.
+	 */
+	_unregisterWindow(nativeWindow: NativeWindow): void {
+		const idx = this._windows.indexOf(nativeWindow);
+		if (idx >= 0) {
+			this._windows.splice(idx, 1);
+		}
+		this.notify(<any>{
+			eventName: WindowEvents.windowClose,
+			object: this,
+			window: nativeWindow,
+		});
+		nativeWindow._destroy();
+
+		// If primary was removed, promote next window
+		if (nativeWindow.isPrimary && this._windows.length > 0) {
+			(this._windows[0] as any)._isPrimary = true;
+		}
+	}
+
+	/**
+	 * @internal - Get all registered NativeWindows.
+	 */
+	_getWindows(): NativeWindow[] {
+		return this._windows;
+	}
+
+	/**
+	 * @internal - Get a NativeWindow by its activity.
+	 */
+	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): NativeWindow | undefined {
+		return this._windows.find((nw) => nw.activity === activity);
+	}
+
+	/**
+	 * @internal - Get a NativeWindow by its id.
+	 */
+	_getWindowById(id: string): NativeWindow | undefined {
+		return this._windows.find((nw) => nw.id === id);
+	}
+
+	/**
+	 * Get the primary NativeWindow.
+	 */
+	get primaryWindow(): NativeWindow | undefined {
+		return this._windows.find((nw) => nw.isPrimary);
+	}
+
+	/**
+	 * Get all active NativeWindows.
+	 */
+	getWindows(): NativeWindow[] {
+		return [...this._windows];
+	}
+
 	getRootView(): View {
 		const activity = this.foregroundActivity || this.startActivity;
 		if (!activity) {
@@ -726,7 +833,7 @@ function updateAccessibilityState(): void {
 	if (!sharedA11YObservable) {
 		return;
 	}
-	
+
 	const accessibilityManager = getAndroidAccessibilityManager();
 	if (!accessibilityManager) {
 		sharedA11YObservable.set(accessibilityStateEnabledPropName, false);
