@@ -6,12 +6,13 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { ios as iosUtils, dataSerialize } from '../utils/native-helper';
-import { ApplicationCommon, initializeSdkVersionClass, SceneEvents } from './application-common';
+import { ApplicationCommon, initializeSdkVersionClass } from './application-common';
 import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import type { iOSApplication as IiOSApplication } from './application';
 import { Trace } from '../trace';
-import { NativeWindow } from '../native-window/native-window.ios';
+import { IOSNativeWindow } from '../native-window/native-window.ios';
+import { NativeWindow } from '../native-window/native-window-common';
 import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
 import {
 	AccessibilityServiceEnabledPropName,
@@ -225,10 +226,10 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		}
 
 		const isPrimary = isFirstScene || !Application.ios.primaryWindow;
-		const nativeWindowId = NativeWindow.getSceneId(windowScene);
+		const nativeWindowId = IOSNativeWindow.getSceneId(windowScene);
 
 		// Create NativeWindow and register it
-		const nativeWindow = new NativeWindow(windowScene, this._window, nativeWindowId, isPrimary);
+		const nativeWindow = new IOSNativeWindow(windowScene, this._window, nativeWindowId, isPrimary);
 		Application.ios._registerWindow(nativeWindow);
 
 		if (isPrimary) {
@@ -236,9 +237,18 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 			setiOSWindow(this._window);
 		}
 
-		// Notify that scene will connect
+		// Notify on NativeWindow first
+		nativeWindow.notify({
+			eventName: NativeWindowEvents.sceneWillConnect,
+			object: nativeWindow,
+			scene: windowScene,
+			window: this._window,
+			connectionOptions: connectionOptions,
+		} as SceneEventData);
+
+		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
-			eventName: SceneEvents.sceneWillConnect,
+			eventName: NativeWindowEvents.sceneWillConnect,
 			object: Application.ios,
 			scene: windowScene,
 			window: this._window,
@@ -263,7 +273,20 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.activate);
+			// Emit sceneDidActivate on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneDidActivate,
+				object: nativeWindow,
+				scene: scene,
+			} as SceneEventData);
 		}
+
+		// @deprecated - Bridge to Application.ios for backward compat
+		Application.ios.notify({
+			eventName: NativeWindowEvents.sceneDidActivate,
+			object: Application.ios,
+			scene: scene,
+		} as SceneEventData);
 
 		// If this is the primary scene, trigger traditional app lifecycle
 		if (nativeWindow?.isPrimary) {
@@ -285,11 +308,17 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.deactivate);
+			// Emit sceneWillResignActive on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneWillResignActive,
+				object: nativeWindow,
+				scene: scene,
+			} as SceneEventData);
 		}
 
-		// Notify that scene will resign active
+		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
-			eventName: SceneEvents.sceneWillResignActive,
+			eventName: NativeWindowEvents.sceneWillResignActive,
 			object: Application.ios,
 			scene: scene,
 		} as SceneEventData);
@@ -299,10 +328,17 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.foreground);
+			// Emit sceneWillEnterForeground on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneWillEnterForeground,
+				object: nativeWindow,
+				scene: scene,
+			} as SceneEventData);
 		}
 
+		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
-			eventName: SceneEvents.sceneWillEnterForeground,
+			eventName: NativeWindowEvents.sceneWillEnterForeground,
 			object: Application.ios,
 			scene: scene,
 		} as SceneEventData);
@@ -312,10 +348,17 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.background);
+			// Emit sceneDidEnterBackground on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneDidEnterBackground,
+				object: nativeWindow,
+				scene: scene,
+			} as SceneEventData);
 		}
 
+		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
-			eventName: SceneEvents.sceneDidEnterBackground,
+			eventName: NativeWindowEvents.sceneDidEnterBackground,
 			object: Application.ios,
 			scene: scene,
 		} as SceneEventData);
@@ -340,11 +383,18 @@ class SceneDelegate extends UIResponder implements UIWindowSceneDelegate {
 		const nativeWindow = Application.ios._getWindowForScene(scene as UIWindowScene);
 		if (nativeWindow) {
 			nativeWindow._notifyEvent(NativeWindowEvents.close);
+			// Emit sceneDidDisconnect on NativeWindow
+			nativeWindow.notify({
+				eventName: NativeWindowEvents.sceneDidDisconnect,
+				object: nativeWindow,
+				scene: scene,
+			} as SceneEventData);
 			Application.ios._unregisterWindow(nativeWindow);
 		}
 
+		// @deprecated - Bridge to Application.ios for backward compat
 		Application.ios.notify({
-			eventName: SceneEvents.sceneDidDisconnect,
+			eventName: NativeWindowEvents.sceneDidDisconnect,
 			object: Application.ios,
 			scene: scene,
 		} as SceneEventData);
@@ -369,7 +419,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	_onSceneConfiguration: ((application: UIApplication, connectingSceneSession: UISceneSession, options: UISceneConnectionOptions) => UISceneConfiguration | null | undefined) | null;
 
 	// NativeWindow registry
-	private _windows: NativeWindow[] = [];
+	private _windows: IOSNativeWindow[] = [];
 
 	private _notificationObservers: NotificationObserver[] = [];
 
@@ -872,9 +922,9 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	/**
 	 * @internal - Register a NativeWindow created by the SceneDelegate.
 	 */
-	_registerWindow(nativeWindow: NativeWindow): void {
+	_registerWindow(nativeWindow: IOSNativeWindow): void {
 		this._windows.push(nativeWindow);
-		this.notify(<any>{
+		this.notify({
 			eventName: WindowEvents.windowOpen,
 			object: this,
 			window: nativeWindow,
@@ -884,12 +934,12 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	/**
 	 * @internal - Unregister a NativeWindow when its scene disconnects.
 	 */
-	_unregisterWindow(nativeWindow: NativeWindow): void {
+	_unregisterWindow(nativeWindow: IOSNativeWindow): void {
 		const idx = this._windows.indexOf(nativeWindow);
 		if (idx >= 0) {
 			this._windows.splice(idx, 1);
 		}
-		this.notify(<any>{
+		this.notify({
 			eventName: WindowEvents.windowClose,
 			object: this,
 			window: nativeWindow,
@@ -916,7 +966,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 	/**
 	 * @internal - Get a NativeWindow by its scene.
 	 */
-	_getWindowForScene(scene: UIWindowScene): NativeWindow | undefined {
+	_getWindowForScene(scene: UIWindowScene): IOSNativeWindow | undefined {
 		return this._windows.find((nw) => nw.iosWindow?.scene === scene);
 	}
 
@@ -1182,7 +1232,7 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 			// Try matching among known scenes
 			for (const nw of this._windows) {
 				const scene = nw.iosWindow?.scene;
-				if (scene && NativeWindow.getSceneId(scene) === target) {
+				if (scene && IOSNativeWindow.getSceneId(scene) === target) {
 					return scene;
 				}
 			}

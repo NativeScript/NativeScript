@@ -2,14 +2,13 @@ import type { View } from '../ui/core/view';
 import { CoreTypes } from '../core-types';
 import { SDK_VERSION } from '../utils/constants';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
-import { NativeWindowCommon } from './native-window-common';
-import type { INativeWindow } from './native-window-interfaces';
+import { NativeWindow } from './native-window-common';
 
 /**
  * Android implementation of NativeWindow.
  * Wraps an AppCompatActivity.
  */
-export class NativeWindow extends NativeWindowCommon {
+export class AndroidNativeWindow extends NativeWindow {
 	private _activity: WeakRef<androidx.appcompat.app.AppCompatActivity>;
 
 	constructor(activity: androidx.appcompat.app.AppCompatActivity, id: string, isPrimary = false) {
@@ -24,7 +23,7 @@ export class NativeWindow extends NativeWindowCommon {
 		return this._activity?.deref();
 	}
 
-	get androidWindow(): INativeWindow['androidWindow'] {
+	get androidWindow() {
 		const activity = this.activity;
 		if (!activity) {
 			return undefined;

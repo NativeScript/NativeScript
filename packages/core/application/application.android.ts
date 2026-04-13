@@ -8,7 +8,8 @@ import { ApplicationCommon, initializeSdkVersionClass } from './application-comm
 import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
-import { NativeWindow } from '../native-window/native-window.android';
+import { AndroidNativeWindow } from '../native-window/native-window.android';
+import { NativeWindow } from '../native-window/native-window-common';
 import { NativeWindowEvents, WindowEvents } from '../native-window/native-window-interfaces';
 import {
 	CommonA11YServiceEnabledObservable,
@@ -82,11 +83,11 @@ function initNativeScriptLifecycleCallbacks() {
 
 			// Create and register NativeWindow for this activity
 			const isPrimary = Application.android._getWindows().length === 0;
-			const nativeWindowId = NativeWindow.getActivityId(activity);
-			const nativeWindow = new NativeWindow(activity, nativeWindowId, isPrimary);
+			const nativeWindowId = AndroidNativeWindow.getActivityId(activity);
+			const nativeWindow = new AndroidNativeWindow(activity, nativeWindowId, isPrimary);
 			Application.android._registerWindow(nativeWindow);
 
-			this.notifyActivityCreated(activity, savedInstanceState);
+			this.notifyActivityCreated(activity, savedInstanceState, nativeWindow);
 
 			if (Application.hasListeners(Application.displayedEvent)) {
 				this.subscribeForGlobalLayout(activity);
@@ -117,9 +118,16 @@ function initNativeScriptLifecycleCallbacks() {
 			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
 				nativeWindow._notifyEvent(NativeWindowEvents.close);
+				// Emit activityDestroyed on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityDestroyed,
+					object: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
 				Application.android._unregisterWindow(nativeWindow);
 			}
 
+			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityDestroyedEvent,
 				object: Application.android,
@@ -144,8 +152,15 @@ function initNativeScriptLifecycleCallbacks() {
 			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
 				nativeWindow._notifyEvent(NativeWindowEvents.deactivate);
+				// Emit activityPaused on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityPaused,
+					object: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
 			}
 
+			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityPausedEvent,
 				object: Application.android,
@@ -161,11 +176,18 @@ function initNativeScriptLifecycleCallbacks() {
 			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
 				nativeWindow._notifyEvent(NativeWindowEvents.activate);
+				// Emit activityResumed on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityResumed,
+					object: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
 			}
 
 			// NOTE: setSuspended(false) is called in frame/index.android.ts inside onPostResume
 			// This is done to ensure proper timing for the event to be raised
 
+			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityResumedEvent,
 				object: Application.android,
@@ -177,6 +199,18 @@ function initNativeScriptLifecycleCallbacks() {
 		public onActivitySaveInstanceState(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle): void {
 			// console.log('NativeScriptLifecycleCallbacks onActivitySaveInstanceState');
 
+			// Emit on NativeWindow first
+			const nativeWindow = Application.android._getWindowForActivity(activity);
+			if (nativeWindow) {
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.saveActivityState,
+					object: nativeWindow,
+					activity,
+					bundle,
+				} as AndroidActivityBundleEventData);
+			}
+
+			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.saveActivityStateEvent,
 				object: Application.android,
@@ -201,8 +235,15 @@ function initNativeScriptLifecycleCallbacks() {
 			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
 				nativeWindow._notifyEvent(NativeWindowEvents.foreground);
+				// Emit activityStarted on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityStarted,
+					object: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
 			}
 
+			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityStartedEvent,
 				object: Application.android,
@@ -225,8 +266,15 @@ function initNativeScriptLifecycleCallbacks() {
 			const nativeWindow = Application.android._getWindowForActivity(activity);
 			if (nativeWindow) {
 				nativeWindow._notifyEvent(NativeWindowEvents.background);
+				// Emit activityStopped on NativeWindow
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityStopped,
+					object: nativeWindow,
+					activity,
+				} as AndroidActivityEventData);
 			}
 
+			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityStoppedEvent,
 				object: Application.android,
@@ -247,7 +295,17 @@ function initNativeScriptLifecycleCallbacks() {
 		}
 
 		@profile
-		notifyActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle) {
+		notifyActivityCreated(activity: androidx.appcompat.app.AppCompatActivity, bundle: android.os.Bundle, nativeWindow?: NativeWindow) {
+			// Emit on NativeWindow first
+			if (nativeWindow) {
+				nativeWindow.notify({
+					eventName: NativeWindowEvents.activityCreated,
+					object: nativeWindow,
+					activity,
+					bundle,
+				} as AndroidActivityBundleEventData);
+			}
+			// @deprecated - Bridge to Application.android for backward compat
 			Application.android.notify({
 				eventName: Application.android.activityCreatedEvent,
 				object: Application.android,
@@ -554,14 +612,14 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	}
 
 	// --- NativeWindow registry ---
-	private _windows: NativeWindow[] = [];
+	private _windows: AndroidNativeWindow[] = [];
 
 	/**
 	 * @internal - Register a NativeWindow created by the lifecycle callbacks.
 	 */
-	_registerWindow(nativeWindow: NativeWindow): void {
+	_registerWindow(nativeWindow: AndroidNativeWindow): void {
 		this._windows.push(nativeWindow);
-		this.notify(<any>{
+		this.notify({
 			eventName: WindowEvents.windowOpen,
 			object: this,
 			window: nativeWindow,
@@ -571,12 +629,12 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	/**
 	 * @internal - Unregister a NativeWindow when its activity is destroyed.
 	 */
-	_unregisterWindow(nativeWindow: NativeWindow): void {
+	_unregisterWindow(nativeWindow: AndroidNativeWindow): void {
 		const idx = this._windows.indexOf(nativeWindow);
 		if (idx >= 0) {
 			this._windows.splice(idx, 1);
 		}
-		this.notify(<any>{
+		this.notify({
 			eventName: WindowEvents.windowClose,
 			object: this,
 			window: nativeWindow,
@@ -599,7 +657,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	/**
 	 * @internal - Get a NativeWindow by its activity.
 	 */
-	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): NativeWindow | undefined {
+	_getWindowForActivity(activity: androidx.appcompat.app.AppCompatActivity): AndroidNativeWindow | undefined {
 		return this._windows.find((nw) => nw.activity === activity);
 	}
 

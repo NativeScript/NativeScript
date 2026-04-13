@@ -1,4 +1,4 @@
-import { Observable, EventData, Page, Application, Frame, StackLayout, Label, Button, Dialogs, View, Color, SceneEvents, SceneEventData, Utils } from '@nativescript/core';
+import { Observable, EventData, Page, Application, StackLayout, Label, Button, Dialogs, View, Color, NativeWindowEvents, SceneEventData, Utils, WindowEvents, WindowOpenEventData, WindowCloseEventData, NativeWindow } from '@nativescript/core';
 
 let page: Page;
 let viewModel: MultipleScenesModel;
@@ -9,12 +9,21 @@ export function navigatingTo(args: EventData) {
 	page.bindingContext = viewModel;
 }
 
+export function navigatingFrom(args: EventData) {
+	if (viewModel) {
+		viewModel.destroy();
+		viewModel = undefined;
+	}
+}
+
 export class MultipleScenesModel extends Observable {
 	private _sceneCount = 0;
 	private _isMultiSceneSupported = false;
-	private _currentScenes: any[] = [];
 	private _currentWindows: any[] = [];
 	private _sceneEvents: string[] = [];
+	private _windowOpenHandler: (args: WindowOpenEventData) => void;
+	private _windowCloseHandler: (args: WindowCloseEventData) => void;
+	private _sceneEventHandlers: Map<string, (args: SceneEventData) => void> = new Map();
 
 	constructor() {
 		super();
@@ -30,10 +39,6 @@ export class MultipleScenesModel extends Observable {
 
 	get isMultiSceneSupported(): boolean {
 		return this._isMultiSceneSupported;
-	}
-
-	get currentScenes(): any[] {
-		return this._currentScenes;
 	}
 
 	get currentWindows(): any[] {
@@ -105,39 +110,84 @@ export class MultipleScenesModel extends Observable {
 	private setupSceneEventListeners() {
 		if (!__APPLE__) return;
 
-		// Listen to all scene lifecycle events
-		Application.on(SceneEvents.sceneWillConnect, (args: SceneEventData) => {
-			this.addSceneEvent(`Scene Will Connect: ${this.getSceneDescription(args.scene)}`);
+		// Listen for window open/close on Application
+		this._windowOpenHandler = (args: WindowOpenEventData) => {
+			const nativeWindow = args.window;
+			if (!nativeWindow) return;
+			this.addSceneEvent(`Window opened: ${nativeWindow.id}`);
+			this.registerNativeWindowListeners(nativeWindow);
 			this.updateSceneInfo();
-		});
-
-		Application.on(SceneEvents.sceneDidActivate, (args: SceneEventData) => {
-			this.addSceneEvent(`Scene Did Activate: ${this.getSceneDescription(args.scene)}`);
+		};
+		this._windowCloseHandler = (args: WindowCloseEventData) => {
+			const nativeWindow = args.window;
+			if (!nativeWindow) return;
+			this.addSceneEvent(`Window closed: ${nativeWindow.id}`);
 			this.updateSceneInfo();
-		});
+		};
+		Application.ios.on(WindowEvents.windowOpen, this._windowOpenHandler);
+		Application.ios.on(WindowEvents.windowClose, this._windowCloseHandler);
 
-		Application.on(SceneEvents.sceneWillResignActive, (args: SceneEventData) => {
-			this.addSceneEvent(`Scene Will Resign Active: ${this.getSceneDescription(args.scene)}`);
-		});
+		// Register listeners on existing windows
+		for (const nativeWindow of Application.ios.getWindows()) {
+			this.registerNativeWindowListeners(nativeWindow);
+		}
+	}
 
-		Application.on(SceneEvents.sceneWillEnterForeground, (args: SceneEventData) => {
-			this.addSceneEvent(`Scene Will Enter Foreground: ${this.getSceneDescription(args.scene)}`);
-		});
+	private registerNativeWindowListeners(nativeWindow: NativeWindow) {
+		const events = [
+			{ name: NativeWindowEvents.sceneWillConnect, label: 'Scene Will Connect' },
+			{ name: NativeWindowEvents.sceneDidActivate, label: 'Scene Did Activate' },
+			{ name: NativeWindowEvents.sceneWillResignActive, label: 'Scene Will Resign Active' },
+			{ name: NativeWindowEvents.sceneWillEnterForeground, label: 'Scene Will Enter Foreground' },
+			{ name: NativeWindowEvents.sceneDidEnterBackground, label: 'Scene Did Enter Background' },
+			{ name: NativeWindowEvents.sceneDidDisconnect, label: 'Scene Did Disconnect' },
+		];
 
-		Application.on(SceneEvents.sceneDidEnterBackground, (args: SceneEventData) => {
-			this.addSceneEvent(`Scene Did Enter Background: ${this.getSceneDescription(args.scene)}`);
-		});
+		for (const event of events) {
+			const handler = (args: SceneEventData) => {
+				this.addSceneEvent(`${event.label}: Window ${nativeWindow.id}`);
+				this.updateSceneInfo();
 
-		Application.on(SceneEvents.sceneDidDisconnect, (args: SceneEventData) => {
-			this.addSceneEvent(`Scene Did Disconnect: ${this.getSceneDescription(args.scene)}`);
-			this.updateSceneInfo();
-		});
+				// Set up content for new scenes when they connect
+				if (event.name === NativeWindowEvents.sceneWillConnect) {
+					this.setupSceneContent(nativeWindow, args);
+				}
+			};
+			const handlerKey = `${nativeWindow.id}:${event.name}`;
+			this._sceneEventHandlers.set(handlerKey, handler);
+			nativeWindow.on(event.name, handler as any);
+		}
+	}
 
-		// Listen for scene content setup events to provide content for new scenes
-		Application.on(SceneEvents.sceneContentSetup, (args: SceneEventData) => {
-			this.addSceneEvent(`Setting up content for new scene: ${this.getSceneDescription(args.scene)}`);
-			this.setupSceneContent(args);
-		});
+	private unregisterNativeWindowListeners(nativeWindow: NativeWindow) {
+		const events = [NativeWindowEvents.sceneWillConnect, NativeWindowEvents.sceneDidActivate, NativeWindowEvents.sceneWillResignActive, NativeWindowEvents.sceneWillEnterForeground, NativeWindowEvents.sceneDidEnterBackground, NativeWindowEvents.sceneDidDisconnect];
+
+		for (const eventName of events) {
+			const handlerKey = `${nativeWindow.id}:${eventName}`;
+			const handler = this._sceneEventHandlers.get(handlerKey);
+			if (handler) {
+				nativeWindow.off(eventName, handler);
+				this._sceneEventHandlers.delete(handlerKey);
+			}
+		}
+	}
+
+	destroy() {
+		if (!__APPLE__) return;
+
+		// Unregister window open/close listeners
+		if (this._windowOpenHandler) {
+			Application.ios.off(WindowEvents.windowOpen, this._windowOpenHandler);
+		}
+		if (this._windowCloseHandler) {
+			Application.ios.off(WindowEvents.windowClose, this._windowCloseHandler);
+		}
+
+		// Unregister all NativeWindow listeners
+		for (const nativeWindow of Application.ios.getWindows()) {
+			this.unregisterNativeWindowListeners(nativeWindow);
+		}
+		this._sceneEventHandlers.clear();
 	}
 
 	private getSceneDescription(scene: UIWindowScene): string {
@@ -149,8 +199,11 @@ export class MultipleScenesModel extends Observable {
 		return scene?.hash ? `${scene?.hash}` : scene?.description || 'Unknown';
 	}
 
-	private setupSceneContent(args: SceneEventData) {
+	private setupSceneContent(nativeWindow: NativeWindow, args: SceneEventData) {
 		if (!args.scene || !args.window || !__APPLE__) return;
+
+		// Skip the primary scene (it already has content)
+		if (nativeWindow === Application.ios.primaryWindow) return;
 
 		try {
 			let nsViewId: string;
@@ -170,9 +223,11 @@ export class MultipleScenesModel extends Observable {
 				// Note: can implement any number of other scene views
 			}
 
-			console.log('setWindowRootView for:', args.window);
-			Application.ios.setWindowRootView(args.window, page);
-			this.addSceneEvent(`Content successfully set for scene: ${this.getSceneDescription(args.scene)}`);
+			if (page) {
+				console.log('setContent for window:', nativeWindow.id);
+				nativeWindow.setContent(page);
+				this.addSceneEvent(`Content successfully set for window: ${nativeWindow.id}`);
+			}
 		} catch (error) {
 			this.addSceneEvent(`Error setting up scene content: ${error.message}`);
 		}
@@ -232,8 +287,6 @@ export class MultipleScenesModel extends Observable {
 		this._closeButtons.set(sceneId, closeButton);
 		layout.addChild(closeButton);
 
-		// Set up the layout as a root view (this creates the native iOS view)
-		page._setupAsRootView({});
 		return page;
 	}
 
@@ -283,8 +336,6 @@ export class MultipleScenesModel extends Observable {
 		this._closeButtons.set(sceneId, closeButton);
 		layout.addChild(closeButton);
 
-		// Set up the layout as a root view (this creates the native iOS view)
-		page._setupAsRootView({});
 		return page;
 	}
 
@@ -334,25 +385,20 @@ export class MultipleScenesModel extends Observable {
 	private updateSceneInfo() {
 		if (__APPLE__ && this._isMultiSceneSupported) {
 			try {
-				this._currentScenes = Application.ios.getAllScenes() || [];
-
-				this._currentWindows = Application.ios.getAllWindows() || [];
-
-				this._sceneCount = this._currentScenes.length;
+				const windows = Application.ios.getWindows() || [];
+				this._currentWindows = windows;
+				this._sceneCount = windows.length;
 			} catch (error) {
 				console.log('Error getting scene info:', error);
 				this._sceneCount = 0;
-				this._currentScenes = [];
 				this._currentWindows = [];
 			}
 		} else {
 			this._sceneCount = 1; // Traditional single window
-			this._currentScenes = [];
 			this._currentWindows = [];
 		}
 
 		this.notifyPropertyChange('sceneCount', this._sceneCount);
-		this.notifyPropertyChange('currentScenes', this._currentScenes);
 		this.notifyPropertyChange('currentWindows', this._currentWindows);
 		this.notifyPropertyChange('statusText', this.statusText);
 	}
@@ -418,7 +464,7 @@ export class MultipleScenesModel extends Observable {
 		this.addSceneEvent(`API Test: ${apiInfo}`);
 
 		// Also log current scene/window counts
-		this.addSceneEvent(`Current state: ${this._currentScenes.length} scenes, ${this._currentWindows.length} windows`);
+		this.addSceneEvent(`Current state: ${this._currentWindows.length} windows`);
 
 		// Add device and system info
 		try {

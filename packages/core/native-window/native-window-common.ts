@@ -11,8 +11,9 @@ import type { StyleScope } from '../ui/styling/style-scope';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { SDK_VERSION } from '../utils/constants';
 import { initializeSdkVersionClass } from '../application/application-common';
-import type { INativeWindow, NativeWindowEventData, NativeWindowEventName } from './native-window-interfaces';
+import type { NativeWindowEventData, NativeWindowEventName } from './native-window-interfaces';
 import { NativeWindowEvents } from './native-window-interfaces';
+import type { AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, SceneEventData } from '../application/application-interfaces';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -43,7 +44,7 @@ let _windowIdCounter = 0;
  *
  * Platform-specific subclasses implement the abstract methods.
  */
-export abstract class NativeWindowCommon extends Observable implements INativeWindow {
+export abstract class NativeWindow extends Observable {
 	private _id: string;
 	private _isPrimary: boolean;
 	protected _rootView: View;
@@ -140,12 +141,43 @@ export abstract class NativeWindowCommon extends Observable implements INativeWi
 		return (this._layoutDirection ??= this._getLayoutDirection());
 	}
 
-	get iosWindow(): INativeWindow['iosWindow'] {
+	get iosWindow(): { readonly scene: UIWindowScene; readonly window: UIWindow } | undefined {
 		return undefined;
 	}
 
-	get androidWindow(): INativeWindow['androidWindow'] {
+	get androidWindow(): { readonly activity: androidx.appcompat.app.AppCompatActivity } | undefined {
 		return undefined;
+	}
+
+	// --- Typed event overloads ---
+
+	on(event: 'activate', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'deactivate', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'background', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'foreground', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'close', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'displayed', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'contentLoaded', callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	on(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	on(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
+	on(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
+	on(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
+	on(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+	on(event: 'sceneWillConnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneDidActivate', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneWillResignActive', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneWillEnterForeground', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneDidEnterBackground', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(event: 'sceneDidDisconnect', callback: (args: SceneEventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: NativeWindowEventData) => void, thisArg?: any): void;
+	on(eventName: string, callback: (data: any) => void, thisArg?: any): void {
+		super.on(eventName, callback, thisArg);
 	}
 
 	// Platform-specific abstract getters
@@ -289,7 +321,7 @@ export abstract class NativeWindowCommon extends Observable implements INativeWi
 	_notifyEvent(eventName: NativeWindowEventName): void {
 		this.notify(<NativeWindowEventData>{
 			eventName,
-			window: this,
+			window: this as any,
 			object: this,
 		});
 	}
