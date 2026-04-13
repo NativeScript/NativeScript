@@ -5,7 +5,7 @@ import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-com
 import { SDK_VERSION } from '../utils/constants';
 import { android as androidUtils } from '../utils';
 import { ApplicationCommon, initializeSdkVersionClass } from './application-common';
-import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
+import type { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
 import {
@@ -312,6 +312,20 @@ const BroadcastReceiver = lazy(() => {
 	return BroadcastReceiverImpl;
 });
 
+type AndroidApplicationOn = ApplicationCommon['on'] & {
+	(event: 'activityCreated', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	(event: 'activityDestroyed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityStarted', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityPaused', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityResumed', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'activityStopped', callback: (args: AndroidActivityEventData) => void, thisArg?: any): void;
+	(event: 'saveActivityState', callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any): void;
+	(event: 'activityResult', callback: (args: AndroidActivityResultEventData) => void, thisArg?: any): void;
+	(event: 'activityBackPressed', callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any): void;
+	(event: 'activityNewIntent', callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any): void;
+	(event: 'activityRequestPermissions', callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any): void;
+};
+
 export class AndroidApplication extends ApplicationCommon implements IAndroidApplication {
 	static readonly activityCreatedEvent = 'activityCreated';
 	static readonly activityDestroyedEvent = 'activityDestroyed';
@@ -336,6 +350,9 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 	readonly activityBackPressedEvent = AndroidApplication.activityBackPressedEvent;
 	readonly activityNewIntentEvent = AndroidApplication.activityNewIntentEvent;
 	readonly activityRequestPermissionsEvent = AndroidApplication.activityRequestPermissionsEvent;
+	// `on` is created in ApplicationCommon as a bound function property. We only re-declare it
+	// here so Android-specific events get typed callbacks without changing the runtime field.
+	declare on: AndroidApplicationOn;
 
 	private _nativeApp: android.app.Application;
 	private _context: android.content.Context;
@@ -604,6 +621,7 @@ export class AndroidApplication extends ApplicationCommon implements IAndroidApp
 		return this;
 	}
 }
+
 export * from './application-common';
 export * from './application-interfaces';
 export const Application = new AndroidApplication();
