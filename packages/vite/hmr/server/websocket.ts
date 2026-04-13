@@ -2255,7 +2255,7 @@ function dedupeRtNamedImportsAgainstDestructures(code: string): string {
 /**
  * THE SINGLE REWRITE FUNCTION - used everywhere for consistency
  */
-function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
+export function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
 	let result = code;
 	const httpOriginSafe = httpOrigin;
 	const importerDir = path.posix.dirname(importerPath);
@@ -2263,6 +2263,7 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 	const importerOutRel = outputDirOverrideRel || getProjectRelativeImportPath(importerPath, projectRoot) || stripToProjectRelative(importerPath, projectRoot).replace(/\.(ts|js|tsx|jsx|mjs|mts|cts)$/i, '.mjs');
 	const importerOutDir = importerOutRel ? path.posix.dirname(importerOutRel) : '';
 	const ensureRel = (p: string) => (p.startsWith('.') ? p : `./${p}`);
+	const isNsSfcSpecifier = (spec: string): boolean => /^(?:https?:\/\/[^/]+)?\/ns\/sfc(?:\/\d+)?(?:\/|$)/.test(spec.replace(PAT.QUERY_PATTERN, ''));
 
 	// Normalize all @nativescript/core imports to the unified HTTP ESM core bridge to guarantee a single realm on device
 	try {
@@ -2603,6 +2604,10 @@ function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<stri
 	// In HTTP mode, skip legacy local-path rewrite to avoid mixing module origins
 	result = result.replace(PAT.VUE_FILE_IMPORT, (_m, p1, spec, p3) => {
 		if (httpOrigin) {
+			if (isNsSfcSpecifier(spec)) {
+				if (verbose) console.log(`[rewrite] .vue already routed (VUE_FILE_IMPORT http): ${spec}`);
+				return `${p1}${spec}${p3}`;
+			}
 			// Route via /ns/sfc with full query preserved
 			try {
 				let base = spec;
@@ -5747,14 +5752,16 @@ export const piniaSymbol = p.piniaSymbol;
 			}
 			// Graph update for this file change (wrapped to avoid aborting rest of handler)
 			try {
-				const mod = server.moduleGraph.getModuleById(file) || server.moduleGraph.getModuleById(file + '?vue');
-				if (mod) {
-					const deps = Array.from(mod.importedModules)
-						.map((m) => (m.id || '').replace(/\?.*$/, ''))
-						.filter(Boolean);
-					const transformed = await server.transformRequest(mod.id!);
-					const code = transformed?.code || '';
-					upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps);
+				if (!file.endsWith('.vue')) {
+					const mod = server.moduleGraph.getModuleById(file) || server.moduleGraph.getModuleById(file + '?vue');
+					if (mod) {
+						const deps = Array.from(mod.importedModules)
+							.map((m) => (m.id || '').replace(/\?.*$/, ''))
+							.filter(Boolean);
+						const transformed = await server.transformRequest(mod.id!);
+						const code = transformed?.code || '';
+						upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps);
+					}
 				}
 			} catch (e) {
 				if (verbose) console.warn('[hmr-ws][v2] failed graph update', e);
@@ -5996,6 +6003,7 @@ export const piniaSymbol = p.piniaSymbol;
 				// Rewrite ONLY .vue imports (everything else is now inlined)
 				const projectRoot = server.config.root || process.cwd();
 				code = rewriteImports(code, rel, sfcFileMap, depFileMap, projectRoot, opts.verbose, undefined);
+				upsertGraphModule(rel, code, [...deps, ...vueDeps]);
 
 				// Add HMR runtime prelude (CRITICAL for runtime)
 				const hmrPrelude = `

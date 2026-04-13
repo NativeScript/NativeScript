@@ -392,7 +392,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					},
 					cors: true,
 					watch: {
-						ignored: ['**/.DS_Store', '**/Documents/**', '**/hooks/**', '**/platforms/**'],
+						ignored: ['**/.DS_Store', '**/hooks/**', '**/platforms/**'],
 					},
 				}
 			: {},
