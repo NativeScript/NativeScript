@@ -1,7 +1,5 @@
 import type { EventData } from '../data/observable';
-import type { View } from '../ui/core/view';
-import type { NavigationEntry } from '../ui/frame/frame-interfaces';
-import type { CoreTypes } from '../core-types';
+import type { NativeWindow } from './native-window-common';
 
 /**
  * Events emitted by a NativeWindow instance.
@@ -21,6 +19,44 @@ export const NativeWindowEvents = {
 	displayed: 'displayed',
 	/** Fired when the root view content is set or changed. */
 	contentLoaded: 'contentLoaded',
+
+	// iOS scene lifecycle events
+	/** Fired when the scene is about to connect (iOS only). */
+	sceneWillConnect: 'sceneWillConnect',
+	/** Fired when the scene becomes active (iOS only). */
+	sceneDidActivate: 'sceneDidActivate',
+	/** Fired when the scene is about to resign active state (iOS only). */
+	sceneWillResignActive: 'sceneWillResignActive',
+	/** Fired when the scene is about to enter the foreground (iOS only). */
+	sceneWillEnterForeground: 'sceneWillEnterForeground',
+	/** Fired when the scene has entered the background (iOS only). */
+	sceneDidEnterBackground: 'sceneDidEnterBackground',
+	/** Fired when the scene has disconnected (iOS only). */
+	sceneDidDisconnect: 'sceneDidDisconnect',
+
+	// Android activity lifecycle events
+	/** Fired when the activity is created (Android only). */
+	activityCreated: 'activityCreated',
+	/** Fired when the activity is destroyed (Android only). */
+	activityDestroyed: 'activityDestroyed',
+	/** Fired when the activity is started (Android only). */
+	activityStarted: 'activityStarted',
+	/** Fired when the activity is paused (Android only). */
+	activityPaused: 'activityPaused',
+	/** Fired when the activity is resumed (Android only). */
+	activityResumed: 'activityResumed',
+	/** Fired when the activity is stopped (Android only). */
+	activityStopped: 'activityStopped',
+	/** Fired when the activity state is being saved (Android only). */
+	saveActivityState: 'saveActivityState',
+	/** Fired when the activity receives a result (Android only). */
+	activityResult: 'activityResult',
+	/** Fired when the back button is pressed (Android only). */
+	activityBackPressed: 'activityBackPressed',
+	/** Fired when the activity receives a new intent (Android only). */
+	activityNewIntent: 'activityNewIntent',
+	/** Fired when permission results are received (Android only). */
+	activityRequestPermissions: 'activityRequestPermissions',
 } as const;
 
 export type NativeWindowEventName = (typeof NativeWindowEvents)[keyof typeof NativeWindowEvents];
@@ -40,7 +76,7 @@ export const WindowEvents = {
  */
 export interface NativeWindowEventData extends EventData {
 	/** The NativeWindow that emitted the event. */
-	window: INativeWindow;
+	window: NativeWindow;
 }
 
 /**
@@ -48,7 +84,7 @@ export interface NativeWindowEventData extends EventData {
  */
 export interface WindowOpenEventData extends EventData {
 	/** The NativeWindow that was opened. */
-	window: INativeWindow;
+	window: NativeWindow;
 }
 
 /**
@@ -56,83 +92,7 @@ export interface WindowOpenEventData extends EventData {
  */
 export interface WindowCloseEventData extends EventData {
 	/** The NativeWindow that was closed. */
-	window: INativeWindow;
-}
-
-/**
- * Cross-platform NativeWindow interface.
- *
- * A NativeWindow represents a platform window surface:
- * - iOS: UIWindowScene + UIWindow
- * - Android: Activity
- *
- * Each NativeWindow manages its own root view, lifecycle events,
- * and platform-specific accessors.
- */
-export interface INativeWindow {
-	/**
-	 * A stable identifier for this window.
-	 * On iOS: derived from the UISceneSession persistentIdentifier.
-	 * On Android: derived from the Activity hashCode.
-	 */
-	readonly id: string;
-
-	/**
-	 * Whether this is the primary (main) window.
-	 * The first window created is typically the primary window.
-	 * Application-level lifecycle events are bridged from the primary window.
-	 */
-	readonly isPrimary: boolean;
-
-	/**
-	 * The current root view of this window.
-	 */
-	readonly rootView: View;
-
-	/**
-	 * Set the content of this window.
-	 * @param content A View instance, a NavigationEntry, or a module name string.
-	 */
-	setContent(content: View | NavigationEntry | string): void;
-
-	/**
-	 * Close this window.
-	 * The primary window cannot be closed.
-	 *
-	 * iOS: requests scene session destruction.
-	 * Android: finishes the activity.
-	 */
-	close(): void;
-
-	/**
-	 * The current orientation of this window.
-	 */
-	orientation(): 'portrait' | 'landscape' | 'unknown';
-
-	/**
-	 * The current system appearance (light/dark) for this window.
-	 */
-	systemAppearance(): 'light' | 'dark' | null;
-
-	/**
-	 * The current layout direction for this window.
-	 */
-	layoutDirection(): CoreTypes.LayoutDirectionType | null;
-
-	/**
-	 * iOS-specific accessors. Only available when running on iOS.
-	 */
-	readonly iosWindow?: {
-		readonly scene: UIWindowScene;
-		readonly window: UIWindow;
-	};
-
-	/**
-	 * Android-specific accessors. Only available when running on Android.
-	 */
-	readonly androidWindow?: {
-		readonly activity: androidx.appcompat.app.AppCompatActivity;
-	};
+	window?: NativeWindow;
 }
 
 /**

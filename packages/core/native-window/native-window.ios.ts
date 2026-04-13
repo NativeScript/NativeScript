@@ -2,15 +2,14 @@ import type { View } from '../ui/core/view';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { CoreTypes } from '../core-types';
-import { NativeWindowCommon } from './native-window-common';
+import { NativeWindow } from './native-window-common';
 import { NativeWindowEvents } from './native-window-interfaces';
-import type { INativeWindow } from './native-window-interfaces';
 
 /**
  * iOS implementation of NativeWindow.
  * Wraps a UIWindowScene + UIWindow pair.
  */
-export class NativeWindow extends NativeWindowCommon {
+export class IOSNativeWindow extends NativeWindow {
 	private _scene: UIWindowScene;
 	private _window: UIWindow;
 
@@ -20,7 +19,7 @@ export class NativeWindow extends NativeWindowCommon {
 		this._window = window;
 	}
 
-	get iosWindow(): INativeWindow['iosWindow'] {
+	get iosWindow() {
 		return {
 			scene: this._scene,
 			window: this._window,

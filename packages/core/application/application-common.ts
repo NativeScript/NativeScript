@@ -16,6 +16,7 @@ import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessib
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
 import { getNativeScriptGlobals } from '../globals/global-utils';
 import { SDK_VERSION } from '../utils/constants';
+import type { WindowCloseEventData, WindowOpenEventData } from '../native-window';
 
 // prettier-ignore
 const ORIENTATION_CSS_CLASSES = [
@@ -39,13 +40,23 @@ const LAYOUT_DIRECTION_CSS_CLASSES = [
 const globalEvents = getNativeScriptGlobals().events;
 
 // Scene lifecycle event names
+/**
+ * @deprecated Use `NativeWindowEvents` from `@nativescript/core/native-window` instead.
+ */
 export const SceneEvents = {
+	/** @deprecated Use `NativeWindowEvents.sceneWillConnect` instead. */
 	sceneWillConnect: 'sceneWillConnect',
+	/** @deprecated Use `NativeWindowEvents.sceneDidActivate` instead. */
 	sceneDidActivate: 'sceneDidActivate',
+	/** @deprecated Use `NativeWindowEvents.sceneWillResignActive` instead. */
 	sceneWillResignActive: 'sceneWillResignActive',
+	/** @deprecated Use `NativeWindowEvents.sceneWillEnterForeground` instead. */
 	sceneWillEnterForeground: 'sceneWillEnterForeground',
+	/** @deprecated Use `NativeWindowEvents.sceneDidEnterBackground` instead. */
 	sceneDidEnterBackground: 'sceneDidEnterBackground',
+	/** @deprecated Use `NativeWindowEvents.sceneDidDisconnect` instead. */
 	sceneDidDisconnect: 'sceneDidDisconnect',
+	/** @deprecated Use `NativeWindowEvents.sceneContentSetup` instead. */
 	sceneContentSetup: 'sceneContentSetup',
 };
 
@@ -129,6 +140,9 @@ interface ApplicationEvents {
 	on(event: 'layoutDirectionChanged', callback: (args: LayoutDirectionChangedEventData) => void, thisArg?: any): void;
 
 	on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any): void;
+
+	on(event: 'windowOpen', callback: (args: WindowOpenEventData) => void, thisArg?: any): void;
+	on(event: 'windowClose', callback: (args: WindowCloseEventData) => void, thisArg?: any): void;
 }
 
 export class ApplicationCommon {
