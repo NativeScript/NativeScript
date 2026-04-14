@@ -38,6 +38,36 @@ ChildService = __decorate([
 		expect(output).toContain('Object.defineProperty(ChildService, "ɵprov", { value: /* @__PURE__ */ ({ token: ChildService, providedIn: "root", factory: ChildService.ɵfac, value: undefined }), configurable: true, writable: true });');
 	});
 
+	it('matches aliased __decorate helpers from bundled output', () => {
+		const input = `
+import { yr as Injectable } from "./vendor.mjs";
+var TasksService = class TasksService {
+};
+TasksService = __decorate$8([
+    Injectable({ providedIn: "root" }),
+    __decorateMetadata("design:paramtypes", [HttpClient, ConfigService])
+], TasksService);
+`;
+
+		const output = synthesizeMissingInjectableFactories(input, { vendorInjectExport: 'Br' });
+
+		expect(output).toContain('Object.defineProperty(TasksService, "ɵfac", { value: function TasksService_Factory(__ngFactoryType__) { return new (__ngFactoryType__ || TasksService)(__nsInject(HttpClient), __nsInject(ConfigService)); }, configurable: true, writable: true });');
+		expect(output.indexOf('Object.defineProperty(TasksService, "ɵfac"')).toBeLessThan(output.indexOf('TasksService = __decorate$8'));
+	});
+
+	it('skips constructor-arg factory synthesis when no vendor inject helper is available', () => {
+		const input = `
+var TasksService = class TasksService {
+};
+TasksService = __decorate$8([
+    Injectable({ providedIn: "root" }),
+    __decorateMetadata("design:paramtypes", [HttpClient, ConfigService])
+], TasksService);
+`;
+
+		expect(synthesizeMissingInjectableFactories(input)).toBe(input);
+	});
+
 	it('adds zero-arg metadata for inject()-field services without design:paramtypes metadata', () => {
 		const input = `
 var ChildrenEffects = class ChildrenEffects {

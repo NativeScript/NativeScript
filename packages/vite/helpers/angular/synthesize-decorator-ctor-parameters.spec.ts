@@ -20,6 +20,23 @@ AppComponent = __decorate([
 		expect(output).toContain('AppComponent.ctorParameters = () => [{ type: typeof (_ref = typeof DeepLinkService !== "undefined" && DeepLinkService) === "function" ? _ref : Object }, { type: typeof (_ref2 = typeof NgZone !== "undefined" && NgZone) === "function" ? _ref2 : Object }];');
 	});
 
+	it('matches aliased __decorate helpers from bundled output', () => {
+		const input = `
+var _ref;
+var TasksService = class TasksService {
+};
+TasksService = __decorate$8([
+    Injectable({ providedIn: "root" }),
+    __decorateMetadata("design:paramtypes", [typeof (_ref = typeof HttpClient !== "undefined" && HttpClient) === "function" ? _ref : Object])
+], TasksService);
+`;
+
+		const output = synthesizeDecoratorCtorParameters(input);
+
+		expect(output).toContain('TasksService.ctorParameters = () => [{ type: typeof (_ref = typeof HttpClient !== "undefined" && HttpClient) === "function" ? _ref : Object }];');
+		expect(output.indexOf('TasksService.ctorParameters = () =>')).toBeLessThan(output.indexOf('TasksService = __decorate$8'));
+	});
+
 	it('evaluates ctorParameters lazily', () => {
 		const source = synthesizeDecoratorCtorParameters(`
 var _ref;

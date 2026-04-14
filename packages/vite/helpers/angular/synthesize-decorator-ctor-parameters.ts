@@ -1,4 +1,4 @@
-const DECORATE_ASSIGNMENT_RE = /(^|[^\w$.])([A-Za-z_$][\w$]*)\s*=\s*__decorate\s*\(/gm;
+const DECORATE_ASSIGNMENT_RE = /(^|[^\w$.])([A-Za-z_$][\w$]*)\s*=\s*__decorate(?:\$\w+)?\s*\(/gm;
 
 export function synthesizeDecoratorCtorParameters(code: string): string {
 	let changed = false;

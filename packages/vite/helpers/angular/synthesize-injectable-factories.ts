@@ -1,4 +1,4 @@
-const DECORATE_ASSIGNMENT_RE = /(^|[^\w$.])([A-Za-z_$][\w$]*)\s*=\s*__decorate\s*\(/gm;
+const DECORATE_ASSIGNMENT_RE = /(^|[^\w$.])([A-Za-z_$][\w$]*)\s*=\s*__decorate(?:\$\w+)?\s*\(/gm;
 const SYNTHETIC_INJECT_IDENTIFIER = '__nsInject';
 
 export function synthesizeMissingInjectableFactories(code: string, options: { vendorInjectExport?: string } = {}): string {
@@ -31,6 +31,10 @@ export function synthesizeMissingInjectableFactories(code: string, options: { ve
 		const decorateCall = code.slice(decorateIndex, closeParenIndex + 1);
 		const paramTypes = resolveParamTypes(code, className, assignmentStart, decorateCall);
 		if (!paramTypes) {
+			continue;
+		}
+
+		if (paramTypes.length > 0 && !options.vendorInjectExport) {
 			continue;
 		}
 

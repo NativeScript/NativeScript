@@ -132,7 +132,7 @@ function angularRollupLinker(projectRoot?: string): Plugin {
 	};
 }
 
-const cliFlags = getCliFlags();
+const cliFlags = getCliFlags()!;
 const isDevEnv = process.env.NODE_ENV !== 'production';
 const hmrActive = isDevEnv && !!cliFlags.hmr;
 
@@ -144,22 +144,118 @@ if (!fs.existsSync(tsConfigAppPath) && fs.existsSync(tsConfigPath)) {
 	tsConfig = tsConfigPath;
 }
 
-function createAngularPlugins(): Plugin[] {
+function normalizeAngularWatchPath(filePath: string): string {
+	return filePath.split('?', 1)[0].replace(/\\/g, '/');
+}
+
+function extractComponentAssetPaths(code: string, componentId: string): string[] {
+	const componentPath = normalizeAngularWatchPath(componentId);
+	const assetPaths = new Set<string>();
+	const resolveAssetPath = (assetPath: string) => normalizeAngularWatchPath(path.resolve(path.dirname(componentPath), assetPath));
+
+	const templateUrlMatch = code.match(/templateUrl\s*:\s*['"](.+?\.(?:html|htm))['"]/);
+	if (templateUrlMatch) {
+		assetPaths.add(resolveAssetPath(templateUrlMatch[1]));
+	}
+
+	const styleUrlMatch = code.match(/styleUrl\s*:\s*['"](.+?\.(?:css|less|sass|scss))['"]/);
+	if (styleUrlMatch) {
+		assetPaths.add(resolveAssetPath(styleUrlMatch[1]));
+	}
+
+	const styleUrlsMatch = code.match(/styleUrls\s*:\s*\[([\s\S]*?)\]/m);
+	if (styleUrlsMatch) {
+		for (const match of styleUrlsMatch[1].matchAll(/['"](.+?\.(?:css|less|sass|scss))['"]/g)) {
+			assetPaths.add(resolveAssetPath(match[1]));
+		}
+	}
+
+	return Array.from(assetPaths);
+}
+
+function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plugin[] {
+	const assetToComponents = new Map<string, Set<string>>();
+	const componentToAssets = new Map<string, Set<string>>();
+	const pendingComponentInvalidations = new Set<string>();
+	let watchMode = false;
+
+	const untrackComponentAssets = (componentPath: string) => {
+		const previousAssets = componentToAssets.get(componentPath);
+		if (!previousAssets) return;
+
+		for (const assetPath of previousAssets) {
+			const components = assetToComponents.get(assetPath);
+			if (!components) continue;
+			components.delete(componentPath);
+			if (components.size === 0) {
+				assetToComponents.delete(assetPath);
+			}
+		}
+
+		componentToAssets.delete(componentPath);
+	};
+
+	const trackComponentAssets = (componentPath: string, assetPaths: string[]) => {
+		untrackComponentAssets(componentPath);
+		if (assetPaths.length === 0) return;
+
+		const normalizedAssets = new Set(assetPaths.map((assetPath) => normalizeAngularWatchPath(assetPath)));
+		componentToAssets.set(componentPath, normalizedAssets);
+
+		for (const assetPath of normalizedAssets) {
+			const components = assetToComponents.get(assetPath) || new Set<string>();
+			components.add(componentPath);
+			assetToComponents.set(assetPath, components);
+		}
+	};
+
 	return [
 		// Allow external html template changes to trigger hot reload: Make .ts files depend on their .html templates
 		{
 			name: 'angular-template-deps',
+			enforce: 'pre',
+			configResolved(resolved) {
+				watchMode = !!resolved.build?.watch;
+			},
 			transform(code, id) {
-				// For .ts files that reference templateUrl, add the .html file as a dependency
-				if (id.endsWith('.ts') && code.includes('templateUrl')) {
-					const templateUrlMatch = code.match(/templateUrl:\s*['"]\.\/(.*?\.html)['"]/);
-					if (templateUrlMatch) {
-						const htmlPath = path.resolve(path.dirname(id), templateUrlMatch[1]);
-						// Add the HTML file as a dependency so Vite watches it
-						this.addWatchFile(htmlPath);
-					}
+				const componentPath = normalizeAngularWatchPath(id);
+				if (!componentPath.endsWith('.ts')) return null;
+
+				const assetPaths = extractComponentAssetPaths(code, componentPath);
+				trackComponentAssets(componentPath, assetPaths);
+
+				for (const assetPath of assetPaths) {
+					this.addWatchFile(assetPath);
 				}
 				return null;
+			},
+			watchChange(id) {
+				if (!watchMode) return;
+
+				const changedPath = normalizeAngularWatchPath(id);
+				const components = assetToComponents.get(changedPath);
+				if (components?.size) {
+					for (const componentPath of components) {
+						pendingComponentInvalidations.add(componentPath);
+					}
+					return;
+				}
+
+				if (/\.(html|htm)$/i.test(changedPath)) {
+					const componentPath = changedPath.replace(/\.(html|htm)$/i, '.ts');
+					if (fs.existsSync(componentPath)) {
+						pendingComponentInvalidations.add(componentPath);
+					}
+				}
+			},
+			shouldTransformCachedModule({ id }) {
+				if (!watchMode) return null;
+
+				const componentPath = normalizeAngularWatchPath(id);
+				if (!pendingComponentInvalidations.has(componentPath)) return null;
+
+				pendingComponentInvalidations.delete(componentPath);
+				return true;
 			},
 		},
 		// Transform Angular partial declarations in node_modules to avoid runtime JIT
@@ -168,6 +264,9 @@ function createAngularPlugins(): Plugin[] {
 		// Simplify: rely on Vite pre plugin (load/transform) for linking; Rollup safety net disabled unless re-enabled later
 		// angularRollupLinker(process.cwd()),
 		...angular({
+			experimental: {
+				useAngularCompilationAPI: opts.useAngularCompilationAPI,
+			},
 			liveReload: false, // Disable live reload in favor of HMR
 			tsconfig: tsConfig,
 		}),
@@ -212,19 +311,36 @@ function createAngularPlugins(): Plugin[] {
 	];
 }
 
-export const angularConfig = ({ mode }): UserConfig => {
-	const plugins = createAngularPlugins();
+export const angularConfig = ({ mode }: { mode: string }): UserConfig => {
+	const useSingleBundleDevOutput = mode === 'development' && !hmrActive;
+	const plugins = createAngularPlugins({
+		// Vite build --watch with the legacy Analog compilation path can regress
+		// Angular app sources from Ivy output back to decorator emit on rebuild.
+		// Restrict the newer compilation API to NativeScript's development no-HMR
+		// flow, which is where the unstable rebuilds occur today.
+		useAngularCompilationAPI: useSingleBundleDevOutput,
+	});
 	const disableAnimations = true;
 	//process.env.NS_DISABLE_NG_ANIMATIONS === "1" ||
 	//process.env.NS_DISABLE_NG_ANIMATIONS === "true";
 
 	// Post-link emitted chunks to catch any remaining partial declarations that slipped through
 	// due to plugin order or external transforms.
+	const applyAngularChunkPostProcessing = (code: string, options: { vendorInjectExport?: string } = {}) => {
+		const codeWithInjectables = synthesizeMissingInjectableFactories(code, {
+			vendorInjectExport: options.vendorInjectExport,
+		});
+		const codeWithCtorParameters = synthesizeDecoratorCtorParameters(codeWithInjectables);
+		return inlineDecoratorComponentTemplates(codeWithCtorParameters, {
+			projectRoot: process.cwd(),
+		});
+	};
+
 	const postLinker = {
 		name: 'ns-angular-linker-post',
 		apply: 'build' as const,
 		enforce: 'post' as const,
-		async generateBundle(_options, bundle) {
+		async generateBundle(_options: any, bundle: any) {
 			function isNsAngularPolyfillsChunk(chunk: any): boolean {
 				if (!chunk || !(chunk as any).modules) return false;
 				return Object.keys((chunk as any).modules).some((m) => m.includes('node_modules/@nativescript/angular/fesm2022/nativescript-angular-polyfills.mjs'));
@@ -262,13 +378,7 @@ export const angularConfig = ({ mode }): UserConfig => {
 							plugins: [freshPlugin],
 						});
 						const linkedCode = res?.code && res.code !== code ? res.code : code;
-						const codeWithInjectables = synthesizeMissingInjectableFactories(linkedCode, {
-							vendorInjectExport,
-						});
-						const codeWithCtorParameters = synthesizeDecoratorCtorParameters(codeWithInjectables);
-						const finalCode = inlineDecoratorComponentTemplates(codeWithCtorParameters, {
-							projectRoot: process.cwd(),
-						});
+						const finalCode = applyAngularChunkPostProcessing(linkedCode, { vendorInjectExport });
 						if (finalCode !== code) {
 							(chunk as any).code = finalCode;
 							if (debug) {
@@ -331,31 +441,35 @@ export const angularConfig = ({ mode }): UserConfig => {
 		enforce: 'post' as const,
 		async renderChunk(code: string, chunk: any) {
 			if (!code) return null;
-			if (!containsRealNgDeclare(code)) return null;
 			const filename = chunk.fileName || chunk.name || 'chunk.mjs';
 			const debug = process.env.VITE_DEBUG_LOGS === '1' || process.env.VITE_DEBUG_LOGS === 'true';
 			try {
-				const { babel } = await ensureSharedAngularLinker(process.cwd());
-				if (!babel) return null;
-				const fileSystem = await resolveAngularFileSystem(process.cwd());
-				// Fresh plugin per chunk — avoids stale linker state across watch-mode rebuilds
-				const freshPlugin = (await importLinkerFactory())?.({ sourceMapping: false, fileSystem } as any);
-				if (!freshPlugin) return null;
-				const runLink = async (input: string) => {
-					const result = await (babel as any).transformAsync(input, {
-						filename,
-						configFile: false,
-						babelrc: false,
-						sourceMaps: false,
-						compact: false,
-						plugins: [freshPlugin],
-					});
-					return result?.code ?? input;
-				};
-				let transformed = await runLink(code);
-				if (containsRealNgDeclare(transformed)) {
-					transformed = await runLink(transformed);
+				let transformed = code;
+				if (containsRealNgDeclare(code)) {
+					const { babel } = await ensureSharedAngularLinker(process.cwd());
+					if (!babel) return null;
+					const fileSystem = await resolveAngularFileSystem(process.cwd());
+					// Fresh plugin per chunk — avoids stale linker state across watch-mode rebuilds
+					const freshPlugin = (await importLinkerFactory())?.({ sourceMapping: false, fileSystem } as any);
+					if (!freshPlugin) return null;
+					const runLink = async (input: string) => {
+						const result = await (babel as any).transformAsync(input, {
+							filename,
+							configFile: false,
+							babelrc: false,
+							sourceMaps: false,
+							compact: false,
+							plugins: [freshPlugin],
+						});
+						return result?.code ?? input;
+					};
+					transformed = await runLink(code);
+					if (containsRealNgDeclare(transformed)) {
+						transformed = await runLink(transformed);
+					}
 				}
+
+				transformed = applyAngularChunkPostProcessing(transformed);
 				if (transformed !== code) {
 					if (debug) {
 						try {
@@ -397,7 +511,7 @@ export const angularConfig = ({ mode }): UserConfig => {
 		);
 	}
 
-	return mergeConfig(baseConfig({ mode, flavor: 'angular' }), {
+	const config = mergeConfig(baseConfig({ mode, flavor: 'angular' }), {
 		plugins: [...plugins, ...(enableRollupLinker ? [angularRollupLinker(process.cwd())] : []), renderChunkLinker, postLinker],
 		resolve: {
 			alias: angularAliases,
@@ -417,4 +531,22 @@ export const angularConfig = ({ mode }): UserConfig => {
 			rolldownOptions: { plugins: [] },
 		},
 	});
+
+	if (useSingleBundleDevOutput) {
+		const build = (config.build ??= {}) as NonNullable<UserConfig['build']> as Record<string, any>;
+		const rolldownOptions = (build.rolldownOptions ??= {}) as Record<string, any>;
+		const outputConfigs = Array.isArray(rolldownOptions.output) ? rolldownOptions.output : [rolldownOptions.output ?? {}];
+
+		for (const output of outputConfigs) {
+			// Angular non-HMR reloads are more reliable when rebuilds keep a single boot bundle.
+			// This avoids watch-time chunk alias/name drift that can leave the native app reloading into stale split points.
+			delete output.manualChunks;
+			delete output.chunkFileNames;
+			output.codeSplitting = false;
+		}
+
+		rolldownOptions.output = Array.isArray(rolldownOptions.output) ? outputConfigs : outputConfigs[0];
+	}
+
+	return config;
 };

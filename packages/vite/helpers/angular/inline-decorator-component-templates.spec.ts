@@ -49,6 +49,27 @@ AppComponent = __decorate([
 		expect(output).not.toContain('templateUrl: "./app.component.html"');
 	});
 
+	it('inlines templateUrl when the bundled output uses an aliased __decorate helper', () => {
+		const projectRoot = mkdtempSync(join(tmpdir(), 'ns-inline-component-'));
+		mkdirSync(join(projectRoot, 'src/app'), { recursive: true });
+		writeFileSync(join(projectRoot, 'src/app/app.component.html'), '<Label text="Decorate Alias" />');
+
+		const input = `
+//#region src/app/app.component.ts
+var AppComponent = class AppComponent {
+};
+AppComponent = __decorate$8([
+    Component({ selector: "hk-app", templateUrl: "./app.component.html" })
+], AppComponent);
+//#endregion
+`;
+
+		const output = inlineDecoratorComponentTemplates(input, { projectRoot });
+
+		expect(output).toContain('template: "<Label text=\\"Decorate Alias\\" />"');
+		expect(output).not.toContain('templateUrl: "./app.component.html"');
+	});
+
 	it('normalizes region paths that append a ts module suffix', () => {
 		const projectRoot = mkdtempSync(join(tmpdir(), 'ns-inline-component-'));
 		mkdirSync(join(projectRoot, 'src/app/caregiver'), { recursive: true });

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
-const DECORATE_ASSIGNMENT_RE = /(^|[^\w$.])([A-Za-z_$][\w$]*)\s*=\s*__decorate\s*\(/gm;
+const DECORATE_ASSIGNMENT_RE = /(^|[^\w$.])([A-Za-z_$][\w$]*)\s*=\s*__decorate(?:\$\w+)?\s*\(/gm;
 const REGION_RE = /\/\/#region\s+([^\n]+)/g;
 const REGION_SOURCE_SUFFIX_RE = /\.(?:[cm]?[jt]sx?)(?=\/)/;
 
