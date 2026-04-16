@@ -630,19 +630,13 @@ export class FileSystemAccess {
 		try {
 			const fileManager = NSFileManager.defaultManager;
 			if (!this.folderExists(path)) {
-				if (onError) {
-					onError(new Error("Failed to enum files for folder '" + path + "': no folder exists at path"));
-				}
-
+				console.error("Failed to enum files for folder '" + path + "': no folder exists at path");
 				return;
 			}
 
 			const enumerator = fileManager.enumeratorAtPath(path);
 			if (!enumerator) {
-				if (onError) {
-					onError(new Error("Failed to enum files for folder '" + path + "': unable to create directory enumerator"));
-				}
-
+				console.error("Failed to enum files for folder '" + path + "': unable to create directory enumerator");
 				return;
 			}
 
