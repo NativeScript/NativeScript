@@ -629,19 +629,22 @@ export class FileSystemAccess {
 	private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
 		try {
 			const fileManager = NSFileManager.defaultManager;
-			let files: NSArray<string>;
-			try {
-				files = fileManager.contentsOfDirectoryAtPathError(path);
-			} catch (ex) {
+			const enumerator = fileManager.enumeratorAtPath(path);
+			if (!enumerator) {
 				if (onError) {
-					onError(new Error("Failed to enum files for folder '" + path + "': " + ex));
+					onError(new Error("Failed to enum files for folder '" + path + "'"));
 				}
 
 				return;
 			}
 
-			for (let i = 0; i < files.count; i++) {
-				const file = files.objectAtIndex(i);
+			let file = enumerator.nextObject() as string;
+			while (file) {
+				// Only surface direct children to match the previous shallow enumeration contract.
+				if (enumerator.level > 1) {
+					file = enumerator.nextObject() as string;
+					continue;
+				}
 
 				const info = {
 					path: this.concatPath(path, file),
@@ -649,7 +652,9 @@ export class FileSystemAccess {
 					extension: '',
 				};
 
-				if (!this.folderExists(this.joinPath(path, file))) {
+				if (this.folderExists(this.joinPath(path, file))) {
+					enumerator.skipDescendants();
+				} else {
 					info.extension = this.getFileExtension(info.path);
 				}
 
@@ -658,6 +663,8 @@ export class FileSystemAccess {
 					// the callback returned false meaning we should stop the iteration
 					break;
 				}
+
+				file = enumerator.nextObject() as string;
 			}
 		} catch (ex) {
 			if (onError) {
