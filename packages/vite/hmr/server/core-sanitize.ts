@@ -210,23 +210,20 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
 }
 
 /**
- * Determine whether a `/ns/core` bridge URL points to a deep subpath module.
+ * Determine whether a `/ns/core` bridge URL points to a real subpath module.
  *
- * Deep subpath modules (e.g., `/ns/core?p=ui/core/view-base/index.js`) serve
- * real ESM content with real named exports via Vite's transform pipeline.
- * The main proxy bridge (`/ns/core`, `/ns/core?p=index.js`) only exports a
- * default Proxy and requires named imports to be destructured from it.
- *
- * The distinction: a deep subpath has a `?p=` query parameter whose value
- * contains `/` (indicating a nested module path like `data/observable`).
+ * Any `/ns/core?p=...` module now serves real ESM content with real named
+ * exports via Vite's transform pipeline, including shallow paths like
+ * `/ns/core?p=index.js` and `/ns/core?p=utils`.
+ * The main proxy bridge (`/ns/core`) still only exports a default Proxy and
+ * requires named imports to be destructured from it.
  *
  * This check is used in all named-import-to-default destructuring passes to
- * skip rewriting for deep subpaths — they have real named exports that work
+ * skip rewriting for real subpath modules — they have named exports that work
  * natively without conversion.
  */
 export function isDeepCoreSubpath(url: string): boolean {
-	const m = url.match(/\?p=([^&'"#]+)/);
-	return !!m && m[1].includes('/');
+	return /\?p=([^&'"#]+)/.test(url);
 }
 
 /**

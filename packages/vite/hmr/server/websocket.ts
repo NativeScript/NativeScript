@@ -112,6 +112,24 @@ function isNativeScriptPluginModule(spec: string): boolean {
 	return /^@nativescript\//i.test(spec || '') && !isNativeScriptCoreModule(spec || '');
 }
 
+function isLikelyNativeScriptRuntimePluginSpecifier(spec: string): boolean {
+	if (!spec) return false;
+	const s = spec.replace(PAT.QUERY_PATTERN, '');
+	if (/^(?:\.|\/|https?:\/\/)/i.test(s)) return false;
+	if (s.startsWith('@@/')) return false;
+	if (s.startsWith('~/')) return false;
+	if (s.startsWith('@/')) return false;
+	if (/\.vue(?:\?|$)/i.test(s)) return false;
+
+	const root = extractRootPackageName(s) || s;
+	if (!root) return false;
+	if (isNativeScriptCoreModule(root)) return false;
+	if (/^(?:vue|nativescript-vue)(?:\b|\/)/i.test(root)) return false;
+	if (/^@nativescript\//i.test(root)) return true;
+	if (/^(?:@nativescript-community|@nstudio|@mleleux)\//i.test(root)) return true;
+	return /(?:^|\/)nativescript(?:$|[-_])/i.test(root);
+}
+
 // Looser detector for NativeScript plugin-style specifiers that should be resolved
 // via device require() rather than HTTP during HMR. This includes popular community
 // scopes in addition to @nativescript/* (excluding core).
@@ -133,7 +151,271 @@ function isLikelyNativeScriptPluginSpecifier(spec: string): boolean {
 	return true;
 }
 
-export function ensureNativeScriptModuleBindings(code: string): string {
+export function tryReadRawExplicitJavaScriptModule(spec: string, projectRoot: string): { code: string; resolvedId: string } | null {
+	if (!spec || !spec.startsWith('/')) return null;
+	if (spec.startsWith('/@id/') || spec.startsWith('/@fs/')) return null;
+	if (!/\.js$/i.test(spec) || /\.(?:mjs|cjs)$/i.test(spec)) return null;
+
+	// NativeScript runtime plugins rely on Vite's transform pipeline to apply
+	// platform-aware entry resolution and preserve root-entry routing semantics.
+	// Reading their on-disk JS directly recreates raw relative imports such as
+	// `./gesturehandler`, which can reintroduce HTTP ESM cycles during HMR.
+	try {
+		const nodeModulesSpecifier = normalizeNodeModulesSpecifier(spec);
+		if (nodeModulesSpecifier) {
+			const pkgName = extractRootPackageName(nodeModulesSpecifier);
+			if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName)) {
+				return null;
+			}
+		}
+	} catch {}
+
+	const root = path.resolve(projectRoot);
+	const absPath = path.resolve(root, `.${spec}`);
+	const rel = path.relative(root, absPath);
+	if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+	if (!existsSync(absPath)) return null;
+
+	try {
+		const code = readFileSync(absPath, 'utf-8');
+		if (/from\s*['"](?:node:)?module['"]/.test(code) || /\bcreateRequire\b/.test(code)) {
+			return null;
+		}
+
+		return {
+			code,
+			resolvedId: spec,
+		};
+	} catch {
+		return null;
+	}
+}
+
+function canonicalizeTransformRequestCacheKey(url: string, projectRoot: string): string {
+	if (!url) return url;
+
+	const [rawPath, rawQuery = ''] = url.split('?', 2);
+	let normalizedPath = rawPath;
+	const root = projectRoot ? projectRoot.replace(/\\/g, '/') : '';
+
+	if (normalizedPath.startsWith('/@fs/')) {
+		const fsPath = normalizedPath.slice('/@fs'.length).replace(/\\/g, '/');
+		if (root && fsPath.startsWith(root)) {
+			const rel = fsPath.slice(root.length);
+			normalizedPath = rel.startsWith('/') ? rel : `/${rel}`;
+		}
+	} else if (root && normalizedPath.replace(/\\/g, '/').startsWith(root)) {
+		const rel = normalizedPath.replace(/\\/g, '/').slice(root.length);
+		normalizedPath = rel.startsWith('/') ? rel : `/${rel}`;
+	}
+
+	if (!rawQuery) {
+		return normalizedPath;
+	}
+
+	const params = new URLSearchParams(rawQuery);
+	params.delete('t');
+	params.delete('v');
+	const kept = Array.from(params.entries()).sort(([leftKey, leftValue], [rightKey, rightValue]) => {
+		if (leftKey === rightKey) {
+			return leftValue.localeCompare(rightValue);
+		}
+		return leftKey.localeCompare(rightKey);
+	});
+	if (!kept.length) {
+		return normalizedPath;
+	}
+
+	const normalizedQuery = new URLSearchParams();
+	for (const [key, value] of kept) {
+		normalizedQuery.append(key, value);
+	}
+
+	return `${normalizedPath}?${normalizedQuery.toString()}`;
+}
+
+type HotUpdateGraphModuleLike = {
+	id?: string | null;
+	importedModules?: Iterable<{ id?: string | null }>;
+	importers?: Iterable<HotUpdateGraphModuleLike>;
+};
+
+export function collectGraphUpdateModulesForHotUpdate(options: { file: string; flavor: string; modules?: Iterable<HotUpdateGraphModuleLike>; getModuleById: (id: string) => HotUpdateGraphModuleLike | undefined }): HotUpdateGraphModuleLike[] {
+	const targets = new Map<string, HotUpdateGraphModuleLike>();
+	const addTarget = (mod?: HotUpdateGraphModuleLike | null) => {
+		const id = mod?.id?.replace(/\?.*$/, '');
+		if (!id) return;
+		if (!targets.has(id)) {
+			targets.set(id, mod!);
+		}
+	};
+
+	if (options.flavor === 'angular' && /\.(html|htm)$/i.test(options.file)) {
+		for (const mod of options.modules || []) {
+			for (const importer of mod?.importers || []) {
+				const importerId = importer?.id || '';
+				if (/\.[cm]?[jt]sx?(?:$|\?)/i.test(importerId)) {
+					addTarget(importer);
+				}
+			}
+		}
+
+		if (!targets.size) {
+			addTarget(options.getModuleById(options.file.replace(/\.(html|htm)$/i, '.ts')));
+			addTarget(options.getModuleById(options.file.replace(/\.(html|htm)$/i, '.js')));
+		}
+
+		return Array.from(targets.values());
+	}
+
+	if (!options.file.endsWith('.vue')) {
+		addTarget(options.getModuleById(options.file) || options.getModuleById(options.file + '?vue'));
+	}
+
+	return Array.from(targets.values());
+}
+
+type SharedTransformRequestRunnerOptions = {
+	maxConcurrent?: number;
+	resultCacheTtlMs?: number;
+	getResultCacheKey?: (url: string) => string;
+};
+
+export function createSharedTransformRequestRunner(transformRequest: (url: string) => Promise<TransformResult | null>, onTimeout?: (url: string, timeoutMs: number) => void, options: SharedTransformRequestRunnerOptions = {}): (url: string, timeoutMs?: number) => Promise<TransformResult | null> {
+	const inFlight = new Map<string, { execution: Promise<TransformResult | null>; started: Promise<void> }>();
+	const recentResults = new Map<string, { expiresAt: number; result: TransformResult }>();
+	const queue: Array<() => void> = [];
+	const maxConcurrent = Math.max(1, Math.floor(options.maxConcurrent ?? 1));
+	const resultCacheTtlMs = Math.max(0, Math.floor(options.resultCacheTtlMs ?? 0));
+	const getResultCacheKey = options.getResultCacheKey ?? ((url: string) => url);
+	let activeCount = 0;
+
+	const pruneRecentResults = () => {
+		if (!recentResults.size) {
+			return;
+		}
+
+		const now = Date.now();
+		for (const [key, entry] of recentResults) {
+			if (entry.expiresAt <= now) {
+				recentResults.delete(key);
+			}
+		}
+	};
+
+	const rememberRecentResult = (url: string, result: TransformResult | null) => {
+		if (!result || resultCacheTtlMs <= 0) {
+			return;
+		}
+
+		const cacheKey = getResultCacheKey(url);
+		recentResults.delete(cacheKey);
+		recentResults.set(cacheKey, {
+			expiresAt: Date.now() + resultCacheTtlMs,
+			result,
+		});
+
+		if (recentResults.size > 512) {
+			const oldestKey = recentResults.keys().next().value;
+			if (oldestKey) {
+				recentResults.delete(oldestKey);
+			}
+		}
+	};
+
+	const runNext = () => {
+		while (activeCount < maxConcurrent) {
+			const next = queue.shift();
+			if (!next) {
+				return;
+			}
+
+			activeCount += 1;
+			next();
+		}
+	};
+
+	const schedule = <T>(task: () => Promise<T>): { execution: Promise<T>; started: Promise<void> } => {
+		let resolveStarted: (() => void) | null = null;
+		const started = new Promise<void>((resolve) => {
+			resolveStarted = resolve;
+		});
+
+		const execution = new Promise<T>((resolve, reject) => {
+			queue.push(() => {
+				let started: Promise<T>;
+				resolveStarted?.();
+				try {
+					started = Promise.resolve(task());
+				} catch (error) {
+					started = Promise.reject(error);
+				}
+
+				started.then(resolve, reject).finally(() => {
+					activeCount = Math.max(0, activeCount - 1);
+					runNext();
+				});
+			});
+
+			runNext();
+		});
+
+		return { execution, started };
+	};
+
+	const withTimeout = (entry: { execution: Promise<TransformResult | null>; started: Promise<void> }, url: string, timeoutMs: number) => {
+		if (!(timeoutMs > 0)) {
+			return entry.execution;
+		}
+
+		return entry.started.then(
+			() =>
+				new Promise<TransformResult | null>((resolve, reject) => {
+					const timer = setTimeout(() => {
+						try {
+							onTimeout?.(url, timeoutMs);
+						} catch {}
+					}, timeoutMs);
+
+					entry.execution.then(resolve, reject).finally(() => {
+						clearTimeout(timer);
+					});
+				}),
+		);
+	};
+
+	return (url: string, timeoutMs = 120000) => {
+		pruneRecentResults();
+		const recent = recentResults.get(getResultCacheKey(url));
+		if (recent && recent.expiresAt > Date.now()) {
+			return Promise.resolve(recent.result);
+		}
+
+		const existingExecution = inFlight.get(url);
+		if (existingExecution) {
+			return withTimeout(existingExecution, url, timeoutMs);
+		}
+
+		const scheduled = schedule(async () => {
+			const result = await Promise.resolve(transformRequest(url));
+			rememberRecentResult(url, result);
+			return result;
+		});
+		let execution: Promise<TransformResult | null>;
+		execution = scheduled.execution.finally(() => {
+			if (inFlight.get(url)?.execution === execution) {
+				inFlight.delete(url);
+			}
+		});
+
+		const entry = { execution, started: scheduled.started };
+		inFlight.set(url, entry);
+
+		return withTimeout(entry, url, timeoutMs);
+	};
+}
+
+export function ensureNativeScriptModuleBindings(code: string, options?: { preserveNonPluginVendorImports?: boolean }): string {
 	// Proceed even if a vendor manifest isn't available; we'll still vendor-bind
 	// likely NativeScript plugin-style specifiers (e.g., 'pinia', '@scope/pkg')
 	// via require() so device can resolve them from the app bundle.
@@ -192,6 +474,11 @@ export function ensureNativeScriptModuleBindings(code: string): string {
 		}
 		const specifier = rawSpec.replace(PAT.QUERY_PATTERN, '');
 		let canonical = resolveVendorFromCandidate(specifier);
+		const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier);
+		if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier) {
+			preservedImports.push(original);
+			return pfx || '';
+		}
 		// If not found in vendor manifest, treat well-known NativeScript plugin-style packages
 		// as require() based modules so the device can resolve them from the app bundle or vendor.
 		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier)) {
@@ -242,6 +529,11 @@ export function ensureNativeScriptModuleBindings(code: string): string {
 		const original = full.replace(/^\n/, '');
 		const specifier = rawSpec.replace(PAT.QUERY_PATTERN, '');
 		let canonical = resolveVendorFromCandidate(specifier);
+		const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier);
+		if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier) {
+			preservedImports.push(original);
+			return _pfx || '';
+		}
 		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier)) {
 			canonical = specifier;
 		}
@@ -345,6 +637,33 @@ function guardBareDynamicImports(code: string): string {
 		const rewritten = code.replace(/\bimport\s*\(/g, '__nsDynImport(');
 		if (rewritten === code && !inject) return code;
 		return inject + rewritten;
+	} catch {
+		return code;
+	}
+}
+
+function ensureDynamicHmrImportHelper(code: string): string {
+	try {
+		if (!code.includes('__nsDynamicHmrImport(')) return code;
+		if (code.includes('const __nsDynamicHmrImport =')) return code;
+		const helper =
+			'const __nsDynamicHmrImport = (spec) => {\n' +
+			"  const __nsm = '/ns' + '/m';\n" +
+			"  try { if (!spec || spec === '@') { return import(new URL(__nsm + '/__invalid_at__.mjs', import.meta.url).href); } } catch {}\n" +
+			'  try {\n' +
+			"    if (typeof spec === 'string' && spec.startsWith(__nsm + '/')) {\n" +
+			"      if (spec.includes('/__ns_hmr__/')) { return import(new URL(spec, import.meta.url).href); }\n" +
+			'      const g = globalThis;\n' +
+			"      const nonce = typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;\n" +
+			"      const tag = nonce ? `n${nonce}` : 'live';\n" +
+			"      const nextPath = __nsm + '/__ns_hmr__/' + encodeURIComponent(tag) + spec.slice(__nsm.length);\n" +
+			"      const origin = typeof g.__NS_HTTP_ORIGIN__ === 'string' && /^https?:\\/\\//.test(g.__NS_HTTP_ORIGIN__) ? g.__NS_HTTP_ORIGIN__ : '';\n" +
+			'      return import(origin ? origin + nextPath : new URL(nextPath, import.meta.url).href);\n' +
+			'    }\n' +
+			'  } catch {}\n' +
+			'  return import(spec);\n' +
+			'};\n';
+		return helper + code;
 	} catch {
 		return code;
 	}
@@ -482,6 +801,42 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
 	}
 
 	return null;
+}
+
+function resolveCandidateFilePath(candidate: string, projectRoot: string): string | null {
+	const cleaned = candidate.replace(PAT.QUERY_PATTERN, '');
+	if (!cleaned) return null;
+
+	const root = path.resolve(projectRoot);
+	let absPath: string | null = null;
+
+	if (cleaned.startsWith('/@fs/')) {
+		absPath = cleaned.slice('/@fs'.length);
+	} else if (cleaned.includes('/node_modules/')) {
+		absPath = path.resolve(root, `.${cleaned}`);
+	} else if (/^(?:[A-Za-z]:)?\//.test(cleaned)) {
+		absPath = path.resolve(cleaned);
+	}
+
+	if (!absPath) {
+		return null;
+	}
+
+	const rel = path.relative(root, absPath);
+	if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
+		return null;
+	}
+
+	return existsSync(absPath) ? absPath : null;
+}
+
+export function filterExistingNodeModulesTransformCandidates(spec: string, candidates: string[], projectRoot: string): string[] {
+	const cleanedSpec = spec.replace(PAT.QUERY_PATTERN, '');
+	if (!cleanedSpec.includes('/node_modules/')) {
+		return candidates;
+	}
+
+	return candidates.filter((candidate) => !!resolveCandidateFilePath(candidate, projectRoot));
 }
 
 function findVendorPrefix(specifier: string, manifest: NonNullable<ReturnType<typeof getVendorManifest>>): string | null {
@@ -676,6 +1031,24 @@ function extractRootPackageName(spec: string): string {
  */
 function resolveVendorRouting(nodeModulesSpec: string, projectRoot: string): { route: 'vendor'; bareSpec: string } | { route: 'http' } | null {
 	const pkgName = extractRootPackageName(nodeModulesSpec);
+	const subpath = nodeModulesSpec.slice(pkgName.length).replace(/^\//, '');
+	const pkgBaseName = pkgName.split('/').pop() || '';
+	const isRootLevelMainEntry = (() => {
+		if (!subpath || subpath.includes('/')) {
+			return false;
+		}
+		const withoutExt = subpath.replace(/\.[^.]+$/, '');
+		const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
+		return withoutPlatform === 'index' || withoutPlatform === pkgBaseName;
+	})();
+
+	// Runtime NativeScript plugins must preserve require()-style loading even when
+	// they are not part of the vendor manifest. Many community packages rely on
+	// singleton side effects or tolerate CommonJS circular initialization that
+	// would fail under plain HTTP ESM evaluation.
+	if (isLikelyNativeScriptRuntimePluginSpecifier(pkgName) && (!subpath || isRootLevelMainEntry)) {
+		return { route: 'vendor', bareSpec: pkgName };
+	}
 
 	// Check if this package is in the vendor manifest
 	const manifest = getVendorManifest();
@@ -683,16 +1056,19 @@ function resolveVendorRouting(nodeModulesSpec: string, projectRoot: string): { r
 		return null;
 	}
 
-	// Platform-specific files always go via HTTP — the ns-vendor:// protocol
-	// does not reliably serve named ES module exports, so packages with
-	// platform-specific main entries (e.g., index.ios.js) must be served
-	// individually over HTTP where the full ESM export surface is preserved.
+	// Platform-specific NativeScript plugin main entries should still use the
+	// vendor bridge so device require() preserves singleton side effects.
+	// Their named/default bindings are synthesized later by
+	// ensureNativeScriptModuleBindings, so they do not rely on ns-vendor:// ESM
+	// exports directly.
+	if (/\.(ios|android|visionos)\.(js|ts|mjs|mts)$/i.test(nodeModulesSpec) && isLikelyNativeScriptRuntimePluginSpecifier(pkgName) && isRootLevelMainEntry) {
+		return { route: 'vendor', bareSpec: pkgName };
+	}
+
+	// Other platform-specific files still go via HTTP.
 	if (/\.(ios|android|visionos)\.(js|ts|mjs|mts)$/.test(nodeModulesSpec)) {
 		return { route: 'http' };
 	}
-
-	// Extract the subpath within the package
-	const subpath = nodeModulesSpec.slice(pkgName.length).replace(/^\//, '');
 
 	// No subpath → bare package specifier → vendor bridge
 	if (!subpath) {
@@ -715,7 +1091,6 @@ function resolveVendorRouting(nodeModulesSpec: string, projectRoot: string): { r
 	// reliably serve all named ES exports for complex packages.
 	if (!subpath.includes('/')) {
 		const lastSegment = subpath.replace(/\.[^.]+$/, '');
-		const pkgBaseName = pkgName.split('/').pop() || '';
 		if (lastSegment === 'index' || lastSegment === pkgBaseName || lastSegment.startsWith(pkgBaseName + '.')) {
 			return { route: 'vendor', bareSpec: pkgName };
 		}
@@ -946,6 +1321,13 @@ function ensureVersionedCoreImports(code: string, origin: string, ver: number): 
 		code = code.replace(/import\(\s*(["'])\/ns\/core(\?p=[^"']+)?\1\s*\)/g, (_m, q: string, qp?: string) => `import(${q}/ns/core/${ver}${qp || ''}${q})`);
 	} catch {}
 	return code;
+}
+
+export function buildVersionedCoreSubpathAliasModule(sub: string, ver: number | string): string {
+	const normalizedSub = (sub || '').replace(/^\/+/, '');
+	const canonicalUrl = `/ns/core/${ver}?p=${normalizedSub}`;
+
+	return `import * as __ns_core_alias from ${JSON.stringify(canonicalUrl)};\n` + `export default (__ns_core_alias.default || __ns_core_alias);\n` + `export * from ${JSON.stringify(canonicalUrl)};\n`;
 }
 
 // Hardened removal of Vite's virtual dynamic-import-helper. Some variants (side-effect only
@@ -1537,6 +1919,67 @@ function deduplicateLinkerImports(code: string): string {
 	}
 }
 
+export function wrapCommonJsModuleForDevice(code: string): string {
+	if (!code) return code;
+
+	try {
+		const hasExportDefault = /\bexport\s+default\b/.test(code) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(code);
+		const hasNamedExports = /\bexport\s+(?:const|let|var|function|class|async)\b/.test(code) || /\bexport\s*\{/.test(code);
+		const hasCjsExports = /\bmodule\s*\.\s*exports\b/.test(code) || /\bexports\s*\.\s*\w/.test(code);
+		if (hasExportDefault || hasNamedExports || !hasCjsExports) {
+			return code;
+		}
+
+		const namedExports = new Set<string>();
+		const exportsRe = /\bexports\s*\.\s*([A-Za-z_$][\w$]*)\s*=/g;
+		let em: RegExpExecArray | null;
+		while ((em = exportsRe.exec(code)) !== null) {
+			const name = em[1];
+			if (name !== '__esModule' && name !== 'default') {
+				namedExports.add(name);
+			}
+		}
+
+		const defPropRe = /Object\s*\.\s*defineProperty\s*\(\s*exports\s*,\s*['"]([^'"]+)['"]/g;
+		while ((em = defPropRe.exec(code)) !== null) {
+			const name = em[1];
+			if (name !== '__esModule' && name !== 'default') {
+				namedExports.add(name);
+			}
+		}
+
+		let suffix = `\nvar __cjs_mod = module.exports;\nexport default __cjs_mod;\n`;
+		if (namedExports.size) {
+			const entries = Array.from(namedExports);
+			const temps = entries.map((name, i) => `var __cjs_e${i} = __cjs_mod[${JSON.stringify(name)}];`);
+			const reExports = entries.map((name, i) => `__cjs_e${i} as ${name}`);
+			suffix += `${temps.join(' ')}\nexport { ${reExports.join(', ')} };\n`;
+		}
+
+		const prelude =
+			`var module = { exports: {} }; var exports = module.exports;\n` +
+			`var __ns_cjs_require_base = (typeof globalThis.__nsBaseRequire === 'function' ? globalThis.__nsBaseRequire : (typeof globalThis.__nsRequire === 'function' ? globalThis.__nsRequire : (typeof globalThis.require === 'function' ? globalThis.require : undefined)));\n` +
+			`var require = function(spec) {\n` +
+			`  if (!__ns_cjs_require_base) { throw new Error('require is not defined'); }\n` +
+			`  var mod = __ns_cjs_require_base(spec);\n` +
+			`  try {\n` +
+			`    if (mod && (typeof mod === 'object' || typeof mod === 'function') && mod.default !== undefined) {\n` +
+			`      var keys = [];\n` +
+			`      try { keys = Object.keys(mod); } catch (e) {}\n` +
+			`      var defaultOnly = keys.length === 1 && keys[0] === 'default';\n` +
+			`      var esModuleOnly = keys.length === 2 && keys.indexOf('default') !== -1 && keys.indexOf('__esModule') !== -1;\n` +
+			`      if (mod.__esModule || defaultOnly || esModuleOnly) { return mod.default; }\n` +
+			`    }\n` +
+			`  } catch (e) {}\n` +
+			`  return mod;\n` +
+			`};\n`;
+
+		return `${prelude}${code}${suffix}`;
+	} catch {
+		return code;
+	}
+}
+
 /**
  * Process code for device: inject globals, remove framework imports
  */
@@ -1674,9 +2117,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	// __nsVendorRequire + __nsPick rewrite. Vendor imports stay as bare
 	// specifiers so the device-side import map resolves them via V8's native
 	// module system, which correctly handles export * re-exports.
-	if (!preserveVendorImports) {
-		result = ensureNativeScriptModuleBindings(result);
-	}
+	result = preserveVendorImports ? ensureNativeScriptModuleBindings(result, { preserveNonPluginVendorImports: true }) : ensureNativeScriptModuleBindings(result);
 
 	// Repair any accidental "import ... = expr" assignments that may have slipped in.
 	try {
@@ -1802,9 +2243,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 
 	// Ensure vendor bindings also apply after potential wrapper injections above
 	// (idempotent: second pass will be a no-op if imports already consumed).
-	if (!preserveVendorImports) {
-		result = ensureNativeScriptModuleBindings(result);
-	}
+	result = preserveVendorImports ? ensureNativeScriptModuleBindings(result, { preserveNonPluginVendorImports: true }) : ensureNativeScriptModuleBindings(result);
 	try {
 		result = repairImportEqualsAssignments(result);
 	} catch {}
@@ -2258,6 +2697,7 @@ function dedupeRtNamedImportsAgainstDestructures(code: string): string {
 export function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
 	let result = code;
 	const httpOriginSafe = httpOrigin;
+	const isDynamicImportPrefix = (prefix: string): boolean => /import\(\s*["']?$/.test(prefix.trimStart());
 	const importerDir = path.posix.dirname(importerPath);
 	// Determine importer output relative path (project-relative .mjs) to compute relative imports consistently
 	const importerOutRel = outputDirOverrideRel || getProjectRelativeImportPath(importerPath, projectRoot) || stripToProjectRelative(importerPath, projectRoot).replace(/\.(ts|js|tsx|jsx|mjs|mts|cts)$/i, '.mjs');
@@ -2517,6 +2957,10 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			const baseId = absMaybe ? toAppModuleBaseId(absMaybe, projectRoot) : null; // e.g. /src/foo.mjs
 			if (baseId) {
 				const httpSpec = `/ns/m${baseId}`;
+				if (isDynamicImportPrefix(prefix)) {
+					if (verbose) console.log(`[rewrite][http] dynamic relative app import → ${httpSpec} (from ${spec})`);
+					return `__nsDynamicHmrImport(${JSON.stringify(httpSpec)})`;
+				}
 				if (verbose) console.log(`[rewrite][http] relative app import → ${httpSpec} (from ${spec})`);
 				return `${prefix}${httpSpec}${suffix}`;
 			}
@@ -2528,6 +2972,10 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			const baseId = toAppModuleBaseId(spec, projectRoot);
 			if (baseId) {
 				const httpSpec = `/ns/m${baseId}`;
+				if (isDynamicImportPrefix(prefix)) {
+					if (verbose) console.log(`[rewrite][http] dynamic app import → ${httpSpec} (from ${spec})`);
+					return `__nsDynamicHmrImport(${JSON.stringify(httpSpec)})`;
+				}
 				if (verbose) console.log(`[rewrite][http] absolute app import → ${httpSpec} (from ${spec})`);
 				return `${prefix}${httpSpec}${suffix}`;
 			}
@@ -2564,6 +3012,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	// Side-effect imports (import "spec") — must run AFTER named-import patterns
 	// since IMPORT_PATTERN_1 already handles `import ... from "spec"`.
 	result = result.replace(PAT.IMPORT_PATTERN_SIDE_EFFECT, replaceVueImport);
+	result = ensureDynamicHmrImportHelper(result);
 
 	// Extra guard: map any lingering dynamic import('@') to a safe stub module path
 	// to prevent device runtime normalization errors.
@@ -2912,6 +3361,25 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			pluginRoot = (server as any).config?.root || process.cwd();
 			const httpServer = server.httpServer;
 			if (!httpServer) return;
+			// Default to serialized transform execution for deterministic HTTP HMR startup.
+			// Higher fan-out can be re-enabled explicitly via NS_VITE_HMR_TRANSFORM_CONCURRENCY.
+			const configuredTransformConcurrency = Number.parseInt(process.env.NS_VITE_HMR_TRANSFORM_CONCURRENCY || '1', 10);
+			const transformConcurrency = Number.isFinite(configuredTransformConcurrency) && configuredTransformConcurrency > 0 ? configuredTransformConcurrency : 1;
+			const configuredTransformCacheMs = Number.parseInt(process.env.NS_VITE_HMR_TRANSFORM_CACHE_MS || '15000', 10);
+			const transformCacheMs = Number.isFinite(configuredTransformCacheMs) && configuredTransformCacheMs >= 0 ? configuredTransformCacheMs : 15000;
+			const sharedTransformRequest = createSharedTransformRequestRunner(
+				(url) => server.transformRequest(url),
+				(url, timeoutMs) => {
+					try {
+						console.warn('[ns:m] slow transformRequest for', url, '(>' + timeoutMs + 'ms)');
+					} catch {}
+				},
+				{
+					maxConcurrent: transformConcurrency,
+					resultCacheTtlMs: transformCacheMs,
+					getResultCacheKey: (url) => canonicalizeTransformRequestCacheKey(url, pluginRoot),
+				},
+			);
 
 			// Attempt early vendor manifest bootstrap once per server.
 			if (!vendorBootstrapDone) {
@@ -3047,12 +3515,14 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// Transform via Vite with variant resolution (same as ws ns:fetch-module)
 					const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 					const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
+					const transformRoot = (server as any).config?.root || process.cwd();
 					const candidates: string[] = [];
 					if (hasExt) candidates.push(spec);
 					candidates.push(baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs');
+					const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, transformRoot);
 					let transformed: TransformResult | null = null;
 					let resolvedCandidate: string | null = null;
-					for (const cand of candidates) {
+					for (const cand of transformCandidates) {
 						try {
 							const r = await server.transformRequest(cand);
 							if (r?.code) {
@@ -3124,7 +3594,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							const depBase = abs.replace(/\.(ts|js|tsx|jsx|mjs|mts|cts)$/i, '');
 							if (seen.has(depBase)) continue;
 							seen.add(depBase);
-							const depCandidates = [depBase + '.ts', depBase + '.js', depBase + '.tsx', depBase + '.jsx', depBase + '.mjs', depBase + '.mts', depBase + '.cts', depBase + '.vue', depBase + '/index.ts', depBase + '/index.js', depBase + '/index.tsx', depBase + '/index.jsx', depBase + '/index.mjs'];
+							const depCandidates = filterExistingNodeModulesTransformCandidates(depBase, [depBase + '.ts', depBase + '.js', depBase + '.tsx', depBase + '.jsx', depBase + '.mjs', depBase + '.mts', depBase + '.cts', depBase + '.vue', depBase + '/index.ts', depBase + '/index.js', depBase + '/index.tsx', depBase + '/index.jsx', depBase + '/index.mjs'], transformRoot);
 							let depTrans: TransformResult | null = null;
 							let depResolved: string | null = null;
 							for (const c of depCandidates) {
@@ -3202,6 +3672,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						res.end('export {}\n');
 						return;
 					}
+					const serverRoot = ((server as any).config?.root || process.cwd()) as string;
 					spec = spec.replace(/[?#].*$/, '');
 					// Accept path-based HMR cache-busting: /ns/m/__ns_hmr__/<tag>/<real-spec>
 					// The iOS HTTP ESM loader canonicalizes cache keys by stripping query params,
@@ -3214,9 +3685,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					} catch {}
 					// Normalize absolute filesystem paths back to project-relative ids (e.g. /src/app.ts)
 					try {
-						const projectRoot = ((server as any).config?.root || process.cwd()) as string;
 						const toPosix = (p: string) => p.replace(/\\/g, '/');
-						const rootPosix = toPosix(projectRoot);
+						const rootPosix = toPosix(serverRoot);
 						const specPosix = toPosix(spec);
 						// If spec is an absolute path under the project root, convert to '/'+relative
 						const isAbsFs = /^\//.test(specPosix) || /^[A-Za-z]:\//.test(spec); // posix or win drive
@@ -3235,7 +3705,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					if (spec.startsWith('/@id/')) {
 						try {
 							// First try Vite's transform pipeline directly
-							const vr = await server.transformRequest(spec);
+							const vr = await sharedTransformRequest(spec);
 							if (vr?.code) {
 								res.statusCode = 200;
 								res.end(vr.code);
@@ -3263,32 +3733,32 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 					const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
 					const candidates = [...(hasExt ? [spec] : []), baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs'];
+					const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, serverRoot);
 					let transformed: TransformResult | null = null;
 					let resolvedCandidate: string | null = null;
-					// Wrap transformRequest with a timeout to prevent Vite 7+ optimizeDeps
-					// discovery from blocking the HTTP ESM pipeline indefinitely.
-					const transformWithTimeout = (url: string, timeoutMs = 30000): Promise<TransformResult | null> => {
-						return Promise.race([
-							server.transformRequest(url),
-							new Promise<null>((resolve) => {
-								setTimeout(() => {
-									try {
-										console.warn('[ns:m] transformRequest timeout for', url, '(' + timeoutMs + 'ms)');
-									} catch {}
-									resolve(null);
-								}, timeoutMs);
-							}),
-						]);
+					const rawExplicitModule = tryReadRawExplicitJavaScriptModule(spec, serverRoot);
+					if (rawExplicitModule) {
+						transformed = { code: rawExplicitModule.code } as TransformResult;
+						resolvedCandidate = rawExplicitModule.resolvedId;
+					}
+					// Queue and dedupe transformRequest calls so heavy app graphs do not
+					// overwhelm Vite with concurrent work. Slow-transform warnings start only
+					// when the transform actually begins executing, and requests stay pending
+					// until Vite returns a real result.
+					const transformWithTimeout = (url: string, timeoutMs = 120000): Promise<TransformResult | null> => {
+						return sharedTransformRequest(url, timeoutMs);
 					};
-					for (const cand of candidates) {
-						try {
-							const r = await transformWithTimeout(cand);
-							if (r?.code) {
-								transformed = r;
-								resolvedCandidate = cand;
-								break;
-							}
-						} catch {}
+					if (!transformed?.code) {
+						for (const cand of transformCandidates) {
+							try {
+								const r = await transformWithTimeout(cand);
+								if (r?.code) {
+									transformed = r;
+									resolvedCandidate = cand;
+									break;
+								}
+							} catch {}
+						}
 					}
 					// Fallback 1: ask Vite to resolve the id, then transform the resolved id (handles aliases and virtual ids)
 					if (!transformed?.code) {
@@ -3315,7 +3785,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								const rid = await (server as any).pluginContainer?.resolveId?.(bare, undefined);
 								const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
 								if (ridStr) {
-									const r = await server.transformRequest(ridStr);
+									const r = await sharedTransformRequest(ridStr);
 									if (r?.code) {
 										transformed = r;
 										resolvedCandidate = ridStr;
@@ -3327,21 +3797,22 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// Fallback 2: try /@fs absolute path under project root (Vite file system alias)
 					if (!transformed?.code) {
 						try {
-							const projectRoot = ((server as any).config?.root || process.cwd()) as string;
 							const toPosix = (p: string) => p.replace(/\\/g, '/');
-							const rootPosix = toPosix(projectRoot).replace(/\/$/, '');
+							const rootPosix = toPosix(serverRoot).replace(/\/$/, '');
 							const absPosix = `${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
 							const fsId = `/@fs${absPosix}`;
-							const r = await transformWithTimeout(fsId);
-							if (r?.code) {
-								transformed = r;
-								resolvedCandidate = fsId;
+							if (resolveCandidateFilePath(fsId, serverRoot)) {
+								const r = await transformWithTimeout(fsId);
+								if (r?.code) {
+									transformed = r;
+									resolvedCandidate = fsId;
+								}
 							}
 						} catch {}
 					}
 					// Fallback 3: try adding ?import to hint Vite's transform pipeline
 					if (!transformed?.code) {
-						for (const cand of candidates) {
+						for (const cand of transformCandidates) {
 							try {
 								const r = await transformWithTimeout(`${cand}${cand.includes('?') ? '&' : '?'}import`);
 								if (r?.code) {
@@ -3539,7 +4010,7 @@ export const piniaSymbol = p.piniaSymbol;
 						if (!transformed?.code) {
 							// Emit a module that throws with context for easier on-device debugging
 							try {
-								const tried = Array.from(new Set(candidates)).slice(0, 12);
+								const tried = Array.from(new Set(transformCandidates.length > 0 ? transformCandidates : candidates)).slice(0, 12);
 								const out = `// [ns:m] transform miss path=${spec} tried=${tried.length}\n` + `throw new Error(${JSON.stringify(`[ns/m] transform failed for ${spec} (tried ${tried.length} candidates).`)});\nexport {};\n`;
 								res.statusCode = 404;
 								res.end(out);
@@ -3625,39 +4096,7 @@ export const piniaSymbol = p.piniaSymbol;
 					//    typically fall back to `self` or `globalThis`.
 					//  - `module`, `exports` must be shims since they don't exist in ESM.
 					try {
-						const hasExportDefault = /\bexport\s+default\b/.test(code) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(code);
-						const hasNamedExports = /\bexport\s+(?:const|let|var|function|class|async)\b/.test(code) || /\bexport\s*\{/.test(code);
-						const hasCjsExports = /\bmodule\s*\.\s*exports\b/.test(code) || /\bexports\s*\.\s*\w/.test(code);
-						if (!hasExportDefault && !hasNamedExports && hasCjsExports) {
-							// Extract named export identifiers from exports.xxx = patterns
-							const namedExports = new Set<string>();
-							const exportsRe = /\bexports\s*\.\s*([A-Za-z_$][\w$]*)\s*=/g;
-							let em: RegExpExecArray | null;
-							while ((em = exportsRe.exec(code)) !== null) {
-								const name = em[1];
-								if (name !== '__esModule' && name !== 'default') {
-									namedExports.add(name);
-								}
-							}
-							// Also check Object.defineProperty(exports, 'name', ...)
-							const defPropRe = /Object\s*\.\s*defineProperty\s*\(\s*exports\s*,\s*['"]([^'"]+)['"]/g;
-							while ((em = defPropRe.exec(code)) !== null) {
-								const name = em[1];
-								if (name !== '__esModule' && name !== 'default') {
-									namedExports.add(name);
-								}
-							}
-							// Build suffix: default export + named re-exports using collision-proof
-							// temp names (__cjs_e0, __cjs_e1, ...) to avoid clashing with CJS locals.
-							let suffix = `\nvar __cjs_mod = module.exports;\nexport default __cjs_mod;\n`;
-							if (namedExports.size) {
-								const entries = Array.from(namedExports);
-								const temps = entries.map((name, i) => `var __cjs_e${i} = __cjs_mod[${JSON.stringify(name)}];`);
-								const reExports = entries.map((name, i) => `__cjs_e${i} as ${name}`);
-								suffix += `${temps.join(' ')}\nexport { ${reExports.join(', ')} };\n`;
-							}
-							code = `var module = { exports: {} }; var exports = module.exports;\n${code}${suffix}`;
-						}
+						code = wrapCommonJsModuleForDevice(code);
 					} catch {}
 					try {
 						assertNoOptimizedArtifacts(code, `NS M ${resolvedCandidate || spec}`);
@@ -4027,6 +4466,7 @@ export const piniaSymbol = p.piniaSymbol;
 					res.setHeader('Pragma', 'no-cache');
 					res.setHeader('Expires', '0');
 					const afterCore = urlObj.pathname.replace(/^\/ns\/core\/?/, '');
+					const hasExplicitVersion = /^[0-9]+$/.test(afterCore);
 					const ver = /^[0-9]+$/.test(afterCore) ? afterCore : String(graphVersion || 0);
 					// Support both query-based (?p=data/observable/index.js) and
 					// path-based (/ns/core/data/observable/index.js) subpath formats.
@@ -4034,13 +4474,25 @@ export const piniaSymbol = p.piniaSymbol;
 					const sub = urlObj.searchParams.get('p') || (afterCore && !/^[0-9]+$/.test(afterCore) ? afterCore : '');
 					const key = sub ? `@nativescript/core/${sub}` : `@nativescript/core`;
 
-					// Deep subpath imports (e.g., accessibility/accessibility-properties.js)
-					// are NOT in the vendor bundle's top-level exports. Serve the actual
-					// module content via Vite's transform pipeline instead of the proxy.
-					if (sub && sub.includes('/')) {
+					// Any @nativescript/core subpath import (including shallow ones like
+					// `utils`) may expose exports that are not available from the root
+					// vendor bundle namespace. Serve the actual transformed module content
+					// instead of the lightweight proxy bridge.
+					if (sub) {
 						try {
-							const modulePath = `/node_modules/@nativescript/core/${sub}`;
-							const transformed = await server.transformRequest(modulePath);
+							const normalizedSub = sub.replace(/^\/+/, '');
+
+							if (!hasExplicitVersion) {
+								res.statusCode = 200;
+								res.end(buildVersionedCoreSubpathAliasModule(normalizedSub, ver));
+								return;
+							}
+
+							const coreSpecifier = `@nativescript/core/${normalizedSub}`;
+							const resolved = await (server as any).pluginContainer?.resolveId?.(coreSpecifier, undefined);
+							const resolvedId = typeof resolved === 'string' ? resolved : resolved?.id || null;
+							const modulePath = resolvedId || `/node_modules/@nativescript/core/${normalizedSub}`;
+							const transformed = await sharedTransformRequest(modulePath);
 							if (transformed?.code) {
 								// Minimal pipeline: Vite already produces correct ESM.
 								// ONLY rewrite specifier strings to device-fetchable URLs.
@@ -5752,15 +6204,26 @@ export const piniaSymbol = p.piniaSymbol;
 			}
 			// Graph update for this file change (wrapped to avoid aborting rest of handler)
 			try {
-				if (!file.endsWith('.vue')) {
-					const mod = server.moduleGraph.getModuleById(file) || server.moduleGraph.getModuleById(file + '?vue');
-					if (mod) {
-						const deps = Array.from(mod.importedModules)
-							.map((m) => (m.id || '').replace(/\?.*$/, ''))
-							.filter(Boolean);
-						const transformed = await server.transformRequest(mod.id!);
-						const code = transformed?.code || '';
-						upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps);
+				const skipAngularHtmlGraphUpdate = ACTIVE_STRATEGY.flavor === 'angular' && /\.(html|htm)$/i.test(file);
+				if (!skipAngularHtmlGraphUpdate) {
+					const graphTargets = collectGraphUpdateModulesForHotUpdate({
+						file,
+						flavor: ACTIVE_STRATEGY.flavor,
+						modules: ctx.modules,
+						getModuleById: (id) => server.moduleGraph.getModuleById(id) as HotUpdateGraphModuleLike | undefined,
+					});
+					for (const mod of graphTargets) {
+						if (!mod?.id) continue;
+						try {
+							const deps = Array.from(mod.importedModules || [])
+								.map((m) => (m.id || '').replace(/\?.*$/, ''))
+								.filter(Boolean);
+							const transformed = await server.transformRequest(mod.id);
+							const code = transformed?.code || '';
+							upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps);
+						} catch (error) {
+							if (verbose) console.warn('[hmr-ws][v2] failed graph update target', mod.id, error);
+						}
 					}
 				}
 			} catch (e) {

@@ -95,7 +95,7 @@ describe('rewriteSpecifiersForDevice', () => {
 // ─── isDeepCoreSubpath ─────────────────────────────────────────────────────────
 
 describe('isDeepCoreSubpath', () => {
-	// Deep subpaths: ?p= value contains '/' → real ESM modules, skip destructuring
+	// Any ?p= subpath now serves a real ESM module, so named imports must be preserved.
 	it('returns true for deep subpath with nested path', () => {
 		expect(isDeepCoreSubpath('/ns/core?p=data/observable-array/index.js')).toBe(true);
 	});
@@ -112,13 +112,12 @@ describe('isDeepCoreSubpath', () => {
 		expect(isDeepCoreSubpath('/ns/core?p=data/observable')).toBe(true);
 	});
 
-	// Shallow subpaths: ?p= value has NO '/' → proxy bridge, must destructure
-	it('returns false for shallow subpath (index.js)', () => {
-		expect(isDeepCoreSubpath('/ns/core?p=index.js')).toBe(false);
+	it('returns true for shallow subpath (index.js)', () => {
+		expect(isDeepCoreSubpath('/ns/core?p=index.js')).toBe(true);
 	});
 
-	it('returns false for shallow subpath (globals)', () => {
-		expect(isDeepCoreSubpath('/ns/core?p=globals')).toBe(false);
+	it('returns true for shallow subpath (globals)', () => {
+		expect(isDeepCoreSubpath('/ns/core?p=globals')).toBe(true);
 	});
 
 	// No subpath: main bridge, must destructure
@@ -175,11 +174,10 @@ describe('deep subpath skip in core named-import destructuring', () => {
 		expect(out).not.toContain('import { Frame }');
 	});
 
-	it('rewrites named import from shallow subpath', () => {
+	it('preserves named import from shallow subpath', () => {
 		const input = 'import { isAndroid } from "/ns/core?p=index.js";';
 		const out = simulateDestructureRewrite(input);
-		expect(out).toContain('import __ns_core_ns_re from');
-		expect(out).toContain('const { isAndroid }');
+		expect(out).toBe(input);
 	});
 
 	it('SKIPS named import from deep subpath (preserves named import)', () => {
@@ -212,8 +210,8 @@ describe('deep subpath skip in core named-import destructuring', () => {
 		// Deep subpath: should NOT be rewritten
 		expect(out).toContain('import { View } from "/ns/core?p=ui/core/view-base/index.js"');
 
-		// Shallow subpath: SHOULD be rewritten
-		expect(out).toContain('const { isAndroid }');
+		// Shallow subpath: should NOT be rewritten
+		expect(out).toContain('import { isAndroid } from "/ns/core?p=index.js"');
 	});
 
 	it('is idempotent — applying twice produces identical output', () => {

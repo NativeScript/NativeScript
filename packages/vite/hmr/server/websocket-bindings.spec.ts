@@ -55,4 +55,14 @@ describe('ensureNativeScriptModuleBindings', () => {
 		expect(text).toMatch(/const\s+__nsVendorModule_\d+__def\s*=\s*__nsDefault\(__nsVendorModule_\d+\)/);
 		expect(text).toMatch(/const\s+FM\s*=\s*\(__nsHasInstall\(__nsVendorModule_\d+__def\)/);
 	});
+
+	it('only vendor-binds NativeScript runtime plugins when preserving other bare vendor imports', () => {
+		const input = `import { computed } from '@angular/core';\nimport { InAppReview } from '@valor/nativescript-in-app-review';\nexport const fn = computed;\nexport const review = InAppReview;`;
+		const out = ensureNativeScriptModuleBindings(input, { preserveNonPluginVendorImports: true });
+		const text = squish(out);
+
+		expect(text).toContain(`from '@angular/core'`);
+		expect(text).not.toMatch(/from\s+['"]@valor\/nativescript-in-app-review['"]/);
+		expect(text).toMatch(/const\s+InAppReview\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*['"]InAppReview['"]\)/);
+	});
 });

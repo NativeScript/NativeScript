@@ -15,17 +15,27 @@ import { describe, it, expect } from 'vitest';
  */
 function resolveVendorRoute(nodeModulesSpecifier: string, vendorCanonical: string): 'vendor' | 'http' {
 	let useVendorBridge = true;
+	const pkgBaseName = vendorCanonical.split('/').pop()!;
+	const afterCanonical = nodeModulesSpecifier.slice(vendorCanonical.length).replace(/^\//, '');
+	const isNativeScriptPlugin = /^(?:@nativescript\/(?!core(?:\b|\/))|@nativescript-community\/|@nstudio\/|@mleleux\/)/.test(vendorCanonical);
+	const isRootLevelMainEntry = (() => {
+		if (!afterCanonical || afterCanonical.includes('/')) {
+			return false;
+		}
+		const withoutExt = afterCanonical.replace(/\.[^.]+$/, '');
+		const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
+		return withoutPlatform === 'index' || withoutPlatform === pkgBaseName;
+	})();
 
 	if (nodeModulesSpecifier) {
-		// Platform-specific files always need HTTP
 		const isPlatformSpecific = /\.(ios|android)\.(js|ts|mjs|mts)$/.test(nodeModulesSpecifier);
-		if (isPlatformSpecific) {
+		if (isPlatformSpecific && isNativeScriptPlugin && isRootLevelMainEntry) {
+			useVendorBridge = true;
+		} else if (isPlatformSpecific) {
 			useVendorBridge = false;
 		} else if (nodeModulesSpecifier !== vendorCanonical) {
-			const afterCanonical = nodeModulesSpecifier.slice(vendorCanonical.length);
-			const pkgName = vendorCanonical.split('/').pop()!;
-			const fileName = afterCanonical.replace(/^\//, '').replace(/\.[^.]+$/, '');
-			const isMainEntry = !afterCanonical || fileName === 'index' || fileName === pkgName || fileName.startsWith(pkgName + '.');
+			const fileName = afterCanonical.replace(/\.[^.]+$/, '');
+			const isMainEntry = !afterCanonical || fileName === 'index' || fileName === pkgBaseName || fileName.startsWith(pkgBaseName + '.');
 			if (!isMainEntry) {
 				useVendorBridge = false;
 			}
@@ -36,7 +46,7 @@ function resolveVendorRoute(nodeModulesSpecifier: string, vendorCanonical: strin
 }
 
 describe('vendor bridge vs HTTP routing', () => {
-	describe('platform-specific files → always HTTP', () => {
+	describe('platform-specific NativeScript plugin main entries → vendor', () => {
 		it.each([
 			['@mleleux/nativescript-revenuecat/index.ios.js', '@mleleux/nativescript-revenuecat'],
 			['@nstudio/nativescript-branch/index.ios.js', '@nstudio/nativescript-branch'],
@@ -45,7 +55,17 @@ describe('vendor bridge vs HTTP routing', () => {
 			['@nativescript/firebase-core/index.ios.js', '@nativescript/firebase-core'],
 			['@nativescript/firebase-messaging/index.ios.js', '@nativescript/firebase-messaging'],
 			['@nativescript/background-http/index.ios.js', '@nativescript/background-http'],
-		])('%s → HTTP (platform-specific)', (spec, canonical) => {
+		])('%s → vendor (NativeScript plugin main entry)', (spec, canonical) => {
+			expect(resolveVendorRoute(spec, canonical)).toBe('vendor');
+		});
+	});
+
+	describe('other platform-specific files → HTTP', () => {
+		it.each([
+			['some-pkg/index.ios.js', 'some-pkg'],
+			['@mleleux/nativescript-revenuecat/Product/index.ios.js', '@mleleux/nativescript-revenuecat'],
+			['@nativescript-community/ui-material-core/css/index.ios.js', '@nativescript-community/ui-material-core'],
+		])('%s → HTTP', (spec, canonical) => {
 			expect(resolveVendorRoute(spec, canonical)).toBe('http');
 		});
 	});
@@ -104,8 +124,7 @@ describe('vendor bridge vs HTTP routing', () => {
 			expect(resolveVendorRoute('some-pkg/index.mjs', 'some-pkg')).toBe('vendor');
 		});
 
-		it('platform-specific index overrides main entry heuristic', () => {
-			// Even though "index" appears, .ios.js makes it platform-specific → HTTP
+		it('non-NativeScript platform-specific index still overrides main entry heuristic', () => {
 			expect(resolveVendorRoute('some-pkg/index.ios.js', 'some-pkg')).toBe('http');
 		});
 

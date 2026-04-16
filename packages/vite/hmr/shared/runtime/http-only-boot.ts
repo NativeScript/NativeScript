@@ -1,4 +1,18 @@
 // HTTP-only dev boot routine
+export function transformEntryRuntimeForEval(src: string): string {
+	let transformed = src
+		.replace(/export\s+default\s+async\s+function\s+([A-Za-z0-9_$]+)?/, 'globalThis.__NS_START_ENTRY__=async function $1')
+		.replace(/export\s+default\s+function\s+([A-Za-z0-9_$]+)?/, 'globalThis.__NS_START_ENTRY__=function $1')
+		.replace(/^export\s+(async\s+function|function|const|let|var|class)\s+/gm, '$1 ')
+		.replace(/^export\s*\{[^}]+\};?\s*$/gm, '');
+
+	if (transformed.indexOf('__NS_START_ENTRY__') === -1) {
+		transformed = 'globalThis.__NS_START_ENTRY__=' + transformed.replace(/export\s+default\s*/, '');
+	}
+
+	return transformed;
+}
+
 export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos', mainEntryRelPosix: string, defaultHost: string, verbose?: boolean) {
 	if (verbose) console.info('[ns-entry] HMR enabled: attempting HTTP-only boot');
 
@@ -80,11 +94,9 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 		if (!r.ok) throw new Error(`entry-rt fetch failed: ${r.status}`);
 		let src = await r.text();
 		if (verbose) console.info('[ns-entry] entry-rt fetched bytes', src?.length || 0);
-		// Transform ESM default export into a global assignment for eval
-		src = src.replace(/export\s+default\s+async\s+function\s+([A-Za-z0-9_$]+)?/, 'globalThis.__NS_START_ENTRY__=async function $1').replace(/export\s+default\s+function\s+([A-Za-z0-9_$]+)?/, 'globalThis.__NS_START_ENTRY__=function $1');
-		if (src.indexOf('__NS_START_ENTRY__') === -1) {
-			src = 'globalThis.__NS_START_ENTRY__=' + src.replace(/export\s+default\s*/, '');
-		}
+		// Transform the ESM entry-runtime source into something eval can execute.
+		// This keeps the HTTP-only boot path tolerant of local helper exports.
+		src = transformEntryRuntimeForEval(src);
 		(0, eval)(src);
 		const fn = (globalThis as any).__NS_START_ENTRY__;
 		if (typeof fn !== 'function') throw new Error('entry-rt missing __NS_START_ENTRY__ after eval');

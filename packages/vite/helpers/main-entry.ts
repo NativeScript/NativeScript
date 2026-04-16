@@ -295,6 +295,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (hasAppCss) {
 					imports += `// Import and apply global CSS before app bootstrap\n`;
 					imports += `import appCssContent from '${APP_CSS_VIRTUAL_ID}';\n`;
+					if (opts.hmrActive) {
+						imports += `try { globalThis.__NS_HMR_APP_CSS__ = appCssContent; } catch {}\n`;
+					}
 				}
 				imports += `import { Application } from '@nativescript/core';\n`;
 				if (hasAppCss) {

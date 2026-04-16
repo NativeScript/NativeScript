@@ -38,6 +38,9 @@ export function handleAngularHotUpdateMessage(msg: any, options: AngularUpdateOp
 				console.log('[hmr-angular] rebooting Angular modules via __reboot_ng_modules__');
 			}
 			try {
+				g.__NS_HMR_IMPORT_NONCE__ = (typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
+			} catch {}
+			try {
 				g.__NS_DEV_RESET_IN_PROGRESS__ = true;
 			} catch {}
 			try {

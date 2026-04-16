@@ -1,5 +1,15 @@
 const VERBOSE = !!(globalThis as any).__NS_ENV_VERBOSE__;
 
+function getPreferredCssApplier(): ((cssText: string, refreshRoot?: boolean) => void) | null {
+	try {
+		const applier = (globalThis as any).__NS_HMR_APPLY_CSS__;
+		if (typeof applier === 'function') {
+			return applier;
+		}
+	} catch {}
+	return null;
+}
+
 function getCore(name: string): any {
 	try {
 		const g = globalThis as any;
@@ -22,6 +32,13 @@ export function applyCssText(cssText: string): void {
 	if (typeof cssText !== 'string' || !cssText.length) return;
 
 	try {
+		const applyInHttpCoreRealm = getPreferredCssApplier();
+		if (applyInHttpCoreRealm) {
+			applyInHttpCoreRealm(cssText, true);
+			if (VERBOSE) console.info('[ns-hmr] CSS applied through HTTP core realm');
+			return;
+		}
+
 		const Application = getCore('Application');
 		if (Application && Application.addCss) {
 			Application.addCss(cssText);

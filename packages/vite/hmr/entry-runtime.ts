@@ -7,7 +7,80 @@ type EntryOpts = {
 	verbose?: boolean;
 };
 
+type HmrCssApplier = (cssText: string, refreshRoot?: boolean) => void;
+type HttpImportFn = (url: string) => Promise<any>;
+type HttpPreloadResult = { ok: boolean; ms: number; url: string; err?: string };
+
 declare const __NS_APP_ROOT_VIRTUAL__: string;
+
+export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): HmrCssApplier | null {
+	try {
+		const g = globalThis as any;
+		const core = coreModule?.default ?? coreModule;
+		const Application = core?.Application ?? coreModule?.Application ?? g.Application;
+		if (!Application?.addCss) {
+			return null;
+		}
+
+		const applyCss: HmrCssApplier = (cssText: string, refreshRoot = true) => {
+			if (typeof cssText !== 'string' || !cssText.length) {
+				return;
+			}
+
+			Application.addCss(cssText);
+			if (!refreshRoot) {
+				return;
+			}
+
+			try {
+				const rootView = Application.getRootView?.();
+				if (rootView && typeof rootView._onCssStateChange === 'function') {
+					rootView._onCssStateChange();
+				} else if (rootView) {
+					const cls = rootView.className || '';
+					rootView.className = cls + ' ';
+					rootView.className = cls;
+				}
+			} catch {}
+		};
+
+		g.__NS_HMR_APPLY_CSS__ = applyCss;
+
+		const appCssText = g.__NS_HMR_APP_CSS__;
+		if (typeof appCssText === 'string' && appCssText.length && !g.__NS_HMR_HTTP_APP_CSS_APPLIED__) {
+			applyCss(appCssText);
+			g.__NS_HMR_HTTP_APP_CSS_APPLIED__ = true;
+			if (verbose) {
+				console.info('[ns-entry] app.css applied in HTTP core realm');
+			}
+		}
+
+		return applyCss;
+	} catch (error: any) {
+		try {
+			if (verbose) console.warn('[ns-entry] failed to install HTTP core CSS support:', error?.message || error);
+		} catch {}
+		return null;
+	}
+}
+
+export async function preloadHttpCoreStyleScope(importHttp: HttpImportFn, origin: string, ver: string | number, verbose?: boolean): Promise<HttpPreloadResult> {
+	const url = String(origin || '') + '/ns/core/' + String(ver || '0') + '?p=ui/styling/style-scope.js';
+	const t0 = Date.now();
+	try {
+		await importHttp(url);
+		if (verbose) {
+			console.info('[ns-entry] HTTP core style-scope preloaded');
+		}
+		return { ok: true, ms: Date.now() - t0, url };
+	} catch (error: any) {
+		const result = { ok: false, ms: Date.now() - t0, url, err: String(error && (error.message || error)) };
+		try {
+			if (verbose) console.warn('[ns-entry] HTTP core style-scope preload failed:', error?.message || error);
+		} catch {}
+		return result;
+	}
+}
 
 function parseStackUrlLineCol(err: any): { url?: string; line?: number; column?: number } {
 	try {
@@ -54,7 +127,7 @@ export default async function startEntry(opts: EntryOpts) {
 	} catch {}
 
 	// Module-local trace snapshot
-	const TRACE: any = { version: VER, origin: ORIGIN, mainPath: MAIN, t0: Date.now(), preload: { rt: {}, core: {} }, main: {}, importMap: {} };
+	const TRACE: any = { version: VER, origin: ORIGIN, mainPath: MAIN, t0: Date.now(), preload: { rt: {}, core: {}, coreStyleScope: {} }, main: {}, importMap: {} };
 
 	// Native HTTP ESM import only.
 	// Ensure a single canonical module realm.
@@ -104,7 +177,9 @@ export default async function startEntry(opts: EntryOpts) {
 		}
 		const t_core = Date.now();
 		try {
-			await importHttp(ORIGIN + '/ns/core/' + VER);
+			const coreBridge = await importHttp(ORIGIN + '/ns/core/' + VER);
+			TRACE.preload.coreStyleScope = await preloadHttpCoreStyleScope(importHttp, ORIGIN, VER, VERBOSE);
+			installHttpCoreCssSupport(coreBridge, VERBOSE);
 			TRACE.preload.core = { ok: true, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER };
 		} catch (e_core: any) {
 			TRACE.preload.core = { ok: false, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER, err: String(e_core && (e_core.message || e_core)) };
