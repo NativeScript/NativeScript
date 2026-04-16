@@ -177,7 +177,6 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 	const assetToComponents = new Map<string, Set<string>>();
 	const componentToAssets = new Map<string, Set<string>>();
 	const pendingComponentInvalidations = new Set<string>();
-	let watchMode = false;
 
 	const untrackComponentAssets = (componentPath: string) => {
 		const previousAssets = componentToAssets.get(componentPath);
@@ -214,9 +213,6 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 		{
 			name: 'angular-template-deps',
 			enforce: 'pre',
-			configResolved(resolved) {
-				watchMode = !!resolved.build?.watch;
-			},
 			transform(code, id) {
 				const componentPath = normalizeAngularWatchPath(id);
 				if (!componentPath.endsWith('.ts')) return null;
@@ -230,8 +226,6 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				return null;
 			},
 			watchChange(id) {
-				if (!watchMode) return;
-
 				const changedPath = normalizeAngularWatchPath(id);
 				const components = assetToComponents.get(changedPath);
 				if (components?.size) {
@@ -249,8 +243,6 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				}
 			},
 			shouldTransformCachedModule({ id }) {
-				if (!watchMode) return null;
-
 				const componentPath = normalizeAngularWatchPath(id);
 				if (!pendingComponentInvalidations.has(componentPath)) return null;
 

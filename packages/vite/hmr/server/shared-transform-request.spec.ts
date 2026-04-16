@@ -224,4 +224,53 @@ describe('createSharedTransformRequestRunner', () => {
 		await expect(runTransform('/src/main.ts', 100)).resolves.toEqual({ code: 'export const ready = true;' });
 		expect(transformRequest).toHaveBeenCalledTimes(1);
 	});
+
+	it('drops a recent cached result after explicit invalidation', async () => {
+		const transformRequest = vi
+			.fn<(_: string) => Promise<{ code: string } | null>>()
+			.mockImplementationOnce(async () => ({ code: 'export const version = 1;' }))
+			.mockImplementationOnce(async () => ({ code: 'export const version = 2;' }));
+		const runTransform = createSharedTransformRequestRunner(transformRequest, undefined, { resultCacheTtlMs: 1_000 });
+
+		await expect(runTransform('/src/main.ts')).resolves.toEqual({ code: 'export const version = 1;' });
+		runTransform.invalidate('/src/main.ts');
+		await expect(runTransform('/src/main.ts')).resolves.toEqual({ code: 'export const version = 2;' });
+
+		expect(transformRequest).toHaveBeenCalledTimes(2);
+	});
+
+	it('ignores a pre-invalidation in-flight result and starts a fresh transform generation', async () => {
+		let resolveFirst: ((value: { code: string } | null) => void) | null = null;
+		let resolveSecond: ((value: { code: string } | null) => void) | null = null;
+		const transformRequest = vi.fn((url: string) => {
+			if (transformRequest.mock.calls.length === 1) {
+				return new Promise<{ code: string } | null>((resolve) => {
+					resolveFirst = resolve;
+				});
+			}
+
+			return new Promise<{ code: string } | null>((resolve) => {
+				resolveSecond = resolve;
+			});
+		});
+		const runTransform = createSharedTransformRequestRunner(transformRequest, undefined, {
+			resultCacheTtlMs: 1_000,
+			maxConcurrent: 2,
+		});
+
+		const first = runTransform('/src/main.ts');
+		runTransform.invalidate('/src/main.ts');
+		const second = runTransform('/src/main.ts');
+
+		expect(transformRequest).toHaveBeenCalledTimes(2);
+
+		resolveFirst?.({ code: 'export const version = 1;' });
+		resolveSecond?.({ code: 'export const version = 2;' });
+
+		await expect(first).resolves.toEqual({ code: 'export const version = 1;' });
+		await expect(second).resolves.toEqual({ code: 'export const version = 2;' });
+		await expect(runTransform('/src/main.ts')).resolves.toEqual({ code: 'export const version = 2;' });
+
+		expect(transformRequest).toHaveBeenCalledTimes(2);
+	});
 });

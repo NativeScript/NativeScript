@@ -34,9 +34,9 @@ function getAngularTemplateDepsPlugin() {
 		throw new Error('angular-template-deps plugin not found');
 	}
 	return plugin as {
-		configResolved?: (config: any) => void;
 		transform?: (this: { addWatchFile: (filePath: string) => void }, code: string, id: string) => null;
 		watchChange?: (id: string, change: { event: string }) => void;
+		shouldTransformCachedModule?: (options: { id: string }) => boolean | null;
 		buildStart?: () => void;
 	};
 }
@@ -90,12 +90,11 @@ describe('angular-template-deps watch invalidation', () => {
 	it.each([
 		['template', 'templatePath'],
 		['style', 'stylePath'],
-	])('invalidates the component transform cache when the %s asset changes in build watch mode', (_label, changedAssetKey) => {
+	])('invalidates the component transform cache when the %s asset changes during dev serve', (_label, changedAssetKey) => {
 		const plugin = getAngularTemplateDepsPlugin();
 		const fixture = createComponentFixture();
 
 		try {
-			plugin.configResolved?.({ build: { watch: {} } });
 			plugin.transform?.call(
 				{
 					addWatchFile() {},
@@ -105,6 +104,20 @@ describe('angular-template-deps watch invalidation', () => {
 			);
 
 			plugin.watchChange?.(fixture[changedAssetKey as 'templatePath' | 'stylePath'], { event: 'update' });
+
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBe(true);
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBeNull();
+		} finally {
+			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('falls back to same-stem component invalidation when an html asset changes before tracking', () => {
+		const plugin = getAngularTemplateDepsPlugin();
+		const fixture = createComponentFixture();
+
+		try {
+			plugin.watchChange?.(fixture.templatePath, { event: 'update' });
 
 			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBe(true);
 			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBeNull();

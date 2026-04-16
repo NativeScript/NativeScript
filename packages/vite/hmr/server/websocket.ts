@@ -275,20 +275,152 @@ export function collectGraphUpdateModulesForHotUpdate(options: { file: string; f
 	return Array.from(targets.values());
 }
 
+type TransitiveImporterModuleLike = {
+	id?: string | null;
+	file?: string | null;
+	importers?: Iterable<TransitiveImporterModuleLike> | null;
+};
+
+export function collectAngularTransitiveImportersForInvalidation(options: { modules: Iterable<TransitiveImporterModuleLike> | undefined | null; isExcluded?: (id: string) => boolean; maxDepth?: number }): TransitiveImporterModuleLike[] {
+	const visited = new Set<TransitiveImporterModuleLike>();
+	const collected = new Map<string, TransitiveImporterModuleLike>();
+	const isExcluded = options.isExcluded ?? ((id: string) => id.includes('/node_modules/'));
+	const maxDepth = Math.max(1, Math.floor(options.maxDepth ?? 16));
+
+	const normalizeId = (value: string | null | undefined): string => (value ?? '').replace(/\?.*$/, '');
+
+	const walk = (mod: TransitiveImporterModuleLike | undefined | null, depth: number): void => {
+		if (!mod || visited.has(mod)) {
+			return;
+		}
+		visited.add(mod);
+
+		if (depth >= maxDepth) {
+			return;
+		}
+
+		const importers = mod.importers;
+		if (!importers) {
+			return;
+		}
+
+		for (const importer of importers) {
+			if (!importer) continue;
+			const importerId = normalizeId(importer.id);
+			if (!importerId) {
+				walk(importer, depth + 1);
+				continue;
+			}
+			if (isExcluded(importerId)) {
+				continue;
+			}
+			if (!collected.has(importerId)) {
+				collected.set(importerId, importer);
+			}
+			walk(importer, depth + 1);
+		}
+	};
+
+	for (const mod of options.modules || []) {
+		walk(mod, 0);
+	}
+
+	return Array.from(collected.values());
+}
+
+export function shouldInvalidateAngularTransitiveImporters(options: { flavor: string; file: string }): boolean {
+	if (options.flavor !== 'angular') {
+		return false;
+	}
+
+	return /\.(?:html|htm|(m|c)?[jt]sx?)$/i.test(options.file);
+}
+
+export function shouldSuppressDefaultViteHotUpdate(options: { flavor: string; file: string }): boolean {
+	if (options.flavor !== 'angular') {
+		return false;
+	}
+
+	return /\.(html|htm|ts)$/i.test(options.file);
+}
+
+type PendingAngularReloadSuppressionEntry = {
+	absPath: string;
+	relPath: string;
+	expiresAt: number;
+};
+
+export function normalizeHotReloadMatchPath(raw: string, root?: string): string {
+	let normalized = String(raw || '')
+		.split('?')[0]
+		.replace(/\\/g, '/')
+		.replace(/^file:\/\//, '');
+
+	if (root) {
+		const rootNormalized = root.replace(/\\/g, '/');
+		if (normalized.startsWith(rootNormalized)) {
+			normalized = normalized.slice(rootNormalized.length);
+		}
+	}
+
+	if (!normalized.startsWith('/')) {
+		normalized = `/${normalized}`;
+	}
+
+	return normalized;
+}
+
+export function shouldSuppressViteFullReloadPayload(options: { payload: any; pendingEntries: Iterable<PendingAngularReloadSuppressionEntry>; root?: string; now?: number }): boolean {
+	const { payload, pendingEntries, root } = options;
+	const now = options.now ?? Date.now();
+
+	if (!payload || payload.type !== 'full-reload') {
+		return false;
+	}
+
+	const payloadPath = typeof payload.path === 'string' && payload.path !== '*' ? normalizeHotReloadMatchPath(payload.path, root) : null;
+	const payloadTriggeredBy = typeof payload.triggeredBy === 'string' ? normalizeHotReloadMatchPath(payload.triggeredBy, root) : null;
+
+	for (const entry of pendingEntries) {
+		if (!entry || entry.expiresAt <= now) {
+			continue;
+		}
+
+		if (payloadTriggeredBy === entry.absPath || payloadTriggeredBy === entry.relPath || payloadPath === entry.relPath || payloadPath === entry.absPath) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 type SharedTransformRequestRunnerOptions = {
 	maxConcurrent?: number;
 	resultCacheTtlMs?: number;
 	getResultCacheKey?: (url: string) => string;
 };
 
-export function createSharedTransformRequestRunner(transformRequest: (url: string) => Promise<TransformResult | null>, onTimeout?: (url: string, timeoutMs: number) => void, options: SharedTransformRequestRunnerOptions = {}): (url: string, timeoutMs?: number) => Promise<TransformResult | null> {
-	const inFlight = new Map<string, { execution: Promise<TransformResult | null>; started: Promise<void> }>();
+type SharedTransformRequestRunner = ((url: string, timeoutMs?: number) => Promise<TransformResult | null>) & {
+	invalidate: (url: string) => void;
+	invalidateMany: (urls: Iterable<string>) => void;
+	clear: () => void;
+};
+
+export function createSharedTransformRequestRunner(transformRequest: (url: string) => Promise<TransformResult | null>, onTimeout?: (url: string, timeoutMs: number) => void, options: SharedTransformRequestRunnerOptions = {}): SharedTransformRequestRunner {
+	const inFlight = new Map<string, { execution: Promise<TransformResult | null>; started: Promise<void>; cacheKey: string; generation: number }>();
 	const recentResults = new Map<string, { expiresAt: number; result: TransformResult }>();
+	const cacheGenerations = new Map<string, number>();
 	const queue: Array<() => void> = [];
 	const maxConcurrent = Math.max(1, Math.floor(options.maxConcurrent ?? 1));
 	const resultCacheTtlMs = Math.max(0, Math.floor(options.resultCacheTtlMs ?? 0));
 	const getResultCacheKey = options.getResultCacheKey ?? ((url: string) => url);
 	let activeCount = 0;
+
+	const getCacheGeneration = (cacheKey: string) => cacheGenerations.get(cacheKey) ?? 0;
+	const invalidateCacheKey = (cacheKey: string) => {
+		cacheGenerations.set(cacheKey, getCacheGeneration(cacheKey) + 1);
+		recentResults.delete(cacheKey);
+	};
 
 	const pruneRecentResults = () => {
 		if (!recentResults.size) {
@@ -303,12 +435,15 @@ export function createSharedTransformRequestRunner(transformRequest: (url: strin
 		}
 	};
 
-	const rememberRecentResult = (url: string, result: TransformResult | null) => {
+	const rememberRecentResult = (url: string, result: TransformResult | null, generation: number) => {
 		if (!result || resultCacheTtlMs <= 0) {
 			return;
 		}
 
 		const cacheKey = getResultCacheKey(url);
+		if (getCacheGeneration(cacheKey) !== generation) {
+			return;
+		}
 		recentResults.delete(cacheKey);
 		recentResults.set(cacheKey, {
 			expiresAt: Date.now() + resultCacheTtlMs,
@@ -384,21 +519,23 @@ export function createSharedTransformRequestRunner(transformRequest: (url: strin
 		);
 	};
 
-	return (url: string, timeoutMs = 120000) => {
+	const runner = ((url: string, timeoutMs = 120000) => {
 		pruneRecentResults();
-		const recent = recentResults.get(getResultCacheKey(url));
+		const cacheKey = getResultCacheKey(url);
+		const generation = getCacheGeneration(cacheKey);
+		const recent = recentResults.get(cacheKey);
 		if (recent && recent.expiresAt > Date.now()) {
 			return Promise.resolve(recent.result);
 		}
 
 		const existingExecution = inFlight.get(url);
-		if (existingExecution) {
+		if (existingExecution && existingExecution.generation === generation && existingExecution.cacheKey === cacheKey) {
 			return withTimeout(existingExecution, url, timeoutMs);
 		}
 
 		const scheduled = schedule(async () => {
 			const result = await Promise.resolve(transformRequest(url));
-			rememberRecentResult(url, result);
+			rememberRecentResult(url, result, generation);
 			return result;
 		});
 		let execution: Promise<TransformResult | null>;
@@ -408,11 +545,28 @@ export function createSharedTransformRequestRunner(transformRequest: (url: strin
 			}
 		});
 
-		const entry = { execution, started: scheduled.started };
+		const entry = { execution, started: scheduled.started, cacheKey, generation };
 		inFlight.set(url, entry);
 
 		return withTimeout(entry, url, timeoutMs);
+	}) as SharedTransformRequestRunner;
+
+	runner.invalidate = (url: string) => {
+		invalidateCacheKey(getResultCacheKey(url));
 	};
+
+	runner.invalidateMany = (urls: Iterable<string>) => {
+		for (const url of urls || []) {
+			runner.invalidate(url);
+		}
+	};
+
+	runner.clear = () => {
+		recentResults.clear();
+		cacheGenerations.clear();
+	};
+
+	return runner;
 }
 
 export function ensureNativeScriptModuleBindings(code: string, options?: { preserveNonPluginVendorImports?: boolean }): string {
@@ -3119,6 +3273,8 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	const verbose = !!opts.verbose;
 	let wss: WebSocketServer | null = null;
+	let sharedTransformRequest!: SharedTransformRequestRunner;
+	const pendingAngularReloadSuppressions = new Map<string, PendingAngularReloadSuppressionEntry>();
 	const sfcFileMap = new Map<string, string>();
 	const depFileMap = new Map<string, string>();
 	// Generic module manifest (spec -> emitted relative .mjs path)
@@ -3139,6 +3295,22 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	// Transactional HMR batches: map graphVersion -> ordered list of changed ids for that version
 	const txnBatches: Map<number, string[]> = new Map();
 	const graph = new Map<string, GraphModule>();
+	function rememberAngularReloadSuppression(root: string, file: string, ttlMs = 3000) {
+		const absPath = normalizeHotReloadMatchPath(file);
+		const relPath = normalizeHotReloadMatchPath(file, root);
+		pendingAngularReloadSuppressions.set(absPath, {
+			absPath,
+			relPath,
+			expiresAt: Date.now() + ttlMs,
+		});
+	}
+	function pruneAngularReloadSuppressions(now = Date.now()) {
+		for (const [key, entry] of pendingAngularReloadSuppressions) {
+			if (!entry || entry.expiresAt <= now) {
+				pendingAngularReloadSuppressions.delete(key);
+			}
+		}
+	}
 	// Compute a dependency-closed, topologically sorted list of modules for a given set of changed ids.
 	// Only include application modules we can serve (e.g., under /src and known .vue/.ts/.js entries in the graph).
 	function computeTxnOrderForChanged(changedIds: string[]): string[] {
@@ -3361,13 +3533,35 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			pluginRoot = (server as any).config?.root || process.cwd();
 			const httpServer = server.httpServer;
 			if (!httpServer) return;
+			const wsAny = server.ws as any;
+			if (!wsAny.__NS_ANGULAR_FULL_RELOAD_FILTER_INSTALLED__) {
+				const originalSend = server.ws.send.bind(server.ws);
+				wsAny.__NS_ANGULAR_FULL_RELOAD_FILTER_INSTALLED__ = true;
+				server.ws.send = ((payload: any, ...rest: any[]) => {
+					pruneAngularReloadSuppressions();
+					if (
+						shouldSuppressViteFullReloadPayload({
+							payload,
+							pendingEntries: pendingAngularReloadSuppressions.values(),
+							root: pluginRoot,
+						})
+					) {
+						if (verbose) {
+							console.log('[hmr-ws][angular] suppressed vite full-reload payload', payload);
+						}
+						return;
+					}
+
+					return originalSend(payload, ...rest);
+				}) as typeof server.ws.send;
+			}
 			// Default to serialized transform execution for deterministic HTTP HMR startup.
 			// Higher fan-out can be re-enabled explicitly via NS_VITE_HMR_TRANSFORM_CONCURRENCY.
 			const configuredTransformConcurrency = Number.parseInt(process.env.NS_VITE_HMR_TRANSFORM_CONCURRENCY || '1', 10);
 			const transformConcurrency = Number.isFinite(configuredTransformConcurrency) && configuredTransformConcurrency > 0 ? configuredTransformConcurrency : 1;
 			const configuredTransformCacheMs = Number.parseInt(process.env.NS_VITE_HMR_TRANSFORM_CACHE_MS || '15000', 10);
 			const transformCacheMs = Number.isFinite(configuredTransformCacheMs) && configuredTransformCacheMs >= 0 ? configuredTransformCacheMs : 15000;
-			const sharedTransformRequest = createSharedTransformRequestRunner(
+			sharedTransformRequest = createSharedTransformRequestRunner(
 				(url) => server.transformRequest(url),
 				(url, timeoutMs) => {
 					try {
@@ -6276,10 +6470,90 @@ export const piniaSymbol = p.piniaSymbol;
 				// For Angular, react to component TS or external template HTML changes under /src
 				const isHtml = file.endsWith('.html');
 				const isTs = file.endsWith('.ts');
+				const angularHtmlInvalidationRoots = isHtml
+					? collectGraphUpdateModulesForHotUpdate({
+							file,
+							flavor: ACTIVE_STRATEGY.flavor,
+							modules: ctx.modules,
+							getModuleById: (id) => server.moduleGraph.getModuleById(id) as HotUpdateGraphModuleLike | undefined,
+						})
+					: [];
 				if (!(isHtml || isTs)) return;
+
+				if (angularHtmlInvalidationRoots.length) {
+					for (const mod of angularHtmlInvalidationRoots) {
+						try {
+							server.moduleGraph.invalidateModule(mod as any);
+						} catch (invalidationError) {
+							if (verbose) {
+								console.warn('[hmr-ws][angular] template root invalidation failed', mod?.id, invalidationError);
+							}
+						}
+					}
+					if (verbose) {
+						console.log('[hmr-ws][angular] invalidated template root modules:', angularHtmlInvalidationRoots.length);
+					}
+				}
+
+				if (shouldInvalidateAngularTransitiveImporters({ flavor: ACTIVE_STRATEGY.flavor, file })) {
+					try {
+						const transitiveImporters = collectAngularTransitiveImportersForInvalidation({
+							modules: (angularHtmlInvalidationRoots.length ? angularHtmlInvalidationRoots : (ctx.modules as unknown as Iterable<TransitiveImporterModuleLike>)) as Iterable<TransitiveImporterModuleLike>,
+							isExcluded: (id) => id.includes('/node_modules/'),
+							maxDepth: 16,
+						});
+						for (const mod of transitiveImporters) {
+							try {
+								server.moduleGraph.invalidateModule(mod as any);
+							} catch (invalidationError) {
+								if (verbose) {
+									console.warn('[hmr-ws][angular] transitive importer invalidation failed', mod?.id, invalidationError);
+								}
+							}
+						}
+						if (verbose && transitiveImporters.length) {
+							console.log('[hmr-ws][angular] invalidated transitive importers:', transitiveImporters.length);
+						}
+					} catch (error) {
+						if (verbose) console.warn('[hmr-ws][angular] transitive importer collection failed', error);
+					}
+				}
+
+				try {
+					const transformCacheInvalidationUrls = new Set<string>();
+					if (isTs) {
+						transformCacheInvalidationUrls.add(file);
+					}
+					for (const mod of angularHtmlInvalidationRoots) {
+						if (mod?.id) {
+							transformCacheInvalidationUrls.add(mod.id);
+						}
+					}
+					if (shouldInvalidateAngularTransitiveImporters({ flavor: ACTIVE_STRATEGY.flavor, file })) {
+						const transitiveImporters = collectAngularTransitiveImportersForInvalidation({
+							modules: (angularHtmlInvalidationRoots.length ? angularHtmlInvalidationRoots : (ctx.modules as unknown as Iterable<TransitiveImporterModuleLike>)) as Iterable<TransitiveImporterModuleLike>,
+							isExcluded: (id) => id.includes('/node_modules/'),
+							maxDepth: 16,
+						});
+						for (const mod of transitiveImporters) {
+							if (mod?.id) {
+								transformCacheInvalidationUrls.add(mod.id);
+							}
+						}
+					}
+					if (transformCacheInvalidationUrls.size) {
+						sharedTransformRequest.invalidateMany(transformCacheInvalidationUrls);
+						if (verbose) {
+							console.log('[hmr-ws][angular] purged shared transform cache entries:', transformCacheInvalidationUrls.size);
+						}
+					}
+				} catch (error) {
+					if (verbose) console.warn('[hmr-ws][angular] shared transform cache purge failed', error);
+				}
 				try {
 					const root = server.config.root || process.cwd();
 					const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+					rememberAngularReloadSuppression(root, file);
 					const origin = getServerOrigin(server);
 					const msg = {
 						type: 'ns:angular-update',
@@ -6294,6 +6568,9 @@ export const piniaSymbol = p.piniaSymbol;
 					});
 				} catch (error) {
 					console.warn('[hmr-ws][angular] update failed:', error);
+				}
+				if (shouldSuppressDefaultViteHotUpdate({ flavor: ACTIVE_STRATEGY.flavor, file })) {
+					return [];
 				}
 				return;
 			}
