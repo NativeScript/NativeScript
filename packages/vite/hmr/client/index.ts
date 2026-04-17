@@ -46,6 +46,80 @@ function ensureCoreAliasesOnGlobalThis() {
 // Apply once on module evaluation
 ensureCoreAliasesOnGlobalThis();
 
+type HmrConnectionOverlayStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline';
+
+function getHmrOverlayApi(): any {
+	try {
+		return (globalThis as any).__NS_HMR_DEV_OVERLAY__ || null;
+	} catch {}
+	return null;
+}
+
+function setConnectionOverlayStage(stage: HmrConnectionOverlayStage, detail?: string) {
+	try {
+		const api = getHmrOverlayApi();
+		if (api && typeof api.setConnectionStage === 'function') {
+			api.setConnectionStage(stage, { detail });
+		}
+	} catch {}
+}
+
+function hideConnectionOverlay() {
+	try {
+		const api = getHmrOverlayApi();
+		if (api && typeof api.hide === 'function') {
+			api.hide('healthy');
+		}
+	} catch {}
+}
+
+let connectionOverlayTimer: any = null;
+let connectionOverlayVisible = false;
+let hasOpenedHmrSocket = false;
+let awaitingHealthyHmrMessage = false;
+let pendingConnectionOverlayStage: HmrConnectionOverlayStage = 'connecting';
+let pendingConnectionOverlayDetail = '';
+
+function clearConnectionOverlayTimer() {
+	if (connectionOverlayTimer) {
+		clearTimeout(connectionOverlayTimer);
+		connectionOverlayTimer = null;
+	}
+}
+
+function showConnectionOverlayNow(stage: HmrConnectionOverlayStage, detail?: string) {
+	pendingConnectionOverlayStage = stage;
+	pendingConnectionOverlayDetail = detail || '';
+	connectionOverlayVisible = true;
+	setConnectionOverlayStage(stage, detail);
+}
+
+function scheduleConnectionOverlay(stage: HmrConnectionOverlayStage, detail?: string, delayMs = 1200) {
+	pendingConnectionOverlayStage = stage;
+	pendingConnectionOverlayDetail = detail || '';
+	clearConnectionOverlayTimer();
+	connectionOverlayTimer = setTimeout(() => {
+		showConnectionOverlayNow(pendingConnectionOverlayStage, pendingConnectionOverlayDetail);
+	}, delayMs);
+}
+
+function updateConnectionOverlay(stage: HmrConnectionOverlayStage, detail?: string) {
+	pendingConnectionOverlayStage = stage;
+	pendingConnectionOverlayDetail = detail || '';
+	if (connectionOverlayVisible) {
+		showConnectionOverlayNow(stage, detail);
+	}
+}
+
+function markHmrConnectionHealthy() {
+	awaitingHealthyHmrMessage = false;
+	clearConnectionOverlayTimer();
+	if (connectionOverlayVisible) {
+		connectionOverlayVisible = false;
+		hideConnectionOverlay();
+	}
+}
+
 /**
  * Flavor hooks
  */
@@ -932,6 +1006,7 @@ function connectHmr() {
 		if (__NS_ENV_VERBOSE__) console.log('[hmr-client] Already connecting to HMR WebSocket, skipping');
 		return;
 	}
+	const overlayStage: HmrConnectionOverlayStage = hasOpenedHmrSocket ? 'reconnecting' : 'connecting';
 	const baseUrl = getHMRWsUrl() || 'ws://localhost:5173/ns-hmr';
 	const buildCandidates = (url: string): string[] => {
 		let candidates: string[] = [];
@@ -990,10 +1065,18 @@ function connectHmr() {
 
 	const tryNext = () => {
 		if (idx >= candidates.length) {
+			showConnectionOverlayNow('offline', 'Waiting for the Vite websocket to come back.');
 			console.warn('[hmr-client] All WS candidates failed:', candidates.join(', '));
+			setTimeout(connectHmr, 1500);
 			return;
 		}
 		const url = candidates[idx++];
+		const connectionDetail = `${overlayStage === 'reconnecting' ? 'Retrying' : 'Opening'} ${url}`;
+		if (connectionOverlayVisible) {
+			updateConnectionOverlay(overlayStage, connectionDetail);
+		} else {
+			scheduleConnectionOverlay(overlayStage, connectionDetail);
+		}
 		try {
 			if (__NS_ENV_VERBOSE__) console.log('[hmr-client] Connecting to HMR WebSocket:', url);
 			const sock = new WebSocket(url);
@@ -1014,6 +1097,12 @@ function connectHmr() {
 			sock.onopen = () => {
 				opened = true;
 				clearTimeout(timeout);
+				clearConnectionOverlayTimer();
+				hasOpenedHmrSocket = true;
+				awaitingHealthyHmrMessage = true;
+				if (connectionOverlayVisible) {
+					showConnectionOverlayNow('synchronizing', 'Connected. Synchronizing the HMR graph.');
+				}
 				VERBOSE && console.log('[hmr-client] Connected to HMR WebSocket');
 			};
 			sock.onmessage = handleHmrMessage;
@@ -1029,6 +1118,7 @@ function connectHmr() {
 					tryNext();
 				} else {
 					if (VERBOSE) console.log('[hmr-client] WebSocket closed (code', ev?.code, '), will reconnect…');
+					scheduleConnectionOverlay('reconnecting', 'The websocket closed. Waiting to reconnect.', 700);
 					// try to reconnect with full candidate list again
 					setTimeout(connectHmr, 1000);
 				}
@@ -1048,6 +1138,10 @@ async function handleHmrMessage(ev: any) {
 		msg = JSON.parse((ev as any).data);
 	} catch {
 		return;
+	}
+
+	if (awaitingHealthyHmrMessage && msg) {
+		markHmrConnectionHealthy();
 	}
 
 	// Notify optional app-level hook after an HMR batch is applied.

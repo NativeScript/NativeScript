@@ -317,6 +317,16 @@ function hoistTopLevelStaticImports(code: string): string {
 	return `${hoisted.join('\n')}\n${stripped.replace(/^\s*\n+/, '')}`;
 }
 
+export function buildBootProgressSnippet(bootModuleLabel: string): string {
+	const normalizedLabel = JSON.stringify(String(bootModuleLabel || '').replace(/\\/g, '/'));
+	return [
+		`const __nsBootGlobal=globalThis;`,
+		`try{if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){const __nsBootApi=__nsBootGlobal.__NS_HMR_DEV_OVERLAY__;if(__nsBootApi&&typeof __nsBootApi.setBootStage==='function'){const __nsBootCount=(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0)+1);__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__=${normalizedLabel};const __nsBootNow=Date.now();const __nsBootLast=Number(__nsBootGlobal.__NS_HMR_BOOT_LAST_PROGRESS_AT__||0);if(__nsBootCount<=8||__nsBootCount%6===0||__nsBootNow-__nsBootLast>90){__nsBootGlobal.__NS_HMR_BOOT_LAST_PROGRESS_AT__=__nsBootNow;const __nsBootProgress=Math.min(94,82+Math.min(10,Math.round((Math.log(__nsBootCount+1)/Math.LN2)*2)));__nsBootApi.setBootStage('importing-main',{detail:'Evaluated '+__nsBootCount+' modules\\n'+__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__,attempt:Number(__nsBootGlobal.__NS_HMR_BOOT_MAIN_ATTEMPT__||1),attempts:Number(__nsBootGlobal.__NS_HMR_BOOT_MAIN_ATTEMPTS__||6),progress:__nsBootProgress});}}}}catch(__nsBootErr){}`,
+		`if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){const __nsBootCount=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0);if(__nsBootCount<=24||__nsBootCount%8===0){await new Promise((resolve)=>setTimeout(resolve,0));}}`,
+		'',
+	].join('\n');
+}
+
 function rewriteVitePrebundleImportsForDevice(code: string, preserveVendorImports: boolean): string {
 	const imports = collectTopLevelImportRecords(code);
 	if (!imports.length) {
@@ -1565,6 +1575,8 @@ async function expandStarExports(code: string, server: any, projectRoot: string,
 			let vitePath = rep.url.replace(/^https?:\/\/[^/]+/, '');
 			// Strip /ns/m/ prefix to get the node_modules path
 			vitePath = vitePath.replace(/^\/ns\/m\//, '/');
+			// Strip boot-path prefix used during initial HTTP boot progress tracking.
+			vitePath = vitePath.replace(/^\/__ns_boot__\/[^/]+/, '');
 			// Strip HMR cache-busting path segments
 			vitePath = vitePath.replace(/\/__ns_hmr__\/[^/]+/, '');
 
@@ -4030,6 +4042,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					let spec = urlObj.searchParams.get('path') || '';
 					// Optional graph version pin for deterministic boot
 					const forcedVer = urlObj.searchParams.get('v');
+					let bootTaggedRequest = false;
 					if (!spec) {
 						const base = '/ns/m';
 						let rest = urlObj.pathname.slice(base.length);
@@ -4048,13 +4061,27 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					}
 					const serverRoot = ((server as any).config?.root || process.cwd()) as string;
 					spec = spec.replace(/[?#].*$/, '');
-					// Accept path-based HMR cache-busting: /ns/m/__ns_hmr__/<tag>/<real-spec>
+					// Accept path-based boot/HMR prefixes:
+					//   /ns/m/__ns_boot__/b1/<real-spec>
+					//   /ns/m/__ns_hmr__/<tag>/<real-spec>
+					//   /ns/m/__ns_boot__/b1/__ns_hmr__/<tag>/<real-spec>
 					// The iOS HTTP ESM loader canonicalizes cache keys by stripping query params,
 					// so we must carry the cache-buster in the path.
 					try {
-						const m = spec.match(/^\/?__ns_hmr__\/[^\/]+(\/.*)?$/);
-						if (m) {
-							spec = m[1] || '/';
+						let changed = true;
+						while (changed) {
+							changed = false;
+							const bootMatch = spec.match(/^\/?__ns_boot__\/[^\/]+(\/.*)?$/);
+							if (bootMatch) {
+								bootTaggedRequest = true;
+								spec = bootMatch[1] || '/';
+								changed = true;
+							}
+							const hmrMatch = spec.match(/^\/?__ns_hmr__\/[^\/]+(\/.*)?$/);
+							if (hmrMatch) {
+								spec = hmrMatch[1] || '/';
+								changed = true;
+							}
 						}
 					} catch {}
 					// Normalize absolute filesystem paths back to project-relative ids (e.g. /src/app.ts)
@@ -4503,10 +4530,14 @@ export const piniaSymbol = p.piniaSymbol;
 						const ver = String(forcedVer || graphVersion || 0);
 						const origin = getServerOrigin(server);
 						const hmrPrefix = `/ns/m/__ns_hmr__/v${ver}`;
+						const bootHmrPrefix = `/ns/m/__ns_boot__/b1/__ns_hmr__/v${ver}`;
 						const rewritePath = (p: string) => {
 							if (!p || !p.startsWith('/ns/m/')) return p;
-							if (p.startsWith('/ns/m/__ns_hmr__/')) return p; // already prefixed
-							return hmrPrefix + p.slice('/ns/m'.length);
+							if (p.startsWith('/ns/m/__ns_boot__/')) return p;
+							if (p.startsWith('/ns/m/__ns_hmr__/')) {
+								return bootTaggedRequest ? `/ns/m/__ns_boot__/b1${p.slice('/ns/m'.length)}` : p;
+							}
+							return (bootTaggedRequest ? bootHmrPrefix : hmrPrefix) + p.slice('/ns/m'.length);
 						};
 						// 1) Static imports: import ... from "/ns/m/..."
 						code = code.replace(/(from\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
@@ -4533,13 +4564,25 @@ export const piniaSymbol = p.piniaSymbol;
 						code = ensureDestructureCoreImports(code);
 					} catch {}
 
+					// Boot-time module graph progress: while the app is still replacing the
+					// placeholder, emit lightweight progress updates as /ns/m modules begin
+					// evaluating. This keeps the overlay moving during large initial graphs.
+					try {
+						if (bootTaggedRequest) {
+							const bootModuleLabel = String(spec || '').replace(/\\/g, '/');
+							const bootProgressSnippet = buildBootProgressSnippet(bootModuleLabel);
+							code = bootProgressSnippet + code;
+							code = hoistTopLevelStaticImports(code);
+						}
+					} catch {}
+
 					// Dev-only: link-check static imports to surface missing bindings early
 					try {
 						const devCheck = process.env.NODE_ENV !== 'production';
 						if (devCheck) {
 							const ast = babelParse(code, {
 								sourceType: 'module',
-								plugins: ['typescript', 'importMeta'] as any,
+								plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
 							}) as any;
 							const imports: Array<{ src: string; wantsDefault: boolean }> = [];
 							babelTraverse(ast, {

@@ -1,3 +1,5 @@
+import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
+
 // HTTP-only dev boot routine
 export function transformEntryRuntimeForEval(src: string): string {
 	let transformed = src
@@ -15,6 +17,10 @@ export function transformEntryRuntimeForEval(src: string): string {
 
 export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos', mainEntryRelPosix: string, defaultHost: string, verbose?: boolean) {
 	if (verbose) console.info('[ns-entry] HMR enabled: attempting HTTP-only boot');
+	ensureHmrDevOverlayRuntimeInstalled(verbose);
+	setHmrBootStage('probing-origin', {
+		detail: 'Looking for a reachable Vite dev server.',
+	});
 
 	async function __ns_import_http(u: string): Promise<any> {
 		try {
@@ -90,6 +96,9 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 	// Use fetch+eval to load the entry runtime, bypassing native ESM import
 	// which can cause hard V8 crashes on iOS when importing HTTP modules.
 	async function __ns_fetch_eval_entry(url: string): Promise<(...args: any[]) => any> {
+		setHmrBootStage('loading-entry-runtime', {
+			detail: url,
+		});
 		const r = await fetch(url);
 		if (!r.ok) throw new Error(`entry-rt fetch failed: ${r.status}`);
 		let src = await r.text();
@@ -104,8 +113,14 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 	}
 
 	const tryLoad = async () => {
-		for (const origin of originCandidates) {
+		for (let index = 0; index < originCandidates.length; index++) {
+			const origin = originCandidates[index];
 			try {
+				setHmrBootStage('probing-origin', {
+					origin,
+					attempt: index + 1,
+					attempts: originCandidates.length,
+				});
 				const __rtUrl = origin + '/ns/entry-rt';
 				if (verbose) console.info('[ns-entry] trying', __rtUrl);
 				const __start = await __ns_fetch_eval_entry(__rtUrl);
@@ -130,9 +145,15 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 
 	if (!loaded) {
 		console.error('[ns-entry] HTTP entry load failed after initial retries; holding on temporary root and continuing to retry…', lastErr && ((lastErr as any).message || lastErr));
+		setHmrBootStage('probing-origin', {
+			detail: 'Vite dev server not reachable yet. Retrying every second.',
+		});
 		while (!loaded) {
 			await new Promise((r) => setTimeout(r, 1000));
 			originCandidates = buildOrigins();
+			setHmrBootStage('probing-origin', {
+				detail: `Retrying ${originCandidates[0] || 'the configured dev server origin'}`,
+			});
 			await tryLoad();
 		}
 	}

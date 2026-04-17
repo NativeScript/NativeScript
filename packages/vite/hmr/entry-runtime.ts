@@ -13,6 +13,74 @@ type HttpPreloadResult = { ok: boolean; ms: number; url: string; err?: string };
 
 declare const __NS_APP_ROOT_VIRTUAL__: string;
 
+function updateBootOverlay(stage: string, info?: any): void {
+	try {
+		const api = (globalThis as any).__NS_HMR_DEV_OVERLAY__;
+		if (api && typeof api.setBootStage === 'function') {
+			api.setBootStage(stage, info);
+		}
+	} catch {}
+}
+
+async function updateBootOverlayAndYield(stage: string, info?: any): Promise<void> {
+	updateBootOverlay(stage, info);
+	await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+function prepareBootImportProgress(url: string, attempt: number, attempts: number): void {
+	const g = globalThis as any;
+	g.__NS_HMR_BOOT_MAIN_URL__ = url;
+	g.__NS_HMR_BOOT_MAIN_ATTEMPT__ = attempt;
+	g.__NS_HMR_BOOT_MAIN_ATTEMPTS__ = attempts;
+	g.__NS_HMR_BOOT_MODULE_COUNT__ = 0;
+	g.__NS_HMR_BOOT_LAST_MODULE__ = '';
+	g.__NS_HMR_BOOT_LAST_PROGRESS_AT__ = 0;
+	g.__NS_HMR_BOOT_IMPORT_STARTED_AT__ = Date.now();
+}
+
+function clearBootImportProgress(): void {
+	const g = globalThis as any;
+	delete g.__NS_HMR_BOOT_MAIN_URL__;
+	delete g.__NS_HMR_BOOT_MAIN_ATTEMPT__;
+	delete g.__NS_HMR_BOOT_MAIN_ATTEMPTS__;
+	delete g.__NS_HMR_BOOT_MODULE_COUNT__;
+	delete g.__NS_HMR_BOOT_LAST_MODULE__;
+	delete g.__NS_HMR_BOOT_LAST_PROGRESS_AT__;
+	delete g.__NS_HMR_BOOT_IMPORT_STARTED_AT__;
+}
+
+function buildBootImportDetail(url: string): string {
+	const g = globalThis as any;
+	const count = Number(g.__NS_HMR_BOOT_MODULE_COUNT__ || 0);
+	const lastModule = typeof g.__NS_HMR_BOOT_LAST_MODULE__ === 'string' ? g.__NS_HMR_BOOT_LAST_MODULE__ : '';
+	const lines = [count > 0 ? `Evaluated ${count} modules` : 'Resolving the module graph'];
+	lines.push(lastModule || url);
+	return lines.join('\n');
+}
+
+function computeBootImportProgress(): number {
+	const g = globalThis as any;
+	const count = Number(g.__NS_HMR_BOOT_MODULE_COUNT__ || 0);
+	const startedAt = Number(g.__NS_HMR_BOOT_IMPORT_STARTED_AT__ || Date.now());
+	const elapsedMs = Math.max(0, Date.now() - startedAt);
+	const progressFromCount = count > 0 ? Math.min(10, Math.round((Math.log(count + 1) / Math.LN2) * 2)) : 0;
+	const progressFromTime = Math.min(8, Math.floor(elapsedMs / 800));
+	return Math.min(94, 82 + Math.max(progressFromCount, progressFromTime));
+}
+
+function startBootImportHeartbeat(url: string, attempt: number, attempts: number): () => void {
+	const timer = setInterval(() => {
+		updateBootOverlay('importing-main', {
+			detail: buildBootImportDetail(url),
+			attempt,
+			attempts,
+			progress: computeBootImportProgress(),
+		});
+	}, 350);
+
+	return () => clearInterval(timer);
+}
+
 export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): HmrCssApplier | null {
 	try {
 		const g = globalThis as any;
@@ -141,6 +209,9 @@ export default async function startEntry(opts: EntryOpts) {
 		// import map instead of relying on Vite-side import rewriting.
 		const configureRuntime = (globalThis as any).__nsConfigureRuntime;
 		if (typeof configureRuntime === 'function') {
+			await updateBootOverlayAndYield('configuring-import-map', {
+				detail: ORIGIN + '/ns/import-map.json',
+			});
 			const t_imap = Date.now();
 			try {
 				const imapRes = await fetch(ORIGIN + '/ns/import-map.json');
@@ -165,6 +236,9 @@ export default async function startEntry(opts: EntryOpts) {
 		}
 
 		// Preload runtime bridge and core bridge
+		await updateBootOverlayAndYield('loading-runtime-bridge', {
+			detail: ORIGIN + '/ns/rt/' + VER,
+		});
 		const t_rt = Date.now();
 		try {
 			await importHttp(ORIGIN + '/ns/rt/' + VER);
@@ -175,10 +249,19 @@ export default async function startEntry(opts: EntryOpts) {
 				console.warn('[ns-entry] /ns/rt preload failed:', e_rt && (e_rt.message || e_rt));
 			} catch {}
 		}
+		await updateBootOverlayAndYield('loading-core-bridge', {
+			detail: ORIGIN + '/ns/core/' + VER,
+		});
 		const t_core = Date.now();
 		try {
 			const coreBridge = await importHttp(ORIGIN + '/ns/core/' + VER);
+			await updateBootOverlayAndYield('preloading-style-scope', {
+				detail: ORIGIN + '/ns/core/' + VER + '?p=ui/styling/style-scope.js',
+			});
 			TRACE.preload.coreStyleScope = await preloadHttpCoreStyleScope(importHttp, ORIGIN, VER, VERBOSE);
+			await updateBootOverlayAndYield('installing-css', {
+				detail: 'Applying app.css in the shared HTTP core realm.',
+			});
 			installHttpCoreCssSupport(coreBridge, VERBOSE);
 			TRACE.preload.core = { ok: true, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER };
 		} catch (e_core: any) {
@@ -189,13 +272,22 @@ export default async function startEntry(opts: EntryOpts) {
 		}
 
 		const MAIN_URL = ORIGIN + '/ns/m' + MAIN + '?v=' + VER;
+		const MAIN_IMPORT_URL = ORIGIN + '/ns/m/__ns_boot__/b1' + MAIN + '?v=' + VER;
 		if (VERBOSE) console.log(D, 'importing main module:', MAIN_URL);
-		(globalThis as any).__NS_ENTRY_LAST_TARGET__ = MAIN_URL; // used by fetchCodeframe sanitized-vs-raw tag
+		(globalThis as any).__NS_ENTRY_LAST_TARGET__ = MAIN_IMPORT_URL; // used by fetchCodeframe sanitized-vs-raw tag
 		const t_main = Date.now();
 		let lastMainErr: any = null;
 		for (let attempt = 0; attempt < 6; attempt++) {
+			prepareBootImportProgress(MAIN_URL, attempt + 1, 6);
+			const stopBootImportHeartbeat = startBootImportHeartbeat(MAIN_URL, attempt + 1, 6);
 			try {
-				const url = attempt === 0 ? MAIN_URL : MAIN_URL + '&r=' + String(Date.now());
+				await updateBootOverlayAndYield('importing-main', {
+					detail: buildBootImportDetail(MAIN_URL),
+					attempt: attempt + 1,
+					attempts: 6,
+					progress: computeBootImportProgress(),
+				});
+				const url = attempt === 0 ? MAIN_IMPORT_URL : MAIN_IMPORT_URL + '&r=' + String(Date.now());
 				if (VERBOSE) console.log(D, 'import attempt', attempt, url);
 				await importHttp(url);
 				if (VERBOSE) console.log(D, 'import succeeded on attempt', attempt, 'took', Date.now() - t_main, 'ms');
@@ -206,11 +298,20 @@ export default async function startEntry(opts: EntryOpts) {
 				if (VERBOSE) console.log(D, 'import attempt', attempt, 'FAILED:', e_main?.message || e_main);
 				// brief backoff; allows dev server and device network to settle
 				await new Promise((r) => setTimeout(r, 150 + attempt * 150));
+			} finally {
+				stopBootImportHeartbeat();
 			}
 		}
+		clearBootImportProgress();
 		if (lastMainErr) throw lastMainErr;
-		TRACE.main = { ok: true, ms: Date.now() - t_main, url: MAIN_URL };
+		TRACE.main = { ok: true, ms: Date.now() - t_main, url: MAIN_IMPORT_URL };
+		await updateBootOverlayAndYield('waiting-for-app', {
+			detail: 'Waiting for the real application root to replace the boot placeholder.',
+		});
 		(globalThis as any).__NS_ENTRY_OK__ = true;
+		updateBootOverlay('ready', {
+			detail: 'HTTP HMR boot is ready. The app root should take over now.',
+		});
 		if (VERBOSE) console.log(D, '__NS_HMR_BOOT_COMPLETE__ = true');
 		(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = true;
 
@@ -244,12 +345,16 @@ export default async function startEntry(opts: EntryOpts) {
 			}
 		} catch {}
 	} catch (e: any) {
+		clearBootImportProgress();
 		const errInfo = { message: String(e && (e.message || e)), stack: e && e.stack ? String(e.stack) : '' };
 		const loc = parseStackUrlLineCol(e);
 		const TARGET = loc.url || (globalThis as any).__NS_ENTRY_LAST_TARGET__;
 		(errInfo as any).url = loc.url;
 		(errInfo as any).line = loc.line;
 		(errInfo as any).column = loc.column;
+		updateBootOverlay('error', {
+			detail: errInfo.message,
+		});
 		(globalThis as any).__NS_ENTRY_ERROR__ = errInfo;
 		TRACE.error = errInfo;
 		try {

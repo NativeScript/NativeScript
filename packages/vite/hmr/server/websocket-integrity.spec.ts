@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parse as babelParse } from '@babel/parser';
-import { ensureNativeScriptModuleBindings } from './websocket.js';
+import { buildBootProgressSnippet, ensureNativeScriptModuleBindings } from './websocket.js';
 
 function parseOk(code: string): { ok: boolean; error?: any } {
 	try {
@@ -55,6 +55,11 @@ export function boot() {
 	it('keeps named-only plugin import syntax-valid after removal', () => {
 		const input = `import { install } from '@nativescript-community/gesturehandler'; export const x = install;`;
 		const out = ensureNativeScriptModuleBindings(input);
+		expect(parseOk(out).ok).toBe(true);
+	});
+
+	it('produces valid JS for the boot progress snippet', () => {
+		const out = `${buildBootProgressSnippet('/src/main.ts')}export const ready = true;`;
 		expect(parseOk(out).ok).toBe(true);
 	});
 });

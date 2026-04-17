@@ -47,6 +47,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 		const Frame = getCore('Frame');
 		const Page = getCore('Page');
 		const Label = getCore('Label');
+		const ActivityIndicator = getCore('ActivityIndicator');
 		if (!Application || !Frame || !Page || !Label) {
 			if (verbose) console.warn('[ns-placeholder] core classes unavailable');
 			return;
@@ -59,13 +60,59 @@ export function installRootPlaceholder(verbose?: boolean) {
 			try {
 				const prev = args?.root;
 				if (!prev && Frame && Page && Label) {
+					const StackLayout = getCore('StackLayout');
 					const page = new Page();
 					page.actionBarHidden = true;
-					const label = new Label();
-					label.text = 'Starting NativeScript + Vite dev server…';
-					label.textAlignment = 'center';
-					label.padding = 12;
-					page.content = label;
+
+					const titleLabel = new Label();
+					titleLabel.text = 'Starting NativeScript + Vite dev server…';
+					titleLabel.textAlignment = 'center';
+					titleLabel.textWrap = true;
+					titleLabel.fontSize = 20;
+
+					const statusLabel = new Label();
+					statusLabel.text = 'Preparing the HTTP HMR bootstrap (4%)';
+					statusLabel.textAlignment = 'center';
+					statusLabel.textWrap = true;
+					statusLabel.fontSize = 14;
+					statusLabel.marginTop = 12;
+
+					const activityIndicator = ActivityIndicator
+						? (() => {
+								const indicator = new ActivityIndicator();
+								indicator.busy = true;
+								indicator.marginTop = 16;
+								indicator.width = 28;
+								indicator.height = 28;
+								indicator.horizontalAlignment = 'center';
+								return indicator;
+							})()
+						: null;
+
+					if (StackLayout) {
+						const root = new StackLayout();
+						root.padding = 24;
+						root.verticalAlignment = 'middle';
+						root.horizontalAlignment = 'center';
+						root.addChild(titleLabel);
+						root.addChild(statusLabel);
+						if (activityIndicator) {
+							root.addChild(activityIndicator);
+						}
+						page.content = root;
+					} else {
+						// Fallback: just show the title label centered
+						titleLabel.verticalAlignment = 'middle';
+						titleLabel.horizontalAlignment = 'center';
+						titleLabel.width = 280;
+						titleLabel.padding = 12;
+						page.content = titleLabel;
+					}
+
+					// Store refs so the overlay API can update the status label
+					g['__NS_DEV_BOOT_STATUS_LABEL__'] = statusLabel;
+					g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'] = activityIndicator;
+
 					const frame = new Frame();
 					frame.navigate({ create: () => page, clearHistory: true, animated: false });
 					try {
