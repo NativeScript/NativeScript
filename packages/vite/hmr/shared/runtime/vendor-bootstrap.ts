@@ -11,6 +11,14 @@ export function installVendorBootstrap(vendorManifest: any, __nsVendorModuleMap:
 			} catch {}
 		}
 	};
+	const record = (key: string, details: any) => {
+		try {
+			const fn = g['__NS_RECORD_MODULE_PROVENANCE__'];
+			if (typeof fn === 'function') {
+				fn(key, details);
+			}
+		} catch {}
+	};
 
 	const manifest = vendorManifest ?? {};
 	let registry: Map<string, any> = g['__nsVendorRegistry'];
@@ -35,6 +43,11 @@ export function installVendorBootstrap(vendorManifest: any, __nsVendorModuleMap:
 	}
 	for (const [id, mod] of Object.entries(modules)) {
 		registry.set(id, mod);
+		record(id, {
+			kind: 'vendor-bundle',
+			specifier: id,
+			via: 'vendor-bootstrap',
+		});
 	}
 
 	const baseRequire = typeof g.require === 'function' ? g.require.bind(g) : undefined;
@@ -63,14 +76,34 @@ export function installVendorBootstrap(vendorManifest: any, __nsVendorModuleMap:
 
 	const ensureModule = (id: string) => {
 		const canonical = resolve(id);
-		if (registry.has(canonical)) return registry.get(canonical);
+		if (registry.has(canonical)) {
+			record(canonical, {
+				kind: 'vendor-registry',
+				specifier: id,
+				via: 'vendor-bootstrap',
+			});
+			return registry.get(canonical);
+		}
 		if ((modules as any)[canonical]) {
 			const mod = (modules as any)[canonical];
 			registry.set(canonical, mod);
+			record(canonical, {
+				kind: 'vendor-bundle',
+				specifier: id,
+				via: 'vendor-bootstrap',
+			});
 			return mod;
 		}
 		const late = typeof g['__nsBaseRequire'] === 'function' ? g['__nsBaseRequire'] : typeof g.require === 'function' ? g.require.bind(g) : undefined;
-		if (late) return late(id);
+		if (late) {
+			const mod = late(id);
+			record(canonical, {
+				kind: 'base-require',
+				specifier: id,
+				via: 'vendor-bootstrap',
+			});
+			return mod;
+		}
 		throw new Error('[ns-vendor] Module not available: ' + id + ' (canonical: ' + canonical + ')');
 	};
 
@@ -84,10 +117,24 @@ export function installVendorBootstrap(vendorManifest: any, __nsVendorModuleMap:
 							return ensureModule(id);
 						} catch (error) {
 							try {
-								return existingNsRequire(id);
+								const mod = existingNsRequire(id);
+								record(resolve(id), {
+									kind: 'legacy-ns-require',
+									specifier: id,
+									via: 'vendor-bootstrap',
+								});
+								return mod;
 							} catch {
 								const late = typeof g['__nsBaseRequire'] === 'function' ? g['__nsBaseRequire'] : typeof g.require === 'function' ? g.require.bind(g) : undefined;
-								if (late) return late(id);
+								if (late) {
+									const mod = late(id);
+									record(resolve(id), {
+										kind: 'base-require',
+										specifier: id,
+										via: 'vendor-bootstrap',
+									});
+									return mod;
+								}
 								throw error;
 							}
 						}

@@ -240,6 +240,159 @@ type HotUpdateGraphModuleLike = {
 	importers?: Iterable<HotUpdateGraphModuleLike>;
 };
 
+const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
+
+type TopLevelImportRecord = {
+	start: number;
+	end: number;
+	text: string;
+	source: string;
+	hasOnlyNamedSpecifiers: boolean;
+	namedBindings: Array<{ importedName: string; text: string }>;
+};
+
+function collectTopLevelImportRecords(code: string): TopLevelImportRecord[] {
+	if (!code || typeof code !== 'string' || !/\bimport\b/.test(code)) {
+		return [];
+	}
+
+	try {
+		const ast = babelParse(code, {
+			sourceType: 'module',
+			plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
+		}) as any;
+		const body = ast?.program?.body;
+		if (!Array.isArray(body)) {
+			return [];
+		}
+
+		return body
+			.filter((node: any) => t.isImportDeclaration(node) && typeof node.start === 'number' && typeof node.end === 'number' && typeof node.source?.value === 'string')
+			.map((node: any) => ({
+				start: node.start as number,
+				end: node.end as number,
+				text: code.slice(node.start as number, node.end as number),
+				source: node.source.value as string,
+				hasOnlyNamedSpecifiers: Array.isArray(node.specifiers) && node.specifiers.length > 0 && node.specifiers.every((spec: any) => t.isImportSpecifier(spec)),
+				namedBindings: Array.isArray(node.specifiers)
+					? node.specifiers
+							.filter((spec: any) => t.isImportSpecifier(spec) && typeof spec.start === 'number' && typeof spec.end === 'number')
+							.map((spec: any) => ({
+								importedName: t.isIdentifier(spec.imported) ? spec.imported.name : String(spec.imported?.value || ''),
+								text: code.slice(spec.start as number, spec.end as number),
+							}))
+					: [],
+			}));
+	} catch {
+		return [];
+	}
+}
+
+function hoistTopLevelStaticImports(code: string): string {
+	const imports = collectTopLevelImportRecords(code);
+	if (!imports.length) {
+		return code;
+	}
+
+	let stripped = code;
+	for (const imp of [...imports].sort((left, right) => right.start - left.start)) {
+		stripped = stripped.slice(0, imp.start) + stripped.slice(imp.end);
+	}
+
+	const hoisted: string[] = [];
+	const seen = new Set<string>();
+	for (const imp of imports) {
+		const text = imp.text.trim();
+		if (!text || seen.has(text)) {
+			continue;
+		}
+		seen.add(text);
+		hoisted.push(text);
+	}
+
+	if (!hoisted.length) {
+		return stripped;
+	}
+
+	return `${hoisted.join('\n')}\n${stripped.replace(/^\s*\n+/, '')}`;
+}
+
+function rewriteVitePrebundleImportsForDevice(code: string, preserveVendorImports: boolean): string {
+	const imports = collectTopLevelImportRecords(code);
+	if (!imports.length) {
+		return code;
+	}
+
+	const edits: Array<{ start: number; end: number; text: string }> = [];
+	for (const imp of imports) {
+		const source = imp.source;
+		const depMatch = source.match(/(?:^|\/)node_modules\/\.vite\/deps\/(.+)$/);
+		const depPath = depMatch?.[1] || (source.startsWith('.vite/deps/') ? source.slice('.vite/deps/'.length) : null);
+		if (!depPath) {
+			continue;
+		}
+
+		let replacement = '';
+		if (preserveVendorImports) {
+			const canonical = resolveVendorFromCandidate(`.vite/deps/${depPath}`);
+			const bareSpecifier = canonical || viteDepsPathToBareSpecifier(depPath);
+			if (bareSpecifier) {
+				replacement = imp.text.replace(source, bareSpecifier);
+			}
+		}
+
+		edits.push({
+			start: imp.start,
+			end: imp.end,
+			text: replacement,
+		});
+	}
+
+	if (!edits.length) {
+		return code;
+	}
+
+	let next = code;
+	for (const edit of edits.sort((left, right) => right.start - left.start)) {
+		next = next.slice(0, edit.start) + edit.text + next.slice(edit.end);
+	}
+
+	return next;
+}
+
+function buildNodeModuleProvenancePrelude(sourceId?: string): string {
+	if (!sourceId) {
+		return '';
+	}
+
+	const cleaned = sourceId.replace(PAT.QUERY_PATTERN, '');
+	let normalized = normalizeNodeModulesSpecifier(cleaned);
+	if (!normalized) {
+		const viteDepsMatch = cleaned.match(/(?:^|\/)node_modules\/\.vite\/deps\/([^?#]+)/);
+		if (viteDepsMatch?.[1]) {
+			normalized = `.vite/deps/${viteDepsMatch[1]}`;
+		}
+	}
+
+	if (!normalized) {
+		return '';
+	}
+
+	let packageSpecifier = normalized;
+	let via = 'node_modules';
+	if (normalized.startsWith('.vite/deps/')) {
+		via = 'vite-deps';
+		packageSpecifier = viteDepsPathToBareSpecifier(normalized.slice('.vite/deps/'.length)) || normalized;
+	}
+
+	const rootPackage = extractRootPackageName(packageSpecifier);
+	if (!rootPackage) {
+		return '';
+	}
+
+	return `try { const __nsRecord = globalThis.__NS_RECORD_MODULE_PROVENANCE__; if (typeof __nsRecord === 'function') { __nsRecord(${JSON.stringify(rootPackage)}, ${JSON.stringify({ kind: 'http-esm', specifier: packageSpecifier, url: sourceId, via })}); } } catch {}\n`;
+}
+
 export function collectGraphUpdateModulesForHotUpdate(options: { file: string; flavor: string; modules?: Iterable<HotUpdateGraphModuleLike>; getModuleById: (id: string) => HotUpdateGraphModuleLike | undefined }): HotUpdateGraphModuleLike[] {
 	const targets = new Map<string, HotUpdateGraphModuleLike>();
 	const addTarget = (mod?: HotUpdateGraphModuleLike | null) => {
@@ -2050,14 +2203,20 @@ function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, p
 function deduplicateLinkerImports(code: string): string {
 	if (!code) return code;
 	try {
+		const imports = collectTopLevelImportRecords(code);
+		if (!imports.length) {
+			return code;
+		}
+
 		// ── Step 1: collect resolved imports already in the file ──────────
 		const pkgUrlMap = new Map<string, string>();
 		const pkgBindings = new Map<string, Set<string>>();
 
-		const resolvedRe = /import\s+(?:\{([^}]*)\}|\*\s+as\s+\w+)\s+from\s+["']((?:https?:\/\/|\/)[^"']+)["']/g;
-		let m: RegExpExecArray | null;
-		while ((m = resolvedRe.exec(code)) !== null) {
-			const url = m[2];
+		for (const imp of imports) {
+			const url = imp.source;
+			if (!/^https?:\/\//.test(url) && !url.startsWith('/')) {
+				continue;
+			}
 			const nmIdx = url.lastIndexOf('/node_modules/');
 			if (nmIdx === -1) continue;
 
@@ -2067,15 +2226,10 @@ function deduplicateLinkerImports(code: string): string {
 
 			if (!pkgUrlMap.has(pkg)) pkgUrlMap.set(pkg, url);
 
-			if (m[1]) {
+			if (imp.namedBindings.length) {
 				if (!pkgBindings.has(pkg)) pkgBindings.set(pkg, new Set());
-				const names = m[1].split(',');
-				for (const n of names) {
-					const name = n
-						.trim()
-						.split(/\s+as\s+/)[0]
-						.trim();
-					if (name) pkgBindings.get(pkg)!.add(name);
+				for (const binding of imp.namedBindings) {
+					if (binding.importedName) pkgBindings.get(pkg)!.add(binding.importedName);
 				}
 			}
 		}
@@ -2083,48 +2237,55 @@ function deduplicateLinkerImports(code: string): string {
 		if (pkgUrlMap.size === 0) return code;
 
 		// ── Step 2: rewrite bare-specifier imports ───────────────────────
-		return code.replace(/^([ \t]*)import\s+\{([^}]+)\}\s+from\s+['"]([^"']+)['"];?\s*$/gm, (full, indent: string, bindingsStr: string, specifier: string) => {
-			// Only process bare specifiers (not already resolved)
+		const edits: Array<{ start: number; end: number; text: string }> = [];
+		for (const imp of imports) {
+			if (!imp.hasOnlyNamedSpecifiers) {
+				continue;
+			}
+			const specifier = imp.source;
 			if (specifier.startsWith('/') || specifier.startsWith('.') || specifier.startsWith('http')) {
-				return full;
+				continue;
 			}
 
 			const parts = specifier.split('/');
 			const pkg = specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
-
 			const url = pkgUrlMap.get(pkg);
-			if (!url) return full;
+			if (!url) {
+				continue;
+			}
 
-			const existing = pkgBindings.get(pkg) || new Set();
-			const bindings = bindingsStr
-				.split(',')
-				.map((b: string) => b.trim())
-				.filter(Boolean);
-			const newBindings = bindings.filter((b: string) => {
-				const name = b.split(/\s+as\s+/)[0].trim();
-				return !existing.has(name);
-			});
+			const existing = pkgBindings.get(pkg) || new Set<string>();
+			const newBindings = imp.namedBindings.filter((binding) => !existing.has(binding.importedName));
 
 			if (newBindings.length === 0) {
-				return ''; // all duplicates — remove line
+				edits.push({ start: imp.start, end: imp.end, text: '' });
+				continue;
 			}
 
-			if (newBindings.length === bindings.length) {
-				// ZERO duplicates — this is NOT a linker artifact. It's an
-				// intentional bare specifier (e.g., vendor bridge). Leave it
-				// as-is; rewriting would route to the wrong subpath URL
-				// (e.g., package root → angular subpath).
-				return full;
+			if (newBindings.length === imp.namedBindings.length) {
+				continue;
 			}
 
-			// Track newly added bindings
-			for (const b of newBindings) {
-				const name = b.split(/\s+as\s+/)[0].trim();
-				existing.add(name);
+			for (const binding of newBindings) {
+				existing.add(binding.importedName);
 			}
 
-			return `${indent}import { ${newBindings.join(', ')} } from "${url}";`;
-		});
+			edits.push({
+				start: imp.start,
+				end: imp.end,
+				text: `import { ${newBindings.map((binding) => binding.text).join(', ')} } from ${JSON.stringify(url)};`,
+			});
+		}
+
+		if (!edits.length) {
+			return code;
+		}
+
+		let next = code;
+		for (const edit of edits.sort((left, right) => right.start - left.start)) {
+			next = next.slice(0, edit.start) + edit.text + next.slice(edit.end);
+		}
+		return next;
 	} catch {
 		return code;
 	}
@@ -2170,8 +2331,10 @@ export function wrapCommonJsModuleForDevice(code: string): string {
 		const prelude =
 			`var module = { exports: {} }; var exports = module.exports;\n` +
 			`var __ns_cjs_require_base = (typeof globalThis.__nsBaseRequire === 'function' ? globalThis.__nsBaseRequire : (typeof globalThis.__nsRequire === 'function' ? globalThis.__nsRequire : (typeof globalThis.require === 'function' ? globalThis.require : undefined)));\n` +
+			`var __ns_cjs_require_kind = (typeof globalThis.__nsBaseRequire === 'function' ? 'base-require' : (typeof globalThis.__nsRequire === 'function' ? 'vendor-require' : 'global-require'));\n` +
 			`var require = function(spec) {\n` +
 			`  if (!__ns_cjs_require_base) { throw new Error('require is not defined'); }\n` +
+			`  try { var __nsRecord = globalThis.__NS_RECORD_MODULE_PROVENANCE__; if (typeof __nsRecord === 'function') { __nsRecord(String(spec), { kind: __ns_cjs_require_kind, specifier: String(spec), via: 'cjs-wrapper', parent: (typeof import.meta !== 'undefined' && import.meta && import.meta.url) ? import.meta.url : undefined }); } } catch (e) {}\n` +
 			`  var mod = __ns_cjs_require_base(spec);\n` +
 			`  try {\n` +
 			`    if (mod && (typeof mod === 'object' || typeof mod === 'function') && mod.default !== undefined) {\n` +
@@ -2195,7 +2358,7 @@ export function wrapCommonJsModuleForDevice(code: string): string {
  * Process code for device: inject globals, remove framework imports
  */
 
-function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveVendorImports: boolean = false, isNodeModule: boolean = false): string {
+function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveVendorImports: boolean = false, isNodeModule: boolean = false, sourceId?: string): string {
 	let result = code;
 
 	// Ensure Angular partial declarations are linked before any sanitizers run so runtime never hits the JIT path.
@@ -2234,6 +2397,10 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		'const __TEST__ = globalThis.__TEST__ !== undefined ? globalThis.__TEST__ : false;',
 	];
 	result = allGlobals.join('\n') + '\n' + result;
+	const nodeModuleProvenancePrelude = buildNodeModuleProvenancePrelude(sourceId);
+	if (nodeModuleProvenancePrelude) {
+		result = nodeModuleProvenancePrelude + result;
+	}
 
 	// AST normalization: inject /ns/rt helper aliases for underscore-prefixed identifiers.
 	// ONLY for app source files — library code in node_modules should be served as-is.
@@ -2338,42 +2505,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	// Strip Vite prebundle deps imports (both named and side-effect) and any malformed const string artifacts
 	// Example problematic line observed: const "/node_modules/.vite/deps/@nativescript_firebase-messaging.js?v=...";
 	if (/node_modules\/\.vite\/deps\//.test(result)) {
-		if (preserveVendorImports) {
-			// When preserveVendorImports is true, vendor .vite/deps/ imports must be
-			// rewritten to bare specifiers (not stripped!) so the device-side import map
-			// can resolve them. Non-vendor .vite/deps/ imports are still stripped.
-			// Named imports: import { X } from "/node_modules/.vite/deps/pkg.js?v=..."
-			result = result.replace(/^([\t ]*import\s+[^;]*from\s+["'])\/?node_modules\/\.vite\/deps\/([^"']+)(["'];?\s*)$/gm, (_m, pre, depPath, post) => {
-				const canonical = resolveVendorFromCandidate(`.vite/deps/${depPath}`);
-				if (canonical) {
-					return `${pre}${canonical}${post}`;
-				}
-				// Not a vendor root — try to reconstruct bare specifier for subpath entries.
-				// e.g., @nativescript_tanstack-router_solid.js → @nativescript/tanstack-router/solid
-				const bareSpecifier = viteDepsPathToBareSpecifier(depPath);
-				if (bareSpecifier) {
-					return `${pre}${bareSpecifier}${post}`;
-				}
-				return ''; // strip non-vendor
-			});
-			// Side-effect only: import "/node_modules/.vite/deps/pkg.js?v=..."
-			result = result.replace(/^([\t ]*import\s+["'])\/?node_modules\/\.vite\/deps\/([^"']+)(["'];?\s*)$/gm, (_m, pre, depPath, post) => {
-				const canonical = resolveVendorFromCandidate(`.vite/deps/${depPath}`);
-				if (canonical) {
-					return `${pre}${canonical}${post}`;
-				}
-				const bareSpecifier = viteDepsPathToBareSpecifier(depPath);
-				if (bareSpecifier) {
-					return `${pre}${bareSpecifier}${post}`;
-				}
-				return ''; // strip non-vendor
-			});
-		} else {
-			// Named imports from prebundle deps
-			result = result.replace(/^[\t ]*import\s+[^;]*from\s+["']\/?node_modules\/\.vite\/deps\/[^"']+["'];?\s*$/gm, '');
-			// Side-effect only imports from prebundle deps
-			result = result.replace(/^[\t ]*import\s+["']\/?node_modules\/\.vite\/deps\/[^"']+["'];?\s*$/gm, '');
-		}
+		result = rewriteVitePrebundleImportsForDevice(result, preserveVendorImports);
 		// Malformed const string lines accidentally produced by upstream transforms
 		result = result.replace(/^[\t ]*const\s+["']\/?node_modules\/\.vite\/deps\/[^"']+["'];?\s*$/gm, '// [hmr-sanitize] stripped malformed const prebundle ref\n');
 		// Naked string-only lines pointing at prebundle deps
@@ -2584,16 +2716,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	// always come before any statements that might reference their bindings. This ordering avoids
 	// device runtimes that are stricter about imports-first semantics during module instantiation.
 	try {
-		const importLineRe = /^\s*import\s+[^;]+;?\s*$/gm;
-		const lines: string[] = [];
-		result = result.replace(importLineRe, (imp) => {
-			lines.push(imp.trim());
-			return '';
-		});
-		if (lines.length) {
-			const hoisted = Array.from(new Set(lines)).join('\n') + '\n';
-			result = hoisted + result;
-		}
+		result = hoistTopLevelStaticImports(result);
 	} catch {}
 
 	// Final safety: normalize any lingering named imports from /ns/rt into default+destructure
@@ -3797,7 +3920,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// preserveVendorImports=true: vendor imports stay as bare specifiers
 					// for the device-side import map (ns-vendor://) instead of being
 					// transformed to __nsVendorRequire calls with fragile __nsPick lookups.
-					code = processCodeForDevice(code, false, true);
+					code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(resolvedCandidate || spec), resolvedCandidate || spec);
 					code = rewriteImports(code, spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 					code = ensureVariableDynamicImportHelper(code);
 					// Enforce upstream guarantee: no optimized deps or virtual ids remain
@@ -3861,7 +3984,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							if (depTrans?.code && depResolved) {
 								let depCode = depTrans.code;
 								depCode = cleanCode(depCode);
-								depCode = processCodeForDevice(depCode, false, true);
+								depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
 								depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 								depCode = ensureVariableDynamicImportHelper(depCode);
 								try {
@@ -4278,7 +4401,7 @@ export const piniaSymbol = p.piniaSymbol;
 					code = REQUIRE_GUARD_SNIPPET + code;
 					code = cleanCode(code);
 					const isNodeMod = /(?:^|\/)node_modules\//.test(resolvedCandidate || spec || '');
-					code = processCodeForDevice(code, false, true, isNodeMod);
+					code = processCodeForDevice(code, false, true, isNodeMod, resolvedCandidate || spec);
 					// Solid HMR: The NativeScript iOS/Android runtime provides import.meta.hot
 					// natively (via InitializeImportMetaHot in HMRSupport.mm) with C++-backed
 					// persistent hot.data that survives across module re-evaluations.
@@ -5243,7 +5366,7 @@ export const piniaSymbol = p.piniaSymbol;
 							code = outCode;
 						} catch {}
 
-						code = processCodeForDevice(code, false, true);
+						code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(fullSpec), fullSpec);
 						// Transform static .vue imports into static imports from the assembler (no TLA) via AST
 						try {
 							const importerPath = fullSpec.replace(/[?#].*$/, '');
@@ -6116,7 +6239,7 @@ export const piniaSymbol = p.piniaSymbol;
 					}
 					// Run full device processing so helper aliasing and globals are consistent in this path too
 					let code = REQUIRE_GUARD_SNIPPET + asm;
-					code = processCodeForDevice(code, false, true);
+					code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(base), base);
 					try {
 						code = ensureVersionedCoreImports(code, getServerOrigin(server), Number(ver));
 					} catch {}
@@ -6286,7 +6409,7 @@ export const piniaSymbol = p.piniaSymbol;
 									let code = transformed.code;
 									// Reuse existing sanitation chain (lightweight)
 									code = cleanCode(code);
-									code = processCodeForDevice(code, false, true);
+									code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(resolvedCandidate || spec), resolvedCandidate || spec);
 									try {
 										code = ensureVersionedCoreImports(code, getServerOrigin(server), graphVersion);
 									} catch {}
@@ -6334,7 +6457,7 @@ export const piniaSymbol = p.piniaSymbol;
 											if (depTrans?.code && depResolved) {
 												let depCode = depTrans.code;
 												depCode = cleanCode(depCode);
-												depCode = processCodeForDevice(depCode, false, true);
+												depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
 												try {
 													depCode = ensureVersionedCoreImports(depCode, getServerOrigin(server), graphVersion);
 												} catch {}

@@ -67,10 +67,10 @@ export const DEFAULT_MANIFEST_FILENAME = 'ns-vendor-manifest.json';
 // Do not force-include @nativescript/core in the dev vendor bundle.
 // Keeping core out of vendor avoids duplicate side-effect registrations (e.g.,
 // com.tns.FragmentClass, com.tns.NativeScriptActivity) across bundle.mjs and vendor.
-// Reserved for any future always-include packages; keep empty by default so
-// framework-specific tooling like @angular/compiler are only pulled in when
-// the corresponding framework is actually used.
-const ALWAYS_INCLUDE = new Set<string>([]);
+// Force runtime-sensitive packages onto the vendor path so they do not drift
+// between startup bundle, HTTP-wrapped CommonJS, and base-require semantics
+// during HMR sessions.
+const ALWAYS_INCLUDE = new Set<string>(['stacktrace-js']);
 const ALWAYS_EXCLUDE = new Set<string>([
 	'@nativescript/android',
 	'@nativescript/ios',
@@ -730,6 +730,8 @@ function shouldSkipDependency(name: string): boolean {
 	}
 	return false;
 }
+
+export const __test_collectVendorModules = collectVendorModules;
 
 function readDependencyPackageJson(specifier: string, projectRequire: ReturnType<typeof createRequire>) {
 	try {

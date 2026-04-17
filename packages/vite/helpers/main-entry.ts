@@ -126,6 +126,8 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				imports += `globalThis.__UI_USE_EXTERNAL_RENDERER__ = false;\n`;
 				imports += `globalThis.__CSS_PARSER__ = 'css-tree';\n`;
 				imports += `globalThis.__TEST__ = false;\n`;
+				imports += "import { installModuleProvenanceRecorder } from '@nativescript/vite/hmr/shared/runtime/module-provenance.js';\n";
+				imports += 'installModuleProvenanceRecorder(__nsVerboseLog);\n';
 				// ---- Vendor manifest bootstrap ----
 				// Use single self-contained vendor module to avoid extra imports affecting chunking
 				imports += "import vendorManifest, { __nsVendorModuleMap } from '@nativescript/vendor';\n";

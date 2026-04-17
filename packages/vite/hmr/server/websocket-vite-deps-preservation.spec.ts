@@ -177,10 +177,12 @@ describe('regression: @nativescript/tanstack-router/solid subpath not collapsed 
 
 		const out = processCodeForDevice(input, false, true);
 
-		// Must rewrite to the SUBPATH specifier, not the root
-		expect(out).toMatch(/from\s+["']@nativescript\/tanstack-router\/solid["']/);
+		// Must preserve the SUBPATH specifier, not collapse to the root.
+		// NativeScript plugin-style packages may be vendor-bound instead of left as bare imports.
+		expect(out).toContain('@nativescript/tanstack-router/solid');
 		// Must NOT resolve to the root (which doesn't export Link)
-		expect(out).not.toMatch(/from\s+["']@nativescript\/tanstack-router["']\s*;/);
+		expect(out).not.toContain('@nativescript/tanstack-router"');
+		expect(out).not.toContain("@nativescript/tanstack-router'");
 		// Must preserve the named imports
 		expect(out).toContain('Link');
 		expect(out).toContain('createNativeScriptRouter');
