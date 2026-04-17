@@ -57,7 +57,7 @@ export class SourceError extends ScopeError {
 	/**
 	 * Creates a new SourceError by child error, source and optional message.
 	 * @param child The child error to extend.
-	 * @param source The source where the error occured.
+	 * @param source The source where the error occurred.
 	 * @param message Additonal message to prepend along the source location and the child error's message.
 	 */
 	constructor(child: Error, source: Source, message?: string);
