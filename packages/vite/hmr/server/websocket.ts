@@ -275,6 +275,63 @@ export function collectGraphUpdateModulesForHotUpdate(options: { file: string; f
 	return Array.from(targets.values());
 }
 
+export function collectAngularHotUpdateRoots(options: { file: string; modules?: Iterable<HotUpdateGraphModuleLike>; getModuleById: (id: string) => HotUpdateGraphModuleLike | undefined; getModulesByFile?: (file: string) => Iterable<HotUpdateGraphModuleLike> | undefined | null }): HotUpdateGraphModuleLike[] {
+	const roots: HotUpdateGraphModuleLike[] = [];
+	const seenIds = new Set<string>();
+	const seenObjects = new Set<HotUpdateGraphModuleLike>();
+
+	const addRoot = (mod?: HotUpdateGraphModuleLike | null) => {
+		if (!mod) {
+			return;
+		}
+
+		if (mod.id) {
+			if (seenIds.has(mod.id)) {
+				return;
+			}
+			seenIds.add(mod.id);
+			roots.push(mod);
+			return;
+		}
+
+		if (seenObjects.has(mod)) {
+			return;
+		}
+		seenObjects.add(mod);
+		roots.push(mod);
+	};
+
+	if (/\.(html|htm)$/i.test(options.file)) {
+		for (const mod of collectGraphUpdateModulesForHotUpdate({
+			file: options.file,
+			flavor: 'angular',
+			modules: options.modules,
+			getModuleById: options.getModuleById,
+		})) {
+			addRoot(mod);
+		}
+		return roots;
+	}
+
+	if (!/\.(m|c)?ts$/i.test(options.file)) {
+		return roots;
+	}
+
+	for (const mod of options.modules || []) {
+		addRoot(mod);
+	}
+
+	for (const mod of options.getModulesByFile?.(options.file) || []) {
+		addRoot(mod);
+	}
+
+	if (!roots.length) {
+		addRoot(options.getModuleById(options.file));
+	}
+
+	return roots;
+}
+
 type TransitiveImporterModuleLike = {
 	id?: string | null;
 	file?: string | null;
@@ -6470,35 +6527,35 @@ export const piniaSymbol = p.piniaSymbol;
 				// For Angular, react to component TS or external template HTML changes under /src
 				const isHtml = file.endsWith('.html');
 				const isTs = file.endsWith('.ts');
-				const angularHtmlInvalidationRoots = isHtml
-					? collectGraphUpdateModulesForHotUpdate({
-							file,
-							flavor: ACTIVE_STRATEGY.flavor,
-							modules: ctx.modules,
-							getModuleById: (id) => server.moduleGraph.getModuleById(id) as HotUpdateGraphModuleLike | undefined,
-						})
-					: [];
+				const angularHotUpdateRoots = collectAngularHotUpdateRoots({
+					file,
+					modules: ctx.modules,
+					getModuleById: (id) => server.moduleGraph.getModuleById(id) as HotUpdateGraphModuleLike | undefined,
+					getModulesByFile: (targetFile) => (server.moduleGraph as any).getModulesByFile?.(targetFile) as Iterable<HotUpdateGraphModuleLike> | undefined,
+				});
 				if (!(isHtml || isTs)) return;
 
-				if (angularHtmlInvalidationRoots.length) {
-					for (const mod of angularHtmlInvalidationRoots) {
+				if (angularHotUpdateRoots.length) {
+					for (const mod of angularHotUpdateRoots) {
 						try {
 							server.moduleGraph.invalidateModule(mod as any);
 						} catch (invalidationError) {
 							if (verbose) {
-								console.warn('[hmr-ws][angular] template root invalidation failed', mod?.id, invalidationError);
+								console.warn('[hmr-ws][angular] hot-update root invalidation failed', mod?.id, invalidationError);
 							}
 						}
 					}
 					if (verbose) {
-						console.log('[hmr-ws][angular] invalidated template root modules:', angularHtmlInvalidationRoots.length);
+						console.log('[hmr-ws][angular] invalidated hot-update root modules:', angularHotUpdateRoots.length);
 					}
 				}
+
+				const angularTransitiveInvalidationRoots = (angularHotUpdateRoots.length ? angularHotUpdateRoots : (ctx.modules as unknown as Iterable<TransitiveImporterModuleLike>)) as Iterable<TransitiveImporterModuleLike>;
 
 				if (shouldInvalidateAngularTransitiveImporters({ flavor: ACTIVE_STRATEGY.flavor, file })) {
 					try {
 						const transitiveImporters = collectAngularTransitiveImportersForInvalidation({
-							modules: (angularHtmlInvalidationRoots.length ? angularHtmlInvalidationRoots : (ctx.modules as unknown as Iterable<TransitiveImporterModuleLike>)) as Iterable<TransitiveImporterModuleLike>,
+							modules: angularTransitiveInvalidationRoots,
 							isExcluded: (id) => id.includes('/node_modules/'),
 							maxDepth: 16,
 						});
@@ -6524,14 +6581,14 @@ export const piniaSymbol = p.piniaSymbol;
 					if (isTs) {
 						transformCacheInvalidationUrls.add(file);
 					}
-					for (const mod of angularHtmlInvalidationRoots) {
+					for (const mod of angularHotUpdateRoots) {
 						if (mod?.id) {
 							transformCacheInvalidationUrls.add(mod.id);
 						}
 					}
 					if (shouldInvalidateAngularTransitiveImporters({ flavor: ACTIVE_STRATEGY.flavor, file })) {
 						const transitiveImporters = collectAngularTransitiveImportersForInvalidation({
-							modules: (angularHtmlInvalidationRoots.length ? angularHtmlInvalidationRoots : (ctx.modules as unknown as Iterable<TransitiveImporterModuleLike>)) as Iterable<TransitiveImporterModuleLike>,
+							modules: angularTransitiveInvalidationRoots,
 							isExcluded: (id) => id.includes('/node_modules/'),
 							maxDepth: 16,
 						});
