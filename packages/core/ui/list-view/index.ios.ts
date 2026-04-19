@@ -162,7 +162,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 		const owner = this._owner?.deref();
 		let cell: ListViewCell;
 		if (owner) {
-			const template = owner._getItemTemplate(indexPath.row);
+			const template = owner.sectioned ? owner._getItemTemplateInSection(indexPath.section, indexPath.row) : owner._getItemTemplate(indexPath.row);
 			cell = <ListViewCell>(tableView.dequeueReusableCellWithIdentifier(template.key) || ListViewCell.initWithEmptyBackground());
 			owner._prepareCell(cell, indexPath);
 
@@ -235,7 +235,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 		let height = owner.getHeight(indexPath.row);
 		if (height === undefined) {
 			// in iOS8+ after call to scrollToRowAtIndexPath:atScrollPosition:animated: this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
-			const template = owner._getItemTemplate(indexPath.row);
+			const template = owner.sectioned ? owner._getItemTemplateInSection(indexPath.section, indexPath.row) : owner._getItemTemplate(indexPath.row);
 			let cell = this._measureCellMap.get(template.key);
 			if (!cell) {
 				cell = <any>tableView.dequeueReusableCellWithIdentifier(template.key) || ListViewCell.initWithEmptyBackground();
@@ -794,13 +794,7 @@ export class ListView extends ListViewBase {
 			let view: ItemView = cell.view;
 			if (!view) {
 				if (this.sectioned) {
-					// For sectioned data, we need to calculate the absolute index for template selection
-					let absoluteIndex = 0;
-					for (let i = 0; i < indexPath.section; i++) {
-						absoluteIndex += this._getItemsInSection(i).length;
-					}
-					absoluteIndex += indexPath.row;
-					view = this._getItemTemplate(absoluteIndex).createView();
+					view = this._getItemTemplateInSection(indexPath.section, indexPath.row).createView();
 				} else {
 					view = this._getItemTemplate(indexPath.row).createView();
 				}
