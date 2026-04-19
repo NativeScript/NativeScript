@@ -36,7 +36,7 @@ describe('stripDecoratedServePrefixes', () => {
 		expect(stripDecoratedServePrefixes('/__ns_hmr__/v492/src/app/components/checkin/checkin.component')).toEqual({
 			cleanedSpec: '/src/app/components/checkin/checkin.component',
 			bootTaggedRequest: false,
-			forcedVer: '492',
+			forcedVer: 'v492',
 		});
 	});
 
@@ -44,16 +44,26 @@ describe('stripDecoratedServePrefixes', () => {
 		expect(stripDecoratedServePrefixes('/__ns_boot__/b1/__ns_hmr__/v492/src/app/components/checkin/checkin.component')).toEqual({
 			cleanedSpec: '/src/app/components/checkin/checkin.component',
 			bootTaggedRequest: true,
-			forcedVer: '492',
+			forcedVer: 'v492',
 		});
 	});
 
-	it('does not invent a graph version for nonce-tagged requests', () => {
+	it('preserves nonce and live request tags', () => {
 		expect(stripDecoratedServePrefixes('/__ns_hmr__/live/src/app/app.routes')).toEqual({
 			cleanedSpec: '/src/app/app.routes',
 			bootTaggedRequest: false,
-			forcedVer: null,
+			forcedVer: 'live',
 		});
+		expect(stripDecoratedServePrefixes('/__ns_hmr__/n1/src/app/components/signup/signup.component')).toEqual({
+			cleanedSpec: '/src/app/components/signup/signup.component',
+			bootTaggedRequest: false,
+			forcedVer: 'n1',
+		});
+	});
+
+	it('uses live and nonce tags for application imports during HMR path rewriting', () => {
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'live', false)).toBe('/ns/m/__ns_hmr__/live/src/app/app.routes');
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/components/signup/signup.component', 'n1', false)).toBe('/ns/m/__ns_hmr__/n1/src/app/components/signup/signup.component');
 	});
 });
 

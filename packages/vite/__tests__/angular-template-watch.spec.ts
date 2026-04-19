@@ -60,6 +60,26 @@ function createComponentFixture() {
 	};
 }
 
+function createWorkspaceComponentFixture() {
+	const tempDir = fs.mkdtempSync(path.join(process.cwd(), '.tmp-ns-angular-template-watch-'));
+	const componentPath = path.join(tempDir, 'example.component.ts');
+	const templatePath = path.join(tempDir, 'example.component.html');
+	const stylePath = path.join(tempDir, 'example.component.css');
+
+	fs.writeFileSync(templatePath, '<Label text="Hello"></Label>');
+	fs.writeFileSync(stylePath, '.example { color: red; }');
+	fs.writeFileSync(componentPath, ["import { Component } from '@angular/core';", '', '@Component({', "  templateUrl: './example.component.html',", "  styleUrls: ['./example.component.css']", '})', 'export class ExampleComponent {}'].join('\n'));
+
+	return {
+		tempDir,
+		componentPath,
+		templatePath,
+		stylePath,
+		componentCode: fs.readFileSync(componentPath, 'utf8'),
+		componentVirtualId: `/${normalizePath(path.relative(process.cwd(), componentPath))}`,
+	};
+}
+
 afterEach(() => {
 	vi.restoreAllMocks();
 });
@@ -121,6 +141,28 @@ describe('angular-template-deps watch invalidation', () => {
 
 			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBe(true);
 			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBeNull();
+		} finally {
+			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('matches absolute watcher paths with project-relative transform ids during serve', () => {
+		const plugin = getAngularTemplateDepsPlugin();
+		const fixture = createWorkspaceComponentFixture();
+
+		try {
+			plugin.transform?.call(
+				{
+					addWatchFile() {},
+				},
+				fixture.componentCode,
+				fixture.componentPath,
+			);
+
+			plugin.watchChange?.(fixture.templatePath, { event: 'update' });
+
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentVirtualId })).toBe(true);
+			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentVirtualId })).toBeNull();
 		} finally {
 			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
 		}

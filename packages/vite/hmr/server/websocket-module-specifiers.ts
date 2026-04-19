@@ -238,9 +238,8 @@ export function stripDecoratedServePrefixes(spec: string): { cleanedSpec: string
 			const hmrMatch = cleanedSpec.match(/^\/?__ns_hmr__\/([^\/]+)(\/.*)?$/);
 			if (hmrMatch) {
 				const tag = hmrMatch[1] || '';
-				const versionMatch = tag.match(/^v(\d+)$/);
-				if (versionMatch?.[1]) {
-					forcedVer = versionMatch[1];
+				if (tag) {
+					forcedVer = tag;
 				}
 				cleanedSpec = hmrMatch[2] || '/';
 				changed = true;

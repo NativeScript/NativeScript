@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { collectAngularTransitiveImportersForInvalidation, shouldInvalidateAngularTransitiveImporters } from './websocket.js';
+import { collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, shouldInvalidateAngularTransitiveImporters } from './websocket.js';
 
 type FakeModule = {
 	id: string;
@@ -156,5 +156,41 @@ describe('shouldInvalidateAngularTransitiveImporters', () => {
 				file: '/src/app/App.tsx',
 			}),
 		).toBe(false);
+	});
+});
+
+describe('collectAngularTransformCacheInvalidationUrls', () => {
+	it('adds extensionless app-module variants for Angular template owner modules and importers', () => {
+		const urls = collectAngularTransformCacheInvalidationUrls({
+			file: '/src/app/components/login/login.component.html',
+			isTs: false,
+			hotUpdateRoots: [{ id: '/src/app/components/login/login.component.ts' }],
+			transitiveImporters: [{ id: '/src/app/app.routes.ts' }, { id: '/src/main.ts' }],
+		}).sort();
+
+		expect(urls).toEqual(['/src/app/app.routes', '/src/app/app.routes.ts', '/src/app/components/login/login.component', '/src/app/components/login/login.component.ts', '/src/main', '/src/main.ts']);
+	});
+
+	it('uses the extensionless canonical app path for query-bearing Angular transform variants', () => {
+		const urls = collectAngularTransformCacheInvalidationUrls({
+			file: '/src/app/components/login/login.component.html',
+			isTs: false,
+			hotUpdateRoots: [{ id: '/src/app/components/login/login.component.ts?angular' }],
+		}).sort();
+
+		expect(urls).toEqual(['/src/app/components/login/login.component', '/src/app/components/login/login.component.ts?angular']);
+	});
+
+	it('canonicalizes absolute app paths before deriving extensionless transform invalidations', () => {
+		const projectRoot = '/Users/example/heykiddo';
+		const urls = collectAngularTransformCacheInvalidationUrls({
+			projectRoot,
+			file: `${projectRoot}/src/app/components/login/login.component.html`,
+			isTs: false,
+			hotUpdateRoots: [{ id: `${projectRoot}/src/app/components/login/login.component.ts` }],
+			transitiveImporters: [{ id: `${projectRoot}/src/app/app.routes.ts` }, { id: `${projectRoot}/src/main.ts` }],
+		}).sort();
+
+		expect(urls).toEqual(['/src/app/app.routes', '/src/app/app.routes.ts', '/src/app/components/login/login.component', '/src/app/components/login/login.component.ts', '/src/main', '/src/main.ts']);
 	});
 });

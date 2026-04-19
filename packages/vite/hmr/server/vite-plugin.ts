@@ -20,7 +20,8 @@ export function computeClientImportSpecifier(options: { projectRoot: string; cli
 		if (path.isAbsolute(rel)) {
 			clientImport = pathToFileURL(clientFsPath).toString();
 		} else {
-			clientImport = (relPosix.startsWith('.') ? relPosix : `/${relPosix}`).replace(/\/+/g, '/');
+			const normalizedRel = (relPosix.startsWith('.') ? relPosix : `/${relPosix}`).replace(/\/+/g, '/');
+			clientImport = normalizedRel.startsWith('/node_modules/') ? `/ns/m${normalizedRel}` : normalizedRel;
 		}
 	} catch {
 		clientImport = clientFsPath.replace(/\\/g, '/');
@@ -80,6 +81,9 @@ const __NS_BROWSER_RUNTIME_VERBOSE__ = ${options.verbose ? 'true' : 'false'};
 const __NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__ = ${JSON.stringify(vendorBundleUrl)};
 const __NS_BROWSER_RUNTIME_VENDOR_BOOTSTRAP_URL__ = ${JSON.stringify(vendorBootstrapUrl)};
 let __nsBrowserRuntimeHmrClientStartPromise;
+let __nsBrowserRuntimeSocket;
+let __nsBrowserRuntimeSocketReconnectTimer;
+let __nsBrowserRuntimeInitialGraphReady = false;
 
 function __nsBrowserRuntimeLog(...args) {
 	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
@@ -124,18 +128,177 @@ async function __nsBrowserRuntimeReplaySeededCss() {
 	}
 }
 
+async function __nsBrowserRuntimeFetchText(url) {
+	try {
+		if (typeof globalThis.fetch === 'function') {
+			const res = await globalThis.fetch(url);
+			return await res.text();
+		}
+		const Http = globalThis.Http;
+		if (Http && typeof Http.getString === 'function') {
+			return await Http.getString(url);
+		}
+	} catch (error) {
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] failed to fetch text', url, error);
+		}
+	}
+	return '';
+}
+
+async function __nsBrowserRuntimeHandleCssUpdates(msg) {
+	const updates = Array.isArray(msg?.updates) ? msg.updates : [];
+	const apply = globalThis.__nsApplyStyleUpdate;
+	if (!updates.length || typeof apply !== 'function') {
+		return;
+	}
+	for (const update of updates) {
+		const cssPath = update?.path || update?.acceptedPath || '';
+		if (!cssPath) {
+			continue;
+		}
+		const timestamp = update?.timestamp || Date.now();
+		const sep = cssPath.includes('?') ? '&' : '?';
+		const url = __NS_BROWSER_RUNTIME_ORIGIN__ + cssPath + sep + 'direct=1&t=' + String(timestamp);
+		const cssText = await __nsBrowserRuntimeFetchText(url);
+		if (typeof cssText === 'string' && cssText.length) {
+			apply({ url, cssText });
+		}
+	}
+}
+
+function __nsBrowserRuntimeHandleAngularUpdate() {
+	const reboot = globalThis.__reboot_ng_modules__;
+	if (typeof reboot !== 'function') {
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] Angular reboot hook unavailable');
+		}
+		return;
+	}
+	try {
+		globalThis.__NS_HMR_IMPORT_NONCE__ = (typeof globalThis.__NS_HMR_IMPORT_NONCE__ === 'number' ? globalThis.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
+	} catch {}
+	try {
+		globalThis.__NS_DEV_RESET_IN_PROGRESS__ = true;
+	} catch {}
+	try {
+		reboot(false);
+	} finally {
+		try {
+			globalThis.__NS_DEV_RESET_IN_PROGRESS__ = false;
+		} catch {}
+	}
+}
+
+function __nsBrowserRuntimeHandleSocketMessage(msg) {
+	if (!msg || typeof msg.type !== 'string') {
+		return;
+	}
+	if (msg.type === 'ns:hmr-full-graph') {
+		globalThis.__NS_HMR_BROWSER_RUNTIME_GRAPH_VERSION__ = typeof msg.version === 'number' ? msg.version : 0;
+		if (!__nsBrowserRuntimeInitialGraphReady) {
+			__nsBrowserRuntimeInitialGraphReady = true;
+			console.info('[ns-browser-runtime-client] initial graph ready');
+		}
+		return;
+	}
+	if (globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__) {
+		return;
+	}
+	if (msg.type === 'ns:angular-update') {
+		__nsBrowserRuntimeHandleAngularUpdate();
+		return;
+	}
+	if (msg.type === 'ns:css-updates') {
+		void __nsBrowserRuntimeHandleCssUpdates(msg);
+	}
+}
+
+function __nsBrowserRuntimeScheduleReconnect() {
+	if (__nsBrowserRuntimeSocketReconnectTimer) {
+		return;
+	}
+	__nsBrowserRuntimeSocketReconnectTimer = setTimeout(() => {
+		__nsBrowserRuntimeSocketReconnectTimer = null;
+		__nsBrowserRuntimeConnectSocket();
+	}, 1000);
+}
+
+function __nsBrowserRuntimeConnectSocket() {
+	const WebSocketCtor = globalThis.WebSocket;
+	if (typeof WebSocketCtor !== 'function') {
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] WebSocket API unavailable');
+		}
+		__nsBrowserRuntimeScheduleReconnect();
+		return;
+	}
+	try {
+		if (__nsBrowserRuntimeSocket) {
+			const readyState = __nsBrowserRuntimeSocket.readyState;
+			const openState = typeof __nsBrowserRuntimeSocket.OPEN === 'number' ? __nsBrowserRuntimeSocket.OPEN : 1;
+			const connectingState = typeof WebSocketCtor.CONNECTING === 'number' ? WebSocketCtor.CONNECTING : 0;
+			if (readyState === openState || readyState === connectingState) {
+				return;
+			}
+		}
+		const ws = new WebSocketCtor(__NS_BROWSER_RUNTIME_WS_URL__);
+		__nsBrowserRuntimeSocket = ws;
+		ws.onopen = () => {
+			globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = true;
+			console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_WS_URL__);
+		};
+		ws.onmessage = (event) => {
+			try {
+				const raw = typeof event?.data === 'string' ? event.data : String(event?.data || '');
+				if (!raw) {
+					return;
+				}
+				__nsBrowserRuntimeHandleSocketMessage(JSON.parse(raw));
+			} catch (error) {
+				if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+					console.warn('[ns-browser-runtime-client] failed to process websocket message', error);
+				}
+			}
+		};
+		ws.onerror = (error) => {
+			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+				console.warn('[ns-browser-runtime-client] websocket error', error);
+			}
+		};
+		ws.onclose = () => {
+			if (__nsBrowserRuntimeSocket === ws) {
+				__nsBrowserRuntimeSocket = null;
+			}
+			globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = false;
+			__nsBrowserRuntimeScheduleReconnect();
+		};
+	} catch (error) {
+		console.warn('[ns-browser-runtime-client] failed to create websocket', error);
+		__nsBrowserRuntimeScheduleReconnect();
+	}
+}
+
 async function __nsBrowserRuntimeEnsureFullClientStarted() {
 	if (!__nsBrowserRuntimeHmrClientStartPromise) {
-		__nsBrowserRuntimeHmrClientStartPromise = import(__NS_BROWSER_RUNTIME_CLIENT_IMPORT__).then((mod) => {
-			const start = mod?.default;
-			if (typeof start !== 'function') {
-				throw new Error('NativeScript HMR client bootstrap is missing a default export');
-			}
-			start({ wsUrl: __NS_BROWSER_RUNTIME_WS_URL__ });
-			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-				console.info('[ns-browser-runtime-client] delegated to full NativeScript HMR client', __NS_BROWSER_RUNTIME_CLIENT_IMPORT__);
-			}
-		});
+		__nsBrowserRuntimeHmrClientStartPromise = import(__NS_BROWSER_RUNTIME_CLIENT_IMPORT__)
+			.then((mod) => {
+				const start = mod?.default;
+				if (typeof start !== 'function') {
+					throw new Error('NativeScript HMR client bootstrap is missing a default export');
+				}
+				start({ wsUrl: __NS_BROWSER_RUNTIME_WS_URL__ });
+				globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__ = true;
+				if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+					console.info('[ns-browser-runtime-client] delegated to full NativeScript HMR client', __NS_BROWSER_RUNTIME_CLIENT_IMPORT__);
+				}
+			})
+			.catch((error) => {
+				globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = false;
+				globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ERROR__ = error;
+				console.error('[ns-browser-runtime-client] failed to start full NativeScript HMR client', __NS_BROWSER_RUNTIME_CLIENT_IMPORT__, error);
+				throw error;
+			});
 	}
 	return __nsBrowserRuntimeHmrClientStartPromise;
 }
@@ -146,6 +309,7 @@ __nsBrowserRuntimeEnsureVendorBootstrap('session-start');
 if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__) {
 	globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = true;
 	globalThis.__NS_HTTP_ORIGIN__ = __NS_BROWSER_RUNTIME_ORIGIN__;
+	__nsBrowserRuntimeConnectSocket();
 	void __nsBrowserRuntimeEnsureFullClientStarted();
 	const __nsBrowserRuntimeWaitForBoot = () => {
 		if (globalThis.__NS_HMR_BOOT_COMPLETE__) {

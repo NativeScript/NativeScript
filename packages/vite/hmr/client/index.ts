@@ -1146,6 +1146,10 @@ async function handleHmrMessage(ev: any) {
 		markHmrConnectionHealthy();
 	}
 
+	if (VERBOSE && msg?.type) {
+		console.log('[hmr-client] received message', msg.type);
+	}
+
 	// Notify optional app-level hook after an HMR batch is applied.
 	function notifyAppHmrUpdate(kind: 'full-graph' | 'delta', changedIds: string[] | undefined) {
 		try {

@@ -9,7 +9,7 @@ describe('ns-hmr-client vite plugin path handling', () => {
 
 		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
 
-		expect(result).toBe('/node_modules/@nativescript/vite/hmr/client/index.js');
+		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
 	});
 
 	it('falls back to file URL when relative becomes absolute (Windows-like different drive)', () => {
@@ -40,7 +40,7 @@ describe('ns-hmr-client vite plugin path handling', () => {
 		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
 
 		// When on the same drive, relative path should be node_modules/... and we normalize to POSIX.
-		expect(result).toBe('/node_modules/@nativescript/vite/hmr/client/index.js');
+		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
 	});
 });
 
@@ -92,13 +92,13 @@ describe('createNsDevClientBootstrapCode', () => {
 		const code = createNsDevClientBootstrapCode({
 			origin: 'http://192.168.1.5:5173',
 			wsUrl: 'ws://192.168.1.5:5173/ns-hmr',
-			clientImport: '/node_modules/@nativescript/vite/hmr/client/index.js',
+			clientImport: '/ns/m/node_modules/@nativescript/vite/hmr/client/index.js',
 			verbose: true,
 		});
 
 		expect(code).toContain('const __NS_BROWSER_RUNTIME_WS_URL__ = "ws://192.168.1.5:5173/ns-hmr";');
 		expect(code).toContain('const __NS_BROWSER_RUNTIME_ORIGIN__ = "http://192.168.1.5:5173";');
-		expect(code).toContain('const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = "/node_modules/@nativescript/vite/hmr/client/index.js";');
+		expect(code).toContain('const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = "/ns/m/node_modules/@nativescript/vite/hmr/client/index.js";');
 		expect(code).toContain('const __NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__ = "http://192.168.1.5:5173/@nativescript/vendor.mjs";');
 		expect(code).toContain('const __NS_BROWSER_RUNTIME_VENDOR_BOOTSTRAP_URL__ = "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js";');
 		expect(code).toContain('import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js";');
@@ -114,9 +114,11 @@ describe('createNsDevClientBootstrapCode', () => {
 		expect(code).toContain('import(__NS_BROWSER_RUNTIME_CLIENT_IMPORT__)');
 		expect(code).toContain('start({ wsUrl: __NS_BROWSER_RUNTIME_WS_URL__ });');
 		expect(code.indexOf("__nsBrowserRuntimeEnsureVendorBootstrap('session-start');")).toBeLessThan(code.indexOf('if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__)'));
-		expect(code).not.toContain('new WebSocket(__NS_BROWSER_RUNTIME_WS_URL__)');
+		expect(code).toContain('const ws = new WebSocketCtor(__NS_BROWSER_RUNTIME_WS_URL__);');
+		expect(code).toContain("console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_WS_URL__);");
+		expect(code).toContain("console.info('[ns-browser-runtime-client] initial graph ready');");
 		expect(code).not.toContain('__nsBrowserRuntimeReload(');
-		expect(code).not.toContain('ns:angular-update');
+		expect(code).toContain("if (msg.type === 'ns:angular-update') {");
 		expect(code).not.toContain('10.0.2.2');
 		expect(code).not.toContain('orderedHosts');
 	});

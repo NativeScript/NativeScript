@@ -60,7 +60,7 @@ import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverri
 
 export { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
 export type { EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
-export { tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
+export { stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
 
 const pluginTransformTypescript: any = (() => {
 	const requireFromHere = createRequire(import.meta.url);
@@ -106,6 +106,19 @@ function resolveFrameworkStrategy(flavor: string): FrameworkServerStrategy {
 }
 
 let ACTIVE_STRATEGY: FrameworkServerStrategy;
+
+function isSocketClientOpen(client: { readyState?: number; OPEN?: number } | null | undefined): boolean {
+	if (!client) {
+		return false;
+	}
+
+	const openState = typeof client.OPEN === 'number' ? client.OPEN : 1;
+	return client.readyState === openState;
+}
+
+function shouldAllowLocalCoreSanitizerPaths(contextLabel: string): boolean {
+	return /\bnode_modules\/@nativescript\/vite\/hmr\/(?:client|frameworks)\//.test(contextLabel);
+}
 
 export type GraphUpsertClassification = 'unchanged' | 'inserted' | 'changed';
 
@@ -496,6 +509,45 @@ export function shouldInvalidateAngularTransitiveImporters(options: { flavor: st
 	}
 
 	return /\.(?:html|htm|(m|c)?[jt]sx?)$/i.test(options.file);
+}
+
+function isExtensionlessAngularAppTransformCandidate(id: string): boolean {
+	return id.startsWith(APP_VIRTUAL_WITH_SLASH) && /\.(?:[mc]?[jt]sx?)$/i.test(id);
+}
+
+function addAngularTransformCacheInvalidationUrl(targets: Set<string>, rawId: string | null | undefined, projectRoot?: string): void {
+	const id = String(rawId || '');
+	if (!id) {
+		return;
+	}
+
+	const cacheKey = projectRoot ? canonicalizeTransformRequestCacheKey(id, projectRoot) : id;
+	targets.add(cacheKey);
+
+	const normalizedId = cacheKey.replace(/\?.*$/, '');
+	if (!isExtensionlessAngularAppTransformCandidate(normalizedId)) {
+		return;
+	}
+
+	targets.add(normalizedId.replace(/\.(?:[mc]?[jt]sx?)$/i, ''));
+}
+
+export function collectAngularTransformCacheInvalidationUrls(options: { file: string; isTs: boolean; hotUpdateRoots: Iterable<{ id?: string | null }>; transitiveImporters?: Iterable<{ id?: string | null }>; projectRoot?: string }): string[] {
+	const urls = new Set<string>();
+
+	if (options.isTs) {
+		addAngularTransformCacheInvalidationUrl(urls, options.file, options.projectRoot);
+	}
+
+	for (const mod of options.hotUpdateRoots || []) {
+		addAngularTransformCacheInvalidationUrl(urls, mod?.id, options.projectRoot);
+	}
+
+	for (const mod of options.transitiveImporters || []) {
+		addAngularTransformCacheInvalidationUrl(urls, mod?.id, options.projectRoot);
+	}
+
+	return Array.from(urls);
 }
 
 export function shouldSuppressDefaultViteHotUpdate(options: { flavor: string; file: string }): boolean {
@@ -1611,11 +1663,24 @@ function toNodeModulesHttpModuleId(importPath: string): string | null {
 }
 
 export function rewriteNsMImportPathForHmr(p: string, ver: string | number, bootTaggedRequest: boolean): string {
+	const toHmrServeTag = (value: string | number): string => {
+		const raw = String(value ?? '').trim();
+		if (!raw) {
+			return 'v0';
+		}
+		if (raw === 'live' || /^n\d+$/i.test(raw) || /^v[^/]+$/i.test(raw)) {
+			return raw;
+		}
+		if (/^\d+$/.test(raw)) {
+			return `v${raw}`;
+		}
+		return raw;
+	};
 	if (!p || !p.startsWith('/ns/m/')) {
 		return p;
 	}
 
-	const canonicalNodeModulesPath = p.replace(/^\/ns\/m\/__ns_boot__\/b1\/__ns_hmr__\/v[^/]+\/node_modules\//, '/ns/m/node_modules/').replace(/^\/ns\/m\/__ns_hmr__\/v[^/]+\/node_modules\//, '/ns/m/node_modules/');
+	const canonicalNodeModulesPath = p.replace(/^\/ns\/m\/__ns_boot__\/b1\/__ns_hmr__\/[^/]+\/node_modules\//, '/ns/m/node_modules/').replace(/^\/ns\/m\/__ns_hmr__\/[^/]+\/node_modules\//, '/ns/m/node_modules/');
 
 	if (canonicalNodeModulesPath.startsWith('/ns/m/node_modules/')) {
 		return canonicalNodeModulesPath;
@@ -1629,9 +1694,25 @@ export function rewriteNsMImportPathForHmr(p: string, ver: string | number, boot
 		return bootTaggedRequest ? `/ns/m/__ns_boot__/b1${canonicalNodeModulesPath.slice('/ns/m'.length)}` : canonicalNodeModulesPath;
 	}
 
-	const hmrPrefix = `/ns/m/__ns_hmr__/v${String(ver || 0)}`;
-	const bootHmrPrefix = `/ns/m/__ns_boot__/b1/__ns_hmr__/v${String(ver || 0)}`;
+	const tag = toHmrServeTag(ver);
+	const hmrPrefix = `/ns/m/__ns_hmr__/${tag}`;
+	const bootHmrPrefix = `/ns/m/__ns_boot__/b1/__ns_hmr__/${tag}`;
 	return (bootTaggedRequest ? bootHmrPrefix : hmrPrefix) + canonicalNodeModulesPath.slice('/ns/m'.length);
+}
+
+function getNumericServeVersionTag(tag: string | null | undefined, fallback: number): number {
+	const raw = String(tag || '').trim();
+	if (!raw) {
+		return fallback;
+	}
+	const versionMatch = raw.match(/^v(\d+)$/);
+	if (versionMatch?.[1]) {
+		return Number(versionMatch[1]);
+	}
+	if (/^\d+$/.test(raw)) {
+		return Number(raw);
+	}
+	return fallback;
 }
 
 function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, projectRoot?: string): string | null {
@@ -2354,6 +2435,9 @@ function assertNoOptimizedArtifacts(code: string, contextLabel: string): void {
 				// (e.g. TSDoc /// <reference> directives, module resolution notes).
 				const trimmed = ln.trimStart();
 				if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
+					continue;
+				}
+				if (shouldAllowLocalCoreSanitizerPaths(contextLabel)) {
 					continue;
 				}
 				offenders.push(`${i + 1}: ${ln.substring(0, 200)} [local-core-path]`);
@@ -4012,7 +4096,7 @@ export const piniaSymbol = p.piniaSymbol;
 					} catch {}
 
 					try {
-						const verNum = Number(forcedVer || graphVersion || 0);
+						const verNum = getNumericServeVersionTag(forcedVer, Number(graphVersion || 0));
 						code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
 						code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), verNum);
 						code = ensureVersionedCoreImports(code, getServerOrigin(server), verNum);
@@ -4021,7 +4105,18 @@ export const piniaSymbol = p.piniaSymbol;
 					// IMPORTANT: use path prefix (not ?v= query) because the iOS HTTP ESM loader
 					// strips query params when computing module cache keys, so ?v= doesn't bust the V8 cache.
 					try {
-						const ver = String(forcedVer || graphVersion || 0);
+						const ver = (() => {
+							const raw = String(forcedVer || '').trim();
+							if (raw) {
+								if (raw === 'live' || /^n\d+$/i.test(raw) || /^v[^/]+$/i.test(raw)) {
+									return raw;
+								}
+								if (/^\d+$/.test(raw)) {
+									return `v${raw}`;
+								}
+							}
+							return `v${String(graphVersion || 0)}`;
+						})();
 						const origin = getServerOrigin(server);
 						const rewritePath = (p: string) => rewriteNsMImportPathForHmr(p, ver, bootTaggedRequest);
 						// 1) Static imports: import ... from "/ns/m/..."
@@ -6035,7 +6130,7 @@ export const piniaSymbol = p.piniaSymbol;
 												delta: true,
 											};
 											wss?.clients.forEach((c) => {
-												if (c.readyState === c.OPEN) {
+												if (isSocketClientOpen(c)) {
 													try {
 														c.send(JSON.stringify(single));
 													} catch {}
@@ -6183,7 +6278,7 @@ export const piniaSymbol = p.piniaSymbol;
 					};
 
 					wss.clients.forEach((client) => {
-						if (client.readyState === client.OPEN) {
+						if (isSocketClientOpen(client)) {
 							client.send(JSON.stringify(msg));
 						}
 					});
@@ -6248,27 +6343,22 @@ export const piniaSymbol = p.piniaSymbol;
 				}
 
 				try {
-					const transformCacheInvalidationUrls = new Set<string>();
-					if (isTs) {
-						transformCacheInvalidationUrls.add(file);
-					}
-					for (const mod of angularHotUpdateRoots) {
-						if (mod?.id) {
-							transformCacheInvalidationUrls.add(mod.id);
-						}
-					}
-					if (shouldInvalidateAngularTransitiveImporters({ flavor: ACTIVE_STRATEGY.flavor, file })) {
-						const transitiveImporters = collectAngularTransitiveImportersForInvalidation({
-							modules: angularTransitiveInvalidationRoots,
-							isExcluded: (id) => id.includes('/node_modules/'),
-							maxDepth: 16,
-						});
-						for (const mod of transitiveImporters) {
-							if (mod?.id) {
-								transformCacheInvalidationUrls.add(mod.id);
-							}
-						}
-					}
+					const transitiveImporters = shouldInvalidateAngularTransitiveImporters({ flavor: ACTIVE_STRATEGY.flavor, file })
+						? collectAngularTransitiveImportersForInvalidation({
+								modules: angularTransitiveInvalidationRoots,
+								isExcluded: (id) => id.includes('/node_modules/'),
+								maxDepth: 16,
+							})
+						: [];
+					const transformCacheInvalidationUrls = new Set(
+						collectAngularTransformCacheInvalidationUrls({
+							file,
+							isTs,
+							hotUpdateRoots: angularHotUpdateRoots,
+							transitiveImporters,
+							projectRoot: server.config.root || process.cwd(),
+						}),
+					);
 					if (transformCacheInvalidationUrls.size) {
 						sharedTransformRequest.invalidateMany(transformCacheInvalidationUrls);
 						if (verbose) {
@@ -6289,8 +6379,14 @@ export const piniaSymbol = p.piniaSymbol;
 						path: rel,
 						timestamp: Date.now(),
 					} as const;
+					if (verbose) {
+						console.log(
+							'[hmr-ws][angular] broadcasting update',
+							Array.from(wss.clients || []).map((client) => ({ readyState: client.readyState, openState: (client as any).OPEN })),
+						);
+					}
 					wss.clients.forEach((client) => {
-						if (client.readyState === client.OPEN) {
+						if (isSocketClientOpen(client)) {
 							client.send(JSON.stringify(msg));
 						}
 					});
@@ -6551,7 +6647,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 				};
 
 				wss.clients.forEach((client) => {
-					if (client.readyState === client.OPEN) {
+					if (isSocketClientOpen(client)) {
 						client.send(JSON.stringify(registryUpdateMsg));
 					}
 				});

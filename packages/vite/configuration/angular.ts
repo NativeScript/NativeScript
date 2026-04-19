@@ -145,7 +145,46 @@ if (!fs.existsSync(tsConfigAppPath) && fs.existsSync(tsConfigPath)) {
 }
 
 function normalizeAngularWatchPath(filePath: string): string {
-	return filePath.split('?', 1)[0].replace(/\\/g, '/');
+	return filePath
+		.split('?', 1)[0]
+		.replace(/\\/g, '/')
+		.replace(/^file:\/\//, '');
+}
+
+function normalizeAngularWatchKey(filePath: string): string {
+	const normalizedPath = normalizeAngularWatchPath(filePath);
+	const fileSystemPath = normalizedPath.startsWith('/@fs/') ? normalizedPath.slice('/@fs'.length) : normalizedPath;
+	const normalizedProjectRoot = projectRoot.replace(/\\/g, '/').replace(/\/$/, '');
+
+	if (normalizedProjectRoot && fileSystemPath.startsWith(normalizedProjectRoot)) {
+		const relative = fileSystemPath.slice(normalizedProjectRoot.length);
+		return relative.startsWith('/') ? relative : `/${relative}`;
+	}
+
+	return fileSystemPath;
+}
+
+function getAngularWatchKeys(filePath: string): string[] {
+	const normalizedPath = normalizeAngularWatchPath(filePath);
+	const keys = new Set<string>();
+	keys.add(normalizedPath);
+	keys.add(normalizeAngularWatchKey(normalizedPath));
+	return Array.from(keys).filter(Boolean);
+}
+
+function resolveAngularWatchFilePath(filePath: string): string {
+	const normalizedPath = normalizeAngularWatchPath(filePath);
+	const fileSystemPath = normalizedPath.startsWith('/@fs/') ? normalizedPath.slice('/@fs'.length) : normalizedPath;
+
+	if (path.isAbsolute(fileSystemPath) && fs.existsSync(fileSystemPath)) {
+		return fileSystemPath;
+	}
+
+	if (fileSystemPath.startsWith('/')) {
+		return path.resolve(projectRoot, `.${fileSystemPath}`);
+	}
+
+	return path.resolve(projectRoot, fileSystemPath);
 }
 
 function extractComponentAssetPaths(code: string, componentId: string): string[] {
@@ -198,7 +237,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 		untrackComponentAssets(componentPath);
 		if (assetPaths.length === 0) return;
 
-		const normalizedAssets = new Set(assetPaths.map((assetPath) => normalizeAngularWatchPath(assetPath)));
+		const normalizedAssets = new Set(assetPaths.flatMap((assetPath) => getAngularWatchKeys(assetPath)));
 		componentToAssets.set(componentPath, normalizedAssets);
 
 		for (const assetPath of normalizedAssets) {
@@ -215,10 +254,11 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 			enforce: 'pre',
 			transform(code, id) {
 				const componentPath = normalizeAngularWatchPath(id);
-				if (!componentPath.endsWith('.ts')) return null;
+				const componentKey = normalizeAngularWatchKey(id);
+				if (!componentKey.endsWith('.ts')) return null;
 
 				const assetPaths = extractComponentAssetPaths(code, componentPath);
-				trackComponentAssets(componentPath, assetPaths);
+				trackComponentAssets(componentKey, assetPaths);
 
 				for (const assetPath of assetPaths) {
 					this.addWatchFile(assetPath);
@@ -227,7 +267,12 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 			},
 			watchChange(id) {
 				const changedPath = normalizeAngularWatchPath(id);
-				const components = assetToComponents.get(changedPath);
+				const components = new Set<string>();
+				for (const assetKey of getAngularWatchKeys(changedPath)) {
+					for (const componentPath of assetToComponents.get(assetKey) || []) {
+						components.add(componentPath);
+					}
+				}
 				if (components?.size) {
 					for (const componentPath of components) {
 						pendingComponentInvalidations.add(componentPath);
@@ -237,13 +282,13 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 
 				if (/\.(html|htm)$/i.test(changedPath)) {
 					const componentPath = changedPath.replace(/\.(html|htm)$/i, '.ts');
-					if (fs.existsSync(componentPath)) {
-						pendingComponentInvalidations.add(componentPath);
+					if (fs.existsSync(resolveAngularWatchFilePath(componentPath))) {
+						pendingComponentInvalidations.add(normalizeAngularWatchKey(componentPath));
 					}
 				}
 			},
 			shouldTransformCachedModule({ id }) {
-				const componentPath = normalizeAngularWatchPath(id);
+				const componentPath = normalizeAngularWatchKey(id);
 				if (!pendingComponentInvalidations.has(componentPath)) return null;
 
 				pendingComponentInvalidations.delete(componentPath);
