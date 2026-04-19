@@ -43,13 +43,37 @@ export async function safeReadDefault(mod: any): Promise<any | null> {
 // Resolve NativeScript core classes/Application from the vendor realm or globalThis.
 export function getCore(name: 'Application' | 'Frame' | 'Page' | 'Label'): any {
 	const g = globalThis;
+	const pickApplicationApi = (candidate: any): any => {
+		if (!candidate) return undefined;
+		const candidates = [candidate, candidate.Application, candidate.app, candidate.application];
+		for (const entry of candidates) {
+			if (entry && (typeof entry.run === 'function' || typeof entry.on === 'function' || typeof entry.resetRootView === 'function')) {
+				return entry;
+			}
+		}
+		return undefined;
+	};
+	if (name === 'Application') {
+		try {
+			const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
+			if (reg && typeof reg.get === 'function') {
+				const mod = reg.get('@nativescript/core/application');
+				const appModule = (mod && (mod.default || mod)) || mod;
+				const picked = pickApplicationApi(appModule);
+				if (picked) return picked;
+			}
+		} catch {}
+	}
 	// 1) Prefer vendor registry to guarantee single realm
 	try {
 		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
 		if (reg && typeof reg.get === 'function') {
 			const mod = reg.get('@nativescript/core');
 			const ns = (mod && (mod.default || mod)) || mod;
-			if (name === 'Application' && (ns?.Application || ns)) return ns.Application || ns;
+			if (name === 'Application') {
+				const picked = pickApplicationApi(ns);
+				if (picked) return picked;
+			}
 			if (ns && ns[name]) return ns[name];
 		}
 	} catch {}
@@ -61,9 +85,18 @@ export function getCore(name: 'Application' | 'Frame' | 'Page' | 'Label'): any {
 	try {
 		const req = g && (g.__nsVendorRequire || g.__nsRequire || g.require);
 		if (typeof req === 'function') {
+			if (name === 'Application') {
+				const appMod = req('@nativescript/core/application');
+				const appModule = (appMod && (appMod.default || appMod)) || appMod;
+				const pickedFromAppModule = pickApplicationApi(appModule);
+				if (pickedFromAppModule) return pickedFromAppModule;
+			}
 			const mod = req('@nativescript/core');
 			const ns = (mod && (mod.default || mod)) || mod;
-			if (name === 'Application' && (ns?.Application || ns)) return ns.Application || ns;
+			if (name === 'Application') {
+				const picked = pickApplicationApi(ns);
+				if (picked) return picked;
+			}
 			if (ns && ns[name]) return ns[name];
 		}
 	} catch {}
@@ -72,9 +105,18 @@ export function getCore(name: 'Application' | 'Frame' | 'Page' | 'Label'): any {
 		const nativeReq = g && g.__nativeRequire;
 		if (typeof nativeReq === 'function') {
 			try {
+				if (name === 'Application') {
+					const appMod = nativeReq('@nativescript/core/application', '/');
+					const appModule = (appMod && (appMod.default || appMod)) || appMod;
+					const pickedFromAppModule = pickApplicationApi(appModule);
+					if (pickedFromAppModule) return pickedFromAppModule;
+				}
 				const mod = nativeReq('@nativescript/core', '/');
 				const ns = (mod && (mod.default || mod)) || mod;
-				if (name === 'Application' && (ns?.Application || ns)) return ns.Application || ns;
+				if (name === 'Application') {
+					const picked = pickApplicationApi(ns);
+					if (picked) return picked;
+				}
 				if (ns && ns[name]) return ns[name];
 			} catch {}
 		}

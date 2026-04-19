@@ -36,7 +36,9 @@ function ensureCoreAliasesOnGlobalThis() {
 			if (F && !g.Frame) g.Frame = F;
 		} catch {}
 		try {
-			if (A && !g.Application) g.Application = A;
+			if (A && (!g.Application || typeof g.Application.run !== 'function' || typeof g.Application.on !== 'function' || typeof g.Application.resetRootView !== 'function')) {
+				g.Application = A;
+			}
 		} catch {}
 		try {
 			if (P && !g.Page) g.Page = P;

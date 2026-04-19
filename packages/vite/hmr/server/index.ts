@@ -1,7 +1,8 @@
+import type { NsDevPlatform } from '../shared/runtime/browser-runtime-contract.js';
 import { nsHmrClientVitePlugin } from './vite-plugin.js';
 import { hmrWebSocketVue, hmrWebSocketAngular, hmrWebSocketSolid, hmrWebSocketTypescript } from './websocket.js';
 
-export function getHMRPlugins(opts: { platform: string; flavor: string; verbose: boolean }) {
+export function getHMRPlugins(opts: { platform: NsDevPlatform; flavor: string; verbose: boolean }) {
 	const plugins = [nsHmrClientVitePlugin(opts)];
 	switch (opts.flavor) {
 		case 'vue':

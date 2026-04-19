@@ -216,7 +216,7 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 			const result = await ensureResult('server');
 			if (req.url === SERVER_VENDOR_PATH) {
 				res.setHeader('Content-Type', 'application/javascript');
-				res.end(result.code);
+				res.end(createVendorBundleRuntimeModule(result));
 				return true;
 			}
 			if (req.url === SERVER_MANIFEST_PATH) {
@@ -290,15 +290,8 @@ export function vendorManifestPlugin(options: VendorManifestPluginOptions): Plug
 			}
 			if (id === VENDOR_BUNDLE_VIRTUAL_ID) {
 				const result = await ensureResult('load-bundle');
-				// Return a single self-contained module that includes both the vendor module map
-				// and the vendor manifest to avoid extra imports that can influence chunking.
-				// - result.code exports `__nsVendorModuleMap`
-				// - we append an inline manifest export
 				return {
-					code: `${result.code}
-export const vendorManifest = ${JSON.stringify(result.manifest)};
-export default vendorManifest;
-`,
+					code: createVendorBundleRuntimeModule(result),
 					moduleType: 'js',
 				};
 			}
@@ -589,7 +582,12 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 	addDeps(pkg.optionalDependencies);
 
 	for (const name of ALWAYS_INCLUDE) {
-		addCandidate(name);
+		// Some force-included packages are only present transitively in apps that
+		// actually use them. Skip missing packages quietly so unrelated projects do
+		// not fail vendor collection just because the policy list names them.
+		if (canResolveDependencyPackageJson(name, projectRequire)) {
+			addCandidate(name);
+		}
 	}
 
 	// Ensure Android Activity proxy is present for SBG scanning in dev/HMR
@@ -732,6 +730,16 @@ function shouldSkipDependency(name: string): boolean {
 }
 
 export const __test_collectVendorModules = collectVendorModules;
+export const __test_createVendorBundleRuntimeModule = createVendorBundleRuntimeModule;
+
+function canResolveDependencyPackageJson(specifier: string, projectRequire: ReturnType<typeof createRequire>): boolean {
+	try {
+		projectRequire.resolve(`${specifier}/package.json`);
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 function readDependencyPackageJson(specifier: string, projectRequire: ReturnType<typeof createRequire>) {
 	try {
@@ -766,6 +774,13 @@ function createVendorEntry(entries: string[]): string {
 	const modules = entries.map((specifier, index) => `${JSON.stringify(specifier)}: __nsVendor_${index}`).join(',\n  ');
 
 	return `${imports}\n\nexport const __nsVendorModuleMap = {\n  ${modules}\n};\n`;
+}
+
+function createVendorBundleRuntimeModule(result: VendorBundleResult): string {
+	return `${result.code}
+export const vendorManifest = ${JSON.stringify(result.manifest)};
+export default vendorManifest;
+`;
 }
 
 function resolveExtensionsForPlatform(platform: string): string[] {

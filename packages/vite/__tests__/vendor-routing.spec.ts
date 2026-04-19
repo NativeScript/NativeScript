@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
  * Extracted routing logic from websocket.ts rewriteImports.
  * This is the EXACT algorithm used in production.
  */
-function resolveVendorRoute(nodeModulesSpecifier: string, vendorCanonical: string): 'vendor' | 'http' {
+function resolveVendorRoute(nodeModulesSpecifier: string, vendorCanonical: string, options?: { packageHasExports?: boolean; packageMainEntries?: string[] }): 'vendor' | 'http' {
 	let useVendorBridge = true;
 	const pkgBaseName = vendorCanonical.split('/').pop()!;
 	const afterCanonical = nodeModulesSpecifier.slice(vendorCanonical.length).replace(/^\//, '');
@@ -34,6 +34,12 @@ function resolveVendorRoute(nodeModulesSpecifier: string, vendorCanonical: strin
 		} else if (isPlatformSpecific) {
 			useVendorBridge = false;
 		} else if (nodeModulesSpecifier !== vendorCanonical) {
+			const packageHasExports = !!options?.packageHasExports;
+			const packageMainEntries = new Set(options?.packageMainEntries ?? []);
+			if (!packageHasExports && packageMainEntries.has(afterCanonical)) {
+				useVendorBridge = true;
+				return useVendorBridge ? 'vendor' : 'http';
+			}
 			const fileName = afterCanonical.replace(/\.[^.]+$/, '');
 			const isMainEntry = !afterCanonical || fileName === 'index' || fileName === pkgBaseName || fileName.startsWith(pkgBaseName + '.');
 			if (!isMainEntry) {
@@ -43,6 +49,60 @@ function resolveVendorRoute(nodeModulesSpecifier: string, vendorCanonical: strin
 	}
 
 	return useVendorBridge ? 'vendor' : 'http';
+}
+
+function normalizeRuntimeNodeModulesSpecifier(specifier: string): string {
+	const nmPrefix = '/node_modules/';
+	const nmPrefix2 = 'node_modules/';
+	let sub = '';
+	if (specifier.startsWith(nmPrefix)) {
+		sub = specifier.slice(nmPrefix.length);
+	} else if (specifier.startsWith(nmPrefix2)) {
+		sub = specifier.slice(nmPrefix2.length);
+	}
+
+	if (!sub || sub.startsWith('.') || sub.startsWith('.vite/')) {
+		return '';
+	}
+
+	const queryIndex = sub.indexOf('?');
+	const subNoQuery = queryIndex === -1 ? sub : sub.slice(0, queryIndex);
+	const querySuffix = queryIndex === -1 ? '' : sub.slice(queryIndex);
+
+	let pkgName = '';
+	if (subNoQuery.startsWith('@')) {
+		const slash1 = subNoQuery.indexOf('/');
+		if (slash1 !== -1) {
+			const slash2 = subNoQuery.indexOf('/', slash1 + 1);
+			pkgName = slash2 !== -1 ? subNoQuery.slice(0, slash2) : subNoQuery;
+		}
+	} else {
+		const slash = subNoQuery.indexOf('/');
+		pkgName = slash !== -1 ? subNoQuery.slice(0, slash) : subNoQuery;
+	}
+
+	if (!pkgName) {
+		return '';
+	}
+
+	let normalized = pkgName;
+	let remainder = subNoQuery.slice(pkgName.length).replace(/^\//, '');
+	if (remainder) {
+		let preserveSubpath = remainder.includes('/');
+		if (!preserveSubpath) {
+			const pkgBaseName = pkgName.split('/').pop()!;
+			const withoutExt = remainder.replace(/\.[^.]+$/, '');
+			const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
+			const isRootLevelMainEntry = withoutPlatform === 'index' || withoutPlatform === pkgBaseName || withoutPlatform.startsWith(pkgBaseName + '.');
+			preserveSubpath = !isRootLevelMainEntry;
+		}
+
+		if (preserveSubpath) {
+			normalized = `${pkgName}/${remainder}${querySuffix}`;
+		}
+	}
+
+	return normalized;
 }
 
 describe('vendor bridge vs HTTP routing', () => {
@@ -105,6 +165,10 @@ describe('vendor bridge vs HTTP routing', () => {
 		])('%s → vendor', (spec, canonical) => {
 			expect(resolveVendorRoute(spec, canonical)).toBe('vendor');
 		});
+
+		it('routes a non-exports package main field file to vendor', () => {
+			expect(resolveVendorRoute('stacktrace-js/stacktrace.js', 'stacktrace-js', { packageMainEntries: ['stacktrace.js'] })).toBe('vendor');
+		});
 	});
 
 	describe('edge cases', () => {
@@ -130,6 +194,10 @@ describe('vendor bridge vs HTTP routing', () => {
 
 		it('android platform suffix → HTTP', () => {
 			expect(resolveVendorRoute('some-pkg/index.android.js', 'some-pkg')).toBe('http');
+		});
+
+		it('keeps export-based main files on HTTP when they resolve to nested build output', () => {
+			expect(resolveVendorRoute('@angular/common/fesm2022/common.mjs', '@angular/common', { packageHasExports: true, packageMainEntries: ['fesm2022/common.mjs'] })).toBe('http');
 		});
 	});
 });
@@ -257,5 +325,24 @@ describe('AST normalizer node_modules guard', () => {
 		const isAppSource = false;
 		const shouldRunForApp = !isAppSource && !hasAstMarker;
 		expect(shouldRunForApp).toBe(true);
+	});
+});
+
+describe('runtime import-map normalization contract', () => {
+	it('preserves deep Angular FESM subpaths so import-map prefixes stay on HTTP', () => {
+		expect(normalizeRuntimeNodeModulesSpecifier('/node_modules/@angular/core/fesm2022/core.mjs')).toBe('@angular/core/fesm2022/core.mjs');
+		expect(normalizeRuntimeNodeModulesSpecifier('/node_modules/@angular/common/fesm2022/http.mjs?v=123')).toBe('@angular/common/fesm2022/http.mjs?v=123');
+	});
+
+	it('keeps non-main single-file submodules on their explicit package subpath', () => {
+		expect(normalizeRuntimeNodeModulesSpecifier('/node_modules/@nativescript-community/ui-material-core/index.common.js')).toBe('@nativescript-community/ui-material-core/index.common.js');
+	});
+
+	it('collapses standard root-level main entry files to the bare package id', () => {
+		expect(normalizeRuntimeNodeModulesSpecifier('/node_modules/tslib/tslib.es6.mjs?v=7')).toBe('tslib');
+	});
+
+	it('keeps non-standard root-level filenames explicit when runtime metadata is unavailable', () => {
+		expect(normalizeRuntimeNodeModulesSpecifier('/node_modules/stacktrace-js/stacktrace.js')).toBe('stacktrace-js/stacktrace.js');
 	});
 });

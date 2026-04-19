@@ -90,6 +90,11 @@ describe('rewriteSpecifiersForDevice', () => {
 		const out = rewriteSpecifiersForDevice('import { X } from "/node_modules/@nativescript/core/foo.js";', ORIGIN, 42);
 		expect(out).toContain('/ns/core/42?p=foo.js');
 	});
+
+	it('rewrites the package main entry file to the main core bridge URL', () => {
+		const out = rewriteSpecifiersForDevice('import { AbsoluteLayout } from "/node_modules/@nativescript/core/index.js";', ORIGIN, 42);
+		expect(out).toBe('import { AbsoluteLayout } from "/ns/core/42";');
+	});
 });
 
 // ─── isDeepCoreSubpath ─────────────────────────────────────────────────────────
@@ -112,8 +117,8 @@ describe('isDeepCoreSubpath', () => {
 		expect(isDeepCoreSubpath('/ns/core?p=data/observable')).toBe(true);
 	});
 
-	it('returns true for shallow subpath (index.js)', () => {
-		expect(isDeepCoreSubpath('/ns/core?p=index.js')).toBe(true);
+	it('returns false for package main entry alias (index.js)', () => {
+		expect(isDeepCoreSubpath('/ns/core?p=index.js')).toBe(false);
 	});
 
 	it('returns true for shallow subpath (globals)', () => {
@@ -174,10 +179,11 @@ describe('deep subpath skip in core named-import destructuring', () => {
 		expect(out).not.toContain('import { Frame }');
 	});
 
-	it('preserves named import from shallow subpath', () => {
+	it('rewrites named import from package main entry alias to default + destructure', () => {
 		const input = 'import { isAndroid } from "/ns/core?p=index.js";';
 		const out = simulateDestructureRewrite(input);
-		expect(out).toBe(input);
+		expect(out).toContain('import __ns_core_ns_re from "/ns/core?p=index.js"');
+		expect(out).toContain('const { isAndroid } = __ns_core_ns_re');
 	});
 
 	it('SKIPS named import from deep subpath (preserves named import)', () => {
@@ -210,8 +216,8 @@ describe('deep subpath skip in core named-import destructuring', () => {
 		// Deep subpath: should NOT be rewritten
 		expect(out).toContain('import { View } from "/ns/core?p=ui/core/view-base/index.js"');
 
-		// Shallow subpath: should NOT be rewritten
-		expect(out).toContain('import { isAndroid } from "/ns/core?p=index.js"');
+		// Package main entry alias: SHOULD be rewritten like the main bridge
+		expect(out).toContain('const { isAndroid } = __ns_core_ns_re_1');
 	});
 
 	it('is idempotent — applying twice produces identical output', () => {
@@ -251,6 +257,14 @@ describe('normalizeAnyCoreSpecToBridge → deep subpath skip pipeline', () => {
 		const out = pipeline(input);
 		expect(out).toContain('import __ns_core_0 from "/ns/core"');
 		expect(out).toContain('const { Frame } = __ns_core_0');
+	});
+
+	it('bare @nativescript/core/index.js → main bridge + destructure', () => {
+		const input = 'import { AbsoluteLayout } from "@nativescript/core/index.js";';
+		const out = pipeline(input);
+		expect(out).toContain('import __ns_core_0 from "/ns/core"');
+		expect(out).toContain('const { AbsoluteLayout } = __ns_core_0');
+		expect(out).not.toContain('/ns/core?p=index.js');
 	});
 
 	it('bare deep subpath → bridge URL + named import preserved', () => {

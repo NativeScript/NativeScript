@@ -85,7 +85,7 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 	try {
 		const g = globalThis as any;
 		const core = coreModule?.default ?? coreModule;
-		const Application = core?.Application ?? coreModule?.Application ?? g.Application;
+		const Application = (core && (typeof core.addCss === 'function' ? core : undefined)) || (core?.Application && typeof core.Application.addCss === 'function' ? core.Application : undefined) || (coreModule?.Application && typeof coreModule.Application.addCss === 'function' ? coreModule.Application : undefined) || g.Application;
 		if (!Application?.addCss) {
 			return null;
 		}

@@ -19,11 +19,11 @@ describe('ensureNativeScriptModuleBindings', () => {
 		// Injects vendor registry + require (lenient checks to avoid brittle regex)
 		expect(text).toContain('globalThis.__nsVendorRegistry');
 		expect(text).toContain('new Map()');
-		expect(text).toMatch(/const\s+__nsVendorRequire\s*=\s*\(typeof\s+globalThis\.__nsRequire|typeof\s+globalThis\.require/);
+		expect(text).toMatch(/(?:const|var)\s+__nsVendorRequire\s*=\s*\(typeof\s+globalThis\.__nsRequire|typeof\s+globalThis\.require/);
 		// Allocates a module cache var and resolves 'pinia'
-		expect(text).toMatch(/const __nsVendorModule_\d+\s*=\s*__nsVendorRegistry\.has\(['"]pinia['"]\)/);
+		expect(text).toMatch(/(?:const|var) __nsVendorModule_\d+\s*=\s*__nsVendorRegistry\.has\(['"]pinia['"]\)/);
 		// Binds defineStore via helper from default or namespace
-		expect(text).toMatch(/const\s+defineStore\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*["']defineStore["']\)/);
+		expect(text).toMatch(/(?:const|var)\s+defineStore\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*["']defineStore["']\)/);
 		// Uses defineStore call
 		expect(text).toMatch(/defineStore\('services'/);
 	});
@@ -43,7 +43,7 @@ describe('ensureNativeScriptModuleBindings', () => {
 		// Original import removed
 		expect(text).not.toMatch(/import\s*\{\s*install\s*\}\s*from/);
 		// Should bind a named const for install via helper
-		expect(text).toMatch(/const\s+install\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*["']install["']\)/);
+		expect(text).toMatch(/(?:const|var)\s+install\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*["']install["']\)/);
 	});
 
 	it('handles default plugin import with safe helper variable', () => {
@@ -55,8 +55,8 @@ describe('ensureNativeScriptModuleBindings', () => {
 		// Must not create identifiers that include quotes or slashes
 		expect(text).not.toMatch(/__nsDef_\d+_["'\/]/);
 		// Should define a per-module default candidate and bind FM from it
-		expect(text).toMatch(/const\s+__nsVendorModule_\d+__def\s*=\s*__nsDefault\(__nsVendorModule_\d+\)/);
-		expect(text).toMatch(/const\s+FM\s*=\s*\(__nsHasInstall\(__nsVendorModule_\d+__def\)/);
+		expect(text).toMatch(/(?:const|var)\s+__nsVendorModule_\d+__def\s*=\s*__nsDefault\(__nsVendorModule_\d+\)/);
+		expect(text).toMatch(/(?:const|var)\s+FM\s*=\s*\(__nsHasInstall\(__nsVendorModule_\d+__def\)/);
 	});
 });
 
@@ -73,7 +73,7 @@ describe('ensureNativeScriptModuleBindings — scoped packages', () => {
 		// Vendor module allocated
 		expect(text).toMatch(/__nsVendorRegistry\.has\(['"]@tanstack\/solid-router['"]\)/);
 		// createRootRoute bound via __nsPick
-		expect(text).toMatch(/const\s+createRootRoute\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*["']createRootRoute["']\)/);
+		expect(text).toMatch(/(?:const|var)\s+createRootRoute\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*["']createRootRoute["']\)/);
 		// Function call preserved
 		expect(text).toContain('createRootRoute()');
 	});
@@ -84,9 +84,9 @@ describe('ensureNativeScriptModuleBindings — scoped packages', () => {
 		const text = squish(out);
 		expect(text).not.toMatch(/from\s+["']@nativescript-community\/solid-js["']/);
 		expect(text).toMatch(/__nsVendorRegistry\.has\(['"]@nativescript-community\/solid-js['"]\)/);
-		expect(text).toMatch(/const\s+render\s*=\s*__nsPick/);
-		expect(text).toMatch(/const\s+insert\s*=\s*__nsPick/);
-		expect(text).toMatch(/const\s+createElement\s*=\s*__nsPick/);
+		expect(text).toMatch(/(?:const|var)\s+render\s*=\s*__nsPick/);
+		expect(text).toMatch(/(?:const|var)\s+insert\s*=\s*__nsPick/);
+		expect(text).toMatch(/(?:const|var)\s+createElement\s*=\s*__nsPick/);
 	});
 
 	it('rewrites multiple scoped imports from different packages', () => {

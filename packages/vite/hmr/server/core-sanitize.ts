@@ -17,16 +17,22 @@ export function normalizeStrayCoreStringLiterals(code: string): string {
 	if (!code || typeof code !== 'string') return code;
 	try {
 		let out = code;
+		const toCoreBridgeUrl = (sub: string) => {
+			const normalized = String(sub || '')
+				.trim()
+				.replace(/^\//, '');
+			if (!normalized || normalized === 'index' || normalized === 'index.js') {
+				return '/ns/core';
+			}
+			return `/ns/core?p=${normalized}`;
+		};
 		// Normalize any concatenated imports on the same line to start on a new line
 		// e.g. `...;import x from` -> `...;\nimport x from`
 		out = out.replace(/;\s*import\s+/g, ';\nimport ');
 		// Case 1: inline literal followed by another import on SAME line
 		// Example: "@nativescript/core/index.js";import { x } from "...";
 		out = out.replace(/(["']@nativescript\/core([^"']*)["'];)(\s*import\s+)/g, (_m, _lit: string, sub: string, after: string) => {
-			const qp = String(sub || '')
-				.trim()
-				.replace(/^\//, '');
-			const url = qp ? `/ns/core?p=${qp}` : '/ns/core';
+			const url = toCoreBridgeUrl(sub);
 			return `import "${url}";${after}`;
 		});
 
@@ -34,10 +40,7 @@ export function normalizeStrayCoreStringLiterals(code: string): string {
 		// Guard with EOL so we don't rewrite JSON keys like "@nativescript/core": "alpha"
 		const reLine = /(^|\n)([\t ]*)["']@nativescript\/core([^"']*)["']\s*;?\s*(?=$|\n)/g;
 		out = out.replace(reLine, (_full, prefix: string, indent: string, sub: string) => {
-			const qp = String(sub || '')
-				.trim()
-				.replace(/^\//, '');
-			const url = qp ? `/ns/core?p=${qp}` : '/ns/core';
+			const url = toCoreBridgeUrl(sub);
 			return `${prefix}${indent}import "${url}";`;
 		});
 
@@ -109,19 +112,22 @@ export function normalizeAnyCoreSpecToBridge(code: string): string {
 	if (!code || typeof code !== 'string') return code;
 	try {
 		let out = code;
-		const toQp = (sub: string) => {
+		const toCoreBridgeUrl = (sub: string) => {
 			const s = String(sub || '')
 				.split('?')[0]
 				.trim()
 				.replace(/^\//, '');
-			return s ? `?p=${s}` : '';
+			if (!s || s === 'index' || s === 'index.js') {
+				return '/ns/core';
+			}
+			return `/ns/core?p=${s}`;
 		};
 		// Static: import ... from "...@nativescript/core[/sub]..."
-		out = out.replace(/from\s+["'][^"']*@nativescript[\/_-]core([^"']*)["']/g, (_m, sub: string) => `from "/ns/core${toQp(sub)}"`);
+		out = out.replace(/from\s+["'][^"']*@nativescript[\/_-]core([^"']*)["']/g, (_m, sub: string) => `from "${toCoreBridgeUrl(sub)}"`);
 		// Side-effect: import "...@nativescript/core[/sub]..."
-		out = out.replace(/(^|\n)\s*import\s+["'][^"']*@nativescript[\/_-]core([^"']*)["'];?/gm, (full, pfx: string, sub: string) => `${pfx}import "/ns/core${toQp(sub)}";`);
+		out = out.replace(/(^|\n)\s*import\s+["'][^"']*@nativescript[\/_-]core([^"']*)["'];?/gm, (full, pfx: string, sub: string) => `${pfx}import "${toCoreBridgeUrl(sub)}";`);
 		// Dynamic: import("...@nativescript/core[/sub]...")
-		out = out.replace(/import\(\s*["'][^"']*@nativescript[\/_-]core([^"']*)["']\s*\)/g, (_m, sub: string) => `import("/ns/core${toQp(sub)}")`);
+		out = out.replace(/import\(\s*["'][^"']*@nativescript[\/_-]core([^"']*)["']\s*\)/g, (_m, sub: string) => `import("${toCoreBridgeUrl(sub)}")`);
 		// Repair glitch where a previous pass split/merged lines into: "from import '/ns/core...'"
 		// Normalize to a valid specifier: "from '/ns/core...'"
 		out = out.replace(/from\s+import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[0-9]+)?(?:\?p=[^"']+)?)['"]/g, (_m, url: string) => `from "${url}"`);
@@ -149,7 +155,10 @@ function rewriteSpec(spec: string, origin: string, ver: number): string {
 	if (coreIdx !== -1) {
 		const after = cleanSpec.substring(coreIdx + '@nativescript/core'.length);
 		const sub = after.replace(/^\//, '').trim();
-		return sub ? `/ns/core/${ver}?p=${sub}` : `/ns/core/${ver}`;
+		if (!sub || sub === 'index' || sub === 'index.js') {
+			return `/ns/core/${ver}`;
+		}
+		return `/ns/core/${ver}?p=${sub}`;
 	}
 
 	// Already a bridge, vendor, or HTTP URL → leave unchanged
@@ -213,8 +222,9 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
  * Determine whether a `/ns/core` bridge URL points to a real subpath module.
  *
  * Any `/ns/core?p=...` module now serves real ESM content with real named
- * exports via Vite's transform pipeline, including shallow paths like
- * `/ns/core?p=index.js` and `/ns/core?p=utils`.
+ * exports via Vite's transform pipeline, except for package-main aliases like
+ * `/ns/core?p=index.js`, which should be treated like the main `/ns/core`
+ * bridge and destructured from its default export.
  * The main proxy bridge (`/ns/core`) still only exports a default Proxy and
  * requires named imports to be destructured from it.
  *
@@ -223,7 +233,13 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
  * natively without conversion.
  */
 export function isDeepCoreSubpath(url: string): boolean {
-	return /\?p=([^&'"#]+)/.test(url);
+	const match = url.match(/\?p=([^&'"#]+)/);
+	if (!match) return false;
+	const sub = String(match[1] || '').replace(/^\/+/, '');
+	if (!sub || sub === 'index' || sub === 'index.js') {
+		return false;
+	}
+	return true;
 }
 
 /**

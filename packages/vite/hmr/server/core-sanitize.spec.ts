@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { normalizeStrayCoreStringLiterals, fixDanglingCoreFrom, normalizeAnyCoreSpecToBridge } from './core-sanitize';
 
 describe('normalizeStrayCoreStringLiterals', () => {
-	it('rewrites "@nativescript/core/index.js" literal to /ns/core import with query', () => {
+	it('rewrites "@nativescript/core/index.js" literal to the main /ns/core bridge import', () => {
 		const input = '"@nativescript/core/index.js";\nconst x = 1;';
 		const out = normalizeStrayCoreStringLiterals(input);
-		expect(out).toContain('import "/ns/core?p=index.js";');
+		expect(out).toContain('import "/ns/core";');
 		expect(out).not.toContain('@nativescript/core/index.js');
 	});
 
@@ -20,7 +20,7 @@ describe('normalizeStrayCoreStringLiterals', () => {
 		const input = '"@nativescript/core/index.js";import { x } from "/foo";';
 		const out = normalizeStrayCoreStringLiterals(input);
 		// We normalize concatenated imports to a new line
-		expect(out).toBe('import "/ns/core?p=index.js";\nimport { x } from "/foo";');
+		expect(out).toBe('import "/ns/core";\nimport { x } from "/foo";');
 	});
 
 	it('does not rewrite JSON object keys for core', () => {
@@ -62,15 +62,15 @@ describe('normalizeStrayCoreStringLiterals', () => {
 		expect(out).toBe(input);
 	});
 
-	it('normalizes bare core subpath import to bridge', () => {
+	it('normalizes bare core package entry import to the main bridge', () => {
 		const src = 'import { isAndroid } from "@nativescript/core/index.js";';
 		const out = normalizeAnyCoreSpecToBridge(src);
-		expect(out).toBe('import { isAndroid } from "/ns/core?p=index.js";');
+		expect(out).toBe('import { isAndroid } from "/ns/core";');
 	});
 
-	it('normalizes resolved node_modules core import to bridge', () => {
+	it('normalizes resolved node_modules core entry import to the main bridge', () => {
 		const src = 'import { isAndroid } from "/node_modules/@nativescript/core/index.js?v=abc123";';
 		const out = normalizeAnyCoreSpecToBridge(src);
-		expect(out).toBe('import { isAndroid } from "/ns/core?p=index.js";');
+		expect(out).toBe('import { isAndroid } from "/ns/core";');
 	});
 });

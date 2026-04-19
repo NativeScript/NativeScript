@@ -1,6 +1,5 @@
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from './project.js';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { preprocessCSS, type ResolvedConfig } from 'vite';
 import { getProjectFlavor } from './flavor.js';
@@ -56,7 +55,7 @@ const APP_CSS_RESOLVED = '\0' + APP_CSS_VIRTUAL_ID;
 const XHR_POLYFILL_VIRTUAL_ID = 'virtual:ns-xhr-polyfill';
 const XHR_POLYFILL_RESOLVED = '\0' + XHR_POLYFILL_VIRTUAL_ID;
 
-export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean }) {
+export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean; useHttps: boolean }) {
 	let resolvedConfig: ResolvedConfig;
 	return {
 		name: 'main-entry',
@@ -128,17 +127,6 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				imports += `globalThis.__TEST__ = false;\n`;
 				imports += "import { installModuleProvenanceRecorder } from '@nativescript/vite/hmr/shared/runtime/module-provenance.js';\n";
 				imports += 'installModuleProvenanceRecorder(__nsVerboseLog);\n';
-				// ---- Vendor manifest bootstrap ----
-				// Use single self-contained vendor module to avoid extra imports affecting chunking
-				imports += "import vendorManifest, { __nsVendorModuleMap } from '@nativescript/vendor';\n";
-				imports += "import { installVendorBootstrap } from '@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js';\n";
-				if (opts.verbose) {
-					imports += `console.info('[ns-entry] vendor manifest imported', { keys: Object.keys(vendorManifest||{}).length, hasMap: typeof __nsVendorModuleMap === 'object' });\n`;
-				}
-				imports += 'installVendorBootstrap(vendorManifest, __nsVendorModuleMap, __nsVerboseLog);\n';
-				if (opts.verbose) {
-					imports += `console.info('[ns-entry] vendor bootstrap installed');\n`;
-				}
 			}
 
 			// ---- Core runtime globals (always-needed) ----
@@ -149,6 +137,14 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			imports += "import '@nativescript/core/globals/index';\n";
 			if (opts.verbose) {
 				imports += `console.info('[ns-entry] core globals loaded');\n`;
+			}
+
+			// Seed the real NativeScript Application singleton before any early HMR/placeholder
+			// code runs. Dynamic discovery is too late for iOS placeholder startup.
+			imports += "import { Application as __nsEarlyApplication } from '@nativescript/core/application';\n";
+			imports += `try { if (__nsEarlyApplication && (typeof __nsEarlyApplication.run === 'function' || typeof __nsEarlyApplication.on === 'function' || typeof __nsEarlyApplication.resetRootView === 'function')) { globalThis.Application = __nsEarlyApplication; } } catch {}\n`;
+			if (opts.verbose) {
+				imports += `console.info('[ns-entry] early Application seeded', { hasRun: typeof globalThis.Application?.run === 'function', hasOn: typeof globalThis.Application?.on === 'function', hasResetRootView: typeof globalThis.Application?.resetRootView === 'function' });\n`;
 			}
 
 			// In dev mode for Angular apps, ensure @angular/compiler (JIT) is loaded.
@@ -221,49 +217,13 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			// ---- Platform-specific always-needed modules ----
-			// Track if we need to defer Android activity import (non-HMR only)
 			let needsAndroidActivityDefer = false;
 			if (opts.platform === 'android') {
-				if (opts.hmrActive) {
-					/**
-					 * Ensure the Java Activity class exists by executing the vendor-packed
-					 * activity registration module via the vendor registry (not ESM import).
-					 * This avoids any on-disk vendor.mjs export mismatches and guarantees the
-					 * class is registered before Android tries to instantiate it.
-					 */
-					imports += `
-            (function __nsEnsureAndroidActivityForHMR(){
-              try {
-                const g = globalThis;
-                const req = (g.__nsVendorRequire || g.__nsRequire);
-                if (!req) {
-                  ${opts.verbose ? "console.warn('[ns-entry] vendor require not available yet; activity registration may be deferred');" : ''}
-                  return;
-                }
-                const candidates = [
-                  '@nativescript/core/ui/frame/activity.android',
-                  '@nativescript/core/ui/frame/activity.android.js'
-                ];
-                for (const id of candidates) {
-                  try {
-                    req(id);
-                    ${opts.verbose ? "console.info('[ns-entry] android activity registered via vendor', id);" : ''}
-                    break;
-                  } catch {}
-                }
-              } catch (e) {
-                try { console.error('[ns-entry] failed to require android activity from vendor', e); } catch {}
-              }
-            })();\n`;
-				} else {
-					/**
-					 * Non-HMR: Defer activity lifecycle wiring until native Application is ready
-					 * to avoid "application is null" errors at production boot.
-					 * We set a flag here and emit the actual code after the static Application import
-					 * to avoid mixing dynamic and static imports of @nativescript/core.
-					 */
-					needsAndroidActivityDefer = true;
-				}
+				/**
+				 * Defer activity lifecycle wiring until native Application is ready
+				 * to avoid "application is null" errors during startup.
+				 */
+				needsAndroidActivityDefer = true;
 			}
 
 			// ---- Optional polyfills ----
@@ -283,9 +243,6 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (opts.verbose) {
 					imports += "console.info('[ns-entry] websockets polyfill imported');\n";
 				}
-				// Load HMR client for WebSocket connection to Vite dev server before HTTP-only boot attempts.
-				imports += "import 'virtual:ns-hmr-client';\n";
-				imports += "console.info('@nativescript/vite HMR client loaded.');\n";
 			}
 
 			// ---- Global CSS injection (always-needed if file exists) ----
@@ -332,33 +289,23 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 			// ---- Application main entry ----
 			if (opts.hmrActive) {
-				// HTTP-only dev boot: try to import the entire app over HTTP; if not reachable, keep retrying.
+				// Deterministic dev boot: fetch one session descriptor and let the runtime
+				// import the session client + app entry over HTTP.
 				if (opts.verbose) {
-					imports += `console.info('[ns-entry] including HTTP-only boot', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;
+					imports += `console.info('[ns-entry] including deterministic dev session bootstrap', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;
 				}
-				const guessLanHost = (): string | undefined => {
-					try {
-						const nets = os.networkInterfaces();
-						for (const name of Object.keys(nets)) {
-							const addrs = nets[name] || [];
-							for (const a of addrs) {
-								if (!a) continue;
-								const family = (a as any).family;
-								const internal = !!(a as any).internal;
-								const address = String((a as any).address || '');
-								if (internal) continue;
-								if ((family === 'IPv4' || family === 4) && address && address !== '127.0.0.1') return address;
-							}
-						}
-					} catch {}
-					return undefined;
-				};
-				// Prefer LAN IP so physical devices work by default; emulator will still be tried as a fallback.
-				const defaultHost = opts.platform === 'android' ? guessLanHost() || '10.0.2.2' : guessLanHost() || 'localhost';
-				imports += "import { startHttpOnlyBoot } from '@nativescript/vite/hmr/shared/runtime/http-only-boot.js';\n";
-				imports += `startHttpOnlyBoot(${JSON.stringify(opts.platform)}, ${JSON.stringify(mainEntryRelPosix)}, ${JSON.stringify((process.env.NS_HMR_HOST || '') as string) || JSON.stringify('')} || ${JSON.stringify(defaultHost)}, __nsVerboseLog);\n`;
+				const configuredHost = typeof resolvedConfig.server.host === 'string' && resolvedConfig.server.host ? resolvedConfig.server.host : 'localhost';
+				const bootHost = ((process.env.NS_HMR_HOST || '') as string) || configuredHost;
+				const bootProtocol = resolvedConfig.server.https || opts.useHttps ? 'https' : 'http';
+				const bootPort = Number(resolvedConfig.server.port || 5173);
+				const sessionUrl = bootProtocol + '://' + bootHost + ':' + String(bootPort) + '/__ns_dev__/session';
+				imports += "import { startBrowserRuntimeSession } from '@nativescript/vite/hmr/shared/runtime/session-bootstrap.js';\n";
+				imports += `startBrowserRuntimeSession(${JSON.stringify(sessionUrl)}, __nsVerboseLog).catch((error) => {\n`;
+				imports += `  try { globalThis.__NS_ENTRY_ERROR__ = { phase: 'deterministic-dev-session', message: String(error && (error.message || error)), stack: error && error.stack ? String(error.stack) : '' }; } catch {}\n`;
+				imports += `  try { console.error('[ns-entry] deterministic dev session bootstrap failed', error && error.stack ? error.stack : error); } catch {}\n`;
+				imports += `});\n`;
 				if (opts.verbose) {
-					imports += `console.info('[ns-entry] HTTP-only boot code appended');\n`;
+					imports += `console.info('[ns-entry] deterministic dev session bootstrap appended');\n`;
 				}
 			} else {
 				if (opts.verbose) {

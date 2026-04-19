@@ -30,6 +30,18 @@ describe('HMR dev overlay snapshots', () => {
 		expect(snapshot.tone).toBe('warn');
 		expect(snapshot.phase).toContain('Reconnecting');
 	});
+
+	it('builds an explicit app-root-committed boot snapshot', () => {
+		const snapshot = createBootOverlaySnapshot('app-root-committed', {
+			detail: 'The real app root replaced the boot placeholder.',
+		});
+
+		expect(snapshot.visible).toBe(true);
+		expect(snapshot.mode).toBe('boot');
+		expect(snapshot.badge).toBe('READY');
+		expect(snapshot.phase).toContain('Real app root committed');
+		expect(snapshot.progress).toBe(100);
+	});
 });
 
 describe('HMR dev overlay runtime API', () => {

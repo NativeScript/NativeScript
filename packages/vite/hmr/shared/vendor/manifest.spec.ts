@@ -3,7 +3,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { __test_collectVendorModules as collectVendorModules } from './manifest.js';
+import { __test_collectVendorModules as collectVendorModules, __test_createVendorBundleRuntimeModule as createVendorBundleRuntimeModule } from './manifest.js';
 
 describe('collectVendorModules', () => {
 	const tempRoots: string[] = [];
@@ -17,7 +17,7 @@ describe('collectVendorModules', () => {
 		}
 	});
 
-	it('always includes stacktrace-js to keep the stacktrace runtime on one vendor path', () => {
+	it('includes stacktrace-js when the package resolves in the project', () => {
 		const root = mkdtempSync(join(tmpdir(), 'ns-vendor-manifest-'));
 		tempRoots.push(root);
 
@@ -28,5 +28,39 @@ describe('collectVendorModules', () => {
 		const collected = collectVendorModules(root, 'ios', 'angular');
 
 		expect(collected.entries).toContain('stacktrace-js');
+	});
+
+	it('skips stacktrace-js when the package is not installed', () => {
+		const root = mkdtempSync(join(tmpdir(), 'ns-vendor-manifest-'));
+		tempRoots.push(root);
+
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app', version: '0.0.0', dependencies: {} }, null, 2));
+
+		const collected = collectVendorModules(root, 'ios', 'angular');
+
+		expect(collected.entries).not.toContain('stacktrace-js');
+	});
+
+	it('emits the same runtime bundle contract for served vendor modules', () => {
+		const code = createVendorBundleRuntimeModule({
+			code: 'export const __nsVendorModuleMap = { "pinia": {} };\n',
+			manifest: {
+				version: 1,
+				createdAt: '2026-04-18T00:00:00.000Z',
+				hash: 'hash-123',
+				modules: {
+					pinia: {
+						id: 'pinia',
+						exports: { '*': true },
+					},
+				},
+				aliases: {},
+			},
+			entries: ['pinia'],
+		});
+
+		expect(code).toContain('export const __nsVendorModuleMap = { "pinia": {} };');
+		expect(code).toContain('export const vendorManifest = {"version":1,"createdAt":"2026-04-18T00:00:00.000Z","hash":"hash-123"');
+		expect(code).toContain('export default vendorManifest;');
 	});
 });

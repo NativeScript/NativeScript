@@ -1,32 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import path from 'path';
-import { pathToFileURL } from 'url';
-
-// Reproduce the path logic from vite-plugin.ts in a testable helper
-function computeClientImport(options: { projectRoot: string; clientFsPath: string }) {
-	const { projectRoot, clientFsPath } = options;
-	let clientImport = clientFsPath;
-	try {
-		const rel = path.relative(projectRoot, clientFsPath);
-		const relPosix = rel.replace(/\\/g, '/');
-
-		if (path.isAbsolute(rel)) {
-			clientImport = pathToFileURL(clientFsPath).toString();
-		} else {
-			clientImport = (relPosix.startsWith('.') ? relPosix : `/${relPosix}`).replace(/\/+/g, '/');
-		}
-	} catch {
-		clientImport = clientFsPath.replace(/\\/g, '/');
-	}
-	return clientImport;
-}
+import { computeClientImportSpecifier, createNsDevClientBootstrapCode, createNsDevSessionDescriptor } from './vite-plugin.js';
 
 describe('ns-hmr-client vite plugin path handling', () => {
 	it('keeps a clean project-relative POSIX path on POSIX-like roots', () => {
 		const projectRoot = '/Users/test/app';
 		const clientFsPath = '/Users/test/app/node_modules/@nativescript/vite/hmr/client/index.js';
 
-		const result = computeClientImport({ projectRoot, clientFsPath });
+		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
 
 		expect(result).toBe('/node_modules/@nativescript/vite/hmr/client/index.js');
 	});
@@ -38,7 +19,7 @@ describe('ns-hmr-client vite plugin path handling', () => {
 		const projectRoot = 'C:/project/root';
 		const clientFsPath = 'D:/ns-vite-demo/node_modules/@nativescript/vite/hmr/client/index.js';
 
-		const result = computeClientImport({ projectRoot, clientFsPath });
+		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
 
 		// On non-Windows hosts, Node's path.relative may not simulate the
 		// cross-drive behavior. The important contract is: when the computed
@@ -56,9 +37,81 @@ describe('ns-hmr-client vite plugin path handling', () => {
 		const projectRoot = 'D:/ns-vite-demo';
 		const clientFsPath = 'D:/ns-vite-demo/node_modules/@nativescript/vite/hmr/client/index.js';
 
-		const result = computeClientImport({ projectRoot, clientFsPath });
+		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
 
 		// When on the same drive, relative path should be node_modules/... and we normalize to POSIX.
 		expect(result).toBe('/node_modules/@nativescript/vite/hmr/client/index.js');
+	});
+});
+
+describe('createNsDevSessionDescriptor', () => {
+	it('builds a URL-native session descriptor from the request host', () => {
+		const descriptor = createNsDevSessionDescriptor({
+			projectRoot: '/Users/test/app',
+			requestHost: '192.168.1.5:5173',
+			platform: 'ios',
+			sessionId: 'session-123',
+			mainEntryPathname: '/src/main.ts',
+		});
+
+		expect(descriptor).toEqual({
+			sessionId: 'session-123',
+			origin: 'http://192.168.1.5:5173',
+			entryUrl: 'http://192.168.1.5:5173/ns/m/src/main.ts',
+			clientUrl: 'http://192.168.1.5:5173/__ns_dev__/client',
+			wsUrl: 'ws://192.168.1.5:5173/ns-hmr',
+			platform: 'ios',
+			hostModules: ['ns-host://runtime', 'ns-host://style-adapter'],
+			features: {
+				fullReload: true,
+				cssHmr: true,
+			},
+		});
+	});
+
+	it('switches protocols when the dev server is secure', () => {
+		const descriptor = createNsDevSessionDescriptor({
+			projectRoot: '/Users/test/app',
+			requestHost: 'dev.example.com:8443',
+			platform: 'visionos',
+			sessionId: 'session-456',
+			secure: true,
+			mainEntryPathname: '/src/app.ts',
+		});
+
+		expect(descriptor.origin).toBe('https://dev.example.com:8443');
+		expect(descriptor.entryUrl).toBe('https://dev.example.com:8443/ns/m/src/app.ts');
+		expect(descriptor.clientUrl).toBe('https://dev.example.com:8443/__ns_dev__/client');
+		expect(descriptor.wsUrl).toBe('wss://dev.example.com:8443/ns-hmr');
+		expect(descriptor.platform).toBe('visionos');
+	});
+});
+
+describe('createNsDevClientBootstrapCode', () => {
+	it('generates a single-url websocket client for deterministic runtime sessions', () => {
+		const code = createNsDevClientBootstrapCode({
+			origin: 'http://192.168.1.5:5173',
+			wsUrl: 'ws://192.168.1.5:5173/ns-hmr',
+			verbose: true,
+		});
+
+		expect(code).toContain('const __NS_BROWSER_RUNTIME_WS_URL__ = "ws://192.168.1.5:5173/ns-hmr";');
+		expect(code).toContain('const __NS_BROWSER_RUNTIME_ORIGIN__ = "http://192.168.1.5:5173";');
+		expect(code).toContain('const __NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__ = "http://192.168.1.5:5173/@nativescript/vendor.mjs";');
+		expect(code).toContain('const __NS_BROWSER_RUNTIME_VENDOR_BOOTSTRAP_URL__ = "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js";');
+		expect(code).toContain('import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js";');
+		expect(code).toContain('import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap as __nsBrowserRuntimeVendorModuleMap } from "http://192.168.1.5:5173/@nativescript/vendor.mjs";');
+		expect(code).not.toContain('__nsBrowserRuntimeConfigureRuntime');
+		expect(code).not.toContain('/ns/import-map.json');
+		expect(code).not.toContain('configureRuntime({');
+		expect(code).toContain("__nsBrowserRuntimeEnsureVendorBootstrap('session-start');");
+		expect(code).not.toContain("await __nsBrowserRuntimeEnsureVendorBootstrap('session-start');");
+		expect(code).toContain('__nsBrowserRuntimeEnsureVendorBootstrap(reason);');
+		expect(code.indexOf("__nsBrowserRuntimeEnsureVendorBootstrap('session-start');")).toBeGreaterThan(code.indexOf('__nsBrowserRuntimeSocket.onclose ='));
+		expect(code.indexOf("__nsBrowserRuntimeEnsureVendorBootstrap('session-start');")).toBeLessThan(code.indexOf('if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__)'));
+		expect(code).toContain('new WebSocket(__NS_BROWSER_RUNTIME_WS_URL__)');
+		expect(code).toContain("await __nsBrowserRuntimeReload('ns:hmr-delta')");
+		expect(code).not.toContain('10.0.2.2');
+		expect(code).not.toContain('orderedHosts');
 	});
 });

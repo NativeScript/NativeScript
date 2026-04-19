@@ -1,7 +1,7 @@
 type HmrOverlayTone = 'info' | 'warn' | 'error';
 type HmrOverlayMode = 'hidden' | 'boot' | 'connection';
 
-export type HmrBootStage = 'placeholder' | 'probing-origin' | 'loading-entry-runtime' | 'configuring-import-map' | 'loading-runtime-bridge' | 'loading-core-bridge' | 'preloading-style-scope' | 'installing-css' | 'importing-main' | 'waiting-for-app' | 'ready' | 'error';
+export type HmrBootStage = 'placeholder' | 'probing-origin' | 'loading-entry-runtime' | 'configuring-import-map' | 'loading-runtime-bridge' | 'loading-core-bridge' | 'preloading-style-scope' | 'installing-css' | 'importing-main' | 'waiting-for-app' | 'app-root-committed' | 'ready' | 'error';
 
 export type HmrConnectionStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';
 
@@ -208,6 +208,17 @@ export function createBootOverlaySnapshot(stage: HmrBootStage, info?: HmrOverlay
 			phase: 'Waiting for the app root view',
 			progress: 94,
 			busy: true,
+			blocking: true,
+			tone: 'info',
+		},
+		'app-root-committed': {
+			visible: true,
+			mode: 'boot',
+			badge: 'READY',
+			title: BOOT_TITLE,
+			phase: 'Real app root committed',
+			progress: 100,
+			busy: false,
 			blocking: true,
 			tone: 'info',
 		},

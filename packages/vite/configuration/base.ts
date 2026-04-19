@@ -344,7 +344,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			nsConfigAsJsonPlugin(),
 			NativeScriptPlugin({ platform }),
 			// Ensure globals and Android activity are included early via virtual entry
-			mainEntryPlugin({ platform, isDevMode, verbose, hmrActive }),
+			mainEntryPlugin({ platform, isDevMode, verbose, hmrActive, useHttps }),
 			// Handle custom Android Activity/Application components (auto-detected or configured)
 			appComponentsPlugin({ platform, verbose }),
 			dynamicImportPlugin(),

@@ -27,6 +27,32 @@ import { readFileSync, readdirSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 import { getProjectRootPath } from '../../helpers/project.js';
 
+type DeviceImportMapExposure = 'full' | 'prefix-only' | 'omit';
+
+const OMIT_DEVICE_IMPORT_MAP_PACKAGES = new Set(['typescript', 'ts-node', 'esbuild', 'prettier', 'webpack', 'vite', '@nativescript/android', '@nativescript/ios', '@nativescript/visionos', '@nativescript/webpack', '@nativescript/types']);
+
+const OMIT_DEVICE_IMPORT_MAP_PREFIXES = ['@types/', '@babel/', 'babel-', '@rollup/', '@vitejs/', 'vite-plugin-', '@angular-devkit/', '@angular/build', '@analogjs/'];
+
+const PREFIX_ONLY_DEVICE_IMPORT_MAP_PACKAGES = new Set(['@nativescript/vite']);
+
+function getDeviceImportMapExposure(name: string): DeviceImportMapExposure {
+	if (PREFIX_ONLY_DEVICE_IMPORT_MAP_PACKAGES.has(name)) {
+		return 'prefix-only';
+	}
+
+	if (OMIT_DEVICE_IMPORT_MAP_PACKAGES.has(name)) {
+		return 'omit';
+	}
+
+	for (const prefix of OMIT_DEVICE_IMPORT_MAP_PREFIXES) {
+		if (name.startsWith(prefix)) {
+			return 'omit';
+		}
+	}
+
+	return 'full';
+}
+
 export interface ImportMap {
 	imports: Record<string, string>;
 }
@@ -186,22 +212,11 @@ function discoverInstalledPackages(imports: Record<string, string>, origin: stri
 	const nodeModulesDir = resolve(projectRoot, 'node_modules');
 	if (!existsSync(nodeModulesDir)) return;
 
-	// Packages that should never be in the import map (build tools, types)
-	const SKIP_PREFIXES = ['@types/', '@babel/', 'babel-', '@nativescript/types'];
-	const SKIP_EXACT = new Set(['typescript', 'ts-node', 'esbuild', 'prettier', 'webpack', '@nativescript/android', '@nativescript/ios', '@nativescript/visionos', '@nativescript/webpack', '@nativescript/types']);
-
-	const shouldSkip = (name: string): boolean => {
-		if (SKIP_EXACT.has(name)) return true;
-		for (const prefix of SKIP_PREFIXES) {
-			if (name.startsWith(prefix)) return true;
-		}
-		return false;
-	};
-
 	const addPackage = (name: string) => {
-		if (shouldSkip(name)) return;
+		const exposure = getDeviceImportMapExposure(name);
+		if (exposure === 'omit') return;
 		// Add exact entry only if not already mapped (vendor packages already have ns-vendor:// exact entries)
-		if (!imports[name]) {
+		if (exposure === 'full' && !imports[name]) {
 			imports[name] = `${origin}/ns/m/node_modules/${name}`;
 		}
 		// ALWAYS add trailing-slash prefix for HTTP subpath resolution,

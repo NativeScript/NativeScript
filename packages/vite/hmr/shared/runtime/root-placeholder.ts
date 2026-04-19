@@ -1,3 +1,185 @@
+import { setHmrBootStage } from './dev-overlay.js';
+
+function isPlaceholderView(view: any, placeholderRoot: any): boolean {
+	if (!view) {
+		return false;
+	}
+	if (placeholderRoot && view === placeholderRoot) {
+		return true;
+	}
+	try {
+		if ((view as any).__ns_dev_placeholder) {
+			return true;
+		}
+	} catch {}
+	return false;
+}
+
+function getCommittedRootView(application: any, placeholderRoot: any): any | null {
+	try {
+		const root = application?.getRootView?.() || null;
+		if (!root) {
+			return null;
+		}
+		if (!isPlaceholderView(root, placeholderRoot)) {
+			return root;
+		}
+		const currentPage = (root as any).currentPage || (root as any)._currentEntry?.resolvedPage || null;
+		if (currentPage && !isPlaceholderView(currentPage, placeholderRoot)) {
+			return root;
+		}
+	} catch {}
+	return null;
+}
+
+function getPlaceholderWaitDiagnosticSnapshot(g: any, application: any, placeholderRoot: any): Record<string, unknown> {
+	const snapshot: Record<string, unknown> = {
+		bootComplete: !!g.__NS_HMR_BOOT_COMPLETE__,
+		hasPlaceholderRoot: !!placeholderRoot,
+		hasPlaceholderFlag: !!g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__,
+		hasAngularAppRef: !!g.__NS_ANGULAR_APP_REF__,
+		hasAngularReboot: typeof g.__reboot_ng_modules__ === 'function',
+	};
+
+	try {
+		snapshot.applicationType = application?.constructor?.name;
+		snapshot.hasLaunched = typeof application?.hasLaunched === 'function' ? !!application.hasLaunched() : undefined;
+		snapshot.rootViewType = application?.getRootView?.()?.constructor?.name;
+	} catch {}
+
+	try {
+		const Frame = g.Frame;
+		const topmost = Frame?.topmost?.() || null;
+		snapshot.topmostFrameType = topmost?.constructor?.name;
+		snapshot.topmostPageType = topmost?.currentPage?.constructor?.name || topmost?._currentEntry?.resolvedPage?.constructor?.name;
+	} catch {}
+
+	return snapshot;
+}
+
+function restoreOriginalApplicationRun(g: any): void {
+	const originalRun = g['__NS_DEV_ORIGINAL_APP_RUN__'];
+	if (typeof originalRun !== 'function') {
+		return;
+	}
+
+	const application = g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application;
+	try {
+		if (application) {
+			(application as any).run = originalRun;
+		}
+	} catch {}
+	try {
+		if (g.Application && g.Application !== application) {
+			g.Application.run = originalRun;
+		}
+	} catch {}
+	try {
+		const proto = application ? Object.getPrototypeOf(application) : null;
+		if (proto && typeof proto.run === 'function' && proto.run !== originalRun) {
+			proto.run = originalRun;
+		}
+	} catch {}
+	delete g['__NS_DEV_ORIGINAL_APP_RUN__'];
+}
+
+function clearPlaceholderGlobals(g: any): void {
+	delete g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
+	delete g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'];
+	delete g['__NS_DEV_BOOT_STATUS_LABEL__'];
+	delete g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'];
+	delete g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'];
+	delete g['__NS_DEV_PLACEHOLDER_APPLICATION__'];
+	const timer = g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
+	if (timer) {
+		try {
+			clearTimeout(timer);
+		} catch {}
+	}
+	delete g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
+}
+
+export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): boolean {
+	const g: any = globalThis as any;
+	const placeholderRoot = g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null;
+	const hadPlaceholder = !!placeholderRoot || !!g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] || !!g['__NS_DEV_BOOT_STATUS_LABEL__'] || !!g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'];
+	const application = g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application;
+	const committedRoot = getCommittedRootView(application, placeholderRoot);
+
+	if (!committedRoot) {
+		return false;
+	}
+
+	let detachedPlaceholder = false;
+	if (hadPlaceholder) {
+		try {
+			const launchHandler = g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'];
+			if (application && typeof (application as any).off === 'function' && launchHandler) {
+				(application as any).off((application as any).launchEvent, launchHandler);
+			}
+		} catch {}
+		restoreOriginalApplicationRun(g);
+		clearPlaceholderGlobals(g);
+		detachedPlaceholder = true;
+	}
+
+	try {
+		g.__NS_HMR_BOOT_COMPLETE__ = true;
+	} catch {}
+
+	if (detachedPlaceholder) {
+		setHmrBootStage('app-root-committed', {
+			detail: 'The real app root replaced the boot placeholder.',
+		});
+	}
+
+	if (verbose) {
+		try {
+			console.info('[ns-placeholder] real app root committed', {
+				reason,
+				rootType: committedRoot?.constructor?.name || typeof committedRoot,
+				detachedPlaceholder,
+			});
+		} catch {}
+	}
+
+	return true;
+}
+
+function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): void {
+	const g: any = globalThis as any;
+	if (g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__']) {
+		return;
+	}
+
+	const startedAt = Date.now();
+	const maxWaitMs = 20000;
+	let attempts = 0;
+	const tick = () => {
+		delete g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'];
+		if (tryFinalizeBootPlaceholder(reason, verbose)) {
+			return;
+		}
+		attempts += 1;
+		if (Date.now() - startedAt >= maxWaitMs) {
+			if (verbose) {
+				try {
+					console.info('[ns-placeholder] waiting for real root commit timed out', {
+						reason,
+						attempts,
+						waitMs: Date.now() - startedAt,
+						state: getPlaceholderWaitDiagnosticSnapshot(g, g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application, g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null),
+					});
+				} catch {}
+			}
+			return;
+		}
+		g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'] = setTimeout(tick, attempts === 1 ? 0 : 100);
+	};
+
+	tick();
+}
+
 // Root placeholder installer used during dev HMR until HTTP ESM loads.
 //
 // Architecture:
@@ -14,53 +196,176 @@ export function installRootPlaceholder(verbose?: boolean) {
 	const g: any = globalThis as any;
 	if (g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__']) return;
 	g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] = true;
+	g['__NS_DEV_RESTORE_PLACEHOLDER__'] = (reason?: string) => {
+		if (!tryFinalizeBootPlaceholder(reason, verbose)) {
+			scheduleBootPlaceholderFinalize(reason, verbose);
+		}
+	};
 	try {
-		const getCore = (name: string): any => {
-			try {
-				const reg = g.__nsVendorRegistry;
-				const req = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-				let mod: any = null;
-				if (reg && reg.has('@nativescript/core')) mod = reg.get('@nativescript/core');
-				else if (typeof req === 'function') {
-					try {
-						mod = req('@nativescript/core');
-					} catch {}
-				}
-				const ns = (mod && (mod.default ?? mod)) || mod;
-				if (name === 'Application' && ns && (ns.Application || ns)) return ns.Application || ns;
-				if (ns && ns[name]) return ns[name];
-			} catch {}
-			try {
-				const nr = g.__nativeRequire;
-				if (typeof nr === 'function') {
-					try {
-						const mod = nr('@nativescript/core', '/');
-						const ns = (mod && (mod.default ?? mod)) || mod;
-						if (name === 'Application' && ns && (ns.Application || ns)) return ns.Application || ns;
-						if (ns && ns[name]) return ns[name];
-					} catch {}
-				}
-			} catch {}
+		type ResolvedModule = { value: any; via: string; moduleId: string };
+		const resolveModule = (moduleIds: string[]): ResolvedModule | undefined => {
+			for (const moduleId of moduleIds) {
+				try {
+					if (typeof g.moduleExists === 'function' && g.moduleExists(moduleId) && typeof g.loadModule === 'function') {
+						const mod = g.loadModule(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: 'loadModule', moduleId };
+					}
+				} catch {}
+				try {
+					const reg = g.__nsVendorRegistry;
+					if (reg?.has?.(moduleId)) {
+						const mod = reg.get(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: '__nsVendorRegistry', moduleId };
+					}
+				} catch {}
+				try {
+					const req = g.__nsVendorRequire || g.__nsRequire || g.require;
+					if (typeof req === 'function') {
+						const mod = req(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
+					}
+				} catch {}
+				try {
+					const nr = g.__nativeRequire;
+					if (typeof nr === 'function') {
+						const mod = nr(moduleId, '/');
+						if (mod) return { value: (mod.default ?? mod) || mod, via: '__nativeRequire', moduleId };
+					}
+				} catch {}
+			}
 			return undefined;
 		};
-		const Application = getCore('Application');
-		const Frame = getCore('Frame');
-		const Page = getCore('Page');
-		const Label = getCore('Label');
-		const ActivityIndicator = getCore('ActivityIndicator');
-		if (!Application || !Frame || !Page || !Label) {
-			if (verbose) console.warn('[ns-placeholder] core classes unavailable');
+		const getCore = (name: string): { value: any; source: string } => {
+			if (name === 'Application' && g.Application && (typeof g.Application.run === 'function' || typeof g.Application.on === 'function' || typeof g.Application.resetRootView === 'function')) {
+				return { value: g.Application, source: 'globalThis.Application' };
+			}
+
+			const pickApplicationApi = (candidate: any, source: string): { value: any; source: string } | null => {
+				if (!candidate) return null;
+				const candidates = [
+					{ value: candidate, source },
+					{ value: candidate.Application, source: `${source}#Application` },
+					{ value: candidate.app, source: `${source}#app` },
+					{ value: candidate.application, source: `${source}#application` },
+				];
+				for (const entry of candidates) {
+					if (entry.value && (typeof entry.value.run === 'function' || typeof entry.value.on === 'function' || typeof entry.value.resetRootView === 'function')) {
+						return entry;
+					}
+				}
+				return null;
+			};
+
+			if (name === 'Application') {
+				const applicationModule = resolveModule(['@nativescript/core/application']);
+				const pickedFromAppModule = pickApplicationApi(applicationModule?.value, applicationModule ? `${applicationModule.via}:${applicationModule.moduleId}` : '@nativescript/core/application');
+				if (pickedFromAppModule) return pickedFromAppModule;
+			}
+
+			const primary = resolveModule(['@nativescript/core']);
+			if (name === 'Application' && primary?.value) {
+				const pickedFromPrimary = pickApplicationApi(primary.value, `${primary.via}:${primary.moduleId}`);
+				if (pickedFromPrimary) return pickedFromPrimary;
+			}
+			if (primary?.value && primary.value[name]) return { value: primary.value[name], source: `${primary.via}:${primary.moduleId}` };
+
+			const ui = resolveModule(['@nativescript/core/ui']);
+			if (ui?.value && ui.value[name]) return { value: ui.value[name], source: `${ui.via}:${ui.moduleId}` };
+
+			return { value: undefined, source: 'unresolved' };
+		};
+		const applicationResolved = getCore('Application');
+		const frameResolved = getCore('Frame');
+		const pageResolved = getCore('Page');
+		const labelResolved = getCore('Label');
+		const activityResolved = getCore('ActivityIndicator');
+		const Application = applicationResolved.value;
+		const Frame = frameResolved.value;
+		const Page = pageResolved.value;
+		const Label = labelResolved.value;
+		const ActivityIndicator = activityResolved.value;
+		if (!Application) {
+			if (verbose) {
+				console.warn('[ns-placeholder] Application unavailable', {
+					resolution: {
+						Application: applicationResolved.source,
+						Frame: frameResolved.source,
+						Page: pageResolved.source,
+						Label: labelResolved.source,
+					},
+					moduleApis: {
+						moduleExists: typeof g.moduleExists === 'function',
+						loadModule: typeof g.loadModule === 'function',
+						uiModuleRegistered: typeof g.moduleExists === 'function' ? !!g.moduleExists('@nativescript/core/ui') : false,
+					},
+				});
+			}
 			return;
+		}
+		g['__NS_DEV_PLACEHOLDER_APPLICATION__'] = Application;
+		const isAndroid = !!(g.__ANDROID__ || typeof g.android !== 'undefined');
+		if (!isAndroid && typeof (Application as any).resetRootView === 'function' && !g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__']) {
+			const __ns_dev_original_reset_root_view = (Application as any).resetRootView.bind(Application);
+			const __ns_dev_patched_reset_root_view = function __ns_dev_patched_reset_root_view(entry?: any) {
+				const result = __ns_dev_original_reset_root_view(entry);
+				try {
+					const restore = g['__NS_DEV_RESTORE_PLACEHOLDER__'];
+					if (typeof restore === 'function') {
+						restore('Application.resetRootView');
+					}
+				} catch {}
+				return result;
+			};
+			(Application as any).resetRootView = __ns_dev_patched_reset_root_view;
+			try {
+				if (g.Application && g.Application !== Application) {
+					g.Application.resetRootView = __ns_dev_patched_reset_root_view;
+				}
+			} catch {}
+			try {
+				const proto = Object.getPrototypeOf(Application);
+				if (proto && typeof proto.resetRootView === 'function' && proto.resetRootView !== __ns_dev_patched_reset_root_view) {
+					proto.resetRootView = __ns_dev_patched_reset_root_view;
+				}
+			} catch {}
+			g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__'] = true;
+		}
+		const canCreatePlaceholderRoot = !!Frame && !!Page && !!Label;
+		if (!canCreatePlaceholderRoot && verbose) {
+			console.warn('[ns-placeholder] visual placeholder unavailable; starting lifecycle without placeholder root', {
+				resolution: {
+					Application: applicationResolved.source,
+					Frame: frameResolved.source,
+					Page: pageResolved.source,
+					Label: labelResolved.source,
+					ActivityIndicator: activityResolved.source,
+				},
+				moduleApis: {
+					moduleExists: typeof g.moduleExists === 'function',
+					loadModule: typeof g.loadModule === 'function',
+					uiModuleRegistered: typeof g.moduleExists === 'function' ? !!g.moduleExists('@nativescript/core/ui') : false,
+				},
+			});
 		}
 
 		let handlerFired = false;
 
 		// launchEvent handler: provides a placeholder root, then patches Application.run
 		const __ns_launch_handler = (args?: any) => {
+			if (verbose) {
+				try {
+					console.info('[ns-placeholder] launch handler fired', {
+						hasArgs: !!args,
+						hasExistingRoot: !!args?.root,
+						hasLaunched: typeof (Application as any).hasLaunched === 'function' ? !!(Application as any).hasLaunched() : undefined,
+						started: !!(Application as any).started,
+					});
+				} catch {}
+			}
 			try {
 				const prev = args?.root;
-				if (!prev && Frame && Page && Label) {
-					const StackLayout = getCore('StackLayout');
+				if (!prev && canCreatePlaceholderRoot && Frame && Page && Label) {
+					const StackLayout = getCore('StackLayout').value;
 					const page = new Page();
 					page.actionBarHidden = true;
 
@@ -120,6 +425,16 @@ export function installRootPlaceholder(verbose?: boolean) {
 						(page as any).__ns_dev_placeholder = true;
 						g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] = frame;
 					} catch {}
+					if (verbose) {
+						try {
+							console.info('[ns-placeholder] assigned placeholder root', {
+								frameType: frame?.constructor?.name,
+								pageType: page?.constructor?.name,
+								hasStackLayout: !!StackLayout,
+								hasActivityIndicator: !!activityIndicator,
+							});
+						} catch {}
+					}
 					if (args) args.root = frame;
 				}
 			} catch (e) {
@@ -142,14 +457,13 @@ export function installRootPlaceholder(verbose?: boolean) {
 						g['__NS_DEV_ORIGINAL_APP_RUN__'] = _originalRun;
 						const __ns_dev_patched_run = function __ns_dev_patched_run(entry?: any) {
 							try {
-								// Clean up: remove launchEvent handler and placeholder references
+								// Detach the launch handler, but keep placeholder refs until the
+								// real app root is actually committed.
 								try {
 									if (Application && (Application as any).off) {
 										(Application as any).off((Application as any).launchEvent, __ns_launch_handler);
 									}
 								} catch {}
-								delete g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'];
-								delete g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'];
 
 								// When entry is undefined/null, the calling framework (e.g. Angular)
 								// manages root views itself via launch events and resetRootView().
@@ -206,6 +520,11 @@ export function installRootPlaceholder(verbose?: boolean) {
 							}
 						};
 						(Application as any).run = __ns_dev_patched_run;
+						if (verbose) {
+							try {
+								console.info('[ns-placeholder] patched Application.run');
+							} catch {}
+						}
 						if (g.Application && g.Application !== Application) {
 							g.Application.run = __ns_dev_patched_run;
 						}
@@ -219,6 +538,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 				} catch {}
 			}
 		};
+		g['__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__'] = __ns_launch_handler;
 
 		try {
 			if (Application && (Application as any).on) {
@@ -228,18 +548,78 @@ export function installRootPlaceholder(verbose?: boolean) {
 
 		// Determine boot path
 		try {
-			if (Application && typeof (Application as any).run === 'function') {
-				const nativeApp = (Application as any).nativeApp;
-				const iosNativeApp = (Application as any).ios?.nativeApp;
-				if (nativeApp || iosNativeApp) {
-					// App already running (v9 runtime) — skip Application.run() to avoid
-					// runAsEmbeddedApp's modal presentViewController.
+			const appAny = Application as any;
+			const methodState = {
+				hasRun: typeof appAny?.run === 'function',
+				hasOn: typeof appAny?.on === 'function',
+				hasOff: typeof appAny?.off === 'function',
+				hasHasLaunched: typeof appAny?.hasLaunched === 'function',
+				hasGetRootView: typeof appAny?.getRootView === 'function',
+				hasResetRootView: typeof appAny?.resetRootView === 'function',
+				hasRunAsMainApp: typeof appAny?.runAsMainApp === 'function',
+				type: appAny?.constructor?.name,
+			};
+			if (verbose) {
+				try {
+					console.info('[ns-placeholder] application methods', methodState);
+					console.info('[ns-placeholder] application source', applicationResolved.source);
+				} catch {}
+			}
+
+			if (!appAny || typeof appAny.run !== 'function') {
+				console.warn('[ns-placeholder] Application.run unavailable', {
+					...methodState,
+					source: applicationResolved.source,
+				});
+				return;
+			}
+
+			const hasLaunched = typeof appAny.hasLaunched === 'function' ? !!appAny.hasLaunched() : false;
+			const hasRootView = typeof appAny.getRootView === 'function' ? !!appAny.getRootView() : false;
+			const started = !!appAny.started;
+			const nativeApp = appAny.nativeApp;
+			const iosNativeApp = appAny.ios?.nativeApp;
+			const canRunAsMainApp = typeof appAny.runAsMainApp === 'function';
+			if (verbose) {
+				try {
+					console.info('[ns-placeholder] boot state', {
+						hasLaunched,
+						hasRootView,
+						started,
+						nativeApp: !!nativeApp,
+						iosNativeApp: !!iosNativeApp,
+						canRunAsMainApp,
+						hasResetRootView: typeof appAny.resetRootView === 'function',
+					});
+				} catch {}
+			}
+
+			if (hasLaunched || hasRootView) {
+				// App lifecycle is already active. Skip starting it again and only install
+				// the placeholder root/patching behavior for the existing instance.
+				if (verbose) {
 					try {
-						__ns_launch_handler();
+						console.info('[ns-placeholder] boot branch: existing lifecycle');
 					} catch {}
-				} else {
-					(Application as any).run();
 				}
+				try {
+					__ns_launch_handler();
+				} catch {}
+			} else if (canRunAsMainApp) {
+				if (verbose) {
+					try {
+						console.info('[ns-placeholder] boot branch: runAsMainApp');
+					} catch {}
+				}
+				appAny.started = true;
+				appAny.runAsMainApp();
+			} else {
+				if (verbose) {
+					try {
+						console.info('[ns-placeholder] boot branch: Application.run');
+					} catch {}
+				}
+				appAny.run();
 			}
 		} catch (e) {
 			console.warn('[ns-placeholder] boot error', e);

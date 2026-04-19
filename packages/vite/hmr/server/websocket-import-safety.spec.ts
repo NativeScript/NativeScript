@@ -32,4 +32,15 @@ describe('processCodeForDevice import safety', () => {
 		expect(out).toContain(`import { Component } from '@angular/core';`);
 		expect(out).not.toContain(`import { Component } from "http://localhost:5173/ns/m/node_modules/@angular/core/fesm2022/core.mjs";\nimport { Component } from "http://localhost:5173/ns/m/node_modules/@angular/core/fesm2022/core.mjs";`);
 	});
+
+	it('rewrites resolved NativeScript core paths to the /ns/core bridge', () => {
+		const input = ['import { Device } from "/node_modules/@nativescript/core/index.js?v=abc123";', 'export { Device };'].join('\n');
+
+		const out = processCodeForDevice(input, false, true, true);
+
+		expect(out).toMatch(/import\s+__ns_core_ns\d+\s+from\s+["']\/ns\/core["']/);
+		expect(out).toMatch(/const\s+\{\s*Device\s*}\s*=\s*__ns_core_ns\d+\s*;/);
+		expect(out).not.toContain('/node_modules/@nativescript/core/index.js');
+		expect(collectTopLevelImportSources(out)).toContain('/ns/core');
+	});
 });

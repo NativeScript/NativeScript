@@ -6,40 +6,87 @@ declare const android: any;
 export function installCoreAliasesEarly(verbose?: boolean) {
 	try {
 		const g: any = globalThis as any;
-		const getCore = (name: string): any => {
-			try {
-				const reg = g.__nsVendorRegistry;
-				const req = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
-				let mod: any = null;
-				if (reg && reg.has('@nativescript/core')) mod = reg.get('@nativescript/core');
-				else if (typeof req === 'function') {
-					try {
-						mod = req('@nativescript/core');
-					} catch {}
-				}
-				const ns = (mod && (mod.default ?? mod)) || mod;
-				if (name === 'Application' && ns && (ns.Application || ns)) return ns.Application || ns;
-				if (ns && ns[name]) return ns[name];
-			} catch {}
-			try {
-				const nr = g.__nativeRequire;
-				if (typeof nr === 'function') {
-					try {
-						const mod = nr('@nativescript/core', '/');
-						const ns = (mod && (mod.default ?? mod)) || mod;
-						if (name === 'Application' && ns && (ns.Application || ns)) return ns.Application || ns;
-						if (ns && ns[name]) return ns[name];
-					} catch {}
-				}
-			} catch {}
+		type ResolvedModule = { value: any; via: string; moduleId: string };
+		const resolveModule = (moduleIds: string[]): ResolvedModule | undefined => {
+			for (const moduleId of moduleIds) {
+				try {
+					if (typeof g.moduleExists === 'function' && g.moduleExists(moduleId) && typeof g.loadModule === 'function') {
+						const mod = g.loadModule(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: 'loadModule', moduleId };
+					}
+				} catch {}
+				try {
+					const reg = g.__nsVendorRegistry;
+					if (reg?.has?.(moduleId)) {
+						const mod = reg.get(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: '__nsVendorRegistry', moduleId };
+					}
+				} catch {}
+				try {
+					const req = g.__nsVendorRequire || g.__nsRequire || g.require;
+					if (typeof req === 'function') {
+						const mod = req(moduleId);
+						if (mod) return { value: (mod.default ?? mod) || mod, via: 'require', moduleId };
+					}
+				} catch {}
+				try {
+					const nr = g.__nativeRequire;
+					if (typeof nr === 'function') {
+						const mod = nr(moduleId, '/');
+						if (mod) return { value: (mod.default ?? mod) || mod, via: '__nativeRequire', moduleId };
+					}
+				} catch {}
+			}
 			return undefined;
 		};
+		const getCore = (name: string): { value: any; source: string } => {
+			if (name === 'Application' && g.Application && (typeof g.Application.run === 'function' || typeof g.Application.on === 'function' || typeof g.Application.resetRootView === 'function')) {
+				return { value: g.Application, source: 'globalThis.Application' };
+			}
+
+			const pickApplicationApi = (candidate: any, source: string): { value: any; source: string } | null => {
+				if (!candidate) return null;
+				const candidates = [
+					{ value: candidate, source },
+					{ value: candidate.Application, source: `${source}#Application` },
+					{ value: candidate.app, source: `${source}#app` },
+					{ value: candidate.application, source: `${source}#application` },
+				];
+				for (const entry of candidates) {
+					if (entry.value && (typeof entry.value.run === 'function' || typeof entry.value.on === 'function' || typeof entry.value.resetRootView === 'function')) {
+						return entry;
+					}
+				}
+				return null;
+			};
+
+			if (name === 'Application') {
+				const applicationModule = resolveModule(['@nativescript/core/application']);
+				const pickedFromAppModule = pickApplicationApi(applicationModule?.value, applicationModule ? `${applicationModule.via}:${applicationModule.moduleId}` : '@nativescript/core/application');
+				if (pickedFromAppModule) return pickedFromAppModule;
+			}
+
+			const primary = resolveModule(['@nativescript/core']);
+			if (name === 'Application' && primary?.value) {
+				const pickedFromPrimary = pickApplicationApi(primary.value, `${primary.via}:${primary.moduleId}`);
+				if (pickedFromPrimary) return pickedFromPrimary;
+			}
+			if (primary?.value && primary.value[name]) return { value: primary.value[name], source: `${primary.via}:${primary.moduleId}` };
+
+			const ui = resolveModule(['@nativescript/core/ui']);
+			if (ui?.value && ui.value[name]) return { value: ui.value[name], source: `${ui.via}:${ui.moduleId}` };
+
+			return { value: undefined, source: 'unresolved' };
+		};
+		const resolutionStatus: Record<string, string> = {};
 
 		for (const n of ['Application', 'Frame', 'Page']) {
 			try {
-				const val = getCore(n);
+				const resolved = getCore(n);
+				const val = resolved.value;
+				resolutionStatus[n] = resolved.source;
 				const existing = g[n];
-				const needs = !existing || (n === 'Frame' && typeof existing?.topmost !== 'function') || (n === 'Application' && !existing) || (n === 'Page' && !existing);
+				const needs = !existing || (n === 'Frame' && typeof existing?.topmost !== 'function') || (n === 'Application' && (typeof existing?.run !== 'function' || typeof existing?.on !== 'function' || typeof existing?.resetRootView !== 'function')) || (n === 'Page' && !existing);
 				if (val && needs) {
 					g[n] = val;
 					if (verbose) {
@@ -54,6 +101,12 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 			try {
 				console.info('[ns-entry] core alias status (early)', {
 					has: { Frame: !!g.Frame, Application: !!g.Application, Page: !!g.Page },
+					resolution: resolutionStatus,
+					moduleApis: {
+						moduleExists: typeof g.moduleExists === 'function',
+						loadModule: typeof g.loadModule === 'function',
+						uiModuleRegistered: typeof g.moduleExists === 'function' ? !!g.moduleExists('@nativescript/core/ui') : false,
+					},
 					methods: { FrameTopmost: typeof g.Frame?.topmost === 'function', AppResetRoot: typeof g.Application?.resetRootView === 'function' },
 				});
 			} catch {}
