@@ -52,4 +52,21 @@ describe('collectGraphUpdateModulesForHotUpdate', () => {
 
 		expect(targets.map((mod) => mod.id)).toEqual(['/src/app/components/login/login.component.ts']);
 	});
+
+	it('excludes Angular test modules from hot-update graph targets', () => {
+		const componentModule = createModule('/src/app/components/login/login.component.ts');
+		const specModule = createModule('/src/app/components/login/login.component.spec.ts');
+		const templateModule = createModule('/src/app/components/login/login.component.html', {
+			importers: [componentModule, specModule],
+		});
+
+		const targets = collectGraphUpdateModulesForHotUpdate({
+			file: '/src/app/components/login/login.component.html',
+			flavor: 'angular',
+			modules: [templateModule],
+			getModuleById: () => undefined,
+		});
+
+		expect(targets.map((mod) => mod.id)).toEqual(['/src/app/components/login/login.component.ts']);
+	});
 });

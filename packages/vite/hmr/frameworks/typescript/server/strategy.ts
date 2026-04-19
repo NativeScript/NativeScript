@@ -1,6 +1,7 @@
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import * as path from 'path';
+import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
 
 // TypeScript server strategy for NativeScript HMR.
 // This is a lightweight strategy that treats app TS/JS files
@@ -14,7 +15,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 	flavor: 'typescript',
 	matchesFile(id: string) {
 		// Treat any app TS/JS under the virtual app root as HMR-relevant.
-		return TS_FILE_PATTERN.test(id) && id.startsWith(TS_APP_PREFIX);
+		return matchesRuntimeGraphModuleId(id, TS_APP_PREFIX, TS_FILE_PATTERN);
 	},
 	preClean(code: string) {
 		// No TS-specific pre-clean; generic sanitizers handle core/HMR noise.
@@ -35,6 +36,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		// Ensure that any TS app module requested by the HTTP realm is transformed once,
 		// so that downstream helpers (rewriteImports, vendor bridge) see a stable shape.
 		const { filePath, server, verbose } = ctx;
+		if (isRuntimeGraphExcludedPath(filePath)) return;
 		try {
 			const transformed = await server.transformRequest(filePath);
 			if (!transformed?.code) return;
@@ -66,6 +68,9 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 				return;
 			}
 			for (const name of list) {
+				if (name === 'node_modules' || name.startsWith('.') || shouldSkipRuntimeGraphDirectoryName(name)) {
+					continue;
+				}
 				const full = path.join(dir, name);
 				let st: any;
 				try {
@@ -75,7 +80,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 				}
 				if (st.isDirectory()) {
 					walk(full);
-				} else if (st.isFile() && TS_FILE_PATTERN.test(name)) {
+				} else if (st.isFile() && shouldIncludeRuntimeGraphFile(full, TS_FILE_PATTERN)) {
 					const rel = '/' + path.relative(root, full).split(path.sep).join('/');
 					entries.push(rel);
 				}

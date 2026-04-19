@@ -71,6 +71,20 @@ describe('collectAngularTransitiveImportersForInvalidation', () => {
 		expect(ids).toEqual(['/src/app/components/onboarding/survey/onboarding-survey-question.component.ts']);
 	});
 
+	it('excludes Angular test importers by default', () => {
+		const enumModule = createModule('/src/app/common/constants/onboarding.enum.ts');
+		const appImporter = createModule('/src/app/components/onboarding/survey/onboarding-survey-question.component.ts');
+		const specImporter = createModule('/src/app/components/onboarding/survey/onboarding-survey-question.component.spec.ts');
+		addImporter(enumModule, appImporter);
+		addImporter(enumModule, specImporter);
+
+		const importers = collectAngularTransitiveImportersForInvalidation({
+			modules: [enumModule],
+		});
+
+		expect(importers.map((mod) => mod.id)).toEqual(['/src/app/components/onboarding/survey/onboarding-survey-question.component.ts']);
+	});
+
 	it('tolerates cycles without looping forever', () => {
 		const enumModule = createModule('/src/app/common/constants/onboarding.enum.ts');
 		const a = createModule('/src/app/a.ts');

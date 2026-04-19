@@ -12,6 +12,17 @@ describe('rewriteImports Angular dynamic app imports', () => {
 		expect(output).not.toContain('import("/ns/m/src/app/components/login/login.component")');
 	});
 
+	it('preserves the boot-tagged app module family for dynamic imports during startup', () => {
+		const input = `const loadSignup = () => import('./components/signup/signup.component');\n`;
+		const output = rewriteImports(input, '/src/app/app.routes.ts', new Map(), new Map(), '/', false, undefined, 'http://localhost:5173', true);
+
+		expect(output).toContain("import.meta.url.includes('/__ns_boot__/b1/') ? '/__ns_boot__/b1' : ''");
+		expect(output).toContain('import.meta.url.match(/\\/__ns_hmr__\\/([^/]+)\\//)');
+		expect(output).toContain("const nextPath = __nsm + __nsBootPrefix + '/__ns_hmr__/' + encodeURIComponent(tag) + spec.slice(__nsm.length);");
+		expect(output).toContain("const tag = nonce ? `n${nonce}` : (__nsImporterTag || 'live');");
+		expect(output).toContain("spec.startsWith(__nsm + '/node_modules/')");
+	});
+
 	it('keeps static app imports on the standard HTTP path', () => {
 		const input = `import { HKFeature } from '/src/app/common/constants/feature.enum.ts';\n`;
 		const output = rewriteImports(input, '/src/app/app.routes.ts', new Map(), new Map(), '/', false, undefined, 'http://localhost:5173', true);

@@ -4,6 +4,7 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import * as PAT from '../../../server/constants.js';
 import { linkAngularPartialsIfNeeded } from './linker.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
+import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
 
 // Angular server strategy for NativeScript HMR.
 //
@@ -16,6 +17,7 @@ import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers
 
 const ANGULAR_APP_DIR = getProjectAppPath();
 const ANGULAR_APP_VIRTUAL_WITH_SLASH = `${getProjectAppVirtualPath()}/`;
+const ANGULAR_RUNTIME_FILE_PATTERN = /\.(ts|js|tsx|jsx|mjs)$/i;
 
 function findAngularEntryFiles(root: string): string[] {
 	const srcDir = path.join(root, ANGULAR_APP_DIR);
@@ -29,7 +31,7 @@ function findAngularEntryFiles(root: string): string[] {
 			return;
 		}
 		for (const name of entries) {
-			if (name === 'node_modules' || name === '.ns-vite-build' || name === 'dist') continue;
+			if (name === 'node_modules' || name === '.ns-vite-build' || name === 'dist' || shouldSkipRuntimeGraphDirectoryName(name)) continue;
 			const full = path.join(dir, name);
 			let st: any;
 			try {
@@ -39,7 +41,7 @@ function findAngularEntryFiles(root: string): string[] {
 			}
 			if (st.isDirectory()) {
 				walk(full);
-			} else if (st.isFile() && (name.endsWith('.ts') || name.endsWith('.js'))) {
+			} else if (st.isFile() && shouldIncludeRuntimeGraphFile(full, ANGULAR_RUNTIME_FILE_PATTERN)) {
 				try {
 					const code = readFileSync(full, 'utf8');
 					// Heuristic: treat files that bootstrap Angular (platformNativeScript, bootstrapApplication, etc.)
@@ -61,7 +63,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	flavor: 'angular',
 	matchesFile(id: string) {
 		// Treat only application TS/JS as candidates for ordering/graph purposes
-		return /\.(ts|js|tsx|jsx|mjs)$/i.test(id) && id.startsWith(ANGULAR_APP_VIRTUAL_WITH_SLASH);
+		return matchesRuntimeGraphModuleId(id, ANGULAR_APP_VIRTUAL_WITH_SLASH, ANGULAR_RUNTIME_FILE_PATTERN);
 	},
 	preClean(code: string) {
 		return code;
@@ -80,6 +82,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// Ensure any Angular code the HMR server assembles for HTTP consumption is fully linked.
 		const { filePath, server, verbose } = ctx;
+		if (isRuntimeGraphExcludedPath(filePath)) return;
 		try {
 			const transformed = await server.transformRequest(filePath);
 			if (!transformed?.code) return;
@@ -111,7 +114,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 				return;
 			}
 			for (const name of list) {
-				if (name === 'node_modules' || name === '.ns-vite-build' || name === 'dist') continue;
+				if (name === 'node_modules' || name === '.ns-vite-build' || name === 'dist' || shouldSkipRuntimeGraphDirectoryName(name)) continue;
 				const full = path.join(dir, name);
 				let st: any;
 				try {
@@ -121,7 +124,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 				}
 				if (st.isDirectory()) {
 					walkForTemplates(full);
-				} else if (st.isFile() && name.endsWith('.ts')) {
+				} else if (st.isFile() && shouldIncludeRuntimeGraphFile(full, /\.ts$/i)) {
 					try {
 						const code = readFileSync(full, 'utf8');
 						if (/\@Component\s*\(/.test(code) && /templateUrl\s*:\s*["']\.\//.test(code)) {

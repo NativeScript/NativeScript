@@ -33,6 +33,7 @@ import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
+import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import {
 	extractVitePrebundleId,
 	filterExistingNodeModulesTransformCandidates,
@@ -379,6 +380,7 @@ export function collectGraphUpdateModulesForHotUpdate(options: { file: string; f
 	const addTarget = (mod?: HotUpdateGraphModuleLike | null) => {
 		const id = mod?.id?.replace(/\?.*$/, '');
 		if (!id) return;
+		if (isRuntimeGraphExcludedPath(id)) return;
 		if (!targets.has(id)) {
 			targets.set(id, mod!);
 		}
@@ -420,6 +422,9 @@ export function collectAngularHotUpdateRoots(options: { file: string; modules?: 
 		}
 
 		if (mod.id) {
+			if (isRuntimeGraphExcludedPath(mod.id)) {
+				return;
+			}
 			if (seenIds.has(mod.id)) {
 				return;
 			}
@@ -475,10 +480,10 @@ type TransitiveImporterModuleLike = {
 export function collectAngularTransitiveImportersForInvalidation(options: { modules: Iterable<TransitiveImporterModuleLike> | undefined | null; isExcluded?: (id: string) => boolean; maxDepth?: number }): TransitiveImporterModuleLike[] {
 	const visited = new Set<TransitiveImporterModuleLike>();
 	const collected = new Map<string, TransitiveImporterModuleLike>();
-	const isExcluded = options.isExcluded ?? ((id: string) => id.includes('/node_modules/'));
+	const isExcluded = options.isExcluded ?? ((id: string) => id.includes('/node_modules/') || isRuntimeGraphExcludedPath(id));
 	const maxDepth = Math.max(1, Math.floor(options.maxDepth ?? 16));
 
-	const normalizeId = (value: string | null | undefined): string => (value ?? '').replace(/\?.*$/, '');
+	const normalizeId = (value: string | null | undefined): string => normalizeRuntimeGraphPath(value ?? '');
 
 	const walk = (mod: TransitiveImporterModuleLike | undefined | null, depth: number): void => {
 		if (!mod || visited.has(mod)) {
@@ -874,14 +879,21 @@ function ensureDynamicHmrImportHelper(code: string): string {
 		const helper =
 			'const __nsDynamicHmrImport = (spec) => {\n' +
 			"  const __nsm = '/ns' + '/m';\n" +
+			"  const __nsBootPrefix = typeof import.meta !== 'undefined' && import.meta && typeof import.meta.url === 'string' && import.meta.url.includes('/__ns_boot__/b1/') ? '/__ns_boot__/b1' : '';\n" +
+			"  const __nsImporterTagMatch = typeof import.meta !== 'undefined' && import.meta && typeof import.meta.url === 'string' ? import.meta.url.match(/\\/__ns_hmr__\\/([^/]+)\\//) : null;\n" +
+			"  const __nsImporterTag = __nsImporterTagMatch && __nsImporterTagMatch[1] ? decodeURIComponent(__nsImporterTagMatch[1]) : '';\n" +
 			"  try { if (!spec || spec === '@') { return import(new URL(__nsm + '/__invalid_at__.mjs', import.meta.url).href); } } catch {}\n" +
 			'  try {\n' +
 			"    if (typeof spec === 'string' && spec.startsWith(__nsm + '/')) {\n" +
-			"      if (spec.includes('/__ns_hmr__/')) { return import(new URL(spec, import.meta.url).href); }\n" +
+			"      if (spec.includes('/__ns_hmr__/')) {\n" +
+			"        const __preservedSpec = __nsBootPrefix && spec.startsWith(__nsm + '/__ns_hmr__/') && !spec.includes('/node_modules/') ? __nsm + __nsBootPrefix + spec.slice(__nsm.length) : spec;\n" +
+			'        return import(new URL(__preservedSpec, import.meta.url).href);\n' +
+			'      }\n' +
+			"      if (spec.startsWith(__nsm + '/node_modules/')) { return import(new URL(spec, import.meta.url).href); }\n" +
 			'      const g = globalThis;\n' +
 			"      const nonce = typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;\n" +
-			"      const tag = nonce ? `n${nonce}` : 'live';\n" +
-			"      const nextPath = __nsm + '/__ns_hmr__/' + encodeURIComponent(tag) + spec.slice(__nsm.length);\n" +
+			"      const tag = nonce ? `n${nonce}` : (__nsImporterTag || 'live');\n" +
+			"      const nextPath = __nsm + __nsBootPrefix + '/__ns_hmr__/' + encodeURIComponent(tag) + spec.slice(__nsm.length);\n" +
 			"      const origin = typeof g.__NS_HTTP_ORIGIN__ === 'string' && /^https?:\\/\\//.test(g.__NS_HTTP_ORIGIN__) ? g.__NS_HTTP_ORIGIN__ : '';\n" +
 			'      return import(origin ? origin + nextPath : new URL(nextPath, import.meta.url).href);\n' +
 			'    }\n' +
@@ -3101,7 +3113,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	// Compute a dependency-closed, topologically sorted list of modules for a given set of changed ids.
 	// Only include application modules we can serve (e.g., under /src and known .vue/.ts/.js entries in the graph).
 	function computeTxnOrderForChanged(changedIds: string[]): string[] {
-		const includeExt = (id: string) => ACTIVE_STRATEGY.matchesFile(id) || /\.(ts|js|mjs|tsx|jsx)$/i.test(id);
+		const includeAppModule = (id: string) => matchesRuntimeGraphModuleId(id, APP_VIRTUAL_WITH_SLASH, /\.(ts|js|mjs|tsx|jsx)$/i);
+		const includeExt = (id: string) => ACTIVE_STRATEGY.matchesFile(id) || includeAppModule(id);
 		const isApp = (id: string) => id.startsWith(APP_VIRTUAL_WITH_SLASH);
 		const roots = changedIds.map(normalizeGraphId).filter((id) => graph.has(id) && (isApp(id) || ACTIVE_STRATEGY.matchesFile(id)) && includeExt(id));
 		const toVisit = new Set<string>();
@@ -3285,13 +3298,13 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 		}
 		async function walk(dir: string) {
 			for (const name of fs.readdirSync(dir)) {
+				if (name === 'node_modules' || name.startsWith('.') || shouldSkipRuntimeGraphDirectoryName(name)) continue;
 				const full = pathMod.join(dir, name);
-				if (name === 'node_modules' || name.startsWith('.')) continue;
 				try {
 					const stat = fs.statSync(full);
 					if (stat.isDirectory()) await walk(full);
 					else if (stat.isFile()) {
-						if (/\.(vue|ts|js|mjs|tsx|jsx)$/.test(name)) {
+						if (shouldIncludeRuntimeGraphFile(full, /\.(vue|ts|js|mjs|tsx|jsx)$/i)) {
 							const rel = '/' + pathMod.relative(root, full).split(pathMod.sep).join('/');
 							// Transform via Vite to gather deps (ignore failures)
 							try {
@@ -3901,7 +3914,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 									const id = (resolvedCandidate || spec).replace(/[?#].*$/, '');
 									// Only track app modules (under APP_VIRTUAL_WITH_SLASH) and ts/js/tsx/jsx/mjs.
 									const isApp = id.startsWith(APP_VIRTUAL_WITH_SLASH) || id.startsWith('/app/');
-									if (isApp && /\.(ts|tsx|js|jsx|mjs|mts|cts)$/i.test(id)) {
+									if (isApp && /\.(ts|tsx|js|jsx|mjs|mts|cts)$/i.test(id) && !isRuntimeGraphExcludedPath(id)) {
 										const deps = Array.from(collectImportDependencies(code, id));
 										if (verbose) {
 											try {
@@ -6244,6 +6257,9 @@ export const piniaSymbol = p.piniaSymbol;
 		async handleHotUpdate(ctx) {
 			const { file, server } = ctx;
 			if (!wss) {
+				return;
+			}
+			if (isRuntimeGraphExcludedPath(file)) {
 				return;
 			}
 			// Graph update for this file change (wrapped to avoid aborting rest of handler)

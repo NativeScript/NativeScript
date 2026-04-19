@@ -56,4 +56,18 @@ describe('collectAngularHotUpdateRoots', () => {
 
 		expect(roots.map((mod) => mod.id)).toEqual(['/src/app/common/constants/onboarding.enum.ts']);
 	});
+
+	it('filters Angular test modules out of hot-update roots', () => {
+		const realModule = createModule('/src/app/common/constants/onboarding.enum.ts');
+		const specModule = createModule('/src/app/common/constants/onboarding.enum.spec.ts');
+
+		const roots = collectAngularHotUpdateRoots({
+			file: '/src/app/common/constants/onboarding.enum.ts',
+			modules: [specModule],
+			getModuleById: () => undefined,
+			getModulesByFile: () => [realModule, specModule],
+		});
+
+		expect(roots.map((mod) => mod.id)).toEqual(['/src/app/common/constants/onboarding.enum.ts']);
+	});
 });
