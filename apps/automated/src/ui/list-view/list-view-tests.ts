@@ -1095,6 +1095,69 @@ export class ListViewTest extends UITest<ListView> {
 		}
 	}
 
+	// Sectioned ListView + multiple item templates tests (fix for #11133)
+	public test_SectionedListView_ItemTemplateSelector_CorrectTemplatePerSection() {
+		// Verifies that _getItemTemplateInSection resolves the template using the
+		// actual row data item (not the section wrapper object).
+		const listView = this.testView;
+		listView.sectioned = true;
+
+		// Section 0 items have age=0 (even → 'red'), section 1 items have age=1 (odd → 'green')
+		listView.items = [
+			{ title: 'Section A', items: [{ age: 0 }, { age: 2 }] },
+			{ title: 'Section B', items: [{ age: 1 }, { age: 3 }] },
+		];
+		listView.itemTemplates = this._itemTemplatesString;
+		listView.itemTemplateSelector = (item: any) => (item.age % 2 === 0 ? 'red' : 'green');
+
+		// Section 0, row 0: age=0 → 'red'
+		const template00 = listView._getItemTemplateInSection(0, 0);
+		TKUnit.assertEqual(template00.key, 'red', 'section 0 row 0 should use red template');
+
+		// Section 0, row 1: age=2 → 'red'
+		const template01 = listView._getItemTemplateInSection(0, 1);
+		TKUnit.assertEqual(template01.key, 'red', 'section 0 row 1 should use red template');
+
+		// Section 1, row 0: age=1 → 'green'
+		const template10 = listView._getItemTemplateInSection(1, 0);
+		TKUnit.assertEqual(template10.key, 'green', 'section 1 row 0 should use green template');
+
+		// Section 1, row 1: age=3 → 'green'
+		const template11 = listView._getItemTemplateInSection(1, 1);
+		TKUnit.assertEqual(template11.key, 'green', 'section 1 row 1 should use green template');
+	}
+
+	public test_SectionedListView_ItemTemplateSelector_DifferentTemplatesWithinSameSection() {
+		// Verifies mixed templates within a single section are resolved correctly.
+		const listView = this.testView;
+		listView.sectioned = true;
+
+		listView.items = [{ title: 'Mixed', items: [{ age: 0 }, { age: 1 }, { age: 2 }] }];
+		listView.itemTemplates = this._itemTemplatesString;
+		listView.itemTemplateSelector = (item: any) => (item.age % 2 === 0 ? 'red' : 'green');
+
+		TKUnit.assertEqual(listView._getItemTemplateInSection(0, 0).key, 'red', 'row 0 (age=0) → red');
+		TKUnit.assertEqual(listView._getItemTemplateInSection(0, 1).key, 'green', 'row 1 (age=1) → green');
+		TKUnit.assertEqual(listView._getItemTemplateInSection(0, 2).key, 'red', 'row 2 (age=2) → red');
+	}
+
+	public test_SectionedListView_ItemTemplateSelector_UnknownKeyFallsBackToDefault() {
+		// Mirrors test_ItemTemplateSelector_WhenWrongTemplateKeyIsSpecified_TheDefaultTemplateIsUsed
+		// but for the sectioned path.
+		const listView = this.testView;
+		listView.sectioned = true;
+
+		listView.items = [{ title: 'Section A', items: [{ age: 0 }] }];
+		listView.itemTemplate = "<Label text='default' />";
+		listView.itemTemplates = this._itemTemplatesString;
+		// Selector always returns a key that does not exist in _itemTemplatesInternal
+		listView.itemTemplateSelector = (_item: any) => 'nonexistent';
+
+		const template = listView._getItemTemplateInSection(0, 0);
+		// Should fall back to the first (default) template
+		TKUnit.assertEqual(template.key, 'default', 'unknown template key should fall back to default');
+	}
+
 	private _itemTemplatesString = `
         <template key="red">
             <Label text='red' style.backgroundColor='red' minHeight='100' maxHeight='100'/>
