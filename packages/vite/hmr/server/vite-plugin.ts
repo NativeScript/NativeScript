@@ -64,7 +64,7 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; req
 	};
 }
 
-export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; verbose?: boolean }) {
+export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; verbose?: boolean }) {
 	const normalizedOrigin = options.origin.replace(/\/$/, '');
 	const vendorBundleUrl = `${normalizedOrigin}/@nativescript/vendor.mjs`;
 	const vendorBootstrapUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js`;
@@ -75,9 +75,11 @@ import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap
 
 const __NS_BROWSER_RUNTIME_WS_URL__ = ${JSON.stringify(options.wsUrl)};
 const __NS_BROWSER_RUNTIME_ORIGIN__ = ${JSON.stringify(options.origin)};
+const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = ${JSON.stringify(options.clientImport)};
 const __NS_BROWSER_RUNTIME_VERBOSE__ = ${options.verbose ? 'true' : 'false'};
 const __NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__ = ${JSON.stringify(vendorBundleUrl)};
 const __NS_BROWSER_RUNTIME_VENDOR_BOOTSTRAP_URL__ = ${JSON.stringify(vendorBootstrapUrl)};
+let __nsBrowserRuntimeHmrClientStartPromise;
 
 function __nsBrowserRuntimeLog(...args) {
 	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
@@ -101,99 +103,41 @@ function __nsBrowserRuntimeEnsureVendorBootstrap(reason) {
 	});
 }
 
-async function __nsBrowserRuntimeFetchText(url) {
-	const response = await fetch(url);
-	if (!response.ok) {
-		throw new Error('CSS fetch failed: ' + response.status + ' for ' + url);
-	}
-	return await response.text();
-}
 
-async function __nsBrowserRuntimeApplyCssUpdates(updates) {
-	for (const update of Array.isArray(updates) ? updates : []) {
-		const cssPath = update?.path || update?.acceptedPath || '';
-		if (!cssPath) continue;
-		const timestamp = update?.timestamp || Date.now();
-		const separator = cssPath.includes('?') ? '&' : '?';
-		const url = __NS_BROWSER_RUNTIME_ORIGIN__ + cssPath + separator + 'direct=1&t=' + String(timestamp);
-		const cssText = await __nsBrowserRuntimeFetchText(url);
-		const apply = globalThis.__nsApplyStyleUpdate;
-		if (typeof apply !== 'function') {
-			throw new Error('__nsApplyStyleUpdate is unavailable');
+async function __nsBrowserRuntimeReplaySeededCss() {
+	const cssText = globalThis.__NS_HMR_APP_CSS__;
+	if (typeof cssText !== 'string' || !cssText.length || globalThis.__NS_HMR_HTTP_APP_CSS_APPLIED__) {
+		return;
+	}
+	const apply = globalThis.__nsApplyStyleUpdate;
+	if (typeof apply !== 'function') {
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] __nsApplyStyleUpdate is unavailable; skipping seeded app.css replay');
 		}
-		apply({ url, cssText });
+		return;
+	}
+	const cssUrl = __NS_BROWSER_RUNTIME_ORIGIN__ + '/src/app.css?direct=1&t=' + String(Date.now());
+	apply({ url: cssUrl, cssText });
+	globalThis.__NS_HMR_HTTP_APP_CSS_APPLIED__ = true;
+	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+		console.info('[ns-entry] app.css applied in HTTP core realm');
 	}
 }
 
-async function __nsBrowserRuntimeReload(reason) {
-	__nsBrowserRuntimeEnsureVendorBootstrap(reason);
-	const reload = globalThis.__nsReloadDevApp;
-	if (typeof reload !== 'function') {
-		throw new Error('__nsReloadDevApp is unavailable for ' + reason);
+async function __nsBrowserRuntimeEnsureFullClientStarted() {
+	if (!__nsBrowserRuntimeHmrClientStartPromise) {
+		__nsBrowserRuntimeHmrClientStartPromise = import(__NS_BROWSER_RUNTIME_CLIENT_IMPORT__).then((mod) => {
+			const start = mod?.default;
+			if (typeof start !== 'function') {
+				throw new Error('NativeScript HMR client bootstrap is missing a default export');
+			}
+			start({ wsUrl: __NS_BROWSER_RUNTIME_WS_URL__ });
+			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+				console.info('[ns-browser-runtime-client] delegated to full NativeScript HMR client', __NS_BROWSER_RUNTIME_CLIENT_IMPORT__);
+			}
+		});
 	}
-	await reload();
-}
-
-let __nsBrowserRuntimeInitialGraphSeen = false;
-let __nsBrowserRuntimeSocket;
-
-function __nsBrowserRuntimeConnect() {
-	if (__nsBrowserRuntimeSocket) {
-		const readyState = __nsBrowserRuntimeSocket.readyState;
-		if (readyState === WebSocket.OPEN || readyState === WebSocket.CONNECTING) {
-			return;
-		}
-	}
-
-	__nsBrowserRuntimeLog('[ns-browser-runtime-client] connecting', __NS_BROWSER_RUNTIME_WS_URL__);
-	__nsBrowserRuntimeSocket = new WebSocket(__NS_BROWSER_RUNTIME_WS_URL__);
-	__nsBrowserRuntimeSocket.onopen = () => {
-		__nsBrowserRuntimeLog('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_WS_URL__);
-	};
-	__nsBrowserRuntimeSocket.onmessage = async (event) => {
-		let message;
-		try {
-			message = JSON.parse(event.data);
-		} catch {
-			return;
-		}
-
-		switch (message?.type) {
-			case 'ns:css-updates':
-				await __nsBrowserRuntimeApplyCssUpdates(message.updates);
-				return;
-			case 'ns:hmr-full-graph':
-				if (!__nsBrowserRuntimeInitialGraphSeen) {
-					__nsBrowserRuntimeInitialGraphSeen = true;
-					__nsBrowserRuntimeLog('[ns-browser-runtime-client] initial graph ready');
-					return;
-				}
-				await __nsBrowserRuntimeReload('ns:hmr-full-graph');
-				return;
-			case 'ns:hmr-delta':
-				__nsBrowserRuntimeInitialGraphSeen = true;
-				await __nsBrowserRuntimeReload('ns:hmr-delta');
-				return;
-			case 'ns:angular-update':
-			case 'ns:vue-sfc-registry-update':
-			case 'full-reload':
-				await __nsBrowserRuntimeReload(message.type);
-				return;
-			case 'error':
-				console.error('[ns-browser-runtime-client] error payload', message.err || message);
-				return;
-			default:
-				return;
-		}
-	};
-
-	__nsBrowserRuntimeSocket.onerror = (error) => {
-		console.warn('[ns-browser-runtime-client] websocket error', (error && (error.message || error)) || error);
-	};
-	__nsBrowserRuntimeSocket.onclose = () => {
-		console.warn('[ns-browser-runtime-client] websocket closed; reconnecting', __NS_BROWSER_RUNTIME_WS_URL__);
-		setTimeout(__nsBrowserRuntimeConnect, 1000);
-	};
+	return __nsBrowserRuntimeHmrClientStartPromise;
 }
 
 __nsBrowserRuntimeEnsureVendorBootstrap('session-start');
@@ -202,9 +146,10 @@ __nsBrowserRuntimeEnsureVendorBootstrap('session-start');
 if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__) {
 	globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = true;
 	globalThis.__NS_HTTP_ORIGIN__ = __NS_BROWSER_RUNTIME_ORIGIN__;
+	void __nsBrowserRuntimeEnsureFullClientStarted();
 	const __nsBrowserRuntimeWaitForBoot = () => {
 		if (globalThis.__NS_HMR_BOOT_COMPLETE__) {
-			__nsBrowserRuntimeConnect();
+			void __nsBrowserRuntimeReplaySeededCss();
 		} else {
 			setTimeout(__nsBrowserRuntimeWaitForBoot, 100);
 		}
@@ -257,9 +202,13 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 						const secure = !!config?.server?.https;
 						const origin = `${secure ? 'https' : 'http'}://${requestHost}`;
 						const wsUrl = `${secure ? 'wss' : 'ws'}://${requestHost}/ns-hmr`;
+						const clientFsPath = require.resolve('@nativescript/vite/hmr/client/index.js');
+						const projectRoot = config?.root || process.cwd();
+						const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
 						const code = createNsDevClientBootstrapCode({
 							origin,
 							wsUrl,
+							clientImport,
 							verbose: opts.verbose,
 						});
 
