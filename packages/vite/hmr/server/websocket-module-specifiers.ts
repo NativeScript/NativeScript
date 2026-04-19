@@ -121,7 +121,7 @@ function isAllowedNativeScriptViteDeviceSubpath(spec: string): boolean {
 		return false;
 	}
 
-	return subpath === 'hmr/entry-runtime.js' || subpath.startsWith('hmr/client/') || subpath.startsWith('hmr/shared/runtime/') || subpath.startsWith('shims/') || subpath === 'runtime/core-aliases-early.js' || subpath === 'polyfills/module.js';
+	return subpath === 'hmr/entry-runtime.js' || subpath.startsWith('hmr/client/') || /^hmr\/frameworks\/[^/]+\/client\//.test(subpath) || subpath.startsWith('hmr/shared/runtime/') || subpath.startsWith('shims/') || subpath === 'runtime/core-aliases-early.js' || subpath === 'polyfills/module.js';
 }
 
 export function getBlockedDeviceNodeModulesReason(spec: string): string | null {

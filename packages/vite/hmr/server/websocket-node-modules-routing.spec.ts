@@ -75,6 +75,8 @@ describe('device build-time package guards', () => {
 
 	it('allows NativeScript Vite runtime subpaths that are served over HTTP', () => {
 		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js')).toBeNull();
+		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/hmr/frameworks/angular/client/index.js')).toBeNull();
+		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/hmr/frameworks/vue/client/index.js')).toBeNull();
 		expect(getBlockedDeviceNodeModulesReason('@nativescript/vite/runtime/core-aliases-early.js')).toBeNull();
 		expect(getBlockedDeviceNodeModulesReason('/node_modules/@nativescript/vite/shims/angular-animations-stub.js')).toBeNull();
 	});

@@ -15,6 +15,38 @@ const VERBOSE = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;
 declare const __NS_TARGET_FLAVOR__: string | undefined;
 declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
 
+function resolveTargetFlavor(): string | undefined {
+	try {
+		if (typeof __NS_TARGET_FLAVOR__ !== 'undefined' && __NS_TARGET_FLAVOR__) {
+			return __NS_TARGET_FLAVOR__;
+		}
+	} catch {}
+	try {
+		const g: any = globalThis as any;
+		if (typeof g.__NS_TARGET_FLAVOR__ === 'string' && g.__NS_TARGET_FLAVOR__) {
+			return g.__NS_TARGET_FLAVOR__;
+		}
+		if (typeof g.__NS_HMR_BROWSER_RUNTIME_TARGET_FLAVOR__ === 'string' && g.__NS_HMR_BROWSER_RUNTIME_TARGET_FLAVOR__) {
+			return g.__NS_HMR_BROWSER_RUNTIME_TARGET_FLAVOR__;
+		}
+		if (typeof g.__reboot_ng_modules__ === 'function') {
+			return 'angular';
+		}
+		if (g.__VUE_HMR_RUNTIME__ || g.__NS_HMR_VUE_SFC_REGISTRY__) {
+			return 'vue';
+		}
+	} catch {}
+	return undefined;
+}
+
+const TARGET_FLAVOR = resolveTargetFlavor();
+
+try {
+	if (TARGET_FLAVOR && !(globalThis as any).__NS_TARGET_FLAVOR__) {
+		(globalThis as any).__NS_TARGET_FLAVOR__ = TARGET_FLAVOR;
+	}
+} catch {}
+
 const APP_ROOT_VIRTUAL = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
 const APP_VIRTUAL_WITH_SLASH = APP_ROOT_VIRTUAL.endsWith('/') ? APP_ROOT_VIRTUAL : `${APP_ROOT_VIRTUAL}/`;
 const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}app.ts`;
@@ -127,7 +159,7 @@ function markHmrConnectionHealthy() {
  */
 import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, ensurePiniaOnApp, addSfcMapping, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate, sfcArtifactMap } from '../frameworks/vue/client/index.js';
 import { handleAngularHotUpdateMessage, installAngularHmrClientHooks } from '../frameworks/angular/client/index.js';
-switch (__NS_TARGET_FLAVOR__) {
+switch (TARGET_FLAVOR) {
 	case 'vue':
 		installNsVueDevShims();
 		break;
@@ -181,7 +213,7 @@ function applyFullGraph(payload: any) {
 	try {
 		const g: any = globalThis as any;
 		const bootDone = !!g.__NS_HMR_BOOT_COMPLETE__;
-		if (!bootDone && !initialMounted && !initialMounting && !g.__NS_HMR_RESCUE_SCHEDULED__ && __NS_TARGET_FLAVOR__ !== 'typescript') {
+		if (!bootDone && !initialMounted && !initialMounting && !g.__NS_HMR_RESCUE_SCHEDULED__ && TARGET_FLAVOR !== 'typescript') {
 			// simple snapshot helpers
 			const getTopmost = () => {
 				try {
@@ -237,7 +269,7 @@ function applyFullGraph(payload: any) {
 					if (!placeholderActive) return;
 					if (VERBOSE) console.log('[hmr][init] placeholder persists after delay; evaluating rescue policy');
 					// Flavor-specific rescue handling
-					if (__NS_TARGET_FLAVOR__ === 'typescript') {
+					if (TARGET_FLAVOR === 'typescript') {
 						// For TS apps, perform a one-time resetRootView to the conventional
 						// app root module. This mimics what Application.run would do and
 						// replaces the placeholder with the real UI without trying to
@@ -270,7 +302,7 @@ function applyFullGraph(payload: any) {
 						return;
 					}
 					let candidate: string | null = null;
-					switch (__NS_TARGET_FLAVOR__) {
+					switch (TARGET_FLAVOR) {
 						case 'vue': {
 							const appEntry = graph.get(APP_MAIN_ENTRY_SPEC);
 							if (appEntry && Array.isArray(appEntry.deps)) {
@@ -308,7 +340,7 @@ function applyFullGraph(payload: any) {
 					(async () => {
 						try {
 							let comp: any = null;
-							switch (__NS_TARGET_FLAVOR__) {
+							switch (TARGET_FLAVOR) {
 								case 'vue':
 									comp = await loadSfcComponent(candidate!, 'initial_mount_rescue');
 									break;
@@ -346,7 +378,7 @@ function applyFullGraph(payload: any) {
 		// to avoid double-mount races that can cause duplicate navigation logs.
 		if (ALLOW_INITIAL_MOUNT && !initialMounted && !bootDone && !bootInProgress && !getCurrentApp() && !getRootFrame()) {
 			let candidate: string | null = null;
-			switch (__NS_TARGET_FLAVOR__) {
+			switch (TARGET_FLAVOR) {
 				case 'vue': {
 					const appEntry = graph.get(APP_MAIN_ENTRY_SPEC);
 					if (appEntry && Array.isArray(appEntry.deps)) {
@@ -386,7 +418,7 @@ function applyFullGraph(payload: any) {
 				} catch {}
 				(async () => {
 					try {
-						if (VERBOSE) console.log('[hmr][init] mounting initial root from', candidate, 'flavor=', __NS_TARGET_FLAVOR__);
+						if (VERBOSE) console.log('[hmr][init] mounting initial root from', candidate, 'flavor=', TARGET_FLAVOR);
 						// Android-only: avoid racing entry-runtime reset and Activity bring-up
 						try {
 							const g: any = globalThis as any;
@@ -416,7 +448,7 @@ function applyFullGraph(payload: any) {
 							}
 						} catch {}
 						let comp: any = null;
-						switch (__NS_TARGET_FLAVOR__) {
+						switch (TARGET_FLAVOR) {
 							case 'vue':
 								comp = await loadSfcComponent(candidate!, 'initial_mount');
 								break;
@@ -455,7 +487,7 @@ function applyFullGraph(payload: any) {
 					}
 				})();
 			} else if (VERBOSE) {
-				console.warn('[hmr][init] no component found in graph to mount initially for flavor', __NS_TARGET_FLAVOR__);
+				console.warn('[hmr][init] no component found in graph to mount initially for flavor', TARGET_FLAVOR);
 			}
 		}
 	} catch {}
@@ -480,7 +512,7 @@ function applyDelta(payload: any) {
 	}
 
 	const changed = payload.changed || [];
-	switch (__NS_TARGET_FLAVOR__) {
+	switch (TARGET_FLAVOR) {
 		case 'vue':
 			recordVuePayloadChanges(changed, getGraphVersion());
 			break;
@@ -558,7 +590,7 @@ function applyDelta(payload: any) {
 // Deterministic navigation using the current Vue app instance rather than vendor-held rootApp
 function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 	const g = globalThis as any;
-	switch (__NS_TARGET_FLAVOR__) {
+	switch (TARGET_FLAVOR) {
 		case 'vue':
 			ensureVueGlobals();
 			break;
@@ -585,7 +617,7 @@ function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 		const existingApp = getCurrentApp();
 		const baseProvides = (existingApp && existingApp._context && existingApp._context.provides) || {};
 		const app = AppFactory(normalizeComponent(comp, comp && (comp.__name || comp.name)));
-		switch (__NS_TARGET_FLAVOR__) {
+		switch (TARGET_FLAVOR) {
 			case 'vue':
 				ensurePiniaOnApp(app);
 				break;
@@ -716,7 +748,7 @@ async function processQueue(): Promise<void> {
 				}
 			}
 			// After evaluating the batch, perform flavor-specific UI refresh.
-			switch (__NS_TARGET_FLAVOR__) {
+			switch (TARGET_FLAVOR) {
 				case 'vue':
 					// Vue SFCs are handled via the registry update path; nothing to do here.
 					break;
@@ -1008,6 +1040,9 @@ function connectHmr() {
 		if (__NS_ENV_VERBOSE__) console.log('[hmr-client] Already connecting to HMR WebSocket, skipping');
 		return;
 	}
+	try {
+		(globalThis as any).__NS_HMR_CLIENT_SOCKET_READY__ = false;
+	} catch {}
 	const overlayStage: HmrConnectionOverlayStage = hasOpenedHmrSocket ? 'reconnecting' : 'connecting';
 	const baseUrl = getHMRWsUrl() || 'ws://localhost:5173/ns-hmr';
 	const buildCandidates = (url: string): string[] => {
@@ -1050,7 +1085,7 @@ function connectHmr() {
 					const key = `${host}:${port}`;
 					if (seen.has(key)) continue;
 					seen.add(key);
-					const cand = `${p}://${host}:${port}${u.pathname || '/ns-hmr'}`;
+					const cand = `${p}://${host}:${port}${u.pathname || '/ns-hmr'}${u.search || ''}`;
 					candidates.push(cand);
 				}
 			}
@@ -1102,6 +1137,9 @@ function connectHmr() {
 				clearConnectionOverlayTimer();
 				hasOpenedHmrSocket = true;
 				awaitingHealthyHmrMessage = true;
+				try {
+					(globalThis as any).__NS_HMR_CLIENT_SOCKET_READY__ = true;
+				} catch {}
 				if (connectionOverlayVisible) {
 					showConnectionOverlayNow('synchronizing', 'Connected. Synchronizing the HMR graph.');
 				}
@@ -1114,6 +1152,9 @@ function connectHmr() {
 			};
 			sock.onclose = (ev: any) => {
 				clearTimeout(timeout);
+				try {
+					(globalThis as any).__NS_HMR_CLIENT_SOCKET_READY__ = false;
+				} catch {}
 				if (!opened) {
 					// immediate failure during connect → try another candidate
 					if (VERBOSE) console.warn('[hmr-client] WS close before open (code', ev?.code, '), trying next…');
@@ -1415,7 +1456,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 			create: () => {
 				if (cachedRoot) return cachedRoot;
 				try {
-					switch (__NS_TARGET_FLAVOR__) {
+					switch (TARGET_FLAVOR) {
 						case 'vue':
 							cachedRoot = getRootForVue(newComponent, state);
 							break;
@@ -1712,7 +1753,7 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 		setTimeout(waitForBoot, 100);
 	}
 	// Best-effort: install back wrapper even before first remount; original root may be captured later
-	switch (__NS_TARGET_FLAVOR__) {
+	switch (TARGET_FLAVOR) {
 		case 'vue':
 			ensureBackWrapperInstalled(performResetRoot, getCore);
 			break;

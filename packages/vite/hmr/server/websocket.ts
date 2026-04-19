@@ -116,6 +116,22 @@ function isSocketClientOpen(client: { readyState?: number; OPEN?: number } | nul
 	return client.readyState === openState;
 }
 
+function getHmrSocketRoleFromRequestUrl(requestUrl: string | undefined): string {
+	try {
+		const url = new URL(requestUrl || '/ns-hmr', 'http://localhost');
+		return url.searchParams.get('ns_hmr_role') || 'unknown';
+	} catch {
+		return 'unknown';
+	}
+}
+
+function getHmrSocketRole(client: { __nsHmrClientRole?: string } | null | undefined): string {
+	if (!client) {
+		return 'unknown';
+	}
+	return typeof client.__nsHmrClientRole === 'string' && client.__nsHmrClientRole ? client.__nsHmrClientRole : 'unknown';
+}
+
 function shouldAllowLocalCoreSanitizerPaths(contextLabel: string): boolean {
 	return /\bnode_modules\/@nativescript\/vite\/hmr\/(?:client|frameworks)\//.test(contextLabel);
 }
@@ -3395,13 +3411,24 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 
 			// Additional connection diagnostics
 			wss.on('connection', (ws, req) => {
+				const role = getHmrSocketRoleFromRequestUrl(req.url);
+				(ws as any).__nsHmrClientRole = role;
 				try {
 					if (verbose) {
 						const ra = (req.socket as any)?.remoteAddress;
 						const rp = (req.socket as any)?.remotePort;
-						console.log('[hmr-ws] Client connected', ra + (rp ? ':' + rp : ''));
+						console.log('[hmr-ws] Client connected', { role, remote: ra + (rp ? ':' + rp : '') });
 					}
 				} catch {}
+				ws.on('close', () => {
+					try {
+						if (verbose) {
+							const ra = (req.socket as any)?.remoteAddress;
+							const rp = (req.socket as any)?.remotePort;
+							console.log('[hmr-ws] Client disconnected', { role, remote: ra + (rp ? ':' + rp : '') });
+						}
+					} catch {}
+				});
 			});
 			wss.on('error', (err) => {
 				try {
@@ -6382,7 +6409,11 @@ export const piniaSymbol = p.piniaSymbol;
 					if (verbose) {
 						console.log(
 							'[hmr-ws][angular] broadcasting update',
-							Array.from(wss.clients || []).map((client) => ({ readyState: client.readyState, openState: (client as any).OPEN })),
+							Array.from(wss.clients || []).map((client) => ({
+								role: getHmrSocketRole(client as any),
+								readyState: client.readyState,
+								openState: (client as any).OPEN,
+							})),
 						);
 					}
 					wss.clients.forEach((client) => {

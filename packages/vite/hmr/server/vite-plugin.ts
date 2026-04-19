@@ -100,6 +100,23 @@ const __NS_BROWSER_RUNTIME_VERBOSE__ = ${options.verbose ? 'true' : 'false'};
 let __nsBrowserRuntimeHmrClientStartPromise;
 let __nsBrowserRuntimeSocket;
 let __nsBrowserRuntimeSocketReconnectTimer;
+let __nsBrowserRuntimeDelegationTimer;
+let __nsBrowserRuntimeDelegationWarningIssued = false;
+let __nsBrowserRuntimeBootWaitWarningIssued = false;
+
+function __nsBrowserRuntimeWithSocketRole(url, role) {
+	try {
+		const resolved = new URL(url);
+		resolved.searchParams.set('ns_hmr_role', role);
+		return resolved.toString();
+	} catch {
+		const sep = url.includes('?') ? '&' : '?';
+		return url + sep + 'ns_hmr_role=' + encodeURIComponent(role);
+	}
+}
+
+const __NS_BROWSER_RUNTIME_FALLBACK_WS_URL__ = __nsBrowserRuntimeWithSocketRole(__NS_BROWSER_RUNTIME_WS_URL__, 'bootstrap');
+const __NS_BROWSER_RUNTIME_FULL_CLIENT_WS_URL__ = __nsBrowserRuntimeWithSocketRole(__NS_BROWSER_RUNTIME_WS_URL__, 'full');
 
 function __nsBrowserRuntimeEnsureVendorBootstrap() {
 	__nsBrowserRuntimeInstallVendorBootstrap(__nsBrowserRuntimeVendorManifest, __nsBrowserRuntimeVendorModuleMap, __NS_BROWSER_RUNTIME_VERBOSE__);
@@ -108,7 +125,6 @@ function __nsBrowserRuntimeEnsureVendorBootstrap() {
 		throw new Error('NativeScript vendor registry was not initialized');
 	}
 }
-
 
 async function __nsBrowserRuntimeReplaySeededCss() {
 	const cssText = globalThis.__NS_HMR_APP_CSS__;
@@ -222,6 +238,63 @@ function __nsBrowserRuntimeScheduleReconnect() {
 	}, 1000);
 }
 
+function __nsBrowserRuntimeClearDelegationTimer() {
+	if (__nsBrowserRuntimeDelegationTimer) {
+		clearTimeout(__nsBrowserRuntimeDelegationTimer);
+		__nsBrowserRuntimeDelegationTimer = null;
+	}
+}
+
+function __nsBrowserRuntimeCloseFallbackSocket(reason) {
+	__nsBrowserRuntimeClearDelegationTimer();
+	const ws = __nsBrowserRuntimeSocket;
+	if (ws) {
+		try {
+			ws.onopen = null;
+			ws.onmessage = null;
+			ws.onerror = null;
+			ws.onclose = null;
+		} catch {}
+		try {
+			ws.close();
+		} catch {}
+	}
+	__nsBrowserRuntimeSocket = null;
+	globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = false;
+	console.info('[ns-browser-runtime-client] delegated to full HMR client; closing bootstrap fallback socket', reason || 'delegated');
+}
+
+function __nsBrowserRuntimeWaitForDelegation(startedAt) {
+	if (globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__) {
+		__nsBrowserRuntimeClearDelegationTimer();
+		return;
+	}
+	if (globalThis.__NS_HMR_CLIENT_SOCKET_READY__) {
+		globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__ = true;
+		__nsBrowserRuntimeCloseFallbackSocket('full-client-ready');
+		return;
+	}
+	if (!__nsBrowserRuntimeDelegationWarningIssued && Date.now() - startedAt >= 10000) {
+		__nsBrowserRuntimeDelegationWarningIssued = true;
+		console.warn('[ns-browser-runtime-client] full HMR client did not confirm websocket readiness; keeping bootstrap fallback active');
+		__nsBrowserRuntimeClearDelegationTimer();
+		return;
+	}
+	__nsBrowserRuntimeDelegationTimer = setTimeout(() => {
+		__nsBrowserRuntimeDelegationTimer = null;
+		__nsBrowserRuntimeWaitForDelegation(startedAt);
+	}, 100);
+}
+
+function __nsBrowserRuntimeTrackDelegation() {
+	if (globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__) {
+		return;
+	}
+	__nsBrowserRuntimeDelegationWarningIssued = false;
+	__nsBrowserRuntimeClearDelegationTimer();
+	__nsBrowserRuntimeWaitForDelegation(Date.now());
+}
+
 function __nsBrowserRuntimeConnectSocket() {
 	const WebSocketCtor = globalThis.WebSocket;
 	if (typeof WebSocketCtor !== 'function') {
@@ -240,12 +313,12 @@ function __nsBrowserRuntimeConnectSocket() {
 				return;
 			}
 		}
-		const ws = new WebSocketCtor(__NS_BROWSER_RUNTIME_WS_URL__);
+		const ws = new WebSocketCtor(__NS_BROWSER_RUNTIME_FALLBACK_WS_URL__);
 		__nsBrowserRuntimeSocket = ws;
 		ws.onopen = () => {
 			globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = true;
 			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-				console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_WS_URL__);
+				console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_FALLBACK_WS_URL__);
 			}
 		};
 		ws.onmessage = (event) => {
@@ -287,8 +360,8 @@ async function __nsBrowserRuntimeEnsureFullClientStarted() {
 				if (typeof start !== 'function') {
 					throw new Error('NativeScript HMR client bootstrap is missing a default export');
 				}
-				start({ wsUrl: __NS_BROWSER_RUNTIME_WS_URL__ });
-				globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__ = true;
+				start({ wsUrl: __NS_BROWSER_RUNTIME_FULL_CLIENT_WS_URL__ });
+				__nsBrowserRuntimeTrackDelegation();
 			})
 			.catch((error) => {
 				globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = false;
@@ -306,11 +379,19 @@ if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__) {
 	globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = true;
 	globalThis.__NS_HTTP_ORIGIN__ = __NS_BROWSER_RUNTIME_ORIGIN__;
 	__nsBrowserRuntimeConnectSocket();
-	void __nsBrowserRuntimeEnsureFullClientStarted();
+	const __nsBrowserRuntimeBootWaitStartedAt = Date.now();
 	const __nsBrowserRuntimeWaitForBoot = () => {
 		if (globalThis.__NS_HMR_BOOT_COMPLETE__) {
+			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+				console.info('[ns-browser-runtime-client] boot complete observed; starting full HMR client');
+			}
 			void __nsBrowserRuntimeReplaySeededCss();
+			void __nsBrowserRuntimeEnsureFullClientStarted();
 		} else {
+			if (!__nsBrowserRuntimeBootWaitWarningIssued && Date.now() - __nsBrowserRuntimeBootWaitStartedAt >= 10000) {
+				__nsBrowserRuntimeBootWaitWarningIssued = true;
+				console.warn('[ns-browser-runtime-client] boot completion was not observed; full HMR client start is still pending');
+			}
 			setTimeout(__nsBrowserRuntimeWaitForBoot, 100);
 		}
 	};
