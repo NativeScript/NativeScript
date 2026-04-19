@@ -65,8 +65,27 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; req
 	};
 }
 
+function resolveBootstrapImportUrl(origin: string, clientImport: string): string {
+	const normalizedOrigin = origin.replace(/\/$/, '');
+	if (!clientImport) {
+		return clientImport;
+	}
+	if (/^(?:https?|file):\/\//i.test(clientImport)) {
+		return clientImport;
+	}
+	if (clientImport.startsWith('/')) {
+		return `${normalizedOrigin}${clientImport}`;
+	}
+	try {
+		return new URL(clientImport, `${normalizedOrigin}/__ns_dev__/client`).toString();
+	} catch {
+		return clientImport;
+	}
+}
+
 export function createNsDevClientBootstrapCode(options: { wsUrl: string; origin: string; clientImport: string; verbose?: boolean }) {
 	const normalizedOrigin = options.origin.replace(/\/$/, '');
+	const resolvedClientImport = resolveBootstrapImportUrl(normalizedOrigin, options.clientImport);
 	const vendorBundleUrl = `${normalizedOrigin}/@nativescript/vendor.mjs`;
 	const vendorBootstrapUrl = `${normalizedOrigin}/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js`;
 
@@ -76,35 +95,18 @@ import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap
 
 const __NS_BROWSER_RUNTIME_WS_URL__ = ${JSON.stringify(options.wsUrl)};
 const __NS_BROWSER_RUNTIME_ORIGIN__ = ${JSON.stringify(options.origin)};
-const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = ${JSON.stringify(options.clientImport)};
+const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = ${JSON.stringify(resolvedClientImport)};
 const __NS_BROWSER_RUNTIME_VERBOSE__ = ${options.verbose ? 'true' : 'false'};
-const __NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__ = ${JSON.stringify(vendorBundleUrl)};
-const __NS_BROWSER_RUNTIME_VENDOR_BOOTSTRAP_URL__ = ${JSON.stringify(vendorBootstrapUrl)};
 let __nsBrowserRuntimeHmrClientStartPromise;
 let __nsBrowserRuntimeSocket;
 let __nsBrowserRuntimeSocketReconnectTimer;
-let __nsBrowserRuntimeInitialGraphReady = false;
 
-function __nsBrowserRuntimeLog(...args) {
-	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-		console.log(...args);
-	}
-}
-
-function __nsBrowserRuntimeEnsureVendorBootstrap(reason) {
-	__nsBrowserRuntimeLog('[ns-browser-runtime-client] applying vendor bootstrap', __NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__);
+function __nsBrowserRuntimeEnsureVendorBootstrap() {
 	__nsBrowserRuntimeInstallVendorBootstrap(__nsBrowserRuntimeVendorManifest, __nsBrowserRuntimeVendorModuleMap, __NS_BROWSER_RUNTIME_VERBOSE__);
 	const registry = globalThis.__nsVendorRegistry;
 	if (!(registry && typeof registry.get === 'function')) {
 		throw new Error('NativeScript vendor registry was not initialized');
 	}
-	globalThis.__NS_HMR_BROWSER_RUNTIME_VENDOR_READY__ = true;
-	globalThis.__NS_HMR_BROWSER_RUNTIME_VENDOR_HASH__ = __nsBrowserRuntimeVendorManifest?.hash ?? null;
-	__nsBrowserRuntimeLog('[ns-browser-runtime-client] vendor bootstrap ready', {
-		reason,
-		hash: __nsBrowserRuntimeVendorManifest?.hash ?? null,
-		modules: Object.keys(__nsBrowserRuntimeVendorModuleMap || {}).length,
-	});
 }
 
 
@@ -196,10 +198,6 @@ function __nsBrowserRuntimeHandleSocketMessage(msg) {
 	}
 	if (msg.type === 'ns:hmr-full-graph') {
 		globalThis.__NS_HMR_BROWSER_RUNTIME_GRAPH_VERSION__ = typeof msg.version === 'number' ? msg.version : 0;
-		if (!__nsBrowserRuntimeInitialGraphReady) {
-			__nsBrowserRuntimeInitialGraphReady = true;
-			console.info('[ns-browser-runtime-client] initial graph ready');
-		}
 		return;
 	}
 	if (globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__) {
@@ -246,7 +244,9 @@ function __nsBrowserRuntimeConnectSocket() {
 		__nsBrowserRuntimeSocket = ws;
 		ws.onopen = () => {
 			globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = true;
-			console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_WS_URL__);
+			if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+				console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_WS_URL__);
+			}
 		};
 		ws.onmessage = (event) => {
 			try {
@@ -289,13 +289,9 @@ async function __nsBrowserRuntimeEnsureFullClientStarted() {
 				}
 				start({ wsUrl: __NS_BROWSER_RUNTIME_WS_URL__ });
 				globalThis.__NS_HMR_BROWSER_RUNTIME_DELEGATED__ = true;
-				if (__NS_BROWSER_RUNTIME_VERBOSE__) {
-					console.info('[ns-browser-runtime-client] delegated to full NativeScript HMR client', __NS_BROWSER_RUNTIME_CLIENT_IMPORT__);
-				}
 			})
 			.catch((error) => {
 				globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__ = false;
-				globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ERROR__ = error;
 				console.error('[ns-browser-runtime-client] failed to start full NativeScript HMR client', __NS_BROWSER_RUNTIME_CLIENT_IMPORT__, error);
 				throw error;
 			});
@@ -303,7 +299,7 @@ async function __nsBrowserRuntimeEnsureFullClientStarted() {
 	return __nsBrowserRuntimeHmrClientStartPromise;
 }
 
-__nsBrowserRuntimeEnsureVendorBootstrap('session-start');
+__nsBrowserRuntimeEnsureVendorBootstrap();
 
 
 if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__) {

@@ -98,9 +98,7 @@ describe('createNsDevClientBootstrapCode', () => {
 
 		expect(code).toContain('const __NS_BROWSER_RUNTIME_WS_URL__ = "ws://192.168.1.5:5173/ns-hmr";');
 		expect(code).toContain('const __NS_BROWSER_RUNTIME_ORIGIN__ = "http://192.168.1.5:5173";');
-		expect(code).toContain('const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = "/ns/m/node_modules/@nativescript/vite/hmr/client/index.js";');
-		expect(code).toContain('const __NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__ = "http://192.168.1.5:5173/@nativescript/vendor.mjs";');
-		expect(code).toContain('const __NS_BROWSER_RUNTIME_VENDOR_BOOTSTRAP_URL__ = "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js";');
+		expect(code).toContain('const __NS_BROWSER_RUNTIME_CLIENT_IMPORT__ = "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/client/index.js";');
 		expect(code).toContain('import { installVendorBootstrap as __nsBrowserRuntimeInstallVendorBootstrap } from "http://192.168.1.5:5173/ns/m/node_modules/@nativescript/vite/hmr/shared/runtime/vendor-bootstrap.js";');
 		expect(code).toContain('import { vendorManifest as __nsBrowserRuntimeVendorManifest, __nsVendorModuleMap as __nsBrowserRuntimeVendorModuleMap } from "http://192.168.1.5:5173/@nativescript/vendor.mjs";');
 		expect(code).toContain('globalThis.__NS_HMR_APP_CSS__');
@@ -109,14 +107,16 @@ describe('createNsDevClientBootstrapCode', () => {
 		expect(code).not.toContain('__nsBrowserRuntimeConfigureRuntime');
 		expect(code).not.toContain('/ns/import-map.json');
 		expect(code).not.toContain('configureRuntime({');
-		expect(code).toContain("__nsBrowserRuntimeEnsureVendorBootstrap('session-start');");
-		expect(code).not.toContain("await __nsBrowserRuntimeEnsureVendorBootstrap('session-start');");
+		expect(code).toContain('__nsBrowserRuntimeEnsureVendorBootstrap();');
+		expect(code).not.toContain('__NS_BROWSER_RUNTIME_VENDOR_BUNDLE_URL__');
+		expect(code).not.toContain('__NS_BROWSER_RUNTIME_VENDOR_BOOTSTRAP_URL__');
+		expect(code).not.toContain('__NS_HMR_BROWSER_RUNTIME_VENDOR_HASH__');
+		expect(code).not.toContain('__NS_HMR_BROWSER_RUNTIME_CLIENT_ERROR__');
 		expect(code).toContain('import(__NS_BROWSER_RUNTIME_CLIENT_IMPORT__)');
 		expect(code).toContain('start({ wsUrl: __NS_BROWSER_RUNTIME_WS_URL__ });');
-		expect(code.indexOf("__nsBrowserRuntimeEnsureVendorBootstrap('session-start');")).toBeLessThan(code.indexOf('if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__)'));
+		expect(code.indexOf('__nsBrowserRuntimeEnsureVendorBootstrap();')).toBeLessThan(code.indexOf('if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__)'));
 		expect(code).toContain('const ws = new WebSocketCtor(__NS_BROWSER_RUNTIME_WS_URL__);');
 		expect(code).toContain("console.info('[ns-browser-runtime-client] connected', __NS_BROWSER_RUNTIME_WS_URL__);");
-		expect(code).toContain("console.info('[ns-browser-runtime-client] initial graph ready');");
 		expect(code).not.toContain('__nsBrowserRuntimeReload(');
 		expect(code).toContain("if (msg.type === 'ns:angular-update') {");
 		expect(code).not.toContain('10.0.2.2');
