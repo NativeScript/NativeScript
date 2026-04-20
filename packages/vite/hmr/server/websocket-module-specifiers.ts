@@ -597,13 +597,20 @@ export function shouldPreserveBareRuntimePluginSubpathImport(spec: string, proje
 	}
 
 	const { packageName, subpath } = resolveNodeModulesPackageBoundary(normalized, projectRoot);
-	if (!subpath || packageName !== rootPackageName || !subpath.includes('/')) {
+	if (!subpath || packageName !== rootPackageName) {
 		return false;
 	}
 
 	const lastSegment = subpath.split('/').pop() || '';
 	if (/\.[a-z0-9]+$/i.test(lastSegment)) {
 		return false;
+	}
+
+	if (!subpath.includes('/')) {
+		const packageBaseName = packageName.split('/').pop() || '';
+		if (lastSegment === 'index' || lastSegment === packageBaseName || lastSegment.startsWith(`${packageBaseName}.`)) {
+			return false;
+		}
 	}
 
 	const reverseMap = getExportsReverseMap(packageName, projectRoot);

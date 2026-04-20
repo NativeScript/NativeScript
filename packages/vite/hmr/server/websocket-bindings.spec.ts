@@ -227,6 +227,39 @@ describe('ensureNativeScriptModuleBindings — package metadata NativeScript det
 		expect(text).toMatch(/(?:const|var)\s+SyncStatus\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*['"]SyncStatus['"]\)/);
 	});
 
+	it('preserves extensionless directory runtime-plugin subpaths from user code as ESM imports', () => {
+		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-bindings-'));
+		tempRoots.push(root);
+
+		mkdirSync(join(root, 'node_modules', '@nativescript-community', 'ui-canvas', 'shapes'), { recursive: true });
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app' }, null, 2));
+		writeFileSync(
+			join(root, 'node_modules', '@nativescript-community', 'ui-canvas', 'package.json'),
+			JSON.stringify(
+				{
+					name: '@nativescript-community/ui-canvas',
+					main: './index',
+					nativescript: {
+						platforms: {
+							ios: '6.0.0',
+						},
+					},
+				},
+				null,
+				2,
+			),
+		);
+
+		process.chdir(root);
+
+		const input = `import { Line } from '@nativescript-community/ui-canvas/shapes';\nexport const canvasLine = Line;`;
+		const out = ensureNativeScriptModuleBindings(input, { preserveNonPluginVendorImports: true });
+		const text = squish(out);
+
+		expect(text).toContain(`from '@nativescript-community/ui-canvas/shapes'`);
+		expect(text).not.toMatch(/__nsVendorRegistry\.has\(['"]@nativescript-community\/ui-canvas\/shapes['"]\)/);
+	});
+
 	it('restores extensionless runtime-plugin subpath specifiers from resolved node_modules imports when source intent is provided', () => {
 		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-bindings-'));
 		tempRoots.push(root);

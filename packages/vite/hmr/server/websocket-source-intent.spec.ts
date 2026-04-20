@@ -56,6 +56,43 @@ describe('processCodeForDevice source import intent', () => {
 		expect(rewritten).toContain('from "http://localhost:5173/ns/m/node_modules/@mleleux/nativescript-revenuecat/Product/common"');
 	});
 
+	it('restores extensionless runtime-plugin subpaths when the served app module id is extensionless', () => {
+		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-source-intent-'));
+		tempRoots.push(root);
+
+		mkdirSync(join(root, 'src'), { recursive: true });
+		mkdirSync(join(root, 'node_modules', '@nativescript-community', 'ui-canvas', 'shapes'), { recursive: true });
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app' }, null, 2));
+		writeFileSync(
+			join(root, 'node_modules', '@nativescript-community', 'ui-canvas', 'package.json'),
+			JSON.stringify(
+				{
+					name: '@nativescript-community/ui-canvas',
+					main: './index',
+					nativescript: {
+						platforms: {
+							ios: '6.0.0',
+						},
+					},
+				},
+				null,
+				2,
+			),
+		);
+		writeFileSync(join(root, 'src', 'app.component.ts'), [`import { Line } from '@nativescript-community/ui-canvas/shapes';`, `export const canvasLine = Line;`].join('\n'));
+
+		process.chdir(root);
+
+		const viteTransformed = [`import { Line } from "/node_modules/@nativescript-community/ui-canvas/shapes/index.js";`, `export const canvasLine = Line;`].join('\n');
+		const processed = processCodeForDevice(viteTransformed, false, true, false, '/src/app.component');
+		expect(processed).toContain(`from "@nativescript-community/ui-canvas/shapes"`);
+		expect(processed).not.toContain(`from "/node_modules/@nativescript-community/ui-canvas/shapes/index.js"`);
+		expect(processed).not.toMatch(/__nsVendorRegistry\.has\(['"]@nativescript-community\/ui-canvas\/shapes\/index\.js['"]\)/);
+
+		const rewritten = rewriteImports(processed, '/src/app.component', new Map(), new Map(), root, false, undefined, 'http://localhost:5173', true);
+		expect(rewritten).toContain('from "http://localhost:5173/ns/m/node_modules/@nativescript-community/ui-canvas/shapes"');
+	});
+
 	it('restores extensionless same-package runtime-plugin imports for node_modules modules before rewrite routing', () => {
 		const root = mkdtempSync(join(tmpdir(), 'ns-websocket-source-intent-'));
 		tempRoots.push(root);

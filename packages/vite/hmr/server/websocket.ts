@@ -1605,6 +1605,88 @@ function findDependencyFileName(depFileMap: Map<string, string>, key: string): s
 	return undefined;
 }
 
+function isRuntimePluginRootEntrySpecifier(specifier: string, projectRoot: string): boolean {
+	if (!specifier) {
+		return false;
+	}
+
+	const cleaned = specifier.replace(PAT.QUERY_PATTERN, '');
+	const normalized = normalizeNodeModulesSpecifier(cleaned) || cleaned.replace(/^\/+/, '');
+	if (!normalized) {
+		return false;
+	}
+
+	const { packageName, subpath } = resolveNodeModulesPackageBoundary(normalized, projectRoot);
+	if (!packageName || !isLikelyNativeScriptRuntimePluginSpecifier(packageName, projectRoot)) {
+		return false;
+	}
+
+	if (!subpath) {
+		return true;
+	}
+
+	if (subpath.includes('/')) {
+		return false;
+	}
+
+	const pkgBaseName = packageName.split('/').pop() || '';
+	const withoutExt = subpath.replace(/\.[^.]+$/, '');
+	const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
+	return withoutPlatform === 'index' || withoutPlatform === pkgBaseName;
+}
+
+function collectMixedRuntimePluginHttpRootPackages(code: string, projectRoot: string): Set<string> {
+	const preservedSubpathPackages = new Set<string>();
+	const rootEntryPackages = new Set<string>();
+
+	const visitSpecifier = (rawSpecifier: string | null | undefined) => {
+		if (!rawSpecifier) {
+			return;
+		}
+
+		const specifier = normalizeNativeScriptCoreSpecifier(rawSpecifier).replace(PAT.QUERY_PATTERN, '');
+		if (!specifier) {
+			return;
+		}
+
+		if (/^https?:\/\//.test(specifier) || specifier.startsWith('/ns/')) {
+			return;
+		}
+
+		if (/^(?:\.|\/)/.test(specifier) && !specifier.includes('/node_modules/')) {
+			return;
+		}
+
+		const normalized = normalizeNodeModulesSpecifier(specifier) || specifier.replace(/^\/+/, '');
+		if (!normalized) {
+			return;
+		}
+
+		const { packageName } = resolveNodeModulesPackageBoundary(normalized, projectRoot);
+		if (!packageName || !isLikelyNativeScriptRuntimePluginSpecifier(packageName, projectRoot)) {
+			return;
+		}
+
+		if (shouldPreserveBareRuntimePluginSubpathImport(specifier, projectRoot)) {
+			preservedSubpathPackages.add(packageName);
+		}
+
+		if (isRuntimePluginRootEntrySpecifier(normalized, projectRoot)) {
+			rootEntryPackages.add(packageName);
+		}
+	};
+
+	for (const pattern of [PAT.IMPORT_PATTERN_1, PAT.IMPORT_PATTERN_2, PAT.IMPORT_PATTERN_3, PAT.IMPORT_PATTERN_SIDE_EFFECT]) {
+		pattern.lastIndex = 0;
+		let match: RegExpExecArray | null;
+		while ((match = pattern.exec(code)) !== null) {
+			visitSpecifier(match[2]);
+		}
+	}
+
+	return new Set(Array.from(preservedSubpathPackages).filter((packageName) => rootEntryPackages.has(packageName)));
+}
+
 function collectImportDependencies(code: string, importerPath: string): Set<string> {
 	const importerDir = path.posix.dirname(importerPath);
 	const deps = new Set<string>();
@@ -2771,6 +2853,7 @@ function dedupeRtNamedImportsAgainstDestructures(code: string): string {
 export function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
 	let result = code;
 	const httpOriginSafe = httpOrigin;
+	const mixedRuntimePluginHttpRootPackages = collectMixedRuntimePluginHttpRootPackages(result, projectRoot);
 	const isDynamicImportPrefix = (prefix: string): boolean => /import\(\s*["']?$/.test(prefix.trimStart());
 	const importerDir = path.posix.dirname(importerPath);
 	// Determine importer output relative path (project-relative .mjs) to compute relative imports consistently
@@ -2948,6 +3031,20 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			return `${prefix}${spec}${suffix}`;
 		}
 
+		const nodeModulesSpecifier = normalizeNodeModulesSpecifier(spec);
+		const normalizedRuntimePluginSpec = nodeModulesSpecifier || spec.replace(PAT.QUERY_PATTERN, '').replace(/^\/+/, '');
+		if (normalizedRuntimePluginSpec && mixedRuntimePluginHttpRootPackages.size > 0 && isRuntimePluginRootEntrySpecifier(normalizedRuntimePluginSpec, projectRoot)) {
+			const { packageName } = resolveNodeModulesPackageBoundary(normalizedRuntimePluginSpec, projectRoot);
+			if (packageName && mixedRuntimePluginHttpRootPackages.has(packageName)) {
+				const httpNodeModulesSpecifier = nodeModulesSpecifier || normalizedRuntimePluginSpec;
+				const httpSpec = `/ns/m/node_modules/${httpNodeModulesSpecifier}`;
+				if (httpOriginSafe) {
+					return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
+				}
+				return `${prefix}${httpSpec}${suffix}`;
+			}
+		}
+
 		if (shouldPreserveBareRuntimePluginSubpathImport(spec, projectRoot)) {
 			const httpSpec = `/ns/m/node_modules/${spec.replace(PAT.QUERY_PATTERN, '').replace(/^\/+/, '')}`;
 			if (httpOriginSafe) {
@@ -2956,7 +3053,6 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			return `${prefix}${httpSpec}${suffix}`;
 		}
 
-		const nodeModulesSpecifier = normalizeNodeModulesSpecifier(spec);
 		const candidateNativeScriptSpec = nodeModulesSpecifier ?? spec;
 
 		// ── Node modules routing ──────────────────────────────────────

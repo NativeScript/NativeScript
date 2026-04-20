@@ -237,7 +237,7 @@ function normalizeExtensionlessRuntimePluginSourceSpecifier(spec: string, projec
 	}
 
 	const { packageName, subpath } = resolveNodeModulesPackageBoundary(normalized, projectRoot);
-	if (!subpath || packageName !== rootPackageName || !subpath.includes('/')) {
+	if (!subpath || packageName !== rootPackageName) {
 		return null;
 	}
 
@@ -319,18 +319,35 @@ function resolveProcessCodeSourceFilePath(sourceId: string, projectRoot: string)
 		return null;
 	}
 
+	const expandCandidateVariants = (candidate: string): string[] => {
+		if (!candidate) {
+			return [];
+		}
+
+		const normalizedCandidate = candidate.replace(/\\/g, '/');
+		const lastSegment = normalizedCandidate.split('/').pop() || '';
+		const hasExplicitExtension = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i.test(lastSegment);
+		if (hasExplicitExtension) {
+			return [candidate];
+		}
+
+		const suffixes = ['', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.mts', '.cts', '.ios.ts', '.ios.js', '.android.ts', '.android.js', '.visionos.ts', '.visionos.js', '/index.ts', '/index.tsx', '/index.js', '/index.jsx', '/index.mjs', '/index.mts', '/index.cts', '/index.ios.ts', '/index.ios.js', '/index.android.ts', '/index.android.js', '/index.visionos.ts', '/index.visionos.js'];
+
+		return Array.from(new Set(suffixes.map((suffix) => `${candidate}${suffix}`)));
+	};
+
 	const candidates: string[] = [];
 	if (cleaned.startsWith('/@fs/')) {
-		candidates.push(cleaned.slice('/@fs'.length));
+		candidates.push(...expandCandidateVariants(cleaned.slice('/@fs'.length)));
 	}
 	if (/^(?:[A-Za-z]:)?\//.test(cleaned)) {
-		candidates.push(cleaned);
-		candidates.push(path.resolve(projectRoot, `.${cleaned}`));
+		candidates.push(...expandCandidateVariants(cleaned));
+		candidates.push(...expandCandidateVariants(path.resolve(projectRoot, `.${cleaned}`)));
 	} else {
-		candidates.push(path.resolve(projectRoot, cleaned.replace(/^\.\//, '')));
+		candidates.push(...expandCandidateVariants(path.resolve(projectRoot, cleaned.replace(/^\.\//, ''))));
 	}
 
-	for (const candidate of candidates) {
+	for (const candidate of Array.from(new Set(candidates))) {
 		try {
 			if (candidate && existsSync(candidate) && statSync(candidate).isFile()) {
 				return candidate;

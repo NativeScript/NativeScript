@@ -114,6 +114,37 @@ describe('rewriteImports NativeScript runtime plugin routing', () => {
 		expect(out).not.toContain('from "@mleleux/nativescript-revenuecat/Product/common"');
 	});
 
+	it('keeps a runtime-plugin root entry on HTTP when the same module preserves a subpath from that package family', () => {
+		const root = mkdtempSync(join(tmpdir(), 'ns-runtime-plugin-route-'));
+		tempRoots.push(root);
+
+		mkdirSync(join(root, 'node_modules', '@nativescript-community', 'ui-canvas'), { recursive: true });
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'fixture-app' }, null, 2));
+		writeFileSync(
+			join(root, 'node_modules', '@nativescript-community', 'ui-canvas', 'package.json'),
+			JSON.stringify(
+				{
+					name: '@nativescript-community/ui-canvas',
+					main: './index',
+					nativescript: {
+						platforms: {
+							ios: '6.0.0',
+						},
+					},
+				},
+				null,
+				2,
+			),
+		);
+
+		const input = [`import { CanvasView } from "/node_modules/@nativescript-community/ui-canvas/index.js";`, `import { Line } from "@nativescript-community/ui-canvas/shapes";`].join('\n');
+		const out = rewriteImports(input, '/src/app.component.ts', new Map(), new Map(), root, false, undefined, 'http://localhost:5173', true);
+
+		expect(out).toContain('from "http://localhost:5173/ns/m/node_modules/@nativescript-community/ui-canvas/index.js"');
+		expect(out).toContain('from "http://localhost:5173/ns/m/node_modules/@nativescript-community/ui-canvas/shapes"');
+		expect(out).not.toContain('from "@nativescript-community/ui-canvas"');
+	});
+
 	it('keeps declared CommonJS main-entry runtime plugins on the root bare package', () => {
 		const root = mkdtempSync(join(tmpdir(), 'ns-runtime-plugin-route-'));
 		tempRoots.push(root);
