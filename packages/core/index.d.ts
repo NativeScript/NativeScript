@@ -8,7 +8,7 @@
 export type { NativeScriptConfig } from './config';
 
 export * from './application';
-export { androidRegisterBroadcastReceiver, androidUnregisterBroadcastReceiver, androidRegisteredReceivers, iosAddNotificationObserver, iosRemoveNotificationObserver, iosNotificationObservers } from './application/helpers';
+export * from './application/application-event-names';
 export { getNativeApp, setNativeApp } from './application/helpers-common';
 export * as ApplicationSettings from './application-settings';
 export namespace AccessibilityEvents {
@@ -46,6 +46,7 @@ export type { iosSymbolScaleType } from './image-source';
 export { ModuleNameResolver } from './module-name-resolver';
 export { _setResolver } from './module-name-resolver/helpers';
 export type { PlatformContext } from './module-name-resolver';
+export * from './media-query-list';
 export type { ModuleListProvider } from './module-name-resolver/helpers';
 export { isAndroid, isIOS, isVisionOS, isApple, Screen, Device, platformNames } from './platform';
 export type { IDevice } from './platform';
