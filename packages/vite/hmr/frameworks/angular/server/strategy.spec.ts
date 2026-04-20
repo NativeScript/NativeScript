@@ -58,6 +58,7 @@ describe('angularServerStrategy', () => {
 			expect(server.transformRequest).not.toHaveBeenCalledWith('/src/main.spec.ts');
 			expect(watcher.add).toHaveBeenCalledWith(path.join(appDir, 'home.component.html'));
 			expect(watcher.add).toHaveBeenCalledWith(path.join(appDir, 'home.component.css'));
+			expect(watcher.add).toHaveBeenCalledWith(appDir);
 			expect(watcher.add).not.toHaveBeenCalledWith(path.join(appDir, 'home.component.spec.html'));
 			expect(watcher.add).not.toHaveBeenCalledWith(path.join(appDir, 'home.component.spec.css'));
 		} finally {

@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildVersionedCoreMainBridgeModule, buildVersionedCoreSubpathAliasModule, collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports } from './websocket.js';
+import { buildVersionedCoreMainBridgeModule, buildVersionedCoreSubpathAliasModule, collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, normalizeCoreExportOriginsForRuntime } from './websocket.js';
 
 describe('buildVersionedCoreSubpathAliasModule', () => {
 	it('aliases an unversioned deep core subpath to the canonical versioned module', () => {
@@ -184,5 +184,30 @@ describe('collectStaticExportOriginsFromFile', () => {
 		expect(origins.Trace).toEqual(expect.arrayContaining([expect.objectContaining({ moduleId: '@nativescript/core/trace', mode: 'named', importedName: 'Trace', canonicalSubpath: 'trace/index.js' })]));
 		expect(origins.Utils).toEqual(expect.arrayContaining([expect.objectContaining({ moduleId: '@nativescript/core/utils', mode: 'module', canonicalSubpath: 'utils/index.js' })]));
 		expect(origins.View).toEqual(expect.arrayContaining([expect.objectContaining({ moduleId: '@nativescript/core/ui', mode: 'named', importedName: 'View', canonicalSubpath: 'ui/index.js' })]));
+	});
+});
+
+describe('normalizeCoreExportOriginsForRuntime', () => {
+	it('upgrades generic index.js core origins to platform-resolved runtime files', async () => {
+		const rootModulePath = path.resolve(process.cwd(), 'packages/core/index.js');
+		const normalized = await normalizeCoreExportOriginsForRuntime(
+			{
+				ApplicationSettings: [{ moduleId: '@nativescript/core/application-settings', mode: 'module', canonicalSubpath: 'application-settings/index.js' }],
+				Frame: [{ moduleId: '@nativescript/core/ui/frame', mode: 'named', importedName: 'Frame', canonicalSubpath: 'ui/frame/index.js' }],
+			},
+			async (moduleId: string) => {
+				if (moduleId === '@nativescript/core/application-settings') {
+					return path.resolve(process.cwd(), 'packages/core/application-settings/index.ios.js');
+				}
+				if (moduleId === '@nativescript/core/ui/frame') {
+					return path.resolve(process.cwd(), 'packages/core/ui/frame/index.ios.js');
+				}
+				return null;
+			},
+			rootModulePath,
+		);
+
+		expect(normalized.ApplicationSettings).toEqual([expect.objectContaining({ canonicalSubpath: 'application-settings/index.ios.js' })]);
+		expect(normalized.Frame).toEqual([expect.objectContaining({ canonicalSubpath: 'ui/frame/index.ios.js' })]);
 	});
 });

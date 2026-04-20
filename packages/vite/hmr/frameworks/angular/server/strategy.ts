@@ -104,6 +104,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		const root = server.config.root || process.cwd();
 		const entries = findAngularEntryFiles(root);
 		const templateFiles: string[] = [];
+		const templateWatchDirs = new Set<string>();
 
 		// Maintain existing behavior: watch external templates and styles referenced via templateUrl/styleUrls.
 		function walkForTemplates(dir: string) {
@@ -156,10 +157,19 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 				try {
 					server.watcher.add(abs);
 				} catch {}
+				try {
+					templateWatchDirs.add(path.dirname(abs));
+				} catch {}
 				if (verbose) {
 					const rel = '/' + path.relative(root, abs).split(path.sep).join('/');
 					console.log(`[angular-registry] watching template: ${rel}`);
 				}
+			}
+
+			for (const dir of templateWatchDirs) {
+				try {
+					server.watcher.add(dir);
+				} catch {}
 			}
 		} catch {}
 

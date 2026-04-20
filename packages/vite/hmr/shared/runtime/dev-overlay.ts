@@ -57,7 +57,7 @@ type HmrOverlayApi = {
 	getSnapshot: () => HmrOverlaySnapshot;
 };
 
-const BOOT_TITLE = 'Starting NativeScript + Vite dev server…';
+const BOOT_TITLE = 'NativeScript Vite preparing dev session...';
 
 const DEFAULT_SNAPSHOT: HmrOverlaySnapshot = {
 	visible: false,
@@ -271,8 +271,8 @@ export function createConnectionOverlaySnapshot(stage: HmrConnectionStage, info?
 			visible: true,
 			mode: 'connection',
 			badge: 'SOCKET',
-			title: 'Waiting for the Vite dev server',
-			phase: 'Opening the websocket connection',
+			title: 'Waiting for Vite dev server',
+			phase: 'Opening websocket connection',
 			detail: 'Live updates are paused until the connection is healthy.',
 			progress: null,
 			busy: true,
@@ -284,7 +284,7 @@ export function createConnectionOverlaySnapshot(stage: HmrConnectionStage, info?
 			mode: 'connection',
 			badge: 'SOCKET',
 			title: 'HMR connection lost',
-			phase: 'Reconnecting to the Vite websocket',
+			phase: 'Reconnecting Vite websocket',
 			detail: 'The app may be stale until the dev server reconnects.',
 			progress: null,
 			busy: true,
@@ -308,7 +308,7 @@ export function createConnectionOverlaySnapshot(stage: HmrConnectionStage, info?
 			mode: 'connection',
 			badge: 'OFFLINE',
 			title: 'Vite dev server offline',
-			phase: 'Waiting for a healthy dev server',
+			phase: 'Idle...',
 			detail: 'The websocket and HTTP HMR path are both unavailable right now.',
 			progress: null,
 			busy: true,
@@ -445,12 +445,12 @@ function applySnapshotToBootRefs(refs: BootOverlayRefs | null, snapshot: HmrOver
 		return;
 	}
 	refs.page.actionBarHidden = true;
-	refs.page.backgroundColor = asColor('#FFF9FAFB');
+	refs.page.backgroundColor = asColor(snapshot.tone === 'error' ? '#b4181068' : '#a1771683');
 	refs.root.visibility = snapshot.visible && snapshot.mode === 'boot' ? 'visible' : 'collapse';
 	refs.titleLabel.text = BOOT_TITLE;
-	refs.titleLabel.color = asColor('#FF111827');
+	refs.titleLabel.color = asColor(snapshot.tone === 'error' ? '#b41810e6' : '#563e3fb1');
 	refs.statusLabel.text = formatStatusText(snapshot) || 'Preparing the HTTP HMR bootstrap (4%)';
-	refs.statusLabel.color = asColor(snapshot.tone === 'error' ? '#FFB91C1C' : '#FF4B5563');
+	refs.statusLabel.color = asColor(snapshot.tone === 'error' ? '#b41810e6' : '#563e3fb1');
 	if (refs.activityIndicator) {
 		refs.activityIndicator.busy = !!snapshot.busy;
 		refs.activityIndicator.visibility = snapshot.visible && snapshot.mode === 'boot' && snapshot.busy ? 'visible' : 'collapse';
@@ -522,7 +522,7 @@ function updateBootStatusLabel(snapshot: HmrOverlaySnapshot): void {
 	}
 	try {
 		statusLabel.text = newText;
-		statusLabel.color = asColor(snapshot.tone === 'error' ? '#FFB91C1C' : '#FF4B5563');
+		statusLabel.color = asColor(snapshot.tone === 'error' ? '#b41810e6' : '#563e3fb1');
 		if (typeof statusLabel.requestLayout === 'function') {
 			statusLabel.requestLayout();
 		}
@@ -666,11 +666,11 @@ function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleL
 	}
 	const visible = snapshot.visible && snapshot.mode === 'connection';
 	refs.overlay.visibility = visible ? 'visible' : 'collapse';
-	refs.overlay.backgroundColor = asColor(snapshot.tone === 'error' ? '#AA7F1D1D' : '#992D3748');
+	refs.overlay.backgroundColor = asColor(snapshot.tone === 'error' ? '#b4181068' : '#a1771683');
 	refs.titleLabel.text = snapshot.title;
-	refs.titleLabel.color = asColor('#FF111827');
+	refs.titleLabel.color = asColor(snapshot.tone === 'error' ? '#b41810e6' : '#563e3fb1');
 	refs.statusLabel.text = formatStatusText(snapshot);
-	refs.statusLabel.color = asColor(snapshot.tone === 'error' ? '#FF7F1D1D' : '#FF374151');
+	refs.statusLabel.color = asColor(snapshot.tone === 'error' ? '#b41810e6' : '#563e3fb1');
 	try {
 		const panel = refs.titleLabel.parent;
 		if (panel) {

@@ -1322,8 +1322,13 @@ async function handleHmrMessage(ev: any) {
 			const deltaIds = Array.isArray(msg.changed) ? msg.changed.map((c: any) => c?.id).filter(Boolean) : [];
 			notifyAppHmrUpdate('delta', deltaIds);
 			return;
-		} else if (handleAngularHotUpdateMessage(msg, { getCore, verbose: VERBOSE })) {
-			return;
+		} else {
+			if (msg.type === 'ns:angular-update' && typeof msg.version === 'number') {
+				setGraphVersion(Number(msg.version || getGraphVersion() || 0));
+			}
+			if (await handleAngularHotUpdateMessage(msg, { getCore, verbose: VERBOSE })) {
+				return;
+			}
 		}
 	}
 	// On-demand module fetch response (Option A)

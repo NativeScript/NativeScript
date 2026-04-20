@@ -370,7 +370,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 					page.actionBarHidden = true;
 
 					const titleLabel = new Label();
-					titleLabel.text = 'Starting NativeScript + Vite dev server…';
+					titleLabel.text = 'NativeScript Vite preparing dev session...';
 					titleLabel.textAlignment = 'center';
 					titleLabel.textWrap = true;
 					titleLabel.fontSize = 20;

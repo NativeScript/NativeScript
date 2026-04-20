@@ -170,6 +170,9 @@ export function getGraphVersion(): number {
 }
 export function setGraphVersion(version: number) {
 	graphVersion = version;
+	try {
+		(globalThis as any).__NS_HMR_GRAPH_VERSION__ = version;
+	} catch {}
 }
 export const graph = new Map<string, HmrGraphModule>();
 // local metrics snapshot

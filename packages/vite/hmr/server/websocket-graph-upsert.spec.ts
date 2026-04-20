@@ -24,4 +24,9 @@ describe('graph upsert broadcast gating', () => {
 		expect(shouldBroadcastGraphUpsertDelta('inserted')).toBe(false);
 		expect(shouldBroadcastGraphUpsertDelta('inserted', true)).toBe(true);
 	});
+
+	it('allows callers to suppress graph delta broadcast even when the graph changes', () => {
+		expect(shouldBroadcastGraphUpsertDelta('changed', false, false)).toBe(false);
+		expect(shouldBroadcastGraphUpsertDelta('inserted', true, false)).toBe(false);
+	});
 });

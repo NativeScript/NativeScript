@@ -149,8 +149,88 @@ export function classifyGraphUpsert(existing: { hash: string; deps: string[] } |
 	return 'changed';
 }
 
-export function shouldBroadcastGraphUpsertDelta(classification: GraphUpsertClassification, emitDeltaOnInsert: boolean = false): boolean {
-	return classification === 'changed' || (classification === 'inserted' && emitDeltaOnInsert);
+export function shouldBroadcastGraphUpsertDelta(classification: GraphUpsertClassification, emitDeltaOnInsert: boolean = false, broadcastEnabled: boolean = true): boolean {
+	return broadcastEnabled && (classification === 'changed' || (classification === 'inserted' && emitDeltaOnInsert));
+}
+
+function shouldGuardAngularEntryStatement(node: any): boolean {
+	if (t.isImportDeclaration(node) || t.isExportDeclaration(node) || t.isFunctionDeclaration(node) || t.isClassDeclaration(node) || t.isVariableDeclaration(node)) {
+		return false;
+	}
+	if (t.isExpressionStatement(node) && typeof (node as any).directive === 'string') {
+		return false;
+	}
+	return true;
+}
+
+export function rewriteAngularEntryRegisterOnly(code: string, angularCoreImportSource: string = '@angular/core'): string {
+	if (!code.includes('runNativeScriptAngularApp(')) {
+		return code;
+	}
+
+	try {
+		const ast = babelParse(code, {
+			sourceType: 'module',
+			plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
+		}) as any;
+		const body = ast?.program?.body;
+		if (!Array.isArray(body)) {
+			return code;
+		}
+
+		let rewroteEntry = false;
+		const angularCoreImportId = t.identifier('__nsAngularCoreForHmr');
+		const registerOnlyFlag = t.memberExpression(t.identifier('globalThis'), t.identifier('__NS_ANGULAR_HMR_REGISTER_ONLY__'));
+		const rememberAngularCoreRef = t.memberExpression(t.identifier('globalThis'), t.identifier('__NS_REMEMBER_ANGULAR_CORE__'));
+		const updateOptionsRef = t.memberExpression(t.identifier('globalThis'), t.identifier('__NS_UPDATE_ANGULAR_APP_OPTIONS__'));
+		const rewrittenBody: any[] = [t.importDeclaration([t.importNamespaceSpecifier(t.cloneNode(angularCoreImportId))], t.stringLiteral(angularCoreImportSource)), t.ifStatement(t.binaryExpression('===', t.unaryExpression('typeof', rememberAngularCoreRef, true), t.stringLiteral('function')), t.blockStatement([t.expressionStatement(t.callExpression(rememberAngularCoreRef, [t.cloneNode(angularCoreImportId)]))]))];
+
+		for (const statement of body) {
+			const expression = t.isExpressionStatement(statement) ? statement.expression : null;
+			if (expression && t.isCallExpression(expression) && t.isIdentifier(expression.callee, { name: 'runNativeScriptAngularApp' }) && expression.arguments.length === 1 && t.isExpression(expression.arguments[0])) {
+				rewroteEntry = true;
+				const optionsId = t.identifier('__nsAngularAppRunOptions');
+				rewrittenBody.push(t.variableDeclaration('const', [t.variableDeclarator(optionsId, t.cloneNode(expression.arguments[0], true))]), t.ifStatement(t.logicalExpression('&&', registerOnlyFlag, t.binaryExpression('===', t.unaryExpression('typeof', updateOptionsRef, true), t.stringLiteral('function'))), t.blockStatement([t.expressionStatement(t.callExpression(updateOptionsRef, [t.cloneNode(optionsId)]))]), t.blockStatement([t.expressionStatement(t.callExpression(t.identifier('runNativeScriptAngularApp'), [t.cloneNode(optionsId)]))])));
+				continue;
+			}
+
+			if (shouldGuardAngularEntryStatement(statement)) {
+				rewrittenBody.push(t.ifStatement(t.unaryExpression('!', t.cloneNode(registerOnlyFlag, true)), t.blockStatement([statement])));
+				continue;
+			}
+
+			rewrittenBody.push(statement);
+		}
+
+		if (!rewroteEntry) {
+			return code;
+		}
+
+		ast.program.body = rewrittenBody;
+		return genCode(ast as any).code;
+	} catch {
+		return code;
+	}
+}
+
+function resolveAngularCoreHmrImportSource(code: string, httpOrigin?: string): string {
+	const rewrittenCoreMatch = code.match(/from\s+["']([^"']*\/node_modules\/@angular\/core\/fesm2022\/core\.mjs)["']/);
+	if (rewrittenCoreMatch?.[1]) {
+		return rewrittenCoreMatch[1];
+	}
+
+	const normalizedOrigin = typeof httpOrigin === 'string' ? httpOrigin.replace(/\/$/, '') : '';
+	if (normalizedOrigin) {
+		return `${normalizedOrigin}/ns/m/node_modules/@angular/core/fesm2022/core.mjs`;
+	}
+
+	return '@angular/core';
+}
+
+export function prepareAngularEntryForDevice(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
+	const rewrittenCode = rewriteImports(code, importerPath, sfcFileMap, depFileMap, projectRoot, verbose, outputDirOverrideRel, httpOrigin, resolveVendorAsHttp);
+
+	return rewriteAngularEntryRegisterOnly(rewrittenCode, resolveAngularCoreHmrImportSource(rewrittenCode, httpOrigin));
 }
 
 const processSfcCode = createProcessSfcCode(processCodeForDevice);
@@ -885,15 +965,17 @@ function ensureDynamicHmrImportHelper(code: string): string {
 			"  try { if (!spec || spec === '@') { return import(new URL(__nsm + '/__invalid_at__.mjs', import.meta.url).href); } } catch {}\n" +
 			'  try {\n' +
 			"    if (typeof spec === 'string' && spec.startsWith(__nsm + '/')) {\n" +
+			'      const g = globalThis;\n' +
+			"      const graphVersion = typeof g.__NS_HMR_GRAPH_VERSION__ === 'number' ? g.__NS_HMR_GRAPH_VERSION__ : 0;\n" +
+			"      const nonce = typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;\n" +
+			"      const __nsActiveBootPrefix = graphVersion || nonce ? '' : __nsBootPrefix;\n" +
 			"      if (spec.includes('/__ns_hmr__/')) {\n" +
-			"        const __preservedSpec = __nsBootPrefix && spec.startsWith(__nsm + '/__ns_hmr__/') && !spec.includes('/node_modules/') ? __nsm + __nsBootPrefix + spec.slice(__nsm.length) : spec;\n" +
+			"        const __preservedSpec = !nonce && __nsBootPrefix && spec.startsWith(__nsm + '/__ns_hmr__/') && !spec.includes('/node_modules/') ? __nsm + __nsBootPrefix + spec.slice(__nsm.length) : spec;\n" +
 			'        return import(new URL(__preservedSpec, import.meta.url).href);\n' +
 			'      }\n' +
 			"      if (spec.startsWith(__nsm + '/node_modules/')) { return import(new URL(spec, import.meta.url).href); }\n" +
-			'      const g = globalThis;\n' +
-			"      const nonce = typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;\n" +
-			"      const tag = nonce ? `n${nonce}` : (__nsImporterTag || 'live');\n" +
-			"      const nextPath = __nsm + __nsBootPrefix + '/__ns_hmr__/' + encodeURIComponent(tag) + spec.slice(__nsm.length);\n" +
+			"      const tag = nonce ? `n${nonce}` : (graphVersion ? `v${graphVersion}` : (__nsImporterTag || 'live'));\n" +
+			"      const nextPath = __nsm + __nsActiveBootPrefix + '/__ns_hmr__/' + encodeURIComponent(tag) + spec.slice(__nsm.length);\n" +
 			"      const origin = typeof g.__NS_HTTP_ORIGIN__ === 'string' && /^https?:\\/\\//.test(g.__NS_HTTP_ORIGIN__) ? g.__NS_HTTP_ORIGIN__ : '';\n" +
 			'      return import(origin ? origin + nextPath : new URL(nextPath, import.meta.url).href);\n' +
 			'    }\n' +
@@ -1057,6 +1139,31 @@ function canonicalCoreSubpathFromLocalSpecifier(spec: string, currentCanonicalSu
 	return `${rel.replace(/\/+$/, '')}/index.js`;
 }
 
+async function resolveRuntimeCoreModulePath(normalizedSubpath: string, resolveModuleId: (moduleId: string) => Promise<string | null> | string | null): Promise<string | null> {
+	const cleanedSubpath = String(normalizedSubpath || '').replace(/^\/+/, '');
+	const candidates: string[] = [];
+	if (!cleanedSubpath || cleanedSubpath === 'index.js') {
+		candidates.push('@nativescript/core');
+	} else {
+		if (/\/index\.js$/i.test(cleanedSubpath)) {
+			const packageSubpath = cleanedSubpath.replace(/\/index\.js$/i, '');
+			if (packageSubpath) {
+				candidates.push(`@nativescript/core/${packageSubpath}`);
+			}
+		}
+		candidates.push(`@nativescript/core/${cleanedSubpath}`);
+	}
+	for (const candidate of candidates) {
+		try {
+			const resolved = await resolveModuleId(candidate);
+			if (resolved) {
+				return String(resolved).replace(/[?#].*$/, '');
+			}
+		} catch {}
+	}
+	return null;
+}
+
 function appendCoreExportOrigin(map: Record<string, CoreExportOrigin[]>, exportedName: string, origin: CoreExportOrigin): void {
 	if (!/^[A-Za-z_$][\w$]*$/.test(exportedName) || exportedName === 'default') return;
 	const existing = map[exportedName] || (map[exportedName] = []);
@@ -1150,6 +1257,43 @@ export function collectStaticExportOriginsFromFile(modulePath: string, rootEntry
 		}
 	}
 	return origins;
+}
+
+export async function normalizeCoreExportOriginsForRuntime(exportOrigins: Record<string, CoreExportOrigin[]>, resolveModuleId: (moduleId: string) => Promise<string | null> | string | null, rootModulePath: string): Promise<Record<string, CoreExportOrigin[]>> {
+	const cleanedRoot = String(rootModulePath || '').replace(/[?#].*$/, '');
+	if (!cleanedRoot || !exportOrigins || typeof exportOrigins !== 'object') {
+		return exportOrigins;
+	}
+	const resolutionCache = new Map<string, string | null>();
+	const normalizedOrigins: Record<string, CoreExportOrigin[]> = {};
+	for (const [exportedName, entries] of Object.entries(exportOrigins)) {
+		normalizedOrigins[exportedName] = await Promise.all(
+			(entries || []).map(async (entry) => {
+				if (!entry?.moduleId || !entry.moduleId.startsWith('@nativescript/core')) {
+					return entry;
+				}
+				let resolvedPath = resolutionCache.get(entry.moduleId);
+				if (resolvedPath === undefined) {
+					try {
+						resolvedPath = (await resolveModuleId(entry.moduleId)) || null;
+					} catch {
+						resolvedPath = null;
+					}
+					resolvedPath = resolvedPath ? String(resolvedPath).replace(/[?#].*$/, '') : null;
+					resolutionCache.set(entry.moduleId, resolvedPath);
+				}
+				if (!resolvedPath) {
+					return entry;
+				}
+				const canonicalSubpath = canonicalCoreSubpathForFile(resolvedPath, cleanedRoot);
+				if (!canonicalSubpath || canonicalSubpath === entry.canonicalSubpath) {
+					return entry;
+				}
+				return { ...entry, canonicalSubpath };
+			}),
+		);
+	}
+	return normalizedOrigins;
 }
 
 function repairImportEqualsAssignments(code: string): string {
@@ -3242,7 +3386,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			} catch {}
 		});
 	}
-	function upsertGraphModule(rawId: string, code: string, deps: string[], options?: { emitDeltaOnInsert?: boolean }) {
+	function upsertGraphModule(rawId: string, code: string, deps: string[], options?: { emitDeltaOnInsert?: boolean; broadcastDelta?: boolean }) {
 		const id = normalizeGraphId(rawId);
 		const normDeps = deps
 			.map((d) => normalizeGraphId(d))
@@ -3262,7 +3406,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				console.log('[hmr-ws][graph] size', graph.size);
 			} catch {}
 		}
-		if (shouldBroadcastGraphUpsertDelta(classification, options?.emitDeltaOnInsert === true)) {
+		if (shouldBroadcastGraphUpsertDelta(classification, options?.emitDeltaOnInsert === true, options?.broadcastDelta !== false)) {
 			emitDelta([gm], []);
 		}
 		return gm;
@@ -4061,7 +4205,13 @@ export const piniaSymbol = p.piniaSymbol;
 							console.log('[hmr-ws][solid] diagnostic injected for', moduleId, '(using runtime native import.meta.hot)');
 						}
 					} catch {}
-					code = rewriteImports(code, resolvedCandidate || spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server), true);
+					const projectRoot = (server as any).config?.root || process.cwd();
+					const serverOrigin = getServerOrigin(server);
+					if (ACTIVE_STRATEGY?.flavor === 'angular') {
+						code = prepareAngularEntryForDevice(code, resolvedCandidate || spec, sfcFileMap, depFileMap, projectRoot, !!verbose, undefined, serverOrigin, true);
+					} else {
+						code = rewriteImports(code, resolvedCandidate || spec, sfcFileMap, depFileMap, projectRoot, !!verbose, undefined, serverOrigin, true);
+					}
 
 					// Expand `export * from "url"` into explicit named re-exports.
 					// NativeScript's HTTP ESM loader may not propagate star-re-exports across
@@ -4519,9 +4669,11 @@ export const piniaSymbol = p.piniaSymbol;
 						try {
 							const normalizedSub = sub.replace(/^\/+/, '');
 							const projectRoot = (server as any).config?.root || process.cwd();
-							const coreSpecifier = `@nativescript/core/${normalizedSub}`;
-							const resolved = await (server as any).pluginContainer?.resolveId?.(coreSpecifier, undefined);
-							const resolvedId = typeof resolved === 'string' ? resolved : resolved?.id || null;
+							const resolveModuleId = async (moduleId: string): Promise<string | null> => {
+								const resolved = await (server as any).pluginContainer?.resolveId?.(moduleId, undefined);
+								return typeof resolved === 'string' ? resolved : resolved?.id || null;
+							};
+							const resolvedId = await resolveRuntimeCoreModulePath(normalizedSub, resolveModuleId);
 							const modulePath = resolvedId || `/node_modules/@nativescript/core/${normalizedSub}`;
 							const transformed = await sharedTransformRequest(modulePath);
 
@@ -4564,7 +4716,14 @@ export const piniaSymbol = p.piniaSymbol;
 							const resolvedId = typeof resolved === 'string' ? resolved : resolved?.id || null;
 							const modulePath = resolvedId || '/node_modules/@nativescript/core/index.js';
 							const staticExportNames = collectStaticExportNamesFromFile(modulePath);
-							const staticExportOrigins = collectStaticExportOriginsFromFile(modulePath);
+							const staticExportOrigins = await normalizeCoreExportOriginsForRuntime(
+								collectStaticExportOriginsFromFile(modulePath),
+								async (moduleId: string) => {
+									const nextResolved = await (server as any).pluginContainer?.resolveId?.(moduleId, undefined);
+									return typeof nextResolved === 'string' ? nextResolved : nextResolved?.id || null;
+								},
+								modulePath,
+							);
 							if (staticExportNames.length) {
 								code = buildVersionedCoreMainBridgeModule(key, ver, staticExportNames, staticExportOrigins);
 							} else {
@@ -6280,7 +6439,10 @@ export const piniaSymbol = p.piniaSymbol;
 								.filter(Boolean);
 							const transformed = await server.transformRequest(mod.id);
 							const code = transformed?.code || '';
-							upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps, { emitDeltaOnInsert: true });
+							upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps, {
+								emitDeltaOnInsert: true,
+								broadcastDelta: ACTIVE_STRATEGY.flavor !== 'angular',
+							});
 						} catch (error) {
 							if (verbose) console.warn('[hmr-ws][v2] failed graph update target', mod.id, error);
 						}
@@ -6420,6 +6582,7 @@ export const piniaSymbol = p.piniaSymbol;
 						type: 'ns:angular-update',
 						origin,
 						path: rel,
+						version: graphVersion,
 						timestamp: Date.now(),
 					} as const;
 					if (verbose) {
