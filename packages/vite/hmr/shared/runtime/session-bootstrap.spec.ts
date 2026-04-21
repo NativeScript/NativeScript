@@ -11,13 +11,23 @@ describe('browser runtime session bootstrap', () => {
 		delete (globalThis as any).__NS_HTTP_ORIGIN__;
 		delete (globalThis as any).__NS_HMR_WS_URL__;
 		delete (globalThis as any).__NS_HMR_BOOT_COMPLETE__;
+		delete (globalThis as any).__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__;
+		delete (globalThis as any).__nsSupportsRuntimeConfigUrl;
 		delete (globalThis as any).__nsStartDevSession;
+		delete (globalThis as any).__nsConfigureDevRuntime;
 		delete (globalThis as any).__nsConfigureRuntime;
 		delete (globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__;
 	});
 
 	it('waits for the real app root after __nsStartDevSession resolves', async () => {
-		const startDevSession = vi.fn().mockResolvedValue(undefined);
+		const startDevSession = vi.fn().mockImplementation(async (session) => {
+			expect((globalThis as any).__NS_HTTP_ORIGIN__).toBeUndefined();
+			expect((globalThis as any).__NS_HMR_WS_URL__).toBeUndefined();
+			expect((globalThis as any).__NS_HMR_BOOT_COMPLETE__).toBeUndefined();
+			(globalThis as any).__NS_HTTP_ORIGIN__ = session.origin;
+			(globalThis as any).__NS_HMR_WS_URL__ = session.wsUrl;
+			(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = false;
+		});
 		const restorePlaceholder = vi.fn();
 		vi.stubGlobal('__nsStartDevSession', startDevSession);
 		(globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__ = restorePlaceholder;
@@ -41,6 +51,8 @@ describe('browser runtime session bootstrap', () => {
 
 		expect(startDevSession).toHaveBeenCalledTimes(1);
 		expect(restorePlaceholder).toHaveBeenCalledWith('session-active');
+		expect((globalThis as any).__NS_HTTP_ORIGIN__).toBe('http://localhost:5173');
+		expect((globalThis as any).__NS_HMR_WS_URL__).toBe('ws://localhost:5173');
 		expect((globalThis as any).__NS_HMR_BOOT_COMPLETE__).toBe(false);
 		expect(api.getSnapshot()).toMatchObject({
 			visible: true,
@@ -65,6 +77,7 @@ describe('browser runtime session bootstrap', () => {
 					entryUrl: 'http://localhost:5173/ns/m/src/main.ts',
 					wsUrl: 'ws://localhost:5173/ns-hmr',
 					platform: 'ios',
+					runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
 				}),
 			})
 			.mockResolvedValueOnce({
@@ -79,7 +92,7 @@ describe('browser runtime session bootstrap', () => {
 				}),
 			});
 
-		vi.stubGlobal('__nsConfigureRuntime', configureRuntime);
+		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
 		vi.stubGlobal('__nsStartDevSession', startDevSession);
 		vi.stubGlobal('fetch', fetchMock);
 
@@ -96,5 +109,82 @@ describe('browser runtime session bootstrap', () => {
 			volatilePatterns: ['?v='],
 		});
 		expect(configureRuntime.mock.invocationCallOrder[0]).toBeLessThan(startDevSession.mock.invocationCallOrder[0]);
+	});
+
+	it('keeps JS runtime-config loading as the default even when the runtime advertises support', async () => {
+		const configureRuntime = vi.fn();
+		const startDevSession = vi.fn().mockResolvedValue(undefined);
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					sessionId: 'session-3',
+					origin: 'http://localhost:5173',
+					clientUrl: 'http://localhost:5173/__ns_dev__/client',
+					entryUrl: 'http://localhost:5173/ns/m/src/main.ts',
+					wsUrl: 'ws://localhost:5173/ns-hmr',
+					platform: 'ios',
+					runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
+				}),
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					importMap: {
+						imports: {
+							stacktrace: 'ns-vendor://stacktrace-js',
+						},
+					},
+					volatilePatterns: ['?v='],
+				}),
+			});
+
+		vi.stubGlobal('__nsSupportsRuntimeConfigUrl', true);
+		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
+		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('fetch', fetchMock);
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
+
+		expect(fetchMock).toHaveBeenNthCalledWith(1, 'http://localhost:5173/__ns_dev__/session');
+		expect(fetchMock).toHaveBeenNthCalledWith(2, 'http://localhost:5173/ns/import-map.json');
+		expect(configureRuntime).toHaveBeenCalledTimes(1);
+		expect(startDevSession).toHaveBeenCalledWith(
+			expect.objectContaining({
+				runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
+			}),
+		);
+	});
+
+	it('delegates runtime config loading to the native session start only when explicitly enabled', async () => {
+		const startDevSession = vi.fn().mockResolvedValue(undefined);
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({
+				sessionId: 'session-3',
+				origin: 'http://localhost:5173',
+				clientUrl: 'http://localhost:5173/__ns_dev__/client',
+				entryUrl: 'http://localhost:5173/ns/m/src/main.ts',
+				wsUrl: 'ws://localhost:5173/ns-hmr',
+				platform: 'ios',
+				runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
+			}),
+		});
+
+		(globalThis as any).__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__ = true;
+		vi.stubGlobal('__nsSupportsRuntimeConfigUrl', true);
+		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('fetch', fetchMock);
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
+
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		expect(fetchMock).toHaveBeenCalledWith('http://localhost:5173/__ns_dev__/session');
+		expect(startDevSession).toHaveBeenCalledWith(
+			expect.objectContaining({
+				runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
+			}),
+		);
 	});
 });

@@ -12,6 +12,11 @@ const ESM_FRAMEWORK_PACKAGE_ROOTS = new Set(['@nativescript/angular', 'nativescr
 const BUILD_TIME_ONLY_PACKAGE_ROOTS = new Set(['@nativescript/vite', '@nativescript/webpack', '@nativescript/android', '@nativescript/ios', '@nativescript/visionos', 'vite', 'webpack', 'esbuild', 'typescript', 'ts-node', 'prettier']);
 
 const BUILD_TIME_ONLY_PACKAGE_PREFIXES = ['@vitejs/', '@rollup/', '@babel/', '@angular-devkit/', '@angular/build', '@analogjs/', 'vite-plugin-'];
+const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
+
+function hasExplicitRuntimePluginScriptExtension(segment: string): boolean {
+	return EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE.test(segment);
+}
 
 export function extractVitePrebundleId(spec: string): string | null {
 	const m = spec.match(/\.vite\/deps\/([^?]+?)\.[mc]?js/);
@@ -602,13 +607,14 @@ export function shouldPreserveBareRuntimePluginSubpathImport(spec: string, proje
 	}
 
 	const lastSegment = subpath.split('/').pop() || '';
-	if (/\.[a-z0-9]+$/i.test(lastSegment)) {
+	if (hasExplicitRuntimePluginScriptExtension(lastSegment)) {
 		return false;
 	}
 
 	if (!subpath.includes('/')) {
 		const packageBaseName = packageName.split('/').pop() || '';
-		if (lastSegment === 'index' || lastSegment === packageBaseName || lastSegment.startsWith(`${packageBaseName}.`)) {
+		const withoutPlatform = lastSegment.replace(/\.(ios|android|visionos)$/i, '');
+		if (withoutPlatform === 'index' || withoutPlatform === packageBaseName || withoutPlatform.startsWith(`${packageBaseName}.`)) {
 			return false;
 		}
 	}

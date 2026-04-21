@@ -1,4 +1,4 @@
-import type { NsDevSessionDescriptor } from './browser-runtime-contract.js';
+import { assertNsDevSessionDescriptor, readNsRuntimeDevHostApi, type NsDevSessionDescriptor, type NsRuntimeDevHostApi } from './browser-runtime-contract.js';
 import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
 
 function describeError(error: unknown) {
@@ -20,34 +20,35 @@ function getSessionUrl(defaultSessionUrl: string) {
 	return defaultSessionUrl;
 }
 
-function assertSessionDescriptor(session: any): asserts session is NsDevSessionDescriptor {
-	if (!session || typeof session !== 'object') {
-		throw new Error('Invalid NativeScript dev session descriptor');
+function getRuntimeConfigUrl(session: NsDevSessionDescriptor) {
+	if (typeof session.runtimeConfigUrl === 'string' && session.runtimeConfigUrl) {
+		return session.runtimeConfigUrl;
 	}
 
-	const requiredKeys = ['sessionId', 'origin', 'entryUrl', 'clientUrl', 'wsUrl', 'platform'];
-	for (const key of requiredKeys) {
-		if (typeof session[key] !== 'string' || !session[key]) {
-			throw new Error(`Missing dev session field: ${key}`);
-		}
+	return `${session.origin.replace(/\/$/, '')}/ns/import-map.json`;
+}
+
+function isNativeRuntimeConfigDelegationEnabled() {
+	try {
+		return (globalThis as any).__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__ === true;
+	} catch {
+		return false;
 	}
 }
 
-async function configureRuntimeImportMap(origin: string, verbose?: boolean) {
-	const configureRuntime = (globalThis as any).__nsConfigureRuntime;
-	if (typeof configureRuntime !== 'function') {
+async function configureRuntimeImportMap(runtimeConfigUrl: string, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {
+	if (typeof runtimeApi.configureRuntime !== 'function') {
 		if (verbose) {
-			console.info('[ns-entry] __nsConfigureRuntime unavailable; skipping import map bootstrap');
+			console.info('[ns-entry] runtime configure hook unavailable; skipping import map bootstrap');
 		}
 		return;
 	}
 
-	const importMapUrl = `${origin.replace(/\/$/, '')}/ns/import-map.json`;
 	setHmrBootStage('configuring-import-map', {
-		detail: importMapUrl,
+		detail: runtimeConfigUrl,
 	});
 
-	const response = await fetch(importMapUrl);
+	const response = await fetch(runtimeConfigUrl);
 	if (!response.ok) {
 		throw new Error(`NativeScript import map fetch failed: ${response.status}`);
 	}
@@ -57,7 +58,7 @@ async function configureRuntimeImportMap(origin: string, verbose?: boolean) {
 		throw new Error('Invalid NativeScript import map payload');
 	}
 
-	configureRuntime({
+	runtimeApi.configureRuntime({
 		importMap: config.importMap,
 		volatilePatterns: Array.isArray(config.volatilePatterns) ? config.volatilePatterns : [],
 	});
@@ -65,9 +66,22 @@ async function configureRuntimeImportMap(origin: string, verbose?: boolean) {
 	if (verbose) {
 		console.info('[ns-entry] import map configured', {
 			entries: Object.keys(config.importMap?.imports || {}).length,
-			importMapUrl,
+			importMapUrl: runtimeConfigUrl,
 		});
 	}
+}
+
+async function prepareRuntimeForSession(session: NsDevSessionDescriptor, runtimeApi: NsRuntimeDevHostApi, verbose?: boolean) {
+	if (session.runtimeConfigUrl && runtimeApi.supportsRuntimeConfigUrl && isNativeRuntimeConfigDelegationEnabled()) {
+		if (verbose) {
+			console.info('[ns-entry] runtime config delegated to native session start', {
+				runtimeConfigUrl: session.runtimeConfigUrl,
+			});
+		}
+		return;
+	}
+
+	await configureRuntimeImportMap(getRuntimeConfigUrl(session), runtimeApi, verbose);
 }
 
 export async function startBrowserRuntimeSession(defaultSessionUrl: string, verbose?: boolean) {
@@ -88,7 +102,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		}
 
 		const session = (await response.json()) as NsDevSessionDescriptor;
-		assertSessionDescriptor(session);
+		assertNsDevSessionDescriptor(session);
 
 		if (verbose) {
 			console.info('[ns-entry] browser runtime session descriptor received', {
@@ -100,20 +114,16 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			});
 		}
 
-		(globalThis as any).__NS_HTTP_ORIGIN__ = session.origin;
-		(globalThis as any).__NS_HMR_WS_URL__ = session.wsUrl;
-		(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = false;
+		const runtimeApi = readNsRuntimeDevHostApi(globalThis);
+		if (typeof runtimeApi.startDevSession !== 'function') {
+			throw new Error('__nsStartDevSession is unavailable in the NativeScript runtime');
+		}
 
-		await configureRuntimeImportMap(session.origin, verbose);
+		await prepareRuntimeForSession(session, runtimeApi, verbose);
 
 		setHmrBootStage('loading-entry-runtime', {
 			detail: session.clientUrl,
 		});
-
-		const startDevSession = (globalThis as any).__nsStartDevSession;
-		if (typeof startDevSession !== 'function') {
-			throw new Error('__nsStartDevSession is unavailable in the NativeScript runtime');
-		}
 
 		setHmrBootStage('importing-main', {
 			detail: session.entryUrl,
@@ -125,7 +135,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 				entryUrl: session.entryUrl,
 			});
 		}
-		await startDevSession(session);
+		await runtimeApi.startDevSession(session);
 		setHmrBootStage('waiting-for-app', {
 			detail: 'The deterministic NativeScript dev session is active. Waiting for the real app root to replace the boot placeholder.',
 		});

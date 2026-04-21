@@ -1,3 +1,4 @@
+import { parse as babelParse } from '@babel/parser';
 import { existsSync, readFileSync, statSync } from 'fs';
 import * as path from 'path';
 
@@ -25,11 +26,66 @@ interface SourceImportIntentCacheEntry {
 	resolvedSpecifierOverrides: Map<string, string>;
 }
 
+interface TopLevelImportRecord {
+	start: number;
+	end: number;
+	text: string;
+	source: string;
+	clause: string | null;
+	isTypeOnly: boolean;
+}
+
 const sourceImportIntentCache = new Map<string, SourceImportIntentCacheEntry>();
+const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
+const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'decorators-legacy', 'classProperties', 'classPrivateProperties', 'classPrivateMethods'] as const;
+
+function hasExplicitRuntimePluginScriptExtension(segment: string): boolean {
+	return EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE.test(segment);
+}
+
+function collectTopLevelImportRecords(code: string): TopLevelImportRecord[] {
+	try {
+		const ast = babelParse(code, {
+			sourceType: 'module',
+			plugins: [...MODULE_IMPORT_ANALYSIS_PLUGINS],
+		}) as any;
+		const body = ast?.program?.body;
+		if (!Array.isArray(body)) {
+			return [];
+		}
+
+		return body
+			.filter((node: any) => node?.type === 'ImportDeclaration' && typeof node.start === 'number' && typeof node.end === 'number' && typeof node.source?.value === 'string')
+			.map((node: any) => {
+				const text = code.slice(node.start as number, node.end as number);
+				const clause = Array.isArray(node.specifiers) && node.specifiers.length > 0 ? text.match(/^\s*import\s+([\s\S]*?)\s+from\s+["'][^"']+["'];?\s*$/)?.[1]?.trim() || null : null;
+				return {
+					start: node.start as number,
+					end: node.end as number,
+					text,
+					source: node.source.value as string,
+					clause,
+					isTypeOnly: node.importKind === 'type',
+				};
+			});
+	} catch {
+		return [];
+	}
+}
+
+function stripTopLevelImportRecords(code: string, records: TopLevelImportRecord[]): string {
+	let stripped = code;
+	for (const record of [...records].sort((left, right) => right.start - left.start)) {
+		stripped = stripped.slice(0, record.start) + stripped.slice(record.end);
+	}
+	return stripped;
+}
 
 export function ensureNativeScriptModuleBindings(code: string, options?: EnsureNativeScriptModuleBindingsOptions): string {
-	const importRegex = /(^|\n)\s*import\s+([\s\S]*?)\s+from\s+["']([^"']+)["'];?/gm;
-	const sideEffectRegex = /(^|\n)\s*import\s+["']([^"']+)["'];?/gm;
+	const importRecords = collectTopLevelImportRecords(code);
+	if (!importRecords.length) {
+		return code;
+	}
 
 	const preservedImports: string[] = [];
 	const modules = new Map<string, NativeScriptImportBinding>();
@@ -67,101 +123,105 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 			});
 	};
 
-	code = code.replace(importRegex, (full: string, pfx: string, clause: string, rawSpec: string) => {
-		const original = full.replace(/^\n/, '');
-		if (full.trimStart().startsWith('import type')) {
-			preservedImports.push(original);
-			return pfx || '';
+	for (const record of importRecords) {
+		const original = record.text.trim();
+		if (!original) {
+			continue;
 		}
+		if (record.isTypeOnly) {
+			preservedImports.push(original);
+			continue;
+		}
+
+		const rawSpec = record.source;
 		const specifier = rawSpec.replace(PAT.QUERY_PATTERN, '');
 		const preservedSpecifier = getPreservedImportSpecifier(specifier, options);
+
+		if (!record.clause) {
+			if (preservedSpecifier) {
+				preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, preservedSpecifier));
+				continue;
+			}
+			if (isEsmFrameworkPackageSpecifier(specifier)) {
+				preservedImports.push(original);
+				continue;
+			}
+			const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
+			let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
+			const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
+			if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier) {
+				preservedImports.push(original);
+				continue;
+			}
+			if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath())) {
+				canonical = specifier;
+			}
+			if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {
+				preservedImports.push(original);
+				continue;
+			}
+			if (!canonical) {
+				preservedImports.push(original);
+				continue;
+			}
+			const binding = getModuleBinding(canonical);
+			binding.sideEffectOnly = true;
+			continue;
+		}
+
 		if (preservedSpecifier) {
 			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, preservedSpecifier));
-			return pfx || '';
+			continue;
 		}
 		if (isEsmFrameworkPackageSpecifier(specifier)) {
 			preservedImports.push(original);
-			return pfx || '';
+			continue;
 		}
 		const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
 		let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
 		const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
 		if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier) {
 			preservedImports.push(original);
-			return pfx || '';
+			continue;
 		}
 		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath())) {
 			canonical = specifier;
 		}
 		if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {
 			preservedImports.push(original);
-			return pfx || '';
+			continue;
 		}
 		if (!canonical) {
 			preservedImports.push(original);
-			return pfx || '';
+			continue;
 		}
 
 		const binding = getModuleBinding(canonical);
-		const trimmed = String(clause).trim();
+		const trimmed = record.clause.trim();
 		if (!trimmed) {
 			binding.sideEffectOnly = true;
-			return pfx || '';
+			continue;
 		}
 		if (trimmed.startsWith('*')) {
 			const m = trimmed.match(/\*\s+as\s+(\w+)/i);
 			if (m?.[1]) binding.namespace.add(m[1]);
-			return pfx || '';
+			continue;
 		}
 		if (trimmed.startsWith('{')) {
 			parseNamedImports(trimmed, binding);
-			return pfx || '';
+			continue;
 		}
 		if (trimmed.includes(',') && trimmed.includes('{')) {
 			const [defaultPart, namedPart] = trimmed.split(/,(.+)/, 2);
 			const def = defaultPart.trim();
 			if (def) binding.default.add(def);
 			if (namedPart) parseNamedImports(namedPart.trim(), binding);
-			return pfx || '';
+			continue;
 		}
 		binding.default.add(trimmed);
-		return pfx || '';
-	});
+	}
 
-	code = code.replace(sideEffectRegex, (full: string, _pfx: string, rawSpec: string) => {
-		const original = full.replace(/^\n/, '');
-		const specifier = rawSpec.replace(PAT.QUERY_PATTERN, '');
-		const preservedSpecifier = getPreservedImportSpecifier(specifier, options);
-		if (preservedSpecifier) {
-			preservedImports.push(rewritePreservedImportSpecifier(original, rawSpec, preservedSpecifier));
-			return _pfx || '';
-		}
-		if (isEsmFrameworkPackageSpecifier(specifier)) {
-			preservedImports.push(original);
-			return _pfx || '';
-		}
-		const runtimePluginBareSpecifier = resolveInternalRuntimePluginBareSpecifier(specifier, getProjectRootPath());
-		let canonical = runtimePluginBareSpecifier || resolveVendorFromCandidate(specifier);
-		const runtimePluginSpecifier = isLikelyNativeScriptRuntimePluginSpecifier(canonical || specifier, getProjectRootPath());
-		if (options?.preserveNonPluginVendorImports && !runtimePluginSpecifier) {
-			preservedImports.push(original);
-			return _pfx || '';
-		}
-		if (!canonical && isLikelyNativeScriptPluginSpecifier(specifier, getProjectRootPath())) {
-			canonical = specifier;
-		}
-		if (canonical && /^@nativescript\/core(\b|\/)/i.test(canonical)) {
-			preservedImports.push(original);
-			return _pfx || '';
-		}
-		if (!canonical) {
-			preservedImports.push(original);
-			return _pfx || '';
-		}
-		const binding = getModuleBinding(canonical);
-		binding.sideEffectOnly = true;
-		return _pfx || '';
-	});
+	code = stripTopLevelImportRecords(code, importRecords);
 
 	if (!modules.size) {
 		if (preservedImports.length) {
@@ -242,11 +302,93 @@ function normalizeExtensionlessRuntimePluginSourceSpecifier(spec: string, projec
 	}
 
 	const lastSegment = subpath.split('/').pop() || '';
-	if (/\.[a-z0-9]+$/i.test(lastSegment)) {
+	if (hasExplicitRuntimePluginScriptExtension(lastSegment)) {
 		return null;
 	}
 
 	return normalized;
+}
+
+function normalizeRuntimePluginSourceSpecifier(spec: string, sourceFilePath: string, projectRoot: string): string | null {
+	if (!spec) {
+		return null;
+	}
+
+	const relativeSpecifier = normalizeRelativeRuntimePluginSourceSpecifier(spec, sourceFilePath, projectRoot);
+	if (relativeSpecifier) {
+		return relativeSpecifier;
+	}
+
+	const cleaned = spec.replace(PAT.QUERY_PATTERN, '');
+	if (!cleaned || /^(?:https?:\/\/)/i.test(cleaned)) {
+		return null;
+	}
+
+	const normalized = normalizeNodeModulesSpecifier(cleaned) || cleaned.replace(/^\/+/, '');
+	const rootPackageName = extractRootPackageName(normalized);
+	if (!rootPackageName || !isLikelyNativeScriptRuntimePluginSpecifier(rootPackageName, projectRoot)) {
+		return null;
+	}
+
+	return normalized;
+}
+
+function isRuntimePluginRootEntrySpecifier(specifier: string, projectRoot: string): boolean {
+	if (!specifier) {
+		return false;
+	}
+
+	const cleaned = specifier.replace(PAT.QUERY_PATTERN, '');
+	const normalized = normalizeNodeModulesSpecifier(cleaned) || cleaned.replace(/^\/+/, '');
+	if (!normalized) {
+		return false;
+	}
+
+	const { packageName, subpath } = resolveNodeModulesPackageBoundary(normalized, projectRoot);
+	if (!packageName || !isLikelyNativeScriptRuntimePluginSpecifier(packageName, projectRoot)) {
+		return false;
+	}
+
+	if (!subpath) {
+		return true;
+	}
+
+	if (subpath.includes('/')) {
+		return false;
+	}
+
+	const packageBaseName = packageName.split('/').pop() || '';
+	const withoutExt = hasExplicitRuntimePluginScriptExtension(subpath) ? subpath.replace(/\.[^.]+$/, '') : subpath;
+	const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
+	return withoutPlatform === 'index' || withoutPlatform === packageBaseName;
+}
+
+function collectMixedRuntimePluginRootPackages(source: string, projectRoot: string, sourceFilePath: string): Set<string> {
+	const rootEntryPackages = new Set<string>();
+	const nonRootSubpathPackages = new Set<string>();
+	const extracted = astExtractImportsAndStripTypes(source);
+
+	for (const importCode of extracted.imports) {
+		const sourceSpecifier = importCode.match(/from\s+["']([^"']+)["']/)?.[1] || importCode.match(/^\s*import\s+["']([^"']+)["']/)?.[1] || null;
+		const normalizedSpecifier = sourceSpecifier ? normalizeRuntimePluginSourceSpecifier(sourceSpecifier, sourceFilePath, projectRoot) : null;
+		if (!normalizedSpecifier) {
+			continue;
+		}
+
+		const { packageName } = resolveNodeModulesPackageBoundary(normalizedSpecifier, projectRoot);
+		if (!packageName) {
+			continue;
+		}
+
+		if (isRuntimePluginRootEntrySpecifier(normalizedSpecifier, projectRoot)) {
+			rootEntryPackages.add(packageName);
+			continue;
+		}
+
+		nonRootSubpathPackages.add(packageName);
+	}
+
+	return new Set(Array.from(rootEntryPackages).filter((packageName) => nonRootSubpathPackages.has(packageName)));
 }
 
 function normalizeRelativeRuntimePluginSourceSpecifier(spec: string, sourceFilePath: string, projectRoot: string): string | null {
@@ -260,7 +402,7 @@ function normalizeRelativeRuntimePluginSourceSpecifier(spec: string, sourceFileP
 	}
 
 	const lastSegment = cleaned.split('/').pop() || '';
-	if (/\.[a-z0-9]+$/i.test(lastSegment)) {
+	if (hasExplicitRuntimePluginScriptExtension(lastSegment)) {
 		return null;
 	}
 
@@ -290,16 +432,27 @@ function getResolvedSpecifierCandidateKeys(sourceSpecifier: string): string[] {
 		return [];
 	}
 
-	const suffixes = ['', '.js', '.ts', '.mjs', '.cjs', '.ios.js', '.android.js', '.visionos.js', '/index.js', '/index.ts', '/index.mjs'];
+	const suffixes = ['', '.js', '.ts', '.mjs', '.cjs', '.ios.js', '.android.js', '.visionos.js', '/index.js', '/index.ts', '/index.mjs', '/index.ios.js', '/index.android.js', '/index.visionos.js'];
 	return Array.from(new Set(suffixes.map((suffix) => (suffix ? `${normalized}${suffix}` : normalized))));
 }
 
 function buildResolvedRuntimePluginSpecifierOverrides(source: string, projectRoot: string, sourceFilePath: string): Map<string, string> {
 	const overrides = new Map<string, string>();
 	const extracted = astExtractImportsAndStripTypes(source);
+	const mixedRuntimePluginRootPackages = collectMixedRuntimePluginRootPackages(source, projectRoot, sourceFilePath);
 
 	for (const importCode of extracted.imports) {
 		const sourceSpecifier = importCode.match(/from\s+["']([^"']+)["']/)?.[1] || importCode.match(/^\s*import\s+["']([^"']+)["']/)?.[1] || null;
+		const normalizedSpecifier = sourceSpecifier ? normalizeRuntimePluginSourceSpecifier(sourceSpecifier, sourceFilePath, projectRoot) : null;
+		if (normalizedSpecifier) {
+			const { packageName } = resolveNodeModulesPackageBoundary(normalizedSpecifier, projectRoot);
+			if (packageName && mixedRuntimePluginRootPackages.has(packageName) && isRuntimePluginRootEntrySpecifier(normalizedSpecifier, projectRoot)) {
+				for (const candidateKey of getResolvedSpecifierCandidateKeys(normalizedSpecifier)) {
+					overrides.set(candidateKey, candidateKey);
+				}
+			}
+		}
+
 		const preservedSpecifier = sourceSpecifier ? normalizeExtensionlessRuntimePluginSourceSpecifier(sourceSpecifier, projectRoot) || normalizeRelativeRuntimePluginSourceSpecifier(sourceSpecifier, sourceFilePath, projectRoot) : null;
 		if (!preservedSpecifier) {
 			continue;

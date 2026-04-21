@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'path';
 import os from 'os';
 import { pathToFileURL } from 'url';
-import type { NsDevPlatform, NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
+import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
 const require = createRequire(import.meta.url);
 
 const VIRTUAL_ID = 'virtual:ns-hmr-client';
@@ -57,11 +57,9 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; req
 		clientUrl: `${origin}/__ns_dev__/client`,
 		wsUrl: `${wsProtocol}://${options.requestHost}/ns-hmr`,
 		platform: options.platform,
-		hostModules: ['ns-host://runtime', 'ns-host://style-adapter'],
-		features: {
-			fullReload: true,
-			cssHmr: true,
-		},
+		runtimeConfigUrl: `${origin}/ns/import-map.json`,
+		hostModules: [...NS_DEFAULT_HOST_MODULES],
+		features: { ...NS_DEFAULT_DEV_FEATURE_FLAGS },
 	};
 }
 

@@ -1,12 +1,24 @@
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import { parse as babelParse } from '@babel/parser';
 import { afterEach, describe, it, expect } from 'vitest';
 import { ensureNativeScriptModuleBindings, rewriteImports } from './websocket.js';
 
 // Helper to normalize whitespace for robust assertions
 function squish(s: string) {
 	return s.replace(/\s+/g, ' ').trim();
+}
+
+const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
+
+function collectTopLevelImportSources(code: string): string[] {
+	const ast = babelParse(code, {
+		sourceType: 'module',
+		plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
+	}) as any;
+
+	return (ast?.program?.body || []).filter((node: any) => node?.type === 'ImportDeclaration' && typeof node?.source?.value === 'string').map((node: any) => node.source.value as string);
 }
 
 describe('ensureNativeScriptModuleBindings', () => {
@@ -85,6 +97,18 @@ describe('ensureNativeScriptModuleBindings', () => {
 		expect(text).toContain(`from '@nativescript/angular'`);
 		expect(text).not.toMatch(/from\s+['"]@valor\/nativescript-in-app-review['"]/);
 		expect(text).toMatch(/(?:const|var)\s+InAppReview\s*=\s*__nsPick\(__nsVendorModule_\d+,\s*['"]InAppReview['"]\)/);
+	});
+
+	it('does not lift repeated template-literal imports into preserved top-level imports', () => {
+		const input = [`import { Component } from '@angular/core';`, `const MERMAID_CDN = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';`, `const MERMAID_CDN$1 = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';`, `export const html = \``, `  <script type="module">`, `    import mermaid from '\${MERMAID_CDN}';`, `  </script>`, `\`;`, `export const fullscreenHtml = \``, `  <script type="module">`, `    import mermaid from '\${MERMAID_CDN$1}';`, `  </script>`, `\`;`, `export { Component };`].join('\n');
+
+		const out = ensureNativeScriptModuleBindings(input, { preserveNonPluginVendorImports: true });
+		const topLevelSources = collectTopLevelImportSources(out);
+
+		expect(topLevelSources).toContain('@angular/core');
+		expect(topLevelSources.some((source) => source.includes('${MERMAID_CDN'))).toBe(false);
+		expect(out).toContain(`import mermaid from '\${MERMAID_CDN}';`);
+		expect(out).toContain(`import mermaid from '\${MERMAID_CDN$1}';`);
 	});
 });
 

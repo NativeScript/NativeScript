@@ -34,6 +34,9 @@ import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath 
 import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
+import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
+import { canonicalizeTransformRequestCacheKey, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
+import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, type GraphUpsertClassification } from './websocket-graph-upsert.js';
 import {
 	extractVitePrebundleId,
 	filterExistingNodeModulesTransformCandidates,
@@ -58,10 +61,16 @@ import {
 	viteDepsPathToBareSpecifier,
 } from './websocket-module-specifiers.js';
 import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides, type EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
+import { buildVersionedCoreMainBridgeModule, buildVersionedCoreSubpathAliasModule, collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, extractDirectExportedNames, hasModuleDefaultExport, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest, resolveRuntimeCoreModulePath, type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
+import { createSharedTransformRequestRunner, type SharedTransformRequestRunner, type SharedTransformRequestRunnerOptions } from './shared-transform-request.js';
 
 export { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
 export type { EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
 export { stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
+export { buildVersionedCoreMainBridgeModule, buildVersionedCoreSubpathAliasModule, collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest } from './websocket-core-bridge.js';
+export { rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
+export { canonicalizeTransformRequestCacheKey, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, createSharedTransformRequestRunner, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, classifyGraphUpsert, shouldBroadcastGraphUpsertDelta };
+export type { CoreExportOrigin, GraphUpsertClassification, HotUpdateGraphModuleLike, ParsedCoreBridgeRequest, PendingAngularReloadSuppressionEntry, SharedTransformRequestRunner, SharedTransformRequestRunnerOptions, TransitiveImporterModuleLike };
 
 const pluginTransformTypescript: any = (() => {
 	const requireFromHere = createRequire(import.meta.url);
@@ -137,96 +146,6 @@ function shouldAllowLocalCoreSanitizerPaths(contextLabel: string): boolean {
 	return /\bnode_modules\/@nativescript\/vite\/hmr\/(?:client|frameworks)\//.test(contextLabel);
 }
 
-export type GraphUpsertClassification = 'unchanged' | 'inserted' | 'changed';
-
-export function classifyGraphUpsert(existing: { hash: string; deps: string[] } | undefined, nextHash: string, nextDeps: string[]): GraphUpsertClassification {
-	if (!existing) {
-		return 'inserted';
-	}
-	if (existing.hash === nextHash && existing.deps.length === nextDeps.length && existing.deps.every((d, i) => d === nextDeps[i])) {
-		return 'unchanged';
-	}
-	return 'changed';
-}
-
-export function shouldBroadcastGraphUpsertDelta(classification: GraphUpsertClassification, emitDeltaOnInsert: boolean = false, broadcastEnabled: boolean = true): boolean {
-	return broadcastEnabled && (classification === 'changed' || (classification === 'inserted' && emitDeltaOnInsert));
-}
-
-function shouldGuardAngularEntryStatement(node: any): boolean {
-	if (t.isImportDeclaration(node) || t.isExportDeclaration(node) || t.isFunctionDeclaration(node) || t.isClassDeclaration(node) || t.isVariableDeclaration(node)) {
-		return false;
-	}
-	if (t.isExpressionStatement(node) && typeof (node as any).directive === 'string') {
-		return false;
-	}
-	return true;
-}
-
-export function rewriteAngularEntryRegisterOnly(code: string, angularCoreImportSource: string = '@angular/core'): string {
-	if (!code.includes('runNativeScriptAngularApp(')) {
-		return code;
-	}
-
-	try {
-		const ast = babelParse(code, {
-			sourceType: 'module',
-			plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
-		}) as any;
-		const body = ast?.program?.body;
-		if (!Array.isArray(body)) {
-			return code;
-		}
-
-		let rewroteEntry = false;
-		const angularCoreImportId = t.identifier('__nsAngularCoreForHmr');
-		const registerOnlyFlag = t.memberExpression(t.identifier('globalThis'), t.identifier('__NS_ANGULAR_HMR_REGISTER_ONLY__'));
-		const rememberAngularCoreRef = t.memberExpression(t.identifier('globalThis'), t.identifier('__NS_REMEMBER_ANGULAR_CORE__'));
-		const updateOptionsRef = t.memberExpression(t.identifier('globalThis'), t.identifier('__NS_UPDATE_ANGULAR_APP_OPTIONS__'));
-		const rewrittenBody: any[] = [t.importDeclaration([t.importNamespaceSpecifier(t.cloneNode(angularCoreImportId))], t.stringLiteral(angularCoreImportSource)), t.ifStatement(t.binaryExpression('===', t.unaryExpression('typeof', rememberAngularCoreRef, true), t.stringLiteral('function')), t.blockStatement([t.expressionStatement(t.callExpression(rememberAngularCoreRef, [t.cloneNode(angularCoreImportId)]))]))];
-
-		for (const statement of body) {
-			const expression = t.isExpressionStatement(statement) ? statement.expression : null;
-			if (expression && t.isCallExpression(expression) && t.isIdentifier(expression.callee, { name: 'runNativeScriptAngularApp' }) && expression.arguments.length === 1 && t.isExpression(expression.arguments[0])) {
-				rewroteEntry = true;
-				const optionsId = t.identifier('__nsAngularAppRunOptions');
-				rewrittenBody.push(t.variableDeclaration('const', [t.variableDeclarator(optionsId, t.cloneNode(expression.arguments[0], true))]), t.ifStatement(t.logicalExpression('&&', registerOnlyFlag, t.binaryExpression('===', t.unaryExpression('typeof', updateOptionsRef, true), t.stringLiteral('function'))), t.blockStatement([t.expressionStatement(t.callExpression(updateOptionsRef, [t.cloneNode(optionsId)]))]), t.blockStatement([t.expressionStatement(t.callExpression(t.identifier('runNativeScriptAngularApp'), [t.cloneNode(optionsId)]))])));
-				continue;
-			}
-
-			if (shouldGuardAngularEntryStatement(statement)) {
-				rewrittenBody.push(t.ifStatement(t.unaryExpression('!', t.cloneNode(registerOnlyFlag, true)), t.blockStatement([statement])));
-				continue;
-			}
-
-			rewrittenBody.push(statement);
-		}
-
-		if (!rewroteEntry) {
-			return code;
-		}
-
-		ast.program.body = rewrittenBody;
-		return genCode(ast as any).code;
-	} catch {
-		return code;
-	}
-}
-
-function resolveAngularCoreHmrImportSource(code: string, httpOrigin?: string): string {
-	const rewrittenCoreMatch = code.match(/from\s+["']([^"']*\/node_modules\/@angular\/core\/fesm2022\/core\.mjs)["']/);
-	if (rewrittenCoreMatch?.[1]) {
-		return rewrittenCoreMatch[1];
-	}
-
-	const normalizedOrigin = typeof httpOrigin === 'string' ? httpOrigin.replace(/\/$/, '') : '';
-	if (normalizedOrigin) {
-		return `${normalizedOrigin}/ns/m/node_modules/@angular/core/fesm2022/core.mjs`;
-	}
-
-	return '@angular/core';
-}
-
 export function prepareAngularEntryForDevice(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
 	const rewrittenCode = rewriteImports(code, importerPath, sfcFileMap, depFileMap, projectRoot, verbose, outputDirOverrideRel, httpOrigin, resolveVendorAsHttp);
 
@@ -242,55 +161,6 @@ interface ProcessCodeForDeviceOptions {
 // Bare specifiers and special skip patterns (virtual, data:, etc.)
 const VENDOR_PACKAGES = /^[A-Za-z@][^:\/\s]*$/;
 const SKIP_PATTERNS = /^(?:data:|blob:|node:|virtual:|vite:|\0|\/@@?id|\/__vite|__vite|__x00__)/;
-
-function canonicalizeTransformRequestCacheKey(url: string, projectRoot: string): string {
-	if (!url) return url;
-
-	const [rawPath, rawQuery = ''] = url.split('?', 2);
-	let normalizedPath = rawPath;
-	const root = projectRoot ? projectRoot.replace(/\\/g, '/') : '';
-
-	if (normalizedPath.startsWith('/@fs/')) {
-		const fsPath = normalizedPath.slice('/@fs'.length).replace(/\\/g, '/');
-		if (root && fsPath.startsWith(root)) {
-			const rel = fsPath.slice(root.length);
-			normalizedPath = rel.startsWith('/') ? rel : `/${rel}`;
-		}
-	} else if (root && normalizedPath.replace(/\\/g, '/').startsWith(root)) {
-		const rel = normalizedPath.replace(/\\/g, '/').slice(root.length);
-		normalizedPath = rel.startsWith('/') ? rel : `/${rel}`;
-	}
-
-	if (!rawQuery) {
-		return normalizedPath;
-	}
-
-	const params = new URLSearchParams(rawQuery);
-	params.delete('t');
-	params.delete('v');
-	const kept = Array.from(params.entries()).sort(([leftKey, leftValue], [rightKey, rightValue]) => {
-		if (leftKey === rightKey) {
-			return leftValue.localeCompare(rightValue);
-		}
-		return leftKey.localeCompare(rightKey);
-	});
-	if (!kept.length) {
-		return normalizedPath;
-	}
-
-	const normalizedQuery = new URLSearchParams();
-	for (const [key, value] of kept) {
-		normalizedQuery.append(key, value);
-	}
-
-	return `${normalizedPath}?${normalizedQuery.toString()}`;
-}
-
-type HotUpdateGraphModuleLike = {
-	id?: string | null;
-	importedModules?: Iterable<{ id?: string | null }>;
-	importers?: Iterable<HotUpdateGraphModuleLike>;
-};
 
 const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
 
@@ -455,435 +325,6 @@ function buildNodeModuleProvenancePrelude(sourceId?: string): string {
 	return `try { const __nsRecord = globalThis.__NS_RECORD_MODULE_PROVENANCE__; if (typeof __nsRecord === 'function') { __nsRecord(${JSON.stringify(rootPackage)}, ${JSON.stringify({ kind: 'http-esm', specifier: packageSpecifier, url: sourceId, via })}); } } catch {}\n`;
 }
 
-export function collectGraphUpdateModulesForHotUpdate(options: { file: string; flavor: string; modules?: Iterable<HotUpdateGraphModuleLike>; getModuleById: (id: string) => HotUpdateGraphModuleLike | undefined }): HotUpdateGraphModuleLike[] {
-	const targets = new Map<string, HotUpdateGraphModuleLike>();
-	const addTarget = (mod?: HotUpdateGraphModuleLike | null) => {
-		const id = mod?.id?.replace(/\?.*$/, '');
-		if (!id) return;
-		if (isRuntimeGraphExcludedPath(id)) return;
-		if (!targets.has(id)) {
-			targets.set(id, mod!);
-		}
-	};
-
-	if (options.flavor === 'angular' && /\.(html|htm)$/i.test(options.file)) {
-		for (const mod of options.modules || []) {
-			for (const importer of mod?.importers || []) {
-				const importerId = importer?.id || '';
-				if (/\.[cm]?[jt]sx?(?:$|\?)/i.test(importerId)) {
-					addTarget(importer);
-				}
-			}
-		}
-
-		if (!targets.size) {
-			addTarget(options.getModuleById(options.file.replace(/\.(html|htm)$/i, '.ts')));
-			addTarget(options.getModuleById(options.file.replace(/\.(html|htm)$/i, '.js')));
-		}
-
-		return Array.from(targets.values());
-	}
-
-	if (!options.file.endsWith('.vue')) {
-		addTarget(options.getModuleById(options.file) || options.getModuleById(options.file + '?vue'));
-	}
-
-	return Array.from(targets.values());
-}
-
-export function collectAngularHotUpdateRoots(options: { file: string; modules?: Iterable<HotUpdateGraphModuleLike>; getModuleById: (id: string) => HotUpdateGraphModuleLike | undefined; getModulesByFile?: (file: string) => Iterable<HotUpdateGraphModuleLike> | undefined | null }): HotUpdateGraphModuleLike[] {
-	const roots: HotUpdateGraphModuleLike[] = [];
-	const seenIds = new Set<string>();
-	const seenObjects = new Set<HotUpdateGraphModuleLike>();
-
-	const addRoot = (mod?: HotUpdateGraphModuleLike | null) => {
-		if (!mod) {
-			return;
-		}
-
-		if (mod.id) {
-			if (isRuntimeGraphExcludedPath(mod.id)) {
-				return;
-			}
-			if (seenIds.has(mod.id)) {
-				return;
-			}
-			seenIds.add(mod.id);
-			roots.push(mod);
-			return;
-		}
-
-		if (seenObjects.has(mod)) {
-			return;
-		}
-		seenObjects.add(mod);
-		roots.push(mod);
-	};
-
-	if (/\.(html|htm)$/i.test(options.file)) {
-		for (const mod of collectGraphUpdateModulesForHotUpdate({
-			file: options.file,
-			flavor: 'angular',
-			modules: options.modules,
-			getModuleById: options.getModuleById,
-		})) {
-			addRoot(mod);
-		}
-		return roots;
-	}
-
-	if (!/\.(m|c)?ts$/i.test(options.file)) {
-		return roots;
-	}
-
-	for (const mod of options.modules || []) {
-		addRoot(mod);
-	}
-
-	for (const mod of options.getModulesByFile?.(options.file) || []) {
-		addRoot(mod);
-	}
-
-	if (!roots.length) {
-		addRoot(options.getModuleById(options.file));
-	}
-
-	return roots;
-}
-
-type TransitiveImporterModuleLike = {
-	id?: string | null;
-	file?: string | null;
-	importers?: Iterable<TransitiveImporterModuleLike> | null;
-};
-
-export function collectAngularTransitiveImportersForInvalidation(options: { modules: Iterable<TransitiveImporterModuleLike> | undefined | null; isExcluded?: (id: string) => boolean; maxDepth?: number }): TransitiveImporterModuleLike[] {
-	const visited = new Set<TransitiveImporterModuleLike>();
-	const collected = new Map<string, TransitiveImporterModuleLike>();
-	const isExcluded = options.isExcluded ?? ((id: string) => id.includes('/node_modules/') || isRuntimeGraphExcludedPath(id));
-	const maxDepth = Math.max(1, Math.floor(options.maxDepth ?? 16));
-
-	const normalizeId = (value: string | null | undefined): string => normalizeRuntimeGraphPath(value ?? '');
-
-	const walk = (mod: TransitiveImporterModuleLike | undefined | null, depth: number): void => {
-		if (!mod || visited.has(mod)) {
-			return;
-		}
-		visited.add(mod);
-
-		if (depth >= maxDepth) {
-			return;
-		}
-
-		const importers = mod.importers;
-		if (!importers) {
-			return;
-		}
-
-		for (const importer of importers) {
-			if (!importer) continue;
-			const importerId = normalizeId(importer.id);
-			if (!importerId) {
-				walk(importer, depth + 1);
-				continue;
-			}
-			if (isExcluded(importerId)) {
-				continue;
-			}
-			if (!collected.has(importerId)) {
-				collected.set(importerId, importer);
-			}
-			walk(importer, depth + 1);
-		}
-	};
-
-	for (const mod of options.modules || []) {
-		walk(mod, 0);
-	}
-
-	return Array.from(collected.values());
-}
-
-export function shouldInvalidateAngularTransitiveImporters(options: { flavor: string; file: string }): boolean {
-	if (options.flavor !== 'angular') {
-		return false;
-	}
-
-	return /\.(?:html|htm|(m|c)?[jt]sx?)$/i.test(options.file);
-}
-
-function isExtensionlessAngularAppTransformCandidate(id: string): boolean {
-	return id.startsWith(APP_VIRTUAL_WITH_SLASH) && /\.(?:[mc]?[jt]sx?)$/i.test(id);
-}
-
-function addAngularTransformCacheInvalidationUrl(targets: Set<string>, rawId: string | null | undefined, projectRoot?: string): void {
-	const id = String(rawId || '');
-	if (!id) {
-		return;
-	}
-
-	const cacheKey = projectRoot ? canonicalizeTransformRequestCacheKey(id, projectRoot) : id;
-	targets.add(cacheKey);
-
-	const normalizedId = cacheKey.replace(/\?.*$/, '');
-	if (!isExtensionlessAngularAppTransformCandidate(normalizedId)) {
-		return;
-	}
-
-	targets.add(normalizedId.replace(/\.(?:[mc]?[jt]sx?)$/i, ''));
-}
-
-export function collectAngularTransformCacheInvalidationUrls(options: { file: string; isTs: boolean; hotUpdateRoots: Iterable<{ id?: string | null }>; transitiveImporters?: Iterable<{ id?: string | null }>; projectRoot?: string }): string[] {
-	const urls = new Set<string>();
-
-	if (options.isTs) {
-		addAngularTransformCacheInvalidationUrl(urls, options.file, options.projectRoot);
-	}
-
-	for (const mod of options.hotUpdateRoots || []) {
-		addAngularTransformCacheInvalidationUrl(urls, mod?.id, options.projectRoot);
-	}
-
-	for (const mod of options.transitiveImporters || []) {
-		addAngularTransformCacheInvalidationUrl(urls, mod?.id, options.projectRoot);
-	}
-
-	return Array.from(urls);
-}
-
-export function shouldSuppressDefaultViteHotUpdate(options: { flavor: string; file: string }): boolean {
-	if (options.flavor !== 'angular') {
-		return false;
-	}
-
-	return /\.(html|htm|ts)$/i.test(options.file);
-}
-
-type PendingAngularReloadSuppressionEntry = {
-	absPath: string;
-	relPath: string;
-	expiresAt: number;
-};
-
-export function normalizeHotReloadMatchPath(raw: string, root?: string): string {
-	let normalized = String(raw || '')
-		.split('?')[0]
-		.replace(/\\/g, '/')
-		.replace(/^file:\/\//, '');
-
-	if (root) {
-		const rootNormalized = root.replace(/\\/g, '/');
-		if (normalized.startsWith(rootNormalized)) {
-			normalized = normalized.slice(rootNormalized.length);
-		}
-	}
-
-	if (!normalized.startsWith('/')) {
-		normalized = `/${normalized}`;
-	}
-
-	return normalized;
-}
-
-export function shouldSuppressViteFullReloadPayload(options: { payload: any; pendingEntries: Iterable<PendingAngularReloadSuppressionEntry>; root?: string; now?: number }): boolean {
-	const { payload, pendingEntries, root } = options;
-	const now = options.now ?? Date.now();
-
-	if (!payload || payload.type !== 'full-reload') {
-		return false;
-	}
-
-	const payloadPath = typeof payload.path === 'string' && payload.path !== '*' ? normalizeHotReloadMatchPath(payload.path, root) : null;
-	const payloadTriggeredBy = typeof payload.triggeredBy === 'string' ? normalizeHotReloadMatchPath(payload.triggeredBy, root) : null;
-
-	for (const entry of pendingEntries) {
-		if (!entry || entry.expiresAt <= now) {
-			continue;
-		}
-
-		if (payloadTriggeredBy === entry.absPath || payloadTriggeredBy === entry.relPath || payloadPath === entry.relPath || payloadPath === entry.absPath) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-type SharedTransformRequestRunnerOptions = {
-	maxConcurrent?: number;
-	resultCacheTtlMs?: number;
-	getResultCacheKey?: (url: string) => string;
-};
-
-type SharedTransformRequestRunner = ((url: string, timeoutMs?: number) => Promise<TransformResult | null>) & {
-	invalidate: (url: string) => void;
-	invalidateMany: (urls: Iterable<string>) => void;
-	clear: () => void;
-};
-
-export function createSharedTransformRequestRunner(transformRequest: (url: string) => Promise<TransformResult | null>, onTimeout?: (url: string, timeoutMs: number) => void, options: SharedTransformRequestRunnerOptions = {}): SharedTransformRequestRunner {
-	const inFlight = new Map<string, { execution: Promise<TransformResult | null>; started: Promise<void>; cacheKey: string; generation: number }>();
-	const recentResults = new Map<string, { expiresAt: number; result: TransformResult }>();
-	const cacheGenerations = new Map<string, number>();
-	const queue: Array<() => void> = [];
-	const maxConcurrent = Math.max(1, Math.floor(options.maxConcurrent ?? 1));
-	const resultCacheTtlMs = Math.max(0, Math.floor(options.resultCacheTtlMs ?? 0));
-	const getResultCacheKey = options.getResultCacheKey ?? ((url: string) => url);
-	let activeCount = 0;
-
-	const getCacheGeneration = (cacheKey: string) => cacheGenerations.get(cacheKey) ?? 0;
-	const invalidateCacheKey = (cacheKey: string) => {
-		cacheGenerations.set(cacheKey, getCacheGeneration(cacheKey) + 1);
-		recentResults.delete(cacheKey);
-	};
-
-	const pruneRecentResults = () => {
-		if (!recentResults.size) {
-			return;
-		}
-
-		const now = Date.now();
-		for (const [key, entry] of recentResults) {
-			if (entry.expiresAt <= now) {
-				recentResults.delete(key);
-			}
-		}
-	};
-
-	const rememberRecentResult = (url: string, result: TransformResult | null, generation: number) => {
-		if (!result || resultCacheTtlMs <= 0) {
-			return;
-		}
-
-		const cacheKey = getResultCacheKey(url);
-		if (getCacheGeneration(cacheKey) !== generation) {
-			return;
-		}
-		recentResults.delete(cacheKey);
-		recentResults.set(cacheKey, {
-			expiresAt: Date.now() + resultCacheTtlMs,
-			result,
-		});
-
-		if (recentResults.size > 512) {
-			const oldestKey = recentResults.keys().next().value;
-			if (oldestKey) {
-				recentResults.delete(oldestKey);
-			}
-		}
-	};
-
-	const runNext = () => {
-		while (activeCount < maxConcurrent) {
-			const next = queue.shift();
-			if (!next) {
-				return;
-			}
-
-			activeCount += 1;
-			next();
-		}
-	};
-
-	const schedule = <T>(task: () => Promise<T>): { execution: Promise<T>; started: Promise<void> } => {
-		let resolveStarted: (() => void) | null = null;
-		const started = new Promise<void>((resolve) => {
-			resolveStarted = resolve;
-		});
-
-		const execution = new Promise<T>((resolve, reject) => {
-			queue.push(() => {
-				let started: Promise<T>;
-				resolveStarted?.();
-				try {
-					started = Promise.resolve(task());
-				} catch (error) {
-					started = Promise.reject(error);
-				}
-
-				started.then(resolve, reject).finally(() => {
-					activeCount = Math.max(0, activeCount - 1);
-					runNext();
-				});
-			});
-
-			runNext();
-		});
-
-		return { execution, started };
-	};
-
-	const withTimeout = (entry: { execution: Promise<TransformResult | null>; started: Promise<void> }, url: string, timeoutMs: number) => {
-		if (!(timeoutMs > 0)) {
-			return entry.execution;
-		}
-
-		return entry.started.then(
-			() =>
-				new Promise<TransformResult | null>((resolve, reject) => {
-					const timer = setTimeout(() => {
-						try {
-							onTimeout?.(url, timeoutMs);
-						} catch {}
-					}, timeoutMs);
-
-					entry.execution.then(resolve, reject).finally(() => {
-						clearTimeout(timer);
-					});
-				}),
-		);
-	};
-
-	const runner = ((url: string, timeoutMs = 120000) => {
-		pruneRecentResults();
-		const cacheKey = getResultCacheKey(url);
-		const generation = getCacheGeneration(cacheKey);
-		const recent = recentResults.get(cacheKey);
-		if (recent && recent.expiresAt > Date.now()) {
-			return Promise.resolve(recent.result);
-		}
-
-		const existingExecution = inFlight.get(url);
-		if (existingExecution && existingExecution.generation === generation && existingExecution.cacheKey === cacheKey) {
-			return withTimeout(existingExecution, url, timeoutMs);
-		}
-
-		const scheduled = schedule(async () => {
-			const result = await Promise.resolve(transformRequest(url));
-			rememberRecentResult(url, result, generation);
-			return result;
-		});
-		let execution: Promise<TransformResult | null>;
-		execution = scheduled.execution.finally(() => {
-			if (inFlight.get(url)?.execution === execution) {
-				inFlight.delete(url);
-			}
-		});
-
-		const entry = { execution, started: scheduled.started, cacheKey, generation };
-		inFlight.set(url, entry);
-
-		return withTimeout(entry, url, timeoutMs);
-	}) as SharedTransformRequestRunner;
-
-	runner.invalidate = (url: string) => {
-		invalidateCacheKey(getResultCacheKey(url));
-	};
-
-	runner.invalidateMany = (urls: Iterable<string>) => {
-		for (const url of urls || []) {
-			runner.invalidate(url);
-		}
-	};
-
-	runner.clear = () => {
-		recentResults.clear();
-		cacheGenerations.clear();
-	};
-
-	return runner;
-}
-
 // Guard any bare dynamic import(spec) occurring in assembled module code.
 // We cannot override native dynamic import globally; for SFC assembler outputs we inline
 // a tiny helper and rewrite "import(" to "__nsDynImport(" to prevent anomalous specs like '@'.
@@ -1028,274 +469,6 @@ async function expandStarExports(code: string, server: any, projectRoot: string,
 function extractExportedNames(code: string): string[] {
 	return extractDirectExportedNames(code);
 }
-
-type CoreExportOrigin = {
-	moduleId: string;
-	mode: 'named' | 'module';
-	importedName?: string;
-	canonicalSubpath?: string;
-};
-
-function extractDirectExportedNames(code: string): string[] {
-	const names = new Set<string>();
-	const declRe = /\bexport\s+(?:async\s+)?(?:function|class)\s+([A-Za-z_$][\w$]*)/g;
-	let match: RegExpExecArray | null;
-	while ((match = declRe.exec(code)) !== null) {
-		names.add(match[1]);
-	}
-	const namespaceRe = /\bexport\s+namespace\s+([A-Za-z_$][\w$]*)/g;
-	while ((match = namespaceRe.exec(code)) !== null) {
-		names.add(match[1]);
-	}
-	const varRe = /\bexport\s+(?:const|let|var)\s+([^=;{]+)/g;
-	while ((match = varRe.exec(code)) !== null) {
-		const decl = match[1].trim();
-		if (decl.startsWith('{')) {
-			const inner = decl.replace(/^\{|\}$/g, '');
-			for (const part of inner.split(',')) {
-				const name = part.split(':')[0].trim();
-				if (/^[A-Za-z_$][\w$]*$/.test(name)) names.add(name);
-			}
-		} else {
-			const name = decl.split(/[\s,=]/)[0].trim();
-			if (/^[A-Za-z_$][\w$]*$/.test(name)) names.add(name);
-		}
-	}
-	const directBraceRe = /\bexport\s*\{([^}]+)\}(?!\s*from)/g;
-	while ((match = directBraceRe.exec(code)) !== null) {
-		for (const part of match[1].split(',')) {
-			const trimmed = part.trim();
-			const asMatch = trimmed.match(/(\S+)\s+as\s+(\S+)/);
-			const name = asMatch ? asMatch[2] : trimmed.split(/\s/)[0];
-			if (name && /^[A-Za-z_$][\w$]*$/.test(name) && name !== 'default') {
-				names.add(name);
-			}
-		}
-	}
-	return Array.from(names);
-}
-
-function parseExportSpecList(specList: string): Array<{ importedName: string; exportedName: string }> {
-	return String(specList || '')
-		.split(',')
-		.map((part) => part.trim())
-		.filter(Boolean)
-		.map((part) => {
-			const asMatch = part.match(/(\S+)\s+as\s+(\S+)/i);
-			if (asMatch) {
-				return { importedName: asMatch[1].trim(), exportedName: asMatch[2].trim() };
-			}
-			const name = part.split(/\s/)[0]?.trim() || '';
-			return { importedName: name, exportedName: name };
-		})
-		.filter(({ exportedName, importedName }) => /^[A-Za-z_$][\w$]*$/.test(exportedName) && exportedName !== 'default' && /^[A-Za-z_$][\w$]*$/.test(importedName));
-}
-
-function runtimeModuleIdForFile(modulePath: string, rootEntryPath: string): string | null {
-	const cleanedPath = String(modulePath || '').replace(/[?#].*$/, '');
-	const cleanedRoot = String(rootEntryPath || '').replace(/[?#].*$/, '');
-	if (!cleanedPath || !cleanedRoot) return null;
-	const rootDir = path.dirname(cleanedRoot);
-	let rel = path.relative(rootDir, cleanedPath).replace(/\\/g, '/');
-	if (!rel || rel === 'index.ts' || rel === 'index.js' || rel === 'index.mjs') {
-		return '@nativescript/core';
-	}
-	rel = rel.replace(/\.(?:ts|js|mjs)$/, '');
-	rel = rel.replace(/\/index$/, '');
-	return `@nativescript/core/${rel}`;
-}
-
-function runtimeModuleIdFromLocalSpecifier(spec: string, currentModuleId: string): string | null {
-	if (!spec.startsWith('.')) return spec || null;
-	const base = currentModuleId.replace(/^@nativescript\/core(?:\/|$)/, '');
-	const baseDir = base ? `/${base}` : '/';
-	let rel = path.posix.normalize(path.posix.join(baseDir, spec)).replace(/^\/+/, '');
-	rel = rel.replace(/\.(?:ts|js|mjs)$/, '');
-	rel = rel.replace(/\/index$/, '');
-	return rel ? `@nativescript/core/${rel}` : '@nativescript/core';
-}
-
-function canonicalCoreSubpathForFile(modulePath: string, rootEntryPath: string): string | null {
-	const cleanedPath = String(modulePath || '').replace(/[?#].*$/, '');
-	const cleanedRoot = String(rootEntryPath || '').replace(/[?#].*$/, '');
-	if (!cleanedPath || !cleanedRoot) return null;
-	const rootDir = path.dirname(cleanedRoot);
-	let rel = path.relative(rootDir, cleanedPath).replace(/\\/g, '/');
-	if (!rel || rel === 'index.ts' || rel === 'index.js' || rel === 'index.mjs') {
-		return null;
-	}
-	rel = rel.replace(/\.(?:ts|js|mjs)$/, '.js');
-	return rel;
-}
-
-function canonicalCoreSubpathFromLocalSpecifier(spec: string, currentCanonicalSubpath: string | null): string | null {
-	if (!spec.startsWith('.')) return null;
-	const baseDir = currentCanonicalSubpath ? path.posix.dirname(currentCanonicalSubpath) : '.';
-	let rel = path.posix.normalize(path.posix.join(baseDir, spec)).replace(/^\.?\/?/, '');
-	if (!rel) return null;
-	if (/\.(?:ts|js|mjs)$/i.test(rel)) {
-		return rel.replace(/\.(?:ts|js|mjs)$/i, '.js');
-	}
-	return `${rel.replace(/\/+$/, '')}/index.js`;
-}
-
-async function resolveRuntimeCoreModulePath(normalizedSubpath: string, resolveModuleId: (moduleId: string) => Promise<string | null> | string | null): Promise<string | null> {
-	const cleanedSubpath = String(normalizedSubpath || '').replace(/^\/+/, '');
-	const candidates: string[] = [];
-	if (!cleanedSubpath || cleanedSubpath === 'index.js') {
-		candidates.push('@nativescript/core');
-	} else {
-		if (/\/index\.js$/i.test(cleanedSubpath)) {
-			const packageSubpath = cleanedSubpath.replace(/\/index\.js$/i, '');
-			if (packageSubpath) {
-				candidates.push(`@nativescript/core/${packageSubpath}`);
-			}
-		}
-		candidates.push(`@nativescript/core/${cleanedSubpath}`);
-	}
-	for (const candidate of candidates) {
-		try {
-			const resolved = await resolveModuleId(candidate);
-			if (resolved) {
-				return String(resolved).replace(/[?#].*$/, '');
-			}
-		} catch {}
-	}
-	return null;
-}
-
-function appendCoreExportOrigin(map: Record<string, CoreExportOrigin[]>, exportedName: string, origin: CoreExportOrigin): void {
-	if (!/^[A-Za-z_$][\w$]*$/.test(exportedName) || exportedName === 'default') return;
-	const existing = map[exportedName] || (map[exportedName] = []);
-	if (existing.some((entry) => entry.moduleId === origin.moduleId && entry.mode === origin.mode && entry.importedName === origin.importedName)) {
-		return;
-	}
-	existing.push(origin);
-}
-
-function resolveLocalExportTarget(spec: string, importerId: string): string | null {
-	const importerPath = String(importerId || '').replace(/[?#].*$/, '');
-	if (!importerPath) return null;
-	const importerDir = path.dirname(importerPath);
-	const candidates = [path.resolve(importerDir, spec), path.resolve(importerDir, `${spec}.ts`), path.resolve(importerDir, `${spec}.js`), path.resolve(importerDir, `${spec}.mjs`), path.resolve(importerDir, spec, 'index.ts'), path.resolve(importerDir, spec, 'index.js'), path.resolve(importerDir, spec, 'index.mjs')];
-	for (const candidate of candidates) {
-		if (existsSync(candidate) && !statSync(candidate).isDirectory()) {
-			return candidate;
-		}
-	}
-	return null;
-}
-
-export function collectStaticExportNamesFromFile(modulePath: string, seen: Set<string> = new Set()): string[] {
-	return Object.keys(collectStaticExportOriginsFromFile(modulePath, modulePath, seen));
-}
-
-export function collectStaticExportOriginsFromFile(modulePath: string, rootEntryPath: string = modulePath, seen: Set<string> = new Set()): Record<string, CoreExportOrigin[]> {
-	const cleanedPath = String(modulePath || '').replace(/[?#].*$/, '');
-	const cleanedRoot = String(rootEntryPath || '').replace(/[?#].*$/, '');
-	if (!cleanedPath || !cleanedRoot || seen.has(cleanedPath) || !existsSync(cleanedPath)) {
-		return {};
-	}
-	seen.add(cleanedPath);
-	let code = '';
-	try {
-		code = readFileSync(cleanedPath, 'utf8');
-	} catch {
-		return {};
-	}
-	const currentModuleId = runtimeModuleIdForFile(cleanedPath, cleanedRoot) || '@nativescript/core';
-	const currentCanonicalSubpath = canonicalCoreSubpathForFile(cleanedPath, cleanedRoot);
-	const origins: Record<string, CoreExportOrigin[]> = {};
-	for (const name of extractDirectExportedNames(code)) {
-		appendCoreExportOrigin(origins, name, { moduleId: currentModuleId, mode: 'named', importedName: name, canonicalSubpath: currentCanonicalSubpath || undefined });
-	}
-	const starAsRe = /\bexport\s+\*\s+as\s+([A-Za-z_$][\w$]*)\s+from\s+["']([^"']+)["']/g;
-	let match: RegExpExecArray | null;
-	while ((match = starAsRe.exec(code)) !== null) {
-		const exportedName = match[1];
-		const spec = match[2];
-		const resolvedTarget = spec.startsWith('.') ? resolveLocalExportTarget(spec, cleanedPath) : null;
-		const moduleId = resolvedTarget ? runtimeModuleIdForFile(resolvedTarget, cleanedRoot) : spec.startsWith('.') ? runtimeModuleIdFromLocalSpecifier(spec, currentModuleId) : spec;
-		const canonicalSubpath = resolvedTarget ? canonicalCoreSubpathForFile(resolvedTarget, cleanedRoot) : spec.startsWith('.') ? canonicalCoreSubpathFromLocalSpecifier(spec, currentCanonicalSubpath) : undefined;
-		if (!moduleId) continue;
-		appendCoreExportOrigin(origins, exportedName, { moduleId, mode: 'module', canonicalSubpath: canonicalSubpath || undefined });
-	}
-	const namedReExportRe = /\bexport\s*\{([^}]+)\}\s*from\s*["']([^"']+)["']/g;
-	while ((match = namedReExportRe.exec(code)) !== null) {
-		const specList = match[1];
-		const spec = match[2];
-		const resolvedTarget = spec.startsWith('.') ? resolveLocalExportTarget(spec, cleanedPath) : null;
-		const moduleId = resolvedTarget ? runtimeModuleIdForFile(resolvedTarget, cleanedRoot) : spec.startsWith('.') ? runtimeModuleIdFromLocalSpecifier(spec, currentModuleId) : spec;
-		const canonicalSubpath = resolvedTarget ? canonicalCoreSubpathForFile(resolvedTarget, cleanedRoot) : spec.startsWith('.') ? canonicalCoreSubpathFromLocalSpecifier(spec, currentCanonicalSubpath) : undefined;
-		if (!moduleId) continue;
-		for (const { exportedName, importedName } of parseExportSpecList(specList)) {
-			appendCoreExportOrigin(origins, exportedName, { moduleId, mode: 'named', importedName, canonicalSubpath: canonicalSubpath || undefined });
-		}
-	}
-	const directBraceRe = /\bexport\s*\{([^}]+)\}(?!\s*from)/g;
-	while ((match = directBraceRe.exec(code)) !== null) {
-		for (const { exportedName, importedName } of parseExportSpecList(match[1])) {
-			appendCoreExportOrigin(origins, exportedName, { moduleId: currentModuleId, mode: 'named', importedName, canonicalSubpath: currentCanonicalSubpath || undefined });
-		}
-	}
-	const starRe = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["'];?[ \t]*$/gm;
-	while ((match = starRe.exec(code)) !== null) {
-		const spec = match[1];
-		if (!spec.startsWith('.')) continue;
-		const resolvedTarget = resolveLocalExportTarget(spec, cleanedPath);
-		const moduleId = resolvedTarget ? runtimeModuleIdForFile(resolvedTarget, cleanedRoot) : runtimeModuleIdFromLocalSpecifier(spec, currentModuleId);
-		const canonicalSubpath = resolvedTarget ? canonicalCoreSubpathForFile(resolvedTarget, cleanedRoot) : canonicalCoreSubpathFromLocalSpecifier(spec, currentCanonicalSubpath);
-		if (!resolvedTarget) continue;
-		const childOrigins = collectStaticExportOriginsFromFile(resolvedTarget, cleanedRoot, seen);
-		for (const [exportedName, entries] of Object.entries(childOrigins)) {
-			if (moduleId) {
-				appendCoreExportOrigin(origins, exportedName, { moduleId, mode: 'named', importedName: exportedName, canonicalSubpath: canonicalSubpath || undefined });
-			}
-			for (const entry of entries) {
-				appendCoreExportOrigin(origins, exportedName, entry);
-			}
-		}
-	}
-	return origins;
-}
-
-export async function normalizeCoreExportOriginsForRuntime(exportOrigins: Record<string, CoreExportOrigin[]>, resolveModuleId: (moduleId: string) => Promise<string | null> | string | null, rootModulePath: string): Promise<Record<string, CoreExportOrigin[]>> {
-	const cleanedRoot = String(rootModulePath || '').replace(/[?#].*$/, '');
-	if (!cleanedRoot || !exportOrigins || typeof exportOrigins !== 'object') {
-		return exportOrigins;
-	}
-	const resolutionCache = new Map<string, string | null>();
-	const normalizedOrigins: Record<string, CoreExportOrigin[]> = {};
-	for (const [exportedName, entries] of Object.entries(exportOrigins)) {
-		normalizedOrigins[exportedName] = await Promise.all(
-			(entries || []).map(async (entry) => {
-				if (!entry?.moduleId || !entry.moduleId.startsWith('@nativescript/core')) {
-					return entry;
-				}
-				let resolvedPath = resolutionCache.get(entry.moduleId);
-				if (resolvedPath === undefined) {
-					try {
-						resolvedPath = (await resolveModuleId(entry.moduleId)) || null;
-					} catch {
-						resolvedPath = null;
-					}
-					resolvedPath = resolvedPath ? String(resolvedPath).replace(/[?#].*$/, '') : null;
-					resolutionCache.set(entry.moduleId, resolvedPath);
-				}
-				if (!resolvedPath) {
-					return entry;
-				}
-				const canonicalSubpath = canonicalCoreSubpathForFile(resolvedPath, cleanedRoot);
-				if (!canonicalSubpath || canonicalSubpath === entry.canonicalSubpath) {
-					return entry;
-				}
-				return { ...entry, canonicalSubpath };
-			}),
-		);
-	}
-	return normalizedOrigins;
-}
-
 function repairImportEqualsAssignments(code: string): string {
 	try {
 		if (!code || typeof code !== 'string') return code;
@@ -1319,75 +492,6 @@ function ensureVersionedRtImports(code: string, origin: string, ver: number): st
 	code = code.replace(/(from\s+["'])(?:https?:\/\/[^"']+)?\/(?:\ns|ns)\/rt(?:\/[\d]+)?(["'])/g, (_m, p1, p3) => `${p1}/ns/rt/${ver}${p3}`);
 	code = code.replace(/(import\(\s*["'])(?:https?:\/\/[^"']+)?\/(?:\@ns|ns)\/rt(?:\/[\d]+)?(["']\s*\))/g, (_m, p1, p3) => `${p1}/ns/rt/${ver}${p3}`);
 	return code;
-}
-
-export function ensureVersionedCoreImports(code: string, origin: string, ver: number): string {
-	try {
-		code = code.replace(/(["'])(?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(\?p=[^"']+)?\1/g, (_m, q, qp) => `${q}/ns/core/${ver}${qp || ''}${q}`);
-		code = code.replace(/import\(\s*(["'])(?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(\?p=[^"']+)?\1\s*\)/g, (_m, q, qp) => `import(${q}/ns/core/${ver}${qp || ''}${q})`);
-	} catch {}
-	return code;
-}
-
-function hasModuleDefaultExport(moduleCode: string): boolean {
-	if (!moduleCode || typeof moduleCode !== 'string') return false;
-	return /\bexport\s+default\b/.test(moduleCode) || /\bexport\s*\{[^}]*\bdefault\b[^}]*\}/.test(moduleCode);
-}
-
-export function buildVersionedCoreSubpathAliasModule(sub: string, ver: number | string, namedExports: string[] = [], hasDefaultExport: boolean = false): string {
-	const normalizedSub = (sub || '').replace(/^\/+/, '');
-	const canonicalUrl = `/ns/core/${ver}?p=${normalizedSub}`;
-	const filteredExports = Array.from(new Set(namedExports)).filter((name) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) && name !== 'default' && name !== '__esModule');
-	const exportLines = filteredExports.length ? `export { ${filteredExports.join(', ')} } from ${JSON.stringify(canonicalUrl)};\n` : `export * from ${JSON.stringify(canonicalUrl)};\n`;
-	if (hasDefaultExport) {
-		return `export { default } from ${JSON.stringify(canonicalUrl)};\n` + exportLines;
-	}
-	return `import * as __ns_core_alias from ${JSON.stringify(canonicalUrl)};\n` + `export default __ns_core_alias;\n` + exportLines;
-}
-
-export function buildVersionedCoreMainBridgeModule(key: string, ver: number | string, namedExports: string[] = [], exportOrigins: Record<string, CoreExportOrigin[]> = {}): string {
-	const filteredExports = Array.from(new Set(namedExports)).filter((name) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) && name !== 'default' && name !== '__esModule');
-	const namedExportDeclarations = filteredExports.length ? filteredExports.map((name) => `const ${name} = __getCoreExport(${JSON.stringify(name)});`).join('\n') + '\n' : '';
-	const namedExportObjectLiteral = filteredExports.length ? `{ ${filteredExports.join(', ')} }` : '{}';
-	const namedExportStatement = filteredExports.length ? `export { ${filteredExports.join(', ')} };\n` : '';
-	const serializedExportOrigins = JSON.stringify(exportOrigins);
-	const staticOriginImports = new Map<string, string>();
-	const staticOriginImportLines: string[] = [];
-	let staticOriginCounter = 0;
-	for (const entries of Object.values(exportOrigins)) {
-		for (const entry of entries) {
-			if (!entry.canonicalSubpath) continue;
-			if (staticOriginImports.has(entry.canonicalSubpath)) continue;
-			const localName = `__ns_core_origin_${staticOriginCounter++}`;
-			staticOriginImports.set(entry.canonicalSubpath, localName);
-			staticOriginImportLines.push(`import * as ${localName} from ${JSON.stringify(`/ns/core/${ver}?p=${entry.canonicalSubpath}`)};`);
-		}
-	}
-	const staticOriginModulesLiteral = staticOriginImports.size
-		? `{ ${Array.from(staticOriginImports.entries())
-				.map(([subpath, localName]) => `${JSON.stringify(subpath)}: ${localName}`)
-				.join(', ')} }`
-		: '{}';
-	return (
-		(staticOriginImportLines.length ? `${staticOriginImportLines.join('\n')}\n` : '') +
-		REQUIRE_GUARD_SNIPPET +
-		`// [ns-core-bridge][v${ver}] HTTP-only ESM bridge\n` +
-		`const g = globalThis;\n` +
-		`const reg = (g.__nsVendorRegistry ||= new Map());\n` +
-		`const __unwrapNsModule = (mod) => {\n  if (!mod) return null;\n  try { if ((typeof mod === 'object' || typeof mod === 'function') && Object.prototype.hasOwnProperty.call(mod, 'default')) { const keys = Object.keys(mod).filter((entry) => entry !== '__esModule'); if (!keys.length || (keys.length === 1 && keys[0] === 'default')) return mod.default; } } catch {}\n  return mod;\n};\n` +
-		`const __resolveNsModule = (moduleId) => {\n  try { if (typeof g.moduleExists === 'function' && g.moduleExists(moduleId) && typeof g.loadModule === 'function') { const mod = g.loadModule(moduleId); if (mod) return __unwrapNsModule(mod); } } catch {}\n  try { if (reg && reg.get) { const mod = reg.get(moduleId); if (mod) return __unwrapNsModule(mod); } } catch {}\n  try { const req = g.__nsVendorRequire || g.__nsRequire || g.require; if (typeof req === 'function') { const mod = req(moduleId); if (mod) return __unwrapNsModule(mod); } } catch {}\n  try { const nr = g.__nativeRequire; if (typeof nr === 'function') { const mod = nr(moduleId, '/'); if (mod) return __unwrapNsModule(mod); } } catch {}\n  return null;\n};\n` +
-		`const __pickApplicationApi = (candidate) => {\n  if (!candidate) return null;\n  const candidates = [candidate, candidate.Application, candidate.app, candidate.application];\n  for (const entry of candidates) { if (entry && (typeof entry.run === 'function' || typeof entry.on === 'function' || typeof entry.resetRootView === 'function')) return entry; }\n  return null;\n};\n` +
-		`let __nsPrimaryCoreReady = false;\nlet __nsPrimaryCore = null;\nconst __getPrimaryCore = () => { if (!__nsPrimaryCoreReady) { __nsPrimaryCore = __resolveNsModule(${JSON.stringify(key)}) || __resolveNsModule('@nativescript/core') || null; __nsPrimaryCoreReady = true; } return __nsPrimaryCore; };\n` +
-		`let __nsCoreUiReady = false;\nlet __nsCoreUi = null;\nconst __getCoreUi = () => { if (!__nsCoreUiReady) { __nsCoreUi = __resolveNsModule('@nativescript/core/ui') || null; __nsCoreUiReady = true; } return __nsCoreUi; };\n` +
-		`const __nsCoreExportOrigins = ${serializedExportOrigins};\nconst __nsCoreOriginModules = ${staticOriginModulesLiteral};\n` +
-		`const __resolveFromExportOrigins = (name) => { const entries = __nsCoreExportOrigins && __nsCoreExportOrigins[name]; if (!entries || !entries.length) return undefined; for (const entry of entries) { try { const mod = (entry.canonicalSubpath && __nsCoreOriginModules[entry.canonicalSubpath]) || __resolveNsModule(entry.moduleId); if (!mod) continue; if (entry.mode === 'module') return mod; const importedName = entry.importedName || name; if (importedName === 'Application') { const picked = __pickApplicationApi(mod); if (picked) return picked; } if (mod && mod[importedName] !== undefined) return mod[importedName]; } catch {} } return undefined; };\n` +
-		`const __getCoreExport = (name) => { if (name === 'Application' && g.Application && (typeof g.Application.run === 'function' || typeof g.Application.on === 'function' || typeof g.Application.resetRootView === 'function')) return g.Application; if (name === 'Application') { const appModule = __resolveNsModule('@nativescript/core/application'); const pickedApp = __pickApplicationApi(appModule); if (pickedApp) return pickedApp; } const primary = __getPrimaryCore(); if (name === 'Application') { const pickedPrimary = __pickApplicationApi(primary); if (pickedPrimary) return pickedPrimary; } try { if (primary && primary[name] !== undefined) return primary[name]; } catch {} const ui = __getCoreUi(); try { if (ui && ui[name] !== undefined) return ui[name]; } catch {} const viaOrigins = __resolveFromExportOrigins(name); if (viaOrigins !== undefined) return viaOrigins; try { const v = g[name]; if (v !== undefined) return v; } catch {} return undefined; };\n` +
-		namedExportDeclarations +
-		`const __nsNamedCore = ${namedExportObjectLiteral};\n` +
-		`const __core = new Proxy(__nsNamedCore, { get(_t, p){ if (p === 'default') return __core; if (p === Symbol.toStringTag) return 'Module'; try { if (typeof p === 'string' && Object.prototype.hasOwnProperty.call(__nsNamedCore, p)) { const value = __nsNamedCore[p]; if (value !== undefined) return value; } } catch {} return __getCoreExport(p); } });\n` +
-		namedExportStatement +
-		`export default __core;\n`
-	);
 }
 
 function stripViteDynamicImportVirtual(code: string): string {
@@ -1630,13 +734,13 @@ function isRuntimePluginRootEntrySpecifier(specifier: string, projectRoot: strin
 	}
 
 	const pkgBaseName = packageName.split('/').pop() || '';
-	const withoutExt = subpath.replace(/\.[^.]+$/, '');
+	const withoutExt = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i.test(subpath) ? subpath.replace(/\.[^.]+$/, '') : subpath;
 	const withoutPlatform = withoutExt.replace(/\.(ios|android|visionos)$/i, '');
 	return withoutPlatform === 'index' || withoutPlatform === pkgBaseName;
 }
 
 function collectMixedRuntimePluginHttpRootPackages(code: string, projectRoot: string): Set<string> {
-	const preservedSubpathPackages = new Set<string>();
+	const nonRootSubpathPackages = new Set<string>();
 	const rootEntryPackages = new Set<string>();
 
 	const visitSpecifier = (rawSpecifier: string | null | undefined) => {
@@ -1667,13 +771,12 @@ function collectMixedRuntimePluginHttpRootPackages(code: string, projectRoot: st
 			return;
 		}
 
-		if (shouldPreserveBareRuntimePluginSubpathImport(specifier, projectRoot)) {
-			preservedSubpathPackages.add(packageName);
-		}
-
 		if (isRuntimePluginRootEntrySpecifier(normalized, projectRoot)) {
 			rootEntryPackages.add(packageName);
+			return;
 		}
+
+		nonRootSubpathPackages.add(packageName);
 	};
 
 	for (const pattern of [PAT.IMPORT_PATTERN_1, PAT.IMPORT_PATTERN_2, PAT.IMPORT_PATTERN_3, PAT.IMPORT_PATTERN_SIDE_EFFECT]) {
@@ -1684,7 +787,7 @@ function collectMixedRuntimePluginHttpRootPackages(code: string, projectRoot: st
 		}
 	}
 
-	return new Set(Array.from(preservedSubpathPackages).filter((packageName) => rootEntryPackages.has(packageName)));
+	return new Set(Array.from(nonRootSubpathPackages).filter((packageName) => rootEntryPackages.has(packageName)));
 }
 
 function collectImportDependencies(code: string, importerPath: string): Set<string> {
@@ -3033,7 +2136,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 
 		const nodeModulesSpecifier = normalizeNodeModulesSpecifier(spec);
 		const normalizedRuntimePluginSpec = nodeModulesSpecifier || spec.replace(PAT.QUERY_PATTERN, '').replace(/^\/+/, '');
-		if (normalizedRuntimePluginSpec && mixedRuntimePluginHttpRootPackages.size > 0 && isRuntimePluginRootEntrySpecifier(normalizedRuntimePluginSpec, projectRoot)) {
+		if (normalizedRuntimePluginSpec && mixedRuntimePluginHttpRootPackages.size > 0) {
 			const { packageName } = resolveNodeModulesPackageBoundary(normalizedRuntimePluginSpec, projectRoot);
 			if (packageName && mixedRuntimePluginHttpRootPackages.has(packageName)) {
 				const httpNodeModulesSpecifier = nodeModulesSpecifier || normalizedRuntimePluginSpec;
@@ -4741,21 +3844,14 @@ export const piniaSymbol = p.piniaSymbol;
 			server.middlewares.use(async (req, res, next) => {
 				try {
 					const urlObj = new URL(req.url || '', 'http://localhost');
-					// Match /ns/core, /ns/core/<ver>, and /ns/core/<subpath> (path-based deep imports)
-					if (!urlObj.pathname.startsWith('/ns/core')) return next();
+					const coreRequest = parseCoreBridgeRequest(urlObj.pathname, urlObj.searchParams, Number(graphVersion || 0));
+					if (!coreRequest) return next();
 					res.setHeader('Access-Control-Allow-Origin', '*');
 					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
 					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 					res.setHeader('Pragma', 'no-cache');
 					res.setHeader('Expires', '0');
-					const afterCore = urlObj.pathname.replace(/^\/ns\/core\/?/, '');
-					const hasExplicitVersion = /^[0-9]+$/.test(afterCore);
-					const ver = /^[0-9]+$/.test(afterCore) ? afterCore : String(graphVersion || 0);
-					// Support both query-based (?p=data/observable/index.js) and
-					// path-based (/ns/core/data/observable/index.js) subpath formats.
-					// The device's HTTP ESM loader may use either depending on the import map.
-					const sub = urlObj.searchParams.get('p') || (afterCore && !/^[0-9]+$/.test(afterCore) ? afterCore : '');
-					const key = sub ? `@nativescript/core/${sub}` : `@nativescript/core`;
+					const { hasExplicitVersion, key, normalizedSub, sub, ver } = coreRequest;
 
 					// Any @nativescript/core subpath import (including shallow ones like
 					// `utils`) may expose exports that are not available from the root
@@ -4763,25 +3859,25 @@ export const piniaSymbol = p.piniaSymbol;
 					// instead of the lightweight proxy bridge.
 					if (sub) {
 						try {
-							const normalizedSub = sub.replace(/^\/+/, '');
+							const resolvedSubpath = normalizedSub || sub;
 							const projectRoot = (server as any).config?.root || process.cwd();
 							const resolveModuleId = async (moduleId: string): Promise<string | null> => {
 								const resolved = await (server as any).pluginContainer?.resolveId?.(moduleId, undefined);
 								return typeof resolved === 'string' ? resolved : resolved?.id || null;
 							};
-							const resolvedId = await resolveRuntimeCoreModulePath(normalizedSub, resolveModuleId);
-							const modulePath = resolvedId || `/node_modules/@nativescript/core/${normalizedSub}`;
+							const resolvedId = await resolveRuntimeCoreModulePath(resolvedSubpath, resolveModuleId);
+							const modulePath = resolvedId || `/node_modules/@nativescript/core/${resolvedSubpath}`;
 							const transformed = await sharedTransformRequest(modulePath);
 
 							if (!hasExplicitVersion) {
 								if (transformed?.code) {
 									const expandedModuleCode = await expandStarExports(transformed.code, server, projectRoot, verbose);
 									res.statusCode = 200;
-									res.end(buildVersionedCoreSubpathAliasModule(normalizedSub, ver, extractExportedNames(expandedModuleCode), hasModuleDefaultExport(expandedModuleCode)));
+									res.end(buildVersionedCoreSubpathAliasModule(resolvedSubpath, ver, extractExportedNames(expandedModuleCode), hasModuleDefaultExport(expandedModuleCode)));
 									return;
 								}
 								res.statusCode = 200;
-								res.end(buildVersionedCoreSubpathAliasModule(normalizedSub, ver));
+								res.end(buildVersionedCoreSubpathAliasModule(resolvedSubpath, ver));
 								return;
 							}
 							if (transformed?.code) {

@@ -61,6 +61,7 @@ describe('createNsDevSessionDescriptor', () => {
 			clientUrl: 'http://192.168.1.5:5173/__ns_dev__/client',
 			wsUrl: 'ws://192.168.1.5:5173/ns-hmr',
 			platform: 'ios',
+			runtimeConfigUrl: 'http://192.168.1.5:5173/ns/import-map.json',
 			hostModules: ['ns-host://runtime', 'ns-host://style-adapter'],
 			features: {
 				fullReload: true,
@@ -83,6 +84,7 @@ describe('createNsDevSessionDescriptor', () => {
 		expect(descriptor.entryUrl).toBe('https://dev.example.com:8443/ns/m/src/app.ts');
 		expect(descriptor.clientUrl).toBe('https://dev.example.com:8443/__ns_dev__/client');
 		expect(descriptor.wsUrl).toBe('wss://dev.example.com:8443/ns-hmr');
+		expect(descriptor.runtimeConfigUrl).toBe('https://dev.example.com:8443/ns/import-map.json');
 		expect(descriptor.platform).toBe('visionos');
 	});
 });

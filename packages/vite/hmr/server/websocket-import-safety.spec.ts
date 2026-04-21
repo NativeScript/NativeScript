@@ -16,12 +16,38 @@ function collectTopLevelImportSources(code: string): string[] {
 
 describe('processCodeForDevice import safety', () => {
 	it('does not hoist template-literal imports into top-level module scope', () => {
-		const input = [`const MERMAID_CDN = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';`, `export function renderMermaid(diagram) {`, `  return \``, `    <script type="module">`, `      import mermaid from '\${MERMAID_CDN}';`, `      mermaid.initialize({ startOnLoad: true });`, `      mermaid.run();`, `    </script>`, `    <pre class="mermaid">\${diagram}</pre>`, `  \`;`, `}`].join('\n');
+		const input = [
+			`const MERMAID_CDN = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';`,
+			`const MERMAID_CDN$1 = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';`,
+			`export function renderMermaid(diagram) {`,
+			`  return \``,
+			`    <script type="module">`,
+			`      import mermaid from '\${MERMAID_CDN}';`,
+			`      mermaid.initialize({ startOnLoad: true });`,
+			`      mermaid.run();`,
+			`    </script>`,
+			`    <pre class="mermaid">\${diagram}</pre>`,
+			`  \`;`,
+			`}`,
+			`export function renderFullscreenMermaid(diagram) {`,
+			`  return \``,
+			`    <script type="module">`,
+			`      import mermaid from '\${MERMAID_CDN$1}';`,
+			`      mermaid.initialize({ startOnLoad: true });`,
+			`      mermaid.run();`,
+			`    </script>`,
+			`    <pre class="mermaid fullscreen">\${diagram}</pre>`,
+			`  \`;`,
+			`}`,
+		].join('\n');
 
 		const out = processCodeForDevice(input, false, true, true);
+		const topLevelSources = collectTopLevelImportSources(out);
 
 		expect(out).toContain(`import mermaid from '\${MERMAID_CDN}';`);
-		expect(collectTopLevelImportSources(out)).not.toContain('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+		expect(out).toContain(`import mermaid from '\${MERMAID_CDN$1}';`);
+		expect(topLevelSources).not.toContain('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+		expect(topLevelSources.some((source) => source.includes('${MERMAID_CDN'))).toBe(false);
 	});
 
 	it('does not rewrite bare imports that only appear inside template literals', () => {
