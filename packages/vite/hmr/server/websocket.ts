@@ -631,7 +631,7 @@ function normalizeImportPath(spec: string, importerDir: string): string | null {
 	} else if (spec.startsWith('./') || spec.startsWith('../')) {
 		key = path.posix.normalize(path.posix.join(importerDir, spec));
 		if (!key.startsWith('/')) {
-			key = '/' + key;
+			key = `/${key}`;
 		}
 	} else {
 		key = spec;
@@ -2909,17 +2909,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						res.setHeader('Content-Type', 'application/json');
 						return void res.end(JSON.stringify({ error: (e as any)?.message || String(e) }));
 					}
-					// Optional diagnostics: when ?diag=1, inject simple entry/exit logs to help isolate
-					// execution-time failures on device without changing semantics.
-					try {
-						const wantDiag = urlObj.searchParams.get('diag') === '1';
-						if (wantDiag) {
-							const importerPath = spec.replace(/[?#].*$/, '');
-							const enter = `try { console.log('[sfc][enter]', ${JSON.stringify(importerPath)}, 'hasReq=', (typeof globalThis.__nsRequire==='function'||typeof globalThis.require==='function')); } catch {}`;
-							const exit = `\n;try { console.log('[sfc][loaded]', ${JSON.stringify(importerPath)}); } catch {}`;
-							code = `${enter}\n${code}${exit}`;
-						}
-					} catch {}
 					try {
 						const origin = getServerOrigin(server);
 						code = ensureVersionedRtImports(code, origin, graphVersion);
@@ -3395,15 +3384,6 @@ export const piniaSymbol = p.piniaSymbol;
 					// persistent hot.data that survives across module re-evaluations.
 					// cleanCode() strips Vite's __vite__createHotContext assignment, which is
 					// correct — the runtime's native hot context is better.
-					// We inject a diagnostic log to trace hot.data state during development.
-					try {
-						if (ACTIVE_STRATEGY?.flavor === 'solid' && /\.(tsx|jsx)$/i.test(resolvedCandidate || spec)) {
-							const moduleId = (resolvedCandidate || spec).replace(/[?#].*$/, '');
-							// Diagnostic: log import.meta.hot state on device to trace solid-refresh flow
-							code = `try{if(typeof import.meta!=='undefined'&&import.meta.hot){var _hd=import.meta.hot.data;var _sr=_hd&&_hd['solid-refresh'];console.log('[solid-hmr][native-hot]',${JSON.stringify(moduleId)},'hasHot=true','hasData=',!!_hd,'hasSolidRefresh=',!!_sr,'dataKeys=',_hd?Object.keys(_hd):[]);}else{console.log('[solid-hmr][native-hot]',${JSON.stringify(moduleId)},'hasHot=',!!(typeof import.meta!=='undefined'&&import.meta.hot));}}catch(e){console.log('[solid-hmr][native-hot] error',e);}\n` + code;
-							console.log('[hmr-ws][solid] diagnostic injected for', moduleId, '(using runtime native import.meta.hot)');
-						}
-					} catch {}
 					const projectRoot = (server as any).config?.root || process.cwd();
 					const serverOrigin = getServerOrigin(server);
 					if (ACTIVE_STRATEGY?.flavor === 'angular') {
@@ -3643,15 +3623,6 @@ export const piniaSymbol = p.piniaSymbol;
 							console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
 						} catch {}
 					}
-					// Diagnostic: dump served code to terminal when ?__diag=1 is in the original URL
-					try {
-						if (urlObj?.searchParams?.get('__diag') === '1') {
-							const specId = resolvedCandidate || spec;
-							console.log(`\n${'='.repeat(80)}\n[ns:m][DIAG] ${specId}\n${'='.repeat(80)}`);
-							console.log(code);
-							console.log(`${'='.repeat(80)}\n[ns:m][DIAG] END ${specId}\n${'='.repeat(80)}\n`);
-						}
-					} catch {}
 					res.statusCode = 200;
 					res.end(code);
 				} catch (e) {
@@ -4914,7 +4885,6 @@ export const piniaSymbol = p.piniaSymbol;
 							parts.push(scriptTransformed);
 							parts.push(renderDecl);
 							parts.push(`try { if (!__ns_sfc__.render) Object.defineProperty(__ns_sfc__, 'render', { configurable: true, enumerable: true, get(){ const r = (typeof __ns_getRender==='function' ? __ns_getRender() : undefined); Object.defineProperty(__ns_sfc__, 'render', { value: r, writable: true, configurable: true, enumerable: true }); return r; }, set(v){ Object.defineProperty(__ns_sfc__, 'render', { value: v, writable: true, configurable: true, enumerable: true }); } }); } catch(_e){}`);
-							parts.push(`// diagnostic: hadScriptDefaultPre=${hadScriptDefaultPre} triedInlineTemplate=${triedInlineTemplate} renderOk=${renderOk} tplBytes=${compiledTplCode.length} scriptBytes=${(compiledScript || '').length} templateErr=${templateErr ? (templateErr as any)?.message : ''}`);
 							parts.push(`export function render(){ const f = (typeof __ns_getRender==='function' ? __ns_getRender() : (__ns_sfc__ && __ns_sfc__.render)); return typeof f==='function' ? f.apply(this, arguments) : undefined; }`);
 							parts.push(`export default __ns_sfc__`);
 							let inlineCode = parts.filter(Boolean).join('\n');
@@ -4981,7 +4951,6 @@ export const piniaSymbol = p.piniaSymbol;
 									if (renderDecl && renderDecl.trim()) outParts.push(renderDecl);
 								}
 								outParts.push(`try { if (!__ns_sfc__.render) Object.defineProperty(__ns_sfc__, 'render', { configurable: true, enumerable: true, get(){ const r = (typeof __ns_getRender==='function' ? __ns_getRender() : (typeof __ns_render==='function' ? __ns_render : undefined)); Object.defineProperty(__ns_sfc__, 'render', { value: r, writable: true, configurable: true, enumerable: true }); return r; }, set(v){ Object.defineProperty(__ns_sfc__, 'render', { value: v, writable: true, configurable: true, enumerable: true }); } }); } catch(_e){}`);
-								outParts.push(`// diagnostic: hadScriptDefaultPre=${hadScriptDefaultPre} triedInlineTemplate=${triedInlineTemplate} renderOk=${renderOk} tplBytes=${compiledTplCode.length} scriptBytes=${(compiledScript || '').length} templateErr=${templateErr ? (templateErr as any)?.message : ''}`);
 								// Export named render as a function that resolves lazily
 								outParts.push('export function render(){ const f = (typeof __ns_getRender==="function" ? __ns_getRender() : (typeof __ns_render==="function" ? __ns_render : (__ns_sfc__ && __ns_sfc__.render))); return typeof f === "function" ? f.apply(this, arguments) : undefined; }');
 								outParts.push('export default __ns_sfc__');
@@ -5259,11 +5228,10 @@ export const piniaSymbol = p.piniaSymbol;
 					}
 					let asm: string;
 					if (inlineOk) {
-						const diagLine = `// diagnostic:inlineOk ver=${ver} inlineBlock=${!!(inlineBlock && inlineBlock.trim())} helperBindingsLen=${helperBindings.length} renderDeclLen=${renderDecl.length}`;
 						if (inlineBlock && inlineBlock.trim()) {
-							asm = [`// [sfc-asm] ${base} (inlined template body)`, `export * from ${JSON.stringify(scriptUrl)};`, `import * as __script from ${JSON.stringify(scriptUrl)};`, inlineBlock, `const __ns_sfc__ = (__script && __script.default) ? __script.default : {};`, `try { if (typeof __ns_render === 'function' && !__ns_sfc__.render) __ns_sfc__.render = __ns_render; } catch {}`, `export default __ns_sfc__;`, diagLine].join('\n');
+							asm = [`// [sfc-asm] ${base} (inlined template body)`, `export * from ${JSON.stringify(scriptUrl)};`, `import * as __script from ${JSON.stringify(scriptUrl)};`, inlineBlock, `const __ns_sfc__ = (__script && __script.default) ? __script.default : {};`, `try { if (typeof __ns_render === 'function' && !__ns_sfc__.render) __ns_sfc__.render = __ns_render; } catch {}`, `export default __ns_sfc__;`].join('\n');
 						} else {
-							asm = [`// [sfc-asm] ${base} (inlined template)`, `export * from ${JSON.stringify(scriptUrl)};`, `import * as __script from ${JSON.stringify(scriptUrl)};`, helperBindings, renderDecl, `const __ns_sfc__ = (__script && __script.default) ? __script.default : {};`, `try { if (typeof __ns_render === 'function' && !__ns_sfc__.render) __ns_sfc__.render = __ns_render; } catch {}`, `export default __ns_sfc__;`, diagLine].filter(Boolean).join('\n');
+							asm = [`// [sfc-asm] ${base} (inlined template)`, `export * from ${JSON.stringify(scriptUrl)};`, `import * as __script from ${JSON.stringify(scriptUrl)};`, helperBindings, renderDecl, `const __ns_sfc__ = (__script && __script.default) ? __script.default : {};`, `try { if (typeof __ns_render === 'function' && !__ns_sfc__.render) __ns_sfc__.render = __ns_render; } catch {}`, `export default __ns_sfc__;`].filter(Boolean).join('\n');
 						}
 					} else {
 						// Deterministic error path when template extraction failed
