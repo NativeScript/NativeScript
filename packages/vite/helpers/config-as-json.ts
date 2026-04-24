@@ -35,6 +35,16 @@ export default function nsConfigAsJsonPlugin(): Plugin {
 		// 3. After Rollup has generated all chunks, emit a package.json asset
 		//    into the output directory (dist/ by default)
 		generateBundle(_options, _bundle) {
+			// Lazy-init in case no module in the graph imported '~/package.json'
+			// this build. (Under HMR with @nativescript/core external, the
+			// `~/package.json` import that lived inside core's graph is gone, so
+			// `load()` never fires. Without this guard, `configObject` is
+			// undefined, `JSON.stringify` returns undefined, and rolldown's
+			// emitFile rejects it with "Missing field `inner` on
+			// BindingEmittedAsset.source".)
+			if (!configObject) {
+				configObject = nsConfigToJson();
+			}
 			const json = JSON.stringify(configObject, null, 2);
 			this.emitFile({
 				type: 'asset',

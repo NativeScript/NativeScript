@@ -19,6 +19,7 @@ import { nativescriptPackageResolver } from '../helpers/nativescript-package-res
 import { cliPlugin } from '../helpers/ns-cli-plugins.js';
 import { dynamicImportPlugin } from '../helpers/dynamic-import-plugin.js';
 import { mainEntryPlugin } from '../helpers/main-entry.js';
+import { buildCoreUrl, specToCoreSub } from '../helpers/ns-core-url.js';
 import { getProjectFlavor } from '../helpers/flavor.js';
 import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
 import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
@@ -305,6 +306,60 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		define: defineConfig,
 		optimizeDeps: optimizeDepsConfig,
 		plugins: [
+			// Under HMR, rewrite every bare `@nativescript/core*` specifier to
+			// the full /ns/core HTTP URL so bundle.mjs contains NO bundled copy
+			// of the core runtime. The plugin runs with enforce:'pre' so it
+			// fires BEFORE Vite's alias resolution converts bare specifiers to
+			// absolute filesystem paths, and apply:'build' so the dev-server
+			// transform pipeline (which has its own import-map) is unaffected.
+			//
+			// Why this is necessary: core's transitively-bundled helpers (e.g.
+			// `@nativescript/zone-js` patches) write `import '@nativescript/core/globals'`
+			// in their source. Without this interception, rolldown leaves those
+			// as bare specifiers in the emitted bundle.mjs output, iOS's ESM
+			// loader can't resolve bare specifiers at module-instantiation time
+			// (the runtime import map is installed later by the HMR client), and
+			// it falls back to a filesystem lookup that crashes with
+			// "Module not found: Cannot find module @nativescript/core/globals".
+			//
+			// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md Option 1 for the broader
+			// architecture.
+			...(hmrActive
+				? [
+						((): any => {
+							const host = (process.env.NS_HMR_HOST as string) || 'localhost';
+							const port = process.env.NS_HMR_PORT || '5173';
+							const proto = (process.env.NS_HMR_PROTO as string) || 'http';
+							const origin = `${proto}://${host}:${port}`;
+							return {
+								name: 'ns-core-external-urls',
+								enforce: 'pre',
+								apply: 'build',
+								resolveId(source: string, importer: string | undefined) {
+									// Route every `@nativescript/core*` reference
+									// (bare specifier OR absolute path into the
+									// installed @nativescript/core package OR its
+									// subpath import-map aliases) through the ONE
+									// canonical URL generator. See Invariant A in
+									// HMR_CORE_REALM_DETERMINISTIC_PLAN.md —
+									// URL proliferation (`?p=`, versioned, mixed
+									// query vs path forms) produces distinct iOS
+									// HTTP ESM cache entries for the same module,
+									// yielding double evaluation.
+									const sub = specToCoreSub(source);
+									if (sub === null) return null;
+									if (process.env.NS_CORE_EXTERNAL_DEBUG) {
+										try {
+											console.log('[ns-core-external]', 'source=', source, 'sub=', sub, 'importer=', importer?.slice(-80));
+										} catch {}
+									}
+									const url = buildCoreUrl(origin, sub);
+									return { id: url, external: 'absolute' };
+								},
+							};
+						})(),
+					]
+				: []),
 			createPlatformCssPlugin(platform),
 			// TODO: move to per-project basis based on usage
 			createEnsureHoistedThemeLinkPlugin(THEME_CORE_ROOT, projectRoot, platform),

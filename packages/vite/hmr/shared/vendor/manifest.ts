@@ -332,7 +332,32 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	const collected = collectVendorModules(projectRoot, platform, flavor);
 	const entryCode = createVendorEntry(collected.entries);
 
+	// Externalize @nativescript/core and its subpaths in the vendor bundle so
+	// vendored packages (e.g. @nativescript-community/ui-material-bottomsheet)
+	// do NOT bring their own copy of core with them. The iOS import map maps
+	// `@nativescript/core` → `/ns/core` (the core bridge) at runtime, and the
+	// bridge delegates to the canonical Application/View/etc. already set up
+	// by bundle.mjs via installCoreAliasesEarly + the globalThis.Application
+	// seed. Without this externalization, vendor.mjs bundles a second copy of
+	// iOSApplication/View/LayoutBase — the second iosApp never receives the
+	// iOS launch event (bundle.mjs's iosApp registered first as
+	// UIApplication.delegate), so Application.getRootView() on it returns
+	// undefined, and any vendor-internal code that reads .getRootView() or
+	// checks `instanceof View` against bundle's classes fails under HMR.
+	const nsCoreExternalPlugin: esbuild.Plugin = {
+		name: 'ns-core-external',
+		setup(build) {
+			build.onResolve({ filter: /^@nativescript\/core(?:\/.*)?$/ }, (args) => ({
+				path: args.path,
+				external: true,
+			}));
+		},
+	};
+
 	const plugins: esbuild.Plugin[] = [
+		// Mark @nativescript/core external BEFORE other plugins so esbuild never
+		// tries to read/transform core's source files. See comment above.
+		nsCoreExternalPlugin,
 		// Apply NativeClass transformer to convert @NativeClass decorated classes to ES5 IIFE pattern.
 		// This MUST run before other plugins to ensure proper transformation.
 		createNativeClassEsbuildPlugin(platform as 'android' | 'ios' | 'visionos'),
@@ -601,16 +626,10 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 		addCandidate('vue');
 	}
 
-	if (pkg.dependencies?.['@nativescript/angular']) {
-		if (pkg.dependencies?.['@angular/core']) {
-			addCandidate('@angular/core');
-		}
-		if (pkg.dependencies?.['@angular/common']) {
-			addCandidate('@angular/common');
-		}
-		// RxJS is large and not required inside the vendor bundle for dev HMR.
-		// Avoid bundling to reduce memory pressure; let app import via HTTP loader.
-	}
+	// Angular framework packages are intentionally NOT added to vendor. They are
+	// served via HTTP only so every importer resolves to a single module realm.
+	// See shouldSkipDependency() for the full rationale. RxJS is also left out of
+	// vendor (large, and not required in the vendor bundle for dev HMR).
 
 	if (pkg.dependencies?.['react-nativescript']) {
 		if (pkg.dependencies?.react) {
@@ -684,6 +703,16 @@ function shouldSkipDependency(name: string): boolean {
 		return true;
 	}
 	if (ALWAYS_EXCLUDE.has(name)) {
+		return true;
+	}
+	// Angular framework packages must only be served via the HTTP path so every
+	// importer resolves to a single module realm. When these packages are present
+	// in the vendor bundle AND imported by app modules via HTTP subpath, every
+	// @Component/@Injectable gets defined twice (once per realm), producing NG0912
+	// selector collisions, cross-realm `instanceof` failures, and dual class
+	// identities throughout Angular's DI container. HTTP-only is the single-realm
+	// invariant for user-level framework code.
+	if (name === '@nativescript/angular' || name === 'nativescript-angular' || name.startsWith('@angular/')) {
 		return true;
 	}
 	// All Babel packages are build tools — never bundle into device runtime.
@@ -1218,15 +1247,84 @@ function normalizeSpecifier(spec) {
   return value;
 }
 
+function normalizeCoreSubLocal(s) {
+  if (!s) return "";
+  let t = String(s).split("?")[0].split("#")[0].trim();
+  t = t.replace(/^\\/+/, "").replace(/\\/+$/, "");
+  t = t.replace(/\\.(?:mjs|cjs|js)$/, "");
+  if (t.length >= 6 && t.substring(t.length - 6) === "/index") {
+    t = t.substring(0, t.length - 6);
+  }
+  if (!t || t === "index") return "";
+  return t;
+}
+
+// Invariant D: shape ESM namespaces before returning to CJS callers.
+//
+// The /ns/core handler's registration footer (see websocket.ts) and the
+// main-entry require shim (see helpers/main-entry.ts) both install the
+// shape function on globalThis. In practice, entries stored in
+// __NS_CORE_MODULES__ are ALREADY shaped, so this pass-through is a
+// fast no-op (the shape function's fast path returns obj as-is when it
+// already has Object.prototype). We call it anyway as defense-in-depth
+// against future callers that might populate the registry without
+// shaping.
+function shapeForCjs(value) {
+  if (!value || typeof value !== "object") return value;
+  const shape = g.__NS_CJS_SHAPE__;
+  if (typeof shape === "function") {
+    try { return shape(value); } catch (e) {}
+  }
+  return value;
+}
+
+function resolveCoreFromRegistry(normalizedId) {
+  if (
+    normalizedId !== "@nativescript/core" &&
+    normalizedId.indexOf("@nativescript/core/") !== 0
+  ) {
+    return null;
+  }
+  const table = g.__NS_CORE_MODULES__;
+  if (!table) return null;
+  if (table[normalizedId]) return shapeForCjs(table[normalizedId]);
+  const rawSub =
+    normalizedId === "@nativescript/core"
+      ? ""
+      : normalizedId.slice("@nativescript/core/".length);
+  const normSub = normalizeCoreSubLocal(rawSub);
+  const bareKey = normSub ? "@nativescript/core/" + normSub : "@nativescript/core";
+  if (table[bareKey]) return shapeForCjs(table[bareKey]);
+  if (normSub && table[normSub]) return shapeForCjs(table[normSub]);
+  if (!normSub && table[""]) return shapeForCjs(table[""]);
+  return null;
+}
+
 export function createRequire(_url) {
   const nsRequire = getNativeScriptRequire();
   if (!nsRequire) {
-    return function () {
+    return function (id) {
+      // Even without nsRequire, the @nativescript/core registry populated by
+      // the /ns/core bridge may already have the module — return it so
+      // vendor install() hooks that run against the HMR-served core don't
+      // crash at module-instantiation time.
+      const fromRegistry = resolveCoreFromRegistry(normalizeSpecifier(id));
+      if (fromRegistry) return fromRegistry;
       throw new Error("NativeScript require() is not available in this context");
     };
   }
   const req = function (id) {
     const normalizedId = normalizeSpecifier(id);
+    // Invariant C: @nativescript/core and its subpaths are served ONCE via
+    // the /ns/core HTTP bridge, which self-registers each module's ESM
+    // namespace on globalThis.__NS_CORE_MODULES__. CommonJS require() from
+    // vendor packages (e.g. \`require('@nativescript/core/ui/core/view').View\`
+    // in @nativescript-community/gesturehandler, or \`require('@nativescript/core').View\`
+    // in @nativescript-community/ui-material-core) MUST resolve to that
+    // same namespace; otherwise we re-trigger class identity splits and
+    // applyMixins() crashes with "Cannot read properties of undefined".
+    const fromRegistry = resolveCoreFromRegistry(normalizedId);
+    if (fromRegistry) return fromRegistry;
     if (
       normalizedId.includes("../data/patch.json") ||
       normalizedId.includes("css-tree/lib/data/patch.json")
@@ -1249,7 +1347,12 @@ export function createRequire(_url) {
     if (normalizedId.endsWith(".json")) {
       return {};
     }
-    return nsRequire(normalizedId);
+    // Shape the native require result too. The NativeScript CJS loader
+    // may serve an @nativescript/core subpath over HTTP before the
+    // /ns/core footer has run (e.g., during initial boot). In that
+    // window, the result is a raw ESM namespace with null [[Prototype]]
+    // and zone.js/vendor install() hooks crash on hasOwnProperty.
+    return shapeForCjs(nsRequire(normalizedId));
   };
   req.resolve = nsRequire.resolve
     ? function (id) {

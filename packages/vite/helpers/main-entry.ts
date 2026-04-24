@@ -6,6 +6,7 @@ import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
+import { buildCoreUrl } from './ns-core-url.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -69,6 +70,44 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			return null;
 		},
 		async load(id: string) {
+			// Compute the dev server origin for HMR mode. Under HMR we emit
+			// `@nativescript/core*` imports as FULL HTTP URLs so iOS's ESM loader
+			// can fetch them directly during bundle.mjs module instantiation —
+			// the import map isn't installed yet at that phase. For non-HMR
+			// builds, we keep bare specifiers so production bundlers inline core
+			// the normal way.
+			const getBootOrigin = (): string | null => {
+				if (!opts.hmrActive) return null;
+				try {
+					const configuredHost = typeof resolvedConfig.server.host === 'string' && resolvedConfig.server.host ? resolvedConfig.server.host : 'localhost';
+					const bootHost = ((process.env.NS_HMR_HOST || '') as string) || configuredHost;
+					const bootProtocol = resolvedConfig.server.https || opts.useHttps ? 'https' : 'http';
+					const bootPort = Number(resolvedConfig.server.port || 5173);
+					return `${bootProtocol}://${bootHost}:${bootPort}`;
+				} catch {
+					return null;
+				}
+			};
+			// Return a spec string for @nativescript/core or a subpath that is
+			// guaranteed to resolve at iOS module-instantiation time. Under HMR
+			// this is always a full HTTP URL into the /ns/core bridge (no
+			// import-map dependency). Under non-HMR it's the bare specifier for
+			// the bundler to handle.
+			//
+			// Under HMR, delegates to buildCoreUrl() — the ONE canonical URL
+			// generator (see Invariant A, HMR_CORE_REALM_DETERMINISTIC_PLAN.md).
+			// Every URL emitter in the build/runtime pipeline (this function,
+			// ns-core-external-urls, rewriteSpec, runtime import map) uses the
+			// same function so iOS's HTTP ESM cache sees byte-identical URLs.
+			const coreSpec = (subpath?: string | null): string => {
+				const origin = getBootOrigin();
+				if (origin) {
+					return buildCoreUrl(origin, subpath);
+				}
+				const sub = subpath ? String(subpath).replace(/^\/+/, '') : '';
+				return sub ? `@nativescript/core/${sub}` : '@nativescript/core';
+			};
+
 			// Virtual module that processes app.css through PostCSS/Tailwind and returns as a JS string.
 			// This avoids using ?inline which conflicts with @analogjs/vite-plugin-angular's CSS
 			// interception in Vite 8 — the Angular plugin converts ?inline CSS to JS via its load hook
@@ -86,7 +125,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// guaranteeing XMLHttpRequest is on globalThis before zone.js or any other code accesses it.
 			if (id === XHR_POLYFILL_RESOLVED) {
 				return {
-					code: ["import * as xhrImpl from '@nativescript/core/xhr';", "var polyfills = ['XMLHttpRequest','FormData','Blob','File','FileReader'];", 'for (var i = 0; i < polyfills.length; i++) {', '  var n = polyfills[i];', '  if (!(n in globalThis) && xhrImpl[n]) globalThis[n] = xhrImpl[n];', '}'].join('\n'),
+					code: [`import * as xhrImpl from ${JSON.stringify(coreSpec('xhr'))};`, "var polyfills = ['XMLHttpRequest','FormData','Blob','File','FileReader'];", 'for (var i = 0; i < polyfills.length; i++) {', '  var n = polyfills[i];', '  if (!(n in globalThis) && xhrImpl[n]) globalThis[n] = xhrImpl[n];', '}'].join('\n'),
 					moduleType: 'js',
 				};
 			}
@@ -95,12 +134,124 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// consistent verbose flag to easily reference below
 			let imports = "const __nsVerboseLog = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;\n";
 
-			// Ensure any CommonJS-style tooling requires (e.g. from Babel or other
-			// build-time libraries that may be accidentally bundled) do not attempt
-			// to resolve Node built-ins like 'fs' or 'path' on device. These modules
-			// are not used at runtime for NativeScript apps, so we safely return an
-			// empty object from a global require shim when present.
-			imports += "try { if (typeof globalThis !== 'undefined') { var _nsReq = function () { return {}; }; _nsReq.context = function() { var _c = { keys: function() { return []; } }; _c.__esModule = true; return _c; }; globalThis.require = _nsReq; } } catch {}\n";
+			// Ensure any CommonJS-style tooling requires (e.g. from Babel or
+			// other build-time libraries that may be accidentally bundled) do
+			// not attempt to resolve Node built-ins like 'fs' or 'path' on
+			// device. These modules are not used at runtime for NativeScript
+			// apps, so we safely return an empty object from a shim.
+			//
+			// IMPORTANT: Under HMR, vendor packages call the real NativeScript
+			// CommonJS require() with `@nativescript/core/<sub>` specifiers
+			// (e.g. `require('@nativescript/core/ui/core/view').View` in
+			// `@nativescript-community/gesturehandler`). If we overwrite
+			// globalThis.require with a blanket stub, every such call returns
+			// `{}` and any property access on the result (e.g. `.View`) is
+			// `undefined`, cascading into `TypeError: Cannot read properties
+			// of undefined (reading 'prototype')` inside `applyMixins` when
+			// vendor install() hooks run.
+			//
+			// Instead, install a DELEGATING shim:
+			//   - If the specifier is a Node built-in (fs, path, os, …) or
+			//     a webpack-only runtime hook (require.context), return a
+			//     safe empty stub.
+			//   - Otherwise, delegate to the preserved original
+			//     `globalThis.require` (NativeScript's native CJS loader),
+			//     which routes `@nativescript/core*` through the HTTP bridge
+			//     or, for already-HTTP-loaded modules, through the
+			//     `globalThis.__NS_CORE_MODULES__` registry populated by the
+			//     `/ns/core` bridge preamble (see Invariant C in
+			//     HMR_CORE_REALM_DETERMINISTIC_PLAN.md).
+			imports += "try { if (typeof globalThis !== 'undefined') {\n";
+			imports += "  var __nsOrigRequire = typeof globalThis.require === 'function' ? globalThis.require : null;\n";
+			imports += '  var __nsNodeBuiltins = { fs: 1, path: 1, os: 1, url: 1, crypto: 1, util: 1, stream: 1, events: 1, buffer: 1, http: 1, https: 1, net: 1, tls: 1, dns: 1, child_process: 1, module: 1, zlib: 1, querystring: 1, assert: 1, constants: 1, vm: 1 };\n';
+			// Mirror helpers/ns-core-url.ts normalizeCoreSub() inline so the
+			// lookup against __NS_CORE_MODULES__ uses the same keys the
+			// /ns/core handler registers under.
+			imports += '  var __nsNormSub = function (s) {\n';
+			imports += "    if (!s) return '';\n";
+			imports += "    var t = String(s).split('?')[0].split('#')[0].trim();\n";
+			imports += "    t = t.replace(/^\\/+/, '').replace(/\\/+$/, '');\n";
+			imports += "    t = t.replace(/\\.(?:mjs|cjs|js)$/, '');\n";
+			imports += "    if (t.length >= 6 && t.substring(t.length - 6) === '/index') t = t.substring(0, t.length - 6);\n";
+			imports += "    if (!t || t === 'index') return '';\n";
+			imports += '    return t;\n';
+			imports += '  };\n';
+			// Invariant D: CJS/ESM interop shape helper.
+			//
+			// Install a global, idempotent shape function that converts
+			// ESM Module Namespace Objects (which have [[Prototype]] = null
+			// per spec §9.4.6) into plain Objects that inherit from
+			// Object.prototype. CJS consumers — especially zone.js's
+			// patchMethod() — call `hasOwnProperty`, `toString`, etc. on
+			// their require() result; a null-proto namespace throws
+			// "X is not a function" on the first such call.
+			//
+			// Properties:
+			//   - Recursive: @nativescript/core re-exports Utils/Http/Trace
+			//     as nested namespaces (`export * as Utils from './utils'`),
+			//     each also null-proto. Shallow wrapping leaves those.
+			//   - Identity-preserving via a WeakMap cache keyed on the
+			//     underlying namespace. zone.js MUTATES its target (stashes
+			//     delegate symbols, overwrites methods); a fresh copy per
+			//     require() would lose those mutations on the next lookup.
+			//   - Installed ONCE on globalThis so the /ns/core handler's
+			//     registration footer, the vendor shim's createRequire, and
+			//     any other consumer share the same cache and see
+			//     mutation-consistent shapes.
+			imports += '  var __nsShapeCache = globalThis.__NS_CJS_SHAPE_CACHE__ || (globalThis.__NS_CJS_SHAPE_CACHE__ = new WeakMap());\n';
+			imports += '  var __nsShapeCjs = globalThis.__NS_CJS_SHAPE__ || (globalThis.__NS_CJS_SHAPE__ = function __nsShape(obj) {\n';
+			imports += "    if (!obj || typeof obj !== 'object') return obj;\n";
+			imports += '    var proto = Object.getPrototypeOf(obj);\n';
+			imports += '    var isNsModule = false;\n';
+			imports += "    try { isNsModule = obj[Symbol.toStringTag] === 'Module'; } catch (e) {}\n";
+			imports += '    if (proto !== null && !isNsModule) return obj;\n';
+			imports += '    if (__nsShapeCache.has(obj)) return __nsShapeCache.get(obj);\n';
+			imports += '    var out = {};\n';
+			imports += '    __nsShapeCache.set(obj, out);\n';
+			imports += '    try {\n';
+			imports += '      var keys = Object.keys(obj);\n';
+			imports += '      for (var i = 0; i < keys.length; i++) {\n';
+			imports += '        var k = keys[i];\n';
+			imports += '        try { out[k] = __nsShape(obj[k]); } catch (e) {}\n';
+			imports += '      }\n';
+			imports += '    } catch (e) {}\n';
+			imports += '    return out;\n';
+			imports += '  });\n';
+			imports += '  var _nsReq = function (id) {\n';
+			imports += '    try {\n';
+			imports += "      var n = String(id || '');\n";
+			imports += "      var stripped = n.indexOf('node:') === 0 ? n.slice(5) : n;\n";
+			imports += '      if (__nsNodeBuiltins[stripped]) return {};\n';
+			imports += "      if (n === '@nativescript/core' || n.indexOf('@nativescript/core/') === 0) {\n";
+			imports += '        var table = globalThis.__NS_CORE_MODULES__;\n';
+			imports += '        if (table) {\n';
+			// Table entries are ALREADY shaped (the /ns/core footer stores
+			// the shape, not the raw namespace). But we pass through
+			// __nsShapeCjs anyway — it's a no-op on already-shaped values
+			// (fast path: `proto !== null && !isNsModule` returns obj as-is)
+			// and guards against future changes to how the registry is
+			// populated (e.g., by direct assignment from test code).
+			imports += '          if (table[n]) return __nsShapeCjs(table[n]);\n';
+			imports += "          var rawSub = n === '@nativescript/core' ? '' : n.slice('@nativescript/core/'.length);\n";
+			imports += '          var normSub = __nsNormSub(rawSub);\n';
+			imports += "          var bareKey = normSub ? '@nativescript/core/' + normSub : '@nativescript/core';\n";
+			imports += '          if (table[bareKey]) return __nsShapeCjs(table[bareKey]);\n';
+			imports += '          if (table[normSub]) return __nsShapeCjs(table[normSub]);\n';
+			imports += '        }\n';
+			imports += '      }\n';
+			// Fallback to native require (NativeScript CJS loader via HTTP
+			// bridge). Shape the result too — the native loader may return
+			// a raw ESM namespace for core subpaths served before the /ns/core
+			// footer runs.
+			imports += '      if (__nsOrigRequire) return __nsShapeCjs(__nsOrigRequire(id));\n';
+			imports += '    } catch (e) {}\n';
+			imports += '    return {};\n';
+			imports += '  };\n';
+			imports += '  _nsReq.context = function () { var _c = { keys: function () { return []; } }; _c.__esModule = true; return _c; };\n';
+			imports += '  if (__nsOrigRequire) { try { _nsReq.resolve = __nsOrigRequire.resolve ? __nsOrigRequire.resolve.bind(__nsOrigRequire) : function (id) { return id; }; } catch (e) {} }\n';
+			imports += '  globalThis.require = _nsReq;\n';
+			imports += '  globalThis.__nsOrigRequire = __nsOrigRequire;\n';
+			imports += '} } catch {}\n';
 
 			// Banner diagnostics for visibility at runtime
 			if (opts.verbose) {
@@ -133,15 +284,17 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// Install XHR polyfill FIRST — its virtual module body runs during import evaluation,
 			// before any subsequent import (like zone.js) can reference XMLHttpRequest.
 			imports += `import '${XHR_POLYFILL_VIRTUAL_ID}';\n`;
-			// Load globals early
-			imports += "import '@nativescript/core/globals/index';\n";
+			// Load globals early. Under HMR we use a full HTTP URL so iOS's
+			// ESM loader can fetch it directly at module-instantiation time —
+			// the import map isn't installed yet at that phase.
+			imports += `import ${JSON.stringify(coreSpec('globals/index'))};\n`;
 			if (opts.verbose) {
 				imports += `console.info('[ns-entry] core globals loaded');\n`;
 			}
 
 			// Seed the real NativeScript Application singleton before any early HMR/placeholder
 			// code runs. Dynamic discovery is too late for iOS placeholder startup.
-			imports += "import { Application as __nsEarlyApplication } from '@nativescript/core/application';\n";
+			imports += `import { Application as __nsEarlyApplication } from ${JSON.stringify(coreSpec('application'))};\n`;
 			imports += `try { if (__nsEarlyApplication && (typeof __nsEarlyApplication.run === 'function' || typeof __nsEarlyApplication.on === 'function' || typeof __nsEarlyApplication.resetRootView === 'function')) { globalThis.Application = __nsEarlyApplication; } } catch {}\n`;
 			if (opts.verbose) {
 				imports += `console.info('[ns-entry] early Application seeded', { hasRun: typeof globalThis.Application?.run === 'function', hasOn: typeof globalThis.Application?.on === 'function', hasResetRootView: typeof globalThis.Application?.resetRootView === 'function' });\n`;
@@ -181,7 +334,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			// Load NS bundle entry points after early hook
-			imports += "import '@nativescript/core/bundle-entry-points';\n";
+			imports += `import ${JSON.stringify(coreSpec('bundle-entry-points'))};\n`;
 			if (opts.verbose) {
 				imports += `console.info('[ns-entry] bundle-entry-points loaded');\n`;
 			}
@@ -258,7 +411,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 						imports += `try { globalThis.__NS_HMR_APP_CSS__ = appCssContent; } catch {}\n`;
 					}
 				}
-				imports += `import { Application } from '@nativescript/core';\n`;
+				imports += `import { Application } from ${JSON.stringify(coreSpec())};\n`;
 				if (hasAppCss) {
 					imports += `if (appCssContent) { try { Application.addCss(appCssContent); } catch (error) { console.error('Error applying CSS:', error); } }\n`;
 					if (opts.verbose) {
@@ -316,7 +469,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 			if (opts.isDevMode) {
 				// debug tools support
-				imports += "import '@nativescript/core/inspector_modules';\n";
+				imports += `import ${JSON.stringify(coreSpec('inspector_modules'))};\n`;
 				if (opts.verbose) {
 					imports += "console.info('[ns-entry] inspector modules imported');\n";
 				}

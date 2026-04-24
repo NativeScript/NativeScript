@@ -1,6 +1,7 @@
 import type { Plugin, ViteDevServer, TransformResult } from 'vite';
 import { createRequire } from 'node:module';
 import { normalizeStrayCoreStringLiterals, fixDanglingCoreFrom, normalizeAnyCoreSpecToBridge, isDeepCoreSubpath, rewriteSpecifiersForDevice } from './core-sanitize.js';
+import { buildDefaultExportFooter, buildShapeInstallHeader, hasNamespaceReExport, rewriteNamespaceReExportsForShape } from './ns-core-cjs-shape.js';
 // AST tooling for robust transformations
 import { parse as babelParse } from '@babel/parser';
 import { genCode } from '../helpers/babel.js';
@@ -33,6 +34,7 @@ import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
+import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 import { canonicalizeTransformRequestCacheKey, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
@@ -61,13 +63,13 @@ import {
 	viteDepsPathToBareSpecifier,
 } from './websocket-module-specifiers.js';
 import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides, type EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
-import { buildVersionedCoreMainBridgeModule, buildVersionedCoreSubpathAliasModule, collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, extractDirectExportedNames, hasModuleDefaultExport, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest, resolveRuntimeCoreModulePath, type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
+import { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, extractDirectExportedNames, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest, resolveRuntimeCoreModulePath, type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner, type SharedTransformRequestRunnerOptions } from './shared-transform-request.js';
 
 export { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
 export type { EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
 export { stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
-export { buildVersionedCoreMainBridgeModule, buildVersionedCoreSubpathAliasModule, collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest } from './websocket-core-bridge.js';
+export { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest } from './websocket-core-bridge.js';
 export { rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 export { canonicalizeTransformRequestCacheKey, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, createSharedTransformRequestRunner, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, classifyGraphUpsert, shouldBroadcastGraphUpsertDelta };
 export type { CoreExportOrigin, GraphUpsertClassification, HotUpdateGraphModuleLike, ParsedCoreBridgeRequest, PendingAngularReloadSuppressionEntry, SharedTransformRequestRunner, SharedTransformRequestRunnerOptions, TransitiveImporterModuleLike };
@@ -1253,8 +1255,31 @@ export function wrapCommonJsModuleForDevice(code: string): string {
 			`var __ns_cjs_require_kind = (typeof globalThis.__nsBaseRequire === 'function' ? 'base-require' : (typeof globalThis.__nsRequire === 'function' ? 'vendor-require' : 'global-require'));\n` +
 			`var require = function(spec) {\n` +
 			`  if (!__ns_cjs_require_base) { throw new Error('require is not defined'); }\n` +
-			`  try { var __nsRecord = globalThis.__NS_RECORD_MODULE_PROVENANCE__; if (typeof __nsRecord === 'function') { __nsRecord(String(spec), { kind: __ns_cjs_require_kind, specifier: String(spec), via: 'cjs-wrapper', parent: (typeof import.meta !== 'undefined' && import.meta && import.meta.url) ? import.meta.url : undefined }); } } catch (e) {}\n` +
-			`  var mod = __ns_cjs_require_base(spec);\n` +
+			// Resolve relative specifiers against the HTTP-served module's URL
+			// before delegating to NS's runtime require. Without this step,
+			// \`require('./base64-vlq')\` inside a CJS module served from
+			// \`http://.../ns/m/node_modules/source-map-js/lib/source-map-generator.js\`
+			// would pass a literal '"./base64-vlq"' to the native require, which
+			// has no notion of the current HTTP-module's location and either
+			// throws "Module not found" or fetches an arbitrary filesystem path
+			// that happens to parse as code (producing misleading syntax errors
+			// like "missing ) after argument list" from unrelated modules).
+			`  var __nsResolvedSpec = spec;\n` +
+			`  try {\n` +
+			`    if (typeof spec === 'string' && (spec.indexOf('./') === 0 || spec.indexOf('../') === 0)) {\n` +
+			`      var __nsParentUrl = (typeof import.meta !== 'undefined' && import.meta && typeof import.meta.url === 'string') ? import.meta.url : null;\n` +
+			`      if (__nsParentUrl) {\n` +
+			`        var __nsResolvedUrl = new URL(spec, __nsParentUrl);\n` +
+			`        // Common Node-style bare extensions: prefer .js if the resolved URL lacks an extension in its last path segment.\n` +
+			`        if (!/\\.[A-Za-z0-9]+$/.test(__nsResolvedUrl.pathname.split('/').pop() || '')) {\n` +
+			`          __nsResolvedUrl.pathname = __nsResolvedUrl.pathname.replace(/\\/+$/, '') + '.js';\n` +
+			`        }\n` +
+			`        __nsResolvedSpec = __nsResolvedUrl.href;\n` +
+			`      }\n` +
+			`    }\n` +
+			`  } catch (e) {}\n` +
+			`  try { var __nsRecord = globalThis.__NS_RECORD_MODULE_PROVENANCE__; if (typeof __nsRecord === 'function') { __nsRecord(String(__nsResolvedSpec), { kind: __ns_cjs_require_kind, specifier: String(spec), url: __nsResolvedSpec !== spec ? __nsResolvedSpec : undefined, via: 'cjs-wrapper', parent: (typeof import.meta !== 'undefined' && import.meta && import.meta.url) ? import.meta.url : undefined }); } } catch (e) {}\n` +
+			`  var mod = __ns_cjs_require_base(__nsResolvedSpec);\n` +
 			`  try {\n` +
 			`    if (mod && (typeof mod === 'object' || typeof mod === 'function') && mod.default !== undefined) {\n` +
 			`      var keys = [];\n` +
@@ -2290,6 +2315,28 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			}
 		}
 
+		// Bare npm package specifier fallback — route to /ns/m/node_modules/.
+		// This catches specifiers like `source-map-js/lib/source-map-generator.js`
+		// emitted by helpers such as the CommonJS compat transform, which Vite
+		// would normally resolve to an absolute path but which pass through the
+		// rewriter as bare strings here. Under HMR (core external) bundle.mjs
+		// depends on these resolving over HTTP rather than via a filesystem
+		// bare-specifier lookup, which iOS can't satisfy and which crashes with
+		// "Module not found".
+		if (spec && !spec.startsWith('/') && !spec.startsWith('./') && !spec.startsWith('../') && !/^https?:\/\//i.test(spec) && !spec.startsWith('ns-vendor:') && !spec.startsWith('@nativescript/core')) {
+			// Only treat as a package spec if it looks like one — disallow
+			// plain identifiers like `moment` unresolved (those are left alone
+			// for existing vendor-routing paths to handle).
+			const bareNpmRe = /^(?:@[A-Za-z0-9][\w.-]*\/)?[A-Za-z0-9][\w.-]*(?:\/[\w.\-/]+)?$/;
+			if (bareNpmRe.test(spec)) {
+				const httpSpec = `/ns/m/node_modules/${spec}`;
+				if (httpOriginSafe) {
+					return `${prefix}${httpOriginSafe}${httpSpec}${suffix}`;
+				}
+				return `${prefix}${httpSpec}${suffix}`;
+			}
+		}
+
 		// Leave everything else unchanged (vendor imports, etc.)
 		return `${prefix}${spec}${suffix}`;
 	};
@@ -2987,6 +3034,23 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				try {
 					const urlObj = new URL(req.url || '', 'http://localhost');
 					if (!urlObj.pathname.startsWith('/ns/m')) return next();
+					// Populate the initial graph on first /ns/m request so graphVersion is
+					// non-zero and stable before we rewrite any child import paths. Without
+					// this the first dyn-imports (e.g. main.ts → routed tab components) are
+					// served with graphVersion=0, which makes the 'live' → v{N} substitution
+					// below no-op; later dyn-imports (after the HMR websocket client connects
+					// and populateInitialGraph runs inside 'connection') arrive when
+					// graphVersion has jumped to some N>0, so their child URLs land at /v{N}/
+					// while the early tree still references /live/ — two distinct iOS HTTP
+					// ESM cache entries for the same file, two Angular class identities,
+					// NG0912 selector collisions.
+					if (graph.size === 0) {
+						try {
+							await populateInitialGraph(server);
+						} catch (e) {
+							if (verbose) console.warn('[hmr-ws][graph] lazy initial population failed', e);
+						}
+					}
 					res.setHeader('Access-Control-Allow-Origin', '*');
 					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
 					// Disable caching for dev ESM endpoints to avoid device-side stale module reuse
@@ -3476,6 +3540,20 @@ export const piniaSymbol = p.piniaSymbol;
 					try {
 						const ver = (() => {
 							const raw = String(forcedVer || '').trim();
+							const gv = Number(graphVersion || 0);
+							// 'live' is the client dynamic-import helper's fallback when
+							// globalThis.__NS_HMR_GRAPH_VERSION__ has not yet been set (i.e. before the
+							// full HMR client takes over). If we propagate 'live' into child import
+							// URLs, a file loaded through a 'live'-tagged parent ends up at
+							// /ns/m/__ns_hmr__/live/... in the iOS V8 module cache while a later
+							// dyn-import at v${N} loads the same file at /ns/m/__ns_hmr__/v${N}/...
+							// — two distinct cache entries, two module realms, two Angular class
+							// identities per @Component, and NG0912 selector collisions. Replace
+							// 'live' with the current graph version so every child resolves to one
+							// canonical URL regardless of the parent's request tag.
+							if (raw === 'live' && gv > 0) {
+								return `v${gv}`;
+							}
 							if (raw) {
 								if (raw === 'live' || /^n\d+$/i.test(raw) || /^v[^/]+$/i.test(raw)) {
 									return raw;
@@ -3811,7 +3889,46 @@ export const piniaSymbol = p.piniaSymbol;
 				}
 			});
 
+			// 2.5.1) Catch-all redirect for stray /node_modules/@nativescript/core/*
+			// requests — route them to the /ns/core bridge so they get the same
+			// __DEV__/__IOS__ preamble and specifier rewriting. Without this,
+			// Vite's default /node_modules/ handler serves the raw file, which
+			// references bare __DEV__ and crashes at module eval.
+			server.middlewares.use((req, _res, next) => {
+				try {
+					const urlObj = new URL(req.url || '', 'http://localhost');
+					const coreNmPrefix = '/node_modules/@nativescript/core';
+					if (!urlObj.pathname.startsWith(coreNmPrefix)) return next();
+					const sub = urlObj.pathname.slice(coreNmPrefix.length).replace(/^\/+/, '');
+					if (sub === '' || sub === 'index.js' || sub === 'index') {
+						req.url = `/ns/core`;
+					} else {
+						req.url = `/ns/core/${sub}`;
+					}
+					return next();
+				} catch {
+					return next();
+				}
+			});
+
 			// 2.6) ESM bridge for @nativescript/core: GET /ns/core[/<ver>][?p=sub/path]
+			//
+			// Since bundle.mjs no longer bundles @nativescript/core (see
+			// HMR_CORE_REALM_DETERMINISTIC_PLAN.md — external in the rolldown
+			// config under HMR), this endpoint is the ONE place core is
+			// evaluated. Every consumer — bundle.mjs's own `@nativescript/core*`
+			// imports (resolved to full HTTP URLs in the entry virtual module),
+			// externalized vendor packages, HTTP-served app modules — all end
+			// up here. No more proxy bridge, no enumeration, no namespace
+			// detection, no prototype-polluted maps. We just serve Vite's
+			// authoritative transformed module content.
+			//
+			// iOS caches by URL path, so each unique URL is evaluated exactly
+			// once per app lifetime. Every class identity is shared, every
+			// `register()` side effect runs once, every `Application` reference
+			// is the same iosApp singleton. The entire class of "does not
+			// provide an export named X" and "Cannot redefine property" errors
+			// is eliminated by construction.
 			server.middlewares.use(async (req, res, next) => {
 				try {
 					const urlObj = new URL(req.url || '', 'http://localhost');
@@ -3822,89 +3939,225 @@ export const piniaSymbol = p.piniaSymbol;
 					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 					res.setHeader('Pragma', 'no-cache');
 					res.setHeader('Expires', '0');
-					const { hasExplicitVersion, key, normalizedSub, sub, ver } = coreRequest;
+					const { normalizedSub, sub, ver } = coreRequest;
 
-					// Any @nativescript/core subpath import (including shallow ones like
-					// `utils`) may expose exports that are not available from the root
-					// vendor bundle namespace. Serve the actual transformed module content
-					// instead of the lightweight proxy bridge.
+					const resolveModuleId = async (moduleId: string): Promise<string | null> => {
+						const resolved = await (server as any).pluginContainer?.resolveId?.(moduleId, undefined);
+						return typeof resolved === 'string' ? resolved : resolved?.id || null;
+					};
+
+					let modulePath: string | null = null;
 					if (sub) {
-						try {
-							const resolvedSubpath = normalizedSub || sub;
-							const projectRoot = (server as any).config?.root || process.cwd();
-							const resolveModuleId = async (moduleId: string): Promise<string | null> => {
-								const resolved = await (server as any).pluginContainer?.resolveId?.(moduleId, undefined);
-								return typeof resolved === 'string' ? resolved : resolved?.id || null;
-							};
-							const resolvedId = await resolveRuntimeCoreModulePath(resolvedSubpath, resolveModuleId);
-							const modulePath = resolvedId || `/node_modules/@nativescript/core/${resolvedSubpath}`;
-							const transformed = await sharedTransformRequest(modulePath);
-
-							if (!hasExplicitVersion) {
-								if (transformed?.code) {
-									const expandedModuleCode = await expandStarExports(transformed.code, server, projectRoot, verbose);
-									res.statusCode = 200;
-									res.end(buildVersionedCoreSubpathAliasModule(resolvedSubpath, ver, extractExportedNames(expandedModuleCode), hasModuleDefaultExport(expandedModuleCode)));
-									return;
-								}
-								res.statusCode = 200;
-								res.end(buildVersionedCoreSubpathAliasModule(resolvedSubpath, ver));
-								return;
-							}
-							if (transformed?.code) {
-								// Minimal pipeline: Vite already produces correct ESM.
-								// ONLY rewrite specifier strings to device-fetchable URLs.
-								// Do NOT run processCodeForDevice, rewriteImports, or any
-								// other heavy transform — those mangle newlines, eat exports,
-								// and cause cascading "does not provide an export" failures.
-								const moduleCode = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(ver));
-								res.statusCode = 200;
-								res.end(moduleCode);
-								return;
-							}
-						} catch (e) {
-							try {
-								console.warn('[ns-core-bridge] deep subpath serve failed:', sub, (e as any)?.message);
-							} catch {}
+						const resolvedSubpath = normalizedSub || sub;
+						modulePath = await resolveRuntimeCoreModulePath(resolvedSubpath, resolveModuleId);
+						if (!modulePath) {
+							modulePath = `/node_modules/@nativescript/core/${resolvedSubpath}`;
 						}
+					} else {
+						modulePath = (await resolveModuleId('@nativescript/core')) || '/node_modules/@nativescript/core/index.js';
 					}
 
-					// Main entry or shallow subpath: use proxy bridge
-					let code = buildVersionedCoreMainBridgeModule(key, ver);
-					if (!sub) {
-						try {
-							const projectRoot = (server as any).config?.root || process.cwd();
-							const coreSpecifier = '@nativescript/core';
-							const resolved = await (server as any).pluginContainer?.resolveId?.(coreSpecifier, undefined);
-							const resolvedId = typeof resolved === 'string' ? resolved : resolved?.id || null;
-							const modulePath = resolvedId || '/node_modules/@nativescript/core/index.js';
-							const staticExportNames = collectStaticExportNamesFromFile(modulePath);
-							const staticExportOrigins = await normalizeCoreExportOriginsForRuntime(
-								collectStaticExportOriginsFromFile(modulePath),
-								async (moduleId: string) => {
-									const nextResolved = await (server as any).pluginContainer?.resolveId?.(moduleId, undefined);
-									return typeof nextResolved === 'string' ? nextResolved : nextResolved?.id || null;
-								},
-								modulePath,
-							);
-							if (staticExportNames.length) {
-								code = buildVersionedCoreMainBridgeModule(key, ver, staticExportNames, staticExportOrigins);
-							} else {
-								const transformed = await sharedTransformRequest(modulePath);
-								if (transformed?.code) {
-									const expandedModuleCode = await expandStarExports(transformed.code, server, projectRoot, verbose);
-									code = buildVersionedCoreMainBridgeModule(key, ver, extractExportedNames(expandedModuleCode));
-								}
-							}
-						} catch (e) {
-							try {
-								console.warn('[ns-core-bridge] main bridge export discovery failed:', (e as any)?.message);
-							} catch {}
-						}
+					const transformed = await sharedTransformRequest(modulePath);
+					if (!transformed?.code) {
+						res.statusCode = 500;
+						res.setHeader('Content-Type', 'application/json');
+						res.end(JSON.stringify({ error: 'core-transform-failed', modulePath, sub: sub || null }));
+						return;
 					}
+
+					// Vite's transform output references module IDs with /@fs,
+					// relative specifiers, or absolute project paths. Rewrite
+					// those to URLs iOS can fetch over HTTP.
+					let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(ver));
+
+					// Invariant D (CJS/ESM interop shape) — EXPORT-SIDE fix.
+					//
+					// `@nativescript/core/index.js` declares namespace
+					// re-exports like:
+					//     export * as Utils from './utils';
+					// The ES spec says these produce Module Namespace Objects
+					// with [[Prototype]] = null. Consumers that reach them
+					// via direct ESM import — `import { Utils } from
+					// '@nativescript/core'` — get the raw null-proto value,
+					// bypassing any CJS `require` shim we install. Most
+					// consumers tolerate this, but CJS-style interop (most
+					// notably zone.js's `patchMethod`) calls
+					// `hasOwnProperty` on the target and crashes on
+					// null-proto.
+					//
+					// We rewrite the re-export to a shape-wrapped const:
+					//     import * as __ns_re_Utils__ from './utils';
+					//     export const Utils = __NS_CJS_SHAPE__(__ns_re_Utils__);
+					// so the EXPORT itself is a plain object — visible to
+					// both ESM and CJS consumers consistently.
+					//
+					// We only pay the rewrite cost when the module actually
+					// contains namespace re-exports (i.e., the main
+					// `index.js`). Subpaths (`/utils`, `/http`, …) don't
+					// re-export via `export * as`; they expose named
+					// exports directly, so the rewrite is a no-op on them.
+					if (hasNamespaceReExport(rewritten)) {
+						rewritten = rewriteNamespaceReExportsForShape(rewritten);
+					}
+
+					// Prepend the build-time defines (__DEV__, __IOS__, __ANDROID__,
+					// __APPLE__, …) that @nativescript/core source references directly.
+					// Vite's `define` config substitutes these in user-code transforms but
+					// skips node_modules by default; since core is now external and served
+					// over HTTP from this endpoint, the served transformed code still has
+					// bare identifiers like `if (__DEV__) …`. Without these consts, V8
+					// hits `ReferenceError: __DEV__ is not defined` at module eval because
+					// globalThis.__DEV__ is set by bundle.mjs's body AFTER all static
+					// imports (including these core modules) have resolved.
+					//
+					// We inject LITERAL boolean values based on CLI flags + dev-server
+					// mode rather than reading from globalThis, so the defines are
+					// resolved even before bundle.mjs's body runs.
+					const __cliFlags = getCliFlags() || {};
+					const __platformIsAndroid = !!(__cliFlags as any).android;
+					const __platformIsVisionOS = !!(__cliFlags as any).visionos;
+					const __platformIsIOS = !__platformIsAndroid && !__platformIsVisionOS;
+					const preamble = [
+						`const __ANDROID__ = ${__platformIsAndroid ? 'true' : 'false'};`,
+						`const __IOS__ = ${__platformIsIOS ? 'true' : 'false'};`,
+						`const __VISIONOS__ = ${__platformIsVisionOS ? 'true' : 'false'};`,
+						`const __APPLE__ = __IOS__ || __VISIONOS__;`,
+						`const __DEV__ = ${(server as any).config?.mode === 'development' ? 'true' : 'false'};`,
+						`const __COMMONJS__ = false;`,
+						`const __NS_WEBPACK__ = false;`,
+						`const __NS_ENV_VERBOSE__ = globalThis.__NS_ENV_VERBOSE__ !== undefined ? !!globalThis.__NS_ENV_VERBOSE__ : false;`,
+						`const __CSS_PARSER__ = 'css-tree';`,
+						`const __UI_USE_XML_PARSER__ = true;`,
+						`const __UI_USE_EXTERNAL_RENDERER__ = false;`,
+						`const __TEST__ = false;`,
+					].join('\n');
+
+					// Boot-time instrumentation + module self-registration.
+					// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md:
+					//   - Invariant A (URL canonicalization): the same
+					//     logical module must always resolve to byte-
+					//     identical URLs across every emitter. The /ns/core
+					//     handler records the first URL seen for each
+					//     canonical sub (or '' for main) in
+					//     `globalThis.__NS_CORE_FIRST_URL__` and fails hard
+					//     on mismatch so drift in any emitter surfaces
+					//     immediately, before the realm splits.
+					//   - Invariant C (boot-order): CommonJS
+					//     `require('@nativescript/core/...')` calls from
+					//     vendor install() hooks must resolve to the SAME
+					//     ESM namespace that ran this side-effect preamble.
+					//     The registration below keys the namespace object
+					//     under BOTH the bare specifier and the canonical
+					//     subpath (and raw subpath for back-compat) so the
+					//     vendor shim's `createRequire` and the main-entry
+					//     `_nsReq` hit on any lookup form.
+					const rawSub = normalizedSub || sub || '';
+					const canonicalSub = normalizeCoreSubCanonical(rawSub);
+					const registrationKeySet = new Set<string>();
+					registrationKeySet.add(canonicalSub ? `@nativescript/core/${canonicalSub}` : '@nativescript/core');
+					registrationKeySet.add(canonicalSub);
+					if (rawSub && rawSub !== canonicalSub) {
+						registrationKeySet.add(`@nativescript/core/${rawSub}`);
+						registrationKeySet.add(rawSub);
+					}
+					const registrationKeys = Array.from(registrationKeySet).map((k) => JSON.stringify(k));
+					const canonicalUrl = `${getServerOrigin(server)}` + (canonicalSub ? `/ns/core/${canonicalSub}` : '/ns/core');
+					const instrumentationHeader = [
+						`/* @nativescript/core bridge — canonical URL: ${canonicalUrl} */`,
+						`try { if (typeof globalThis !== 'undefined') {`,
+						`  const __nsFirst = globalThis.__NS_CORE_FIRST_URL__ || (globalThis.__NS_CORE_FIRST_URL__ = Object.create(null));`,
+						`  const __nsSeen = globalThis.__NS_CORE_FETCHED_URLS__ || (globalThis.__NS_CORE_FETCHED_URLS__ = []);`,
+						`  const __nsKey = ${JSON.stringify(canonicalSub)};`,
+						`  const __nsUrl = ${JSON.stringify(canonicalUrl)};`,
+						`  __nsSeen.push(__nsUrl);`,
+						`  if (typeof __nsFirst[__nsKey] === 'string' && __nsFirst[__nsKey] !== __nsUrl) {`,
+						`    throw new Error('[ns-core] URL drift for sub=' + __nsKey + ': first=' + __nsFirst[__nsKey] + ' now=' + __nsUrl + ' (see HMR_CORE_REALM_DETERMINISTIC_PLAN.md Invariant A)');`,
+						`  }`,
+						`  if (!__nsFirst[__nsKey]) __nsFirst[__nsKey] = __nsUrl;`,
+						`  globalThis.__NS_CORE_EVAL_COUNT__ = (globalThis.__NS_CORE_EVAL_COUNT__ || 0) + 1;`,
+						`} } catch (e) { try { console.warn('[ns-core] instrumentation failed:', (e && e.message) || e); } catch {} }`,
+					].join('\n');
+
+					// Invariant D (CJS/ESM interop shape) — REGISTRATION side.
+					//
+					// The actual shape installer runs earlier in the module
+					// body (between preamble and selfImport; see
+					// buildShapeInstallHeader). At this point we just read
+					// globalThis.__NS_CJS_SHAPE__ and apply it to the self
+					// namespace before registering under the CJS key space.
+					//
+					// Why shape self at registration: consumers that reach
+					// `@nativescript/core` via `require()` (legacy vendors,
+					// `globalThis.require` shim) look up the registry. They
+					// expect a plain object (Object.prototype in chain) so
+					// `.hasOwnProperty` / `.toString` work. Shaping once on
+					// registration — the shape function is identity-preserving
+					// via WeakMap — gives a stable, shared, CJS-compatible
+					// view without copying on every require.
+					//
+					// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md § "Invariant D"
+					// for the full rationale.
+					const registrationFooter = [
+						`try { if (typeof globalThis !== 'undefined') {`,
+						`  const __nsReg = globalThis.__NS_CORE_MODULES__ || (globalThis.__NS_CORE_MODULES__ = Object.create(null));`,
+						`  const __nsShapeFn = typeof globalThis.__NS_CJS_SHAPE__ === 'function' ? globalThis.__NS_CJS_SHAPE__ : function (x) { return x; };`,
+						`  const __nsSelfRaw = (typeof __ns_core_self_ns__ !== 'undefined') ? __ns_core_self_ns__ : { default: undefined };`,
+						`  const __nsSelf = __nsShapeFn(__nsSelfRaw);`,
+						...registrationKeys.map((k) => `  __nsReg[${k}] = __nsSelf;`),
+						`} } catch (e) { try { console.warn('[ns-core] self-register failed:', (e && e.message) || e); } catch {} }`,
+					].join('\n');
+
+					// Bind `import * as __ns_core_self_ns__` to the module's
+					// own export namespace so the footer can stash it into
+					// the registry. Self-import is a no-op at eval time —
+					// V8 resolves it to the module record we're already
+					// evaluating and the final namespace is the same object
+					// the registry receives. We use the CANONICAL URL here
+					// so the self-import participates in Invariant A along
+					// with every other @nativescript/core URL.
+					const canonicalUrlForSelf = canonicalSub ? `/ns/core/${canonicalSub}` : '/ns/core';
+					const selfImport = `import * as __ns_core_self_ns__ from ${JSON.stringify(canonicalUrlForSelf)};`;
+
+					// Invariant D — SHAPE INSTALLER.
+					//
+					// Emits idempotent body-code that installs
+					// globalThis.__NS_CJS_SHAPE__ BEFORE `rewritten`'s body
+					// runs. This matters because the rewrite step above may
+					// have produced statements like
+					// `export const Utils = (typeof globalThis.__NS_CJS_SHAPE__ ...)(__ns_re_Utils__);`
+					// that execute during module evaluation. Without the
+					// installer running first, the ternary falls back to
+					// identity — still safe, but the null-proto namespace
+					// leaks through and consumers that expect a plain
+					// object would still crash.
+					//
+					// Placement is important: BEFORE selfImport in the
+					// concatenation. ESM imports are hoisted regardless of
+					// textual position, but body code executes in source
+					// order. Placing the installer first guarantees it
+					// runs before any body statement in `rewritten`.
+					//
+					// Install is idempotent: `|| (globalThis.X = ...)` so
+					// whichever /ns/core module evaluates first wins and
+					// every subsequent module becomes a no-op.
+					const shapeInstallHeader = buildShapeInstallHeader();
+
+					// Invariant D — DEFAULT EXPORT BRIDGE.
+					//
+					// See `buildDefaultExportFooter` in ns-core-cjs-shape.ts
+					// for the full rationale (consumer matrix, skip conditions,
+					// why the default isn't shaped). The short version:
+					// upstream rewrites turn `import { X } from '@nativescript/core'`
+					// into a DEFAULT import, and the bridge has to provide one.
+					const defaultExportFooter = buildDefaultExportFooter(rewritten);
+
+					const moduleCode = [instrumentationHeader, preamble, shapeInstallHeader, selfImport, rewritten, defaultExportFooter, registrationFooter].join('\n');
 					res.statusCode = 200;
-					res.end(code);
+					res.end(moduleCode);
 				} catch (e) {
+					try {
+						console.warn('[ns-core-bridge] serve failed:', (e as any)?.message);
+					} catch {}
 					next();
 				}
 			});

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import * as path from 'node:path';
+import { normalizeCoreSub } from '../../helpers/ns-core-url.js';
 
 export type CoreExportOrigin = {
 	moduleId: string;
@@ -159,7 +160,19 @@ function resolveLocalExportTarget(spec: string, importerId: string): string | nu
 	const importerPath = String(importerId || '').replace(/[?#].*$/, '');
 	if (!importerPath) return null;
 	const importerDir = path.dirname(importerPath);
-	const candidates = [path.resolve(importerDir, spec), path.resolve(importerDir, `${spec}.ts`), path.resolve(importerDir, `${spec}.js`), path.resolve(importerDir, `${spec}.mjs`), path.resolve(importerDir, spec, 'index.ts'), path.resolve(importerDir, spec, 'index.js'), path.resolve(importerDir, spec, 'index.mjs')];
+	// Include platform-specific variants (.ios.js / .android.js / .visionos.js).
+	// @nativescript/core ships only platform-specific files for many submodules
+	// (e.g. `./application/index.ios.js`, no plain `./application/index.js`), so
+	// a plain Node-style resolution misses them and the recursive export-name
+	// walk fails to follow `export * from './application'`. Without this, the
+	// /ns/core bridge's named-export list omits `Application`, and any static
+	// `import { Application } from '@nativescript/core'` through the bridge
+	// fails with "module does not provide an export named 'Application'".
+	//
+	// Prefer .ios variants at the top since the HMR dev server is iOS-first;
+	// .android variants are still tried so Android serving also works.
+	const platformVariants = ['.ios.ts', '.ios.js', '.ios.mjs', '.android.ts', '.android.js', '.android.mjs', '.visionos.ts', '.visionos.js', '.visionos.mjs'];
+	const candidates = [path.resolve(importerDir, spec), path.resolve(importerDir, `${spec}.ts`), path.resolve(importerDir, `${spec}.js`), path.resolve(importerDir, `${spec}.mjs`), ...platformVariants.map((ext) => path.resolve(importerDir, `${spec}${ext}`)), path.resolve(importerDir, spec, 'index.ts'), path.resolve(importerDir, spec, 'index.js'), path.resolve(importerDir, spec, 'index.mjs'), ...platformVariants.map((ext) => path.resolve(importerDir, spec, `index${ext}`))];
 	for (const candidate of candidates) {
 		if (existsSync(candidate) && !statSync(candidate).isDirectory()) {
 			return candidate;
@@ -187,7 +200,16 @@ export function collectStaticExportOriginsFromFile(modulePath: string, rootEntry
 	}
 	const currentModuleId = runtimeModuleIdForFile(cleanedPath, cleanedRoot) || '@nativescript/core';
 	const currentCanonicalSubpath = canonicalCoreSubpathForFile(cleanedPath, cleanedRoot);
-	const origins: Record<string, CoreExportOrigin[]> = {};
+	// Use a null-prototype map so keys like `toString`, `constructor`, or
+	// `hasOwnProperty` — which DO appear as real exports in some core
+	// subpaths (e.g. `@nativescript/core/ui/gestures/gestures-common`
+	// re-exports `toString`) — don't collide with Object.prototype's own
+	// properties. Previously `origins['toString']` returned the inherited
+	// Function, and the subsequent `existing.some(...)` call threw
+	// "existing.some is not a function", causing the whole subpath's
+	// export discovery to bail and fall back to a pure `export *` which
+	// in turn leaked into the "hasKey not provided" downstream crash.
+	const origins: Record<string, CoreExportOrigin[]> = Object.create(null);
 	for (const name of extractDirectExportedNames(code)) {
 		appendCoreExportOrigin(origins, name, { moduleId: currentModuleId, mode: 'named', importedName: name, canonicalSubpath: currentCanonicalSubpath || undefined });
 	}
@@ -220,7 +242,13 @@ export function collectStaticExportOriginsFromFile(modulePath: string, rootEntry
 			appendCoreExportOrigin(origins, exportedName, { moduleId: currentModuleId, mode: 'named', importedName, canonicalSubpath: currentCanonicalSubpath || undefined });
 		}
 	}
-	const starRe = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["'];?[ \t]*$/gm;
+	// Tolerate trailing comments on `export * from '…'` lines. @nativescript/core
+	// has lines like `export * from './layouts'; // barrel export`, and the
+	// previous strict `[ \t]*$` anchor refused to match them — which silently
+	// skipped recursion into ./layouts, omitting GridLayout/LayoutBase (and
+	// any name reached through a similarly-commented star re-export) from the
+	// /ns/core bridge's named-export list.
+	const starRe = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["'][^\n]*$/gm;
 	while ((match = starRe.exec(code)) !== null) {
 		const spec = match[1];
 		if (!spec.startsWith('.')) continue;
@@ -291,68 +319,30 @@ export function hasModuleDefaultExport(moduleCode: string): boolean {
 	return /\bexport\s+default\b/.test(moduleCode) || /\bexport\s*\{[^}]*\bdefault\b[^}]*\}/.test(moduleCode);
 }
 
-export function buildVersionedCoreSubpathAliasModule(sub: string, ver: number | string, namedExports: string[] = [], hasDefaultExport: boolean = false): string {
-	const normalizedSub = (sub || '').replace(/^\/+/, '');
-	const canonicalUrl = `/ns/core/${ver}?p=${normalizedSub}`;
-	const filteredExports = Array.from(new Set(namedExports)).filter((name) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) && name !== 'default' && name !== '__esModule');
-	const exportLines = filteredExports.length ? `export { ${filteredExports.join(', ')} } from ${JSON.stringify(canonicalUrl)};\n` : `export * from ${JSON.stringify(canonicalUrl)};\n`;
-	if (hasDefaultExport) {
-		return `export { default } from ${JSON.stringify(canonicalUrl)};\n` + exportLines;
-	}
-	return `import * as __ns_core_alias from ${JSON.stringify(canonicalUrl)};\n` + `export default __ns_core_alias;\n` + exportLines;
-}
-
-export function buildVersionedCoreMainBridgeModule(key: string, ver: number | string, namedExports: string[] = [], exportOrigins: Record<string, CoreExportOrigin[]> = {}): string {
-	const filteredExports = Array.from(new Set(namedExports)).filter((name) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) && name !== 'default' && name !== '__esModule');
-	const namedExportDeclarations = filteredExports.length ? filteredExports.map((name) => `const ${name} = __getCoreExport(${JSON.stringify(name)});`).join('\n') + '\n' : '';
-	const namedExportObjectLiteral = filteredExports.length ? `{ ${filteredExports.join(', ')} }` : '{}';
-	const namedExportStatement = filteredExports.length ? `export { ${filteredExports.join(', ')} };\n` : '';
-	const serializedExportOrigins = JSON.stringify(exportOrigins);
-	const staticOriginImports = new Map<string, string>();
-	const staticOriginImportLines: string[] = [];
-	let staticOriginCounter = 0;
-	for (const entries of Object.values(exportOrigins)) {
-		for (const entry of entries) {
-			if (!entry.canonicalSubpath) continue;
-			if (staticOriginImports.has(entry.canonicalSubpath)) continue;
-			const localName = `__ns_core_origin_${staticOriginCounter++}`;
-			staticOriginImports.set(entry.canonicalSubpath, localName);
-			staticOriginImportLines.push(`import * as ${localName} from ${JSON.stringify(`/ns/core/${ver}?p=${entry.canonicalSubpath}`)};`);
-		}
-	}
-	const staticOriginModulesLiteral = staticOriginImports.size
-		? `{ ${Array.from(staticOriginImports.entries())
-				.map(([subpath, localName]) => `${JSON.stringify(subpath)}: ${localName}`)
-				.join(', ')} }`
-		: '{}';
-	return (
-		(staticOriginImportLines.length ? `${staticOriginImportLines.join('\n')}\n` : '') +
-		REQUIRE_GUARD_SNIPPET +
-		`// [ns-core-bridge][v${ver}] HTTP-only ESM bridge\n` +
-		`const g = globalThis;\n` +
-		`const reg = (g.__nsVendorRegistry ||= new Map());\n` +
-		`const __unwrapNsModule = (mod) => {\n  if (!mod) return null;\n  try { if ((typeof mod === 'object' || typeof mod === 'function') && Object.prototype.hasOwnProperty.call(mod, 'default')) { const keys = Object.keys(mod).filter((entry) => entry !== '__esModule'); if (!keys.length || (keys.length === 1 && keys[0] === 'default')) return mod.default; } } catch {}\n  return mod;\n};\n` +
-		`const __resolveNsModule = (moduleId) => {\n  try { if (typeof g.moduleExists === 'function' && g.moduleExists(moduleId) && typeof g.loadModule === 'function') { const mod = g.loadModule(moduleId); if (mod) return __unwrapNsModule(mod); } } catch {}\n  try { if (reg && reg.get) { const mod = reg.get(moduleId); if (mod) return __unwrapNsModule(mod); } } catch {}\n  try { const req = g.__nsVendorRequire || g.__nsRequire || g.require; if (typeof req === 'function') { const mod = req(moduleId); if (mod) return __unwrapNsModule(mod); } } catch {}\n  try { const nr = g.__nativeRequire; if (typeof nr === 'function') { const mod = nr(moduleId, '/'); if (mod) return __unwrapNsModule(mod); } } catch {}\n  return null;\n};\n` +
-		`const __pickApplicationApi = (candidate) => {\n  if (!candidate) return null;\n  const candidates = [candidate, candidate.Application, candidate.app, candidate.application];\n  for (const entry of candidates) { if (entry && (typeof entry.run === 'function' || typeof entry.on === 'function' || typeof entry.resetRootView === 'function')) return entry; }\n  return null;\n};\n` +
-		`let __nsPrimaryCoreReady = false;\nlet __nsPrimaryCore = null;\nconst __getPrimaryCore = () => { if (!__nsPrimaryCoreReady) { __nsPrimaryCore = __resolveNsModule(${JSON.stringify(key)}) || __resolveNsModule('@nativescript/core') || null; __nsPrimaryCoreReady = true; } return __nsPrimaryCore; };\n` +
-		`let __nsCoreUiReady = false;\nlet __nsCoreUi = null;\nconst __getCoreUi = () => { if (!__nsCoreUiReady) { __nsCoreUi = __resolveNsModule('@nativescript/core/ui') || null; __nsCoreUiReady = true; } return __nsCoreUi; };\n` +
-		`const __nsCoreExportOrigins = ${serializedExportOrigins};\nconst __nsCoreOriginModules = ${staticOriginModulesLiteral};\n` +
-		`const __resolveFromExportOrigins = (name) => { const entries = __nsCoreExportOrigins && __nsCoreExportOrigins[name]; if (!entries || !entries.length) return undefined; for (const entry of entries) { try { const mod = (entry.canonicalSubpath && __nsCoreOriginModules[entry.canonicalSubpath]) || __resolveNsModule(entry.moduleId); if (!mod) continue; if (entry.mode === 'module') return mod; const importedName = entry.importedName || name; if (importedName === 'Application') { const picked = __pickApplicationApi(mod); if (picked) return picked; } if (mod && mod[importedName] !== undefined) return mod[importedName]; } catch {} } return undefined; };\n` +
-		`const __getCoreExport = (name) => { if (name === 'Application' && g.Application && (typeof g.Application.run === 'function' || typeof g.Application.on === 'function' || typeof g.Application.resetRootView === 'function')) return g.Application; if (name === 'Application') { const appModule = __resolveNsModule('@nativescript/core/application'); const pickedApp = __pickApplicationApi(appModule); if (pickedApp) return pickedApp; } const primary = __getPrimaryCore(); if (name === 'Application') { const pickedPrimary = __pickApplicationApi(primary); if (pickedPrimary) return pickedPrimary; } try { if (primary && primary[name] !== undefined) return primary[name]; } catch {} const ui = __getCoreUi(); try { if (ui && ui[name] !== undefined) return ui[name]; } catch {} const viaOrigins = __resolveFromExportOrigins(name); if (viaOrigins !== undefined) return viaOrigins; try { const v = g[name]; if (v !== undefined) return v; } catch {} return undefined; };\n` +
-		namedExportDeclarations +
-		`const __nsNamedCore = ${namedExportObjectLiteral};\n` +
-		`const __core = new Proxy(__nsNamedCore, { get(_t, p){ if (p === 'default') return __core; if (p === Symbol.toStringTag) return 'Module'; try { if (typeof p === 'string' && Object.prototype.hasOwnProperty.call(__nsNamedCore, p)) { const value = __nsNamedCore[p]; if (value !== undefined) return value; } } catch {} return __getCoreExport(p); } });\n` +
-		namedExportStatement +
-		`export default __core;\n`
-	);
-}
+// Dead code removed (see HMR_CORE_REALM_DETERMINISTIC_PLAN.md Round 2,
+// step 3): `buildVersionedCoreSubpathAliasModule` and
+// `buildVersionedCoreMainBridgeModule` built synthetic proxy modules for
+// `/ns/core/<ver>?p=<sub>` URLs that no longer exist. The current
+// /ns/core handler serves Vite-transformed @nativescript/core source
+// directly with a self-registering preamble; no proxy layer is needed.
+// Leaving these functions wired up guaranteed drift between the URL
+// canonicalizer (Invariant A) and the module registry, so they have been
+// removed together with the unversioned `ver` and `?p=` URL forms.
 
 export function parseCoreBridgeRequest(pathname: string, searchParams: URLSearchParams, currentGraphVersion: number): ParsedCoreBridgeRequest | null {
 	if (!pathname) return null;
 	if (!(pathname === '/ns/core' || pathname === '/ns/core/' || pathname.startsWith('/ns/core/'))) {
 		return null;
 	}
-	if (/^\/ns\/core\/\d+(?:\/.*)$/.test(pathname)) {
+	// Reject legacy versioned path-based deep imports. Versioning was
+	// deleted in Round 2 of HMR_CORE_REALM_DETERMINISTIC_PLAN.md — every
+	// emitter now uses the canonical `/ns/core/<sub>` form. Serving a
+	// legacy request like `/ns/core/3/ui/frame/index.js` would split iOS's
+	// HTTP ESM cache across versioned and canonical URLs for the same
+	// file, re-triggering the double-evaluation bug. Also reject bare
+	// trailing-slash variants like `/ns/core/3/` which don't match the
+	// accepted forms `/ns/core` / `/ns/core/<sub>` / `/ns/core/<ver>`.
+	if (/^\/ns\/core\/\d+\/.*$/.test(pathname)) {
 		return null;
 	}
 	const afterCore = pathname.replace(/^\/ns\/core\/?/, '');
@@ -361,8 +351,19 @@ export function parseCoreBridgeRequest(pathname: string, searchParams: URLSearch
 	}
 	const hasExplicitVersion = /^\d+$/.test(afterCore);
 	const ver = hasExplicitVersion ? afterCore : String(currentGraphVersion || 0);
+	// Keep the raw ?p= value (including any `.js` / `/index` suffix) in
+	// `sub` and `normalizedSub` so existing call sites still see the
+	// as-requested spelling. Canonicalization for Invariant A identity
+	// lookups is the handler's responsibility — see the /ns/core bridge
+	// middleware in websocket.ts which uses normalizeCoreSub() before
+	// populating globalThis.__NS_CORE_MODULES__.
 	const sub = searchParams.get('p') || (afterCore && !hasExplicitVersion ? afterCore : '');
 	const normalizedSub = sub ? sub.replace(/^\/+/, '') : null;
+	// Guard: normalizeCoreSub is imported at the top of this module so
+	// adding it to the returned request here costs nothing, but keeping
+	// the RAW subpath in `normalizedSub` (matching the historical shape)
+	// preserves wire-level compatibility with specs and external callers.
+	void normalizeCoreSub;
 	return {
 		hasExplicitVersion,
 		ver,

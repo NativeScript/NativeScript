@@ -3,6 +3,12 @@ import { synthesizeDefaultExport, isDeepCoreSubpath, normalizeAnyCoreSpecToBridg
 
 // ─── rewriteSpecifiersForDevice ────────────────────────────────────────────────
 // Tests use REAL Vite output captured from the live dev server.
+//
+// All @nativescript/core specifiers are rewritten to the CANONICAL
+// `/ns/core/<sub>` path form (no version, no `?p=`, no `.js` tail). See
+// HMR_CORE_REALM_DETERMINISTIC_PLAN.md — Invariant A requires byte-
+// identical URLs across every emitter; the legacy versioned / query-param
+// form has been deleted.
 
 const ORIGIN = 'http://localhost:5173';
 const VER = 0;
@@ -11,25 +17,25 @@ describe('rewriteSpecifiersForDevice', () => {
 	it('rewrites core named import specifier to bridge URL', () => {
 		const input = 'import { Observable } from "/node_modules/@nativescript/core/data/observable/index.js";';
 		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
-		expect(out).toBe('import { Observable } from "/ns/core/0?p=data/observable/index.js";');
+		expect(out).toBe('import { Observable } from "/ns/core/data/observable";');
 	});
 
 	it('rewrites core namespace import specifier', () => {
 		const input = 'import * as types from "/node_modules/@nativescript/core/utils/types.js";';
 		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
-		expect(out).toBe('import * as types from "/ns/core/0?p=utils/types.js";');
+		expect(out).toBe('import * as types from "/ns/core/utils/types";');
 	});
 
 	it('rewrites core named re-export specifier', () => {
 		const input = 'export { booleanConverter } from "/node_modules/@nativescript/core/ui/core/view-base/utils.js";';
 		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
-		expect(out).toBe('export { booleanConverter } from "/ns/core/0?p=ui/core/view-base/utils.js";');
+		expect(out).toBe('export { booleanConverter } from "/ns/core/ui/core/view-base/utils";');
 	});
 
 	it('rewrites core star re-export specifier', () => {
 		const input = 'export * from "/node_modules/@nativescript/core/accessibility/accessibility-common.js";';
 		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
-		expect(out).toBe('export * from "/ns/core/0?p=accessibility/accessibility-common.js";');
+		expect(out).toBe('export * from "/ns/core/accessibility/accessibility-common";');
 	});
 
 	it('does NOT mangle code structure — preserves newlines before exports (the styling-profile.js bug)', () => {
@@ -39,7 +45,7 @@ describe('rewriteSpecifiersForDevice', () => {
 		// The export MUST be on its own line, NOT concatenated with the comment
 		const lines = out.split('\n');
 		expect(lines[2]).toMatch(/^export \{ profile \}/);
-		expect(out).toContain('export { profile } from "/ns/core/0?p=profiling/index.js"');
+		expect(out).toContain('export { profile } from "/ns/core/profiling"');
 	});
 
 	it('rewrites non-core node_modules to HTTP URLs', () => {
@@ -54,8 +60,8 @@ describe('rewriteSpecifiersForDevice', () => {
 		expect(out).toBe(input);
 	});
 
-	it('leaves already-bridge URLs unchanged', () => {
-		const input = 'import { X } from "/ns/core/0?p=data/observable/index.js";';
+	it('leaves already-canonical bridge URLs unchanged', () => {
+		const input = 'import { X } from "/ns/core/data/observable";';
 		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
 		expect(out).toBe(input);
 	});
@@ -65,10 +71,10 @@ describe('rewriteSpecifiersForDevice', () => {
 		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
 
 		// All core specifiers rewritten to bridge
-		expect(out).toContain('from "/ns/core/0?p=ui/styling/styling-shared.js"');
-		expect(out).toContain('from "/ns/core/0?p=ui/core/properties/index.js"');
-		expect(out).toContain('from "/ns/core/0?p=profiling/index.js"');
-		expect(out).toContain('from "/ns/core/0?p=ui/core/view-base/utils.js"');
+		expect(out).toContain('from "/ns/core/ui/styling/styling-shared"');
+		expect(out).toContain('from "/ns/core/ui/core/properties"');
+		expect(out).toContain('from "/ns/core/profiling"');
+		expect(out).toContain('from "/ns/core/ui/core/view-base/utils"');
 
 		// Declarations untouched
 		expect(out).toContain('export function getAncestor');
@@ -83,62 +89,68 @@ describe('rewriteSpecifiersForDevice', () => {
 	it('handles dynamic imports', () => {
 		const input = 'const mod = await import("/node_modules/@nativescript/core/profiling/index.js");';
 		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
-		expect(out).toContain('import("/ns/core/0?p=profiling/index.js")');
+		expect(out).toContain('import("/ns/core/profiling")');
 	});
 
-	it('preserves version in output URL', () => {
+	it('does NOT include a version segment in the output URL', () => {
+		// Invariant A: versioning was deleted. The rewrite emits the
+		// canonical `/ns/core/<sub>` form regardless of the `ver` argument.
+		// Any legacy caller passing a non-zero ver receives an unversioned
+		// URL so iOS's HTTP ESM cache sees one identity per logical module.
 		const out = rewriteSpecifiersForDevice('import { X } from "/node_modules/@nativescript/core/foo.js";', ORIGIN, 42);
-		expect(out).toContain('/ns/core/42?p=foo.js');
+		expect(out).toContain('/ns/core/foo');
+		expect(out).not.toMatch(/\/ns\/core\/\d+/);
+		expect(out).not.toContain('?p=');
 	});
 
 	it('rewrites the package main entry file to the main core bridge URL', () => {
 		const out = rewriteSpecifiersForDevice('import { AbsoluteLayout } from "/node_modules/@nativescript/core/index.js";', ORIGIN, 42);
-		expect(out).toBe('import { AbsoluteLayout } from "/ns/core/42";');
+		expect(out).toBe('import { AbsoluteLayout } from "/ns/core";');
 	});
 });
 
 // ─── isDeepCoreSubpath ─────────────────────────────────────────────────────────
 
 describe('isDeepCoreSubpath', () => {
-	// Any ?p= subpath now serves a real ESM module, so named imports must be preserved.
-	it('returns true for deep subpath with nested path', () => {
+	// Canonical path form is the authoritative shape. Both forms must be
+	// supported for back-compat with legacy call sites that still carry
+	// a `?p=` query URL.
+	it('returns true for canonical deep subpath with nested path', () => {
+		expect(isDeepCoreSubpath('/ns/core/data/observable-array')).toBe(true);
+	});
+
+	it('returns true for legacy ?p= deep subpath (back-compat)', () => {
 		expect(isDeepCoreSubpath('/ns/core?p=data/observable-array/index.js')).toBe(true);
 	});
 
-	it('returns true for versioned deep subpath', () => {
+	it('returns true for legacy versioned deep subpath (back-compat)', () => {
 		expect(isDeepCoreSubpath('/ns/core/0?p=ui/core/view-base/index.js')).toBe(true);
 	});
 
 	it('returns true for HTTP origin deep subpath', () => {
-		expect(isDeepCoreSubpath('http://localhost:5173/ns/core/0?p=ui/core/view-base/index.js')).toBe(true);
+		expect(isDeepCoreSubpath('http://localhost:5173/ns/core/ui/core/view-base')).toBe(true);
 	});
 
 	it('returns true for two-segment deep subpath', () => {
-		expect(isDeepCoreSubpath('/ns/core?p=data/observable')).toBe(true);
+		expect(isDeepCoreSubpath('/ns/core/data/observable')).toBe(true);
 	});
 
-	it('returns false for package main entry alias (index.js)', () => {
+	it('returns false for package main entry alias (legacy ?p=index.js)', () => {
 		expect(isDeepCoreSubpath('/ns/core?p=index.js')).toBe(false);
 	});
 
 	it('returns true for shallow subpath (globals)', () => {
-		expect(isDeepCoreSubpath('/ns/core?p=globals')).toBe(true);
+		expect(isDeepCoreSubpath('/ns/core/globals')).toBe(true);
 	});
 
-	// No subpath: main bridge, must destructure
-	it('returns false for main bridge (no query)', () => {
+	it('returns false for main bridge (no query, no sub)', () => {
 		expect(isDeepCoreSubpath('/ns/core')).toBe(false);
-	});
-
-	it('returns false for versioned main bridge', () => {
-		expect(isDeepCoreSubpath('/ns/core/0')).toBe(false);
 	});
 
 	it('returns false for HTTP origin main bridge', () => {
 		expect(isDeepCoreSubpath('http://localhost:5173/ns/core')).toBe(false);
 	});
 
-	// Edge cases
 	it('returns false for empty string', () => {
 		expect(isDeepCoreSubpath('')).toBe(false);
 	});
@@ -147,7 +159,7 @@ describe('isDeepCoreSubpath', () => {
 		expect(isDeepCoreSubpath('/ns/m/node_modules/rxjs/index.js')).toBe(false);
 	});
 
-	it('handles ?p= with hash fragment', () => {
+	it('handles legacy ?p= with hash fragment', () => {
 		expect(isDeepCoreSubpath('/ns/core?p=ui/core/view#L10')).toBe(true);
 	});
 });
@@ -157,11 +169,14 @@ describe('isDeepCoreSubpath', () => {
 // without needing to export the internal function.
 
 describe('deep subpath skip in core named-import destructuring', () => {
-	// Simulate the core of ensureDestructureCoreImports
+	// Simulate the core of ensureDestructureCoreImports. The regex
+	// accepts both the canonical path form (/ns/core/<sub>) and the
+	// legacy query form (/ns/core?p=<sub>) so older fixtures and
+	// emitters still round-trip correctly during the migration window.
 	function simulateDestructureRewrite(code: string): string {
 		let result = code;
 		let counter = 0;
-		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"'?#]*)?(?:\?p=[^"']+)?)['"];?\s*/gm;
 		result = result.replace(re, (_full, pfx: string, specList: string, src: string) => {
 			if (isDeepCoreSubpath(src)) return _full;
 			const tmp = `__ns_core_ns_re${counter > 0 ? `_${counter}` : ''}`;
@@ -179,34 +194,33 @@ describe('deep subpath skip in core named-import destructuring', () => {
 		expect(out).not.toContain('import { Frame }');
 	});
 
-	it('rewrites named import from package main entry alias to default + destructure', () => {
+	it('rewrites named import from legacy package main entry alias to default + destructure', () => {
 		const input = 'import { isAndroid } from "/ns/core?p=index.js";';
 		const out = simulateDestructureRewrite(input);
 		expect(out).toContain('import __ns_core_ns_re from "/ns/core?p=index.js"');
 		expect(out).toContain('const { isAndroid } = __ns_core_ns_re');
 	});
 
-	it('SKIPS named import from deep subpath (preserves named import)', () => {
-		const input = 'import { ObservableArray } from "/ns/core?p=data/observable-array/index.js";';
+	it('SKIPS named import from canonical deep subpath (preserves named import)', () => {
+		const input = 'import { ObservableArray } from "/ns/core/data/observable-array";';
 		const out = simulateDestructureRewrite(input);
-		// Should be unchanged — deep subpath has real named exports
 		expect(out).toBe(input);
 	});
 
-	it('SKIPS versioned deep subpath', () => {
-		const input = 'import { View } from "/ns/core/0?p=ui/core/view-base/index.js";';
+	it('SKIPS legacy ?p= deep subpath (back-compat)', () => {
+		const input = 'import { View } from "/ns/core?p=ui/core/view-base/index.js";';
 		const out = simulateDestructureRewrite(input);
 		expect(out).toBe(input);
 	});
 
 	it('SKIPS HTTP origin deep subpath', () => {
-		const input = 'import { booleanConverter } from "http://localhost:5173/ns/core/0?p=ui/core/view-base/utils.js";';
+		const input = 'import { booleanConverter } from "http://localhost:5173/ns/core/ui/core/view-base/utils";';
 		const out = simulateDestructureRewrite(input);
 		expect(out).toBe(input);
 	});
 
 	it('handles mixed shallow and deep subpaths in same file', () => {
-		const input = ['import { Frame } from "/ns/core";', 'import { View } from "/ns/core?p=ui/core/view-base/index.js";', 'import { isAndroid } from "/ns/core?p=index.js";'].join('\n');
+		const input = ['import { Frame } from "/ns/core";', 'import { View } from "/ns/core/ui/core/view-base";', 'import { isAndroid } from "/ns/core?p=index.js";'].join('\n');
 		const out = simulateDestructureRewrite(input);
 
 		// Main bridge import: SHOULD be rewritten
@@ -214,23 +228,22 @@ describe('deep subpath skip in core named-import destructuring', () => {
 		expect(out).toContain('const { Frame } = __ns_core_ns_re');
 
 		// Deep subpath: should NOT be rewritten
-		expect(out).toContain('import { View } from "/ns/core?p=ui/core/view-base/index.js"');
+		expect(out).toContain('import { View } from "/ns/core/ui/core/view-base"');
 
-		// Package main entry alias: SHOULD be rewritten like the main bridge
+		// Legacy package main entry alias: SHOULD be rewritten like the main bridge
 		expect(out).toContain('const { isAndroid } = __ns_core_ns_re_1');
 	});
 
 	it('is idempotent — applying twice produces identical output', () => {
-		const input = ['import { Frame } from "/ns/core";', 'import { View } from "/ns/core?p=ui/core/view-base/index.js";'].join('\n');
+		const input = ['import { Frame } from "/ns/core";', 'import { View } from "/ns/core/ui/core/view-base";'].join('\n');
 		const pass1 = simulateDestructureRewrite(input);
 		const pass2 = simulateDestructureRewrite(pass1);
 		expect(pass1).toBe(pass2);
 	});
 
 	it('multiple deep subpath imports all preserved', () => {
-		const input = ['import { Observable } from "/ns/core?p=data/observable/index.js";', 'import { ObservableArray } from "/ns/core?p=data/observable-array/index.js";', 'import { View } from "/ns/core?p=ui/core/view-base/index.js";'].join('\n');
+		const input = ['import { Observable } from "/ns/core/data/observable";', 'import { ObservableArray } from "/ns/core/data/observable-array";', 'import { View } from "/ns/core/ui/core/view-base";'].join('\n');
 		const out = simulateDestructureRewrite(input);
-		// All three should be preserved as-is
 		expect(out).toBe(input);
 	});
 });
@@ -243,7 +256,7 @@ describe('normalizeAnyCoreSpecToBridge → deep subpath skip pipeline', () => {
 		let result = normalizeAnyCoreSpecToBridge(code);
 		// Step 2: Simulate destructure pass (with deep subpath skip)
 		let counter = 0;
-		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"'?#]*)?(?:\?p=[^"']+)?)['"];?\s*/gm;
 		result = result.replace(re, (_full, pfx: string, specList: string, src: string) => {
 			if (isDeepCoreSubpath(src)) return _full;
 			const tmp = `__ns_core_${counter++}`;
@@ -265,21 +278,21 @@ describe('normalizeAnyCoreSpecToBridge → deep subpath skip pipeline', () => {
 		expect(out).toContain('import __ns_core_0 from "/ns/core"');
 		expect(out).toContain('const { AbsoluteLayout } = __ns_core_0');
 		expect(out).not.toContain('/ns/core?p=index.js');
+		expect(out).not.toContain('/ns/core/index');
 	});
 
-	it('bare deep subpath → bridge URL + named import preserved', () => {
+	it('bare deep subpath → canonical bridge URL + named import preserved', () => {
 		const input = 'import { ObservableArray } from "@nativescript/core/data/observable-array";';
 		const out = pipeline(input);
-		// Should be converted to bridge URL but NOT destructured
-		expect(out).toContain('/ns/core?p=data/observable-array');
+		expect(out).toContain('/ns/core/data/observable-array');
 		expect(out).toContain('import { ObservableArray }');
 		expect(out).not.toContain('const { ObservableArray }');
 	});
 
-	it('resolved node_modules path → bridge URL + named import preserved', () => {
+	it('resolved node_modules path → canonical bridge URL + named import preserved', () => {
 		const input = 'import { View } from "/node_modules/@nativescript/core/ui/core/view-base/index.js";';
 		const out = pipeline(input);
-		expect(out).toContain('/ns/core?p=ui/core/view-base/index.js');
+		expect(out).toContain('/ns/core/ui/core/view-base');
 		expect(out).toContain('import { View }');
 		expect(out).not.toContain('const { View }');
 	});
@@ -288,11 +301,8 @@ describe('normalizeAnyCoreSpecToBridge → deep subpath skip pipeline', () => {
 		const input = ['import { Application } from "@nativescript/core";', 'import { View } from "@nativescript/core/ui/core/view-base";'].join('\n');
 		const out = pipeline(input);
 
-		// Main entry should be destructured
 		expect(out).toContain('const { Application }');
-
-		// Deep subpath should keep named import
-		expect(out).toContain('import { View } from "/ns/core?p=ui/core/view-base"');
+		expect(out).toContain('import { View } from "/ns/core/ui/core/view-base"');
 	});
 
 	it('pipeline is idempotent on output', () => {

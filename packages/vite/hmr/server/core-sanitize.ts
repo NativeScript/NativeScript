@@ -1,3 +1,5 @@
+import { buildCoreUrlPath } from '../../helpers/ns-core-url.js';
+
 /**
  * Rewrites stray string-literal side-effect lines that reference @nativescript/core
  * into proper ESM import statements targeting the unified /ns/core bridge.
@@ -8,8 +10,8 @@
  *   "@nativescript/core/index.js";
  * This trips the sanitizer's local-core-path detector and breaks HTTP ESM loading.
  *
- * This helper safely maps those literals to:
- *   import "/ns/core?p=index.js";
+ * This helper safely maps those literals to the canonical path form:
+ *   import "/ns/core/<sub>";   // subpath form, no version, no ?p=
  * or, without subpath:
  *   import "/ns/core";
  */
@@ -17,15 +19,7 @@ export function normalizeStrayCoreStringLiterals(code: string): string {
 	if (!code || typeof code !== 'string') return code;
 	try {
 		let out = code;
-		const toCoreBridgeUrl = (sub: string) => {
-			const normalized = String(sub || '')
-				.trim()
-				.replace(/^\//, '');
-			if (!normalized || normalized === 'index' || normalized === 'index.js') {
-				return '/ns/core';
-			}
-			return `/ns/core?p=${normalized}`;
-		};
+		const toCoreBridgeUrl = (sub: string) => buildCoreUrlPath(sub);
 		// Normalize any concatenated imports on the same line to start on a new line
 		// e.g. `...;import x from` -> `...;\nimport x from`
 		out = out.replace(/;\s*import\s+/g, ';\nimport ');
@@ -67,7 +61,9 @@ export function fixDanglingCoreFrom(code: string): string {
 
 		// Multi-line form: import { ...\n  ...\n} from\nimport "<core-url>";[tail]
 		// Merge into: import { ... } from "<core-url>";\n[tail]
-		code = code.replace(/(^|\n|;)\s*import\s*\{([\s\S]*?)\}\s*from\s*\n\s*import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/\d+)?(?:\?p=[^"']+)?)["'];?(.*)/g, (_m, pre: string, named: string, url: string, tail: string) => {
+		// Accepts canonical path form (/ns/core/<sub>), legacy query form
+		// (/ns/core?p=<sub>), and versioned-path form (/ns/core/<ver>/<sub>).
+		code = code.replace(/(^|\n|;)\s*import\s*\{([\s\S]*?)\}\s*from\s*\n\s*import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?(?:\?p=[^"']+)?)["'];?(.*)/g, (_m, pre: string, named: string, url: string, tail: string) => {
 			const prefix = pre ? (String(pre).endsWith(';') ? String(pre) + '\n' : String(pre)) : '';
 			const tailNorm = (tail || '').replace(/^\s*;?\s*/, '').trim();
 			return prefix + `import {${named}} from "${url}";` + (tailNorm ? `\n${tailNorm}` : '');
@@ -81,7 +77,7 @@ export function fixDanglingCoreFrom(code: string): string {
 				const next = lines[i + 1];
 				// Support when the next line starts with the core import followed by another ';import ...'
 				// Capture the core import URL and any trailing content after it (another import concatenated)
-				const m2 = /^\s*import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/\d+)?(?:\?p=[^"']+)?)["'];?(.*)$/.exec(next);
+				const m2 = /^\s*import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?(?:\?p=[^"']+)?)["'];?(.*)$/.exec(next);
 				if (m2) {
 					const url = m2[1];
 					const tail = m2[2] || '';
@@ -112,16 +108,7 @@ export function normalizeAnyCoreSpecToBridge(code: string): string {
 	if (!code || typeof code !== 'string') return code;
 	try {
 		let out = code;
-		const toCoreBridgeUrl = (sub: string) => {
-			const s = String(sub || '')
-				.split('?')[0]
-				.trim()
-				.replace(/^\//, '');
-			if (!s || s === 'index' || s === 'index.js') {
-				return '/ns/core';
-			}
-			return `/ns/core?p=${s}`;
-		};
+		const toCoreBridgeUrl = (sub: string) => buildCoreUrlPath(sub);
 		// Static: import ... from "...@nativescript/core[/sub]..."
 		out = out.replace(/from\s+["'][^"']*@nativescript[\/_-]core([^"']*)["']/g, (_m, sub: string) => `from "${toCoreBridgeUrl(sub)}"`);
 		// Side-effect: import "...@nativescript/core[/sub]..."
@@ -129,8 +116,9 @@ export function normalizeAnyCoreSpecToBridge(code: string): string {
 		// Dynamic: import("...@nativescript/core[/sub]...")
 		out = out.replace(/import\(\s*["'][^"']*@nativescript[\/_-]core([^"']*)["']\s*\)/g, (_m, sub: string) => `import("${toCoreBridgeUrl(sub)}")`);
 		// Repair glitch where a previous pass split/merged lines into: "from import '/ns/core...'"
-		// Normalize to a valid specifier: "from '/ns/core...'"
-		out = out.replace(/from\s+import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[0-9]+)?(?:\?p=[^"']+)?)['"]/g, (_m, url: string) => `from "${url}"`);
+		// Normalize to a valid specifier: "from '/ns/core...'". Accepts both
+		// canonical path form (/ns/core/<sub>) and legacy ?p= form.
+		out = out.replace(/from\s+import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?(?:\?p=[^"']+)?)['"]/g, (_m, url: string) => `from "${url}"`);
 		return out;
 	} catch {
 		return code;
@@ -141,28 +129,39 @@ export function normalizeAnyCoreSpecToBridge(code: string): string {
  * Rewrite a single import/export specifier for device consumption.
  *
  * Converts Vite-resolved root-relative paths to URLs the device can fetch:
- *   /node_modules/@nativescript/core/x/y  →  /ns/core/{ver}?p=x/y
+ *   /node_modules/@nativescript/core/x/y  →  /ns/core/x/y   (canonical)
  *   /node_modules/other-pkg/x.js          →  {origin}/ns/m/node_modules/other-pkg/x.js
  *   /src/app/foo.ts                       →  {origin}/ns/m/src/app/foo.ts
  *   already /ns/... or http://...         →  unchanged
  */
 function rewriteSpec(spec: string, origin: string, ver: number): string {
+	void ver;
 	// Strip Vite cache-busting query params for bridge URLs
 	const cleanSpec = spec.split('?')[0];
 
-	// @nativescript/core anywhere in the path → core bridge
+	// @nativescript/core anywhere in the path → core bridge.
+	// Delegated to the ONE canonical URL generator (see Invariant A in
+	// HMR_CORE_REALM_DETERMINISTIC_PLAN.md) to guarantee that every emitter
+	// — this function, the ns-core-external-urls plugin, main-entry's
+	// coreSpec, and the runtime import map — produces byte-identical URLs
+	// for the same logical module. Mixed forms (query `?p=`, versioned,
+	// `.js` suffix) would otherwise produce distinct iOS HTTP ESM cache
+	// entries for the same file, re-evaluating register() side effects and
+	// crashing on "Cannot redefine property".
 	const coreIdx = cleanSpec.indexOf('@nativescript/core');
 	if (coreIdx !== -1) {
 		const after = cleanSpec.substring(coreIdx + '@nativescript/core'.length);
-		const sub = after.replace(/^\//, '').trim();
-		if (!sub || sub === 'index' || sub === 'index.js') {
-			return `/ns/core/${ver}`;
-		}
-		return `/ns/core/${ver}?p=${sub}`;
+		return buildCoreUrlPath(after);
 	}
 
 	// Already a bridge, vendor, or HTTP URL → leave unchanged
 	if (spec.startsWith('/ns/') || spec.startsWith('http://') || spec.startsWith('https://') || spec.startsWith('ns-vendor://')) {
+		return spec;
+	}
+
+	// Leave relative specifiers for Vite/rolldown to resolve (they do not
+	// appear after Vite transform but the guard is free)
+	if (spec.startsWith('./') || spec.startsWith('../')) {
 		return spec;
 	}
 
@@ -171,7 +170,19 @@ function rewriteSpec(spec: string, origin: string, ver: number): string {
 		return `${origin}/ns/m${spec}`;
 	}
 
-	return spec;
+	// Bare package specifier (e.g. `source-map-js/lib/source-map-generator.js`)
+	// → HTTP URL through /ns/m/node_modules/ handler. Under HMR bundle-build,
+	// @nativescript/core subpath modules served by this bridge (e.g.
+	// /ns/core?p=inspector_modules) may reference other npm packages with bare
+	// specifiers in their transformed output — specifically, the CommonJS
+	// compat transformer for source-map-js rewrites `require('./lib/source-
+	// map-generator')` into `import from 'source-map-js/lib/source-map-
+	// generator.js'`, a bare specifier that iOS's ESM loader cannot resolve at
+	// module-instantiation time (the runtime import map isn't installed yet).
+	// Converting to /ns/m/node_modules/<spec> makes iOS fetch the package over
+	// HTTP, which Vite serves through the same pipeline that already handles
+	// every other node_modules subpath import in the app.
+	return `${origin}/ns/m/node_modules/${spec}`;
 }
 
 /**
@@ -198,7 +209,14 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
 	//   import * as X from "spec"
 	//   export { X } from "spec"
 	//   export * from "spec"
-	result = result.replace(/(from\s*)(["'])([^"']+)\2/g, (_m, pre: string, q: string, spec: string) => {
+	//
+	// The lookbehind guard below ensures we only match `from` at the start of
+	// its ESM-keyword context, not `from` appearing INSIDE a string literal
+	// (e.g. `if (time === 'from') { … }` in @nativescript/core's
+	// css-animation-parser). Without this guard the regex spans from the
+	// `from` inside the string to the NEXT quote elsewhere in the file,
+	// corrupting both tokens.
+	result = result.replace(/(?<![a-zA-Z0-9_$'"`])(from\s+)(["'])([^"']+)\2/g, (_m, pre: string, q: string, spec: string) => {
 		return `${pre}${q}${rewriteSpec(spec, origin, ver)}${q}`;
 	});
 
@@ -221,9 +239,9 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
 /**
  * Determine whether a `/ns/core` bridge URL points to a real subpath module.
  *
- * Any `/ns/core?p=...` module now serves real ESM content with real named
+ * Any `/ns/core/<sub>` module now serves real ESM content with real named
  * exports via Vite's transform pipeline, except for package-main aliases like
- * `/ns/core?p=index.js`, which should be treated like the main `/ns/core`
+ * `/ns/core/index`, which should be treated like the main `/ns/core`
  * bridge and destructured from its default export.
  * The main proxy bridge (`/ns/core`) still only exports a default Proxy and
  * requires named imports to be destructured from it.
@@ -231,14 +249,25 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
  * This check is used in all named-import-to-default destructuring passes to
  * skip rewriting for real subpath modules — they have named exports that work
  * natively without conversion.
+ *
+ * Accepts both the canonical path form (`/ns/core/<sub>`) and the legacy
+ * query form (`/ns/core?p=<sub>`) for back-compat; every emitter has been
+ * migrated to the path form but external code may still carry the old URL.
  */
 export function isDeepCoreSubpath(url: string): boolean {
-	const match = url.match(/\?p=([^&'"#]+)/);
-	if (!match) return false;
-	const sub = String(match[1] || '').replace(/^\/+/, '');
-	if (!sub || sub === 'index' || sub === 'index.js') {
-		return false;
+	if (!url || typeof url !== 'string') return false;
+	// Legacy query form
+	const query = url.match(/\?p=([^&'"#]+)/);
+	if (query) {
+		const sub = String(query[1] || '').replace(/^\/+/, '');
+		if (!sub || sub === 'index' || sub === 'index.js') return false;
+		return true;
 	}
+	// Canonical path form — extract the subpath segment following /ns/core/.
+	const path = url.match(/\/ns\/core\/([^?#]+)/);
+	if (!path) return false;
+	const sub = String(path[1] || '').replace(/^\/+|\/+$/g, '');
+	if (!sub || sub === 'index' || sub === 'index.js') return false;
 	return true;
 }
 

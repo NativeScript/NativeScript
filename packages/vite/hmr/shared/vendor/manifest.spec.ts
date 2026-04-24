@@ -41,6 +41,43 @@ describe('collectVendorModules', () => {
 		expect(collected.entries).not.toContain('stacktrace-js');
 	});
 
+	it('excludes Angular framework packages so they resolve only through HTTP', () => {
+		const root = mkdtempSync(join(tmpdir(), 'ns-vendor-manifest-'));
+		tempRoots.push(root);
+
+		writeFileSync(
+			join(root, 'package.json'),
+			JSON.stringify(
+				{
+					name: 'fixture-app',
+					version: '0.0.0',
+					dependencies: {
+						'@nativescript/angular': '*',
+						'@angular/core': '*',
+						'@angular/common': '*',
+						'@angular/compiler': '*',
+						'@angular/forms': '*',
+						'@angular/router': '*',
+						'@angular/platform-browser': '*',
+					},
+				},
+				null,
+				2,
+			),
+		);
+
+		for (const name of ['@nativescript/angular', '@angular/core', '@angular/common', '@angular/compiler', '@angular/forms', '@angular/router', '@angular/platform-browser']) {
+			mkdirSync(join(root, 'node_modules', ...name.split('/')), { recursive: true });
+			writeFileSync(join(root, 'node_modules', ...name.split('/'), 'package.json'), JSON.stringify({ name, version: '1.0.0' }, null, 2));
+		}
+
+		const collected = collectVendorModules(root, 'ios', 'angular');
+
+		for (const name of ['@nativescript/angular', '@angular/core', '@angular/common', '@angular/compiler', '@angular/forms', '@angular/router', '@angular/platform-browser']) {
+			expect(collected.entries).not.toContain(name);
+		}
+	});
+
 	it('emits the same runtime bundle contract for served vendor modules', () => {
 		const code = createVendorBundleRuntimeModule({
 			code: 'export const __nsVendorModuleMap = { "pinia": {} };\n',

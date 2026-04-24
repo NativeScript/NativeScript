@@ -26,6 +26,7 @@ import { getVendorManifest, listVendorModules } from '../shared/vendor/registry.
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 import { getProjectRootPath } from '../../helpers/project.js';
+import { buildCoreUrl } from '../../helpers/ns-core-url.js';
 
 type DeviceImportMapExposure = 'full' | 'prefix-only' | 'omit';
 
@@ -106,9 +107,12 @@ export function generateImportMap(options: ImportMapOptions): ImportMap {
 		}
 	}
 
-	// @nativescript/core → bridge endpoint
-	imports['@nativescript/core'] = `${origin}/ns/core`;
-	imports['@nativescript/core/'] = `${origin}/ns/core/`;
+	// @nativescript/core → bridge endpoint (canonical URL generator, see
+	// Invariant A in HMR_CORE_REALM_DETERMINISTIC_PLAN.md). The trailing-
+	// slash entry intentionally uses the same generator so subpath imports
+	// resolve via `${origin}/ns/core/<sub>`.
+	imports['@nativescript/core'] = buildCoreUrl(origin);
+	imports['@nativescript/core/'] = `${buildCoreUrl(origin)}/`;
 
 	// Add framework-specific entries
 	addFrameworkEntries(imports, origin, flavor);
