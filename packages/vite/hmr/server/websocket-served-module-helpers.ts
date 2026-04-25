@@ -138,16 +138,17 @@ export function ensureGuardPlainDynamicImports(code: string, _origin: string): s
 	}
 }
 
-// alpha.59 — Stable URL helper for dynamic imports.
+// Stable URL helper for dynamic imports.
 //
-// Pre-alpha.59 the helper synthesized `/ns/m/__ns_hmr__/<tag>/<rest>` URLs
-// from `globalThis.__NS_HMR_GRAPH_VERSION__` and an importer-derived tag.
-// That tag flowed straight into V8's `g_moduleRegistry` cache key — so a
-// `graphVersion` bump on every save effectively flushed the whole module
-// graph (HMR latency was dominated by Vite re-transforming the unchanged
-// closure on every save, ~3s per cycle).
+// Older versions of the helper synthesized
+// `/ns/m/__ns_hmr__/<tag>/<rest>` URLs from
+// `globalThis.__NS_HMR_GRAPH_VERSION__` and an importer-derived tag.
+// That tag flowed straight into V8's `g_moduleRegistry` cache key — so
+// a `graphVersion` bump on every save effectively flushed the whole
+// module graph (HMR latency was dominated by Vite re-transforming the
+// unchanged closure on every save).
 //
-// alpha.59 inverts that contract:
+// The current contract inverts that:
 //   * The runtime canonicalizes any URL shape (boot prefix, hmr prefix,
 //     stable) to a single key via `CanonicalizeHttpUrlKey`.
 //   * The Angular client receives an explicit eviction set in
@@ -167,10 +168,10 @@ export function ensureGuardPlainDynamicImports(code: string, _origin: string): s
 //   2. `/ns/m/...` specs that don't yet have a boot prefix get one
 //      added when the caller is itself a boot-tagged module. This
 //      keeps the boot-progress instrumentation flowing through the
-//      transitive cold-boot graph on alpha.59 + alpha.59 boot
-//      sequences. Once HMR takes over (`__NS_HMR_BOOT_COMPLETE__` is
-//      set on the global), no prefix is added — the runtime
-//      canonicalizer collapses any historical prefix to the same key.
+//      transitive cold-boot graph during cold-boot sequences. Once HMR
+//      takes over (`__NS_HMR_BOOT_COMPLETE__` is set on the global), no
+//      prefix is added — the runtime canonicalizer collapses any
+//      historical prefix to the same key.
 //   3. Everything else is a pass-through `import(spec)`.
 export function ensureDynamicHmrImportHelper(code: string): string {
 	try {

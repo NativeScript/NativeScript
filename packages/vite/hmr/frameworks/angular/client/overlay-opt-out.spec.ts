@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
- * alpha.62 follow-up — opt-out flag
+ * HMR-applying overlay opt-out flag
  * (`NS_VITE_PROGRESS_OVERLAY=0` → `__NS_HMR_PROGRESS_OVERLAY_ENABLED__ = false`).
  *
  * The angular client captures the gate value once at module load

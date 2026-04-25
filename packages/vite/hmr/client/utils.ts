@@ -3,8 +3,8 @@
  */
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 
-// alpha.59 — Build-time verbose flag, read defensively so unit tests
-// (where the `define` substitution doesn't run) don't blow up.
+// Build-time verbose flag, read defensively so unit tests (where the
+// `define` substitution doesn't run) don't blow up.
 const ENV_VERBOSE: boolean = (() => {
 	try {
 		return typeof __NS_ENV_VERBOSE__ === 'boolean' ? __NS_ENV_VERBOSE__ : false;
@@ -214,25 +214,25 @@ export function deriveHttpOrigin(wsUrl: string | undefined) {
 	}
 }
 
-// alpha.59 — Detect runtime support for `__nsInvalidateModules`.
+// Detect runtime support for `__nsInvalidateModules`.
 //
-// alpha.59 ships a global JS function `__nsInvalidateModules(urls)` that
-// removes the canonical key for each URL from V8's module registry
-// (`g_moduleRegistry`). Combined with the HMR URL canonicalizer in
-// HMRSupport.mm — which strips `__ns_hmr__/<tag>/` and
-// `__ns_boot__/b1/` prefixes before keying — explicit eviction lets
-// the client keep import URLs STABLE across saves while still busting
-// V8's cache for exactly the modules that need to re-evaluate.
+// Modern runtimes ship a global JS function `__nsInvalidateModules(urls)`
+// that removes the canonical key for each URL from V8's module registry
+// (`g_moduleRegistry`). Combined with the HMR URL canonicalizer in the
+// runtime — which strips `__ns_hmr__/<tag>/` and `__ns_boot__/b1/`
+// prefixes before keying — explicit eviction lets the client keep
+// import URLs STABLE across saves while still busting V8's cache for
+// exactly the modules that need to re-evaluate.
 //
-// Without explicit eviction, an alpha.59 runtime would silently drop
-// the legacy `/ns/m/__ns_hmr__/v<N>/...` cache-buster (because the
+// Without explicit eviction, a modern runtime would silently drop the
+// legacy `/ns/m/__ns_hmr__/v<N>/...` cache-buster (because the
 // canonicalizer collapses it back to the stable key) and any HMR
 // re-import would resolve to the cached old module. So when the
 // runtime exposes `__nsInvalidateModules`, the client emits stable
 // URLs and the caller is responsible for invalidating before
-// re-importing. When the runtime does NOT expose it (alpha.58 and
-// earlier), the client falls back to legacy URL versioning so cache
-// busting works even on older devices.
+// re-importing. When the runtime does NOT expose it, the client falls
+// back to legacy URL versioning so cache busting works even on older
+// devices.
 export function hasExplicitEviction(): boolean {
 	try {
 		return typeof (globalThis as any).__nsInvalidateModules === 'function';
@@ -242,15 +242,16 @@ export function hasExplicitEviction(): boolean {
 }
 
 // One-time mode banner so the user can correlate an HMR slowdown with
-// the active eviction strategy without grepping logs.
+// the active eviction strategy without grepping logs. Verbose-only.
 let _hmrModeBannerEmitted = false;
 export function emitHmrModeBannerOnce(force = false): void {
 	if (_hmrModeBannerEmitted && !force) return;
 	_hmrModeBannerEmitted = true;
+	if (!ENV_VERBOSE) return;
 	try {
 		const supported = hasExplicitEviction();
 		const mode = supported ? 'explicit-eviction (stable URLs)' : 'legacy-url-versioning (no __nsInvalidateModules)';
-		console.info(`[hmr-client] alpha.59 module reload mode: ${mode}`);
+		console.info(`[hmr-client] module reload mode: ${mode}`);
 	} catch {}
 }
 
@@ -260,7 +261,7 @@ export function _resetHmrModeBannerForTests(): void {
 	_hmrModeBannerEmitted = false;
 }
 
-// alpha.59 — Explicit module eviction.
+// Explicit module eviction.
 //
 // Hands a list of canonical module URLs (or `/ns/m/...` paths) to the
 // runtime so V8's module registry drops them. Returns true iff the
@@ -342,9 +343,9 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 	const baseUrl = origin + basePath;
 	let url = baseUrl;
 
-	// alpha.59 — Stable URL when explicit eviction is supported.
+	// Stable URL when explicit eviction is supported.
 	//
-	// On alpha.59+ runtimes the canonicalizer collapses any
+	// On modern runtimes the canonicalizer collapses any
 	// `__ns_hmr__/<tag>/` segment back to the stable key, so embedding
 	// a tag does nothing useful — V8 still resolves to the cached
 	// module. We rely on the caller (queue processor, framework
@@ -352,11 +353,11 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 	// and emit the canonical URL so successive saves never drift
 	// across cache identities.
 	//
-	// On alpha.58 (and earlier) runtimes there is no canonicalizer and
-	// no `__nsInvalidateModules`, so we MUST embed a tag in the path
-	// (the iOS HTTP loader strips query params before keying its
-	// cache, so the bust must live in the path). Otherwise the second
-	// save returns a cache hit with the old module.
+	// On legacy runtimes (no canonicalizer, no `__nsInvalidateModules`),
+	// we MUST embed a tag in the path — the iOS HTTP loader strips
+	// query params before keying its cache, so the bust must live in
+	// the path. Otherwise the second save returns a cache hit with the
+	// old module.
 	if (!hasExplicitEviction()) {
 		try {
 			const v = typeof graphVersion === 'number' ? graphVersion : 0;

@@ -1,5 +1,5 @@
 /**
- * alpha.62 follow-up — early "pending" notification.
+ * Early "pending" notification for HMR.
  *
  * When `handleHotUpdate(ctx)` first fires for a save event, the server
  * spends 7–200ms doing graph upserts, transforms and dependency

@@ -5,7 +5,7 @@ declare const __NS_HMR_KICKSTART_MAX_URLS__: number | undefined;
 
 type GetCoreFn = (name: string) => any;
 
-// Round-eleven.3 (alpha.62) — HMR-applying progress overlay.
+// HMR-applying progress overlay.
 //
 // We route progress through `globalThis.__NS_HMR_DEV_OVERLAY__`
 // instead of importing the overlay module directly. This mirrors how
@@ -22,14 +22,14 @@ type HmrUpdateOverlayInfo = {
 	progress?: number | null;
 };
 
-// alpha.62 follow-up — opt-out flag (default: enabled). Driven by
-// `NS_VITE_PROGRESS_OVERLAY=0` (or `false`/`off`/`no`) on the dev
-// server; baked into the bundle via `__NS_HMR_PROGRESS_OVERLAY_ENABLED__`
-// at build time. We collapse the build-time constant into a runtime
-// boolean once so each call-site is a single property check rather
-// than a try/typeof. Tests that re-run the angular client (via vitest)
-// see `undefined` and default to enabled — matching the production
-// dev-server experience.
+// Opt-out flag for the apply-progress overlay (default: enabled).
+// Driven by `NS_VITE_PROGRESS_OVERLAY=0` (or `false`/`off`/`no`) on the
+// dev server; baked into the bundle via
+// `__NS_HMR_PROGRESS_OVERLAY_ENABLED__` at build time. We collapse the
+// build-time constant into a runtime boolean once so each call-site is
+// a single property check rather than a try/typeof. Tests that re-run
+// the angular client (via vitest) see `undefined` and default to
+// enabled — matching the production dev-server experience.
 const overlayEnabled: boolean = (() => {
 	try {
 		return typeof __NS_HMR_PROGRESS_OVERLAY_ENABLED__ === 'boolean' ? __NS_HMR_PROGRESS_OVERLAY_ENABLED__ : true;
@@ -66,8 +66,7 @@ function hideUpdateOverlay(): void {
 	} catch {}
 }
 
-// alpha.59 — Safe accessor for the build-time `__NS_ENV_VERBOSE__`
-// constant.
+// Safe accessor for the build-time `__NS_ENV_VERBOSE__` constant.
 //
 // Vite replaces `__NS_ENV_VERBOSE__` at build time via `define`. In
 // unit tests (vitest, plain ts-node, etc.) the identifier is
@@ -76,11 +75,10 @@ function hideUpdateOverlay(): void {
 // build-time constant into a runtime boolean once at module load and
 // then short-circuit on `verbose` arguments at every call-site.
 //
-// Pre-alpha.59 several call-sites wrote `if (__NS_ENV_VERBOSE__ &&
-// options.verbose)`, which threw on the FIRST call into
-// `refreshAngularBootstrapOptions` from a test. Always order
-// `verbose && envVerbose` so the runtime flag short-circuits the
-// build constant.
+// Always order `verbose && envVerbose` so the runtime flag
+// short-circuits the build-time constant; that prevents reference
+// errors in test environments where the `define` substitution does
+// not run.
 const envVerbose: boolean = (() => {
 	try {
 		return typeof __NS_ENV_VERBOSE__ === 'boolean' ? __NS_ENV_VERBOSE__ : false;
@@ -107,17 +105,17 @@ interface AngularUpdateOptions {
 	verbose: boolean;
 }
 
-// alpha.59 — HMR cycle serialization mutex.
+// HMR cycle serialization mutex.
 //
-// Pre-alpha.59 a back-to-back save (e.g., the user holds Cmd+S, or
-// `runOnSave` saves a file twice during one tick) could overlap two
-// HMR cycles: the first cycle's `import(entry)` would still be
-// resolving when the second cycle's `__nsInvalidateModules` ran,
-// leaving the registry in a half-evicted state and producing flaky
-// "module already evaluated" errors.
+// A back-to-back save (e.g., the user holds Cmd+S, or `runOnSave`
+// saves a file twice during one tick) could overlap two HMR cycles:
+// the first cycle's `import(entry)` would still be resolving when the
+// second cycle's `__nsInvalidateModules` ran, leaving the registry in
+// a half-evicted state and producing flaky "module already evaluated"
+// errors.
 //
-// Each `handleAngularHotUpdateMessage` call now publishes a promise
-// to `inFlightHmrCycle` and awaits the previous publication before
+// Each `handleAngularHotUpdateMessage` call publishes a promise to
+// `inFlightHmrCycle` and awaits the previous publication before
 // starting its own evict + import. The previous-cycle promise resolves
 // regardless of success or failure (we always run `resolveCycle()` in
 // `finally`), so a stuck cycle can't deadlock the queue. The mutex is
@@ -125,20 +123,19 @@ interface AngularUpdateOptions {
 // websocket reconnect (both blow away the JS realm).
 let inFlightHmrCycle: Promise<void> | null = null;
 
-// alpha.59 — Explicit module eviction.
+// Explicit module eviction.
 //
 // `__nsInvalidateModules` is a runtime-installed global that takes an
 // array of canonical /ns/m/<rel> URLs and removes each one from V8's
 // module registry (`g_moduleRegistry`). The runtime canonicalizer
-// (HMRSupport.mm) strips legacy `__ns_hmr__/<tag>/` and
-// `__ns_boot__/b1/` segments before lookup, so the same URL evicts
-// every cache entry historically created for that module — even if a
-// pre-alpha.59 stale tagged URL is still around.
+// strips legacy `__ns_hmr__/<tag>/` and `__ns_boot__/b1/` segments
+// before lookup, so the same URL evicts every cache entry historically
+// created for that module — even if a stale tagged URL is still around.
 //
-// Soft-fails on older runtimes (alpha.58 and earlier) that don't
-// expose the function. In that case we fall through to the legacy
-// URL-versioning path and emit a one-time warning so the user knows
-// the eviction protocol is unavailable.
+// Soft-fails on older runtimes that don't expose the function. In that
+// case we fall through to the legacy URL-versioning path and emit a
+// one-time warning so the user knows the eviction protocol is
+// unavailable.
 function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	if (!urls || !urls.length) return false;
 	const g: any = globalThis;
@@ -164,7 +161,7 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	}
 }
 
-// alpha.63 — Parallel module-source prefetch for the HMR re-import.
+// Parallel module-source prefetch for the HMR re-import.
 //
 // Why this exists. After `__nsInvalidateModules(evictPaths)` the
 // V8 cache (`g_moduleRegistry`) no longer holds the changed file
@@ -192,13 +189,11 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 // the runtime's BFS-from-seed mode would (a) re-fetch modules V8
 // still has compiled, and (b) add one round trip per graph level.
 // Passing the array form takes the explicit list, fans it out in
-// one wave, and skips the recursion. The runtime's array
-// overload is the alpha.63 native-side change that landed alongside
-// this client.
+// one wave, and skips the recursion.
 //
 // Soft-fail behavior:
 // - Older runtime (no `__nsKickstartHmrPrefetch`)  → no-op, V8 falls
-//   back to per-module `HttpFetchText` (today's behavior).
+//   back to per-module `HttpFetchText`.
 // - Older runtime (string-only `__nsKickstartHmrPrefetch`)  → array
 //   arg is rejected by the runtime; we still log no-op and proceed.
 // - Kickstart timeout                              → partial
@@ -211,13 +206,13 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 // evaluated.
 type KickstartResult = { ok: boolean; fetched: number; ms: number };
 
-// alpha.64 — Eviction-set size cap for the kickstart.
+// Eviction-set size cap for the kickstart.
 //
 // `__NS_HMR_KICKSTART_MAX_URLS__` is a build-time literal injected
 // by `helpers/global-defines.ts` (default 32). It is a pure
 // performance gate: the kickstart never affects correctness, so
-// skipping it for large fan-out edits just reverts the runtime to
-// alpha.62-style sequential `HttpFetchText`. See the doc comment on
+// skipping it for large fan-out edits simply reverts the runtime to
+// sequential `HttpFetchText`. See the doc comment on
 // `resolveHmrKickstartMaxUrls` (in global-defines.ts) for the
 // rationale and the empirical numbers behind the default.
 //
@@ -249,8 +244,7 @@ const kickstartMaxUrls: number = (() => {
 // - `urls.length > cap`  → skip kickstart (returns false). V8 falls
 //   back to per-module synchronous fetches inside its module walk.
 // - `cap === 0`           → kickstart disabled regardless of size.
-// - `cap === Infinity`    → kickstart always eligible (alpha.63
-//   behavior).
+// - `cap === Infinity`    → kickstart always eligible (no cap).
 export function shouldRunKickstart(urlCount: number, maxUrls: number = kickstartMaxUrls): boolean {
 	if (!Number.isFinite(urlCount) || urlCount <= 0) return false;
 	if (!Number.isFinite(maxUrls)) return maxUrls > 0;
@@ -295,7 +289,7 @@ function kickstartHmrPrefetch(urls: readonly string[], verbose: boolean): Kickst
 
 function getAngularBootstrapEntryCandidates(msg: any): string[] {
 	const root = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
-	// alpha.59 — Server announces the canonical bootstrap entry as
+	// Server announces the canonical bootstrap entry as
 	// `importerEntry`, computed from `package.json#main`. Fall back to
 	// the legacy `entryCandidates` array (for older servers) and finally
 	// to a hard-coded list. All candidates must be project-relative
@@ -337,24 +331,22 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 
 	const origin = originSource.replace(/\/$/, '');
 
-	// alpha.59 — Explicit eviction set takes precedence over URL
-	// versioning. The server walks the inverse-dep closure of the
-	// changed file (collectAngularEvictionUrls) and emits canonical
-	// /ns/m/<rel> URLs in `evictPaths`. We hand the list to the runtime
-	// before re-importing the entry; the runtime drops those entries
-	// from `g_moduleRegistry` so V8's subsequent `import(entry)` walks
-	// the dep graph and re-fetches ONLY those modules. Everything else
-	// stays hot in the cache (the dominant cost of a pre-alpha.59 HMR
-	// cycle was V8 re-fetching the ENTIRE graph because the URL changed
-	// for every node — see HMR_STABLE_URL_INVALIDATION_PLAN.md).
+	// Explicit eviction set takes precedence over URL versioning. The
+	// server walks the inverse-dep closure of the changed file
+	// (collectAngularEvictionUrls) and emits canonical /ns/m/<rel> URLs
+	// in `evictPaths`. We hand the list to the runtime before
+	// re-importing the entry; the runtime drops those entries from
+	// `g_moduleRegistry` so V8's subsequent `import(entry)` walks the
+	// dep graph and re-fetches ONLY those modules. Everything else stays
+	// hot in the cache.
 	const evictPaths = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)) : [];
 
-	// Round-eleven.3 — Drive the apply-progress overlay through the
-	// 'evicting' frame *before* the runtime invalidate call so the
-	// user sees the count even on the cheapest stage. Eviction count
-	// also doubles as a useful debug breadcrumb in the overlay's
-	// detail line — large counts (e.g. constants edits → 100+
-	// importers) explain why a cycle takes longer than an HTML edit.
+	// Drive the apply-progress overlay through the 'evicting' frame
+	// *before* the runtime invalidate call so the user sees the count
+	// even on the cheapest stage. Eviction count also doubles as a
+	// useful debug breadcrumb in the overlay's detail line — large
+	// counts (e.g. constants edits → 100+ importers) explain why a
+	// cycle takes longer than an HTML edit.
 	setUpdateOverlayStage('evicting', {
 		detail: evictPaths.length ? `Invalidating ${evictPaths.length} module${evictPaths.length === 1 ? '' : 's'}` : 'Invalidating module cache',
 	});
@@ -367,7 +359,7 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 		} catch {}
 	}
 
-	// alpha.63 — Parallel HTTP prefetch for the freshly-evicted modules.
+	// Parallel HTTP prefetch for the freshly-evicted modules.
 	//
 	// Order matters here: the kickstart MUST run after the eviction so
 	// that it actually re-populates `g_prefetchCache` for the modules
@@ -383,17 +375,17 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	// prefixed forms V8 will end up requesting. Better to skip the
 	// optimization than risk a confusing partial cache hit.
 	//
-	// alpha.64 — `shouldRunKickstart` gates large eviction sets out
-	// of the parallel wave. A `.ts` file with deep inverse-dep
-	// fan-in (constants files, design-system enums) can produce a
+	// `shouldRunKickstart` gates large eviction sets out of the
+	// parallel wave. A `.ts` file with deep inverse-dep fan-in
+	// (constants files, design-system enums) can produce a
 	// 200–300-URL closure that overwhelms Vite's single-threaded
 	// transform pipeline. The kickstart fan-out then makes the cycle
 	// 5–8× slower than letting V8 fetch sequentially as it walks the
 	// real forward path. The cap (default 32, override with
 	// `NS_VITE_KICKSTART_MAX_URLS`) keeps component-shaped closures
 	// (typically 5–30 URLs) on the fast path. Correctness is
-	// unaffected — V8's per-module synchronous fetch is the same code
-	// path the runtime used through alpha.62.
+	// unaffected — V8's per-module synchronous fetch is the same fall-
+	// back code path the runtime has always used.
 	if (evicted && evictPaths.length > 0) {
 		if (shouldRunKickstart(evictPaths.length)) {
 			const result = kickstartHmrPrefetch(evictPaths, options.verbose);
@@ -411,28 +403,27 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 
 	// URL strategy:
 	//
-	// * `evicted=true`  → alpha.59 runtime accepted the eviction; we
+	// * `evicted=true`  → modern runtime accepted the eviction; we
 	//   re-import the entry under its STABLE canonical URL. V8's
 	//   registry no longer holds the evicted modules so the import
 	//   triggers fresh fetches for them; the rest of the graph is a
 	//   cache hit.
 	// * `evicted=false` → either we have no eviction set (older server)
 	//   or the runtime lacks `__nsInvalidateModules` (older runtime).
-	//   Fall back to the legacy `__ns_hmr__/v<version>/` URL pattern
-	//   so V8 sees a fresh URL and re-fetches the entry. The runtime
-	//   canonicalizer (alpha.59) collapses the path back to the stable
-	//   key, which keeps cache identity consistent across saves.
+	//   Fall back to the legacy `__ns_hmr__/v<version>/` URL pattern so
+	//   V8 sees a fresh URL and re-fetches the entry. The runtime
+	//   canonicalizer collapses the path back to the stable key, which
+	//   keeps cache identity consistent across saves.
 	const versionRaw = typeof msg?.version === 'number' ? msg.version : 0;
 	const useStableUrls = evicted;
 
 	let lastError: unknown;
 
-	// Round-eleven.3 — 'reimporting' is the entry point for the long
-	// tail of an HMR cycle: V8 walks the freshly-evicted graph and
-	// the iOS runtime re-fetches each node from the dev server. We
-	// announce the stage once, before the loop, so the user sees a
-	// progress jump even when the import resolves on the first
-	// candidate (the common case).
+	// 'reimporting' is the entry point for the long tail of an HMR
+	// cycle: V8 walks the freshly-evicted graph and the iOS runtime
+	// re-fetches each node from the dev server. We announce the stage
+	// once, before the loop, so the user sees a progress jump even when
+	// the import resolves on the first candidate (the common case).
 	setUpdateOverlayStage('reimporting', {
 		detail: 'Re-importing Angular bootstrap entry',
 	});
@@ -462,11 +453,11 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 		return false;
 	}
 
-	// alpha.59 — Cycle mutex. See `inFlightHmrCycle` for why this is
-	// necessary. We publish `thisCycle` *before* awaiting the previous
-	// one so a third concurrent message sees the latest in-flight,
-	// not the stale previous. This serializes N concurrent updates into
-	// a single FIFO chain.
+	// Cycle mutex. See `inFlightHmrCycle` for why this is necessary. We
+	// publish `thisCycle` *before* awaiting the previous one so a third
+	// concurrent message sees the latest in-flight, not the stale
+	// previous. This serializes N concurrent updates into a single FIFO
+	// chain.
 	const previousCycle = inFlightHmrCycle;
 	let resolveCycle!: () => void;
 	const thisCycle = new Promise<void>((resolve) => {
@@ -529,11 +520,10 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			try {
 				g.__NS_DEV_RESET_IN_PROGRESS__ = true;
 			} catch {}
-			// Round-eleven.3 — 'rebooting' marks the long tail of the
-			// cycle: NgZone teardown, module re-instantiation, and
-			// resetRootView. The detail line shows refresh-so-far ms
-			// so a user can already see if the slow phase is
-			// re-import or reboot.
+			// 'rebooting' marks the long tail of the cycle: NgZone
+			// teardown, module re-instantiation, and resetRootView.
+			// The detail line shows refresh-so-far ms so a user can
+			// already see if the slow phase is re-import or reboot.
 			setUpdateOverlayStage('rebooting', {
 				detail: `Re-bootstrapping Angular (refresh ${Math.max(0, tAfterRefresh - t0)}ms)`,
 			});
@@ -546,10 +536,10 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			}
 			tEnd = Date.now();
 			emitTiming(true);
-			// Round-eleven.3 — 'complete' surfaces the wall-clock
-			// total so a user gets a single-glance confirmation
-			// matching the [ns-hmr][angular] log line in the
-			// terminal. The overlay auto-hides shortly after.
+			// 'complete' surfaces the wall-clock total so a user gets a
+			// single-glance confirmation matching the [ns-hmr][angular]
+			// log line in the terminal. The overlay auto-hides shortly
+			// after.
 			setUpdateOverlayStage('complete', {
 				detail: `Total ${Math.max(0, tEnd - t0)}ms`,
 			});

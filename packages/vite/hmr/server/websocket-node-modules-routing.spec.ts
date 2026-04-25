@@ -25,15 +25,15 @@ describe('node_modules HTTP import canonicalization', () => {
 		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/node_modules/css-tree/lib/tokenizer/index.js', 492, true)).toBe('/ns/m/node_modules/css-tree/lib/tokenizer/index.js');
 	});
 
-	// alpha.59 — Stable URL + Explicit Invalidation.
+	// Stable URL + Explicit Invalidation.
 	//
-	// Pre-alpha.59 the rewriter stamped `__ns_hmr__/v<N>/` into every
-	// app-module URL on every save. The version segment forced V8 to
-	// re-fetch the entire dependency closure even when only one file
-	// changed (the URL was the cache key). alpha.59 emits stable URLs
-	// and uses an explicit `__nsInvalidateModules` protocol for cache
-	// busting; the rewriter is now a canonicalizer that strips legacy
-	// tags rather than adding them. See HMR_STABLE_URL_INVALIDATION_PLAN.md.
+	// Older versions of the rewriter stamped `__ns_hmr__/v<N>/` into
+	// every app-module URL on every save. The version segment forced
+	// V8 to re-fetch the entire dependency closure even when only one
+	// file changed (the URL was the cache key). The current contract
+	// emits stable URLs and uses an explicit `__nsInvalidateModules`
+	// protocol for cache busting; the rewriter is now a canonicalizer
+	// that strips legacy tags rather than adding them.
 	it('emits stable canonical URLs for application module imports', () => {
 		// Bare app module → stable.
 		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
@@ -96,11 +96,11 @@ describe('stripDecoratedServePrefixes', () => {
 		});
 	});
 
-	it('keeps app module rewrites stable regardless of the supplied tag (alpha.59)', () => {
+	it('keeps app module rewrites stable regardless of the supplied tag', () => {
 		// The `ver` argument is preserved on the function signature for
-		// API compatibility, but it is now ignored for app modules. Cache
-		// busting is driven by `__nsInvalidateModules`, not URL
-		// versioning. See HMR_STABLE_URL_INVALIDATION_PLAN.md.
+		// API compatibility, but it is now ignored for app modules.
+		// Cache busting is driven by `__nsInvalidateModules`, not URL
+		// versioning.
 		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'live', false)).toBe('/ns/m/src/app/app.routes');
 		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/components/signup/signup.component', 'n1', false)).toBe('/ns/m/src/app/components/signup/signup.component');
 		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/components/signup/signup.component', 0, false)).toBe('/ns/m/src/app/components/signup/signup.component');

@@ -1,14 +1,14 @@
-// alpha.59 — Stable URL + Explicit Invalidation.
+// Stable URL + explicit invalidation contract for `/ns/m/...` modules.
 //
-// Pre-alpha.59 the server emitted `/ns/m/__ns_hmr__/v<N>/<rel>` URLs in
-// every served module so that V8's HTTP module cache (`g_moduleRegistry`)
-// would see a fresh URL on each save and re-fetch the dependency closure.
-// On every save the server also bumped a global `graphVersion` counter,
-// which propagated into every emitted URL — effectively invalidating the
-// ENTIRE cached graph on every save (Vite's single-threaded transform
-// pipeline became the wall-clock bottleneck at ~3s per save).
+// Older versions emitted `/ns/m/__ns_hmr__/v<N>/<rel>` URLs in every
+// served module so that V8's HTTP module cache (`g_moduleRegistry`)
+// would see a fresh URL on each save and re-fetch the dependency
+// closure. On every save the server also bumped a global `graphVersion`
+// counter, which propagated into every emitted URL — effectively
+// invalidating the ENTIRE cached graph on every save (Vite's
+// single-threaded transform pipeline became the wall-clock bottleneck).
 //
-// alpha.59 inverts that contract:
+// The current contract inverts that:
 //   - The runtime registers a canonical key for every URL via
 //     `CanonicalizeHttpUrlKey` (HMRSupport.mm), which strips
 //     `__ns_hmr__/<tag>/` and `__ns_boot__/b1/` segments before lookup.
@@ -45,12 +45,11 @@ export function rewriteNsMImportPathForHmr(p: string, _ver: string | number, boo
 
 	// Step 1: collapse any legacy boot+hmr or hmr-only prefix back to the
 	// canonical `/ns/m/<rest>` form. Inputs we may see in the wild include:
-	//   * `/ns/m/__ns_boot__/b1/__ns_hmr__/v<N>/<rest>` (cold-boot served
-	//     code under alpha.58 and earlier)
-	//   * `/ns/m/__ns_hmr__/v<N>/<rest>`               (HMR-served code
-	//     under alpha.58 and earlier)
-	//   * `/ns/m/__ns_boot__/b1/<rest>`                (alpha.59 boot)
-	//   * `/ns/m/<rest>`                                (alpha.59 HMR)
+	//   * `/ns/m/__ns_boot__/b1/__ns_hmr__/v<N>/<rest>` (legacy cold-boot
+	//     served code)
+	//   * `/ns/m/__ns_hmr__/v<N>/<rest>`               (legacy HMR served code)
+	//   * `/ns/m/__ns_boot__/b1/<rest>`                (current cold boot)
+	//   * `/ns/m/<rest>`                                (current HMR)
 	// We strip `__ns_hmr__/<tag>/` regardless of `<tag>` (handles `live`,
 	// `v<N>`, `n<N>`, anything matched by `formatNsMHmrServeTag`). The
 	// `__ns_boot__/b1/` segment is stripped here too — we'll re-add it

@@ -201,15 +201,15 @@ export function collectAngularTransitiveImportersForInvalidation(options: { modu
 	return Array.from(collected.values());
 }
 
-// Round-six narrowing: a TS/JS file needs to invalidate its transitive
+// Angular narrowing: a TS/JS file needs to invalidate its transitive
 // importers only when it carries Angular semantics (a top-level @Component,
 // @Directive, @Pipe, @Injectable, or @NgModule decorator). Files that only
 // export constants, types, enums, plain functions, or plain classes are
 // "leaf" modules — ES modules' live bindings deliver the new exports to
 // importers automatically once V8 re-evaluates the changed module. Forcing
 // every importer to re-transform on a constants edit is what produces the
-// 132-module invalidation wave that dominates the 3.6s `refresh` phase
-// reported on heykiddo-talk-angular for a one-line constants change.
+// large invalidation waves that dominate the `refresh` phase on
+// constants-style edits in big apps.
 //
 // Regex anchors at line start with only whitespace before `@Decorator(` so
 // we don't false-match on string literals, JSDoc references, or commented-
@@ -230,19 +230,18 @@ export function shouldInvalidateAngularTransitiveImporters(options: { flavor: st
 	// Template-only (.html/.htm) edits change the component's view but never
 	// its exported symbol shape, so importers of the component do not need to
 	// re-transform. Skipping the transitive walk here is the single biggest
-	// latency win for template HMR (Track 2.1 in
-	// HMR_CORE_REALM_DETERMINISTIC_PLAN.md).
+	// latency win for template HMR.
 	if (!/\.(?:(m|c)?[jt]sx?)$/i.test(options.file)) {
 		return false;
 	}
 
-	// Round-six: when source is available, narrow to "files whose changes
-	// can affect the Angular semantics of their importers". Files without a
-	// top-level @Component/@Directive/@Pipe/@Injectable/@NgModule decorator
-	// are leaf modules — invalidating the file itself is sufficient.
-	// When source is undefined/null (e.g. ctx.read() failed or the caller
-	// didn't plumb it through), fall back to the conservative pre-round-six
-	// behavior: invalidate transitively, same as before.
+	// When source is available, narrow to "files whose changes can affect
+	// the Angular semantics of their importers". Files without a top-level
+	// @Component/@Directive/@Pipe/@Injectable/@NgModule decorator are leaf
+	// modules — invalidating the file itself is sufficient. When source is
+	// undefined/null (e.g. ctx.read() failed or the caller didn't plumb it
+	// through), fall back to the conservative behavior: invalidate
+	// transitively.
 	if (typeof options.source === 'string') {
 		return angularSourceHasSemanticDecorator(options.source);
 	}
@@ -289,12 +288,11 @@ export function collectAngularTransformCacheInvalidationUrls(options: { file: st
 	return Array.from(urls);
 }
 
-// alpha.59 — Stable URL + Explicit Invalidation.
+// Stable URL + Explicit Invalidation.
 //
 // Compute the set of fully-qualified `/ns/m/<rel>` URLs that the runtime
-// should drop from `g_moduleRegistry` before re-importing main.ts. The set
-// must satisfy the eviction invariants documented in
-// HMR_STABLE_URL_INVALIDATION_PLAN.md §5:
+// should drop from `g_moduleRegistry` before re-importing main.ts. The
+// set must satisfy these invariants:
 //
 // * The changed file itself (so V8 fetches the new source).
 // * Every transitive importer up to the entry (so the new exports are
@@ -308,12 +306,12 @@ export function collectAngularTransformCacheInvalidationUrls(options: { file: st
 // The output URLs are origin-absolute (e.g.
 // `http://localhost:5173/ns/m/src/main.ts`) so the runtime can feed the
 // list directly into `__nsInvalidateModules` without any further
-// resolution work. The runtime canonicalizer (HMRSupport.mm) collapses
-// any residual `__ns_hmr__/<tag>/` or `__ns_boot__/b1/` segments, so the
-// effective registry key is `/ns/m/<rel>` regardless of any tag a stale
-// V8 cache entry might still carry.
+// resolution work. The runtime canonicalizer collapses any residual
+// `__ns_hmr__/<tag>/` or `__ns_boot__/b1/` segments, so the effective
+// registry key is `/ns/m/<rel>` regardless of any tag a stale V8 cache
+// entry might still carry.
 //
-// alpha.61 — Extensionless canonical key.
+// Extensionless canonical key.
 //
 // Vite emits ES module import statements with extensions stripped (this
 // is how `resolve.extensions` works for Angular/TS apps), so V8 in the
@@ -336,8 +334,7 @@ export function collectAngularTransformCacheInvalidationUrls(options: { file: st
 // .cjs/.cts`, emit BOTH the extensioned URL AND the extension-stripped
 // canonical URL. The runtime evicts whichever shape V8 actually has;
 // the other is a harmless `remove:miss`. Cost: at most 2x URLs in
-// `evictPaths` (still tiny relative to the JSON payload). This single
-// change is what unsticks visual updates for the heykiddo case.
+// `evictPaths` (still tiny relative to the JSON payload).
 //
 // Returning a `Set` of URLs (rather than an array) lets the caller
 // collapse multiple sources (changed file + roots + transitive
@@ -382,12 +379,13 @@ export function collectAngularEvictionUrls(options: { file: string; hotUpdateRoo
 		urls.add(`${origin}/ns/m${rel}`);
 		// V8 in the iOS runtime keys `g_moduleRegistry` by the URL Vite
 		// emitted in the *generated* import statement, which strips JS/TS
-		// extensions (see the alpha.61 block above). So the canonical
-		// registry key for an app TS/JS module is the extensionless form.
-		// Emit it alongside the `.ts` form so the explicit eviction matches
-		// whatever shape the runtime actually stored. This cannot
-		// false-positive: at most one of the two URLs maps to a real entry,
-		// and `__nsInvalidateModules` treats unknown keys as no-ops.
+		// extensions (see the extensionless-key block above). So the
+		// canonical registry key for an app TS/JS module is the
+		// extensionless form. Emit it alongside the `.ts` form so the
+		// explicit eviction matches whatever shape the runtime actually
+		// stored. This cannot false-positive: at most one of the two URLs
+		// maps to a real entry, and `__nsInvalidateModules` treats unknown
+		// keys as no-ops.
 		const extMatch = rel.match(/\.(?:[mc]?[jt]sx?)$/i);
 		if (extMatch) {
 			urls.add(`${origin}/ns/m${rel.slice(0, -extMatch[0].length)}`);

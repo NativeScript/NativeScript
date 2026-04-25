@@ -15,9 +15,6 @@
 //   3. `formatPopulateInitialGraphSummary` — the single line we print
 //      when `populateInitialGraph` finishes. Includes module count and
 //      duration so it's trivial to spot regressions.
-//
-// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md — "Track 1 + 2 — diagnostic
-// instrumentation (2026-04)" for the rationale.
 
 export type ServerStartupBannerInput = {
 	version: string;
@@ -30,7 +27,7 @@ export type ServerStartupBannerInput = {
 // Single-line, human-scannable banner. We avoid pretty-printing (no
 // boxes/colors) so it plays well with piped logs and the Vite custom
 // logger. Format:
-//   [hmr-ws] @nativescript/vite@8.0.0-alpha.48 — transformConcurrency=8 transformCacheMs=60000ms lazyInitialGraph=on graphVersion=1
+//   [hmr-ws] @nativescript/vite@<version> — transformConcurrency=8 transformCacheMs=60000ms lazyInitialGraph=on graphVersion=1
 export function formatServerStartupBanner(input: ServerStartupBannerInput): string {
 	const parts = [`transformConcurrency=${Math.max(1, Math.floor(input.transformConcurrency))}`, `transformCacheMs=${Math.max(0, Math.floor(input.transformCacheMs))}ms`, `lazyInitialGraph=${input.lazyInitialGraph ? 'on' : 'off'}`, `graphVersion=${Math.max(0, Math.floor(input.graphVersion))}`];
 	return `[hmr-ws] @nativescript/vite@${input.version} — ${parts.join(' ')}`;
@@ -243,18 +240,14 @@ export type HmrUpdateSummary = {
 	/** Number of HMR clients the message was sent to. */
 	recipients: number;
 	/**
-	 * Round-Seven decision (Angular only): whether transitive-importer
+	 * Angular-only narrowing decision: whether transitive-importer
 	 * invalidation was narrowed because the changed file lacks Angular
 	 * semantic decorators (`@Component`/`@Directive`/`@Pipe`/`@Injectable`/
 	 * `@NgModule`). `true` means narrow (importers preserved, ESM live
 	 * bindings carry the change). `false` means broad (importers also
-	 * invalidated, pre-Round-Seven behavior). `null`/`undefined` means
-	 * the field is not applicable to this update (e.g. CSS, non-Angular
-	 * flavor) and the field is omitted from the summary line entirely.
-	 *
-	 * See HMR_CORE_REALM_DETERMINISTIC_PLAN.md ("Round-eight — surface
-	 * narrowing decision in update summary") for why this is rendered
-	 * inline alongside `invalidated`.
+	 * invalidated). `null`/`undefined` means the field is not applicable
+	 * to this update (e.g. CSS, non-Angular flavor) and the field is
+	 * omitted from the summary line entirely.
 	 */
 	narrowed?: boolean | null;
 };
@@ -266,7 +259,7 @@ export type HmrUpdateSummary = {
  *   [hmr-ws][update] kind=ts file=/src/foo.ts await=12ms framework=180ms broadcast=2ms total=194ms invalidated=23 recipients=1
  *
  * For Angular `.ts` updates, `narrowed=yes|no` is appended so the
- * Round-Seven decision is immediately visible without flipping verbose:
+ * narrowing decision is immediately visible without flipping verbose:
  *   [hmr-ws][update] kind=ts file=/src/app/foo.constants.ts ... invalidated=1 recipients=1 narrowed=yes
  *   [hmr-ws][update] kind=ts file=/src/app/foo.component.ts ... invalidated=132 recipients=1 narrowed=no
  */

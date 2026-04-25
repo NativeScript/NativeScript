@@ -150,8 +150,8 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		const alreadyConfigured = (globalThis as any).__NS_IMPORT_MAP_CONFIGURED__ === true;
 		await prepareRuntimeForSession(session, runtimeApi, verbose);
 		// Record the import-map segment only when we actually did work. The
-		// dedup path (Track 1.2) returns instantly without I/O; omitting the
-		// segment in that case keeps the boot log honest.
+		// dedup path returns instantly without I/O; omitting the segment in
+		// that case keeps the boot log honest.
 		if (!alreadyConfigured) {
 			trace.importMap = { ok: true, ms: Date.now() - tImap };
 		}

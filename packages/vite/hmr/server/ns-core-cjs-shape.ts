@@ -1,7 +1,5 @@
 /**
- * CJS/ESM interop shape (Invariant D).
- *
- * See HMR_CORE_REALM_DETERMINISTIC_PLAN.md § "Invariant D — CJS/ESM interop shape".
+ * CJS/ESM interop shape.
  *
  * PROBLEM
  * -------
@@ -186,7 +184,7 @@ export function hasNamespaceReExport(code: string): boolean {
 }
 
 /**
- * Default-export bridge footer (Invariant D, round 3).
+ * Default-export bridge footer.
  *
  * BACKGROUND
  * ----------
@@ -249,7 +247,7 @@ export function hasNamespaceReExport(code: string): boolean {
  */
 export function buildDefaultExportFooter(rewrittenCode: string): string {
 	if (hasExistingDefaultExport(rewrittenCode)) return '';
-	return ['/* Invariant D: default export bridge — see HMR_CORE_REALM_DETERMINISTIC_PLAN.md */', 'export default __ns_core_self_ns__;'].join('\n');
+	return ['/* Default-export bridge for /ns/core consumers */', 'export default __ns_core_self_ns__;'].join('\n');
 }
 
 /**

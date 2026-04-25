@@ -40,14 +40,14 @@ describe('handleAngularHotUpdateMessage', () => {
 		}
 	});
 
-	// alpha.59 — Stable URL + Explicit Invalidation.
+	// Stable URL + Explicit Invalidation.
 	//
 	// When the server emits an `evictPaths` array AND the runtime
 	// exposes `__nsInvalidateModules`, the client must:
 	//   1. Hand the eviction set to the runtime BEFORE the entry import.
 	//   2. Re-import the entry under its STABLE canonical URL (no
 	//      `__ns_hmr__/v<N>/` segment).
-	// The runtime canonicalizer (HMRSupport.mm alpha.59) then collapses
+	// The runtime canonicalizer (in `HMRSupport.mm`) then collapses
 	// any historical tagged URL still hanging around to the same key,
 	// so the only thing forcing a re-fetch is the explicit eviction.
 	it('hands the eviction set to the runtime and imports the stable entry URL', async () => {
@@ -183,7 +183,7 @@ describe('handleAngularHotUpdateMessage', () => {
 		}
 	});
 
-	// alpha.59 — Cycle serialization mutex.
+	// Cycle serialization mutex.
 	//
 	// Two saves arriving in the same JS turn (or one cycle's import()
 	// awaiting while another save lands) must NOT overlap their evict
@@ -389,7 +389,7 @@ describe('handleAngularHotUpdateMessage', () => {
 	});
 });
 
-// Round-eleven.3 — HMR-applying progress overlay integration.
+// HMR-applying progress overlay integration.
 //
 // These tests pin the contract between the angular client and the
 // dev-overlay runtime: every successful HMR cycle MUST drive the

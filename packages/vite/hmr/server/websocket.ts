@@ -110,14 +110,13 @@ const APP_VIRTUAL_WITH_SLASH = `${APP_VIRTUAL_PREFIX}/`;
 const DEFAULT_MAIN_ENTRY = getProjectAppRelativePath('app.ts');
 const DEFAULT_MAIN_ENTRY_VIRTUAL = getProjectAppVirtualPath('app.ts');
 
-// alpha.59 — Stable URL + Explicit Invalidation:
 // Memoized resolver for the project bootstrap entry as a posix
-// project-relative path (e.g. `/src/main.ts`). This mirrors the resolution
-// the cold-boot wrapper performs (`getPackageJson().main` →
-// project-relative under `/<APP_ROOT_DIR>/`) so the eviction set for HMR
-// always lines up with the URL the runtime actually re-imports. Resolved
-// at first call and cached: `package.json` is read at startup and never
-// changes during a dev session, so it's safe to memoize.
+// project-relative path (e.g. `/src/main.ts`). This mirrors the
+// resolution the cold-boot wrapper performs (`getPackageJson().main` →
+// project-relative under `/<APP_ROOT_DIR>/`) so the eviction set for
+// HMR always lines up with the URL the runtime actually re-imports.
+// Resolved at first call and cached: `package.json` is read at startup
+// and never changes during a dev session, so it's safe to memoize.
 let __ns_bootstrap_entry_rel_cached: string | null = null;
 function getBootstrapEntryRelPath(): string {
 	if (__ns_bootstrap_entry_rel_cached) return __ns_bootstrap_entry_rel_cached;
@@ -430,11 +429,9 @@ function ensureGuardPlainDynamicImports(code: string, origin: string): string {
 	}
 }
 
-// alpha.59 — `ensureDynamicHmrImportHelper` was previously duplicated
-// here. Single source of truth now lives in
+// `ensureDynamicHmrImportHelper` lives in
 // `./websocket-served-module-helpers.js`. See that file for the
-// architectural rationale and the current (much smaller) helper
-// implementation.
+// architectural rationale and the current helper implementation.
 
 async function expandStarExports(code: string, server: any, projectRoot: string, verbose?: boolean, sharedTransformer?: (url: string) => Promise<{ code?: string } | null | undefined>): Promise<string> {
 	const STAR_RE = /^[ \t]*(export\s+\*\s+from\s+["'])([^"']+)(["'];?)[ \t]*$/gm;
@@ -1045,14 +1042,13 @@ function toNodeModulesHttpModuleId(importPath: string): string | null {
 	return `/ns/m/node_modules/${nodeModulesSpecifier}`;
 }
 
-// alpha.59 — `rewriteNsMImportPathForHmr` and `getNumericServeVersionTag`
-// previously lived here as duplicates of the implementations in
+// `rewriteNsMImportPathForHmr` and `getNumericServeVersionTag` live in
 // `./websocket-ns-m-paths.js`. The path rewriter is part of the
-// "Stable URL + Explicit Invalidation" architecture (see
-// HMR_STABLE_URL_INVALIDATION_PLAN.md) and must be a single source of
-// truth so the canonicalization rules can't drift between the two files.
-// They are imported above and re-exported below for tests / external
-// callers that historically reached them through this module.
+// "Stable URL + Explicit Invalidation" architecture and must be a
+// single source of truth so the canonicalization rules can't drift
+// between modules. They are imported above and re-exported below for
+// tests / external callers that historically reached them through this
+// module.
 
 function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, projectRoot?: string): string | null {
 	if (!spec || typeof spec !== 'string') {
@@ -2720,7 +2716,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								}
 								// bumpVersion: false — the initial walk is a bulk load, not a live
 								// edit. Keeping graphVersion stable during cold boot avoids double
-								// cache-key drift described in Track 1.3 of the HMR plan.
+								// cache-key drift.
 								upsertGraphModule(rel, code, deps, { bumpVersion: false });
 							} catch {}
 						}
@@ -2731,9 +2727,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 		try {
 			await walk(pathMod.join(root, 'src'));
 		} catch {}
-		// Diagnostic summary: Always-on so slow
-		// cold-boot walks surface even when verbose is off. A `bumpedVersion=no`
-		// result is the happy path (Track 1.3); `yes` indicates a regression.
+		// Diagnostic summary: Always-on so slow cold-boot walks
+		// surface even when verbose is off. A `bumpedVersion=no`
+		// result is the happy path; `yes` indicates a regression.
 		try {
 			console.info(
 				formatPopulateInitialGraphSummary({
@@ -2796,16 +2792,16 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			// race conditions during HTTP HMR startup, but the shared runner
 			// already has per-URL coalescing and an async-cached result map,
 			// so higher fan-out is safe and dramatically reduces cold-boot
-			// time (Track 1.4 in HMR_CORE_REALM_DETERMINISTIC_PLAN.md). We cap
-			// at 8 by default to match typical dev machines and respect Vite's
-			// internal worker pool limits. Override via the env var when needed.
+			// time. We cap at 8 by default to match typical dev machines and
+			// respect Vite's internal worker pool limits. Override via the
+			// `NS_VITE_HMR_TRANSFORM_CONCURRENCY` env var when needed.
 			const configuredTransformConcurrency = Number.parseInt(process.env.NS_VITE_HMR_TRANSFORM_CONCURRENCY || '', 10);
 			const transformConcurrency = Number.isFinite(configuredTransformConcurrency) && configuredTransformConcurrency > 0 ? configuredTransformConcurrency : 8;
-			// Keep transformed code cached for longer across HMR updates so that
-			// unchanged neighbours of an edited file don't re-run through the
-			// Angular/TypeScript/Vite transform pipeline. The HMR flow
-			// explicitly invalidates affected URLs, so a longer TTL is safe.
-			// See Track 2.2 in HMR_CORE_REALM_DETERMINISTIC_PLAN.md.
+			// Keep transformed code cached for longer across HMR updates so
+			// that unchanged neighbours of an edited file don't re-run
+			// through the Angular/TypeScript/Vite transform pipeline. The
+			// HMR flow explicitly invalidates affected URLs, so a longer TTL
+			// is safe. Override with `NS_VITE_HMR_TRANSFORM_CACHE_MS`.
 			const configuredTransformCacheMs = Number.parseInt(process.env.NS_VITE_HMR_TRANSFORM_CACHE_MS || '', 10);
 			const transformCacheMs = Number.isFinite(configuredTransformCacheMs) && configuredTransformCacheMs >= 0 ? configuredTransformCacheMs : 60000;
 			sharedTransformRequest = createSharedTransformRequestRunner(
@@ -2822,10 +2818,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				},
 			);
 
-			// Always-on startup banner — prints once per dev server process so
-			// anyone investigating perf can immediately see which build is live
-			// and what knobs are active. See HMR_CORE_REALM_DETERMINISTIC_PLAN.md
-			// ("Track 1 + 2 — diagnostic instrumentation").
+			// Always-on startup banner — prints once per dev server process
+			// so anyone investigating perf can immediately see which build
+			// is live and what knobs are active.
 			try {
 				let pkgVersion = 'unknown';
 				try {
@@ -2855,17 +2850,16 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				);
 			} catch {}
 
-			// Always-on cold-boot request trace. Runs in front of every other
-			// middleware so it catches all NS dev routes (/ns/m/*, /ns/rt/*,
-			// /ns/core/*, /__ns_boot__/*, etc.) with a single hook. Closes
-			// itself after an idle window so HMR edits don't get rolled into
-			// the cold-boot numbers. The idle window is generous by default
-			// (5s) because V8's HTTP ESM resolver pauses between dep levels
-			// while parsing — a too-tight window was closing after the first
-			// wave and under-reporting boot by 100x. Override via
-			// NS_VITE_HMR_BOOT_TRACE_IDLE_MS when profiling something tricky.
-			// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md ("Track 1 + 2 — round
-			// three, 2026-04").
+			// Always-on cold-boot request trace. Runs in front of every
+			// other middleware so it catches all NS dev routes (/ns/m/*,
+			// /ns/rt/*, /ns/core/*, /__ns_boot__/*, etc.) with a single
+			// hook. Closes itself after an idle window so HMR edits don't
+			// get rolled into the cold-boot numbers. The idle window is
+			// generous by default (5s) because V8's HTTP ESM resolver
+			// pauses between dep levels while parsing — a too-tight window
+			// was closing after the first wave and under-reporting boot by
+			// 100x. Override via `NS_VITE_HMR_BOOT_TRACE_IDLE_MS` when
+			// profiling something tricky.
 			try {
 				const configuredIdleMs = Number.parseInt(process.env.NS_VITE_HMR_BOOT_TRACE_IDLE_MS || '', 10);
 				const idleWindowMs = Number.isFinite(configuredIdleMs) && configuredIdleMs > 0 ? configuredIdleMs : 5000;
@@ -2907,13 +2901,12 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			// kicked off on the first /ns/m hit, which meant populate was
 			// competing with the device for the same 8 transform slots
 			// throughout the first 4-5 seconds of cold boot. Starting at
-			// `configureServer` time gives populate the full app build/launch
-			// window (typically 2-3s on simulator) as a head start, so more
-			// of its work lands before the device even connects. Disable via
-			// NS_VITE_HMR_DISABLE_POPULATE=1 when profiling whether populate
-			// is helping or hurting a specific app. See
-			// HMR_CORE_REALM_DETERMINISTIC_PLAN.md ("Track 1 + 2 — round
-			// three").
+			// `configureServer` time gives populate the full app
+			// build/launch window (typically 2-3s on simulator) as a head
+			// start, so more of its work lands before the device even
+			// connects. Disable via `NS_VITE_HMR_DISABLE_POPULATE=1` when
+			// profiling whether populate is helping or hurting a specific
+			// app.
 			try {
 				const disablePopulate = process.env.NS_VITE_HMR_DISABLE_POPULATE === '1' || process.env.NS_VITE_HMR_DISABLE_POPULATE === 'true';
 				if (disablePopulate) {
@@ -3196,12 +3189,12 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// That gave deterministic URL tags but blocked the cold boot on a
 					// full src/ tree walk (hundreds of transformRequest calls, 3-6s).
 					//
-					// Track 1.3: graphVersion now starts at 1 and stays stable during
-					// cold boot (see `upsertGraphModule`'s bumpVersion option and the
-					// inline comment at the graphVersion declaration). We kick off the
-					// initial population in the background so it doesn't block the first
-					// response. `handleHotUpdate` awaits the same promise so the first
-					// HMR event still sees a fully populated graph.
+					// graphVersion now starts at 1 and stays stable during cold boot
+					// (see `upsertGraphModule`'s bumpVersion option and the inline
+					// comment at the graphVersion declaration). We kick off the
+					// initial population in the background so it doesn't block the
+					// first response. `handleHotUpdate` awaits the same promise so
+					// the first HMR event still sees a fully populated graph.
 					ensureInitialGraphPopulationStarted(server);
 					// Cold-boot counter is now hooked via the leading boot-trace
 					// middleware (see `configureServer` — it records the request
@@ -3475,7 +3468,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 											} catch {}
 										}
 										// Serve-time warm-up: no live edit happened, so don't bump
-										// graphVersion. See Track 1.3 in HMR_CORE_REALM_DETERMINISTIC_PLAN.md.
+										// graphVersion.
 										upsertGraphModule(id, code, deps, { bumpVersion: false });
 									}
 								}
@@ -3687,19 +3680,20 @@ export const piniaSymbol = p.piniaSymbol;
 						}
 					} catch {}
 
-					// alpha.59 — `/ns/rt` and `/ns/core` URL versioning.
+					// `/ns/rt` and `/ns/core` URL versioning.
 					//
-					// Pre-alpha.59 these URLs were emitted as `/ns/rt/<ver>`
-					// and `/ns/core/<ver>` so V8's HTTP module cache would see
-					// a fresh URL on every save. The runtime canonicalizer
-					// (HMRSupport.mm `CanonicalizeHttpUrlKey`) collapses these
-					// version segments to the bare `/ns/rt` and `/ns/core`
-					// keys before lookup, so V8 actually saw a single cache
-					// entry — but the server was doing extra work to inject a
-					// version segment that the runtime then immediately
-					// stripped. Now that alpha.59 has explicit eviction (and
-					// these bridge endpoints don't change at HMR time
-					// anyway), the version segment is purely vestigial.
+					// Older versions of the server emitted `/ns/rt/<ver>` and
+					// `/ns/core/<ver>` so V8's HTTP module cache would see a
+					// fresh URL on every save. The runtime canonicalizer
+					// (`CanonicalizeHttpUrlKey` in HMRSupport.mm) collapses
+					// these version segments to the bare `/ns/rt` and
+					// `/ns/core` keys before lookup, so V8 actually saw a
+					// single cache entry — but the server was doing extra
+					// work to inject a version segment that the runtime then
+					// immediately stripped. Now that the runtime supports
+					// explicit eviction (and these bridge endpoints don't
+					// change at HMR time anyway), the version segment is
+					// purely vestigial.
 					//
 					// Rather than rip the helpers out (which would touch
 					// every ensureVersionedImports caller and risk bumping
@@ -3714,25 +3708,25 @@ export const piniaSymbol = p.piniaSymbol;
 						code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), verNum);
 						code = ensureVersionedCoreImports(code, getServerOrigin(server), verNum);
 					} catch {}
-					// alpha.59 — `/ns/m` URL finalize step.
+					// `/ns/m` URL finalize step.
 					//
-					// `rewriteNsMImportPathForHmr` (Phase 3a) is now a
-					// canonicalizer: it strips legacy `__ns_hmr__/<tag>/`
-					// segments and adds `__ns_boot__/b1/` only for boot-tagged
-					// requests. The `ver` parameter is preserved on the
-					// signature for API compatibility but is ignored for app
-					// modules (cache busting is driven by
-					// `__nsInvalidateModules`, not URL versioning). We pass
-					// `'v0'` as a stable placeholder — the canonicalizer
-					// emits the same URL regardless of this value, but a
-					// constant placeholder makes the contract explicit.
+					// `rewriteNsMImportPathForHmr` is a canonicalizer: it
+					// strips legacy `__ns_hmr__/<tag>/` segments and adds
+					// `__ns_boot__/b1/` only for boot-tagged requests. The
+					// `ver` parameter is preserved on the signature for API
+					// compatibility but is ignored for app modules (cache
+					// busting is driven by `__nsInvalidateModules`, not URL
+					// versioning). We pass `'v0'` as a stable placeholder —
+					// the canonicalizer emits the same URL regardless of
+					// this value, but a constant placeholder makes the
+					// contract explicit.
 					//
 					// SFC URLs (line below, `/ns/sfc/${verTag}/...`) still
 					// embed a version because the Vue SFC pathway does not
-					// yet have an eviction protocol. The runtime canonicalizer
-					// does NOT strip `/ns/sfc/<ver>/`, so Vue users still see
-					// per-save SFC re-fetches — that's a known follow-up
-					// (HMR_STABLE_URL_INVALIDATION_PLAN.md "Vue Follow-up").
+					// yet have an eviction protocol. The runtime
+					// canonicalizer does NOT strip `/ns/sfc/<ver>/`, so Vue
+					// users still see per-save SFC re-fetches — that's a
+					// known follow-up.
 					try {
 						const verTag = (() => {
 							const numeric = getNumericServeVersionTag(forcedVer, Number(graphVersion || 0));
@@ -4089,15 +4083,15 @@ export const piniaSymbol = p.piniaSymbol;
 
 			// 2.6) ESM bridge for @nativescript/core: GET /ns/core[/<ver>][?p=sub/path]
 			//
-			// Since bundle.mjs no longer bundles @nativescript/core (see
-			// HMR_CORE_REALM_DETERMINISTIC_PLAN.md — external in the rolldown
-			// config under HMR), this endpoint is the ONE place core is
-			// evaluated. Every consumer — bundle.mjs's own `@nativescript/core*`
-			// imports (resolved to full HTTP URLs in the entry virtual module),
-			// externalized vendor packages, HTTP-served app modules — all end
-			// up here. No more proxy bridge, no enumeration, no namespace
-			// detection, no prototype-polluted maps. We just serve Vite's
-			// authoritative transformed module content.
+			// Since bundle.mjs no longer bundles @nativescript/core (it is
+			// declared external in the rolldown config under HMR), this
+			// endpoint is the ONE place core is evaluated. Every consumer —
+			// bundle.mjs's own `@nativescript/core*` imports (resolved to
+			// full HTTP URLs in the entry virtual module), externalized
+			// vendor packages, HTTP-served app modules — all end up here.
+			// No more proxy bridge, no enumeration, no namespace detection,
+			// no prototype-polluted maps. We just serve Vite's authoritative
+			// transformed module content.
 			//
 			// iOS caches by URL path, so each unique URL is evaluated exactly
 			// once per app lifetime. Every class identity is shared, every
@@ -4209,16 +4203,15 @@ export const piniaSymbol = p.piniaSymbol;
 					].join('\n');
 
 					// Boot-time instrumentation + module self-registration.
-					// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md:
-					//   - Invariant A (URL canonicalization): the same
-					//     logical module must always resolve to byte-
-					//     identical URLs across every emitter. The /ns/core
-					//     handler records the first URL seen for each
-					//     canonical sub (or '' for main) in
-					//     `globalThis.__NS_CORE_FIRST_URL__` and fails hard
-					//     on mismatch so drift in any emitter surfaces
+					//
+					//   - URL canonicalization: the same logical module must
+					//     always resolve to byte-identical URLs across every
+					//     emitter. The /ns/core handler records the first URL
+					//     seen for each canonical sub (or '' for main) in
+					//     `globalThis.__NS_CORE_FIRST_URL__` and fails hard on
+					//     mismatch so drift in any emitter surfaces
 					//     immediately, before the realm splits.
-					//   - Invariant C (boot-order): CommonJS
+					//   - CJS/ESM boot order: CommonJS
 					//     `require('@nativescript/core/...')` calls from
 					//     vendor install() hooks must resolve to the SAME
 					//     ESM namespace that ran this side-effect preamble.
@@ -4247,14 +4240,14 @@ export const piniaSymbol = p.piniaSymbol;
 						`  const __nsUrl = ${JSON.stringify(canonicalUrl)};`,
 						`  __nsSeen.push(__nsUrl);`,
 						`  if (typeof __nsFirst[__nsKey] === 'string' && __nsFirst[__nsKey] !== __nsUrl) {`,
-						`    throw new Error('[ns-core] URL drift for sub=' + __nsKey + ': first=' + __nsFirst[__nsKey] + ' now=' + __nsUrl + ' (see HMR_CORE_REALM_DETERMINISTIC_PLAN.md Invariant A)');`,
+						`    throw new Error('[ns-core] URL drift for sub=' + __nsKey + ': first=' + __nsFirst[__nsKey] + ' now=' + __nsUrl);`,
 						`  }`,
 						`  if (!__nsFirst[__nsKey]) __nsFirst[__nsKey] = __nsUrl;`,
 						`  globalThis.__NS_CORE_EVAL_COUNT__ = (globalThis.__NS_CORE_EVAL_COUNT__ || 0) + 1;`,
 						`} } catch (e) { try { console.warn('[ns-core] instrumentation failed:', (e && e.message) || e); } catch {} }`,
 					].join('\n');
 
-					// Invariant D (CJS/ESM interop shape) — REGISTRATION side.
+					// CJS/ESM interop shape — REGISTRATION side.
 					//
 					// The actual shape installer runs earlier in the module
 					// body (between preamble and selfImport; see
@@ -4270,9 +4263,6 @@ export const piniaSymbol = p.piniaSymbol;
 					// registration — the shape function is identity-preserving
 					// via WeakMap — gives a stable, shared, CJS-compatible
 					// view without copying on every require.
-					//
-					// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md § "Invariant D"
-					// for the full rationale.
 					const registrationFooter = [
 						`try { if (typeof globalThis !== 'undefined') {`,
 						`  const __nsReg = globalThis.__NS_CORE_MODULES__ || (globalThis.__NS_CORE_MODULES__ = Object.create(null));`,
@@ -6010,13 +6000,12 @@ export const piniaSymbol = p.piniaSymbol;
 			if (isRuntimeGraphExcludedPath(file)) {
 				return;
 			}
-			// Always-on update timing — see HMR_CORE_REALM_DETERMINISTIC_PLAN.md
-			// ("Track 2 — round one, 2026-04: HMR update metrics"). Captures
-			// the four phases (await, framework, broadcast, total) plus
-			// invalidated module count and recipient count. Emitted at the
-			// end of this function via `emitHmrUpdateSummary()`. Single line,
-			// always-on so a 6-second `.ts` save is immediately visible
-			// without flipping verbose.
+			// Always-on update timing. Captures the four phases (await,
+			// framework, broadcast, total) plus invalidated module count
+			// and recipient count. Emitted at the end of this function via
+			// `emitHmrUpdateSummary()`. Single line, always-on so a
+			// 6-second `.ts` save is immediately visible without flipping
+			// verbose.
 			const updateRoot = server.config.root || process.cwd();
 			const updateRel = (() => {
 				try {
@@ -6034,22 +6023,20 @@ export const piniaSymbol = p.piniaSymbol;
 				tEnd: 0,
 				invalidated: 0,
 				recipients: 0,
-				// Round-eight diagnostic — populated by the angular branch when
+				// Narrowing diagnostic — populated by the angular branch when
 				// the changed file is `.ts`, otherwise remains undefined and is
-				// omitted from the summary line entirely. See
-				// HMR_CORE_REALM_DETERMINISTIC_PLAN.md ("Round-eight — surface
-				// narrowing decision").
+				// omitted from the summary line entirely.
 				narrowed: undefined as boolean | undefined,
 				emitted: false,
 			};
 
-			// alpha.62 follow-up — broadcast a "pending" notification at
-			// the very start of handleHotUpdate so the client can show
-			// the HMR-applying overlay BEFORE we spend time on graph
-			// updates / transforms / dependency analysis (typically
-			// 7–200ms on a warm cache). Without this, the overlay only
-			// appears at `ns:angular-update` broadcast time and the
-			// user perceives a "delayed" reaction to their save.
+			// Broadcast a "pending" notification at the very start of
+			// handleHotUpdate so the client can show the HMR-applying
+			// overlay BEFORE we spend time on graph updates / transforms /
+			// dependency analysis (typically 7–200ms on a warm cache).
+			// Without this, the overlay only appears at `ns:angular-update`
+			// broadcast time and the user perceives a "delayed" reaction
+			// to their save.
 			//
 			// Fire-and-forget: a failed pending broadcast must never
 			// hold up the actual update. The client treats receipt of
@@ -6096,10 +6083,11 @@ export const piniaSymbol = p.piniaSymbol;
 					);
 				} catch {}
 			};
-			// Track 1.3: the first /ns/m request kicks off populateInitialGraph
-			// in the background. If an HMR update races in before that walk
-			// completes, we'd lose transitive-importer data. Await completion
-			// here so the delta computation below always sees a populated graph.
+			// The first /ns/m request kicks off populateInitialGraph in the
+			// background. If an HMR update races in before that walk
+			// completes, we'd lose transitive-importer data. Await
+			// completion here so the delta computation below always sees a
+			// populated graph.
 			if (graphInitialPopulationPromise) {
 				try {
 					await graphInitialPopulationPromise;
@@ -6212,13 +6200,13 @@ export const piniaSymbol = p.piniaSymbol;
 
 				const angularTransitiveInvalidationRoots = (angularHotUpdateRoots.length ? angularHotUpdateRoots : (ctx.modules as unknown as Iterable<TransitiveImporterModuleLike>)) as Iterable<TransitiveImporterModuleLike>;
 
-				// Round-six narrowing: read the source for `.ts/.tsx/.js/.jsx`
-				// edits so `shouldInvalidateAngularTransitiveImporters` can
+				// Read the source for `.ts/.tsx/.js/.jsx` edits so
+				// `shouldInvalidateAngularTransitiveImporters` can
 				// distinguish leaf modules (constants/utils) from real
 				// Angular files. If `ctx.read()` throws (file deleted, race
 				// against the watcher), `angularChangedSource` stays
-				// undefined and we fall back to the conservative
-				// pre-round-six "always invalidate transitively" behavior.
+				// undefined and we fall back to the conservative "always
+				// invalidate transitively" behavior.
 				let angularChangedSource: string | undefined;
 				if (isTs) {
 					try {
@@ -6234,38 +6222,37 @@ export const piniaSymbol = p.piniaSymbol;
 					source: angularChangedSource,
 				});
 
-				// Round-eight diagnostic. We surface the narrowing decision on
-				// every `.ts` Angular hot update (HTML routes always invalidate
-				// transitively today and aren't subject to Round-Seven, so we
-				// leave them as `undefined` — the field is omitted from the
-				// summary line). The boolean is the inverse of
-				// `angularNeedsTransitive` because "needs transitive" is the
-				// pre-Round-Seven (broad) behavior.
+				// Surface the narrowing decision on every `.ts` Angular hot
+				// update (HTML routes always invalidate transitively and
+				// aren't subject to narrowing, so we leave them as
+				// `undefined` — the field is omitted from the summary line).
+				// The boolean is the inverse of `angularNeedsTransitive`
+				// because "needs transitive" is the broad (un-narrowed)
+				// behavior.
 				if (isTs) {
 					updateMetrics.narrowed = !angularNeedsTransitive;
 				}
 
-				// alpha.59 — Stable URL + Explicit Invalidation:
+				// Stable URL + Explicit Invalidation:
 				//
-				// Compute the transitive importer closure ONCE here and reuse it
-				// for (a) `server.moduleGraph.invalidateModule` (so Vite's
+				// Compute the transitive importer closure ONCE here and reuse
+				// it for (a) `server.moduleGraph.invalidateModule` (so Vite's
 				// transform pipeline re-runs on next request), (b) the shared
-				// transform-request cache, and (c) the runtime eviction set we
-				// broadcast in `ns:angular-update`. Pre-alpha.59 code computed
-				// this list twice in adjacent try blocks; consolidating it
+				// transform-request cache, and (c) the runtime eviction set
+				// we broadcast in `ns:angular-update`. Consolidating this
 				// removes a redundant graph walk and guarantees the three
 				// consumers see the exact same set of importers (otherwise a
 				// late module-graph mutation between calls could leave an
 				// asymmetric narrowed/broad mix).
 				//
-				// alpha.59.1 — separate Vite-transform narrowing from runtime
-				// eviction. `angularNeedsTransitive` answers the question "does
-				// the changed file's symbol shape change such that importers
-				// must be re-transformed by Vite?". The runtime, however, has
-				// a stricter requirement: ESM live bindings only refresh if
-				// the importing module re-evaluates inside V8. A constants
-				// file with no Angular decorator does NOT need a Vite
-				// re-transform of its importers (their compiled JS is
+				// We separate Vite-transform narrowing from runtime eviction:
+				// `angularNeedsTransitive` answers the question "does the
+				// changed file's symbol shape change such that importers
+				// must be re-transformed by Vite?". The runtime, however,
+				// has a stricter requirement: ESM live bindings only refresh
+				// if the importing module re-evaluates inside V8. A
+				// constants file with no Angular decorator does NOT need a
+				// Vite re-transform of its importers (their compiled JS is
 				// identical), but its importers still hold stale bindings to
 				// the OLD constants Module record. After eviction + re-import
 				// of `main.ts`, V8 sees the cached importers, returns them
@@ -6273,12 +6260,13 @@ export const piniaSymbol = p.piniaSymbol;
 				// user-visible symptom: HMR completes successfully, logs are
 				// clean, but the simulator does not reflect the change.
 				//
-				// The fix: ALWAYS compute the transitive importer closure for
-				// runtime eviction. Only skip Vite's `moduleGraph.invalidate`
-				// + transform-cache purge when `angularNeedsTransitive` is
-				// false — those are the genuine narrowing wins (saves
-				// re-transform work on the server). The eviction set always
-				// includes importers so V8 re-fetches and re-binds them.
+				// The fix: ALWAYS compute the transitive importer closure
+				// for runtime eviction. Only skip Vite's
+				// `moduleGraph.invalidate` + transform-cache purge when
+				// `angularNeedsTransitive` is false — those are the genuine
+				// narrowing wins (saves re-transform work on the server).
+				// The eviction set always includes importers so V8 re-fetches
+				// and re-binds them.
 				let transitiveImporters: TransitiveImporterModuleLike[] = [];
 				try {
 					transitiveImporters = collectAngularTransitiveImportersForInvalidation({
@@ -6302,19 +6290,18 @@ export const piniaSymbol = p.piniaSymbol;
 							console.log('[hmr-ws][angular] invalidated transitive importers:', transitiveImporters.length);
 						}
 					} else if (isTs && typeof angularChangedSource === 'string') {
-						// Round-eight: was previously gated on `verbose`. Surfacing this
-						// log unconditionally lets the user immediately confirm whether
-						// Round-Seven's narrowing fired for a given `.ts` edit (the
-						// summary line below still emits `narrowed=yes`/`no`, but
-						// having both makes the decision easier to spot in noisy logs
-						// and lets the user diff scenarios without flipping
+						// Surfacing this log unconditionally lets the user
+						// immediately confirm whether narrowing fired for a
+						// given `.ts` edit (the summary line below still
+						// emits `narrowed=yes`/`no`, but having both makes
+						// the decision easier to spot in noisy logs and lets
+						// the user diff scenarios without flipping
 						// `NS_HMR_VERBOSE=true`).
 						//
-						// alpha.59.1 — narrowing now means "skip Vite re-transform"
-						// (the importers still get evicted from the V8 module
-						// registry so live bindings refresh). The log call-out is
-						// preserved but extended with the importer count to make the
-						// distinction visible.
+						// Narrowing means "skip Vite re-transform" (the
+						// importers still get evicted from the V8 module
+						// registry so live bindings refresh). The importer
+						// count is appended so the distinction is visible.
 						console.log(`[hmr-ws][angular] narrowed transitive invalidation (no @Component/@Directive/@Pipe/@Injectable/@NgModule): ${updateRel} — Vite transform skipped, runtime eviction includes ${transitiveImporters.length} importer(s)`);
 					}
 				} catch (error) {
@@ -6322,13 +6309,13 @@ export const piniaSymbol = p.piniaSymbol;
 				}
 
 				try {
-					// alpha.59.1 — purge shared transform cache for the changed
-					// file + hot-update roots unconditionally (their transform
-					// output IS different now). Transitive importers are only
-					// purged when narrowing decides their output may have
-					// changed; otherwise their cached transforms are still
-					// valid (compiled JS is identical even though the runtime
-					// must re-evaluate them to refresh ESM bindings).
+					// Purge shared transform cache for the changed file +
+					// hot-update roots unconditionally (their transform
+					// output IS different now). Transitive importers are
+					// only purged when narrowing decides their output may
+					// have changed; otherwise their cached transforms are
+					// still valid (compiled JS is identical even though the
+					// runtime must re-evaluate them to refresh ESM bindings).
 					const transformCacheInvalidationUrls = new Set(
 						collectAngularTransformCacheInvalidationUrls({
 							file,
@@ -6355,19 +6342,19 @@ export const piniaSymbol = p.piniaSymbol;
 					const origin = getServerOrigin(server);
 					const bootstrapEntryRel = getBootstrapEntryRelPath();
 
-					// alpha.59 — Stable URL + Explicit Invalidation:
+					// Stable URL + Explicit Invalidation:
 					//
 					// `evictPaths` is the canonical list of `/ns/m/<rel>` URLs
 					// the runtime must drop from `g_moduleRegistry` before
-					// re-importing `importerEntry`. Pre-alpha.59 the server
-					// signaled invalidation by bumping a global `graphVersion`
-					// counter and embedding it in every URL — but V8 keys the
-					// module registry by full URL, so a v1 → v2 bump
-					// effectively flushed the entire dependency graph from
-					// the cache and forced the runtime to re-fetch + re-eval
-					// every transitively-imported module on each save (~3s
-					// HMR cycles, dominated by Vite's single-threaded transform
-					// pipeline). The new model:
+					// re-importing `importerEntry`. Older versions of the
+					// server signaled invalidation by bumping a global
+					// `graphVersion` counter and embedding it in every URL —
+					// but V8 keys the module registry by full URL, so a v1 →
+					// v2 bump effectively flushed the entire dependency
+					// graph from the cache and forced the runtime to
+					// re-fetch + re-eval every transitively-imported module
+					// on each save (~3s HMR cycles, dominated by Vite's
+					// single-threaded transform pipeline). The new model:
 					//
 					//   1. URLs are stable: `/ns/m/<rel>` everywhere, no `vN`.
 					//   2. The server walks the inverse-dependency closure and

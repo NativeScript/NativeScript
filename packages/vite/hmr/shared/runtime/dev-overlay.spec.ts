@@ -225,7 +225,7 @@ describe('iOS overlay layout', () => {
 	});
 });
 
-// Round-eleven.3 — HMR-applying progress overlay.
+// HMR-applying progress overlay.
 //
 // These tests pin the snapshot shape (badge / phase / progress /
 // tone / mode) for each stage in the cycle so a future refactor
@@ -233,7 +233,7 @@ describe('iOS overlay layout', () => {
 // the stage ordering. Progress percentages are part of the
 // contract: they're what the user sees in the overlay's status
 // line, and any reshuffle should be a deliberate design decision.
-describe('Round-eleven.3 — HMR apply overlay snapshots', () => {
+describe('HMR apply overlay snapshots', () => {
 	it("emits a 'received' frame at 5% with success tone and mode='update'", () => {
 		const snapshot = createUpdateOverlaySnapshot('received', { detail: 'Updating /src/app/foo.ts' });
 		expect(snapshot.visible).toBe(true);
@@ -297,7 +297,7 @@ describe('Round-eleven.3 — HMR apply overlay snapshots', () => {
 	});
 });
 
-describe('Round-eleven.3 — HMR apply overlay runtime API', () => {
+describe('HMR apply overlay runtime API', () => {
 	beforeEach(() => {
 		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
 		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
@@ -343,11 +343,11 @@ describe('Round-eleven.3 — HMR apply overlay runtime API', () => {
 				progress: 100,
 			});
 
-			// alpha.62 follow-up — when 'complete' fires without a
-			// preceding 'received', the cycle had no recorded start
-			// timestamp, so the minimum-visible window (800ms) wins
-			// over the standard 600ms auto-hide. After 1s the
-			// overlay drops back to DEFAULT_SNAPSHOT.
+			// When 'complete' fires without a preceding 'received',
+			// the cycle had no recorded start timestamp, so the
+			// minimum-visible window (800ms) wins over the standard
+			// 600ms auto-hide. After 1s the overlay drops back to
+			// DEFAULT_SNAPSHOT.
 			vi.advanceTimersByTime(1000);
 			expect(api.getSnapshot()).toMatchObject({
 				visible: false,
@@ -358,11 +358,11 @@ describe('Round-eleven.3 — HMR apply overlay runtime API', () => {
 		}
 	});
 
-	// alpha.62 follow-up — a fast HMR cycle (50ms total) still must
-	// hold the overlay long enough for the user to perceive it.
-	// We assert the full sequence: 'received' → 'complete' immediately
-	// after, then verify the auto-hide stretches to honor the
-	// minimum-visible window.
+	// A fast HMR cycle (50ms total) still must hold the overlay
+	// long enough for the user to perceive it. We assert the full
+	// sequence: 'received' → 'complete' immediately after, then
+	// verify the auto-hide stretches to honor the minimum-visible
+	// window.
 	it('holds the overlay for at least UPDATE_MIN_VISIBLE_MS after a fast cycle', () => {
 		vi.useFakeTimers();
 		try {
@@ -481,14 +481,14 @@ describe('Round-eleven.3 — HMR apply overlay runtime API', () => {
 		expect((globalThis as any).__NS_HMR_DEV_OVERLAY__).toBeDefined();
 	});
 
-	// alpha.62 follow-up — the server now emits `ns:hmr-pending`
-	// IMMEDIATELY when `handleHotUpdate` fires, then later emits
-	// `ns:angular-update` once it has done graph upserts and chosen
-	// an eviction set. Both messages call setUpdateStage('received').
-	// The cycle clock — used by the auto-hide minimum-visible
-	// window — must be stamped against the FIRST 'received' frame,
-	// not the second; otherwise the early-overlay UX is defeated
-	// because the second 'received' resets the clock to ~now.
+	// The server emits `ns:hmr-pending` IMMEDIATELY when
+	// `handleHotUpdate` fires, then later emits `ns:angular-update`
+	// once it has done graph upserts and chosen an eviction set.
+	// Both messages call setUpdateStage('received'). The cycle clock
+	// — used by the auto-hide minimum-visible window — must be
+	// stamped against the FIRST 'received' frame, not the second;
+	// otherwise the early-overlay UX is defeated because the second
+	// 'received' resets the clock to ~now.
 	it("preserves updateCycleStartedAt when 'received' fires twice in the same cycle", () => {
 		vi.useFakeTimers();
 		try {

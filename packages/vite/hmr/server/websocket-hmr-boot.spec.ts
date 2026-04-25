@@ -3,8 +3,7 @@ import { describe, it, expect } from 'vitest';
 /**
  * Tests for the HMR boot sequence coordination and import routing.
  *
- * These tests verify the patterns used to prevent the boot race condition
- * described in HMR_PHASE2_IMPLEMENTATION_STATUS.md:
+ * These tests verify the patterns used to prevent the boot race condition:
  *
  * 1. Virtual module routing: Vite virtual modules (/@solid-refresh, etc.)
  *    must be routed through /ns/m/ so their internal imports get vendor-rewritten.

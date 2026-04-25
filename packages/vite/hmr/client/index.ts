@@ -107,15 +107,15 @@ function hideConnectionOverlay() {
 	} catch {}
 }
 
-// alpha.62 follow-up — Eagerly drive the HMR-applying overlay's
-// 'received' frame as soon as the server emits `ns:hmr-pending`,
-// BEFORE the framework-specific (`ns:angular-update` /
-// `ns:css-updates`) payload arrives. The flavor-specific handler
-// later walks through 'evicting' → 'reimporting' → 'rebooting' →
-// 'complete'. Calling 'received' twice in the same cycle is safe:
-// the overlay preserves `updateCycleStartedAt` when a 'received'
-// frame replaces an existing 'received' frame so the
-// minimum-visible window is still timed against the FIRST frame.
+// Eagerly drive the HMR-applying overlay's 'received' frame as soon
+// as the server emits `ns:hmr-pending`, BEFORE the framework-specific
+// (`ns:angular-update` / `ns:css-updates`) payload arrives. The
+// flavor-specific handler later walks through 'evicting' →
+// 'reimporting' → 'rebooting' → 'complete'. Calling 'received' twice
+// in the same cycle is safe: the overlay preserves
+// `updateCycleStartedAt` when a 'received' frame replaces an existing
+// 'received' frame so the minimum-visible window is still timed
+// against the FIRST frame.
 //
 // Soft-fails when the overlay isn't installed (production builds,
 // vitest, etc.) or when the user opted out via
@@ -755,9 +755,9 @@ async function processQueue(): Promise<void> {
 			if (!drained.length) return;
 			if (VERBOSE) console.log('[hmr][queue] processing changed ids', drained);
 
-			// alpha.59 — Explicit eviction step.
+			// Explicit eviction step.
 			//
-			// On alpha.59+ runtimes the URL canonicalizer collapses any
+			// On modern runtimes the URL canonicalizer collapses any
 			// `__ns_hmr__/<tag>/` segment back to a stable cache key, so
 			// without explicit eviction the upcoming `import(url)` would
 			// resolve via V8's `g_moduleRegistry` and return the cached
@@ -872,10 +872,10 @@ async function processQueue(): Promise<void> {
 							}
 							return null;
 						};
-						// alpha.59 — Evict the boundary set so re-importing
-						// each .tsx component actually picks up the new
-						// transitive dependency code; without this V8 returns
-						// the cached boundary module unchanged.
+						// Evict the boundary set so re-importing each .tsx
+						// component actually picks up the new transitive
+						// dependency code; without this V8 returns the
+						// cached boundary module unchanged.
 						const boundaryIds = Array.from(boundaries);
 						const solidEvictUrls = buildEvictionUrls(boundaryIds);
 						const solidEvicted = invalidateModulesByUrls(solidEvictUrls);
@@ -1191,9 +1191,10 @@ function connectHmr() {
 					showConnectionOverlayNow('synchronizing', 'Connected. Synchronizing the HMR graph.');
 				}
 				VERBOSE && console.log('[hmr-client] Connected to HMR WebSocket');
-				// alpha.59 — Print the active module reload mode once on first
-				// successful connect so the user can correlate HMR latency with
-				// runtime capability without grepping for protocol details.
+				// Print the active module reload mode once on first
+				// successful connect so the user can correlate HMR latency
+				// with runtime capability without grepping for protocol
+				// details. The banner is verbose-gated.
 				try {
 					emitHmrModeBannerOnce();
 				} catch {}
@@ -1255,13 +1256,13 @@ async function handleHmrMessage(ev: any) {
 	}
 
 	if (msg) {
-		// alpha.62 follow-up — `ns:hmr-pending` is a fire-and-forget
-		// UX hint emitted by the server at the START of handleHotUpdate.
-		// We drive the HMR-applying overlay's 'received' frame here
-		// (synchronously), well before the authoritative payload
-		// (`ns:angular-update` / `ns:css-updates`) lands. Skip running
-		// any other handlers — the pending message has no module
-		// payload and intentionally does not bump the graph version.
+		// `ns:hmr-pending` is a fire-and-forget UX hint emitted by the
+		// server at the START of handleHotUpdate. We drive the
+		// HMR-applying overlay's 'received' frame here (synchronously),
+		// well before the authoritative payload (`ns:angular-update` /
+		// `ns:css-updates`) lands. Skip running any other handlers —
+		// the pending message has no module payload and intentionally
+		// does not bump the graph version.
 		if (msg.type === 'ns:hmr-pending' && typeof msg.path === 'string') {
 			setHmrPendingOverlay(msg.path);
 			return;
@@ -1326,7 +1327,7 @@ async function handleHmrMessage(ev: any) {
 					return true;
 				});
 				if (toReimport.length && VERBOSE) console.log('[hmr][full-graph] inferred changed modules; re-importing', toReimport);
-				// alpha.59 — Evict the inferred changed set before re-importing.
+				// Evict the inferred changed set before re-importing.
 				// See `processQueue` for the architectural rationale; the
 				// full-graph code path is the resync fallback (server chose
 				// not to send a delta) and shares the same V8 cache pitfall.

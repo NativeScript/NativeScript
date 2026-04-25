@@ -140,14 +140,14 @@ function rewriteSpec(spec: string, origin: string, ver: number): string {
 	const cleanSpec = spec.split('?')[0];
 
 	// @nativescript/core anywhere in the path → core bridge.
-	// Delegated to the ONE canonical URL generator (see Invariant A in
-	// HMR_CORE_REALM_DETERMINISTIC_PLAN.md) to guarantee that every emitter
-	// — this function, the ns-core-external-urls plugin, main-entry's
-	// coreSpec, and the runtime import map — produces byte-identical URLs
-	// for the same logical module. Mixed forms (query `?p=`, versioned,
-	// `.js` suffix) would otherwise produce distinct iOS HTTP ESM cache
-	// entries for the same file, re-evaluating register() side effects and
-	// crashing on "Cannot redefine property".
+	// Delegated to the ONE canonical URL generator to guarantee that
+	// every emitter — this function, the ns-core-external-urls plugin,
+	// main-entry's coreSpec, and the runtime import map — produces
+	// byte-identical URLs for the same logical module. Mixed forms
+	// (query `?p=`, versioned, `.js` suffix) would otherwise produce
+	// distinct iOS HTTP ESM cache entries for the same file,
+	// re-evaluating register() side effects and crashing on "Cannot
+	// redefine property".
 	const coreIdx = cleanSpec.indexOf('@nativescript/core');
 	if (coreIdx !== -1) {
 		const after = cleanSpec.substring(coreIdx + '@nativescript/core'.length);

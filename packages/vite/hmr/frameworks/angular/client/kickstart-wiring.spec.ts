@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { handleAngularHotUpdateMessage } from './index.js';
 
-// alpha.63 — Parallel module-source prefetch wiring.
+// Parallel module-source prefetch wiring.
 //
 // These tests pin the contract between the Angular HMR client and the
 // iOS runtime's `__nsKickstartHmrPrefetch` global:
@@ -20,7 +20,7 @@ import { handleAngularHotUpdateMessage } from './index.js';
 //
 //   3. Older runtimes that lack `__nsKickstartHmrPrefetch` MUST NOT
 //      cause the cycle to fail. The client falls back to the
-//      pre-alpha.63 sequential walk.
+//      sequential walk.
 //
 //   4. Eviction-fallback path (legacy URL-versioning when
 //      `__nsInvalidateModules` is absent or threw) MUST skip the
@@ -33,7 +33,7 @@ import { handleAngularHotUpdateMessage } from './index.js';
 // runtime probe resolves to a spy without pulling the real native
 // runtime (which would require a NativeScript host).
 
-describe('Angular HMR client — alpha.63 kickstart wiring', () => {
+describe('Angular HMR client — kickstart wiring', () => {
 	beforeEach(() => {
 		vi.spyOn(console, 'info').mockImplementation(() => {});
 	});

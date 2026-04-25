@@ -319,29 +319,24 @@ export function hasModuleDefaultExport(moduleCode: string): boolean {
 	return /\bexport\s+default\b/.test(moduleCode) || /\bexport\s*\{[^}]*\bdefault\b[^}]*\}/.test(moduleCode);
 }
 
-// Dead code removed (see HMR_CORE_REALM_DETERMINISTIC_PLAN.md Round 2,
-// step 3): `buildVersionedCoreSubpathAliasModule` and
-// `buildVersionedCoreMainBridgeModule` built synthetic proxy modules for
-// `/ns/core/<ver>?p=<sub>` URLs that no longer exist. The current
-// /ns/core handler serves Vite-transformed @nativescript/core source
-// directly with a self-registering preamble; no proxy layer is needed.
-// Leaving these functions wired up guaranteed drift between the URL
-// canonicalizer (Invariant A) and the module registry, so they have been
-// removed together with the unversioned `ver` and `?p=` URL forms.
+// Versioned `/ns/core/<ver>?p=<sub>` proxy modules have been removed.
+// The current /ns/core handler serves Vite-transformed @nativescript/core
+// source directly with a self-registering preamble; no proxy layer is
+// needed. Leaving the helpers wired up would have guaranteed drift
+// between the URL canonicalizer and the module registry.
 
 export function parseCoreBridgeRequest(pathname: string, searchParams: URLSearchParams, currentGraphVersion: number): ParsedCoreBridgeRequest | null {
 	if (!pathname) return null;
 	if (!(pathname === '/ns/core' || pathname === '/ns/core/' || pathname.startsWith('/ns/core/'))) {
 		return null;
 	}
-	// Reject legacy versioned path-based deep imports. Versioning was
-	// deleted in Round 2 of HMR_CORE_REALM_DETERMINISTIC_PLAN.md — every
-	// emitter now uses the canonical `/ns/core/<sub>` form. Serving a
-	// legacy request like `/ns/core/3/ui/frame/index.js` would split iOS's
-	// HTTP ESM cache across versioned and canonical URLs for the same
-	// file, re-triggering the double-evaluation bug. Also reject bare
+	// Reject legacy versioned path-based deep imports. Every emitter now
+	// uses the canonical `/ns/core/<sub>` form. Serving a legacy request
+	// like `/ns/core/3/ui/frame/index.js` would split iOS's HTTP ESM
+	// cache across versioned and canonical URLs for the same file,
+	// re-triggering the double-evaluation bug. Also reject bare
 	// trailing-slash variants like `/ns/core/3/` which don't match the
-	// accepted forms `/ns/core` / `/ns/core/<sub>` / `/ns/core/<ver>`.
+	// accepted forms `/ns/core` / `/ns/core/<sub>`.
 	if (/^\/ns\/core\/\d+\/.*$/.test(pathname)) {
 		return null;
 	}

@@ -95,10 +95,10 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// the bundler to handle.
 			//
 			// Under HMR, delegates to buildCoreUrl() — the ONE canonical URL
-			// generator (see Invariant A, HMR_CORE_REALM_DETERMINISTIC_PLAN.md).
-			// Every URL emitter in the build/runtime pipeline (this function,
-			// ns-core-external-urls, rewriteSpec, runtime import map) uses the
-			// same function so iOS's HTTP ESM cache sees byte-identical URLs.
+			// generator. Every URL emitter in the build/runtime pipeline (this
+			// function, ns-core-external-urls, rewriteSpec, runtime import map)
+			// uses the same function so iOS's HTTP ESM cache sees byte-identical
+			// URLs.
 			const coreSpec = (subpath?: string | null): string => {
 				const origin = getBootOrigin();
 				if (origin) {
@@ -159,8 +159,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//     which routes `@nativescript/core*` through the HTTP bridge
 			//     or, for already-HTTP-loaded modules, through the
 			//     `globalThis.__NS_CORE_MODULES__` registry populated by the
-			//     `/ns/core` bridge preamble (see Invariant C in
-			//     HMR_CORE_REALM_DETERMINISTIC_PLAN.md).
+			//     `/ns/core` bridge preamble.
 			imports += "try { if (typeof globalThis !== 'undefined') {\n";
 			imports += "  var __nsOrigRequire = typeof globalThis.require === 'function' ? globalThis.require : null;\n";
 			imports += '  var __nsNodeBuiltins = { fs: 1, path: 1, os: 1, url: 1, crypto: 1, util: 1, stream: 1, events: 1, buffer: 1, http: 1, https: 1, net: 1, tls: 1, dns: 1, child_process: 1, module: 1, zlib: 1, querystring: 1, assert: 1, constants: 1, vm: 1 };\n';

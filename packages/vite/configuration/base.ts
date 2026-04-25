@@ -322,8 +322,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// it falls back to a filesystem lookup that crashes with
 			// "Module not found: Cannot find module @nativescript/core/globals".
 			//
-			// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md Option 1 for the broader
-			// architecture.
+			// The broader architecture: Vite is the single source of truth for
+			// every `@nativescript/core` URL on the device, so a build-time
+			// pre-resolver routes every reference into the runtime bridge.
 			...(hmrActive
 				? [
 						((): any => {
@@ -340,12 +341,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 									// (bare specifier OR absolute path into the
 									// installed @nativescript/core package OR its
 									// subpath import-map aliases) through the ONE
-									// canonical URL generator. See Invariant A in
-									// HMR_CORE_REALM_DETERMINISTIC_PLAN.md —
-									// URL proliferation (`?p=`, versioned, mixed
-									// query vs path forms) produces distinct iOS
-									// HTTP ESM cache entries for the same module,
-									// yielding double evaluation.
+									// canonical URL generator. URL proliferation
+									// (`?p=`, versioned, mixed query vs path
+									// forms) produces distinct iOS HTTP ESM cache
+									// entries for the same module, yielding
+									// double evaluation.
 									const sub = specToCoreSub(source);
 									if (sub === null) return null;
 									if (process.env.NS_CORE_EXTERNAL_DEBUG) {

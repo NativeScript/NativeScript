@@ -1,26 +1,24 @@
-// Round-eleven.3 (alpha.62) — Add 'success' tone for in-progress HMR
-// applies. The boot/error overlays already use 'info'/'warn'/'error';
-// 'success' is the calm green that signals "things are happening
-// correctly right now" without competing with error/warn states. The
-// existing tone-switches (panel bg, text colour, backdrop alpha) all
-// continue to default to the non-error branch; we just opt success
-// into a tinted-green branch wherever those switches live.
+// 'success' tone for in-progress HMR applies. The boot/error overlays
+// already use 'info'/'warn'/'error'; 'success' is the calm green that
+// signals "things are happening correctly right now" without competing
+// with error/warn states. The existing tone-switches (panel bg, text
+// colour, backdrop alpha) all continue to default to the non-error
+// branch; we just opt success into a tinted-green branch wherever
+// those switches live.
 type HmrOverlayTone = 'info' | 'warn' | 'error' | 'success';
 
-// Round-eleven.3 — 'update' is the small-panel surface we render
-// during an HMR cycle. It reuses the connection overlay's window /
-// in-tree wrapper so we get the exact same z-order guarantees on iOS
-// (above modals, sheets, and the dev banner) without duplicating the
-// view-construction code.
+// 'update' is the small-panel surface we render during an HMR cycle.
+// It reuses the connection overlay's window / in-tree wrapper so we
+// get the exact same z-order guarantees on iOS (above modals, sheets,
+// and the dev banner) without duplicating the view-construction code.
 type HmrOverlayMode = 'hidden' | 'boot' | 'connection' | 'update';
 
 export type HmrBootStage = 'placeholder' | 'probing-origin' | 'loading-entry-runtime' | 'configuring-import-map' | 'loading-runtime-bridge' | 'loading-core-bridge' | 'preloading-style-scope' | 'installing-css' | 'importing-main' | 'waiting-for-app' | 'app-root-committed' | 'ready' | 'error';
 
 export type HmrConnectionStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';
 
-// Round-eleven.3 — HMR apply stages, in chronological order. The
-// progression matches what the angular client does inside
-// handleAngularHotUpdateMessage:
+// HMR apply stages, in chronological order. The progression matches
+// what the angular client does inside handleAngularHotUpdateMessage:
 //   received    → mutex acquired, message parsed
 //   evicting    → __nsInvalidateModules() about to fire
 //   reimporting → import(stable-entry) about to fire
@@ -89,21 +87,20 @@ type HmrOverlayRuntimeState = {
 	iosRefs: IosOverlayRefs | null;
 	iosBuildFailed: boolean;
 	verbose: boolean;
-	// Round-eleven.3 — Single auto-hide timer for HMR apply
-	// completions. Held on the runtime state (not per-API-instance) so
-	// re-entrant calls from session-bootstrap reuses the same timer
-	// rather than racing each other. The callback only hides the
-	// overlay if the snapshot is still 'update' / 'complete' — if a
-	// new HMR cycle has already reset it to 'update' / 'received', we
-	// silently no-op so the second cycle's progress isn't ripped out
-	// from under it.
+	// Single auto-hide timer for HMR apply completions. Held on the
+	// runtime state (not per-API-instance) so re-entrant calls from
+	// session-bootstrap reuses the same timer rather than racing each
+	// other. The callback only hides the overlay if the snapshot is
+	// still 'update' / 'complete' — if a new HMR cycle has already
+	// reset it to 'update' / 'received', we silently no-op so the
+	// second cycle's progress isn't ripped out from under it.
 	updateAutoHideTimer: ReturnType<typeof setTimeout> | null;
-	// Round-eleven.3 (alpha.62 follow-up) — Timestamp the overlay first
-	// became visible for the current update cycle. We use this to
-	// compute a minimum on-screen duration so a 50ms HMR cycle still
-	// gives the user a perceptible visual confirmation. Reset whenever
-	// the cycle returns to 'received' (i.e., a new save fires) so each
-	// cycle is timed independently.
+	// Timestamp the overlay first became visible for the current
+	// update cycle. We use this to compute a minimum on-screen
+	// duration so a 50ms HMR cycle still gives the user a perceptible
+	// visual confirmation. Reset whenever the cycle returns to
+	// 'received' (i.e., a new save fires) so each cycle is timed
+	// independently.
 	updateCycleStartedAt: number;
 };
 
@@ -111,9 +108,9 @@ type HmrOverlayApi = {
 	ensureBootPage: (verbose?: boolean) => any | null;
 	setBootStage: (stage: HmrBootStage, info?: HmrOverlayStageInfo) => HmrOverlaySnapshot;
 	setConnectionStage: (stage: HmrConnectionStage, info?: HmrOverlayStageInfo) => HmrOverlaySnapshot;
-	// Round-eleven.3 — Drive the HMR-applying progress overlay. Callers
-	// (e.g., the angular client) walk: received → evicting → reimporting
-	// → rebooting → complete. Setting 'complete' enqueues a short auto-
+	// Drive the HMR-applying progress overlay. Callers (e.g., the
+	// angular client) walk: received → evicting → reimporting →
+	// rebooting → complete. Setting 'complete' enqueues a short auto-
 	// hide so the overlay gracefully dismisses without the caller
 	// needing a separate hide() call (it can still call hide() to
 	// dismiss earlier, e.g., on error).
@@ -401,12 +398,12 @@ export function createConnectionOverlaySnapshot(stage: HmrConnectionStage, info?
 	};
 }
 
-// Round-eleven.3 (alpha.62) — Snapshot factory for the HMR-applying
-// overlay. Each stage owns a fixed phase string, badge, and progress
-// %. We pick the percentages so users see continuous forward motion:
-// the cheap stages (mutex acquire, eviction call) advance fast; the
-// long tail (entry re-import + Angular reboot) sits at 60→90 so the
-// bar keeps moving even when the V8 ESM walk dominates wall time.
+// Snapshot factory for the HMR-applying overlay. Each stage owns a
+// fixed phase string, badge, and progress %. We pick the percentages
+// so users see continuous forward motion: the cheap stages (mutex
+// acquire, eviction call) advance fast; the long tail (entry
+// re-import + Angular reboot) sits at 60→90 so the bar keeps moving
+// even when the V8 ESM walk dominates wall time.
 //
 // The 'complete' stage holds for a brief moment (the API auto-hides
 // it via setUpdateStage) so the user gets visual closure ("the update
@@ -826,9 +823,9 @@ function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleL
 	if (!refs) {
 		return;
 	}
-	// Round-eleven.3 — 'update' mode shares the live (in-tree) overlay
-	// chrome with 'connection'. Both render a centered panel inside the
-	// page; only the colours and text change with the snapshot's tone.
+	// 'update' mode shares the live (in-tree) overlay chrome with
+	// 'connection'. Both render a centered panel inside the page;
+	// only the colours and text change with the snapshot's tone.
 	const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
 	refs.overlay.visibility = visible ? 'visible' : 'collapse';
 	// Backdrop tints by tone:
@@ -1142,11 +1139,11 @@ function layoutIosOverlayRefs(refs: IosOverlayRefs): void {
 function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: HmrOverlaySnapshot): boolean {
 	if (!refs) return false;
 	try {
-		// Round-eleven.3 — 'update' mode rides the same dedicated
-		// UIWindow as 'connection' so the HMR apply overlay always
-		// stacks above modals/sheets/system alerts. The window is
-		// constructed lazily (ensureIosOverlayRefs) and reused for the
-		// lifetime of the dev session.
+		// 'update' mode rides the same dedicated UIWindow as
+		// 'connection' so the HMR apply overlay always stacks above
+		// modals/sheets/system alerts. The window is constructed
+		// lazily (ensureIosOverlayRefs) and reused for the lifetime of
+		// the dev session.
 		const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
 		refs.window.hidden = !visible;
 		if (!visible) return true;
@@ -1244,22 +1241,20 @@ function applyRuntimeSnapshot(snapshot: HmrOverlaySnapshot): HmrOverlaySnapshot 
 	return state.snapshot;
 }
 
-// Round-eleven.3 — How long the 'complete' frame stays on screen
-// before we auto-hide. The original 350ms was too tight: many HMR
-// cycles complete in 50–250ms, so the *total* overlay lifetime
-// (received → complete + 350ms) was often under 500ms, which is
-// faster than the human eye can comfortably register. 600ms gives
-// the user time to read the "Total Xms" line and confirm visually
-// that something happened.
+// How long the 'complete' frame stays on screen before we auto-hide.
+// The original 350ms was too tight: many HMR cycles complete in
+// 50–250ms, so the *total* overlay lifetime (received → complete +
+// 350ms) was often under 500ms, which is faster than the human eye
+// can comfortably register. 600ms gives the user time to read the
+// "Total Xms" line and confirm visually that something happened.
 const UPDATE_AUTO_HIDE_MS = 600;
 
-// Round-eleven.3 (alpha.62 follow-up) — Minimum perceptible duration
-// for an entire update overlay cycle (from 'received' to hide). If
-// the cycle finished in 50ms (e.g., a tiny HTML edit on a warm
-// cache), we still hold for ~MIN_VISIBLE_MS total before hiding so
-// the overlay is actually seen. Combined with UPDATE_AUTO_HIDE_MS,
-// the *effective* hold-after-complete = max(UPDATE_AUTO_HIDE_MS,
-// MIN_VISIBLE_MS - elapsed-since-received).
+// Minimum perceptible duration for an entire update overlay cycle
+// (from 'received' to hide). If the cycle finished in 50ms (e.g., a
+// tiny HTML edit on a warm cache), we still hold for ~MIN_VISIBLE_MS
+// total before hiding so the overlay is actually seen. Combined with
+// UPDATE_AUTO_HIDE_MS, the *effective* hold-after-complete =
+// max(UPDATE_AUTO_HIDE_MS, MIN_VISIBLE_MS - elapsed-since-received).
 const UPDATE_MIN_VISIBLE_MS = 800;
 
 function clearUpdateAutoHideTimer(state: HmrOverlayRuntimeState): void {
@@ -1421,11 +1416,11 @@ export function setHmrConnectionStage(stage: HmrConnectionStage, info?: HmrOverl
 	return ensureHmrDevOverlayRuntimeInstalled().setConnectionStage(stage, info);
 }
 
-// Round-eleven.3 — Public entry point for driving the HMR-applying
-// overlay. Callers walk through stages (received → evicting →
-// reimporting → rebooting → complete); 'complete' auto-hides after a
-// short interval. Soft-fails (no-op) if the runtime overlay was never
-// installed (e.g., production builds, test environments).
+// Public entry point for driving the HMR-applying overlay. Callers
+// walk through stages (received → evicting → reimporting → rebooting
+// → complete); 'complete' auto-hides after a short interval.
+// Soft-fails (no-op) if the runtime overlay was never installed
+// (e.g., production builds, test environments).
 export function setHmrUpdateStage(stage: HmrUpdateStage, info?: HmrOverlayStageInfo): HmrOverlaySnapshot {
 	return ensureHmrDevOverlayRuntimeInstalled().setUpdateStage(stage, info);
 }

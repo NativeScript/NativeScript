@@ -174,15 +174,14 @@ describe('shouldInvalidateAngularTransitiveImporters', () => {
 		).toBe(false);
 	});
 
-	// Round-six narrowing: when source is provided, narrow transitive
+	// Narrowing: when source is provided, narrow transitive
 	// invalidation to files that actually carry Angular semantics.
 	// Constants/utility/type-only files become leaf modules — their
 	// importers do not need to re-transform because ES module live
-	// bindings deliver the new exports automatically once V8 re-evaluates
-	// the changed module. See HMR_CORE_REALM_DETERMINISTIC_PLAN.md
-	// (round-six) for the regression analysis.
-	describe('round-six: narrows transitive invalidation when source is supplied', () => {
-		it('skips transitive invalidation for a constants-only file (the heykiddo case)', () => {
+	// bindings deliver the new exports automatically once V8
+	// re-evaluates the changed module.
+	describe('narrows transitive invalidation when source is supplied', () => {
+		it('skips transitive invalidation for a constants-only file', () => {
 			const constantsSource = `
 				export const BAR_HEIGHT = 50;
 				export const ICON_SIZE = 24;
@@ -509,7 +508,7 @@ describe('collectAngularTransformCacheInvalidationUrls', () => {
 	});
 
 	it('canonicalizes absolute app paths before deriving extensionless transform invalidations', () => {
-		const projectRoot = '/Users/example/heykiddo';
+		const projectRoot = '/Users/example/sample-app';
 		const urls = collectAngularTransformCacheInvalidationUrls({
 			projectRoot,
 			file: `${projectRoot}/src/app/components/login/login.component.html`,
@@ -522,26 +521,27 @@ describe('collectAngularTransformCacheInvalidationUrls', () => {
 	});
 });
 
-// alpha.59.1 — runtime eviction set must include transitive importers even
-// when the Vite-side narrowing optimization decides their compiled JS is
-// unchanged. ESM live bindings only refresh if the importing module
-// re-evaluates inside V8 against a freshly fetched copy of the changed
-// module; if the importer stays cached in `g_moduleRegistry`, it continues
-// to read the OLD exports and the user never sees the change.
+// The runtime eviction set must include transitive importers even
+// when the Vite-side narrowing optimization decides their compiled JS
+// is unchanged. ESM live bindings only refresh if the importing
+// module re-evaluates inside V8 against a freshly fetched copy of the
+// changed module; if the importer stays cached in `g_moduleRegistry`,
+// it continues to read the OLD exports and the user never sees the
+// change.
 //
-// Regression scenario (heykiddo):
+// Regression scenario:
 //   1. Edit `app-resources.constants.ts` (no @Component decorator).
 //   2. Server-side narrowing skips Vite re-transform of importers.
 //   3. PRE-FIX: `transitiveImporters` was passed empty to
-//      `collectAngularEvictionUrls` → eviction set = [file, main.ts] only.
-//      Components stay cached with OLD bindings → no visual update even
-//      though logs show `refresh=257ms` and `Application.resetRootView`
-//      ran cleanly.
+//      `collectAngularEvictionUrls` → eviction set = [file, main.ts]
+//      only. Components stay cached with OLD bindings → no visual
+//      update even though logs show `refresh=257ms` and
+//      `Application.resetRootView` ran cleanly.
 //   4. POST-FIX: callers always compute the transitive closure for
 //      eviction; only Vite-graph invalidation is gated on narrowing.
-describe('collectAngularEvictionUrls (alpha.59 + alpha.59.1 invariants)', () => {
+describe('collectAngularEvictionUrls', () => {
 	const origin = 'http://localhost:5173';
-	const projectRoot = '/Users/example/heykiddo';
+	const projectRoot = '/Users/example/sample-app';
 
 	it('always includes the changed file as an eviction URL (both extensioned and extensionless)', () => {
 		const urls = collectAngularEvictionUrls({
@@ -551,7 +551,7 @@ describe('collectAngularEvictionUrls (alpha.59 + alpha.59.1 invariants)', () => 
 		});
 
 		expect(urls).toContain(`${origin}/ns/m/src/app/common/constants/app-resources.constants.ts`);
-		// alpha.61 — extensionless form is the canonical V8 cache key
+		// Extensionless form is the canonical V8 cache key.
 		expect(urls).toContain(`${origin}/ns/m/src/app/common/constants/app-resources.constants`);
 	});
 
@@ -569,12 +569,12 @@ describe('collectAngularEvictionUrls (alpha.59 + alpha.59.1 invariants)', () => 
 		expect(urls).toContain(`${origin}/ns/m/src/main`);
 	});
 
-	it('includes transitive importers even for narrowed (constants/leaf) edits — regression guard for alpha.59.1', () => {
-		// Models the heykiddo case: a constants file with no decorator,
-		// imported by a component, which is imported by routes, which is
-		// imported by main.ts. All three importers must end up in the
-		// eviction set so V8 re-fetches them and re-binds against the
-		// freshly evaluated constants module.
+	it('includes transitive importers even for narrowed (constants/leaf) edits', () => {
+		// A constants file with no decorator, imported by a component,
+		// which is imported by routes, which is imported by main.ts.
+		// All three importers must end up in the eviction set so V8
+		// re-fetches them and re-binds against the freshly evaluated
+		// constants module.
 		const transitiveImporters = [{ id: `${projectRoot}/src/app/components/login/login.component.ts` }, { id: `${projectRoot}/src/app/app.routes.ts` }, { id: `${projectRoot}/src/main.ts` }];
 
 		const urls = collectAngularEvictionUrls({
@@ -587,12 +587,11 @@ describe('collectAngularEvictionUrls (alpha.59 + alpha.59.1 invariants)', () => 
 
 		expect(urls).toEqual(
 			[
-				// alpha.61: every TS/JS app module emits BOTH the
-				// extensioned form (covers explicit `.ts` imports like
-				// the HMR client's `import(main.ts)`) and the
-				// extensionless form (covers Vite's default extension
-				// stripping, which is how V8 actually keys
-				// `g_moduleRegistry`).
+				// Every TS/JS app module emits BOTH the extensioned
+				// form (covers explicit `.ts` imports like the HMR
+				// client's `import(main.ts)`) and the extensionless
+				// form (covers Vite's default extension stripping,
+				// which is how V8 actually keys `g_moduleRegistry`).
 				`${origin}/ns/m/src/app/app.routes`,
 				`${origin}/ns/m/src/app/app.routes.ts`,
 				`${origin}/ns/m/src/app/common/constants/app-resources.constants`,
@@ -673,19 +672,20 @@ describe('collectAngularEvictionUrls (alpha.59 + alpha.59.1 invariants)', () => 
 		expect(componentUrls).toEqual([`${origin}/ns/m/src/app/components/login/login.component`, `${origin}/ns/m/src/app/components/login/login.component.ts`]);
 	});
 
-	// alpha.61 — direct regression test for the silent-HMR bug.
+	// Direct regression test for the silent-HMR bug.
 	//
-	// Live-fire scenario from the heykiddo runtime logs:
+	// Live-fire scenario from runtime logs:
 	//   `[resolver][http-rel] base=.../main.ts spec=/ns/m/src/app/app.component
 	//    -> http://localhost:5173/ns/m/src/app/app.component`
 	//   `[http-esm][load][cache-hit] key=http://localhost:5173/ns/m/src/app/app.component`
-	// V8 stores app modules under EXTENSIONLESS URLs because Vite strips
-	// extensions in generated import statements. Pre-alpha.61, the server
-	// only emitted the `.ts` form, so every eviction was a `remove:miss`
-	// against the registry and stale modules survived. This test pins
-	// the dual-form invariant so a future refactor cannot accidentally
-	// drop the extensionless URL again.
-	describe('alpha.61: emits canonical extensionless URLs (matching V8 cache keys)', () => {
+	// V8 stores app modules under EXTENSIONLESS URLs because Vite
+	// strips extensions in generated import statements. Earlier
+	// revisions of the server only emitted the `.ts` form, so every
+	// eviction was a `remove:miss` against the registry and stale
+	// modules survived. This test pins the dual-form invariant so a
+	// future refactor cannot accidentally drop the extensionless URL
+	// again.
+	describe('emits canonical extensionless URLs (matching V8 cache keys)', () => {
 		it('emits BOTH `.ts` and extensionless form for app TS modules', () => {
 			const urls = collectAngularEvictionUrls({
 				file: `${projectRoot}/src/app/foo.component.ts`,
@@ -710,7 +710,7 @@ describe('collectAngularEvictionUrls (alpha.59 + alpha.59.1 invariants)', () => 
 			}
 		});
 
-		it('emits dual forms for index.ts barrel files (the heykiddo `utils/index` case)', () => {
+		it('emits dual forms for index.ts barrel files (`utils/index` case)', () => {
 			// V8 stores barrel files under `/index` (Vite's canonical
 			// path) — the extensioned form is rarely cached, but emit
 			// it anyway as defense-in-depth.

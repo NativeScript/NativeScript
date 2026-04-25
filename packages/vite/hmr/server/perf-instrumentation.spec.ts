@@ -5,14 +5,14 @@ describe('perf-instrumentation', () => {
 	describe('formatServerStartupBanner', () => {
 		it('renders the canonical single line banner', () => {
 			const line = formatServerStartupBanner({
-				version: '8.0.0-alpha.49',
+				version: '8.0.0',
 				transformConcurrency: 8,
 				transformCacheMs: 60000,
 				lazyInitialGraph: true,
 				graphVersion: 1,
 			});
 
-			expect(line).toBe('[hmr-ws] @nativescript/vite@8.0.0-alpha.49 — transformConcurrency=8 transformCacheMs=60000ms lazyInitialGraph=on graphVersion=1');
+			expect(line).toBe('[hmr-ws] @nativescript/vite@8.0.0 — transformConcurrency=8 transformCacheMs=60000ms lazyInitialGraph=on graphVersion=1');
 		});
 
 		it('reports lazyInitialGraph=off when disabled', () => {
@@ -474,8 +474,8 @@ describe('perf-instrumentation', () => {
 			}
 		});
 
-		describe('round-eight: surfaces narrowing decision when applicable', () => {
-			it('appends `narrowed=yes` when Round-Seven narrowed the update', () => {
+		describe('surfaces narrowing decision when applicable', () => {
+			it('appends `narrowed=yes` when narrowing is applied to the update', () => {
 				const line = formatHmrUpdateSummary({
 					file: '/src/app/common/constants/app-resources.constants.ts',
 					kind: 'ts',
@@ -491,7 +491,7 @@ describe('perf-instrumentation', () => {
 				expect(line).toBe('[hmr-ws][update] kind=ts file=/src/app/common/constants/app-resources.constants.ts await=0ms framework=12ms broadcast=1ms total=13ms invalidated=1 recipients=1 narrowed=yes');
 			});
 
-			it('appends `narrowed=no` when Round-Seven fell back to broad invalidation (e.g. @Component edit)', () => {
+			it('appends `narrowed=no` when narrowing falls back to broad invalidation (e.g. @Component edit)', () => {
 				const line = formatHmrUpdateSummary({
 					file: '/src/app/components/foo.component.ts',
 					kind: 'ts',

@@ -1,5 +1,5 @@
 /**
- * alpha.62 follow-up — client-side helper for `ns:hmr-pending`.
+ * Client-side helper for `ns:hmr-pending`.
  *
  * Server emits `ns:hmr-pending` immediately when `handleHotUpdate`
  * fires, BEFORE doing any graph upserts / transforms / dependency

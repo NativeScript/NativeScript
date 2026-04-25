@@ -12,15 +12,16 @@ describe('rewriteImports Angular dynamic app imports', () => {
 		expect(output).not.toContain('import("/ns/m/src/app/components/login/login.component")');
 	});
 
-	// alpha.59 — Stable URL + Explicit Invalidation.
+	// Stable URL + Explicit Invalidation.
 	//
-	// The previous helper synthesized `/ns/m/__ns_hmr__/<tag>/<rest>`
-	// URLs from `__NS_HMR_GRAPH_VERSION__`/`__NS_HMR_IMPORT_NONCE__`.
-	// That tag flowed into V8's `g_moduleRegistry` cache key — so a
+	// An older revision of the helper synthesized
+	// `/ns/m/__ns_hmr__/<tag>/<rest>` URLs from
+	// `__NS_HMR_GRAPH_VERSION__`/`__NS_HMR_IMPORT_NONCE__`. That tag
+	// flowed into V8's `g_moduleRegistry` cache key — so a
 	// `graphVersion` bump on every save effectively flushed the entire
-	// cached graph. The new helper has none of that: it only adds the
-	// boot prefix during cold boot, never synthesizes a version tag.
-	// See HMR_STABLE_URL_INVALIDATION_PLAN.md.
+	// cached graph. The current helper has none of that: it only adds
+	// the boot prefix during cold boot, never synthesizes a version
+	// tag.
 	it('emits a tag-free dynamic-import helper for app modules', () => {
 		const input = `const loadSignup = () => import('./components/signup/signup.component');\n`;
 		const output = rewriteImports(input, '/src/app/app.routes.ts', new Map(), new Map(), '/', false, undefined, 'http://localhost:5173', true);
@@ -35,8 +36,8 @@ describe('rewriteImports Angular dynamic app imports', () => {
 		expect(output).toContain("spec.startsWith(__nsm + '/node_modules/')");
 
 		// CRITICAL invariants — the helper must NOT synthesize legacy
-		// version tags. These regressions were the root cause of pre-
-		// alpha.59 V8 cache-key thrash:
+		// version tags. These regressions were the root cause of the
+		// historical V8 cache-key thrash:
 		expect(output).not.toMatch(/encodeURIComponent\(tag\)/);
 		expect(output).not.toMatch(/__NS_HMR_GRAPH_VERSION__/);
 		expect(output).not.toMatch(/__NS_HMR_IMPORT_NONCE__/);

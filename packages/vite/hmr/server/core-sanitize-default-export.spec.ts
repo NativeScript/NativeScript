@@ -5,10 +5,9 @@ import { synthesizeDefaultExport, isDeepCoreSubpath, normalizeAnyCoreSpecToBridg
 // Tests use REAL Vite output captured from the live dev server.
 //
 // All @nativescript/core specifiers are rewritten to the CANONICAL
-// `/ns/core/<sub>` path form (no version, no `?p=`, no `.js` tail). See
-// HMR_CORE_REALM_DETERMINISTIC_PLAN.md — Invariant A requires byte-
-// identical URLs across every emitter; the legacy versioned / query-param
-// form has been deleted.
+// `/ns/core/<sub>` path form (no version, no `?p=`, no `.js` tail).
+// Byte-identical URLs across every emitter are required; the legacy
+// versioned / query-param form has been deleted.
 
 const ORIGIN = 'http://localhost:5173';
 const VER = 0;

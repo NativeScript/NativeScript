@@ -9,9 +9,6 @@
 // The trace is also mirrored onto `globalThis.__NS_BOOT_TRACE__` so a
 // developer can `console.log(globalThis.__NS_BOOT_TRACE__)` from the
 // device or pick it up via `js:evaluate` in test harnesses.
-//
-// See HMR_CORE_REALM_DETERMINISTIC_PLAN.md — "Post-D roadmap — dev-loop
-// performance and UX" for the full context.
 
 export type BootTraceSegment = {
 	ok?: boolean;

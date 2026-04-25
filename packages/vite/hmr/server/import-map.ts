@@ -107,10 +107,9 @@ export function generateImportMap(options: ImportMapOptions): ImportMap {
 		}
 	}
 
-	// @nativescript/core → bridge endpoint (canonical URL generator, see
-	// Invariant A in HMR_CORE_REALM_DETERMINISTIC_PLAN.md). The trailing-
-	// slash entry intentionally uses the same generator so subpath imports
-	// resolve via `${origin}/ns/core/<sub>`.
+	// @nativescript/core → bridge endpoint (canonical URL generator).
+	// The trailing-slash entry intentionally uses the same generator so
+	// subpath imports resolve via `${origin}/ns/core/<sub>`.
 	imports['@nativescript/core'] = buildCoreUrl(origin);
 	imports['@nativescript/core/'] = `${buildCoreUrl(origin)}/`;
 

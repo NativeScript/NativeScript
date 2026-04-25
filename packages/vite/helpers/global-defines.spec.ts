@@ -39,12 +39,12 @@ describe('isHmrProgressOverlayEnabled (NS_VITE_PROGRESS_OVERLAY)', () => {
 	});
 });
 
-// alpha.64 — Kickstart-eligibility threshold. The behavior matters
-// because the wrong cap directly damages cold-edit latency: too low
-// and component edits lose the parallel speed-up; too high and a
-// constants edit balloons the cycle to multiple seconds. These tests
-// pin the configuration semantics (env-var parsing, defaults, edge
-// values) so a future tweak can't silently shift the default.
+// Kickstart-eligibility threshold. The behavior matters because the
+// wrong cap directly damages cold-edit latency: too low and component
+// edits lose the parallel speed-up; too high and a constants edit
+// balloons the cycle to multiple seconds. These tests pin the
+// configuration semantics (env-var parsing, defaults, edge values) so
+// a future tweak can't silently shift the default.
 describe('resolveHmrKickstartMaxUrls (NS_VITE_KICKSTART_MAX_URLS)', () => {
 	it('exposes a default of 32 (the empirically chosen knee point)', () => {
 		// Pin the constant so a casual nudge from 32 → 16 doesn't slip in
@@ -83,7 +83,7 @@ describe('resolveHmrKickstartMaxUrls (NS_VITE_KICKSTART_MAX_URLS)', () => {
 		expect(resolveHmrKickstartMaxUrls({ NS_VITE_KICKSTART_MAX_URLS: '0' } as any)).toBe(0);
 	});
 
-	it('accepts "Infinity" / "unlimited" / "none" as "no cap" (alpha.63 behavior)', () => {
+	it('accepts "Infinity" / "unlimited" / "none" as "no cap"', () => {
 		for (const raw of ['Infinity', 'INFINITY', 'unlimited', 'UNLIMITED', 'none', 'NONE']) {
 			expect(resolveHmrKickstartMaxUrls({ NS_VITE_KICKSTART_MAX_URLS: raw } as any)).toBe(Number.POSITIVE_INFINITY);
 		}

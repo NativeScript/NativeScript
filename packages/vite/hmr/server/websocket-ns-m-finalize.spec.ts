@@ -24,13 +24,14 @@ const baseHelpers = {
 };
 
 describe('finalizeNsMServedModule', () => {
-	// alpha.59 — Stable URL + Explicit Invalidation.
+	// Stable URL + Explicit Invalidation.
 	//
-	// Pre-alpha.59 the finalizer stamped every emitted `/ns/m/<rel>` URL
-	// with `__ns_hmr__/v<N>/`. The version segment forced V8 to refetch
-	// the entire dependency closure on every save (the URL was V8's
-	// cache key). alpha.59 emits stable URLs so the closure stays hot;
-	// only modules in the explicit eviction set are refetched.
+	// Earlier revisions of the finalizer stamped every emitted
+	// `/ns/m/<rel>` URL with `__ns_hmr__/v<N>/`. The version segment
+	// forced V8 to refetch the entire dependency closure on every
+	// save (the URL was V8's cache key). The finalizer now emits
+	// stable URLs so the closure stays hot; only modules in the
+	// explicit eviction set are refetched.
 	it('emits stable canonical URLs for app /ns/m imports under HMR', async () => {
 		const code = 'import "/ns/m/src/app/app.routes";\nexport const ok = true;\n';
 		const out = await finalizeNsMServedModule({

@@ -1,12 +1,11 @@
 /**
  * Single canonical URL generator for `@nativescript/core` under HMR.
  *
- * Invariant A (HMR_CORE_REALM_DETERMINISTIC_PLAN.md):
- *   Every public-facing reference to `@nativescript/core[/sub]` resolves to
- *   exactly one URL string — byte-for-byte identical across every emitter
- *   (bundle entry, external-urls plugin, rewriter, import map, runtime
- *   require). There is no ambiguity about `?p=` vs path, `.js` vs
- *   extensionless, versioned vs unversioned.
+ * Every public-facing reference to `@nativescript/core[/sub]` resolves to
+ * exactly one URL string — byte-for-byte identical across every emitter
+ * (bundle entry, external-urls plugin, rewriter, import map, runtime
+ * require). There is no ambiguity about `?p=` vs path, `.js` vs
+ * extensionless, versioned vs unversioned.
  *
  * This module is the ONE site that constructs those URLs. Every caller in
  * the repo should use `buildCoreUrl()` (or `buildCoreUrlPath()` when origin

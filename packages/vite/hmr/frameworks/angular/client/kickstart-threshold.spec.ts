@@ -1,23 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
- * alpha.64 — Kickstart-eligibility threshold tests.
+ * Kickstart-eligibility threshold tests.
  *
- * The Angular client's parallel HMR prefetch (`alpha.63`) is a clean
- * win for component-shaped eviction sets (5–30 modules) and a net
- * loss for deep-fan-in `.ts` edits (constants files,
+ * The Angular client's parallel HMR prefetch (`__nsKickstartHmrPrefetch`)
+ * is a clean win for component-shaped eviction sets (5–30 modules)
+ * and a net loss for deep-fan-in `.ts` edits (constants files,
  * design-system enums) where the inverse-dep closure can hit
  * 200–300 modules. Without a cap, those wide closures overwhelm
  * Vite's single-threaded transform pipeline and a "should-be-200ms"
- * cycle balloons to 6+ seconds (see the `[hmr-kickstart][list] urls=264`
- * trace in the alpha.63 user feedback that prompted this round).
+ * cycle balloons to 6+ seconds.
  *
  * The threshold short-circuits the kickstart when
  * `evictPaths.length` exceeds the configured cap (default 32,
  * override via `NS_VITE_KICKSTART_MAX_URLS`). The HMR cycle still
  * completes correctly — V8 falls back to per-module synchronous
- * fetches as it walks the real forward path, exactly the way the
- * runtime behaved through alpha.62.
+ * fetches as it walks the real forward path.
  *
  * These tests live in their own file because the build-time cap is
  * captured ONCE at module load time. To exercise both above-cap and
@@ -74,7 +72,7 @@ function makeUrls(count: number, prefix = 'http://localhost:5173/ns/m/src/app/fi
 	return urls;
 }
 
-describe('Angular HMR client — alpha.64 kickstart threshold', () => {
+describe('Angular HMR client — kickstart threshold', () => {
 	beforeEach(() => {
 		clearGlobals();
 		vi.resetModules();
@@ -131,10 +129,11 @@ describe('Angular HMR client — alpha.64 kickstart threshold', () => {
 
 	it('skips the kickstart for the 264-URL repro case (constants edit pathology)', async () => {
 		// 264 is the URL count from the user-facing trace that
-		// motivated alpha.64 (`[hmr-kickstart][list] urls=264 fetched=264 ms=6313`).
-		// Pinning the exact number documents the empirical signal in
-		// the test source and prevents a future regression from
-		// making this case "kickstart eligible" again.
+		// motivated the threshold cap (`[hmr-kickstart][list]
+		// urls=264 fetched=264 ms=6313`). Pinning the exact number
+		// documents the empirical signal in the test source and
+		// prevents a future regression from making this case
+		// "kickstart eligible" again.
 		const ctx = installGlobals();
 		const evictPaths = makeUrls(264);
 
@@ -183,9 +182,9 @@ describe('Angular HMR client — alpha.64 kickstart threshold', () => {
 		expect(ctx.kickstart).not.toHaveBeenCalled();
 	});
 
-	it('runs the kickstart for any size when the cap is Infinity (alpha.63 behavior)', async () => {
-		// Some users may want the unconditional alpha.63 behavior
-		// back (e.g. for benchmarking with a deliberately-warm dev
+	it('runs the kickstart for any size when the cap is Infinity (unconditional kickstart)', async () => {
+		// Some users may want the unconditional kickstart behavior
+		// (e.g. for benchmarking with a deliberately-warm dev
 		// server). `__NS_HMR_KICKSTART_MAX_URLS__ = Infinity` is the
 		// escape hatch.
 		(globalThis as any).__NS_HMR_KICKSTART_MAX_URLS__ = Number.POSITIVE_INFINITY;
