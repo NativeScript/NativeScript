@@ -20,6 +20,61 @@ export function isHmrProgressOverlayEnabled(env: NodeJS.ProcessEnv = process.env
 	return !['0', 'false', 'off', 'no'].includes(raw);
 }
 
+/**
+ * alpha.64 — Kickstart-eligibility threshold for the parallel HMR
+ * prefetch (alpha.63's `__nsKickstartHmrPrefetch`).
+ *
+ * Why a threshold exists. The kickstart fetches the SERVER-computed
+ * inverse-dep closure (`evictPaths`) in parallel before V8 starts
+ * its module walk, which is a clean win when the closure size is
+ * close to what V8 will actually re-evaluate on the next import. For
+ * a typical Angular component edit (`*.component.ts` / `.html`) the
+ * closure contains ~5–30 modules and almost all of them sit on the
+ * live forward path from the entry, so fan-out beats sequential
+ * `HttpFetchText` calls by 3–5×.
+ *
+ * The picture inverts for `.ts` files with deep inverse-dep fan-in
+ * (constants files, design-system enums, shared utilities). The
+ * server faithfully reports the entire inverse closure (often
+ * 100–300 importers), but V8's forward walk on re-import only
+ * re-evaluates the ~20–30 modules that sit on the currently-rendered
+ * route's path. The kickstart's parallel wave then over-fetches the
+ * other ~70–270 importers — and Vite's single-threaded transform
+ * pipeline cannot keep up with 16-way concurrent demand, so each
+ * fetch's tail latency balloons (avg `[http-loader][fetch-sync]`
+ * went from 17 ms to 74 ms in the user's repro). Net result: a
+ * "should-be-200ms" HMR cycle becomes 6+ seconds.
+ *
+ * The threshold short-circuits the kickstart when `evictPaths.length`
+ * exceeds the configured cap. The HMR cycle still completes
+ * correctly — V8 falls back to per-module synchronous fetches, which
+ * is what the runtime did before alpha.63 — and the cycle reverts
+ * to roughly the alpha.62 floor (~400–800 ms for a wide-fan-in
+ * constants edit).
+ *
+ * Default: 32. Empirically chosen so component-shaped closures
+ * (typically 5–30) keep the kickstart speed-up while wide-fan-in
+ * leaf edits (typically 100+) skip it. Override with
+ * `NS_VITE_KICKSTART_MAX_URLS=N` (any non-negative integer) — `0`
+ * disables the kickstart entirely; `Infinity` disables the
+ * threshold and restores alpha.63 behavior unconditionally.
+ */
+export const HMR_KICKSTART_DEFAULT_MAX_URLS = 32;
+
+export function resolveHmrKickstartMaxUrls(env: NodeJS.ProcessEnv = process.env): number {
+	const raw = (env.NS_VITE_KICKSTART_MAX_URLS ?? '').toString().trim();
+	if (!raw) return HMR_KICKSTART_DEFAULT_MAX_URLS;
+	const lower = raw.toLowerCase();
+	if (lower === 'infinity' || lower === 'unlimited' || lower === 'none') {
+		return Number.POSITIVE_INFINITY;
+	}
+	const parsed = Number(raw);
+	if (!Number.isFinite(parsed) || parsed < 0) {
+		return HMR_KICKSTART_DEFAULT_MAX_URLS;
+	}
+	return Math.floor(parsed);
+}
+
 export function getGlobalDefines(opts: { platform: string; targetMode: string; verbose: boolean; flavor: string; isCI?: boolean }) {
 	return {
 		// Define platform flags for runtime checks
@@ -34,6 +89,14 @@ export function getGlobalDefines(opts: { platform: string; targetMode: string; v
 		__NS_TARGET_FLAVOR__: JSON.stringify(opts.flavor),
 		// whether to show the HMR in-progress overlay.
 		__NS_HMR_PROGRESS_OVERLAY_ENABLED__: JSON.stringify(isHmrProgressOverlayEnabled()),
+		// alpha.64 — eviction-set size cap for the parallel HMR
+		// kickstart. JSON.stringify(Number.POSITIVE_INFINITY) is the
+		// string "null", so we serialize Infinity ourselves to keep the
+		// build-time literal readable in source maps.
+		__NS_HMR_KICKSTART_MAX_URLS__: ((): string => {
+			const n = resolveHmrKickstartMaxUrls();
+			return Number.isFinite(n) ? String(n) : 'Infinity';
+		})(),
 		__CSS_PARSER__: JSON.stringify('css-tree'),
 		__UI_USE_XML_PARSER__: true,
 		__UI_USE_EXTERNAL_RENDERER__: false,

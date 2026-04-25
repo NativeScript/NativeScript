@@ -1,6 +1,7 @@
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
 declare const __NS_HMR_PROGRESS_OVERLAY_ENABLED__: boolean | undefined;
+declare const __NS_HMR_KICKSTART_MAX_URLS__: number | undefined;
 
 type GetCoreFn = (name: string) => any;
 
@@ -163,6 +164,135 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	}
 }
 
+// alpha.63 — Parallel module-source prefetch for the HMR re-import.
+//
+// Why this exists. After `__nsInvalidateModules(evictPaths)` the
+// V8 cache (`g_moduleRegistry`) no longer holds the changed file
+// or any of its transitive importers. The next `import(entry)` will
+// walk the dep graph through V8's *synchronous*
+// `ResolveModuleCallback`, which means each evicted module enters
+// `LoadHttpModuleForUrl` → `HttpFetchText` → network fetch, one at
+// a time. With ~131 importers (a constants edit reaches that
+// quickly in a real Angular app) and ~10ms per round-tripped fetch
+// over keep-alive, that's a ~1.3s sequential floor inside `refresh`.
+//
+// V8 10.3.x does not expose an async resolve callback for static
+// imports, so we cannot parallelize the walk itself. What we *can*
+// do is pre-fill the loader's `g_prefetchCache` BEFORE V8 starts
+// walking. `__nsKickstartHmrPrefetch(urls)` does exactly that — it
+// runs an N-way parallel HTTP wave (default 16-way), blocks the
+// JS thread until the wave drains, and stores every body in the
+// cache. When V8 then walks, every `HttpFetchText` is a memory
+// read instead of a network round trip. The walk's wall time
+// collapses to the slowest *single* fetch in the wave.
+//
+// Why we pass `evictPaths` directly (not just the entry seed). The
+// dev server's `collectAngularEvictionUrls` already computed the
+// inverse-dep closure of the changed file. Re-discovering it via
+// the runtime's BFS-from-seed mode would (a) re-fetch modules V8
+// still has compiled, and (b) add one round trip per graph level.
+// Passing the array form takes the explicit list, fans it out in
+// one wave, and skips the recursion. The runtime's array
+// overload is the alpha.63 native-side change that landed alongside
+// this client.
+//
+// Soft-fail behavior:
+// - Older runtime (no `__nsKickstartHmrPrefetch`)  → no-op, V8 falls
+//   back to per-module `HttpFetchText` (today's behavior).
+// - Older runtime (string-only `__nsKickstartHmrPrefetch`)  → array
+//   arg is rejected by the runtime; we still log no-op and proceed.
+// - Kickstart timeout                              → partial
+//   pre-fill; V8 fetches the rest synchronously.
+// - Synchronous throw                              → guarded; cycle
+//   continues without speedup.
+//
+// All four paths preserve correctness — kickstart is a pure
+// performance optimization and never changes which modules are
+// evaluated.
+type KickstartResult = { ok: boolean; fetched: number; ms: number };
+
+// alpha.64 — Eviction-set size cap for the kickstart.
+//
+// `__NS_HMR_KICKSTART_MAX_URLS__` is a build-time literal injected
+// by `helpers/global-defines.ts` (default 32). It is a pure
+// performance gate: the kickstart never affects correctness, so
+// skipping it for large fan-out edits just reverts the runtime to
+// alpha.62-style sequential `HttpFetchText`. See the doc comment on
+// `resolveHmrKickstartMaxUrls` (in global-defines.ts) for the
+// rationale and the empirical numbers behind the default.
+//
+// The constant is read once at module load (the same pattern used
+// for `overlayEnabled`) so each call site is a single inequality
+// check rather than a try/typeof. Tests that re-import this module
+// see `undefined` and fall back to the default.
+const KICKSTART_DEFAULT_MAX_URLS = 32;
+const kickstartMaxUrls: number = (() => {
+	try {
+		const raw = __NS_HMR_KICKSTART_MAX_URLS__;
+		if (typeof raw !== 'number') return KICKSTART_DEFAULT_MAX_URLS;
+		if (!Number.isFinite(raw)) return Number.POSITIVE_INFINITY;
+		if (raw < 0) return KICKSTART_DEFAULT_MAX_URLS;
+		return Math.floor(raw);
+	} catch {
+		return KICKSTART_DEFAULT_MAX_URLS;
+	}
+})();
+
+// Decide whether to run the kickstart for a given eviction set.
+// Exported for unit testing — callers in this module use the inline
+// `evictPaths.length` comparison below for a slightly cheaper
+// hot-path.
+//
+// Semantics:
+// - `0` urls   → no work to do; skip (returns false).
+// - `urls.length <= cap` → kickstart eligible (returns true).
+// - `urls.length > cap`  → skip kickstart (returns false). V8 falls
+//   back to per-module synchronous fetches inside its module walk.
+// - `cap === 0`           → kickstart disabled regardless of size.
+// - `cap === Infinity`    → kickstart always eligible (alpha.63
+//   behavior).
+export function shouldRunKickstart(urlCount: number, maxUrls: number = kickstartMaxUrls): boolean {
+	if (!Number.isFinite(urlCount) || urlCount <= 0) return false;
+	if (!Number.isFinite(maxUrls)) return maxUrls > 0;
+	if (maxUrls <= 0) return false;
+	return urlCount <= maxUrls;
+}
+
+function kickstartHmrPrefetch(urls: readonly string[], verbose: boolean): KickstartResult | null {
+	if (!urls || !urls.length) return null;
+	const g: any = globalThis;
+	const fn = g.__nsKickstartHmrPrefetch;
+	if (typeof fn !== 'function') {
+		if (verbose && envVerbose) {
+			try {
+				console.info(`[hmr-angular] runtime missing __nsKickstartHmrPrefetch; serial fetches will be used. urls=${urls.length}`);
+			} catch {}
+		}
+		return null;
+	}
+	try {
+		// Concurrency cap of 16 matches the runtime's documented
+		// default for the kickstart BFS. Timeout at 10s tracks the
+		// runtime's `HttpFetchText` retry envelope so we don't
+		// hold the JS thread forever on a stalled dev server.
+		const result = fn.call(null, urls.slice(), { maxConcurrent: 16, timeoutMs: 10000 });
+		if (result && typeof result === 'object') {
+			const ok = !!result.ok;
+			const fetched = typeof result.fetched === 'number' ? result.fetched : 0;
+			const ms = typeof result.ms === 'number' ? result.ms : 0;
+			return { ok, fetched, ms };
+		}
+		return null;
+	} catch (error) {
+		if (verbose && envVerbose) {
+			try {
+				console.warn('[hmr-angular] __nsKickstartHmrPrefetch threw', (error as any)?.message || error);
+			} catch {}
+		}
+		return null;
+	}
+}
+
 function getAngularBootstrapEntryCandidates(msg: any): string[] {
 	const root = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
 	// alpha.59 — Server announces the canonical bootstrap entry as
@@ -235,6 +365,48 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 		try {
 			console.info(`[ns-hmr][angular] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
 		} catch {}
+	}
+
+	// alpha.63 — Parallel HTTP prefetch for the freshly-evicted modules.
+	//
+	// Order matters here: the kickstart MUST run after the eviction so
+	// that it actually re-populates `g_prefetchCache` for the modules
+	// V8 will ask for. If we kickstarted before the eviction, every URL
+	// would skip on the "already cached" check (the walk consumes
+	// destructively but the prior non-evicted modules sit in V8's
+	// `g_moduleRegistry`, not the prefetch cache).
+	//
+	// We only kickstart when the eviction succeeded, because the
+	// fallback path (legacy URL-versioning, see `useStableUrls = evicted`
+	// below) doesn't go through canonical /ns/m URLs and the runtime
+	// would not match its prefetch cache lookups against the version-
+	// prefixed forms V8 will end up requesting. Better to skip the
+	// optimization than risk a confusing partial cache hit.
+	//
+	// alpha.64 — `shouldRunKickstart` gates large eviction sets out
+	// of the parallel wave. A `.ts` file with deep inverse-dep
+	// fan-in (constants files, design-system enums) can produce a
+	// 200–300-URL closure that overwhelms Vite's single-threaded
+	// transform pipeline. The kickstart fan-out then makes the cycle
+	// 5–8× slower than letting V8 fetch sequentially as it walks the
+	// real forward path. The cap (default 32, override with
+	// `NS_VITE_KICKSTART_MAX_URLS`) keeps component-shaped closures
+	// (typically 5–30 URLs) on the fast path. Correctness is
+	// unaffected — V8's per-module synchronous fetch is the same code
+	// path the runtime used through alpha.62.
+	if (evicted && evictPaths.length > 0) {
+		if (shouldRunKickstart(evictPaths.length)) {
+			const result = kickstartHmrPrefetch(evictPaths, options.verbose);
+			if (options.verbose && envVerbose && result) {
+				try {
+					console.info(`[ns-hmr][angular] kickstart urls=${evictPaths.length} fetched=${result.fetched} ok=${result.ok ? 'yes' : 'no'} ms=${result.ms}`);
+				} catch {}
+			}
+		} else if (options.verbose && envVerbose) {
+			try {
+				console.info(`[ns-hmr][angular] kickstart skipped urls=${evictPaths.length} cap=${Number.isFinite(kickstartMaxUrls) ? kickstartMaxUrls : 'Infinity'} (eviction set too large; falling back to sequential fetch)`);
+			} catch {}
+		}
 	}
 
 	// URL strategy:
