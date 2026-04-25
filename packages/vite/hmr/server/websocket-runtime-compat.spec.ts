@@ -10,6 +10,11 @@ describe('websocket runtime compat builders', () => {
 		expect(code).toContain("console.log('[ns-rt] evaluated'");
 	});
 
+	it('gates the [ns-rt] evaluated marker behind __NS_ENV_VERBOSE__ so it is silent by default', () => {
+		const code = buildNsRtBridgeModule('42', '// guard\n');
+		expect(code).toContain("if (globalThis.__NS_ENV_VERBOSE__) console.log('[ns-rt] evaluated'");
+	});
+
 	it('builds the /ns/entry wrapper around entry-runtime fetch/eval', () => {
 		const code = buildNsEntryWrapper({
 			origin: 'http://localhost:1234',

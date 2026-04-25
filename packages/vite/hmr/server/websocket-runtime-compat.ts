@@ -48,7 +48,7 @@ export function buildNsRtBridgeModule(rtVer: string, requireGuardSnippet: string
 		`let __cached_rt = null;\n` +
 		`let __cached_vm = null;\n` +
 		`const __RT_REALM_TAG = (globalThis.__NS_RT_REALM__ ||= Math.random().toString(36).slice(2));\n` +
-		`try { if (!(globalThis.__NS_RT_ONCE__ && globalThis.__NS_RT_ONCE__.eval)) { (globalThis.__NS_RT_ONCE__ ||= {}).eval = true; console.log('[ns-rt] evaluated', { rtRealm: __RT_REALM_TAG }); } } catch {}\n` +
+		`try { if (!(globalThis.__NS_RT_ONCE__ && globalThis.__NS_RT_ONCE__.eval)) { (globalThis.__NS_RT_ONCE__ ||= {}).eval = true; if (globalThis.__NS_ENV_VERBOSE__) console.log('[ns-rt] evaluated', { rtRealm: __RT_REALM_TAG }); } } catch {}\n` +
 		`function __ensure(){\n` +
 		`  if (__cached_rt) return __cached_rt;\n` +
 		`  let vm = null;\n` +
@@ -260,7 +260,7 @@ export function registerRuntimeCompatHandlers(server: ViteDevServer, options: Re
 			} catch {}
 			setJavascriptResponseHeaders(res);
 			const content = await loadEntryRuntimeContent(verbose);
-			console.log('[hmr-http] /ns/entry-rt serving', content.length, 'bytes');
+			if (verbose) console.log('[hmr-http] /ns/entry-rt serving', content.length, 'bytes');
 			res.statusCode = 200;
 			res.end(content);
 		} catch (error) {

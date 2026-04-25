@@ -42,7 +42,7 @@ export function applyCssText(cssText: string): void {
 		const Application = getCore('Application');
 		if (Application && Application.addCss) {
 			Application.addCss(cssText);
-			console.info('[ns-hmr] CSS applied, refreshing view');
+			if (VERBOSE) console.info('[ns-hmr] CSS applied, refreshing view');
 		}
 		// Trigger a view refresh so the new styles are rendered.
 		// NativeScript caches computed styles — addCss alone won't repaint.

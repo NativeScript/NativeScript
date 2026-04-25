@@ -224,7 +224,7 @@ describe('browser runtime session bootstrap', () => {
 		expect(configureRuntime).not.toHaveBeenCalled();
 	});
 
-	it('instrumentation: always emits a [ns-boot] timeline line on success', async () => {
+	it('instrumentation: emits a [ns-boot] timeline line on success when verbose is on', async () => {
 		const configureRuntime = vi.fn();
 		const startDevSession = vi.fn().mockResolvedValue(undefined);
 		const fetchMock = vi
@@ -249,11 +249,9 @@ describe('browser runtime session bootstrap', () => {
 		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
 		vi.stubGlobal('__nsStartDevSession', startDevSession);
 		vi.stubGlobal('fetch', fetchMock);
-		// The log path uses console.info unconditionally — spy rather than stub
-		// so other tests keep seeing real output if they need it.
 		const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
 
-		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
 
 		const lines = infoSpy.mock.calls.map((call) => String(call[0])).filter((line) => line.startsWith('[ns-boot]'));
 		expect(lines, 'expected exactly one boot timeline line').toHaveLength(1);
@@ -270,12 +268,52 @@ describe('browser runtime session bootstrap', () => {
 		expect(trace.native?.ok).toBe(true);
 	});
 
-	it('instrumentation: emits a FAILED [ns-boot] line when the session fetch throws', async () => {
+	it('instrumentation: stays silent on success when verbose is off but still publishes the trace', async () => {
+		const configureRuntime = vi.fn();
+		const startDevSession = vi.fn().mockResolvedValue(undefined);
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					sessionId: 'session-trace-quiet',
+					origin: 'http://localhost:5173',
+					clientUrl: 'http://localhost:5173/__ns_dev__/client',
+					entryUrl: 'http://localhost:5173/ns/m/src/main.ts',
+					wsUrl: 'ws://localhost:5173/ns-hmr',
+					platform: 'ios',
+					runtimeConfigUrl: 'http://localhost:5173/ns/import-map.json',
+				}),
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ importMap: { imports: {} }, volatilePatterns: [] }),
+			});
+
+		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
+		vi.stubGlobal('__nsStartDevSession', startDevSession);
+		vi.stubGlobal('fetch', fetchMock);
+		const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
+
+		const lines = infoSpy.mock.calls.map((call) => String(call[0])).filter((line) => line.startsWith('[ns-boot]'));
+		expect(lines, 'no boot timeline line should leak when verbose is off').toEqual([]);
+
+		// The trace itself should still be published for post-boot inspection.
+		const trace = (globalThis as any).__NS_BOOT_TRACE__;
+		expect(trace).toBeDefined();
+		expect(typeof trace.t0).toBe('number');
+		expect(typeof trace.t1).toBe('number');
+		expect(trace.session?.ok).toBe(true);
+	});
+
+	it('instrumentation: emits a FAILED [ns-boot] line when the session fetch throws and verbose is on', async () => {
 		const fetchMock = vi.fn().mockRejectedValue(new Error('boom'));
 		vi.stubGlobal('fetch', fetchMock);
 		const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
 
-		await expect(startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session')).rejects.toThrow('boom');
+		await expect(startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true)).rejects.toThrow('boom');
 
 		const bootLine = infoSpy.mock.calls.map((c) => String(c[0])).find((line) => line.startsWith('[ns-boot]'));
 		expect(bootLine).toBeDefined();
@@ -305,7 +343,7 @@ describe('browser runtime session bootstrap', () => {
 		vi.stubGlobal('fetch', fetchMock);
 		const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
 
-		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session');
+		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
 
 		const bootLine = infoSpy.mock.calls.map((c) => String(c[0])).find((line) => line.startsWith('[ns-boot]'));
 		expect(bootLine).toBeDefined();

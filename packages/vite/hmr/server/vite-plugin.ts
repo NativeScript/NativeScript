@@ -259,7 +259,9 @@ function __nsBrowserRuntimeCloseFallbackSocket(reason) {
 	}
 	__nsBrowserRuntimeSocket = null;
 	globalThis.__NS_HMR_BROWSER_RUNTIME_SOCKET_READY__ = false;
-	console.info('[ns-browser-runtime-client] delegated to full HMR client; closing bootstrap fallback socket', reason || 'delegated');
+	if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+		console.info('[ns-browser-runtime-client] delegated to full HMR client; closing bootstrap fallback socket', reason || 'delegated');
+	}
 }
 
 function __nsBrowserRuntimeWaitForDelegation(startedAt) {

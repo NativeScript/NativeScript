@@ -2727,19 +2727,23 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 		try {
 			await walk(pathMod.join(root, 'src'));
 		} catch {}
-		// Diagnostic summary: Always-on so slow cold-boot walks
-		// surface even when verbose is off. A `bumpedVersion=no`
-		// result is the happy path; `yes` indicates a regression.
-		try {
-			console.info(
-				formatPopulateInitialGraphSummary({
-					moduleCount: graph.size,
-					durationMs: Date.now() - tStart,
-					graphVersion,
-					bumpedVersion: graphVersion !== versionAtStart,
-				}),
-			);
-		} catch {}
+		// Diagnostic summary. Gated behind the verbose flag so the
+		// dev console stays quiet on a normal save. Flip
+		// NS_VITE_VERBOSE=1 to surface slow cold-boot walks; a
+		// `bumpedVersion=no` result is the happy path, `yes`
+		// indicates a regression.
+		if (verbose) {
+			try {
+				console.info(
+					formatPopulateInitialGraphSummary({
+						moduleCount: graph.size,
+						durationMs: Date.now() - tStart,
+						graphVersion,
+						bumpedVersion: graphVersion !== versionAtStart,
+					}),
+				);
+			} catch {}
+		}
 	}
 	// Kick off `populateInitialGraph` in the background (non-awaited) so /ns/m
 	// responses are never blocked on a full tree walk. Returns the shared
@@ -2839,15 +2843,17 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						}
 					} catch {}
 				}
-				console.info(
-					formatServerStartupBanner({
-						version: pkgVersion,
-						transformConcurrency,
-						transformCacheMs,
-						lazyInitialGraph: true,
-						graphVersion,
-					}),
-				);
+				if (verbose) {
+					console.info(
+						formatServerStartupBanner({
+							version: pkgVersion,
+							transformConcurrency,
+							transformCacheMs,
+							lazyInitialGraph: true,
+							graphVersion,
+						}),
+					);
+				}
 			} catch {}
 
 			// Always-on cold-boot request trace. Runs in front of every
@@ -2869,7 +2875,11 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					coldBootCounter = createColdBootRequestCounter({
 						summaryEvery,
 						idleWindowMs,
+						// Gated on the verbose flag so cold-boot progress and
+						// the final window-closed summary stay quiet by
+						// default. Flip NS_VITE_VERBOSE=1 to surface them.
 						log: (line) => {
+							if (!verbose) return;
 							try {
 								console.info(line);
 							} catch {}
@@ -3398,7 +3408,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						if (transformed?.code && ACTIVE_STRATEGY?.flavor === 'solid' && (resolvedCandidate || spec || '').includes('@solid-refresh')) {
 							const PATCH_SENTINEL = '/* __ns_solid_refresh_patched__ */';
 							const alreadyPatched = transformed.code.includes(PATCH_SENTINEL);
-							console.log('[hmr-ws][solid] @solid-refresh patch check:', { spec: resolvedCandidate || spec, alreadyPatched, codeLen: transformed.code.length });
+							if (verbose) {
+								console.log('[hmr-ws][solid] @solid-refresh patch check:', { spec: resolvedCandidate || spec, alreadyPatched, codeLen: transformed.code.length });
+							}
 							if (!alreadyPatched) {
 								let patchedCode = transformed.code;
 
@@ -3408,7 +3420,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								const declineCheck = 'function shouldWarnAndDecline() {';
 								if (patchedCode.includes(declineCheck)) {
 									patchedCode = patchedCode.replace(declineCheck, `${PATCH_SENTINEL}\nfunction shouldWarnAndDecline() { return false; /* NS HMR: always allow refresh */ }\nfunction __original_shouldWarnAndDecline() {`);
-									console.log('[hmr-ws][solid] bypassed shouldWarnAndDecline() for NativeScript HMR');
+									if (verbose) {
+										console.log('[hmr-ws][solid] bypassed shouldWarnAndDecline() for NativeScript HMR');
+									}
 								}
 
 								// Patch 2: Force createMemo path in createProxy.
@@ -3420,11 +3434,18 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								const proxyCondition = 'if (!s || $DEVCOMP in s) {';
 								if (patchedCode.includes(proxyCondition)) {
 									patchedCode = patchedCode.replace(proxyCondition, 'if (true) { /* NS HMR: always use createMemo for reactive HMR updates */');
-									console.log('[hmr-ws][solid] forced createMemo path in createProxy for NativeScript HMR');
+									if (verbose) {
+										console.log('[hmr-ws][solid] forced createMemo path in createProxy for NativeScript HMR');
+									}
 								}
 
 								// Patch 3: Inline patchRegistry call so updates apply immediately
 								// on module re-evaluation (accept callbacks are not invoked by the HMR client).
+								// The injected `console.log` helpers run inside the user's runtime
+								// when @solid-refresh re-evaluates a module, so they are a runtime
+								// concern (stripped if the user disables the patch). Keeping them
+								// behind the patch sentinel rather than the dev-server `verbose`
+								// flag is intentional — the patch only runs when Solid HMR fires.
 								const marker = 'hot.data[SOLID_REFRESH] = hot.data[SOLID_REFRESH] || registry;';
 								if (patchedCode.includes(marker)) {
 									const patchCode = [
@@ -3438,7 +3459,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 										`}`,
 									].join('\n    ');
 									patchedCode = patchedCode.replace(marker, `${patchCode}\n    ${marker}`);
-									console.log('[hmr-ws][solid] added inline patchRegistry for NativeScript HMR');
+									if (verbose) {
+										console.log('[hmr-ws][solid] added inline patchRegistry for NativeScript HMR');
+									}
 								}
 
 								// Work on a copy to avoid mutating Vite's cached TransformResult
@@ -3852,9 +3875,11 @@ export const piniaSymbol = p.piniaSymbol;
 										// by the serving pipeline. Only warn, don't fatally block the importer.
 										const hasCjsPattern = /\bmodule\s*\.\s*exports\b/.test(targetCode) || /\bexports\s*\.\s*\w/.test(targetCode);
 										if (hasCjsPattern) {
-											try {
-												console.warn(`[ns:m][link-check] CJS module without export default: ${u.pathname} (will be CJS-wrapped at serve time)`);
-											} catch {}
+											if (verbose) {
+												try {
+													console.warn(`[ns:m][link-check] CJS module without export default: ${u.pathname} (will be CJS-wrapped at serve time)`);
+												} catch {}
+											}
 											continue;
 										}
 										const msg = `[link-check] Missing default export in ${u.pathname}${u.search} (imported by ${resolvedCandidate || spec})`;
@@ -3867,9 +3892,11 @@ export const piniaSymbol = p.piniaSymbol;
 							}
 						}
 					} catch (eLC) {
-						try {
-							console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
-						} catch {}
+						if (verbose) {
+							try {
+								console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
+							} catch {}
+						}
 					}
 					res.statusCode = 200;
 					res.end(code);
@@ -3910,8 +3937,10 @@ export const piniaSymbol = p.piniaSymbol;
 						`let __cached_rt = null;\n` +
 						`let __cached_vm = null;\n` +
 						`const __RT_REALM_TAG = (globalThis.__NS_RT_REALM__ ||= Math.random().toString(36).slice(2));\n` +
-						// Unconditional one-shot evaluation marker to confirm bridge is executed on device
-						`try { if (!(globalThis.__NS_RT_ONCE__ && globalThis.__NS_RT_ONCE__.eval)) { (globalThis.__NS_RT_ONCE__ ||= {}).eval = true; console.log('[ns-rt] evaluated', { rtRealm: __RT_REALM_TAG }); } } catch {}\n` +
+						// One-shot evaluation marker to confirm the bridge is executed on
+						// device. Gated on __NS_ENV_VERBOSE__ so it stays silent unless
+						// the developer opts in via NS_VITE_VERBOSE / VITE_DEBUG_LOGS.
+						`try { if (!(globalThis.__NS_RT_ONCE__ && globalThis.__NS_RT_ONCE__.eval)) { (globalThis.__NS_RT_ONCE__ ||= {}).eval = true; if (globalThis.__NS_ENV_VERBOSE__) console.log('[ns-rt] evaluated', { rtRealm: __RT_REALM_TAG }); } } catch {}\n` +
 						`function __ensure(){\n` +
 						`  if (__cached_rt) return __cached_rt;\n` +
 						`  let vm = null;\n` +
@@ -4372,7 +4401,7 @@ export const piniaSymbol = p.piniaSymbol;
 							content = 'export default async function start(){ console.error("[/ns/entry-rt] not found"); }\n';
 						}
 					}
-					console.log('[hmr-http] /ns/entry-rt serving', content.length, 'bytes');
+					if (verbose) console.log('[hmr-http] /ns/entry-rt serving', content.length, 'bytes');
 					res.statusCode = 200;
 					res.end(content);
 				} catch (e) {
@@ -6489,7 +6518,7 @@ export const piniaSymbol = p.piniaSymbol;
 				return;
 			}
 
-			console.log('[hmr-ws] Processing .vue file update...');
+			if (verbose) console.log('[hmr-ws] Processing .vue file update...');
 
 			try {
 				const root = server.config.root || process.cwd();

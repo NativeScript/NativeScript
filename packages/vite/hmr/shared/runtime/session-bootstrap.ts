@@ -202,12 +202,15 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 	} finally {
 		trace.t1 = Date.now();
 		publishBootTrace(trace);
-		// Unconditional — use `console.info` so it lands in every NativeScript
-		// log stream (iOS shows it as `CONSOLE INFO`, Android shows it as
-		// `I chromium`). This is the single line we tell people to look for
-		// when investigating boot perf.
-		try {
-			console.info(formatBootTimeline(trace));
-		} catch {}
+		// The boot timeline is also stashed on `globalThis.__NS_BOOT_TRACE__`
+		// (via publishBootTrace) so a developer can inspect it on demand. We
+		// only emit the human-readable line when verbose is on so the dev
+		// console stays quiet by default. Flip NS_VITE_VERBOSE=1 to surface
+		// it during boot-perf investigations.
+		if (verbose) {
+			try {
+				console.info(formatBootTimeline(trace));
+			} catch {}
+		}
 	}
 }
