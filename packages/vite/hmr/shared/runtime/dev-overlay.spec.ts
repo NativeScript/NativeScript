@@ -343,9 +343,70 @@ describe('Round-eleven.3 — HMR apply overlay runtime API', () => {
 				progress: 100,
 			});
 
-			// After the auto-hide window elapses, the overlay
-			// drops back to the hidden DEFAULT_SNAPSHOT.
-			vi.advanceTimersByTime(400);
+			// alpha.62 follow-up — when 'complete' fires without a
+			// preceding 'received', the cycle had no recorded start
+			// timestamp, so the minimum-visible window (800ms) wins
+			// over the standard 600ms auto-hide. After 1s the
+			// overlay drops back to DEFAULT_SNAPSHOT.
+			vi.advanceTimersByTime(1000);
+			expect(api.getSnapshot()).toMatchObject({
+				visible: false,
+				mode: 'hidden',
+			});
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	// alpha.62 follow-up — a fast HMR cycle (50ms total) still must
+	// hold the overlay long enough for the user to perceive it.
+	// We assert the full sequence: 'received' → 'complete' immediately
+	// after, then verify the auto-hide stretches to honor the
+	// minimum-visible window.
+	it('holds the overlay for at least UPDATE_MIN_VISIBLE_MS after a fast cycle', () => {
+		vi.useFakeTimers();
+		try {
+			const api = ensureHmrDevOverlayRuntimeInstalled(true);
+			api.setUpdateStage('received', { detail: '/src/foo.ts' });
+			vi.advanceTimersByTime(50);
+			api.setUpdateStage('complete', { detail: 'Total 50ms' });
+
+			// Even after the standard 600ms hold, the overlay should
+			// still be visible because the cycle started only 50ms
+			// before complete, so we owe the user another ~750ms of
+			// visibility (800ms min - 50ms elapsed = 750ms remaining).
+			vi.advanceTimersByTime(600);
+			expect(api.getSnapshot()).toMatchObject({
+				visible: true,
+				mode: 'update',
+				progress: 100,
+			});
+
+			// After enough total time elapses, the overlay hides.
+			vi.advanceTimersByTime(300);
+			expect(api.getSnapshot()).toMatchObject({
+				visible: false,
+				mode: 'hidden',
+			});
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	// Slow cycles already exceed the min-visible threshold by the
+	// time 'complete' fires; we must NOT add extra hold on top —
+	// the standard UPDATE_AUTO_HIDE_MS (600ms) wins.
+	it('uses standard hold (not min-visible padding) when cycle already exceeded threshold', () => {
+		vi.useFakeTimers();
+		try {
+			const api = ensureHmrDevOverlayRuntimeInstalled(true);
+			api.setUpdateStage('received', { detail: '/src/big.ts' });
+			vi.advanceTimersByTime(2000); // simulate a slow cycle (e.g., big SCSS recompile)
+			api.setUpdateStage('complete', { detail: 'Total 2000ms' });
+
+			// Standard 600ms hold; no extra padding because the
+			// cycle has already been on screen for 2000ms.
+			vi.advanceTimersByTime(700);
 			expect(api.getSnapshot()).toMatchObject({
 				visible: false,
 				mode: 'hidden',
@@ -418,5 +479,85 @@ describe('Round-eleven.3 — HMR apply overlay runtime API', () => {
 			progress: 5,
 		});
 		expect((globalThis as any).__NS_HMR_DEV_OVERLAY__).toBeDefined();
+	});
+
+	// alpha.62 follow-up — the server now emits `ns:hmr-pending`
+	// IMMEDIATELY when `handleHotUpdate` fires, then later emits
+	// `ns:angular-update` once it has done graph upserts and chosen
+	// an eviction set. Both messages call setUpdateStage('received').
+	// The cycle clock — used by the auto-hide minimum-visible
+	// window — must be stamped against the FIRST 'received' frame,
+	// not the second; otherwise the early-overlay UX is defeated
+	// because the second 'received' resets the clock to ~now.
+	it("preserves updateCycleStartedAt when 'received' fires twice in the same cycle", () => {
+		vi.useFakeTimers();
+		try {
+			const api = ensureHmrDevOverlayRuntimeInstalled(true);
+			// Cycle 1 starts at t=0 (pending message arrives)
+			api.setUpdateStage('received', { detail: 'pending: /src/foo.ts' });
+			vi.advanceTimersByTime(120);
+			// Angular handler re-asserts 'received' 120ms later. Detail
+			// text updates, but the cycle clock must NOT reset.
+			api.setUpdateStage('received', { detail: 'angular: /src/foo.ts' });
+			vi.advanceTimersByTime(80);
+			// The cycle has been on screen for 200ms total. Complete
+			// fires at t=200ms. The auto-hide must use the cycle's
+			// ORIGINAL start (t=0) for the min-visible math: 800ms
+			// min - 200ms elapsed = 600ms remainder. Combined with
+			// the 600ms standard hold, total post-complete hold = 600ms.
+			api.setUpdateStage('complete', { detail: 'Total 200ms' });
+			// At t=750ms (550ms after complete) the overlay is still
+			// visible because we owe at least 600ms post-complete.
+			vi.advanceTimersByTime(550);
+			expect(api.getSnapshot()).toMatchObject({
+				visible: true,
+				mode: 'update',
+				progress: 100,
+			});
+			// At t=900ms (700ms after complete) it's gone.
+			vi.advanceTimersByTime(150);
+			expect(api.getSnapshot()).toMatchObject({
+				visible: false,
+				mode: 'hidden',
+			});
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	// Defensive: a brand-new cycle (no in-progress 'update' state)
+	// MUST stamp a fresh cycle start. Without this we'd end up
+	// reusing the previous cycle's startedAt forever.
+	it("DOES stamp updateCycleStartedAt when 'received' fires from a hidden state", () => {
+		vi.useFakeTimers();
+		try {
+			const api = ensureHmrDevOverlayRuntimeInstalled(true);
+			// Cycle 1 happens and finishes
+			api.setUpdateStage('received', { detail: 'cycle 1' });
+			vi.advanceTimersByTime(40);
+			api.setUpdateStage('complete', { detail: 'Total 40ms' });
+			vi.advanceTimersByTime(2000); // long past auto-hide
+			expect(api.getSnapshot()).toMatchObject({ visible: false, mode: 'hidden' });
+
+			// Cycle 2 starts fresh much later
+			api.setUpdateStage('received', { detail: 'cycle 2' });
+			vi.advanceTimersByTime(50);
+			api.setUpdateStage('complete', { detail: 'Total 50ms' });
+
+			// Cycle 2's hold should be timed against ITS OWN 'received'
+			// (50ms ago), NOT cycle 1's stamped-then-cleared start.
+			// Min-visible 800ms - 50ms elapsed = 750ms remainder, so
+			// at +600ms post-complete it should still be visible.
+			vi.advanceTimersByTime(700);
+			expect(api.getSnapshot()).toMatchObject({
+				visible: true,
+				mode: 'update',
+				progress: 100,
+			});
+			vi.advanceTimersByTime(150);
+			expect(api.getSnapshot()).toMatchObject({ visible: false, mode: 'hidden' });
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });

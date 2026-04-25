@@ -1,5 +1,6 @@
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
+declare const __NS_HMR_PROGRESS_OVERLAY_ENABLED__: boolean | undefined;
 
 type GetCoreFn = (name: string) => any;
 
@@ -20,7 +21,24 @@ type HmrUpdateOverlayInfo = {
 	progress?: number | null;
 };
 
+// alpha.62 follow-up — opt-out flag (default: enabled). Driven by
+// `NS_VITE_PROGRESS_OVERLAY=0` (or `false`/`off`/`no`) on the dev
+// server; baked into the bundle via `__NS_HMR_PROGRESS_OVERLAY_ENABLED__`
+// at build time. We collapse the build-time constant into a runtime
+// boolean once so each call-site is a single property check rather
+// than a try/typeof. Tests that re-run the angular client (via vitest)
+// see `undefined` and default to enabled — matching the production
+// dev-server experience.
+const overlayEnabled: boolean = (() => {
+	try {
+		return typeof __NS_HMR_PROGRESS_OVERLAY_ENABLED__ === 'boolean' ? __NS_HMR_PROGRESS_OVERLAY_ENABLED__ : true;
+	} catch {
+		return true;
+	}
+})();
+
 function getHmrOverlayApi(): any {
+	if (!overlayEnabled) return null;
 	try {
 		return (globalThis as any).__NS_HMR_DEV_OVERLAY__ || null;
 	} catch {}
@@ -28,6 +46,7 @@ function getHmrOverlayApi(): any {
 }
 
 function setUpdateOverlayStage(stage: HmrUpdateOverlayStage, info?: HmrUpdateOverlayInfo): void {
+	if (!overlayEnabled) return;
 	try {
 		const api = getHmrOverlayApi();
 		if (api && typeof api.setUpdateStage === 'function') {
@@ -37,6 +56,7 @@ function setUpdateOverlayStage(stage: HmrUpdateOverlayStage, info?: HmrUpdateOve
 }
 
 function hideUpdateOverlay(): void {
+	if (!overlayEnabled) return;
 	try {
 		const api = getHmrOverlayApi();
 		if (api && typeof api.hide === 'function') {

@@ -98,6 +98,13 @@ type HmrOverlayRuntimeState = {
 	// silently no-op so the second cycle's progress isn't ripped out
 	// from under it.
 	updateAutoHideTimer: ReturnType<typeof setTimeout> | null;
+	// Round-eleven.3 (alpha.62 follow-up) — Timestamp the overlay first
+	// became visible for the current update cycle. We use this to
+	// compute a minimum on-screen duration so a 50ms HMR cycle still
+	// gives the user a perceptible visual confirmation. Reset whenever
+	// the cycle returns to 'received' (i.e., a new save fires) so each
+	// cycle is timed independently.
+	updateCycleStartedAt: number;
 };
 
 type HmrOverlayApi = {
@@ -145,6 +152,7 @@ function getRuntimeState(): HmrOverlayRuntimeState {
 			iosBuildFailed: false,
 			verbose: false,
 			updateAutoHideTimer: null,
+			updateCycleStartedAt: 0,
 		} satisfies HmrOverlayRuntimeState;
 	}
 	const state = g.__NS_HMR_DEV_OVERLAY_STATE__ as Partial<HmrOverlayRuntimeState>;
@@ -153,6 +161,7 @@ function getRuntimeState(): HmrOverlayRuntimeState {
 	if (typeof state.iosRefs === 'undefined') state.iosRefs = null;
 	if (typeof state.iosBuildFailed === 'undefined') state.iosBuildFailed = false;
 	if (typeof state.updateAutoHideTimer === 'undefined') state.updateAutoHideTimer = null;
+	if (typeof state.updateCycleStartedAt !== 'number') state.updateCycleStartedAt = 0;
 	return state as HmrOverlayRuntimeState;
 }
 
@@ -824,24 +833,27 @@ function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleL
 	refs.overlay.visibility = visible ? 'visible' : 'collapse';
 	// Backdrop tints by tone:
 	//   error   → red wash (matches existing UX)
-	//   success → soft green wash, deliberately lighter than the
-	//             warn-orange so the underlying app remains readable
-	//             during a fast HMR cycle (300–2000ms)
+	//   success → richer green wash; the previous 18% alpha was so
+	//             subtle on light app backgrounds that users couldn't
+	//             tell the overlay had even fired. 50% alpha keeps the
+	//             underlying app legible while making the apply event
+	//             unmistakable during the (often <300ms) cycle.
 	//   default → warm orange (existing connection-overlay look)
-	const overlayBg = snapshot.tone === 'error' ? '#b4181068' : snapshot.tone === 'success' ? '#1f883d2e' : '#a1771683';
+	const overlayBg = snapshot.tone === 'error' ? '#b4181068' : snapshot.tone === 'success' ? '#1f883d80' : '#a1771683';
 	refs.overlay.backgroundColor = asColor(overlayBg);
 	refs.titleLabel.text = snapshot.title;
-	const textColor = snapshot.tone === 'error' ? '#b41810e6' : snapshot.tone === 'success' ? '#0e6e2fe6' : '#563e3fb1';
+	const textColor = snapshot.tone === 'error' ? '#b41810e6' : snapshot.tone === 'success' ? '#0e6e2fff' : '#563e3fb1';
 	refs.titleLabel.color = asColor(textColor);
 	refs.statusLabel.text = formatStatusText(snapshot);
 	refs.statusLabel.color = asColor(textColor);
 	try {
 		const panel = refs.titleLabel.parent;
 		if (panel) {
-			// Subtle green-tinted panel for HMR-apply, plain white
-			// otherwise. Keeps the apply overlay distinct from the
-			// boot/connection overlays at a glance.
-			const panelBg = snapshot.tone === 'success' ? '#F1FCF3FF' : '#FFFFFFFF';
+			// Slightly richer green-tinted panel for HMR-apply so the
+			// title/status text reads at a glance against the brighter
+			// backdrop wash. White panel for connection/error keeps
+			// existing UX intact.
+			const panelBg = snapshot.tone === 'success' ? '#E6F8E9FF' : '#FFFFFFFF';
 			panel.backgroundColor = asColor(panelBg);
 			panel.opacity = 1;
 			panel.padding = 16;
@@ -1157,18 +1169,21 @@ function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: HmrOverla
 					// notice these.
 					refs.backdrop.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0, 0, 0, 0.35);
 				} else if (isSuccess) {
-					// Tinted-green panel + dark-green text. We
-					// deliberately keep the panel readable (off-white
-					// with green tint) instead of a saturated green so
-					// long detail strings (e.g., file paths) stay easy
-					// to read on small screens.
-					refs.panel.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0.94, 0.99, 0.95, 1);
+					// Slightly more saturated green panel + dark-green
+					// text. The previous 0.94/0.99/0.95 background was
+					// nearly indistinguishable from white on most
+					// devices; this bump keeps long detail strings
+					// readable while making the apply event obviously
+					// "happening right now".
+					refs.panel.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0.9, 0.97, 0.91, 1);
 					refs.titleLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.05, 0.43, 0.18, 1);
-					refs.statusLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.05, 0.43, 0.18, 0.9);
-					// Lighter dimming during HMR — the cycle is short
-					// (300–2000ms) and we don't want to obscure the
-					// app's UI underneath while a save lands.
-					refs.backdrop.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0, 0, 0, 0.12);
+					refs.statusLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.05, 0.43, 0.18, 1);
+					// Bumped from 0.12 to 0.28. The 0.12 wash was so
+					// faint on bright app backgrounds that the overlay
+					// was effectively invisible during a fast cycle.
+					// 0.28 still keeps the app readable underneath but
+					// makes the HMR event visually unmistakable.
+					refs.backdrop.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0, 0.15, 0.05, 0.28);
 				} else {
 					// Default (info / warn) — existing connection look.
 					refs.panel.backgroundColor = UIColor.whiteColor;
@@ -1230,10 +1245,22 @@ function applyRuntimeSnapshot(snapshot: HmrOverlaySnapshot): HmrOverlaySnapshot 
 }
 
 // Round-eleven.3 — How long the 'complete' frame stays on screen
-// before we auto-hide. Long enough to register visually, short enough
-// to feel snappy. 350ms keeps the perception of "the update landed
-// successfully" without blocking quick repeated saves.
-const UPDATE_AUTO_HIDE_MS = 350;
+// before we auto-hide. The original 350ms was too tight: many HMR
+// cycles complete in 50–250ms, so the *total* overlay lifetime
+// (received → complete + 350ms) was often under 500ms, which is
+// faster than the human eye can comfortably register. 600ms gives
+// the user time to read the "Total Xms" line and confirm visually
+// that something happened.
+const UPDATE_AUTO_HIDE_MS = 600;
+
+// Round-eleven.3 (alpha.62 follow-up) — Minimum perceptible duration
+// for an entire update overlay cycle (from 'received' to hide). If
+// the cycle finished in 50ms (e.g., a tiny HTML edit on a warm
+// cache), we still hold for ~MIN_VISIBLE_MS total before hiding so
+// the overlay is actually seen. Combined with UPDATE_AUTO_HIDE_MS,
+// the *effective* hold-after-complete = max(UPDATE_AUTO_HIDE_MS,
+// MIN_VISIBLE_MS - elapsed-since-received).
+const UPDATE_MIN_VISIBLE_MS = 800;
 
 function clearUpdateAutoHideTimer(state: HmrOverlayRuntimeState): void {
 	if (state.updateAutoHideTimer) {
@@ -1246,6 +1273,15 @@ function clearUpdateAutoHideTimer(state: HmrOverlayRuntimeState): void {
 
 function scheduleUpdateAutoHide(state: HmrOverlayRuntimeState): void {
 	clearUpdateAutoHideTimer(state);
+	// Compute how much longer we need to hold the overlay so that the
+	// total cycle visibility is at least UPDATE_MIN_VISIBLE_MS. For
+	// fast cycles (50ms reboot) this stretches the hide; for slow
+	// cycles (>UPDATE_MIN_VISIBLE_MS) it falls back to the standard
+	// UPDATE_AUTO_HIDE_MS so we don't truncate the celebratory hold.
+	const startedAt = state.updateCycleStartedAt || 0;
+	const elapsed = startedAt > 0 ? Math.max(0, Date.now() - startedAt) : 0;
+	const minRemainder = elapsed > 0 ? Math.max(0, UPDATE_MIN_VISIBLE_MS - elapsed) : UPDATE_MIN_VISIBLE_MS;
+	const holdMs = Math.max(UPDATE_AUTO_HIDE_MS, minRemainder);
 	try {
 		state.updateAutoHideTimer = setTimeout(() => {
 			state.updateAutoHideTimer = null;
@@ -1256,15 +1292,30 @@ function scheduleUpdateAutoHide(state: HmrOverlayRuntimeState): void {
 			// our timer must not steal it.
 			const current = state.snapshot;
 			if (current.mode === 'update' && current.tone === 'success' && current.progress === 100) {
+				state.updateCycleStartedAt = 0;
 				applyRuntimeSnapshot({ ...DEFAULT_SNAPSHOT });
 			}
-		}, UPDATE_AUTO_HIDE_MS);
+		}, holdMs);
 	} catch {
 		// setTimeout missing (extremely rare; some test envs). Fall
 		// back to immediate hide so we never leave the overlay visible
 		// forever after a 'complete'.
+		state.updateCycleStartedAt = 0;
 		applyRuntimeSnapshot({ ...DEFAULT_SNAPSHOT });
 	}
+}
+
+function logUpdateStageTransition(state: HmrOverlayRuntimeState, stage: HmrUpdateStage, info?: HmrOverlayStageInfo): void {
+	if (!state.verbose) return;
+	try {
+		const detail = info?.detail || '';
+		const progress = typeof info?.progress === 'number' ? info.progress : null;
+		const progressTag = progress !== null ? ` (${Math.round(progress)}%)` : '';
+		// Single-line breadcrumb so a developer can correlate
+		// overlay frames with the [ns-hmr][angular] timing log when
+		// debugging "I don't see the overlay" reports.
+		console.info(`[ns-hmr-overlay] update stage=${stage}${progressTag}${detail ? ` detail=${detail}` : ''}`);
+	} catch {}
 }
 
 function createOverlayApi(): HmrOverlayApi {
@@ -1284,11 +1335,15 @@ function createOverlayApi(): HmrOverlayApi {
 		setBootStage(stage: HmrBootStage, info?: HmrOverlayStageInfo) {
 			// A boot transition cancels any pending HMR auto-hide so
 			// the boot phase always wins.
-			clearUpdateAutoHideTimer(getRuntimeState());
+			const state = getRuntimeState();
+			clearUpdateAutoHideTimer(state);
+			state.updateCycleStartedAt = 0;
 			return applyRuntimeSnapshot(createBootOverlaySnapshot(stage, info));
 		},
 		setConnectionStage(stage: HmrConnectionStage, info?: HmrOverlayStageInfo) {
-			clearUpdateAutoHideTimer(getRuntimeState());
+			const state = getRuntimeState();
+			clearUpdateAutoHideTimer(state);
+			state.updateCycleStartedAt = 0;
 			return applyRuntimeSnapshot(createConnectionOverlaySnapshot(stage, info));
 		},
 		setUpdateStage(stage: HmrUpdateStage, info?: HmrOverlayStageInfo) {
@@ -1298,6 +1353,34 @@ function createOverlayApi(): HmrOverlayApi {
 			// succession could see cycle-2's progress overlay yanked
 			// off by cycle-1's already-scheduled hide.
 			clearUpdateAutoHideTimer(state);
+			// Stamp the cycle start on 'received', but distinguish
+			// between two cases:
+			//
+			//   (a) Re-assertion of the SAME cycle (e.g., the server
+			//       emits both `ns:hmr-pending` AND `ns:angular-update`,
+			//       both of which call `setUpdateStage('received')`).
+			//       We must PRESERVE the original timestamp so the
+			//       minimum-visible-window math measures the FIRST
+			//       'received' the user actually saw.
+			//
+			//   (b) Genuinely-new cycle starting either from a hidden
+			//       overlay OR while the previous cycle is still on
+			//       its 'complete' frame (pre auto-hide). In both
+			//       sub-cases we MUST stamp a fresh start so the
+			//       new cycle's auto-hide math is sane.
+			//
+			// We treat the previous snapshot as "in-progress for the
+			// same cycle" iff mode==='update' AND progress!==100.
+			// 'complete' frames are a sign that the cycle finished;
+			// any subsequent 'received' is a NEW cycle.
+			if (stage === 'received') {
+				const prev = state.snapshot;
+				const isMidCycleReassertion = prev.mode === 'update' && prev.progress !== 100;
+				if (!isMidCycleReassertion) {
+					state.updateCycleStartedAt = Date.now();
+				}
+			}
+			logUpdateStageTransition(state, stage, info);
 			const snapshot = applyRuntimeSnapshot(createUpdateOverlaySnapshot(stage, info));
 			if (stage === 'complete') {
 				scheduleUpdateAutoHide(state);
@@ -1305,7 +1388,9 @@ function createOverlayApi(): HmrOverlayApi {
 			return snapshot;
 		},
 		hide() {
-			clearUpdateAutoHideTimer(getRuntimeState());
+			const state = getRuntimeState();
+			clearUpdateAutoHideTimer(state);
+			state.updateCycleStartedAt = 0;
 			applyRuntimeSnapshot({ ...DEFAULT_SNAPSHOT });
 		},
 		getSnapshot() {

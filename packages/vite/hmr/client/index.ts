@@ -107,6 +107,25 @@ function hideConnectionOverlay() {
 	} catch {}
 }
 
+// alpha.62 follow-up — Eagerly drive the HMR-applying overlay's
+// 'received' frame as soon as the server emits `ns:hmr-pending`,
+// BEFORE the framework-specific (`ns:angular-update` /
+// `ns:css-updates`) payload arrives. The flavor-specific handler
+// later walks through 'evicting' → 'reimporting' → 'rebooting' →
+// 'complete'. Calling 'received' twice in the same cycle is safe:
+// the overlay preserves `updateCycleStartedAt` when a 'received'
+// frame replaces an existing 'received' frame so the
+// minimum-visible window is still timed against the FIRST frame.
+//
+// Soft-fails when the overlay isn't installed (production builds,
+// vitest, etc.) or when the user opted out via
+// `__NS_HMR_PROGRESS_OVERLAY_ENABLED__ === false`.
+import { applyHmrPendingFrame } from './hmr-pending-overlay.js';
+
+function setHmrPendingOverlay(filePath: string) {
+	applyHmrPendingFrame(filePath, { getOverlay: getHmrOverlayApi });
+}
+
 let connectionOverlayTimer: any = null;
 let connectionOverlayVisible = false;
 let hasOpenedHmrSocket = false;
@@ -1236,6 +1255,17 @@ async function handleHmrMessage(ev: any) {
 	}
 
 	if (msg) {
+		// alpha.62 follow-up — `ns:hmr-pending` is a fire-and-forget
+		// UX hint emitted by the server at the START of handleHotUpdate.
+		// We drive the HMR-applying overlay's 'received' frame here
+		// (synchronously), well before the authoritative payload
+		// (`ns:angular-update` / `ns:css-updates`) lands. Skip running
+		// any other handlers — the pending message has no module
+		// payload and intentionally does not bump the graph version.
+		if (msg.type === 'ns:hmr-pending' && typeof msg.path === 'string') {
+			setHmrPendingOverlay(msg.path);
+			return;
+		}
 		if (msg.type === 'ns:hmr-full-graph') {
 			// Bump a monotonic nonce so HTTP ESM imports can always be cache-busted per update.
 			try {

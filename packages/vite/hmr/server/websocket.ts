@@ -40,6 +40,7 @@ import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } fr
 import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
 import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion, type GraphUpsertClassification } from './websocket-graph-upsert.js';
 import { classifyBootRoute, classifyHmrUpdateKind, createColdBootRequestCounter, formatHmrUpdateSummary, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
+import { createHmrPendingMessage } from './websocket-hmr-pending.js';
 import {
 	extractVitePrebundleId,
 	filterExistingNodeModulesTransformCandidates,
@@ -6041,6 +6042,36 @@ export const piniaSymbol = p.piniaSymbol;
 				narrowed: undefined as boolean | undefined,
 				emitted: false,
 			};
+
+			// alpha.62 follow-up — broadcast a "pending" notification at
+			// the very start of handleHotUpdate so the client can show
+			// the HMR-applying overlay BEFORE we spend time on graph
+			// updates / transforms / dependency analysis (typically
+			// 7–200ms on a warm cache). Without this, the overlay only
+			// appears at `ns:angular-update` broadcast time and the
+			// user perceives a "delayed" reaction to their save.
+			//
+			// Fire-and-forget: a failed pending broadcast must never
+			// hold up the actual update. The client treats receipt of
+			// `ns:angular-update` (or `ns:css-updates`) as authoritative;
+			// the pending message is purely a UX hint.
+			try {
+				const pendingPayload = JSON.stringify(
+					createHmrPendingMessage({
+						origin: getServerOrigin(server),
+						path: updateMetrics.file,
+						kind: updateMetrics.kind,
+						timestamp: updateMetrics.t0,
+					}),
+				);
+				wss.clients.forEach((client) => {
+					if (isSocketClientOpen(client)) {
+						try {
+							client.send(pendingPayload);
+						} catch {}
+					}
+				});
+			} catch {}
 			const emitHmrUpdateSummary = () => {
 				if (updateMetrics.emitted) return;
 				updateMetrics.emitted = true;
