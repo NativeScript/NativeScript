@@ -12,25 +12,36 @@ describe('rewriteImports Angular dynamic app imports', () => {
 		expect(output).not.toContain('import("/ns/m/src/app/components/login/login.component")');
 	});
 
-	it('preserves the boot-tagged app module family for dynamic imports during startup', () => {
+	// alpha.59 — Stable URL + Explicit Invalidation.
+	//
+	// The previous helper synthesized `/ns/m/__ns_hmr__/<tag>/<rest>`
+	// URLs from `__NS_HMR_GRAPH_VERSION__`/`__NS_HMR_IMPORT_NONCE__`.
+	// That tag flowed into V8's `g_moduleRegistry` cache key — so a
+	// `graphVersion` bump on every save effectively flushed the entire
+	// cached graph. The new helper has none of that: it only adds the
+	// boot prefix during cold boot, never synthesizes a version tag.
+	// See HMR_STABLE_URL_INVALIDATION_PLAN.md.
+	it('emits a tag-free dynamic-import helper for app modules', () => {
 		const input = `const loadSignup = () => import('./components/signup/signup.component');\n`;
 		const output = rewriteImports(input, '/src/app/app.routes.ts', new Map(), new Map(), '/', false, undefined, 'http://localhost:5173', true);
 
-		expect(output).toContain("import.meta.url.includes('/__ns_boot__/b1/') ? '/__ns_boot__/b1' : ''");
-		expect(output).toContain('import.meta.url.match(/\\/__ns_hmr__\\/([^/]+)\\//)');
-		expect(output).toContain("const graphVersion = typeof g.__NS_HMR_GRAPH_VERSION__ === 'number' ? g.__NS_HMR_GRAPH_VERSION__ : 0;");
-		expect(output).toContain("const __nsActiveBootPrefix = graphVersion || nonce ? '' : __nsBootPrefix;");
-		expect(output).toContain("const __preservedSpec = !nonce && __nsBootPrefix && spec.startsWith(__nsm + '/__ns_hmr__/') && !spec.includes('/node_modules/') ? __nsm + __nsBootPrefix + spec.slice(__nsm.length) : spec;");
-		expect(output).toContain("const nextPath = __nsm + __nsActiveBootPrefix + '/__ns_hmr__/' + encodeURIComponent(tag) + spec.slice(__nsm.length);");
-		expect(output).toContain("const tag = nonce ? `n${nonce}` : (graphVersion ? `v${graphVersion}` : (__nsImporterTag || 'live'));");
+		// Helper is installed.
+		expect(output).toContain('const __nsDynamicHmrImport =');
+		// Boot prefix is still preserved when the importer itself is in
+		// the boot context (drives boot-progress instrumentation).
+		expect(output).toContain("import.meta.url.includes('/__ns_boot__/b1/')");
+		expect(output).toContain("__nsm + '/__ns_boot__/b1' + spec.slice(__nsm.length)");
+		// node_modules paths bypass the prefix logic.
 		expect(output).toContain("spec.startsWith(__nsm + '/node_modules/')");
-	});
 
-	it('prefers the incrementing HMR nonce over the graph version for app dynamic imports after hot updates', () => {
-		const input = `const loadLogin = () => import('./components/login/login.component');\n`;
-		const output = rewriteImports(input, '/src/app/app.routes.ts', new Map(), new Map(), '/', false, undefined, 'http://localhost:5173', true);
-
-		expect(output).toContain("const tag = nonce ? `n${nonce}` : (graphVersion ? `v${graphVersion}` : (__nsImporterTag || 'live'));");
+		// CRITICAL invariants — the helper must NOT synthesize legacy
+		// version tags. These regressions were the root cause of pre-
+		// alpha.59 V8 cache-key thrash:
+		expect(output).not.toMatch(/encodeURIComponent\(tag\)/);
+		expect(output).not.toMatch(/__NS_HMR_GRAPH_VERSION__/);
+		expect(output).not.toMatch(/__NS_HMR_IMPORT_NONCE__/);
+		expect(output).not.toContain('__ns_hmr__');
+		expect(output).not.toContain('importerTag');
 	});
 
 	it('keeps static app imports on the standard HTTP path', () => {

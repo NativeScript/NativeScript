@@ -6,7 +6,7 @@
  * The HMR client is evaluated via HTTP ESM on device; static imports would create secondary instances.
  */
 
-import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore } from './utils.js';
+import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore, hasExplicitEviction, invalidateModulesByUrls, buildEvictionUrls, emitHmrModeBannerOnce } from './utils.js';
 import { handleCssUpdates } from './css-handler.js';
 
 // satisfied by define replacement
@@ -735,6 +735,26 @@ async function processQueue(): Promise<void> {
 			}
 			if (!drained.length) return;
 			if (VERBOSE) console.log('[hmr][queue] processing changed ids', drained);
+
+			// alpha.59 — Explicit eviction step.
+			//
+			// On alpha.59+ runtimes the URL canonicalizer collapses any
+			// `__ns_hmr__/<tag>/` segment back to a stable cache key, so
+			// without explicit eviction the upcoming `import(url)` would
+			// resolve via V8's `g_moduleRegistry` and return the cached
+			// stale module — making the queue drain a silent no-op for
+			// every save after the first.
+			//
+			// We hand the canonical eviction URLs to the runtime first;
+			// `invalidateModulesByUrls` is a no-op on older runtimes and
+			// `requestModuleFromServer` automatically falls back to the
+			// legacy `/ns/m/__ns_hmr__/v<N>/` URL versioning path in that
+			// case. node_modules and virtual specs are filtered out by
+			// `buildEvictionUrls` so vendor modules stay hot.
+			const evictUrls = buildEvictionUrls(drained);
+			const evicted = invalidateModulesByUrls(evictUrls);
+			if (VERBOSE) console.log(`[hmr][queue] eviction count=${evictUrls.length} ok=${evicted}`);
+
 			// Evaluate changed modules best-effort; failures shouldn't completely break HMR.
 			for (const id of drained) {
 				try {
@@ -833,6 +853,14 @@ async function processQueue(): Promise<void> {
 							}
 							return null;
 						};
+						// alpha.59 — Evict the boundary set so re-importing
+						// each .tsx component actually picks up the new
+						// transitive dependency code; without this V8 returns
+						// the cached boundary module unchanged.
+						const boundaryIds = Array.from(boundaries);
+						const solidEvictUrls = buildEvictionUrls(boundaryIds);
+						const solidEvicted = invalidateModulesByUrls(solidEvictUrls);
+						if (VERBOSE) console.log(`[hmr][solid] eviction count=${solidEvictUrls.length} ok=${solidEvicted}`);
 						for (const id of boundaries) {
 							if (seen.has(id)) continue;
 							try {
@@ -1144,6 +1172,12 @@ function connectHmr() {
 					showConnectionOverlayNow('synchronizing', 'Connected. Synchronizing the HMR graph.');
 				}
 				VERBOSE && console.log('[hmr-client] Connected to HMR WebSocket');
+				// alpha.59 — Print the active module reload mode once on first
+				// successful connect so the user can correlate HMR latency with
+				// runtime capability without grepping for protocol details.
+				try {
+					emitHmrModeBannerOnce();
+				} catch {}
 			};
 			sock.onmessage = handleHmrMessage;
 			sock.onerror = (error: any) => {
@@ -1262,6 +1296,13 @@ async function handleHmrMessage(ev: any) {
 					return true;
 				});
 				if (toReimport.length && VERBOSE) console.log('[hmr][full-graph] inferred changed modules; re-importing', toReimport);
+				// alpha.59 — Evict the inferred changed set before re-importing.
+				// See `processQueue` for the architectural rationale; the
+				// full-graph code path is the resync fallback (server chose
+				// not to send a delta) and shares the same V8 cache pitfall.
+				const fgEvictUrls = buildEvictionUrls(toReimport);
+				const fgEvicted = invalidateModulesByUrls(fgEvictUrls);
+				if (VERBOSE) console.log(`[hmr][full-graph] eviction count=${fgEvictUrls.length} ok=${fgEvicted}`);
 				for (const id of toReimport) {
 					try {
 						const spec = normalizeSpec(id);

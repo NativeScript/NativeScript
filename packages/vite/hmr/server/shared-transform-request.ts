@@ -134,8 +134,15 @@ export function createSharedTransformRequestRunner(transformRequest: (url: strin
 			return Promise.resolve(recent.result);
 		}
 
-		const existingExecution = inFlight.get(url);
-		if (existingExecution && existingExecution.generation === generation && existingExecution.cacheKey === cacheKey) {
+		// Key the in-flight map on the canonical `cacheKey`, not the raw URL,
+		// so two concurrent calls for `/foo.ts?t=1` and `/foo.ts?t=2` share a
+		// single transform rather than doing the same work twice. The cache
+		// key already strips `?t=` and `?v=` cache-busters and sorts the
+		// remaining query — see `canonicalizeTransformRequestCacheKey`. This
+		// pairs with `rememberRecentResult`, which was always keyed by
+		// cacheKey.
+		const existingExecution = inFlight.get(cacheKey);
+		if (existingExecution && existingExecution.generation === generation) {
 			return withTimeout(existingExecution, url, timeoutMs);
 		}
 
@@ -146,13 +153,13 @@ export function createSharedTransformRequestRunner(transformRequest: (url: strin
 		});
 		let execution: Promise<TransformResult | null>;
 		execution = scheduled.execution.finally(() => {
-			if (inFlight.get(url)?.execution === execution) {
-				inFlight.delete(url);
+			if (inFlight.get(cacheKey)?.execution === execution) {
+				inFlight.delete(cacheKey);
 			}
 		});
 
 		const entry = { execution, started: scheduled.started, cacheKey, generation };
-		inFlight.set(url, entry);
+		inFlight.set(cacheKey, entry);
 
 		return withTimeout(entry, url, timeoutMs);
 	}) as SharedTransformRequestRunner;

@@ -207,8 +207,29 @@ export default async function startEntry(opts: EntryOpts) {
 		// Configure runtime with import map before loading any modules.
 		// This enables the native runtime to resolve bare specifiers through the
 		// import map instead of relying on Vite-side import rewriting.
+		//
+		// session-bootstrap may have already fetched the import map
+		// and configured the runtime before we were invoked. In that case the
+		// shared flag on globalThis lets us skip a redundant fetch (~100-200ms).
+		//
+		// once the import map is in place, the /ns/rt and /ns/core
+		// imports (plus the style-scope preload) are independent HTTP GETs. We
+		// fire them in parallel so the boot path is bounded by the slowest
+		// payload rather than the sum.
 		const configureRuntime = (globalThis as any).__nsConfigureRuntime;
-		if (typeof configureRuntime === 'function') {
+		const g: any = globalThis as any;
+		const importMapPromise: Promise<void> = (async () => {
+			if (typeof configureRuntime !== 'function') {
+				if (VERBOSE) {
+					console.info('[ns-entry] __nsConfigureRuntime not available (older runtime); skipping import map');
+				}
+				return;
+			}
+			if (g.__NS_IMPORT_MAP_CONFIGURED__ === true) {
+				TRACE.importMap = { ok: true, ms: 0, cached: true };
+				if (VERBOSE) console.info('[ns-entry] import map already configured by earlier boot stage');
+				return;
+			}
 			await updateBootOverlayAndYield('configuring-import-map', {
 				detail: ORIGIN + '/ns/import-map.json',
 			});
@@ -221,6 +242,9 @@ export default async function startEntry(opts: EntryOpts) {
 						importMap: config.importMap,
 						volatilePatterns: config.volatilePatterns,
 					});
+					try {
+						g.__NS_IMPORT_MAP_CONFIGURED__ = true;
+					} catch {}
 					TRACE.importMap = { ok: true, ms: Date.now() - t_imap, entries: Object.keys(config.importMap?.imports || {}).length };
 					if (VERBOSE) console.info('[ns-entry] import map configured with', TRACE.importMap.entries, 'entries');
 				} else {
@@ -231,44 +255,65 @@ export default async function startEntry(opts: EntryOpts) {
 				TRACE.importMap = { ok: false, ms: Date.now() - t_imap, err: String(e_imap && (e_imap.message || e_imap)) };
 				if (VERBOSE) console.warn('[ns-entry] import map error:', e_imap?.message);
 			}
-		} else if (VERBOSE) {
-			console.info('[ns-entry] __nsConfigureRuntime not available (older runtime); skipping import map');
-		}
+		})();
 
-		// Preload runtime bridge and core bridge
-		await updateBootOverlayAndYield('loading-runtime-bridge', {
-			detail: ORIGIN + '/ns/rt/' + VER,
-		});
+		// Start the runtime bridge preload as soon as the import map is ready.
+		// Any bare-specifier resolution inside /ns/rt depends on the import map,
+		// so we chain it after importMapPromise — but otherwise let it race.
 		const t_rt = Date.now();
-		try {
-			await importHttp(ORIGIN + '/ns/rt/' + VER);
-			TRACE.preload.rt = { ok: true, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER };
-		} catch (e_rt: any) {
-			TRACE.preload.rt = { ok: false, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER, err: String(e_rt && (e_rt.message || e_rt)) };
+		const rtPromise: Promise<any> = importMapPromise.then(async () => {
+			await updateBootOverlayAndYield('loading-runtime-bridge', {
+				detail: ORIGIN + '/ns/rt/' + VER,
+			});
 			try {
-				console.warn('[ns-entry] /ns/rt preload failed:', e_rt && (e_rt.message || e_rt));
-			} catch {}
-		}
-		await updateBootOverlayAndYield('loading-core-bridge', {
-			detail: ORIGIN + '/ns/core/' + VER,
+				const mod = await importHttp(ORIGIN + '/ns/rt/' + VER);
+				TRACE.preload.rt = { ok: true, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER };
+				return mod;
+			} catch (e_rt: any) {
+				TRACE.preload.rt = { ok: false, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER, err: String(e_rt && (e_rt.message || e_rt)) };
+				try {
+					console.warn('[ns-entry] /ns/rt preload failed:', e_rt && (e_rt.message || e_rt));
+				} catch {}
+				return null;
+			}
 		});
+
+		// /ns/core and the style-scope preload are both core-realm side effects
+		// that run independently of /ns/rt. We fire them in parallel with rt so
+		// the aggregate cost is max(rt, core, styleScope) instead of the sum.
 		const t_core = Date.now();
-		try {
-			const coreBridge = await importHttp(ORIGIN + '/ns/core/' + VER);
+		const corePromise: Promise<any> = importMapPromise.then(async () => {
+			await updateBootOverlayAndYield('loading-core-bridge', {
+				detail: ORIGIN + '/ns/core/' + VER,
+			});
+			try {
+				const mod = await importHttp(ORIGIN + '/ns/core/' + VER);
+				TRACE.preload.core = { ok: true, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER };
+				return mod;
+			} catch (e_core: any) {
+				TRACE.preload.core = { ok: false, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER, err: String(e_core && (e_core.message || e_core)) };
+				try {
+					console.warn('[ns-entry] /ns/core preload failed:', e_core && (e_core.message || e_core));
+				} catch {}
+				return null;
+			}
+		});
+		const styleScopePromise: Promise<HttpPreloadResult> = importMapPromise.then(async () => {
 			await updateBootOverlayAndYield('preloading-style-scope', {
 				detail: ORIGIN + '/ns/core/' + VER + '?p=ui/styling/style-scope.js',
 			});
-			TRACE.preload.coreStyleScope = await preloadHttpCoreStyleScope(importHttp, ORIGIN, VER, VERBOSE);
+			return preloadHttpCoreStyleScope(importHttp, ORIGIN, VER, VERBOSE);
+		});
+
+		// Wait for all parallel preloads to resolve. Rejections are already
+		// absorbed inside each wrapper, so Promise.all never throws here.
+		const [, coreBridge, styleScopeResult] = await Promise.all([rtPromise, corePromise, styleScopePromise]);
+		TRACE.preload.coreStyleScope = styleScopeResult;
+		if (coreBridge) {
 			await updateBootOverlayAndYield('installing-css', {
 				detail: 'Applying app.css in the shared HTTP core realm.',
 			});
 			installHttpCoreCssSupport(coreBridge, VERBOSE);
-			TRACE.preload.core = { ok: true, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER };
-		} catch (e_core: any) {
-			TRACE.preload.core = { ok: false, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER, err: String(e_core && (e_core.message || e_core)) };
-			try {
-				console.warn('[ns-entry] /ns/core preload failed:', e_core && (e_core.message || e_core));
-			} catch {}
 		}
 
 		const MAIN_URL = ORIGIN + '/ns/m' + MAIN + '?v=' + VER;
@@ -377,6 +422,24 @@ export default async function startEntry(opts: EntryOpts) {
 		try {
 			TRACE.t1 = Date.now();
 			(globalThis as any).__NS_ENTRY_TRACE__ = TRACE;
+			// Always print a concise, human-readable boot timeline so anyone
+			// investigating perf can see before/after numbers without flipping
+			// the verbose flag. Verbose mode still gets the full JSON dump.
+			try {
+				const parts: string[] = [];
+				const push = (label: string, ms?: number) => {
+					if (typeof ms === 'number') parts.push(`${label}=${ms}ms`);
+				};
+				push('importMap', TRACE.importMap?.ms);
+				push('rt', TRACE.preload?.rt?.ms);
+				push('core', TRACE.preload?.core?.ms);
+				push('styleScope', TRACE.preload?.coreStyleScope?.ms);
+				push('main', TRACE.main?.ms);
+				const total = typeof TRACE.t0 === 'number' && typeof TRACE.t1 === 'number' ? TRACE.t1 - TRACE.t0 : undefined;
+				push('total', total);
+				const status = TRACE.error ? 'FAILED' : 'ok';
+				console.info(`[ns-entry][boot] ${status} ${parts.join(' ')}`);
+			} catch {}
 			if (VERBOSE) console.info('[ns-entry][trace]', JSON.stringify(TRACE));
 		} catch {}
 	}

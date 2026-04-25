@@ -25,9 +25,44 @@ describe('node_modules HTTP import canonicalization', () => {
 		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/node_modules/css-tree/lib/tokenizer/index.js', 492, true)).toBe('/ns/m/node_modules/css-tree/lib/tokenizer/index.js');
 	});
 
-	it('continues to version application module imports', () => {
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 492, false)).toBe('/ns/m/__ns_hmr__/v492/src/app/app.routes');
-		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/v491/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/src/app/app.routes');
+	// alpha.59 — Stable URL + Explicit Invalidation.
+	//
+	// Pre-alpha.59 the rewriter stamped `__ns_hmr__/v<N>/` into every
+	// app-module URL on every save. The version segment forced V8 to
+	// re-fetch the entire dependency closure even when only one file
+	// changed (the URL was the cache key). alpha.59 emits stable URLs
+	// and uses an explicit `__nsInvalidateModules` protocol for cache
+	// busting; the rewriter is now a canonicalizer that strips legacy
+	// tags rather than adding them. See HMR_STABLE_URL_INVALIDATION_PLAN.md.
+	it('emits stable canonical URLs for application module imports', () => {
+		// Bare app module → stable.
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
+		// Legacy tagged URL (an older client may still serve one) → tag stripped.
+		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/v491/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
+		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/live/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
+		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/n5/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
+		// `_ver` argument is ignored for app modules — stability is the rule now.
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'live', false)).toBe('/ns/m/src/app/app.routes');
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'v999', false)).toBe('/ns/m/src/app/app.routes');
+	});
+
+	it('preserves the boot prefix for boot-tagged app module requests', () => {
+		// Bare app module + bootTagged → boot prefix added.
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/src/app/app.routes');
+		// Legacy boot+hmr → tag stripped, boot prefix retained.
+		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/src/app/app.routes');
+		// Already-canonical boot URL → idempotent.
+		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/src/app/app.routes');
+		// Boot-tagged request whose source had only an hmr tag (no boot prefix)
+		// → tag stripped, boot prefix added.
+		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_hmr__/v491/src/app/app.routes', 492, true)).toBe('/ns/m/__ns_boot__/b1/src/app/app.routes');
+	});
+
+	it('drops legacy tags from non-boot requests even when the input was boot-tagged', () => {
+		// A path that was previously emitted under boot is collapsed when
+		// requested under HMR (e.g. an importer whose tag changed contexts).
+		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/__ns_hmr__/v491/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
+		expect(rewriteNsMImportPathForHmr('/ns/m/__ns_boot__/b1/src/app/app.routes', 492, false)).toBe('/ns/m/src/app/app.routes');
 	});
 });
 
@@ -61,9 +96,14 @@ describe('stripDecoratedServePrefixes', () => {
 		});
 	});
 
-	it('uses live and nonce tags for application imports during HMR path rewriting', () => {
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'live', false)).toBe('/ns/m/__ns_hmr__/live/src/app/app.routes');
-		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/components/signup/signup.component', 'n1', false)).toBe('/ns/m/__ns_hmr__/n1/src/app/components/signup/signup.component');
+	it('keeps app module rewrites stable regardless of the supplied tag (alpha.59)', () => {
+		// The `ver` argument is preserved on the function signature for
+		// API compatibility, but it is now ignored for app modules. Cache
+		// busting is driven by `__nsInvalidateModules`, not URL
+		// versioning. See HMR_STABLE_URL_INVALIDATION_PLAN.md.
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/app.routes', 'live', false)).toBe('/ns/m/src/app/app.routes');
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/components/signup/signup.component', 'n1', false)).toBe('/ns/m/src/app/components/signup/signup.component');
+		expect(rewriteNsMImportPathForHmr('/ns/m/src/app/components/signup/signup.component', 0, false)).toBe('/ns/m/src/app/components/signup/signup.component');
 	});
 });
 

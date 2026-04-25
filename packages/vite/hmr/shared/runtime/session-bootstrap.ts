@@ -1,5 +1,6 @@
 import { assertNsDevSessionDescriptor, readNsRuntimeDevHostApi, type NsDevSessionDescriptor, type NsRuntimeDevHostApi } from './browser-runtime-contract.js';
 import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
+import { formatBootTimeline, publishBootTrace, type BootTrace } from './boot-timeline.js';
 
 function describeError(error: unknown) {
 	if (error instanceof Error) {
@@ -44,6 +45,21 @@ async function configureRuntimeImportMap(runtimeConfigUrl: string, runtimeApi: N
 		return;
 	}
 
+	// the entry-runtime and session-bootstrap historically each
+	// fetched /ns/import-map.json and called configureRuntime. That double
+	// fetch added 100-200ms on every cold boot with zero benefit. We now
+	// gate both callers behind globalThis.__NS_IMPORT_MAP_CONFIGURED__ so
+	// whichever runs first wins; subsequent calls short-circuit.
+	const g = globalThis as any;
+	if (g.__NS_IMPORT_MAP_CONFIGURED__ === true) {
+		if (verbose) {
+			console.info('[ns-entry] import map already configured by an earlier boot stage; skipping fetch', {
+				importMapUrl: runtimeConfigUrl,
+			});
+		}
+		return;
+	}
+
 	setHmrBootStage('configuring-import-map', {
 		detail: runtimeConfigUrl,
 	});
@@ -62,6 +78,9 @@ async function configureRuntimeImportMap(runtimeConfigUrl: string, runtimeApi: N
 		importMap: config.importMap,
 		volatilePatterns: Array.isArray(config.volatilePatterns) ? config.volatilePatterns : [],
 	});
+	try {
+		g.__NS_IMPORT_MAP_CONFIGURED__ = true;
+	} catch {}
 
 	if (verbose) {
 		console.info('[ns-entry] import map configured', {
@@ -95,7 +114,14 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		console.info('[ns-entry] starting browser runtime session', { sessionUrl });
 	}
 
+	// Boot timeline — this is the real boot path for runtimes that expose
+	// `__nsStartDevSession`. The historical boot log lived in
+	// `entry-runtime.ts`, which is only hit when the native runtime
+	// falls back to the HTTP bootloader.
+	const trace: BootTrace = { t0: Date.now() };
+
 	try {
+		const tSession = Date.now();
 		const response = await fetch(sessionUrl);
 		if (!response.ok) {
 			throw new Error(`NativeScript dev session fetch failed: ${response.status}`);
@@ -103,6 +129,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 
 		const session = (await response.json()) as NsDevSessionDescriptor;
 		assertNsDevSessionDescriptor(session);
+		trace.session = { ok: true, ms: Date.now() - tSession, meta: { sessionId: session.sessionId } };
 
 		if (verbose) {
 			console.info('[ns-entry] browser runtime session descriptor received', {
@@ -119,7 +146,15 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			throw new Error('__nsStartDevSession is unavailable in the NativeScript runtime');
 		}
 
+		const tImap = Date.now();
+		const alreadyConfigured = (globalThis as any).__NS_IMPORT_MAP_CONFIGURED__ === true;
 		await prepareRuntimeForSession(session, runtimeApi, verbose);
+		// Record the import-map segment only when we actually did work. The
+		// dedup path (Track 1.2) returns instantly without I/O; omitting the
+		// segment in that case keeps the boot log honest.
+		if (!alreadyConfigured) {
+			trace.importMap = { ok: true, ms: Date.now() - tImap };
+		}
 
 		setHmrBootStage('loading-entry-runtime', {
 			detail: session.clientUrl,
@@ -135,7 +170,9 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 				entryUrl: session.entryUrl,
 			});
 		}
+		const tNative = Date.now();
 		await runtimeApi.startDevSession(session);
+		trace.native = { ok: true, ms: Date.now() - tNative };
 		setHmrBootStage('waiting-for-app', {
 			detail: 'The deterministic NativeScript dev session is active. Waiting for the real app root to replace the boot placeholder.',
 		});
@@ -154,6 +191,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			});
 		}
 	} catch (error) {
+		trace.error = { message: describeError(error) };
 		setHmrBootStage('error', {
 			detail: describeError(error),
 		});
@@ -161,5 +199,15 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			console.error('[ns-entry] browser runtime session failed', error instanceof Error && error.stack ? error.stack : error);
 		}
 		throw error;
+	} finally {
+		trace.t1 = Date.now();
+		publishBootTrace(trace);
+		// Unconditional — use `console.info` so it lands in every NativeScript
+		// log stream (iOS shows it as `CONSOLE INFO`, Android shows it as
+		// `I chromium`). This is the single line we tell people to look for
+		// when investigating boot perf.
+		try {
+			console.info(formatBootTimeline(trace));
+		} catch {}
 	}
 }

@@ -90,9 +90,19 @@ export function clearVerboseCache(): void {
 // expected given NativeScript's virtual vendor bundling strategy.
 // Currently filters:
 //  - Sourcemap missing source files (common in published packages)
+//  - Sourcemap source paths that walk outside the published package (the map
+//    was generated in a monorepo and still references workspace paths the
+//    consumer's node_modules doesn't have)
+//  - Sidecar `.js.map` files listed in a `//# sourceMappingURL=` comment that
+//    were not published alongside the `.js` file
 //  - Eval usage attributed to the virtual "@nativescript/vendor" module
 //  - License/annotation position warnings for the vendor bundle
+//  - Analog Angular optimizer/router plugins that never emit sourcemaps
 // Extend this list cautiously; prefer documenting each suppression reason.
+//
+// All matching uses `.includes()` (never `.startsWith()`) because Vite wraps
+// some warnings in picocolors ANSI escape sequences before handing them to
+// the logger, which would defeat `startsWith`-style probes on TTY output.
 export function createFilteredViteLogger(): Logger {
 	const baseLogger = createLogger(undefined, { allowClearScreen: true });
 	return {
@@ -110,9 +120,32 @@ export function createFilteredViteLogger(): Logger {
 	};
 }
 
-function shouldSuppressViteWarning(msg: string): boolean {
-	// Missing sourcemap original sources
-	if (msg.startsWith('Sourcemap for ') && msg.includes('missing source files')) {
+// Exported for unit tests. Keep this function pure so the test suite can
+// exercise every suppression pattern without instantiating a real logger.
+export function shouldSuppressViteWarning(msg: string): boolean {
+	// Missing sourcemap original sources (kept as-is — published packages
+	// frequently drop a few `sources[n]` entries during transpile).
+	if (msg.includes('Sourcemap for ') && msg.includes('missing source files')) {
+		return true;
+	}
+	// Cross-package sourcemap path. Emitted for every `@nativescript/core`
+	// file at dev-server startup when the consumer has the published
+	// package installed: the shipped `.js.map` still references the
+	// original monorepo `packages/core/**` path, which does not exist in
+	// the consumer's node_modules. There is nothing we (or the app
+	// author) can do about this short of republishing core with relative
+	// sources — silently dropping it is correct.
+	if (msg.includes('Sourcemap for ') && msg.includes('points to a source file outside its package')) {
+		return true;
+	}
+	// Missing sidecar .js.map file. A couple of community packages
+	// (e.g. `@nativescript-community/observable`) ship the `.js` with a
+	// `//# sourceMappingURL=foo.js.map` footer but never include the
+	// actual map. Vite's sourcemap loader then retries the ENOENT on
+	// every request, flooding the terminal. We cannot resolve the
+	// missing file, so suppressing the warn-level diagnostic is the
+	// least invasive fix.
+	if (msg.includes('Failed to load source map for')) {
 		return true;
 	}
 	// Vendor eval usage (third-party libs aggregated); benign

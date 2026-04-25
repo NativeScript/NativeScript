@@ -3,6 +3,16 @@
  */
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 
+// alpha.59 — Build-time verbose flag, read defensively so unit tests
+// (where the `define` substitution doesn't run) don't blow up.
+const ENV_VERBOSE: boolean = (() => {
+	try {
+		return typeof __NS_ENV_VERBOSE__ === 'boolean' ? __NS_ENV_VERBOSE__ : false;
+	} catch {
+		return false;
+	}
+})();
+
 /**
  * Defensively read a module's default export with progressive backoff.
  * If a TDZ error happens, retry several microtasks and finally one macrotask tick.
@@ -204,6 +214,109 @@ export function deriveHttpOrigin(wsUrl: string | undefined) {
 	}
 }
 
+// alpha.59 — Detect runtime support for `__nsInvalidateModules`.
+//
+// alpha.59 ships a global JS function `__nsInvalidateModules(urls)` that
+// removes the canonical key for each URL from V8's module registry
+// (`g_moduleRegistry`). Combined with the HMR URL canonicalizer in
+// HMRSupport.mm — which strips `__ns_hmr__/<tag>/` and
+// `__ns_boot__/b1/` prefixes before keying — explicit eviction lets
+// the client keep import URLs STABLE across saves while still busting
+// V8's cache for exactly the modules that need to re-evaluate.
+//
+// Without explicit eviction, an alpha.59 runtime would silently drop
+// the legacy `/ns/m/__ns_hmr__/v<N>/...` cache-buster (because the
+// canonicalizer collapses it back to the stable key) and any HMR
+// re-import would resolve to the cached old module. So when the
+// runtime exposes `__nsInvalidateModules`, the client emits stable
+// URLs and the caller is responsible for invalidating before
+// re-importing. When the runtime does NOT expose it (alpha.58 and
+// earlier), the client falls back to legacy URL versioning so cache
+// busting works even on older devices.
+export function hasExplicitEviction(): boolean {
+	try {
+		return typeof (globalThis as any).__nsInvalidateModules === 'function';
+	} catch {
+		return false;
+	}
+}
+
+// One-time mode banner so the user can correlate an HMR slowdown with
+// the active eviction strategy without grepping logs.
+let _hmrModeBannerEmitted = false;
+export function emitHmrModeBannerOnce(force = false): void {
+	if (_hmrModeBannerEmitted && !force) return;
+	_hmrModeBannerEmitted = true;
+	try {
+		const supported = hasExplicitEviction();
+		const mode = supported ? 'explicit-eviction (stable URLs)' : 'legacy-url-versioning (no __nsInvalidateModules)';
+		console.info(`[hmr-client] alpha.59 module reload mode: ${mode}`);
+	} catch {}
+}
+
+// Reset the banner — used by tests so mode flips during a single
+// process are observable.
+export function _resetHmrModeBannerForTests(): void {
+	_hmrModeBannerEmitted = false;
+}
+
+// alpha.59 — Explicit module eviction.
+//
+// Hands a list of canonical module URLs (or `/ns/m/...` paths) to the
+// runtime so V8's module registry drops them. Returns true iff the
+// runtime accepted the eviction. Falls through silently (returning
+// `false`) on older runtimes so the caller can switch to the legacy
+// URL-versioning path. Empty inputs are no-ops.
+export function invalidateModulesByUrls(urls: readonly string[]): boolean {
+	emitHmrModeBannerOnce();
+	if (!urls || !urls.length) return false;
+	const g: any = globalThis as any;
+	const fn = g.__nsInvalidateModules;
+	if (typeof fn !== 'function') return false;
+	try {
+		fn.call(null, urls);
+		return true;
+	} catch (error) {
+		try {
+			if (ENV_VERBOSE) console.warn('[hmr-client] __nsInvalidateModules threw', (error as any)?.message || error);
+		} catch {}
+		return false;
+	}
+}
+
+// Build canonical eviction URLs for a list of specs. Each spec must be
+// a project-relative path (e.g. `/src/foo.ts`) or a normalizable
+// import id; node_modules and virtual specs are filtered out because
+// the runtime canonicalizer routes them through different cache keys
+// and evicting them would invalidate vendor modules unrelated to the
+// HMR change. Output URLs are deduplicated and prefixed with the
+// active dev-server origin.
+export function buildEvictionUrls(specs: readonly string[]): string[] {
+	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
+	if (!origin) return [];
+	const out: string[] = [];
+	const seen = new Set<string>();
+	for (const raw of specs) {
+		if (!raw || typeof raw !== 'string') continue;
+		// Skip virtual / Vite-internal specs — they don't have a stable
+		// HTTP cache identity and evicting them would be a no-op.
+		if (/^\0|^\/?\0/.test(raw)) continue;
+		if (/plugin-vue:export-helper/.test(raw)) continue;
+		// Skip vendor-realm imports; the bundled vendor module is owned
+		// by the runtime, not the dev server, so /ns/m eviction would
+		// not match its cache key.
+		if (/(^|\/)node_modules\//.test(raw)) continue;
+		const spec = normalizeSpec(raw);
+		if (!spec) continue;
+		const path = spec.startsWith('/') ? spec : '/' + spec;
+		const url = origin + '/ns/m' + path;
+		if (seen.has(url)) continue;
+		seen.add(url);
+		out.push(url);
+	}
+	return out;
+}
+
 export async function requestModuleFromServer(spec: string): Promise<string> {
 	const isSfcArtifact = (s: string) => /(?:^|\/)sfc-[a-f0-9]{8}\.mjs$/i.test(s) || /\/_ns_hmr\/src\/sfc\//.test(s) || /__NSDOC__\/_ns_hmr\/src\/sfc\//.test(s);
 	// Ignore Vite/virtual helper or empty specs
@@ -223,27 +336,45 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 		// We still go through the normal request flow below, but short-circuit index heuristics.
 	}
 	// Construct HTTP ESM URL for this spec.
-	// IMPORTANT: cache-bust via PATH (not query) because the iOS HTTP ESM cache key
-	// canonicalization strips query params.
 	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
 	if (!origin) return Promise.reject(new Error('no-http-origin'));
 	const basePath = '/ns/m' + (spec.startsWith('/') ? spec : '/' + spec);
 	const baseUrl = origin + basePath;
 	let url = baseUrl;
-	try {
-		// Use version+hash to avoid ESM cache returning the old module.
-		const v = typeof graphVersion === 'number' ? graphVersion : 0;
-		const h = graph.get(spec)?.hash || '';
-		const g: any = globalThis as any;
-		const n = typeof g?.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;
-		// Only add params when we have at least one signal.
-		if (v || h || n) {
-			// Prefer nonce when present to guarantee changes apply even if server version/hash are stable.
-			const tag = n ? `${n}-${v}${h ? `-${h}` : ''}` : h ? `${v}-${h}` : String(v);
-			// /ns/m/__ns_hmr__/<tag>/<original-spec>
-			url = origin + '/ns/m/__ns_hmr__/' + encodeURIComponent(tag) + basePath.slice('/ns/m'.length);
-		}
-	} catch {}
+
+	// alpha.59 — Stable URL when explicit eviction is supported.
+	//
+	// On alpha.59+ runtimes the canonicalizer collapses any
+	// `__ns_hmr__/<tag>/` segment back to the stable key, so embedding
+	// a tag does nothing useful — V8 still resolves to the cached
+	// module. We rely on the caller (queue processor, framework
+	// client) to call `invalidateModulesByUrls` before re-importing,
+	// and emit the canonical URL so successive saves never drift
+	// across cache identities.
+	//
+	// On alpha.58 (and earlier) runtimes there is no canonicalizer and
+	// no `__nsInvalidateModules`, so we MUST embed a tag in the path
+	// (the iOS HTTP loader strips query params before keying its
+	// cache, so the bust must live in the path). Otherwise the second
+	// save returns a cache hit with the old module.
+	if (!hasExplicitEviction()) {
+		try {
+			const v = typeof graphVersion === 'number' ? graphVersion : 0;
+			const h = graph.get(spec)?.hash || '';
+			const g: any = globalThis as any;
+			const n = typeof g?.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;
+			// Only add params when we have at least one signal.
+			if (v || h || n) {
+				// Prefer nonce when present to guarantee changes apply even if server version/hash are stable.
+				const tag = n ? `${n}-${v}${h ? `-${h}` : ''}` : h ? `${v}-${h}` : String(v);
+				// /ns/m/__ns_hmr__/<tag>/<original-spec>
+				url = origin + '/ns/m/__ns_hmr__/' + encodeURIComponent(tag) + basePath.slice('/ns/m'.length);
+			}
+		} catch {}
+	}
+
+	emitHmrModeBannerOnce();
+
 	const prev = moduleFetchCache.get(spec);
 	if (prev === url) {
 		return Promise.resolve(url);

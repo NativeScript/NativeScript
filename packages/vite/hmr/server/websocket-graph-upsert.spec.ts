@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta } from './websocket.js';
+import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion } from './websocket.js';
 
 describe('graph upsert broadcast gating', () => {
 	it('classifies first discovery as inserted', () => {
@@ -28,5 +28,35 @@ describe('graph upsert broadcast gating', () => {
 	it('allows callers to suppress graph delta broadcast even when the graph changes', () => {
 		expect(shouldBroadcastGraphUpsertDelta('changed', false, false)).toBe(false);
 		expect(shouldBroadcastGraphUpsertDelta('inserted', true, false)).toBe(false);
+	});
+});
+
+describe('shouldBumpGraphVersion', () => {
+	it('never bumps the version for unchanged classifications', () => {
+		// The unchanged path early-returns in upsertGraphModule, so advancing
+		// graphVersion for it would desync the graph from the URL tag the
+		// client has already cached.
+		expect(shouldBumpGraphVersion('unchanged', true)).toBe(false);
+		expect(shouldBumpGraphVersion('unchanged', false)).toBe(false);
+		expect(shouldBumpGraphVersion('unchanged')).toBe(false);
+	});
+
+	it('bumps the version for changed entries by default (live-edit path)', () => {
+		expect(shouldBumpGraphVersion('changed')).toBe(true);
+		expect(shouldBumpGraphVersion('changed', true)).toBe(true);
+	});
+
+	it('bumps the version for inserted entries by default (live-edit path)', () => {
+		expect(shouldBumpGraphVersion('inserted')).toBe(true);
+		expect(shouldBumpGraphVersion('inserted', true)).toBe(true);
+	});
+
+	it('suppresses version bumps for serve-time warm-ups (bumpVersion: false)', () => {
+		// /ns/m serve-time upserts and the initial-graph walk pass
+		// `bumpVersion: false`. They populate the graph without advancing the
+		// URL tag, preserving the stable `v1` cache key across the cold boot.
+		expect(shouldBumpGraphVersion('inserted', false)).toBe(false);
+		expect(shouldBumpGraphVersion('changed', false)).toBe(false);
+		expect(shouldBumpGraphVersion('unchanged', false)).toBe(false);
 	});
 });
