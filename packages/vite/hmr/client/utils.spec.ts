@@ -152,26 +152,48 @@ describe('emitHmrModeBannerOnce', () => {
 
 	afterEach(() => {
 		clearGlobalEvictionFn();
+		delete (globalThis as any).__NS_ENV_VERBOSE__;
+		vi.resetModules();
 		vi.restoreAllMocks();
 	});
 
-	it('logs once per process and includes the active mode', () => {
+	// The mode banner is verbose-only, so the spec reaches for a fresh
+	// module import with `__NS_ENV_VERBOSE__ = true` published BEFORE
+	// the import so the module-level capture sees a truthy define.
+	async function importVerboseUtils() {
+		(globalThis as any).__NS_ENV_VERBOSE__ = true;
+		vi.resetModules();
+		return await import('./utils.js');
+	}
+
+	it('logs once per process and includes the active mode (verbose)', async () => {
+		const utils = await importVerboseUtils();
+		utils._resetHmrModeBannerForTests();
 		const info = vi.spyOn(console, 'info').mockImplementation(() => {});
-		emitHmrModeBannerOnce();
-		emitHmrModeBannerOnce();
+		utils.emitHmrModeBannerOnce();
+		utils.emitHmrModeBannerOnce();
 		expect(info).toHaveBeenCalledTimes(1);
 		expect(info.mock.calls[0]?.[0]).toContain('legacy-url-versioning');
 	});
 
-	it('reflects explicit eviction when force-emitted', () => {
+	it('reflects explicit eviction when force-emitted (verbose)', async () => {
+		const utils = await importVerboseUtils();
+		utils._resetHmrModeBannerForTests();
 		const info = vi.spyOn(console, 'info').mockImplementation(() => {});
 		setGlobalEvictionFn(() => {});
-		emitHmrModeBannerOnce(); // first emission picks up the active mode
-		emitHmrModeBannerOnce(true); // forced re-emission, same mode
+		utils.emitHmrModeBannerOnce(); // first emission picks up the active mode
+		utils.emitHmrModeBannerOnce(true); // forced re-emission, same mode
 		expect(info).toHaveBeenCalledTimes(2);
 		for (const call of info.mock.calls) {
 			expect(String(call[0])).toContain('explicit-eviction');
 		}
+	});
+
+	it('stays silent when verbose is off (default)', () => {
+		const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+		emitHmrModeBannerOnce();
+		emitHmrModeBannerOnce(true);
+		expect(info).not.toHaveBeenCalled();
 	});
 });
 
