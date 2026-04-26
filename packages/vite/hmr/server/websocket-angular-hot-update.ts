@@ -64,19 +64,34 @@ export function collectGraphUpdateModulesForHotUpdate(options: { file: string; f
 	};
 
 	if (options.flavor === 'angular' && /\.(html|htm)$/i.test(options.file)) {
+		const importerIdsSeen: string[] = [];
+		const importerIdsAccepted: string[] = [];
 		for (const mod of options.modules || []) {
 			for (const importer of mod?.importers || []) {
 				const importerId = importer?.id || '';
+				importerIdsSeen.push(importerId);
 				if (/\.[cm]?[jt]sx?(?:$|\?)/i.test(importerId)) {
 					addTarget(importer);
+					importerIdsAccepted.push(importerId);
 				}
 			}
 		}
 
-		if (!targets.size) {
+		const fellBackToFile = !targets.size;
+		if (fellBackToFile) {
 			addTarget(options.getModuleById(options.file.replace(/\.(html|htm)$/i, '.ts')));
 			addTarget(options.getModuleById(options.file.replace(/\.(html|htm)$/i, '.js')));
 		}
+
+		try {
+			console.info(`[ns-hmr-diag][server] collectGraphUpdateModulesForHotUpdate(html) file=${options.file} importersSeen=${importerIdsSeen.length} importersAccepted=${importerIdsAccepted.length} fellBackToFile=${fellBackToFile} targets=${targets.size}`);
+			if (importerIdsSeen.length) {
+				console.info(`[ns-hmr-diag][server] importersSeen sample=`, importerIdsSeen.slice(0, 8));
+			}
+			if (importerIdsAccepted.length) {
+				console.info(`[ns-hmr-diag][server] importersAccepted sample=`, importerIdsAccepted.slice(0, 8));
+			}
+		} catch {}
 
 		return Array.from(targets.values());
 	}

@@ -6209,6 +6209,14 @@ export const piniaSymbol = p.piniaSymbol;
 					getModuleById: (id) => server.moduleGraph.getModuleById(id) as HotUpdateGraphModuleLike | undefined,
 					getModulesByFile: (targetFile) => (server.moduleGraph as any).getModulesByFile?.(targetFile) as Iterable<HotUpdateGraphModuleLike> | undefined,
 				});
+				try {
+					console.info(
+						`[ns-hmr-diag][server] hot-update file=${file} isHtml=${isHtml} isTs=${isTs} ctxModules=${Array.from(ctx.modules || []).length} hotUpdateRoots=${angularHotUpdateRoots.length} (${angularHotUpdateRoots
+							.map((m) => m?.id ?? '(none)')
+							.slice(0, 8)
+							.join(', ')}${angularHotUpdateRoots.length > 8 ? ', …' : ''})`,
+					);
+				} catch {}
 				if (!(isHtml || isTs)) return;
 
 				updateMetrics.invalidated += angularHotUpdateRoots.length;
@@ -6296,6 +6304,8 @@ export const piniaSymbol = p.piniaSymbol;
 				// narrowing wins (saves re-transform work on the server).
 				// The eviction set always includes importers so V8 re-fetches
 				// and re-binds them.
+				console.info(`[ns-hmr-diag][server] angularNeedsTransitive=${angularNeedsTransitive} (file=${path.basename(file)})`);
+
 				let transitiveImporters: TransitiveImporterModuleLike[] = [];
 				try {
 					transitiveImporters = collectAngularTransitiveImportersForInvalidation({
@@ -6303,6 +6313,12 @@ export const piniaSymbol = p.piniaSymbol;
 						isExcluded: (id) => id.includes('/node_modules/'),
 						maxDepth: 16,
 					});
+					try {
+						console.info(
+							`[ns-hmr-diag][server] transitiveImporters count=${transitiveImporters.length} firstN=`,
+							transitiveImporters.slice(0, 16).map((m) => m?.id ?? '(none)'),
+						);
+					} catch {}
 
 					if (angularNeedsTransitive) {
 						updateMetrics.invalidated += transitiveImporters.length;
@@ -6414,15 +6430,26 @@ export const piniaSymbol = p.piniaSymbol;
 							bootstrapEntry: bootstrapEntryRel,
 						});
 					} catch (error) {
-						if (verbose) console.warn('[hmr-ws][angular] eviction set computation failed', error);
+						console.warn('[ns-hmr-diag][server] eviction set computation failed', error);
 					}
 
-					if (verbose) {
-						console.log('[hmr-ws][angular] eviction set', {
-							count: evictPaths.length,
-							importerEntry: bootstrapEntryRel,
-						});
-					}
+					// Diagnostic: ALWAYS log the eviction set details so
+					// we can verify (a) the changed file made it into
+					// evictPaths and (b) whether the corresponding
+					// `.ts`/`.js` companion files made it in too. Log up
+					// to N entries to keep payload manageable but show
+					// the changed file + .ts companion explicitly.
+					try {
+						const tsRel = rel.replace(/\.(html|htm)$/i, '.ts');
+						const jsRel = rel.replace(/\.(html|htm)$/i, '.js');
+						const containsRelatedTs = evictPaths.some((u) => u.endsWith(tsRel));
+						const containsRelatedJs = evictPaths.some((u) => u.endsWith(jsRel));
+						const sample = evictPaths.slice(0, 32);
+						console.info(`[ns-hmr-diag][server] evict-set count=${evictPaths.length} importerEntry=${bootstrapEntryRel ?? '(none)'} containsRelatedTs=${containsRelatedTs} containsRelatedJs=${containsRelatedJs} firstN=`, sample);
+						if (evictPaths.length > sample.length) {
+							console.info(`[ns-hmr-diag][server] evict-set hidden=${evictPaths.length - sample.length} (showed first ${sample.length})`);
+						}
+					} catch {}
 
 					const msg = {
 						type: 'ns:angular-update',

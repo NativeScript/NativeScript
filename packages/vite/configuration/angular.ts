@@ -7,6 +7,7 @@ import { angularLinkerVitePlugin, angularLinkerVitePluginPost } from '../helpers
 import { synthesizeMissingInjectableFactories } from '../helpers/angular/synthesize-injectable-factories.js';
 import { ensureSharedAngularLinker, resolveAngularFileSystem } from '../helpers/angular/shared-linker.js';
 import { inlineDecoratorComponentTemplates } from '../helpers/angular/inline-decorator-component-templates.js';
+import { appendComponentHmrRegistration, findComponentClassNames, INJECTION_MARKER as HMR_REGISTER_MARKER } from '../helpers/angular/inject-component-hmr-registration.js';
 import { synthesizeDecoratorCtorParameters } from '../helpers/angular/synthesize-decorator-ctor-parameters.js';
 import { containsRealNgDeclare } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
@@ -217,6 +218,15 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 	const componentToAssets = new Map<string, Set<string>>();
 	const pendingComponentInvalidations = new Set<string>();
 
+	// Shared state between the `enforce: 'pre'` discovery plugin and the
+	// `enforce: 'post'` injection plugin. Maps a clean (no-querystring)
+	// .ts file id to the list of `@Component`-decorated class names found
+	// in its RAW TypeScript source. The pre plugin populates this map;
+	// the post plugin reads it to know which class names to register
+	// against the compiled output. Cleared on each pre-plugin invocation
+	// so renames or `@Component` removals don't leave stale entries.
+	const componentsByCleanId = new Map<string, string[]>();
+
 	const untrackComponentAssets = (componentPath: string) => {
 		const previousAssets = componentToAssets.get(componentPath);
 		if (!previousAssets) return;
@@ -247,7 +257,130 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 		}
 	};
 
+	const isCandidateComponentTs = (cleanId: string): boolean => {
+		if (!cleanId.endsWith('.ts')) return false;
+		if (cleanId.includes('/node_modules/')) return false;
+		if (cleanId.endsWith('.d.ts')) return false;
+		if (cleanId.endsWith('.spec.ts') || cleanId.endsWith('.test.ts')) return false;
+		return true;
+	};
+
 	return [
+		// HMR self-registration runs in two phases:
+		//
+		//   1. (this plugin, `enforce: 'pre'`) Walk the raw TypeScript
+		//      source for each user `.ts` file and record the names of
+		//      any `@Component`-decorated classes into the shared
+		//      `componentsByCleanId` map. Discovery has to happen on the
+		//      raw source because the Analog Angular plugin rewrites
+		//      `@Component(...)` into static metadata calls and removes
+		//      the textual decorator pattern.
+		//
+		//   2. (`ns-component-hmr-register-post`, `enforce: 'post'`)
+		//      After the Analog Angular plugin has compiled the file,
+		//      append the global `__NS_HMR_REGISTER_COMPONENT__`
+		//      registration calls keyed by the names recorded in step 1.
+		//
+		// Why the two-phase split: the Analog Angular plugin's `transform`
+		// returns its OWN regenerated compiled output (from its internal
+		// `outputFiles` cache populated at `buildStart`), discarding any
+		// code modifications applied earlier in the pipeline. We
+		// previously appended the registration snippet here, in the pre
+		// plugin, and the snippet was silently dropped — leaving the
+		// HMR class registry empty and `getFreshComponentClass` returning
+		// `found=false reason=no-registry` after every reboot.
+		//
+		// Placement notes that still apply:
+		//   - `apply: 'serve'`: the registry runtime hook is dev-only;
+		//     production builds never need self-registration.
+		//   - Intentionally NOT gated on `hmrActive`. The injected
+		//     snippet self-guards with
+		//     `typeof globalThis.__NS_HMR_REGISTER_COMPONENT__ === 'function'`,
+		//     so it's a no-op when the runtime hook isn't installed
+		//     (e.g. `--no-hmr` users still serving modules through
+		//     Vite). Gating the transform itself on `hmrActive` produced
+		//     a silent failure mode where `--no-hmr` users got HMR
+		//     machinery up but never got the registration calls
+		//     injected, leaving the registry empty.
+		{
+			name: 'ns-component-hmr-register',
+			enforce: 'pre',
+			apply: 'serve',
+			transform(code, id) {
+				const cleanId = id.split('?', 1)[0];
+				if (!isCandidateComponentTs(cleanId)) return null;
+
+				const componentNames = findComponentClassNames(code);
+				if (componentNames.length === 0) {
+					// Drop any stale entry from a previous transform
+					// pass; the file may have lost its `@Component`
+					// decorator across a rename/refactor.
+					componentsByCleanId.delete(cleanId);
+					return null;
+				}
+
+				componentsByCleanId.set(cleanId, componentNames);
+
+				try {
+					// Diagnostic: log which files we discovered components
+					// in. The `modal|dialog` regex is case-insensitive so
+					// it matches `resource-modal.component.ts` (lowercase
+					// in the path).
+					if (/modal|dialog/i.test(cleanId) || (globalThis as { __NS_HMR_DIAG_VERBOSE?: boolean }).__NS_HMR_DIAG_VERBOSE) {
+						console.info(`[ns-hmr-diag][ns-component-hmr-register] discovered ${componentNames.length} component(s) in ${cleanId} (${componentNames.join(', ')})`);
+					}
+				} catch {}
+
+				// Discovery only — never modify the raw TS source. Any
+				// modification here is discarded by the Analog Angular
+				// plugin downstream; the actual snippet append happens
+				// in `ns-component-hmr-register-post`.
+				return null;
+			},
+		},
+		// Phase 2: append the HMR registration snippet to the compiled
+		// JS output produced by `@analogjs/vite-plugin-angular`. Runs
+		// `enforce: 'post'` so we see the post-Angular code (where the
+		// pre plugin's work would otherwise be discarded). Reads the
+		// component names recorded by the pre plugin via
+		// `componentsByCleanId`.
+		{
+			name: 'ns-component-hmr-register-post',
+			enforce: 'post',
+			apply: 'serve',
+			transform(code, id) {
+				const cleanId = id.split('?', 1)[0];
+				if (!isCandidateComponentTs(cleanId)) return null;
+
+				const componentNames = componentsByCleanId.get(cleanId);
+				if (!componentNames || componentNames.length === 0) return null;
+
+				// Idempotency: the Vite cache may replay the transform
+				// pipeline on cached modules. The marker comment is
+				// inserted by `appendComponentHmrRegistration` and
+				// guards against double-injection. We also defensively
+				// short-circuit here so we don't have to allocate the
+				// suffix string on every cached re-run.
+				if (code.includes(HMR_REGISTER_MARKER)) return null;
+
+				const result = appendComponentHmrRegistration(code, componentNames);
+				if (!result.code) return null;
+
+				try {
+					if (/modal|dialog/i.test(cleanId) || (globalThis as { __NS_HMR_DIAG_VERBOSE?: boolean }).__NS_HMR_DIAG_VERBOSE) {
+						console.info(`[ns-hmr-diag][ns-component-hmr-register-post] appended registrations for ${result.componentNames.length} component(s) in ${cleanId} (${result.componentNames.join(', ')})`);
+					}
+				} catch {}
+
+				// Returning `null` for the source map is acceptable for
+				// dev: lines 1..N (the original compiled body) keep
+				// the upstream Angular source map; the appended snippet
+				// is invisible to debuggers but harmless. For
+				// production-grade source maps a MagicString-based
+				// pass-through could be used; not required for HMR.
+				return { code: result.code, map: null };
+			},
+		},
 		// Allow external html template changes to trigger hot reload: Make .ts files depend on their .html templates
 		{
 			name: 'angular-template-deps',
@@ -263,6 +396,17 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				for (const assetPath of assetPaths) {
 					this.addWatchFile(assetPath);
 				}
+				// Diagnostic: surface which .ts files we've registered
+				// asset (template/styleUrls) dependencies for. This is
+				// the first fence the HTML→TS invalidation pipeline must
+				// pass — if we never see a [tracking] log for the
+				// component we're editing, the watcher will never fire
+				// and `pendingComponentInvalidations` stays empty.
+				if (/Modal|Dialog/.test(componentKey) || (globalThis as { __NS_HMR_DIAG_VERBOSE?: boolean }).__NS_HMR_DIAG_VERBOSE) {
+					try {
+						console.info(`[ns-hmr-diag][angular-template-deps] [tracking] componentKey=${componentKey} assets=${assetPaths.length} (${assetPaths.slice(0, 4).join(', ')})`);
+					} catch {}
+				}
 				return null;
 			},
 			watchChange(id) {
@@ -277,13 +421,25 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 					for (const componentPath of components) {
 						pendingComponentInvalidations.add(componentPath);
 					}
+					try {
+						console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via assetToComponents] changed=${changedPath} → invalidating ${components.size} component(s):`, Array.from(components));
+					} catch {}
 					return;
 				}
 
 				if (/\.(html|htm)$/i.test(changedPath)) {
 					const componentPath = changedPath.replace(/\.(html|htm)$/i, '.ts');
-					if (fs.existsSync(resolveAngularWatchFilePath(componentPath))) {
-						pendingComponentInvalidations.add(normalizeAngularWatchKey(componentPath));
+					const exists = fs.existsSync(resolveAngularWatchFilePath(componentPath));
+					if (exists) {
+						const componentKey = normalizeAngularWatchKey(componentPath);
+						pendingComponentInvalidations.add(componentKey);
+						try {
+							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via fallback .html→.ts] changed=${changedPath} componentKey=${componentKey}`);
+						} catch {}
+					} else {
+						try {
+							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [no companion .ts found] changed=${changedPath} expectedTs=${componentPath}`);
+						} catch {}
 					}
 				}
 			},
@@ -292,6 +448,9 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				if (!pendingComponentInvalidations.has(componentPath)) return null;
 
 				pendingComponentInvalidations.delete(componentPath);
+				try {
+					console.info(`[ns-hmr-diag][angular-template-deps] shouldTransformCachedModule → re-transform componentKey=${componentPath}`);
+				} catch {}
 				return true;
 			},
 		},

@@ -141,22 +141,24 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	const g: any = globalThis;
 	const fn = g.__nsInvalidateModules;
 	if (typeof fn !== 'function') {
-		if (verbose && envVerbose) {
-			try {
-				console.warn(`[hmr-angular] runtime missing __nsInvalidateModules; falling back to legacy URL versioning. evict=${urls.length}`);
-			} catch {}
-		}
+		try {
+			console.warn(`[ns-hmr-diag][client] runtime missing __nsInvalidateModules; falling back to legacy URL versioning. evict=${urls.length}`);
+		} catch {}
 		return false;
 	}
 	try {
+		try {
+			console.info(`[ns-hmr-diag][client] invalidateModules calling __nsInvalidateModules urls=${urls.length}`);
+		} catch {}
 		fn.call(null, urls);
+		try {
+			console.info(`[ns-hmr-diag][client] invalidateModules OK urls=${urls.length}`);
+		} catch {}
 		return true;
 	} catch (error) {
-		if (verbose && envVerbose) {
-			try {
-				console.warn('[hmr-angular] __nsInvalidateModules threw', (error as any)?.message || error);
-			} catch {}
-		}
+		try {
+			console.warn('[ns-hmr-diag][client] __nsInvalidateModules threw', (error as any)?.message || error);
+		} catch {}
 		return false;
 	}
 }
@@ -341,6 +343,22 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	// hot in the cache.
 	const evictPaths = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)) : [];
 
+	// Diagnostic: log eviction set client-side so we can verify what
+	// the runtime is being asked to drop. We log up to 32 entries so
+	// large constants edits don't swamp the console; the summary is
+	// always printed.
+	try {
+		const _path = typeof msg?.path === 'string' ? msg.path : '(unknown)';
+		console.info(`[ns-hmr-diag][client] received ns:angular-update path=${_path} evictPaths.length=${evictPaths.length} importerEntry=${msg?.importerEntry ?? '(none)'}`);
+		if (evictPaths.length) {
+			const sample = evictPaths.slice(0, 32);
+			console.info(`[ns-hmr-diag][client] evictPaths firstN=`, sample);
+			if (evictPaths.length > sample.length) {
+				console.info(`[ns-hmr-diag][client] evictPaths hidden=${evictPaths.length - sample.length}`);
+			}
+		}
+	} catch {}
+
 	// Drive the apply-progress overlay through the 'evicting' frame
 	// *before* the runtime invalidate call so the user sees the count
 	// even on the cheapest stage. Eviction count also doubles as a
@@ -353,11 +371,9 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 
 	const evicted = invalidateModules(evictPaths, options.verbose);
 
-	if (options.verbose && envVerbose) {
-		try {
-			console.info(`[ns-hmr][angular] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
-		} catch {}
-	}
+	try {
+		console.info(`[ns-hmr-diag][client] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
+	} catch {}
 
 	// Parallel HTTP prefetch for the freshly-evicted modules.
 	//
@@ -509,9 +525,9 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 		// canonical reboot entry point.
 		const reboot = g.__reboot_ng_modules__;
 		if (typeof reboot === 'function') {
-			if (options.verbose && envVerbose) {
-				console.log('[hmr-angular] rebooting Angular modules via __reboot_ng_modules__');
-			}
+			try {
+				console.info('[ns-hmr-diag][client] calling __reboot_ng_modules__');
+			} catch {}
 			await refreshAngularBootstrapOptions(msg, options);
 			tAfterRefresh = Date.now();
 			try {

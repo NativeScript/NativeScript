@@ -357,7 +357,7 @@ export function createConnectionOverlaySnapshot(stage: HmrConnectionStage, info?
 			mode: 'connection',
 			badge: 'SOCKET',
 			title: 'HMR connection lost',
-			phase: 'Reconnecting Vite websocket',
+			phase: 'Trying to reconnect Vite websocket',
 			detail: 'The app may be stale until the dev server reconnects.',
 			progress: null,
 			busy: true,
