@@ -13,6 +13,7 @@ import { containsRealNgDeclare } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
+import { resolveVerboseFlag } from '../helpers/logging.js';
 
 // Lazily import the Angular linker factory function. Used by chunk-level linkers
 // to create FRESH plugin instances per invocation (avoiding stale state in watch mode).
@@ -214,6 +215,7 @@ function extractComponentAssetPaths(code: string, componentId: string): string[]
 }
 
 function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plugin[] {
+	const verbose = resolveVerboseFlag();
 	const assetToComponents = new Map<string, Set<string>>();
 	const componentToAssets = new Map<string, Set<string>>();
 	const pendingComponentInvalidations = new Set<string>();
@@ -321,15 +323,11 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 
 				componentsByCleanId.set(cleanId, componentNames);
 
-				try {
-					// Diagnostic: log which files we discovered components
-					// in. The `modal|dialog` regex is case-insensitive so
-					// it matches `resource-modal.component.ts` (lowercase
-					// in the path).
-					if (/modal|dialog/i.test(cleanId) || (globalThis as { __NS_HMR_DIAG_VERBOSE?: boolean }).__NS_HMR_DIAG_VERBOSE) {
+				if (verbose) {
+					try {
 						console.info(`[ns-hmr-diag][ns-component-hmr-register] discovered ${componentNames.length} component(s) in ${cleanId} (${componentNames.join(', ')})`);
-					}
-				} catch {}
+					} catch {}
+				}
 
 				// Discovery only — never modify the raw TS source. Any
 				// modification here is discarded by the Analog Angular
@@ -366,11 +364,11 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				const result = appendComponentHmrRegistration(code, componentNames);
 				if (!result.code) return null;
 
-				try {
-					if (/modal|dialog/i.test(cleanId) || (globalThis as { __NS_HMR_DIAG_VERBOSE?: boolean }).__NS_HMR_DIAG_VERBOSE) {
+				if (verbose) {
+					try {
 						console.info(`[ns-hmr-diag][ns-component-hmr-register-post] appended registrations for ${result.componentNames.length} component(s) in ${cleanId} (${result.componentNames.join(', ')})`);
-					}
-				} catch {}
+					} catch {}
+				}
 
 				// Returning `null` for the source map is acceptable for
 				// dev: lines 1..N (the original compiled body) keep
@@ -402,7 +400,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				// pass — if we never see a [tracking] log for the
 				// component we're editing, the watcher will never fire
 				// and `pendingComponentInvalidations` stays empty.
-				if (/Modal|Dialog/.test(componentKey) || (globalThis as { __NS_HMR_DIAG_VERBOSE?: boolean }).__NS_HMR_DIAG_VERBOSE) {
+				if (verbose) {
 					try {
 						console.info(`[ns-hmr-diag][angular-template-deps] [tracking] componentKey=${componentKey} assets=${assetPaths.length} (${assetPaths.slice(0, 4).join(', ')})`);
 					} catch {}
@@ -421,9 +419,11 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 					for (const componentPath of components) {
 						pendingComponentInvalidations.add(componentPath);
 					}
-					try {
-						console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via assetToComponents] changed=${changedPath} → invalidating ${components.size} component(s):`, Array.from(components));
-					} catch {}
+					if (verbose) {
+						try {
+							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via assetToComponents] changed=${changedPath} → invalidating ${components.size} component(s):`, Array.from(components));
+						} catch {}
+					}
 					return;
 				}
 
@@ -433,10 +433,12 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 					if (exists) {
 						const componentKey = normalizeAngularWatchKey(componentPath);
 						pendingComponentInvalidations.add(componentKey);
-						try {
-							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via fallback .html→.ts] changed=${changedPath} componentKey=${componentKey}`);
-						} catch {}
-					} else {
+						if (verbose) {
+							try {
+								console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via fallback .html→.ts] changed=${changedPath} componentKey=${componentKey}`);
+							} catch {}
+						}
+					} else if (verbose) {
 						try {
 							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [no companion .ts found] changed=${changedPath} expectedTs=${componentPath}`);
 						} catch {}
@@ -448,9 +450,11 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				if (!pendingComponentInvalidations.has(componentPath)) return null;
 
 				pendingComponentInvalidations.delete(componentPath);
-				try {
-					console.info(`[ns-hmr-diag][angular-template-deps] shouldTransformCachedModule → re-transform componentKey=${componentPath}`);
-				} catch {}
+				if (verbose) {
+					try {
+						console.info(`[ns-hmr-diag][angular-template-deps] shouldTransformCachedModule → re-transform componentKey=${componentPath}`);
+					} catch {}
+				}
 				return true;
 			},
 		},

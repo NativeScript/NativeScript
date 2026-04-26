@@ -52,7 +52,7 @@ export function canonicalizeTransformRequestCacheKey(url: string, projectRoot: s
 	return `${normalizedPath}?${normalizedQuery.toString()}`;
 }
 
-export function collectGraphUpdateModulesForHotUpdate(options: { file: string; flavor: string; modules?: Iterable<HotUpdateGraphModuleLike>; getModuleById: (id: string) => HotUpdateGraphModuleLike | undefined }): HotUpdateGraphModuleLike[] {
+export function collectGraphUpdateModulesForHotUpdate(options: { file: string; flavor: string; modules?: Iterable<HotUpdateGraphModuleLike>; getModuleById: (id: string) => HotUpdateGraphModuleLike | undefined; verbose?: boolean }): HotUpdateGraphModuleLike[] {
 	const targets = new Map<string, HotUpdateGraphModuleLike>();
 	const addTarget = (mod?: HotUpdateGraphModuleLike | null) => {
 		const id = mod?.id?.replace(/\?.*$/, '');
@@ -83,15 +83,17 @@ export function collectGraphUpdateModulesForHotUpdate(options: { file: string; f
 			addTarget(options.getModuleById(options.file.replace(/\.(html|htm)$/i, '.js')));
 		}
 
-		try {
-			console.info(`[ns-hmr-diag][server] collectGraphUpdateModulesForHotUpdate(html) file=${options.file} importersSeen=${importerIdsSeen.length} importersAccepted=${importerIdsAccepted.length} fellBackToFile=${fellBackToFile} targets=${targets.size}`);
-			if (importerIdsSeen.length) {
-				console.info(`[ns-hmr-diag][server] importersSeen sample=`, importerIdsSeen.slice(0, 8));
-			}
-			if (importerIdsAccepted.length) {
-				console.info(`[ns-hmr-diag][server] importersAccepted sample=`, importerIdsAccepted.slice(0, 8));
-			}
-		} catch {}
+		if (options.verbose) {
+			try {
+				console.info(`[ns-hmr-diag][server] collectGraphUpdateModulesForHotUpdate(html) file=${options.file} importersSeen=${importerIdsSeen.length} importersAccepted=${importerIdsAccepted.length} fellBackToFile=${fellBackToFile} targets=${targets.size}`);
+				if (importerIdsSeen.length) {
+					console.info(`[ns-hmr-diag][server] importersSeen sample=`, importerIdsSeen.slice(0, 8));
+				}
+				if (importerIdsAccepted.length) {
+					console.info(`[ns-hmr-diag][server] importersAccepted sample=`, importerIdsAccepted.slice(0, 8));
+				}
+			} catch {}
+		}
 
 		return Array.from(targets.values());
 	}

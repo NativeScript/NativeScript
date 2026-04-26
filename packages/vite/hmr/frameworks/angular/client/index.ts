@@ -147,15 +147,21 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 		return false;
 	}
 	try {
-		try {
-			console.info(`[ns-hmr-diag][client] invalidateModules calling __nsInvalidateModules urls=${urls.length}`);
-		} catch {}
+		if (verbose && envVerbose) {
+			try {
+				console.info(`[ns-hmr-diag][client] invalidateModules calling __nsInvalidateModules urls=${urls.length}`);
+			} catch {}
+		}
 		fn.call(null, urls);
-		try {
-			console.info(`[ns-hmr-diag][client] invalidateModules OK urls=${urls.length}`);
-		} catch {}
+		if (verbose && envVerbose) {
+			try {
+				console.info(`[ns-hmr-diag][client] invalidateModules OK urls=${urls.length}`);
+			} catch {}
+		}
 		return true;
 	} catch (error) {
+		// Real exception path — the runtime hook itself threw. Always
+		// surfaced for the same reason as the missing-hook warn above.
 		try {
 			console.warn('[ns-hmr-diag][client] __nsInvalidateModules threw', (error as any)?.message || error);
 		} catch {}
@@ -344,20 +350,23 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	const evictPaths = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)) : [];
 
 	// Diagnostic: log eviction set client-side so we can verify what
-	// the runtime is being asked to drop. We log up to 32 entries so
-	// large constants edits don't swamp the console; the summary is
-	// always printed.
-	try {
-		const _path = typeof msg?.path === 'string' ? msg.path : '(unknown)';
-		console.info(`[ns-hmr-diag][client] received ns:angular-update path=${_path} evictPaths.length=${evictPaths.length} importerEntry=${msg?.importerEntry ?? '(none)'}`);
-		if (evictPaths.length) {
-			const sample = evictPaths.slice(0, 32);
-			console.info(`[ns-hmr-diag][client] evictPaths firstN=`, sample);
-			if (evictPaths.length > sample.length) {
-				console.info(`[ns-hmr-diag][client] evictPaths hidden=${evictPaths.length - sample.length}`);
+	// the runtime is being asked to drop. Up to 32 entries are sampled
+	// so large constants edits don't swamp the console. Gated behind
+	// the standard `__NS_ENV_VERBOSE__` build define (`NS_VITE_VERBOSE`)
+	// so the lines stay silent on normal saves.
+	if (options.verbose && envVerbose) {
+		try {
+			const _path = typeof msg?.path === 'string' ? msg.path : '(unknown)';
+			console.info(`[ns-hmr-diag][client] received ns:angular-update path=${_path} evictPaths.length=${evictPaths.length} importerEntry=${msg?.importerEntry ?? '(none)'}`);
+			if (evictPaths.length) {
+				const sample = evictPaths.slice(0, 32);
+				console.info(`[ns-hmr-diag][client] evictPaths firstN=`, sample);
+				if (evictPaths.length > sample.length) {
+					console.info(`[ns-hmr-diag][client] evictPaths hidden=${evictPaths.length - sample.length}`);
+				}
 			}
-		}
-	} catch {}
+		} catch {}
+	}
 
 	// Drive the apply-progress overlay through the 'evicting' frame
 	// *before* the runtime invalidate call so the user sees the count
@@ -371,9 +380,11 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 
 	const evicted = invalidateModules(evictPaths, options.verbose);
 
-	try {
-		console.info(`[ns-hmr-diag][client] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
-	} catch {}
+	if (options.verbose && envVerbose) {
+		try {
+			console.info(`[ns-hmr-diag][client] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
+		} catch {}
+	}
 
 	// Parallel HTTP prefetch for the freshly-evicted modules.
 	//
@@ -525,9 +536,11 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 		// canonical reboot entry point.
 		const reboot = g.__reboot_ng_modules__;
 		if (typeof reboot === 'function') {
-			try {
-				console.info('[ns-hmr-diag][client] calling __reboot_ng_modules__');
-			} catch {}
+			if (options.verbose && envVerbose) {
+				try {
+					console.info('[ns-hmr-diag][client] calling __reboot_ng_modules__');
+				} catch {}
+			}
 			await refreshAngularBootstrapOptions(msg, options);
 			tAfterRefresh = Date.now();
 			try {
