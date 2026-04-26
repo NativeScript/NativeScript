@@ -1006,9 +1006,7 @@ function buildIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | nu
 	const scene = findActiveWindowScene(host);
 	if (!scene) {
 		if (state.verbose) {
-			try {
-				console.info('[ns-hmr-overlay] no active UIWindowScene; skipping iOS overlay promotion');
-			} catch {}
+			console.info('[ns-hmr-overlay] no active UIWindowScene; skipping iOS overlay promotion');
 		}
 		return null;
 	}
@@ -1064,9 +1062,7 @@ function buildIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | nu
 
 		return { window, controller, backdrop, panel, titleLabel, statusLabel };
 	} catch (err) {
-		try {
-			console.warn('[ns-hmr-overlay] iOS overlay construction failed:', (err as any)?.message || err);
-		} catch {}
+		console.warn('[ns-hmr-overlay] iOS overlay construction failed:', (err as any)?.message || err);
 		return null;
 	}
 }
@@ -1130,9 +1126,7 @@ function layoutIosOverlayRefs(refs: IosOverlayRefs): void {
 		refs.titleLabel.frame = toCgRect(layout.title);
 		refs.statusLabel.frame = toCgRect(layout.status);
 	} catch (err) {
-		try {
-			console.warn('[ns-hmr-overlay] iOS overlay layout failed:', (err as any)?.message || err);
-		} catch {}
+		console.warn('[ns-hmr-overlay] iOS overlay layout failed:', (err as any)?.message || err);
 	}
 }
 
@@ -1194,9 +1188,7 @@ function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: HmrOverla
 		layoutIosOverlayRefs(refs);
 		return true;
 	} catch (err) {
-		try {
-			console.warn('[ns-hmr-overlay] iOS overlay apply failed:', (err as any)?.message || err);
-		} catch {}
+		console.warn('[ns-hmr-overlay] iOS overlay apply failed:', (err as any)?.message || err);
 		return false;
 	}
 }

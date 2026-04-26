@@ -904,9 +904,7 @@ function createVendorEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 			// @angular/platform-browser/animations -> provide concrete named stubs
 			build.onResolve({ filter: /^@angular\/platform-browser\/animations(?:\/.*)?$/ }, (args) => {
 				if (debug) {
-					try {
-						console.log('[vendor] map', args.path, '->', PB_ANIMATIONS_ID);
-					} catch {}
+					console.log('[vendor] map', args.path, '->', PB_ANIMATIONS_ID);
 				}
 				return { path: PB_ANIMATIONS_ID, namespace: 'ns-vendor' };
 			});
@@ -932,9 +930,7 @@ function createVendorEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 			// @angular/animations/browser -> provide ɵ* engine/renderer/style normalizer stubs
 			build.onResolve({ filter: /^@angular\/animations\/browser(?:\/.*)?$/ }, (args) => {
 				if (debug) {
-					try {
-						console.log('[vendor] map', args.path, '->', ANIMATIONS_BROWSER_ID);
-					} catch {}
+					console.log('[vendor] map', args.path, '->', ANIMATIONS_BROWSER_ID);
 				}
 				return { path: ANIMATIONS_BROWSER_ID, namespace: 'ns-vendor' };
 			});
@@ -958,9 +954,7 @@ function createVendorEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 				{ filter: /^@angular\/animations(?:$|\/)$/ },
 				(args) => {
 					if (debug) {
-						try {
-							console.log('[vendor] map', args.path, '->', ANIMATIONS_ID);
-						} catch {}
+						console.log('[vendor] map', args.path, '->', ANIMATIONS_ID);
 					}
 					return { path: ANIMATIONS_ID, namespace: 'ns-vendor' };
 				},
@@ -1139,9 +1133,7 @@ function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 						fileSystem: angularFileSystem,
 					});
 					if (debug) {
-						try {
-							console.log('[ns-angular-linker][vendor] linking', args.path);
-						} catch {}
+						console.log('[ns-angular-linker][vendor] linking', args.path);
 					}
 					const result = await (babel as any).transformAsync(source, {
 						filename: args.path,

@@ -157,12 +157,6 @@ export function installVendorBootstrap(vendorManifest: any, __nsVendorModuleMap:
 	} catch {}
 
 	if (verbose) {
-		try {
-			console.info('[ns-entry] vendor manifest applied', (g['__nsVendorManifest'] || {}).hash);
-		} catch {
-			try {
-				console.info('[ns-entry] vendor manifest applied');
-			} catch {}
-		}
+		console.info('[ns-entry] vendor manifest applied', (g['__nsVendorManifest'] || {}).hash);
 	}
 }

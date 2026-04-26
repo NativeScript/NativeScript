@@ -105,7 +105,7 @@ export function buildShapeInstallHeader(): string {
 		`      return out;`,
 		`    };`,
 		`  }`,
-		`} } catch (e) { try { console.warn('[ns-core] shape installer failed:', (e && e.message) || e); } catch {} }`,
+		`} } catch (e) { console.warn('[ns-core] shape installer failed:', (e && e.message) || e); }`,
 	].join('\n');
 }
 

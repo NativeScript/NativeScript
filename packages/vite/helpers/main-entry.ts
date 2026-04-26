@@ -454,7 +454,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				imports += "import { startBrowserRuntimeSession } from '@nativescript/vite/hmr/shared/runtime/session-bootstrap.js';\n";
 				imports += `startBrowserRuntimeSession(${JSON.stringify(sessionUrl)}, __nsVerboseLog).catch((error) => {\n`;
 				imports += `  try { globalThis.__NS_ENTRY_ERROR__ = { phase: 'deterministic-dev-session', message: String(error && (error.message || error)), stack: error && error.stack ? String(error.stack) : '' }; } catch {}\n`;
-				imports += `  try { console.error('[ns-entry] deterministic dev session bootstrap failed', error && error.stack ? error.stack : error); } catch {}\n`;
+				imports += `  console.error('[ns-entry] deterministic dev session bootstrap failed', error && error.stack ? error.stack : error);\n`;
 				imports += `});\n`;
 				if (opts.verbose) {
 					imports += `console.info('[ns-entry] deterministic dev session bootstrap appended');\n`;

@@ -82,8 +82,6 @@ export function installModuleProvenanceRecorder(verbose?: boolean) {
 	}
 
 	if (verbose) {
-		try {
-			console.info('[ns-entry] module provenance recorder installed');
-		} catch {}
+		console.info('[ns-entry] module provenance recorder installed');
 	}
 }

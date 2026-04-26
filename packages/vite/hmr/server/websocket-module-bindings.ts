@@ -235,7 +235,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 	injection += "var __NS_VENDOR_SOFT__ = (typeof globalThis.__NS_VENDOR_SOFT__ !== 'undefined' ? !!globalThis.__NS_VENDOR_SOFT__ : true);\n";
 	injection += "var __nsVendorRequire = (typeof globalThis.__nsRequire === 'function' ? globalThis.__nsRequire : (typeof globalThis.require === 'function' ? globalThis.require : (spec => { throw new Error('__nsVendorRequire unavailable'); })));\n";
 	injection += "try { (globalThis.__NS_VENDOR_ONCE__ ||= { loggedRequireMissing: false }); if (!globalThis.__NS_VENDOR_ONCE__.loggedRequireMissing && typeof __nsVendorRequire !== 'function') { console.warn('[ns-hmr][vendor][require-missing] using soft stubs=', __NS_VENDOR_SOFT__); globalThis.__NS_VENDOR_ONCE__.loggedRequireMissing = true; } } catch {}\n";
-	injection += "var __nsMissing = function(name){ try { var fn = function(){ try { console.warn('[ns-hmr][vendor][stub]', name); } catch {} }; return new Proxy(fn, { get: (_t, p) => __nsMissing(name + '.' + String(p)) }); } catch { return {}; } };\n";
+	injection += "var __nsMissing = function(name){ try { var fn = function(){ console.warn('[ns-hmr][vendor][stub]', name); }; return new Proxy(fn, { get: (_t, p) => __nsMissing(name + '.' + String(p)) }); } catch { return {}; } };\n";
 	injection += "var __nsHasInstall = function(x){ try { return (typeof x === 'function') || (typeof x === 'object' && x && typeof x.install === 'function'); } catch { return false; } };\n";
 	injection += "var __nsDefault = function(mod){ try { return (mod && mod['default'] !== undefined) ? mod['default'] : mod; } catch { return mod; } };\n";
 	injection += "var __nsNestedDefault = function(mod){ try { return (mod && mod.default && (typeof mod.default.default === 'function' || (typeof mod.default.default === 'object' && mod.default.default && typeof mod.default.default.install === 'function'))) ? mod.default.default : undefined; } catch { return undefined; } };\n";
@@ -245,7 +245,7 @@ export function ensureNativeScriptModuleBindings(code: string, options?: EnsureN
 	for (const [canonical, binding] of modules) {
 		const cacheKey = JSON.stringify(canonical);
 		const moduleVar = `__nsVendorModule_${index++}`;
-		injection += `var ${moduleVar} = __nsVendorRegistry.has(${cacheKey}) ? __nsVendorRegistry.get(${cacheKey}) : (() => { try { var mod = __nsVendorRequire(${cacheKey}); __nsVendorRegistry.set(${cacheKey}, mod); return mod; } catch (e) { try { console.error('[ns-hmr][vendor][require-failed]', ${cacheKey}, (e && (e.message||e)) ); } catch {} try { if (__NS_VENDOR_SOFT__) { var stub = __nsMissing(${cacheKey}); __nsVendorRegistry.set(${cacheKey}, stub); return stub; } } catch {} throw e; } })();\n`;
+		injection += `var ${moduleVar} = __nsVendorRegistry.has(${cacheKey}) ? __nsVendorRegistry.get(${cacheKey}) : (() => { try { var mod = __nsVendorRequire(${cacheKey}); __nsVendorRegistry.set(${cacheKey}, mod); return mod; } catch (e) { console.error('[ns-hmr][vendor][require-failed]', ${cacheKey}, (e && (e.message||e)) ); try { if (__NS_VENDOR_SOFT__) { var stub = __nsMissing(${cacheKey}); __nsVendorRegistry.set(${cacheKey}, stub); return stub; } } catch {} throw e; } })();\n`;
 
 		binding.namespace.forEach((alias) => {
 			injection += `var ${alias} = ${moduleVar};\n`;

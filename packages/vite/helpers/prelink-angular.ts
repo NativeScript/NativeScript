@@ -69,9 +69,7 @@ async function prelinkPackage(req: NodeRequire, pkgName: string, cacheRoot: stri
 		const cacheFile = path.join(destDir, file);
 		await copyOrLinkInto(babel, createLinker, srcFile, cacheFile);
 		if (debug) {
-			try {
-				console.log(`[ns-angular-prelink] cached`, `${pkgName}/fesm2022/${file}`);
-			} catch {}
+			console.log(`[ns-angular-prelink] cached`, `${pkgName}/fesm2022/${file}`);
 		}
 	}
 }

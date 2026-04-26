@@ -121,9 +121,7 @@ export function linkAngularPartialsIfNeeded(code: string, filename = 'hmr-inline
 		});
 		if (result?.code && result.code !== code) {
 			if (debug) {
-				try {
-					console.log('[ns-hmr][angular-linker] linked', filename);
-				} catch {}
+				console.log('[ns-hmr][angular-linker] linked', filename);
 			}
 			return result.code;
 		}

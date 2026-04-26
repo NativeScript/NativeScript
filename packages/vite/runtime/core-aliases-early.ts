@@ -90,26 +90,22 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 				if (val && needs) {
 					g[n] = val;
 					if (verbose) {
-						try {
-							console.info('[ns-entry] core alias (early)', n);
-						} catch {}
+						console.info('[ns-entry] core alias (early)', n);
 					}
 				}
 			} catch {}
 		}
 		if (verbose) {
-			try {
-				console.info('[ns-entry] core alias status (early)', {
-					has: { Frame: !!g.Frame, Application: !!g.Application, Page: !!g.Page },
-					resolution: resolutionStatus,
-					moduleApis: {
-						moduleExists: typeof g.moduleExists === 'function',
-						loadModule: typeof g.loadModule === 'function',
-						uiModuleRegistered: typeof g.moduleExists === 'function' ? !!g.moduleExists('@nativescript/core/ui') : false,
-					},
-					methods: { FrameTopmost: typeof g.Frame?.topmost === 'function', AppResetRoot: typeof g.Application?.resetRootView === 'function' },
-				});
-			} catch {}
+			console.info('[ns-entry] core alias status (early)', {
+				has: { Frame: !!g.Frame, Application: !!g.Application, Page: !!g.Page },
+				resolution: resolutionStatus,
+				moduleApis: {
+					moduleExists: typeof g.moduleExists === 'function',
+					loadModule: typeof g.loadModule === 'function',
+					uiModuleRegistered: typeof g.moduleExists === 'function' ? !!g.moduleExists('@nativescript/core/ui') : false,
+				},
+				methods: { FrameTopmost: typeof g.Frame?.topmost === 'function', AppResetRoot: typeof g.Application?.resetRootView === 'function' },
+			});
 		}
 
 		// Android-only resilience: patch AndroidApplication.init
@@ -193,9 +189,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 							__ns_getTelemetry() && __ns_getTelemetry().nullDefers++;
 						} catch {}
 						if (verbose) {
-							try {
-								console.warn('[ns-entry][android] Application.init called with null and resolution failed; deferring.');
-							} catch {}
+							console.warn('[ns-entry][android] Application.init called with null and resolution failed; deferring.');
 						}
 						return;
 					}
@@ -212,9 +206,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 							__ns_getTelemetry() && __ns_getTelemetry().duplicates++;
 						} catch {}
 						if (verbose) {
-							try {
-								console.info('[ns-entry][android] Application.init already initialized; continuing.');
-							} catch {}
+							console.info('[ns-entry][android] Application.init already initialized; continuing.');
 						}
 						return;
 					}
@@ -225,9 +217,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 				g['__NS_DEV_PATCHED_ANDROID_INIT__'] = true;
 			} catch {}
 			if (verbose) {
-				try {
-					console.info('[ns-entry] AndroidApplication.init patched for resilience');
-				} catch {}
+				console.info('[ns-entry] AndroidApplication.init patched for resilience');
 			}
 		} catch {}
 
@@ -281,9 +271,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 					const patched = function __ns_safe_resetRootView(this: any, entry: any) {
 						if (!isReady()) {
 							if (verbose) {
-								try {
-									console.info('[ns-entry][android] deferring resetRootView until activity is ready');
-								} catch {}
+								console.info('[ns-entry][android] deferring resetRootView until activity is ready');
 							}
 							return once(() => {
 								try {
@@ -293,9 +281,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 										if (typeof restore === 'function') restore();
 									} catch {}
 								} catch (e) {
-									try {
-										console.error('[ns-entry][android] deferred resetRootView failed', e);
-									} catch {}
+									console.error('[ns-entry][android] deferred resetRootView failed', e);
 									throw e;
 								}
 							});
@@ -321,9 +307,7 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 						g['__NS_DEV_PATCHED_RESET_ROOT__'] = true;
 					} catch {}
 					if (verbose) {
-						try {
-							console.info('[ns-entry] Application.resetRootView patched for early-boot readiness');
-						} catch {}
+						console.info('[ns-entry] Application.resetRootView patched for early-boot readiness');
 					}
 				}
 			}

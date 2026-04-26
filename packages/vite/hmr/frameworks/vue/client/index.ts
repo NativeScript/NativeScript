@@ -52,9 +52,7 @@ export function installNsVueDevShims() {
 					}
 					return orig.apply(this, arguments as any);
 				} catch (e) {
-					try {
-						console.warn('[diag][nv][navigateTo][error]', (e && (e as any).message) || e);
-					} catch {}
+					console.warn('[diag][nv][navigateTo][error]', (e && (e as any).message) || e);
 					try {
 						// Rescue path: attempt navigation via authoritative app Frame
 						return ((globalThis as any).__nsNavigateUsingApp as any)?.(component, params);
@@ -734,9 +732,7 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 		meta = await fetchSfcMeta(targetVuePath, tag);
 	} catch {}
 	if (__NS_ENV_VERBOSE__ && meta) {
-		try {
-			console.log('[hmr][vue-reset][meta]', targetVuePath, meta);
-		} catch {}
+		console.log('[hmr][vue-reset][meta]', targetVuePath, meta);
 	}
 	// Prefer deterministic assembler first so AST normalization (including nav helpers) always applies.
 	try {
@@ -760,19 +756,13 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 		// Now import the template render implementation
 		const templateMod = await safeDynImport(resolveSfcVariantSpec(targetVuePath, 'template', tag + '_template'));
 		if (__NS_ENV_VERBOSE__) {
-			try {
-				const sKeys = scriptMod ? Object.keys(scriptMod).join(',') : '<none>';
-				const tKeys = templateMod ? Object.keys(templateMod).join(',') : '<none>';
-				console.log('[hmr][vue-reset][diag] variant-imports', targetVuePath, 'script.keys=', sKeys, 'template.keys=', tKeys);
-				try {
-					console.log('[hmr][vue-reset][diag] scriptMod:', scriptMod);
-				} catch {}
-				try {
-					console.log('[hmr][vue-reset][diag] templateMod:', {
-						render: typeof templateMod?.render,
-					});
-				} catch {}
-			} catch {}
+			const sKeys = scriptMod ? Object.keys(scriptMod).join(',') : '<none>';
+			const tKeys = templateMod ? Object.keys(templateMod).join(',') : '<none>';
+			console.log('[hmr][vue-reset][diag] variant-imports', targetVuePath, 'script.keys=', sKeys, 'template.keys=', tKeys);
+			console.log('[hmr][vue-reset][diag] scriptMod:', scriptMod);
+			console.log('[hmr][vue-reset][diag] templateMod:', {
+				render: typeof templateMod?.render,
+			});
 		}
 		// Only use variant assembly when the script provides a real component options object.
 		const render = (templateMod as any)?.render;
@@ -810,9 +800,7 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 				} catch {}
 			}
 			if (__NS_ENV_VERBOSE__) {
-				try {
-					console.log('[hmr][vue-reset][diag] assembled.component (from script default) keys=', Object.keys(base).join(','), 'has.render=', !!(base as any).render, 'components=', Object.keys((base as any).components || {}).join(','));
-				} catch {}
+				console.log('[hmr][vue-reset][diag] assembled.component (from script default) keys=', Object.keys(base).join(','), 'has.render=', !!(base as any).render, 'components=', Object.keys((base as any).components || {}).join(','));
 			}
 			return base;
 		}
@@ -857,9 +845,7 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 					} catch {}
 				}
 				if (__NS_ENV_VERBOSE__) {
-					try {
-						console.log('[hmr][vue-reset][diag] synthesized.component keys=', Object.keys(comp).join(','), 'components=', Object.keys((comp as any).components || {}).join(','));
-					} catch {}
+					console.log('[hmr][vue-reset][diag] synthesized.component keys=', Object.keys(comp).join(','), 'components=', Object.keys((comp as any).components || {}).join(','));
 				}
 				return comp;
 			} catch (e) {
@@ -1038,15 +1024,13 @@ export function getRootForVue(
 	const vm = typeof (app as any).runWithContext === 'function' ? (app as any).runWithContext(() => (app as any).mount(root) as any) : ((app as any).mount(root) as any);
 	setCurrentApp(app);
 	if (__NS_ENV_VERBOSE__) {
-		try {
-			console.log('[hmr-client] [createRoot] mount result', {
-				hasEl: !!vm?.$el,
-				elType: vm?.$el?.constructor?.name,
-				hasNativeView: !!vm?.$el?.nativeView,
-				nativeViewType: vm?.$el?.nativeView?.constructor?.name,
-				elapsedMs: Date.now() - t0,
-			});
-		} catch {}
+		console.log('[hmr-client] [createRoot] mount result', {
+			hasEl: !!vm?.$el,
+			elType: vm?.$el?.constructor?.name,
+			hasNativeView: !!vm?.$el?.nativeView,
+			nativeViewType: vm?.$el?.nativeView?.constructor?.name,
+			elapsedMs: Date.now() - t0,
+		});
 	}
 	const findNativeView = (element: any): any => {
 		if (element?.nativeView) return element.nativeView;

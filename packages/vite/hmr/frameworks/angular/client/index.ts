@@ -141,30 +141,22 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	const g: any = globalThis;
 	const fn = g.__nsInvalidateModules;
 	if (typeof fn !== 'function') {
-		try {
-			console.warn(`[ns-hmr-diag][client] runtime missing __nsInvalidateModules; falling back to legacy URL versioning. evict=${urls.length}`);
-		} catch {}
+		console.warn(`[ns-hmr-diag][client] runtime missing __nsInvalidateModules; falling back to legacy URL versioning. evict=${urls.length}`);
 		return false;
 	}
 	try {
 		if (verbose && envVerbose) {
-			try {
-				console.info(`[ns-hmr-diag][client] invalidateModules calling __nsInvalidateModules urls=${urls.length}`);
-			} catch {}
+			console.info(`[ns-hmr-diag][client] invalidateModules calling __nsInvalidateModules urls=${urls.length}`);
 		}
 		fn.call(null, urls);
 		if (verbose && envVerbose) {
-			try {
-				console.info(`[ns-hmr-diag][client] invalidateModules OK urls=${urls.length}`);
-			} catch {}
+			console.info(`[ns-hmr-diag][client] invalidateModules OK urls=${urls.length}`);
 		}
 		return true;
 	} catch (error) {
 		// Real exception path — the runtime hook itself threw. Always
 		// surfaced for the same reason as the missing-hook warn above.
-		try {
-			console.warn('[ns-hmr-diag][client] __nsInvalidateModules threw', (error as any)?.message || error);
-		} catch {}
+		console.warn('[ns-hmr-diag][client] __nsInvalidateModules threw', (error as any)?.message || error);
 		return false;
 	}
 }
@@ -266,9 +258,7 @@ function kickstartHmrPrefetch(urls: readonly string[], verbose: boolean): Kickst
 	const fn = g.__nsKickstartHmrPrefetch;
 	if (typeof fn !== 'function') {
 		if (verbose && envVerbose) {
-			try {
-				console.info(`[hmr-angular] runtime missing __nsKickstartHmrPrefetch; serial fetches will be used. urls=${urls.length}`);
-			} catch {}
+			console.info(`[hmr-angular] runtime missing __nsKickstartHmrPrefetch; serial fetches will be used. urls=${urls.length}`);
 		}
 		return null;
 	}
@@ -287,9 +277,7 @@ function kickstartHmrPrefetch(urls: readonly string[], verbose: boolean): Kickst
 		return null;
 	} catch (error) {
 		if (verbose && envVerbose) {
-			try {
-				console.warn('[hmr-angular] __nsKickstartHmrPrefetch threw', (error as any)?.message || error);
-			} catch {}
+			console.warn('[hmr-angular] __nsKickstartHmrPrefetch threw', (error as any)?.message || error);
 		}
 		return null;
 	}
@@ -355,17 +343,15 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	// the standard `__NS_ENV_VERBOSE__` build define (`NS_VITE_VERBOSE`)
 	// so the lines stay silent on normal saves.
 	if (options.verbose && envVerbose) {
-		try {
-			const _path = typeof msg?.path === 'string' ? msg.path : '(unknown)';
-			console.info(`[ns-hmr-diag][client] received ns:angular-update path=${_path} evictPaths.length=${evictPaths.length} importerEntry=${msg?.importerEntry ?? '(none)'}`);
-			if (evictPaths.length) {
-				const sample = evictPaths.slice(0, 32);
-				console.info(`[ns-hmr-diag][client] evictPaths firstN=`, sample);
-				if (evictPaths.length > sample.length) {
-					console.info(`[ns-hmr-diag][client] evictPaths hidden=${evictPaths.length - sample.length}`);
-				}
+		const _path = typeof msg?.path === 'string' ? msg.path : '(unknown)';
+		console.info(`[ns-hmr-diag][client] received ns:angular-update path=${_path} evictPaths.length=${evictPaths.length} importerEntry=${msg?.importerEntry ?? '(none)'}`);
+		if (evictPaths.length) {
+			const sample = evictPaths.slice(0, 32);
+			console.info(`[ns-hmr-diag][client] evictPaths firstN=`, sample);
+			if (evictPaths.length > sample.length) {
+				console.info(`[ns-hmr-diag][client] evictPaths hidden=${evictPaths.length - sample.length}`);
 			}
-		} catch {}
+		}
 	}
 
 	// Drive the apply-progress overlay through the 'evicting' frame
@@ -381,9 +367,7 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	const evicted = invalidateModules(evictPaths, options.verbose);
 
 	if (options.verbose && envVerbose) {
-		try {
-			console.info(`[ns-hmr-diag][client] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
-		} catch {}
+		console.info(`[ns-hmr-diag][client] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
 	}
 
 	// Parallel HTTP prefetch for the freshly-evicted modules.
@@ -417,14 +401,10 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 		if (shouldRunKickstart(evictPaths.length)) {
 			const result = kickstartHmrPrefetch(evictPaths, options.verbose);
 			if (options.verbose && envVerbose && result) {
-				try {
-					console.info(`[ns-hmr][angular] kickstart urls=${evictPaths.length} fetched=${result.fetched} ok=${result.ok ? 'yes' : 'no'} ms=${result.ms}`);
-				} catch {}
+				console.info(`[ns-hmr][angular] kickstart urls=${evictPaths.length} fetched=${result.fetched} ok=${result.ok ? 'yes' : 'no'} ms=${result.ms}`);
 			}
 		} else if (options.verbose && envVerbose) {
-			try {
-				console.info(`[ns-hmr][angular] kickstart skipped urls=${evictPaths.length} cap=${Number.isFinite(kickstartMaxUrls) ? kickstartMaxUrls : 'Infinity'} (eviction set too large; falling back to sequential fetch)`);
-			} catch {}
+			console.info(`[ns-hmr][angular] kickstart skipped urls=${evictPaths.length} cap=${Number.isFinite(kickstartMaxUrls) ? kickstartMaxUrls : 'Infinity'} (eviction set too large; falling back to sequential fetch)`);
 		}
 	}
 
@@ -469,9 +449,7 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	}
 
 	if (options.verbose && envVerbose && lastError) {
-		try {
-			console.warn('[hmr-angular] failed to refresh Angular bootstrap entry', (lastError as any)?.message || lastError);
-		} catch {}
+		console.warn('[hmr-angular] failed to refresh Angular bootstrap entry', (lastError as any)?.message || lastError);
 	}
 }
 
@@ -505,14 +483,12 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 	let tEnd = t0;
 	const filePath = typeof msg?.path === 'string' ? msg.path : '<unknown>';
 	const emitTiming = (ok: boolean, errorMessage?: string) => {
-		try {
-			const refreshMs = Math.max(0, tAfterRefresh - t0);
-			const rebootMs = Math.max(0, tEnd - tAfterRefresh);
-			const totalMs = Math.max(0, tEnd - t0);
-			const status = ok ? 'ok' : 'FAILED';
-			const suffix = errorMessage ? ` error=${errorMessage}` : '';
-			console.info(`[ns-hmr][angular] ${status} file=${filePath} refresh=${refreshMs}ms reboot=${rebootMs}ms total=${totalMs}ms${suffix}`);
-		} catch {}
+		const refreshMs = Math.max(0, tAfterRefresh - t0);
+		const rebootMs = Math.max(0, tEnd - tAfterRefresh);
+		const totalMs = Math.max(0, tEnd - t0);
+		const status = ok ? 'ok' : 'FAILED';
+		const suffix = errorMessage ? ` error=${errorMessage}` : '';
+		console.info(`[ns-hmr][angular] ${status} file=${filePath} refresh=${refreshMs}ms reboot=${rebootMs}ms total=${totalMs}ms${suffix}`);
 	};
 
 	// Show the apply-progress overlay as soon as the
@@ -537,9 +513,7 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 		const reboot = g.__reboot_ng_modules__;
 		if (typeof reboot === 'function') {
 			if (options.verbose && envVerbose) {
-				try {
-					console.info('[ns-hmr-diag][client] calling __reboot_ng_modules__');
-				} catch {}
+				console.info('[ns-hmr-diag][client] calling __reboot_ng_modules__');
 			}
 			await refreshAngularBootstrapOptions(msg, options);
 			tAfterRefresh = Date.now();
@@ -585,9 +559,7 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 		hideUpdateOverlay();
 	} catch (error) {
 		if (options.verbose) {
-			try {
-				console.warn('[hmr-angular] failed to handle update', (error && (error as any).message) || error);
-			} catch {}
+			console.warn('[hmr-angular] failed to handle update', (error && (error as any).message) || error);
 		}
 		tEnd = Date.now();
 		emitTiming(false, (error && (error as any).message) || String(error));

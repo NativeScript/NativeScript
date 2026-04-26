@@ -208,9 +208,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		// console stays quiet by default. Flip NS_VITE_VERBOSE=1 to surface
 		// it during boot-perf investigations.
 		if (verbose) {
-			try {
-				console.info(formatBootTimeline(trace));
-			} catch {}
+			console.info(formatBootTimeline(trace));
 		}
 	}
 }

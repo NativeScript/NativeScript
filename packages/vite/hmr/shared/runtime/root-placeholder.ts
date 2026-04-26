@@ -134,13 +134,11 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 	}
 
 	if (verbose) {
-		try {
-			console.info('[ns-placeholder] real app root committed', {
-				reason,
-				rootType: committedRoot?.constructor?.name || typeof committedRoot,
-				detachedPlaceholder,
-			});
-		} catch {}
+		console.info('[ns-placeholder] real app root committed', {
+			reason,
+			rootType: committedRoot?.constructor?.name || typeof committedRoot,
+			detachedPlaceholder,
+		});
 	}
 
 	return true;
@@ -163,14 +161,12 @@ function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): vo
 		attempts += 1;
 		if (Date.now() - startedAt >= maxWaitMs) {
 			if (verbose) {
-				try {
-					console.info('[ns-placeholder] waiting for real root commit timed out', {
-						reason,
-						attempts,
-						waitMs: Date.now() - startedAt,
-						state: getPlaceholderWaitDiagnosticSnapshot(g, g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application, g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null),
-					});
-				} catch {}
+				console.info('[ns-placeholder] waiting for real root commit timed out', {
+					reason,
+					attempts,
+					waitMs: Date.now() - startedAt,
+					state: getPlaceholderWaitDiagnosticSnapshot(g, g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application, g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null),
+				});
 			}
 			return;
 		}
@@ -353,14 +349,12 @@ export function installRootPlaceholder(verbose?: boolean) {
 		// launchEvent handler: provides a placeholder root, then patches Application.run
 		const __ns_launch_handler = (args?: any) => {
 			if (verbose) {
-				try {
-					console.info('[ns-placeholder] launch handler fired', {
-						hasArgs: !!args,
-						hasExistingRoot: !!args?.root,
-						hasLaunched: typeof (Application as any).hasLaunched === 'function' ? !!(Application as any).hasLaunched() : undefined,
-						started: !!(Application as any).started,
-					});
-				} catch {}
+				console.info('[ns-placeholder] launch handler fired', {
+					hasArgs: !!args,
+					hasExistingRoot: !!args?.root,
+					hasLaunched: typeof (Application as any).hasLaunched === 'function' ? !!(Application as any).hasLaunched() : undefined,
+					started: !!(Application as any).started,
+				});
 			}
 			try {
 				const prev = args?.root;
@@ -426,14 +420,12 @@ export function installRootPlaceholder(verbose?: boolean) {
 						g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] = frame;
 					} catch {}
 					if (verbose) {
-						try {
-							console.info('[ns-placeholder] assigned placeholder root', {
-								frameType: frame?.constructor?.name,
-								pageType: page?.constructor?.name,
-								hasStackLayout: !!StackLayout,
-								hasActivityIndicator: !!activityIndicator,
-							});
-						} catch {}
+						console.info('[ns-placeholder] assigned placeholder root', {
+							frameType: frame?.constructor?.name,
+							pageType: page?.constructor?.name,
+							hasStackLayout: !!StackLayout,
+							hasActivityIndicator: !!activityIndicator,
+						});
 					}
 					if (args) args.root = frame;
 				}
@@ -521,9 +513,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 						};
 						(Application as any).run = __ns_dev_patched_run;
 						if (verbose) {
-							try {
-								console.info('[ns-placeholder] patched Application.run');
-							} catch {}
+							console.info('[ns-placeholder] patched Application.run');
 						}
 						if (g.Application && g.Application !== Application) {
 							g.Application.run = __ns_dev_patched_run;
@@ -560,10 +550,8 @@ export function installRootPlaceholder(verbose?: boolean) {
 				type: appAny?.constructor?.name,
 			};
 			if (verbose) {
-				try {
-					console.info('[ns-placeholder] application methods', methodState);
-					console.info('[ns-placeholder] application source', applicationResolved.source);
-				} catch {}
+				console.info('[ns-placeholder] application methods', methodState);
+				console.info('[ns-placeholder] application source', applicationResolved.source);
 			}
 
 			if (!appAny || typeof appAny.run !== 'function') {
@@ -581,43 +569,35 @@ export function installRootPlaceholder(verbose?: boolean) {
 			const iosNativeApp = appAny.ios?.nativeApp;
 			const canRunAsMainApp = typeof appAny.runAsMainApp === 'function';
 			if (verbose) {
-				try {
-					console.info('[ns-placeholder] boot state', {
-						hasLaunched,
-						hasRootView,
-						started,
-						nativeApp: !!nativeApp,
-						iosNativeApp: !!iosNativeApp,
-						canRunAsMainApp,
-						hasResetRootView: typeof appAny.resetRootView === 'function',
-					});
-				} catch {}
+				console.info('[ns-placeholder] boot state', {
+					hasLaunched,
+					hasRootView,
+					started,
+					nativeApp: !!nativeApp,
+					iosNativeApp: !!iosNativeApp,
+					canRunAsMainApp,
+					hasResetRootView: typeof appAny.resetRootView === 'function',
+				});
 			}
 
 			if (hasLaunched || hasRootView) {
 				// App lifecycle is already active. Skip starting it again and only install
 				// the placeholder root/patching behavior for the existing instance.
 				if (verbose) {
-					try {
-						console.info('[ns-placeholder] boot branch: existing lifecycle');
-					} catch {}
+					console.info('[ns-placeholder] boot branch: existing lifecycle');
 				}
 				try {
 					__ns_launch_handler();
 				} catch {}
 			} else if (canRunAsMainApp) {
 				if (verbose) {
-					try {
-						console.info('[ns-placeholder] boot branch: runAsMainApp');
-					} catch {}
+					console.info('[ns-placeholder] boot branch: runAsMainApp');
 				}
 				appAny.started = true;
 				appAny.runAsMainApp();
 			} else {
 				if (verbose) {
-					try {
-						console.info('[ns-placeholder] boot branch: Application.run');
-					} catch {}
+					console.info('[ns-placeholder] boot branch: Application.run');
 				}
 				appAny.run();
 			}

@@ -125,9 +125,7 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 
 		return applyCss;
 	} catch (error: any) {
-		try {
-			if (verbose) console.warn('[ns-entry] failed to install HTTP core CSS support:', error?.message || error);
-		} catch {}
+		if (verbose) console.warn('[ns-entry] failed to install HTTP core CSS support:', error?.message || error);
 		return null;
 	}
 }
@@ -143,9 +141,7 @@ export async function preloadHttpCoreStyleScope(importHttp: HttpImportFn, origin
 		return { ok: true, ms: Date.now() - t0, url };
 	} catch (error: any) {
 		const result = { ok: false, ms: Date.now() - t0, url, err: String(error && (error.message || error)) };
-		try {
-			if (verbose) console.warn('[ns-entry] HTTP core style-scope preload failed:', error?.message || error);
-		} catch {}
+		if (verbose) console.warn('[ns-entry] HTTP core style-scope preload failed:', error?.message || error);
 		return result;
 	}
 }
@@ -176,9 +172,7 @@ async function fetchCodeframe(u: string, line?: number) {
 		}
 		if ((globalThis as any).__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag]', u === (globalThis as any).__NS_ENTRY_LAST_TARGET__ ? 'sanitized' : 'raw', hash ? `(hash ${hash})` : '', '\n' + context);
 	} catch (fe: any) {
-		try {
-			if ((globalThis as any).__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag] fetch failed', u, fe && (fe.message || fe));
-		} catch {}
+		if ((globalThis as any).__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag] fetch failed', u, fe && (fe.message || fe));
 	}
 }
 
@@ -271,9 +265,7 @@ export default async function startEntry(opts: EntryOpts) {
 				return mod;
 			} catch (e_rt: any) {
 				TRACE.preload.rt = { ok: false, ms: Date.now() - t_rt, url: ORIGIN + '/ns/rt/' + VER, err: String(e_rt && (e_rt.message || e_rt)) };
-				try {
-					console.warn('[ns-entry] /ns/rt preload failed:', e_rt && (e_rt.message || e_rt));
-				} catch {}
+				console.warn('[ns-entry] /ns/rt preload failed:', e_rt && (e_rt.message || e_rt));
 				return null;
 			}
 		});
@@ -292,9 +284,7 @@ export default async function startEntry(opts: EntryOpts) {
 				return mod;
 			} catch (e_core: any) {
 				TRACE.preload.core = { ok: false, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER, err: String(e_core && (e_core.message || e_core)) };
-				try {
-					console.warn('[ns-entry] /ns/core preload failed:', e_core && (e_core.message || e_core));
-				} catch {}
+				console.warn('[ns-entry] /ns/core preload failed:', e_core && (e_core.message || e_core));
 				return null;
 			}
 		});
@@ -402,10 +392,8 @@ export default async function startEntry(opts: EntryOpts) {
 		});
 		(globalThis as any).__NS_ENTRY_ERROR__ = errInfo;
 		TRACE.error = errInfo;
-		try {
-			console.error('[ns-entry] failed to import main via HTTP', errInfo.message);
-			if (errInfo.stack && VERBOSE) console.error(errInfo.stack);
-		} catch {}
+		console.error('[ns-entry] failed to import main via HTTP', errInfo.message);
+		if (errInfo.stack && VERBOSE) console.error(errInfo.stack);
 		// Always provide minimal diagnostics on error, even if verbose=false
 		try {
 			const urls: string[] = [TARGET];

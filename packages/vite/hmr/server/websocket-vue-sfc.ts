@@ -147,9 +147,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 				}
 				if (!transformed?.code) {
 					if (options.verbose) {
-						try {
-							console.warn('[sfc][serve] transform miss for', fullSpec);
-						} catch {}
+						console.warn('[sfc][serve] transform miss for', fullSpec);
 					}
 					try {
 						const tried = candidates.slice(0, 8);
@@ -248,9 +246,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 						}
 					} catch (templateError) {
 						if (options.verbose) {
-							try {
-								console.warn('[sfc][template][self-compile][fail]', fullSpec, (templateError as any)?.message);
-							} catch {}
+							console.warn('[sfc][template][self-compile][fail]', fullSpec, (templateError as any)?.message);
 						}
 						code = transformed.code || 'export {}\n';
 						code = processTemplateVariantMinimal(code);
@@ -387,9 +383,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 				}
 			} catch (variantTsError) {
 				if (options.verbose) {
-					try {
-						console.warn('[sfc][variant:script][babel-ts][fail]', fullSpec, (variantTsError as any)?.message);
-					} catch {}
+					console.warn('[sfc][variant:script][babel-ts][fail]', fullSpec, (variantTsError as any)?.message);
 				}
 			}
 
@@ -431,9 +425,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 			const kind = isVariant ? `variant:${variantType || 'unknown'}` : 'full';
 			const sig = `// [sfc] kind=${kind} path=${importerPath} len=${code.length} default=${hasDefault} wrapped=${false}\n`;
 			if (options.verbose) {
-				try {
-					console.log(`[sfc][serve] ${fullSpec} kind=${kind} default=${hasDefault} bytes=${code.length}`);
-				} catch {}
+				console.log(`[sfc][serve] ${fullSpec} kind=${kind} default=${hasDefault} bytes=${code.length}`);
 			}
 			if (!hasDefault) {
 				const match = code.match(/\b(?:const|let|var)\s+(__ns_sfc__|_sfc_main)\b/);
@@ -472,13 +464,9 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 			const scriptMeta = extractExportMetadata(scriptCode);
 			const hasRender = templateHasRender(templateCode);
 			if (hasRender && options.verbose) {
-				try {
-					console.log('[sfc-meta] detected render for', base);
-				} catch {}
+				console.log('[sfc-meta] detected render for', base);
 			} else if (!hasRender && options.verbose) {
-				try {
-					console.warn('[sfc-meta] render NOT detected for', base);
-				} catch {}
+				console.warn('[sfc-meta] render NOT detected for', base);
 			}
 			const hash = createHash('md5').update(base).digest('hex').slice(0, 8);
 			const payload = {
@@ -584,9 +572,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 						}
 					} catch (scriptError) {
 						if (options.verbose) {
-							try {
-								console.warn('[sfc-asm][compileScript] failed', base, (scriptError as any)?.message);
-							} catch {}
+							console.warn('[sfc-asm][compileScript] failed', base, (scriptError as any)?.message);
 						}
 						try {
 							const fallbackScript: any = (compileScript as any)(
@@ -601,9 +587,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 							bindingMetadata = fallbackScript?.bindings;
 						} catch (fallbackError) {
 							if (options.verbose) {
-								try {
-									console.warn('[sfc-asm][compileScript][no-inline-fallback] failed', base, (fallbackError as any)?.message);
-								} catch {}
+								console.warn('[sfc-asm][compileScript][no-inline-fallback] failed', base, (fallbackError as any)?.message);
 							}
 						}
 					}
@@ -624,9 +608,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 							bindingMetadata = noInlineScript?.bindings || bindingMetadata;
 						} catch (noInlineError) {
 							if (options.verbose) {
-								try {
-									console.warn('[sfc-asm][compileScript][no-inline-fallback] failed', base, (noInlineError as any)?.message);
-								} catch {}
+								console.warn('[sfc-asm][compileScript][no-inline-fallback] failed', base, (noInlineError as any)?.message);
 							}
 						}
 					}
@@ -648,16 +630,12 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 							} as any);
 							compiledTemplateCode = (compiledTemplate && (compiledTemplate.code || '')) || '';
 							if (compiledTemplate?.errors?.length && options.verbose) {
-								try {
-									console.warn('[sfc-asm][compileTemplate][errors]', base, compiledTemplate.errors);
-								} catch {}
+								console.warn('[sfc-asm][compileTemplate][errors]', base, compiledTemplate.errors);
 							}
 						}
 					} catch (templateError) {
 						if (options.verbose) {
-							try {
-								console.warn('[sfc-asm][compileTemplate] failed', base, (templateError as any)?.message);
-							} catch {}
+							console.warn('[sfc-asm][compileTemplate] failed', base, (templateError as any)?.message);
 						}
 						if (templateResult?.code) compiledTemplateCode = templateResult.code;
 					}
@@ -702,9 +680,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 							}
 						} catch (extractError) {
 							if (options.verbose) {
-								try {
-									console.warn('[sfc-asm][extractTemplateRender] failed', base, (extractError as any)?.message);
-								} catch {}
+								console.warn('[sfc-asm][extractTemplateRender] failed', base, (extractError as any)?.message);
 							}
 						}
 					}
@@ -763,9 +739,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 						if (tsResult?.code) scriptTransformed = tsResult.code;
 					} catch (tsError) {
 						if (options.verbose) {
-							try {
-								console.warn('[sfc-asm][babel-ts][fail]', base, (tsError as any)?.message);
-							} catch {}
+							console.warn('[sfc-asm][babel-ts][fail]', base, (tsError as any)?.message);
 						}
 					}
 
@@ -775,15 +749,11 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 						importLines = astResult.imports;
 						scriptTransformed = astResult.body;
 						if (astResult.diagnostics.length && options.verbose) {
-							try {
-								console.warn('[sfc-asm][ast]', base, astResult.diagnostics.join('; '));
-							} catch {}
+							console.warn('[sfc-asm][ast]', base, astResult.diagnostics.join('; '));
 						}
 					} catch (astError) {
 						if (options.verbose) {
-							try {
-								console.warn('[sfc-asm][ast][fail]', base, (astError as any)?.message);
-							} catch {}
+							console.warn('[sfc-asm][ast][fail]', base, (astError as any)?.message);
 						}
 					}
 

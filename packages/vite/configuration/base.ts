@@ -349,9 +349,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 									const sub = specToCoreSub(source);
 									if (sub === null) return null;
 									if (process.env.NS_CORE_EXTERNAL_DEBUG) {
-										try {
-											console.log('[ns-core-external]', 'source=', source, 'sub=', sub, 'importer=', importer?.slice(-80));
-										} catch {}
+										console.log('[ns-core-external]', 'source=', source, 'sub=', sub, 'importer=', importer?.slice(-80));
 									}
 									const url = buildCoreUrl(origin, sub);
 									return { id: url, external: 'absolute' };

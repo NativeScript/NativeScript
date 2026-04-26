@@ -468,9 +468,7 @@ async function expandStarExports(code: string, server: any, projectRoot: string,
 				if (!names.length) return null;
 
 				if (verbose) {
-					try {
-						console.log(`[ns/m] expanded export* -> ${names.length} names from ${vitePath}`);
-					} catch {}
+					console.log(`[ns/m] expanded export* -> ${names.length} names from ${vitePath}`);
 				}
 
 				return { rep, names };
@@ -536,7 +534,7 @@ function stripViteDynamicImportVirtual(code: string): string {
 	return code;
 }
 
-const REQUIRE_GUARD_SNIPPET = `// [guard] install require('http(s)://') detector\n(()=>{try{var g=globalThis;if(g.__NS_REQUIRE_GUARD_INSTALLED__){}else{var mk=function(o,l){return function(){try{var s=arguments[0];if(typeof s==='string'&&/^(?:https?:)\\/\\//.test(s)){var e=new Error('[ns-hmr][require-guard] require of URL: '+s+' via '+l);try{console.error(e.message+'\\n'+(e.stack||''));}catch(e2){}try{g.__NS_REQUIRE_GUARD_LAST__={spec:s,stack:e.stack,label:l,ts:Date.now()};}catch(e3){}}}catch(e1){}return o.apply(this, arguments);};};if(typeof g.require==='function'&&!g.require.__NS_REQ_GUARDED__){var o1=g.require;g.require=mk(o1,'require');g.require.__NS_REQ_GUARDED__=true;}if(typeof g.__nsRequire==='function'&&!g.__nsRequire.__NS_REQ_GUARDED__){var o2=g.__nsRequire;g.__nsRequire=mk(o2,'__nsRequire');g.__nsRequire.__NS_REQ_GUARDED__=true;}g.__NS_REQUIRE_GUARD_INSTALLED__=true;}}catch(e){}})();\n`;
+const REQUIRE_GUARD_SNIPPET = `// [guard] install require('http(s)://') detector\n(()=>{try{var g=globalThis;if(g.__NS_REQUIRE_GUARD_INSTALLED__){}else{var mk=function(o,l){return function(){try{var s=arguments[0];if(typeof s==='string'&&/^(?:https?:)\\/\\//.test(s)){var e=new Error('[ns-hmr][require-guard] require of URL: '+s+' via '+l);console.error(e.message+'\\n'+(e.stack||''));try{g.__NS_REQUIRE_GUARD_LAST__={spec:s,stack:e.stack,label:l,ts:Date.now()};}catch(e3){}}}catch(e1){}return o.apply(this, arguments);};};if(typeof g.require==='function'&&!g.require.__NS_REQ_GUARDED__){var o1=g.require;g.require=mk(o1,'require');g.require.__NS_REQ_GUARDED__=true;}if(typeof g.__nsRequire==='function'&&!g.__nsRequire.__NS_REQ_GUARDED__){var o2=g.__nsRequire;g.__nsRequire=mk(o2,'__nsRequire');g.__nsRequire.__NS_REQ_GUARDED__=true;}g.__NS_REQUIRE_GUARD_INSTALLED__=true;}}catch(e){}})();\n`;
 
 function shouldRemapImport(spec: string): boolean {
 	if (!spec || typeof spec !== 'string') return false;
@@ -2103,9 +2101,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 		if (spec === '@') {
 			const stub = `/ns/m/__invalid_at__.mjs`;
 			if (verbose) {
-				try {
-					console.warn(`[rewrite] mapped bare '@' spec to stub: ${stub}`);
-				} catch {}
+				console.warn(`[rewrite] mapped bare '@' spec to stub: ${stub}`);
 			}
 			return `${prefix}${stub}${suffix}`;
 		}
@@ -2333,9 +2329,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	result = result.replace(/(import\(\s*['"])@(['"]\s*\))/g, (_m) => {
 		const stubExpr = `import(new URL('/ns/m/__invalid_at__.mjs', import.meta.url).href)`;
 		if (verbose) {
-			try {
-				console.warn(`[rewrite] mapped dynamic import('@') to /ns/m/__invalid_at__.mjs via import.meta.url`);
-			} catch {}
+			console.warn(`[rewrite] mapped dynamic import('@') to /ns/m/__invalid_at__.mjs via import.meta.url`);
 		}
 		return stubExpr;
 	});
@@ -2345,9 +2339,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	result = result.replace(/(from\s*['"])@(['"])/g, (_m, p1: string, p2: string) => {
 		const stub = `/ns/m/__invalid_at__.mjs`;
 		if (verbose) {
-			try {
-				console.warn(`[rewrite] mapped static from '@' to ${stub}`);
-			} catch {}
+			console.warn(`[rewrite] mapped static from '@' to ${stub}`);
 		}
 		return `${p1}${stub}${p2}`;
 	});
@@ -2355,9 +2347,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	result = result.replace(/(import\s*(?!\()\s*['"])@(['"])/g, (_m, p1: string, p2: string) => {
 		const stub = `/ns/m/__invalid_at__.mjs`;
 		if (verbose) {
-			try {
-				console.warn(`[rewrite] mapped side-effect import '@' to ${stub}`);
-			} catch {}
+			console.warn(`[rewrite] mapped side-effect import '@' to ${stub}`);
 		}
 		return `${p1}${stub}${p2}`;
 	});
@@ -2639,10 +2629,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 		const gm: GraphModule = { id, deps: normDeps, hash };
 		graph.set(id, gm);
 		if (verbose) {
-			try {
-				console.log('[hmr-ws][graph] upsert', { id, deps: normDeps, hash, graphVersion, classification, bumpVersion });
-				console.log('[hmr-ws][graph] size', graph.size);
-			} catch {}
+			console.log('[hmr-ws][graph] upsert', { id, deps: normDeps, hash, graphVersion, classification, bumpVersion });
+			console.log('[hmr-ws][graph] size', graph.size);
 		}
 		if (shouldBroadcastGraphUpsertDelta(classification, options?.emitDeltaOnInsert === true, options?.broadcastDelta !== false)) {
 			emitDelta([gm], []);
@@ -2733,16 +2721,14 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 		// `bumpedVersion=no` result is the happy path, `yes`
 		// indicates a regression.
 		if (verbose) {
-			try {
-				console.info(
-					formatPopulateInitialGraphSummary({
-						moduleCount: graph.size,
-						durationMs: Date.now() - tStart,
-						graphVersion,
-						bumpedVersion: graphVersion !== versionAtStart,
-					}),
-				);
-			} catch {}
+			console.info(
+				formatPopulateInitialGraphSummary({
+					moduleCount: graph.size,
+					durationMs: Date.now() - tStart,
+					graphVersion,
+					bumpedVersion: graphVersion !== versionAtStart,
+				}),
+			);
 		}
 	}
 	// Kick off `populateInitialGraph` in the background (non-awaited) so /ns/m
@@ -2811,9 +2797,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			sharedTransformRequest = createSharedTransformRequestRunner(
 				(url) => server.transformRequest(url),
 				(url, timeoutMs) => {
-					try {
-						console.warn('[ns:m] slow transformRequest for', url, '(>' + timeoutMs + 'ms)');
-					} catch {}
+					console.warn('[ns:m] slow transformRequest for', url, '(>' + timeoutMs + 'ms)');
 				},
 				{
 					maxConcurrent: transformConcurrency,
@@ -2880,9 +2864,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						// default. Flip NS_VITE_VERBOSE=1 to surface them.
 						log: (line) => {
 							if (!verbose) return;
-							try {
-								console.info(line);
-							} catch {}
+							console.info(line);
 						},
 					});
 				}
@@ -2994,9 +2976,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				});
 			});
 			wss.on('error', (err) => {
-				try {
-					console.warn('[hmr-ws] server error:', err?.message || String(err));
-				} catch {}
+				console.warn('[hmr-ws] server error:', err?.message || String(err));
 			});
 
 			// Import map endpoint: GET /ns/import-map.json
@@ -3486,9 +3466,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 									if (isApp && /\.(ts|tsx|js|jsx|mjs|mts|cts)$/i.test(id) && !isRuntimeGraphExcludedPath(id)) {
 										const deps = Array.from(collectImportDependencies(code, id));
 										if (verbose) {
-											try {
-												console.log('[hmr-ws][ts-graph] candidate', { id, depsCount: deps.length });
-											} catch {}
+											console.log('[hmr-ws][ts-graph] candidate', { id, depsCount: deps.length });
 										}
 										// Serve-time warm-up: no live edit happened, so don't bump
 										// graphVersion.
@@ -3876,9 +3854,7 @@ export const piniaSymbol = p.piniaSymbol;
 										const hasCjsPattern = /\bmodule\s*\.\s*exports\b/.test(targetCode) || /\bexports\s*\.\s*\w/.test(targetCode);
 										if (hasCjsPattern) {
 											if (verbose) {
-												try {
-													console.warn(`[ns:m][link-check] CJS module without export default: ${u.pathname} (will be CJS-wrapped at serve time)`);
-												} catch {}
+												console.warn(`[ns:m][link-check] CJS module without export default: ${u.pathname} (will be CJS-wrapped at serve time)`);
 											}
 											continue;
 										}
@@ -3893,17 +3869,13 @@ export const piniaSymbol = p.piniaSymbol;
 						}
 					} catch (eLC) {
 						if (verbose) {
-							try {
-								console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
-							} catch {}
+							console.warn('[ns:m][link-check] failed', (eLC as any)?.message || eLC);
 						}
 					}
 					res.statusCode = 200;
 					res.end(code);
 				} catch (e) {
-					try {
-						console.warn('[sfc-asm] error serving', req.url, e && (e as any).message ? (e as any).message : e);
-					} catch {}
+					console.warn('[sfc-asm] error serving', req.url, e && (e as any).message ? (e as any).message : e);
 					res.statusCode = 500;
 					res.end('export {}\n');
 				}
@@ -4032,7 +4004,7 @@ export const piniaSymbol = p.piniaSymbol;
 						`export const vShow = (__ensure().vShow);\n` +
 						`export const createApp = (...a) => (__ensure().createApp)(...a);\n` +
 						`export const registerElement = (...a) => (__ensure().registerElement)(...a);\n` +
-						`export const $navigateTo = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); try { if (!(g && g.Frame)) { const ns = (__ns_core_bridge && (__ns_core_bridge.__esModule && __ns_core_bridge.default ? __ns_core_bridge.default : (__ns_core_bridge.default || __ns_core_bridge))) || __ns_core_bridge || {}; if (ns) { if (!g.Frame && ns.Frame) g.Frame = ns.Frame; if (!g.Page && ns.Page) g.Page = ns.Page; if (!g.Application && (ns.Application||ns.app||ns.application)) g.Application = (ns.Application||ns.app||ns.application); } } } catch {} try { const hmrRealm = (g && g.__NS_HMR_REALM__) || 'unknown'; const hasTop = !!(g && g.Frame && g.Frame.topmost && g.Frame.topmost()); const top = hasTop ? g.Frame.topmost() : null; const ctor = top && top.constructor && top.constructor.name; } catch {} if (g && typeof g.__nsNavigateUsingApp === 'function') { try { return g.__nsNavigateUsingApp(...a); } catch (e) { try { console.error('[ns-rt] $navigateTo app navigator error', e); } catch {} throw e; } } try { console.error('[ns-rt] $navigateTo unavailable: app navigator missing'); } catch {} throw new Error('$navigateTo unavailable: app navigator missing'); } ;\n` +
+						`export const $navigateTo = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); try { if (!(g && g.Frame)) { const ns = (__ns_core_bridge && (__ns_core_bridge.__esModule && __ns_core_bridge.default ? __ns_core_bridge.default : (__ns_core_bridge.default || __ns_core_bridge))) || __ns_core_bridge || {}; if (ns) { if (!g.Frame && ns.Frame) g.Frame = ns.Frame; if (!g.Page && ns.Page) g.Page = ns.Page; if (!g.Application && (ns.Application||ns.app||ns.application)) g.Application = (ns.Application||ns.app||ns.application); } } } catch {} try { const hmrRealm = (g && g.__NS_HMR_REALM__) || 'unknown'; const hasTop = !!(g && g.Frame && g.Frame.topmost && g.Frame.topmost()); const top = hasTop ? g.Frame.topmost() : null; const ctor = top && top.constructor && top.constructor.name; } catch {} if (g && typeof g.__nsNavigateUsingApp === 'function') { try { return g.__nsNavigateUsingApp(...a); } catch (e) { console.error('[ns-rt] $navigateTo app navigator error', e); throw e; } } console.error('[ns-rt] $navigateTo unavailable: app navigator missing'); throw new Error('$navigateTo unavailable: app navigator missing'); } ;\n` +
 						`export const $navigateBack = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$navigateBack || (vm.default && vm.default.$navigateBack))) || (rt && (rt.$navigateBack || (rt.runtimeHelpers && rt.runtimeHelpers.navigateBack))); let res; try { const via = (impl && (impl === (vm && vm.$navigateBack) || impl === (vm && vm.default && vm.default.$navigateBack))) ? 'vm' : (impl ? 'rt' : 'none'); } catch {} try { if (typeof impl === 'function') res = impl(...a); } catch {} try { const top = (g && g.Frame && g.Frame.topmost && g.Frame.topmost()); if (!res && top && top.canGoBack && top.canGoBack()) { res = top.goBack(); } } catch {} try { const hook = g && (g.__NS_HMR_ON_NAVIGATE_BACK || g.__NS_HMR_ON_BACK || g.__nsAttemptBackRemount); if (typeof hook === 'function') hook(); } catch {} return res; }\n` +
 						`export const $showModal = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$showModal || (vm.default && vm.default.$showModal))) || (rt && (rt.$showModal || (rt.runtimeHelpers && rt.runtimeHelpers.showModal))); try { if (typeof impl === 'function') return impl(...a); } catch (e) { } return undefined; }\n` +
 						`export default {\n` +
@@ -4273,7 +4245,7 @@ export const piniaSymbol = p.piniaSymbol;
 						`  }`,
 						`  if (!__nsFirst[__nsKey]) __nsFirst[__nsKey] = __nsUrl;`,
 						`  globalThis.__NS_CORE_EVAL_COUNT__ = (globalThis.__NS_CORE_EVAL_COUNT__ || 0) + 1;`,
-						`} } catch (e) { try { console.warn('[ns-core] instrumentation failed:', (e && e.message) || e); } catch {} }`,
+						`} } catch (e) { console.warn('[ns-core] instrumentation failed:', (e && e.message) || e); }`,
 					].join('\n');
 
 					// CJS/ESM interop shape — REGISTRATION side.
@@ -4299,7 +4271,7 @@ export const piniaSymbol = p.piniaSymbol;
 						`  const __nsSelfRaw = (typeof __ns_core_self_ns__ !== 'undefined') ? __ns_core_self_ns__ : { default: undefined };`,
 						`  const __nsSelf = __nsShapeFn(__nsSelfRaw);`,
 						...registrationKeys.map((k) => `  __nsReg[${k}] = __nsSelf;`),
-						`} } catch (e) { try { console.warn('[ns-core] self-register failed:', (e && e.message) || e); } catch {} }`,
+						`} } catch (e) { console.warn('[ns-core] self-register failed:', (e && e.message) || e); }`,
 					].join('\n');
 
 					// Bind `import * as __ns_core_self_ns__` to the module's
@@ -4350,9 +4322,7 @@ export const piniaSymbol = p.piniaSymbol;
 					res.statusCode = 200;
 					res.end(moduleCode);
 				} catch (e) {
-					try {
-						console.warn('[ns-core-bridge] serve failed:', (e as any)?.message);
-					} catch {}
+					console.warn('[ns-core-bridge] serve failed:', (e as any)?.message);
 					next();
 				}
 			});
@@ -4362,13 +4332,11 @@ export const piniaSymbol = p.piniaSymbol;
 				try {
 					const urlObj = new URL(req.url || '', 'http://localhost');
 					if (!(urlObj.pathname === '/ns/entry-rt')) return next();
-					try {
-						if (verbose) {
-							const ra = (req.socket as any)?.remoteAddress;
-							const rp = (req.socket as any)?.remotePort;
-							console.log('[hmr-http] GET /ns/entry-rt from', ra + (rp ? ':' + rp : ''));
-						}
-					} catch {}
+					if (verbose) {
+						const ra = (req.socket as any)?.remoteAddress;
+						const rp = (req.socket as any)?.remotePort;
+						console.log('[hmr-http] GET /ns/entry-rt from', ra + (rp ? ':' + rp : ''));
+					}
 					res.setHeader('Access-Control-Allow-Origin', '*');
 					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
 					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
@@ -4601,9 +4569,7 @@ export const piniaSymbol = p.piniaSymbol;
 						}
 						if (!transformed?.code) {
 							if (verbose) {
-								try {
-									console.warn(`[sfc][serve] transform miss for`, fullSpec);
-								} catch {}
+								console.warn(`[sfc][serve] transform miss for`, fullSpec);
 							}
 							// Emit an erroring module to surface the failure at import site with helpful hints
 							try {
@@ -4715,9 +4681,7 @@ export const piniaSymbol = p.piniaSymbol;
 									}
 								} catch (eTplSelf) {
 									if (verbose) {
-										try {
-											console.warn('[sfc][template][self-compile][fail]', fullSpec, (eTplSelf as any)?.message);
-										} catch {}
+										console.warn('[sfc][template][self-compile][fail]', fullSpec, (eTplSelf as any)?.message);
 									}
 									code = transformed.code || 'export {}\n';
 									code = processTemplateVariantMinimal(code);
@@ -4874,9 +4838,7 @@ export const piniaSymbol = p.piniaSymbol;
 							}
 						} catch (eTsVar) {
 							if (verbose) {
-								try {
-									console.warn('[sfc][variant:script][babel-ts][fail]', fullSpec, (eTsVar as any)?.message);
-								} catch {}
+								console.warn('[sfc][variant:script][babel-ts][fail]', fullSpec, (eTsVar as any)?.message);
 							}
 						}
 					}
@@ -4935,9 +4897,7 @@ export const piniaSymbol = p.piniaSymbol;
 					const kind = isVariant ? `variant:${variantType || 'unknown'}` : 'full';
 					const sig = `// [sfc] kind=${kind} path=${importerPath} len=${code.length} default=${hasDefault} wrapped=${false}\n`;
 					if (verbose) {
-						try {
-							console.log(`[sfc][serve] ${fullSpec} kind=${kind} default=${hasDefault} bytes=${code.length}`);
-						} catch {}
+						console.log(`[sfc][serve] ${fullSpec} kind=${kind} default=${hasDefault} bytes=${code.length}`);
 					}
 					// Ensure script variants always provide a default export if they declare a component
 					if (!hasDefault) {
@@ -5002,13 +4962,9 @@ export const piniaSymbol = p.piniaSymbol;
 					// 6) Object property forms (rare in template output) render: (...) => {}
 					const hasRender = /export\s+function\s+render\s*\(/.test(templateCode) || /(?:^|\n)\s*function\s+render\s*\(/.test(templateCode) || /export\s+(?:const|let|var)\s+render\s*=/.test(templateCode) || /(?:^|\n)\s*(?:const|let|var)\s+render\s*=/.test(templateCode) || /\brender\s*[:=]\s*/.test(templateCode) || /export\s*\{\s*render\s*(?:as\s*render)?\s*\}/.test(templateCode);
 					if (hasRender && verbose) {
-						try {
-							console.log('[sfc-meta] detected render for', base);
-						} catch {}
+						console.log('[sfc-meta] detected render for', base);
 					} else if (!hasRender && verbose) {
-						try {
-							console.warn('[sfc-meta] render NOT detected for', base);
-						} catch {}
+						console.warn('[sfc-meta] render NOT detected for', base);
 					}
 					const hash = createHash('md5').update(base).digest('hex').slice(0, 8);
 					const payload = {
@@ -5142,9 +5098,7 @@ export const piniaSymbol = p.piniaSymbol;
 								}
 							} catch (eScript) {
 								if (verbose) {
-									try {
-										console.warn('[sfc-asm][compileScript] failed', base, (eScript as any)?.message);
-									} catch {}
+									console.warn('[sfc-asm][compileScript] failed', base, (eScript as any)?.message);
 								}
 								// Retry without inlineTemplate
 								try {
@@ -5162,9 +5116,7 @@ export const piniaSymbol = p.piniaSymbol;
 									usedInlineScript = false;
 								} catch (eNoInline) {
 									if (verbose) {
-										try {
-											console.warn('[sfc-asm][compileScript][no-inline-fallback] failed', base, (eNoInline as any)?.message);
-										} catch {}
+										console.warn('[sfc-asm][compileScript][no-inline-fallback] failed', base, (eNoInline as any)?.message);
 									}
 								}
 							}
@@ -5196,9 +5148,7 @@ export const piniaSymbol = p.piniaSymbol;
 									bindingMetadata = sNoInline?.bindings || bindingMetadata;
 								} catch (eNoInline) {
 									if (verbose) {
-										try {
-											console.warn('[sfc-asm][compileScript][no-inline-fallback] failed', base, (eNoInline as any)?.message);
-										} catch {}
+										console.warn('[sfc-asm][compileScript][no-inline-fallback] failed', base, (eNoInline as any)?.message);
 									}
 								}
 							}
@@ -5221,17 +5171,13 @@ export const piniaSymbol = p.piniaSymbol;
 									} as any);
 									compiledTplCode = (ct && (ct.code || '')) || '';
 									if (ct?.errors?.length && verbose) {
-										try {
-											console.warn('[sfc-asm][compileTemplate][errors]', base, ct.errors);
-										} catch {}
+										console.warn('[sfc-asm][compileTemplate][errors]', base, ct.errors);
 									}
 								}
 							} catch (eTpl) {
 								templateErr = eTpl;
 								if (verbose) {
-									try {
-										console.warn('[sfc-asm][compileTemplate] failed', base, (eTpl as any)?.message);
-									} catch {}
+									console.warn('[sfc-asm][compileTemplate] failed', base, (eTpl as any)?.message);
 								}
 								// Fallback: use the variant-transformed template code if available
 								try {
@@ -5285,9 +5231,7 @@ export const piniaSymbol = p.piniaSymbol;
 									}
 								} catch (eExtract) {
 									if (verbose) {
-										try {
-											console.warn('[sfc-asm][extractTemplateRender] failed', base, (eExtract as any)?.message);
-										} catch {}
+										console.warn('[sfc-asm][extractTemplateRender] failed', base, (eExtract as any)?.message);
 									}
 								}
 							}
@@ -5357,9 +5301,7 @@ export const piniaSymbol = p.piniaSymbol;
 									if (tsRes?.code) scriptTransformed = tsRes.code;
 								} catch (eTs) {
 									if (verbose) {
-										try {
-											console.warn('[sfc-asm][babel-ts][fail]', base, (eTs as any)?.message);
-										} catch {}
+										console.warn('[sfc-asm][babel-ts][fail]', base, (eTs as any)?.message);
 									}
 								}
 								// Hoist imports + strip residual TS via AST
@@ -5369,15 +5311,11 @@ export const piniaSymbol = p.piniaSymbol;
 									importLines = astRes.imports;
 									scriptTransformed = astRes.body;
 									if (astRes.diagnostics.length && verbose) {
-										try {
-											console.warn('[sfc-asm][ast]', base, astRes.diagnostics.join('; '));
-										} catch {}
+										console.warn('[sfc-asm][ast]', base, astRes.diagnostics.join('; '));
 									}
 								} catch (eAst) {
 									if (verbose) {
-										try {
-											console.warn('[sfc-asm][ast][fail]', base, (eAst as any)?.message);
-										} catch {}
+										console.warn('[sfc-asm][ast][fail]', base, (eAst as any)?.message);
 									}
 								}
 								// Ensure renderDecl ends with closing brace ONLY for function declaration forms
@@ -6211,14 +6149,12 @@ export const piniaSymbol = p.piniaSymbol;
 					getModulesByFile: (targetFile) => (server.moduleGraph as any).getModulesByFile?.(targetFile) as Iterable<HotUpdateGraphModuleLike> | undefined,
 				});
 				if (verbose) {
-					try {
-						console.info(
-							`[ns-hmr-diag][server] hot-update file=${file} isHtml=${isHtml} isTs=${isTs} ctxModules=${Array.from(ctx.modules || []).length} hotUpdateRoots=${angularHotUpdateRoots.length} (${angularHotUpdateRoots
-								.map((m) => m?.id ?? '(none)')
-								.slice(0, 8)
-								.join(', ')}${angularHotUpdateRoots.length > 8 ? ', …' : ''})`,
-						);
-					} catch {}
+					console.info(
+						`[ns-hmr-diag][server] hot-update file=${file} isHtml=${isHtml} isTs=${isTs} ctxModules=${Array.from(ctx.modules || []).length} hotUpdateRoots=${angularHotUpdateRoots.length} (${angularHotUpdateRoots
+							.map((m) => m?.id ?? '(none)')
+							.slice(0, 8)
+							.join(', ')}${angularHotUpdateRoots.length > 8 ? ', …' : ''})`,
+					);
 				}
 				if (!(isHtml || isTs)) return;
 
@@ -6319,12 +6255,10 @@ export const piniaSymbol = p.piniaSymbol;
 						maxDepth: 16,
 					});
 					if (verbose) {
-						try {
-							console.info(
-								`[ns-hmr-diag][server] transitiveImporters count=${transitiveImporters.length} firstN=`,
-								transitiveImporters.slice(0, 16).map((m) => m?.id ?? '(none)'),
-							);
-						} catch {}
+						console.info(
+							`[ns-hmr-diag][server] transitiveImporters count=${transitiveImporters.length} firstN=`,
+							transitiveImporters.slice(0, 16).map((m) => m?.id ?? '(none)'),
+						);
 					}
 
 					if (angularNeedsTransitive) {
@@ -6705,7 +6639,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
         if (typeof spec === 'string' && /^(?:https?:)\/\//.test(spec)) {
           const err = new Error('[ns-hmr][require-guard] require of URL: ' + spec + ' via ' + label);
           const stack = err.stack || '';
-          try { console.error(err.message + '\n' + stack); } catch {}
+          console.error(err.message + '\n' + stack);
           try { g.__NS_REQUIRE_GUARD_LAST__ = { spec, stack, label, ts: Date.now() }; } catch {}
         }
       } catch {}

@@ -80,9 +80,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 				const { babel, linkerPlugin } = await ensureSharedAngularLinker(projectRoot);
 				if (!babel || !linkerPlugin) return null;
 				if (debug) {
-					try {
-						console.log('[ns-angular-linker][vite-load] linking', cleanId);
-					} catch {}
+					console.log('[ns-angular-linker][vite-load] linking', cleanId);
 				}
 				const result = await (babel as any).transformAsync(code, {
 					filename: cleanId,
@@ -114,9 +112,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 			try {
 				const plugin = createLinker({ sourceMapping: false, fileSystem: angularFileSystem });
 				if (debug) {
-					try {
-						console.log('[ns-angular-linker][vite] linking', cleanId);
-					} catch {}
+					console.log('[ns-angular-linker][vite] linking', cleanId);
 				}
 				const result = await (babel as any).transformAsync(code, {
 					filename: cleanId,
@@ -154,9 +150,7 @@ export function angularLinkerVitePluginPost(projectRoot?: string): Plugin {
 			if (!babel || !linkerPlugin) return null;
 			try {
 				if (debug) {
-					try {
-						console.log('[ns-angular-linker][vite-post] linking', id.split('?', 1)[0]);
-					} catch {}
+					console.log('[ns-angular-linker][vite-post] linking', id.split('?', 1)[0]);
 				}
 				const result = await (babel as any).transformAsync(code, {
 					filename: id.split('?', 1)[0],

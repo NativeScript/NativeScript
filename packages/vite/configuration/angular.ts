@@ -83,9 +83,7 @@ function angularRollupLinker(projectRoot?: string): Plugin {
 				if (!forceLink && code.indexOf('\u0275\u0275ngDeclare') === -1 && code.indexOf('ɵɵngDeclare') === -1 && code.indexOf('ngDeclare') === -1) return null;
 				const plugin = createLinker({ sourceMapping: false, fileSystem: angularFileSystem });
 				if (debug) {
-					try {
-						console.log('[ns-angular-linker][rollup-load] linking', cleanId);
-					} catch {}
+					console.log('[ns-angular-linker][rollup-load] linking', cleanId);
 				}
 				const result = await (babel as any).transformAsync(code, {
 					filename: cleanId,
@@ -113,9 +111,7 @@ function angularRollupLinker(projectRoot?: string): Plugin {
 			try {
 				const plugin = createLinker({ sourceMapping: false, fileSystem: angularFileSystem });
 				if (debug) {
-					try {
-						console.log('[ns-angular-linker][rollup] linking', cleanId);
-					} catch {}
+					console.log('[ns-angular-linker][rollup] linking', cleanId);
 				}
 				const result = await (babel as any).transformAsync(code, {
 					filename: cleanId,
@@ -324,9 +320,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				componentsByCleanId.set(cleanId, componentNames);
 
 				if (verbose) {
-					try {
-						console.info(`[ns-hmr-diag][ns-component-hmr-register] discovered ${componentNames.length} component(s) in ${cleanId} (${componentNames.join(', ')})`);
-					} catch {}
+					console.info(`[ns-hmr-diag][ns-component-hmr-register] discovered ${componentNames.length} component(s) in ${cleanId} (${componentNames.join(', ')})`);
 				}
 
 				// Discovery only — never modify the raw TS source. Any
@@ -365,9 +359,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				if (!result.code) return null;
 
 				if (verbose) {
-					try {
-						console.info(`[ns-hmr-diag][ns-component-hmr-register-post] appended registrations for ${result.componentNames.length} component(s) in ${cleanId} (${result.componentNames.join(', ')})`);
-					} catch {}
+					console.info(`[ns-hmr-diag][ns-component-hmr-register-post] appended registrations for ${result.componentNames.length} component(s) in ${cleanId} (${result.componentNames.join(', ')})`);
 				}
 
 				// Returning `null` for the source map is acceptable for
@@ -401,9 +393,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 				// component we're editing, the watcher will never fire
 				// and `pendingComponentInvalidations` stays empty.
 				if (verbose) {
-					try {
-						console.info(`[ns-hmr-diag][angular-template-deps] [tracking] componentKey=${componentKey} assets=${assetPaths.length} (${assetPaths.slice(0, 4).join(', ')})`);
-					} catch {}
+					console.info(`[ns-hmr-diag][angular-template-deps] [tracking] componentKey=${componentKey} assets=${assetPaths.length} (${assetPaths.slice(0, 4).join(', ')})`);
 				}
 				return null;
 			},
@@ -420,9 +410,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 						pendingComponentInvalidations.add(componentPath);
 					}
 					if (verbose) {
-						try {
-							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via assetToComponents] changed=${changedPath} → invalidating ${components.size} component(s):`, Array.from(components));
-						} catch {}
+						console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via assetToComponents] changed=${changedPath} → invalidating ${components.size} component(s):`, Array.from(components));
 					}
 					return;
 				}
@@ -434,14 +422,10 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 						const componentKey = normalizeAngularWatchKey(componentPath);
 						pendingComponentInvalidations.add(componentKey);
 						if (verbose) {
-							try {
-								console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via fallback .html→.ts] changed=${changedPath} componentKey=${componentKey}`);
-							} catch {}
+							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via fallback .html→.ts] changed=${changedPath} componentKey=${componentKey}`);
 						}
 					} else if (verbose) {
-						try {
-							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [no companion .ts found] changed=${changedPath} expectedTs=${componentPath}`);
-						} catch {}
+						console.info(`[ns-hmr-diag][angular-template-deps] watchChange [no companion .ts found] changed=${changedPath} expectedTs=${componentPath}`);
 					}
 				}
 			},
@@ -451,9 +435,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 
 				pendingComponentInvalidations.delete(componentPath);
 				if (verbose) {
-					try {
-						console.info(`[ns-hmr-diag][angular-template-deps] shouldTransformCachedModule → re-transform componentKey=${componentPath}`);
-					} catch {}
+					console.info(`[ns-hmr-diag][angular-template-deps] shouldTransformCachedModule → re-transform componentKey=${componentPath}`);
 				}
 				return true;
 			},
@@ -582,9 +564,7 @@ export const angularConfig = ({ mode }: { mode: string }): UserConfig => {
 						if (finalCode !== code) {
 							(chunk as any).code = finalCode;
 							if (debug) {
-								try {
-									console.log('[ns-angular-linker][post] linked', fileName, isNsPolyfills ? '(polyfills)' : '');
-								} catch {}
+								console.log('[ns-angular-linker][post] linked', fileName, isNsPolyfills ? '(polyfills)' : '');
 							}
 						}
 						if (strict && !isNsPolyfills && containsRealNgDeclare(finalCode)) {
@@ -624,9 +604,7 @@ export const angularConfig = ({ mode }: { mode: string }): UserConfig => {
 				if (enforceStrict) {
 					throw new Error(message);
 				} else {
-					try {
-						console.warn(`[ns-angular-linker-post] ${message}`);
-					} catch {}
+					console.warn(`[ns-angular-linker-post] ${message}`);
 				}
 			}
 		},
@@ -672,9 +650,7 @@ export const angularConfig = ({ mode }: { mode: string }): UserConfig => {
 				transformed = applyAngularChunkPostProcessing(transformed);
 				if (transformed !== code) {
 					if (debug) {
-						try {
-							console.log('[ns-angular-linker][render] linked', filename);
-						} catch {}
+						console.log('[ns-angular-linker][render] linked', filename);
 					}
 					return { code: transformed, map: null };
 				}
