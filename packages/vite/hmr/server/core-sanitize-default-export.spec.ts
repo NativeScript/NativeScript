@@ -106,6 +106,48 @@ describe('rewriteSpecifiersForDevice', () => {
 		const out = rewriteSpecifiersForDevice('import { AbsoluteLayout } from "/node_modules/@nativescript/core/index.js";', ORIGIN, 42);
 		expect(out).toBe('import { AbsoluteLayout } from "/ns/core";');
 	});
+
+	// ─── Pattern 3: side-effect imports at start of input ─────────────────────
+	// Regression: the legacy `[;\n]` anchor required a preceding `;` or `\n`,
+	// so a side-effect import on line 0 of the transformed module body was
+	// served raw. Concretely, `/ns/core/inspector_modules` whose first body
+	// line was `import "/@fs/.../@nativescript/core/globals/index.js";` leaked
+	// the `/@fs/` URL to the device, bypassing the `/ns/core` bridge's
+	// define-injection and producing a `__DEV__ is not defined` ReferenceError
+	// from `platform-check.js`.
+	//
+	// Output specifiers are emitted in the canonical `/ns/core/<sub>` form
+	// (no `.js`, no `/index`) per `normalizeCoreSub`.
+	it('rewrites a side-effect core import that is the very first line of input', () => {
+		const input = 'import "/@fs/Users/x/y/node_modules/@nativescript/core/globals/index.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('import "/ns/core/globals";');
+		expect(out).not.toContain('/@fs/');
+	});
+
+	it('rewrites side-effect core imports both at start and mid-file', () => {
+		const input = ['import "/@fs/Users/x/y/node_modules/@nativescript/core/globals/index.js";', 'import "/ns/core/debugger/webinspector-network.ios";', 'import "/@fs/Users/x/y/node_modules/@nativescript/core/utils/native-helper.ios.js";'].join('\n');
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		// First and third imports must be rewritten; the middle one (already
+		// canonical) must be untouched.
+		expect(out).toContain('import "/ns/core/globals";');
+		expect(out).toContain('import "/ns/core/utils/native-helper.ios";');
+		expect(out).toContain('import "/ns/core/debugger/webinspector-network.ios";');
+		expect(out).not.toContain('/@fs/');
+	});
+
+	it('preserves leading whitespace before a first-line side-effect import', () => {
+		// Some transforms emit a leading space before the first import.
+		const input = '  import "/node_modules/@nativescript/core/globals/index.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('  import "/ns/core/globals";');
+	});
+
+	it('rewrites a first-line core import preceded only by a newline', () => {
+		const input = '\nimport "/node_modules/@nativescript/core/globals/index.js";';
+		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
+		expect(out).toBe('\nimport "/ns/core/globals";');
+	});
 });
 
 // ─── isDeepCoreSubpath ─────────────────────────────────────────────────────────

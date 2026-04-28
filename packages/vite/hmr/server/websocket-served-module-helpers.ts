@@ -3,6 +3,7 @@ import * as t from '@babel/types';
 
 import * as PAT from './constants.js';
 import { isDeepCoreSubpath } from './core-sanitize.js';
+import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { extractDirectExportedNames } from './websocket-core-bridge.js';
 
 const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
@@ -567,7 +568,7 @@ export function deduplicateLinkerImports(code: string): string {
 	}
 }
 
-export function wrapCommonJsModuleForDevice(code: string): string {
+export function wrapCommonJsModuleForDevice(code: string, absolutePath?: string | null): string {
 	if (!code) return code;
 
 	try {
@@ -593,6 +594,22 @@ export function wrapCommonJsModuleForDevice(code: string): string {
 			const name = match[1];
 			if (name !== '__esModule' && name !== 'default') {
 				namedExports.add(name);
+			}
+		}
+
+		// Static enumeration only sees `exports.foo = ...` and `Object.defineProperty(exports, 'foo', ...)`.
+		// Real-world packages like lodash attach their entire surface to a function inside an IIFE and
+		// then `module.exports = thatFunction`. Static analysis returns zero in that case. To handle
+		// these modules we ALSO load the package in the dev-server's Node context (only when we have a
+		// node_modules path) and merge the runtime keys. See `helpers/cjs-named-exports.ts` for the
+		// reasoning and safety boundaries.
+		if (absolutePath) {
+			try {
+				for (const n of getCjsNamedExports(absolutePath)) {
+					namedExports.add(n);
+				}
+			} catch {
+				/* fall through to whatever we caught statically */
 			}
 		}
 

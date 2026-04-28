@@ -202,6 +202,116 @@ var PDFViewDelegateImpl_1;
 		expect(code).toContain('PDFViewDelegateImpl_1 =');
 	});
 
+	it('post-phase: handles __decorate array containing NativeClass + __metadata (constructor case)', () => {
+		// Real Angular compile output: when the class has a constructor TS injects
+		// `__metadata("design:paramtypes", [])` alongside `NativeClass()`. The original
+		// regex-based cleanup required the array to contain ONLY NativeClass() and
+		// silently skipped this case, leaving `NativeClass()` in the served code → ReferenceError.
+		const angularOutputWithMetadata = `import { __decorate, __metadata } from "tslib";
+let MyLocationManagerDelegate = class MyLocationManagerDelegate extends NSObject {
+  constructor() { super(); this.callbacks = new Map(); }
+  addCallback(key, callback) { this.callbacks.set(key, callback); }
+};
+MyLocationManagerDelegate.ObjCProtocols = [CLLocationManagerDelegate];
+MyLocationManagerDelegate = __decorate([NativeClass(), __metadata("design:paramtypes", [])], MyLocationManagerDelegate);
+export { MyLocationManagerDelegate };
+`;
+		const result = postCleanupNativeClass(angularOutputWithMetadata, '/app/src/my-location-manager.ts');
+		expect(result).toBeTruthy();
+		const code = result!.code;
+		// NativeClass must be gone — that was the actual ReferenceError trigger.
+		expect(code).not.toMatch(/\bNativeClass\b/);
+		// __metadata must survive (some other plugins may rely on the design:paramtypes hint).
+		expect(code).toContain('__metadata("design:paramtypes", [])');
+		// Should be downleveled to ES5 with __extends for native class detection.
+		expect(code).toContain('__extends(MyLocationManagerDelegate');
+		expect(code).not.toContain('class MyLocationManagerDelegate extends');
+		// __extends must NOT be imported from tslib — the NativeScript iOS V8 runtime
+		// installs a native-aware `__extends` on `globalThis` (ClassBuilder.mm
+		// `RegisterNativeTypeScriptExtendsFunction`) that performs ObjC class
+		// registration when the parent is a native wrapper. Importing tslib's
+		// __extends would shadow that global with a plain implementation, leading
+		// to `Cannot read properties of undefined (reading '__extended')` at
+		// `_super.call(this)` time.
+		expect(code).not.toMatch(/import\s*\{[^}]*\b__extends\b[^}]*\}\s*from\s*["'][^"']*tslib[^"']*["']/);
+		// The other tslib named imports (used by __decorate / __metadata calls) must remain.
+		expect(code).toMatch(/import\s*\{[^}]*\b__decorate\b[^}]*\}\s*from\s*["']tslib["']/);
+		expect(code).toMatch(/import\s*\{[^}]*\b__metadata\b[^}]*\}\s*from\s*["']tslib["']/);
+	});
+
+	it('post-phase: strips __extends from a pre-existing tslib named import (lets it fall through to global)', () => {
+		// Defense in depth: if some upstream plugin already added `__extends` to the
+		// tslib import, the post-cleanup must remove it again so the bare reference
+		// resolves to the runtime's native-aware global rather than tslib's plain
+		// implementation.
+		const preImported = `import { __decorate, __extends, __metadata } from "tslib";
+let X = class X extends NSObject {};
+X.ObjCProtocols = [P];
+X = __decorate([NativeClass(), __metadata("design:paramtypes", [])], X);
+export { X };
+`;
+		const result = postCleanupNativeClass(preImported, '/app/src/x.ts');
+		expect(result).toBeTruthy();
+		const code = result!.code;
+		// __extends reference is still present (used by the IIFE), but NOT imported.
+		expect(code).toContain('__extends(X');
+		expect(code).not.toMatch(/import\s*\{[^}]*\b__extends\b[^}]*\}\s*from\s*["'][^"']*tslib[^"']*["']/);
+		// __decorate and __metadata stay imported.
+		expect(code).toMatch(/import\s*\{[^}]*\b__decorate\b[^}]*\}\s*from\s*["']tslib["']/);
+		expect(code).toMatch(/import\s*\{[^}]*\b__metadata\b[^}]*\}\s*from\s*["']tslib["']/);
+	});
+
+	it('post-phase: drops the entire tslib import when __extends was the only specifier', () => {
+		// Edge case: a pre-existing `import { __extends } from "tslib"` would become
+		// `import { } from "tslib"` after stripping — which is a syntax error in some
+		// targets. We drop the whole import statement instead.
+		const onlyExtendsImport = `import { __extends } from "tslib";
+let X = class X extends NSObject {};
+X.ObjCProtocols = [P];
+X = __decorate([NativeClass()], X);
+export { X };
+`;
+		const result = postCleanupNativeClass(onlyExtendsImport, '/app/src/x.ts');
+		expect(result).toBeTruthy();
+		const code = result!.code;
+		expect(code).toContain('__extends(X');
+		// No tslib import should remain at all.
+		expect(code).not.toMatch(/from\s*["'][^"']*tslib[^"']*["']/);
+	});
+
+	it('post-phase: removes the entire __decorate call when NativeClass is the only entry', () => {
+		// When the array has only NativeClass (no metadata, no other decorators), the
+		// __decorate call should collapse to a self-assign (`X = X`) rather than leaving
+		// a stray `__decorate([], X)` that some bundlers will then try to inline.
+		const onlyNativeClass = `
+var Foo = class Foo extends NSObject {};
+Foo.ObjCProtocols = [SomeProto];
+Foo = __decorate([NativeClass()], Foo);
+`;
+		const result = postCleanupNativeClass(onlyNativeClass, '/app/src/foo.ts');
+		expect(result).toBeTruthy();
+		const code = result!.code;
+		expect(code).not.toMatch(/\bNativeClass\b/);
+		expect(code).not.toContain('__decorate');
+		expect(code).toContain('__extends(Foo');
+	});
+
+	it('post-phase: keeps remaining decorators when NativeClass is mixed with multiple others', () => {
+		// Belt-and-braces: if a user has a custom decorator alongside NativeClass, we
+		// must strip ONLY NativeClass and keep the rest intact.
+		const mixed = `
+var Bar = class Bar extends NSObject {};
+Bar = __decorate([CustomDecorator(), NativeClass(), AnotherOne()], Bar);
+`;
+		const result = postCleanupNativeClass(mixed, '/app/src/bar.ts');
+		expect(result).toBeTruthy();
+		const code = result!.code;
+		expect(code).not.toMatch(/\bNativeClass\b/);
+		expect(code).toContain('CustomDecorator()');
+		expect(code).toContain('AnotherOne()');
+		expect(code).toContain('__extends(Bar');
+	});
+
 	it('handles Android-style constructor returning global.__native(this) without leaking top-level return', () => {
 		const ANDROID_CONSTRUCTOR_TS = `
 @NativeClass

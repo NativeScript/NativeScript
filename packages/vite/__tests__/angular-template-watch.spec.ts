@@ -60,6 +60,24 @@ function createComponentFixture() {
 	};
 }
 
+function createCommentedStyleUrlsFixture() {
+	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ns-angular-template-watch-cmt-'));
+	const componentPath = path.join(tempDir, 'commented.component.ts');
+	const templatePath = path.join(tempDir, 'commented.component.html');
+	const stylePath = path.join(tempDir, 'commented.component.scss');
+
+	fs.writeFileSync(templatePath, '<Label text="Hello"></Label>');
+	fs.writeFileSync(componentPath, ["import { Component } from '@angular/core';", '', '@Component({', "  selector: 'app-commented',", "  templateUrl: './commented.component.html',", "  // styleUrls: ['./commented.component.scss'],", "  /* styleUrl: './commented.component.scss', */", '})', 'export class CommentedComponent {}'].join('\n'));
+
+	return {
+		tempDir,
+		componentPath,
+		templatePath,
+		stylePath,
+		componentCode: fs.readFileSync(componentPath, 'utf8'),
+	};
+}
+
 function createWorkspaceComponentFixture() {
 	const tempDir = fs.mkdtempSync(path.join(process.cwd(), '.tmp-ns-angular-template-watch-'));
 	const componentPath = path.join(tempDir, 'example.component.ts');
@@ -141,6 +159,30 @@ describe('angular-template-deps watch invalidation', () => {
 
 			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBe(true);
 			expect(plugin.shouldTransformCachedModule?.({ id: fixture.componentPath })).toBeNull();
+		} finally {
+			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
+		}
+	});
+
+	it('does not register watch entries for commented-out styleUrls / styleUrl declarations', () => {
+		const plugin = getAngularTemplateDepsPlugin();
+		const fixture = createCommentedStyleUrlsFixture();
+		const watchedFiles: string[] = [];
+
+		try {
+			plugin.transform?.call(
+				{
+					addWatchFile(filePath: string) {
+						watchedFiles.push(normalizePath(filePath));
+					},
+				},
+				fixture.componentCode,
+				fixture.componentPath,
+			);
+
+			expect(watchedFiles).toContain(normalizePath(fixture.templatePath));
+			expect(watchedFiles).not.toContain(normalizePath(fixture.stylePath));
+			expect(watchedFiles.some((f) => f.endsWith('.scss'))).toBe(false);
 		} finally {
 			fs.rmSync(fixture.tempDir, { recursive: true, force: true });
 		}

@@ -42,6 +42,31 @@ describe('ns-hmr-client vite plugin path handling', () => {
 		// When on the same drive, relative path should be node_modules/... and we normalize to POSIX.
 		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
 	});
+
+	it('routes hoisted workspace node_modules through /ns/m/ when node_modules sits above the project root', () => {
+		// Nx / pnpm / Yarn workspaces hoist node_modules to the workspace root. With the
+		// previous logic, path.relative produced "../../node_modules/..." which the
+		// device's URL constructor collapses to a raw "/node_modules/..." URL — bypassing
+		// the AST normalizer that strips /@vite/client. This regression test guards the
+		// monorepo path so the import always lands on /ns/m/node_modules/... .
+		const projectRoot = '/Users/me/repo/apps/my-app';
+		const clientFsPath = '/Users/me/repo/node_modules/@nativescript/vite/hmr/client/index.js';
+
+		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
+
+		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
+	});
+
+	it('routes pnpm-style nested node_modules through their last node_modules segment', () => {
+		const projectRoot = '/Users/me/repo/apps/my-app';
+		const clientFsPath = '/Users/me/repo/node_modules/.pnpm/@nativescript+vite@8.0.0/node_modules/@nativescript/vite/hmr/client/index.js';
+
+		const result = computeClientImportSpecifier({ projectRoot, clientFsPath });
+
+		// We use the LAST /node_modules/ segment so the resolved /ns/m/ route still
+		// matches the actual file the dev server would serve under that virtual path.
+		expect(result).toBe('/ns/m/node_modules/@nativescript/vite/hmr/client/index.js');
+	});
 });
 
 describe('createNsDevSessionDescriptor', () => {

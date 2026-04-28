@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { normalizeNodeModulesSpecifier, resolveVendorFromCandidate } from './websocket.js';
+import { normalizeNodeModulesSpecifier, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { registerVendorManifest, clearVendorManifest } from '../shared/vendor/registry.js';
 
 // ---------------------------------------------------------------------------

@@ -75,7 +75,7 @@ export async function finalizeNsMServedModule(options: FinalizeNsMServedModuleOp
 		code = deduplicateLinkerImports(code);
 	} catch {}
 
-	code = wrapCommonJsModuleForDevice(code);
+	code = wrapCommonJsModuleForDevice(code, resolvedCandidate || null);
 	assertNoOptimizedArtifacts(code, `NS M ${resolvedCandidate || spec}`);
 	code = appendRoutesDefaultExport(code);
 

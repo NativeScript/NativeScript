@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { wrapCommonJsModuleForDevice } from './websocket.js';
+import { clearCjsNamedExportsCache } from '../helpers/cjs-named-exports.js';
 import { installModuleProvenanceRecorder } from '../shared/runtime/module-provenance.js';
 
 describe('wrapCommonJsModuleForDevice', () => {
@@ -74,5 +78,73 @@ describe('wrapCommonJsModuleForDevice', () => {
 		const source = 'export const value = 1;\n';
 
 		expect(wrapCommonJsModuleForDevice(source)).toBe(source);
+	});
+
+	it('synthesizes named exports from runtime-loaded module when given absolute path (lodash shape)', () => {
+		// Lodash assigns its entire surface to a function inside an IIFE and
+		// only `module.exports = thatFunction`. There are zero `exports.foo = ...`
+		// patterns in the source — static analysis returns nothing, so the wrapper
+		// would emit only `export default`. With the absolute-path arg the wrapper
+		// loads the module in Node and merges runtime-enumerated keys, satisfying
+		// `import { capitalize } from 'lodash'` at parse time on the device.
+		clearCjsNamedExportsCache();
+		const fixtureRoot = mkdtempSync(join(tmpdir(), 'ns-hmr-cjs-wrap-'));
+		try {
+			mkdirSync(join(fixtureRoot, 'node_modules/fake-lodash'), { recursive: true });
+			const target = join(fixtureRoot, 'node_modules/fake-lodash/index.js');
+			const source = ['(function () {', '  function _(value) { return { __wrapped: value }; }', "  ['capitalize', 'chunk', 'debounce'].forEach(function (m) {", '    _[m] = function () { return m; };', '  });', '  module.exports = _;', '}.call(this));'].join('\n');
+			writeFileSync(target, source);
+
+			const wrapped = wrapCommonJsModuleForDevice(source, target);
+
+			expect(wrapped).toContain('export default __cjs_mod;');
+			expect(wrapped).toContain('as capitalize');
+			expect(wrapped).toContain('as chunk');
+			expect(wrapped).toContain('as debounce');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+			clearCjsNamedExportsCache();
+		}
+	});
+
+	it('falls back to static analysis when the module fails to load at runtime', () => {
+		clearCjsNamedExportsCache();
+		const fixtureRoot = mkdtempSync(join(tmpdir(), 'ns-hmr-cjs-wrap-'));
+		try {
+			mkdirSync(join(fixtureRoot, 'node_modules/throws-pkg'), { recursive: true });
+			const target = join(fixtureRoot, 'node_modules/throws-pkg/index.js');
+			// `exports.named` is statically detectable, but the throw means runtime
+			// enumeration returns []. The static regex result must still be honored.
+			const source = ['exports.named = 1;', 'throw new Error("boom");'].join('\n');
+			writeFileSync(target, source);
+
+			const wrapped = wrapCommonJsModuleForDevice(source, target);
+			expect(wrapped).toContain('as named');
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+			clearCjsNamedExportsCache();
+		}
+	});
+
+	it('merges static `exports.foo = ...` keys with runtime-enumerated keys without duplicates', () => {
+		clearCjsNamedExportsCache();
+		const fixtureRoot = mkdtempSync(join(tmpdir(), 'ns-hmr-cjs-wrap-'));
+		try {
+			mkdirSync(join(fixtureRoot, 'node_modules/mixed-pkg'), { recursive: true });
+			const target = join(fixtureRoot, 'node_modules/mixed-pkg/index.js');
+			const source = ['exports.staticKey = 1;', 'exports.shared = 2;', 'Object.assign(exports, { runtimeKey: 3, shared: 4 });'].join('\n');
+			writeFileSync(target, source);
+
+			const wrapped = wrapCommonJsModuleForDevice(source, target);
+
+			expect(wrapped).toContain('as staticKey');
+			expect(wrapped).toContain('as runtimeKey');
+			// `shared` should appear exactly once.
+			const sharedMatches = (wrapped.match(/as shared\b/g) || []).length;
+			expect(sharedMatches).toBe(1);
+		} finally {
+			rmSync(fixtureRoot, { recursive: true, force: true });
+			clearCjsNamedExportsCache();
+		}
 	});
 });

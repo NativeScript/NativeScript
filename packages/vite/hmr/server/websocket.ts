@@ -12,13 +12,14 @@ const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 import * as t from '@babel/types';
 import { existsSync, readFileSync, statSync } from 'fs';
 import { astNormalizeModuleImportsAndHelpers, astVerifyAndAnnotateDuplicates } from '../helpers/ast-normalizer.js';
+import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { stripRtCoreSentinel, stripDanglingViteCjsImports } from '../helpers/sanitize.js';
 import { WebSocketServer } from 'ws';
 import * as path from 'path';
 import { createHash } from 'crypto';
 import * as PAT from './constants.js';
 import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
-import { getPackageJson, getProjectFilePath, getProjectRootPath } from '../../helpers/project.js';
+import { getMonorepoWorkspaceRoot, getPackageJson, getProjectFilePath, getProjectRootPath } from '../../helpers/project.js';
 import { loadPrebuiltVendorManifest } from '../shared/vendor/manifest-loader.js';
 import '../vendor-bootstrap.js';
 import { NS_NATIVE_TAGS } from './compiler.js';
@@ -59,6 +60,7 @@ import {
 	resolveNodeModulesPackageBoundary,
 	resolveVendorFromCandidate,
 	resolveVendorRouting,
+	rewriteFsAbsoluteToNsM,
 	shouldPreserveBareRuntimePluginSubpathImport,
 	stripDecoratedServePrefixes,
 	tryReadRawExplicitJavaScriptModule,
@@ -1186,7 +1188,7 @@ function deduplicateLinkerImports(code: string): string {
 	}
 }
 
-export function wrapCommonJsModuleForDevice(code: string): string {
+export function wrapCommonJsModuleForDevice(code: string, absolutePath?: string | null): string {
 	if (!code) return code;
 
 	try {
@@ -1212,6 +1214,22 @@ export function wrapCommonJsModuleForDevice(code: string): string {
 			const name = em[1];
 			if (name !== '__esModule' && name !== 'default') {
 				namedExports.add(name);
+			}
+		}
+
+		// Static enumeration only sees `exports.foo = ...` and `Object.defineProperty(exports, 'foo', ...)`.
+		// Real-world packages like lodash attach their entire surface to a function inside an IIFE and
+		// then `module.exports = thatFunction`. Static analysis returns zero in that case. To handle
+		// these modules we ALSO load the package in the dev-server's Node context (only when we have a
+		// node_modules path) and merge the runtime keys. See `helpers/cjs-named-exports.ts` for the
+		// reasoning and safety boundaries.
+		if (absolutePath) {
+			try {
+				for (const n of getCjsNamedExports(absolutePath)) {
+					namedExports.add(n);
+				}
+			} catch {
+				/* fall through to whatever we caught statically */
 			}
 		}
 
@@ -1600,10 +1618,18 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		result = result.replace(/;\s*import\s+/g, ';\nimport ');
 		result = result.replace(/}\s*import\s+/g, '}\nimport ');
 		// Fallback: ensure any static import that isn't at start of line gets a newline before it.
-		// Only match after statement-ending characters (;, }, ), ], quotes) — NOT after `*` or
-		// spaces inside JSDoc comment blocks, which would accidentally extract example imports
-		// from documentation comments and hoist them as real code.
-		result = result.replace(/([;}\)\]'"`])\s*(import\s+[^;\n]*\s+from\s*["'][^"']+["'])/g, '$1\n$2');
+		//
+		// Only match after **structural** statement-ending characters: `;`, `}`, `)`, `]`. We
+		// deliberately do NOT include `'`, `"`, or `` ` `` here — those are string-literal
+		// terminators (and openers!), and including them caused the regex to fire inside
+		// example code embedded in error strings. Concrete failure observed:
+		// `@supabase/realtime-js` throws an Error whose message contains the literal
+		// `'  import ws from "ws"\n' +`. With `'` in the delimiter class, the engine matched
+		// the opening `'` of that string literal as a "statement terminator" and rewrote the
+		// example to `'\nimport ws from "..."` — splitting the string across two lines and
+		// producing a SyntaxError on device. The structural delimiters below do not appear
+		// inside string-literal openers, so the rewrite is safe.
+		result = result.replace(/([;}\)\]])\s*(import\s+[^;\n]*\s+from\s*["'][^"']+["'])/g, '$1\n$2');
 	} catch {}
 
 	// Collapse duplicate destructuring from the same temp namespace var (e.g., multiple const { x } = __ns_rt_ns1)
@@ -1958,6 +1984,10 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	const mixedRuntimePluginHttpRootPackages = collectMixedRuntimePluginHttpRootPackages(result, projectRoot);
 	const isDynamicImportPrefix = (prefix: string): boolean => /import\(\s*["']?$/.test(prefix.trimStart());
 	const importerDir = path.posix.dirname(importerPath);
+	// Resolved once per `rewriteImports` call so the per-import `/@fs/` rewriter
+	// can convert workspace-lib paths back into our `/ns/m/` pipeline. Memoized
+	// upstream — calling here is cheap and we reuse the value below.
+	const monorepoWorkspaceRootForRewrite = getMonorepoWorkspaceRoot(projectRoot);
 	// Determine importer output relative path (project-relative .mjs) to compute relative imports consistently
 	const importerOutRel = outputDirOverrideRel || getProjectRelativeImportPath(importerPath, projectRoot) || stripToProjectRelative(importerPath, projectRoot).replace(/\.(ts|js|tsx|jsx|mjs|mts|cts)$/i, '.mjs');
 	const importerOutDir = importerOutRel ? path.posix.dirname(importerOutRel) : '';
@@ -2026,7 +2056,22 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 
 			// Resolve the JSON file path relative to the importer
 			let fullPath: string;
-			if (cleanPath.startsWith('/')) {
+			if (cleanPath.startsWith('/@fs/')) {
+				// Vite filesystem URL: `/@fs/<abs-path>`. Strip the `/@fs` prefix
+				// (4 chars, leaving the leading `/`) to recover the absolute
+				// path. This matches `rewriteFsAbsoluteToNsM`'s convention and
+				// covers both bare specifiers Vite pre-resolved out of the
+				// project root (e.g. `emojibase-data/en/compact.json` →
+				// `/@fs/.../node_modules/.../compact.json`) and tsconfig
+				// path-alias targets that resolve outside the project root
+				// (e.g. `~shared/...metadata.json` → `/@fs/.../tools/...json`).
+				// Without this branch the next `else if` would `path.join` the
+				// `/@fs/...` URL onto `projectRoot`, collapsing the leading `/`
+				// and producing a malformed nested path that always misses on
+				// `existsSync` and triggers a `ReferenceError` at runtime when
+				// the JSON-import-failed comment leaves the binding undefined.
+				fullPath = cleanPath.slice('/@fs'.length);
+			} else if (cleanPath.startsWith('/')) {
 				// Absolute from project root
 				fullPath = path.join(projectRoot, cleanPath);
 			} else if (cleanPath.startsWith('./') || cleanPath.startsWith('../')) {
@@ -2046,7 +2091,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 				// Inline the JSON as a const declaration
 				return `const ${varName} = ${jsonContent};`;
 			} else {
-				console.warn(`[rewrite] JSON file not found: ${fullPath}`);
+				console.warn(`[rewrite] JSON file not found: ${fullPath} (specifier=${jsonPath})`);
 			}
 		} catch (error) {
 			console.warn(`[rewrite] Could not inline JSON import: ${jsonPath}`, error);
@@ -2108,9 +2153,37 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 
 		spec = normalizeNativeScriptCoreSpecifier(spec);
 
+		// Pull `/@fs/<abs-path>` URLs back into the `/ns/m/` pipeline so they
+		// hit our CJS/UMD-wrapping handler. Vite emits `/@fs/...` for any
+		// resolved id outside the configured `root` — including hoisted
+		// `node_modules/<pkg>` entries and workspace libs in monorepos. Left
+		// untouched, the device fetches them through Vite's standard
+		// middleware which never invokes `wrapCommonJsModuleForDevice`, so a
+		// UMD module like papaparse crashes on `(this).Papa = factory()`
+		// because top-level `this` is `undefined` in ESM context.
+		if (spec.startsWith('/@fs/')) {
+			const rewritten = rewriteFsAbsoluteToNsM(spec, projectRoot, monorepoWorkspaceRootForRewrite);
+			if (rewritten) {
+				if (httpOriginSafe) {
+					return `${prefix}${httpOriginSafe}${rewritten}${suffix}`;
+				}
+				return `${prefix}${rewritten}${suffix}`;
+			}
+			// Path resolves outside both roots — leave Vite's URL alone as a
+			// last resort. The original behaviour was to fall through here
+			// and let downstream branches (e.g. `normalizeNodeModulesSpecifier`)
+			// handle paths whose abs form happens to contain `/node_modules/`,
+			// so preserve that for the unrewritable case below.
+		}
+
 		// Route Vite virtual modules (/@solid-refresh, etc.) through /ns/m/ so their
 		// internal imports (e.g. solid-js) get vendor-rewritten by our pipeline.
-		// Skip known Vite internals (/@vite/, /@id/, /@fs/) which are handled elsewhere.
+		// Skip known Vite internals (/@vite/, /@id/) which are handled elsewhere.
+		// `/@fs/` is intentionally excluded above; if we ever reach here with a
+		// `/@fs/` spec it means the rewrite-to-`/ns/m/` pass couldn't anchor it
+		// under projectRoot or workspaceRoot, so we fall through and rely on the
+		// `normalizeNodeModulesSpecifier` branch below for paths that still
+		// contain a `/node_modules/<pkg>/` segment.
 		if (spec.startsWith('/@') && !/^\/@(?:vite|id|fs)\//.test(spec)) {
 			const out = `/ns/m${spec}`;
 			if (httpOriginSafe) {
@@ -3055,10 +3128,11 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 					const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
 					const transformRoot = (server as any).config?.root || process.cwd();
+					const transformWorkspaceRoot = getMonorepoWorkspaceRoot(transformRoot);
 					const candidates: string[] = [];
 					if (hasExt) candidates.push(spec);
 					candidates.push(baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs');
-					const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, transformRoot);
+					const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, transformRoot, transformWorkspaceRoot);
 					let transformed: TransformResult | null = null;
 					let resolvedCandidate: string | null = null;
 					for (const cand of transformCandidates) {
@@ -3122,7 +3196,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							const depBase = abs.replace(/\.(ts|js|tsx|jsx|mjs|mts|cts)$/i, '');
 							if (seen.has(depBase)) continue;
 							seen.add(depBase);
-							const depCandidates = filterExistingNodeModulesTransformCandidates(depBase, [depBase + '.ts', depBase + '.js', depBase + '.tsx', depBase + '.jsx', depBase + '.mjs', depBase + '.mts', depBase + '.cts', depBase + '.vue', depBase + '/index.ts', depBase + '/index.js', depBase + '/index.tsx', depBase + '/index.jsx', depBase + '/index.mjs'], transformRoot);
+							const depCandidates = filterExistingNodeModulesTransformCandidates(depBase, [depBase + '.ts', depBase + '.js', depBase + '.tsx', depBase + '.jsx', depBase + '.mjs', depBase + '.mts', depBase + '.cts', depBase + '.vue', depBase + '/index.ts', depBase + '/index.js', depBase + '/index.tsx', depBase + '/index.jsx', depBase + '/index.mjs'], transformRoot, transformWorkspaceRoot);
 							let depTrans: TransformResult | null = null;
 							let depResolved: string | null = null;
 							for (const c of depCandidates) {
@@ -3219,6 +3293,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						return;
 					}
 					const serverRoot = ((server as any).config?.root || process.cwd()) as string;
+					const monorepoWorkspaceRoot = getMonorepoWorkspaceRoot(serverRoot);
 					spec = spec.replace(/[?#].*$/, '');
 					// Accept path-based boot/HMR prefixes:
 					//   /ns/m/__ns_boot__/b1/<real-spec>
@@ -3288,7 +3363,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 					const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
 					const candidates = [...(hasExt ? [spec] : []), baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs'];
-					const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, serverRoot);
+					const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, serverRoot, monorepoWorkspaceRoot);
 					let transformed: TransformResult | null = null;
 					let resolvedCandidate: string | null = null;
 					const rawExplicitModule = tryReadRawExplicitJavaScriptModule(spec, serverRoot);
@@ -3349,18 +3424,24 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							}
 						} catch {}
 					}
-					// Fallback 2: try /@fs absolute path under project root (Vite file system alias)
+					// Fallback 2: try /@fs absolute path under project root (Vite file system alias).
+					// In a monorepo with hoisted node_modules the file may live above
+					// `serverRoot`, so try the workspace root next.
 					if (!transformed?.code) {
 						try {
 							const toPosix = (p: string) => p.replace(/\\/g, '/');
-							const rootPosix = toPosix(serverRoot).replace(/\/$/, '');
-							const absPosix = `${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
-							const fsId = `/@fs${absPosix}`;
-							if (resolveCandidateFilePath(fsId, serverRoot)) {
-								const r = await transformWithTimeout(fsId);
-								if (r?.code) {
-									transformed = r;
-									resolvedCandidate = fsId;
+							const rootsToTry = [serverRoot, ...(monorepoWorkspaceRoot && path.resolve(monorepoWorkspaceRoot) !== path.resolve(serverRoot) ? [monorepoWorkspaceRoot] : [])];
+							for (const root of rootsToTry) {
+								const rootPosix = toPosix(root).replace(/\/$/, '');
+								const absPosix = `${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
+								const fsId = `/@fs${absPosix}`;
+								if (resolveCandidateFilePath(fsId, serverRoot, monorepoWorkspaceRoot)) {
+									const r = await transformWithTimeout(fsId);
+									if (r?.code) {
+										transformed = r;
+										resolvedCandidate = fsId;
+										break;
+									}
 								}
 							}
 						} catch {}
@@ -3661,7 +3742,7 @@ export const piniaSymbol = p.piniaSymbol;
 					//    typically fall back to `self` or `globalThis`.
 					//  - `module`, `exports` must be shims since they don't exist in ESM.
 					try {
-						code = wrapCommonJsModuleForDevice(code);
+						code = wrapCommonJsModuleForDevice(code, resolvedCandidate || null);
 					} catch {}
 					try {
 						assertNoOptimizedArtifacts(code, `NS M ${resolvedCandidate || spec}`);

@@ -8,16 +8,25 @@ export const QUERY_PATTERN = /\?.*$/;
 export const VARIABLE_DYNAMIC_IMPORT_HELPER_PATTERN = /__variableDynamicImportRuntimeHelper\s*=/;
 
 // Import/export matchers (static and dynamic)
-export const IMPORT_PATTERN_1 = /(?:^|\n)(\s*import\s+[^'";]*?\s+from\s+["'])([^"']+)(["'];?)/g;
-export const IMPORT_PATTERN_2 = /(?:^|\n)(\s*export\s+[^'";]*?\s+from\s+["'])([^"']+)(["'];?)/g;
+//
+// Each pattern's first capture group includes the optional leading anchor
+// (`^|\n`) so the replacement function preserves the line break that would
+// otherwise be silently consumed by the regex engine. Without this, two
+// concatenated patterns like:
+//   `})();\nexport * from "a"\nexport * from "b"`
+// would collapse to:
+//   `})();export * from "a"export * from "b"`
+// because each `(?:^|\n)` ate a newline that no replacement string put back.
+export const IMPORT_PATTERN_1 = /((?:^|\n)\s*import\s+[^'";]*?\s+from\s+["'])([^"']+)(["'];?)/g;
+export const IMPORT_PATTERN_2 = /((?:^|\n)\s*export\s+[^'";]*?\s+from\s+["'])([^"']+)(["'];?)/g;
 export const EXPORT_PATTERN = IMPORT_PATTERN_2;
 export const IMPORT_PATTERN_3 = /(import\(\s*["'])([^"']+)(["']\s*\))/g;
 // Side-effect imports: import "spec" / import 'spec' (no `from`, no bindings)
-export const IMPORT_PATTERN_SIDE_EFFECT = /(?:^|\n)(\s*import\s+["'])([^"']+)(["'];?)/g;
+export const IMPORT_PATTERN_SIDE_EFFECT = /((?:^|\n)\s*import\s+["'])([^"']+)(["'];?)/g;
 
 // Vue-specific patterns
 export const VUE_FILE_PATTERN = /\.vue(?:\?[^"']*)?$/;
-export const VUE_FILE_IMPORT = /(?:^|\n)(\s*import\s+[^'";]*?\s+from\s+["'])([^"']+\.vue(?:\?[^"']*)?)(["'];?)/g;
+export const VUE_FILE_IMPORT = /((?:^|\n)\s*import\s+[^'";]*?\s+from\s+["'])([^"']+\.vue(?:\?[^"']*)?)(["'];?)/g;
 
 // Vite/HMR noise cleanup
 export const VITE_CLIENT_IMPORT = /(?:^|\n)\s*import\s+['"](?:\/@vite\/client|@vite\/client)['"];?/g;

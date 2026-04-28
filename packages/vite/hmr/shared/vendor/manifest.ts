@@ -2,12 +2,13 @@ import type { Plugin, ViteDevServer } from 'vite';
 import * as esbuild from 'esbuild';
 import { readFile } from 'fs/promises';
 import path from 'path';
-import { readFileSync } from 'fs';
+import fs, { readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { createRequire } from 'node:module';
 import { registerVendorManifest, clearVendorManifest, getVendorManifest } from './registry.js';
 import { generatePlatformPolyfills } from '../runtime/platform-polyfills.js';
 import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
+import { getGlobalDefines } from '../../../helpers/global-defines.js';
 
 interface VendorManifestModuleEntry {
 	id: string;
@@ -419,9 +420,31 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 			'.css': 'text',
 			'.json': 'json',
 		},
-		define: {
-			'process.env.NODE_ENV': JSON.stringify(mode),
-		},
+		// Mirror Vite's main-bundle DefinePlugin in the vendor esbuild build.
+		//
+		// esbuild's `define` requires every value to be a JS expression
+		// expressed as a string (the same constraint Vite normalises away).
+		// `getGlobalDefines()` returns a few raw `boolean` values for
+		// historical reasons (e.g. `__COMMONJS__: false`,
+		// `__UI_USE_XML_PARSER__: true`), so coerce any non-string entries
+		// through `JSON.stringify` before handing the table to esbuild.
+		define: (() => {
+			const raw = getGlobalDefines({
+				platform,
+				targetMode: mode,
+				verbose: !!options.verbose,
+				flavor: flavor ?? '',
+				isCI: !!process.env.CI,
+			}) as Record<string, unknown>;
+			const out: Record<string, string> = {};
+			for (const [key, value] of Object.entries(raw)) {
+				out[key] = typeof value === 'string' ? value : JSON.stringify(value);
+			}
+			// Belt-and-suspenders: keep the original NODE_ENV define explicit so
+			// future changes to `getGlobalDefines()` can't silently drop it.
+			out['process.env.NODE_ENV'] = JSON.stringify(mode);
+			return out;
+		})(),
 		plugins,
 		// Externalize ALL Node built-in modules. The vendor bundle runs on the
 		// NativeScript device runtime, not Node, so any Node API reference must
@@ -553,10 +576,18 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 	const packageJsonPath = path.resolve(projectRoot, 'package.json');
 	const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 	const projectRequire = createRequire(packageJsonPath);
+	const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 
 	const vendor = new Set<string>();
 	const visited = new Set<string>();
 	const queue: string[] = [];
+	// Local-source deps (file: pointing to a directory, link:, workspace:) are
+	// app code, not pre-packaged libraries. esbuild's vendor pipeline has none
+	// of the user's tsconfig path aliases or other Vite plugin resolvers, so
+	// any aliased import inside their source will fail with "Could not
+	// resolve". We collect their names here so that peer-dep traversal can
+	// also skip them.
+	const localSourceNames = new Set<string>();
 
 	const isPackageRootSpecifier = (name: string): boolean => {
 		if (!name) return false;
@@ -598,7 +629,23 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 		if (!deps) {
 			return;
 		}
-		for (const name of Object.keys(deps)) {
+		for (const [name, spec] of Object.entries(deps)) {
+			if (isUnvendorableLocalSource(name, spec, projectRequire, platform)) {
+				// Defer to the regular Vite/Rolldown pipeline (HTTP-served in
+				// dev, bundled in production) where the
+				// ns-tsconfig-paths-resolver and the rest of the plugin chain
+				// can handle aliased imports. Local .tgz file: refs ARE proper
+				// packaged libraries and DO stay in vendor; so do file:
+				// directory refs that point at packages with compiled JS
+				// entry points (a common NativeScript monorepo pattern that
+				// hoists installs and re-exposes them from the app's
+				// package.json via `file:../../node_modules/<name>`).
+				localSourceNames.add(name);
+				if (debug) {
+					console.log(`[vendor] skipping local source dependency ${name} (spec: ${String(spec)})`);
+				}
+				continue;
+			}
 			addCandidate(name);
 		}
 	};
@@ -673,7 +720,7 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 
 		const peerDependencies = Object.keys(dependencyPkg.peerDependencies ?? {});
 		for (const peer of peerDependencies) {
-			if (shouldSkipDependency(peer)) {
+			if (shouldSkipDependency(peer) || localSourceNames.has(peer)) {
 				continue;
 			}
 			if (projectDeps.dependencies.has(peer) || projectDeps.optional.has(peer) || projectDeps.dev.has(peer)) {
@@ -758,8 +805,142 @@ function shouldSkipDependency(name: string): boolean {
 	return false;
 }
 
+const COMPILED_JS_ENTRY_EXTENSIONS = ['.js', '.mjs', '.cjs'];
+const COMPILED_JS_ENTRY_REGEX = /\.(?:c|m)?jsx?$/;
+
+function compiledJsExtensionsForPlatform(platform: string | undefined): string[] {
+	const exts = [...COMPILED_JS_ENTRY_EXTENSIONS];
+	switch (platform) {
+		case 'android':
+			exts.push('.android.js');
+			break;
+		case 'ios':
+			exts.push('.ios.js', '.visionos.js');
+			break;
+		case 'visionos':
+			exts.push('.visionos.js', '.ios.js');
+			break;
+	}
+	return exts;
+}
+
+/**
+ * Determine whether a `package.json` dependency must be excluded from the
+ * HMR vendor bundle because esbuild's standalone vendor pipeline can't
+ * resolve its source.
+ *
+ * The HMR vendor bundle is generated by a standalone esbuild build that
+ * has none of the Vite plugin chain (most notably
+ * `ns-tsconfig-paths-resolver`), so any aliased import inside the
+ * package's **source** files will fail with "Could not resolve" and abort
+ * the whole bundle.
+ *
+ * Skip:
+ *  - `link:` and `workspace:` refs (always app-side source).
+ *  - `file:` refs to a directory whose installed package only ships
+ *    TypeScript/JSX source (no compiled `.js`/`.mjs`/`.cjs` entry).
+ *
+ * Keep (return false):
+ *  - Regular semver / git / url specs (normal third-party libraries).
+ *  - Local `.tgz` file refs (pre-packaged libraries extracted at install).
+ *  - `file:` directory refs that resolve to a package with a compiled JS
+ *    entry — a common NativeScript monorepo convention where the app's
+ *    `package.json` redirects to `../../node_modules/<name>` to avoid
+ *    duplicate installs while letting the NativeScript CLI discover
+ *    plugins from the app directory.
+ */
+export function isUnvendorableLocalSource(name: string, spec: unknown, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
+	if (typeof spec !== 'string') return false;
+	if (spec.startsWith('link:') || spec.startsWith('workspace:')) return true;
+	if (!spec.startsWith('file:')) return false;
+	// Tarballs are already pre-packaged libraries — install extracts them
+	// into a normal node_modules entry.
+	if (/\.t(?:ar\.)?gz(?:[?#].*)?$/.test(spec)) return false;
+	// Directory file: refs need a deeper check: peek at the installed
+	// package.json and ask "does this ship compiled JS?". If yes, vendor
+	// it. If no (TS source only), defer to the regular Vite pipeline.
+	return !packageHasCompiledJsEntry(name, projectRequire, platform);
+}
+
+function packageHasCompiledJsEntry(name: string, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
+	let pkgJsonPath: string;
+	try {
+		pkgJsonPath = projectRequire.resolve(`${name}/package.json`);
+	} catch {
+		return false;
+	}
+	let pkg: any;
+	try {
+		pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+	} catch {
+		return false;
+	}
+	const pkgDir = path.dirname(pkgJsonPath);
+	const candidates: string[] = [];
+	const pushCandidate = (value: unknown) => {
+		if (typeof value === 'string' && value) candidates.push(value);
+	};
+	pushCandidate(pkg.module);
+	pushCandidate(pkg.main);
+	// Recursively flatten conditional `exports` maps to surface concrete
+	// file paths. We only need `string` leaves; anything else (function-
+	// based exports, etc.) doesn't apply to esbuild's resolution.
+	const visitExports = (node: any) => {
+		if (!node) return;
+		if (typeof node === 'string') {
+			pushCandidate(node);
+			return;
+		}
+		if (Array.isArray(node)) {
+			for (const item of node) visitExports(item);
+			return;
+		}
+		if (typeof node === 'object') {
+			for (const value of Object.values(node)) visitExports(value);
+		}
+	};
+	visitExports(pkg.exports);
+	if (candidates.length === 0) {
+		// node's default lookup falls back to `index.js`.
+		candidates.push('index');
+	}
+	const extensionsToTry = compiledJsExtensionsForPlatform(platform);
+	for (const cand of candidates) {
+		const abs = path.resolve(pkgDir, cand);
+		const ext = path.extname(cand);
+		if (COMPILED_JS_ENTRY_REGEX.test(cand)) {
+			// Explicit JS extension. If the file exists, vendor it. If not
+			// (a NativeScript plugin commonly declares `main: "index.js"`
+			// but ships only platform variants like `index.ios.js`), try
+			// the platform-specific variants which esbuild's
+			// `resolveExtensions` will pick up at bundle time.
+			if (fs.existsSync(abs)) return true;
+			const baseAbs = abs.slice(0, -ext.length);
+			for (const e of extensionsToTry) {
+				if (fs.existsSync(baseAbs + e)) return true;
+			}
+			continue;
+		}
+		if (!ext) {
+			// Extensionless main — try plain JS variants AND the
+			// platform-specific variants NativeScript plugins commonly use
+			// (`index.ios.js`, `index.android.js`, `index.visionos.js`).
+			for (const e of extensionsToTry) {
+				if (fs.existsSync(abs + e)) return true;
+			}
+			continue;
+		}
+		// A non-JS extension (typically `.ts`/`.tsx`) means the package
+		// only ships TS source — esbuild's vendor pipeline can't resolve
+		// any tsconfig-aliased imports inside it.
+	}
+	return false;
+}
+
 export const __test_collectVendorModules = collectVendorModules;
 export const __test_createVendorBundleRuntimeModule = createVendorBundleRuntimeModule;
+export const __test_isUnvendorableLocalSource = isUnvendorableLocalSource;
+export const __test_packageHasCompiledJsEntry = packageHasCompiledJsEntry;
 
 function canResolveDependencyPackageJson(specifier: string, projectRequire: ReturnType<typeof createRequire>): boolean {
 	try {

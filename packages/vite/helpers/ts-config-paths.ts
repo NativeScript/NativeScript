@@ -216,6 +216,34 @@ export function createTsConfigPathsResolver(opts: { paths: Record<string, string
 		return undefined;
 	}
 
+	// Per-resolver caches.
+	//
+	// Hot-path note: this plugin is `enforce: 'pre'`, so it's invoked for every
+	// `resolveId` call in the build — including thousands of relative imports
+	// (`./foo`), absolute paths, virtual modules (`\0…`), and bare node_modules
+	// specifiers (`rxjs`, `@angular/core`, …) that can never match a tsconfig
+	// `paths` entry. Memoizing both the no-match outcome and the per-`fullPath`
+	// filesystem walk turns repeated lookups from `O(N regexes + ~12 fs syscalls)`
+	// into a single `Set.has` / `Map.get`.
+	//
+	// Cache validity: `paths` / `baseUrl` are baked into the closure at plugin
+	// creation, so the regex set never changes for the lifetime of this resolver.
+	// The filesystem cache assumes overlapping platform/extension files (e.g.
+	// adding a new `foo.ios.ts` next to `foo.ts`) won't appear mid-watch; if that
+	// ever bites, invalidate via Vite's `watchChange` hook instead of widening
+	// these caches.
+	const noMatchCache = new Set<string>();
+	const fsResolveCache = new Map<string, string>();
+	const cachedResolveTsConfigPath = (fullPath: string, debugId?: string): string => {
+		const cached = fsResolveCache.get(fullPath);
+		if (cached !== undefined) {
+			return cached;
+		}
+		const resolved = resolveTsConfigPath(fullPath, opts.platform, opts.verbose, debugId);
+		fsResolveCache.set(fullPath, resolved);
+		return resolved;
+	};
+
 	return {
 		name: 'ns-tsconfig-paths-resolver',
 		enforce: 'pre',
@@ -223,12 +251,35 @@ export function createTsConfigPathsResolver(opts: { paths: Record<string, string
 			if (source === '~/package.json') {
 				return null;
 			}
+
+			// Early reject for specifier shapes that can never match a tsconfig
+			// `paths` entry. Skipping them here avoids walking every resolver
+			// regex on the hot path.
+			//   46 = '.'  → relative imports (`./foo`, `../bar`)
+			//   47 = '/'  → already-absolute paths (no alias would start with /)
+			//    0 = '\0' → Vite/Rolldown virtual modules
+			const firstChar = source.charCodeAt(0);
+			if (firstChar === 46 || firstChar === 47 || firstChar === 0) {
+				return null;
+			}
+			// URL-style specifiers (`http:`, `file:`, `data:`, `node:fs`, …) and
+			// Windows drive letters (`C:\…`). None of these can match a path
+			// alias, and `:` isn't a valid character in npm package names or
+			// tsconfig path patterns we'd ever want to alias.
+			if (source.includes(':')) {
+				return null;
+			}
+
+			if (noMatchCache.has(source)) {
+				return null;
+			}
+
 			for (const resolver of resolvers) {
 				if (resolver.type === 'exact') {
 					if (source !== resolver.pattern) {
 						continue;
 					}
-					return resolveTsConfigPath(resolver.resolvedDestination, opts.platform, opts.verbose, source);
+					return cachedResolveTsConfigPath(resolver.resolvedDestination, source);
 				}
 
 				const match = resolver.regex.exec(source);
@@ -237,8 +288,10 @@ export function createTsConfigPathsResolver(opts: { paths: Record<string, string
 				}
 				const subpath = match[1];
 				const fullPath = subpath ? path.join(resolver.resolvedDestination, subpath) : resolver.resolvedDestination;
-				return resolveTsConfigPath(fullPath, opts.platform, opts.verbose, source);
+				return cachedResolveTsConfigPath(fullPath, source);
 			}
+
+			noMatchCache.add(source);
 			return null;
 		},
 	};

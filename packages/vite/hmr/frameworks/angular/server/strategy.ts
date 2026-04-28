@@ -5,6 +5,7 @@ import * as PAT from '../../../server/constants.js';
 import { linkAngularPartialsIfNeeded } from './linker.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
+import { stripJsComments } from '../../../../helpers/angular/util.js';
 
 // Angular server strategy for NativeScript HMR.
 //
@@ -127,7 +128,15 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 					walkForTemplates(full);
 				} else if (st.isFile() && shouldIncludeRuntimeGraphFile(full, /\.ts$/i)) {
 					try {
-						const code = readFileSync(full, 'utf8');
+						const rawCode = readFileSync(full, 'utf8');
+						// Blank out `//` and `/* */` comments before regex
+						// scanning so a commented-out `templateUrl` /
+						// `styleUrls` line doesn't enroll the watcher (and
+						// therefore the import graph) for a non-existent
+						// asset. See note in
+						// `extractComponentAssetPaths` for the failure
+						// mode this avoids in current Rolldown-Vite.
+						const code = stripJsComments(rawCode);
 						if (/\@Component\s*\(/.test(code) && /templateUrl\s*:\s*["']\.\//.test(code)) {
 							const m = code.match(/templateUrl\s*:\s*["']\.\/(.*?\.html)["']/);
 							if (m && m[1]) {

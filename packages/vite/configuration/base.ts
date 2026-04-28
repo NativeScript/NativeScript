@@ -9,10 +9,10 @@ import ts from 'typescript';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import NativeScriptPlugin from '../helpers/resolver.js';
 import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
-import { getProjectRootPath } from '../helpers/project.js';
+import { findMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
-import { getWorkerPlugins, workerUrlPlugin } from '../helpers/workers.js';
+import { getWorkerPlugins, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin } from '../helpers/workers.js';
 import { createTsConfigPathsResolver, getTsConfigData } from '../helpers/ts-config-paths.js';
 import { commonjsPlugins } from '../helpers/commonjs-plugins.js';
 import { nativescriptPackageResolver } from '../helpers/nativescript-package-resolver.js';
@@ -394,6 +394,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 
 			// Platform-specific package resolver - MUST come before commonjs plugin
 			nativescriptPackageResolver(platform),
+			// Stub legacy webpack `nativescript-worker-loader!` imports so they don't
+			// fail static resolution under Rolldown (see helper for full rationale).
+			nativescriptWorkerLoaderStubPlugin(),
 			nsConfigAsJsonPlugin(),
 			NativeScriptPlugin({ platform }),
 			// Ensure globals and Android activity are included early via virtual entry
@@ -447,18 +450,45 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					watch: {
 						ignored: ['**/.DS_Store', '**/hooks/**', '**/platforms/**'],
 					},
+					// Widen `fs.allow` to the detected monorepo workspace root.
+					//
+					// Vite's default `searchForWorkspaceRoot` recognises pnpm /
+					// lerna / `package.json#workspaces` / Deno workspaces, but
+					// not Nx / Rush / Turborepo. In an Nx layout where the app
+					// lives at `apps/<name>/`, Vite's default falls back to
+					// the app dir as the fs-serving root, so any
+					// `transformRequest` for a file in the *hoisted* root
+					// `node_modules/…` (e.g. `@nativescript/core/bundle-entry-points.js`)
+					// trips `isFileLoadingAllowed` and fails with
+					// `Failed to load url … Does the file exist?` — even
+					// though the file is right there on disk.
+					//
+					// Detect the real workspace root once at config time and
+					// add it to `fs.allow`. `mergeConfig` concatenates arrays,
+					// so apps that pass their own `server.fs.allow` keep
+					// their entries on top of this baseline.
+					...(() => {
+						const monorepoRoot = findMonorepoWorkspaceRoot(projectRoot);
+						if (!monorepoRoot || monorepoRoot === projectRoot) return {};
+						return { fs: { allow: [monorepoRoot, projectRoot] } };
+					})(),
 				}
 			: {},
 		// Configure worker builds to bundle everything into standalone workers
 		worker: {
 			format: 'es',
-			plugins: () => getWorkerPlugins(platform),
+			// `worker.plugins` is a factory that's called fresh per worker bundle, so
+			// each Rolldown worker build gets its own resolver instances.
+			plugins: () => getWorkerPlugins({ platform, verbose }),
 			rolldownOptions: {
 				// Don't externalize anything - bundle everything into the worker
 				external: [],
 				output: {
-					// Inline all dynamic imports to create standalone bundle
-					inlineDynamicImports: true,
+					// Inline all dynamic imports into a single worker bundle.
+					// `codeSplitting: false` is the modern Rolldown spelling of the
+					// deprecated `inlineDynamicImports: true`. See:
+					// https://rolldown.rs/options/output#codesplitting
+					codeSplitting: false,
 				},
 			},
 		},

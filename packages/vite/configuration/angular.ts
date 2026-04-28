@@ -9,7 +9,7 @@ import { ensureSharedAngularLinker, resolveAngularFileSystem } from '../helpers/
 import { inlineDecoratorComponentTemplates } from '../helpers/angular/inline-decorator-component-templates.js';
 import { appendComponentHmrRegistration, findComponentClassNames, INJECTION_MARKER as HMR_REGISTER_MARKER } from '../helpers/angular/inject-component-hmr-registration.js';
 import { synthesizeDecoratorCtorParameters } from '../helpers/angular/synthesize-decorator-ctor-parameters.js';
-import { containsRealNgDeclare } from '../helpers/angular/util.js';
+import { containsRealNgDeclare, stripJsComments } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
@@ -190,17 +190,27 @@ function extractComponentAssetPaths(code: string, componentId: string): string[]
 	const assetPaths = new Set<string>();
 	const resolveAssetPath = (assetPath: string) => normalizeAngularWatchPath(path.resolve(path.dirname(componentPath), assetPath));
 
-	const templateUrlMatch = code.match(/templateUrl\s*:\s*['"](.+?\.(?:html|htm))['"]/);
+	// Blank out `//` and `/* */` comments before scanning. The regexes below
+	// are intentionally simple (no JS parser) so they would otherwise match
+	// commented-out `templateUrl` / `styleUrls` declarations and register
+	// phantom asset deps via `addWatchFile`. In current Rolldown-Vite that
+	// also enrolls them as `_addedImports`, which `vite:import-analysis`
+	// then tries to resolve — surfacing as a misleading
+	// `Failed to resolve import "<file>" from "<importer>". Does the file
+	// exist?` pre-transform error if the file (predictably) doesn't exist.
+	const scanCode = stripJsComments(code);
+
+	const templateUrlMatch = scanCode.match(/templateUrl\s*:\s*['"](.+?\.(?:html|htm))['"]/);
 	if (templateUrlMatch) {
 		assetPaths.add(resolveAssetPath(templateUrlMatch[1]));
 	}
 
-	const styleUrlMatch = code.match(/styleUrl\s*:\s*['"](.+?\.(?:css|less|sass|scss))['"]/);
+	const styleUrlMatch = scanCode.match(/styleUrl\s*:\s*['"](.+?\.(?:css|less|sass|scss))['"]/);
 	if (styleUrlMatch) {
 		assetPaths.add(resolveAssetPath(styleUrlMatch[1]));
 	}
 
-	const styleUrlsMatch = code.match(/styleUrls\s*:\s*\[([\s\S]*?)\]/m);
+	const styleUrlsMatch = scanCode.match(/styleUrls\s*:\s*\[([\s\S]*?)\]/m);
 	if (styleUrlsMatch) {
 		for (const match of styleUrlsMatch[1].matchAll(/['"](.+?\.(?:css|less|sass|scss))['"]/g)) {
 			assetPaths.add(resolveAssetPath(match[1]));

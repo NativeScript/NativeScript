@@ -14,12 +14,29 @@ export function computeClientImportSpecifier(options: { projectRoot: string; cli
 	const { projectRoot, clientFsPath } = options;
 	let clientImport = clientFsPath;
 	try {
+		const fsPosix = clientFsPath.replace(/\\/g, '/');
 		const rel = path.relative(projectRoot, clientFsPath);
 		const relPosix = rel.replace(/\\/g, '/');
 
 		if (path.isAbsolute(rel)) {
 			clientImport = pathToFileURL(clientFsPath).toString();
 		} else {
+			// Prefer routing via the absolute fs path's `node_modules/...` tail. This
+			// covers monorepo / pnpm setups where node_modules is hoisted ABOVE the
+			// project root and `path.relative` would otherwise produce a
+			// "../../node_modules/..." specifier. That relative form is sent to the
+			// device's bootstrap as `__NS_BROWSER_RUNTIME_CLIENT_IMPORT__`, where the
+			// URL constructor resolves it against `${origin}/__ns_dev__/client` and
+			// collapses the leading `..` segments back to `${origin}/node_modules/...`.
+			// That URL bypasses the `/ns/m/` AST-normalizer pipeline (which strips
+			// browser-only `/@vite/client` imports), so the on-device HTTP loader
+			// eventually tries to fetch `/@vite/client` and fails with
+			// "HTTP import failed (status=0)" / "Instantiation failed (http-loader)".
+			const lastNm = fsPosix.lastIndexOf('/node_modules/');
+			if (lastNm !== -1) {
+				return `/ns/m${fsPosix.slice(lastNm)}`;
+			}
+
 			const normalizedRel = (relPosix.startsWith('.') ? relPosix : `/${relPosix}`).replace(/\/+/g, '/');
 			clientImport = normalizedRel.startsWith('/node_modules/') ? `/ns/m${normalizedRel}` : normalizedRel;
 		}

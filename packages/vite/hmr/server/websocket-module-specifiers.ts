@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, realpathSync } from 'fs';
 import * as path from 'path';
 
 import * as PAT from './constants.js';
@@ -348,40 +348,216 @@ export function resolveVendorFromCandidate(specifier: string | null | undefined)
 	return null;
 }
 
-export function resolveCandidateFilePath(candidate: string, projectRoot: string): string | null {
+/**
+ * Resolve a candidate URL ('/node_modules/...', '/@fs/...', or an
+ * absolute fs path) to a real file on disk under one of the allowed
+ * roots, returning the absolute fs path or `null`.
+ *
+ * `workspaceRoot` is consulted ONLY when the candidate cannot be
+ * resolved under `projectRoot` — this keeps the existing app-local
+ * behaviour identical and adds a fallback for monorepos where
+ * `node_modules/` is hoisted above the app dir (Nx, Rush, Turborepo,
+ * etc.). Without this fallback, every `/ns/m/node_modules/<hoisted-pkg>`
+ * request to the dev server's bridge fails with a "transform miss"
+ * 404 even though the file is right there at the workspace root.
+ */
+export function resolveCandidateFilePath(candidate: string, projectRoot: string, workspaceRoot?: string | null): string | null {
 	const cleaned = candidate.replace(PAT.QUERY_PATTERN, '');
 	if (!cleaned) return null;
 
-	const root = path.resolve(projectRoot);
-	let absPath: string | null = null;
+	const tryUnderRoot = (root: string): string | null => {
+		const resolvedRoot = path.resolve(root);
+		let absPath: string | null = null;
 
-	if (cleaned.startsWith('/@fs/')) {
-		absPath = cleaned.slice('/@fs'.length);
-	} else if (cleaned.includes('/node_modules/')) {
-		absPath = path.resolve(root, `.${cleaned}`);
-	} else if (/^(?:[A-Za-z]:)?\//.test(cleaned)) {
-		absPath = path.resolve(cleaned);
+		if (cleaned.startsWith('/@fs/')) {
+			absPath = cleaned.slice('/@fs'.length);
+		} else if (cleaned.includes('/node_modules/')) {
+			absPath = path.resolve(resolvedRoot, `.${cleaned}`);
+		} else if (/^(?:[A-Za-z]:)?\//.test(cleaned)) {
+			absPath = path.resolve(cleaned);
+		}
+
+		if (!absPath) {
+			return null;
+		}
+
+		const rel = path.relative(resolvedRoot, absPath);
+		if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
+			return null;
+		}
+
+		return existsSync(absPath) ? absPath : null;
+	};
+
+	const fromProjectRoot = tryUnderRoot(projectRoot);
+	if (fromProjectRoot) return fromProjectRoot;
+
+	if (workspaceRoot) {
+		const resolvedProject = path.resolve(projectRoot);
+		const resolvedWorkspace = path.resolve(workspaceRoot);
+		if (resolvedWorkspace !== resolvedProject) {
+			return tryUnderRoot(resolvedWorkspace);
+		}
 	}
 
-	if (!absPath) {
-		return null;
-	}
-
-	const rel = path.relative(root, absPath);
-	if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
-		return null;
-	}
-
-	return existsSync(absPath) ? absPath : null;
+	return null;
 }
 
-export function filterExistingNodeModulesTransformCandidates(spec: string, candidates: string[], projectRoot: string): string[] {
+/**
+ * Rewrite a `/@fs/<abs-path>` URL into a `/ns/m/<rel>` URL so the chain
+ * stays inside our HMR pipeline.
+ *
+ * Vite's transform output emits `/@fs/<abs-path>` for any module whose
+ * resolved id lives outside the configured `root` — including hoisted
+ * `node_modules/<pkg>/...` entries and workspace libraries in monorepos
+ * (Nx, Rush, Turborepo, pnpm/yarn/npm workspaces, etc.). If we leave
+ * those URLs untouched, the device fetches them through Vite's standard
+ * middleware which does NOT apply our CJS/UMD-wrapping pipeline; UMD
+ * modules like papaparse then crash because top-level `this` is
+ * `undefined` in ESM context (the `(function(root, factory) { ... })(this,
+ * function moduleFactory() { ... })` IIFE passes `undefined` as `root`
+ * and the third branch tries to do `undefined.Papa = factory()`).
+ *
+ * The conversion preserves any `?...` / `#...` suffix and tries roots in
+ * this order:
+ *   1. `projectRoot` — app-local files; mirrors the URL shape we already
+ *      emit for relative imports under the app's own dir.
+ *   2. `workspaceRoot` — hoisted `node_modules` and monorepo workspace
+ *      libs. The `/ns/m/` handler resolves these via its
+ *      `buildFsCandidate` fallback that probes both roots.
+ *
+ * Returns `null` when the absolute path is outside both roots; the
+ * caller should then leave the original `/@fs/` URL alone (defensive).
+ */
+export function rewriteFsAbsoluteToNsM(spec: string, projectRoot: string, workspaceRoot?: string | null): string | null {
+	if (!spec || !spec.startsWith('/@fs/')) return null;
+
+	const queryStart = spec.search(/[?#]/);
+	const cleanSpec = queryStart !== -1 ? spec.slice(0, queryStart) : spec;
+	const querySuffix = queryStart !== -1 ? spec.slice(queryStart) : '';
+
+	// /@fs/<abs-path> — strip the prefix to recover the absolute path.
+	// On posix this is "/Users/...". On Windows Vite emits "/@fs/C:/..."
+	// where the path retains its drive letter.
+	const absPath = cleanSpec.slice('/@fs'.length);
+	if (!absPath.startsWith('/')) return null;
+
+	const toPosix = (value: string) => value.replace(/\\/g, '/');
+	const stripTrailing = (value: string) => value.replace(/\/+$/, '');
+
+	const projectRootPosix = stripTrailing(toPosix(path.resolve(projectRoot)));
+	const workspaceRootPosix = workspaceRoot ? stripTrailing(toPosix(path.resolve(workspaceRoot))) : null;
+
+	const tryRoot = (root: string): string | null => {
+		if (!root) return null;
+		if (absPath === root) return '';
+		if (absPath.startsWith(`${root}/`)) {
+			return absPath.slice(root.length + 1);
+		}
+		return null;
+	};
+
+	// App-local first so URLs match the existing `/ns/m/<projectRel>` shape.
+	let rel = tryRoot(projectRootPosix);
+	if (rel === null && workspaceRootPosix && workspaceRootPosix !== projectRootPosix) {
+		rel = tryRoot(workspaceRootPosix);
+	}
+	if (rel === null) return null;
+
+	return rel === '' ? `/ns/m${querySuffix}` : `/ns/m/${rel}${querySuffix}`;
+}
+
+/**
+ * Filter `candidates` (variations of `spec` with different extensions /
+ * `index.*`) down to those that exist on disk under `projectRoot` or
+ * `workspaceRoot`. Workspace-root-only matches are rewritten to their
+ * `/@fs/<abs-path>` form so the downstream `transformRequest` call can
+ * load them directly without having to go through Vite's bare-specifier
+ * resolver — which is gated by the package's `package.json#exports`
+ * field and refuses internal sub-paths even when the file is on disk
+ * (e.g. `css-tree/lib/syntax/index.js`).
+ *
+ * Candidates whose real path (after symlink resolution) lives OUTSIDE
+ * any `node_modules` directory are also rewritten to `/@fs/<real-path>`.
+ * Vite's built-in esbuild transform plugin excludes `node_modules` paths
+ * from TS->JS conversion, so a workspace TypeScript package re-exposed
+ * via `node_modules/<scope>/<pkg>` (a common monorepo pattern: e.g.
+ * `node_modules/@blackout/plugins -> ../../plugins/src`) would otherwise
+ * be served as raw TypeScript and fail at the device with `Missing
+ * initializer in const declaration` on type annotations like
+ * `export const X: string = '...'`. Routing through the realpath makes
+ * Vite see a non-`node_modules` path and the TS transform applies.
+ *
+ * App-local candidates whose real path is also app-local are returned
+ * unchanged so existing behaviour is preserved bit-for-bit.
+ */
+export function filterExistingNodeModulesTransformCandidates(spec: string, candidates: string[], projectRoot: string, workspaceRoot?: string | null): string[] {
 	const cleanedSpec = spec.replace(PAT.QUERY_PATTERN, '');
 	if (!cleanedSpec.includes('/node_modules/')) {
 		return candidates;
 	}
 
-	return candidates.filter((candidate) => !!resolveCandidateFilePath(candidate, projectRoot));
+	const resolvedProjectRoot = path.resolve(projectRoot);
+	const resolvedWorkspaceRoot = workspaceRoot ? path.resolve(workspaceRoot) : null;
+	const hasDistinctWorkspaceRoot = !!resolvedWorkspaceRoot && resolvedWorkspaceRoot !== resolvedProjectRoot;
+
+	// The bridge's caller composes `candidates` from both the explicit
+	// spec and a fan-out of extension/index variants, which routinely
+	// produces the same URL twice (e.g. `/foo/index.js` is both the
+	// explicit spec and a `${baseNoExt}.js` variant). Dedup so we don't
+	// invoke `transformRequest()` twice for the same path.
+	const seen = new Set<string>();
+	const result: string[] = [];
+	for (const candidate of candidates) {
+		const resolved = resolveCandidateFilePath(candidate, resolvedProjectRoot, hasDistinctWorkspaceRoot ? resolvedWorkspaceRoot : null);
+		if (!resolved) continue;
+
+		const cleanedCandidate = candidate.replace(PAT.QUERY_PATTERN, '');
+		const querySuffix = candidate.length > cleanedCandidate.length ? candidate.slice(cleanedCandidate.length) : '';
+
+		// Detect "node_modules entry that symlinks to non-node_modules
+		// source". This is the canonical NativeScript monorepo pattern for
+		// workspace packages re-exposed under `node_modules/<scope>/<pkg>`
+		// so the runtime resolver finds them via standard Node resolution.
+		// Without this rewrite Vite serves the raw `.ts` source and the
+		// device chokes on type annotations.
+		let mapped: string | null = null;
+		try {
+			const realResolved = realpathSync(resolved);
+			if (realResolved !== resolved) {
+				const realIsInsideNodeModules = realResolved.split(path.sep).includes('node_modules');
+				if (!realIsInsideNodeModules) {
+					mapped = `/@fs${realResolved.replace(/\\/g, '/')}${querySuffix}`;
+				}
+			}
+		} catch {
+			// realpath may fail on broken or circular symlinks. Fall
+			// through to the existing project/workspace logic.
+		}
+
+		if (mapped === null) {
+			if (!hasDistinctWorkspaceRoot) {
+				mapped = candidate;
+			} else {
+				const relFromProject = path.relative(resolvedProjectRoot, resolved);
+				const insideProjectRoot = relFromProject !== '' && !relFromProject.startsWith('..') && !path.isAbsolute(relFromProject);
+				if (insideProjectRoot) {
+					mapped = candidate;
+				} else {
+					// Hoisted `node_modules/<pkg>/...` file lives above projectRoot.
+					// Rewrite the URL to its fs-anchored form so Vite reads it directly
+					// instead of bouncing through bare-specifier resolution that the
+					// hoisted package's `exports` field may refuse.
+					mapped = `/@fs${resolved.replace(/\\/g, '/')}${querySuffix}`;
+				}
+			}
+		}
+
+		if (seen.has(mapped)) continue;
+		seen.add(mapped);
+		result.push(mapped);
+	}
+	return result;
 }
 
 function findVendorPrefix(specifier: string, manifest: NonNullable<ReturnType<typeof getVendorManifest>>): string | null {

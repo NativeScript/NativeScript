@@ -2,6 +2,7 @@ import { getPackageJson, getProjectFilePath, getProjectRootPath } from './projec
 import fs from 'fs';
 import path from 'path';
 import { preprocessCSS, type ResolvedConfig } from 'vite';
+import { parse as parseCssToAst } from 'css';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
@@ -56,6 +57,36 @@ const APP_CSS_RESOLVED = '\0' + APP_CSS_VIRTUAL_ID;
 const XHR_POLYFILL_VIRTUAL_ID = 'virtual:ns-xhr-polyfill';
 const XHR_POLYFILL_RESOLVED = '\0' + XHR_POLYFILL_VIRTUAL_ID;
 
+// Virtual module that seeds compile-time defines (`__APPLE__`, `__IOS__`,
+// `__DEV__`, etc.) on `globalThis` BEFORE any other module evaluates.
+//
+// Why this exists. The per-module shim that `processCodeForDevice` injects
+// at the top of every served module reads these values from `globalThis`:
+//   const __APPLE__ = globalThis.__APPLE__ !== undefined
+//     ? globalThis.__APPLE__
+//     : (__IOS__ || __VISIONOS__);
+// `const` evaluates ONCE at module instantiation. So every module needs
+// `globalThis.__APPLE__` to already be set when it instantiates — otherwise
+// it locks in `false` for the lifetime of the module.
+//
+// In ESM, all `import` statements hoist to the top of the module's
+// evaluation phase: imports run in DFS post-order BEFORE the importing
+// module's body. If we put the seed assignments inline in the entry's
+// body (e.g. `globalThis.__APPLE__ = true`), they run AFTER every module
+// transitively imported via `bundle-entry-points` (which reaches the
+// user's `main.ts` → `app.module.ts` → services → util files). Those
+// utility modules then snapshot `globalThis.__APPLE__ = undefined` and
+// fall through to the `false` branch — landing iOS code in the
+// `else { /* Android */ }` branch and crashing on `Utils.android.*`.
+//
+// The fix is to import this virtual module FIRST in the entry. As a leaf
+// in the dependency graph it evaluates before every sibling import, so
+// its body assignments happen before any user module instantiates and
+// reads `globalThis.__*`. This is the architecturally-correct way to
+// make values available to other modules across the import graph in ESM.
+const DEFINES_SEED_VIRTUAL_ID = 'virtual:ns-defines-seed';
+const DEFINES_SEED_RESOLVED = '\0' + DEFINES_SEED_VIRTUAL_ID;
+
 export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean; useHttps: boolean }) {
 	let resolvedConfig: ResolvedConfig;
 	return {
@@ -67,6 +98,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			if (id === VIRTUAL_ID) return RESOLVED;
 			if (id === APP_CSS_VIRTUAL_ID) return APP_CSS_RESOLVED;
 			if (id === XHR_POLYFILL_VIRTUAL_ID) return XHR_POLYFILL_RESOLVED;
+			if (id === DEFINES_SEED_VIRTUAL_ID) return DEFINES_SEED_RESOLVED;
 			return null;
 		},
 		async load(id: string) {
@@ -108,16 +140,29 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				return sub ? `@nativescript/core/${sub}` : '@nativescript/core';
 			};
 
-			// Virtual module that processes app.css through PostCSS/Tailwind and returns as a JS string.
-			// This avoids using ?inline which conflicts with @analogjs/vite-plugin-angular's CSS
-			// interception in Vite 8 — the Angular plugin converts ?inline CSS to JS via its load hook
-			// but doesn't set moduleType:'js', so vite:css still tries to run PostCSS on the JS output.
+			// Virtual module that processes app.css through PostCSS/Tailwind and emits a
+			// JS module that BOTH applies the CSS as a side-effect AND exports the raw
+			// CSS string as default.
+			//
+			// Background: Vite's default `?inline` CSS handling collides with
+			// @analogjs/vite-plugin-angular's load hook in Vite 8 (it converts ?inline
+			// CSS to JS without setting moduleType:'js', so vite:css still tries to run
+			// PostCSS on the JS output). This virtual module sidesteps that.
+			//
+			// We still export the raw CSS string as default so the entry can seed
+			// `globalThis.__NS_HMR_APP_CSS__` for HMR's HTTP-core-realm replay path.
 			if (id === APP_CSS_RESOLVED) {
 				const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
 				const code = fs.readFileSync(appCssPath, 'utf-8');
 				const result = await preprocessCSS(code, appCssPath, resolvedConfig);
+				const ast = parseCssToAst(result.code, { silent: true });
+				// `css` emits `position` metadata on every AST node. NS doesn't
+				// use it, and stripping it ~halves the inlined JSON size — same
+				// thing webpack's css2json-loader does.
+				const astJson = JSON.stringify(ast, (key, value) => (key === 'position' ? undefined : value));
+				const lines = [`import { addTaggedAdditionalCSS } from ${JSON.stringify(coreSpec('ui/styling/style-scope'))};`, `addTaggedAdditionalCSS(${astJson}, 'app.css');`, `export default ${JSON.stringify(result.code)};`];
 				return {
-					code: `export default ${JSON.stringify(result.code)};`,
+					code: lines.join('\n'),
 					moduleType: 'js',
 				};
 			}
@@ -129,10 +174,49 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					moduleType: 'js',
 				};
 			}
+			// Virtual module that seeds compile-time defines on globalThis.
+			// Imported FIRST in the entry so it evaluates as a leaf before
+			// any other module — including the `bundle-entry-points` chain
+			// that transitively reaches the user's app code. See the
+			// DEFINES_SEED_VIRTUAL_ID comment at the top of this file.
+			if (id === DEFINES_SEED_RESOLVED) {
+				const isApple = opts.platform === 'ios' || opts.platform === 'visionos';
+				const seedLines = [
+					`globalThis.__DEV__ = ${opts.isDevMode ? 'true' : 'false'};`,
+					`globalThis.__ANDROID__ = ${opts.platform === 'android' ? 'true' : 'false'};`,
+					`globalThis.__IOS__ = ${opts.platform === 'ios' ? 'true' : 'false'};`,
+					`globalThis.__VISIONOS__ = ${opts.platform === 'visionos' ? 'true' : 'false'};`,
+					`globalThis.__APPLE__ = ${isApple ? 'true' : 'false'};`,
+					'globalThis.__COMMONJS__ = false;',
+					'globalThis.__NS_WEBPACK__ = false;',
+					`globalThis.__NS_ENV_VERBOSE__ = ${opts.verbose ? 'true' : 'false'};`,
+					'globalThis.__UI_USE_XML_PARSER__ = true;',
+					'globalThis.__UI_USE_EXTERNAL_RENDERER__ = false;',
+					"globalThis.__CSS_PARSER__ = 'css-tree';",
+					'globalThis.__TEST__ = false;',
+				];
+				return {
+					code: seedLines.join('\n') + '\n',
+					moduleType: 'js',
+				};
+			}
 			if (id !== RESOLVED) return null;
 
+			let imports = '';
+			// Under HMR: import the defines-seed virtual module FIRST so its
+			// body — which sets `globalThis.__APPLE__`, `__IOS__`, `__DEV__`,
+			// etc. — evaluates as a leaf in the dependency graph BEFORE any
+			// other module instantiates. Per-module shims injected by
+			// `processCodeForDevice` read these from globalThis and snapshot
+			// them at instantiation time, so they MUST be set first.
+			//
+			// Under non-HMR: Vite's `define` config handles substitution
+			// statically at build time — no runtime seeding needed.
+			if (opts.hmrActive) {
+				imports += `import '${DEFINES_SEED_VIRTUAL_ID}';\n`;
+			}
 			// consistent verbose flag to easily reference below
-			let imports = "const __nsVerboseLog = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;\n";
+			imports += "const __nsVerboseLog = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;\n";
 
 			// Ensure any CommonJS-style tooling requires (e.g. from Babel or
 			// other build-time libraries that may be accidentally bundled) do
@@ -258,23 +342,13 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			if (opts.hmrActive) {
-				// Seed ALL compile-time defines on globalThis so that every execution
-				// context — the primary bundle, HTTP ESM modules, and cross-realm
-				// calls — can reliably access them. The per-module injection in
-				// processCodeForDevice() reads from globalThis as the source of truth;
-				// these seeds ensure the values are always available.
-				imports += `globalThis.__DEV__ = ${opts.isDevMode ? 'true' : 'false'};\n`;
-				imports += `globalThis.__ANDROID__ = ${opts.platform === 'android' ? 'true' : 'false'};\n`;
-				imports += `globalThis.__IOS__ = ${opts.platform === 'ios' ? 'true' : 'false'};\n`;
-				imports += `globalThis.__VISIONOS__ = ${opts.platform === 'visionos' ? 'true' : 'false'};\n`;
-				imports += `globalThis.__APPLE__ = ${opts.platform === 'ios' || opts.platform === 'visionos' ? 'true' : 'false'};\n`;
-				imports += `globalThis.__COMMONJS__ = false;\n`;
-				imports += `globalThis.__NS_WEBPACK__ = false;\n`;
-				imports += `globalThis.__NS_ENV_VERBOSE__ = ${opts.verbose ? 'true' : 'false'};\n`;
-				imports += `globalThis.__UI_USE_XML_PARSER__ = true;\n`;
-				imports += `globalThis.__UI_USE_EXTERNAL_RENDERER__ = false;\n`;
-				imports += `globalThis.__CSS_PARSER__ = 'css-tree';\n`;
-				imports += `globalThis.__TEST__ = false;\n`;
+				// NOTE: globalThis defines (`__APPLE__`, `__IOS__`, `__DEV__`,
+				// etc.) are seeded by the `virtual:ns-defines-seed` import at
+				// the very top of this entry — see the import on line ~192.
+				// They MUST run as a leaf module ahead of any other graph
+				// node, so we can't seed them inline here (ESM imports hoist
+				// past inline body code, so any module reachable through
+				// `bundle-entry-points` would otherwise see undefined).
 				imports += "import { installModuleProvenanceRecorder } from '@nativescript/vite/hmr/shared/runtime/module-provenance.js';\n";
 				imports += 'installModuleProvenanceRecorder(__nsVerboseLog);\n';
 			}
@@ -404,18 +478,23 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// Import Application statically if needed for CSS or Android activity defer
 			if (hasAppCss || needsAndroidActivityDefer) {
 				if (hasAppCss) {
-					imports += `// Import and apply global CSS before app bootstrap\n`;
+					// The virtual module's body calls
+					// `addTaggedAdditionalCSS(ast, 'app.css')` as an import-time
+					// side-effect, so the CSS lands in NS's selector tables before
+					// any view is created. The default export is the raw CSS
+					// string, kept so HMR can seed `__NS_HMR_APP_CSS__` for the
+					// HTTP-core-realm replay path.
+					imports += `// Apply global CSS before app bootstrap (AST applied as a side-effect of this import)\n`;
 					imports += `import appCssContent from '${APP_CSS_VIRTUAL_ID}';\n`;
 					if (opts.hmrActive) {
 						imports += `try { globalThis.__NS_HMR_APP_CSS__ = appCssContent; } catch {}\n`;
 					}
-				}
-				imports += `import { Application } from ${JSON.stringify(coreSpec())};\n`;
-				if (hasAppCss) {
-					imports += `if (appCssContent) { try { Application.addCss(appCssContent); } catch (error) { console.error('Error applying CSS:', error); } }\n`;
 					if (opts.verbose) {
-						imports += `console.info('[ns-entry] app.css applied');\n`;
+						imports += `console.info('[ns-entry] app.css applied as AST');\n`;
 					}
+				}
+				if (needsAndroidActivityDefer) {
+					imports += `import { Application } from ${JSON.stringify(coreSpec())};\n`;
 				}
 			}
 

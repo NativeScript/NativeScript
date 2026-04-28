@@ -226,11 +226,18 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
 	});
 
 	// Pattern 3: import "specifier" — side-effect imports (no from clause)
-	// Anchored after line start, newline, or semicolon to avoid false matches
-	result = result.replace(/([;\n]\s*import\s+)(["'])([^"']+)\2/g, (_m, pre: string, q: string, spec: string) => {
+	// Anchored after start-of-string, newline, or semicolon to avoid false matches.
+	// The `^` alternative is critical: when a transformed module's body begins
+	// with a side-effect import (no preceding `;` or `\n`), the legacy
+	// `[;\n]`-only anchor missed it and the URL leaked to the device unmodified.
+	// Concrete failure mode: `/ns/core/inspector_modules` whose first body line
+	// `import '/@fs/.../@nativescript/core/globals/index.js';` was served raw,
+	// producing a `__DEV__ is not defined` ReferenceError in `platform-check.js`
+	// because `/@fs/` URLs bypass the `/ns/core` bridge's define-injection.
+	result = result.replace(/(^|[;\n])(\s*import\s+)(["'])([^"']+)\3/g, (_m, lead: string, pre: string, q: string, spec: string) => {
 		// Skip if it looks like an identifier rather than a path
 		if (!/[/.@]/.test(spec)) return _m;
-		return `${pre}${q}${rewriteSpec(spec, origin, ver)}${q}`;
+		return `${lead}${pre}${q}${rewriteSpec(spec, origin, ver)}${q}`;
 	});
 
 	return result;

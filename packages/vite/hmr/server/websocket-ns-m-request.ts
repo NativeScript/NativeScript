@@ -9,6 +9,16 @@ export interface NsMRequestContext {
 	forcedVer: string | null;
 	bootTaggedRequest: boolean;
 	serverRoot: string;
+	/**
+	 * Optional monorepo workspace root for the dev server. When the app
+	 * lives under `apps/<name>/` inside a hoisted-`node_modules` workspace
+	 * (Nx / Rush / Turborepo / pnpm / yarn workspaces / npm workspaces),
+	 * `serverRoot` is the app dir but most packages live at the workspace
+	 * root. Candidates that resolve there are routed through `/@fs/...`
+	 * to bypass the package's `package.json#exports` gating which would
+	 * otherwise refuse internal sub-paths like `css-tree/lib/syntax/...`.
+	 */
+	workspaceRoot?: string | null;
 	candidates: string[];
 	transformCandidates: string[];
 }
@@ -47,7 +57,7 @@ function normalizeAbsoluteFilesystemSpec(spec: string, serverRoot: string): stri
 	return relative;
 }
 
-export function createNsMRequestContext(requestUrl: string, serverRoot: string, appVirtualWithSlash: string): NsMRequestContextResult {
+export function createNsMRequestContext(requestUrl: string, serverRoot: string, appVirtualWithSlash: string, workspaceRoot?: string | null): NsMRequestContextResult {
 	try {
 		const urlObj = new URL(requestUrl || '', 'http://localhost');
 		if (!urlObj.pathname.startsWith('/ns/m')) {
@@ -112,7 +122,7 @@ export function createNsMRequestContext(requestUrl: string, serverRoot: string, 
 		const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 		const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
 		const candidates = [...(hasExt ? [spec] : []), `${baseNoExt}.ts`, `${baseNoExt}.js`, `${baseNoExt}.tsx`, `${baseNoExt}.jsx`, `${baseNoExt}.mjs`, `${baseNoExt}.mts`, `${baseNoExt}.cts`, `${baseNoExt}.vue`, `${baseNoExt}/index.ts`, `${baseNoExt}/index.js`, `${baseNoExt}/index.tsx`, `${baseNoExt}/index.jsx`, `${baseNoExt}/index.mjs`];
-		const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, serverRoot);
+		const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, serverRoot, workspaceRoot);
 
 		return {
 			kind: 'context',
@@ -122,6 +132,7 @@ export function createNsMRequestContext(requestUrl: string, serverRoot: string, 
 				forcedVer,
 				bootTaggedRequest,
 				serverRoot,
+				workspaceRoot: workspaceRoot ?? null,
 				candidates,
 				transformCandidates,
 			},
@@ -151,7 +162,7 @@ function getLoadedCode(loadResult: string | { code?: string } | TransformResult 
 
 export async function resolveNsMTransformedModule(options: ResolveNsMTransformedModuleOptions): Promise<NsMResolvedTransform> {
 	const { context, transformRequest, resolveId, loadVirtualId, timeoutMs = 120000 } = options;
-	const { spec, serverRoot, transformCandidates } = context;
+	const { spec, serverRoot, workspaceRoot, transformCandidates } = context;
 	let transformed: TransformResult | null = null;
 	let resolvedCandidate: string | null = null;
 
@@ -211,12 +222,19 @@ export async function resolveNsMTransformedModule(options: ResolveNsMTransformed
 		}
 	}
 
-	const absolutePosixPath = `${serverRoot.replace(/\\/g, '/').replace(/\/$/, '')}${spec.startsWith('/') ? '' : '/'}${spec}`;
-	const fsId = `/@fs${absolutePosixPath}`;
-	if (resolveCandidateFilePath(fsId, serverRoot)) {
-		transformed = await tryTransformRequest(transformRequest, fsId, timeoutMs);
-		if (transformed?.code) {
-			return { transformed, resolvedCandidate: fsId };
+	const buildFsCandidate = (root: string): string => {
+		const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
+		const absolutePosixPath = `${rootPosix}${spec.startsWith('/') ? '' : '/'}${spec}`;
+		return `/@fs${absolutePosixPath}`;
+	};
+	const fsRootsToTry = [serverRoot, ...(workspaceRoot && path.resolve(workspaceRoot) !== path.resolve(serverRoot) ? [workspaceRoot] : [])];
+	for (const root of fsRootsToTry) {
+		const fsId = buildFsCandidate(root);
+		if (resolveCandidateFilePath(fsId, serverRoot, workspaceRoot)) {
+			transformed = await tryTransformRequest(transformRequest, fsId, timeoutMs);
+			if (transformed?.code) {
+				return { transformed, resolvedCandidate: fsId };
+			}
 		}
 	}
 

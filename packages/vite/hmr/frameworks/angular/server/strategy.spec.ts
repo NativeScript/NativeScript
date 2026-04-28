@@ -65,4 +65,38 @@ describe('angularServerStrategy', () => {
 			rmSync(tmpRoot, { recursive: true, force: true });
 		}
 	});
+
+	it('skips commented-out templateUrl / styleUrls when registering template watches', async () => {
+		const tmpRoot = mkdtempSync(path.join(os.tmpdir(), 'angular-strategy-commented-'));
+		try {
+			const srcDir = path.join(tmpRoot, 'src');
+			const appDir = path.join(srcDir, 'app');
+			mkdirSync(appDir, { recursive: true });
+
+			writeFileSync(path.join(srcDir, 'main.ts'), 'bootstrapApplication(AppComponent);');
+			writeFileSync(path.join(appDir, 'commented.component.ts'), ["import { Component } from '@angular/core';", '@Component({', "  selector: 'app-cmt',", "  templateUrl: './commented.component.html',", "  // styleUrls: ['./commented.component.scss'],", "  /* templateUrl: './phantom.component.html', */", '})', 'export class CommentedComponent {}'].join('\n'));
+			writeFileSync(path.join(appDir, 'commented.component.html'), '<Label text="Hello" />');
+
+			const watcher = { add: vi.fn() };
+			const server = {
+				config: { root: tmpRoot },
+				transformRequest: vi.fn(async (id: string) => ({ code: `// transformed ${id}` })),
+				watcher,
+			} as any;
+
+			await angularServerStrategy.buildRegistry({
+				server,
+				sfcFileMap: new Map(),
+				depFileMap: new Map(),
+				wss: {} as any,
+				verbose: false,
+			});
+
+			expect(watcher.add).toHaveBeenCalledWith(path.join(appDir, 'commented.component.html'));
+			expect(watcher.add).not.toHaveBeenCalledWith(path.join(appDir, 'commented.component.scss'));
+			expect(watcher.add).not.toHaveBeenCalledWith(path.join(appDir, 'phantom.component.html'));
+		} finally {
+			rmSync(tmpRoot, { recursive: true, force: true });
+		}
+	});
 });
