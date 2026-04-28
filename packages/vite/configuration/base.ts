@@ -12,7 +12,7 @@ import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
 import { findMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
-import { getWorkerPlugins, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin } from '../helpers/workers.js';
+import { getWorkerPlugins, workerHmrUrlPlugin, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin } from '../helpers/workers.js';
 import { createTsConfigPathsResolver, getTsConfigData } from '../helpers/ts-config-paths.js';
 import { commonjsPlugins } from '../helpers/commonjs-plugins.js';
 import { nativescriptPackageResolver } from '../helpers/nativescript-package-resolver.js';
@@ -404,6 +404,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Handle custom Android Activity/Application components (auto-detected or configured)
 			appComponentsPlugin({ platform, verbose }),
 			dynamicImportPlugin(),
+			// Dev/HMR only: rewrite `new Worker(new URL('./foo', import.meta.url))`
+			// to a `/ns/m/`-routed string URL before Vite's built-in worker plugin
+			// produces a `?worker_file&type=classic` URL that the NS runtime can't
+			// load (see `workerHmrUrlPlugin` for the full rationale).
+			...(hmrActive ? [workerHmrUrlPlugin({ verbose })] : []),
 			// Transform Vite worker URLs to NativeScript format AFTER bundling
 			workerUrlPlugin(),
 			// Copy static assets and fonts when present in project app root
