@@ -219,7 +219,8 @@ jobs:
         if: ${{ steps.ctx.outputs.mode == 'main' && steps.affected.outputs.count == '0' }}
         run: echo "No affected release projects on main; skipping version + publish."
 
-      # Orchestrated release: bumps versions, generates changelogs, commits + tags + pushes in one shot.
+      # Orchestrated release: bumps versions, generates changelogs, commits + tags in one shot.
+      # The orchestrator does not accept --git-* flags (config-driven only); push is handled in the next step.
       # --skip-publish keeps publishing as a separate step below so the OIDC token-clearing logic still runs.
       - name: nx release version + changelog (dispatch)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && !inputs.dry-run }}
@@ -243,9 +244,11 @@ jobs:
             "${preid_arg[@]}" \
             "${projects_arg[@]}" \
             --skip-publish \
-            --git-commit \
-            --git-push \
             --verbose
+
+      - name: Push release commit and tags (dispatch)
+        if: ${{ steps.ctx.outputs.mode == 'dispatch' && !inputs.dry-run }}
+        run: git push --follow-tags
 
       - name: nx release version + changelog (dispatch, dry-run)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && inputs.dry-run }}
