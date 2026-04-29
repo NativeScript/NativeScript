@@ -184,11 +184,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// Use devtool for both CommonJS and ESM - let webpack handle source mapping properly
 	config.devtool(sourceMapType);
 
-	// For ESM builds, fix the sourceMappingURL to use correct paths
-	if (sourceMapType && sourceMapType !== 'hidden-source-map') {
+	// When the CLI has started its loopback dev-host HTTP server, rewrite the
+	// sourceMappingURL to point at it so Chrome DevTools can fetch .map files
+	// over HTTP with CORS. Dev-only; plugin self-noops without env.devtoolsHost.
+	if (
+		mode === 'development' &&
+		env.devtoolsHost &&
+		sourceMapType &&
+		sourceMapType !== 'hidden-source-map'
+	) {
 		config
 			.plugin('FixSourceMapUrlPlugin')
-			.use(FixSourceMapUrlPlugin as any, [{ outputPath }]);
+			.use(FixSourceMapUrlPlugin as any, [
+				{ devtoolsHost: env.devtoolsHost },
+			]);
 	}
 
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder

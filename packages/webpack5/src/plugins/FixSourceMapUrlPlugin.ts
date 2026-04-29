@@ -1,33 +1,42 @@
-import { resolve } from 'path';
-import { pathToFileURL } from 'url';
 import type { Compiler } from 'webpack';
 import { sources } from 'webpack';
 
 export interface FixSourceMapUrlPluginOptions {
-	outputPath: string;
+	devtoolsHost?: string;
 }
 
 /**
- * Ensures sourceMappingURL points to the actual file:// location on device/emulator.
- * Handles Webpack 5 asset sources (string/Buffer/Source objects).
+ * Rewrites `//# sourceMappingURL=<map>` comments for development builds.
+ *
+ * When `devtoolsHost` (e.g. "http://127.0.0.1:41500") is provided by the CLI,
+ * the URL is rewritten to "<devtoolsHost>/<mapFilename>" so Chrome DevTools
+ * can fetch the map over HTTP with CORS. Without a devtoolsHost the
+ * existing URL is left untouched and webpack's default relative filename
+ * rides through to the runtime.
  */
 export default class FixSourceMapUrlPlugin {
 	constructor(private readonly options: FixSourceMapUrlPluginOptions) {}
 
 	apply(compiler: Compiler) {
+		const { devtoolsHost } = this.options;
+		if (!devtoolsHost) {
+			return;
+		}
+
 		const wp: any = (compiler as any).webpack;
 		const hasProcessAssets =
 			!!wp?.Compilation?.PROCESS_ASSETS_STAGE_DEV_TOOLING &&
 			!!(compiler as any).hooks?.thisCompilation;
+
+		const hostBase = devtoolsHost.replace(/\/+$/, '');
 
 		const getSourceMapUrl = (sourceMapPath: string): string => {
 			if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(sourceMapPath)) {
 				return sourceMapPath;
 			}
 
-			return pathToFileURL(
-				resolve(this.options.outputPath, sourceMapPath),
-			).toString();
+			const normalized = sourceMapPath.replace(/^\/+/, '');
+			return `${hostBase}/${normalized}`;
 		};
 
 		const toStringContent = (content: any): string => {
@@ -73,7 +82,6 @@ export default class FixSourceMapUrlPlugin {
 			}
 
 			let source = toStringContent(rawSource);
-			// Replace sourceMappingURL to use file:// protocol pointing to actual location
 			source = source.replace(
 				/\/\/\# sourceMappingURL=(.+\.map(?:\?[^\s]*)?)/g,
 				(_match, sourceMapPath: string) =>

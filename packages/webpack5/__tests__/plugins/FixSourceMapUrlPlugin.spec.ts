@@ -1,6 +1,3 @@
-import { resolve } from 'path';
-import { pathToFileURL } from 'url';
-
 import FixSourceMapUrlPlugin from '../../src/plugins/FixSourceMapUrlPlugin';
 
 function createCompiler() {
@@ -23,6 +20,9 @@ function createCompiler() {
 
 			emitHandler(compilation);
 		},
+		hasEmitHandler() {
+			return !!emitHandler;
+		},
 	};
 }
 
@@ -38,11 +38,11 @@ function createCompilation(source: string) {
 }
 
 describe('FixSourceMapUrlPlugin', () => {
-	it('encodes spaces in rewritten source map urls', () => {
-		const outputPath = '/Users/test/my tns app/platforms/android/dist';
+	it('rewrites sourceMappingURL to the devtoolsHost origin', () => {
+		const devtoolsHost = 'http://127.0.0.1:41500';
 		const { compiler, run } = createCompiler();
 
-		new FixSourceMapUrlPlugin({ outputPath }).apply(compiler);
+		new FixSourceMapUrlPlugin({ devtoolsHost }).apply(compiler);
 
 		const compilation = createCompilation(
 			'console.log("test");\n//# sourceMappingURL=bundle.js.map',
@@ -50,18 +50,51 @@ describe('FixSourceMapUrlPlugin', () => {
 		run(compilation);
 
 		expect(compilation.assets['bundle.js'].source()).toContain(
-			`//# sourceMappingURL=${pathToFileURL(resolve(outputPath, 'bundle.js.map')).toString()}`,
+			`//# sourceMappingURL=${devtoolsHost}/bundle.js.map`,
 		);
-		expect(compilation.assets['bundle.js'].source()).toContain('%20');
+	});
+
+	it('strips leading slashes from the map path when joining with the host', () => {
+		const devtoolsHost = 'http://127.0.0.1:41500';
+		const { compiler, run } = createCompiler();
+
+		new FixSourceMapUrlPlugin({ devtoolsHost }).apply(compiler);
+
+		const compilation = createCompilation(
+			'console.log("test");\n//# sourceMappingURL=/bundle.js.map',
+		);
+		run(compilation);
+
+		expect(compilation.assets['bundle.js'].source()).toContain(
+			`//# sourceMappingURL=${devtoolsHost}/bundle.js.map`,
+		);
+		expect(compilation.assets['bundle.js'].source()).not.toContain(
+			`${devtoolsHost}//`,
+		);
+	});
+
+	it('strips trailing slashes from the devtoolsHost', () => {
+		const devtoolsHost = 'http://127.0.0.1:41500/';
+		const { compiler, run } = createCompiler();
+
+		new FixSourceMapUrlPlugin({ devtoolsHost }).apply(compiler);
+
+		const compilation = createCompilation(
+			'console.log("test");\n//# sourceMappingURL=bundle.js.map',
+		);
+		run(compilation);
+
+		expect(compilation.assets['bundle.js'].source()).toContain(
+			`//# sourceMappingURL=http://127.0.0.1:41500/bundle.js.map`,
+		);
 	});
 
 	it('leaves absolute source map urls unchanged', () => {
-		const outputPath = '/Users/test/my tns app/platforms/android/dist';
-		const existingUrl =
-			'file:///Users/test/my%20tns%20app/platforms/android/dist/bundle.js.map';
+		const devtoolsHost = 'http://127.0.0.1:41500';
+		const existingUrl = 'http://example.test/bundle.js.map';
 		const { compiler, run } = createCompiler();
 
-		new FixSourceMapUrlPlugin({ outputPath }).apply(compiler);
+		new FixSourceMapUrlPlugin({ devtoolsHost }).apply(compiler);
 
 		const compilation = createCompilation(
 			`console.log("test");\n//# sourceMappingURL=${existingUrl}`,
@@ -71,5 +104,13 @@ describe('FixSourceMapUrlPlugin', () => {
 		expect(compilation.assets['bundle.js'].source()).toContain(
 			`//# sourceMappingURL=${existingUrl}`,
 		);
+	});
+
+	it('no-ops and skips tapping hooks when devtoolsHost is not provided', () => {
+		const { compiler, hasEmitHandler } = createCompiler();
+
+		new FixSourceMapUrlPlugin({}).apply(compiler);
+
+		expect(hasEmitHandler()).toBe(false);
 	});
 });
