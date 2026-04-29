@@ -1,3 +1,13 @@
+## 5.0.34 (2026-04-29)
+
+### 🩹 Fixes
+
+- **webpack:** resolve source map path with proper encoding ([#11180](https://github.com/NativeScript/NativeScript/pull/11180))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 5.0.33 (2026-03-30)
 
 ### 🩹 Fixes
