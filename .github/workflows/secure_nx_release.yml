@@ -9,8 +9,18 @@ on:
       - '*-*'
   workflow_dispatch:
     inputs:
-      dist-tag:
-        description: "npm dist-tag to use (e.g. latest | next | canary)"
+      release-type:
+        description: "Version bump (patch/minor/major publish to npm 'latest'; prerelease uses 'preid')"
+        required: false
+        type: choice
+        options:
+          - prerelease
+          - patch
+          - minor
+          - major
+        default: prerelease
+      preid:
+        description: "Prerelease identifier (used only when release-type=prerelease; also becomes the npm dist-tag, e.g. next | canary)"
         required: false
         type: string
         default: next
@@ -83,16 +93,28 @@ jobs:
           set -euo pipefail
 
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
-            dist_tag="${{ inputs['dist-tag'] }}"
+            release_type="${{ inputs['release-type'] }}"
+            preid="${{ inputs['preid'] }}"
             scope="${{ inputs['release-group'] }}"
             dry_run="${{ inputs['dry-run'] }}"
             mode="dispatch"
+
+            # npm dist-tag follows release type: prerelease -> preid, stable -> latest
+            if [[ "$release_type" == "prerelease" ]]; then
+              dist_tag="$preid"
+            else
+              dist_tag="latest"
+            fi
           elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            release_type=""
+            preid=""
             dist_tag=""
             scope=""
             dry_run="false"
             mode="tag"
           else
+            release_type="prerelease"
+            preid="next"
             dist_tag="next"
             scope=""
             dry_run="false"
@@ -100,6 +122,8 @@ jobs:
           fi
 
           echo "mode=${mode}" >> "$GITHUB_OUTPUT"
+          echo "release_type=${release_type}" >> "$GITHUB_OUTPUT"
+          echo "preid=${preid}" >> "$GITHUB_OUTPUT"
           echo "dist_tag=${dist_tag}" >> "$GITHUB_OUTPUT"
           echo "scope=${scope}" >> "$GITHUB_OUTPUT"
           echo "dry_run=${dry_run}" >> "$GITHUB_OUTPUT"
@@ -195,42 +219,56 @@ jobs:
         if: ${{ steps.ctx.outputs.mode == 'main' && steps.affected.outputs.count == '0' }}
         run: echo "No affected release projects on main; skipping version + publish."
 
-      - name: nx release version (dispatch)
+      # Orchestrated release: bumps versions, generates changelogs, commits + tags + pushes in one shot.
+      # --skip-publish keeps publishing as a separate step below so the OIDC token-clearing logic still runs.
+      - name: nx release version + changelog (dispatch)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && !inputs.dry-run }}
         shell: bash
         run: |
           set -euo pipefail
 
           scope="${{ steps.ctx.outputs.scope }}"
+          projects_arg=()
           if [[ -n "$scope" ]]; then
             projects_arg=(--projects "$scope")
-          else
-            projects_arg=()
           fi
 
-          npx nx release version prerelease \
-            --preid "${{ steps.ctx.outputs.dist_tag }}" \
+          release_type="${{ steps.ctx.outputs.release_type }}"
+          preid_arg=()
+          if [[ "$release_type" == "prerelease" ]]; then
+            preid_arg=(--preid "${{ steps.ctx.outputs.preid }}")
+          fi
+
+          npx nx release "$release_type" \
+            "${preid_arg[@]}" \
             "${projects_arg[@]}" \
+            --skip-publish \
             --git-commit \
             --git-push \
             --verbose
 
-      - name: nx release version (dispatch, dry-run)
+      - name: nx release version + changelog (dispatch, dry-run)
         if: ${{ steps.ctx.outputs.mode == 'dispatch' && inputs.dry-run }}
         shell: bash
         run: |
           set -euo pipefail
 
           scope="${{ steps.ctx.outputs.scope }}"
+          projects_arg=()
           if [[ -n "$scope" ]]; then
             projects_arg=(--projects "$scope")
-          else
-            projects_arg=()
           fi
 
-          npx nx release version prerelease \
-            --preid "${{ steps.ctx.outputs.dist_tag }}" \
+          release_type="${{ steps.ctx.outputs.release_type }}"
+          preid_arg=()
+          if [[ "$release_type" == "prerelease" ]]; then
+            preid_arg=(--preid "${{ steps.ctx.outputs.preid }}")
+          fi
+
+          npx nx release "$release_type" \
+            "${preid_arg[@]}" \
             "${projects_arg[@]}" \
+            --skip-publish \
             --verbose \
             --dry-run
 
@@ -406,6 +444,8 @@ jobs:
 
           echo "Nx Release completed."
           echo "- mode: ${mode}"
+          echo "- release-type: '${{ steps.ctx.outputs.release_type }}'"
+          echo "- preid: '${{ steps.ctx.outputs.preid }}'"
           echo "- dist-tag: ${{ steps.ctx.outputs.mode == 'tag' && steps.taginfo.outputs.dist_tag || steps.ctx.outputs.dist_tag }}"
           echo "- scope: '${{ steps.ctx.outputs.scope }}'"
           echo "- next-prerelease-allowlist: ${NEXT_PRERELEASE_PROJECT_ALLOWLIST}"
