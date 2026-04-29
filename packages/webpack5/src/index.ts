@@ -53,16 +53,6 @@ export interface IWebpackEnv {
 	// enable commonjs modules (default: ES modules, esm)
 	commonjs?: boolean;
 
-	/**
-	 * CLI-populated origin of the loopback HTTP server that serves the
-	 * webpack output directory (e.g. "http://127.0.0.1:41500"). Used only
-	 * in development to rewrite sourceMappingURL comments so Chrome
-	 * DevTools can fetch .map files over HTTP with CORS.
-	 *
-	 * Do not set manually.
-	 */
-	devtoolsHost?: string;
-
 	// misc
 	replace?: string[] | string;
 	watchNodeModules?: boolean;
