@@ -24,7 +24,6 @@ import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getValue } from '../helpers/config';
 import { getIPS } from '../helpers/host';
-import FixSourceMapUrlPlugin from '../plugins/FixSourceMapUrlPlugin';
 import {
 	getAvailablePlatforms,
 	getAbsoluteDistPath,
@@ -42,12 +41,16 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// set mode
 	config.mode(mode);
 
-	// use source map files by default with v9+
+	// Inline source maps for v9+ dev builds.
+	// Chrome DevTools cannot fetch external .map files in this debugging
+	// flow: bundled DevTools blocks http:// via CSP, the appspot frontend
+	// hits the same CSP, and the iOS V8 inspector backend fetch is blocked
+	// by App Transport Security. A `data:` URL inlined in the bundle
+	// sidesteps all three since DevTools handles it without any network
+	// request. Production builds keep their configured devtool unchanged.
 	function useSourceMapFiles() {
 		if (mode === 'development') {
-			// in development we always use source-map files with v9+ runtimes
-			// they are parsed and mapped to display in-flight app error screens
-			env.sourceMap = 'source-map';
+			env.sourceMap = 'inline-source-map';
 		}
 	}
 	// determine target output by @nativescript/* runtime version
@@ -183,13 +186,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// Use devtool for both CommonJS and ESM - let webpack handle source mapping properly
 	config.devtool(sourceMapType);
-
-	// For ESM builds, fix the sourceMappingURL to use correct paths
-	if (sourceMapType && sourceMapType !== 'hidden-source-map') {
-		config
-			.plugin('FixSourceMapUrlPlugin')
-			.use(FixSourceMapUrlPlugin as any, [{ outputPath }]);
-	}
 
 	// when using hidden-source-map, output source maps to the `platforms/{platformName}-sourceMaps` folder
 	if (env.sourceMap === 'hidden-source-map') {
