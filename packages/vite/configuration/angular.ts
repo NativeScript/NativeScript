@@ -1,5 +1,6 @@
 import { mergeConfig, type UserConfig, type Plugin } from 'vite';
 import path from 'path';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import angular from '@analogjs/vite-plugin-angular';
 import { angularLinkerVitePlugin, angularLinkerVitePluginPost } from '../helpers/angular/angular-linker.js';
@@ -7,6 +8,7 @@ import { ensureSharedAngularLinker } from '../helpers/angular/shared-linker.js';
 import { containsRealNgDeclare } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
+import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 
 // Rollup-level linker to guarantee Angular libraries are linked when included in the bundle graph.
 function angularRollupLinker(projectRoot?: string): Plugin {
@@ -108,6 +110,14 @@ const cliFlags = getCliFlags();
 const isDevEnv = process.env.NODE_ENV !== 'production';
 const hmrActive = isDevEnv && !!cliFlags.hmr;
 
+const projectRoot = process.cwd();
+const tsConfigAppPath = path.resolve(projectRoot, 'tsconfig.app.json');
+const tsConfigPath = path.resolve(projectRoot, 'tsconfig.json');
+let tsConfig = tsConfigAppPath;
+if (!fs.existsSync(tsConfigAppPath) && fs.existsSync(tsConfigPath)) {
+	tsConfig = tsConfigPath;
+}
+
 const plugins = [
 	// Allow external html template changes to trigger hot reload: Make .ts files depend on their .html templates
 	{
@@ -132,6 +142,7 @@ const plugins = [
 	// angularRollupLinker(process.cwd()),
 	angular({
 		liveReload: false, // Disable live reload in favor of HMR
+		tsconfig: tsConfig,
 	}),
 	// Post-phase linker to catch any declarations introduced after other transforms (including project code)
 	angularLinkerVitePluginPost(process.cwd()),
@@ -305,7 +316,7 @@ export const angularConfig = ({ mode }): UserConfig => {
 
 	const enableRollupLinker = process.env.NS_ENABLE_ROLLUP_LINKER === '1' || process.env.NS_ENABLE_ROLLUP_LINKER === 'true' || hmrActive;
 
-	return mergeConfig(baseConfig({ mode }), {
+	return mergeConfig(baseConfig({ mode, flavor: 'angular' }), {
 		plugins: [...plugins, ...(enableRollupLinker ? [angularRollupLinker(process.cwd())] : []), renderChunkLinker, postLinker],
 		// Always alias fesm2022 deep imports to package root so vendor bridge can externalize properly
 		resolve: {
@@ -325,11 +336,11 @@ export const angularConfig = ({ mode }): UserConfig => {
 				alias: [
 					{
 						find: /^@angular\/animations(\/.+)?$/, // match subpaths too
-						replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+						replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/angular-animations-stub.js'),
 					},
 					{
 						find: /^@angular\/platform-browser\/animations(\/.+)?$/,
-						replacement: new URL('../shims/angular-animations-stub.js', import.meta.url).pathname,
+						replacement: resolveRelativeToImportMeta(import.meta.url, '../shims/angular-animations-stub.js'),
 					},
 				],
 			},

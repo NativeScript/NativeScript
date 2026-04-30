@@ -62,6 +62,14 @@ module.exports = {
           script: 'nx debug apps-toolbox android',
           description: '⚆  Run Android  🤖'
         },
+        devios: {
+          script: 'nx dev apps-toolbox --platform=ios',
+          description: '⚆  Dev iOS  ' 
+        },
+        devandroid: {
+          script: 'nx dev apps-toolbox --platform=android',
+          description: '⚆  Dev Android  🤖' 
+        }
       },
       "...UI...": {
         script: `npx cowsay "Tons of ui samples to prove out core behavior and validate github issue fixes ☑️"`,
@@ -128,6 +136,17 @@ module.exports = {
 				test: {
 					script: 'nx test webpack5',
 					description: '@nativescript/webpack(5): Unit tests'
+				},
+			},
+			// @nativescript/vite
+			vite: {
+				build: {
+					script: 'nx build vite',
+					description: '@nativescript/vite: Build'
+				},
+				test: {
+					script: 'nx test vite',
+					description: '@nativescript/vite: Unit tests'
 				},
 			},
     },

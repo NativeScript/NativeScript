@@ -32,7 +32,7 @@ function attachEventListeners(page: Page, events: Array<string>) {
 	});
 }
 
-function attachFrameEventListeners(frame: Frame, events: Array<string>) {
+function attachFrameEventListeners(frame: { on(eventName: string, callback: (...args: any[]) => void): void }, events: Array<string>) {
 	let argsToString = (args: frame.NavigationData) => {
 		return `${(<frame.BackstackEntry>args.entry).resolvedPage.id} ${args.eventName} ${args.isBack ? 'back' : 'forward'}`;
 	};

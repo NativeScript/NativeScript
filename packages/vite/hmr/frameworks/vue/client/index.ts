@@ -1,4 +1,4 @@
-import { attachDiagnosticsToFrame, deriveHttpOrigin, getCore, getCurrentApp, getGraphVersion, getHMRWsUrl, getHttpOriginForVite, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
+import { deriveHttpOrigin, getCore, getCurrentApp, getGraphVersion, getHMRWsUrl, getHttpOriginForVite, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
 
 // satisfied by define replacement
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
@@ -1099,9 +1099,6 @@ export function getRootForVue(
 		// Treat Frame as authoritative root regardless of whether it already has a currentPage.
 		// This avoids producing a Frame inside a wrapper Page which can lead to blank content in complex apps.
 		if (ctorName === 'Frame' || /^Frame(\$\d+)?$/.test(ctorName)) {
-			try {
-				attachDiagnosticsToFrame(nativeView);
-			} catch {}
 			if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] root kind=frame (adopting component Frame)');
 			state.setRootKind('frame');
 			state.setCachedRoot(nativeView);

@@ -55,7 +55,8 @@ export function test_set_color() {
 		ai.color = new color.Color('red');
 
 		function testAction(views: Array<viewModule.View>) {
-			TKUnit.assertEqual(ai.color.ios.CGColor, ai.nativeViewProtected.color.CGColor, 'ai.color');
+			const nativeView = ai.nativeViewProtected as unknown as UIActivityIndicatorView;
+			TKUnit.assertEqual(ai.color.ios.CGColor, nativeView.color.CGColor, 'ai.color');
 		}
 
 		helper.buildUIAndRunTest(ai, testAction);

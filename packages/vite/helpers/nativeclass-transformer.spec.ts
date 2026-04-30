@@ -38,6 +38,23 @@ export class HyphenImpl extends NSObject {
 }
 `;
 
+const STATUS_BAR_GETTER_TS = `
+@NativeClass()
+export class StatusBarController extends UIViewController {
+	get preferredStatusBarStyle() {
+		const owner = this.owner?.deref();
+		if (owner?.statusBarStyle) {
+			if (SDK_VERSION >= 13) {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.DarkContent;
+			} else {
+				return owner.statusBarStyle === 'light' ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+			}
+		}
+		return UIStatusBarStyle.Default;
+	}
+}
+`;
+
 // Nested class inside a function with @NativeClass
 const NESTED_CLASS_TS = `
 function ensureTouchControlHandlers() {
@@ -95,6 +112,15 @@ describe('NativeClass transformer helper', () => {
 		expect(code).not.toContain('/frame-in');
 		// enumerable should be set to true on the descriptor, or we emit a direct prototype assignment which is enumerable by default
 		expect(/Object\.defineProperty\([\s\S]*?{[\s\S]*?enumerable:\s*true/.test(code) || /prototype\['frame-in'\]\s*=/.test(code)).toBeTruthy();
+	});
+
+	it('forces enumerable true for getter descriptors with nested control flow', () => {
+		const res = transformNativeClassSource(STATUS_BAR_GETTER_TS, '/app/src/status-bar-controller.ts');
+		expect(res).toBeTruthy();
+		const code = res!.code;
+		expect(code).toContain('Object.defineProperty(StatusBarController');
+		expect(code).toContain('"preferredStatusBarStyle"');
+		expect(code).toMatch(/Object\.defineProperty\([\s\S]*?preferredStatusBarStyle[\s\S]*?enumerable:\s*true/);
 	});
 
 	it('handles @NativeClass on nested class declarations', () => {

@@ -221,7 +221,7 @@ export class MultipleScenesModel extends Observable {
 		closeButton.text = 'Close This Scene';
 		closeButton.fontSize = 22;
 		closeButton.fontWeight = 'bold';
-		closeButton.backgroundColor = '#ff4444';
+		closeButton.backgroundColor = new Color('#ff4444');
 		closeButton.color = new Color('white');
 		closeButton.borderRadius = 8;
 		closeButton.padding = 16;
@@ -272,7 +272,7 @@ export class MultipleScenesModel extends Observable {
 		closeButton.text = 'Close This Scene';
 		closeButton.fontSize = 25;
 		closeButton.fontWeight = 'bold';
-		closeButton.backgroundColor = '#006ead';
+		closeButton.backgroundColor = new Color('#006ead');
 		closeButton.color = new Color('white');
 		closeButton.borderRadius = 8;
 		closeButton.padding = 16;

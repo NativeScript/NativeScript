@@ -259,7 +259,7 @@ export function test_property_change_from_native_calls_attributeModified() {
 		callbackCalled = true;
 	};
 
-	textProperty.nativeValueChange(tv, 'new value');
+	textProperty.nativeValueChange(tv as any, 'new value');
 
 	assert(callbackCalled, 'attributeModified not called');
 }

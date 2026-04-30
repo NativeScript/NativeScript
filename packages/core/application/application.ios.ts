@@ -302,8 +302,8 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		return this._rootView;
 	}
 
-	resetRootView(view?: View) {
-		super.resetRootView(view);
+	resetRootView(entry?: NavigationEntry | string) {
+		super.resetRootView(entry);
 		this.setWindowContent();
 	}
 
@@ -1264,6 +1264,7 @@ global.__onLiveSyncCore = function (context?: ModuleContext) {
 };
 
 export * from './application-common';
+export * from './application-interfaces';
 export const Application = iosApp;
 export const AndroidApplication = undefined;
 

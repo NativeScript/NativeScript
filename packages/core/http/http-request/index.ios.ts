@@ -2,7 +2,8 @@ import { ImageSource } from '../../image-source';
 import { File } from '../../file-system';
 import type { HttpRequestOptions, HttpResponse, HttpContentHandler } from '../http-interfaces';
 import type { HttpResponseEncoding } from '../http-interfaces';
-import { requestInternal, BaseHttpContent } from '../http-request-internal';
+import type { BaseHttpContent } from '../http-request-internal';
+import { requestInternal } from '../http-request-internal';
 import { getFilenameFromUrl, parseJSON } from './http-request-common';
 
 const contentHandler: HttpContentHandler = {

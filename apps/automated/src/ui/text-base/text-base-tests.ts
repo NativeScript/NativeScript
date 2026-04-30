@@ -16,7 +16,7 @@ export function test_native_font_size_with_a11y_font_scale() {
 		layout.style.iosAccessibilityAdjustsFontSize = true;
 		layout.style.fontScaleInternal = deviceFontScaleMock;
 
-		const nativeFontSize = testView.nativeTextViewProtected.font.pointSize;
+		const nativeFontSize = (testView.nativeTextViewProtected as unknown as TNSLabel).font.pointSize;
 		const expectedNativeFontSize = testView.style.fontInternal.fontSize * deviceFontScaleMock;
 		TKUnit.assertEqual(nativeFontSize, expectedNativeFontSize, 'View font size does not respect a11y font scaling');
 	}

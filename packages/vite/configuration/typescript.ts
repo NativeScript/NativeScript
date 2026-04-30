@@ -5,6 +5,7 @@ import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from '../helpers/project.js';
 import { getProjectAppPath } from '../helpers/utils.js';
+import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
 
 /**
  * TypeScript + XML NativeScript Vite configuration.
@@ -105,10 +106,10 @@ function createBundlerContextPlugin(): Plugin {
 			function pushImport(abs: string, raw: boolean) {
 				const idLocal = `__m${index++}`;
 				const spec = toImportSpecifier(abs) + (raw ? '?raw' : '');
-				importLines.push(`import ${raw ? idLocal : `* as ${idLocal}`} from '${spec}';`);
+				importLines.push(`import ${raw ? idLocal : `* as ${idLocal}`} from ${JSON.stringify(spec)};`);
 				const cleaned = spec.replace(/\?raw$/, '');
-				registryEntries.push(`registry.set('${toCtxKey(abs)}','${cleaned}');`);
-				moduleMapLines.push(`all['${cleaned}'] = ${idLocal};`);
+				registryEntries.push(`registry.set(${JSON.stringify(toCtxKey(abs))}, ${JSON.stringify(cleaned)});`);
+				moduleMapLines.push(`all[${JSON.stringify(cleaned)}] = ${idLocal};`);
 			}
 			xmlFiles.forEach((f) => pushImport(f, true));
 			styleFiles.forEach((f) => pushImport(f, true));
@@ -153,8 +154,8 @@ function createXmlLoaderPlugin(): Plugin {
 	};
 }
 
-export const typescriptConfig = ({ mode }): UserConfig => {
-	return mergeConfig(baseConfig({ mode }), {
-		plugins: [createXmlLoaderPlugin(), createBundlerContextPlugin()],
+export const typescriptConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
+	return mergeConfig(baseConfig({ mode, flavor: 'typescript' }), {
+		plugins: [...getTypeCheckPlugins('typescript', options.typeCheck), createXmlLoaderPlugin(), createBundlerContextPlugin()],
 	});
 };

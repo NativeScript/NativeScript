@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR enabled 1`] = `
 "{
@@ -30,8 +30,16 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     clean: true
   },
   resolve: {
+    fallback: {
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+    },
+    fullySpecified: false,
     symlinks: true,
     alias: {
+      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src',
       'react-dom': 'react-nativescript'
@@ -66,6 +74,13 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
   },
   module: {
     rules: [
+      /* config.module.rule('esm-extensionless') */
+      {
+        test: /\\.(mjs|js|ts|tsx)$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
       /* config.module.rule('bundle') */
       {
         enforce: 'post',
@@ -127,6 +142,14 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
               },
               getCustomTransformers: function () { /* omitted long function */ }
             }
+          },
+          /* config.module.rule('ts').use('native-class-downlevel-loader') */
+          {
+            loader: 'native-class-downlevel-loader'
+          },
+          /* config.module.rule('ts').use('native-class-strip-loader') */
+          {
+            loader: 'native-class-strip-loader'
           }
         ]
       },
@@ -207,7 +230,12 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              implementation: {
+                info: 'mock-sass'
+              }
+            }
           }
         ]
       }
@@ -250,6 +278,12 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     ]
   },
   plugins: [
+    /* config.plugin('FixSourceMapUrlPlugin') */
+    new FixSourceMapUrlPlugin(
+      {
+        outputPath: '__jest__/platforms/android/app/src/main/assets/app'
+      }
+    ),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -273,10 +307,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(ios|visionos)\\.(\\w+)$/
+      /.(ios|visionos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
-    new DefinePlugin(
+    new CompatDefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
@@ -285,6 +319,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
+        __COMMONJS__: true,
         __ANDROID__: true,
         __IOS__: false,
         __VISIONOS__: false,
@@ -336,12 +371,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     /* config.plugin('HotModuleReplacementPlugin') */
     new HotModuleReplacementPlugin(),
     /* config.plugin('ReactRefreshPlugin') */
-    new ReactRefreshPlugin(
+    new ReactRefreshWebpackPlugin(
       {
         overlay: false,
-        forceEnable: false,
-        exclude: /node_modules/i,
-        include: /\\.([cm]js|[jt]sx?|flow)$/i
+        forceEnable: false
       }
     )
   ],
@@ -387,8 +420,16 @@ exports[`react configuration > android > base config 1`] = `
     clean: true
   },
   resolve: {
+    fallback: {
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+    },
+    fullySpecified: false,
     symlinks: true,
     alias: {
+      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src',
       'react-dom': 'react-nativescript'
@@ -423,6 +464,13 @@ exports[`react configuration > android > base config 1`] = `
   },
   module: {
     rules: [
+      /* config.module.rule('esm-extensionless') */
+      {
+        test: /\\.(mjs|js|ts|tsx)$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
       /* config.module.rule('bundle') */
       {
         enforce: 'post',
@@ -466,6 +514,14 @@ exports[`react configuration > android > base config 1`] = `
               },
               getCustomTransformers: function () { /* omitted long function */ }
             }
+          },
+          /* config.module.rule('ts').use('native-class-downlevel-loader') */
+          {
+            loader: 'native-class-downlevel-loader'
+          },
+          /* config.module.rule('ts').use('native-class-strip-loader') */
+          {
+            loader: 'native-class-strip-loader'
           }
         ]
       },
@@ -546,7 +602,12 @@ exports[`react configuration > android > base config 1`] = `
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              implementation: {
+                info: 'mock-sass'
+              }
+            }
           }
         ]
       }
@@ -589,6 +650,12 @@ exports[`react configuration > android > base config 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('FixSourceMapUrlPlugin') */
+    new FixSourceMapUrlPlugin(
+      {
+        outputPath: '__jest__/platforms/android/app/src/main/assets/app'
+      }
+    ),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -612,10 +679,10 @@ exports[`react configuration > android > base config 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(ios|visionos)\\.(\\w+)$/
+      /.(ios|visionos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
-    new DefinePlugin(
+    new CompatDefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
@@ -624,6 +691,7 @@ exports[`react configuration > android > base config 1`] = `
         __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
+        __COMMONJS__: true,
         __ANDROID__: true,
         __IOS__: false,
         __VISIONOS__: false,
@@ -715,8 +783,16 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     clean: true
   },
   resolve: {
+    fallback: {
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+    },
+    fullySpecified: false,
     symlinks: true,
     alias: {
+      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src',
       'react-dom': 'react-nativescript'
@@ -751,6 +827,13 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
   },
   module: {
     rules: [
+      /* config.module.rule('esm-extensionless') */
+      {
+        test: /\\.(mjs|js|ts|tsx)$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
       /* config.module.rule('bundle') */
       {
         enforce: 'post',
@@ -812,6 +895,14 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
               },
               getCustomTransformers: function () { /* omitted long function */ }
             }
+          },
+          /* config.module.rule('ts').use('native-class-downlevel-loader') */
+          {
+            loader: 'native-class-downlevel-loader'
+          },
+          /* config.module.rule('ts').use('native-class-strip-loader') */
+          {
+            loader: 'native-class-strip-loader'
           }
         ]
       },
@@ -892,7 +983,12 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              implementation: {
+                info: 'mock-sass'
+              }
+            }
           }
         ]
       }
@@ -935,6 +1031,12 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     ]
   },
   plugins: [
+    /* config.plugin('FixSourceMapUrlPlugin') */
+    new FixSourceMapUrlPlugin(
+      {
+        outputPath: '__jest__/platforms/ios/jest/app'
+      }
+    ),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -958,10 +1060,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(android|visionos)\\.(\\w+)$/
+      /.(android|visionos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
-    new DefinePlugin(
+    new CompatDefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
@@ -970,6 +1072,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
+        __COMMONJS__: true,
         __ANDROID__: false,
         __IOS__: true,
         __VISIONOS__: false,
@@ -1021,12 +1124,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     /* config.plugin('HotModuleReplacementPlugin') */
     new HotModuleReplacementPlugin(),
     /* config.plugin('ReactRefreshPlugin') */
-    new ReactRefreshPlugin(
+    new ReactRefreshWebpackPlugin(
       {
         overlay: false,
-        forceEnable: false,
-        exclude: /node_modules/i,
-        include: /\\.([cm]js|[jt]sx?|flow)$/i
+        forceEnable: false
       }
     )
   ],
@@ -1073,8 +1174,16 @@ exports[`react configuration > ios > base config 1`] = `
     clean: true
   },
   resolve: {
+    fallback: {
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts'
+    },
+    fullySpecified: false,
     symlinks: true,
     alias: {
+      'mdn-data/css/properties.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-properties.ts',
+      'mdn-data/css/syntaxes.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-syntaxes.ts',
+      'mdn-data/css/at-rules.json': '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/mdn-data-at-rules.ts',
+      module: '/Users/nstudio/Documents/github/NativeScript/NativeScript/packages/webpack5/src/polyfills/module.ts',
       '~': '__jest__/src',
       '@': '__jest__/src',
       'react-dom': 'react-nativescript'
@@ -1109,6 +1218,13 @@ exports[`react configuration > ios > base config 1`] = `
   },
   module: {
     rules: [
+      /* config.module.rule('esm-extensionless') */
+      {
+        test: /\\.(mjs|js|ts|tsx)$/,
+        resolve: {
+          fullySpecified: false
+        }
+      },
       /* config.module.rule('bundle') */
       {
         enforce: 'post',
@@ -1152,6 +1268,14 @@ exports[`react configuration > ios > base config 1`] = `
               },
               getCustomTransformers: function () { /* omitted long function */ }
             }
+          },
+          /* config.module.rule('ts').use('native-class-downlevel-loader') */
+          {
+            loader: 'native-class-downlevel-loader'
+          },
+          /* config.module.rule('ts').use('native-class-strip-loader') */
+          {
+            loader: 'native-class-strip-loader'
           }
         ]
       },
@@ -1232,7 +1356,12 @@ exports[`react configuration > ios > base config 1`] = `
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'sass-loader'
+            loader: 'sass-loader',
+            options: {
+              implementation: {
+                info: 'mock-sass'
+              }
+            }
           }
         ]
       }
@@ -1275,6 +1404,12 @@ exports[`react configuration > ios > base config 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('FixSourceMapUrlPlugin') */
+    new FixSourceMapUrlPlugin(
+      {
+        outputPath: '__jest__/platforms/ios/jest/app'
+      }
+    ),
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
@@ -1298,10 +1433,10 @@ exports[`react configuration > ios > base config 1`] = `
     ),
     /* config.plugin('ContextExclusionPlugin|Other_Platforms') */
     new ContextExclusionPlugin(
-      /\\.(android|visionos)\\.(\\w+)$/
+      /.(android|visionos).(w+)$/
     ),
     /* config.plugin('DefinePlugin') */
-    new DefinePlugin(
+    new CompatDefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
@@ -1310,6 +1445,7 @@ exports[`react configuration > ios > base config 1`] = `
         __CSS_PARSER__: '"css-tree"',
         __UI_USE_XML_PARSER__: true,
         __UI_USE_EXTERNAL_RENDERER__: false,
+        __COMMONJS__: true,
         __ANDROID__: false,
         __IOS__: true,
         __VISIONOS__: false,

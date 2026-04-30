@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as testModule from '../../ui-test';
-import { Label, GridLayout, LayoutBase, StackLayout, BindingOptions, CoreTypes, Span, FormattedString, Utils, Color, Observable, path } from '@nativescript/core';
+import { Label, GridLayout, StackLayout, BindingOptions, CoreTypes, Span, FormattedString, Utils, Color, Observable, path, View } from '@nativescript/core';
 import * as labelTestsNative from './label-tests-native';
 import * as helper from '../../ui-helper';
 
@@ -588,7 +588,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	}
 
-	private requestLayoutFixture(expectRequestLayout: boolean, initialValue: string, setup: (label: Label) => LayoutBase): void {
+	private requestLayoutFixture<T extends View & { addChild(view: Label): void }>(expectRequestLayout: boolean, initialValue: string, setup: (label: Label) => T): void {
 		if (!__APPLE__) {
 			return;
 		}
@@ -602,7 +602,7 @@ export class LabelTest extends testModule.UITest<Label> {
 		let mainPage = helper.getCurrentPage();
 		mainPage.content = host;
 
-		const nativeHostView = host.nativeViewProtected as UIView;
+		const nativeHostView = host.nativeViewProtected as unknown as UIView;
 
 		// Check if native view layer is still marked as dirty before proceeding
 		TKUnit.waitUntilReady(() => host.isLoaded && nativeHostView?.layer && !nativeHostView.layer.needsLayout());

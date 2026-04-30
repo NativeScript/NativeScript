@@ -1,7 +1,7 @@
 /**
  * @internal Util used for exporting opposing platform utils and warning the user if they are trying to access them.
  */
-export function platformCheck(parent?: string) {
+export function platformCheck<T = {}>(parent?: string): T {
 	if (__DEV__) {
 		return new Proxy(
 			{},
@@ -19,8 +19,8 @@ export function platformCheck(parent?: string) {
 					throw new Error(errorMsg);
 				},
 			},
-		);
+		) as T;
 	}
 
-	return undefined;
+	return undefined as T;
 }

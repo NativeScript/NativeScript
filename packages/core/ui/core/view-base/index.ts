@@ -113,7 +113,8 @@ export function getAncestor<T extends ViewBase = ViewBase>(view: T, criterion: s
 	let matcher: (view: ViewBase) => view is T;
 
 	if (typeof criterion === 'string') {
-		matcher = (view: ViewBase): view is T => view.typeName === criterion;
+		const normalizedCriterion = criterion.toLowerCase();
+		matcher = (view: ViewBase): view is T => view.typeName === criterion || view.cssType === normalizedCriterion;
 	} else {
 		matcher = (view: ViewBase): view is T => view instanceof criterion;
 	}
@@ -386,6 +387,14 @@ export abstract class ViewBase extends Observable {
 	 * @nsProperty
 	 */
 	public className: string;
+
+	/**
+	 * Gets the CSS fully qualified type name used for selector matching.
+	 */
+	public get cssType(): string {
+		return undefined;
+	}
+	public set cssType(value: string) {}
 
 	/**
 	 * Gets or sets the visual state of the view.
