@@ -8,7 +8,7 @@ import { layout, ios as iosUtils, getWindow } from '../../../utils';
 import { SDK_VERSION, supportsGlass } from '../../../utils/constants';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, directionProperty, filterProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { IOSPostAccessibilityNotificationType, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
@@ -69,6 +69,19 @@ export class View extends ViewCommon {
 
 	get isLayoutRequested(): boolean {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
+	}
+
+	private _filter: NSCCSSFilter;
+
+	[filterProperty.setNative](value: string) {
+		if (!this._filter) {
+			this._filter = NSCCSSFilter.alloc().init();
+		}
+		this._filter.parseWithCss(value);
+
+		if (this.nativeViewProtected) {
+			this._filter.applyTo(this.nativeViewProtected);
+		}
 	}
 
 	disposeNativeView() {

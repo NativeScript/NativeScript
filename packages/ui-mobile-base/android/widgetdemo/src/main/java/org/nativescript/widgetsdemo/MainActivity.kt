@@ -1,10 +1,14 @@
 package org.nativescript.widgetsdemo
 
+import android.animation.ValueAnimator
 import android.app.Dialog
+import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
@@ -19,8 +23,10 @@ import org.nativescript.widgets.CommonLayoutParams
 import org.nativescript.widgets.ContentLayout
 import org.nativescript.widgets.GridLayout
 import org.nativescript.widgets.GridUnitType
+import org.nativescript.widgets.ImageView
 import org.nativescript.widgets.LayoutBase
 import org.nativescript.widgets.StackLayout
+import org.nativescript.widgets.StyleableTextView
 import org.nativescript.widgets.Utils
 
 class MainActivity : AppCompatActivity() {
@@ -255,7 +261,7 @@ class MainActivity : AppCompatActivity() {
 				val (name, mode) = modes[modeIndex]
 				page.overflowEdge = mode
 				statusLabel.text = "Mode: $name"
-				page.postDelayed(100) {
+				page.postDelayed(100L) {
 					paddingLabel.text = "paddingBottom: ${page.paddingBottom}  (edge=${page.edgeInsets.bottom}, ime=${page.imeInsets.bottom})"
 					Log.d(TAG, "Cycle -> $name: paddingBottom=${page.paddingBottom}, edge=${page.edgeInsets.bottom}, ime=${page.imeInsets.bottom}")
 				}
@@ -287,6 +293,13 @@ class MainActivity : AppCompatActivity() {
 
 		Utils.enableEdgeToEdge(this)
 		val frame = ContentLayout(this)
+		//ete(frame)
+		frame.layoutParams = CommonLayoutParams(
+			ViewGroup.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT
+			)
+		)
 
 		frame.overflowEdge = LayoutBase.OverflowEdgeIgnore
 
@@ -390,5 +403,133 @@ class MainActivity : AppCompatActivity() {
 		page.addView(buttonContainer)
 		frame.addView(page)
 		setContentView(frame)
+	}
+
+	fun growShadow(view: LayoutBase, onComplete: (() -> Unit)? = null) {
+		// Grow shadow: offset and blur increase
+		val growAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+			duration = 800
+			addUpdateListener { animation ->
+				val p = animation.animatedValue as Float
+				val offset = p * 15
+				val blur = p * 20
+				view.filter = "drop-shadow($offset $offset $blur rgba(0,0,0,0.6))"
+			}
+		}
+
+		// Shrink shadow back
+		val shrinkAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+			duration = 800
+			addUpdateListener { animation ->
+				val p = animation.animatedValue as Float
+				val offset = (1 - p) * 15
+				val blur = (1 - p) * 20
+				view.filter = "drop-shadow($offset $offset $blur rgba(0,0,0,0.6))"
+			}
+		}
+
+		growAnimator.addListener(object : android.animation.Animator.AnimatorListener {
+			override fun onAnimationStart(animation: android.animation.Animator) {}
+			override fun onAnimationCancel(animation: android.animation.Animator) {}
+			override fun onAnimationRepeat(animation: android.animation.Animator) {}
+			override fun onAnimationEnd(animation: android.animation.Animator) {
+				shrinkAnimator.start()
+			}
+		})
+
+		shrinkAnimator.addListener(object : android.animation.Animator.AnimatorListener {
+			override fun onAnimationStart(animation: android.animation.Animator) {}
+			override fun onAnimationCancel(animation: android.animation.Animator) {}
+			override fun onAnimationRepeat(animation: android.animation.Animator) {}
+			override fun onAnimationEnd(animation: android.animation.Animator) {
+				view.filter = ""
+				onComplete?.invoke()
+			}
+		})
+
+		growAnimator.start()
+	}
+
+	fun growShadow(view: StyleableTextView, onComplete: (() -> Unit)? = null) {
+		// Grow shadow: offset and blur increase
+		val growAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+			duration = 800
+			addUpdateListener { animation ->
+				val p = animation.animatedValue as Float
+				val offset = p * 15
+				val blur = p * 20
+				view.filter = "drop-shadow($offset $offset $blur rgba(0,0,0,0.6))"
+			}
+		}
+
+		// Shrink shadow back
+		val shrinkAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+			duration = 800
+			addUpdateListener { animation ->
+				val p = animation.animatedValue as Float
+				val offset = (1 - p) * 15
+				val blur = (1 - p) * 20
+				view.filter = "drop-shadow($offset $offset $blur rgba(0,0,0,0.6))"
+			}
+		}
+
+		growAnimator.addListener(object : android.animation.Animator.AnimatorListener {
+			override fun onAnimationStart(animation: android.animation.Animator) {}
+			override fun onAnimationCancel(animation: android.animation.Animator) {}
+			override fun onAnimationRepeat(animation: android.animation.Animator) {}
+			override fun onAnimationEnd(animation: android.animation.Animator) {
+				shrinkAnimator.start()
+			}
+		})
+
+		shrinkAnimator.addListener(object : android.animation.Animator.AnimatorListener {
+			override fun onAnimationStart(animation: android.animation.Animator) {}
+			override fun onAnimationCancel(animation: android.animation.Animator) {}
+			override fun onAnimationRepeat(animation: android.animation.Animator) {}
+			override fun onAnimationEnd(animation: android.animation.Animator) {
+				view.filter = ""
+				onComplete?.invoke()
+			}
+		})
+
+		growAnimator.start()
+	}
+
+	fun demoGrowShadow() {
+		val container = ContentLayout(this)
+		container.setBackgroundColor(Color.WHITE)
+		container.layoutParams = CommonLayoutParams(
+			ViewGroup.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT
+			)
+		)
+
+		val shadowLabel = StackLayout(this).apply {
+			setBackgroundColor(Color.parseColor("#3498db"))
+			layoutParams = CommonLayoutParams(
+				ViewGroup.LayoutParams(200, 200)
+			).apply {
+				gravity = android.view.Gravity.CENTER
+			}
+		}
+
+		val labelText = StyleableTextView(this).apply {
+			text = "Shadow"
+			setTextColor(Color.WHITE)
+			textSize = 24f
+		}
+		shadowLabel.addView(labelText)
+
+		val btn = Button(this).apply {
+			text = "Grow Shadow"
+			setOnClickListener {
+				growShadow(shadowLabel)
+			}
+		}
+
+		container.addView(shadowLabel)
+		container.addView(btn)
+		setContentView(container)
 	}
 }

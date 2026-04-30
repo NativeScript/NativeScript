@@ -1,0 +1,266 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="CSS Filters" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <ScrollView>
+        <StackLayout padding="10">
+
+            <!-- ========== STATIC FILTER EXAMPLES ========== -->
+            <Label text="Static Filters" class="h2" marginBottom="10" fontWeight="bold" />
+
+            <!-- Blur comparison -->
+            <Label text="blur(5px)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#ecf0f1" padding="15" margin="2">
+                    <Label text="Normal" fontSize="12" color="#666" textAlignment="center" />
+                    <Label text="Sample Text" fontSize="20" textAlignment="center" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: blur(5px);" backgroundColor="#ecf0f1" padding="15" margin="2">
+                    <Label text="Filtered" fontSize="12" color="#666" textAlignment="center" />
+                    <Label text="Sample Text" fontSize="20" textAlignment="center" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Grayscale comparison -->
+            <Label text="grayscale(100%)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#e74c3c" padding="15" margin="2">
+                    <Label text="Normal" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{greySrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: grayscale(100%);" backgroundColor="#e74c3c" padding="15" margin="2">
+                    <Label text="Filtered" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{greySrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Sepia comparison -->
+            <Label text="sepia(100%)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#3498db" padding="15" margin="2">
+                    <Label text="Normal" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{sepiaSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: sepia(100%);" backgroundColor="#3498db" padding="15" margin="2">
+                    <Label text="Filtered" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{sepiaSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Brightness comparison -->
+            <Label text="brightness(1.5) vs brightness(0.5)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#2c3e50" padding="15" margin="2">
+                    <Label text="Normal" fontSize="10" color="white" textAlignment="center" />
+                    <Image src="{{imageSrc}}" height="60" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: brightness(1.5);" backgroundColor="#2c3e50" padding="15" margin="2">
+                    <Label text="Bright 1.5" fontSize="10" color="white" textAlignment="center" />
+                    <Image src="{{brightnessSrc}}" height="60" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="2" style="filter: brightness(0.5);" backgroundColor="#2c3e50" padding="15" margin="2">
+                    <Label text="Dim 0.5" fontSize="10" color="white" textAlignment="center" />
+                    <Image src="{{brightnessSrc}}" height="60" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Contrast comparison -->
+            <Label text="contrast(200%)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#95a5a6" padding="15" margin="2">
+                    <Label text="Normal" fontSize="12" color="red" textAlignment="center" />
+                    <Image src="{{contrastSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: contrast(200%);" backgroundColor="#95a5a6" padding="15" margin="2">
+                    <Label text="Filtered" fontSize="12" color="red" textAlignment="center" />
+                    <Image src="{{contrastSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Saturate comparison -->
+            <Label text="saturate(300%)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#9b59b6" padding="15" margin="2">
+                    <Label text="Normal" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{saturateSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: saturate(300%);" backgroundColor="#9b59b6" padding="15" margin="2">
+                    <Label text="Filtered" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{saturateSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Hue Rotate comparison -->
+            <Label text="hue-rotate(180deg)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#1abc9c" padding="15" margin="2">
+                    <Label text="Normal" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{hueSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: hue-rotate(180deg);" backgroundColor="#1abc9c" padding="15" margin="2">
+                    <Label text="Filtered" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{hueSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Invert comparison -->
+            <Label text="invert(100%)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#34495e" padding="15" margin="2">
+                    <Label text="Normal" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{invertSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: invert(100%);" backgroundColor="#34495e" padding="15" margin="2">
+                    <Label text="Filtered" fontSize="12" color="white" textAlignment="center" />
+                    <Image src="{{invertSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Drop Shadow comparison -->
+            <Label text="drop-shadow(4px 4px 8px #000)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#16a085" padding="20" margin="2">
+                    <Label text="Normal" fontSize="12" color="white" textAlignment="center" />
+                    <Label text="Shadow" fontSize="20" color="white" textAlignment="center" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: drop-shadow(4px 4px 8px #000000);" backgroundColor="#16a085" padding="20" margin="2">
+                    <Label text="Filtered" fontSize="12" color="white" textAlignment="center" />
+                    <Label text="Shadow" fontSize="20" color="white" textAlignment="center" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Combined: blur + grayscale -->
+            <Label text="blur(2px) grayscale(50%)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <Image col="0" src="{{blurSrc}}" height="120" stretch="aspectFill" margin="2" />
+                <Image col="1" style="filter: blur(2px) grayscale(50%);" src="{{blurSrc}}" height="120" stretch="aspectFill" margin="2" />
+            </GridLayout>
+
+            <!-- Combined: contrast + saturate -->
+            <Label text="contrast(150%) saturate(150%)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#27ae60" padding="10" margin="2">
+                    <Label text="Normal" fontSize="10" color="white" textAlignment="center" />
+                    <Image src="{{saturateSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: contrast(150%) saturate(150%);" backgroundColor="#27ae60" padding="10" margin="2">
+                    <Label text="Filtered" fontSize="10" color="white" textAlignment="center" />
+                    <Image src="{{saturateSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Combined: sepia + brightness -->
+            <Label text="sepia(50%) brightness(1.2)" class="h3" marginTop="10" />
+            <GridLayout columns="*, *" rows="auto" marginBottom="10">
+                <StackLayout col="0" backgroundColor="#8e44ad" padding="10" margin="2">
+                    <Label text="Normal" fontSize="10" color="white" textAlignment="center" />
+                    <Image src="{{sepiaBrightnessSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+                <StackLayout col="1" style="filter: sepia(50%) brightness(1.2);" backgroundColor="#8e44ad" padding="10" margin="2">
+                    <Label text="Filtered" fontSize="10" color="white" textAlignment="center" />
+                    <Image src="{{sepiaBrightnessSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                </StackLayout>
+            </GridLayout>
+
+            <!-- ========== ANIMATED FILTER EXAMPLES ========== -->
+            <Label text="Animated Filters" class="h2" marginTop="30" marginBottom="10" fontWeight="bold" />
+
+            <!-- Blur Animation (Label only) -->
+            <Label text="Blur Animation - Label" class="h3" marginTop="10" />
+            <StackLayout backgroundColor="#9b59b6" padding="20">
+                <Label id="blurAnimLabel" text="Blurring Text" color="white" fontSize="24" textAlignment="center" />
+                <Button text="Animate Blur" tap="onAnimateBlur" marginTop="10" />
+            </StackLayout>
+
+            <!-- Pulse Blur on Image -->
+            <Label text="Pulse Blur - Image" class="h3" marginTop="10" />
+            <StackLayout backgroundColor="#2c3e50" padding="20">
+                <Image id="blurAnimImage" src="{{imageSrc}}" height="150" stretch="aspectFill" />
+                <Button text="Pulse Blur" tap="onPulseBlur" marginTop="10" />
+            </StackLayout>
+
+            <!-- Blur + Grayscale Animation (Parent View) -->
+            <Label text="Blur + Grayscale - Parent View" class="h3" marginTop="10" />
+            <StackLayout id="blurGrayContainer" backgroundColor="#1abc9c" padding="20">
+                <Label text="Combo Animation" color="white" fontSize="24" textAlignment="center" />
+                <Image src="{{imageSrc}}" height="120" stretch="aspectFill" marginTop="10" />
+                <Button text="Animate Blur + Gray" tap="onAnimateBlurGray" marginTop="10" />
+            </StackLayout>
+
+            <!-- Brightness Breathing (Parent View) -->
+            <Label text="Brightness Breathing - Parent View" class="h3" marginTop="10" />
+            <StackLayout id="brightnessContainer" backgroundColor="#e74c3c" padding="20">
+                <Label text="Breathing Light" color="white" fontSize="24" textAlignment="center" />
+                <Button text="Breathe Brightness" tap="onBreatheBrightness" marginTop="10" />
+            </StackLayout>
+
+            <!-- Hue Sweep (Parent View with Image) -->
+            <Label text="Hue Rotation - Parent View" class="h3" marginTop="10" />
+            <StackLayout id="hueContainer" backgroundColor="#3498db" padding="20">
+                <Label text="Color Sweep" color="white" fontSize="24" textAlignment="center" />
+                <Image src="{{imageSrc}}" height="80" stretch="aspectFill" marginTop="10" />
+                <Button text="Sweep Hue" tap="onSweepHue" marginTop="10" />
+            </StackLayout>
+
+            <!-- Sepia Fade (Label only) -->
+            <Label text="Sepia Fade - Label" class="h3" marginTop="10" />
+            <StackLayout backgroundColor="#27ae60" padding="20">
+                <Image id="sepiaAnim" src="{{imageSrc}}" height="80" stretch="aspectFill" marginTop="5" />
+                <Label text="Vintage Fade" color="white" fontSize="24" textAlignment="center" />
+                <Button text="Fade Sepia" tap="onFadeSepia" marginTop="10" />
+            </StackLayout>
+
+            <!-- Invert Flash (Label only) -->
+            <Label text="Invert Flash - Label" class="h3" marginTop="10" />
+            <StackLayout backgroundColor="#f39c12" padding="20">
+                <Label id="invertAnim" text="Flash Invert" color="white" fontSize="24" textAlignment="center" />
+                <Button text="Flash Invert" tap="onFlashInvert" marginTop="10" />
+            </StackLayout>
+
+            <!-- Drop Shadow Grow (Label only) -->
+            <Label text="Drop Shadow Grow - Label" class="h3" marginTop="10" />
+            <StackLayout backgroundColor="#3498db" padding="20">
+                <Label style="filter: drop-shadow(3px 3px 10px #000000);" id="shadowAnim" text="Growing Shadow" color="white" fontSize="24" textAlignment="center" />
+                <Button text="Grow Shadow" tap="onGrowShadow" marginTop="10" />
+            </StackLayout>
+
+            <!-- Contrast Pulse (Parent View) -->
+            <Label text="Contrast Pulse - Parent View" class="h3" marginTop="10" />
+            <StackLayout id="contrastContainer" backgroundColor="#95a5a6" padding="20">
+                <Label text="Contrast Pulse" color="white" fontSize="24" textAlignment="center" />
+                <Image src="{{imageSrc}}" height="80" stretch="aspectFill" marginTop="10" />
+                <Button text="Pulse Contrast" tap="onPulseContrast" marginTop="10" />
+            </StackLayout>
+
+            <!-- Saturation Wave (Parent View with Image) -->
+            <Label text="Saturation Wave - Parent View" class="h3" marginTop="10" />
+            <StackLayout id="saturateContainer" backgroundColor="#e67e22" padding="20">
+                <Label text="Saturation Wave" color="white" fontSize="24" textAlignment="center" />
+                <Image src="{{imageSrc}}" height="80" stretch="aspectFill" marginTop="10" />
+                <Button text="Wave Saturation" tap="onWaveSaturation" marginTop="10" />
+            </StackLayout>
+
+            <!-- Multi-Filter Cascade (Parent View) -->
+            <Label text="Multi-Filter Cascade - Parent View" class="h3" marginTop="10" />
+            <StackLayout id="cascadeContainer" backgroundColor="#8e44ad" padding="20">
+                <Label text="Filter Cascade" color="white" fontSize="24" textAlignment="center" />
+                <Image src="{{imageSrc}}" height="80" stretch="aspectFill" marginTop="10" />
+                <Button text="Run Cascade" tap="onCascade" marginTop="10" />
+            </StackLayout>
+
+            <!-- Full Spectrum Animation (Parent View) -->
+            <Label text="Full Spectrum - Parent View" class="h3" marginTop="10" />
+            <StackLayout id="spectrumContainer" backgroundColor="#16a085" padding="20">
+                <Label text="Full Spectrum" color="white" fontSize="24" textAlignment="center" />
+                <Image src="{{imageSrc}}" height="80" stretch="aspectFill" marginTop="10" />
+                <Button text="Run Spectrum" tap="onFullSpectrum" marginTop="10" />
+            </StackLayout>
+
+            <!-- Spacer at bottom -->
+            <StackLayout height="50" />
+
+        </StackLayout>
+    </ScrollView>
+</Page>
