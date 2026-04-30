@@ -129,6 +129,24 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 		return this._itemTemplatesInternal[0];
 	}
 
+	public _getItemTemplateInSection(section: number, index: number): KeyedTemplate {
+		let templateKey = 'default';
+		if (this.itemTemplateSelector) {
+			const dataItem = this._getDataItemInSection(section, index);
+			const sectionItems = this._getItemsInSection(section);
+			templateKey = this._itemTemplateSelector(dataItem, index, sectionItems);
+		}
+
+		for (let i = 0, length = this._itemTemplatesInternal.length; i < length; i++) {
+			if (this._itemTemplatesInternal[i].key === templateKey) {
+				return this._itemTemplatesInternal[i];
+			}
+		}
+
+		// This is the default template
+		return this._itemTemplatesInternal[0];
+	}
+
 	public _prepareItem(item: View, index: number) {
 		if (item) {
 			item.bindingContext = this._getDataItem(index);
