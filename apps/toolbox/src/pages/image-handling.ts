@@ -10,10 +10,15 @@ export function navigatingTo(args: EventData) {
 
 export class DemoModel extends Observable {
 	addingPhoto = false;
+	tintTestSrc = 'res://icon';
 	symbolWiggleEffect = ImageSymbolEffects.Wiggle;
 	symbolBounceEffect = ImageSymbolEffects.Bounce;
 	symbolBreathEffect = ImageSymbolEffects.Breathe;
 	symbolRotateEffect = ImageSymbolEffects.Rotate;
+
+	toggleTintTestSrc() {
+		this.set('tintTestSrc', this.tintTestSrc === 'res://icon' ? 'res://add_to_fav' : 'res://icon');
+	}
 
 	pickImage() {
 		const context = create({
