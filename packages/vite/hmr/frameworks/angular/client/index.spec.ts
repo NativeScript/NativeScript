@@ -389,6 +389,642 @@ describe('handleAngularHotUpdateMessage', () => {
 	});
 });
 
+// Worker auto-termination across HMR cycles.
+//
+// When an HMR update re-bootstraps Angular via `__reboot_ng_modules__`,
+// component constructors re-run and spawn fresh `new Worker(...)`
+// instances. The previous worker objects (held by the iOS Worker
+// dispatch table, not by any JS variable Angular knows about) stay
+// alive — every cycle silently doubles the live worker count.
+//
+// The fix is a two-tier strategy IN `terminateTrackedWorkers`:
+//
+//   1. PREFERRED: call `globalThis.__nsTerminateAllWorkers()` (NS iOS
+//      runtime's authoritative `Caches::Workers` registry → terminate
+//      everything in one native call). Catches every worker regardless
+//      of how it was created.
+//
+//   2. FALLBACK: drain `globalThis.__NS_HMR_WORKERS__` (a Set populated
+//      by `__nsHmrTrackWorker`, the helper `workerHmrUrlPlugin`
+//      injects). Older runtimes that don't ship `__nsTerminateAllWorkers`
+//      degrade cleanly to this path.
+//
+// These tests pin the BEHAVIOUR of that strategy so a runtime that
+// regresses the native function (or a Vite plugin that stops injecting
+// the producer-side wrap) is caught by the unit suite before it ships.
+describe('handleAngularHotUpdateMessage — worker termination before reboot', () => {
+	type SnapshotCleanup = () => void;
+
+	// Save & restore globals the angular client touches so cross-spec
+	// pollution from other describe blocks can't bleed into these
+	// assertions.
+	function snapshotWorkerGlobals(): SnapshotCleanup {
+		const g = globalThis as any;
+		const previousReboot = g.__reboot_ng_modules__;
+		const previousNative = g.__nsTerminateAllWorkers;
+		const previousSet = g.__NS_HMR_WORKERS__;
+		const previousDispose = g.__nsRunHmrDispose;
+		return () => {
+			g.__reboot_ng_modules__ = previousReboot;
+			g.__nsTerminateAllWorkers = previousNative;
+			g.__NS_HMR_WORKERS__ = previousSet;
+			g.__nsRunHmrDispose = previousDispose;
+		};
+	}
+
+	it('prefers globalThis.__nsTerminateAllWorkers() when the native API is present', async () => {
+		const restore = snapshotWorkerGlobals();
+		const reboot = vi.fn();
+		const nativeTerminate = vi.fn(() => 3); // pretend 3 workers were terminated
+		const fakeWorker = { terminate: vi.fn() };
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		g.__nsTerminateAllWorkers = nativeTerminate;
+		// Producer-side Set still has an entry — when the native path
+		// runs we must NOT also call .terminate() on this directly
+		// (the runtime already did it). The Set should be cleared
+		// regardless to avoid unbounded growth.
+		g.__NS_HMR_WORKERS__ = new Set([fakeWorker]);
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			// Native API called exactly once before reboot.
+			expect(nativeTerminate).toHaveBeenCalledTimes(1);
+			// Producer-side fakeWorker.terminate() was NOT called by the
+			// client — the native runtime owns termination when the API
+			// is present.
+			expect(fakeWorker.terminate).not.toHaveBeenCalled();
+			// Set was cleared so producer-side bookkeeping doesn't leak
+			// across HMR cycles.
+			expect(g.__NS_HMR_WORKERS__.size).toBe(0);
+			// Reboot still happened.
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('falls back to draining __NS_HMR_WORKERS__ when no native API is present', async () => {
+		const restore = snapshotWorkerGlobals();
+		const reboot = vi.fn();
+		const workerA = { terminate: vi.fn() };
+		const workerB = { terminate: vi.fn() };
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		// Explicitly delete so the older-runtime case is unambiguous.
+		delete g.__nsTerminateAllWorkers;
+		g.__NS_HMR_WORKERS__ = new Set([workerA, workerB]);
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			// Both producer-side workers terminated.
+			expect(workerA.terminate).toHaveBeenCalledTimes(1);
+			expect(workerB.terminate).toHaveBeenCalledTimes(1);
+			expect(g.__NS_HMR_WORKERS__.size).toBe(0);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('falls back to JS-Set drain when the native API throws (defensive)', async () => {
+		const restore = snapshotWorkerGlobals();
+		const reboot = vi.fn();
+		const workerA = { terminate: vi.fn() };
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		// Native API exists but throws — we must NOT propagate the
+		// exception out of the HMR cycle. We must also fall back to the
+		// JS-tracked Set so the user still gets the cleanup they expect
+		// (rather than silently stacking up workers because the runtime
+		// regressed).
+		g.__nsTerminateAllWorkers = vi.fn(() => {
+			throw new Error('native terminate failed');
+		});
+		g.__NS_HMR_WORKERS__ = new Set([workerA]);
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			// Fallback ran on workerA.
+			expect(workerA.terminate).toHaveBeenCalledTimes(1);
+			expect(g.__NS_HMR_WORKERS__.size).toBe(0);
+			// Reboot still ran — runtime regression is non-fatal.
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('does not throw when neither global is present (non-worker apps)', async () => {
+		const restore = snapshotWorkerGlobals();
+		const reboot = vi.fn();
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		delete g.__nsTerminateAllWorkers;
+		delete g.__NS_HMR_WORKERS__;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('swallows per-worker terminate() failures so one bad worker cannot break the HMR cycle', async () => {
+		const restore = snapshotWorkerGlobals();
+		const reboot = vi.fn();
+		const badWorker = {
+			terminate: vi.fn(() => {
+				throw new Error('worker already dead');
+			}),
+		};
+		const goodWorker = { terminate: vi.fn() };
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		delete g.__nsTerminateAllWorkers; // force fallback path
+		// Set order is insertion order: bad first to confirm we don't
+		// short-circuit on the first failure.
+		g.__NS_HMR_WORKERS__ = new Set([badWorker, goodWorker]);
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			// Bad worker was attempted (throw was swallowed) AND good
+			// worker still ran.
+			expect(badWorker.terminate).toHaveBeenCalledTimes(1);
+			expect(goodWorker.terminate).toHaveBeenCalledTimes(1);
+			expect(g.__NS_HMR_WORKERS__.size).toBe(0);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+});
+
+// `import.meta.hot.dispose` callback drain before reboot.
+//
+// The NS iOS runtime exposes `globalThis.__nsRunHmrDispose([keys?])` so the
+// HMR client can drain the per-module dispose registry that
+// `import.meta.hot.dispose(cb)` populates (see `HMRSupport.mm`). Without this
+// drain, every HMR update silently leaks side effects: intervals keep
+// firing, sockets stay open, store subscriptions stay active, etc.
+//
+// Contract pinned by these specs:
+//
+//   * The angular client MUST call `__nsRunHmrDispose()` (no arg → drain
+//     every module) before `__reboot_ng_modules__`. Order matters: dispose
+//     runs FIRST so user-code disposers see a still-live runtime; the
+//     hard worker terminator runs SECOND.
+//
+//   * Older runtimes without `__nsRunHmrDispose` MUST degrade silently —
+//     no throw, reboot still fires, and the worker terminator fallback
+//     still cleans up workers.
+//
+//   * Per-callback failures inside the runtime are not the client's
+//     concern (the runtime swallows them per Vite spec). But if the
+//     ENTIRE drain throws (out-of-memory, runtime regression), we still
+//     don't take down the HMR cycle.
+describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before reboot', () => {
+	type SnapshotCleanup = () => void;
+	function snapshotGlobals(): SnapshotCleanup {
+		const g = globalThis as any;
+		const previousReboot = g.__reboot_ng_modules__;
+		const previousDispose = g.__nsRunHmrDispose;
+		const previousNative = g.__nsTerminateAllWorkers;
+		return () => {
+			g.__reboot_ng_modules__ = previousReboot;
+			g.__nsRunHmrDispose = previousDispose;
+			g.__nsTerminateAllWorkers = previousNative;
+		};
+	}
+
+	it('calls __nsRunHmrDispose() with no arg before reboot when the runtime API is present', async () => {
+		const restore = snapshotGlobals();
+		const reboot = vi.fn();
+		const runDispose = vi.fn(() => 7); // pretend 7 disposers ran
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		g.__nsRunHmrDispose = runDispose;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			expect(runDispose).toHaveBeenCalledTimes(1);
+			// Implementation calls runDispose with the global as
+			// `this` and no arguments → drain everything.
+			expect(runDispose.mock.calls[0]).toEqual([]);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('calls dispose BEFORE the worker terminator (correct order is dispose → terminate → reboot)', async () => {
+		const restore = snapshotGlobals();
+		const callOrder: string[] = [];
+		const reboot = vi.fn(() => {
+			callOrder.push('reboot');
+		});
+		const runDispose = vi.fn(() => {
+			callOrder.push('dispose');
+			return 1;
+		});
+		const nativeTerminate = vi.fn(() => {
+			callOrder.push('terminate');
+			return 1;
+		});
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		g.__nsRunHmrDispose = runDispose;
+		g.__nsTerminateAllWorkers = nativeTerminate;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			// Strict ordering: dispose first (so user code can clean up
+			// gracefully while runtime is still live), then hard
+			// worker termination (catches anything user code missed),
+			// then reboot.
+			expect(callOrder).toEqual(['dispose', 'terminate', 'reboot']);
+		} finally {
+			restore();
+		}
+	});
+
+	it('degrades silently when the runtime does not expose __nsRunHmrDispose (older runtime)', async () => {
+		const restore = snapshotGlobals();
+		const reboot = vi.fn();
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		delete g.__nsRunHmrDispose;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			// No throw, reboot still ran. The dispose drain is a
+			// best-effort enhancement; missing API must never break
+			// the existing reboot flow.
+			expect(handled).toBe(true);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('does not propagate exceptions when __nsRunHmrDispose itself throws (defensive)', async () => {
+		const restore = snapshotGlobals();
+		const reboot = vi.fn();
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		// Runtime regression: the drain function throws (out of memory,
+		// isolate teardown race, etc.). The HMR cycle must NOT die.
+		g.__nsRunHmrDispose = vi.fn(() => {
+			throw new Error('runtime drain blew up');
+		});
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('quietly no-ops when the runtime returns 0 (nothing to drain)', async () => {
+		const restore = snapshotGlobals();
+		const reboot = vi.fn();
+		const runDispose = vi.fn(() => 0);
+		const g = globalThis as any;
+
+		g.__reboot_ng_modules__ = reboot;
+		g.__nsRunHmrDispose = runDispose;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			expect(runDispose).toHaveBeenCalledTimes(1);
+			expect(reboot).toHaveBeenCalledWith(true);
+			// We don't assert anything about logging here; the
+			// "single concise log per HMR cycle" output is gated to
+			// `executed > 0` and that's covered by the live e2e
+			// verification, not by unit tests (we don't want to bind
+			// the suite to a specific log format).
+		} finally {
+			restore();
+		}
+	});
+});
+
+// Standard Vite HMR lifecycle event dispatching.
+//
+// `import.meta.hot.on(event, cb)` is implemented in the iOS runtime
+// (`HMRSupport.mm`) — but the canonical Vite events
+// (`vite:beforeUpdate`, `vite:afterUpdate`, `vite:beforeFullReload`,
+// `vite:invalidate`, `vite:error`) only fire if the HMR client
+// dispatches them at the right points in each cycle. This describe
+// block pins:
+//
+//   * The 'happy path' fires `vite:beforeUpdate` first, then
+//     `vite:afterUpdate` after the reboot completes (BOTH events fire
+//     for a successful cycle).
+//   * Errors fire `vite:error` instead of `vite:afterUpdate`.
+//   * Declined modules trigger `vite:beforeFullReload` (via the
+//     dispatchHotEvent path inside `triggerFullReload`) and call
+//     `__nsReloadDevApp` — the cycle short-circuits before the reboot.
+//   * Older runtimes without `__NS_DISPATCH_HOT_EVENT__` (no event
+//     dispatcher installed) silently no-op without crashing the
+//     cycle.
+//
+// Note: We can't directly assert the no-op case ("dispatcher missing")
+// from a spec because `dispatchHotEvent` is a private helper, but
+// every spec below works whether or not the global is installed —
+// none of them require any side effect from the dispatcher to pass.
+describe('handleAngularHotUpdateMessage — standard Vite event dispatching', () => {
+	type SnapshotCleanup = () => void;
+	function snapshotGlobals(): SnapshotCleanup {
+		const g = globalThis as any;
+		const previousReboot = g.__reboot_ng_modules__;
+		const previousDispatcher = g.__NS_DISPATCH_HOT_EVENT__;
+		const previousDispose = g.__nsRunHmrDispose;
+		const previousNative = g.__nsTerminateAllWorkers;
+		const previousDeclined = g.__nsHasDeclinedModule;
+		const previousReload = g.__nsReloadDevApp;
+		return () => {
+			g.__reboot_ng_modules__ = previousReboot;
+			g.__NS_DISPATCH_HOT_EVENT__ = previousDispatcher;
+			g.__nsRunHmrDispose = previousDispose;
+			g.__nsTerminateAllWorkers = previousNative;
+			g.__nsHasDeclinedModule = previousDeclined;
+			g.__nsReloadDevApp = previousReload;
+		};
+	}
+
+	function installEventCapture(): { events: Array<{ event: string; payload: any }>; restore: SnapshotCleanup } {
+		const events: Array<{ event: string; payload: any }> = [];
+		const g = globalThis as any;
+		const previousDispatcher = g.__NS_DISPATCH_HOT_EVENT__;
+		g.__NS_DISPATCH_HOT_EVENT__ = (event: string, payload: any) => {
+			events.push({ event, payload });
+		};
+		return {
+			events,
+			restore: () => {
+				g.__NS_DISPATCH_HOT_EVENT__ = previousDispatcher;
+			},
+		};
+	}
+
+	it('dispatches vite:beforeUpdate then vite:afterUpdate on a successful cycle', async () => {
+		const restore = snapshotGlobals();
+		const { events, restore: restoreDispatcher } = installEventCapture();
+		const reboot = vi.fn();
+		const g = globalThis as any;
+		g.__reboot_ng_modules__ = reboot;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage(
+				{
+					type: 'ns:angular-update',
+					path: '/src/app/foo.component.ts',
+					evictPaths: ['http://localhost:5173/ns/m/src/app/foo.component'],
+				},
+				{ getCore: () => undefined, verbose: false },
+			);
+
+			expect(handled).toBe(true);
+			expect(reboot).toHaveBeenCalledWith(true);
+
+			// Filter to the events we care about — overlay/diag events
+			// are out of scope for this spec.
+			const lifecycle = events.filter((e) => e.event === 'vite:beforeUpdate' || e.event === 'vite:afterUpdate');
+			expect(lifecycle.map((e) => e.event)).toEqual(['vite:beforeUpdate', 'vite:afterUpdate']);
+
+			// Both events carry the same `updates: [Update]` shape
+			// (Vite spec). The Update entry must include the changed
+			// path, eviction set, and a timestamp.
+			for (const ev of lifecycle) {
+				expect(ev.payload).toHaveProperty('updates');
+				expect(Array.isArray(ev.payload.updates)).toBe(true);
+				expect(ev.payload.updates).toHaveLength(1);
+				const u = ev.payload.updates[0];
+				expect(u.type).toBe('js-update');
+				expect(u.path).toBe('/src/app/foo.component.ts');
+				expect(u.evictPaths).toEqual(['http://localhost:5173/ns/m/src/app/foo.component']);
+				expect(typeof u.timestamp).toBe('number');
+			}
+		} finally {
+			restoreDispatcher();
+			restore();
+		}
+	});
+
+	it('dispatches vite:error and SKIPS vite:afterUpdate when the cycle throws', async () => {
+		const restore = snapshotGlobals();
+		const { events, restore: restoreDispatcher } = installEventCapture();
+		const reboot = vi.fn(() => {
+			throw new Error('reboot blew up');
+		});
+		const g = globalThis as any;
+		g.__reboot_ng_modules__ = reboot;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update', path: '/src/app/foo.component.ts' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+
+			const lifecycle = events.filter((e) => e.event === 'vite:beforeUpdate' || e.event === 'vite:afterUpdate' || e.event === 'vite:error');
+			// `beforeUpdate` always fires (entry of the cycle); the
+			// reboot threw → `error` fires instead of `afterUpdate`.
+			expect(lifecycle.map((e) => e.event)).toEqual(['vite:beforeUpdate', 'vite:error']);
+
+			// vite:error payload mirrors Vite's ErrorPayload shape.
+			const errorEvent = lifecycle[1];
+			expect(errorEvent.payload.type).toBe('error');
+			expect(errorEvent.payload.err.message).toBe('reboot blew up');
+			expect(typeof errorEvent.payload.err.stack === 'string' || errorEvent.payload.err.stack === undefined).toBe(true);
+			expect(errorEvent.payload.path).toBe('/src/app/foo.component.ts');
+		} finally {
+			restoreDispatcher();
+			restore();
+		}
+	});
+
+	it('dispatches vite:beforeFullReload and skips reboot when a module is declined', async () => {
+		const restore = snapshotGlobals();
+		const { events, restore: restoreDispatcher } = installEventCapture();
+		const reboot = vi.fn();
+		const reloadDevApp = vi.fn();
+		const hasDeclined = vi.fn(() => true); // ← module declined HMR
+		const g = globalThis as any;
+		g.__reboot_ng_modules__ = reboot;
+		g.__nsReloadDevApp = reloadDevApp;
+		g.__nsHasDeclinedModule = hasDeclined;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage(
+				{
+					type: 'ns:angular-update',
+					path: '/src/app/foo.component.ts',
+					evictPaths: ['http://localhost:5173/ns/m/src/app/foo.component'],
+				},
+				{ getCore: () => undefined, verbose: false },
+			);
+
+			expect(handled).toBe(true);
+
+			// Must NOT have called __reboot_ng_modules__ (full reload
+			// instead).
+			expect(reboot).not.toHaveBeenCalled();
+			// Must have triggered the runtime full-reload.
+			expect(reloadDevApp).toHaveBeenCalledTimes(1);
+			// Must have asked the runtime about declined modules with
+			// the eviction set.
+			expect(hasDeclined).toHaveBeenCalledWith(['http://localhost:5173/ns/m/src/app/foo.component']);
+
+			// Event sequence: beforeUpdate (always), then
+			// beforeFullReload (because of the decline).
+			const lifecycle = events.filter((e) => e.event === 'vite:beforeUpdate' || e.event === 'vite:beforeFullReload' || e.event === 'vite:afterUpdate');
+			expect(lifecycle.map((e) => e.event)).toEqual(['vite:beforeUpdate', 'vite:beforeFullReload']);
+			// vite:afterUpdate must NOT fire — the cycle was diverted
+			// to a full reload.
+			expect(events.some((e) => e.event === 'vite:afterUpdate')).toBe(false);
+		} finally {
+			restoreDispatcher();
+			restore();
+		}
+	});
+
+	it('does not reload when no module is declined (decline check returns false)', async () => {
+		const restore = snapshotGlobals();
+		const { events, restore: restoreDispatcher } = installEventCapture();
+		const reboot = vi.fn();
+		const reloadDevApp = vi.fn();
+		const hasDeclined = vi.fn(() => false);
+		const g = globalThis as any;
+		g.__reboot_ng_modules__ = reboot;
+		g.__nsReloadDevApp = reloadDevApp;
+		g.__nsHasDeclinedModule = hasDeclined;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update', evictPaths: [] }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			// Reboot fired normally; no full reload.
+			expect(reboot).toHaveBeenCalledWith(true);
+			expect(reloadDevApp).not.toHaveBeenCalled();
+			// beforeUpdate + afterUpdate (no beforeFullReload).
+			const lifecycle = events.filter((e) => e.event === 'vite:beforeUpdate' || e.event === 'vite:beforeFullReload' || e.event === 'vite:afterUpdate');
+			expect(lifecycle.map((e) => e.event)).toEqual(['vite:beforeUpdate', 'vite:afterUpdate']);
+		} finally {
+			restoreDispatcher();
+			restore();
+		}
+	});
+
+	it('proceeds with reboot when __nsHasDeclinedModule is missing (older runtime)', async () => {
+		const restore = snapshotGlobals();
+		const reboot = vi.fn();
+		const g = globalThis as any;
+		g.__reboot_ng_modules__ = reboot;
+		// No __nsHasDeclinedModule — older runtime.
+		delete g.__nsHasDeclinedModule;
+		delete g.__nsReloadDevApp;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('proceeds with reboot when decline check throws (defensive)', async () => {
+		const restore = snapshotGlobals();
+		const reboot = vi.fn();
+		const g = globalThis as any;
+		g.__reboot_ng_modules__ = reboot;
+		g.__nsHasDeclinedModule = vi.fn(() => {
+			throw new Error('runtime decline check exploded');
+		});
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			expect(handled).toBe(true);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('proceeds with reboot when module is declined but __nsReloadDevApp is unavailable', async () => {
+		const restore = snapshotGlobals();
+		const reboot = vi.fn();
+		const g = globalThis as any;
+		g.__reboot_ng_modules__ = reboot;
+		g.__nsHasDeclinedModule = vi.fn(() => true);
+		// __nsReloadDevApp NOT installed — older runtime can't full-reload.
+		delete g.__nsReloadDevApp;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+
+			// We can't full-reload, so we proceed with the regular
+			// reboot path. Suboptimal (the decline isn't honored), but
+			// the only correct fallback for older runtimes — failing
+			// silently here would leave the user with a stale UI.
+			expect(handled).toBe(true);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+
+	it('does not throw when __NS_DISPATCH_HOT_EVENT__ is missing (older runtime)', async () => {
+		const restore = snapshotGlobals();
+		const reboot = vi.fn();
+		const g = globalThis as any;
+		g.__reboot_ng_modules__ = reboot;
+		// No event dispatcher → all dispatchHotEvent calls become
+		// no-ops. The HMR cycle must still complete normally.
+		delete g.__NS_DISPATCH_HOT_EVENT__;
+
+		try {
+			const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update' }, { getCore: () => undefined, verbose: false });
+			expect(handled).toBe(true);
+			expect(reboot).toHaveBeenCalledWith(true);
+		} finally {
+			restore();
+		}
+	});
+});
+
 // HMR-applying progress overlay integration.
 //
 // These tests pin the contract between the angular client and the

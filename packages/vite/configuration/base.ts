@@ -12,7 +12,7 @@ import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
 import { findMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
-import { getWorkerPlugins, workerHmrUrlPlugin, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin } from '../helpers/workers.js';
+import { getWorkerPlugins, workerHmrUrlPlugin, workerUrlPlugin, nativescriptWorkerLoaderStubPlugin, tsFallbackTransformPlugin, angularWorkerUrlPreservePlugin } from '../helpers/workers.js';
 import { createTsConfigPathsResolver, getTsConfigData } from '../helpers/ts-config-paths.js';
 import { commonjsPlugins } from '../helpers/commonjs-plugins.js';
 import { nativescriptPackageResolver } from '../helpers/nativescript-package-resolver.js';
@@ -409,8 +409,31 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// produces a `?worker_file&type=classic` URL that the NS runtime can't
 			// load (see `workerHmrUrlPlugin` for the full rationale).
 			...(hmrActive ? [workerHmrUrlPlugin({ verbose })] : []),
+			// `vite build` only (production / `--no-hmr`): neutralize Angular's
+			// internal TS transformer so it stops blanking the worker URL.
+			//
+			// Without this, Analog's `processWebWorker` host callback returns
+			// `''` and Angular's worker transformer rewrites the original
+			// `new Worker(new URL('./foo.worker', import.meta.url))` into
+			// `new Worker(new URL("", import.meta.url), { type: "module" })`.
+			// Vite's own `workerImportMetaUrlPlugin` then doesn't match the
+			// empty URL, no worker asset is emitted, and the shipped bundle
+			// crashes on device with a `ReadText("")` assertion inside V8's
+			// module loader. See `angularWorkerUrlPreservePlugin` in
+			// `helpers/workers.ts` for the full rationale. Monkey-patch is
+			// idempotent and a no-op in non-Angular projects.
+			...(!hmrActive ? [angularWorkerUrlPreservePlugin({ verbose })] : []),
 			// Transform Vite worker URLs to NativeScript format AFTER bundling
 			workerUrlPlugin(),
+			// Dev/HMR only: safety-net TypeScript transform for `.ts`/`.tsx` files
+			// that escape the Angular plugin's fileEmitter (e.g. worker entry files
+			// loaded via `new Worker(new URL('./foo.worker', import.meta.url))`,
+			// which are not in the Angular TypeScript program). Without this, the
+			// Analog Angular plugin's config hook disables Vite's oxc transformer
+			// in HMR mode and any non-Angular `.ts` file reaches the device with
+			// type annotations intact. See `tsFallbackTransformPlugin` for the
+			// detection heuristic and the full rationale.
+			...(hmrActive ? [tsFallbackTransformPlugin({ verbose })] : []),
 			// Copy static assets and fonts when present in project app root
 			...((staticCopyTargets == null ? void 0 : staticCopyTargets.length)
 				? [

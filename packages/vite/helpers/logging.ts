@@ -160,5 +160,32 @@ export function shouldSuppressViteWarning(msg: string): boolean {
 	if (msg.includes('Sourcemap is likely to be incorrect') && (msg.includes('analogjs-router-optimization') || msg.includes('@analogjs/vite-plugin-angular-optimizer'))) {
 		return true;
 	}
+	// "contains Angular decorators but is not in the TypeScript program."
+	//
+	// Emitted by `@analogjs/vite-plugin-angular` for any `.ts` file that
+	// has an Angular decorator (`@Injectable`, `@Component`, etc.) but
+	// isn't reachable from Angular's tsconfig program — typically because
+	// the file is dynamically imported, lives outside `tsconfig.app.json`'s
+	// `include` glob, or is loaded via a non-Angular code path
+	// (e.g. `import('./service.ts')` inside a Vite-only utility).
+	//
+	// In practice these files compile fine via our `tsFallbackTransformPlugin`
+	// (which type-strips them through Vite's oxc transformer at request
+	// time, see `helpers/workers.ts`'s ANGULAR_DECORATOR_RE skip-guard for
+	// the matching policy). Decorator metadata isn't generated for them
+	// because they're not in the Angular program — but that's exactly the
+	// expected outcome for files that don't need DI or template binding.
+	//
+	// The warning appears once per offending file at every cold boot of
+	// the dev server (50+ lines for a real app), drowning out signal
+	// without ever pointing at an actionable problem. Suppressing it
+	// matches the working contract `tsFallbackTransformPlugin`
+	// established. If a user actually does intend a file to be in the
+	// Angular program, they'll notice via Angular's own runtime errors
+	// (missing providers, unresolved templates) — which we never
+	// suppress.
+	if (msg.includes('@analogjs/vite-plugin-angular') && msg.includes('contains Angular decorators but is not in the TypeScript program')) {
+		return true;
+	}
 	return false;
 }

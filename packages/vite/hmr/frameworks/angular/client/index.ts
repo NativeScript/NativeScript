@@ -136,6 +136,278 @@ let inFlightHmrCycle: Promise<void> | null = null;
 // case we fall through to the legacy URL-versioning path and emit a
 // one-time warning so the user knows the eviction protocol is
 // unavailable.
+// Dispatch one of Vite's standard HMR lifecycle events through the iOS
+// runtime's `__NS_DISPATCH_HOT_EVENT__` global. The runtime owns the
+// listener registry that `import.meta.hot.on(event, cb)` populates; this
+// function is the producer side that lets the Angular HMR client emit the
+// canonical Vite events (`vite:beforeUpdate`, `vite:afterUpdate`,
+// `vite:beforeFullReload`, `vite:invalidate`, `vite:error`) at the right
+// moments. User code that does
+// `import.meta.hot.on('vite:beforeUpdate', cb)` only fires when this is
+// called.
+//
+// Soft-fails on older runtimes that don't expose the dispatcher (the
+// global is undefined; we no-op). Per-listener failures are swallowed
+// inside the runtime, so a single bad listener can't break the HMR cycle.
+function dispatchHotEvent(g: any, event: string, payload?: unknown): void {
+	try {
+		const fn = g && g.__NS_DISPATCH_HOT_EVENT__;
+		if (typeof fn === 'function') {
+			fn.call(g, event, payload);
+		}
+	} catch (err) {
+		// Defensive: if the dispatcher itself throws, we'd already have
+		// no listeners (per-callback failures swallowed inside the
+		// runtime), so this is purely a safety net for runtime
+		// regressions. Log only under verbose to avoid noisy dev logs.
+		if (envVerbose) {
+			console.warn(`[ns-hmr-diag][client] __NS_DISPATCH_HOT_EVENT__('${event}') threw:`, (err as any)?.message ?? err);
+		}
+	}
+}
+
+// Trigger a full app reload via the runtime's `__nsReloadDevApp` global,
+// dispatching `vite:beforeFullReload` first so user-code listeners can
+// react. Returns `true` if the reload was triggered, `false` if the
+// runtime doesn't expose the API. Used both by `import.meta.hot.invalidate()`
+// (handled directly inside the runtime) AND by the declined-module check
+// below (where the JS layer makes the decision and asks for the reload).
+function triggerFullReload(g: any, message: string): boolean {
+	const fn = g && g.__nsReloadDevApp;
+	if (typeof fn !== 'function') {
+		return false;
+	}
+	dispatchHotEvent(g, 'vite:beforeFullReload', { message });
+	try {
+		// Fire-and-forget — `__nsReloadDevApp` returns a Promise, but we
+		// don't await it here because the JS realm is about to be torn
+		// down. The HMR cycle's caller treats this as terminal and
+		// short-circuits the rest of the cycle.
+		fn.call(g);
+	} catch (err) {
+		if (envVerbose) {
+			console.warn('[ns-hmr-diag][client] __nsReloadDevApp threw:', (err as any)?.message ?? err);
+		}
+		return false;
+	}
+	return true;
+}
+
+// Check if any module being touched by this HMR update has called
+// `import.meta.hot.decline()`. If so, per Vite spec we MUST do a full
+// reload instead of a hot-update — declining means "I refuse to be
+// hot-updated". Returns `true` if a full reload was triggered (caller
+// should short-circuit the rest of the cycle).
+//
+// Older runtimes without `__nsHasDeclinedModule` skip the check entirely
+// (legacy behaviour: HMR proceeds with the reboot, which is the same
+// behaviour they had before this fix).
+function checkDeclinedAndReload(g: any, msg: any, options: { verbose?: boolean }): boolean {
+	const checker = g && g.__nsHasDeclinedModule;
+	if (typeof checker !== 'function') return false;
+
+	// `evictPaths` is the eviction set the dev server computed for this
+	// HMR cycle — every module that needs to be re-evaluated. If ANY of
+	// those modules declined HMR, the whole cycle has to convert to a
+	// full reload. Pass them through verbatim; the runtime canonicalizes
+	// internally when matching against `g_hotDeclined`.
+	const evictPaths: string[] = Array.isArray(msg?.evictPaths) ? msg.evictPaths : [];
+
+	let declined = false;
+	try {
+		declined = !!checker.call(g, evictPaths);
+	} catch (err) {
+		if (options.verbose && envVerbose) {
+			console.warn('[ns-hmr-diag][client] __nsHasDeclinedModule threw:', (err as any)?.message ?? err);
+		}
+		return false;
+	}
+
+	if (!declined) return false;
+
+	const filePath = typeof msg?.path === 'string' ? msg.path : '<unknown>';
+	const message = `module declined HMR (file=${filePath}, evictPaths=${evictPaths.length})`;
+	console.info(`[ns-hmr][decline] ${message} — falling back to full reload`);
+	const reloaded = triggerFullReload(g, message);
+	if (!reloaded && options.verbose && envVerbose) {
+		console.warn('[ns-hmr-diag][client] declined module detected but __nsReloadDevApp unavailable; HMR will proceed (older runtime)');
+	}
+	return reloaded;
+}
+
+// Drain `import.meta.hot.dispose(cb)` callbacks via the iOS runtime's
+// `globalThis.__nsRunHmrDispose()` global before Angular's reboot.
+//
+// The runtime owns the dispose registry (`g_hotDispose` in
+// `HMRSupport.mm`) — every call to `import.meta.hot.dispose(cb)` from
+// user code lands there. This client just asks the runtime to drain.
+// We pass NO key argument so the runtime drains every registered
+// callback across every module, which matches the wholesale-reboot
+// semantics of `__reboot_ng_modules__`: when Angular tears down its
+// component tree and re-bootstraps, every module's accumulated side
+// effects are conceptually being thrown away. (A future per-module
+// HMR client could pass an explicit key list to limit the drain.)
+//
+// Older runtimes (before this hook shipped) silently no-op via the
+// optional chain; in that case, dispose callbacks register but never
+// fire, and the worker-specific safety net in `terminateTrackedWorkers`
+// below still catches the worker pile-up case.
+function runHmrDisposeCallbacks(g: any, options: { verbose?: boolean }): void {
+	let runner: ((keys?: string[]) => unknown) | undefined;
+	try {
+		const candidate = g && g.__nsRunHmrDispose;
+		if (typeof candidate === 'function') {
+			runner = candidate;
+		}
+	} catch {
+		// `globalThis` access defensiveness — Proxy-wrapped globals can
+		// throw on property reads.
+	}
+
+	if (!runner) {
+		// Older runtime: the dispose callback registry exists in the
+		// native runtime but no JS-callable drain entrypoint is
+		// available. Silently no-op (worker terminator below still
+		// runs). The diagnostic message is gated to verbose so we
+		// don't nag users on every cycle of every project that hasn't
+		// adopted the new runtime yet.
+		if (options.verbose && envVerbose) {
+			console.info('[ns-hmr-diag][client] runtime missing __nsRunHmrDispose; skipping import.meta.hot.dispose drain (upgrade @nativescript/ios for support)');
+		}
+		return;
+	}
+
+	let executed: number | null = null;
+	try {
+		const result = runner.call(g);
+		executed = typeof result === 'number' ? result : 0;
+	} catch (err) {
+		// One bad disposer should already be swallowed inside the
+		// runtime per-callback try/catch. If the runtime itself throws
+		// (out-of-memory, isolate teardown race, etc.) we MUST NOT
+		// take down the HMR cycle.
+		if (options.verbose && envVerbose) {
+			console.warn('[ns-hmr-diag][client] __nsRunHmrDispose threw:', (err as any)?.message ?? err);
+		}
+		return;
+	}
+
+	// Surface ONE concise log per HMR cycle that actually had disposers
+	// to run. Quiet on cycles where no module had registered any.
+	if (executed && executed > 0) {
+		console.info(`[ns-hmr][dispose] ran ${executed} import.meta.hot.dispose callback${executed === 1 ? '' : 's'} before reboot`);
+	}
+}
+
+// Terminate every live worker before Angular's reboot. Two-tier strategy:
+//
+//   1. PREFERRED — `globalThis.__nsTerminateAllWorkers()` (NS iOS runtime
+//      ≥ the version that ships `Worker::TerminateAllWorkersCallback`).
+//      Native code iterates `Caches::Workers` (the runtime's authoritative
+//      worker registry) and calls `WorkerWrapper::Terminate()` on each
+//      live entry. Universal: catches every worker regardless of how it
+//      was created — `new Worker(new URL(...))`, raw `Worker('~/x.js')`,
+//      dynamic-import-spawned workers, plugin-spawned workers, etc.
+//
+//   2. FALLBACK — drain `globalThis.__NS_HMR_WORKERS__` (a Set populated
+//      by `__nsHmrTrackWorker`, the helper that `workerHmrUrlPlugin`
+//      injects at the top of every dev module containing a
+//      `new Worker(new URL(...))` call). This keeps HMR worker cleanup
+//      working on older runtimes that don't yet expose
+//      `__nsTerminateAllWorkers`. It only catches workers spawned via
+//      the Vite-rewritten path, so the runtime API is strictly better
+//      coverage.
+//
+// Either way: producer-side wraps are still useful as diagnostic
+// metadata (which user code spawned which worker), so we always clear
+// the JS Set after termination — irrespective of which tier ran — so
+// it doesn't grow unbounded across HMR cycles.
+//
+// Tolerant of:
+//   * Missing globals — non-worker apps have neither global; we no-op.
+//   * `terminate()` throwing — the runtime can throw on already-dead
+//     workers; we catch per-entry so subsequent terminations and the
+//     reboot itself still proceed.
+//   * Native API throwing — wrapped in try/catch so a runtime regression
+//     can't take down the HMR cycle; we degrade to the JS-Set fallback.
+function terminateTrackedWorkers(g: any, options: { verbose?: boolean }): void {
+	let nativeApi: ((this: any) => unknown) | undefined;
+	try {
+		const candidate = g && g.__nsTerminateAllWorkers;
+		if (typeof candidate === 'function') {
+			nativeApi = candidate;
+		}
+	} catch {
+		// Reading the global threw (extremely defensive — `globalThis`
+		// access shouldn't, but Proxy-wrapped globals can).
+	}
+
+	let nativeTerminated: number | null = null;
+	if (nativeApi) {
+		try {
+			const result = nativeApi.call(g);
+			// Native API returns the count of workers terminated as a
+			// number. Older betas may return undefined; treat any
+			// non-number as "ran successfully, count unknown".
+			nativeTerminated = typeof result === 'number' ? result : 0;
+		} catch (err) {
+			if (options.verbose && envVerbose) {
+				console.warn('[ns-hmr-diag][client] __nsTerminateAllWorkers threw; falling back to JS-tracked Set:', (err as any)?.message ?? err);
+			}
+			nativeApi = undefined; // force fallback below
+		}
+	}
+
+	// Always touch the JS-tracked Set so producer-side bookkeeping
+	// doesn't outlive its workers across HMR cycles. If the native API
+	// already terminated everything, this is just a `.clear()`. If the
+	// native API isn't available (older runtime), this is the actual
+	// cleanup path.
+	let workers: Set<any> | undefined;
+	try {
+		workers = g && g.__NS_HMR_WORKERS__;
+	} catch {
+		// fall through with `workers === undefined`
+	}
+
+	let fallbackTerminated = 0;
+	let fallbackFailed = 0;
+	const fallbackTotal = workers && typeof workers.size === 'number' ? workers.size : 0;
+
+	if (!nativeApi && workers && fallbackTotal > 0) {
+		// No native API — drain the JS-tracked Set as the primary path.
+		for (const worker of workers) {
+			try {
+				if (worker && typeof worker.terminate === 'function') {
+					worker.terminate();
+					fallbackTerminated++;
+				}
+			} catch {
+				fallbackFailed++;
+			}
+		}
+	}
+
+	if (workers) {
+		try {
+			workers.clear();
+		} catch {}
+	}
+
+	// Surface ONE concise log per HMR cycle when there was actually work
+	// to do. This isn't gated on `verbose` so the user can see in the
+	// dev terminal which cleanup tier ran without flipping a flag —
+	// it's a single line per HMR-cycle-with-workers, never per cycle
+	// when no workers exist. Filter on "actually did something" so we
+	// stay quiet on no-worker apps and on cycles where neither tier
+	// found anything.
+	if (nativeApi && (nativeTerminated ?? 0) > 0) {
+		console.info(`[ns-hmr][workers] terminated ${nativeTerminated} via runtime __nsTerminateAllWorkers before reboot`);
+	} else if (!nativeApi && fallbackTerminated > 0) {
+		console.info(`[ns-hmr][workers] terminated ${fallbackTerminated}/${fallbackTotal} via JS-tracked Set fallback before reboot (older runtime; consider upgrading @nativescript/ios for native API)`);
+	}
+}
+
 function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	if (!urls || !urls.length) return false;
 	const g: any = globalThis;
@@ -505,6 +777,33 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 	try {
 		const g: any = globalThis;
 
+		// Vite-spec entry: `vite:beforeUpdate` fires as soon as the
+		// client receives an update message, BEFORE any work begins
+		// (refresh, dispose, reboot). User listeners can use this to
+		// pause animations, cancel in-flight requests, etc. Payload
+		// matches Vite's `Update[]` shape loosely — `path` is the
+		// canonical changed file, `evictPaths` is the eviction
+		// closure the server already computed.
+		const updatePayload = {
+			type: 'js-update' as const,
+			path: typeof msg?.path === 'string' ? msg.path : null,
+			evictPaths: Array.isArray(msg?.evictPaths) ? msg.evictPaths : [],
+			timestamp: t0,
+		};
+		dispatchHotEvent(g, 'vite:beforeUpdate', { updates: [updatePayload] });
+
+		// Declined-module short-circuit. If any updated module called
+		// `import.meta.hot.decline()`, we MUST do a full reload per
+		// Vite spec rather than the hot-update path. `triggerFullReload`
+		// also dispatches `vite:beforeFullReload`. The reload tears the
+		// JS realm down so we don't need to do any further bookkeeping
+		// here — return early.
+		if (checkDeclinedAndReload(g, msg, options)) {
+			tEnd = Date.now();
+			emitTiming(true);
+			return true;
+		}
+
 		// Prefer __reboot_ng_modules__ — it properly disposes existing modules,
 		// re-bootstraps Angular inside NgZone, and sets the root view internally.
 		// __NS_ANGULAR_BOOTSTRAP__ is exposed as a secondary signal that the
@@ -523,6 +822,44 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			try {
 				g.__NS_DEV_RESET_IN_PROGRESS__ = true;
 			} catch {}
+			// Two-phase pre-reboot cleanup. Order matters: dispose runs
+			// FIRST so user-code disposers see a still-live runtime
+			// (sockets, workers, etc.) and can issue graceful "I'm
+			// going away" messages; then we hard-terminate any worker
+			// the user didn't manually clean up.
+			//
+			// Phase 1 — `import.meta.hot.dispose(cb)` callbacks
+			// ────────────────────────────────────────────────
+			// The NS iOS runtime exposes
+			// `globalThis.__nsRunHmrDispose()` (registered in
+			// `Worker.mm`'s sibling `HMRSupport.mm`). It walks
+			// `g_hotDispose` — the per-module callback registry that
+			// `import.meta.hot.dispose(cb)` populates — and invokes
+			// every callback with that module's `hot.data` object,
+			// matching the Vite spec. Soft-fails on older runtimes
+			// without the API (call is optional-chained).
+			//
+			// This is the standards-compliant cleanup hook every Vite
+			// user already knows. Apps register their intervals,
+			// listeners, sockets, store subscriptions, etc. via
+			// `import.meta.hot.dispose(...)` and they're guaranteed to
+			// fire before the next Angular reboot — no NS-specific
+			// knowledge required.
+			runHmrDisposeCallbacks(g, options);
+			// Phase 2 — worker auto-terminate (defence in depth)
+			// ───────────────────────────────────────────────────
+			// Even with perfect dispose() coverage, workers spawned
+			// from constructors that re-run on Angular reboot (e.g.
+			// `new Worker(...)` inside `AppComponent`'s constructor)
+			// don't fire dispose for `app.component.ts` when only
+			// `login.component.html` changes — `app.component.ts`
+			// isn't being replaced, so its disposers don't run per
+			// Vite spec. The runtime API
+			// `__nsTerminateAllWorkers()` doesn't care about module
+			// boundaries; it just kills every live worker in
+			// `Caches::Workers`. Falls back to the
+			// `__NS_HMR_WORKERS__` JS Set on older runtimes.
+			terminateTrackedWorkers(g, options);
 			// 'rebooting' marks the long tail of the cycle: NgZone
 			// teardown, module re-instantiation, and resetRootView.
 			// The detail line shows refresh-so-far ms so a user can
@@ -539,6 +876,12 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			}
 			tEnd = Date.now();
 			emitTiming(true);
+			// Vite-spec exit: `vite:afterUpdate` fires after the update
+			// has been successfully applied. User code can re-attach
+			// any state torn down by `vite:beforeUpdate` (resume
+			// animations, re-fetch, etc.). Same payload shape as
+			// `vite:beforeUpdate` so listeners can correlate.
+			dispatchHotEvent(g, 'vite:afterUpdate', { updates: [updatePayload] });
 			// 'complete' surfaces the wall-clock total so a user gets a
 			// single-glance confirmation matching the [ns-hmr][angular]
 			// log line in the terminal. The overlay auto-hides shortly
@@ -562,7 +905,19 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			console.warn('[hmr-angular] failed to handle update', (error && (error as any).message) || error);
 		}
 		tEnd = Date.now();
-		emitTiming(false, (error && (error as any).message) || String(error));
+		const errorMessage = (error && (error as any).message) || String(error);
+		emitTiming(false, errorMessage);
+		// Vite-spec error event — fires on any HMR cycle that throws.
+		// Payload shape mirrors Vite's `ErrorPayload`: `err: { message,
+		// stack? }` plus optional `path`. Soft-fails if no listeners.
+		dispatchHotEvent(globalThis as any, 'vite:error', {
+			type: 'error',
+			err: {
+				message: errorMessage,
+				stack: (error && (error as any).stack) || undefined,
+			},
+			path: typeof msg?.path === 'string' ? msg.path : undefined,
+		});
 		// Errors → drop the overlay so the user isn't left looking
 		// at indefinite progress; the underlying error is already
 		// logged above (and surfaced via Vite's standard error

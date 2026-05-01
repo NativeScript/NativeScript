@@ -97,6 +97,59 @@ describe('shouldSuppressViteWarning', () => {
 		});
 	});
 
+	describe('Analog "contains Angular decorators but is not in the TypeScript program" warnings', () => {
+		// These appear once per offending file at every cold boot of the
+		// dev server (50+ lines for a typical NS Angular app). They aren't
+		// actionable — the matching files go through our
+		// `tsFallbackTransformPlugin` and load fine without being in the
+		// Angular program. See the suppression's inline comment in
+		// `logging.ts` for the full rationale.
+		const buildAnalogWarning = (filePath: string) => [`warning: [@analogjs/vite-plugin-angular]: "${filePath}" contains Angular decorators but is not in the TypeScript program. Ensure it is included in your tsconfig.`, '  Plugin: @analogjs/vite-plugin-angular', `  File: ${filePath}`].join('\n');
+
+		it('drops the multi-line warning shape Vite actually emits', () => {
+			// This is the verbatim shape from the dev server log the user
+			// reported — same message, same trailing Plugin/File lines.
+			const msg = buildAnalogWarning('/Users/me/app/src/app/shared/services/schedule-time.service.ts');
+			expect(shouldSuppressViteWarning(msg)).toBe(true);
+		});
+
+		it('drops the warning for any source path (services, components, pipes, directives)', () => {
+			const paths = ['/abs/src/app/shared/services/foo.service.ts', '/abs/src/app/components/bar.component.ts', '/abs/src/app/pipes/baz.pipe.ts', '/abs/src/app/directives/qux.directive.ts', '/abs/src/app/utils/dynamic-import-target.ts'];
+			for (const p of paths) {
+				expect(shouldSuppressViteWarning(buildAnalogWarning(p)), `should suppress for ${p}`).toBe(true);
+			}
+		});
+
+		it('drops the single-line variant (no trailing Plugin/File lines)', () => {
+			// Vite sometimes wraps the message without the multi-line
+			// payload (e.g. when warnOnce dedupes). We must catch both
+			// shapes — gating purely on the unique substring keeps the
+			// match robust.
+			const msg = `[@analogjs/vite-plugin-angular]: "/abs/foo.ts" contains Angular decorators but is not in the TypeScript program. Ensure it is included in your tsconfig.`;
+			expect(shouldSuppressViteWarning(msg)).toBe(true);
+		});
+
+		it('handles ANSI-colored variants (picocolors-wrapped TTY output)', () => {
+			const wrapped = `\u001b[33mwarning: [@analogjs/vite-plugin-angular]: "/abs/foo.ts" contains Angular decorators but is not in the TypeScript program. Ensure it is included in your tsconfig.\u001b[39m`;
+			expect(shouldSuppressViteWarning(wrapped)).toBe(true);
+		});
+
+		it('does NOT suppress unrelated Analog warnings (only the decorator-missing-from-program one)', () => {
+			// Guards against over-aggressive matching — any Analog
+			// warning that ISN'T this specific message must still
+			// surface so we don't silently swallow real diagnostics.
+			expect(shouldSuppressViteWarning('warning: [@analogjs/vite-plugin-angular]: Failed to compile component template')).toBe(false);
+			expect(shouldSuppressViteWarning('warning: [@analogjs/vite-plugin-angular]: Inline style URL could not be resolved')).toBe(false);
+		});
+
+		it('does NOT suppress similar wording from non-Analog sources', () => {
+			// Same hallmark phrase but from a different plugin → keep.
+			// Defensive: if some other tool ever emits the same text we
+			// shouldn't blindly hide it.
+			expect(shouldSuppressViteWarning('warning: [some-other-plugin]: file contains Angular decorators but is not in the TypeScript program')).toBe(false);
+		});
+	});
+
 	describe('fallthrough behaviour', () => {
 		it('never suppresses arbitrary Vite warnings', () => {
 			// Regression guard: future edits must not broaden the filter so
