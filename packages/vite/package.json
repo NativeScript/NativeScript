@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/vite",
-	"version": "8.0.0-alpha.8",
+	"version": "8.0.0-alpha.10",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
@@ -92,6 +92,7 @@
 		"@vitejs/plugin-vue-jsx": "^5.1.5",
 		"@vue/compiler-sfc": "^3.5.0",
 		"vue-tsc": "^3.2.0",
+		"css": "^3.0.0",
 		"esbuild": "^0.27.4",
 		"minimist": "^1.2.8",
 		"react-reconciler": "^0.32.0",
@@ -102,6 +103,7 @@
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
+		"@types/css": "^0.0.38",
 		"@types/node": "^24.9.1",
 		"vitest": "~4.0.9"
 	},
