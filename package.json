@@ -32,7 +32,7 @@
 		"@nstudio/focus": "^20.0.2",
 		"@nstudio/nps-i": "~2.0.0",
 		"@nx/devkit": "22.0.2",
-		"@nx/eslint-plugin": "22.0.2",
+		"@nx/eslint-plugin": "22.7.1",
 		"@nx/jest": "22.0.2",
 		"@nx/js": "22.0.2",
 		"@nx/node": "22.0.2",
