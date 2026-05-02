@@ -42,7 +42,7 @@
 		"@nx/workspace": "22.0.2",
 		"@prettier/plugin-xml": "^3.4.1",
 		"@rollup/plugin-alias": "^6.0.0",
-		"@rollup/plugin-commonjs": "^29.0.0",
+		"@rollup/plugin-commonjs": "^29.0.2",
 		"@rollup/plugin-replace": "^6.0.3",
 		"@swc-node/register": "~1.10.1",
 		"@swc/core": "~1.12.7",
