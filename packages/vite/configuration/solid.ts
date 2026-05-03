@@ -58,5 +58,25 @@ const plugins = [
 export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
 	return mergeConfig(baseConfig({ mode, flavor: 'solid' }), {
 		plugins: [...getTypeCheckPlugins('solid', options.typeCheck), ...plugins],
+		optimizeDeps: {
+			// Solid HMR-only quirk: NS apps that load `@nativescript/core` end up
+			// pulling `css-tree`, whose `data-patch.js` does
+			// `import { createRequire } from 'module';`. The base config aliases
+			// the bare `'module'` specifier to a polyfill that exports
+			// `createRequire`, but if Vite's depscanner ALSO discovers it
+			// (because Solid keeps optimizeDeps enabled), Vite pre-bundles the
+			// polyfill at `/node_modules/.vite/deps/module.js` and rewrites the
+			// import to point there. The HMR /ns/m/ pipeline's
+			// `rewriteVitePrebundleImportsForDevice` then can't map that
+			// pre-bundled URL back to a known bare specifier (because `module`
+			// isn't a real package), and SILENTLY DROPS the entire import
+			// statement — leaving `createRequire` undefined at runtime. The
+			// Angular config disables optimizeDeps wholesale so it never sees
+			// this; Solid keeps optimizeDeps active for `solid-js` etc., so we
+			// surgically exclude `module` (and `node:module`) here. With both
+			// excluded, the alias resolves the import directly to the polyfill
+			// file and the HMR pipeline leaves it intact.
+			exclude: ['module', 'node:module'],
+		},
 	});
 };
