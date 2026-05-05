@@ -112,16 +112,26 @@ describe('buildEvictionUrls', () => {
 		expect(buildEvictionUrls([])).toEqual([]);
 	});
 
-	it('builds canonical /ns/m URLs and dedupes repeats', () => {
+	it('builds BOTH canonical (no-ext) and extensioned /ns/m URLs and dedupes repeats', () => {
+		// Eviction emits both URL variants per spec because the iOS runtime's
+		// `g_moduleRegistry` and `g_prefetchCache` may key the same logical
+		// module under either variant depending on which code path populated
+		// the entry — see `buildEvictionUrls` in `utils.ts` for the full
+		// rationale (the "one-save-behind" bug documented in
+		// `HMR_DEEP_DIVE.md` §3).
 		const urls = buildEvictionUrls(['/src/main.ts', '/src/main.ts', 'src/util.ts']);
-		expect(urls).toEqual([`${ORIGIN}/ns/m/src/main.ts`, `${ORIGIN}/ns/m/src/util.ts`]);
+		expect(urls).toEqual([`${ORIGIN}/ns/m/src/main`, `${ORIGIN}/ns/m/src/main.ts`, `${ORIGIN}/ns/m/src/util`, `${ORIGIN}/ns/m/src/util.ts`]);
 	});
 
 	it('skips virtual specs and node_modules ids so vendor stays hot', () => {
 		const urls = buildEvictionUrls(['\0plugin-vue:export-helper', '/src/components/Foo.vue?vue&type=script', '/node_modules/lodash/index.js', '/src/services/api.ts']);
 		expect(urls.some((u) => u.includes('node_modules'))).toBe(false);
 		expect(urls.some((u) => u.includes('plugin-vue'))).toBe(false);
-		expect(urls).toEqual([`${ORIGIN}/ns/m/src/components/Foo.vue`, `${ORIGIN}/ns/m/src/services/api.ts`]);
+		// `.vue` is a non-script extension so only the single URL with `.vue`
+		// is emitted (the canonical-vs-extensioned pair only applies to
+		// script-source extensions).
+		// `.ts` is a script extension, so we emit both `/api` and `/api.ts`.
+		expect(urls).toEqual([`${ORIGIN}/ns/m/src/components/Foo.vue`, `${ORIGIN}/ns/m/src/services/api`, `${ORIGIN}/ns/m/src/services/api.ts`]);
 	});
 
 	it('returns an empty list when no http origin is available', () => {
@@ -136,11 +146,26 @@ describe('buildEvictionUrls', () => {
 			// so buildEvictionUrls should not be empty unless the implementation
 			// explicitly opts out — assert it produced at least one URL using the default.
 			const urls = buildEvictionUrls(['/src/main.ts']);
-			expect(urls).toHaveLength(1);
-			expect(urls[0]).toMatch(/^http:\/\/localhost:5173\/ns\/m\/src\/main\.ts$/);
+			// Both canonical and extensioned URLs are emitted now.
+			expect(urls).toHaveLength(2);
+			expect(urls[0]).toMatch(/^http:\/\/localhost:5173\/ns\/m\/src\/main$/);
+			expect(urls[1]).toMatch(/^http:\/\/localhost:5173\/ns\/m\/src\/main\.ts$/);
 		} finally {
 			(globalThis as any).WebSocket = fakeWs;
 		}
+	});
+
+	it('emits both canonical and extensioned URLs for every script-source variant', () => {
+		const urls = buildEvictionUrls(['/src/components/Home.tsx', '/src/components/Home.jsx', '/src/utils/helper.mjs', '/src/utils/helper.cts', '/src/utils/helper.js']);
+		expect(urls).toEqual([
+			`${ORIGIN}/ns/m/src/components/Home`,
+			`${ORIGIN}/ns/m/src/components/Home.tsx`,
+			`${ORIGIN}/ns/m/src/components/Home.jsx`, // canonical part deduped, extensioned variant unique
+			`${ORIGIN}/ns/m/src/utils/helper`,
+			`${ORIGIN}/ns/m/src/utils/helper.mjs`,
+			`${ORIGIN}/ns/m/src/utils/helper.cts`,
+			`${ORIGIN}/ns/m/src/utils/helper.js`,
+		]);
 	});
 });
 
@@ -220,31 +245,47 @@ describe('requestModuleFromServer', () => {
 		} catch {}
 	});
 
-	it('returns the stable canonical URL when explicit eviction is supported', async () => {
+	it('returns the bare canonical URL on the very first request before any HMR cycle has run', async () => {
+		// Before any HMR cycle, both `__NS_HMR_IMPORT_NONCE__` and
+		// `graphVersion` are 0 and there's no hash signal — the
+		// canonical URL is sufficient (and lets the runtime populate
+		// V8's cache under the stable key on first load).
 		setGlobalEvictionFn(() => {});
+		setGraphVersion(0);
+		(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 0;
 		const url = await requestModuleFromServer('/src/main.ts');
-		expect(url).toBe(`${ORIGIN}/ns/m/src/main.ts`);
+		expect(url).toBe(`${ORIGIN}/ns/m/src/main`);
 		expect(url).not.toMatch(/__ns_hmr__/);
 	});
 
-	it('keeps stable URLs even after a graph version bump when explicit eviction is supported', async () => {
+	it('embeds a `__ns_hmr__/<tag>/` segment on every HMR re-import so the iOS HTTP loader treats each save as a fresh fetch', async () => {
+		// Path-tagging on every HMR cycle (even with explicit eviction)
+		// is required because the iOS HTTP loader's response cache
+		// keys by exact URL string and operates independently of V8's
+		// `g_moduleRegistry`. Without the tag, the loader hands V8 the
+		// previous save's body and HMR appears "one save behind" — see
+		// `requestModuleFromServer` in `utils.ts` for the full
+		// rationale. The runtime canonicalizer collapses the tag back
+		// to the stable key BEFORE V8's module-cache lookup, so V8
+		// still sees one logical module per URL.
 		setGlobalEvictionFn(() => {});
 		setGraphVersion(7);
 		(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 3;
 		const url = await requestModuleFromServer('/src/main.ts');
-		expect(url).toBe(`${ORIGIN}/ns/m/src/main.ts`);
-		expect(url).not.toMatch(/__ns_hmr__/);
+		expect(url.startsWith(`${ORIGIN}/ns/m/__ns_hmr__/`)).toBe(true);
+		expect(url).toMatch(/__ns_hmr__\/3-7/);
+		// Path tail uses the canonical (no-extension) form, matching
+		// the server's static-import rewrite output.
+		expect(url.endsWith('/src/main')).toBe(true);
 	});
 
-	it('falls back to legacy /ns/m/__ns_hmr__/<tag>/ URLs when the runtime is missing __nsInvalidateModules', async () => {
+	it('embeds a tag on legacy runtimes too so the URL changes between saves', async () => {
 		clearGlobalEvictionFn();
 		setGraphVersion(5);
 		(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 9;
 		const url = await requestModuleFromServer('/src/foo.ts');
 		expect(url.startsWith(`${ORIGIN}/ns/m/__ns_hmr__/`)).toBe(true);
-		expect(url.endsWith('/src/foo.ts')).toBe(true);
-		// Tag must include the nonce-bumped version segment so successive
-		// saves on legacy runtimes still resolve to a different URL.
+		expect(url.endsWith('/src/foo')).toBe(true);
 		expect(url).toMatch(/__ns_hmr__\/9-5/);
 	});
 
@@ -253,7 +294,7 @@ describe('requestModuleFromServer', () => {
 		setGraphVersion(0);
 		(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 0;
 		const url = await requestModuleFromServer('/src/main.ts');
-		expect(url).toBe(`${ORIGIN}/ns/m/src/main.ts`);
+		expect(url).toBe(`${ORIGIN}/ns/m/src/main`);
 	});
 
 	it('rejects virtual helper specs without producing a URL', async () => {

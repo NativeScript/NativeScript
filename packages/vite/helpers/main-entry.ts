@@ -190,6 +190,16 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					'globalThis.__COMMONJS__ = false;',
 					'globalThis.__NS_WEBPACK__ = false;',
 					`globalThis.__NS_ENV_VERBOSE__ = ${opts.verbose ? 'true' : 'false'};`,
+					// Seed the runtime flavor so the HMR client (which is loaded from
+					// node_modules and therefore NOT processed by Vite's `define`
+					// substitution) can resolve `TARGET_FLAVOR` reliably. Without
+					// this, `resolveTargetFlavor()` in `hmr/client/index.ts` only
+					// detects 'angular' (via __reboot_ng_modules__) and 'vue' (via
+					// __VUE_HMR_RUNTIME__), and 'solid' / 'typescript' fall through
+					// to undefined — so any flavor-specific switch case in
+					// `processQueue` (Solid component boundary discovery, route-loader
+					// patching, overlay stage transitions) silently never fires.
+					`globalThis.__NS_TARGET_FLAVOR__ = ${JSON.stringify(flavor)};`,
 					'globalThis.__UI_USE_XML_PARSER__ = true;',
 					'globalThis.__UI_USE_EXTERNAL_RENDERER__ = false;',
 					"globalThis.__CSS_PARSER__ = 'css-tree';",

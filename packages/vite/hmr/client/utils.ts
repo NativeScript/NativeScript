@@ -292,11 +292,46 @@ export function invalidateModulesByUrls(urls: readonly string[]): boolean {
 // and evicting them would invalidate vendor modules unrelated to the
 // HMR change. Output URLs are deduplicated and prefixed with the
 // active dev-server origin.
+// Strip script-source extensions (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`,
+// `.mts`, `.cts`) so eviction and dynamic re-import target the SAME
+// canonical URL that the server's `rewriteImports` produces for static
+// imports. Keep `.vue`, `.json`, `.css`, etc. — those are non-script
+// asset URLs the server serves with their own extension preserved.
+//
+// Why this matters: V8's HTTP-module cache is keyed by URL string. The
+// server-side rewrite turns
+//
+//     import Home from '../components/home'
+//
+// into
+//
+//     import Home from '/ns/m/src/components/home'  (no extension)
+//
+// via `toAppModuleBaseId` (`getProjectRelativeImportPath` collapses
+// every script extension to `.mjs` and then strips it). If we evict
+// `/ns/m/src/components/home.tsx` (the URL the dev re-import path
+// happens to use), V8 still has the no-extension URL cached from the
+// initial boot's static-import path — and the route file's re-import
+// then resolves its `import Home from '../components/home'` to the
+// stale cached module. Stripping here guarantees all three sites
+// (static imports, dynamic re-imports, evictions) agree on one URL
+// per module so a single eviction actually drops the right cache
+// entry.
+const SCRIPT_EXT_RE = /\.(ts|tsx|js|jsx|mjs|mts|cts)$/i;
+function stripScriptExtension(specPath: string): string {
+	return specPath.replace(SCRIPT_EXT_RE, '');
+}
+
 export function buildEvictionUrls(specs: readonly string[]): string[] {
 	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
 	if (!origin) return [];
 	const out: string[] = [];
 	const seen = new Set<string>();
+	const addUrl = (url: string) => {
+		if (seen.has(url)) return;
+		seen.add(url);
+		out.push(url);
+	};
 	for (const raw of specs) {
 		if (!raw || typeof raw !== 'string') continue;
 		// Skip virtual / Vite-internal specs — they don't have a stable
@@ -310,10 +345,28 @@ export function buildEvictionUrls(specs: readonly string[]): string[] {
 		const spec = normalizeSpec(raw);
 		if (!spec) continue;
 		const path = spec.startsWith('/') ? spec : '/' + spec;
-		const url = origin + '/ns/m' + path;
-		if (seen.has(url)) continue;
-		seen.add(url);
-		out.push(url);
+		const canonical = stripScriptExtension(path);
+		// Emit BOTH the canonical (no-extension) URL AND the original
+		// extensioned URL when they differ. The iOS runtime's
+		// `__nsInvalidateModules` couples eviction across V8's
+		// `g_moduleRegistry` AND the speculative `g_prefetchCache`, but
+		// each cache may key entries under a different URL variant
+		// depending on whether they were populated by:
+		//   • a static rewritten import (no extension — see
+		//     `toAppModuleBaseId` in the server)
+		//   • a dynamic re-import (extension preserved — pre-fix history)
+		//   • a kickstart/prefetch BFS write (varies by source)
+		// Without emitting both shapes, an HMR cycle reliably exhibits
+		// the "one-step-behind" symptom documented in
+		// `HMR_DEEP_DIVE.md` §3 — the previous save's body sits in one
+		// of the two caches under the un-evicted variant and V8 hands
+		// it back on the next dynamic import.
+		// Vendor / virtual ids are filtered above so the duplication
+		// only applies to in-project sources.
+		addUrl(origin + '/ns/m' + canonical);
+		if (path !== canonical) {
+			addUrl(origin + '/ns/m' + path);
+		}
 	}
 	return out;
 }
@@ -337,42 +390,70 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 		// We still go through the normal request flow below, but short-circuit index heuristics.
 	}
 	// Construct HTTP ESM URL for this spec.
+	//
+	// Strip script-source extensions (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`,
+	// `.mts`, `.cts`) so the dynamic re-import URL matches the canonical
+	// URL the server's rewriteImports produces for static imports — see
+	// `buildEvictionUrls` for the full rationale. Without this, V8 ends up
+	// with two cache entries (`/ns/m/.../foo.tsx` for HMR re-imports and
+	// `/ns/m/.../foo` for in-module static imports), and the second save
+	// of a component file silently re-evaluates against a stale cached
+	// instance because eviction only clears one of the two URL keys.
 	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
 	if (!origin) return Promise.reject(new Error('no-http-origin'));
-	const basePath = '/ns/m' + (spec.startsWith('/') ? spec : '/' + spec);
+	const rawPath = spec.startsWith('/') ? spec : '/' + spec;
+	const canonicalPath = stripScriptExtension(rawPath);
+	const basePath = '/ns/m' + canonicalPath;
 	const baseUrl = origin + basePath;
 	let url = baseUrl;
 
-	// Stable URL when explicit eviction is supported.
+	// Path-tag the URL on every HMR re-import so the iOS HTTP loader's
+	// internal response cache (which keys by exact URL string and
+	// strips query parameters before lookup) sees a fresh URL on each
+	// save and re-fetches from the dev server.
 	//
-	// On modern runtimes the canonicalizer collapses any
-	// `__ns_hmr__/<tag>/` segment back to the stable key, so embedding
-	// a tag does nothing useful — V8 still resolves to the cached
-	// module. We rely on the caller (queue processor, framework
-	// client) to call `invalidateModulesByUrls` before re-importing,
-	// and emit the canonical URL so successive saves never drift
-	// across cache identities.
+	// The runtime canonicalizer (`CanonicalizeHttpUrlKey` in
+	// `HMRSupport.mm`) collapses any `__ns_hmr__/<tag>/` segment back
+	// to the stable cache key BEFORE V8 looks up `g_moduleRegistry`,
+	// so the tag is invisible to V8's module cache — that cache stays
+	// keyed by the canonical URL and is cleared via
+	// `invalidateModulesByUrls`. The tag's only job is to bust the
+	// HTTP-fetch layer's response cache, which (per the comment block
+	// above the legacy fallback) appears to operate independently of
+	// `g_moduleRegistry` and DOES key by exact URL.
 	//
-	// On legacy runtimes (no canonicalizer, no `__nsInvalidateModules`),
-	// we MUST embed a tag in the path — the iOS HTTP loader strips
-	// query params before keying its cache, so the bust must live in
-	// the path. Otherwise the second save returns a cache hit with the
-	// old module.
-	if (!hasExplicitEviction()) {
-		try {
-			const v = typeof graphVersion === 'number' ? graphVersion : 0;
-			const h = graph.get(spec)?.hash || '';
-			const g: any = globalThis as any;
-			const n = typeof g?.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;
-			// Only add params when we have at least one signal.
-			if (v || h || n) {
-				// Prefer nonce when present to guarantee changes apply even if server version/hash are stable.
-				const tag = n ? `${n}-${v}${h ? `-${h}` : ''}` : h ? `${v}-${h}` : String(v);
-				// /ns/m/__ns_hmr__/<tag>/<original-spec>
-				url = origin + '/ns/m/__ns_hmr__/' + encodeURIComponent(tag) + basePath.slice('/ns/m'.length);
-			}
-		} catch {}
-	}
+	// Symptom when the tag is omitted on modern runtimes: every HMR
+	// cycle is "one save behind". The eviction clears V8's module
+	// registry, V8 re-fetches the URL, the iOS HTTP loader returns the
+	// PREVIOUS save's body from its response cache, and V8 evaluates
+	// stale code. The solid-refresh patchRegistry compares signatures
+	// of the previous body against the previous body (no diff), no
+	// proxy update fires, and the visible page never picks up the
+	// latest edit — see `HMR_DEEP_DIVE.md` §3 for the original
+	// description of this class of bug (originally diagnosed as a
+	// `g_prefetchCache` issue; the symptom shape is the same here).
+	//
+	// Cost: one extra cache-busted request per re-imported module
+	// per save. The tag carries `<nonce>-<graphVersion>[-<hash>]`
+	// so it changes every save, and the canonicalizer collapses it
+	// for V8 cache identity so successive saves still share one V8
+	// module key.
+	try {
+		const v = typeof graphVersion === 'number' ? graphVersion : 0;
+		const h = graph.get(spec)?.hash || '';
+		const g: any = globalThis as any;
+		const n = typeof g?.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;
+		// Only add a tag when we have at least one signal — on the very
+		// first request before any HMR cycle the module is fresh and
+		// we want the canonical URL to populate V8's cache directly.
+		if (v || h || n) {
+			// Prefer nonce when present to guarantee changes apply even
+			// if server version/hash happen to be stable across saves.
+			const tag = n ? `${n}-${v}${h ? `-${h}` : ''}` : h ? `${v}-${h}` : String(v);
+			// /ns/m/__ns_hmr__/<tag>/<original-spec>
+			url = origin + '/ns/m/__ns_hmr__/' + encodeURIComponent(tag) + basePath.slice('/ns/m'.length);
+		}
+	} catch {}
 
 	emitHmrModeBannerOnce();
 

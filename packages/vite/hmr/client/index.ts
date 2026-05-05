@@ -107,6 +107,102 @@ function hideConnectionOverlay() {
 	} catch {}
 }
 
+// Update-stage overlay driver for the generic processQueue path
+// (Solid + TypeScript flavors). The Angular client drives the overlay
+// itself via `frameworks/angular/client/index.ts` because Angular HMR
+// goes through `handleAngularHotUpdateMessage` instead of processQueue.
+// For Solid the `ns:hmr-pending` handler shows 'received', then this
+// helper walks through 'evicting' → 'reimporting' → 'complete' so the
+// applying overlay actually finishes and auto-hides.
+//
+// Soft-fails (no-op) when the overlay was never installed.
+type HmrUpdateOverlayStage = 'received' | 'evicting' | 'reimporting' | 'rebooting' | 'complete';
+function setUpdateOverlayStage(stage: HmrUpdateOverlayStage, info?: { detail?: string; progress?: number | null }) {
+	try {
+		const api = getHmrOverlayApi();
+		if (api && typeof api.setUpdateStage === 'function') {
+			api.setUpdateStage(stage, info);
+		}
+	} catch {}
+}
+
+// ── Solid HMR completion hooks ──────────────────────────────────────────────
+//
+// solid-refresh's inline `patchRegistry` correctly swaps the proxy's internal
+// signal to point at each newly-evaluated component implementation. Tracing
+// confirms the proxy's memo re-evaluates and produces the expected new view
+// nodes after a `.tsx` edit.
+//
+// However, in the universal-renderer + nested-context configuration used by
+// frameworks like `@nativescript/tanstack-router` (RouterContextProvider →
+// SafeFragment → solid-js Provider's children helper → resolveChildren →
+// ErrorBoundary memo → component memo), the page-level `createRenderEffect`
+// inside `insertExpression` does NOT re-fire when the inner component memo
+// updates. The subscription graph appears intact yet propagation stops short
+// of the renderEffect that owns the visible page tree.
+//
+// Rather than ship a deep solid-js patch specific to one configuration, we
+// expose a generic completion hook here. Framework integrations register a
+// listener (see `@nativescript/tanstack-router`'s `NativeScriptRouterProvider`)
+// that performs whatever framework-specific UI refresh is required — for
+// the router that means remounting the active Page's Solid tree so the
+// fresh component output reaches the screen.
+//
+// The hook is opt-in: if no framework registers a listener, behavior is
+// unchanged and the existing best-effort solid-refresh path remains in
+// charge.
+type NsSolidHmrEvent = {
+	kind: 'solid';
+	changedFiles: string[];
+	boundaries: string[];
+};
+type NsSolidHmrListener = (ev: NsSolidHmrEvent) => void;
+
+// Store the listener registry on globalThis (rather than in a module-private
+// closure) because in NativeScript the HMR client module and the user app
+// modules can resolve to different module instances depending on how the
+// dev runtime loads them (HTTP client URL vs. the bundled vendor realm).
+// A module-local Set would not be shared across instances; the global one
+// is.
+function getNsSolidHmrListenerSet(): Set<NsSolidHmrListener> {
+	const g: any = globalThis as any;
+	let set = g.__ns_solid_hmr_listener_set as Set<NsSolidHmrListener> | undefined;
+	if (!set) {
+		set = new Set<NsSolidHmrListener>();
+		g.__ns_solid_hmr_listener_set = set;
+	}
+	return set;
+}
+
+function nsSolidHmrSubscribe(fn: NsSolidHmrListener): () => void {
+	const listeners = getNsSolidHmrListenerSet();
+	listeners.add(fn);
+	if (VERBOSE) console.log('[hmr][solid] subscribe — listeners=', listeners.size);
+	return () => listeners.delete(fn);
+}
+
+function nsSolidHmrEmit(ev: NsSolidHmrEvent) {
+	const listeners = getNsSolidHmrListenerSet();
+	if (VERBOSE) console.log('[hmr][solid] emit listeners=', listeners.size, 'changedFiles=', ev.changedFiles);
+	for (const fn of Array.from(listeners)) {
+		try {
+			fn(ev);
+		} catch (err) {
+			if (VERBOSE) console.warn('[hmr][solid] listener threw', err);
+		}
+	}
+}
+
+try {
+	const g: any = globalThis as any;
+	g.__ns_solid_hmr_subscribe = nsSolidHmrSubscribe;
+	// Eagerly create the listener set so the global exists at module load time.
+	getNsSolidHmrListenerSet();
+	if (VERBOSE) console.log('[hmr][solid] HMR client loaded. global set=', typeof g.__ns_solid_hmr_subscribe, 'listenerSet=', typeof g.__ns_solid_hmr_listener_set);
+} catch (err) {
+	console.warn('[hmr][solid] could not install global __ns_solid_hmr_subscribe', err);
+}
+
 // Eagerly drive the HMR-applying overlay's 'received' frame as soon
 // as the server emits `ns:hmr-pending`, BEFORE the framework-specific
 // (`ns:angular-update` / `ns:css-updates`) payload arrives. The
@@ -755,6 +851,13 @@ async function processQueue(): Promise<void> {
 			if (!drained.length) return;
 			if (VERBOSE) console.log('[hmr][queue] processing changed ids', drained);
 
+			// Track wall-clock so the 'complete' frame can show a meaningful
+			// total. Only the Solid + TypeScript flavors drive the overlay
+			// from here; Angular has its own flow inside
+			// `frameworks/angular/client/index.ts`.
+			const tQueueStart = Date.now();
+			const driveSolidOverlay = TARGET_FLAVOR === 'solid';
+
 			// Explicit eviction step.
 			//
 			// On modern runtimes the URL canonicalizer collapses any
@@ -770,11 +873,21 @@ async function processQueue(): Promise<void> {
 			// legacy `/ns/m/__ns_hmr__/v<N>/` URL versioning path in that
 			// case. node_modules and virtual specs are filtered out by
 			// `buildEvictionUrls` so vendor modules stay hot.
+			if (driveSolidOverlay) {
+				setUpdateOverlayStage('evicting', {
+					detail: drained.length === 1 ? `Invalidating ${drained[0]}` : `Invalidating ${drained.length} modules`,
+				});
+			}
 			const evictUrls = buildEvictionUrls(drained);
 			const evicted = invalidateModulesByUrls(evictUrls);
 			if (VERBOSE) console.log(`[hmr][queue] eviction count=${evictUrls.length} ok=${evicted}`);
 
 			// Evaluate changed modules best-effort; failures shouldn't completely break HMR.
+			if (driveSolidOverlay) {
+				setUpdateOverlayStage('reimporting', {
+					detail: drained.length === 1 ? `Re-importing ${drained[0]}` : `Re-importing ${drained.length} modules`,
+				});
+			}
 			for (const id of drained) {
 				try {
 					const spec = normalizeSpec(id);
@@ -792,6 +905,13 @@ async function processQueue(): Promise<void> {
 					// Vue SFCs are handled via the registry update path; nothing to do here.
 					break;
 				case 'solid': {
+					// Boundaries discovered in this HMR cycle (tsx files reachable
+					// via the reverse import graph from any changed file, plus route
+					// files reachable from any tsx start point). Declared at the top
+					// of the case block so the emit step below can include the
+					// complete set in the listener event — framework integrations
+					// use it to map route boundaries → fresh component references.
+					const boundaries = new Set<string>();
 					// Solid .tsx components are self-accepting via solid-refresh's inline
 					// patchRegistry — re-importing them is sufficient. For non-component
 					// .ts utility modules, we must propagate up the import graph to find
@@ -810,8 +930,10 @@ async function processQueue(): Promise<void> {
 								arr.push(id);
 							}
 						}
-						// BFS from each non-tsx changed module up to tsx/jsx boundaries
-						const boundaries = new Set<string>();
+						// Pass 1: BFS from each non-tsx changed module up to tsx/jsx
+						// boundaries. These get re-imported below so solid-refresh's
+						// inline patchRegistry runs and (best-effort) swaps the proxy
+						// signals for any components defined in those tsx boundaries.
 						for (const id of drained) {
 							if (/\.(tsx|jsx)$/i.test(id)) continue; // already self-accepting
 							const visited = new Set<string>();
@@ -828,6 +950,47 @@ async function processQueue(): Promise<void> {
 									} else {
 										queue.push(imp);
 									}
+								}
+							}
+						}
+						// Pass 2: walk further from any tsx starting point (a tsx file
+						// in `drained` OR a tsx boundary discovered in pass 1) to find
+						// route files (`/src/routes/*.{tsx,jsx}`) that transitively
+						// import them. Re-importing a route file refreshes its
+						// `Route.options.component` to the freshly-imported reference
+						// and the existing boundary loop below patches the live router
+						// with that fresh reference.
+						//
+						// This is the key fix for "edit home.tsx → save → no visual
+						// update": the old BFS skipped tsx files in `drained` (assuming
+						// solid-refresh's in-place proxy patch was sufficient), but in
+						// the universal-renderer + nested-context configuration that
+						// patch does not always propagate to the visible page tree.
+						// Adding the route file as a boundary lets us patch
+						// `route.options.component` directly to a fresh module export,
+						// which the framework subscriber then passes through to the
+						// page remount — making the cycle robust to the proxy patch
+						// silently failing.
+						const tsxStarts = new Set<string>();
+						for (const id of drained) {
+							if (/\.(tsx|jsx)$/i.test(id)) tsxStarts.add(id);
+						}
+						for (const b of boundaries) tsxStarts.add(b);
+						const ROUTE_FILE_RE = /\/src\/routes\/.+\.(tsx|jsx)$/i;
+						for (const start of tsxStarts) {
+							const visited = new Set<string>();
+							const queue = [start];
+							while (queue.length) {
+								const cur = queue.shift()!;
+								if (visited.has(cur)) continue;
+								visited.add(cur);
+								if (cur !== start && ROUTE_FILE_RE.test(cur)) {
+									boundaries.add(cur);
+								}
+								const importers = reverseIndex.get(cur);
+								if (!importers) continue;
+								for (const imp of importers) {
+									queue.push(imp);
 								}
 							}
 						}
@@ -888,19 +1051,24 @@ async function processQueue(): Promise<void> {
 								if (!url) continue;
 								if (VERBOSE) console.log('[hmr][solid] propagated to boundary', { id, url });
 								const mod: any = await import(/* @vite-ignore */ url);
-								// Patch TanStack Router route loaders
+								// Patch TanStack Router route options for any module
+								// that exports a `Route`. We patch BOTH the component
+								// and the loader (when present); components-only routes
+								// were previously skipped because the gate required a
+								// loader, which left their `options.component` pointing
+								// at the stale module's exports after HMR.
 								try {
 									const newRoute = mod?.Route;
-									if (newRoute?.options?.loader) {
+									if (newRoute?.options) {
 										const router = findRouter();
 										const fullPath = boundaryToFullPath(id);
-										if (VERBOSE) console.log('[hmr][solid][diag] route patch attempt', { id, fullPath, hasRouter: !!router, routesByIdKeys: router?.routesById ? Object.keys(router.routesById) : 'none' });
+										if (VERBOSE) console.log('[hmr][solid][diag] route patch attempt', { id, fullPath, hasRouter: !!router, hasLoader: !!newRoute.options.loader, hasComponent: !!newRoute.options.component });
 										const existingRoute = fullPath && router ? findRouteByFullPath(router, fullPath) : null;
 										if (existingRoute?.options) {
-											existingRoute.options.loader = newRoute.options.loader;
+											if (newRoute.options.loader) existingRoute.options.loader = newRoute.options.loader;
 											if (newRoute.options.component) existingRoute.options.component = newRoute.options.component;
 											routesPatchCount++;
-											if (VERBOSE) console.log('[hmr][solid] patched route loader', existingRoute.id, 'fullPath=', fullPath);
+											if (VERBOSE) console.log('[hmr][solid] patched route', existingRoute.id, 'fullPath=', fullPath);
 										} else if (VERBOSE) {
 											console.log('[hmr][solid] no matching route for fullPath', fullPath);
 										}
@@ -928,6 +1096,42 @@ async function processQueue(): Promise<void> {
 					} catch (e) {
 						if (VERBOSE) console.warn('[hmr][solid] propagation failed', e);
 					}
+					// Notify any framework integrations (e.g.
+					// `@nativescript/tanstack-router`) that a Solid HMR
+					// cycle has completed. They use this signal to perform
+					// framework-specific UI refresh (e.g. remount the active
+					// router page) when solid-refresh's own reactive
+					// propagation does not reach the visible tree under
+					// the current renderer/context configuration.
+					//
+					// Boundaries include both the directly-changed tsx files
+					// AND every tsx ancestor reachable via the reverse import
+					// graph (route files in particular). The framework
+					// listener uses the route-file boundaries to look up the
+					// freshly-patched `route.options.component` and pass it
+					// through to the page remount.
+					try {
+						const tsxChangedInDrained = drained.filter((id) => /\.(tsx|jsx)$/i.test(id));
+						const allBoundaries = Array.from(new Set([...tsxChangedInDrained, ...boundaries]));
+						nsSolidHmrEmit({
+							kind: 'solid',
+							changedFiles: drained.slice(),
+							boundaries: allBoundaries,
+						});
+					} catch (err) {
+						if (VERBOSE) console.warn('[hmr][solid] emit failed', err);
+					}
+					// Tell the overlay the cycle is done. solid-refresh's
+					// inline patchRegistry has already flushed the new
+					// component bodies into the live tree (the `case
+					// 'solid'` block above re-imports each .tsx
+					// boundary), so by the time we get here the user is
+					// already looking at the new render. The 'complete'
+					// frame surfaces the wall-clock total and triggers
+					// the overlay's auto-hide.
+					setUpdateOverlayStage('complete', {
+						detail: `Total ${Math.max(0, Date.now() - tQueueStart)}ms`,
+					});
 					break;
 				}
 				case 'typescript': {
