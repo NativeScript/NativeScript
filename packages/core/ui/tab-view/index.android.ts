@@ -373,12 +373,20 @@ export class TabViewItem extends TabViewItemBase {
 	}
 
 	public _update(): void {
-		const tv = this.nativeViewProtected;
 		const tabView = this.parent as TabView;
-		if (tv && tabView) {
-			this.tabItemSpec = createTabItemSpec(this);
-			tabView.updateAndroidItemAt(this.index, this.tabItemSpec);
+		if (!tabView) {
+			return;
 		}
+		// Top path needs the per-item TextView; bottom-nav path drives updates through
+		// the BottomNavigationView's menu and has no per-item TextView. Either widget
+		// being present means the parent has initialized its tabs and can take an update.
+		const tv = this.nativeViewProtected;
+		const hasBottomNav = !!(<any>tabView)._bottomNav;
+		if (!tv && !hasBottomNav) {
+			return;
+		}
+		this.tabItemSpec = createTabItemSpec(this);
+		tabView.updateAndroidItemAt(this.index, this.tabItemSpec);
 	}
 
 	public _getChildFragmentManager(): androidx.fragment.app.FragmentManager {
@@ -460,6 +468,11 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 
 export class TabView extends TabViewBase {
 	private _tabLayout: org.nativescript.widgets.TabLayout;
+	private _bottomNav!: com.google.android.material.bottomnavigation.BottomNavigationView;
+	private _isBottomNav = false;
+	private _suppressBottomNavListener = false;
+	private _bottomNavSelectedListener: any;
+	private _bottomNavPageListener: any;
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
 	private _androidViewId = -1;
@@ -492,39 +505,32 @@ export class TabView extends TabViewBase {
 			Trace.write('TabView._createUI(' + this + ');', traceCategory);
 		}
 
+		this._isBottomNav = this.androidTabsPosition === 'bottom';
+
+		return this._isBottomNav ? this._createBottomNavView() : this._createTabLayoutView();
+	}
+
+	private _createTabLayoutView(): org.nativescript.widgets.GridLayout {
 		const context: android.content.Context = this._context;
 		const nativeView = new org.nativescript.widgets.GridLayout(context);
 		const viewPager = new org.nativescript.widgets.TabViewPager(context);
 		const tabLayout = new org.nativescript.widgets.TabLayout(context);
 		const lp = new org.nativescript.widgets.CommonLayoutParams();
 		const primaryColor = androidUtils.resources.getPaletteColor(PRIMARY_COLOR, context);
-		let accentColor = getDefaultAccentColor(context);
+		const accentColor = getDefaultAccentColor(context);
 
 		lp.row = 1;
 
-		if (this.androidTabsPosition === 'top') {
-			nativeView.addRowsFromJSON(
-				JSON.stringify([
-					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
-					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
-				]),
-			);
-			viewPager.setLayoutParams(lp);
+		nativeView.addRowsFromJSON(
+			JSON.stringify([
+				{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
+				{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+			]),
+		);
+		viewPager.setLayoutParams(lp);
 
-			if (!this.androidSwipeEnabled) {
-				viewPager.setSwipePageEnabled(false);
-			}
-		} else {
-			nativeView.addRowsFromJSON(
-				JSON.stringify([
-					{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
-					{ value: 1, type: 0 /* org.nativescript.widgets.GridUnitType.auto */ },
-				]),
-			);
-			tabLayout.setLayoutParams(lp);
+		if (!this.androidSwipeEnabled) {
 			viewPager.setSwipePageEnabled(false);
-			// set completely transparent accent color for tab selected indicator.
-			accentColor = 0x00ffffff;
 		}
 
 		nativeView.addView(viewPager);
@@ -550,6 +556,81 @@ export class TabView extends TabViewBase {
 		return nativeView;
 	}
 
+	private _createBottomNavView(): org.nativescript.widgets.GridLayout {
+		const context: android.content.Context = this._context;
+		const nativeView = new org.nativescript.widgets.GridLayout(context);
+		const viewPager = new org.nativescript.widgets.TabViewPager(context);
+		// BottomNavigationView reads required Material attributes (itemActiveIndicatorStyle,
+		// itemTextAppearance*, etc.) from the Activity theme. NativeScript apps default to
+		// Theme.AppCompat — without Material attrs the widget can render zero-height. Wrap
+		// the context in a Material 3 Bridge theme so the widget styles correctly without
+		// forcing the host app theme to change.
+		const themedContext = this._wrapWithMaterialThemeOverlay(context);
+		const bottomNav = new com.google.android.material.bottomnavigation.BottomNavigationView(themedContext);
+		// Guarantee a measurable height even before the menu populates, so GridLayout's
+		// auto row reserves space on the very first measure pass. Material 3 spec uses 80dp.
+		bottomNav.setMinimumHeight(Math.round(80 * layout.getDisplayDensity()));
+		const primaryColor = androidUtils.resources.getPaletteColor(PRIMARY_COLOR, context);
+
+		// Row 0 = content (viewPager star), row 1 = bottom navigation bar (fixed Material 3
+		// height of 80dp converted to device pixels — GridUnitType.pixel takes raw px).
+		// Using a fixed size avoids GridLayout's auto-row measuring an empty
+		// BottomNavigationView at zero height during the first pass and never recovering.
+		const navBarHeightPx = Math.round(80 * layout.getDisplayDensity());
+		nativeView.addRowsFromJSON(
+			JSON.stringify([
+				{ value: 1, type: 2 /* org.nativescript.widgets.GridUnitType.star */ },
+				{ value: navBarHeightPx, type: 1 /* org.nativescript.widgets.GridUnitType.pixel (raw px) */ },
+			]),
+		);
+
+		const viewPagerLp = new org.nativescript.widgets.CommonLayoutParams();
+		viewPagerLp.row = 0;
+		viewPager.setLayoutParams(viewPagerLp);
+		// Swipe between tabs is not the BottomNavigation idiom; nav bar drives selection.
+		viewPager.setSwipePageEnabled(false);
+
+		nativeView.addView(viewPager);
+		(<any>nativeView).viewPager = viewPager;
+
+		const adapter = new PagerAdapter(this);
+		viewPager.setAdapter(adapter);
+		(<any>viewPager).adapter = adapter;
+
+		const navLp = new org.nativescript.widgets.CommonLayoutParams();
+		navLp.row = 1;
+		bottomNav.setLayoutParams(navLp);
+
+		nativeView.addView(bottomNav);
+		(<any>nativeView).bottomNav = bottomNav;
+
+		if (primaryColor) {
+			bottomNav.setBackgroundColor(primaryColor);
+		}
+
+		return nativeView;
+	}
+
+	private _wrapWithMaterialThemeOverlay(context: android.content.Context): android.content.Context {
+		// Try Material 3 first, then Material Components (Bridge variants extend AppCompat).
+		const candidates = ['Theme.Material3.DayNight', 'Theme.Material3.Light', 'Theme.MaterialComponents.Light.Bridge', 'Theme.MaterialComponents.DayNight.Bridge'];
+		const resources = context.getResources();
+		const pkgName = context.getPackageName();
+		for (const styleName of candidates) {
+			const id = resources.getIdentifier(styleName, 'style', pkgName);
+			if (id !== 0) {
+				if (Trace.isEnabled()) {
+					Trace.write(`TabView: BottomNavigationView theme overlay='${styleName}' id=${id}`, traceCategory);
+				}
+				return new android.view.ContextThemeWrapper(context, id);
+			}
+		}
+		if (Trace.isEnabled()) {
+			Trace.write(`TabView: no Material theme style resolved; BottomNavigationView will use host context`, traceCategory, Trace.messageType.warn);
+		}
+		return context;
+	}
+
 	public initNativeView(): void {
 		super.initNativeView();
 		if (this._androidViewId < 0) {
@@ -557,13 +638,69 @@ export class TabView extends TabViewBase {
 		}
 
 		const nativeView: any = this.nativeViewProtected;
-		this._tabLayout = (<any>nativeView).tabLayout;
 
-		const viewPager = (<any>nativeView).viewPager;
+		const viewPager = nativeView.viewPager;
 		viewPager.setId(this._androidViewId);
 		this._viewPager = viewPager;
-		this._pagerAdapter = (<any>viewPager).adapter;
+		this._pagerAdapter = viewPager.adapter;
 		(<any>this._pagerAdapter).owner = this;
+
+		if (this._isBottomNav) {
+			this._bottomNav = nativeView.bottomNav;
+			this._setupBottomNavListeners();
+		} else {
+			this._tabLayout = nativeView.tabLayout;
+		}
+	}
+
+	private _setupBottomNavListeners(): void {
+		if (!this._bottomNav || !this._viewPager) {
+			return;
+		}
+
+		const ownerRef = new WeakRef<TabView>(this);
+
+		const itemSelectedListener = new com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener({
+			onNavigationItemSelected(item: android.view.MenuItem): boolean {
+				const owner = ownerRef.get();
+				if (!owner || owner._suppressBottomNavListener) {
+					return true;
+				}
+				const id = item.getItemId();
+				if (owner._viewPager) {
+					owner._viewPager.setCurrentItem(id, false);
+				}
+				return true;
+			},
+		});
+		this._bottomNavSelectedListener = itemSelectedListener;
+		this._bottomNav.setOnItemSelectedListener(itemSelectedListener);
+
+		const pageChangeListener = new androidx.viewpager.widget.ViewPager.OnPageChangeListener({
+			onPageScrolled(_position: number, _positionOffset: number, _positionOffsetPixels: number) {
+				/* no-op */
+			},
+			onPageScrollStateChanged(_state: number) {
+				/* no-op */
+			},
+			onPageSelected(position: number) {
+				const owner = ownerRef.get();
+				if (!owner || !owner._bottomNav) {
+					return;
+				}
+				const menu = owner._bottomNav.getMenu();
+				if (position >= 0 && position < menu.size()) {
+					owner._suppressBottomNavListener = true;
+					try {
+						menu.getItem(position).setChecked(true);
+					} finally {
+						owner._suppressBottomNavListener = false;
+					}
+				}
+			},
+		});
+		this._bottomNavPageListener = pageChangeListener;
+		this._viewPager.addOnPageChangeListener(pageChangeListener);
 	}
 
 	public _loadUnloadTabItems(newIndex: number) {
@@ -627,12 +764,28 @@ export class TabView extends TabViewBase {
 	}
 
 	public disposeNativeView() {
-		this._tabLayout.setItems(null, null);
-		(<any>this._pagerAdapter).owner = null;
-		this._pagerAdapter = null;
+		if (this._tabLayout) {
+			this._tabLayout.setItems(null as any, null as any);
+			this._tabLayout = null as any;
+		}
 
-		this._tabLayout = null;
-		this._viewPager = null;
+		if (this._bottomNav) {
+			if (this._bottomNavSelectedListener) {
+				this._bottomNav.setOnItemSelectedListener(null as any);
+			}
+			if (this._bottomNavPageListener && this._viewPager) {
+				this._viewPager.removeOnPageChangeListener(this._bottomNavPageListener);
+			}
+			this._bottomNav.getMenu().clear();
+			this._bottomNav = null as any;
+			this._bottomNavSelectedListener = null;
+			this._bottomNavPageListener = null;
+		}
+
+		(<any>this._pagerAdapter).owner = null;
+		this._pagerAdapter = null as any;
+
+		this._viewPager = null as any;
 		super.disposeNativeView();
 	}
 
@@ -699,7 +852,12 @@ export class TabView extends TabViewBase {
 
 			const length = items ? items.length : 0;
 			if (length === 0) {
-				this._tabLayout.setItems(null, null);
+				if (this._tabLayout) {
+					this._tabLayout.setItems(null as any, null as any);
+				}
+				if (this._bottomNav) {
+					this._bottomNav.getMenu().clear();
+				}
 				this._pagerAdapter.notifyDataSetChanged();
 
 				return;
@@ -713,14 +871,125 @@ export class TabView extends TabViewBase {
 				tabItems.push(tabItemSpec);
 			});
 
-			const tabLayout = this._tabLayout;
-			tabLayout.setItems(tabItems, this._viewPager);
-			items.forEach((item, i, arr) => {
-				const tv = tabLayout.getTextViewForItemAt(i);
-				item.setNativeView(tv);
-			});
+			if (this._tabLayout) {
+				const tabLayout = this._tabLayout;
+				tabLayout.setItems(tabItems, this._viewPager);
+				items.forEach((item, i, arr) => {
+					const tv = tabLayout.getTextViewForItemAt(i);
+					item.setNativeView(tv);
+				});
+			} else if (this._bottomNav) {
+				this._populateBottomNavMenu(tabItems);
+			}
 
 			this._pagerAdapter.notifyDataSetChanged();
+		}
+	}
+
+	private _populateBottomNavMenu(tabItems: Array<org.nativescript.widgets.TabItemSpec>): void {
+		const menu = this._bottomNav.getMenu();
+		menu.clear();
+
+		tabItems.forEach((spec, i) => {
+			const menuItem = menu.add(android.view.Menu.NONE, i, i, spec.title || '');
+			const drawable = this._getDrawableFromSpec(spec);
+			if (drawable) {
+				menuItem.setIcon(drawable);
+			}
+		});
+
+		if (Trace.isEnabled()) {
+			Trace.write(`TabView: BottomNavigationView populated with ${tabItems.length} menu item(s)`, traceCategory);
+		}
+
+		// Re-apply colors that depend on the menu existing.
+		this._applyBottomNavTextAndIconColors();
+		this._applyBottomNavIconRenderingMode();
+
+		// Sync the visible selection with selectedIndex.
+		const selectedIndex = this.selectedIndex;
+		if (selectedIndex >= 0 && selectedIndex < menu.size()) {
+			this._suppressBottomNavListener = true;
+			try {
+				menu.getItem(selectedIndex).setChecked(true);
+			} finally {
+				this._suppressBottomNavListener = false;
+			}
+		}
+
+		// Force the host GridLayout to re-measure. Without this, an auto row that already
+		// measured an empty BottomNavigationView (height 0) stays collapsed even after items
+		// are added — the parent doesn't know to remeasure unless we ask.
+		this._bottomNav.requestLayout();
+		const parent = this._bottomNav.getParent();
+		if (parent && (<any>parent).requestLayout) {
+			(<any>parent).requestLayout();
+		}
+	}
+
+	private _getDrawableFromSpec(spec: org.nativescript.widgets.TabItemSpec): android.graphics.drawable.Drawable | null {
+		if (!spec) {
+			return null;
+		}
+		if (spec.iconDrawable) {
+			return spec.iconDrawable;
+		}
+		if (spec.iconId && spec.iconId !== 0) {
+			try {
+				return androidx.core.content.ContextCompat.getDrawable(this._context, spec.iconId);
+			} catch (e) {
+				return null;
+			}
+		}
+		return null;
+	}
+
+	private _buildCheckedColorStateList(checkedColor: number, uncheckedColor: number): android.content.res.ColorStateList {
+		const states: any = Array.create('[I', 2);
+		const checkedAttr: any = Array.create('int', 1);
+		checkedAttr[0] = android.R.attr.state_checked;
+		states[0] = checkedAttr;
+		const uncheckedAttr: any = Array.create('int', 1);
+		uncheckedAttr[0] = -android.R.attr.state_checked;
+		states[1] = uncheckedAttr;
+
+		const colors = Array.create('int', 2);
+		colors[0] = checkedColor;
+		colors[1] = uncheckedColor;
+
+		return new android.content.res.ColorStateList(states, colors);
+	}
+
+	private _applyBottomNavTextAndIconColors(): void {
+		if (!this._bottomNav) {
+			return;
+		}
+		const styleAny: any = this.style;
+		const tabTextColor = styleAny.tabTextColor instanceof Color ? styleAny.tabTextColor.android : null;
+		const selectedTabTextColor = styleAny.selectedTabTextColor instanceof Color ? styleAny.selectedTabTextColor.android : null;
+
+		if (tabTextColor === null && selectedTabTextColor === null) {
+			return;
+		}
+
+		const checked = selectedTabTextColor !== null ? selectedTabTextColor : tabTextColor;
+		const unchecked = tabTextColor !== null ? tabTextColor : selectedTabTextColor;
+		const csl = this._buildCheckedColorStateList(checked, unchecked);
+		this._bottomNav.setItemTextColor(csl);
+		// Tint icons to match in 'alwaysTemplate' mode; leave originals untinted otherwise.
+		if (this.androidIconRenderingMode !== 'alwaysOriginal') {
+			this._bottomNav.setItemIconTintList(csl);
+		}
+	}
+
+	private _applyBottomNavIconRenderingMode(): void {
+		if (!this._bottomNav) {
+			return;
+		}
+		if (this.androidIconRenderingMode === 'alwaysOriginal') {
+			this._bottomNav.setItemIconTintList(null as any);
+		} else {
+			this._applyBottomNavTextAndIconColors();
 		}
 	}
 
@@ -735,7 +1004,19 @@ export class TabView extends TabViewBase {
 	}
 
 	public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
-		this._tabLayout.updateItemAt(index, spec);
+		if (this._tabLayout) {
+			this._tabLayout.updateItemAt(index, spec);
+		} else if (this._bottomNav) {
+			const menu = this._bottomNav.getMenu();
+			if (index >= 0 && index < menu.size()) {
+				const menuItem = menu.getItem(index);
+				menuItem.setTitle(spec.title || '');
+				const drawable = this._getDrawableFromSpec(spec);
+				if (drawable) {
+					menuItem.setIcon(drawable);
+				}
+			}
+		}
 	}
 
 	[androidOffscreenTabLimitProperty.getDefault](): number {
@@ -749,17 +1030,33 @@ export class TabView extends TabViewBase {
 		return 'alwaysOriginal';
 	}
 	[androidIconRenderingModeProperty.setNative](value: 'alwaysOriginal' | 'alwaysTemplate') {
-		this._tabLayout.setIconRenderingMode(this.getNativeRenderingMode(value));
+		if (this._tabLayout) {
+			this._tabLayout.setIconRenderingMode(this.getNativeRenderingMode(value));
+		} else if (this._bottomNav) {
+			this._applyBottomNavIconRenderingMode();
+		}
 	}
 
 	[selectedIndexProperty.setNative](value: number) {
-		const smoothScroll = this.androidTabsPosition === 'top';
+		const smoothScroll = !this._isBottomNav && this.androidTabsPosition === 'top';
 
 		if (Trace.isEnabled()) {
 			Trace.write('TabView this._viewPager.setCurrentItem(' + value + ', ' + smoothScroll + ');', traceCategory);
 		}
 
 		this._viewPager.setCurrentItem(value, smoothScroll);
+
+		if (this._bottomNav) {
+			const menu = this._bottomNav.getMenu();
+			if (value >= 0 && value < menu.size()) {
+				this._suppressBottomNavListener = true;
+				try {
+					menu.getItem(value).setChecked(true);
+				} finally {
+					this._suppressBottomNavListener = false;
+				}
+			}
+		}
 	}
 
 	[itemsProperty.getDefault](): TabViewItem[] {
@@ -771,49 +1068,75 @@ export class TabView extends TabViewBase {
 	}
 
 	[tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
-		return this._tabLayout.getBackground();
+		const target = this._tabLayout || this._bottomNav;
+		return target ? target.getBackground() : (null as any);
 	}
 	[tabBackgroundColorProperty.setNative](value: android.graphics.drawable.Drawable | Color) {
+		const target = this._tabLayout || this._bottomNav;
+		if (!target) {
+			return;
+		}
 		if (value instanceof Color) {
-			this._tabLayout.setBackgroundColor(value.android);
+			target.setBackgroundColor(value.android);
 		} else {
-			this._tabLayout.setBackground(AndroidHelper.getCopyOrDrawable(value, this.nativeViewProtected.getResources()));
+			target.setBackground(AndroidHelper.getCopyOrDrawable(value, this.nativeViewProtected.getResources()));
 		}
 	}
 
 	[tabTextFontSizeProperty.getDefault](): number {
-		return this._tabLayout.getTabTextFontSize();
+		if (this._tabLayout) {
+			return this._tabLayout.getTabTextFontSize();
+		}
+		// BottomNavigationView text size is theme-driven; no per-instance default.
+		return -1;
 	}
 	[tabTextFontSizeProperty.setNative](value: number | { nativeSize: number }) {
-		if (typeof value === 'number') {
-			this._tabLayout.setTabTextFontSize(value);
-		} else {
-			this._tabLayout.setTabTextFontSize(value.nativeSize);
+		if (this._tabLayout) {
+			if (typeof value === 'number') {
+				this._tabLayout.setTabTextFontSize(value);
+			} else {
+				this._tabLayout.setTabTextFontSize(value.nativeSize);
+			}
 		}
+		// Note: BottomNavigationView label sizing comes from the host theme's
+		// itemTextAppearanceActive / itemTextAppearanceInactive styles. Per-instance
+		// text-size overrides are not supported; set those styles in the app theme.
 	}
 
 	[tabTextColorProperty.getDefault](): number {
-		return this._tabLayout.getTabTextColor();
+		return this._tabLayout ? this._tabLayout.getTabTextColor() : 0;
 	}
 	[tabTextColorProperty.setNative](value: number | Color) {
-		const color = value instanceof Color ? value.android : value;
-		this._tabLayout.setTabTextColor(color);
+		if (this._tabLayout) {
+			const color = value instanceof Color ? value.android : value;
+			this._tabLayout.setTabTextColor(color);
+		} else if (this._bottomNav) {
+			this._applyBottomNavTextAndIconColors();
+		}
 	}
 
 	[selectedTabTextColorProperty.getDefault](): number {
-		return this._tabLayout.getSelectedTabTextColor();
+		return this._tabLayout ? this._tabLayout.getSelectedTabTextColor() : 0;
 	}
 	[selectedTabTextColorProperty.setNative](value: number | Color) {
-		const color = value instanceof Color ? value.android : value;
-		this._tabLayout.setSelectedTabTextColor(color);
+		if (this._tabLayout) {
+			const color = value instanceof Color ? value.android : value;
+			this._tabLayout.setSelectedTabTextColor(color);
+		} else if (this._bottomNav) {
+			this._applyBottomNavTextAndIconColors();
+		}
 	}
 
 	[androidSelectedTabHighlightColorProperty.getDefault](): number {
 		return getDefaultAccentColor(this._context);
 	}
 	[androidSelectedTabHighlightColorProperty.setNative](value: number | Color) {
-		const tabLayout = this._tabLayout;
 		const color = value instanceof Color ? value.android : value;
-		tabLayout.setSelectedIndicatorColors([color]);
+		if (this._tabLayout) {
+			this._tabLayout.setSelectedIndicatorColors([color]);
+		} else if (this._bottomNav) {
+			// Material 3 active indicator pill behind the selected item.
+			this._bottomNav.setItemActiveIndicatorColor(android.content.res.ColorStateList.valueOf(color));
+		}
 	}
 }

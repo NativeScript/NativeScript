@@ -32,6 +32,13 @@ class TabViewDemoModel extends Observable {
 		this.applyFontFamily('ns-playground-font');
 	};
 
+	useResIcons = () => {
+		if (!this.tabView || !this.tabView.items) return;
+		if (!__ANDROID__) return;
+		const resIcons = ['res://outline_home_24', 'res://outline_list_alt_24', 'res://outline_info_24'];
+		this.setIcons(resIcons);
+	};
+
 	clearIcons = () => {
 		if (!this.tabView || !this.tabView.items) return;
 		this.tabView.items.forEach((item) => {

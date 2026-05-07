@@ -1,0 +1,9 @@
+repositories {
+	google()
+	mavenCentral()
+}
+
+dependencies {
+	def androidXMaterialVersion = project.hasProperty("androidXMaterial") ? androidXMaterial : (project.hasProperty("ns_default_androidx_material_version") ? ns_default_androidx_material_version : "1.8.0")
+	implementation "com.google.android.material:material:$androidXMaterialVersion"
+}
