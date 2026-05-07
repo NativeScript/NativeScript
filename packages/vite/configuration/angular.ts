@@ -8,6 +8,7 @@ import { synthesizeMissingInjectableFactories } from '../helpers/angular/synthes
 import { ensureSharedAngularLinker, resolveAngularFileSystem } from '../helpers/angular/shared-linker.js';
 import { inlineDecoratorComponentTemplates } from '../helpers/angular/inline-decorator-component-templates.js';
 import { appendComponentHmrRegistration, findComponentClassNames, INJECTION_MARKER as HMR_REGISTER_MARKER } from '../helpers/angular/inject-component-hmr-registration.js';
+import { injectAngularHmrViteIgnore } from '../helpers/angular/inject-hmr-vite-ignore.js';
 import { synthesizeDecoratorCtorParameters } from '../helpers/angular/synthesize-decorator-ctor-parameters.js';
 import { containsRealNgDeclare, stripJsComments } from '../helpers/angular/util.js';
 import { baseConfig } from './base.js';
@@ -134,6 +135,37 @@ const cliFlags = getCliFlags()!;
 const isDevEnv = process.env.NODE_ENV !== 'production';
 const hmrActive = isDevEnv && !!cliFlags.hmr;
 
+/**
+ * Web-style template HMR opt-out.
+ *
+ * When `hmrActive` is true we default to the in-place template-replacement
+ * pipeline (`liveReload: true` on Analog → `_enableHmr: true` on the Angular
+ * TS compiler → `angular:component-update` events served via the
+ * `/@ng/component` middleware → `ɵɵreplaceMetadata` on the live class).
+ * Setting `_enableHmr: true` also forces Analog to set
+ * `externalRuntimeStyles: true`, changing how component styles are emitted
+ * (URLs fetched lazily instead of inlined). On the web that's fine; for
+ * NativeScript it's a new code path that touches the SCSS / Tailwind
+ * pipeline and the iOS runtime's HTTP module loader.
+ *
+ * If a project hits a regression on day one (broken styling, unresolved
+ * `?ngcomp=` imports, etc.) the user can roll back to the legacy reboot
+ * pipeline without an upstream patch by setting the env flag. We honour
+ * `0`, `false`, `off`, and `no` (case-insensitive) as "off" — anything
+ * else (including unset) keeps the new path on.
+ *
+ * The flag is read once at module load, mirroring how `hmrActive` is
+ * computed, so a project can flip it via `cross-env` in their dev script
+ * and never look back.
+ */
+const angularLiveReloadDisabledByEnv: boolean = (() => {
+	const raw = process.env.NS_VITE_ANGULAR_LIVE_RELOAD;
+	if (typeof raw !== 'string') return false;
+	const v = raw.trim().toLowerCase();
+	return v === '0' || v === 'false' || v === 'off' || v === 'no';
+})();
+const hmrAngularLiveReload = hmrActive && !angularLiveReloadDisabledByEnv;
+
 const projectRoot = process.cwd();
 const tsConfigAppPath = path.resolve(projectRoot, 'tsconfig.app.json');
 const tsConfigPath = path.resolve(projectRoot, 'tsconfig.json');
@@ -220,7 +252,21 @@ function extractComponentAssetPaths(code: string, componentId: string): string[]
 	return Array.from(assetPaths);
 }
 
-function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plugin[] {
+/**
+ * File replacement entry forwarded to `@analogjs/vite-plugin-angular`.
+ * `replace` and `with` may be absolute paths or paths relative to
+ * `workspaceRoot` (when supplied). The Analog plugin matches against the
+ * resolved id with `endsWith(replace)`, so absolute paths Just Work in Nx
+ * / pnpm / Rush layouts where the source tree may live above the project
+ * root.
+ */
+export interface AngularFileReplacement {
+	replace: string;
+	with: string;
+	ssr?: string;
+}
+
+function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileReplacements?: AngularFileReplacement[]; workspaceRoot?: string }): Plugin[] {
 	const verbose = resolveVerboseFlag();
 	const assetToComponents = new Map<string, Set<string>>();
 	const componentToAssets = new Map<string, Set<string>>();
@@ -459,11 +505,127 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 			experimental: {
 				useAngularCompilationAPI: opts.useAngularCompilationAPI,
 			},
-			liveReload: false, // Disable live reload in favor of HMR
+			// `liveReload` is Analog's flag for Angular's web-style template HMR
+			// pipeline. When ON, Analog:
+			//   1. Sets `_enableHmr = true` on the TS compiler so each compiled
+			//      component `.mjs` emits `<ClassName>_HmrLoad` plus an
+			//      `import.meta.hot.on('angular:component-update', ...)` listener.
+			//   2. Registers a `/@ng/component?c=<id>` middleware that serves the
+			//      recompiled template's `_UpdateMetadata` source on demand.
+			//   3. In `handleHotUpdate` for `.html` / `.css` / `.scss` edits, sends
+			//      `server.ws.send('angular:component-update', { id, timestamp })`
+			//      so the runtime can call `ɵɵreplaceMetadata` on the live class —
+			//      swapping the template definition AND walking live LViews to
+			//      recreate matching views in-place. NO Angular reboot, NO route
+			//      navigation.
+			//
+			// Previously this was `false` because the NativeScript HMR pipeline
+			// rebuilt every save through `__reboot_ng_modules__`. That works but
+			// has two big downsides on mobile: every save triggers a full app
+			// reboot AND the captured route-history replay (see
+			// `@nativescript/angular`'s `hmr-route-replay.ts`), which produces 2-3
+			// re-navigations per save and re-instantiates the page component
+			// multiple times. For pure template/style edits — the common case —
+			// the web-style component-replacement path keeps the page mounted and
+			// only swaps the changed bits.
+			//
+			// We only enable this when HMR itself is active (`hmrActive` already
+			// gates on `--hmr` and `NODE_ENV !== 'production'`). With HMR off the
+			// behaviour is unchanged: production builds and `--no-hmr` dev still
+			// see `liveReload: false`, the compiler skips the HMR initializers,
+			// and the middleware is not registered.
+			//
+			// Important interactions to be aware of:
+			//   - When `_enableHmr` is true, Analog also sets
+			//     `externalRuntimeStyles = true`, changing how component styles
+			//     are emitted (URLs fetched at runtime instead of inlined). For
+			//     NativeScript, the existing CSS pipeline expects inlined styles;
+			//     `ns-component-hmr-style-overrides` (below) restores the
+			//     pre-HMR style-emission strategy so Tailwind/global SCSS
+			//     packaging keeps working.
+			//   - The runtime dynamic-import resolves the metadata URL relative
+			//     to `import.meta.url`, e.g. `http://host:port/ns/m/<componentDir>/@ng/component?c=...`.
+			//     Analog's middleware uses `req.url.includes('/@ng/component')`
+			//     (substring match), so the request still matches even with the
+			//     `/ns/m/` prefix in the path.
+			//   - The NS HMR client (`packages/vite/hmr/client/index.ts`)
+			//     forwards Vite's standard `{ type: 'custom', event, data }`
+			//     payloads to `import.meta.hot.on` listeners via
+			//     `__NS_DISPATCH_HOT_EVENT__`, and short-circuits before the
+			//     reboot path for `angular:component-update`.
+			//   - The NS server-side hot-update handler in
+			//     `packages/vite/hmr/server/websocket.ts` skips its own
+			//     `ns:angular-update` broadcast for `.html` / component-style
+			//     edits so we don't double-fire (the reboot path stays for `.ts`
+			//     edits).
+			//   - To roll back to the legacy reboot-only pipeline (e.g. while
+			//     debugging an `externalRuntimeStyles` regression), set
+			//     `NS_VITE_ANGULAR_LIVE_RELOAD=0` in the dev environment.
+			//     `hmrAngularLiveReload` collapses both gates above.
+			liveReload: hmrAngularLiveReload,
+			// NativeScript can't consume Angular's `externalRuntimeStyles`
+			// mode — that emits component styles as runtime-loaded
+			// `<hash>.css` URL references which only a browser CSSOM/`<link>`
+			// pipeline can resolve. We tell our patched Analog plugin (see
+			// `patches/@analogjs+vite-plugin-angular+2.3.1.patch` in
+			// downstream apps; upstream PR pending) to keep the legacy
+			// behavior of inlining preprocessed CSS strings into the
+			// component metadata's `styles: [...]` array, which the NS
+			// renderer's CSS-bundle pipeline already knows how to apply.
+			// The option is independent from `liveReload` (`_enableHmr`
+			// still wires up `ɵɵreplaceMetadata` for in-place template
+			// HMR) — we keep HMR ON, just opt out of the URL-style
+			// emission. Note the option lands as a no-op on stock
+			// Analog releases that haven't merged the patch; once
+			// merged, this will switch the compiler off external styles
+			// for NativeScript without affecting web builds.
+			externalRuntimeStyles: false,
 			tsconfig: tsConfig,
+			// Forward Angular-style file replacements (e.g. `environment.ts`
+			// → `environment.stg.ts`) directly into the Analog plugin so the
+			// Angular TypeScript host (which reads source files via its own
+			// CompilerHost, bypassing Vite's load chain) sees the swap. This
+			// is the same hook Angular CLI uses for `fileReplacements` in
+			// `angular.json` build configurations.
+			fileReplacements: opts.fileReplacements ?? [],
+			workspaceRoot: opts.workspaceRoot ?? process.cwd(),
 		}),
 		// Post-phase linker to catch any declarations introduced after other transforms (including project code)
 		angularLinkerVitePluginPost(process.cwd()),
+		// Re-inject the `/* @vite-ignore */` annotation onto Angular's HMR
+		// initializer dynamic imports.
+		//
+		// Angular's compiler emits each component's HMR loader as
+		// `import(/* @vite-ignore */ i0.ɵɵgetReplaceMetadataURL(...))` so
+		// Vite leaves the runtime-computed URL alone. The annotation goes
+		// missing somewhere in the post-Angular pipeline (empirically the
+		// linker's `compact: false` Babel pass loses it on some files),
+		// causing Vite's static analyzer to flag the import and rewrite
+		// the call site through its runtime resolver — which then throws
+		// `TypeError at ɵɵgetReplaceMetadataURL` on the iOS device because
+		// the resolver expects a statically known specifier.
+		//
+		// Running `enforce: 'post'` and `apply: 'serve'` here ensures we
+		// see the file AFTER every other transform has had its chance to
+		// strip comments, AND only in dev (the HMR initializer is gated
+		// behind `ngDevMode` and never runs in a production build, so the
+		// fix would be wasted work outside `serve`). The helper is
+		// idempotent: if the annotation is already present, the file is
+		// returned unchanged.
+		{
+			name: 'ns-angular-hmr-vite-ignore',
+			enforce: 'post',
+			apply: 'serve',
+			transform(code, id) {
+				if (!hmrAngularLiveReload) return null;
+				const cleanId = id.split('?', 1)[0];
+				if (!cleanId.endsWith('.ts') && !cleanId.endsWith('.mjs') && !cleanId.endsWith('.js')) return null;
+				if (cleanId.includes('/node_modules/')) return null;
+				const next = injectAngularHmrViteIgnore(code);
+				if (next === code) return null;
+				return { code: next, map: null };
+			},
+		},
 		// Enforce: fully disable dependency optimization during serve to avoid rxjs esm5 crawling and OOM
 		{
 			name: 'ns-disable-optimize-deps',
@@ -503,7 +665,33 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean }): Plug
 	];
 }
 
-export const angularConfig = ({ mode }: { mode: string }): UserConfig => {
+export const angularConfig = ({
+	mode,
+	fileReplacements,
+	workspaceRoot,
+}: {
+	mode: string;
+	/**
+	 * Angular CLI–style file replacements (e.g. `environment.ts` →
+	 * `environment.stg.ts`) forwarded to `@analogjs/vite-plugin-angular`'s
+	 * `replaceFiles` plugin AND to the Angular TypeScript CompilerHost.
+	 *
+	 * Required for monorepo apps that need configuration-specific
+	 * environment files: the Angular host reads source files via its own
+	 * file-system layer, so a Vite `resolveId`/`load` plugin alone cannot
+	 * swap a `.ts` file for `vite serve` / HMR — the host will still
+	 * compile the original source from disk. Passing the list here ensures
+	 * the host sees the replacement before TypeScript ever parses the
+	 * file, matching how Angular CLI's `fileReplacements` works.
+	 */
+	fileReplacements?: AngularFileReplacement[];
+	/**
+	 * Workspace root used by `@analogjs/vite-plugin-angular` to resolve
+	 * relative `fileReplacements` paths. Absolute paths bypass this.
+	 * Defaults to `process.cwd()`.
+	 */
+	workspaceRoot?: string;
+}): UserConfig => {
 	const useSingleBundleDevOutput = mode === 'development' && !hmrActive;
 	const plugins = createAngularPlugins({
 		// Vite build --watch with the legacy Analog compilation path can regress
@@ -511,6 +699,8 @@ export const angularConfig = ({ mode }: { mode: string }): UserConfig => {
 		// Restrict the newer compilation API to NativeScript's development no-HMR
 		// flow, which is where the unstable rebuilds occur today.
 		useAngularCompilationAPI: useSingleBundleDevOutput,
+		fileReplacements,
+		workspaceRoot,
 	});
 	const disableAnimations = true;
 	//process.env.NS_DISABLE_NG_ANIMATIONS === "1" ||

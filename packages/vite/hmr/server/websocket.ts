@@ -3248,6 +3248,79 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				try {
 					const urlObj = new URL(req.url || '', 'http://localhost');
 					if (!urlObj.pathname.startsWith('/ns/m')) return next();
+					// Delegate AnalogJS Angular component live-reload endpoints.
+					//
+					// Angular 21's `ɵɵgetReplaceMetadataURL` (in @angular/core
+					// _debug_node-chunk.mjs) builds the metadata-replacement URL as
+					// `new URL('./@ng/component?c=<id>&t=<ts>', import.meta.url).href`.
+					// Because `import.meta.url` for a NS-served module is
+					// `http://host:port/ns/m/<project-relative>/component.ts`, the
+					// resolved metadata URL ends up *nested* under the component's
+					// directory: `/ns/m/<dir>/@ng/component?c=...&t=...`.
+					//
+					// AnalogJS's `liveReloadPlugin` registers a middleware that matches
+					// `/@ng/component` anywhere in `req.url` and returns either an empty
+					// module body (no HMR update available) or the metadata-replacement
+					// code (after a save invalidates the file). Without this delegation
+					// the NS `/ns/m/` middleware would treat the path as a file lookup,
+					// fail to resolve `@ng/component` against disk, and respond with
+					// 404 — which surfaces as `HTTP fetch/compile failed` at the
+					// component's own `_HmrLoad(Date.now())` call on initial boot and
+					// blocks Angular component bootstrapping.
+					//
+					// Calling `next()` here lets AnalogJS's middleware (or any other
+					// middleware later in the chain) handle the request. Analog's
+					// middleware reads only the `?c=` query string and is pathname-
+					// agnostic, so we don't need to rewrite `req.url` for it to work.
+					//
+					// HOWEVER: AnalogJS responds with an EMPTY body (`res.end('')`)
+					// for non-invalidated component IDs (initial boot, before any
+					// file save). The iOS HTTP ESM loader's
+					// `LoadHttpModuleForUrl` (ModuleInternalCallbacks.mm) treats an
+					// empty body as a fetch failure (`body.empty() → reject`), even
+					// when the HTTP status is 200 OK. That bubbles up as
+					// `HTTP fetch/compile failed` at the device's `__ns_import(...)`
+					// inside each component's `_HmrLoad(Date.now())` and crashes
+					// Angular's component bootstrap. To make Analog's empty
+					// "no-update" response acceptable to the iOS loader, we wrap
+					// `res.write` / `res.end` and substitute a minimal valid ESM
+					// module body (`export {}`) when downstream writes nothing.
+					// Non-empty bodies (real HMR update payloads after a save)
+					// pass through unchanged.
+					if (urlObj.pathname.includes('/@ng/component')) {
+						const chunks: string[] = [];
+						const origWrite = res.write.bind(res);
+						const origEnd = res.end.bind(res);
+						let ended = false;
+						const captureChunk = (chunk: unknown): void => {
+							if (chunk == null) return;
+							if (typeof chunk === 'string') {
+								chunks.push(chunk);
+							} else if (Buffer.isBuffer(chunk)) {
+								chunks.push(chunk.toString('utf8'));
+							} else {
+								chunks.push(String(chunk));
+							}
+						};
+						(res as any).write = function (chunk?: unknown, ..._args: unknown[]): boolean {
+							captureChunk(chunk);
+							return true;
+						};
+						(res as any).end = function (chunk?: unknown, ..._args: unknown[]): unknown {
+							if (ended) return true;
+							ended = true;
+							captureChunk(chunk);
+							let body = chunks.join('');
+							if (body.length === 0) {
+								body = '// [ns:m] empty Angular component metadata — substituted with valid empty module to satisfy iOS HTTP loader (rejects empty bodies)\nexport {};\n';
+							}
+							try {
+								res.setHeader('Content-Length', Buffer.byteLength(body, 'utf8'));
+							} catch {}
+							return (origEnd as (data: string) => unknown)(body);
+						};
+						return next();
+					}
 					// Previously we awaited `populateInitialGraph(server)` here so
 					// graphVersion would be non-zero for the first /ns/m request.
 					// That gave deterministic URL tags but blocked the cold boot on a
@@ -4148,6 +4221,40 @@ export const piniaSymbol = p.piniaSymbol;
 						`export const $navigateTo = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); try { if (!(g && g.Frame)) { const ns = (__ns_core_bridge && (__ns_core_bridge.__esModule && __ns_core_bridge.default ? __ns_core_bridge.default : (__ns_core_bridge.default || __ns_core_bridge))) || __ns_core_bridge || {}; if (ns) { if (!g.Frame && ns.Frame) g.Frame = ns.Frame; if (!g.Page && ns.Page) g.Page = ns.Page; if (!g.Application && (ns.Application||ns.app||ns.application)) g.Application = (ns.Application||ns.app||ns.application); } } } catch {} try { const hmrRealm = (g && g.__NS_HMR_REALM__) || 'unknown'; const hasTop = !!(g && g.Frame && g.Frame.topmost && g.Frame.topmost()); const top = hasTop ? g.Frame.topmost() : null; const ctor = top && top.constructor && top.constructor.name; } catch {} if (g && typeof g.__nsNavigateUsingApp === 'function') { try { return g.__nsNavigateUsingApp(...a); } catch (e) { console.error('[ns-rt] $navigateTo app navigator error', e); throw e; } } console.error('[ns-rt] $navigateTo unavailable: app navigator missing'); throw new Error('$navigateTo unavailable: app navigator missing'); } ;\n` +
 						`export const $navigateBack = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$navigateBack || (vm.default && vm.default.$navigateBack))) || (rt && (rt.$navigateBack || (rt.runtimeHelpers && rt.runtimeHelpers.navigateBack))); let res; try { const via = (impl && (impl === (vm && vm.$navigateBack) || impl === (vm && vm.default && vm.default.$navigateBack))) ? 'vm' : (impl ? 'rt' : 'none'); } catch {} try { if (typeof impl === 'function') res = impl(...a); } catch {} try { const top = (g && g.Frame && g.Frame.topmost && g.Frame.topmost()); if (!res && top && top.canGoBack && top.canGoBack()) { res = top.goBack(); } } catch {} try { const hook = g && (g.__NS_HMR_ON_NAVIGATE_BACK || g.__NS_HMR_ON_BACK || g.__nsAttemptBackRemount); if (typeof hook === 'function') hook(); } catch {} return res; }\n` +
 						`export const $showModal = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$showModal || (vm.default && vm.default.$showModal))) || (rt && (rt.$showModal || (rt.runtimeHelpers && rt.runtimeHelpers.showModal))); try { if (typeof impl === 'function') return impl(...a); } catch (e) { } return undefined; }\n` +
+						// Vite client helpers re-exported through the runtime bridge.
+						//
+						// Vite's `vite:import-analysis` plugin rewrites unresolvable dynamic
+						// imports (where the URL is not a static string literal) as
+						// `__vite__injectQuery(<expr>, 'import')` and prepends an import
+						// from `/@vite/client`. The /* @vite-ignore */ comment only
+						// suppresses the warning, not the rewrite — Vite gates the rewrite
+						// on `urlIsStringRE`, not `hasViteIgnoreRE`.
+						//
+						// In NativeScript dev, the AST normalizer (packages/vite/hmr/helpers/
+						// ast-normalizer.ts) correctly strips the /@vite/client import (the
+						// browser-only client module is not loadable on-device), then sees
+						// the unbound `__vite__injectQuery` identifier and synthesizes
+						// `const { vite__injectQuery: __vite__injectQuery } = __ns_rt_ns_1`
+						// from this bridge. Without this export the destructure binds to
+						// undefined and Angular 21's component HMR loader (and any other
+						// caller of dynamic-import-with-non-literal-URL) fails with
+						// `__vite__injectQuery is not a function` at module evaluation.
+						//
+						// This polyfill mirrors Vite 8's `__vite__injectQuery` in
+						// node_modules/vite/dist/node/chunks/node.js — for relative or
+						// absolute-path URLs it appends `?<queryToInject>` (preserving
+						// existing search/hash); for already-absolute URLs (http(s):, etc.)
+						// it returns the URL unchanged. Angular's `ɵɵgetReplaceMetadataURL`
+						// returns absolute HTTP URLs, so this acts as a passthrough at
+						// runtime, matching Vite's web behavior.
+						`export const vite__injectQuery = (url, queryToInject) => {\n` +
+						`  if (typeof url !== 'string') return url;\n` +
+						`  if (url[0] !== '.' && url[0] !== '/') return url;\n` +
+						`  const pathname = url.replace(/[?#].*$/, '');\n` +
+						`  let search = '', hash = '';\n` +
+						`  try { const u = new URL(url, 'http://vite.dev'); search = u.search || ''; hash = u.hash || ''; } catch {}\n` +
+						`  return pathname + '?' + queryToInject + (search ? '&' + search.slice(1) : '') + (hash || '');\n` +
+						`};\n` +
 						`export default {\n` +
 						`  defineComponent, resolveComponent, createVNode, createTextVNode, createCommentVNode,\n` +
 						`  Fragment, Teleport, Transition, TransitionGroup, KeepAlive, Suspense, withCtx, openBlock,\n` +
@@ -4157,7 +4264,8 @@ export const piniaSymbol = p.piniaSymbol;
 						`  isVNode, cloneVNode, isRef, ref, shallowRef, unref, computed, reactive, readonly, isReactive, isReadonly, toRaw, markRaw, shallowReactive, shallowReadonly,\n` +
 						`  watch, watchEffect, watchPostEffect, watchSyncEffect, onBeforeMount, onMounted, onBeforeUpdate, onUpdated,\n` +
 						`  onBeforeUnmount, onUnmounted, onActivated, onDeactivated, onErrorCaptured, onRenderTracked, onRenderTriggered, nextTick, h, provide, inject, vShow, createApp, registerElement,\n` +
-						`  $navigateTo, $navigateBack, $showModal\n` +
+						`  $navigateTo, $navigateBack, $showModal,\n` +
+						`  vite__injectQuery\n` +
 						`};\n`;
 					// Prepend guard and ship (harmless, keeps diagnostics consistent)
 					code = REQUIRE_GUARD_SNIPPET + code;
@@ -6297,6 +6405,118 @@ export const piniaSymbol = p.piniaSymbol;
 				// For Angular, react to component TS or external template HTML changes under /src
 				const isHtml = file.endsWith('.html');
 				const isTs = file.endsWith('.ts');
+				// Web-style template HMR opt-in: when the user enables Angular's
+				// `liveReload` (Analog's flag, mirrored from `--hmr` in
+				// `configuration/angular.ts`), `.html` edits are owned by
+				// Analog's `handleHotUpdate` which sends
+				// `server.ws.send('angular:component-update', { id, timestamp })`.
+				// The runtime listener registered in each compiled component
+				// `.mjs` then dynamic-imports `/@ng/component?c=<id>&t=<ts>` and
+				// calls `ɵɵreplaceMetadata` on the live class — swapping the
+				// template definition AND walking live `LView`s to recreate
+				// matching views in-place. NO Angular reboot, NO route navigation.
+				//
+				// The NS reboot path (`ns:angular-update` → `__reboot_ng_modules__`)
+				// must be SKIPPED for HTML edits when this is on; otherwise both
+				// fire, the reboot wins, and we lose the in-place swap. The
+				// reboot path stays intact for `.ts` edits — those genuinely
+				// change module-level code (services, route configs, NgModule
+				// providers) that Angular's `ɵɵreplaceMetadata` can't reach.
+				//
+				// We detect "live reload mode is on" by checking that the
+				// `analogjs-live-reload-plugin` registered itself with the
+				// dev server. That plugin only exists when `liveReload: true`
+				// was passed to `angular()` in `configuration/angular.ts`,
+				// which gates on `hmrActive`. So this check is a clean
+				// boolean: true iff the in-place pipeline is wired up.
+				const angularLiveReloadActive = ((server.config?.plugins as Array<{ name?: string }> | undefined) ?? []).some((plugin) => plugin?.name === 'analogjs-live-reload-plugin');
+				if (isHtml && angularLiveReloadActive) {
+					updateMetrics.tAfterFramework = Date.now();
+					if (verbose) {
+						const rel =
+							'/' +
+							path.posix
+								.normalize(path.relative(server.config.root || process.cwd(), file))
+								.split(path.sep)
+								.join('/');
+						console.info(`[ns-hmr-diag][server] HTML edit handed off to Analog component-update path; skipping ns:angular-update broadcast (file=${rel})`);
+					}
+					// Re-query the moduleGraph for this file AFTER awaiting
+					// `graphInitialPopulationPromise` (done at the top of
+					// `handleHotUpdate`) and return the freshly-discovered
+					// modules so they propagate to Analog's `handleHotUpdate`
+					// in the same chain.
+					//
+					// Vite v8 builds the initial `mixedHmrContext.modules`
+					// from `mixedModuleGraph.getModulesByFile(file)` BEFORE
+					// any plugin runs. On the very first save after a cold
+					// dev-server start, the moduleGraph for the changed
+					// `.html` template has not yet been populated — that
+					// population happens lazily via `populateInitialGraph`
+					// → `transformRequest` → Analog's `transform` hook →
+					// `addWatchFile(htmlFile)` → `vite:import-analysis`
+					// consumes `_addedImports` and finally calls
+					// `moduleGraph.updateModuleInfo` which registers the
+					// `html → component.ts` importer relationship in
+					// `fileToModulesMap`. All of that work races against the
+					// file-watcher event for the `.html` edit, and the
+					// watcher event almost always wins — so `ctx.modules`
+					// arrives as `[]` even though the component is fully
+					// compiled and ready to receive an in-place template
+					// swap.
+					//
+					// Returning `undefined` here would propagate that empty
+					// `ctx.modules` to the next plugin (Analog's handler),
+					// which iterates with `ctx.modules.forEach(mod => mod
+					// .importers.forEach(imp => …))` — a no-op when
+					// `ctx.modules` is empty. Analog never broadcasts
+					// `angular:component-update`, never marks anything
+					// self-accepting, and Vite falls back to a `full-reload`
+					// payload that the device runtime cannot honor (NS apps
+					// don't have a browser-style page reload). The
+					// user-visible symptom is exactly the "first save logs
+					// `(client) page reload` and the simulator gets stuck
+					// on the HMR-applying overlay forever" failure we hit
+					// before this re-query was added.
+					//
+					// Since we already `await graphInitialPopulationPromise`
+					// at the top of this function, by this point the
+					// moduleGraph IS populated (every component file in
+					// `src/` has been transformed and `addWatchFile` has
+					// been consumed by `import-analysis`). A fresh
+					// `getModulesByFile(file)` call now returns the template
+					// module with the importing component's module in
+					// `.importers`. Returning that array overwrites
+					// `mixedHmrContext.modules` so Analog's handler — which
+					// runs RIGHT AFTER us in the same chain — sees the
+					// populated importer graph, identifies the component
+					// class via `classNames.get(imp.id)`, and broadcasts
+					// `angular:component-update` for `ɵɵreplaceMetadata`.
+					//
+					// We still skip the reboot path (`ns:angular-update`)
+					// for HTML edits — control never reaches the
+					// reboot-broadcast block below because of the `return`
+					// here. The default-Vite-full-reload suppression is now
+					// Analog's responsibility: it marks the changed module
+					// self-accepting, which tells Vite the update is
+					// handled and prevents the fallback.
+					let resolvedModules: typeof ctx.modules = ctx.modules;
+					try {
+						const fresh = (server.moduleGraph as any)?.getModulesByFile?.(file) as Set<unknown> | undefined;
+						if (fresh && fresh.size > 0) {
+							resolvedModules = [...fresh] as typeof ctx.modules;
+							if (verbose) {
+								console.info(`[ns-hmr-diag][server] re-queried modules after graph population: count=${resolvedModules.length} (was ${ctx.modules?.length ?? 0})`);
+							}
+						}
+					} catch (refetchErr) {
+						if (verbose) {
+							console.warn('[ns-hmr-diag][server] failed to re-query moduleGraph for html update', refetchErr);
+						}
+					}
+					emitHmrUpdateSummary();
+					return resolvedModules;
+				}
 				const angularHotUpdateRoots = collectAngularHotUpdateRoots({
 					file,
 					modules: ctx.modules,

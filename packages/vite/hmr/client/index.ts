@@ -1599,6 +1599,50 @@ async function handleHmrMessage(ev: any) {
 			notifyAppHmrUpdate('delta', deltaIds);
 			return;
 		} else {
+			// Vite custom-event dispatch.
+			//
+			// `server.ws.send('event-name', payload)` from any Vite plugin lands
+			// on the wire as `{ type: 'custom', event: 'event-name', data: payload }`.
+			// On the web, Vite's stock client owns a `customListenersMap` that
+			// fires every `import.meta.hot.on('event-name', cb)` callback. We
+			// don't run Vite's stock client on device — the iOS runtime owns
+			// the listener registry via `__NS_DISPATCH_HOT_EVENT__` (the
+			// counterpart to `import.meta.hot.on` populated by user code +
+			// compiled Angular components). Forwarding `type: 'custom'` here
+			// is the only thing standing between server-emitted events and
+			// the listeners they were meant for.
+			//
+			// `angular:component-update` is the canonical example. Analog's
+			// plugin sends it on `.html` / component-style edits; the
+			// compiled component `.mjs` registered a listener that
+			// dynamic-imports `/@ng/component?c=<id>&t=<ts>` and calls
+			// `ɵɵreplaceMetadata` on the live class — swapping the template
+			// definition AND walking live `LView`s to recreate matching views
+			// in-place. The page stays mounted and only the changed bits
+			// re-render. We MUST `return` after dispatch so the reboot path
+			// (`handleAngularHotUpdateMessage` → `__reboot_ng_modules__`)
+			// never runs for these updates — that's the whole point of the
+			// component-replacement pipeline.
+			//
+			// All other custom events are forwarded but NOT short-circuited
+			// (Vite spec: custom events are additive — they don't replace
+			// any framework-specific handling). The reboot path falls through
+			// for `ns:angular-update` (the legacy/`.ts`-edit broadcast) and
+			// for any framework not yet using the in-place replacement path.
+			if (msg.type === 'custom' && typeof msg.event === 'string') {
+				try {
+					const dispatch = (globalThis as any).__NS_DISPATCH_HOT_EVENT__;
+					if (typeof dispatch === 'function') {
+						dispatch(msg.event, msg.data);
+					}
+				} catch (err) {
+					if (VERBOSE) console.warn('[hmr-client][custom] dispatch failed for', msg.event, err);
+				}
+				if (msg.event === 'angular:component-update') {
+					if (VERBOSE) console.log('[hmr-client][custom] dispatched angular:component-update — skipping reboot path');
+					return;
+				}
+			}
 			if (msg.type === 'ns:angular-update' && typeof msg.version === 'number') {
 				setGraphVersion(Number(msg.version || getGraphVersion() || 0));
 			}
