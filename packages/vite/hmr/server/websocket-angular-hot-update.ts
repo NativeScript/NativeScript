@@ -84,12 +84,12 @@ export function collectGraphUpdateModulesForHotUpdate(options: { file: string; f
 		}
 
 		if (options.verbose) {
-			console.info(`[ns-hmr-diag][server] collectGraphUpdateModulesForHotUpdate(html) file=${options.file} importersSeen=${importerIdsSeen.length} importersAccepted=${importerIdsAccepted.length} fellBackToFile=${fellBackToFile} targets=${targets.size}`);
+			console.info(`[ns-hmr][server] collectGraphUpdateModulesForHotUpdate(html) file=${options.file} importersSeen=${importerIdsSeen.length} importersAccepted=${importerIdsAccepted.length} fellBackToFile=${fellBackToFile} targets=${targets.size}`);
 			if (importerIdsSeen.length) {
-				console.info(`[ns-hmr-diag][server] importersSeen sample=`, importerIdsSeen.slice(0, 8));
+				console.info(`[ns-hmr][server] importersSeen sample=`, importerIdsSeen.slice(0, 8));
 			}
 			if (importerIdsAccepted.length) {
-				console.info(`[ns-hmr-diag][server] importersAccepted sample=`, importerIdsAccepted.slice(0, 8));
+				console.info(`[ns-hmr][server] importersAccepted sample=`, importerIdsAccepted.slice(0, 8));
 			}
 		}
 

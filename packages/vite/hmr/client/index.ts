@@ -1630,16 +1630,65 @@ async function handleHmrMessage(ev: any) {
 			// for `ns:angular-update` (the legacy/`.ts`-edit broadcast) and
 			// for any framework not yet using the in-place replacement path.
 			if (msg.type === 'custom' && typeof msg.event === 'string') {
+				// Dispatch every Vite "custom" event through the runtime's
+				// `__NS_DISPATCH_HOT_EVENT__` bridge so `import.meta.hot.on(event, cb)`
+				// callbacks fire on the device. Critical contract: this is the
+				// ONLY route by which Analog's `angular:component-update` reaches
+				// the compiled component's `(d) => d.id === id && Component_HmrLoad(...)`
+				// listener — without it, server-side broadcasts log green
+				// (`(client) hmr update`) while the device sees nothing happen.
+				//
+				// Diagnostic policy: log "no dispatcher" loud (boot-time rt-bridge
+				// failure), and listener exceptions loud (compiled HmrLoad
+				// fetch/parse error). Successful dispatches are silent — the
+				// runtime's `[import.meta.hot] dispatch summary` line carries
+				// the per-event match-count diagnostic.
 				try {
 					const dispatch = (globalThis as any).__NS_DISPATCH_HOT_EVENT__;
 					if (typeof dispatch === 'function') {
 						dispatch(msg.event, msg.data);
+					} else {
+						console.warn(`[hmr-client][custom] no __NS_DISPATCH_HOT_EVENT__ available for '${msg.event}'`);
 					}
 				} catch (err) {
-					if (VERBOSE) console.warn('[hmr-client][custom] dispatch failed for', msg.event, err);
+					console.warn('[hmr-client][custom] dispatch threw for', msg.event, err);
 				}
 				if (msg.event === 'angular:component-update') {
 					if (VERBOSE) console.log('[hmr-client][custom] dispatched angular:component-update — skipping reboot path');
+					// Walk the apply-progress overlay through its
+					// remaining stages for the in-place template-swap
+					// path. The full reboot path
+					// (`handleAngularHotUpdateMessage`) drives the
+					// overlay itself ('received' → 'evicting' →
+					// 'reimporting' → 'rebooting' → 'complete'); the
+					// in-place path bypasses that handler entirely
+					// because the work happens inside Angular's
+					// `ɵɵreplaceMetadata` after the runtime forwards the
+					// `angular:component-update` event to the compiled
+					// component's listener. Without this update the
+					// overlay would freeze at 5% ('received') even
+					// though the visual swap completes a few frames
+					// later — exactly the "Preparing update (5%)" stuck
+					// frame we have been chasing.
+					//
+					// We transition straight to 'reimporting' to
+					// communicate that metadata is being fetched (the
+					// runtime listener fires `__ns_import('/@ng/component?c=...&t=...')`),
+					// then schedule 'complete' on the next macrotask so
+					// the auto-hide timer kicks in. The actual
+					// template swap is fire-and-forget from this point;
+					// the user sees the overlay close at the same time
+					// as Angular re-renders the bound text/structure.
+					try {
+						const filePath = typeof (msg.data as any)?.id === 'string' ? decodeURIComponent((msg.data as any).id).split('@')[0] : undefined;
+						const detail = filePath ? `Applying template update to ${filePath}` : 'Applying template update';
+						setUpdateOverlayStage('reimporting', { detail });
+						setTimeout(() => {
+							try {
+								setUpdateOverlayStage('complete', { detail: filePath ? `Updated ${filePath}` : 'Update applied' });
+							} catch {}
+						}, 16);
+					} catch {}
 					return;
 				}
 			}

@@ -376,7 +376,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 				componentsByCleanId.set(cleanId, componentNames);
 
 				if (verbose) {
-					console.info(`[ns-hmr-diag][ns-component-hmr-register] discovered ${componentNames.length} component(s) in ${cleanId} (${componentNames.join(', ')})`);
+					console.info(`[ns-hmr][ns-component-hmr-register] discovered ${componentNames.length} component(s) in ${cleanId} (${componentNames.join(', ')})`);
 				}
 
 				// Discovery only — never modify the raw TS source. Any
@@ -415,7 +415,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 				if (!result.code) return null;
 
 				if (verbose) {
-					console.info(`[ns-hmr-diag][ns-component-hmr-register-post] appended registrations for ${result.componentNames.length} component(s) in ${cleanId} (${result.componentNames.join(', ')})`);
+					console.info(`[ns-hmr][ns-component-hmr-register-post] appended registrations for ${result.componentNames.length} component(s) in ${cleanId} (${result.componentNames.join(', ')})`);
 				}
 
 				// Returning `null` for the source map is acceptable for
@@ -449,7 +449,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 				// component we're editing, the watcher will never fire
 				// and `pendingComponentInvalidations` stays empty.
 				if (verbose) {
-					console.info(`[ns-hmr-diag][angular-template-deps] [tracking] componentKey=${componentKey} assets=${assetPaths.length} (${assetPaths.slice(0, 4).join(', ')})`);
+					console.info(`[ns-hmr][angular-template-deps] [tracking] componentKey=${componentKey} assets=${assetPaths.length} (${assetPaths.slice(0, 4).join(', ')})`);
 				}
 				return null;
 			},
@@ -466,7 +466,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 						pendingComponentInvalidations.add(componentPath);
 					}
 					if (verbose) {
-						console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via assetToComponents] changed=${changedPath} → invalidating ${components.size} component(s):`, Array.from(components));
+						console.info(`[ns-hmr][angular-template-deps] watchChange [via assetToComponents] changed=${changedPath} → invalidating ${components.size} component(s):`, Array.from(components));
 					}
 					return;
 				}
@@ -478,10 +478,14 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 						const componentKey = normalizeAngularWatchKey(componentPath);
 						pendingComponentInvalidations.add(componentKey);
 						if (verbose) {
-							console.info(`[ns-hmr-diag][angular-template-deps] watchChange [via fallback .html→.ts] changed=${changedPath} componentKey=${componentKey}`);
+							console.info(`[ns-hmr][angular-template-deps] watchChange [via fallback .html→.ts] changed=${changedPath} componentKey=${componentKey}`);
 						}
-					} else if (verbose) {
-						console.info(`[ns-hmr-diag][angular-template-deps] watchChange [no companion .ts found] changed=${changedPath} expectedTs=${componentPath}`);
+					} else {
+						// Truly anomalous: a watched template/style asset has no companion
+						// `.ts` file, so we cannot route the edit through the Angular
+						// HMR pipeline. Always-on warning so it surfaces in non-verbose
+						// runs — silent fallback would hide a real wiring break.
+						console.warn(`[ns-hmr][angular-template-deps] watchChange [no companion .ts found] changed=${changedPath} expectedTs=${componentPath}`);
 					}
 				}
 			},
@@ -491,7 +495,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 
 				pendingComponentInvalidations.delete(componentPath);
 				if (verbose) {
-					console.info(`[ns-hmr-diag][angular-template-deps] shouldTransformCachedModule → re-transform componentKey=${componentPath}`);
+					console.info(`[ns-hmr][angular-template-deps] shouldTransformCachedModule → re-transform componentKey=${componentPath}`);
 				}
 				return true;
 			},
@@ -579,6 +583,15 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 			// Analog releases that haven't merged the patch; once
 			// merged, this will switch the compiler off external styles
 			// for NativeScript without affecting web builds.
+			//
+			// `@ts-expect-error` because the option is not yet in
+			// `@analogjs/vite-plugin-angular`'s published `PluginOptions`
+			// type. When the upstream PR (https://github.com/analogjs/analog)
+			// adds it, this `@ts-expect-error` will itself become an
+			// "unused suppression" error — that's the signal to remove
+			// this comment AND the surrounding explanation, and bump
+			// the Analog peer dep to the version that ships the type.
+			// @ts-expect-error -- pending upstream Analog type publish
 			externalRuntimeStyles: false,
 			tsconfig: tsConfig,
 			// Forward Angular-style file replacements (e.g. `environment.ts`

@@ -161,7 +161,7 @@ function dispatchHotEvent(g: any, event: string, payload?: unknown): void {
 		// runtime), so this is purely a safety net for runtime
 		// regressions. Log only under verbose to avoid noisy dev logs.
 		if (envVerbose) {
-			console.warn(`[ns-hmr-diag][client] __NS_DISPATCH_HOT_EVENT__('${event}') threw:`, (err as any)?.message ?? err);
+			console.warn(`[ns-hmr][client] __NS_DISPATCH_HOT_EVENT__('${event}') threw:`, (err as any)?.message ?? err);
 		}
 	}
 }
@@ -186,7 +186,7 @@ function triggerFullReload(g: any, message: string): boolean {
 		fn.call(g);
 	} catch (err) {
 		if (envVerbose) {
-			console.warn('[ns-hmr-diag][client] __nsReloadDevApp threw:', (err as any)?.message ?? err);
+			console.warn('[ns-hmr][client] __nsReloadDevApp threw:', (err as any)?.message ?? err);
 		}
 		return false;
 	}
@@ -218,7 +218,7 @@ function checkDeclinedAndReload(g: any, msg: any, options: { verbose?: boolean }
 		declined = !!checker.call(g, evictPaths);
 	} catch (err) {
 		if (options.verbose && envVerbose) {
-			console.warn('[ns-hmr-diag][client] __nsHasDeclinedModule threw:', (err as any)?.message ?? err);
+			console.warn('[ns-hmr][client] __nsHasDeclinedModule threw:', (err as any)?.message ?? err);
 		}
 		return false;
 	}
@@ -230,7 +230,7 @@ function checkDeclinedAndReload(g: any, msg: any, options: { verbose?: boolean }
 	console.info(`[ns-hmr][decline] ${message} — falling back to full reload`);
 	const reloaded = triggerFullReload(g, message);
 	if (!reloaded && options.verbose && envVerbose) {
-		console.warn('[ns-hmr-diag][client] declined module detected but __nsReloadDevApp unavailable; HMR will proceed (older runtime)');
+		console.warn('[ns-hmr][client] declined module detected but __nsReloadDevApp unavailable; HMR will proceed (older runtime)');
 	}
 	return reloaded;
 }
@@ -272,7 +272,7 @@ function runHmrDisposeCallbacks(g: any, options: { verbose?: boolean }): void {
 		// don't nag users on every cycle of every project that hasn't
 		// adopted the new runtime yet.
 		if (options.verbose && envVerbose) {
-			console.info('[ns-hmr-diag][client] runtime missing __nsRunHmrDispose; skipping import.meta.hot.dispose drain (upgrade @nativescript/ios for support)');
+			console.info('[ns-hmr][client] runtime missing __nsRunHmrDispose; skipping import.meta.hot.dispose drain (upgrade @nativescript/ios for support)');
 		}
 		return;
 	}
@@ -287,7 +287,7 @@ function runHmrDisposeCallbacks(g: any, options: { verbose?: boolean }): void {
 		// (out-of-memory, isolate teardown race, etc.) we MUST NOT
 		// take down the HMR cycle.
 		if (options.verbose && envVerbose) {
-			console.warn('[ns-hmr-diag][client] __nsRunHmrDispose threw:', (err as any)?.message ?? err);
+			console.warn('[ns-hmr][client] __nsRunHmrDispose threw:', (err as any)?.message ?? err);
 		}
 		return;
 	}
@@ -352,7 +352,7 @@ function terminateTrackedWorkers(g: any, options: { verbose?: boolean }): void {
 			nativeTerminated = typeof result === 'number' ? result : 0;
 		} catch (err) {
 			if (options.verbose && envVerbose) {
-				console.warn('[ns-hmr-diag][client] __nsTerminateAllWorkers threw; falling back to JS-tracked Set:', (err as any)?.message ?? err);
+				console.warn('[ns-hmr][client] __nsTerminateAllWorkers threw; falling back to JS-tracked Set:', (err as any)?.message ?? err);
 			}
 			nativeApi = undefined; // force fallback below
 		}
@@ -413,22 +413,22 @@ function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	const g: any = globalThis;
 	const fn = g.__nsInvalidateModules;
 	if (typeof fn !== 'function') {
-		console.warn(`[ns-hmr-diag][client] runtime missing __nsInvalidateModules; falling back to legacy URL versioning. evict=${urls.length}`);
+		console.warn(`[ns-hmr][client] runtime missing __nsInvalidateModules; falling back to legacy URL versioning. evict=${urls.length}`);
 		return false;
 	}
 	try {
 		if (verbose && envVerbose) {
-			console.info(`[ns-hmr-diag][client] invalidateModules calling __nsInvalidateModules urls=${urls.length}`);
+			console.info(`[ns-hmr][client] invalidateModules calling __nsInvalidateModules urls=${urls.length}`);
 		}
 		fn.call(null, urls);
 		if (verbose && envVerbose) {
-			console.info(`[ns-hmr-diag][client] invalidateModules OK urls=${urls.length}`);
+			console.info(`[ns-hmr][client] invalidateModules OK urls=${urls.length}`);
 		}
 		return true;
 	} catch (error) {
 		// Real exception path — the runtime hook itself threw. Always
 		// surfaced for the same reason as the missing-hook warn above.
-		console.warn('[ns-hmr-diag][client] __nsInvalidateModules threw', (error as any)?.message || error);
+		console.warn('[ns-hmr][client] __nsInvalidateModules threw', (error as any)?.message || error);
 		return false;
 	}
 }
@@ -616,12 +616,12 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	// so the lines stay silent on normal saves.
 	if (options.verbose && envVerbose) {
 		const _path = typeof msg?.path === 'string' ? msg.path : '(unknown)';
-		console.info(`[ns-hmr-diag][client] received ns:angular-update path=${_path} evictPaths.length=${evictPaths.length} importerEntry=${msg?.importerEntry ?? '(none)'}`);
+		console.info(`[ns-hmr][client] received ns:angular-update path=${_path} evictPaths.length=${evictPaths.length} importerEntry=${msg?.importerEntry ?? '(none)'}`);
 		if (evictPaths.length) {
 			const sample = evictPaths.slice(0, 32);
-			console.info(`[ns-hmr-diag][client] evictPaths firstN=`, sample);
+			console.info(`[ns-hmr][client] evictPaths firstN=`, sample);
 			if (evictPaths.length > sample.length) {
-				console.info(`[ns-hmr-diag][client] evictPaths hidden=${evictPaths.length - sample.length}`);
+				console.info(`[ns-hmr][client] evictPaths hidden=${evictPaths.length - sample.length}`);
 			}
 		}
 	}
@@ -639,7 +639,7 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	const evicted = invalidateModules(evictPaths, options.verbose);
 
 	if (options.verbose && envVerbose) {
-		console.info(`[ns-hmr-diag][client] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
+		console.info(`[ns-hmr][client] evict count=${evictPaths.length} ok=${evicted ? 'yes' : 'no'}`);
 	}
 
 	// Parallel HTTP prefetch for the freshly-evicted modules.
@@ -812,7 +812,7 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 		const reboot = g.__reboot_ng_modules__;
 		if (typeof reboot === 'function') {
 			if (options.verbose && envVerbose) {
-				console.info('[ns-hmr-diag][client] calling __reboot_ng_modules__');
+				console.info('[ns-hmr][client] calling __reboot_ng_modules__');
 			}
 			await refreshAngularBootstrapOptions(msg, options);
 			tAfterRefresh = Date.now();

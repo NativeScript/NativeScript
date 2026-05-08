@@ -536,7 +536,18 @@ function stripViteDynamicImportVirtual(code: string): string {
 	return code;
 }
 
-const REQUIRE_GUARD_SNIPPET = `// [guard] install require('http(s)://') detector\n(()=>{try{var g=globalThis;if(g.__NS_REQUIRE_GUARD_INSTALLED__){}else{var mk=function(o,l){return function(){try{var s=arguments[0];if(typeof s==='string'&&/^(?:https?:)\\/\\//.test(s)){var e=new Error('[ns-hmr][require-guard] require of URL: '+s+' via '+l);console.error(e.message+'\\n'+(e.stack||''));try{g.__NS_REQUIRE_GUARD_LAST__={spec:s,stack:e.stack,label:l,ts:Date.now()};}catch(e3){}}}catch(e1){}return o.apply(this, arguments);};};if(typeof g.require==='function'&&!g.require.__NS_REQ_GUARDED__){var o1=g.require;g.require=mk(o1,'require');g.require.__NS_REQ_GUARDED__=true;}if(typeof g.__nsRequire==='function'&&!g.__nsRequire.__NS_REQ_GUARDED__){var o2=g.__nsRequire;g.__nsRequire=mk(o2,'__nsRequire');g.__nsRequire.__NS_REQ_GUARDED__=true;}g.__NS_REQUIRE_GUARD_INSTALLED__=true;}}catch(e){}})();\n`;
+// Detect (and log) `require('http(s)://...')` calls made from CJS shims.
+// Pattern: HTTP-served ESM modules end up in NS-vite's `__nsRequire`
+// shim with HTTP URLs as their relative resolution targets. The guard
+// is install-once-per-isolate, dedupes per-URL (so semver's ~30 deep
+// imports produce ~30 lines on the first boot and 0 on subsequent
+// boots within the same isolate), and uses `console.warn` so the
+// message reads as advisory (the round-3 finding in
+// LATEST-05-07-2026-HMR_ANGULAR_DEBUG_SESSION.md). Forensic detail
+// (stack) lives on `globalThis.__NS_REQUIRE_GUARD_LAST__` for
+// post-mortem inspection. Set `globalThis.__NS_REQUIRE_GUARD_VERBOSE__`
+// to `true` before any module loads to restore per-call logging.
+const REQUIRE_GUARD_SNIPPET = `// [guard] install require('http(s)://') detector\n(()=>{try{var g=globalThis;if(g.__NS_REQUIRE_GUARD_INSTALLED__){}else{var seen=g.__NS_REQUIRE_GUARD_SEEN__||(g.__NS_REQUIRE_GUARD_SEEN__=new Set());var mk=function(o,l){return function(){try{var s=arguments[0];if(typeof s==='string'&&/^(?:https?:)\\/\\//.test(s)){var k=l+'|'+s;var v=g.__NS_REQUIRE_GUARD_VERBOSE__===true;var first=!seen.has(k);if(first)seen.add(k);if(first||v){var e=new Error('[ns-hmr][require-guard] require of URL: '+s+' via '+l);if(v)console.warn(e.message+'\\n'+(e.stack||''));else console.warn(e.message);try{g.__NS_REQUIRE_GUARD_LAST__={spec:s,stack:e.stack,label:l,ts:Date.now()};}catch(e3){}}}}catch(e1){}return o.apply(this, arguments);};};if(typeof g.require==='function'&&!g.require.__NS_REQ_GUARDED__){var o1=g.require;g.require=mk(o1,'require');g.require.__NS_REQ_GUARDED__=true;}if(typeof g.__nsRequire==='function'&&!g.__nsRequire.__NS_REQ_GUARDED__){var o2=g.__nsRequire;g.__nsRequire=mk(o2,'__nsRequire');g.__nsRequire.__NS_REQ_GUARDED__=true;}g.__NS_REQUIRE_GUARD_INSTALLED__=true;}}catch(e){}})();\n`;
 
 function shouldRemapImport(spec: string): boolean {
 	if (!spec || typeof spec !== 'string') return false;
@@ -2833,6 +2844,69 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			if (!wsAny.__NS_ANGULAR_FULL_RELOAD_FILTER_INSTALLED__) {
 				const originalSend = server.ws.send.bind(server.ws);
 				wsAny.__NS_ANGULAR_FULL_RELOAD_FILTER_INSTALLED__ = true;
+				// Bridge Vite's stock WS broadcasts (`server.ws.send(...)`)
+				// to our `/ns-hmr` WebSocket. Vite v8 keeps two completely
+				// separate `WebSocketServer` instances: its own (default
+				// path `/`, accepting `vite-hmr`/`vite-ping` protocols) and
+				// ours (`/ns-hmr`, where the iOS device actually connects).
+				// Plugin-emitted events like Analog's
+				// `server.ws.send('angular:component-update', { id, ts })`
+				// flow through Vite's `normalizedHotChannel.send` →
+				// `wss.clients.forEach`, but those `wss.clients` are
+				// EMPTY in NativeScript dev — the device never speaks the
+				// `vite-hmr` protocol nor connects to `/`. Without a
+				// bridge, every plugin-emitted custom event is logged on
+				// the server (e.g. `(client) hmr update <html>`) but
+				// silently dropped before reaching the device. Symptom:
+				// the iOS HMR-applying overlay sticks at 5%
+				// ("Preparing update") forever because Angular's compiled
+				// `import.meta.hot.on('angular:component-update', cb)`
+				// listeners never fire. We mirror the payload onto our
+				// `/ns-hmr` clients here so the existing custom-event
+				// dispatcher in `hmr/client/index.ts` (which forwards to
+				// `__NS_DISPATCH_HOT_EVENT__`) actually runs.
+				const bridgeToNsHmrClients = (payload: any, args: any[]): void => {
+					try {
+						let normalized: any;
+						if (typeof args[0] === 'string') {
+							normalized = { type: 'custom', event: args[0], data: args[1] };
+						} else {
+							normalized = payload;
+						}
+						if (!normalized) return;
+						// Vite's stock `update` payload includes per-module
+						// HMR boundary info that our device-side client
+						// has no handler for (we drive HMR via our own
+						// `ns:angular-update`/`ns:hmr-delta`/`ns:css-updates`
+						// messages). Forwarding it would just look like
+						// noise to the client. Custom events
+						// (`type: 'custom'`) — including
+						// `angular:component-update` and Analog's
+						// CSS-direct/inline `update` shorthand — DO need
+						// to reach the device, since they drive the
+						// in-place `ɵɵreplaceMetadata` template-swap path.
+						// Filter the relay to those.
+						if (normalized.type !== 'custom') return;
+						const stringified = JSON.stringify(normalized);
+						let recipients = 0;
+						wss?.clients.forEach((client: any) => {
+							try {
+								if (client && client.readyState === 1) {
+									client.send(stringified);
+									recipients++;
+								}
+							} catch {}
+						});
+						if (verbose) {
+							const event = (normalized as any)?.event;
+							console.log(`[hmr-ws][bridge] forwarded ${normalized.type}${event ? `:${event}` : ''} payload to ${recipients} /ns-hmr client(s)`);
+						}
+					} catch (err) {
+						if (verbose) {
+							console.warn('[hmr-ws][bridge] failed to forward payload to /ns-hmr clients', err);
+						}
+					}
+				};
 				server.ws.send = ((payload: any, ...rest: any[]) => {
 					pruneAngularReloadSuppressions();
 					if (
@@ -2848,6 +2922,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						return;
 					}
 
+					bridgeToNsHmrClients(payload, [payload, ...rest]);
 					return originalSend(payload, ...rest);
 				}) as typeof server.ws.send;
 			}
@@ -6439,7 +6514,7 @@ export const piniaSymbol = p.piniaSymbol;
 								.normalize(path.relative(server.config.root || process.cwd(), file))
 								.split(path.sep)
 								.join('/');
-						console.info(`[ns-hmr-diag][server] HTML edit handed off to Analog component-update path; skipping ns:angular-update broadcast (file=${rel})`);
+						console.info(`[ns-hmr][server] HTML edit handed off to Analog component-update path; skipping ns:angular-update broadcast (file=${rel})`);
 					}
 					// Re-query the moduleGraph for this file AFTER awaiting
 					// `graphInitialPopulationPromise` (done at the top of
@@ -6506,12 +6581,12 @@ export const piniaSymbol = p.piniaSymbol;
 						if (fresh && fresh.size > 0) {
 							resolvedModules = [...fresh] as typeof ctx.modules;
 							if (verbose) {
-								console.info(`[ns-hmr-diag][server] re-queried modules after graph population: count=${resolvedModules.length} (was ${ctx.modules?.length ?? 0})`);
+								console.info(`[ns-hmr][server] re-queried modules after graph population: count=${resolvedModules.length} (was ${ctx.modules?.length ?? 0})`);
 							}
 						}
 					} catch (refetchErr) {
 						if (verbose) {
-							console.warn('[ns-hmr-diag][server] failed to re-query moduleGraph for html update', refetchErr);
+							console.warn('[ns-hmr][server] failed to re-query moduleGraph for html update', refetchErr);
 						}
 					}
 					emitHmrUpdateSummary();
@@ -6525,7 +6600,7 @@ export const piniaSymbol = p.piniaSymbol;
 				});
 				if (verbose) {
 					console.info(
-						`[ns-hmr-diag][server] hot-update file=${file} isHtml=${isHtml} isTs=${isTs} ctxModules=${Array.from(ctx.modules || []).length} hotUpdateRoots=${angularHotUpdateRoots.length} (${angularHotUpdateRoots
+						`[ns-hmr][server] hot-update file=${file} isHtml=${isHtml} isTs=${isTs} ctxModules=${Array.from(ctx.modules || []).length} hotUpdateRoots=${angularHotUpdateRoots.length} (${angularHotUpdateRoots
 							.map((m) => m?.id ?? '(none)')
 							.slice(0, 8)
 							.join(', ')}${angularHotUpdateRoots.length > 8 ? ', …' : ''})`,
@@ -6619,7 +6694,7 @@ export const piniaSymbol = p.piniaSymbol;
 				// The eviction set always includes importers so V8 re-fetches
 				// and re-binds them.
 				if (verbose) {
-					console.info(`[ns-hmr-diag][server] angularNeedsTransitive=${angularNeedsTransitive} (file=${path.basename(file)})`);
+					console.info(`[ns-hmr][server] angularNeedsTransitive=${angularNeedsTransitive} (file=${path.basename(file)})`);
 				}
 
 				let transitiveImporters: TransitiveImporterModuleLike[] = [];
@@ -6631,7 +6706,7 @@ export const piniaSymbol = p.piniaSymbol;
 					});
 					if (verbose) {
 						console.info(
-							`[ns-hmr-diag][server] transitiveImporters count=${transitiveImporters.length} firstN=`,
+							`[ns-hmr][server] transitiveImporters count=${transitiveImporters.length} firstN=`,
 							transitiveImporters.slice(0, 16).map((m) => m?.id ?? '(none)'),
 						);
 					}
@@ -6747,7 +6822,7 @@ export const piniaSymbol = p.piniaSymbol;
 						});
 					} catch (error) {
 						if (verbose) {
-							console.warn('[ns-hmr-diag][server] eviction set computation failed', error);
+							console.warn('[ns-hmr][server] eviction set computation failed', error);
 						}
 					}
 
@@ -6758,9 +6833,9 @@ export const piniaSymbol = p.piniaSymbol;
 							const containsRelatedTs = evictPaths.some((u) => u.endsWith(tsRel));
 							const containsRelatedJs = evictPaths.some((u) => u.endsWith(jsRel));
 							const sample = evictPaths.slice(0, 32);
-							console.info(`[ns-hmr-diag][server] evict-set count=${evictPaths.length} importerEntry=${bootstrapEntryRel ?? '(none)'} containsRelatedTs=${containsRelatedTs} containsRelatedJs=${containsRelatedJs} firstN=`, sample);
+							console.info(`[ns-hmr][server] evict-set count=${evictPaths.length} importerEntry=${bootstrapEntryRel ?? '(none)'} containsRelatedTs=${containsRelatedTs} containsRelatedJs=${containsRelatedJs} firstN=`, sample);
 							if (evictPaths.length > sample.length) {
-								console.info(`[ns-hmr-diag][server] evict-set hidden=${evictPaths.length - sample.length} (showed first ${sample.length})`);
+								console.info(`[ns-hmr][server] evict-set hidden=${evictPaths.length - sample.length} (showed first ${sample.length})`);
 							}
 						} catch {}
 					}
