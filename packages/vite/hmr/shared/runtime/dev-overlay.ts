@@ -13,6 +13,19 @@ type HmrOverlayTone = 'info' | 'warn' | 'error' | 'success';
 // and the dev banner) without duplicating the view-construction code.
 type HmrOverlayMode = 'hidden' | 'boot' | 'connection' | 'update';
 
+// Position controls where the live (connection / update) overlay
+// renders. 'top' / 'bottom' produce a "toast"-style chip that slides
+// in from the nearest screen edge, sits inside the safe area, and
+// uses a transparent backdrop so the rest of the app stays touchable.
+// 'center' preserves the full-screen-dim modal
+//
+// Configurable per-session via:
+//   globalThis.__NS_HMR_OVERLAY_POSITION__ = 'top' | 'bottom' | 'center';
+// or via the exported `setHmrDevOverlayPosition()` helper.
+export type HmrOverlayPosition = 'top' | 'bottom' | 'center';
+
+const DEFAULT_OVERLAY_POSITION: HmrOverlayPosition = 'top';
+
 export type HmrBootStage = 'placeholder' | 'probing-origin' | 'loading-entry-runtime' | 'configuring-import-map' | 'loading-runtime-bridge' | 'loading-core-bridge' | 'preloading-style-scope' | 'installing-css' | 'importing-main' | 'waiting-for-app' | 'app-root-committed' | 'ready' | 'error';
 
 export type HmrConnectionStage = 'connecting' | 'reconnecting' | 'synchronizing' | 'offline' | 'healthy';
@@ -65,6 +78,12 @@ type LiveOverlayRefs = {
 	overlay: any;
 	titleLabel: any;
 	statusLabel: any;
+	// Previous visibility/position so we only fire the slide-in
+	// animation on hidden→visible transitions or when the position
+	// actually changes (avoids re-animating every progress tick
+	// inside a single HMR cycle).
+	wasVisible: boolean;
+	currentPosition: HmrOverlayPosition;
 };
 
 // iOS promotes the live/connection overlay to its own UIWindow so
@@ -78,6 +97,9 @@ type IosOverlayRefs = {
 	panel: any;
 	titleLabel: any;
 	statusLabel: any;
+	// See LiveOverlayRefs comment — same animation gating semantics.
+	wasVisible: boolean;
+	currentPosition: HmrOverlayPosition;
 };
 
 type HmrOverlayRuntimeState = {
@@ -136,6 +158,39 @@ const DEFAULT_SNAPSHOT: HmrOverlaySnapshot = {
 
 function getOverlayGlobal(): any {
 	return globalThis as any;
+}
+
+/**
+ * Resolve the configured live-overlay position.
+ *
+ * Reads `globalThis.__NS_HMR_OVERLAY_POSITION__` so a project can
+ * override the default at boot time (e.g. inside `app.ts` before the
+ * Vite session bootstraps). Falls back to 'top' which gives the
+ * toast-style chip with a slide-in animation and safe-area padding.
+ */
+export function getHmrDevOverlayPosition(): HmrOverlayPosition {
+	const g = getOverlayGlobal();
+	const stored = g.__NS_HMR_OVERLAY_POSITION__;
+	if (stored === 'top' || stored === 'bottom' || stored === 'center') {
+		return stored;
+	}
+	return DEFAULT_OVERLAY_POSITION;
+}
+
+/**
+ * Imperative setter for the live-overlay position. Re-applies the
+ * current snapshot so the change is visible without waiting for the
+ * next HMR cycle. Useful during dev to A/B between top/bottom/center
+ * without restarting the app.
+ */
+export function setHmrDevOverlayPosition(position: HmrOverlayPosition): void {
+	if (position !== 'top' && position !== 'bottom' && position !== 'center') {
+		return;
+	}
+	const g = getOverlayGlobal();
+	g.__NS_HMR_OVERLAY_POSITION__ = position;
+	const state = getRuntimeState();
+	applyRuntimeSnapshot(state.snapshot);
 }
 
 function getRuntimeState(): HmrOverlayRuntimeState {
@@ -734,9 +789,18 @@ function buildLiveOverlayView(snapshot: HmrOverlaySnapshot): Omit<LiveOverlayRef
 	overlay.height = '100%';
 	overlay.horizontalAlignment = 'stretch';
 	overlay.verticalAlignment = 'stretch';
+	// Toast mode lets touches reach the underlying app. We flip
+	// isUserInteractionEnabled in applySnapshotToLiveRefs based on
+	// the resolved position, but keep it false here as a safe default
+	// (the panel itself is purely informational).
+	try {
+		overlay.isUserInteractionEnabled = false;
+	} catch {}
 
 	const panel = new StackLayout();
 	panel.horizontalAlignment = 'center';
+	// Vertical alignment is overridden in applySnapshotToLiveRefs
+	// based on getHmrDevOverlayPosition(); 'middle' is the default
 	panel.verticalAlignment = 'middle';
 	panel.width = 320;
 	panel.margin = 24;
@@ -762,6 +826,8 @@ function buildLiveOverlayView(snapshot: HmrOverlaySnapshot): Omit<LiveOverlayRef
 		overlay,
 		titleLabel,
 		statusLabel,
+		wasVisible: false,
+		currentPosition: getHmrDevOverlayPosition(),
 	};
 	applySnapshotToLiveRefs(refs, snapshot);
 	return refs;
@@ -819,37 +885,52 @@ function ensureLiveOverlayRefs(snapshot: HmrOverlaySnapshot): LiveOverlayRefs | 
 	return state.liveRefs;
 }
 
-function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleLabel' | 'statusLabel'> | null, snapshot: HmrOverlaySnapshot): void {
+function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleLabel' | 'statusLabel'> & Partial<Pick<LiveOverlayRefs, 'wasVisible' | 'currentPosition'>>, snapshot: HmrOverlaySnapshot): void;
+function applySnapshotToLiveRefs(refs: null, snapshot: HmrOverlaySnapshot): void;
+function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot): void {
 	if (!refs) {
 		return;
 	}
 	// 'update' mode shares the live (in-tree) overlay chrome with
-	// 'connection'. Both render a centered panel inside the page;
-	// only the colours and text change with the snapshot's tone.
+	// 'connection'. Both render a small panel inside the page; only
+	// the colours, text, and (now) panel position change with the
+	// snapshot's tone and the configured overlay position.
 	const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
-	refs.overlay.visibility = visible ? 'visible' : 'collapse';
-	// Backdrop tints by tone:
-	//   error   → red wash (matches existing UX)
-	//   success → richer green wash; the previous 18% alpha was so
-	//             subtle on light app backgrounds that users couldn't
-	//             tell the overlay had even fired. 50% alpha keeps the
-	//             underlying app legible while making the apply event
-	//             unmistakable during the (often <300ms) cycle.
-	//   default → warm orange (existing connection-overlay look)
-	const overlayBg = snapshot.tone === 'error' ? '#b4181068' : snapshot.tone === 'success' ? '#1f883d80' : '#a1771683';
-	refs.overlay.backgroundColor = asColor(overlayBg);
+	const wasVisible = !!refs.wasVisible;
+	const position = getHmrDevOverlayPosition();
+	const previousPosition: HmrOverlayPosition = refs.currentPosition || position;
+	const isToast = position !== 'center';
+
 	refs.titleLabel.text = snapshot.title;
+	refs.statusLabel.text = formatStatusText(snapshot);
+
 	const textColor = snapshot.tone === 'error' ? '#b41810e6' : snapshot.tone === 'success' ? '#0e6e2fff' : '#563e3fb1';
 	refs.titleLabel.color = asColor(textColor);
-	refs.statusLabel.text = formatStatusText(snapshot);
 	refs.statusLabel.color = asColor(textColor);
+
+	// Backdrop tints (centered modal only). Toast modes use a fully
+	// transparent backdrop so the rest of the app stays visible AND
+	// reachable; the panel itself carries enough colour to stand out.
+	if (isToast) {
+		refs.overlay.backgroundColor = asColor('transparent');
+	} else {
+		// Original wash-by-tone for centered:
+		//   error   → red wash (matches existing UX)
+		//   success → richer green wash so the apply event is visible
+		//             on bright app backgrounds
+		//   default → warm orange (existing connection-overlay look)
+		const overlayBg = snapshot.tone === 'error' ? '#b4181068' : snapshot.tone === 'success' ? '#1f883d80' : '#a1771683';
+		refs.overlay.backgroundColor = asColor(overlayBg);
+	}
+
+	// Panel chrome — toast and centered share the same chip look,
+	// just position differs. We keep the slightly richer green tint
+	// for the HMR success state so it pops without needing the
+	// backdrop wash.
+	let panel: any = null;
 	try {
-		const panel = refs.titleLabel.parent;
+		panel = refs.titleLabel.parent;
 		if (panel) {
-			// Slightly richer green-tinted panel for HMR-apply so the
-			// title/status text reads at a glance against the brighter
-			// backdrop wash. White panel for connection/error keeps
-			// existing UX intact.
 			const panelBg = snapshot.tone === 'success' ? '#E6F8E9FF' : '#FFFFFFFF';
 			panel.backgroundColor = asColor(panelBg);
 			panel.opacity = 1;
@@ -857,8 +938,129 @@ function applySnapshotToLiveRefs(refs: Pick<LiveOverlayRefs, 'overlay' | 'titleL
 			try {
 				panel.borderRadius = 12;
 			} catch {}
+
+			// Position-aware alignment. The wrapper GridLayout fills
+			// the page content area, which on iOS is already inside
+			// the safe area; we add a small extra margin so the chip
+			// doesn't kiss the notch / home indicator.
+			try {
+				if (position === 'top') {
+					panel.verticalAlignment = 'top';
+					panel.margin = '12 16 0 16';
+				} else if (position === 'bottom') {
+					panel.verticalAlignment = 'bottom';
+					panel.margin = '0 16 12 16';
+				} else {
+					panel.verticalAlignment = 'middle';
+					panel.margin = 24;
+				}
+			} catch {}
 		}
 	} catch {}
+
+	// Touch passthrough for toast; centered mode keeps the
+	// blocking modal so the dim backdrop is meaningful.
+	try {
+		refs.overlay.isUserInteractionEnabled = !isToast;
+	} catch {}
+
+	const positionChanged = previousPosition !== position;
+	const justAppeared = visible && (!wasVisible || positionChanged);
+	const justDismissed = !visible && wasVisible;
+
+	if (justAppeared) {
+		refs.overlay.visibility = 'visible';
+		if (isToast && panel && typeof panel.animate === 'function') {
+			animateLivePanelIn(panel, position);
+		} else if (panel) {
+			try {
+				panel.translateY = 0;
+				panel.opacity = 1;
+			} catch {}
+		}
+	} else if (justDismissed) {
+		if (isToast && panel && typeof panel.animate === 'function') {
+			animateLivePanelOut(panel, previousPosition, () => {
+				try {
+					refs.overlay.visibility = 'collapse';
+				} catch {}
+			});
+		} else {
+			refs.overlay.visibility = 'collapse';
+		}
+	} else {
+		refs.overlay.visibility = visible ? 'visible' : 'collapse';
+	}
+
+	if (typeof refs.wasVisible !== 'undefined') refs.wasVisible = visible;
+	if (typeof refs.currentPosition !== 'undefined') refs.currentPosition = position;
+}
+
+/**
+ * Slide-in animation for the in-tree toast panel.
+ *
+ * NativeScript's `View.animate({ translate, opacity, duration, curve })`
+ * is widely available across Core versions, so we don't depend on any
+ * specific curve enum being importable here. We use a moderate-to-snappy
+ * 320ms ease-out which feels close to a UIView spring without needing
+ * platform-specific APIs.
+ */
+function animateLivePanelIn(panel: any, position: HmrOverlayPosition): void {
+	if (!panel || typeof panel.animate !== 'function') return;
+	try {
+		const startY = position === 'bottom' ? 80 : -80;
+		panel.translateY = startY;
+		panel.opacity = 0;
+		const result = panel.animate({
+			translate: { x: 0, y: 0 },
+			opacity: 1,
+			duration: 320,
+			curve: 'easeOut',
+		});
+		if (result && typeof result.catch === 'function') {
+			result.catch(() => {
+				try {
+					panel.translateY = 0;
+					panel.opacity = 1;
+				} catch {}
+			});
+		}
+	} catch {
+		try {
+			panel.translateY = 0;
+			panel.opacity = 1;
+		} catch {}
+	}
+}
+
+function animateLivePanelOut(panel: any, position: HmrOverlayPosition, onComplete: () => void): void {
+	if (!panel || typeof panel.animate !== 'function') {
+		onComplete();
+		return;
+	}
+	try {
+		const targetY = position === 'bottom' ? 80 : -80;
+		const result = panel.animate({
+			translate: { x: 0, y: targetY },
+			opacity: 0,
+			duration: 220,
+			curve: 'easeIn',
+		});
+		const finish = () => {
+			try {
+				panel.translateY = 0;
+				panel.opacity = 1;
+			} catch {}
+			onComplete();
+		};
+		if (result && typeof result.then === 'function') {
+			result.then(finish, finish);
+		} else {
+			finish();
+		}
+	} catch {
+		onComplete();
+	}
 }
 
 // pure helpers for iOS window promotion. Factored out so the layout
@@ -897,10 +1099,19 @@ export type IosOverlayLayout = {
 /**
  * Layout math for the live overlay when it runs inside its own UIWindow.
  * Pure, deterministic and independent of UIKit so we can verify the rules
- * (max panel width, centered placement, safe-area clamping, sane defaults)
- * from tests.
+ * (max panel width, position-aware placement, safe-area clamping, sane
+ * defaults) from tests.
+ *
+ * `position` controls where the panel sits vertically:
+ *   - 'top':    hugs `safeInsets.top + toastVerticalInset` so the chip
+ *               sits just below the notch / Dynamic Island.
+ *   - 'bottom': hugs `viewHeight - safeInsets.bottom - panelHeight -
+ *               toastVerticalInset` so the chip sits just above the
+ *               home indicator / nav bar.
+ *   - 'center': original modal placement (vertically centered, clamped
+ *               so it never crosses the top safe-area inset).
  */
-export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: number; safeInsets?: IosSafeInsets | null; titleHeight: number; statusHeight: number; maxPanelWidth?: number; horizontalMargin?: number; panelPadding?: number; interLabelSpacing?: number; minTopInset?: number }): IosOverlayLayout {
+export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: number; safeInsets?: IosSafeInsets | null; titleHeight: number; statusHeight: number; maxPanelWidth?: number; horizontalMargin?: number; panelPadding?: number; interLabelSpacing?: number; minTopInset?: number; position?: HmrOverlayPosition; toastVerticalInset?: number }): IosOverlayLayout {
 	const viewWidth = Math.max(0, Number(input.viewWidth) || 0);
 	const viewHeight = Math.max(0, Number(input.viewHeight) || 0);
 	const safeInsets: IosSafeInsets = {
@@ -916,6 +1127,15 @@ export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: 
 	const panelPadding = Math.max(0, Number(input.panelPadding ?? 16));
 	const interLabelSpacing = Math.max(0, Number(input.interLabelSpacing ?? 10));
 	const minTopInset = Math.max(0, Number(input.minTopInset ?? 20));
+	// Default to 'center' on the pure function so the existing
+	// snapshot/layout tests remain stable; the runtime call site
+	// (layoutIosOverlayRefs) reads the configured position from
+	// `getHmrDevOverlayPosition()` and forwards it explicitly.
+	const position: HmrOverlayPosition = input.position ?? 'center';
+	// Distance between the panel and the safe-area edge in toast
+	// modes. 8pt mirrors the typical iOS notification chip inset and
+	// keeps the chip from hugging the notch / home indicator.
+	const toastVerticalInset = Math.max(0, Number(input.toastVerticalInset ?? 8));
 
 	const available = Math.max(0, viewWidth - 2 * horizontalMargin - safeInsets.left - safeInsets.right);
 	const panelWidth = Math.min(maxPanelWidth, available);
@@ -924,9 +1144,25 @@ export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: 
 	const spacing = titleHeight > 0 && statusHeight > 0 ? interLabelSpacing : 0;
 	const panelHeight = panelPadding * 2 + titleHeight + spacing + statusHeight;
 	const panelX = Math.max(0, (viewWidth - panelWidth) / 2);
-	// Center vertically, but never cross the top safe-area inset (notch/Dynamic Island).
-	const centered = (viewHeight - panelHeight) / 2;
-	const panelY = Math.max(safeInsets.top + minTopInset, centered);
+
+	let panelY: number;
+	if (position === 'top') {
+		// Pin to the top safe-area inset (just below notch / Dynamic
+		// Island). Clamp non-negative for fully-NaN input.
+		panelY = Math.max(0, safeInsets.top + toastVerticalInset);
+	} else if (position === 'bottom') {
+		// Pin to the bottom safe-area inset (just above home indicator
+		// / nav bar). If the panel can't fit between the safe-area
+		// insets we fall back to the top safe-area edge so the chip is
+		// always visible (rather than getting clipped off-screen).
+		const desired = viewHeight - safeInsets.bottom - panelHeight - toastVerticalInset;
+		panelY = Math.max(safeInsets.top + minTopInset, desired);
+	} else {
+		// Center vertically, but never cross the top safe-area inset
+		// (notch/Dynamic Island). Original modal placement.
+		const centered = (viewHeight - panelHeight) / 2;
+		panelY = Math.max(safeInsets.top + minTopInset, centered);
+	}
 
 	return {
 		backdrop: { x: 0, y: 0, width: viewWidth, height: viewHeight },
@@ -1060,7 +1296,32 @@ function buildIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | nu
 		statusLabel.textColor = UIColor.darkGrayColor;
 		panel.addSubview(statusLabel);
 
-		return { window, controller, backdrop, panel, titleLabel, statusLabel };
+		// Subtle drop-shadow so the toast chip reads against light app
+		// content (white-on-white is invisible). The error / centered
+		// branches still get the dim backdrop, so the shadow is mostly
+		// a no-op for them — but it's a one-time setup.
+		try {
+			panel.layer.shadowColor = UIColor.blackColor.CGColor;
+			panel.layer.shadowOpacity = 0.18;
+			panel.layer.shadowRadius = 8;
+			panel.layer.shadowOffset = { width: 0, height: 2 };
+			panel.layer.masksToBounds = false;
+		} catch {}
+
+		// `wasVisible` / `currentPosition` are mutated by
+		// applySnapshotToIosRefs when the snapshot triggers a slide-in
+		// or slide-out. They start in the "hidden" state so the very
+		// first visible snapshot animates in cleanly.
+		return {
+			window,
+			controller,
+			backdrop,
+			panel,
+			titleLabel,
+			statusLabel,
+			wasVisible: false,
+			currentPosition: getHmrDevOverlayPosition(),
+		};
 	} catch (err) {
 		console.warn('[ns-hmr-overlay] iOS overlay construction failed:', (err as any)?.message || err);
 		return null;
@@ -1081,7 +1342,7 @@ function ensureIosOverlayRefs(state: HmrOverlayRuntimeState): IosOverlayRefs | n
 	return state.iosRefs;
 }
 
-function layoutIosOverlayRefs(refs: IosOverlayRefs): void {
+function layoutIosOverlayRefs(refs: IosOverlayRefs, position: HmrOverlayPosition): IosOverlayLayout | null {
 	try {
 		const bounds = refs.controller.view.bounds;
 		const viewWidth = Number(bounds?.size?.width) || 0;
@@ -1114,6 +1375,7 @@ function layoutIosOverlayRefs(refs: IosOverlayRefs): void {
 			maxPanelWidth,
 			horizontalMargin,
 			panelPadding,
+			position,
 		});
 
 		const toCgRect = (rect: IosRect) => ({
@@ -1125,8 +1387,122 @@ function layoutIosOverlayRefs(refs: IosOverlayRefs): void {
 		refs.panel.frame = toCgRect(layout.panel);
 		refs.titleLabel.frame = toCgRect(layout.title);
 		refs.statusLabel.frame = toCgRect(layout.status);
+		return layout;
 	} catch (err) {
 		console.warn('[ns-hmr-overlay] iOS overlay layout failed:', (err as any)?.message || err);
+		return null;
+	}
+}
+
+/**
+ * Slide-in animation for the iOS toast panel. Off-screen start frame
+ * lives just above (top) or below (bottom) the visible area; the panel
+ * snaps to its target frame with a spring so the motion feels physical
+ * without the heavy "settle" overshoot of a hard spring (damping 0.85
+ * lands quickly with a small overshoot).
+ */
+function animateIosPanelIn(refs: IosOverlayRefs, position: HmrOverlayPosition, layout: IosOverlayLayout): void {
+	const g = getOverlayGlobal();
+	const UIView = g?.UIView;
+	if (!UIView) return;
+	try {
+		const targetFrame = {
+			origin: { x: layout.panel.x, y: layout.panel.y },
+			size: { width: layout.panel.width, height: layout.panel.height },
+		};
+		// Off-screen start: distance includes a small fudge so the
+		// shadow blur tail isn't visible at t=0.
+		const startY = position === 'bottom' ? layout.backdrop.height + 24 : -(layout.panel.height + 24);
+		refs.panel.frame = {
+			origin: { x: layout.panel.x, y: startY },
+			size: { width: layout.panel.width, height: layout.panel.height },
+		};
+		refs.panel.alpha = 0;
+		try {
+			if (typeof UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion === 'function') {
+				UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(
+					0.42,
+					0,
+					0.85,
+					0.7,
+					0,
+					() => {
+						refs.panel.frame = targetFrame;
+						refs.panel.alpha = 1;
+					},
+					null,
+				);
+			} else if (typeof UIView.animateWithDurationAnimations === 'function') {
+				UIView.animateWithDurationAnimations(0.32, () => {
+					refs.panel.frame = targetFrame;
+					refs.panel.alpha = 1;
+				});
+			} else {
+				refs.panel.frame = targetFrame;
+				refs.panel.alpha = 1;
+			}
+		} catch {
+			refs.panel.frame = targetFrame;
+			refs.panel.alpha = 1;
+		}
+	} catch {}
+}
+
+/**
+ * Slide-out animation for the iOS toast panel. Mirrors animateIosPanelIn:
+ * the panel travels to the nearest off-screen edge while fading out so
+ * the dismissal still feels intentional even on fast HMR cycles.
+ */
+function animateIosPanelOut(refs: IosOverlayRefs, position: HmrOverlayPosition, onComplete: () => void): void {
+	const g = getOverlayGlobal();
+	const UIView = g?.UIView;
+	const currentFrame = refs.panel?.frame;
+	if (!UIView || !currentFrame) {
+		onComplete();
+		return;
+	}
+	try {
+		const bounds = refs.controller?.view?.bounds;
+		const viewHeight = Number(bounds?.size?.height) || 0;
+		const targetY = position === 'bottom' ? viewHeight + 24 : -(Number(currentFrame.size?.height) + 24);
+		const startFrame = currentFrame;
+		const targetFrame = {
+			origin: { x: Number(startFrame.origin?.x) || 0, y: targetY },
+			size: startFrame.size,
+		};
+		try {
+			if (typeof UIView.animateWithDurationDelayOptionsAnimationsCompletion === 'function') {
+				// UIViewAnimationOptionCurveEaseIn = 1 << 16 — accelerate
+				// out so the dismissal doesn't drag on screen.
+				UIView.animateWithDurationDelayOptionsAnimationsCompletion(
+					0.22,
+					0,
+					1 << 16,
+					() => {
+						refs.panel.frame = targetFrame;
+						refs.panel.alpha = 0;
+					},
+					() => onComplete(),
+				);
+			} else if (typeof UIView.animateWithDurationAnimationsCompletion === 'function') {
+				UIView.animateWithDurationAnimationsCompletion(
+					0.22,
+					() => {
+						refs.panel.frame = targetFrame;
+						refs.panel.alpha = 0;
+					},
+					() => onComplete(),
+				);
+			} else {
+				refs.panel.alpha = 0;
+				onComplete();
+			}
+		} catch {
+			refs.panel.alpha = 0;
+			onComplete();
+		}
+	} catch {
+		onComplete();
 	}
 }
 
@@ -1139,9 +1515,38 @@ function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: HmrOverla
 		// lazily (ensureIosOverlayRefs) and reused for the lifetime of
 		// the dev session.
 		const visible = snapshot.visible && (snapshot.mode === 'connection' || snapshot.mode === 'update');
-		refs.window.hidden = !visible;
-		if (!visible) return true;
+		const wasVisible = !!refs.wasVisible;
+		const position = getHmrDevOverlayPosition();
+		const previousPosition = refs.currentPosition;
+		const isToast = position !== 'center';
 
+		// Touches pass through the overlay window in toast mode so
+		// the user can keep tapping the app while the HMR chip is
+		// shown. In centered mode we keep the blocking
+		// behaviour (the dim backdrop is itself a hint to wait).
+		try {
+			refs.window.userInteractionEnabled = !isToast;
+		} catch {}
+
+		if (!visible) {
+			// Animate out before hiding the window so the dismissal
+			// has a discoverable motion. Only animate when previously
+			// visible and in toast mode — centered modal hides instantly.
+			if (wasVisible && isToast) {
+				animateIosPanelOut(refs, previousPosition, () => {
+					try {
+						refs.window.hidden = true;
+					} catch {}
+				});
+			} else {
+				refs.window.hidden = true;
+			}
+			refs.wasVisible = false;
+			refs.currentPosition = position;
+			return true;
+		}
+
+		refs.window.hidden = false;
 		refs.titleLabel.text = snapshot.title || '';
 		refs.statusLabel.text = formatStatusText(snapshot);
 
@@ -1156,9 +1561,6 @@ function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: HmrOverla
 					refs.panel.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(1, 0.96, 0.96, 1);
 					refs.titleLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.7, 0.1, 0.06, 1);
 					refs.statusLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.7, 0.1, 0.06, 0.9);
-					// Slightly stronger dimming on errors; users need to
-					// notice these.
-					refs.backdrop.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0, 0, 0, 0.35);
 				} else if (isSuccess) {
 					// Slightly more saturated green panel + dark-green
 					// text. The previous 0.94/0.99/0.95 background was
@@ -1169,23 +1571,48 @@ function applySnapshotToIosRefs(refs: IosOverlayRefs | null, snapshot: HmrOverla
 					refs.panel.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0.9, 0.97, 0.91, 1);
 					refs.titleLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.05, 0.43, 0.18, 1);
 					refs.statusLabel.textColor = UIColor.colorWithRedGreenBlueAlpha(0.05, 0.43, 0.18, 1);
-					// Bumped from 0.12 to 0.28. The 0.12 wash was so
-					// faint on bright app backgrounds that the overlay
-					// was effectively invisible during a fast cycle.
-					// 0.28 still keeps the app readable underneath but
-					// makes the HMR event visually unmistakable.
-					refs.backdrop.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0, 0.15, 0.05, 0.28);
 				} else {
 					// Default (info / warn) — existing connection look.
 					refs.panel.backgroundColor = UIColor.whiteColor;
 					refs.titleLabel.textColor = UIColor.blackColor;
 					refs.statusLabel.textColor = UIColor.darkGrayColor;
+				}
+
+				// Backdrop dims only in centered mode; toast mode keeps
+				// the rest of the app fully visible/usable. Errors get
+				// a slightly stronger dim in centered mode because the
+				// user MUST notice them.
+				if (isToast) {
+					refs.backdrop.backgroundColor = UIColor.clearColor;
+				} else if (isError) {
+					refs.backdrop.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0, 0, 0, 0.35);
+				} else if (isSuccess) {
+					refs.backdrop.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0, 0.15, 0.05, 0.28);
+				} else {
 					refs.backdrop.backgroundColor = UIColor.colorWithRedGreenBlueAlpha(0, 0, 0, 0.35);
 				}
 			} catch {}
 		}
 
-		layoutIosOverlayRefs(refs);
+		const layout = layoutIosOverlayRefs(refs, position);
+		// Slide-in animation only fires on the actual hidden→visible
+		// transition (or on a position swap — e.g. dev toggling top
+		// to bottom mid-cycle). Subsequent updates within the same
+		// visible cycle just refresh text/colours without re-animating.
+		const positionChanged = previousPosition !== position;
+		const justAppeared = !wasVisible || positionChanged;
+		if (justAppeared && isToast && layout) {
+			animateIosPanelIn(refs, position, layout);
+		} else if (justAppeared && !isToast) {
+			// Centered modal: ensure alpha is reset to 1 in case a
+			// previous toast-mode dismissal left it at 0.
+			try {
+				refs.panel.alpha = 1;
+			} catch {}
+		}
+
+		refs.wasVisible = true;
+		refs.currentPosition = position;
 		return true;
 	} catch (err) {
 		console.warn('[ns-hmr-overlay] iOS overlay apply failed:', (err as any)?.message || err);

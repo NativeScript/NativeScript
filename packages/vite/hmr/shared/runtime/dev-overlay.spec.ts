@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeIosOverlayLayout, computeIosOverlayWindowLevel, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, ensureHmrDevOverlayRuntimeInstalled, setHmrUpdateStage } from './dev-overlay.js';
+import { computeIosOverlayLayout, computeIosOverlayWindowLevel, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, ensureHmrDevOverlayRuntimeInstalled, getHmrDevOverlayPosition, setHmrDevOverlayPosition, setHmrUpdateStage } from './dev-overlay.js';
 
 describe('HMR dev overlay snapshots', () => {
 	afterEach(() => {
@@ -222,6 +222,147 @@ describe('iOS overlay layout', () => {
 			expect(rect.width).toBeGreaterThanOrEqual(0);
 			expect(rect.height).toBeGreaterThanOrEqual(0);
 		}
+	});
+});
+
+describe('iOS overlay layout — toast positions', () => {
+	const baseSafe = { top: 47, bottom: 34, left: 0, right: 0 };
+
+	it("position='top' pins the panel to safeInsets.top + toastVerticalInset", () => {
+		const layout = computeIosOverlayLayout({
+			viewWidth: 390,
+			viewHeight: 844,
+			safeInsets: baseSafe,
+			titleHeight: 20,
+			statusHeight: 36,
+			position: 'top',
+		});
+		// 47 (safe top) + 8 (default toastVerticalInset) = 55
+		expect(layout.panel.y).toBe(47 + 8);
+		// X stays centered horizontally — toast affects vertical only.
+		expect(layout.panel.x).toBe((390 - 340) / 2);
+	});
+
+	it("position='bottom' pins the panel above the home-indicator safe area", () => {
+		const layout = computeIosOverlayLayout({
+			viewWidth: 390,
+			viewHeight: 844,
+			safeInsets: baseSafe,
+			titleHeight: 20,
+			statusHeight: 36,
+			position: 'bottom',
+		});
+		// panelHeight = 16*2 + 20 + 10 + 36 = 98
+		// expected y = 844 - 34 (bottom safe) - 98 (panel) - 8 (inset) = 704
+		expect(layout.panel.y).toBe(844 - 34 - 98 - 8);
+	});
+
+	it("position='top' falls back to a non-negative y when safe insets are 0", () => {
+		const layout = computeIosOverlayLayout({
+			viewWidth: 390,
+			viewHeight: 844,
+			safeInsets: { top: 0, bottom: 0, left: 0, right: 0 },
+			titleHeight: 20,
+			statusHeight: 20,
+			position: 'top',
+		});
+		// 0 (safe top) + 8 (default toastVerticalInset) = 8
+		expect(layout.panel.y).toBe(8);
+	});
+
+	it("position='bottom' clamps to top safe-area + minTopInset on too-small viewports", () => {
+		// Tiny viewport where the bottom-anchored desired y would be
+		// negative — we must clamp to the top safe-area + minTopInset
+		// rather than tucking the panel off-screen.
+		const layout = computeIosOverlayLayout({
+			viewWidth: 390,
+			viewHeight: 100,
+			safeInsets: baseSafe,
+			titleHeight: 20,
+			statusHeight: 20,
+			position: 'bottom',
+		});
+		expect(layout.panel.y).toBeGreaterThanOrEqual(47 + 20);
+	});
+
+	it("position='center' (default) preserves the original centered layout", () => {
+		const layoutA = computeIosOverlayLayout({
+			viewWidth: 390,
+			viewHeight: 844,
+			safeInsets: baseSafe,
+			titleHeight: 20,
+			statusHeight: 36,
+			position: 'center',
+		});
+		const layoutB = computeIosOverlayLayout({
+			viewWidth: 390,
+			viewHeight: 844,
+			safeInsets: baseSafe,
+			titleHeight: 20,
+			statusHeight: 36,
+			// position omitted — must default to 'center' so existing
+			// callers (and the snapshot tests above) keep their
+			// behaviour.
+		});
+		expect(layoutA.panel.y).toBe(layoutB.panel.y);
+		const expectedHeight = 16 * 2 + 20 + 10 + 36;
+		expect(layoutA.panel.y).toBeCloseTo((844 - expectedHeight) / 2);
+	});
+
+	it('honors caller-supplied toastVerticalInset for tighter / looser chips', () => {
+		const layout = computeIosOverlayLayout({
+			viewWidth: 390,
+			viewHeight: 844,
+			safeInsets: baseSafe,
+			titleHeight: 20,
+			statusHeight: 20,
+			position: 'top',
+			toastVerticalInset: 24,
+		});
+		expect(layout.panel.y).toBe(47 + 24);
+	});
+});
+
+describe('HMR overlay position config', () => {
+	beforeEach(() => {
+		delete (globalThis as any).__NS_HMR_OVERLAY_POSITION__;
+		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
+		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+	});
+
+	afterEach(() => {
+		delete (globalThis as any).__NS_HMR_OVERLAY_POSITION__;
+		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
+		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+	});
+
+	it("defaults to 'top' so the centered modal does NOT obscure app UI", () => {
+		expect(getHmrDevOverlayPosition()).toBe('top');
+	});
+
+	it('reads a stored override from the global flag', () => {
+		(globalThis as any).__NS_HMR_OVERLAY_POSITION__ = 'bottom';
+		expect(getHmrDevOverlayPosition()).toBe('bottom');
+		(globalThis as any).__NS_HMR_OVERLAY_POSITION__ = 'center';
+		expect(getHmrDevOverlayPosition()).toBe('center');
+	});
+
+	it('falls back to the default when an unknown value is stored', () => {
+		(globalThis as any).__NS_HMR_OVERLAY_POSITION__ = 'left';
+		expect(getHmrDevOverlayPosition()).toBe('top');
+		(globalThis as any).__NS_HMR_OVERLAY_POSITION__ = 42;
+		expect(getHmrDevOverlayPosition()).toBe('top');
+	});
+
+	it('setHmrDevOverlayPosition updates the global and ignores invalid values', () => {
+		setHmrDevOverlayPosition('bottom');
+		expect((globalThis as any).__NS_HMR_OVERLAY_POSITION__).toBe('bottom');
+		setHmrDevOverlayPosition('center');
+		expect((globalThis as any).__NS_HMR_OVERLAY_POSITION__).toBe('center');
+		// Invalid input must NOT clobber a previously-set value, so a
+		// typo in dev code can't accidentally reset the position.
+		setHmrDevOverlayPosition('elsewhere' as any);
+		expect((globalThis as any).__NS_HMR_OVERLAY_POSITION__).toBe('center');
 	});
 });
 
