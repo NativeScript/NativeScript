@@ -1334,7 +1334,20 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		// Minimal process shim — populated with CLI --env.* flags at module load time.
 		// In production builds, Vite/Rollup replaces process.env.* statically.
 		// In HMR dev mode the code runs as-is on device, so we need the shim.
-		`if (typeof process === "undefined") { globalThis.process = { env: ${__processEnvJson} }; } else if (!process.env) { process.env = ${__processEnvJson}; }`,
+		//
+		// IMPORTANT: every check goes through `globalThis.process` (a member
+		// expression), NEVER bare `typeof process` (an identifier reference).
+		// bare identifier resolution
+		// against runtime-added global object properties is not reliable in
+		// V8 module scope. `globalThis.process` is unambiguous: it always
+		// reads the `process` property off the (single) global object.
+		//
+		// The shim is also strictly additive — it only initializes
+		// `globalThis.process` and `globalThis.process.env` if they are
+		// missing. App code that pre-populates `process.env` (e.g. an Azure
+		// App Configuration boot module) is preserved; we never overwrite a
+		// populated env with the bare `{ NODE_ENV: 'development' }` stub.
+		`if (typeof globalThis.process === "undefined" || globalThis.process === null) { globalThis.process = { env: ${__processEnvJson} }; } else if (!globalThis.process.env) { globalThis.process.env = ${__processEnvJson}; }`,
 		'const __ANDROID__ = globalThis.__ANDROID__ !== undefined ? globalThis.__ANDROID__ : false;',
 		'const __IOS__ = globalThis.__IOS__ !== undefined ? globalThis.__IOS__ : false;',
 		'const __VISIONOS__ = globalThis.__VISIONOS__ !== undefined ? globalThis.__VISIONOS__ : false;',
