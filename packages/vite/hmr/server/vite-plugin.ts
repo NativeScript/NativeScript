@@ -65,12 +65,19 @@ export function createNsDevSessionDescriptor(options: { projectRoot: string; req
 	const wsProtocol = options.secure ? 'wss' : 'ws';
 	const origin = `${protocol}://${options.requestHost}`;
 	const entryPathname = options.mainEntryPathname || resolveProjectMainEntryPath(options.projectRoot);
-	const mirroredEntryPathname = entryPathname.startsWith('/ns/m/') ? entryPathname : `/ns/m${entryPathname.startsWith('/') ? entryPathname : `/${entryPathname}`}`;
+	const canonicalEntryPathname = entryPathname.startsWith('/ns/m/') ? entryPathname : `/ns/m${entryPathname.startsWith('/') ? entryPathname : `/${entryPathname}`}`;
+	// Wrap the entry pathname in the `__ns_boot__/b1` boot tag so the
+	// dev server injects the boot-progress snippet (see
+	// `buildBootProgressSnippet`). The runtime's `CanonicalizeHttpUrlKey`
+	// strips the tag before keying the V8 module registry, so it's a
+	// pure request-time hint — boot and steady-state HMR URLs share
+	// cache identity.
+	const bootTaggedEntryPathname = `/ns/m/__ns_boot__/b1${canonicalEntryPathname.slice('/ns/m'.length)}`;
 
 	return {
 		sessionId: options.sessionId,
 		origin,
-		entryUrl: `${origin}${mirroredEntryPathname}`,
+		entryUrl: `${origin}${bootTaggedEntryPathname}`,
 		clientUrl: `${origin}/__ns_dev__/client`,
 		wsUrl: `${wsProtocol}://${options.requestHost}/ns-hmr`,
 		platform: options.platform,
@@ -293,7 +300,12 @@ function __nsBrowserRuntimeWaitForDelegation(startedAt) {
 	}
 	if (!__nsBrowserRuntimeDelegationWarningIssued && Date.now() - startedAt >= 10000) {
 		__nsBrowserRuntimeDelegationWarningIssued = true;
-		console.warn('[ns-browser-runtime-client] full HMR client did not confirm websocket readiness; keeping bootstrap fallback active');
+		// Verbose-only: the 10s threshold trips on every real Angular
+		// cold boot. The bootstrap fallback keeps running; the message
+		// is diagnostic, not actionable.
+		if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+			console.warn('[ns-browser-runtime-client] full HMR client did not confirm websocket readiness; keeping bootstrap fallback active');
+		}
 		__nsBrowserRuntimeClearDelegationTimer();
 		return;
 	}
@@ -407,7 +419,15 @@ if (!globalThis.__NS_HMR_BROWSER_RUNTIME_CLIENT_ACTIVE__) {
 		} else {
 			if (!__nsBrowserRuntimeBootWaitWarningIssued && Date.now() - __nsBrowserRuntimeBootWaitStartedAt >= 10000) {
 				__nsBrowserRuntimeBootWaitWarningIssued = true;
-				console.warn('[ns-browser-runtime-client] boot completion was not observed; full HMR client start is still pending');
+				// Verbose-only: real Angular cold boots routinely take
+				// 15-30s through importing-main. The poller keeps watching
+				// __NS_HMR_BOOT_COMPLETE__; until it flips this looks like
+				// an error to users but is purely informational.
+				// (No backticks: this script body is embedded in a template
+				// literal in vite-plugin.ts.)
+				if (__NS_BROWSER_RUNTIME_VERBOSE__) {
+					console.warn('[ns-browser-runtime-client] boot completion was not observed; full HMR client start is still pending');
+				}
 			}
 			setTimeout(__nsBrowserRuntimeWaitForBoot, 100);
 		}

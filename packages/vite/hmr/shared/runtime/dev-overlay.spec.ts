@@ -17,7 +17,11 @@ describe('HMR dev overlay snapshots', () => {
 		expect(snapshot.visible).toBe(true);
 		expect(snapshot.mode).toBe('boot');
 		expect(snapshot.phase).toContain('Importing the app entry');
-		expect(snapshot.progress).toBe(82);
+		// 2026-05-10: 'importing-main' base lowered from 82 → 30 so the bar
+		// has ~62 percentage points of visible motion during the long
+		// HTTP-module-load phase (the heartbeat + snippet then ratchet it up
+		// toward 92 before 'waiting-for-app' fires at 94).
+		expect(snapshot.progress).toBe(30);
 		expect(snapshot.detail).toContain('Attempt 2/6');
 	});
 
@@ -28,7 +32,7 @@ describe('HMR dev overlay snapshots', () => {
 		expect(snapshot.mode).toBe('connection');
 		expect(snapshot.progress).toBeNull();
 		expect(snapshot.tone).toBe('warn');
-		expect(snapshot.phase).toContain('Reconnecting');
+		expect(snapshot.phase).toContain('reconnect');
 	});
 
 	it('builds an explicit app-root-committed boot snapshot', () => {
@@ -92,6 +96,65 @@ describe('HMR dev overlay runtime API', () => {
 			mode: 'hidden',
 			badge: 'HMR',
 		});
+	});
+
+	// Regression guard for the 2026-05-10 monotonic-ratchet contract in
+	// `setBootStage`. Boot stages are *supposed* to fire in increasing
+	// order, but in practice the http-bootloader fallback (`entry-runtime.ts`)
+	// fires `installing-css` (70) before `importing-main`, while the new
+	// 'importing-main' base is 30. Without the ratchet the placeholder bar
+	// would visibly drop from 70 → 30 every cold boot, which the user reads
+	// as "the boot started over". The ratchet keeps the higher previous
+	// value AND lets the snippet/heartbeat continue climbing from there
+	// toward the 92 cap.
+	it('clamps a lower boot-stage progress to the previous value (monotonic ratchet)', () => {
+		const api = ensureHmrDevOverlayRuntimeInstalled(true);
+
+		api.setBootStage('installing-css', { detail: 'Applying app stylesheet' });
+		expect(api.getSnapshot().progress).toBe(70);
+
+		api.setBootStage('importing-main', { detail: '/src/main.ts' });
+		// 'importing-main' base is 30; ratchet preserves the previous 70.
+		expect(api.getSnapshot().progress).toBe(70);
+		// Phase still reflects the new stage so the user sees the right label.
+		expect(api.getSnapshot().phase).toContain('Importing the app entry');
+	});
+
+	it('lets a higher boot-stage progress overwrite a lower previous value', () => {
+		const api = ensureHmrDevOverlayRuntimeInstalled(true);
+
+		api.setBootStage('importing-main', { detail: '/src/main.ts' });
+		expect(api.getSnapshot().progress).toBe(30);
+
+		api.setBootStage('waiting-for-app', { detail: 'Waiting for the real app root' });
+		// 'waiting-for-app' base is 94 — strictly greater than the previous
+		// 30, so the ratchet allows it through unchanged.
+		expect(api.getSnapshot().progress).toBe(94);
+	});
+
+	it('lets the snippet/heartbeat ratchet `importing-main` past its base (explicit progress override)', () => {
+		const api = ensureHmrDevOverlayRuntimeInstalled(true);
+
+		api.setBootStage('importing-main', { detail: '/src/main.ts' });
+		expect(api.getSnapshot().progress).toBe(30);
+
+		// Simulate the heartbeat / inline snippet pushing the bar forward
+		// once the module count + elapsed-time formula has accumulated.
+		api.setBootStage('importing-main', { detail: 'Evaluated 80 modules\n/src/foo.ts', progress: 92 });
+		expect(api.getSnapshot().progress).toBe(92);
+	});
+
+	it('does not ratchet across modes (connection / update reset cleanly)', () => {
+		const api = ensureHmrDevOverlayRuntimeInstalled(true);
+
+		api.setBootStage('installing-css', { detail: 'Applying app stylesheet' });
+		expect(api.getSnapshot().progress).toBe(70);
+
+		// Switching to a connection snapshot is a fresh visual state — the
+		// ratchet must NOT carry the boot progress over.
+		api.setConnectionStage('reconnecting');
+		expect(api.getSnapshot().mode).toBe('connection');
+		expect(api.getSnapshot().progress).toBeNull();
 	});
 });
 

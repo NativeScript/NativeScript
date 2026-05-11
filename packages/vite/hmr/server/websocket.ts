@@ -277,14 +277,13 @@ function hoistTopLevelStaticImports(code: string): string {
 	return `${hoisted.join('\n')}\n${stripped.replace(/^\s*\n+/, '')}`;
 }
 
+// Duplicate of `websocket-served-module-helpers.ts::buildBootProgressSnippet`
+// — both copies must stay in lock-step. See the canonical doc there for
+// why the snippet must remain fully synchronous (top-level await on a
+// boot-tagged module trips the iOS 10 s async-module deadline).
 export function buildBootProgressSnippet(bootModuleLabel: string): string {
 	const normalizedLabel = JSON.stringify(String(bootModuleLabel || '').replace(/\\/g, '/'));
-	return [
-		`const __nsBootGlobal=globalThis;`,
-		`try{if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){const __nsBootApi=__nsBootGlobal.__NS_HMR_DEV_OVERLAY__;if(__nsBootApi&&typeof __nsBootApi.setBootStage==='function'){const __nsBootCount=(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0)+1);__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__=${normalizedLabel};const __nsBootNow=Date.now();const __nsBootLast=Number(__nsBootGlobal.__NS_HMR_BOOT_LAST_PROGRESS_AT__||0);if(__nsBootCount<=8||__nsBootCount%6===0||__nsBootNow-__nsBootLast>90){__nsBootGlobal.__NS_HMR_BOOT_LAST_PROGRESS_AT__=__nsBootNow;const __nsBootProgress=Math.min(94,82+Math.min(10,Math.round((Math.log(__nsBootCount+1)/Math.LN2)*2)));__nsBootApi.setBootStage('importing-main',{detail:'Evaluated '+__nsBootCount+' modules\\n'+__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__,attempt:Number(__nsBootGlobal.__NS_HMR_BOOT_MAIN_ATTEMPT__||1),attempts:Number(__nsBootGlobal.__NS_HMR_BOOT_MAIN_ATTEMPTS__||6),progress:__nsBootProgress});}}}}catch(__nsBootErr){}`,
-		`if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){const __nsBootCount=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0);if(__nsBootCount<=24||__nsBootCount%8===0){await new Promise((resolve)=>setTimeout(resolve,0));}}`,
-		'',
-	].join('\n');
+	return [`const __nsBootGlobal=globalThis;`, `try{if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0)+1;__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__=${normalizedLabel};}}catch(__nsBootErr){}`, ''].join('\n');
 }
 
 function rewriteVitePrebundleImportsForDevice(code: string, preserveVendorImports: boolean): string {

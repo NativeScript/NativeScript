@@ -34,6 +34,7 @@ function prepareBootImportProgress(url: string, attempt: number, attempts: numbe
 	g.__NS_HMR_BOOT_MAIN_ATTEMPTS__ = attempts;
 	g.__NS_HMR_BOOT_MODULE_COUNT__ = 0;
 	g.__NS_HMR_BOOT_LAST_MODULE__ = '';
+	g.__NS_HMR_BOOT_LAST_PROGRESS__ = 0;
 	g.__NS_HMR_BOOT_LAST_PROGRESS_AT__ = 0;
 	g.__NS_HMR_BOOT_IMPORT_STARTED_AT__ = Date.now();
 }
@@ -45,6 +46,7 @@ function clearBootImportProgress(): void {
 	delete g.__NS_HMR_BOOT_MAIN_ATTEMPTS__;
 	delete g.__NS_HMR_BOOT_MODULE_COUNT__;
 	delete g.__NS_HMR_BOOT_LAST_MODULE__;
+	delete g.__NS_HMR_BOOT_LAST_PROGRESS__;
 	delete g.__NS_HMR_BOOT_LAST_PROGRESS_AT__;
 	delete g.__NS_HMR_BOOT_IMPORT_STARTED_AT__;
 }
@@ -58,25 +60,44 @@ function buildBootImportDetail(url: string): string {
 	return lines.join('\n');
 }
 
+// Inlined copy of `boot-progress.ts::computeBootImportProgress` +
+// `applyMonotonicBootProgress`. This file is the device-side entry
+// runtime for the http-bootloader fallback path; relative imports from
+// `shared/runtime/` would cross the runtime boundary and slow
+// first-byte. Keep the formula in sync with `boot-progress.ts` —
+// `boot-progress.spec.ts` pins the canonical values.
 function computeBootImportProgress(): number {
 	const g = globalThis as any;
 	const count = Number(g.__NS_HMR_BOOT_MODULE_COUNT__ || 0);
 	const startedAt = Number(g.__NS_HMR_BOOT_IMPORT_STARTED_AT__ || Date.now());
 	const elapsedMs = Math.max(0, Date.now() - startedAt);
-	const progressFromCount = count > 0 ? Math.min(10, Math.round((Math.log(count + 1) / Math.LN2) * 2)) : 0;
-	const progressFromTime = Math.min(8, Math.floor(elapsedMs / 800));
-	return Math.min(94, 82 + Math.max(progressFromCount, progressFromTime));
+	const progressFromCount = Math.min(40, Math.floor(count / 2));
+	const progressFromTime = Math.min(62, Math.floor(elapsedMs / 250));
+	const candidate = Math.min(94, 30 + Math.min(62, progressFromCount + progressFromTime));
+	const previousRaw = g.__NS_HMR_BOOT_LAST_PROGRESS__;
+	const previous = typeof previousRaw === 'number' && Number.isFinite(previousRaw) ? previousRaw : 0;
+	const next = Math.max(previous, candidate);
+	try {
+		g.__NS_HMR_BOOT_LAST_PROGRESS__ = next;
+	} catch {}
+	return next;
 }
 
 function startBootImportHeartbeat(url: string, attempt: number, attempts: number): () => void {
+	// 250 ms cadence matches `session-bootstrap.ts::startBootImportHeartbeat`
+	// so both boot paths feel equally responsive.
 	const timer = setInterval(() => {
+		const g = globalThis as any;
+		if (g.__NS_HMR_BOOT_COMPLETE__) {
+			return;
+		}
 		updateBootOverlay('importing-main', {
 			detail: buildBootImportDetail(url),
 			attempt,
 			attempts,
 			progress: computeBootImportProgress(),
 		});
-	}, 350);
+	}, 250);
 
 	return () => clearInterval(timer);
 }

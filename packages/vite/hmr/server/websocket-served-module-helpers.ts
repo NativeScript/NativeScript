@@ -83,14 +83,27 @@ export function hoistTopLevelStaticImports(code: string): string {
 	return `${hoisted.join('\n')}\n${stripped.replace(/^\s*\n+/, '')}`;
 }
 
+// Boot-progress instrumentation snippet (server-side string-only).
+//
+// Injected at the top of every `__ns_boot__/b1`-tagged module the dev
+// server serves during cold boot. The snippet is FULLY SYNCHRONOUS —
+// even one conditional top-level `await` would mark the module async
+// in V8, propagating an async-promise chain through the entire boot
+// graph and tripping the iOS 10 s top-level-await deadline (see
+// `ModuleInternal.mm::pumpAsyncProgress`). It just bumps the
+// `__NS_HMR_BOOT_MODULE_COUNT__` / `__NS_HMR_BOOT_LAST_MODULE__`
+// globals; the 250 ms heartbeat in `session-bootstrap.ts` owns
+// `setBootStage` and runs `boot-progress.ts::computeBootImportProgress`
+// against those counters plus elapsed wall-clock to drive the bar.
+// The iOS runtime's `MaybePumpJSThreadDuringBoot` keeps the JS-thread
+// CFRunLoop ticking between sync fetches so the heartbeat can fire
+// during the otherwise-blocking cold-boot module walk.
+//
+// Regression-tested by `websocket-integrity.spec.ts` (snippet stays
+// fully synchronous + propagates exactly via the boot-tag prefix).
 export function buildBootProgressSnippet(bootModuleLabel: string): string {
 	const normalizedLabel = JSON.stringify(String(bootModuleLabel || '').replace(/\\/g, '/'));
-	return [
-		`const __nsBootGlobal=globalThis;`,
-		`try{if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){const __nsBootApi=__nsBootGlobal.__NS_HMR_DEV_OVERLAY__;if(__nsBootApi&&typeof __nsBootApi.setBootStage==='function'){const __nsBootCount=(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0)+1);__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__=${normalizedLabel};const __nsBootNow=Date.now();const __nsBootLast=Number(__nsBootGlobal.__NS_HMR_BOOT_LAST_PROGRESS_AT__||0);if(__nsBootCount<=8||__nsBootCount%6===0||__nsBootNow-__nsBootLast>90){__nsBootGlobal.__NS_HMR_BOOT_LAST_PROGRESS_AT__=__nsBootNow;const __nsBootProgress=Math.min(94,82+Math.min(10,Math.round((Math.log(__nsBootCount+1)/Math.LN2)*2)));__nsBootApi.setBootStage('importing-main',{detail:'Evaluated '+__nsBootCount+' modules\\n'+__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__,attempt:Number(__nsBootGlobal.__NS_HMR_BOOT_MAIN_ATTEMPT__||1),attempts:Number(__nsBootGlobal.__NS_HMR_BOOT_MAIN_ATTEMPTS__||6),progress:__nsBootProgress});}}}}catch(__nsBootErr){}`,
-		`if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){const __nsBootCount=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0);if(__nsBootCount<=24||__nsBootCount%8===0){await new Promise((resolve)=>setTimeout(resolve,0));}}`,
-		'',
-	].join('\n');
+	return [`const __nsBootGlobal=globalThis;`, `try{if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0)+1;__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__=${normalizedLabel};}}catch(__nsBootErr){}`, ''].join('\n');
 }
 
 export function stripCoreGlobalsImports(code: string): string {

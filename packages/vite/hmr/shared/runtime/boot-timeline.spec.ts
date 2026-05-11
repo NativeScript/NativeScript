@@ -21,6 +21,36 @@ describe('boot-timeline', () => {
 			expect(line).toBe('[ns-boot] ok total=1345ms session=42ms importMap=77ms native=1200ms');
 		});
 
+		it('renders the kickstart segment between importMap and native when present', () => {
+			const trace: BootTrace = {
+				t0: 1000,
+				t1: 8000,
+				session: { ok: true, ms: 42 },
+				importMap: { ok: true, ms: 77 },
+				kickstart: { ok: true, ms: 4500, meta: { fetched: 1850 } },
+				native: { ok: true, ms: 2200 },
+			};
+
+			const line = formatBootTimeline(trace);
+
+			expect(line).toBe('[ns-boot] ok total=7000ms session=42ms importMap=77ms kickstart=4500ms native=2200ms');
+		});
+
+		it('omits the kickstart segment when no kickstart ran (older runtime / soft-fail)', () => {
+			const trace: BootTrace = {
+				t0: 1000,
+				t1: 32000,
+				session: { ok: true, ms: 42 },
+				importMap: { ok: true, ms: 77 },
+				native: { ok: true, ms: 30000 },
+			};
+
+			const line = formatBootTimeline(trace);
+
+			expect(line).toBe('[ns-boot] ok total=31000ms session=42ms importMap=77ms native=30000ms');
+			expect(line).not.toContain('kickstart=');
+		});
+
 		it('omits segments whose ms is missing', () => {
 			const trace: BootTrace = {
 				t0: 1000,

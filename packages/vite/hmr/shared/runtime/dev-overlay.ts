@@ -323,7 +323,11 @@ export function createBootOverlaySnapshot(stage: HmrBootStage, info?: HmrOverlay
 			badge: 'BOOT',
 			title: BOOT_TITLE,
 			phase: 'Importing the app entry',
-			progress: 82,
+			// 30 (not 82) so the bar visibly climbs the ~62 points the
+			// heartbeat + snippet drive during the long HTTP-module-load
+			// phase. The monotonic ratchet in `setBootStage` prevents
+			// earlier-but-higher stages from being clobbered.
+			progress: 30,
 			busy: true,
 			blocking: true,
 			tone: 'info',
@@ -1752,7 +1756,17 @@ function createOverlayApi(): HmrOverlayApi {
 			const state = getRuntimeState();
 			clearUpdateAutoHideTimer(state);
 			state.updateCycleStartedAt = 0;
-			return applyRuntimeSnapshot(createBootOverlaySnapshot(stage, info));
+			const next = createBootOverlaySnapshot(stage, info);
+			// Monotonic boot-progress ratchet: boot stages can fire out of
+			// order across boot paths (native `__nsStartDevSession` vs the
+			// http-bootloader fallback) and individual bases were tuned
+			// independently, so clamp boot→boot transitions to never go
+			// backwards. Non-boot snapshots (error/ready) bypass — they
+			// genuinely want to reset the visual.
+			if (next.mode === 'boot' && state.snapshot.mode === 'boot' && typeof next.progress === 'number' && typeof state.snapshot.progress === 'number' && next.progress < state.snapshot.progress) {
+				next.progress = state.snapshot.progress;
+			}
+			return applyRuntimeSnapshot(next);
 		},
 		setConnectionStage(stage: HmrConnectionStage, info?: HmrOverlayStageInfo) {
 			const state = getRuntimeState();

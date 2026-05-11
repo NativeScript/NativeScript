@@ -21,6 +21,11 @@ export type BootTrace = {
 	t1?: number;
 	session?: BootTraceSegment;
 	importMap?: BootTraceSegment;
+	// Optional: omitted when the runtime doesn't expose
+	// `__nsKickstartHmrPrefetch` or a thrown error degraded to V8's
+	// normal sync walk (so the timeline reads "no kickstart" rather than
+	// "0 ms").
+	kickstart?: BootTraceSegment;
 	native?: BootTraceSegment;
 	error?: { message: string };
 };
@@ -53,6 +58,7 @@ export function formatBootTimeline(trace: BootTrace): string {
 
 	push('session', trace.session);
 	push('importMap', trace.importMap);
+	push('kickstart', trace.kickstart);
 	push('native', trace.native);
 
 	const suffix = trace.error?.message ? `: ${trace.error.message}` : '';

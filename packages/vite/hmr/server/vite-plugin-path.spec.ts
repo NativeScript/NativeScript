@@ -82,7 +82,14 @@ describe('createNsDevSessionDescriptor', () => {
 		expect(descriptor).toEqual({
 			sessionId: 'session-123',
 			origin: 'http://192.168.1.5:5173',
-			entryUrl: 'http://192.168.1.5:5173/ns/m/src/main.ts',
+			// The entry URL is wrapped in the `__ns_boot__/b1` boot tag so the
+			// dev server injects the boot-progress snippet on cold boot. The
+			// runtime canonicalizer strips the tag before keying the module
+			// registry, so the URL still shares cache identity with the
+			// steady-state HMR form `/ns/m/src/main.ts` — see the `Step 1`
+			// comment in `rewriteNsMImportPathForHmr` and the docstring on
+			// `createNsDevSessionDescriptor`.
+			entryUrl: 'http://192.168.1.5:5173/ns/m/__ns_boot__/b1/src/main.ts',
 			clientUrl: 'http://192.168.1.5:5173/__ns_dev__/client',
 			wsUrl: 'ws://192.168.1.5:5173/ns-hmr',
 			platform: 'ios',
@@ -106,11 +113,28 @@ describe('createNsDevSessionDescriptor', () => {
 		});
 
 		expect(descriptor.origin).toBe('https://dev.example.com:8443');
-		expect(descriptor.entryUrl).toBe('https://dev.example.com:8443/ns/m/src/app.ts');
+		expect(descriptor.entryUrl).toBe('https://dev.example.com:8443/ns/m/__ns_boot__/b1/src/app.ts');
 		expect(descriptor.clientUrl).toBe('https://dev.example.com:8443/__ns_dev__/client');
 		expect(descriptor.wsUrl).toBe('wss://dev.example.com:8443/ns-hmr');
 		expect(descriptor.runtimeConfigUrl).toBe('https://dev.example.com:8443/ns/import-map.json');
 		expect(descriptor.platform).toBe('visionos');
+	});
+
+	it('preserves the boot-tag wrapper when the caller passes a fully-qualified /ns/m/ entry pathname', () => {
+		// Some callers (e.g. legacy custom shims) construct the canonical
+		// /ns/m/<rel> mirror themselves before handing it in. We still want
+		// the boot tag applied so the cold-boot snippet propagates; the
+		// `slice('/ns/m'.length)` math has to insert the tag in front of
+		// the existing /ns/m segment without doubling it.
+		const descriptor = createNsDevSessionDescriptor({
+			projectRoot: '/Users/test/app',
+			requestHost: 'localhost:5173',
+			platform: 'ios',
+			sessionId: 'session-789',
+			mainEntryPathname: '/ns/m/src/entrypoints/main.ts',
+		});
+
+		expect(descriptor.entryUrl).toBe('http://localhost:5173/ns/m/__ns_boot__/b1/src/entrypoints/main.ts');
 	});
 });
 
