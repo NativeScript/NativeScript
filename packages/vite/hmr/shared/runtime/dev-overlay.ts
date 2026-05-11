@@ -1,3 +1,5 @@
+import { BOOT_PLACEHOLDER_MOTION, computeBootProgressFillScale, formatBootDetailLine, formatBootPrimaryLine } from './boot-placeholder-ui.js';
+
 // 'success' tone for in-progress HMR applies. The boot/error overlays
 // already use 'info'/'warn'/'error'; 'success' is the calm green that
 // signals "things are happening correctly right now" without competing
@@ -725,10 +727,32 @@ function findBootStatusLabel(): any {
 	return null;
 }
 
+function findBootDetailLabel(): any {
+	const g = getOverlayGlobal();
+	return g.__NS_DEV_BOOT_DETAIL_LABEL__ || null;
+}
+
+function findBootProgressFill(): any {
+	const g = getOverlayGlobal();
+	return g.__NS_DEV_BOOT_PROGRESS_FILL__ || null;
+}
+
 function updateBootStatusLabel(snapshot: HmrOverlaySnapshot): void {
-	const newText = formatStatusText(snapshot) || 'Preparing the HTTP HMR bootstrap (4%)';
 	const statusLabel = findBootStatusLabel();
+	const detailLabel = findBootDetailLabel();
+	const progressFill = findBootProgressFill();
 	const activityIndicator = findBootActivityIndicator();
+
+	// New (card) layout: phase line + detail line live in separate
+	// labels so the typography can differ. Legacy (single-label)
+	// layout: keep the original combined "phase (X%)\ndetail" text so
+	// nothing visually regresses for runtimes still attached to the
+	// older placeholder shape.
+	const hasSplitLabels = !!detailLabel;
+	const phaseLine = formatBootPrimaryLine(snapshot);
+	const detailLine = formatBootDetailLine(snapshot);
+	const combinedText = formatStatusText(snapshot) || 'Preparing the HTTP HMR bootstrap (4%)';
+
 	if (!statusLabel) {
 		if (activityIndicator) {
 			try {
@@ -736,11 +760,17 @@ function updateBootStatusLabel(snapshot: HmrOverlaySnapshot): void {
 				activityIndicator.visibility = snapshot.visible && snapshot.mode === 'boot' && snapshot.busy ? 'visible' : 'collapse';
 			} catch {}
 		}
+		applyBootProgressFill(progressFill, snapshot);
 		return;
 	}
+
 	try {
-		statusLabel.text = newText;
-		statusLabel.color = asColor(snapshot.tone === 'error' ? '#b41810e6' : '#563e3fb1');
+		statusLabel.text = hasSplitLabels ? phaseLine || 'Preparing the HTTP HMR bootstrap' : combinedText;
+		// Card layout uses the calibrated phase-text colour from the
+		// palette; legacy single-label layout keeps the original muted
+		// brown so we don't visually regress mid-session.
+		const phaseColorHex = snapshot.tone === 'error' ? '#B91C1C' : hasSplitLabels ? '#475569' : '#563e3fb1';
+		statusLabel.color = asColor(phaseColorHex);
 		if (typeof statusLabel.requestLayout === 'function') {
 			statusLabel.requestLayout();
 		}
@@ -749,11 +779,63 @@ function updateBootStatusLabel(snapshot: HmrOverlaySnapshot): void {
 			parent.requestLayout();
 		}
 	} catch {}
+
+	if (detailLabel) {
+		try {
+			detailLabel.text = detailLine;
+			detailLabel.color = asColor(snapshot.tone === 'error' ? '#DC2626' : '#94A3B8');
+			detailLabel.visibility = detailLine ? 'visible' : 'collapse';
+		} catch {}
+	}
+
+	applyBootProgressFill(progressFill, snapshot);
+
 	if (activityIndicator) {
 		try {
 			activityIndicator.busy = !!snapshot.busy;
 			activityIndicator.visibility = snapshot.visible && snapshot.mode === 'boot' && snapshot.busy ? 'visible' : 'collapse';
 		} catch {}
+	}
+}
+
+// Drive the progress fill scaleX from the snapshot. Uses NS's view
+// animate API for a smooth 220 ms easeOut between heartbeat ticks; a
+// monotonic ratchet on `globalThis.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__`
+// guards against the fill snapping backwards if a less-progressed
+// snapshot ever lands between ticks (mirrors the JS-side
+// `applyMonotonicBootProgress` contract).
+function applyBootProgressFill(progressFill: any, snapshot: HmrOverlaySnapshot): void {
+	if (!progressFill) return;
+	const g = getOverlayGlobal();
+	const isError = snapshot.tone === 'error';
+	progressFill.backgroundColor = asColor(isError ? '#B41810' : '#3B6FE5');
+	const targetScale = computeBootProgressFillScale(snapshot.progress ?? null);
+	const previousRaw = Number(g.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__);
+	const previous = Number.isFinite(previousRaw) ? previousRaw : 0;
+	const next = Math.max(previous, targetScale);
+	g.__NS_DEV_BOOT_PROGRESS_LAST_SCALE__ = next;
+	try {
+		// NS view.animate scales around `originX`/`originY`; the
+		// placeholder builder pins `originX = 0` so the fill grows
+		// rightward. animate() may be unavailable in some headless
+		// test environments — fall through to a direct property set.
+		if (typeof progressFill.animate === 'function') {
+			progressFill
+				.animate({
+					scale: { x: next, y: 1 },
+					duration: BOOT_PLACEHOLDER_MOTION.progressDurationMs,
+					curve: 'easeOut',
+				})
+				.catch(() => {
+					try {
+						progressFill.scaleX = next;
+					} catch {}
+				});
+		} else {
+			progressFill.scaleX = next;
+		}
+	} catch {
+		progressFill.scaleX = next;
 	}
 }
 
