@@ -39,6 +39,7 @@ import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
+import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion, type GraphUpsertClassification } from './websocket-graph-upsert.js';
 import { classifyBootRoute, classifyHmrUpdateKind, createColdBootRequestCounter, formatHmrUpdateSummary, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
@@ -82,6 +83,7 @@ export { rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 // without churn while the implementation lives in a focused module.
 export { formatNsMHmrServeTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
 export { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, createSharedTransformRequestRunner, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion };
+export { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 export type { CoreExportOrigin, GraphUpsertClassification, HotUpdateGraphModuleLike, ParsedCoreBridgeRequest, PendingAngularReloadSuppressionEntry, SharedTransformRequestRunner, SharedTransformRequestRunnerOptions, TransitiveImporterModuleLike };
 
 const pluginTransformTypescript: any = (() => {
@@ -6444,6 +6446,52 @@ export const piniaSymbol = p.piniaSymbol;
 			}
 
 			const root = server.config.root || process.cwd();
+
+			// CSS hot-update — handled BEFORE the project-scope filter
+			// because workspace `@import` deps live outside `<root>/`.
+			// The helper maps in-scope edits to their own path and
+			// out-of-scope edits to `app.css` (Vite re-runs PostCSS
+			// through the `@import` chain on the next fetch).
+			if (file.endsWith('.css')) {
+				const cssPaths = collectCssHotUpdatePaths({
+					file,
+					root,
+					appRootDir: APP_ROOT_DIR,
+					appEntryCss: path.resolve(root, APP_ROOT_DIR, 'app.css'),
+				});
+				if (cssPaths.length > 0) {
+					updateMetrics.tAfterFramework = Date.now();
+					try {
+						const origin = getServerOrigin(server);
+						const timestamp = Date.now();
+						const msg = {
+							type: 'ns:css-updates',
+							origin,
+							updates: cssPaths.map((cssPath) => ({
+								type: 'css-update',
+								path: cssPath,
+								acceptedPath: cssPath,
+								timestamp,
+							})),
+						};
+
+						wss.clients.forEach((client) => {
+							if (isSocketClientOpen(client)) {
+								client.send(JSON.stringify(msg));
+								updateMetrics.recipients += 1;
+							}
+						});
+					} catch (error) {
+						console.warn('[hmr-ws] CSS update failed:', error);
+					}
+					if (verbose) console.log(`[hmr-ws] Hot update for: ${file} → broadcast CSS paths: ${cssPaths.join(', ')}`);
+					emitHmrUpdateSummary();
+					return;
+				}
+				// CSS without a broadcast target (no appEntryCss
+				// configured) — fall through to the scope filter.
+			}
+
 			const srcDir = `${root}/src`;
 			const coreDir = `${root}/core`;
 			const appDir = `${root}/${APP_ROOT_DIR}`;
@@ -6453,39 +6501,6 @@ export const piniaSymbol = p.piniaSymbol;
 			const shouldIgnore = !(inSrcOrCore || inApp);
 			if (shouldIgnore) return;
 			if (verbose) console.log(`[hmr-ws] Hot update for: ${file}`);
-
-			// Handle CSS updates
-			if (file.endsWith('.css')) {
-				updateMetrics.tAfterFramework = Date.now();
-				try {
-					let rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
-
-					const origin = getServerOrigin(server);
-					const msg = {
-						type: 'ns:css-updates',
-						origin,
-						updates: [
-							{
-								type: 'css-update',
-								path: rel,
-								acceptedPath: rel,
-								timestamp: Date.now(),
-							},
-						],
-					};
-
-					wss.clients.forEach((client) => {
-						if (isSocketClientOpen(client)) {
-							client.send(JSON.stringify(msg));
-							updateMetrics.recipients += 1;
-						}
-					});
-				} catch (error) {
-					console.warn('[hmr-ws] CSS update failed:', error);
-				}
-				emitHmrUpdateSummary();
-				return;
-			}
 
 			// Framework-specific hot update handling
 			if (ACTIVE_STRATEGY.flavor === 'angular') {

@@ -8,6 +8,7 @@
 
 import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore, hasExplicitEviction, invalidateModulesByUrls, buildEvictionUrls, emitHmrModeBannerOnce } from './utils.js';
 import { handleCssUpdates } from './css-handler.js';
+import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
 
 // satisfied by define replacement
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
@@ -1724,12 +1725,28 @@ async function handleHmrMessage(ev: any) {
 		return;
 	}
 	if (msg.type === 'ns:css-updates' && Array.isArray(msg.updates)) {
+		// Drive the HMR-applying overlay past the 'received' (5%) frame
+		// that `ns:hmr-pending` set earlier in the cycle. Without this
+		// the overlay sticks at "Preparing update" forever for CSS-only
+		// edits because `handleCssUpdates` is a leaf — there's no
+		// downstream module-evaluation path that would hit the queue's
+		// 'complete' transition.
+		const cssCount = msg.updates.length;
+		try {
+			setUpdateOverlayStage('reimporting', { detail: buildCssApplyingDetail(cssCount) });
+		} catch {}
 		try {
 			const origin = msg.origin || getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
 			await handleCssUpdates(msg.updates, origin);
+			try {
+				setUpdateOverlayStage('complete', { detail: buildCssAppliedDetail(cssCount) });
+			} catch {}
 			return;
 		} catch (e) {
 			console.warn('[hmr-client] CSS updates handling failed:', e);
+			try {
+				setUpdateOverlayStage('complete', { detail: 'CSS update failed' });
+			} catch {}
 			return;
 		}
 	}

@@ -11,7 +11,29 @@ type HmrCssApplier = (cssText: string, refreshRoot?: boolean) => void;
 type HttpImportFn = (url: string) => Promise<any>;
 type HttpPreloadResult = { ok: boolean; ms: number; url: string; err?: string };
 
+type TaggedCssAdd = (cssText: string, tag: string) => unknown;
+type TaggedCssRemove = (tag: string) => unknown;
+type TaggedCssApi = { add?: TaggedCssAdd; remove?: TaggedCssRemove };
+
+// Must match the tag used by the boot virtual `app.css` emitter in
+// `helpers/main-entry.ts` so HMR's remove/add pair replaces the
+// boot-time selectors instead of stacking on top of them.
+export const APP_CSS_TAG = 'app.css';
+
 declare const __NS_APP_ROOT_VIRTUAL__: string;
+
+function resolveTaggedCssApi(coreModule: any): TaggedCssApi {
+	const candidates: any[] = [coreModule, coreModule?.default, globalThis as any];
+	for (const candidate of candidates) {
+		if (!candidate) continue;
+		const add = candidate.addTaggedAdditionalCSS;
+		const remove = candidate.removeTaggedAdditionalCSS;
+		if (typeof add === 'function' && typeof remove === 'function') {
+			return { add: add.bind(candidate), remove: remove.bind(candidate) };
+		}
+	}
+	return {};
+}
 
 function updateBootOverlay(stage: string, info?: any): void {
 	try {
@@ -111,12 +133,28 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 			return null;
 		}
 
+		// Replace selectors via remove + add tagged pair so deleted
+		// rules disappear (the additive `Application.addCss` cannot
+		// undo previously installed selectors).
+		const taggedCss = resolveTaggedCssApi(coreModule);
 		const applyCss: HmrCssApplier = (cssText: string, refreshRoot = true) => {
 			if (typeof cssText !== 'string' || !cssText.length) {
 				return;
 			}
 
-			Application.addCss(cssText);
+			let appliedTagged = false;
+			if (taggedCss.add && taggedCss.remove) {
+				try {
+					taggedCss.remove(APP_CSS_TAG);
+					taggedCss.add(cssText, APP_CSS_TAG);
+					appliedTagged = true;
+				} catch (taggedError: any) {
+					if (verbose) console.warn('[ns-entry] tagged CSS replace failed, falling back to addCss:', taggedError?.message || taggedError);
+				}
+			}
+			if (!appliedTagged) {
+				Application.addCss(cssText);
+			}
 			if (!refreshRoot) {
 				return;
 			}

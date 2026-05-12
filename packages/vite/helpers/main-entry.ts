@@ -1,7 +1,7 @@
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from './project.js';
 import fs from 'fs';
 import path from 'path';
-import { preprocessCSS, type ResolvedConfig } from 'vite';
+import { preprocessCSS, type ResolvedConfig, type ViteDevServer } from 'vite';
 import { parse as parseCssToAst } from 'css';
 import { getProjectFlavor } from './flavor.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
@@ -93,6 +93,30 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 		name: 'main-entry',
 		configResolved(config: ResolvedConfig) {
 			resolvedConfig = config;
+		},
+		// Warm chokidar with `app.css`'s @import dependency tree at
+		// server startup. Without this, the FIRST save to a workspace
+		// `@import` dep (e.g. `<repo>/libs/.../index.css`) is silently
+		// dropped: nothing in the cold-boot path causes the dev server
+		// to transform `app.css`, so `vite:css` never registers
+		// `@import`-resolved deps with the watcher. Eagerly resolving
+		// them here breaks the chicken-and-egg.
+		configureServer(server: ViteDevServer) {
+			if (server.config.command !== 'serve') return;
+			const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
+			if (!fs.existsSync(appCssPath)) return;
+			(async () => {
+				try {
+					const code = fs.readFileSync(appCssPath, 'utf-8');
+					const result = await preprocessCSS(code, appCssPath, server.config);
+					server.watcher.add(appCssPath);
+					for (const dep of result?.deps ?? []) {
+						if (typeof dep === 'string' && dep) {
+							server.watcher.add(dep);
+						}
+					}
+				} catch {}
+			})();
 		},
 		resolveId(id: string) {
 			if (id === VIRTUAL_ID) return RESOLVED;

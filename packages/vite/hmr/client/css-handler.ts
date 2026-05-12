@@ -1,5 +1,10 @@
 const VERBOSE = !!(globalThis as any).__NS_ENV_VERBOSE__;
 
+// Must match the tag used by the boot virtual `app.css` emitter in
+// `helpers/main-entry.ts` and `entry-runtime.ts::APP_CSS_TAG` so HMR's
+// remove/add pair replaces the boot-time selectors instead of stacking.
+export const APP_CSS_TAG = 'app.css';
+
 function getPreferredCssApplier(): ((cssText: string, refreshRoot?: boolean) => void) | null {
 	try {
 		const applier = (globalThis as any).__NS_HMR_APPLY_CSS__;
@@ -27,6 +32,20 @@ function getCore(name: string): any {
 	return (globalThis as any)[name];
 }
 
+type TaggedCssApi = {
+	add?: (cssText: string, tag: string) => unknown;
+	remove?: (tag: string) => unknown;
+};
+
+function resolveTaggedCssApi(): TaggedCssApi {
+	const add = getCore('addTaggedAdditionalCSS');
+	const remove = getCore('removeTaggedAdditionalCSS');
+	if (typeof add === 'function' && typeof remove === 'function') {
+		return { add, remove };
+	}
+	return {};
+}
+
 // CSS helper: apply CSS and refresh the current page so new styles render
 export function applyCssText(cssText: string): void {
 	if (typeof cssText !== 'string' || !cssText.length) return;
@@ -39,19 +58,33 @@ export function applyCssText(cssText: string): void {
 			return;
 		}
 
+		// Replace selectors via remove + add tagged pair so deleted
+		// rules disappear (the additive `Application.addCss` cannot
+		// undo previously installed selectors).
+		const taggedCss = resolveTaggedCssApi();
 		const Application = getCore('Application');
-		if (Application && Application.addCss) {
-			Application.addCss(cssText);
-			if (VERBOSE) console.info('[ns-hmr] CSS applied, refreshing view');
+		let appliedTagged = false;
+		if (taggedCss.add && taggedCss.remove) {
+			try {
+				taggedCss.remove(APP_CSS_TAG);
+				taggedCss.add(cssText, APP_CSS_TAG);
+				appliedTagged = true;
+				if (VERBOSE) console.info('[ns-hmr] CSS applied via tagged replace');
+			} catch (taggedError: any) {
+				console.warn('[ns-hmr] tagged CSS replace failed, falling back to addCss:', taggedError?.message || String(taggedError));
+			}
 		}
-		// Trigger a view refresh so the new styles are rendered.
-		// NativeScript caches computed styles — addCss alone won't repaint.
+		if (!appliedTagged && Application && Application.addCss) {
+			Application.addCss(cssText);
+			if (VERBOSE) console.info('[ns-hmr] CSS applied via addCss (additive fallback)');
+		}
+		// NS caches computed styles — re-trigger styling on the root
+		// (propagates to descendants via `eachDescendant`).
 		try {
 			const rootView = Application?.getRootView?.();
 			if (rootView && typeof rootView._onCssStateChange === 'function') {
 				rootView._onCssStateChange();
 			} else if (rootView) {
-				// Force a style recalculation by toggling the root's class
 				const cls = rootView.className || '';
 				rootView.className = cls + ' ';
 				rootView.className = cls;
