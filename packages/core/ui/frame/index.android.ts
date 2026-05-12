@@ -84,6 +84,12 @@ export class Frame extends FrameBase {
 	private _cachedTransitionState: TransitionState;
 	private _frameCreateTimeout: NodeJS.Timeout;
 
+	// True while inside an onLoaded()-driven _ensureEntryFragment call. _ensureEntryFragment
+	// also runs from _onAttachedToWindow during outgoing navigations, where the fragment's
+	// view is null because it's being torn down on purpose — we must not rebuild it then.
+	// This flag lets _ensureEntryFragment tell the two cases apart.
+	private _pendingFragmentCheck = false;
+
 	constructor() {
 		super();
 		this._android = new AndroidFrame(this);
@@ -245,6 +251,10 @@ export class Frame extends FrameBase {
 	}
 
 	onLoaded(): void {
+		// Tell _ensureEntryFragment this pass is from onLoaded (an incoming reattach)
+		// rather than from _onAttachedToWindow during an outgoing transition. See the
+		// field declaration of _pendingFragmentCheck for why this matters.
+		this._pendingFragmentCheck = true;
 		if (this._originalBackground) {
 			this.backgroundColor = null;
 			this.backgroundColor = this._originalBackground;
@@ -274,6 +284,7 @@ export class Frame extends FrameBase {
 		// though we should not do it on app "start"
 		// or it will create a "flash" to activity background color
 		if (this._isReset && !this._attachedToWindow) {
+			this._pendingFragmentCheck = false;
 			return;
 		}
 
@@ -282,7 +293,13 @@ export class Frame extends FrameBase {
 			// so we manually check on loaded event if the fragment is not recreated and recreate it
 			const currentEntry = this._currentEntry || this._executingContext?.entry;
 			if (currentEntry) {
-				if (!currentEntry.fragment) {
+				// Rebuild if either:
+				//   (a) there is no fragment at all, or
+				//   (b) the fragment exists but its view was destroyed AND we got here via
+				//       onLoaded (not via _onAttachedToWindow during an outgoing transition,
+				//       where a null view is expected and a rebuild would be wrong).
+				const fragmentNeedsRebuild = !currentEntry.fragment || (currentEntry.fragment.getView() == null && this._pendingFragmentCheck);
+				if (fragmentNeedsRebuild) {
 					const manager = this._getFragmentManager();
 					const transaction = manager.beginTransaction();
 					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
@@ -292,6 +309,7 @@ export class Frame extends FrameBase {
 				}
 			}
 
+			this._pendingFragmentCheck = false;
 			this._frameCreateTimeout = null;
 		}, 0);
 	}
