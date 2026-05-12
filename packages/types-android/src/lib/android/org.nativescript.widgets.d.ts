@@ -555,12 +555,16 @@
 
                 export namespace Worker {
                     interface IOnImageLoadedListener {
-                        onImageLoaded(success: boolean): void;
+                        handlesImageUpdate(): boolean;
+                        onImageLoaded(bitmapOrDrawable: globalAndroid.graphics.Bitmap | globalAndroid.graphics.drawable.Drawable): void;
+                        onImageLoadingError(e: java.lang.Exception): void;
                     }
 
                     export class OnImageLoadedListener implements IOnImageLoadedListener {
                         constructor(implementation: IOnImageLoadedListener);
-                        public onImageLoaded(success: boolean): void;
+                        public handlesImageUpdate(): boolean;
+                        public onImageLoaded(bitmapOrDrawable: globalAndroid.graphics.Bitmap | globalAndroid.graphics.drawable.Drawable): void;
+                        public onImageLoadingError(e: java.lang.Exception): void;
                     }
                 }
 
