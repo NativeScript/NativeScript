@@ -30,28 +30,26 @@ describe('normalizeStrayCoreStringLiterals', () => {
 	});
 
 	it('merges dangling from with next core import', () => {
-		const src = 'import { A, B } from\nimport "/ns/core?p=index.js";';
+		const src = 'import { A, B } from\nimport "/ns/core";';
 		const out = fixDanglingCoreFrom(src);
-		expect(out).toBe('import { A, B } from "/ns/core?p=index.js";');
+		expect(out).toBe('import { A, B } from "/ns/core";');
 	});
 
 	it('merges dangling from when next line has core import followed by another import on same line', () => {
-		const src = ['import { A, B } from', 'import "http://localhost:5173/ns/core/0?p=index.js";import { useX } from "http://localhost:5173/ns/m/x";'].join('\n');
+		const src = ['import { A, B } from', 'import "http://localhost:5173/ns/core";import { useX } from "http://localhost:5173/ns/m/x";'].join('\n');
 		const out = fixDanglingCoreFrom(src);
-		expect(out).toContain('import { A, B } from "http://localhost:5173/ns/core/0?p=index.js";');
-		// ensure the trailing import remains on a new line
+		expect(out).toContain('import { A, B } from "http://localhost:5173/ns/core";');
 		expect(out).toContain('import { useX } from "http://localhost:5173/ns/m/x";');
-		// and only one core import remains
-		const coreCount = out.match(/ns\/core\//g)?.length || 0;
+		const coreCount = out.match(/ns\/core/g)?.length || 0;
 		expect(coreCount).toBe(1);
 	});
 
 	it('handles concatenated import before a multiline named import that dangles from', () => {
-		const src = ['import App from "http://localhost:5173/ns/sfc/0/src/components/App.vue";import {', '  TouchManager,', '  CoreTypes,', '  Frame', '} from', 'import "http://localhost:5173/ns/core/0?p=index.js";import { useServices } from "http://localhost:5173/ns/m/core/v4/pinia/services";'].join('\n');
+		const src = ['import App from "http://localhost:5173/ns/sfc/0/src/components/App.vue";import {', '  TouchManager,', '  CoreTypes,', '  Frame', '} from', 'import "http://localhost:5173/ns/core";import { useServices } from "http://localhost:5173/ns/m/core/v4/pinia/services";'].join('\n');
 		const norm = normalizeStrayCoreStringLiterals(src);
 		const out = fixDanglingCoreFrom(norm);
 		expect(out).toContain('import {');
-		expect(out).toContain('} from "http://localhost:5173/ns/core/0?p=index.js";');
+		expect(out).toContain('} from "http://localhost:5173/ns/core";');
 		expect(out).toContain('import App from "http://localhost:5173/ns/sfc/0/src/components/App.vue";');
 		expect(out).toContain('import { useServices } from "http://localhost:5173/ns/m/core/v4/pinia/services";');
 	});

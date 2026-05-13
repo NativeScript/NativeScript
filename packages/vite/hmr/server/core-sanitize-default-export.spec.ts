@@ -160,19 +160,11 @@ describe('rewriteSpecifiersForDevice', () => {
 // ─── isDeepCoreSubpath ─────────────────────────────────────────────────────────
 
 describe('isDeepCoreSubpath', () => {
-	// Canonical path form is the authoritative shape. Both forms must be
-	// supported for back-compat with legacy call sites that still carry
-	// a `?p=` query URL.
+	// Only the canonical path form `/ns/core/<sub>` is recognised; every
+	// emitter funnels through `buildCoreUrlPath` so the legacy `?p=` query
+	// form and the `<version>` segment form are gone.
 	it('returns true for canonical deep subpath with nested path', () => {
 		expect(isDeepCoreSubpath('/ns/core/data/observable-array')).toBe(true);
-	});
-
-	it('returns true for legacy ?p= deep subpath (back-compat)', () => {
-		expect(isDeepCoreSubpath('/ns/core?p=data/observable-array/index.js')).toBe(true);
-	});
-
-	it('returns true for legacy versioned deep subpath (back-compat)', () => {
-		expect(isDeepCoreSubpath('/ns/core/0?p=ui/core/view-base/index.js')).toBe(true);
 	});
 
 	it('returns true for HTTP origin deep subpath', () => {
@@ -183,15 +175,11 @@ describe('isDeepCoreSubpath', () => {
 		expect(isDeepCoreSubpath('/ns/core/data/observable')).toBe(true);
 	});
 
-	it('returns false for package main entry alias (legacy ?p=index.js)', () => {
-		expect(isDeepCoreSubpath('/ns/core?p=index.js')).toBe(false);
-	});
-
 	it('returns true for shallow subpath (globals)', () => {
 		expect(isDeepCoreSubpath('/ns/core/globals')).toBe(true);
 	});
 
-	it('returns false for main bridge (no query, no sub)', () => {
+	it('returns false for main bridge (no sub)', () => {
 		expect(isDeepCoreSubpath('/ns/core')).toBe(false);
 	});
 
@@ -206,10 +194,6 @@ describe('isDeepCoreSubpath', () => {
 	it('returns false for unrelated URL', () => {
 		expect(isDeepCoreSubpath('/ns/m/node_modules/rxjs/index.js')).toBe(false);
 	});
-
-	it('handles legacy ?p= with hash fragment', () => {
-		expect(isDeepCoreSubpath('/ns/core?p=ui/core/view#L10')).toBe(true);
-	});
 });
 
 // ─── Deep subpath skip: simulated ensureDestructureCoreImports behavior ────────
@@ -217,14 +201,13 @@ describe('isDeepCoreSubpath', () => {
 // without needing to export the internal function.
 
 describe('deep subpath skip in core named-import destructuring', () => {
-	// Simulate the core of ensureDestructureCoreImports. The regex
-	// accepts both the canonical path form (/ns/core/<sub>) and the
-	// legacy query form (/ns/core?p=<sub>) so older fixtures and
-	// emitters still round-trip correctly during the migration window.
+	// Simulate the core of `ensureDestructureCoreImports`. Only the
+	// canonical path form `/ns/core[/<sub>]` is recognised — no version
+	// segment, no `?p=` query form.
 	function simulateDestructureRewrite(code: string): string {
 		let result = code;
 		let counter = 0;
-		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"'?#]*)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"'?#]*)?)['"];?\s*/gm;
 		result = result.replace(re, (_full, pfx: string, specList: string, src: string) => {
 			if (isDeepCoreSubpath(src)) return _full;
 			const tmp = `__ns_core_ns_re${counter > 0 ? `_${counter}` : ''}`;
@@ -242,21 +225,8 @@ describe('deep subpath skip in core named-import destructuring', () => {
 		expect(out).not.toContain('import { Frame }');
 	});
 
-	it('rewrites named import from legacy package main entry alias to default + destructure', () => {
-		const input = 'import { isAndroid } from "/ns/core?p=index.js";';
-		const out = simulateDestructureRewrite(input);
-		expect(out).toContain('import __ns_core_ns_re from "/ns/core?p=index.js"');
-		expect(out).toContain('const { isAndroid } = __ns_core_ns_re');
-	});
-
 	it('SKIPS named import from canonical deep subpath (preserves named import)', () => {
 		const input = 'import { ObservableArray } from "/ns/core/data/observable-array";';
-		const out = simulateDestructureRewrite(input);
-		expect(out).toBe(input);
-	});
-
-	it('SKIPS legacy ?p= deep subpath (back-compat)', () => {
-		const input = 'import { View } from "/ns/core?p=ui/core/view-base/index.js";';
 		const out = simulateDestructureRewrite(input);
 		expect(out).toBe(input);
 	});
@@ -268,18 +238,12 @@ describe('deep subpath skip in core named-import destructuring', () => {
 	});
 
 	it('handles mixed shallow and deep subpaths in same file', () => {
-		const input = ['import { Frame } from "/ns/core";', 'import { View } from "/ns/core/ui/core/view-base";', 'import { isAndroid } from "/ns/core?p=index.js";'].join('\n');
+		const input = ['import { Frame } from "/ns/core";', 'import { View } from "/ns/core/ui/core/view-base";'].join('\n');
 		const out = simulateDestructureRewrite(input);
 
-		// Main bridge import: SHOULD be rewritten
 		expect(out).toContain('import __ns_core_ns_re from "/ns/core"');
 		expect(out).toContain('const { Frame } = __ns_core_ns_re');
-
-		// Deep subpath: should NOT be rewritten
 		expect(out).toContain('import { View } from "/ns/core/ui/core/view-base"');
-
-		// Legacy package main entry alias: SHOULD be rewritten like the main bridge
-		expect(out).toContain('const { isAndroid } = __ns_core_ns_re_1');
 	});
 
 	it('is idempotent — applying twice produces identical output', () => {
@@ -300,11 +264,9 @@ describe('deep subpath skip in core named-import destructuring', () => {
 
 describe('normalizeAnyCoreSpecToBridge → deep subpath skip pipeline', () => {
 	function pipeline(code: string): string {
-		// Step 1: Normalize @nativescript/core to /ns/core bridge URLs
 		let result = normalizeAnyCoreSpecToBridge(code);
-		// Step 2: Simulate destructure pass (with deep subpath skip)
 		let counter = 0;
-		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"'?#]*)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+		const re = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"'?#]*)?)['"];?\s*/gm;
 		result = result.replace(re, (_full, pfx: string, specList: string, src: string) => {
 			if (isDeepCoreSubpath(src)) return _full;
 			const tmp = `__ns_core_${counter++}`;
@@ -325,7 +287,6 @@ describe('normalizeAnyCoreSpecToBridge → deep subpath skip pipeline', () => {
 		const out = pipeline(input);
 		expect(out).toContain('import __ns_core_0 from "/ns/core"');
 		expect(out).toContain('const { AbsoluteLayout } = __ns_core_0');
-		expect(out).not.toContain('/ns/core?p=index.js');
 		expect(out).not.toContain('/ns/core/index');
 	});
 

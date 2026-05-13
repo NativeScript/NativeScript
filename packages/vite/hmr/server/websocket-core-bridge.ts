@@ -10,19 +10,26 @@ export type CoreExportOrigin = {
 };
 
 export type ParsedCoreBridgeRequest = {
-	hasExplicitVersion: boolean;
-	ver: string;
 	sub: string;
 	normalizedSub: string | null;
 	key: string;
 	/**
 	 * Set when the incoming path's sub-spec is not in canonical form
-	 * (e.g. trailing `.js`, `/index`, platform suffix, or a `?p=` query).
-	 * The middleware should emit a 301 redirect to this path so iOS only
-	 * ever caches the canonical URL. Empirical Phase 1 telemetry confirmed
-	 * that no current emitter produces non-canonical paths; promoting from
-	 * warn → 301 turns the bridge into the choke point that guarantees
-	 * URL identity across all emitters.
+	 * (e.g. trailing `.js`, `/index`, platform suffix). The middleware
+	 * should emit a 301 redirect to this path so iOS only ever caches
+	 * the canonical URL.
+	 *
+	 * `normalizeCoreSub` strips `.js`/`.mjs`/`.cjs`/`.ts` extensions,
+	 * trailing `/index`, and platform suffixes (`.ios`, `.android`,
+	 * `.visionos`) because Vite's path resolver legitimately emits those
+	 * shapes when it follows a package's `exports` map to a
+	 * platform-specific file (`ui/text-base/index.ios.js`) for the
+	 * extensionless import (`@nativescript/core/ui/text-base`). The 301
+	 * is therefore a real canonicalisation step, not legacy back-compat:
+	 * the rewriter's URL has to round-trip through file-system resolution
+	 * occasionally, and the device must end up on the single canonical
+	 * URL so iOS's HTTP-ESM cache key is shared with every other
+	 * emitter (vendor `require`, import map, AST normaliser, etc.).
 	 */
 	canonicalPath?: string;
 };
@@ -33,8 +40,7 @@ export type ParsedCoreBridgeRequest = {
 // is install-once-per-isolate, dedupes per-URL (so semver's ~30 deep
 // imports produce ~30 lines on the first boot and 0 on subsequent
 // boots within the same isolate), and uses `console.warn` so the
-// message reads as advisory (the round-3 finding in
-// LATEST-05-07-2026-HMR_ANGULAR_DEBUG_SESSION.md). Forensic detail
+// message reads as advisory. Forensic detail
 // (stack) lives on `globalThis.__NS_REQUIRE_GUARD_LAST__` for
 // post-mortem inspection. Set `globalThis.__NS_REQUIRE_GUARD_VERBOSE__`
 // to `true` before any module loads to restore per-call logging.
@@ -327,90 +333,60 @@ export async function normalizeCoreExportOriginsForRuntime(exportOrigins: Record
 	return normalizedOrigins;
 }
 
-export function ensureVersionedCoreImports(code: string, _origin: string, ver: number): string {
-	try {
-		code = code.replace(/(["'])(?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(\?p=[^"']+)?\1/g, (_m, q, qp) => `${q}/ns/core/${ver}${qp || ''}${q}`);
-		code = code.replace(/import\(\s*(["'])(?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(\?p=[^"']+)?\1\s*\)/g, (_m, q, qp) => `import(${q}/ns/core/${ver}${qp || ''}${q})`);
-	} catch {}
-	return code;
-}
-
 export function hasModuleDefaultExport(moduleCode: string): boolean {
 	if (!moduleCode || typeof moduleCode !== 'string') return false;
 	return /\bexport\s+default\b/.test(moduleCode) || /\bexport\s*\{[^}]*\bdefault\b[^}]*\}/.test(moduleCode);
 }
 
-// Versioned `/ns/core/<ver>?p=<sub>` proxy modules have been removed.
-// The current /ns/core handler serves Vite-transformed @nativescript/core
-// source directly with a self-registering preamble; no proxy layer is
-// needed. Leaving the helpers wired up would have guaranteed drift
-// between the URL canonicalizer and the module registry.
-
-export function parseCoreBridgeRequest(pathname: string, searchParams: URLSearchParams, currentGraphVersion: number): ParsedCoreBridgeRequest | null {
+/**
+ * Parse an incoming `/ns/core` bridge request.
+ *
+ * Accepted shapes:
+ *   - `/ns/core`               → package main
+ *   - `/ns/core/<sub>`         → subpath form (`<sub>` may carry a
+ *                                `.js`/`/index`/platform-suffix tail
+ *                                that we strip via `normalizeCoreSub`
+ *                                and report through `canonicalPath` so
+ *                                the middleware can 301)
+ *
+ * Anything else returns `null` so the middleware falls through to
+ * `next()` and a downstream 404 surfaces the offending emitter.
+ *
+ * URL contract:
+ *   - No version segment. `/ns/core/<digits>` was an experimental
+ *     cache-busting shape that split iOS's HTTP-ESM module cache from
+ *     the unversioned URL emitted by the runtime import map. Removed.
+ *   - No `?p=<sub>` query form. The canonical path form
+ *     `/ns/core/<sub>` is the only spelling every emitter produces.
+ */
+export function parseCoreBridgeRequest(pathname: string, _searchParams: URLSearchParams, _currentGraphVersion: number): ParsedCoreBridgeRequest | null {
 	if (!pathname) return null;
 	if (!(pathname === '/ns/core' || pathname === '/ns/core/' || pathname.startsWith('/ns/core/'))) {
-		return null;
-	}
-	// Reject legacy versioned path-based deep imports. Every emitter now
-	// uses the canonical `/ns/core/<sub>` form. Serving a legacy request
-	// like `/ns/core/3/ui/frame/index.js` would split iOS's HTTP ESM
-	// cache across versioned and canonical URLs for the same file,
-	// re-triggering the double-evaluation bug. Also reject bare
-	// trailing-slash variants like `/ns/core/3/` which don't match the
-	// accepted forms `/ns/core` / `/ns/core/<sub>`.
-	if (/^\/ns\/core\/\d+\/.*$/.test(pathname)) {
 		return null;
 	}
 	const afterCore = pathname.replace(/^\/ns\/core\/?/, '');
 	if (afterCore.startsWith('/')) {
 		return null;
 	}
-	const hasExplicitVersion = /^\d+$/.test(afterCore);
-	const ver = hasExplicitVersion ? afterCore : String(currentGraphVersion || 0);
-	// Keep the raw ?p= value (including any `.js` / `/index` suffix) in
-	// `sub` and `normalizedSub` so existing call sites still see the
-	// as-requested spelling. Canonicalization for Invariant A identity
-	// lookups is the handler's responsibility — see the /ns/core bridge
-	// middleware in websocket.ts which uses normalizeCoreSub() before
-	// populating globalThis.__NS_CORE_MODULES__.
-	const sub = searchParams.get('p') || (afterCore && !hasExplicitVersion ? afterCore : '');
+	const sub = afterCore || '';
 	const normalizedSub = sub ? sub.replace(/^\/+/, '') : null;
-	// Canonical-form computation: every emitter is expected to canonicalize
-	// core URLs via `buildCoreUrlPath` / `normalizeCoreSub` before the device
-	// fetches them. We compute the canonical form here and, if the incoming
-	// path differs (e.g. `.js` suffix, `/index` trailer, platform suffix, or
-	// the legacy `?p=` query form), expose a `canonicalPath` so the
-	// middleware can 301 the caller to the deterministic URL. This is the
-	// choke point that prevents the realm-split bug from recurring: iOS's
-	// HTTP ESM loader keys its module records by URL string, so allowing
-	// two spellings for the same logical file would re-evaluate the module
-	// in a second realm.
-	//
-	// Note: `sub` / `normalizedSub` keep their RAW shape (matching the
-	// pre-redirect contract and the wire-level spec) so existing call
-	// sites and the test suite remain stable. The redirect signal travels
-	// only on `canonicalPath`.
 	let canonicalPath: string | undefined;
 	if (normalizedSub) {
 		const canonical = normalizeCoreSub(normalizedSub);
 		const expectedPath = canonical ? `/ns/core/${canonical}` : '/ns/core';
-		const usedQuery = !!searchParams.get('p');
-		const isCanonicalIncoming = !usedQuery && pathname === expectedPath;
-		if (!isCanonicalIncoming) {
+		if (pathname !== expectedPath) {
 			canonicalPath = expectedPath;
 			try {
 				const g = globalThis as any;
 				g.__NS_BRIDGE_NONCANON__ ||= { count: 0, samples: [] };
 				g.__NS_BRIDGE_NONCANON__.count++;
 				if (g.__NS_BRIDGE_NONCANON__.samples.length < 10) {
-					g.__NS_BRIDGE_NONCANON__.samples.push({ raw: normalizedSub, canonical, query: usedQuery, pathname });
+					g.__NS_BRIDGE_NONCANON__.samples.push({ raw: normalizedSub, canonical, pathname });
 				}
 			} catch {}
 		}
 	}
 	return {
-		hasExplicitVersion,
-		ver,
 		sub: normalizedSub || '',
 		normalizedSub,
 		key: normalizedSub ? `@nativescript/core/${normalizedSub}` : '@nativescript/core',

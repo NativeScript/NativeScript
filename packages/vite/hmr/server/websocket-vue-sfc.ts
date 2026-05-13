@@ -43,7 +43,6 @@ export interface RegisterVueSfcHandlersOptions {
 	cleanCode(code: string): string;
 	processCodeForDevice: ProcessCodeForDeviceFn;
 	rewriteImports: RewriteImportsFn;
-	ensureVersionedCoreImports(code: string, origin: string, version: number): string;
 }
 
 export interface ParsedVersionedEndpointPath {
@@ -399,7 +398,6 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 				const origin = options.getServerOrigin(server);
 				code = ensureVersionedRtImports(code, origin, currentVersion);
 				code = options.getStrategy().ensureVersionedImports(code, origin, currentVersion);
-				code = options.ensureVersionedCoreImports(code, origin, currentVersion);
 			} catch {}
 			try {
 				code = ensureDestructureCoreImports(code);
@@ -415,7 +413,6 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 				const currentVersion = Number.isFinite(versionNumber) && versionNumber > 0 ? versionNumber : options.getGraphVersion();
 				const origin = options.getServerOrigin(server);
 				code = ensureVersionedRtImports(code, origin, currentVersion);
-				code = options.ensureVersionedCoreImports(code, origin, currentVersion);
 			} catch {}
 			try {
 				code = stripDanglingViteCjsImports(code);
@@ -722,9 +719,6 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 					let inlineCode = parts.filter(Boolean).join('\n');
 					inlineCode = options.processCodeForDevice(inlineCode, false, true);
 					try {
-						inlineCode = options.ensureVersionedCoreImports(inlineCode, options.getServerOrigin(server), Number(version));
-					} catch {}
-					try {
 						inlineCode = ensureDestructureCoreImports(inlineCode);
 					} catch {}
 
@@ -777,9 +771,6 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 					outParts.push('export default __ns_sfc__');
 					let inlineCode2 = outParts.filter(Boolean).join('\n');
 					inlineCode2 = options.processCodeForDevice(inlineCode2, false, true);
-					try {
-						inlineCode2 = options.ensureVersionedCoreImports(inlineCode2, options.getServerOrigin(server), Number(version));
-					} catch {}
 					try {
 						inlineCode2 = ensureDestructureCoreImports(inlineCode2);
 					} catch {}
@@ -942,7 +933,6 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 						const origin = options.getServerOrigin(server);
 						inlineCode2 = ensureVersionedRtImports(inlineCode2, origin, Number(version));
 						inlineCode2 = options.getStrategy().ensureVersionedImports(inlineCode2, origin, Number(version));
-						inlineCode2 = options.ensureVersionedCoreImports(inlineCode2, origin, Number(version));
 					} catch {}
 					try {
 						inlineCode2 = astNormalizeModuleImportsAndHelpers(inlineCode2);
@@ -1026,9 +1016,6 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 
 			let code = options.requireGuardSnippet + asm;
 			code = options.processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(base), base);
-			try {
-				code = options.ensureVersionedCoreImports(code, options.getServerOrigin(server), Number(version));
-			} catch {}
 			code = options.rewriteImports(code, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
 			try {
 				code = ensureDestructureCoreImports(code);
@@ -1039,7 +1026,6 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 				const origin = options.getServerOrigin(server);
 				code = ensureVersionedRtImports(code, origin, Number(version));
 				code = options.getStrategy().ensureVersionedImports(code, origin, Number(version));
-				code = options.ensureVersionedCoreImports(code, origin, Number(version));
 			} catch {}
 			res.statusCode = 200;
 			res.end(code);

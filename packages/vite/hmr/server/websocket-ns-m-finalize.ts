@@ -2,7 +2,6 @@ import type { FrameworkServerStrategy } from './framework-strategy.js';
 
 import { sanitizeStrayCoreReferences } from './core-sanitize.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, deduplicateLinkerImports, dedupeRtNamedImportsAgainstDestructures, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, hoistTopLevelStaticImports, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
-import { ensureVersionedCoreImports } from './websocket-core-bridge.js';
 import { formatNsMHmrServeTag, getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
 
 export interface FinalizeNsMServedModuleHelpers {
@@ -80,7 +79,10 @@ export async function finalizeNsMServedModule(options: FinalizeNsMServedModuleOp
 	const versionNumber = getNumericServeVersionTag(forcedVer, Number(graphVersion || 0));
 	code = ensureVersionedRtImports(code, serverOrigin, versionNumber);
 	code = strategy.ensureVersionedImports(code, serverOrigin, versionNumber);
-	code = ensureVersionedCoreImports(code, serverOrigin, versionNumber);
+	// `/ns/core` URLs are intentionally NOT versioned.
+	// iOS's HTTP-ESM cache key from the unversioned URL emitted by the
+	// runtime import map, which broke `instanceof` checks across the
+	// vendor/app realm boundary.
 
 	// Prefer the current graph version over the request's forcedVer for child
 	// import paths: a parent requested at /ns/m/__ns_hmr__/live/... must emit

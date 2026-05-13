@@ -221,8 +221,14 @@ export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): H
 	}
 }
 
-export async function preloadHttpCoreStyleScope(importHttp: HttpImportFn, origin: string, ver: string | number, verbose?: boolean): Promise<HttpPreloadResult> {
-	const url = String(origin || '') + '/ns/core/' + String(ver || '0') + '?p=ui/styling/style-scope.js';
+export async function preloadHttpCoreStyleScope(importHttp: HttpImportFn, origin: string, verbose?: boolean): Promise<HttpPreloadResult> {
+	// Use the canonical, unversioned subpath form `/ns/core/ui/styling/style-scope`.
+	// Every consumer of `@nativescript/core/ui/styling/style-scope` (cold-boot
+	// preload here, app-side imports, vendor `require()` shims via the runtime
+	// import map) lands on the same URL string, so iOS's HTTP-ESM loader keys
+	// them to one module record and the style-scope module's class identity is
+	// shared across realms.
+	const url = String(origin || '') + '/ns/core/ui/styling/style-scope';
 	const t0 = Date.now();
 	try {
 		await importHttp(url);
@@ -364,26 +370,38 @@ export default async function startEntry(opts: EntryOpts) {
 		// /ns/core and the style-scope preload are both core-realm side effects
 		// that run independently of /ns/rt. We fire them in parallel with rt so
 		// the aggregate cost is max(rt, core, styleScope) instead of the sum.
+		// Preload the canonical, unversioned `/ns/core` URL so this cold-boot
+		// fetch shares an iOS HTTP-ESM module record (and a single class-
+		// identity realm) with vendor `require('@nativescript/core')` lookups
+		// resolved through the runtime import map, the `/ns/rt` bridge's
+		// dynamic core import, and every served-module import. Threading a
+		// `/<version>` segment here previously created two separate module
+		// records for byte-identical content, splitting `Frame`/`Page`/`View`
+		// class identity across the boundary and leaving the dev placeholder
+		// root visible after `Application.resetRootView(realFrame)` no-ops via
+		// a failed `instanceof Frame` check.
 		const t_core = Date.now();
+		const CORE_URL = ORIGIN + '/ns/core';
 		const corePromise: Promise<any> = importMapPromise.then(async () => {
 			await updateBootOverlayAndYield('loading-core-bridge', {
-				detail: ORIGIN + '/ns/core/' + VER,
+				detail: CORE_URL,
 			});
 			try {
-				const mod = await importHttp(ORIGIN + '/ns/core/' + VER);
-				TRACE.preload.core = { ok: true, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER };
+				const mod = await importHttp(CORE_URL);
+				TRACE.preload.core = { ok: true, ms: Date.now() - t_core, url: CORE_URL };
 				return mod;
 			} catch (e_core: any) {
-				TRACE.preload.core = { ok: false, ms: Date.now() - t_core, url: ORIGIN + '/ns/core/' + VER, err: String(e_core && (e_core.message || e_core)) };
+				TRACE.preload.core = { ok: false, ms: Date.now() - t_core, url: CORE_URL, err: String(e_core && (e_core.message || e_core)) };
 				console.warn('[ns-entry] /ns/core preload failed:', e_core && (e_core.message || e_core));
 				return null;
 			}
 		});
+		const STYLE_SCOPE_URL = ORIGIN + '/ns/core/ui/styling/style-scope';
 		const styleScopePromise: Promise<HttpPreloadResult> = importMapPromise.then(async () => {
 			await updateBootOverlayAndYield('preloading-style-scope', {
-				detail: ORIGIN + '/ns/core/' + VER + '?p=ui/styling/style-scope.js',
+				detail: STYLE_SCOPE_URL,
 			});
-			return preloadHttpCoreStyleScope(importHttp, ORIGIN, VER, VERBOSE);
+			return preloadHttpCoreStyleScope(importHttp, ORIGIN, VERBOSE);
 		});
 
 		// Wait for all parallel preloads to resolve. Rejections are already

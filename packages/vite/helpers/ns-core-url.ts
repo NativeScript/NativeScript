@@ -4,8 +4,14 @@
  * Every public-facing reference to `@nativescript/core[/sub]` resolves to
  * exactly one URL string — byte-for-byte identical across every emitter
  * (bundle entry, external-urls plugin, rewriter, import map, runtime
- * require). There is no ambiguity about `?p=` vs path, `.js` vs
- * extensionless, versioned vs unversioned.
+ * require). The only valid shapes are:
+ *
+ *   - `/ns/core`               — package main
+ *   - `/ns/core/<sub>`         — subpath form
+ *
+ * with `<sub>` always run through `normalizeCoreSub` (extensionless, no
+ * `/index` tail, no platform suffix). There is no version segment, no
+ * `?p=` query form, no `.js` tail.
  *
  * This module is the ONE site that constructs those URLs. Every caller in
  * the repo should use `buildCoreUrl()` (or `buildCoreUrlPath()` when origin
@@ -105,7 +111,7 @@ export function buildCoreUrl(origin: string, sub?: string | null): string {
  */
 export function isCoreBridgeUrl(input: string): boolean {
 	if (!input) return false;
-	return /\/ns\/core(?:\/|$|\?)/.test(input);
+	return /\/ns\/core(?:\/|$)/.test(input);
 }
 
 /**
@@ -113,7 +119,6 @@ export function isCoreBridgeUrl(input: string): boolean {
  *   'http://localhost:5173/ns/core'             → ''
  *   'http://localhost:5173/ns/core/application' → 'application'
  *   '/ns/core/ui/core/view'                     → 'ui/core/view'
- *   '/ns/core?p=foo'                            → 'foo'  (legacy form tolerated)
  *   'http://example.com/other'                  → null
  */
 export function extractCoreSub(input: string): string | null {
@@ -121,12 +126,9 @@ export function extractCoreSub(input: string): string | null {
 	try {
 		const u = new URL(input, 'http://placeholder.invalid');
 		const pathname = u.pathname;
-		const pRaw = u.searchParams.get('p');
-		if (pRaw) return normalizeCoreSub(pRaw);
 		const afterCore = pathname.replace(/^.*\/ns\/core(?:\/|$)/, '');
 		return normalizeCoreSub(afterCore);
 	} catch {
-		// Fall back to literal parsing if URL constructor fails
 		const m = input.match(/\/ns\/core(?:\/([^?#]*))?/);
 		if (!m) return null;
 		return normalizeCoreSub(m[1] || '');

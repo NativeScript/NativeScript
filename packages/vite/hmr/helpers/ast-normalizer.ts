@@ -19,7 +19,7 @@ const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 // AST `isNsCorePackage` branches under the Angular pipeline. We keep the
 // rewrite as a defense-in-depth safety net, but if it ever runs we want the
 // drift to be visible immediately — silent re-rewrite is precisely what
-// re-introduced the realm-split bug (see LATEST-05-12-2026-HMR_CORE_REALM_SPLIT.md).
+// re-introduced the realm-split bug
 function reportUnexpectedCoreSpec(kind: string, spec: string): void {
 	try {
 		const g = globalThis as any;
@@ -29,7 +29,7 @@ function reportUnexpectedCoreSpec(kind: string, spec: string): void {
 		if (typeof bucket[slot] === 'number') bucket[slot]++;
 		const arr = bucket.samples as Array<{ kind: string; src: string }>;
 		if (arr.length < 5) arr.push({ kind, src: spec });
-		console.warn(`[ast-normalizer] unexpected @nativescript/core spec at ${kind}: '${spec}' — upstream rewriter regressed (see LATEST-05-12-2026-HMR_CORE_REALM_SPLIT.md)`);
+		console.warn(`[ast-normalizer] unexpected @nativescript/core spec at ${kind}: '${spec}' — upstream rewriter regressed`);
 	} catch {}
 }
 

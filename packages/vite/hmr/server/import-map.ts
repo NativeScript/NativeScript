@@ -173,7 +173,7 @@ export function buildRuntimeConfig(options: ImportMapOptions): {
 	};
 }
 
-function addFrameworkEntries(imports: Record<string, string>, _origin: string, flavor: string): void {
+function addFrameworkEntries(imports: Record<string, string>, origin: string, flavor: string): void {
 	switch (flavor) {
 		case 'vue':
 			// nativescript-vue should resolve from vendor if available
@@ -185,10 +185,27 @@ function addFrameworkEntries(imports: Record<string, string>, _origin: string, f
 			}
 			break;
 		case 'solid':
-			// Solid runtime root should resolve from vendor
-			if (!imports['solid-js']) {
-				imports['solid-js'] = `ns-vendor://solid-js`;
-			}
+			// Solid runtime root MUST resolve to the same HTTP URL that
+			// Vite's solid-js alias produces for user code and the
+			// HTTP-served `@solid-refresh` middleware. The vendor bundle
+			// no longer ships `solid-js` for the Solid flavor — see
+			// `manifest.ts`'s `nsSolidJsExternalPlugin` + the matching
+			// `addCandidate` skip — so all three import sites (vendor's
+			// externalized `import 'solid-js'`, user code's
+			// alias-rewritten `/ns/m/node_modules/solid-js/...`, and
+			// `@solid-refresh`'s own rewritten import) converge on the
+			// dev.js URL below. V8's ESM loader dedupes by URL, so the
+			// app sees one `Owner` module-local, one `$DEVCOMP`/`$PROXY`
+			// symbol identity, and one reactive graph end-to-end. Without
+			// this unification, `solid-refresh`'s `setComp` ticks a
+			// signal whose subscribers live in a different solid-js
+			// realm than the page tree's render effect → HMR appears to
+			// fire (toast shows) but the screen never re-renders, and
+			// boot logs the `computations created outside a createRoot`
+			// warning because solid-refresh's HMRComp memo is created in
+			// the HTTP-side solid-js whose `Owner` was never set by the
+			// vendor-side `render()` createRoot.
+			imports['solid-js'] = `${origin}/ns/m/node_modules/solid-js/dist/dev.js`;
 			// No trailing-slash prefix — subpaths like solid-js/store,
 			// solid-js/jsx-runtime resolve via HTTP from discoverInstalledPackages()
 			break;

@@ -4,76 +4,64 @@ import { parseCoreBridgeRequest } from './websocket.js';
 
 describe('parseCoreBridgeRequest', () => {
 	it('accepts the canonical root core bridge path with no redirect', () => {
-		const parsed = parseCoreBridgeRequest('/ns/core', new URLSearchParams(), 7);
+		const parsed = parseCoreBridgeRequest('/ns/core', new URLSearchParams(), 0);
 
 		expect(parsed).toEqual({
-			hasExplicitVersion: false,
 			key: '@nativescript/core',
 			normalizedSub: null,
 			sub: '',
-			ver: '7',
 			canonicalPath: undefined,
 		});
 	});
 
 	it('accepts a canonical deep import path with no redirect', () => {
-		const parsed = parseCoreBridgeRequest('/ns/core/ui/frame', new URLSearchParams(), 4);
+		const parsed = parseCoreBridgeRequest('/ns/core/ui/frame', new URLSearchParams(), 0);
 
 		expect(parsed).toEqual({
-			hasExplicitVersion: false,
 			key: '@nativescript/core/ui/frame',
 			normalizedSub: 'ui/frame',
 			sub: 'ui/frame',
-			ver: '4',
 			canonicalPath: undefined,
 		});
 	});
 
 	it('signals 301 to canonical path when subpath has a trailing /index.js', () => {
-		const parsed = parseCoreBridgeRequest('/ns/core/ui/frame/index.js', new URLSearchParams(), 4);
+		// Vite's path resolver follows a package's `exports` map to the
+		// physical file (`ui/frame/index.js`) for the extensionless import
+		// `@nativescript/core/ui/frame`. The 301 collapses both spellings to
+		// the canonical URL so iOS's HTTP-ESM cache key is shared.
+		const parsed = parseCoreBridgeRequest('/ns/core/ui/frame/index.js', new URLSearchParams(), 0);
 
 		expect(parsed).toEqual({
-			hasExplicitVersion: false,
 			key: '@nativescript/core/ui/frame/index.js',
 			normalizedSub: 'ui/frame/index.js',
 			sub: 'ui/frame/index.js',
-			ver: '4',
 			canonicalPath: '/ns/core/ui/frame',
 		});
 	});
 
-	it('signals 301 to canonical path for legacy `?p=` query form even with explicit version', () => {
-		const parsed = parseCoreBridgeRequest('/ns/core/3', new URLSearchParams('p=utils/index.js'), 9);
-
-		expect(parsed).toEqual({
-			hasExplicitVersion: true,
-			key: '@nativescript/core/utils/index.js',
-			normalizedSub: 'utils/index.js',
-			sub: 'utils/index.js',
-			ver: '3',
-			canonicalPath: '/ns/core/utils',
-		});
-	});
-
-	it('signals 301 for trailing platform suffix variants', () => {
-		const parsed = parseCoreBridgeRequest('/ns/core/ui/text-base/index.ios', new URLSearchParams(), 4);
+	it('signals 301 to canonical path for platform-suffix variants', () => {
+		// `normalizeCoreSub` strips `.ios` / `.android` / `.visionos` because
+		// Vite's platform-aware resolver emits e.g. `ui/text-base/index.ios.js`
+		// for `@nativescript/core/ui/text-base`. Both spellings must funnel to
+		// the same canonical URL so the served core's `TextBase` class
+		// identity is shared with vendor `require()` lookups.
+		const parsed = parseCoreBridgeRequest('/ns/core/ui/text-base/index.ios', new URLSearchParams(), 0);
 
 		expect(parsed?.canonicalPath).toBe('/ns/core/ui/text-base');
 	});
 
 	it('signals 301 to canonical /ns/core when subpath canonicalizes to empty', () => {
-		const parsed = parseCoreBridgeRequest('/ns/core/index.js', new URLSearchParams(), 4);
+		// `/ns/core/index.js` is the file form of the package main; the
+		// canonical URL drops the `index.js` tail so all package-main consumers
+		// share a single module record.
+		const parsed = parseCoreBridgeRequest('/ns/core/index.js', new URLSearchParams(), 0);
 
 		expect(parsed?.canonicalPath).toBe('/ns/core');
 	});
 
-	it('rejects versioned path-based deep imports', () => {
-		expect(parseCoreBridgeRequest('/ns/core/3/ui/frame/index.js', new URLSearchParams(), 9)).toBeNull();
-		expect(parseCoreBridgeRequest('/ns/core/3/', new URLSearchParams(), 9)).toBeNull();
-	});
-
 	it('rejects accidental prefix matches outside the core bridge', () => {
-		expect(parseCoreBridgeRequest('/ns/corex', new URLSearchParams(), 5)).toBeNull();
-		expect(parseCoreBridgeRequest('/ns/core-http', new URLSearchParams(), 5)).toBeNull();
+		expect(parseCoreBridgeRequest('/ns/corex', new URLSearchParams(), 0)).toBeNull();
+		expect(parseCoreBridgeRequest('/ns/core-http', new URLSearchParams(), 0)).toBeNull();
 	});
 });

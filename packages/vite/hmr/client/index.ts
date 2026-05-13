@@ -218,6 +218,7 @@ try {
 // vitest, etc.) or when the user opted out via
 // `__NS_HMR_PROGRESS_OVERLAY_ENABLED__ === false`.
 import { applyHmrPendingFrame } from './hmr-pending-overlay.js';
+import { driveVueSfcUpdateOverlay } from './vue-sfc-update-overlay.js';
 
 function setHmrPendingOverlay(filePath: string) {
 	applyHmrPendingFrame(filePath, { getOverlay: getHmrOverlayApi });
@@ -903,7 +904,25 @@ async function processQueue(): Promise<void> {
 			// After evaluating the batch, perform flavor-specific UI refresh.
 			switch (TARGET_FLAVOR) {
 				case 'vue':
-					// Vue SFCs are handled via the registry update path; nothing to do here.
+					// Vue SFCs are handled via the registry update path
+					// (which drives its own overlay completion through
+					// `driveVueSfcUpdateOverlay`); nothing else to do
+					// for the view-tree refresh here.
+					//
+					// However, when a non-SFC file (e.g. a `.ts`
+					// utility module imported by an SFC) is the only
+					// changed entry, no `ns:vue-sfc-registry-update`
+					// will follow — and without an explicit 'complete'
+					// the overlay would stick on "Preparing update
+					// (5%)". Drive the closing frame here so the
+					// auto-hide timer can dismiss the toast in the
+					// pure-TS-change case. The detail surfaces the
+					// changed count so a user can correlate the
+					// overlay with the server-side `[hmr-ws][update]`
+					// log.
+					setUpdateOverlayStage('complete', {
+						detail: drained.length === 1 ? `Updated ${drained[0]} in ${Math.max(0, Date.now() - tQueueStart)}ms` : `Updated ${drained.length} modules in ${Math.max(0, Date.now() - tQueueStart)}ms`,
+					});
 					break;
 				case 'solid': {
 					// Boundaries discovered in this HMR cycle (tsx files reachable
@@ -1756,10 +1775,25 @@ async function handleHmrMessage(ev: any) {
 	}
 	if (msg.type === 'ns:vue-sfc-registry-update') {
 		if (typeof msg.version === 'number') setGraphVersion(msg.version);
-		const comp = await handleVueSfcRegistryUpdate(msg, getGraphVersion());
-		if (comp) {
-			await performResetRoot(comp);
-		}
+		// `ns:hmr-pending` already set the overlay to 'received' (5%).
+		// Without the explicit stage walk below the overlay would stick
+		// at "Preparing update" forever after a successful SFC swap —
+		// the Vue path was missing the framework-specific completion
+		// hooks that Angular drives via `handleAngularHotUpdateMessage`
+		// and CSS drives inline above. `driveVueSfcUpdateOverlay` is a
+		// thin orchestrator that walks 'evicting' → 'reimporting' →
+		// 'rebooting' → 'complete' around the load + reset steps and
+		// always lands on 'complete' (or a failure detail) so the
+		// auto-hide timer can dismiss the toast.
+		const sfcFilePath = typeof msg.path === 'string' ? msg.path : undefined;
+		await driveVueSfcUpdateOverlay(
+			{
+				filePath: sfcFilePath,
+				loadComponent: () => handleVueSfcRegistryUpdate(msg, getGraphVersion()),
+				applyComponent: (component) => performResetRoot(component),
+			},
+			{ getOverlay: getHmrOverlayApi },
+		);
 		return;
 	}
 }

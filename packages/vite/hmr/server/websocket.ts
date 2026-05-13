@@ -68,7 +68,7 @@ import {
 	viteDepsPathToBareSpecifier,
 } from './websocket-module-specifiers.js';
 import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides, type EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
-import { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, extractDirectExportedNames, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest, resolveRuntimeCoreModulePath, type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
+import { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, extractDirectExportedNames, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest, resolveRuntimeCoreModulePath, type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner, type SharedTransformRequestRunnerOptions } from './shared-transform-request.js';
 import { formatNsMHmrServeTag, getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
 import { ensureDynamicHmrImportHelper } from './websocket-served-module-helpers.js';
@@ -76,7 +76,7 @@ import { ensureDynamicHmrImportHelper } from './websocket-served-module-helpers.
 export { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
 export type { EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
 export { stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
-export { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, ensureVersionedCoreImports, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest } from './websocket-core-bridge.js';
+export { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest } from './websocket-core-bridge.js';
 export { rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 // Re-export the canonical URL rewriter from `websocket-ns-m-paths.js` so the
 // existing test suites (which import from `./websocket.js`) keep working
@@ -543,8 +543,7 @@ function stripViteDynamicImportVirtual(code: string): string {
 // is install-once-per-isolate, dedupes per-URL (so semver's ~30 deep
 // imports produce ~30 lines on the first boot and 0 on subsequent
 // boots within the same isolate), and uses `console.warn` so the
-// message reads as advisory (the round-3 finding in
-// LATEST-05-07-2026-HMR_ANGULAR_DEBUG_SESSION.md). Forensic detail
+// message reads as advisory. Forensic detail
 // (stack) lives on `globalThis.__NS_REQUIRE_GUARD_LAST__` for
 // post-mortem inspection. Set `globalThis.__NS_REQUIRE_GUARD_VERBOSE__`
 // to `true` before any module loads to restore per-call logging.
@@ -1373,6 +1372,22 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	// Running the normalizer on libraries like tslib injects harmful destructures
 	// (e.g., `const { SuppressedError } = __ns_rt_ns_1`) that shadow globals.
 	if (!isNodeModule) {
+		// CRITICAL ORDERING: canonicalise any bare `@nativescript/core[/sub]`
+		// specifiers to `/ns/core[/sub]` BEFORE the AST normaliser sees them.
+		// `astNormalizeModuleImportsAndHelpers` defensively rewrites bare
+		// `@nativescript/core` imports and emits a one-shot
+		// `[ast-normalizer] unexpected @nativescript/core spec` warning —
+		// the warning means the upstream rewriter regressed. For Vue SFC
+		// `<script>` blocks the bare specifier flows through Vite's
+		// transform pipeline without a per-statement source-string rewrite
+		// (Vite's resolver only edits the module graph, not the emitted
+		// code), so the only upstream rewriter that can canonicalise these
+		// in dev mode is this regex sweep. Running it here keeps the AST
+		// normaliser purely a tripwire instead of an active rewriter.
+		try {
+			result = sanitizeStrayCoreReferences(result);
+		} catch {}
+
 		try {
 			result = astNormalizeModuleImportsAndHelpers(result);
 		} catch {}
@@ -1562,8 +1577,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		const vendorCoreRE1 = /globalThis\.__nsVendor\s*\(\s*["']@nativescript\/core["']\s*\)/g;
 		const vendorCoreRE2 = /__nsVendor\s*\(\s*["']@nativescript\/core["']\s*\)/g;
 		if (vendorCoreRE1.test(result) || vendorCoreRE2.test(result)) {
-			// Ensure an import for the core bridge exists
-			const hasImport = /import\s+__ns_core_bridge\s+from\s+["'][^"']*\/(?:\@ns|ns)\/core(?:\/[\d]+)?(?:\?p=[^"']+)?["']\s*;?/.test(result) || /(^|\n)\s*import\s+__ns_core_bridge\s+from\s+["']\/(?:\@ns|ns)\/core["']\s*;?/m.test(result);
+			const hasImport = /import\s+__ns_core_bridge\s+from\s+["'][^"']*\/(?:\@ns|ns)\/core(?:\/[^"']+)?["']\s*;?/.test(result) || /(^|\n)\s*import\s+__ns_core_bridge\s+from\s+["']\/(?:\@ns|ns)\/core["']\s*;?/m.test(result);
 			if (!hasImport) {
 				result = `import __ns_core_bridge from "/ns/core";\n` + result;
 			}
@@ -1577,7 +1591,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		const reqCoreRE1 = /(^|[^.\w$])require\(\s*["']@nativescript\/core([^"'\n]*)["']\s*\)/g;
 		const reqCoreRE2 = /(?:globalThis|window|self)\.require\(\s*["']@nativescript\/core([^"'\n]*)["']\s*\)/g;
 		if (reqCoreRE1.test(result) || reqCoreRE2.test(result)) {
-			const hasImport = /import\s+__ns_core_bridge\s+from\s+["'][^"']*\/(?:\@ns|ns)\/core(?:\/[\d]+)?(?:\?p=[^"']+)?["']\s*;?/.test(result) || /(^|\n)\s*import\s+__ns_core_bridge\s+from\s+["']\/(?:\@ns|ns)\/core["']\s*;?/m.test(result);
+			const hasImport = /import\s+__ns_core_bridge\s+from\s+["'][^"']*\/(?:\@ns|ns)\/core(?:\/[^"']+)?["']\s*;?/.test(result) || /(^|\n)\s*import\s+__ns_core_bridge\s+from\s+["']\/(?:\@ns|ns)\/core["']\s*;?/m.test(result);
 			if (!hasImport) {
 				result = `import __ns_core_bridge from "/ns/core";\n` + result;
 			}
@@ -1610,7 +1624,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 						return m.length === 2 ? `${m[0].trim()}: ${m[1].trim()}` : seg;
 					})
 					.join(', ');
-			const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+			const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
 			result = result.replace(reNamed, (_full, pfx: string, specList: string, src: string) => {
 				// Deep subpath URLs serve actual ESM with real named exports — skip.
 				if (isDeepCoreSubpath(src)) return _full;
@@ -1619,7 +1633,7 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 				const decl = `const { ${toDestructureCore(specList)} } = ${tmp};`;
 				return `${pfx}import ${tmp} from ${JSON.stringify(src)};\n${decl}\n`;
 			});
-			const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+			const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
 			result = result.replace(reMixed, (_full, pfx: string, defName: string, specList: string, src: string) => {
 				if (isDeepCoreSubpath(src)) return _full;
 				const decl = `const { ${toDestructureCore(specList)} } = ${defName};`;
@@ -1859,7 +1873,10 @@ function assertNoOptimizedArtifacts(code: string, contextLabel: string): void {
 }
 
 // Ensure there are no lingering named imports from the unified core bridge.
-// Converts named imports from /ns/core[/ver][?p=...] into default import + destructuring.
+// Converts named imports from `/ns/core[/<sub>]` into default import +
+// destructuring. The package-main bridge serves a shape-shifted module whose
+// named exports come from `__ns_core_bridge.default` rather than ESM named
+// exports, so a named-import binding would be `undefined` at evaluation.
 function ensureDestructureCoreImports(code: string): string {
 	try {
 		let result = code;
@@ -1874,8 +1891,8 @@ function ensureDestructureCoreImports(code: string): string {
 					return m.length === 2 ? `${m[0].trim()}: ${m[1].trim()}` : seg;
 				})
 				.join(', ');
-		// import { A, B } from '/ns/core[/ver][?p=...]'
-		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+		// import { A, B } from '/ns/core[/<sub>]'
+		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
 		result = result.replace(reNamed, (_full, pfx: string, specList: string, src: string) => {
 			// Deep subpath URLs serve actual ESM with real named exports — skip.
 			if (isDeepCoreSubpath(src)) return _full;
@@ -1884,8 +1901,8 @@ function ensureDestructureCoreImports(code: string): string {
 			const decl = `const { ${toDestructure(specList)} } = ${tmp};`;
 			return `${pfx}import ${tmp} from ${JSON.stringify(src)};\n${decl}\n`;
 		});
-		// import Default, { A, B } from '/ns/core[...]'
-		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+		// import Default, { A, B } from '/ns/core[/<sub>]'
+		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
 		result = result.replace(reMixed, (_full, pfx: string, defName: string, specList: string, src: string) => {
 			if (isDeepCoreSubpath(src)) return _full;
 			const decl = `const { ${toDestructure(specList)} } = ${defName};`;
@@ -1998,6 +2015,27 @@ function dedupeRtNamedImportsAgainstDestructures(code: string): string {
  */
 export function rewriteImports(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
 	let result = code;
+	// Pre-normalize concatenated imports onto their own lines.
+	//
+	// Babel's `genCode(ast, { retainLines: true })` in
+	// `astNormalizeModuleImportsAndHelpers` (which runs before us in the SFC
+	// asm pipeline, and in several other hot paths) can emit multiple
+	// statements on a single line, e.g.:
+	//   `} = __ns_rt_ns_1;import { $goTo } from "../utils";import PageWrapper from ...;`
+	//
+	// IMPORT_PATTERN_1/_2/_3/SIDE_EFFECT all anchor on `(?:^|\n)\s*import`,
+	// so any import past the first one on a single line is silently dropped
+	// by the rewriter. Downstream that leaves bare relative specifiers like
+	// `../utils` to be resolved by the iOS HTTP ESM loader, which interprets
+	// them relative to the `/ns/asm/0?path=...` URL and 404s on the
+	// resulting `/ns/utils`. Splitting `;import` onto its own line makes the
+	// existing patterns match every import, restoring the rewrite contract.
+	//
+	// Mirrors the same normalization already performed in
+	// `core-sanitize.ts::normalizeStrayCoreStringLiterals` (`;\s*import` →
+	// `;\nimport`) but applied universally at the rewriter entry point so
+	// every caller benefits without having to opt in.
+	result = result.replace(/;\s*import\s+/g, ';\nimport ');
 	const httpOriginSafe = httpOrigin;
 	const mixedRuntimePluginHttpRootPackages = collectMixedRuntimePluginHttpRootPackages(result, projectRoot);
 	const isDynamicImportPrefix = (prefix: string): boolean => /import\(\s*["']?$/.test(prefix.trimStart());
@@ -2016,13 +2054,14 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	try {
 		let coreAliasIdx = 0;
 		const mkAlias = () => `__NSC${coreAliasIdx++}`;
-		// Use the canonical PATH form `/ns/core/<sub>` (NOT the legacy
-		// `/ns/core?p=<sub>` query form). The iOS HTTP ESM loader caches
-		// module records by URL string — if vendor.mjs's external imports
-		// resolve to `/ns/core/<sub>` (via the import map + buildCoreUrl()
-		// canonical generator) and the app's rewritten imports resolve to
-		// `/ns/core?p=<sub>`, V8 creates two distinct module records for
-		// the same logical core subpath. Each gets its own class
+		// Use the canonical PATH form `/ns/core/<sub>`. The iOS HTTP ESM
+		// loader caches module records by URL string — every emitter
+		// (`buildCoreUrl()` / `buildCoreUrlPath()`, the runtime import map,
+		// vendor `require()` shims, app-side rewrites, the cold-boot
+		// preload in `entry-runtime.ts`) MUST produce the same byte
+		// string for the same logical core subpath. A divergence creates
+		// two distinct V8 module records for the same source. Each gets
+		// its own class
 		// identities (TextBase, View, etc.), and side-effect patches
 		// applied to one (e.g. @nativescript-community/text's
 		// `TextBase.prototype.setTextDecorationAndTransform` override
@@ -2395,6 +2434,41 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 					console.log(`[rewrite] dep import: ${spec} → ./${depFile}`);
 				}
 				return `${prefix}./${depFile}${suffix}`;
+			}
+		}
+
+		// ── Bare specifier vendor routing ────────────────────────────
+		// Bare specifiers like `pinia`, `dayjs`, `lodash` never reach
+		// the `nodeModulesSpecifier` branch above because
+		// `normalizeNodeModulesSpecifier` keys on a literal
+		// `/node_modules/` segment in the path. Without this check
+		// they'd fall straight into the HTTP fallback below and get
+		// rewritten to `/ns/m/node_modules/<spec>`, which serves the
+		// package source over HTTP and bypasses the device-side import
+		// map's `<pkg>` → `ns-vendor://<pkg>` entry. For CJS/UMD
+		// packages (e.g. Pinia) the bare HTTP path doesn't expose the
+		// full named-exports surface (only the default export round-
+		// trips), so consumers like
+		// `import { defineStore } from "pinia"` blow up at instantiate
+		// time with `SyntaxError: ... does not provide an export named
+		// 'defineStore'`. Preserving the bare spec lets the vendor
+		// bridge serve it from the prebuilt `bundle.mjs`, which already
+		// re-exports the full CJS surface. Subpath imports
+		// (`pinia/plugins/foo`) intentionally fall through to the
+		// HTTP fallback — `resolveVendorRouting` returns
+		// `{ route: 'http' }` for non-main-entry subpaths even when the
+		// root package is in the manifest, mirroring the
+		// `nodeModulesSpecifier` branch.
+		if (spec && !spec.startsWith('/') && !spec.startsWith('./') && !spec.startsWith('../') && !/^https?:\/\//i.test(spec) && !spec.startsWith('ns-vendor:') && !spec.startsWith('@nativescript/core')) {
+			const bareNpmRe = /^(?:@[A-Za-z0-9][\w.-]*\/)?[A-Za-z0-9][\w.-]*(?:\/[\w.\-/]+)?$/;
+			if (bareNpmRe.test(spec)) {
+				const bareVendorRouting = resolveVendorRouting(spec, projectRoot);
+				if (bareVendorRouting?.route === 'vendor') {
+					if (verbose) {
+						console.log(`[rewrite] bare vendor import: ${spec} → ${bareVendorRouting.bareSpec}`);
+					}
+					return `${prefix}${bareVendorRouting.bareSpec}${suffix}`;
+				}
 			}
 		}
 
@@ -3276,7 +3350,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						const origin = getServerOrigin(server);
 						code = ensureVersionedRtImports(code, origin, graphVersion);
 						code = ACTIVE_STRATEGY.ensureVersionedImports(code, origin, graphVersion);
-						code = ensureVersionedCoreImports(code, origin, graphVersion);
 					} catch {}
 					// Compute rel .mjs output path
 					const specForRel = resolvedCandidate || spec;
@@ -3325,7 +3398,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								try {
 									depCode = ensureVersionedRtImports(depCode, getServerOrigin(server), graphVersion);
 									depCode = ACTIVE_STRATEGY.ensureVersionedImports(depCode, getServerOrigin(server), graphVersion);
-									depCode = ensureVersionedCoreImports(depCode, getServerOrigin(server), graphVersion);
 								} catch {}
 								let depRel = depResolved.replace(/^\//, '').replace(/\.(tsx?|jsx?)$/i, '.mjs');
 								if (!depRel.endsWith('.mjs')) depRel += '.mjs';
@@ -4021,7 +4093,6 @@ export const piniaSymbol = p.piniaSymbol;
 						const verNum = 0;
 						code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
 						code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), verNum);
-						code = ensureVersionedCoreImports(code, getServerOrigin(server), verNum);
 					} catch {}
 					// `/ns/m` URL finalize step.
 					//
@@ -4216,7 +4287,12 @@ export const piniaSymbol = p.piniaSymbol;
 					let code =
 						`// [ns-rt][v2.3] NativeScript-Vue runtime bridge (module-scoped cache, no globals)\n` +
 						`const __origin = ((typeof globalThis !== 'undefined' && globalThis && globalThis.__NS_HTTP_ORIGIN__) || (new URL(import.meta.url)).origin);\n` +
-						`let __ns_core_bridge = null; try { import(__origin + "/ns/core/${rtVer}").then(m => { __ns_core_bridge = m; }).catch(() => {}); } catch {}\n` +
+						// Always target the canonical, unversioned `/ns/core` URL — the
+						// runtime import map maps bare `@nativescript/core` to the same
+						// URL, so vendor `require('@nativescript/core')` and this dynamic
+						// import end up at one iOS HTTP-ESM module record (and one class
+						// identity realm).
+						`let __ns_core_bridge = null; try { import(__origin + "/ns/core").then(m => { __ns_core_bridge = m; }).catch(() => {}); } catch {}\n` +
 						`const g = globalThis;\n` +
 						`const reg = (g.__nsVendorRegistry ||= new Map());\n` +
 						`const req = reg && reg.get ? (g.__nsVendorRequire || g.__nsRequire || g.require) : (g.__nsRequire || g.require);\n` +
@@ -4431,7 +4507,7 @@ export const piniaSymbol = p.piniaSymbol;
 				}
 			});
 
-			// 2.6) ESM bridge for @nativescript/core: GET /ns/core[/<ver>][?p=sub/path]
+			// 2.6) ESM bridge for @nativescript/core: GET /ns/core[/<sub>]
 			//
 			// Since bundle.mjs no longer bundles @nativescript/core (it is
 			// declared external in the rolldown config under HMR), this
@@ -4475,7 +4551,7 @@ export const piniaSymbol = p.piniaSymbol;
 					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 					res.setHeader('Pragma', 'no-cache');
 					res.setHeader('Expires', '0');
-					const { normalizedSub, sub, ver } = coreRequest;
+					const { normalizedSub, sub } = coreRequest;
 
 					const resolveModuleId = async (moduleId: string): Promise<string | null> => {
 						const resolved = await (server as any).pluginContainer?.resolveId?.(moduleId, undefined);
@@ -4504,7 +4580,7 @@ export const piniaSymbol = p.piniaSymbol;
 					// Vite's transform output references module IDs with /@fs,
 					// relative specifiers, or absolute project paths. Rewrite
 					// those to URLs iOS can fetch over HTTP.
-					let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(ver));
+					let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(graphVersion || 0));
 
 					// Invariant D (CJS/ESM interop shape) — EXPORT-SIDE fix.
 					//
@@ -5217,16 +5293,15 @@ export const piniaSymbol = p.piniaSymbol;
 					code = ensureVariableDynamicImportHelper(code);
 					try {
 						// For variant requests under /ns/sfc, prefer the version from the path segment when present
-						// so that any internal '/ns/rt', '/ns/core', or '/ns/sfc' imports are aligned with the same version.
+						// so that any internal '/ns/rt' or '/ns/sfc' imports are aligned with the same version.
+						// `/ns/core` URLs are intentionally unversioned (realm-split history).
 						const verNum = Number(verFromPath || '0');
 						if (Number.isFinite(verNum) && verNum > 0) {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
 							code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), verNum);
-							code = ensureVersionedCoreImports(code, getServerOrigin(server), verNum);
 						} else {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), graphVersion);
 							code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), graphVersion);
-							code = ensureVersionedCoreImports(code, getServerOrigin(server), graphVersion);
 						}
 					} catch {}
 					// Final guard for SFC variant output as well
@@ -5235,7 +5310,7 @@ export const piniaSymbol = p.piniaSymbol;
 					} catch {}
 
 					// CRITICAL: As a last step for script/template variants, re-run AST normalization and strip
-					// any sentinel destructures that could cause duplicate locals, then re-apply core versioning.
+					// any sentinel destructures that could cause duplicate locals, then re-apply rt versioning.
 					try {
 						code = astNormalizeModuleImportsAndHelpers(code);
 					} catch {}
@@ -5247,10 +5322,8 @@ export const piniaSymbol = p.piniaSymbol;
 						const verNum = Number(verFromPath || '0');
 						if (Number.isFinite(verNum) && verNum > 0) {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
-							code = ensureVersionedCoreImports(code, getServerOrigin(server), verNum);
 						} else {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), graphVersion);
-							code = ensureVersionedCoreImports(code, getServerOrigin(server), graphVersion);
 						}
 					} catch {}
 					// Last-chance sanitizer for dangling Vite CJS import helper usages that may surface after late transforms
@@ -5647,9 +5720,6 @@ export const piniaSymbol = p.piniaSymbol;
 							let inlineCode = parts.filter(Boolean).join('\n');
 							inlineCode = processCodeForDevice(inlineCode, false, true);
 							try {
-								inlineCode = ensureVersionedCoreImports(inlineCode, getServerOrigin(server), Number(ver));
-							} catch {}
-							try {
 								inlineCode = ensureDestructureCoreImports(inlineCode);
 							} catch {}
 							// Replace legacy mutation pipeline with canonical assembler for reliability
@@ -5707,9 +5777,6 @@ export const piniaSymbol = p.piniaSymbol;
 								outParts.push('export default __ns_sfc__');
 								let inlineCode2 = outParts.filter(Boolean).join('\n');
 								inlineCode2 = processCodeForDevice(inlineCode2, false, true);
-								try {
-									inlineCode2 = ensureVersionedCoreImports(inlineCode2, getServerOrigin(server), Number(ver));
-								} catch {}
 								try {
 									inlineCode2 = ensureDestructureCoreImports(inlineCode2);
 								} catch {}
@@ -5899,7 +5966,6 @@ export const piniaSymbol = p.piniaSymbol;
 									const origin = getServerOrigin(server);
 									inlineCode2 = ensureVersionedRtImports(inlineCode2, origin, Number(ver));
 									inlineCode2 = ACTIVE_STRATEGY.ensureVersionedImports(inlineCode2, origin, Number(ver));
-									inlineCode2 = ensureVersionedCoreImports(inlineCode2, origin, Number(ver));
 								} catch {}
 								// Normalize imports/helpers via AST to ensure _defineComponent and other helpers are bound once
 								try {
@@ -5993,9 +6059,6 @@ export const piniaSymbol = p.piniaSymbol;
 					// Run full device processing so helper aliasing and globals are consistent in this path too
 					let code = REQUIRE_GUARD_SNIPPET + asm;
 					code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(base), base);
-					try {
-						code = ensureVersionedCoreImports(code, getServerOrigin(server), Number(ver));
-					} catch {}
 					code = rewriteImports(code, base, sfcFileMap, depFileMap, projectRoot, !!verbose, undefined, getServerOrigin(server));
 					try {
 						code = ensureDestructureCoreImports(code);
@@ -6006,7 +6069,6 @@ export const piniaSymbol = p.piniaSymbol;
 						const origin = getServerOrigin(server);
 						code = ensureVersionedRtImports(code, origin, Number(ver));
 						code = ACTIVE_STRATEGY.ensureVersionedImports(code, origin, Number(ver));
-						code = ensureVersionedCoreImports(code, origin, Number(ver));
 					} catch {}
 					// Inline-template body path already runs processCodeForDevice (AST + sanitizers); no additional _defineComponent fix needed
 					res.statusCode = 200;
@@ -6163,9 +6225,6 @@ export const piniaSymbol = p.piniaSymbol;
 									// Reuse existing sanitation chain (lightweight)
 									code = cleanCode(code);
 									code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(resolvedCandidate || spec), resolvedCandidate || spec);
-									try {
-										code = ensureVersionedCoreImports(code, getServerOrigin(server), graphVersion);
-									} catch {}
 									code = rewriteImports(code, spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 									code = ensureVariableDynamicImportHelper(code);
 									code = ensureGuardPlainDynamicImports(code, origin);
@@ -6211,9 +6270,6 @@ export const piniaSymbol = p.piniaSymbol;
 												let depCode = depTrans.code;
 												depCode = cleanCode(depCode);
 												depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
-												try {
-													depCode = ensureVersionedCoreImports(depCode, getServerOrigin(server), graphVersion);
-												} catch {}
 												depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 												depCode = ensureVariableDynamicImportHelper(depCode);
 												depCode = ensureGuardPlainDynamicImports(depCode, origin);

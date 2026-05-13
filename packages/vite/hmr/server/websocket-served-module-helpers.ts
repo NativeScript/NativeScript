@@ -383,7 +383,7 @@ export function ensureDestructureCoreImports(code: string): string {
 					return match.length === 2 ? `${match[0].trim()}: ${match[1].trim()}` : seg;
 				})
 				.join(', ');
-		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
 		result = result.replace(reNamed, (_full, prefix: string, specList: string, src: string) => {
 			if (isDeepCoreSubpath(src)) return _full;
 			const tempName = `__ns_core_ns_re${coreImportCounter > 0 ? `_${coreImportCounter}` : ''}`;
@@ -391,7 +391,7 @@ export function ensureDestructureCoreImports(code: string): string {
 			const decl = `const { ${toDestructure(specList)} } = ${tempName};`;
 			return `${prefix}import ${tempName} from ${JSON.stringify(src)};\n${decl}\n`;
 		});
-		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[\d]+)?(?:\?p=[^"']+)?)['"];?\s*/gm;
+		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
 		result = result.replace(reMixed, (_full, prefix: string, defName: string, specList: string, src: string) => {
 			if (isDeepCoreSubpath(src)) return _full;
 			const decl = `const { ${toDestructure(specList)} } = ${defName};`;

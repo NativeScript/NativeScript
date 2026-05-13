@@ -32,7 +32,7 @@ describe('ns-core-url — Invariant A canonical form', () => {
 		});
 
 		it('strips platform suffix segments to prevent realm splits (.ios.js → bare, .ios → bare)', () => {
-			// Realm-split context (see LATEST-05-12-2026-HMR_CORE_REALM_SPLIT.md):
+			// Realm-split context:
 			// when Vite's alias+extension resolver picks up the platform file
 			// (`ui/text-base/index.ios.js`) and the runtime import map / vendor
 			// path uses the bare subpath (`ui/text-base`), the iOS HTTP ESM
@@ -97,7 +97,6 @@ describe('ns-core-url — Invariant A canonical form', () => {
 			expect(isCoreBridgeUrl('/ns/core/application')).toBe(true);
 			expect(isCoreBridgeUrl('http://localhost:5173/ns/core')).toBe(true);
 			expect(isCoreBridgeUrl('http://localhost:5173/ns/core/ui/core/view')).toBe(true);
-			expect(isCoreBridgeUrl('/ns/core?p=foo')).toBe(true);
 			expect(isCoreBridgeUrl('/node_modules/@nativescript/core/application.js')).toBe(false);
 			expect(isCoreBridgeUrl('http://example.com/other')).toBe(false);
 		});
@@ -108,11 +107,6 @@ describe('ns-core-url — Invariant A canonical form', () => {
 			expect(extractCoreSub('/ns/core/application')).toBe('application');
 			expect(extractCoreSub('http://localhost:5173/ns/core/ui/core/view')).toBe('ui/core/view');
 			expect(extractCoreSub('http://localhost:5173/ns/core')).toBe('');
-		});
-
-		it('tolerates legacy ?p= form', () => {
-			expect(extractCoreSub('/ns/core?p=application')).toBe('application');
-			expect(extractCoreSub('/ns/core/123?p=ui/core/view')).toBe('ui/core/view');
 		});
 	});
 

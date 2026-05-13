@@ -41,7 +41,12 @@ export function buildNsRtBridgeModule(rtVer: string, requireGuardSnippet: string
 	const code =
 		`// [ns-rt][v2.3] NativeScript-Vue runtime bridge (module-scoped cache, no globals)\n` +
 		`const __origin = ((typeof globalThis !== 'undefined' && globalThis && globalThis.__NS_HTTP_ORIGIN__) || (new URL(import.meta.url)).origin);\n` +
-		`let __ns_core_bridge = null; try { import(__origin + "/ns/core/${rtVer}").then(m => { __ns_core_bridge = m; }).catch(() => {}); } catch {}\n` +
+		// Use the canonical, unversioned `/ns/core` URL so this dynamic import
+		// shares an iOS HTTP-ESM module record (and therefore a single class-
+		// identity realm) with vendor `require('@nativescript/core')` lookups
+		// resolved via the runtime import map, plus every app-side import that
+		// goes through the core bridge. The `rtVer` is intentionally unused.
+		`let __ns_core_bridge = null; try { import(__origin + "/ns/core").then(m => { __ns_core_bridge = m; }).catch(() => {}); } catch {}\n` +
 		`const g = globalThis;\n` +
 		`const reg = (g.__nsVendorRegistry ||= new Map());\n` +
 		`const req = reg && reg.get ? (g.__nsVendorRequire || g.__nsRequire || g.require) : (g.__nsRequire || g.require);\n` +

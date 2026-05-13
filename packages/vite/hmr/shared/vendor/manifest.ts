@@ -355,10 +355,42 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		},
 	};
 
+	// Externalize the `solid-js` root specifier for the Solid flavor so
+	// vendor-bundled packages (e.g. `@nativescript-community/solid-js`,
+	// `solid-navigation`, transitively `solid-js/universal` and
+	// `solid-js/store`) don't bake their own copy of solid-js into
+	// vendor.mjs. The dev server's import map (see `import-map.ts`)
+	// redirects bare `solid-js` to the same `/ns/m/node_modules/solid-js/...`
+	// URL that Vite's alias produces for user code and `@solid-refresh`,
+	// so V8 dedupes the three import paths down to a single module
+	// instance — one `Owner` module-local, one reactive graph, one
+	// `$DEVCOMP`/`$PROXY` symbol identity across the whole app.
+	//
+	// Important: scope this to the EXACT bare `solid-js` specifier. Subpaths
+	// like `solid-js/store`, `solid-js/universal`, `solid-js/web` stay
+	// bundleable so vendor packages that import them keep working out of
+	// the box; those subpaths still go through the unified solid-js
+	// runtime via their own `import 'solid-js'` statements (which we just
+	// externalized).
+	const nsSolidJsExternalPlugin: esbuild.Plugin = {
+		name: 'ns-solid-js-external',
+		setup(build) {
+			build.onResolve({ filter: /^solid-js$/ }, (args) => ({
+				path: args.path,
+				external: true,
+			}));
+		},
+	};
+
 	const plugins: esbuild.Plugin[] = [
 		// Mark @nativescript/core external BEFORE other plugins so esbuild never
 		// tries to read/transform core's source files. See comment above.
 		nsCoreExternalPlugin,
+		// For the Solid flavor, externalize `solid-js` so vendor.mjs and the
+		// HTTP-served `@solid-refresh` / user code converge on one runtime
+		// realm. See `nsSolidJsExternalPlugin`'s definition for the full
+		// duplicate-instance rationale.
+		...(flavor === 'solid' ? [nsSolidJsExternalPlugin] : []),
 		// Apply NativeClass transformer to convert @NativeClass decorated classes to ES5 IIFE pattern.
 		// This MUST run before other plugins to ensure proper transformation.
 		createNativeClassEsbuildPlugin(platform as 'android' | 'ios' | 'visionos'),
@@ -601,6 +633,7 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 	};
 
 	const isAngularFlavor = flavor === 'angular';
+	const isSolidFlavor = flavor === 'solid';
 	const addCandidate = (name: string) => {
 		if (!name || shouldSkipDependency(name)) {
 			return;
@@ -610,6 +643,29 @@ function collectVendorModules(projectRoot: string, platform: string, flavor?: st
 		// prevents esbuild from trying to bundle @angular/compiler and its Babel
 		// toolchain, which requires Node built-ins like fs/path/url.
 		if (!isAngularFlavor && (name === '@angular/compiler' || name.startsWith('@angular/'))) {
+			return;
+		}
+		// For the Solid flavor, keep `solid-js` itself OUT of the vendor bundle.
+		//
+		// Both `@solid-refresh` (served via HTTP) and Vite-aliased user code
+		// import `solid-js` through the dev server, while the vendor bundle
+		// pulls it in as a peerDependency of `@nativescript-community/solid-js`.
+		// Two copies → two `Owner` module-locals → the proxy memo created by
+		// `solid-refresh`'s `HMRComp` is registered on the HTTP copy's Owner
+		// (which is always null — hence the
+		// `computations created outside a createRoot or render` warning), while
+		// `render(App, doc)` runs against the vendor copy's Owner. Same chain
+		// breaks HMR propagation: `patchRegistry`'s `setComp` ticks the HTTP
+		// copy's signal but the live page tree subscribes through the vendor
+		// copy's reactive graph, so the new component body never reaches the
+		// screen.
+		//
+		// We pair this skip with the matching esbuild externalization
+		// (`nsSolidJsExternalPlugin`) and an import-map redirect in
+		// `import-map.ts` that points `solid-js` at the HTTP URL. All three
+		// converge on the same dev-server URL, V8 dedupes by URL, and the
+		// app sees a single `solid-js` realm.
+		if (isSolidFlavor && name === 'solid-js') {
 			return;
 		}
 		// Skip already-visited packages to avoid redundant queue processing

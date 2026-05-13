@@ -137,17 +137,23 @@ describe('installHttpCoreCssSupport', () => {
 });
 
 describe('preloadHttpCoreStyleScope', () => {
-	it('preloads the HTTP core style-scope module before CSS application', async () => {
+	it('preloads the canonical `/ns/core/ui/styling/style-scope` URL', async () => {
+		// Every consumer of `@nativescript/core/ui/styling/style-scope` —
+		// this cold-boot preload, app-side imports, vendor `require()`
+		// shims via the runtime import map — must land on the same URL
+		// string so iOS's HTTP-ESM loader keys them to one module record.
+		// Any divergence here re-introduces the class-identity split that
+		// caused the gray-screen `Application.resetRootView` regression
 		const importer = vi.fn().mockResolvedValue({});
-		const result = await preloadHttpCoreStyleScope(importer, 'http://localhost:5173', '7', true);
+		const result = await preloadHttpCoreStyleScope(importer, 'http://localhost:5173', true);
 
-		expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/core/7?p=ui/styling/style-scope.js');
-		expect(result).toMatchObject({ ok: true, url: 'http://localhost:5173/ns/core/7?p=ui/styling/style-scope.js' });
+		expect(importer).toHaveBeenCalledWith('http://localhost:5173/ns/core/ui/styling/style-scope');
+		expect(result).toMatchObject({ ok: true, url: 'http://localhost:5173/ns/core/ui/styling/style-scope' });
 	});
 
 	it('reports failure when the preload import rejects', async () => {
 		const importer = vi.fn().mockRejectedValue(new Error('boom'));
-		const result = await preloadHttpCoreStyleScope(importer, 'http://localhost:5173', '7', true);
+		const result = await preloadHttpCoreStyleScope(importer, 'http://localhost:5173', true);
 
 		expect(result.ok).toBe(false);
 		expect(result.err).toContain('boom');

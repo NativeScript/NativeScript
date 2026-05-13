@@ -49,21 +49,18 @@ export function normalizeStrayCoreStringLiterals(code: string): string {
  * following side-effect import of the core bridge.
  *
  * Example:
- *   import { A, B } from\nimport "/ns/core?p=index.js";
+ *   import { A, B } from\nimport "/ns/core/index";
  * becomes
- *   import { A, B } from "/ns/core?p=index.js";
+ *   import { A, B } from "/ns/core/index";
  */
 export function fixDanglingCoreFrom(code: string): string {
 	if (!code || typeof code !== 'string') return code;
 	try {
-		// Also normalize any concatenated imports before processing
 		code = code.replace(/;\s*import\s+/g, ';\nimport ');
 
 		// Multi-line form: import { ...\n  ...\n} from\nimport "<core-url>";[tail]
 		// Merge into: import { ... } from "<core-url>";\n[tail]
-		// Accepts canonical path form (/ns/core/<sub>), legacy query form
-		// (/ns/core?p=<sub>), and versioned-path form (/ns/core/<ver>/<sub>).
-		code = code.replace(/(^|\n|;)\s*import\s*\{([\s\S]*?)\}\s*from\s*\n\s*import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?(?:\?p=[^"']+)?)["'];?(.*)/g, (_m, pre: string, named: string, url: string, tail: string) => {
+		code = code.replace(/(^|\n|;)\s*import\s*\{([\s\S]*?)\}\s*from\s*\n\s*import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?)["'];?(.*)/g, (_m, pre: string, named: string, url: string, tail: string) => {
 			const prefix = pre ? (String(pre).endsWith(';') ? String(pre) + '\n' : String(pre)) : '';
 			const tailNorm = (tail || '').replace(/^\s*;?\s*/, '').trim();
 			return prefix + `import {${named}} from "${url}";` + (tailNorm ? `\n${tailNorm}` : '');
@@ -75,19 +72,16 @@ export function fixDanglingCoreFrom(code: string): string {
 			const m = /^\s*import\s*\{[^}]+\}\s*from\s*$/.exec(ln);
 			if (m && i + 1 < lines.length) {
 				const next = lines[i + 1];
-				// Support when the next line starts with the core import followed by another ';import ...'
-				// Capture the core import URL and any trailing content after it (another import concatenated)
-				const m2 = /^\s*import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?(?:\?p=[^"']+)?)["'];?(.*)$/.exec(next);
+				const m2 = /^\s*import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?)["'];?(.*)$/.exec(next);
 				if (m2) {
 					const url = m2[1];
 					const tail = m2[2] || '';
 					out.push(ln + ' ' + `"${url}";`);
-					// If there is a tail like ';import { ... } from "..."', normalize it onto a new line
 					const tailNorm = tail.replace(/^\s*;?\s*/, '');
 					if (tailNorm.trim().length > 0) {
 						out.push(tailNorm);
 					}
-					i++; // consume the next line
+					i++;
 					continue;
 				}
 			}
@@ -152,10 +146,10 @@ export function normalizeAnyCoreSpecToBridge(code: string): string {
 		out = out.replace(/(^|\n)\s*import\s+["'][^"']*@nativescript[\/_-]core([^"']*)["'];?/gm, (full, pfx: string, sub: string) => `${pfx}import "${toCoreBridgeUrl(sub)}";`);
 		// Dynamic: import("...@nativescript/core[/sub]...")
 		out = out.replace(/import\(\s*["'][^"']*@nativescript[\/_-]core([^"']*)["']\s*\)/g, (_m, sub: string) => `import("${toCoreBridgeUrl(sub)}")`);
-		// Repair glitch where a previous pass split/merged lines into: "from import '/ns/core...'"
-		// Normalize to a valid specifier: "from '/ns/core...'". Accepts both
-		// canonical path form (/ns/core/<sub>) and legacy ?p= form.
-		out = out.replace(/from\s+import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?(?:\?p=[^"']+)?)['"]/g, (_m, url: string) => `from "${url}"`);
+		// Repair glitch where a previous pass split/merged lines into:
+		// "from import '/ns/core...'". Normalize to a valid specifier:
+		// "from '/ns/core...'".
+		out = out.replace(/from\s+import\s+["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']*)?)['"]/g, (_m, url: string) => `from "${url}"`);
 		return out;
 	} catch {
 		return code;
@@ -314,21 +308,9 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
  * This check is used in all named-import-to-default destructuring passes to
  * skip rewriting for real subpath modules — they have named exports that work
  * natively without conversion.
- *
- * Accepts both the canonical path form (`/ns/core/<sub>`) and the legacy
- * query form (`/ns/core?p=<sub>`) for back-compat; every emitter has been
- * migrated to the path form but external code may still carry the old URL.
  */
 export function isDeepCoreSubpath(url: string): boolean {
 	if (!url || typeof url !== 'string') return false;
-	// Legacy query form
-	const query = url.match(/\?p=([^&'"#]+)/);
-	if (query) {
-		const sub = String(query[1] || '').replace(/^\/+/, '');
-		if (!sub || sub === 'index' || sub === 'index.js') return false;
-		return true;
-	}
-	// Canonical path form — extract the subpath segment following /ns/core/.
 	const path = url.match(/\/ns\/core\/([^?#]+)/);
 	if (!path) return false;
 	const sub = String(path[1] || '').replace(/^\/+|\/+$/g, '');
