@@ -77,7 +77,7 @@ export function computeBootImportProgress(input: { count?: number; elapsedMs?: n
 /**
  * Render the second-line detail for the placeholder. Surfaces the
  * count + last-loaded module path once the snippet has fired, or a
- * generic "Loading the application module graph (Nms)" line during
+ * generic "Loading the module graph (Nms)" line during
  * the pre-snippet window.
  */
 export function formatBootImportDetail(input: { count?: number; lastModule?: string; elapsedMs?: number }): string {

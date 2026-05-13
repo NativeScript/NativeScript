@@ -257,7 +257,26 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			break;
 	}
 
-	const optimizeDepsExclude = ['@nativescript/core', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'];
+	// `module` / `node:module` are aliased to local polyfills (see
+	// `aliasCssTree` and the `node:module` entry in `resolveConfig.alias`).
+	// Vite's depscanner has no awareness of these aliases and, when discovery
+	// is enabled (every non-Angular flavor), happily pre-bundles them at
+	// `/node_modules/.vite/deps/module.js`. The HMR `/ns/m/` pipeline then
+	// runs `rewriteVitePrebundleImportsForDevice`, which maps pre-bundle URLs
+	// back to bare specifiers via the vendor manifest. Because `module` is
+	// NOT a real package (no manifest entry), the mapping returns `null` and
+	// the entire `import { createRequire } from 'module'` line is dropped —
+	// leaving `createRequire` undefined when `css-tree/lib/data-patch.js`
+	// executes on device:
+	//
+	//   ReferenceError: createRequire is not defined
+	//       at .../node_modules/css-tree/lib/data-patch.js
+	//
+	// Excluding both specifiers from optimizeDeps keeps the alias path
+	// intact end-to-end. Angular sets `noDiscovery: true` so it never hits
+	// this in the first place, but adding it here is still safe because the
+	// Angular config rebuilds `optimizeDeps.exclude` from a different list.
+	const optimizeDepsExclude = ['@nativescript/core', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript', 'module', 'node:module'];
 	const optimizeDepsConditions = ['module', 'react-native', 'import', 'browser', 'default'];
 	const optimizeDepsConfig = disableOptimizeDeps
 		? {
