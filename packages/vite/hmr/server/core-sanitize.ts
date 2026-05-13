@@ -100,6 +100,43 @@ export function fixDanglingCoreFrom(code: string): string {
 }
 
 /**
+ * Run the full "rescue any stray @nativescript/core references" pass over the
+ * code in one call. This is the canonical entry point for NS-M served modules
+ * (and any other consumer that wants the safety net). The three sub-passes
+ * cover progressively rarer pipeline accidents:
+ *
+ *   1. `normalizeStrayCoreStringLiterals` — turns naked `"@nativescript/core/foo";`
+ *      string literals (produced by some upstream transforms that bare-stringify
+ *      side-effect imports) back into proper `import "/ns/core/foo";`.
+ *   2. `fixDanglingCoreFrom` — merges multi-line accidents where a `from`
+ *      clause got separated from its specifier across newlines.
+ *   3. `normalizeAnyCoreSpecToBridge` — final regex sweep that catches any
+ *      remaining `from "...@nativescript/core[/sub]..."` references that escaped
+ *      both the AST normalizer and the import rewriter.
+ *
+ * The three sub-passes used to be open-coded at three different call sites in
+ * `websocket.ts`/`websocket-ns-m-finalize.ts`. Centralising here ensures every
+ * NS-M emitter applies the SAME safety net in the SAME order — drift between
+ * those sites is the kind of thing that re-introduces the realm-split bug.
+ *
+ * Returns the (possibly) rewritten code; never throws.
+ */
+export function sanitizeStrayCoreReferences(code: string): string {
+	if (!code || typeof code !== 'string') return code;
+	let out = code;
+	try {
+		out = normalizeStrayCoreStringLiterals(out);
+	} catch {}
+	try {
+		out = fixDanglingCoreFrom(out);
+	} catch {}
+	try {
+		out = normalizeAnyCoreSpecToBridge(out);
+	} catch {}
+	return out;
+}
+
+/**
  * Fallback: normalize ANY import spec that references '@nativescript/core' (including
  * absolute/relative or resolved forms like '/node_modules/@nativescript/core/index.js?v=...')
  * into the unified '/ns/core' bridge before fast-fail assertions.
@@ -152,6 +189,27 @@ function rewriteSpec(spec: string, origin: string, ver: number): string {
 	if (coreIdx !== -1) {
 		const after = cleanSpec.substring(coreIdx + '@nativescript/core'.length);
 		return buildCoreUrlPath(after);
+	}
+
+	// Already-canonicalised bridge URLs deserve a second look — a
+	// `/ns/core/<sub>` URL with a stale platform suffix (`.ios`),
+	// trailing `/index`, or `.js` extension would survive this pass
+	// but be 301-redirected by the bridge handler at runtime, costing
+	// an extra round-trip and risking double-evaluation if iOS caches
+	// both spellings. Run any `/ns/core/...` (or full-origin variant)
+	// back through `buildCoreUrlPath` so the rewriter is the
+	// single point that produces canonical core URLs for the device.
+	const coreBridgePathOnly = cleanSpec.match(/^\/ns\/core(?:\/[^?#]*)?$/);
+	if (coreBridgePathOnly) {
+		const sub = cleanSpec.replace(/^\/ns\/core\/?/, '');
+		return buildCoreUrlPath(sub);
+	}
+	const coreBridgeWithOrigin = cleanSpec.match(/^https?:\/\/[^/]+\/ns\/core(?:\/[^?#]*)?$/);
+	if (coreBridgeWithOrigin) {
+		const sub = cleanSpec.replace(/^https?:\/\/[^/]+\/ns\/core\/?/, '');
+		const canonicalPath = buildCoreUrlPath(sub);
+		const originPrefix = cleanSpec.replace(/\/ns\/core(?:\/.*)?$/, '');
+		return `${originPrefix}${canonicalPath}`;
 	}
 
 	// Already a bridge, vendor, or HTTP URL → leave unchanged

@@ -15,6 +15,16 @@ export type ParsedCoreBridgeRequest = {
 	sub: string;
 	normalizedSub: string | null;
 	key: string;
+	/**
+	 * Set when the incoming path's sub-spec is not in canonical form
+	 * (e.g. trailing `.js`, `/index`, platform suffix, or a `?p=` query).
+	 * The middleware should emit a 301 redirect to this path so iOS only
+	 * ever caches the canonical URL. Empirical Phase 1 telemetry confirmed
+	 * that no current emitter produces non-canonical paths; promoting from
+	 * warn → 301 turns the bridge into the choke point that guarantees
+	 * URL identity across all emitters.
+	 */
+	canonicalPath?: string;
 };
 
 // Detect (and log) `require('http(s)://...')` calls made from CJS shims.
@@ -365,16 +375,45 @@ export function parseCoreBridgeRequest(pathname: string, searchParams: URLSearch
 	// populating globalThis.__NS_CORE_MODULES__.
 	const sub = searchParams.get('p') || (afterCore && !hasExplicitVersion ? afterCore : '');
 	const normalizedSub = sub ? sub.replace(/^\/+/, '') : null;
-	// Guard: normalizeCoreSub is imported at the top of this module so
-	// adding it to the returned request here costs nothing, but keeping
-	// the RAW subpath in `normalizedSub` (matching the historical shape)
-	// preserves wire-level compatibility with specs and external callers.
-	void normalizeCoreSub;
+	// Canonical-form computation: every emitter is expected to canonicalize
+	// core URLs via `buildCoreUrlPath` / `normalizeCoreSub` before the device
+	// fetches them. We compute the canonical form here and, if the incoming
+	// path differs (e.g. `.js` suffix, `/index` trailer, platform suffix, or
+	// the legacy `?p=` query form), expose a `canonicalPath` so the
+	// middleware can 301 the caller to the deterministic URL. This is the
+	// choke point that prevents the realm-split bug from recurring: iOS's
+	// HTTP ESM loader keys its module records by URL string, so allowing
+	// two spellings for the same logical file would re-evaluate the module
+	// in a second realm.
+	//
+	// Note: `sub` / `normalizedSub` keep their RAW shape (matching the
+	// pre-redirect contract and the wire-level spec) so existing call
+	// sites and the test suite remain stable. The redirect signal travels
+	// only on `canonicalPath`.
+	let canonicalPath: string | undefined;
+	if (normalizedSub) {
+		const canonical = normalizeCoreSub(normalizedSub);
+		const expectedPath = canonical ? `/ns/core/${canonical}` : '/ns/core';
+		const usedQuery = !!searchParams.get('p');
+		const isCanonicalIncoming = !usedQuery && pathname === expectedPath;
+		if (!isCanonicalIncoming) {
+			canonicalPath = expectedPath;
+			try {
+				const g = globalThis as any;
+				g.__NS_BRIDGE_NONCANON__ ||= { count: 0, samples: [] };
+				g.__NS_BRIDGE_NONCANON__.count++;
+				if (g.__NS_BRIDGE_NONCANON__.samples.length < 10) {
+					g.__NS_BRIDGE_NONCANON__.samples.push({ raw: normalizedSub, canonical, query: usedQuery, pathname });
+				}
+			} catch {}
+		}
+	}
 	return {
 		hasExplicitVersion,
 		ver,
 		sub: normalizedSub || '',
 		normalizedSub,
 		key: normalizedSub ? `@nativescript/core/${normalizedSub}` : '@nativescript/core',
+		canonicalPath,
 	};
 }

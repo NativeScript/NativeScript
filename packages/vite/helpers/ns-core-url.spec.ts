@@ -31,9 +31,19 @@ describe('ns-core-url — Invariant A canonical form', () => {
 			expect(normalizeCoreSub('application.cjs')).toBe('application');
 		});
 
-		it('keeps platform suffix segments (.ios.js → .ios)', () => {
-			expect(normalizeCoreSub('application/index.ios.js')).toBe('application/index.ios');
-			expect(normalizeCoreSub('ui/core/view.ios.js')).toBe('ui/core/view.ios');
+		it('strips platform suffix segments to prevent realm splits (.ios.js → bare, .ios → bare)', () => {
+			// Realm-split context (see LATEST-05-12-2026-HMR_CORE_REALM_SPLIT.md):
+			// when Vite's alias+extension resolver picks up the platform file
+			// (`ui/text-base/index.ios.js`) and the runtime import map / vendor
+			// path uses the bare subpath (`ui/text-base`), the iOS HTTP ESM
+			// loader caches two distinct module records for the same logical
+			// file. The platform-suffix strip below ensures every emitter
+			// emits the same canonical URL.
+			expect(normalizeCoreSub('application/index.ios.js')).toBe('application');
+			expect(normalizeCoreSub('ui/core/view.ios.js')).toBe('ui/core/view');
+			expect(normalizeCoreSub('ui/text-base/index.ios')).toBe('ui/text-base');
+			expect(normalizeCoreSub('runtime/runtime.android')).toBe('runtime/runtime');
+			expect(normalizeCoreSub('ui/text-base/index.visionos')).toBe('ui/text-base');
 		});
 
 		it('preserves deep subpaths verbatim', () => {

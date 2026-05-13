@@ -1,6 +1,6 @@
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 
-import { fixDanglingCoreFrom, normalizeAnyCoreSpecToBridge, normalizeStrayCoreStringLiterals } from './core-sanitize.js';
+import { sanitizeStrayCoreReferences } from './core-sanitize.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, deduplicateLinkerImports, dedupeRtNamedImportsAgainstDestructures, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, hoistTopLevelStaticImports, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { ensureVersionedCoreImports } from './websocket-core-bridge.js';
 import { formatNsMHmrServeTag, getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
@@ -63,9 +63,7 @@ export async function finalizeNsMServedModule(options: FinalizeNsMServedModuleOp
 
 	try {
 		const previous = code;
-		code = normalizeStrayCoreStringLiterals(code);
-		code = fixDanglingCoreFrom(code);
-		code = normalizeAnyCoreSpecToBridge(code);
+		code = sanitizeStrayCoreReferences(code);
 		if (code !== previous) {
 			code = `// [hmr-sanitize] core-literal->bridge\n${code}`;
 		}

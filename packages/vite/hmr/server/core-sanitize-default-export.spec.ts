@@ -126,13 +126,20 @@ describe('rewriteSpecifiersForDevice', () => {
 	});
 
 	it('rewrites side-effect core imports both at start and mid-file', () => {
+		// All three are normalized to the canonical bare form (no .ios / .js /
+		// /index suffix) — buildCoreUrlPath strips platform suffixes so that
+		// vendor code, app code and the runtime import map all key the same
+		// URL string and iOS evaluates each core module exactly once.
 		const input = ['import "/@fs/Users/x/y/node_modules/@nativescript/core/globals/index.js";', 'import "/ns/core/debugger/webinspector-network.ios";', 'import "/@fs/Users/x/y/node_modules/@nativescript/core/utils/native-helper.ios.js";'].join('\n');
 		const out = rewriteSpecifiersForDevice(input, ORIGIN, VER);
-		// First and third imports must be rewritten; the middle one (already
-		// canonical) must be untouched.
 		expect(out).toContain('import "/ns/core/globals";');
-		expect(out).toContain('import "/ns/core/utils/native-helper.ios";');
-		expect(out).toContain('import "/ns/core/debugger/webinspector-network.ios";');
+		expect(out).toContain('import "/ns/core/utils/native-helper";');
+		// rewriteSpecifiersForDevice canonicalises EVERY spec; an
+		// `/ns/core/debugger/webinspector-network.ios` URL on input is
+		// recognised as containing `@nativescript/core` (via the
+		// `/ns/core` → core-bridge mapping inside `rewriteSpec`) so its
+		// platform suffix is also stripped on output.
+		expect(out).toContain('import "/ns/core/debugger/webinspector-network";');
 		expect(out).not.toContain('/@fs/');
 	});
 

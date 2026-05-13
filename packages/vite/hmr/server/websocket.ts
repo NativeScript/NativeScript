@@ -1,6 +1,6 @@
 import type { Plugin, ViteDevServer, TransformResult } from 'vite';
 import { createRequire } from 'node:module';
-import { normalizeStrayCoreStringLiterals, fixDanglingCoreFrom, normalizeAnyCoreSpecToBridge, isDeepCoreSubpath, rewriteSpecifiersForDevice } from './core-sanitize.js';
+import { sanitizeStrayCoreReferences, isDeepCoreSubpath, rewriteSpecifiersForDevice } from './core-sanitize.js';
 import { buildDefaultExportFooter, buildShapeInstallHeader, hasNamespaceReExport, rewriteNamespaceReExportsForShape } from './ns-core-cjs-shape.js';
 // AST tooling for robust transformations
 import { parse as babelParse } from '@babel/parser';
@@ -1586,18 +1586,11 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		}
 	} catch {}
 
-	// Normalize stray string-literal side-effect lines that still reference @nativescript/core
-	// into proper imports of the unified core bridge. This prevents the local-core-path
-	// fast-fail from triggering due to upstream transforms that emitted naked literals.
-	try {
-		result = normalizeStrayCoreStringLiterals(result);
-	} catch {}
-	try {
-		result = fixDanglingCoreFrom(result);
-	} catch {}
-	try {
-		result = normalizeAnyCoreSpecToBridge(result);
-	} catch {}
+	// Apply the three-pass safety net for stray @nativescript/core references
+	// (naked string literals, dangling `from` merges, lingering resolved-path
+	// references). Centralised in core-sanitize.sanitizeStrayCoreReferences so
+	// every NS-M emitter applies the same passes in the same order.
+	result = sanitizeStrayCoreReferences(result);
 
 	result = ensureVariableDynamicImportHelper(result);
 
@@ -3952,16 +3945,14 @@ export const piniaSymbol = p.piniaSymbol;
 					try {
 						code = ensureGuardPlainDynamicImports(code, getServerOrigin(server));
 					} catch {}
-					// Extra hardening: normalize any remaining core references to the unified bridge
-					// - Stray string-literals
-					// - Dangling `from` merges
-					// - Any spec (including /node_modules resolves) that still references '@nativescript/core'
-					// Do this right before the final fast-fail assertion. If a rewrite occurred, add a small marker for diagnostics.
+					// Extra hardening before the fast-fail assertion: run the
+					// consolidated stray-core-reference safety net. If any
+					// rewrite occurred, leave a diagnostic marker so the
+					// pipeline review log explains why the served code carries
+					// it.
 					try {
 						const __before = code;
-						code = normalizeStrayCoreStringLiterals(code);
-						code = fixDanglingCoreFrom(code);
-						code = normalizeAnyCoreSpecToBridge(code);
+						code = sanitizeStrayCoreReferences(code);
 						if (code !== __before) {
 							code = `// [hmr-sanitize] core-literal->bridge\n` + code;
 						}
@@ -4463,6 +4454,22 @@ export const piniaSymbol = p.piniaSymbol;
 					const urlObj = new URL(req.url || '', 'http://localhost');
 					const coreRequest = parseCoreBridgeRequest(urlObj.pathname, urlObj.searchParams, Number(graphVersion || 0));
 					if (!coreRequest) return next();
+					// Non-canonical incoming URL — every emitter is supposed
+					// to canonicalize before hitting the device. Promote the
+					// drift to a 301 redirect so iOS still gets the file at
+					// the canonical URL (no realm split) but the offending
+					// caller is forced to update. We log the offending raw
+					// pathname so the regression source is easy to find.
+					if (coreRequest.canonicalPath) {
+						try {
+							console.warn(`[ns-core-bridge] 301 ${urlObj.pathname}${urlObj.search} → ${coreRequest.canonicalPath} (non-canonical core URL — please update emitter)`);
+						} catch {}
+						res.setHeader('Access-Control-Allow-Origin', '*');
+						res.setHeader('Location', coreRequest.canonicalPath);
+						res.statusCode = 301;
+						res.end();
+						return;
+					}
 					res.setHeader('Access-Control-Allow-Origin', '*');
 					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
 					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');

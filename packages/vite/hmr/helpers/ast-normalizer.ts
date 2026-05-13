@@ -12,6 +12,27 @@ import { buildCoreUrlPath, specToCoreSub } from '../../helpers/ns-core-url.js';
 // Ensure traverse callable across CJS/ESM builds
 const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 
+// `core-sanitize.rewriteSpec` plus the `ns-core-external-urls` resolve plugin
+// canonicalize every `@nativescript/core[/sub]` import to a `/ns/core/...`
+// bridge URL upstream of this normalizer. Empirical Phase 1 telemetry across
+// cold boot, full app load, and HMR TS/HTML updates showed zero fires for the
+// AST `isNsCorePackage` branches under the Angular pipeline. We keep the
+// rewrite as a defense-in-depth safety net, but if it ever runs we want the
+// drift to be visible immediately — silent re-rewrite is precisely what
+// re-introduced the realm-split bug (see LATEST-05-12-2026-HMR_CORE_REALM_SPLIT.md).
+function reportUnexpectedCoreSpec(kind: string, spec: string): void {
+	try {
+		const g = globalThis as any;
+		g.__NS_AST_CORE_FIRED__ ||= { Import: 0, ImportExpression: 0, ImportCall: 0, RequireCall: 0, samples: [] };
+		const bucket = g.__NS_AST_CORE_FIRED__;
+		const slot = kind as 'Import' | 'ImportExpression' | 'ImportCall' | 'RequireCall';
+		if (typeof bucket[slot] === 'number') bucket[slot]++;
+		const arr = bucket.samples as Array<{ kind: string; src: string }>;
+		if (arr.length < 5) arr.push({ kind, src: spec });
+		console.warn(`[ast-normalizer] unexpected @nativescript/core spec at ${kind}: '${spec}' — upstream rewriter regressed (see LATEST-05-12-2026-HMR_CORE_REALM_SPLIT.md)`);
+	} catch {}
+}
+
 // Normalize imports and helper aliases deterministically.
 // Contract:
 // - Input: arbitrary JS/TS module text
@@ -94,16 +115,21 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 				if (isVueLike(src)) {
 					path.node.source = t.stringLiteral('/ns/rt');
 				} else if (isNsCorePackage(src)) {
-					// Rewrite any @nativescript/core[/sub] to the canonical bridge
-					// URL preserving the subpath. The /ns/core bridge serves each
-					// subpath as a real ESM module, so consumers can keep their
-					// named imports instead of going through the default-export
-					// destructure required for the package-main namespace. The
-					// downstream named→destructure transform still runs for
-					// already-rewritten URLs (matched by `isCoreLike` below) when
-					// callers want that shape.
-					const sub = specToCoreSub(src) || '';
-					path.node.source = t.stringLiteral(buildCoreUrlPath(sub));
+					// Defense-in-depth: upstream stages (`core-sanitize`
+					// `rewriteSpec` + the `ns-core-external-urls` resolve
+					// plugin) are supposed to have already converted every
+					// `@nativescript/core[/sub]` to a canonical bridge URL
+					// before the AST normalizer runs. Empirical Phase 1
+					// telemetry for Angular showed zero fires across cold
+					// boot, full app load, and HMR TS/HTML updates, so this
+					// path is effectively dead.
+					//
+					// We keep the rewrite but log a one-shot warning when
+					// it fires so future regressions surface immediately
+					// rather than silently re-introducing the realm-split
+					// bug.
+					reportUnexpectedCoreSpec('Import', src);
+					path.node.source = t.stringLiteral(buildCoreUrlPath(specToCoreSub(src) || ''));
 				} else if (isVitePrebundle(src)) {
 					const id = vitePrebundleId(src);
 					if (id && /^(?:pinia)(?:$|[_\.-])/.test(id)) {
@@ -296,6 +322,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 					if (isVueLike(src)) {
 						path.node.source = t.stringLiteral('/ns/rt');
 					} else if (isNsCorePackage(src)) {
+						reportUnexpectedCoreSpec('ImportExpression', src);
 						path.node.source = t.stringLiteral(buildCoreUrlPath(specToCoreSub(src) || ''));
 					}
 				}
@@ -307,6 +334,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 						if (isVueLike(first.value)) {
 							path.node.arguments[0] = t.stringLiteral('/ns/rt');
 						} else if (isNsCorePackage(first.value)) {
+							reportUnexpectedCoreSpec('ImportCall', first.value);
 							path.node.arguments[0] = t.stringLiteral(buildCoreUrlPath(specToCoreSub(first.value) || ''));
 						}
 					}
@@ -319,6 +347,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 						if (isVueLike(v)) {
 							path.node.arguments[0] = t.stringLiteral('/ns/rt');
 						} else if (isNsCorePackage(v)) {
+							reportUnexpectedCoreSpec('RequireCall', v);
 							path.node.arguments[0] = t.stringLiteral(buildCoreUrlPath(specToCoreSub(v) || ''));
 						}
 					}
