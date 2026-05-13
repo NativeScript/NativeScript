@@ -87,7 +87,7 @@ export function formatBootImportDetail(input: { count?: number; lastModule?: str
 	if (count > 0) {
 		return lastModule ? `Evaluated ${count} modules\n${lastModule}` : `Evaluated ${count} modules`;
 	}
-	return `Loading the application module graph (${elapsedMs}ms)`;
+	return `Loading the module graph (${elapsedMs}ms)`;
 }
 
 /**

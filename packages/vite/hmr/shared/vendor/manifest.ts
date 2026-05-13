@@ -979,11 +979,27 @@ function createVendorEntry(entries: string[]): string {
 `;
 	}
 
-	const imports = entries.map((specifier, index) => `import * as __nsVendor_${index} from ${JSON.stringify(specifier)};`).join('\n');
+	// Emit a side-effect-only import FIRST for each entry, then the namespace
+	// import we actually expose through `__nsVendorModuleMap`. Per the ESM
+	// spec, `import "pkg";` (no clause) guarantees module body evaluation, and
+	// esbuild treats these as DCE-immune even when the package declares
+	// `"sideEffects": false`. Without this, packages whose top-level
+	// statements install runtime patches (e.g. `@nativescript-community/text`
+	// monkey-patching `TextBase.prototype.setTextDecorationAndTransform` via
+	// `overrideSpanAndFormattedString()` invoked from
+	// `@nativescript-community/ui-label/index-common.js` line 12) can have
+	// their bodies elided by esbuild — exports stay resolvable via the
+	// namespace, but the runtime patches never fire, producing line-height /
+	// letter-spacing / formatted-text rendering divergence between HMR
+	// (vendor.mjs via HTTP) and no-HMR (single Rolldown bundle that inlines
+	// everything anyway). This affects any NS plugin that relies on top-level
+	// side-effects to wire up renderer behavior.
+	const sideEffectImports = entries.map((specifier) => `import ${JSON.stringify(specifier)};`).join('\n');
+	const namespaceImports = entries.map((specifier, index) => `import * as __nsVendor_${index} from ${JSON.stringify(specifier)};`).join('\n');
 
 	const modules = entries.map((specifier, index) => `${JSON.stringify(specifier)}: __nsVendor_${index}`).join(',\n  ');
 
-	return `${imports}\n\nexport const __nsVendorModuleMap = {\n  ${modules}\n};\n`;
+	return `${sideEffectImports}\n\n${namespaceImports}\n\nexport const __nsVendorModuleMap = {\n  ${modules}\n};\n`;
 }
 
 function createVendorBundleRuntimeModule(result: VendorBundleResult): string {

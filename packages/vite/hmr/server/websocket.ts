@@ -35,7 +35,7 @@ import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
 import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
-import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
+import { buildCoreUrl, buildCoreUrlPath, normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
@@ -2023,10 +2023,30 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	try {
 		let coreAliasIdx = 0;
 		const mkAlias = () => `__NSC${coreAliasIdx++}`;
-		const coreUrl = (sub?: string) => {
-			const p = (sub || '').replace(/^\//, '');
-			return `${httpOriginSafe || ''}/ns/core` + (p ? `?p=${p}` : '');
-		};
+		// Use the canonical PATH form `/ns/core/<sub>` (NOT the legacy
+		// `/ns/core?p=<sub>` query form). The iOS HTTP ESM loader caches
+		// module records by URL string — if vendor.mjs's external imports
+		// resolve to `/ns/core/<sub>` (via the import map + buildCoreUrl()
+		// canonical generator) and the app's rewritten imports resolve to
+		// `/ns/core?p=<sub>`, V8 creates two distinct module records for
+		// the same logical core subpath. Each gets its own class
+		// identities (TextBase, View, etc.), and side-effect patches
+		// applied to one (e.g. @nativescript-community/text's
+		// `TextBase.prototype.setTextDecorationAndTransform` override
+		// installed when vendor.mjs evaluates `overrideSpanAndFormattedString()`
+		// from `@nativescript-community/ui-label/index-common.js`) are
+		// invisible to the other — manifesting as inconsistent line-height /
+		// letter-spacing rendering between HMR and no-HMR.
+		//
+		// Mirrors `normalizeCoreSub()` (helpers/ns-core-url.ts) so the URL
+		// produced here is byte-identical to what `buildCoreUrl()` produces
+		// for the bundle entry, import map, and external-urls plugin.
+		// Delegate to the ONE canonical URL builder so every emitter (this
+		// rewriter, core-sanitize, the runtime import map, the ns-core-external-urls
+		// build plugin, and main-entry) produces byte-identical URLs for
+		// the same logical core module. Any drift here would re-introduce
+		// the realm-split bug.
+		const coreUrl = (sub?: string) => (httpOriginSafe ? buildCoreUrl(httpOriginSafe, sub) : buildCoreUrlPath(sub));
 		// Case 1: import { A, B } from '@nativescript/core[/sub]'
 		result = result.replace(/(^|\n)\s*import\s*\{\s*([^}]+?)\s*\}\s*from\s+["']@nativescript\/core([^"'\n]*)["'];?/g, (_m, pfx: string, names: string, sub: string) => {
 			const alias = mkAlias();

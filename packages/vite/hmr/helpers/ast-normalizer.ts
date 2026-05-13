@@ -7,6 +7,7 @@ import { parse as babelParse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { genCode } from './babel.js';
+import { buildCoreUrlPath, specToCoreSub } from '../../helpers/ns-core-url.js';
 
 // Ensure traverse callable across CJS/ESM builds
 const babelTraverse: any = (traverse as any)?.default || (traverse as any);
@@ -93,8 +94,16 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 				if (isVueLike(src)) {
 					path.node.source = t.stringLiteral('/ns/rt');
 				} else if (isNsCorePackage(src)) {
-					// Rewrite any @nativescript/core[/*] to the HTTP-ESM bridge
-					path.node.source = t.stringLiteral('/ns/core');
+					// Rewrite any @nativescript/core[/sub] to the canonical bridge
+					// URL preserving the subpath. The /ns/core bridge serves each
+					// subpath as a real ESM module, so consumers can keep their
+					// named imports instead of going through the default-export
+					// destructure required for the package-main namespace. The
+					// downstream named→destructure transform still runs for
+					// already-rewritten URLs (matched by `isCoreLike` below) when
+					// callers want that shape.
+					const sub = specToCoreSub(src) || '';
+					path.node.source = t.stringLiteral(buildCoreUrlPath(sub));
 				} else if (isVitePrebundle(src)) {
 					const id = vitePrebundleId(src);
 					if (id && /^(?:pinia)(?:$|[_\.-])/.test(id)) {
@@ -287,7 +296,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 					if (isVueLike(src)) {
 						path.node.source = t.stringLiteral('/ns/rt');
 					} else if (isNsCorePackage(src)) {
-						path.node.source = t.stringLiteral('/ns/core');
+						path.node.source = t.stringLiteral(buildCoreUrlPath(specToCoreSub(src) || ''));
 					}
 				}
 			},
@@ -298,7 +307,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 						if (isVueLike(first.value)) {
 							path.node.arguments[0] = t.stringLiteral('/ns/rt');
 						} else if (isNsCorePackage(first.value)) {
-							path.node.arguments[0] = t.stringLiteral('/ns/core');
+							path.node.arguments[0] = t.stringLiteral(buildCoreUrlPath(specToCoreSub(first.value) || ''));
 						}
 					}
 					return;
@@ -310,7 +319,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 						if (isVueLike(v)) {
 							path.node.arguments[0] = t.stringLiteral('/ns/rt');
 						} else if (isNsCorePackage(v)) {
-							path.node.arguments[0] = t.stringLiteral('/ns/core');
+							path.node.arguments[0] = t.stringLiteral(buildCoreUrlPath(specToCoreSub(v) || ''));
 						}
 					}
 				}

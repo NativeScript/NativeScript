@@ -5,6 +5,7 @@ describe('installHttpCoreCssSupport', () => {
 	beforeEach(() => {
 		delete (globalThis as any).__NS_HMR_APPLY_CSS__;
 		delete (globalThis as any).__NS_HMR_APP_CSS__;
+		delete (globalThis as any).__NS_HMR_APP_CSS_AST__;
 		delete (globalThis as any).__NS_HMR_HTTP_APP_CSS_APPLIED__;
 		delete (globalThis as any).addTaggedAdditionalCSS;
 		delete (globalThis as any).removeTaggedAdditionalCSS;
@@ -87,6 +88,51 @@ describe('installHttpCoreCssSupport', () => {
 
 	it('returns null when the coreModule does not expose Application.addCss', () => {
 		expect(installHttpCoreCssSupport({})).toBeNull();
+	});
+
+	it('cold-boot prefers the rework AST stashed on globalThis over the raw text fallback', () => {
+		// `helpers/main-entry.ts` stashes the rework AST on
+		// `__NS_HMR_APP_CSS_AST__` so HMR cold boot mirrors the no-HMR
+		// rolldown bundle's application path. The raw text remains as a
+		// fallback for live HMR edits arriving via the dev-server WS.
+		const addCss = vi.fn();
+		const addTaggedAdditionalCSS = vi.fn(() => true);
+		const removeTaggedAdditionalCSS = vi.fn(() => true);
+		const Application = { addCss, getRootView: vi.fn(() => null) };
+
+		const ast = { type: 'stylesheet', stylesheet: { rules: [{ type: 'rule', selectors: ['.text-sm'], declarations: [{ type: 'declaration', property: 'line-height', value: '20' }] }] } };
+		(globalThis as any).__NS_HMR_APP_CSS_AST__ = ast;
+		(globalThis as any).__NS_HMR_APP_CSS__ = '.text-sm { line-height: 20; }';
+
+		installHttpCoreCssSupport({ Application, addTaggedAdditionalCSS, removeTaggedAdditionalCSS });
+
+		expect(removeTaggedAdditionalCSS).toHaveBeenCalledWith(APP_CSS_TAG);
+		expect(addTaggedAdditionalCSS).toHaveBeenCalledTimes(1);
+		expect(addTaggedAdditionalCSS).toHaveBeenCalledWith(ast, APP_CSS_TAG);
+		expect(addCss).not.toHaveBeenCalled();
+		expect((globalThis as any).__NS_HMR_HTTP_APP_CSS_APPLIED__).toBe(true);
+	});
+
+	it('cold-boot falls back to raw text when the AST apply throws', () => {
+		const addCss = vi.fn();
+		let call = 0;
+		const addTaggedAdditionalCSS = vi.fn(() => {
+			call += 1;
+			if (call === 1) throw new Error('AST not understood');
+			return true;
+		});
+		const removeTaggedAdditionalCSS = vi.fn(() => true);
+		const Application = { addCss, getRootView: vi.fn(() => null) };
+
+		(globalThis as any).__NS_HMR_APP_CSS_AST__ = { type: 'stylesheet', stylesheet: { rules: [] } };
+		(globalThis as any).__NS_HMR_APP_CSS__ = '.x { color: red; }';
+
+		installHttpCoreCssSupport({ Application, addTaggedAdditionalCSS, removeTaggedAdditionalCSS });
+
+		// First call attempts AST; throws. Second call is raw text via applyCss.
+		expect(addTaggedAdditionalCSS).toHaveBeenCalledTimes(2);
+		expect(addTaggedAdditionalCSS).toHaveBeenLastCalledWith('.x { color: red; }', APP_CSS_TAG);
+		expect((globalThis as any).__NS_HMR_HTTP_APP_CSS_APPLIED__).toBe(true);
 	});
 });
 

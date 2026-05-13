@@ -175,6 +175,24 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//
 			// We still export the raw CSS string as default so the entry can seed
 			// `globalThis.__NS_HMR_APP_CSS__` for HMR's HTTP-core-realm replay path.
+			//
+			// We always pre-parse with rework `css` and either:
+			//   - non-HMR: call `addTaggedAdditionalCSS(astJson, 'app.css')` directly
+			//     so the bundled `style-scope` realm gets the styles before any view
+			//     is created.
+			//   - HMR: stash the AST on `globalThis.__NS_HMR_APP_CSS_AST__` so
+			//     `installHttpCoreCssSupport` can apply it via the SAME AST path
+			//     in the HTTP-core realm. Without this, the HTTP path would fall
+			//     back to applying the raw text via `cssTreeParse` at runtime,
+			//     which has produced subtle behavioral mismatches with the rework
+			//     AST (e.g. `.text-sm { line-height: 20 }` rendering with extra
+			//     line spacing under HMR but not under the no-HMR rolldown
+			//     bundle, even though both bundles serialize the identical
+			//     declaration). Pre-parsing once at build time and shipping the
+			//     AST to BOTH paths keeps cold-boot rendering identical between
+			//     the two modes. Live HMR edits still arrive as raw text via the
+			//     dev-server WebSocket, so `installHttpCoreCssSupport` keeps the
+			//     raw-text fallback for that case.
 			if (id === APP_CSS_RESOLVED) {
 				const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
 				const code = fs.readFileSync(appCssPath, 'utf-8');
@@ -184,7 +202,17 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				// use it, and stripping it ~halves the inlined JSON size — same
 				// thing webpack's css2json-loader does.
 				const astJson = JSON.stringify(ast, (key, value) => (key === 'position' ? undefined : value));
-				const lines = [`import { addTaggedAdditionalCSS } from ${JSON.stringify(coreSpec('ui/styling/style-scope'))};`, `addTaggedAdditionalCSS(${astJson}, 'app.css');`, `export default ${JSON.stringify(result.code)};`];
+				const lines: string[] = [];
+				if (opts.hmrActive) {
+					// Stash AST on globalThis BEFORE the entry seeds
+					// `__NS_HMR_APP_CSS__` from this module's default export, so
+					// `installHttpCoreCssSupport` can prefer the AST and match
+					// the no-HMR application path exactly.
+					lines.push(`try { (globalThis).__NS_HMR_APP_CSS_AST__ = ${astJson}; } catch {}`);
+				} else {
+					lines.push(`import { addTaggedAdditionalCSS } from ${JSON.stringify(coreSpec('ui/styling/style-scope'))};`, `addTaggedAdditionalCSS(${astJson}, 'app.css');`);
+				}
+				lines.push(`export default ${JSON.stringify(result.code)};`);
 				return {
 					code: lines.join('\n'),
 					moduleType: 'js',
@@ -512,13 +540,19 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// Import Application statically if needed for CSS or Android activity defer
 			if (hasAppCss || needsAndroidActivityDefer) {
 				if (hasAppCss) {
-					// The virtual module's body calls
-					// `addTaggedAdditionalCSS(ast, 'app.css')` as an import-time
-					// side-effect, so the CSS lands in NS's selector tables before
-					// any view is created. The default export is the raw CSS
-					// string, kept so HMR can seed `__NS_HMR_APP_CSS__` for the
-					// HTTP-core-realm replay path.
-					imports += `// Apply global CSS before app bootstrap (AST applied as a side-effect of this import)\n`;
+					// The virtual module's body either:
+					//   - non-HMR: calls `addTaggedAdditionalCSS(ast, 'app.css')`
+					//     as an import-time side-effect, landing CSS in NS's
+					//     selector tables before any view is created.
+					//   - HMR: stashes the rework AST on
+					//     `globalThis.__NS_HMR_APP_CSS_AST__` so
+					//     `installHttpCoreCssSupport` can apply it via the SAME
+					//     AST path in the HTTP-core realm. The default export
+					//     is the raw CSS string, also seeded onto
+					//     `globalThis.__NS_HMR_APP_CSS__` here as a
+					//     raw-text fallback (used for live HMR edits via the
+					//     dev-server WebSocket).
+					imports += `// Apply global CSS before app bootstrap (AST under non-HMR; AST stashed for HMR cold boot)\n`;
 					imports += `import appCssContent from '${APP_CSS_VIRTUAL_ID}';\n`;
 					if (opts.hmrActive) {
 						imports += `try { globalThis.__NS_HMR_APP_CSS__ = appCssContent; } catch {}\n`;

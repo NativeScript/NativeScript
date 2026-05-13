@@ -35,6 +35,29 @@ export function normalizeCoreSub(sub?: string | null): string {
 	let s = String(sub).split('?')[0].split('#')[0].trim();
 	s = s.replace(/^\/+/, '').replace(/\/+$/, '');
 	s = s.replace(/\.(?:mjs|cjs|js)$/, '');
+	// Strip a trailing platform suffix (`.ios` / `.android` / `.visionos`)
+	// so Vite-resolved platform-specific file paths canonicalize to the
+	// same form the runtime import map uses for the bare subpath.
+	//
+	// Why this matters: when the app source has
+	// `import { TextBase } from '@nativescript/core/ui/text-base'`, Vite's
+	// alias + extension resolver picks `ui/text-base/index.ios.js`. After
+	// `.js` is stripped above we have `ui/text-base/index.ios`. Vendor
+	// code, by contrast, takes the bare specifier path: the runtime
+	// import map's `@nativescript/core/` prefix maps it to
+	// `/ns/core/ui/text-base` directly (no `.ios`). The iOS HTTP ESM
+	// loader caches by URL string, so two spellings of the same file
+	// would produce two distinct V8 module records, re-evaluate
+	// `TextBase`, and create a realm split that leaves the
+	// `@nativescript-community` plugin's `setTextDecorationAndTransform`
+	// override visible to vendor code but invisible to the app.
+	//
+	// Stripping the suffix here normalises both shapes — `ui/text-base/`
+	// `index.ios` and `runtime/runtime.ios` — to the bare form. The
+	// trailing `/index` handler below then collapses
+	// `ui/text-base/index` → `ui/text-base`, and the final `index`
+	// guard collapses the package-main case to ''.
+	s = s.replace(/\.(?:ios|android|visionos)$/, '');
 	// Strip trailing `/index` so that `globals/index` → `globals`, matching
 	// the bare import form that consumers spell as `@nativescript/core/globals`.
 	// The main module case (`index` alone) is handled below.
