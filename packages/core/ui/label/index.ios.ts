@@ -187,45 +187,45 @@ export class Label extends TextBase implements LabelDefinition {
 	[borderTopWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
-		nativeView.borderThickness = {
+		nativeView.borderThickness = new UIEdgeInsets({
 			top: layout.toDeviceIndependentPixels(this.effectiveBorderTopWidth),
 			right: border.right,
 			bottom: border.bottom,
 			left: border.left,
-		};
+		});
 	}
 
 	[borderRightWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
-		nativeView.borderThickness = {
+		nativeView.borderThickness = new UIEdgeInsets({
 			top: border.top,
 			right: layout.toDeviceIndependentPixels(this.effectiveBorderRightWidth),
 			bottom: border.bottom,
 			left: border.left,
-		};
+		});
 	}
 
 	[borderBottomWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
-		nativeView.borderThickness = {
+		nativeView.borderThickness = new UIEdgeInsets({
 			top: border.top,
 			right: border.right,
 			bottom: layout.toDeviceIndependentPixels(this.effectiveBorderBottomWidth),
 			left: border.left,
-		};
+		});
 	}
 
 	[borderLeftWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
-		nativeView.borderThickness = {
+		nativeView.borderThickness = new UIEdgeInsets({
 			top: border.top,
 			right: border.right,
 			bottom: border.bottom,
 			left: layout.toDeviceIndependentPixels(this.effectiveBorderLeftWidth),
-		};
+		});
 	}
 
 	[paddingInternalProperty.setNative](_value: string) {

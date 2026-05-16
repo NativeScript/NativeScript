@@ -489,7 +489,7 @@ export class TextBase extends TextBaseCommon {
 		const top = this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0);
 		const right = this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0);
 		const bottom = this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0);
-		this.nativeViewProtected.setPadding(left, top, right, bottom);
+		this.nativeTextViewProtected.setPadding(left, top, right, bottom);
 	}
 
 	[lineHeightProperty.getDefault](): number {
