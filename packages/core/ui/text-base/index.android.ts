@@ -484,8 +484,12 @@ export class TextBase extends TextBaseCommon {
 		);
 	}
 
-	[paddingInternalProperty.setNative](value: string) {
-		this.nativeViewProtected.setPadding(this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0), this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0), this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0), this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0));
+	[paddingInternalProperty.setNative](_value: string) {
+		const left = this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0);
+		const top = this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0);
+		const right = this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0);
+		const bottom = this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0);
+		this.nativeViewProtected.setPadding(left, top, right, bottom);
 	}
 
 	[lineHeightProperty.getDefault](): number {

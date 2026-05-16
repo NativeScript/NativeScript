@@ -124,7 +124,11 @@ export class Button extends ButtonBase {
 	}
 
 	[paddingInternalProperty.setNative](_value: string) {
-		this.nativeViewProtected.setPadding(this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0), this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0), this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0), this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0));
+		const left = this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0);
+		const top = this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0);
+		const right = this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0);
+		const bottom = this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0);
+		this.nativeViewProtected.setPadding(left, top, right, bottom);
 	}
 
 	[zIndexProperty.setNative](value: number) {
