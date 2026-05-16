@@ -485,12 +485,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[paddingInternalProperty.setNative](value: string) {
-		if (typeof value === 'string') {
-			this.nativeViewProtected.setPadding(this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0), this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0), this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0), this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0));
-		} else {
-			// Reset padding in case of null or any value other than string
-			this.nativeViewProtected.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-		}
+		this.nativeViewProtected.setPadding(this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0), this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0), this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0), this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0));
 	}
 
 	[lineHeightProperty.getDefault](): number {

@@ -1,6 +1,7 @@
 import { ButtonBase } from './button-common';
 import { PseudoClassHandler } from '../core/view';
 import { zIndexProperty, minWidthProperty, minHeightProperty, paddingInternalProperty } from '../styling/style-properties';
+import { Length } from '../styling/length-shared';
 import { textAlignmentProperty } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
@@ -122,13 +123,8 @@ export class Button extends ButtonBase {
 		return { value: dips, unit: 'px' };
 	}
 
-	[paddingInternalProperty.setNative](value: string) {
-		if (typeof value === 'string') {
-			this.nativeViewProtected.setPadding(this.effectivePaddingLeft, this.effectivePaddingTop, this.effectivePaddingRight, this.effectivePaddingBottom);
-		} else {
-			// Reset padding in case of null or any value other than string
-			this.nativeViewProtected.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
-		}
+	[paddingInternalProperty.setNative](_value: string) {
+		this.nativeViewProtected.setPadding(this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0), this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0), this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0), this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0));
 	}
 
 	[zIndexProperty.setNative](value: number) {

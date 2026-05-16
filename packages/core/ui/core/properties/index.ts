@@ -246,7 +246,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 				if (reset) {
 					delete this[key];
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, reset);
+						valueChanged(this, oldValue, value);
 					}
 					if (this[setNative]) {
 						if (this._suspendNativeUpdatesCount) {
@@ -263,7 +263,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 				} else {
 					this[key] = value;
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, reset);
+						valueChanged(this, oldValue, value);
 					}
 					if (this[setNative]) {
 						if (this._suspendNativeUpdatesCount) {
@@ -309,7 +309,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 			if (changed) {
 				owner[key] = value;
 				if (valueChanged) {
-					valueChanged(owner, oldValue, value, false);
+					valueChanged(owner, oldValue, value);
 				}
 
 				if (owner.nativeViewProtected && !(defaultValueKey in owner)) {
@@ -428,7 +428,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 				if (reset) {
 					delete this[key];
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, reset);
+						valueChanged(this, oldValue, value);
 					}
 
 					if (this[setNative]) {
@@ -446,7 +446,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 				} else {
 					this[key] = value;
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, reset);
+						valueChanged(this, oldValue, value);
 					}
 
 					if (this[setNative]) {
@@ -664,7 +664,7 @@ export class CssProperty<T extends Style, U> {
 				if (reset) {
 					delete this[key];
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, reset);
+						valueChanged(this, oldValue, value);
 					}
 
 					if (view[setNative]) {
@@ -682,7 +682,7 @@ export class CssProperty<T extends Style, U> {
 				} else {
 					this[key] = value;
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, reset);
+						valueChanged(this, oldValue, value);
 					}
 
 					if (view[setNative]) {
@@ -748,7 +748,7 @@ export class CssProperty<T extends Style, U> {
 				if (reset) {
 					delete this[key];
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, reset);
+						valueChanged(this, oldValue, value);
 					}
 
 					if (view[setNative]) {
@@ -766,7 +766,7 @@ export class CssProperty<T extends Style, U> {
 				} else {
 					this[key] = value;
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, reset);
+						valueChanged(this, oldValue, value);
 					}
 
 					if (view[setNative]) {
@@ -964,7 +964,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
 					const computedValueChanged = oldValue !== value && (!options.equalityComparer || !options.equalityComparer(oldValue, value));
 
 					if (computedValueChanged && options.valueChanged) {
-						options.valueChanged(this, oldValue, value, !isSet && wasSet);
+						options.valueChanged(this, oldValue, value);
 					}
 
 					if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
@@ -1150,7 +1150,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
 				if (changed) {
 					if (valueChanged) {
-						valueChanged(this, oldValue, value, unsetNativeValue);
+						valueChanged(this, oldValue, value);
 					}
 
 					if (view[setNative]) {

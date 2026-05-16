@@ -349,6 +349,20 @@ export class View extends ViewCommon {
 		return insets;
 	}
 
+	public override _setDefaultPaddings(insets: any): void {
+		if (insets instanceof UIEdgeInsets) {
+			this._defaultPaddingTop = layout.toDevicePixels(insets.top);
+			this._defaultPaddingRight = layout.toDevicePixels(insets.right);
+			this._defaultPaddingBottom = layout.toDevicePixels(insets.bottom);
+			this._defaultPaddingLeft = layout.toDevicePixels(insets.left);
+		} else {
+			this._defaultPaddingTop = 0;
+			this._defaultPaddingRight = 0;
+			this._defaultPaddingBottom = 0;
+			this._defaultPaddingLeft = 0;
+		}
+	}
+
 	public getLocationInWindow(): Point {
 		if (!this.nativeViewProtected || !this.nativeViewProtected.window) {
 			return undefined;
