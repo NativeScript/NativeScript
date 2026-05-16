@@ -11,7 +11,7 @@ export interface PropertyOptions<T, U> {
 	readonly defaultValue?: U;
 	readonly affectsLayout?: boolean;
 	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
+	readonly valueChanged?: (target: T, oldValue: U, newValue: U, unset?: boolean) => void;
 	readonly valueConverter?: (value: string) => U;
 }
 
@@ -46,7 +46,7 @@ export interface CssAnimationPropertyOptions<T, U> {
 	readonly cssName?: string;
 	readonly defaultValue?: U;
 	readonly equalityComparer?: (x: U, y: U) => boolean;
-	readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
+	readonly valueChanged?: (target: T, oldValue: U, newValue: U, unset?: boolean) => void;
 	readonly valueConverter?: (value: string) => U;
 }
 

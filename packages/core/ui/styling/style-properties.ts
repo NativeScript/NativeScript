@@ -404,6 +404,12 @@ export const marginBottomProperty = new CssProperty<Style, CoreTypes.PercentLeng
 });
 marginBottomProperty.register(Style);
 
+export const paddingInternalProperty = new CssProperty<Style, string>({
+	name: 'paddingInternal',
+	cssName: '_paddingInternal',
+});
+paddingInternalProperty.register(Style);
+
 const paddingProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'padding',
 	cssName: 'padding',
@@ -424,10 +430,16 @@ export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>(
 	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: (target, oldValue, newValue, unset) => {
 		const view = target.viewRef.get();
 		if (view) {
 			view.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
+
+			if (unset) {
+				target.paddingInternal = null;
+			} else {
+				target.paddingInternal = `${view.effectivePaddingTop} ${view.effectivePaddingRight} ${view.effectivePaddingBottom} ${view.effectivePaddingLeft}`;
+			}
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
@@ -442,10 +454,16 @@ export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>
 	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: (target, oldValue, newValue, unset) => {
 		const view = target.viewRef.get();
 		if (view) {
 			view.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
+
+			if (unset) {
+				target.paddingInternal = null;
+			} else {
+				target.paddingInternal = `${view.effectivePaddingTop} ${view.effectivePaddingRight} ${view.effectivePaddingBottom} ${view.effectivePaddingLeft}`;
+			}
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
@@ -460,10 +478,16 @@ export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: (target, oldValue, newValue, unset) => {
 		const view = target.viewRef.get();
 		if (view) {
 			view.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
+
+			if (unset) {
+				target.paddingInternal = null;
+			} else {
+				target.paddingInternal = `${view.effectivePaddingTop} ${view.effectivePaddingRight} ${view.effectivePaddingBottom} ${view.effectivePaddingLeft}`;
+			}
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
@@ -478,10 +502,16 @@ export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType
 	defaultValue: CoreTypes.zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
-	valueChanged: (target, oldValue, newValue) => {
+	valueChanged: (target, oldValue, newValue, unset) => {
 		const view = target.viewRef.get();
 		if (view) {
 			view.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
+
+			if (unset) {
+				target.paddingInternal = null;
+			} else {
+				target.paddingInternal = `${view.effectivePaddingTop} ${view.effectivePaddingRight} ${view.effectivePaddingBottom} ${view.effectivePaddingLeft}`;
+			}
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}

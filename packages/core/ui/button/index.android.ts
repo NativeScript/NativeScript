@@ -1,7 +1,6 @@
 import { ButtonBase } from './button-common';
 import { PseudoClassHandler } from '../core/view';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
-import { Length } from '../styling/length-shared';
+import { zIndexProperty, minWidthProperty, minHeightProperty, paddingInternalProperty } from '../styling/style-properties';
 import { textAlignmentProperty } from '../text-base';
 import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
@@ -123,32 +122,13 @@ export class Button extends ButtonBase {
 		return { value: dips, unit: 'px' };
 	}
 
-	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
-		return { value: this._defaultPaddingTop, unit: 'px' };
-	}
-	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
-		org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
-	}
-
-	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
-		return { value: this._defaultPaddingRight, unit: 'px' };
-	}
-	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
-		org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
-	}
-
-	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
-		return { value: this._defaultPaddingBottom, unit: 'px' };
-	}
-	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
-		org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
-	}
-
-	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
-		return { value: this._defaultPaddingLeft, unit: 'px' };
-	}
-	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
-		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
+	[paddingInternalProperty.setNative](value: string) {
+		if (typeof value === 'string') {
+			this.nativeViewProtected.setPadding(this.effectivePaddingLeft, this.effectivePaddingTop, this.effectivePaddingRight, this.effectivePaddingBottom);
+		} else {
+			// Reset padding in case of null or any value other than string
+			this.nativeViewProtected.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+		}
 	}
 
 	[zIndexProperty.setNative](value: number) {

@@ -263,6 +263,8 @@
                 constructor(context: android.content.Context);
                 public getOverflowEdge(): number;
                 public setOverflowEdge(value: number): void;
+                public getPassThroughParent(): boolean;
+                public setPassThroughParent(value: boolean): void;
             }
 
             export module LayoutBase {
