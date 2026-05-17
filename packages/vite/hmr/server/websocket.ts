@@ -19,7 +19,7 @@ import * as path from 'path';
 import { createHash } from 'crypto';
 import * as PAT from './constants.js';
 import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
-import { buildNsRtBridgeModule, discoverNsvBridgeExports } from './websocket-runtime-compat.js';
+import { buildNsRtBridgeModule, discoverNsvBridgeExports } from './ns-rt-bridge.js';
 import { getMonorepoWorkspaceRoot, getPackageJson, getProjectFilePath, getProjectRootPath } from '../../helpers/project.js';
 import { loadPrebuiltVendorManifest } from '../shared/vendor/manifest-loader.js';
 import '../vendor-bootstrap.js';

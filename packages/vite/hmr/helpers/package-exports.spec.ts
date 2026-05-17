@@ -122,4 +122,103 @@ describe('enumeratePackageExports', () => {
 		expect(a.names).toBe(b.names);
 		fixture.cleanup();
 	});
+
+	// Regression: when a re-exported package ships dual CJS/ESM (e.g.
+	// `@vue/runtime-core` has `main: "index.js"` pointing at a CJS shim plus
+	// `exports[".module"]: "./dist/runtime-core.esm-bundler.js"` and
+	// `module: "dist/runtime-core.esm-bundler.js"` carrying the actual ESM),
+	// `createRequire.resolve()` lands on the CJS shim. Parsing that as ESM
+	// yields zero exports — and silently drops the entire re-export chain
+	// behind it. The enumerator MUST honour `exports`/`module` for ESM entry
+	// resolution; otherwise apps using `import { ref } from 'nativescript-vue'`
+	// (which is `export * from '@vue/runtime-core'` underneath) crash with
+	// `TypeError: ref is not a function` once the bridge serves an empty
+	// passthrough surface.
+	it('honours `exports[".module"]` over CJS `main` when recursing into a re-exported dual-format package', () => {
+		// Inner dual-format package: CJS `main` shim that requires nothing real,
+		// real ESM at `dist/index.esm.js` advertised via `exports`.
+		const root = mkdtempSync(path.join(tmpdir(), 'ns-pkg-exports-dual-'));
+		try {
+			const nm = path.join(root, 'node_modules');
+			mkdirSync(nm);
+			const dualDir = path.join(nm, 'dual-pkg');
+			mkdirSync(dualDir);
+			mkdirSync(path.join(dualDir, 'dist'));
+			// CJS shim — parsed as ESM yields no `export` nodes.
+			writeFileSync(path.join(dualDir, 'index.js'), "'use strict';\nmodule.exports = require('./dist/index.cjs.js');\n");
+			writeFileSync(
+				path.join(dualDir, 'package.json'),
+				JSON.stringify({
+					name: 'dual-pkg',
+					main: 'index.js',
+					module: 'dist/index.esm.js',
+					exports: {
+						'.': {
+							module: './dist/index.esm.js',
+							import: './dist/index.esm.js',
+							default: './index.js',
+						},
+					},
+				}),
+			);
+			writeFileSync(path.join(dualDir, 'dist', 'index.esm.js'), 'export const fromEsm = 1;\nexport function alsoFromEsm() {}\n');
+
+			// Consumer that depends on dual-pkg via `export *`.
+			const consumerDir = path.join(nm, 'consumer-pkg');
+			mkdirSync(consumerDir);
+			mkdirSync(path.join(consumerDir, 'dist'));
+			writeFileSync(path.join(consumerDir, 'package.json'), JSON.stringify({ name: 'consumer-pkg', main: 'dist/index.js' }));
+			writeFileSync(path.join(consumerDir, 'dist', 'index.js'), ["export * from 'dual-pkg';", 'export const consumerOwn = 1;'].join('\n'));
+
+			const shape = enumeratePackageExports('consumer-pkg', root);
+			expect(shape.names.has('consumerOwn')).toBe(true);
+			// The whole point: ESM-only names from the dual-format dep must come through.
+			expect(shape.names.has('fromEsm')).toBe(true);
+			expect(shape.names.has('alsoFromEsm')).toBe(true);
+		} finally {
+			try {
+				rmSync(root, { recursive: true, force: true });
+			} catch {}
+		}
+	});
+
+	it('prefers `exports[".module"]` even when both `module` and CJS `main` are present (priority order)', () => {
+		// Locks the priority: `exports.<sub>.module` > `module` > `main`. A
+		// future "just use main" refactor regresses to the bug above.
+		const root = mkdtempSync(path.join(tmpdir(), 'ns-pkg-exports-priority-'));
+		try {
+			const nm = path.join(root, 'node_modules');
+			mkdirSync(nm);
+			const dir = path.join(nm, 'priority-pkg');
+			mkdirSync(dir);
+			mkdirSync(path.join(dir, 'dist'));
+			writeFileSync(path.join(dir, 'cjs-main.js'), "export const fromMain = 'main';\n");
+			writeFileSync(path.join(dir, 'module-field.js'), "export const fromModuleField = 'module-field';\n");
+			writeFileSync(path.join(dir, 'dist', 'esm.js'), "export const fromExportsModule = 'exports-module';\n");
+			writeFileSync(
+				path.join(dir, 'package.json'),
+				JSON.stringify({
+					name: 'priority-pkg',
+					main: 'cjs-main.js',
+					module: 'module-field.js',
+					exports: {
+						'.': { module: './dist/esm.js', default: './cjs-main.js' },
+					},
+				}),
+			);
+			const consumerDir = path.join(nm, 'priority-consumer');
+			mkdirSync(consumerDir);
+			writeFileSync(path.join(consumerDir, 'package.json'), JSON.stringify({ name: 'priority-consumer', main: 'index.js' }));
+			writeFileSync(path.join(consumerDir, 'index.js'), "export * from 'priority-pkg';\n");
+
+			const shape = enumeratePackageExports('priority-consumer', root);
+			expect(shape.names.has('fromExportsModule')).toBe(true);
+			expect(shape.names.has('fromModuleField')).toBe(false);
+			expect(shape.names.has('fromMain')).toBe(false);
+		} finally {
+			try {
+				rmSync(root, { recursive: true, force: true });
+			} catch {}
+		}
+	});
 });

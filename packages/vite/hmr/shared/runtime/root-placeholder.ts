@@ -835,17 +835,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 							// after the synchronous call stack that invoked `Application.run`
 							// has fully unwound, so `nativescript-vue`'s post-`startApp` code
 							// (`setRootApp(app);`) has executed before any view lifecycle fires.
-							try {
-								Promise.resolve().then(__ns_deferred_reset);
-							} catch (e) {
-								// Fallback: if Promise scheduling fails for any reason, run inline.
-								// This restores the pre-fix behaviour rather than silently dropping the reset.
-								try {
-									__ns_deferred_reset();
-								} catch (ee) {
-									console.warn('[ns-placeholder] patched run() error:', ee);
-								}
-							}
+							Promise.resolve().then(__ns_deferred_reset);
 						};
 						(Application as any).run = __ns_dev_patched_run;
 						if (verbose) {

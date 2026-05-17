@@ -70,7 +70,7 @@ export function enumeratePackageExports(packageId: string, projectRoot: string):
 	};
 
 	const rootRequire = createRequireFromDir(root);
-	const entry = safeResolve(rootRequire, packageId);
+	const entry = resolvePackageEsmEntry(packageId, rootRequire);
 	if (!entry) {
 		cache.set(cacheKey, result);
 		return result;
@@ -193,12 +193,149 @@ function resolveSpec(spec: string, dir: string, localRequire: NodeJS.Require | n
 	if (spec.startsWith('/')) {
 		return existsSync(spec) ? spec : null;
 	}
-	// Bare specifier — resolve via the calling file's require to honor
-	// nested node_modules layouts (e.g. `@vue/runtime-core` from inside
-	// `nativescript-vue`).
+	// Bare specifier (e.g. `@vue/runtime-core` from inside `nativescript-vue`).
+	// `createRequire.resolve()` is CJS-first and follows the package's `main`
+	// field, which for dual-format packages like `@vue/runtime-core` points at
+	// a CommonJS shim (`module.exports = require('./dist/…cjs.js')`) — parsing
+	// that as ESM yields zero exports and we silently drop the entire
+	// re-export chain. Use the ESM-aware resolver instead so we land on the
+	// actual `dist/…esm-bundler.js` advertised by `exports[".module"]` /
+	// `module`, where `export { ref, computed, … }` lives.
 	if (localRequire) {
-		const r = safeResolve(localRequire, spec);
-		if (r) return r;
+		return resolvePackageEsmEntry(spec, localRequire);
+	}
+	return null;
+}
+
+/**
+ * Resolve a bare specifier to its ESM entry file by consulting the package's
+ * own `package.json` ESM hints — in priority order:
+ *
+ *   1. `exports[<sub>].module` (Vue, modern dual-format packages)
+ *   2. `exports[<sub>].import`
+ *   3. `exports[<sub>]` shorthand (string form)
+ *   4. top-level `module` field (older dual-format convention)
+ *   5. top-level `main` (last resort; may be CJS — we'll parse what we get)
+ *
+ * `<sub>` is either `"."` (root entry) or `"./relative/subpath"`. Anything not
+ * declared in `exports` falls back to plain CJS resolution.
+ *
+ * Returns the absolute file path, or `null` if the package can't be located.
+ */
+function resolvePackageEsmEntry(spec: string, localRequire: NodeJS.Require): string | null {
+	const { packageName, subpath } = splitBareSpec(spec);
+	if (!packageName) return null;
+
+	// Locate the package's `package.json` from the calling file's vantage point.
+	// Node ≥ 18.6 has `require.resolve('<pkg>/package.json')` working for almost
+	// every layout (including pnpm hoisted/nested), provided the package
+	// declares `package.json` reachable (it is, by default). If the package
+	// opts out of exposing it via `exports`, fall back to walking up from any
+	// resolvable entry.
+	let pkgJsonPath = safeResolve(localRequire, `${packageName}/package.json`);
+	if (!pkgJsonPath) {
+		const someEntry = safeResolve(localRequire, spec);
+		if (someEntry) pkgJsonPath = findPackageJsonUpward(someEntry, packageName);
+	}
+	if (!pkgJsonPath) return null;
+
+	const pkgDir = path.dirname(pkgJsonPath);
+	const pkg = readJsonSafe(pkgJsonPath);
+	if (!pkg) return null;
+
+	const subKey = subpath ? `./${subpath}` : '.';
+	const esmRelative = pickEsmEntryFromManifest(pkg, subKey);
+	if (esmRelative) {
+		const resolved = resolveRelativeInsidePackage(pkgDir, esmRelative);
+		if (resolved) return resolved;
+	}
+
+	// Last-resort fallback: ordinary CJS resolution. Parsing may yield zero
+	// exports (the file is genuinely CJS) — that's acceptable; the caller
+	// treats an empty contribution as "this package adds nothing" rather than
+	// erroring out.
+	return safeResolve(localRequire, spec);
+}
+
+function splitBareSpec(spec: string): { packageName: string; subpath: string } {
+	if (spec.startsWith('@')) {
+		const parts = spec.split('/');
+		if (parts.length < 2) return { packageName: '', subpath: '' };
+		return { packageName: `${parts[0]}/${parts[1]}`, subpath: parts.slice(2).join('/') };
+	}
+	const slash = spec.indexOf('/');
+	if (slash === -1) return { packageName: spec, subpath: '' };
+	return { packageName: spec.slice(0, slash), subpath: spec.slice(slash + 1) };
+}
+
+function readJsonSafe(file: string): any | null {
+	try {
+		return JSON.parse(readFileSync(file, 'utf-8'));
+	} catch {
+		return null;
+	}
+}
+
+function pickEsmEntryFromManifest(pkg: any, subKey: string): string | null {
+	const exportsField = pkg?.exports;
+	if (exportsField && typeof exportsField === 'object') {
+		const entry = exportsField[subKey];
+		const fromConditional = pickEsmFromConditionalExports(entry);
+		if (fromConditional) return fromConditional;
+	}
+	// `exports` as a bare string only applies to the `.` subpath.
+	if (typeof exportsField === 'string' && subKey === '.') return exportsField;
+
+	if (subKey === '.') {
+		if (typeof pkg?.module === 'string') return pkg.module;
+		if (typeof pkg?.main === 'string') return pkg.main;
+		// CommonJS-only packages frequently omit `main`; Node defaults to `index.js`.
+		return 'index.js';
+	}
+	// Subpath without an `exports` mapping: caller falls through to CJS resolution.
+	return null;
+}
+
+function pickEsmFromConditionalExports(entry: any): string | null {
+	if (!entry) return null;
+	if (typeof entry === 'string') return entry;
+	if (typeof entry !== 'object') return null;
+	// Prefer `module` (the de-facto "ESM bundler" condition that Vue, lit,
+	// preact etc. ship), then `import`, then `default`. Skip `node`/`require`
+	// because those usually point at the CJS shim we're explicitly avoiding.
+	for (const key of ['module', 'import', 'default']) {
+		const value = (entry as any)[key];
+		if (typeof value === 'string') return value;
+		if (value && typeof value === 'object') {
+			const nested = pickEsmFromConditionalExports(value);
+			if (nested) return nested;
+		}
+	}
+	return null;
+}
+
+function resolveRelativeInsidePackage(pkgDir: string, rel: string): string | null {
+	const trimmed = rel.replace(/^\.\//, '');
+	const candidates = [trimmed, `${trimmed}.js`, `${trimmed}.mjs`, `${trimmed}.cjs`, `${trimmed}/index.js`, `${trimmed}/index.mjs`];
+	for (const c of candidates) {
+		const p = path.join(pkgDir, c);
+		if (existsSync(p)) return safeRealpath(p);
+	}
+	return null;
+}
+
+function findPackageJsonUpward(startFile: string, expectedName: string): string | null {
+	let dir = path.dirname(startFile);
+	const root = path.parse(dir).root;
+	while (dir && dir !== root) {
+		const candidate = path.join(dir, 'package.json');
+		if (existsSync(candidate)) {
+			const pkg = readJsonSafe(candidate);
+			if (pkg?.name === expectedName) return candidate;
+		}
+		const next = path.dirname(dir);
+		if (next === dir) break;
+		dir = next;
 	}
 	return null;
 }

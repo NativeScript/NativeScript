@@ -214,30 +214,4 @@ describe('installRootPlaceholder — patched Application.run timing', () => {
 		await Promise.resolve();
 		expect(resetSpy).not.toHaveBeenCalled();
 	});
-
-	it('falls back to inline reset if microtask scheduling itself throws', () => {
-		const { application, resetSpy } = setupPlaceholderApplication();
-		// Replace the global Promise with one whose `.then` throws — this is
-		// the only realistic shape of "microtask scheduling failed" the patched
-		// run guards against. The fallback path must still reset so the app
-		// doesn't end up stuck on the placeholder forever.
-		const originalPromise = (globalThis as any).Promise;
-		const brokenPromise: any = {
-			resolve() {
-				return {
-					then() {
-						throw new Error('synthetic Promise.then failure');
-					},
-				};
-			},
-		};
-		(globalThis as any).Promise = brokenPromise;
-		try {
-			const entry = { create: vi.fn(() => ({ tag: 'fake-native-view' })) };
-			(application as any).run(entry);
-			expect(resetSpy).toHaveBeenCalledWith(entry);
-		} finally {
-			(globalThis as any).Promise = originalPromise;
-		}
-	});
 });
