@@ -733,7 +733,13 @@ function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 	const buildTarget = () => {
 		const existingApp = getCurrentApp();
 		const baseProvides = (existingApp && existingApp._context && existingApp._context.provides) || {};
-		const app = AppFactory(normalizeComponent(comp, comp && (comp.__name || comp.name)));
+		// Forward `opts.props` as Vue's rootProps so `$navigateTo(Comp, { props: { … } })`
+		// reaches the destination component. nativescript-vue's stock `$navigateTo`
+		// does the same via `createNativeView(target, options?.props, …)` →
+		// `renderer.createApp(component, props)`. Dropping props here would surface
+		// at the destination as `[Vue warn]: Missing required prop` and any
+		// required-prop component would render with `undefined` bindings.
+		const app = AppFactory(normalizeComponent(comp, comp && (comp.__name || comp.name)), opts && (opts as any).props);
 		switch (TARGET_FLAVOR) {
 			case 'vue':
 				ensurePiniaOnApp(app);

@@ -6,6 +6,7 @@ import * as path from 'path';
 import babelCore from '@babel/core';
 
 import { getPackageJson, getProjectFilePath } from '../../helpers/project.js';
+import { enumeratePackageExports } from '../helpers/package-exports.js';
 
 const pluginTransformTypescript: any = (() => {
 	const requireFromHere = createRequire(import.meta.url);
@@ -37,9 +38,170 @@ function setNoStoreHeaders(res: any): void {
 	res.setHeader('Expires', '0');
 }
 
-export function buildNsRtBridgeModule(rtVer: string, requireGuardSnippet: string): string {
+// Identifiers the bridge must ALWAYS provide, even when static export
+// discovery yields nothing (e.g. when `nativescript-vue` can't be resolved
+// during tests, or when a future bundler tree-shakes an entry). This list
+// matches the historical hand-curated set so the fallback never serves a
+// smaller surface than what apps relied on previously. Discovery is allowed
+// to extend this set with anything else `nativescript-vue` (+ its
+// `@vue/runtime-core` re-export chain) declares; hence the union below.
+const NSV_BASELINE_EXPORTS: ReadonlyArray<string> = Object.freeze([
+	'defineComponent',
+	'resolveComponent',
+	'createVNode',
+	'createTextVNode',
+	'createCommentVNode',
+	'Fragment',
+	'Teleport',
+	'Transition',
+	'TransitionGroup',
+	'KeepAlive',
+	'Suspense',
+	'withCtx',
+	'openBlock',
+	'createBlock',
+	'createElementVNode',
+	'createElementBlock',
+	'renderSlot',
+	'mergeProps',
+	'toHandlers',
+	'renderList',
+	'normalizeProps',
+	'guardReactiveProps',
+	'normalizeClass',
+	'normalizeStyle',
+	'toDisplayString',
+	'withDirectives',
+	'resolveDirective',
+	'withModifiers',
+	'withKeys',
+	'resolveDynamicComponent',
+	'isVNode',
+	'cloneVNode',
+	'isRef',
+	'ref',
+	'shallowRef',
+	'unref',
+	'computed',
+	'reactive',
+	'readonly',
+	'isReactive',
+	'isReadonly',
+	'toRaw',
+	'markRaw',
+	'shallowReactive',
+	'shallowReadonly',
+	'watch',
+	'watchEffect',
+	'watchPostEffect',
+	'watchSyncEffect',
+	'onBeforeMount',
+	'onMounted',
+	'onBeforeUpdate',
+	'onUpdated',
+	'onBeforeUnmount',
+	'onUnmounted',
+	'onActivated',
+	'onDeactivated',
+	'onErrorCaptured',
+	'onRenderTracked',
+	'onRenderTriggered',
+	'nextTick',
+	'h',
+	'provide',
+	'inject',
+	'vShow',
+	'createApp',
+	'registerElement',
+	'createNativeView',
+	'$closeModal',
+	'getCurrentInstance',
+	'render',
+	'ELEMENT_REF',
+]);
+
+// Exports the bridge handles specially — HMR-routed navigation helpers and
+// the Vite client polyfill — must never be emitted as plain passthroughs,
+// or the auto-discovered passthrough would shadow the HMR shim and break
+// navigation. They're emitted from `buildShimExports` instead.
+const NSV_SHIM_OVERRIDES: ReadonlySet<string> = new Set(['$navigateTo', '$navigateBack', '$showModal', 'vite__injectQuery']);
+
+const IDENT_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+
+export interface NsRtBridgeOptions {
+	/** Version segment from `/ns/rt/<ver>`. Retained for the URL dispatcher; the bridge body intentionally ignores it. */
+	rtVer: string;
+	/** Prologue installed verbatim before the bridge body (typically the require URL guard). */
+	requireGuardSnippet: string;
+	/**
+	 * Discovered ESM export names of the underlying vendor package
+	 * (`nativescript-vue`, including its `@vue/runtime-core` re-export
+	 * chain). Each name becomes `export const <name> = (__ensure().<name>);`
+	 * — a single canonical specifier (`/ns/rt`) forwards *every* symbol the
+	 * vendor publishes, eliminating the hand-curated re-export drift that
+	 * caused `createNativeView is not a function` and similar regressions.
+	 *
+	 * If omitted or empty, the bridge falls back to `NSV_BASELINE_EXPORTS`
+	 * so callers that haven't migrated to discovery still get a working
+	 * (if smaller) surface.
+	 */
+	vendorExports?: Iterable<string>;
+}
+
+/**
+ * Build the `/ns/rt` runtime bridge module text.
+ *
+ * Single-realm policy: every named export the vendor package publishes
+ * appears as `export const X = (__ensure().X);` — a constant binding, not a
+ * function wrapper. Constant bindings preserve identity for Vue's Symbol
+ * markers (`Fragment`, `Teleport`, …) AND work transparently for functions
+ * (`ref`, `createApp`, …) since the user code calls the underlying value
+ * directly. Calling `__ensure()` at module evaluation time is safe because
+ * the vendor bundle is registered earlier in the boot graph (vendor.mjs →
+ * `__nsVendorRegistry`), and the bridge resolves the same `nativescript-vue`
+ * record everyone else uses.
+ *
+ * HMR-specific shims (`$navigateTo`, `$navigateBack`, `$showModal`) and the
+ * Vite client polyfill (`vite__injectQuery`) are emitted as opt-in overrides
+ * that replace the passthrough — those exports route through the HMR
+ * navigator instead of the vendor's native version, so the bridge must
+ * provide the override, not the discovered original.
+ */
+export function buildNsRtBridgeModule(options: NsRtBridgeOptions): string;
+// Legacy positional signature: retained so call sites that haven't migrated
+// to the options form keep compiling. Internally normalised to the options
+// shape with an empty `vendorExports` (which triggers the baseline fallback).
+export function buildNsRtBridgeModule(rtVer: string, requireGuardSnippet: string): string;
+export function buildNsRtBridgeModule(arg1: NsRtBridgeOptions | string, arg2?: string): string {
+	const options: NsRtBridgeOptions = typeof arg1 === 'string' ? { rtVer: arg1, requireGuardSnippet: arg2 ?? '' } : arg1;
+	const requireGuardSnippet = options.requireGuardSnippet || '';
+
+	// Union of discovered exports and the baseline, with HMR-shimmed names
+	// removed (they're emitted as opt-in overrides below). Sort for stable
+	// output — useful for diffing the served bridge across requests.
+	const passthrough = new Set<string>(NSV_BASELINE_EXPORTS);
+	if (options.vendorExports) {
+		for (const name of options.vendorExports) {
+			if (typeof name === 'string' && IDENT_RE.test(name)) passthrough.add(name);
+		}
+	}
+	for (const shim of NSV_SHIM_OVERRIDES) passthrough.delete(shim);
+	// Don't shadow our own bridge-internal identifiers, even if the package
+	// happens to publish a colliding name.
+	const RESERVED = new Set(['__realm', '__cached_rt', '__cached_vm', '__ensure', '__get', 'default']);
+	for (const r of RESERVED) passthrough.delete(r);
+	const passthroughNames = Array.from(passthrough).sort();
+
+	const passthroughExports = passthroughNames.map((n) => `export const ${n} = (__ensure().${n});`).join('\n');
+	const defaultListing = passthroughNames.concat(['$navigateTo', '$navigateBack', '$showModal', 'vite__injectQuery']).join(', ');
+
 	const code =
-		`// [ns-rt][v2.3] NativeScript-Vue runtime bridge (module-scoped cache, no globals)\n` +
+		`// [ns-rt][v2.4] NativeScript-Vue runtime bridge (module-scoped cache, no globals)\n` +
+		`// Single-realm policy: every export is a constant binding off the vendor module's\n` +
+		`// canonical instance, so app code, plugins, and the vendor bundle itself share one\n` +
+		`// module record. The set of exports below is derived from the package's static ESM\n` +
+		`// shape (see hmr/helpers/package-exports.ts), not a hand-curated list, so any symbol\n` +
+		`// the vendor publishes flows through automatically.\n` +
 		`const __origin = ((typeof globalThis !== 'undefined' && globalThis && globalThis.__NS_HTTP_ORIGIN__) || (new URL(import.meta.url)).origin);\n` +
 		// Use the canonical, unversioned `/ns/core` URL so this dynamic import
 		// shares an iOS HTTP-ESM module record (and therefore a single class-
@@ -64,6 +226,12 @@ export function buildNsRtBridgeModule(rtVer: string, requireGuardSnippet: string
 		`  __cached_rt = rt;\n` +
 		`  return rt;\n` +
 		`}\n` +
+		// Soft-globals for @nativescript/core when missing (dev-only safety).
+		// This stays even with the auto-derived passthrough because Frame /
+		// Page / Application aren't `nativescript-vue` exports — they're
+		// hoisted onto `globalThis` so the navigation shims (and any legacy
+		// `global.Frame.topmost()`-style call site inside the vendor bundle)
+		// see the same identities served by `/ns/core`.
 		`try {\n` +
 		`  const dev = typeof __DEV__ !== 'undefined' ? __DEV__ : true;\n` +
 		`  if (dev) {\n` +
@@ -75,92 +243,57 @@ export function buildNsRtBridgeModule(rtVer: string, requireGuardSnippet: string
 		`    }\n` +
 		`  }\n` +
 		`} catch {}\n` +
-		`const __get = (k) => { const rt = __ensure(); const v = rt && rt[k]; if (typeof v !== 'function' && v === undefined) { throw new Error('[ns-rt] missing export '+k); } return v; };\n` +
 		`export const __realm = __RT_REALM_TAG;\n` +
-		`export const defineComponent = (...a) => (__get('defineComponent'))(...a);\n` +
-		`export const resolveComponent = (...a) => (__ensure().resolveComponent)(...a);\n` +
-		`export const createVNode = (...a) => (__ensure().createVNode)(...a);\n` +
-		`export const createTextVNode = (...a) => (__ensure().createTextVNode)(...a);\n` +
-		`export const createCommentVNode = (...a) => (__ensure().createCommentVNode)(...a);\n` +
-		`export const Fragment = (__ensure().Fragment);\n` +
-		`export const Teleport = (__ensure().Teleport);\n` +
-		`export const Transition = (__ensure().Transition);\n` +
-		`export const TransitionGroup = (__ensure().TransitionGroup);\n` +
-		`export const KeepAlive = (__ensure().KeepAlive);\n` +
-		`export const Suspense = (__ensure().Suspense);\n` +
-		`export const withCtx = (...a) => (__ensure().withCtx)(...a);\n` +
-		`export const openBlock = (...a) => (__ensure().openBlock)(...a);\n` +
-		`export const createBlock = (...a) => (__ensure().createBlock)(...a);\n` +
-		`export const createElementVNode = (...a) => (__ensure().createElementVNode)(...a);\n` +
-		`export const createElementBlock = (...a) => (__ensure().createElementBlock)(...a);\n` +
-		`export const renderSlot = (...a) => (__ensure().renderSlot)(...a);\n` +
-		`export const mergeProps = (...a) => (__ensure().mergeProps)(...a);\n` +
-		`export const toHandlers = (...a) => (__ensure().toHandlers)(...a);\n` +
-		`export const renderList = (...a) => (__ensure().renderList)(...a);\n` +
-		`export const normalizeProps = (...a) => (__ensure().normalizeProps)(...a);\n` +
-		`export const guardReactiveProps = (...a) => (__ensure().guardReactiveProps)(...a);\n` +
-		`export const normalizeClass = (...a) => (__ensure().normalizeClass)(...a);\n` +
-		`export const normalizeStyle = (...a) => (__ensure().normalizeStyle)(...a);\n` +
-		`export const toDisplayString = (...a) => (__ensure().toDisplayString)(...a);\n` +
-		`export const withDirectives = (...a) => (__ensure().withDirectives)(...a);\n` +
-		`export const resolveDirective = (...a) => (__ensure().resolveDirective)(...a);\n` +
-		`export const withModifiers = (...a) => (__ensure().withModifiers)(...a);\n` +
-		`export const withKeys = (...a) => (__ensure().withKeys)(...a);\n` +
-		`export const resolveDynamicComponent = (...a) => (__ensure().resolveDynamicComponent)(...a);\n` +
-		`export const isVNode = (...a) => (__ensure().isVNode)(...a);\n` +
-		`export const cloneVNode = (...a) => (__ensure().cloneVNode)(...a);\n` +
-		`export const isRef = (...a) => (__ensure().isRef)(...a);\n` +
-		`export const ref = (...a) => (__ensure().ref)(...a);\n` +
-		`export const shallowRef = (...a) => (__ensure().shallowRef)(...a);\n` +
-		`export const unref = (...a) => (__ensure().unref)(...a);\n` +
-		`export const computed = (...a) => (__ensure().computed)(...a);\n` +
-		`export const reactive = (...a) => (__ensure().reactive)(...a);\n` +
-		`export const readonly = (...a) => (__ensure().readonly)(...a);\n` +
-		`export const isReactive = (...a) => (__ensure().isReactive)(...a);\n` +
-		`export const isReadonly = (...a) => (__ensure().isReadonly)(...a);\n` +
-		`export const toRaw = (...a) => (__ensure().toRaw)(...a);\n` +
-		`export const markRaw = (...a) => (__ensure().markRaw)(...a);\n` +
-		`export const shallowReactive = (...a) => (__ensure().shallowReactive)(...a);\n` +
-		`export const shallowReadonly = (...a) => (__ensure().shallowReadonly)(...a);\n` +
-		`export const watch = (...a) => (__ensure().watch)(...a);\n` +
-		`export const watchEffect = (...a) => (__ensure().watchEffect)(...a);\n` +
-		`export const watchPostEffect = (...a) => (__ensure().watchPostEffect)(...a);\n` +
-		`export const watchSyncEffect = (...a) => (__ensure().watchSyncEffect)(...a);\n` +
-		`export const onBeforeMount = (...a) => (__ensure().onBeforeMount)(...a);\n` +
-		`export const onMounted = (...a) => (__ensure().onMounted)(...a);\n` +
-		`export const onBeforeUpdate = (...a) => (__ensure().onBeforeUpdate)(...a);\n` +
-		`export const onUpdated = (...a) => (__ensure().onUpdated)(...a);\n` +
-		`export const onBeforeUnmount = (...a) => (__ensure().onBeforeUnmount)(...a);\n` +
-		`export const onUnmounted = (...a) => (__ensure().onUnmounted)(...a);\n` +
-		`export const onActivated = (...a) => (__ensure().onActivated)(...a);\n` +
-		`export const onDeactivated = (...a) => (__ensure().onDeactivated)(...a);\n` +
-		`export const onErrorCaptured = (...a) => (__ensure().onErrorCaptured)(...a);\n` +
-		`export const onRenderTracked = (...a) => (__ensure().onRenderTracked)(...a);\n` +
-		`export const onRenderTriggered = (...a) => (__ensure().onRenderTriggered)(...a);\n` +
-		`export const nextTick = (...a) => (__ensure().nextTick)(...a);\n` +
-		`export const h = (...a) => (__ensure().h)(...a);\n` +
-		`export const provide = (...a) => (__ensure().provide)(...a);\n` +
-		`export const inject = (...a) => (__ensure().inject)(...a);\n` +
-		`export const vShow = (__ensure().vShow);\n` +
-		`export const createApp = (...a) => (__ensure().createApp)(...a);\n` +
-		`export const registerElement = (...a) => (__ensure().registerElement)(...a);\n` +
+		// Auto-emitted passthrough exports. Discovery-driven, sorted, dedupe'd.
+		passthroughExports +
+		`\n` +
+		// HMR-routed navigation helpers (replace the would-be passthroughs).
+		// These run through `globalThis.__nsNavigateUsingApp` etc. instead of
+		// the vendor's native navigation, so HMR can re-route navigation
+		// targets after module updates.
 		`export const $navigateTo = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); try { if (!(g && g.Frame)) { const ns = (__ns_core_bridge && (__ns_core_bridge.__esModule && __ns_core_bridge.default ? __ns_core_bridge.default : (__ns_core_bridge.default || __ns_core_bridge))) || __ns_core_bridge || {}; if (ns) { if (!g.Frame && ns.Frame) g.Frame = ns.Frame; if (!g.Page && ns.Page) g.Page = ns.Page; if (!g.Application && (ns.Application||ns.app||ns.application)) g.Application = (ns.Application||ns.app||ns.application); } } } catch {} try { const hmrRealm = (g && g.__NS_HMR_REALM__) || 'unknown'; const hasTop = !!(g && g.Frame && g.Frame.topmost && g.Frame.topmost()); const top = hasTop ? g.Frame.topmost() : null; const ctor = top && top.constructor && top.constructor.name; } catch {} if (g && typeof g.__nsNavigateUsingApp === 'function') { try { return g.__nsNavigateUsingApp(...a); } catch (e) { console.error('[ns-rt] $navigateTo app navigator error', e); throw e; } } console.error('[ns-rt] $navigateTo unavailable: app navigator missing'); throw new Error('$navigateTo unavailable: app navigator missing'); } ;\n` +
 		`export const $navigateBack = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$navigateBack || (vm.default && vm.default.$navigateBack))) || (rt && (rt.$navigateBack || (rt.runtimeHelpers && rt.runtimeHelpers.navigateBack))); let res; try { const via = (impl && (impl === (vm && vm.$navigateBack) || impl === (vm && vm.default && vm.default.$navigateBack))) ? 'vm' : (impl ? 'rt' : 'none'); } catch {} try { if (typeof impl === 'function') res = impl(...a); } catch {} try { const top = (g && g.Frame && g.Frame.topmost && g.Frame.topmost()); if (!res && top && top.canGoBack && top.canGoBack()) { res = top.goBack(); } } catch {} try { const hook = g && (g.__NS_HMR_ON_NAVIGATE_BACK || g.__NS_HMR_ON_BACK || g.__nsAttemptBackRemount); if (typeof hook === 'function') hook(); } catch {} return res; }\n` +
 		`export const $showModal = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$showModal || (vm.default && vm.default.$showModal))) || (rt && (rt.$showModal || (rt.runtimeHelpers && rt.runtimeHelpers.showModal))); try { if (typeof impl === 'function') return impl(...a); } catch (e) { } return undefined; }\n` +
-		`export default {\n` +
-		`  defineComponent, resolveComponent, createVNode, createTextVNode, createCommentVNode,\n` +
-		`  Fragment, Teleport, Transition, TransitionGroup, KeepAlive, Suspense, withCtx, openBlock,\n` +
-		`  createBlock, createElementVNode, createElementBlock, renderSlot, mergeProps, toHandlers,\n` +
-		`  renderList, normalizeProps, guardReactiveProps, normalizeClass, normalizeStyle, toDisplayString,\n` +
-		`  withDirectives, resolveDirective, withModifiers, withKeys, resolveDynamicComponent,\n` +
-		`  isVNode, cloneVNode, isRef, ref, shallowRef, unref, computed, reactive, readonly, isReactive, isReadonly, toRaw, markRaw, shallowReactive, shallowReadonly,\n` +
-		`  watch, watchEffect, watchPostEffect, watchSyncEffect, onBeforeMount, onMounted, onBeforeUpdate, onUpdated,\n` +
-		`  onBeforeUnmount, onUnmounted, onActivated, onDeactivated, onErrorCaptured, onRenderTracked, onRenderTriggered, nextTick, h, provide, inject, vShow, createApp, registerElement,\n` +
-		`  $navigateTo, $navigateBack, $showModal\n` +
-		`};\n`;
+		// Vite client polyfill — see the comment in websocket.ts for full rationale.
+		`export const vite__injectQuery = (url, queryToInject) => {\n` +
+		`  if (typeof url !== 'string') return url;\n` +
+		`  if (url[0] !== '.' && url[0] !== '/') return url;\n` +
+		`  const pathname = url.replace(/[?#].*$/, '');\n` +
+		`  let search = '', hash = '';\n` +
+		`  try { const u = new URL(url, 'http://vite.dev'); search = u.search || ''; hash = u.hash || ''; } catch {}\n` +
+		`  return pathname + '?' + queryToInject + (search ? '&' + search.slice(1) : '') + (hash || '');\n` +
+		`};\n` +
+		`export default { ${defaultListing} };\n`;
 
 	return requireGuardSnippet + code;
 }
+
+/**
+ * Resolve the set of names the bridge should re-export for `nativescript-vue`
+ * given a project root. Returns the union of static discovery (via
+ * `enumeratePackageExports`) and the curated baseline. The baseline is the
+ * floor: if discovery fails (package missing, parse error, etc.) the bridge
+ * still serves at least the historical surface.
+ *
+ * Caching lives inside `enumeratePackageExports`, so repeated calls in a dev
+ * session are effectively free.
+ */
+export function discoverNsvBridgeExports(projectRoot: string): Set<string> {
+	const out = new Set<string>(NSV_BASELINE_EXPORTS);
+	try {
+		const shape = enumeratePackageExports('nativescript-vue', projectRoot);
+		for (const n of shape.names) {
+			if (typeof n === 'string' && IDENT_RE.test(n)) out.add(n);
+		}
+	} catch {
+		// Swallow — caller still gets the baseline.
+	}
+	return out;
+}
+
+// Exported for tests so they can assert the floor matches the historical
+// surface without parsing nativescript-vue.
+export const __nsvBaselineExports: ReadonlyArray<string> = NSV_BASELINE_EXPORTS;
 
 async function loadEntryRuntimeContent(verbose: boolean): Promise<string> {
 	let content = '';

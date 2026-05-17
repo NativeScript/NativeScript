@@ -731,68 +731,120 @@ export function installRootPlaceholder(verbose?: boolean) {
 					if (Application && typeof (Application as any).run === 'function') {
 						const _originalRun = (Application as any).run.bind(Application);
 						g['__NS_DEV_ORIGINAL_APP_RUN__'] = _originalRun;
+						// HMR ordering invariant: the patched `Application.run` MUST yield
+						// back to the synchronous caller before any iOS view-lifecycle event
+						// fires on the new root view.
+						//
+						// Concrete bug this guards against: nativescript-vue's `app.start()` is
+						//   const componentInstance = app.mount(createAppRoot(), false, false);
+						//   startApp(componentInstance);   // → Application.run({ create: … })
+						//   setRootApp(app);                // — sets the module-private `rootApp`
+						// In a non-HMR build `Application.run` is `UIApplicationMain`, which
+						// returns control to the iOS runloop and lets `setRootApp(app)` execute
+						// before any `loaded`/`traitCollectionDidChange` callbacks fire. Under
+						// HMR `Application.run` is replaced with synchronous `resetRootView`,
+						// which attaches the root to the window *inside* this call — iOS then
+						// synchronously fires `loaded` on the new view tree, a TabView handler
+						// calls `nativescript-vue`'s `createNativeView`, that reads
+						// `rootApp._context`, and crashes with
+						//   TypeError: Cannot read properties of null (reading '_context')
+						// because `setRootApp(app)` hasn't run yet.
+						//
+						// `setRootApp` is module-private inside the vendor bundle, so the bridge
+						// cannot call it directly. Deferring the synchronous root attachment to a
+						// microtask restores the production timing: every consumer that called
+						// `Application.run(entry)` completes its tail (including private state
+						// setters like `setRootApp`) before iOS triggers lifecycle on the new
+						// root. The microtask runs before any I/O or DOM-tick boundary, so the UI
+						// still appears in the same iOS runloop turn — no user-visible delay.
 						const __ns_dev_patched_run = function __ns_dev_patched_run(entry?: any) {
+							// Detach the launch handler synchronously: by the time the caller
+							// returned from `Application.run()`, the framework owns root-view
+							// management, and we must not re-enter the placeholder path on a
+							// subsequent launch tick.
 							try {
-								// Detach the launch handler, but keep placeholder refs until the
-								// real app root is actually committed.
+								if (Application && (Application as any).off) {
+									(Application as any).off((Application as any).launchEvent, __ns_launch_handler);
+								}
+							} catch {}
+
+							// Frameworks (notably Angular) call `Application.run()` with no
+							// entry — they own the root via launch events and `resetRootView()`
+							// directly. Bailing here keeps `resetRootView(undefined)` from
+							// throwing "Main entry is missing".
+							if (!entry) {
+								if (verbose) console.info('[ns-placeholder] patched run() called with no entry; framework manages root view');
+								return;
+							}
+
+							// Snapshot for the deferred body so a later mutation by the caller
+							// can't observe a half-finished closure.
+							const __ns_deferred_entry = entry;
+
+							const __ns_deferred_reset = () => {
 								try {
-									if (Application && (Application as any).off) {
-										(Application as any).off((Application as any).launchEvent, __ns_launch_handler);
-									}
-								} catch {}
-
-								// When entry is undefined/null, the calling framework (e.g. Angular)
-								// manages root views itself via launch events and resetRootView().
-								// Don't attempt resetRootView(undefined) which throws "Main entry is missing".
-								if (!entry) {
-									if (verbose) console.info('[ns-placeholder] patched run() called with no entry; framework manages root view');
-									return;
-								}
-
-								const isModuleNameEntry = entry && entry.moduleName && !entry.create;
-								if (isModuleNameEntry) {
-									if (typeof (Application as any).resetRootView === 'function') {
-										(Application as any).resetRootView(entry);
-									}
-								} else {
-									// Framework path: two-phase boot with dominative document
-									(Application as any)._rootView = null;
-
-									try {
-										const domModule =
-											g.__nsVendorRegistry?.get?.('dominative') ||
-											(typeof require === 'function'
-												? (() => {
-														try {
-															return require('dominative');
-														} catch {
-															return null;
-														}
-													})()
-												: null);
-										const doc = domModule?.document;
-
-										if (doc && typeof (Application as any).resetRootView === 'function') {
-											(Application as any).resetRootView({ create: () => doc });
-											if (entry && typeof entry.create === 'function') {
-												entry.create();
-											}
-										} else {
-											if (typeof (Application as any).resetRootView === 'function') {
-												(Application as any).resetRootView(entry);
-											}
+									const isModuleNameEntry = __ns_deferred_entry && __ns_deferred_entry.moduleName && !__ns_deferred_entry.create;
+									if (isModuleNameEntry) {
+										if (typeof (Application as any).resetRootView === 'function') {
+											(Application as any).resetRootView(__ns_deferred_entry);
 										}
-									} catch (e2: any) {
-										if (verbose) console.warn('[ns-placeholder] two-phase boot failed:', e2?.message || e2);
+									} else {
+										// Framework path: two-phase boot with dominative document
+										(Application as any)._rootView = null;
+
 										try {
-											if (typeof (Application as any).resetRootView === 'function') {
-												(Application as any).resetRootView(entry);
+											const domModule =
+												g.__nsVendorRegistry?.get?.('dominative') ||
+												(typeof require === 'function'
+													? (() => {
+															try {
+																return require('dominative');
+															} catch {
+																return null;
+															}
+														})()
+													: null);
+											const doc = domModule?.document;
+
+											if (doc && typeof (Application as any).resetRootView === 'function') {
+												(Application as any).resetRootView({ create: () => doc });
+												if (__ns_deferred_entry && typeof __ns_deferred_entry.create === 'function') {
+													__ns_deferred_entry.create();
+												}
+											} else {
+												if (typeof (Application as any).resetRootView === 'function') {
+													(Application as any).resetRootView(__ns_deferred_entry);
+												}
 											}
-										} catch {}
+										} catch (e2: any) {
+											if (verbose) console.warn('[ns-placeholder] two-phase boot failed:', e2?.message || e2);
+											try {
+												if (typeof (Application as any).resetRootView === 'function') {
+													(Application as any).resetRootView(__ns_deferred_entry);
+												}
+											} catch {}
+										}
 									}
+								} catch (e) {
+									console.warn('[ns-placeholder] deferred patched run() error:', e);
 								}
+							};
+
+							// Microtask-defer. `Promise.resolve().then(...)` lands the callback
+							// in the same iOS runloop turn — no perceptible delay — but only
+							// after the synchronous call stack that invoked `Application.run`
+							// has fully unwound, so `nativescript-vue`'s post-`startApp` code
+							// (`setRootApp(app);`) has executed before any view lifecycle fires.
+							try {
+								Promise.resolve().then(__ns_deferred_reset);
 							} catch (e) {
-								console.warn('[ns-placeholder] patched run() error:', e);
+								// Fallback: if Promise scheduling fails for any reason, run inline.
+								// This restores the pre-fix behaviour rather than silently dropping the reset.
+								try {
+									__ns_deferred_reset();
+								} catch (ee) {
+									console.warn('[ns-placeholder] patched run() error:', ee);
+								}
 							}
 						};
 						(Application as any).run = __ns_dev_patched_run;

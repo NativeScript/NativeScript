@@ -280,6 +280,13 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 								const decl = t.variableDeclaration('const', [t.variableDeclarator(t.objectPattern(safeProps), t.identifier(existingRtDefaultLocal))]);
 								path.insertAfter(decl);
 							}
+						}
+						// Always strip ALL remaining ImportSpecifiers from this /ns/rt import.
+						// If `named` is empty here it's either because the source had no named
+						// specifiers, or because they were all nav helpers ($navigateTo/$navigateBack)
+						// filtered above. In the latter case we still need to drop the originals so
+						// the wrapper consts injected later don't collide with a leftover named import.
+						if (path.node.specifiers.some((s) => t.isImportSpecifier(s))) {
 							path.node.specifiers = path.node.specifiers.filter((s) => !t.isImportSpecifier(s));
 						}
 						// Collect any local names introduced by this import for declared set

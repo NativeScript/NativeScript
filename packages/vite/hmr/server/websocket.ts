@@ -19,6 +19,7 @@ import * as path from 'path';
 import { createHash } from 'crypto';
 import * as PAT from './constants.js';
 import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
+import { buildNsRtBridgeModule, discoverNsvBridgeExports } from './websocket-runtime-compat.js';
 import { getMonorepoWorkspaceRoot, getPackageJson, getProjectFilePath, getProjectRootPath } from '../../helpers/project.js';
 import { loadPrebuiltVendorManifest } from '../shared/vendor/manifest-loader.js';
 import '../vendor-bootstrap.js';
@@ -4283,168 +4284,15 @@ export const piniaSymbol = p.piniaSymbol;
 					res.setHeader('Expires', '0');
 					const rtVerSeg = urlObj.pathname.replace(/^\/ns\/rt\/?/, '');
 					const rtVer = /^[0-9]+$/.test(rtVerSeg) ? rtVerSeg : String(graphVersion || 0);
-					const origin = getServerOrigin(server);
-					let code =
-						`// [ns-rt][v2.3] NativeScript-Vue runtime bridge (module-scoped cache, no globals)\n` +
-						`const __origin = ((typeof globalThis !== 'undefined' && globalThis && globalThis.__NS_HTTP_ORIGIN__) || (new URL(import.meta.url)).origin);\n` +
-						// Always target the canonical, unversioned `/ns/core` URL — the
-						// runtime import map maps bare `@nativescript/core` to the same
-						// URL, so vendor `require('@nativescript/core')` and this dynamic
-						// import end up at one iOS HTTP-ESM module record (and one class
-						// identity realm).
-						`let __ns_core_bridge = null; try { import(__origin + "/ns/core").then(m => { __ns_core_bridge = m; }).catch(() => {}); } catch {}\n` +
-						`const g = globalThis;\n` +
-						`const reg = (g.__nsVendorRegistry ||= new Map());\n` +
-						`const req = reg && reg.get ? (g.__nsVendorRequire || g.__nsRequire || g.require) : (g.__nsRequire || g.require);\n` +
-						`let __cached_rt = null;\n` +
-						`let __cached_vm = null;\n` +
-						`const __RT_REALM_TAG = (globalThis.__NS_RT_REALM__ ||= Math.random().toString(36).slice(2));\n` +
-						// One-shot evaluation marker to confirm the bridge is executed on
-						// device. Gated on __NS_ENV_VERBOSE__ so it stays silent unless
-						// the developer opts in via NS_VITE_VERBOSE / VITE_DEBUG_LOGS.
-						`try { if (!(globalThis.__NS_RT_ONCE__ && globalThis.__NS_RT_ONCE__.eval)) { (globalThis.__NS_RT_ONCE__ ||= {}).eval = true; if (globalThis.__NS_ENV_VERBOSE__) console.log('[ns-rt] evaluated', { rtRealm: __RT_REALM_TAG }); } } catch {}\n` +
-						`function __ensure(){\n` +
-						`  if (__cached_rt) return __cached_rt;\n` +
-						`  let vm = null;\n` +
-						`  try { vm = reg && reg.has && reg.has('nativescript-vue') ? reg.get('nativescript-vue') : (typeof req==='function' ? req('nativescript-vue') : null); } catch {}\n` +
-						`  if (!vm) { try { vm = reg && reg.has && reg.has('vue') ? reg.get('vue') : (typeof req==='function' ? req('vue') : null); } catch {} }\n` +
-						`  const rt = (vm && (vm.default ?? vm)) || {};\n` +
-						`  __cached_vm = vm;\n` +
-						`  __cached_rt = rt;\n` +
-						`  return rt;\n` +
-						`}\n` +
-						`// Soft-globals for @nativescript/core when missing (dev-only safety)\n` +
-						`try {\n` +
-						`  const dev = typeof __DEV__ !== 'undefined' ? __DEV__ : true;\n` +
-						`  if (dev) {\n` +
-						`    const ns = (__ns_core_bridge && (__ns_core_bridge.__esModule && __ns_core_bridge.default ? __ns_core_bridge.default : (__ns_core_bridge.default || __ns_core_bridge))) || __ns_core_bridge || {};\n` +
-						`    if (ns) {\n` +
-						`      if (!g.Frame && ns.Frame) g.Frame = ns.Frame;\n` +
-						`      if (!g.Page && ns.Page) g.Page = ns.Page;\n` +
-						`      if (!g.Application && (ns.Application||ns.app||ns.application)) g.Application = (ns.Application||ns.app||ns.application);\n` +
-						`    }\n` +
-						`  }\n` +
-						`} catch {}\n` +
-						`const __get = (k) => { const rt = __ensure(); const v = rt && rt[k]; if (typeof v !== 'function' && v === undefined) { throw new Error('[ns-rt] missing export '+k); } return v; };\n` +
-						`export const __realm = __RT_REALM_TAG;\n` +
-						`export const defineComponent = (...a) => (__get('defineComponent'))(...a);\n` +
-						`export const resolveComponent = (...a) => (__ensure().resolveComponent)(...a);\n` +
-						`export const createVNode = (...a) => (__ensure().createVNode)(...a);\n` +
-						`export const createTextVNode = (...a) => (__ensure().createTextVNode)(...a);\n` +
-						`export const createCommentVNode = (...a) => (__ensure().createCommentVNode)(...a);\n` +
-						`export const Fragment = (__ensure().Fragment);\n` +
-						`export const Teleport = (__ensure().Teleport);\n` +
-						`export const Transition = (__ensure().Transition);\n` +
-						`export const TransitionGroup = (__ensure().TransitionGroup);\n` +
-						`export const KeepAlive = (__ensure().KeepAlive);\n` +
-						`export const Suspense = (__ensure().Suspense);\n` +
-						`export const withCtx = (...a) => (__ensure().withCtx)(...a);\n` +
-						`export const openBlock = (...a) => (__ensure().openBlock)(...a);\n` +
-						`export const createBlock = (...a) => (__ensure().createBlock)(...a);\n` +
-						`export const createElementVNode = (...a) => (__ensure().createElementVNode)(...a);\n` +
-						`export const createElementBlock = (...a) => (__ensure().createElementBlock)(...a);\n` +
-						`export const renderSlot = (...a) => (__ensure().renderSlot)(...a);\n` +
-						`export const mergeProps = (...a) => (__ensure().mergeProps)(...a);\n` +
-						`export const toHandlers = (...a) => (__ensure().toHandlers)(...a);\n` +
-						`export const renderList = (...a) => (__ensure().renderList)(...a);\n` +
-						`export const normalizeProps = (...a) => (__ensure().normalizeProps)(...a);\n` +
-						`export const guardReactiveProps = (...a) => (__ensure().guardReactiveProps)(...a);\n` +
-						`export const normalizeClass = (...a) => (__ensure().normalizeClass)(...a);\n` +
-						`export const normalizeStyle = (...a) => (__ensure().normalizeStyle)(...a);\n` +
-						`export const toDisplayString = (...a) => (__ensure().toDisplayString)(...a);\n` +
-						`export const withDirectives = (...a) => (__ensure().withDirectives)(...a);\n` +
-						`export const resolveDirective = (...a) => (__ensure().resolveDirective)(...a);\n` +
-						`export const withModifiers = (...a) => (__ensure().withModifiers)(...a);\n` +
-						`export const withKeys = (...a) => (__ensure().withKeys)(...a);\n` +
-						`export const resolveDynamicComponent = (...a) => (__ensure().resolveDynamicComponent)(...a);\n` +
-						`export const isVNode = (...a) => (__ensure().isVNode)(...a);\n` +
-						`export const cloneVNode = (...a) => (__ensure().cloneVNode)(...a);\n` +
-						`export const isRef = (...a) => (__ensure().isRef)(...a);\n` +
-						`export const ref = (...a) => (__ensure().ref)(...a);\n` +
-						`export const shallowRef = (...a) => (__ensure().shallowRef)(...a);\n` +
-						`export const unref = (...a) => (__ensure().unref)(...a);\n` +
-						`export const computed = (...a) => (__ensure().computed)(...a);\n` +
-						`export const reactive = (...a) => (__ensure().reactive)(...a);\n` +
-						`export const readonly = (...a) => (__ensure().readonly)(...a);\n` +
-						`export const isReactive = (...a) => (__ensure().isReactive)(...a);\n` +
-						`export const isReadonly = (...a) => (__ensure().isReadonly)(...a);\n` +
-						`export const toRaw = (...a) => (__ensure().toRaw)(...a);\n` +
-						`export const markRaw = (...a) => (__ensure().markRaw)(...a);\n` +
-						`export const shallowReactive = (...a) => (__ensure().shallowReactive)(...a);\n` +
-						`export const shallowReadonly = (...a) => (__ensure().shallowReadonly)(...a);\n` +
-						`export const watch = (...a) => (__ensure().watch)(...a);\n` +
-						`export const watchEffect = (...a) => (__ensure().watchEffect)(...a);\n` +
-						`export const watchPostEffect = (...a) => (__ensure().watchPostEffect)(...a);\n` +
-						`export const watchSyncEffect = (...a) => (__ensure().watchSyncEffect)(...a);\n` +
-						`export const onBeforeMount = (...a) => (__ensure().onBeforeMount)(...a);\n` +
-						`export const onMounted = (...a) => (__ensure().onMounted)(...a);\n` +
-						`export const onBeforeUpdate = (...a) => (__ensure().onBeforeUpdate)(...a);\n` +
-						`export const onUpdated = (...a) => (__ensure().onUpdated)(...a);\n` +
-						`export const onBeforeUnmount = (...a) => (__ensure().onBeforeUnmount)(...a);\n` +
-						`export const onUnmounted = (...a) => (__ensure().onUnmounted)(...a);\n` +
-						`export const onActivated = (...a) => (__ensure().onActivated)(...a);\n` +
-						`export const onDeactivated = (...a) => (__ensure().onDeactivated)(...a);\n` +
-						`export const onErrorCaptured = (...a) => (__ensure().onErrorCaptured)(...a);\n` +
-						`export const onRenderTracked = (...a) => (__ensure().onRenderTracked)(...a);\n` +
-						`export const onRenderTriggered = (...a) => (__ensure().onRenderTriggered)(...a);\n` +
-						`export const nextTick = (...a) => (__ensure().nextTick)(...a);\n` +
-						`export const h = (...a) => (__ensure().h)(...a);\n` +
-						`export const provide = (...a) => (__ensure().provide)(...a);\n` +
-						`export const inject = (...a) => (__ensure().inject)(...a);\n` +
-						`export const vShow = (__ensure().vShow);\n` +
-						`export const createApp = (...a) => (__ensure().createApp)(...a);\n` +
-						`export const registerElement = (...a) => (__ensure().registerElement)(...a);\n` +
-						`export const $navigateTo = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); try { if (!(g && g.Frame)) { const ns = (__ns_core_bridge && (__ns_core_bridge.__esModule && __ns_core_bridge.default ? __ns_core_bridge.default : (__ns_core_bridge.default || __ns_core_bridge))) || __ns_core_bridge || {}; if (ns) { if (!g.Frame && ns.Frame) g.Frame = ns.Frame; if (!g.Page && ns.Page) g.Page = ns.Page; if (!g.Application && (ns.Application||ns.app||ns.application)) g.Application = (ns.Application||ns.app||ns.application); } } } catch {} try { const hmrRealm = (g && g.__NS_HMR_REALM__) || 'unknown'; const hasTop = !!(g && g.Frame && g.Frame.topmost && g.Frame.topmost()); const top = hasTop ? g.Frame.topmost() : null; const ctor = top && top.constructor && top.constructor.name; } catch {} if (g && typeof g.__nsNavigateUsingApp === 'function') { try { return g.__nsNavigateUsingApp(...a); } catch (e) { console.error('[ns-rt] $navigateTo app navigator error', e); throw e; } } console.error('[ns-rt] $navigateTo unavailable: app navigator missing'); throw new Error('$navigateTo unavailable: app navigator missing'); } ;\n` +
-						`export const $navigateBack = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$navigateBack || (vm.default && vm.default.$navigateBack))) || (rt && (rt.$navigateBack || (rt.runtimeHelpers && rt.runtimeHelpers.navigateBack))); let res; try { const via = (impl && (impl === (vm && vm.$navigateBack) || impl === (vm && vm.default && vm.default.$navigateBack))) ? 'vm' : (impl ? 'rt' : 'none'); } catch {} try { if (typeof impl === 'function') res = impl(...a); } catch {} try { const top = (g && g.Frame && g.Frame.topmost && g.Frame.topmost()); if (!res && top && top.canGoBack && top.canGoBack()) { res = top.goBack(); } } catch {} try { const hook = g && (g.__NS_HMR_ON_NAVIGATE_BACK || g.__NS_HMR_ON_BACK || g.__nsAttemptBackRemount); if (typeof hook === 'function') hook(); } catch {} return res; }\n` +
-						`export const $showModal = (...a) => { const vm = (__cached_vm || (void __ensure(), __cached_vm)); const rt = __ensure(); const impl = (vm && (vm.$showModal || (vm.default && vm.default.$showModal))) || (rt && (rt.$showModal || (rt.runtimeHelpers && rt.runtimeHelpers.showModal))); try { if (typeof impl === 'function') return impl(...a); } catch (e) { } return undefined; }\n` +
-						// Vite client helpers re-exported through the runtime bridge.
-						//
-						// Vite's `vite:import-analysis` plugin rewrites unresolvable dynamic
-						// imports (where the URL is not a static string literal) as
-						// `__vite__injectQuery(<expr>, 'import')` and prepends an import
-						// from `/@vite/client`. The /* @vite-ignore */ comment only
-						// suppresses the warning, not the rewrite — Vite gates the rewrite
-						// on `urlIsStringRE`, not `hasViteIgnoreRE`.
-						//
-						// In NativeScript dev, the AST normalizer (packages/vite/hmr/helpers/
-						// ast-normalizer.ts) correctly strips the /@vite/client import (the
-						// browser-only client module is not loadable on-device), then sees
-						// the unbound `__vite__injectQuery` identifier and synthesizes
-						// `const { vite__injectQuery: __vite__injectQuery } = __ns_rt_ns_1`
-						// from this bridge. Without this export the destructure binds to
-						// undefined and Angular 21's component HMR loader (and any other
-						// caller of dynamic-import-with-non-literal-URL) fails with
-						// `__vite__injectQuery is not a function` at module evaluation.
-						//
-						// This polyfill mirrors Vite 8's `__vite__injectQuery` in
-						// node_modules/vite/dist/node/chunks/node.js — for relative or
-						// absolute-path URLs it appends `?<queryToInject>` (preserving
-						// existing search/hash); for already-absolute URLs (http(s):, etc.)
-						// it returns the URL unchanged. Angular's `ɵɵgetReplaceMetadataURL`
-						// returns absolute HTTP URLs, so this acts as a passthrough at
-						// runtime, matching Vite's web behavior.
-						`export const vite__injectQuery = (url, queryToInject) => {\n` +
-						`  if (typeof url !== 'string') return url;\n` +
-						`  if (url[0] !== '.' && url[0] !== '/') return url;\n` +
-						`  const pathname = url.replace(/[?#].*$/, '');\n` +
-						`  let search = '', hash = '';\n` +
-						`  try { const u = new URL(url, 'http://vite.dev'); search = u.search || ''; hash = u.hash || ''; } catch {}\n` +
-						`  return pathname + '?' + queryToInject + (search ? '&' + search.slice(1) : '') + (hash || '');\n` +
-						`};\n` +
-						`export default {\n` +
-						`  defineComponent, resolveComponent, createVNode, createTextVNode, createCommentVNode,\n` +
-						`  Fragment, Teleport, Transition, TransitionGroup, KeepAlive, Suspense, withCtx, openBlock,\n` +
-						`  createBlock, createElementVNode, createElementBlock, renderSlot, mergeProps, toHandlers,\n` +
-						`  renderList, normalizeProps, guardReactiveProps, normalizeClass, normalizeStyle, toDisplayString,\n` +
-						`  withDirectives, resolveDirective, withModifiers, withKeys, resolveDynamicComponent,\n` +
-						`  isVNode, cloneVNode, isRef, ref, shallowRef, unref, computed, reactive, readonly, isReactive, isReadonly, toRaw, markRaw, shallowReactive, shallowReadonly,\n` +
-						`  watch, watchEffect, watchPostEffect, watchSyncEffect, onBeforeMount, onMounted, onBeforeUpdate, onUpdated,\n` +
-						`  onBeforeUnmount, onUnmounted, onActivated, onDeactivated, onErrorCaptured, onRenderTracked, onRenderTriggered, nextTick, h, provide, inject, vShow, createApp, registerElement,\n` +
-						`  $navigateTo, $navigateBack, $showModal,\n` +
-						`  vite__injectQuery\n` +
-						`};\n`;
-					// Prepend guard and ship (harmless, keeps diagnostics consistent)
-					code = REQUIRE_GUARD_SNIPPET + code;
+					// Single-realm bridge: discover every export `nativescript-vue`
+					// (plus its `@vue/runtime-core` re-export chain) publishes so
+					// the bridge never silently drops a symbol. `discoverNsvBridgeExports`
+					// returns the union of static discovery and the curated baseline,
+					// with the baseline acting as the floor if discovery fails. The
+					// shared builder owns the bridge body (preamble, passthroughs,
+					// HMR shims, polyfills, default export) — there's no inline copy.
+					const vendorExports = discoverNsvBridgeExports(getProjectRootPath());
+					const code = buildNsRtBridgeModule({ rtVer, requireGuardSnippet: REQUIRE_GUARD_SNIPPET, vendorExports });
 					res.statusCode = 200;
 					res.end(code);
 				} catch (e) {
