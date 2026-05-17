@@ -128,7 +128,6 @@ export abstract class ViewCommon extends ViewBase {
 	private _measuredWidth: number;
 	private _measuredHeight: number;
 
-	protected _isLayoutValid: boolean;
 	private _cssType: string;
 
 	private _localAnimations: Set<Animation>;
@@ -1009,7 +1008,7 @@ export abstract class ViewCommon extends ViewBase {
 	//END Style property shortcuts
 
 	get isLayoutValid(): boolean {
-		return this._isLayoutValid;
+		return false;
 	}
 
 	get cssType(): string {
@@ -1070,11 +1069,6 @@ export abstract class ViewCommon extends ViewBase {
 		}
 	}
 
-	public requestLayout(): void {
-		this._isLayoutValid = false;
-		super.requestLayout();
-	}
-
 	public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
 	public abstract onLayout(left: number, top: number, right: number, bottom: number): void;
 	public abstract layoutNativeView(left: number, top: number, right: number, bottom: number): void;
@@ -1111,7 +1105,6 @@ export abstract class ViewCommon extends ViewBase {
 	 * Returns two booleans - the first if "boundsChanged" the second is "sizeChanged".
 	 */
 	_setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean; sizeChanged: boolean } {
-		this._isLayoutValid = true;
 		const boundsChanged: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
 		const sizeChanged: boolean = this._oldRight - this._oldLeft !== right - left || this._oldBottom - this._oldTop !== bottom - top;
 		this._oldLeft = left;
