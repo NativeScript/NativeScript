@@ -268,10 +268,8 @@ export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(
 	let mainPage = helper.getCurrentPage();
 	mainPage.content = host;
 
-	const nativeHostView = host.nativeViewProtected as UIView;
-
-	// Check if native view layer is still marked as dirty before proceeding
-	TKUnit.waitUntilReady(() => host.isLoaded && nativeHostView?.layer && !nativeHostView.layer.needsLayout());
+	// Check if view is loaded and layout is valid
+	TKUnit.waitUntilReady(() => host.isLoaded && host.isLayoutValid);
 
 	let called = false;
 	image.requestLayout = () => (called = true);
@@ -290,10 +288,8 @@ export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout 
 	let mainPage = helper.getCurrentPage();
 	mainPage.content = host;
 
-	const nativeHostView = host.nativeViewProtected as UIView;
-
-	// Check if native view layer is still marked as dirty before proceeding
-	TKUnit.waitUntilReady(() => host.isLoaded && nativeHostView?.layer && !nativeHostView.layer.needsLayout());
+	// Check if view is loaded and layout is valid
+	TKUnit.waitUntilReady(() => host.isLoaded && host.isLayoutValid);
 
 	let called = false;
 	image.requestLayout = () => (called = true);
