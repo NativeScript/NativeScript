@@ -383,7 +383,26 @@ export class TabViewItem extends TabViewItemBase {
 
 	public _getChildFragmentManager(): androidx.fragment.app.FragmentManager {
 		const tabView = this.parent as TabView;
-		return (<any>tabView)._getRootFragmentManager();
+		let tabFragment = null;
+		const fragmentManager = tabView._getFragmentManager();
+		const fragments = fragmentManager.getFragments().toArray();
+		for (let i = 0; i < fragments.length; i++) {
+			if (fragments[i].index === this.index) {
+				tabFragment = fragments[i];
+				break;
+			}
+		}
+
+		// TODO: can happen in a modal tabview scenario when the modal dialog fragment is already removed
+		if (!tabFragment) {
+			if (Trace.isEnabled()) {
+				Trace.write(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
+			}
+
+			return (<any>tabView)._getRootFragmentManager();
+		}
+
+		return tabFragment.getChildFragmentManager();
 	}
 
 	[fontSizeProperty.getDefault](): { nativeSize: number } {
