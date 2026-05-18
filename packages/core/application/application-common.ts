@@ -415,6 +415,7 @@ export class ApplicationCommon {
 			object: this,
 			ios: this.ios,
 			android: this.android,
+			windows: this.windows,
 			...additionalLanchEventData,
 		};
 		this.notify(launchArgs);
@@ -743,6 +744,10 @@ export class ApplicationCommon {
 	}
 
 	get ios(): iOSApplicationType {
+		return undefined;
+	}
+
+	get windows() {
 		return undefined;
 	}
 

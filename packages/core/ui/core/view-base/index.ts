@@ -336,6 +336,7 @@ export abstract class ViewBase extends Observable {
 	private _onUnloadedCalled = false;
 	private _iosView: Object;
 	private _androidView: Object;
+	private _windowsView: Object;
 	private _style: Style;
 	private _isLoaded: boolean;
 
@@ -1196,6 +1197,8 @@ export abstract class ViewBase extends Observable {
 					}
 				}
 			}
+		}else if(__WINDOWS__){
+			this._windowsView = nativeView;
 		} else {
 			this._iosView = nativeView;
 		}

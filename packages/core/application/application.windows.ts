@@ -1,11 +1,16 @@
 import { ApplicationCommon } from './application-common';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { setAppMainEntry, setToggleApplicationEventListenersCallback, setApplicationPropertiesCallback, setA11yUpdatePropertiesCallback } from './helpers-common';
+import type { View } from '../ui/core/view';
+import { setRootView } from './helpers-common';
+import { CoreTypes } from 'index';
 
 export class WindowsApplication extends ApplicationCommon {
-	constructor() {
-		super();
-		this.setupLifecycleEvents();
+
+	private _rootView: View;
+
+	getRootView(): View {
+		return this._rootView;
 	}
 
 	run(entry?: string | NavigationEntry): void {
@@ -13,8 +18,32 @@ export class WindowsApplication extends ApplicationCommon {
 			throw new Error('Application is already started.');
 		}
 
+		this.setupLifecycleEvents();
+
 		this.started = true;
 		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
+		this.setWindowContent();
+	}
+
+
+	private setWindowContent(view?: View): void {
+		if (this._rootView) {
+			this._rootView._onRootViewReset();
+		}
+		const rootView = this.createRootView(view, true);
+		if (!rootView) return;
+
+		this._rootView = rootView;
+		setRootView(rootView);
+
+		rootView._setupAsRootView({});
+
+		const win = Windows.UI.Xaml.Window.Current;
+		win.Content = rootView.nativeViewProtected;
+		win.Activate();
+
+		this.initRootView(rootView);
+		rootView.callLoaded();
 	}
 
 	getNativeApplication() {
@@ -34,7 +63,7 @@ export class WindowsApplication extends ApplicationCommon {
 			if (orientation === DisplayOrientations.Landscape || orientation === DisplayOrientations.LandscapeFlipped) {
 				return 'landscape';
 			}
-		} catch (e) {}
+		} catch (e) { }
 
 		return 'unknown';
 	}
@@ -64,21 +93,36 @@ export class WindowsApplication extends ApplicationCommon {
 
 			// In dark mode Windows uses a light (near-white) foreground color
 			return foreground.R > 128 ? 'dark' : 'light';
-		} catch (e) {}
+		} catch (e) { }
 
 		return null;
+	}
+
+	protected getLayoutDirection(): CoreTypes.LayoutDirectionType {
+		const content = Windows.UI.Xaml.Window.Current.Content as Windows.UI.Xaml.FrameworkElement | null;
+		if (!content) {
+			return null as never;
+		}
+
+
+		const direction = content.FlowDirection;
+
+		if (direction === Windows.UI.Xaml.FlowDirection.RightToLeft) {
+			return 'rtl';
+		}
+		return 'ltr';
 	}
 
 	private setupLifecycleEvents(): void {
 		const coreApp = Windows.ApplicationModel.Core.CoreApplication;
 
 		if (coreApp) {
-			coreApp.Suspending = NSWinRT.asDelegate((sender: any, args: any) => this.setSuspended(true, { win: args }));
-			coreApp.Resuming = NSWinRT.asDelegate((sender: any, args: any) => this.setSuspended(false, { win: args }));
-			coreApp.EnteredBackground = NSWinRT.asDelegate((sender: any, args: any) => this.setInBackground(true, { win: args }));
-			coreApp.LeavingBackground = NSWinRT.asDelegate((sender: any, args: any) => this.setInBackground(false, { win: args }));
-			coreApp.Exiting = NSWinRT.asDelegate((sender: any, args: any) => this.notify({ eventName: this.exitEvent, object: this, win: args }));
-			coreApp.UnhandledErrorDetected = NSWinRT.asDelegate((sender: any, args: any) => this.notify({ eventName: this.uncaughtErrorEvent, object: this, win: args }));
+			coreApp.Suspending = (_sender: any, args: any) => this.setSuspended(true, { win: args });
+			coreApp.Resuming = (_sender: any, args: any) => this.setSuspended(false, { win: args });
+			coreApp.EnteredBackground = (_sender: any, args: any) => this.setInBackground(true, { win: args });
+			coreApp.LeavingBackground = (_sender: any, args: any) => this.setInBackground(false, { win: args });
+			coreApp.Exiting = (_sender: any, args: any) => this.notify({ eventName: this.exitEvent, object: this, win: args });
+			coreApp.UnhandledErrorDetected = (_sender: any, args: any) => this.notify({ eventName: this.uncaughtErrorEvent, object: this, win: args });
 		}
 
 		const displayInfo = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
@@ -88,7 +132,7 @@ export class WindowsApplication extends ApplicationCommon {
 		};
 
 		if (displayInfo && displayInfo.OrientationChanged !== undefined) {
-			displayInfo.OrientationChanged = NSWinRT.asDelegate(onOrientationChanged);
+			displayInfo.OrientationChanged = () => onOrientationChanged();
 		}
 
 		const ui = new Windows.UI.ViewManagement.UISettings();
@@ -100,7 +144,7 @@ export class WindowsApplication extends ApplicationCommon {
 		};
 
 		if (ui && ui.ColorValuesChanged !== undefined) {
-			ui.ColorValuesChanged = NSWinRT.asDelegate(onColorValuesChanged);
+			ui.ColorValuesChanged = () => onColorValuesChanged();
 		}
 	}
 }
