@@ -101,22 +101,85 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 		// to transform `app.css`, so `vite:css` never registers
 		// `@import`-resolved deps with the watcher. Eagerly resolving
 		// them here breaks the chicken-and-egg.
+		//
+		// We ALSO stash the resolved dep set on the server itself so
+		// the HMR websocket handler can recognize when a non-CSS edit
+		// (e.g. a `.html` template or `.ts` file scanned by Tailwind's
+		// content config) should trigger a fresh `app.css` fetch. The
+		// `preprocessCSS` deps include every file PostCSS reported as
+		// a `dependency` message — for Tailwind 3 with content globs,
+		// Vite's `compileCSS` expands the `dir-dependency` glob into
+		// the individual file paths, so we get the full content set.
+		//
+		// `app.css` is NEVER a real Vite module in NS HMR (the virtual
+		// `:ns-app-css` module re-runs `preprocessCSS` in its load
+		// hook), so the standard moduleGraph `addWatchFile` →
+		// `_addedImports` → file-only-entry-importer chain doesn't
+		// populate, and `ctx.modules` for a content-file edit never
+		// links back to a CSS module. The dep set fills that gap.
 		configureServer(server: ViteDevServer) {
 			if (server.config.command !== 'serve') return;
 			const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
 			if (!fs.existsSync(appCssPath)) return;
-			(async () => {
+
+			const normalizeFsPath = (p: string): string => path.resolve(p).replace(/\\/g, '/');
+			const normalizedAppCssPath = normalizeFsPath(appCssPath);
+			const watchedDeps = new Set<string>([normalizedAppCssPath]);
+
+			const refreshDeps = async (): Promise<void> => {
 				try {
 					const code = fs.readFileSync(appCssPath, 'utf-8');
 					const result = await preprocessCSS(code, appCssPath, server.config);
 					server.watcher.add(appCssPath);
+					const next = new Set<string>([normalizedAppCssPath]);
 					for (const dep of result?.deps ?? []) {
 						if (typeof dep === 'string' && dep) {
 							server.watcher.add(dep);
+							next.add(normalizeFsPath(dep));
 						}
 					}
+					// Atomic-ish replace: clear + repopulate the existing
+					// Set so any concurrent reader sees a consistent view
+					// when iterating with `.has()`.
+					watchedDeps.clear();
+					for (const f of next) watchedDeps.add(f);
 				} catch {}
-			})();
+			};
+
+			(server as any).__nsAppCssPath = normalizedAppCssPath;
+			(server as any).__nsAppCssDeps = watchedDeps;
+			(server as any).__nsRefreshAppCssDeps = refreshDeps;
+
+			refreshDeps();
+
+			// Re-scan when `app.css` itself or a Tailwind config file
+			// changes — Tailwind's content list and utility definitions
+			// can both shift, so the dep set has to follow. Debounced
+			// because watcher events for the same edit can fire in
+			// quick succession (chokidar's atomic save handling).
+			let pendingRefresh: NodeJS.Timeout | null = null;
+			const scheduleRefresh = (): void => {
+				if (pendingRefresh) clearTimeout(pendingRefresh);
+				pendingRefresh = setTimeout(() => {
+					pendingRefresh = null;
+					refreshDeps();
+				}, 50);
+			};
+			const isAppCssOrTailwindConfig = (file: string): boolean => {
+				const normalized = normalizeFsPath(file);
+				if (normalized === normalizedAppCssPath) return true;
+				return /\/tailwind\.config\.[mc]?[jt]s$/.test(normalized);
+			};
+			server.watcher.on('change', (file) => {
+				if (isAppCssOrTailwindConfig(file)) scheduleRefresh();
+			});
+			// `add`/`unlink` cover Tailwind's content set growing or
+			// shrinking — new template files, deleted partials, etc.
+			// Re-running `preprocessCSS` is the safest way to keep the
+			// glob expansion accurate without re-implementing the
+			// match.
+			server.watcher.on('add', scheduleRefresh);
+			server.watcher.on('unlink', scheduleRefresh);
 		},
 		resolveId(id: string) {
 			if (id === VIRTUAL_ID) return RESOLVED;

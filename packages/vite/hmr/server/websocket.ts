@@ -6433,6 +6433,86 @@ export const piniaSymbol = p.piniaSymbol;
 			if (shouldIgnore) return;
 			if (verbose) console.log(`[hmr-ws] Hot update for: ${file}`);
 
+			// Tailwind / content-scanning CSS broadcast for non-CSS edits.
+			//
+			// Background: when a `.html` template or `.ts` file scanned
+			// by Tailwind's `content` config gets a brand-new utility
+			// class (e.g. `pt-6` that was never used in the codebase
+			// before), the booted CSS bundle doesn't contain a rule for
+			// it. The Angular template HMR swaps the markup, the view
+			// re-renders, the class lookup misses, and the layout
+			// regresses to its default.
+			//
+			// In a "normal" Vite setup, the `vite:css` plugin consumes
+			// each PostCSS `dependency` message via `addWatchFile`, and
+			// `vite:css-analysis` later registers each watched file as
+			// an importer of the CSS module. A content-file edit then
+			// invalidates the CSS module through the moduleGraph and
+			// `ctx.modules`/`mod.importers` would surface it.
+			//
+			// NS HMR breaks that chain: `app.css` is loaded via a
+			// virtual module (`virtual:ns-app-css`) whose `load` hook
+			// calls `preprocessCSS(...)` and emits a JS module — the
+			// CSS itself is never a moduleGraph node, so the importer
+			// chain never forms. `ctx.modules` for the html edit only
+			// contains the html-as-Angular-template module with the
+			// component `.ts` as its importer.
+			//
+			// To bridge that gap, `mainEntryPlugin` stores the set of
+			// `preprocessCSS` deps for `app.css` on the server as
+			// `__nsAppCssDeps` (refreshed when `app.css` /
+			// `tailwind.config.*` change, or when files are added /
+			// removed). If the changed file is in that set, we
+			// broadcast a `ns:css-updates` for `app.css` so the device
+			// fetches fresh CSS through `?direct=1` and Vite re-runs
+			// PostCSS+Tailwind — picking up the new utility class.
+			//
+			// This MUST run before the framework branches because
+			// several of them return early (notably the Angular HTML
+			// live-reload path), and the broadcast must land alongside
+			// the framework's own template-update payload.
+			if (!file.endsWith('.css')) {
+				try {
+					const deps = (server as any).__nsAppCssDeps as Set<string> | undefined;
+					const appCssPath = (server as any).__nsAppCssPath as string | undefined;
+					if (deps && appCssPath) {
+						const normalizedFile = path.resolve(file).replace(/\\/g, '/');
+						if (deps.has(normalizedFile)) {
+							const rootPosix = root.replace(/\\/g, '/').replace(/\/$/, '');
+							const relRaw = path.posix.normalize(path.posix.relative(rootPosix, appCssPath));
+							const appCssRel = relRaw && relRaw !== '.' && !relRaw.startsWith('..') ? (relRaw.startsWith('/') ? relRaw : `/${relRaw}`) : null;
+							if (appCssRel) {
+								const origin = getServerOrigin(server);
+								const timestamp = Date.now();
+								const msg = {
+									type: 'ns:css-updates',
+									origin,
+									updates: [
+										{
+											type: 'css-update',
+											path: appCssRel,
+											acceptedPath: appCssRel,
+											timestamp,
+										},
+									],
+								};
+								wss.clients.forEach((client) => {
+									if (isSocketClientOpen(client)) {
+										try {
+											client.send(JSON.stringify(msg));
+											updateMetrics.recipients += 1;
+										} catch {}
+									}
+								});
+								if (verbose) console.info(`[ns-hmr][server] Tailwind/PostCSS content-file edit (${path.basename(file)}) broadcast ${appCssRel}`);
+							}
+						}
+					}
+				} catch (error) {
+					console.warn('[hmr-ws] CSS content-source broadcast failed:', error);
+				}
+			}
+
 			// Framework-specific hot update handling
 			if (ACTIVE_STRATEGY.flavor === 'angular') {
 				// For Angular, react to component TS or external template HTML changes under /src
