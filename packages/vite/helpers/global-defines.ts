@@ -10,6 +10,7 @@ export function getGlobalDefines(opts: { platform: string; targetMode: string; v
 		__IOS__: JSON.stringify(opts.platform === 'ios'),
 		__VISIONOS__: JSON.stringify(opts.platform === 'visionos'),
 		__APPLE__: JSON.stringify(opts.platform === 'ios' || opts.platform === 'visionos'),
+		__WINDOWS__: JSON.stringify(opts.platform === 'windows'),
 		__DEV__: JSON.stringify(opts.targetMode === 'development'),
 		__COMMONJS__: false,
 		__NS_WEBPACK__: false,

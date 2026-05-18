@@ -18,7 +18,7 @@ export function createPlatformCssPlugin(platform: string): Plugin {
 			const baseId = id.split('?')[0];
 			if (!baseId.endsWith('.css') || !code.includes('@import')) return null;
 			const dir = path.dirname(baseId);
-			const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
+			const platformExt = platform === 'android' ? '.android.css' : platform === 'windows' ? '.windows.css' : '.ios.css';
 			let changed = false;
 			// Support @import "foo.css"; @import 'foo.css'; @import url("foo.css"); preserving rest
 			const importRegex = /@import\s+(?:url\()?['"]([^'"()]+\.css)['"]\)?/g;
@@ -46,7 +46,7 @@ export function createPlatformCssPlugin(platform: string): Plugin {
 			const baseDir = path.dirname(importerPath);
 			const abs = path.isAbsolute(id) ? id : path.resolve(baseDir, id);
 			if (existsSync(abs)) return null;
-			const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
+			const platformExt = platform === 'android' ? '.android.css' : platform === 'windows' ? '.windows.css' : '.ios.css';
 			const alt = abs.replace(/\.css$/, platformExt);
 			if (existsSync(alt)) {
 				return '\0ns-css-platform:' + alt;
