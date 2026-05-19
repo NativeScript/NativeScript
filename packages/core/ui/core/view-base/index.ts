@@ -1502,7 +1502,7 @@ export abstract class ViewBase extends Observable {
 	 * Method is intended to be overridden by inheritors and used as "protected"
 	 */
 	public _dialogClosed(): void {
-		eachDescendant(this, (child: ViewBase) => {
+		this.eachChild((child: ViewBase) => {
 			child._dialogClosed();
 
 			return true;
@@ -1513,7 +1513,7 @@ export abstract class ViewBase extends Observable {
 	 * Method is intended to be overridden by inheritors and used as "protected"
 	 */
 	public _onRootViewReset(): void {
-		eachDescendant(this, (child: ViewBase) => {
+		this.eachChild((child: ViewBase) => {
 			child._onRootViewReset();
 
 			return true;
