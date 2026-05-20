@@ -726,7 +726,7 @@ function updateAccessibilityState(): void {
 	if (!sharedA11YObservable) {
 		return;
 	}
-	
+
 	const accessibilityManager = getAndroidAccessibilityManager();
 	if (!accessibilityManager) {
 		sharedA11YObservable.set(accessibilityStateEnabledPropName, false);
@@ -885,6 +885,8 @@ export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: strin
 
 export function initAccessibilityCssHelper(): void {
 	ensureClasses();
+	updateCurrentHelperClasses(applyRootCssClass);
+	applyFontScaleToRootViews();
 
 	Application.on(Application.fontScaleChangedEvent, () => {
 		updateCurrentHelperClasses(applyRootCssClass);
