@@ -509,8 +509,6 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 
-		console.log('ActionBar._onTitlePropertyChanged', this.title);
-
 		if (page.frame) {
 			page.frame._updateActionBar(page);
 		}
