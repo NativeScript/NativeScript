@@ -139,7 +139,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 			// delegate we set in setViewControllers. Re-assert it whenever any tab is
 			// selected so moreNav push/pop callbacks for tabs >= 5 still reach us.
 			const moreNav = tabBarController.moreNavigationController;
-			if (moreNav && moreNav.delegate !== owner.moreNavigationControllerDelegate) {
+			if (moreNav && owner.moreNavigationControllerDelegate && moreNav.delegate !== owner.moreNavigationControllerDelegate) {
 				moreNav.delegate = owner.moreNavigationControllerDelegate;
 			}
 			owner._onViewControllerShown(tabBarController, viewController);
@@ -603,7 +603,9 @@ export class TabView extends TabViewBase {
 		}
 
 		// When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
-		this._ios.moreNavigationController.delegate = this.moreNavigationControllerDelegate;
+		if (this._ios.moreNavigationController) {
+            this._ios.moreNavigationController.delegate = this.moreNavigationControllerDelegate;
+        }
 	}
 
 	private _getIconRenderingMode(): UIImageRenderingMode {
