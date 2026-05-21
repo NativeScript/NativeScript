@@ -3,7 +3,7 @@ import { ShadowCSSValues } from '../styling/css-shadow';
 import { Font } from '../styling/font';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, textStrokeProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, directionProperty } from '../styling/style-properties';
+import { colorProperty, fontSizeProperty, fontInternalProperty, directionProperty, paddingInternalProperty } from '../styling/style-properties';
 import { Length } from '../styling/length-shared';
 import { StrokeCSSValues } from '../styling/css-stroke';
 import { FormattedString } from './formatted-string';
@@ -484,32 +484,12 @@ export class TextBase extends TextBaseCommon {
 		);
 	}
 
-	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
-		return { value: this._defaultPaddingTop, unit: 'px' };
-	}
-	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
-		org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
-	}
-
-	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
-		return { value: this._defaultPaddingRight, unit: 'px' };
-	}
-	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
-		org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
-	}
-
-	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
-		return { value: this._defaultPaddingBottom, unit: 'px' };
-	}
-	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
-		org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
-	}
-
-	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
-		return { value: this._defaultPaddingLeft, unit: 'px' };
-	}
-	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
-		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
+	[paddingInternalProperty.setNative](_value: string) {
+		const left = this.effectivePaddingLeft + Length.toDevicePixels(this.style.borderLeftWidth, 0);
+		const top = this.effectivePaddingTop + Length.toDevicePixels(this.style.borderTopWidth, 0);
+		const right = this.effectivePaddingRight + Length.toDevicePixels(this.style.borderRightWidth, 0);
+		const bottom = this.effectivePaddingBottom + Length.toDevicePixels(this.style.borderBottomWidth, 0);
+		this.nativeTextViewProtected.setPadding(left, top, right, bottom);
 	}
 
 	[lineHeightProperty.getDefault](): number {
