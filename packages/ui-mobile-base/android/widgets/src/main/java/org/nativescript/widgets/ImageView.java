@@ -15,12 +15,16 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;
 import org.nativescript.widgets.image.Worker;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 /**
  * @author hhristov
@@ -292,6 +296,33 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 
 	}
 
+	@Nullable
+	private CSSFilters.CSSFilter mFilter = null;
+
+	private String mFilterRaw = "";
+
+	public String getFilter() {
+		return mFilterRaw;
+	}
+
+	public void setFilter(String value) {
+		mFilterRaw = value;
+		boolean hadFilters = mFilter != null && !mFilter.getFilters().isEmpty();
+		mFilter = CSSFilters.parse(value);
+		if (!mFilter.getFilters().isEmpty() || (value.isEmpty() && hadFilters)) {
+			invalidate();
+		}
+	}
+
+	@Override
+	public void draw(@NonNull Canvas canvas) {
+		Object suppress = getTag(R.id.tag_suppress_ops);
+		if (suppress != null && (boolean) suppress) {
+			super.onDraw(canvas);
+		} else {
+			super.draw(canvas);
+		}
+	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {
@@ -420,6 +451,17 @@ public class ImageView extends androidx.appcompat.widget.AppCompatImageView impl
 			}
 			canvas.drawPath(path, paint);
 		}
+
+
+		ViewUtils.onDraw(
+			this, canvas, mFilter, new Function1<Canvas, Unit>() {
+				@Override
+				public Unit invoke(Canvas canvas) {
+					ImageView.super.onDraw(canvas);
+					return null;
+				}
+			}
+		);
 	}
 
 	@Override
