@@ -236,8 +236,15 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 		// [nested frames / fragments] see https://github.com/NativeScript/NativeScript/issues/6629
 		// retaining reference to a destroyed fragment here somehow causes a cryptic
 		// "IllegalStateException: Failure saving state: active fragment has cleared index: -1"
-		// in a specific mixed parent / nested frame navigation scenario
-		entry.fragment = null;
+		// in a specific mixed parent / nested frame navigation scenario.
+		//
+		// Only null out entry.fragment if it still points to THIS fragment. _ensureEntryFragment
+		// may have already replaced it with a new fragment (when recovering one whose view was
+		// destroyed) — if THIS old fragment is destroyed afterwards, we must not overwrite the
+		// newer reference.
+		if (entry.fragment === fragment) {
+			entry.fragment = null;
+		}
 
 		const page = entry.resolvedPage;
 		if (!page) {
