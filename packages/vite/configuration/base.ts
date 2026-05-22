@@ -591,6 +591,25 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				output: {
 					format: 'es', // Emit ES modules (.mjs)
 					entryFileNames: 'bundle.mjs',
+					// Prepend a tiny polyfill prelude to every emitted chunk so timer
+					// globals (`setTimeout`, `setInterval`, `clearTimeout`,
+					// `clearInterval`) are available at module-instantiation time —
+					// BEFORE `@nativescript/core/globals` runs from inside the entry.
+					//
+					// Why this is needed. ESM evaluates dependency chunks DFS-post-order
+					// before the importing module's body. `bundle.mjs` declares
+					// `import './vendor.mjs'` at the top, so `vendor.mjs` evaluates first
+					// — but the official timer polyfills live in
+					// `@nativescript/core/globals` which is bundled into `bundle.mjs`'s
+					// body. Any vendor package that captures a timer global at module
+					// top-level hits `ReferenceError: setTimeout is
+					// not defined` because `globalThis.setTimeout` is still undefined
+					// during vendor.mjs evaluation.
+					//
+					// When the runtime eventually exposes the unprefixed timer names
+					// directly (removing the chicken-and-egg at the source), this
+					// prelude becomes a no-op and can be removed.
+					banner: [`typeof globalThis !== 'undefined' && typeof globalThis.setTimeout === 'undefined' && typeof globalThis.__ns__setTimeout === 'function' && (`, `  globalThis.setTimeout = globalThis.__ns__setTimeout,`, `  globalThis.setInterval = globalThis.__ns__setInterval,`, `  globalThis.clearTimeout = globalThis.__ns__clearTimeout,`, `  globalThis.clearInterval = globalThis.__ns__clearInterval`, `);`].join('\n'),
 					// Point source map URLs to absolute file:// paths on the host so
 					// Chrome DevTools can fetch them even though the running code comes
 					// from file:///app on the simulator/device.
