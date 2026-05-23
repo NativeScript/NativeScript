@@ -1,14 +1,14 @@
 import { Trace } from '../../trace';
 import { _clearEntry, _clearFragment, _getAnimatedEntries, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions } from './fragment.transitions';
-import type { BackstackEntry } from '.';
+import type { AndroidFrame, BackstackEntry, Frame } from '.';
 import { profile } from '../../profiling';
 import { getNativeApp } from '../../application/helpers-common';
 import { Color } from '../../color';
 import type { Page } from '../page';
-import type { AndroidFrame as Frame } from '.';
+import type { ExpandedEntry } from './fragment.transitions.android';
 export const FRAMEID = '_frameId';
 export const CALLBACKS = '_callbacks';
-export const framesCache = new Array<WeakRef<any>>();
+export const framesCache = new Array<WeakRef<AndroidFrame>>();
 
 export interface AndroidFragmentCallbacks {
 	onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
@@ -58,7 +58,7 @@ function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Fr
 
 export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 	public frame: Frame;
-	public entry: BackstackEntry;
+	public entry: ExpandedEntry;
 	private backgroundBitmap: android.graphics.Bitmap = null;
 
 	@profile
@@ -233,11 +233,14 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 			return null;
 		}
 
-		// [nested frames / fragments] see https://github.com/NativeScript/NativeScript/issues/6629
-		// retaining reference to a destroyed fragment here somehow causes a cryptic
-		// "IllegalStateException: Failure saving state: active fragment has cleared index: -1"
-		// in a specific mixed parent / nested frame navigation scenario
-		entry.fragment = null;
+		// Check if entry fragment is still this fragment as the destroy lifecycle might have been called due to replace
+		if (entry.fragment === fragment) {
+			// [nested frames / fragments] see https://github.com/NativeScript/NativeScript/issues/6629
+			// retaining reference to a destroyed fragment here somehow causes a cryptic
+			// "IllegalStateException: Failure saving state: active fragment has cleared index: -1"
+			// in a specific mixed parent / nested frame navigation scenario
+			entry.fragment = null;
+		}
 
 		const page = entry.resolvedPage;
 		if (!page) {
@@ -279,8 +282,13 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 			if (!owner) {
 				return;
 			}
-			if (frame._executingContext && !(<any>owner.entry).isAnimationRunning) {
-				frame.setCurrent(owner.entry, frame._executingContext.navigationType);
+			if (!owner.entry.isAnimationRunning) {
+				if (frame._executingContext) {
+					frame.setCurrent(owner.entry, frame._executingContext.navigationType);
+				} else {
+					// Restore cached animation settings if we just completed simulated first navigation (no animation)
+					frame._restoreTransitionState?.();
+				}
 			}
 		}, 0);
 
@@ -327,7 +335,7 @@ export class FragmentCallbacksImplementation implements AndroidFragmentCallbacks
 
 export function getFrameByNumberId(frameId: number): Frame {
 	// Find the frame for this activity.
-	for (let i = 0; i < framesCache.length; i++) {
+	for (let i = 0, length = framesCache.length; i < length; i++) {
 		const aliveFrame = framesCache[i].get();
 		if (aliveFrame && aliveFrame.frameId === frameId) {
 			return aliveFrame.owner;
