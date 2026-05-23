@@ -1069,9 +1069,18 @@ export function getRootForVue(
 		}
 		return null;
 	};
-	// Prefer adopting a Frame if the component produced one. This avoids nesting a Frame inside
-	// the placeholder Frame and ensures a single authoritative Frame for app navigation.
-	const nativeView = findFrameNativeView(vm?.$el) || findPageNativeView(vm?.$el) || findNativeView(vm?.$el);
+	// Resolve the top-level native view from the component output. The previous logic
+	// preferred ANY Frame found anywhere in the tree via depth-first recursion, which
+	// is wrong when the component root is a Page that contains nested Frames (e.g.
+	// a TabView whose TabViewItems each wrap their content in a <Frame>). That picked
+	// the FIRST nested Frame and set it as the app root via resetRootView, severing
+	// it from its TabViewItem parent and leaving a white screen on HMR reload.
+	// Only fall back to the deep Frame/Page lookups when the top-level view is neither
+	// (e.g., a raw Layout that the user intends to host an inner Frame for navigation).
+	const topLevelNativeView = findNativeView(vm?.$el);
+	const topCtorName = topLevelNativeView ? String(topLevelNativeView?.constructor?.name || '').replace(/^_+/, '') : '';
+	const topIsPageOrFrame = /^(Page|Frame)(\$\d+)?$/.test(topCtorName);
+	const nativeView = topIsPageOrFrame ? topLevelNativeView : findFrameNativeView(vm?.$el) || findPageNativeView(vm?.$el) || topLevelNativeView;
 	const GPage: any = getCore('Page');
 	// Decide root type and cache it
 	if (nativeView) {

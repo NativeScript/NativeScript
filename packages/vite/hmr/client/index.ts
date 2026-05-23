@@ -2041,7 +2041,14 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 		existingAppFrame = getRootFrame() || (getCore('Frame') as any)?.topmost?.() || null;
 	} catch {}
 	const isAuthoritativeFrame = !!existingAppFrame && existingAppFrame !== placeholderFrame;
-	if (!hadPlaceholder && !isFrameRoot && isAuthoritativeFrame && typeof (existingAppFrame as any).navigate === 'function') {
+	// Vue: skip the in-place navigate path. After `app.mount(NSVRoot)` in getRootForVue the
+	// new Page already has a parent (the freshly-constructed NSVRoot), so an attempt to navigate
+	// the existing app Frame to that same Page completes silently without ever rebinding the
+	// page to the Frame — the screen keeps showing the previous render. resetRootView with a
+	// fresh Frame correctly reparents the Page and is the proven path that produces visible
+	// in-place updates for SFC HMR cycles. Non-Vue flavors keep the legacy navigate fast path.
+	const allowNavigateFastPath = TARGET_FLAVOR !== 'vue';
+	if (allowNavigateFastPath && !hadPlaceholder && !isFrameRoot && isAuthoritativeFrame && typeof (existingAppFrame as any).navigate === 'function') {
 		try {
 			const navEntry = {
 				create: () => preparedRoot,
