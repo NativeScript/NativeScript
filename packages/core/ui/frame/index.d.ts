@@ -175,7 +175,7 @@ export class Frame extends FrameBase {
 	 *
 	 * @nsProperty
 	 */
-	iosToolBarClass?: any;
+	iosToolbarClass?: any;
 
 	//@private
 	/**
