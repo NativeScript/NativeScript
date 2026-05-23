@@ -189,9 +189,15 @@ class UIViewControllerImpl extends UIViewController {
 							// only consider when interactive transitions are not enabled
 							navigationController.interactivePopGestureRecognizer.delegate = navigationController;
 							navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+							if (SDK_VERSION >= 26) {
+								navigationController.interactiveContentPopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;
+							}
 						}
 					} else {
 						navigationController.interactivePopGestureRecognizer.enabled = false;
+						if (SDK_VERSION >= 26) {
+							navigationController.interactiveContentPopGestureRecognizer.enabled = false;
+						}
 					}
 				}
 			}
@@ -457,10 +463,16 @@ export class Page extends PageBase {
 
 	public _updateEnableSwipeBackNavigation(enabled: boolean) {
 		const navController = this._ios.navigationController;
-		if (this.frame && navController && navController.interactivePopGestureRecognizer) {
+		if (this.frame && navController) {
 			// Make sure we don't set true if cannot go back
 			enabled = enabled && this.frame.canGoBack();
-			navController.interactivePopGestureRecognizer.enabled = enabled;
+			if (navController.interactivePopGestureRecognizer) {
+				navController.interactivePopGestureRecognizer.enabled = enabled;
+			}
+
+			if (SDK_VERSION >= 26 && navController.interactiveContentPopGestureRecognizer) {
+				navController.interactiveContentPopGestureRecognizer.enabled = enabled;
+			}
 		}
 	}
 

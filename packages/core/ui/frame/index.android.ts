@@ -1,4 +1,4 @@
-import type { AndroidActivityCallbacks, AndroidFrame as AndroidFrameDefinition, NavigationTransition, AndroidFragmentCallbacks } from '.';
+import type { AndroidActivityCallbacks, Frame as FrameDefinition, AndroidFrame as AndroidFrameDefinition, NavigationTransition } from '.';
 import type { BackstackEntry } from './frame-interfaces';
 import type { Page } from '../page';
 import { TransitionState } from './frame-common';
@@ -6,7 +6,7 @@ import { Observable } from '../../data/observable';
 import { Trace } from '../../trace';
 import { View } from '../core/view';
 import { _stack, FrameBase, NavigationType } from './frame-common';
-import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions, addNativeTransitionListener } from './fragment.transitions';
+import { _clearEntry, _clearFragment, _getAnimatedEntries, _getTransitionState, _restoreTransitionState, _reverseTransitions, _setAndroidFragmentTransitions, _updateTransitions } from './fragment.transitions';
 import { profile } from '../../profiling';
 import { android as androidUtils } from '../../utils/native-helper';
 import type { ExpandedEntry } from './fragment.transitions.android';
@@ -25,7 +25,6 @@ export { setFragmentClass } from './fragment';
 const INTENT_EXTRA = 'com.tns.activity';
 
 const ownerSymbol = Symbol('_owner');
-const isPendingDetachSymbol = Symbol('_isPendingDetach');
 
 let navDepth = -1;
 let fragmentId = -1;
@@ -54,12 +53,6 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 				if (owner) {
 					owner._onDetachedFromWindow();
 				}
-
-				if (view[isPendingDetachSymbol]) {
-					delete view[isPendingDetachSymbol];
-					view.removeOnAttachStateChangeListener(this);
-					view[ownerSymbol] = null;
-				}
 			},
 		});
 
@@ -82,7 +75,6 @@ export class Frame extends FrameBase {
 	 */
 	private _isReset = false;
 	private _cachedTransitionState: TransitionState;
-	private _frameCreateTimeout: NodeJS.Timeout;
 
 	constructor() {
 		super();
@@ -153,7 +145,6 @@ export class Frame extends FrameBase {
 		this._attachedToWindow = true;
 		this._isReset = false;
 		this._processNextNavigationEntry();
-		this._ensureEntryFragment();
 	}
 
 	_onDetachedFromWindow(): void {
@@ -208,7 +199,7 @@ export class Frame extends FrameBase {
 			if (cachedTransitionState) {
 				this._cachedTransitionState = cachedTransitionState;
 				this._currentEntry = null;
-				// NavigateCore will eventually call _processNextNavigationEntry again.
+				// NavigateCore will eventually call _processNextNavigationEntry again
 				this._navigateCore(entry);
 				this._currentEntry = entry;
 			} else {
@@ -251,49 +242,7 @@ export class Frame extends FrameBase {
 			this._originalBackground = null;
 		}
 
-		this._ensureEntryFragment();
 		super.onLoaded();
-	}
-
-	onUnloaded() {
-		super.onUnloaded();
-
-		if (typeof this._frameCreateTimeout === 'number') {
-			clearTimeout(this._frameCreateTimeout);
-			this._frameCreateTimeout = null;
-		}
-	}
-
-	/**
-	 * TODO: Check if this fragment precaution is still needed
-	 */
-	private _ensureEntryFragment(): void {
-		// in case the activity is "reset" using resetRootView or disposed we must wait for
-		// the attachedToWindow event to make the first navigation or it will crash
-		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
-		// though we should not do it on app "start"
-		// or it will create a "flash" to activity background color
-		if (this._isReset && !this._attachedToWindow) {
-			return;
-		}
-
-		this._frameCreateTimeout = setTimeout(() => {
-			// there's a bug with nested frames where sometimes the nested fragment is not recreated at all
-			// so we manually check on loaded event if the fragment is not recreated and recreate it
-			const currentEntry = this._currentEntry || this._executingContext?.entry;
-			if (currentEntry) {
-				if (!currentEntry.fragment) {
-					const manager = this._getFragmentManager();
-					const transaction = manager.beginTransaction();
-					currentEntry.fragment = this.createFragment(currentEntry, currentEntry.fragmentTag);
-					_updateTransitions(currentEntry);
-					transaction.replace(this.containerViewId, currentEntry.fragment, currentEntry.fragmentTag);
-					transaction.commitAllowingStateLoss();
-				}
-			}
-
-			this._frameCreateTimeout = null;
-		}, 0);
 	}
 
 	private disposeCurrentFragment(): void {
@@ -378,11 +327,8 @@ export class Frame extends FrameBase {
 			this._processNextNavigationEntry();
 		}
 
-		// restore cached animation settings if we just completed simulated first navigation (no animation)
-		if (this._cachedTransitionState) {
-			_restoreTransitionState(this._cachedTransitionState);
-			this._cachedTransitionState = null;
-		}
+		// Restore cached animation settings if we just completed simulated first navigation (no animation)
+		this._restoreTransitionState();
 
 		// restore original fragment transitions if we just completed replace navigation (hmr)
 		if (navigationType === NavigationType.replace) {
@@ -463,7 +409,7 @@ export class Frame extends FrameBase {
 		// layout pass so we will wait forever for transitionCompleted handler...
 		// https://github.com/NativeScript/NativeScript/issues/4895
 		let navigationTransition: NavigationTransition;
-		if (this._currentEntry) {
+		if (currentEntry) {
 			navigationTransition = this._getNavigationTransition(newEntry.entry);
 		} else {
 			navigationTransition = null;
@@ -562,13 +508,13 @@ export class Frame extends FrameBase {
 		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
 		const listener = getAttachListener();
 
-		// There are cases like root view when detach listener is not called upon removing view from view-tree
-		// so mark those views as pending and remove listener once the view is detached
-		if (nativeView.isAttachedToWindow()) {
-			nativeView[isPendingDetachSymbol] = true;
-		} else {
-			nativeView.removeOnAttachStateChangeListener(listener);
-			nativeView[ownerSymbol] = null;
+		nativeView.removeOnAttachStateChangeListener(listener);
+		nativeView[ownerSymbol] = null;
+
+		// There are cases like root view when detach listener is not called before the native view gets disposed
+		// so call detach method directly for these views
+		if (this._attachedToWindow) {
+			this._onDetachedFromWindow();
 		}
 
 		this._tearDownPending = !!this._executingContext;
@@ -628,6 +574,13 @@ export class Frame extends FrameBase {
 		}
 	}
 
+	public _restoreTransitionState(): void {
+		if (this._cachedTransitionState) {
+			_restoreTransitionState(this._cachedTransitionState);
+			this._cachedTransitionState = null;
+		}
+	}
+
 	public _saveFragmentsState(): void {
 		// We save only fragments in backstack.
 		// Current fragment is saved by FragmentManager.
@@ -655,12 +608,12 @@ let framesCounter = 0;
 
 class AndroidFrame extends Observable implements AndroidFrameDefinition {
 	public rootViewGroup: android.view.ViewGroup;
-	public frameId;
+	public readonly frameId: number;
 
 	private _showActionBar = true;
-	private _owner: Frame;
+	private readonly _owner: FrameDefinition;
 
-	constructor(owner: Frame) {
+	constructor(owner: FrameDefinition) {
 		super();
 		this._owner = owner;
 		this.frameId = framesCounter++;
@@ -730,7 +683,7 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 		return undefined;
 	}
 
-	public get owner(): Frame {
+	public get owner(): FrameDefinition {
 		return this._owner;
 	}
 
@@ -1068,6 +1021,8 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			const manager = this._rootView._getFragmentManager();
 			manager.executePendingTransactions();
 
+			// Some flavors reuse the same root view, so unload the view in order to load it successfully when needed
+			this._rootView.callUnloaded();
 			this._rootView._onRootViewReset();
 		}
 		// Delete previously cached root view in order to recreate it.

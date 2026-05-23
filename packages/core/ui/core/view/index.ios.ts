@@ -95,8 +95,7 @@ export class View extends ViewCommon {
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
 		const measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
-		const forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
-		if (this.nativeViewProtected && (forceLayout || measureSpecsChanged)) {
+		if (this.nativeViewProtected && (this.isLayoutRequested || measureSpecsChanged)) {
 			// first clears the measured dimension flag
 			this._privateFlags &= ~PFLAG_MEASURED_DIMENSION_SET;
 
@@ -122,7 +121,7 @@ export class View extends ViewCommon {
 			this.layoutNativeView(left, top, right, bottom);
 		}
 
-		const needsLayout = boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
+		const needsLayout = boundsChanged || this.isLayoutRequired;
 		if (needsLayout) {
 			let position: Position;
 
@@ -259,9 +258,8 @@ export class View extends ViewCommon {
 
 	get isLayoutValid(): boolean {
 		if (this.nativeViewProtected) {
-			return this._isLayoutValid;
+			return !this.isLayoutRequested;
 		}
-
 		return false;
 	}
 
@@ -347,6 +345,20 @@ export class View extends ViewCommon {
 		}
 
 		return insets;
+	}
+
+	public override _setDefaultPaddings(insets: any): void {
+		if (insets instanceof UIEdgeInsets) {
+			this._defaultPaddingTop = layout.toDevicePixels(insets.top);
+			this._defaultPaddingRight = layout.toDevicePixels(insets.right);
+			this._defaultPaddingBottom = layout.toDevicePixels(insets.bottom);
+			this._defaultPaddingLeft = layout.toDevicePixels(insets.left);
+		} else {
+			this._defaultPaddingTop = 0;
+			this._defaultPaddingRight = 0;
+			this._defaultPaddingBottom = 0;
+			this._defaultPaddingLeft = 0;
+		}
 	}
 
 	public getLocationInWindow(): Point {

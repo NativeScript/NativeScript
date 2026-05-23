@@ -133,11 +133,6 @@
 					"commitReferences": true,
 					"versionTitleDate": true
 				}
-			},
-			"git": {
-				"commit": false,
-				"tag": false,
-				"push": false
 			}
 		},
 		"releaseTag": {

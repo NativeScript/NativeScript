@@ -904,6 +904,8 @@ export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: strin
 
 export function initAccessibilityCssHelper(): void {
 	ensureClasses();
+	updateCurrentHelperClasses(applyRootCssClass);
+	applyFontScaleToRootViews();
 
 	Application.on(Application.fontScaleChangedEvent, () => {
 		updateCurrentHelperClasses(applyRootCssClass);

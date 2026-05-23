@@ -1,3 +1,23 @@
+## 5.0.35 (2026-04-29)
+
+### 🩹 Fixes
+
+- **webpack:** inline sourcemaps ([#11188](https://github.com/NativeScript/NativeScript/pull/11188))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
+## 5.0.34 (2026-04-29)
+
+### 🩹 Fixes
+
+- **webpack:** resolve source map path with proper encoding ([#11180](https://github.com/NativeScript/NativeScript/pull/11180))
+
+### ❤️ Thank You
+
+- Nathan Walker
+
 ## 5.0.33 (2026-03-30)
 
 ### 🩹 Fixes
