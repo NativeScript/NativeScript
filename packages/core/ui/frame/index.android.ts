@@ -513,7 +513,7 @@ export class Frame extends FrameBase {
 
 		// There are cases like root view when detach listener is not called before the native view gets disposed
 		// so call detach method directly for these views
-		if (this._attachedToWindow && nativeView.isAttachedToWindow()) {
+		if (this._attachedToWindow) {
 			this._onDetachedFromWindow();
 		}
 
