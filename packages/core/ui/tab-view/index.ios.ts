@@ -183,7 +183,6 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		const owner = this._owner?.deref();
 		if (owner) {
 			owner._onViewControllerShown(navigationController.tabBarController, viewController);
-
 			// The cascade above may have just attached a queued Page to a Frame whose
 			// Frame.onLoaded only fired post-animation. iOS won't re-layout on its own
 			// after the push completes — trigger one so the late attachment becomes visible.
@@ -940,15 +939,12 @@ class NSTabAccessoryContainer extends UIView {
 		const w = this.bounds.size.width;
 		const h = this.bounds.size.height;
 		try {
-			// Convert to device pixels and floor to avoid +1px overshoot from rounding
 			let wp = Math.floor(layout.toDevicePixels(w));
 			const hp = Math.floor(layout.toDevicePixels(h));
-			// Clamp width to <= container pixel width (defensive)
 			const containerPxWidth = Math.floor(layout.toDevicePixels(this.bounds.size.width));
 			if (wp > containerPxWidth) {
 				wp = containerPxWidth;
 			}
-			// Ensure NS view and its children are measured with the final container width
 			const widthSpec = layout.makeMeasureSpec(wp, layout.EXACTLY);
 			const heightSpec = layout.makeMeasureSpec(hp, layout.EXACTLY);
 			owner.measure(widthSpec, heightSpec);
