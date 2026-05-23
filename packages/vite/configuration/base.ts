@@ -20,6 +20,7 @@ import { cliPlugin } from '../helpers/ns-cli-plugins.js';
 import { dynamicImportPlugin } from '../helpers/dynamic-import-plugin.js';
 import { mainEntryPlugin } from '../helpers/main-entry.js';
 import { buildCoreUrl, specToCoreSub } from '../helpers/ns-core-url.js';
+import { resolveDeviceReachableOrigin } from '../helpers/dev-host.js';
 import { getProjectFlavor } from '../helpers/flavor.js';
 import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
 import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
@@ -347,10 +348,22 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			...(hmrActive
 				? [
 						((): any => {
-							const host = (process.env.NS_HMR_HOST as string) || 'localhost';
-							const port = process.env.NS_HMR_PORT || '5173';
-							const proto = (process.env.NS_HMR_PROTO as string) || 'http';
-							const origin = `${proto}://${host}:${port}`;
+							// Routes through `resolveDeviceReachableOrigin` so the
+							// origin baked into externalized `@nativescript/core*`
+							// URLs is something the DEVICE can reach. Wildcard
+							// binds (`0.0.0.0`) and Android loopback get remapped
+							// to a real LAN IP (preferred) or `10.0.2.2` (Android
+							// emulator). Same helper used by `main-entry.ts` so
+							// both code paths produce byte-identical URL strings
+							// — required by the iOS HTTP ESM cache identity rule.
+							const port = process.env.NS_HMR_PORT ? Number(process.env.NS_HMR_PORT) : 5173;
+							const proto: 'http' | 'https' = (process.env.NS_HMR_PROTO as string) === 'https' ? 'https' : 'http';
+							const { origin } = resolveDeviceReachableOrigin({
+								host: process.env.NS_HMR_HOST,
+								platform,
+								protocol: proto,
+								port,
+							});
 							return {
 								name: 'ns-core-external-urls',
 								enforce: 'pre',

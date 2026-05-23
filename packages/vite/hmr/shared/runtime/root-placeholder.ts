@@ -17,19 +17,35 @@ function isPlaceholderView(view: any, placeholderRoot: any): boolean {
 }
 
 function getCommittedRootView(application: any, placeholderRoot: any): any | null {
+	const probe = (app: any): any | null => {
+		try {
+			const root = app?.getRootView?.() || null;
+			if (!root) return null;
+			if (!isPlaceholderView(root, placeholderRoot)) return root;
+			const currentPage = (root as any).currentPage || (root as any)._currentEntry?.resolvedPage || null;
+			if (currentPage && !isPlaceholderView(currentPage, placeholderRoot)) return root;
+		} catch {}
+		return null;
+	};
+
+	const primary = probe(application);
+	if (primary) return primary;
+
+	// Vite HMR realm split: Angular's `Application.resetRootView` may have
+	// committed the real root on a different Application instance than the
+	// one the placeholder/early hook patched. Scan every Application we
+	// know about so we can detect the commit regardless of which twin
+	// Angular actually wrote to.
 	try {
-		const root = application?.getRootView?.() || null;
-		if (!root) {
-			return null;
-		}
-		if (!isPlaceholderView(root, placeholderRoot)) {
-			return root;
-		}
-		const currentPage = (root as any).currentPage || (root as any)._currentEntry?.resolvedPage || null;
-		if (currentPage && !isPlaceholderView(currentPage, placeholderRoot)) {
-			return root;
+		const g: any = globalThis as any;
+		const known: any[] = g['__NS_DEV_KNOWN_APPLICATIONS__'] || [];
+		for (const app of known) {
+			if (!app || app === application) continue;
+			const r = probe(app);
+			if (r) return r;
 		}
 	} catch {}
+
 	return null;
 }
 
@@ -436,6 +452,46 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 	const committedRoot = getCommittedRootView(application, placeholderRoot);
 
 	if (!committedRoot) {
+		// Throttled verbose-gated diagnostic. Used to be unconditional
+		// (with a `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out) while we
+		// were debugging the Android "Waiting for the app root view"
+		// stall — now that Layer 1-9 fixes have landed, surface this
+		// only when the user opted into `verbose` in their HMR config.
+		// Still throttled to 1 Hz to avoid spamming the verbose log on
+		// long stalls.
+		try {
+			if (verbose) {
+				const now = Date.now();
+				const last = g.__NS_PLACEHOLDER_DIAG_LAST_FINALIZE__ || 0;
+				if (now - last > 1000) {
+					g.__NS_PLACEHOLDER_DIAG_LAST_FINALIZE__ = now;
+					const describe = (app: any) => {
+						try {
+							const r = app?.getRootView?.();
+							const cp = (r as any)?.currentPage || (r as any)?._currentEntry?.resolvedPage;
+							return {
+								appType: app?.constructor?.name || typeof app,
+								appIdentity: app === application ? 'primary' : 'alt',
+								rootType: r?.constructor?.name || 'null',
+								rootIsPlaceholder: !!r && (r === placeholderRoot || (r as any).__ns_dev_placeholder === true),
+								currentPageType: cp?.constructor?.name,
+							};
+						} catch {
+							return { appType: 'error' };
+						}
+					};
+					const known = (g['__NS_DEV_KNOWN_APPLICATIONS__'] || []) as any[];
+					console.warn('[ns-placeholder][diag] tryFinalize: no committed root', {
+						reason,
+						hadPlaceholder,
+						placeholderRootType: placeholderRoot?.constructor?.name,
+						primary: describe(application),
+						knownApplications: known.length,
+						alts: known.filter((a) => a && a !== application).map(describe),
+					});
+				}
+			}
+		} catch {}
 		return false;
 	}
 
@@ -489,14 +545,21 @@ function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): vo
 		}
 		attempts += 1;
 		if (Date.now() - startedAt >= maxWaitMs) {
-			if (verbose) {
-				console.info('[ns-placeholder] waiting for real root commit timed out', {
-					reason,
-					attempts,
-					waitMs: Date.now() - startedAt,
-					state: getPlaceholderWaitDiagnosticSnapshot(g, g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application, g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null),
-				});
-			}
+			// Verbose-gated — used to be unconditional with a
+			// `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out while we were
+			// debugging the Android stall. Now that the stall is
+			// resolved, users investigating a new stall should enable
+			// `verbose` in their HMR config to see this warning.
+			try {
+				if (verbose) {
+					console.warn('[ns-placeholder][diag] waiting for real root commit TIMED OUT', {
+						reason,
+						attempts,
+						waitMs: Date.now() - startedAt,
+						state: getPlaceholderWaitDiagnosticSnapshot(g, g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application, g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null),
+					});
+				}
+			} catch {}
 			return;
 		}
 		g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__'] = setTimeout(tick, attempts === 1 ? 0 : 100);
@@ -629,32 +692,162 @@ export function installRootPlaceholder(verbose?: boolean) {
 		}
 		g['__NS_DEV_PLACEHOLDER_APPLICATION__'] = Application;
 		const isAndroid = !!(g.__ANDROID__ || typeof g.android !== 'undefined');
-		if (!isAndroid && typeof (Application as any).resetRootView === 'function' && !g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__']) {
-			const __ns_dev_original_reset_root_view = (Application as any).resetRootView.bind(Application);
-			const __ns_dev_patched_reset_root_view = function __ns_dev_patched_reset_root_view(entry?: any) {
-				const result = __ns_dev_original_reset_root_view(entry);
+		// Patch `Application.resetRootView` on BOTH platforms so the placeholder
+		// finalize callback (`__NS_DEV_RESTORE_PLACEHOLDER__`) fires every time
+		// the framework swaps the root view.
+		//
+		// History: this used to be gated behind `!isAndroid` on the assumption
+		// that `core-aliases-early.ts` already installs an Android-specific
+		// `resetRootView` wrapper. That early hook is unreliable in HTTP HMR
+		// boot — it runs before `@nativescript/core/bundle-entry-points`, so
+		// `g.Application` is undefined when it runs and the wrapper is silently
+		// skipped. By the time `installRootPlaceholder` reaches this point,
+		// `getCore('Application')` has resolved a real Application (the
+		// placeholder UI is already showing, which proves it), so wrapping here
+		// works on Android too. We also coordinate with the early hook's flag
+		// (`__NS_DEV_PATCHED_RESET_ROOT__`) so we never double-wrap if it did
+		// install successfully.
+		const earlyAndroidWrapped = !!g['__NS_DEV_PATCHED_RESET_ROOT__'];
+		// Verbose-gated. Previously this was unconditional with a
+		// `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out — needed while we
+		// were debugging the Android "Waiting for the app root view"
+		// stall. Now that Layer 1-9 fixes have landed, the diag stream
+		// (resetRootView wraps, launch-handler entries, placeholder
+		// install state) is only useful when investigating a new
+		// stall, so it follows the user's `verbose` opt-in.
+		const diag: (...args: any[]) => void = verbose
+			? (...args: any[]) => {
+					try {
+						console.warn('[ns-placeholder][diag]', ...args);
+					} catch {}
+				}
+			: () => {};
+		diag('install entry', {
+			platform: isAndroid ? 'android' : 'ios',
+			applicationSource: applicationResolved.source,
+			applicationType: Application?.constructor?.name,
+			hasReset: typeof (Application as any).resetRootView === 'function',
+			alreadyPatchedEarly: earlyAndroidWrapped,
+			alreadyPatchedView: !!g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__'],
+			globalApplicationSame: g.Application === Application,
+			vendorApplicationSame: (() => {
+				try {
+					const v = g.__nsVendorRegistry?.get?.('@nativescript/core');
+					return v?.Application === Application || v?.default?.Application === Application;
+				} catch {
+					return null;
+				}
+			})(),
+		});
+		// Always patch every Application instance we can find. The early
+		// Android hook in `core-aliases-early.ts` only patches `g.Application`
+		// (the bundled realm's Application) and its prototype — but on Vite
+		// HMR there can be a SECOND Application loaded by the HTTP realm
+		// (`vendor-registry @nativescript/core`) that Angular's `import { Application }`
+		// actually resolves to. If we don't patch that twin too, Angular's
+		// `Application.resetRootView({ create: () => doc })` lands on an
+		// unpatched object, the placeholder finalize callback is never
+		// invoked, and the boot stalls at "Waiting for the app root view".
+		const makePatched = (origReset: (...args: any[]) => any, label: string) =>
+			function __ns_dev_patched_reset_root_view(entry?: any) {
+				diag(`patched resetRootView called (${label})`, {
+					hasEntry: !!entry,
+					entryKind: entry?.create ? 'create-fn' : entry?.moduleName ? 'module-name' : typeof entry,
+				});
+				const result = origReset(entry);
 				try {
 					const restore = g['__NS_DEV_RESTORE_PLACEHOLDER__'];
 					if (typeof restore === 'function') {
-						restore('Application.resetRootView');
+						restore(`Application.resetRootView (${label})`);
 					}
-				} catch {}
+				} catch (e: any) {
+					diag('patched resetRootView restore threw', String(e && (e.message || e)));
+				}
 				return result;
 			};
-			(Application as any).resetRootView = __ns_dev_patched_reset_root_view;
+		const wrapOnce = (target: any, label: string): boolean => {
 			try {
-				if (g.Application && g.Application !== Application) {
-					g.Application.resetRootView = __ns_dev_patched_reset_root_view;
-				}
-			} catch {}
+				if (!target || typeof target.resetRootView !== 'function') return false;
+				if ((target.resetRootView as any).__ns_dev_placeholder_wrap === true) return false;
+				const orig = target.resetRootView.bind(target);
+				const wrapped: any = makePatched(orig, label);
+				wrapped.__ns_dev_placeholder_wrap = true;
+				target.resetRootView = wrapped;
+				return true;
+			} catch {
+				return false;
+			}
+		};
+		const wrappedLocal = wrapOnce(Application, 'local');
+		const wrappedGlobal = g.Application && g.Application !== Application ? wrapOnce(g.Application, 'global') : false;
+		const wrappedProto = (() => {
 			try {
 				const proto = Object.getPrototypeOf(Application);
-				if (proto && typeof proto.resetRootView === 'function' && proto.resetRootView !== __ns_dev_patched_reset_root_view) {
-					proto.resetRootView = __ns_dev_patched_reset_root_view;
+				return wrapOnce(proto, 'proto');
+			} catch {
+				return false;
+			}
+		})();
+		// Vendor-realm Application coverage. Even when `earlyAndroidWrapped`
+		// is true, the early hook only touched `g.Application` + its proto;
+		// the vendor's Application is a separate object with its own
+		// `resetRootView` that the early hook never sees.
+		let wrappedVendor = false;
+		let wrappedVendorAppModule = false;
+		try {
+			const reg = g.__nsVendorRegistry;
+			if (reg && typeof reg.get === 'function') {
+				const vendorCore = reg.get('@nativescript/core');
+				const vendorApp = vendorCore?.Application || vendorCore?.default?.Application;
+				if (vendorApp && vendorApp !== Application) {
+					wrappedVendor = wrapOnce(vendorApp, 'vendor-core');
+					try {
+						const vp = Object.getPrototypeOf(vendorApp);
+						if (vp && vp !== Object.getPrototypeOf(Application)) {
+							wrapOnce(vp, 'vendor-core-proto');
+						}
+					} catch {}
+				}
+				const vendorAppMod = reg.get('@nativescript/core/application');
+				const vendorAppOnly = vendorAppMod?.Application || vendorAppMod?.default?.Application;
+				if (vendorAppOnly && vendorAppOnly !== Application && vendorAppOnly !== vendorApp) {
+					wrappedVendorAppModule = wrapOnce(vendorAppOnly, 'vendor-application');
+				}
+			}
+		} catch {}
+		// Track every Application instance we know about so
+		// `tryFinalizeBootPlaceholder` can poll the real root view on the
+		// instance Angular actually committed to.
+		try {
+			const apps: any[] = (g['__NS_DEV_KNOWN_APPLICATIONS__'] ||= []);
+			const push = (a: any) => {
+				if (a && apps.indexOf(a) === -1) apps.push(a);
+			};
+			push(Application);
+			push(g.Application);
+			try {
+				const reg = g.__nsVendorRegistry;
+				if (reg && typeof reg.get === 'function') {
+					const vendorCore = reg.get('@nativescript/core');
+					push(vendorCore?.Application);
+					push(vendorCore?.default?.Application);
+					const vendorAppMod = reg.get('@nativescript/core/application');
+					push(vendorAppMod?.Application);
+					push(vendorAppMod?.default?.Application);
 				}
 			} catch {}
-			g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__'] = true;
-		}
+		} catch {}
+		g['__NS_DEV_PATCHED_RESET_ROOT_VIEW__'] = true;
+		g['__NS_DEV_PATCHED_RESET_ROOT__'] = true;
+		diag('patched Application.resetRootView', {
+			platform: isAndroid ? 'android' : 'ios',
+			wrappedLocal,
+			wrappedGlobal,
+			wrappedProto,
+			wrappedVendor,
+			wrappedVendorAppModule,
+			knownApplications: (g['__NS_DEV_KNOWN_APPLICATIONS__'] || []).length,
+		});
 		const canCreatePlaceholderRoot = !!Frame && !!Page && !!Label;
 		if (!canCreatePlaceholderRoot && verbose) {
 			console.warn('[ns-placeholder] visual placeholder unavailable; starting lifecycle without placeholder root', {
@@ -677,14 +870,13 @@ export function installRootPlaceholder(verbose?: boolean) {
 
 		// launchEvent handler: provides a placeholder root, then patches Application.run
 		const __ns_launch_handler = (args?: any) => {
-			if (verbose) {
-				console.info('[ns-placeholder] launch handler fired', {
-					hasArgs: !!args,
-					hasExistingRoot: !!args?.root,
-					hasLaunched: typeof (Application as any).hasLaunched === 'function' ? !!(Application as any).hasLaunched() : undefined,
-					started: !!(Application as any).started,
-				});
-			}
+			diag('launch handler fired', {
+				hasArgs: !!args,
+				hasExistingRoot: !!args?.root,
+				existingRootType: args?.root?.constructor?.name,
+				hasLaunched: typeof (Application as any).hasLaunched === 'function' ? !!(Application as any).hasLaunched() : undefined,
+				started: !!(Application as any).started,
+			});
 			try {
 				const prev = args?.root;
 				if (!prev && canCreatePlaceholderRoot && Frame && Page && Label) {
@@ -758,6 +950,10 @@ export function installRootPlaceholder(verbose?: boolean) {
 						// root. The microtask runs before any I/O or DOM-tick boundary, so the UI
 						// still appears in the same iOS runloop turn — no user-visible delay.
 						const __ns_dev_patched_run = function __ns_dev_patched_run(entry?: any) {
+							diag('patched Application.run called', {
+								hasEntry: !!entry,
+								entryKind: entry?.create ? 'create-fn' : entry?.moduleName ? 'module-name' : typeof entry,
+							});
 							// Detach the launch handler synchronously: by the time the caller
 							// returned from `Application.run()`, the framework owns root-view
 							// management, and we must not re-enter the placeholder path on a
@@ -773,7 +969,7 @@ export function installRootPlaceholder(verbose?: boolean) {
 							// directly. Bailing here keeps `resetRootView(undefined)` from
 							// throwing "Main entry is missing".
 							if (!entry) {
-								if (verbose) console.info('[ns-placeholder] patched run() called with no entry; framework manages root view');
+								diag('patched run() called with no entry; framework manages root view');
 								return;
 							}
 

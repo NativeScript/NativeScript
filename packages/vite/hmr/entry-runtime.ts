@@ -459,6 +459,43 @@ export default async function startEntry(opts: EntryOpts) {
 		if (VERBOSE) console.log(D, '__NS_HMR_BOOT_COMPLETE__ = true');
 		(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = true;
 
+		// Belt-and-suspenders: kick off the placeholder finalize poll now. The
+		// `Application.resetRootView` wrapper (installed by `installRootPlaceholder`
+		// or `installCoreAliasesEarly`) is the primary trigger, but on Android
+		// HTTP HMR boot the early hook can silently fail to install (it runs
+		// before `@nativescript/core/bundle-entry-points` loads, when
+		// `g.Application` is still `undefined`). Calling the restore hook here
+		// runs `tryFinalizeBootPlaceholder` immediately and, if the real root
+		// isn't committed yet (it usually isn't — Angular bootstrap is still
+		// async), schedules a ~100 ms poll that succeeds the moment the
+		// framework's `Application.run({ create })` or `resetRootView()` call
+		// commits a non-placeholder root. Without this safety net Android can
+		// hang at "Waiting for the app root view (94 %)" indefinitely.
+		try {
+			const g: any = globalThis as any;
+			const restorePlaceholder = g.__NS_DEV_RESTORE_PLACEHOLDER__;
+			// Verbose-gated. Previously this was unconditional with a
+			// `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out — left wide open
+			// while we were chasing the Android "Waiting for the app
+			// root view" stall. Now that the stall is resolved the
+			// warning belongs behind `verbose`; if a new stall surfaces
+			// the user can flip `verbose: true` in their HMR config to
+			// see this + the matching `[ns-placeholder][diag]` chain.
+			try {
+				if (VERBOSE) {
+					console.warn('[ns-entry][diag] main import done; kicking placeholder finalize', {
+						hasRestoreCallback: typeof restorePlaceholder === 'function',
+						hasPlaceholderRoot: !!g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__,
+						hasApplication: !!(g.__NS_DEV_PLACEHOLDER_APPLICATION__ || g.Application),
+					});
+				}
+			} catch {}
+			if (typeof restorePlaceholder === 'function') {
+				restorePlaceholder('main-import-done');
+				if (VERBOSE) console.log(D, 'kicked __NS_DEV_RESTORE_PLACEHOLDER__ after main import');
+			}
+		} catch {}
+
 		// The placeholder patches Application.run() → resetRootView(), so the
 		// app's Application.run() call in the main module transparently replaced
 		// the placeholder with the real app UI. Restore original run() now.

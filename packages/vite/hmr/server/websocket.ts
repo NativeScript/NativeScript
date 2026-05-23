@@ -1,6 +1,6 @@
 import type { Plugin, ViteDevServer, TransformResult } from 'vite';
 import { createRequire } from 'node:module';
-import { sanitizeStrayCoreReferences, isDeepCoreSubpath, rewriteSpecifiersForDevice } from './core-sanitize.js';
+import { sanitizeStrayCoreReferences, isDeepCoreSubpath, isDirectoryIndexFilename, rewriteSpecifiersForDevice, type RelativeBase } from './core-sanitize.js';
 import { buildDefaultExportFooter, buildShapeInstallHeader, hasNamespaceReExport, rewriteNamespaceReExportsForShape } from './ns-core-cjs-shape.js';
 // AST tooling for robust transformations
 import { parse as babelParse } from '@babel/parser';
@@ -37,6 +37,7 @@ import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath 
 import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { buildCoreUrl, buildCoreUrlPath, normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
+import { resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helpers/dev-host.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
@@ -4428,7 +4429,24 @@ export const piniaSymbol = p.piniaSymbol;
 					// Vite's transform output references module IDs with /@fs,
 					// relative specifiers, or absolute project paths. Rewrite
 					// those to URLs iOS can fetch over HTTP.
-					let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(graphVersion || 0));
+					//
+					// We also thread a `RelativeBase` so any lingering relative
+					// specifiers (`./x`, `../x`) — which Vite's import-analysis
+					// sometimes leaves untouched for `node_modules` files — get
+					// resolved against the served URL's logical directory and
+					// rewritten to canonical `/ns/core/<resolved>` URLs.
+					//
+					// Without this, V8/iOS apply RFC 3986 URL resolution against
+					// the served URL (which has no trailing slash) and treat the
+					// last path segment as a *file*, so `./layout-helper-common`
+					// from `/ns/core/utils/layout-helper` becomes
+					// `/ns/core/utils/layout-helper-common` — a sibling that
+					// doesn't exist, producing "Failed to load url … Does the
+					// file exist?" from Vite and a stuck boot screen.
+					const __rawSubForRel = String(normalizedSub || sub || '').replace(/^\/+|\/+$/g, '');
+					const __isDirIndex = isDirectoryIndexFilename(modulePath || '');
+					const __relBase: RelativeBase = { sub: __rawSubForRel, isDirectoryIndex: __isDirIndex };
+					let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(graphVersion || 0), __relBase);
 
 					// Invariant D (CJS/ESM interop shape) — EXPORT-SIDE fix.
 					//
@@ -6776,7 +6794,9 @@ export const piniaSymbol = p.piniaSymbol;
 						// importers still get evicted from the V8 module
 						// registry so live bindings refresh). The importer
 						// count is appended so the distinction is visible.
-						console.log(`[hmr-ws][angular] narrowed transitive invalidation (no @Component/@Directive/@Pipe/@Injectable/@NgModule): ${updateRel} — Vite transform skipped, runtime eviction includes ${transitiveImporters.length} importer(s)`);
+						if (verbose && transitiveImporters.length) {
+							console.log(`[hmr-ws][angular] narrowed transitive invalidation (no @Component/@Directive/@Pipe/@Injectable/@NgModule): ${updateRel} — Vite transform skipped, runtime eviction includes ${transitiveImporters.length} importer(s)`);
+						}
 					}
 				} catch (error) {
 					if (verbose) console.warn('[hmr-ws][angular] transitive importer collection failed', error);
@@ -7453,48 +7473,89 @@ export function hmrWebSocketTypescript(opts: { verbose?: boolean }): Plugin {
 }
 
 /**
- * Get server origin for URLs
+ * Get the dev-server origin string baked into every module the rewriter
+ * serves to the device (`/ns/core/...`, `/ns/m/...`, etc.).
+ *
+ * This MUST agree with the origin `dev-host.ts` bakes into `bundle.mjs`
+ * itself. If the two disagree (e.g. the bundle imports
+ * `http://localhost:5173/ns/core/utils` while the rewriter splices in
+ * `http://192.168.0.8:5173/ns/core/utils`) V8's ESM loader keys those
+ * as DIFFERENT modules and the app ends up with two side-by-side
+ * realms of `@nativescript/core` — a classic singleton-state split.
+ * `internal/debug-sessions/LATEST-05-12-2026-HMR_CORE_REALM_SPLIT.md`
+ * documents the symptom.
+ *
+ * Routing all platforms through `resolveDeviceReachableOrigin` keeps
+ * them in lock-step:
+ *
+ *   - Android wildcard / loopback → `10.0.2.2` (emulator NAT can't
+ *     reach the host's LAN IP; physical devices opt in via
+ *     `NS_HMR_PREFER_LAN_HOST=1`).
+ *
+ *   - iOS / visionOS wildcard → `localhost` (simulator shares the
+ *     host's network stack; physical devices opt in via the same
+ *     `NS_HMR_PREFER_LAN_HOST=1` or `NS_HMR_HOST=<lan-ip>` env).
+ *
+ *   - Explicit non-loopback `server.host` (e.g. a developer-set LAN
+ *     IP) on any platform → trusted verbatim.
+ *
+ * The old `resolvedUrls.network[0]` preference is intentionally
+ * dropped — Vite reports a LAN IP whenever it detects one, but that
+ * IP is neither reachable from an Android emulator nor consistent
+ * with what `dev-host.ts` selects, so leaning on it created the
+ * realm-split risk above.
  */
 function getServerOrigin(server: ViteDevServer): string {
-	const urls: any = (server as any).resolvedUrls;
-	// Prefer a real LAN/network URL when available so emulators/devices can reach the host directly.
-	if (urls?.network?.length) {
-		try {
-			const u = new URL(String(urls.network[0]));
-			const origin = `${u.protocol}//${u.host}`;
-			if (!/^https?:\/\/[\w\-.:\[\]]+$/.test(origin)) {
-				console.warn('[hmr][origin] invariant failed for resolvedUrls.network:', urls.network[0], '→', origin);
-			}
-			return origin;
-		} catch {
-			// Fallthrough to local below if network parse fails
-		}
-	}
-	if (urls?.local?.length) {
-		try {
-			const u = new URL(String(urls.local[0]));
-			const origin = `${u.protocol}//${u.host}`;
-			if (!/^https?:\/\/[\w\-.:\[\]]+$/.test(origin)) {
-				console.warn('[hmr][origin] invariant failed for resolvedUrls.local:', urls.local[0], '→', origin);
-			}
-			return origin;
-		} catch {
-			// Fallthrough to manual construction
-		}
-	}
-
+	const platform: DevHostPlatform = detectDevHostPlatform();
 	const isHttps = !!server.config.server?.https;
+	const protocol: 'http' | 'https' = isHttps ? 'https' : 'http';
 	const httpServer = server.httpServer as any;
 	const addr = httpServer?.address?.();
 	const port = Number(server.config.server?.port || addr?.port || 5173);
-	const hostCfg = server.config.server?.host;
-	const host = typeof hostCfg === 'string' && hostCfg !== '0.0.0.0' ? hostCfg : '127.0.0.1';
 
-	const origin = `${isHttps ? 'https' : 'http'}://${host}:${port}`;
+	try {
+		const { origin } = resolveDeviceReachableOrigin({
+			host: server.config.server?.host,
+			platform,
+			protocol,
+			port,
+		});
+		if (/^https?:\/\/[\w\-.:\[\]]+$/.test(origin)) {
+			return origin;
+		}
+		console.warn('[hmr][origin] invariant failed for resolveDeviceReachableOrigin:', origin);
+	} catch (err) {
+		console.warn('[hmr][origin] resolveDeviceReachableOrigin threw:', (err as any)?.message || String(err));
+	}
+
+	// Last-ditch fallback for the implausible case where the resolver
+	// throws (CI containers with no NICs, exotic `process.env` shapes,
+	// etc.). We deliberately do NOT consult `resolvedUrls.network[0]`
+	// here — see the file-level comment above for why.
+	const hostCfg = server.config.server?.host;
+	const fallbackHost = typeof hostCfg === 'string' && hostCfg && hostCfg !== '0.0.0.0' ? hostCfg : platform === 'android' ? '10.0.2.2' : '127.0.0.1';
+	const origin = `${protocol}://${fallbackHost}:${port}`;
 	if (!/^https?:\/\/[\w\-.:\[\]]+$/.test(origin)) {
 		console.warn('[hmr][origin] invariant failed for constructed origin:', origin);
 	}
 	return origin;
+}
+
+/**
+ * Resolve the device target platform from the CLI flags the dev server
+ * was launched with. The `--env.android` / `--env.visionos` flags are
+ * surfaced by the NativeScript CLI when it spawns Vite; iOS is the
+ * safe default when no flag is set so the helper stays a pure
+ * function and standalone `vite serve` sessions still get sensible
+ * URLs.
+ */
+function detectDevHostPlatform(): DevHostPlatform {
+	try {
+		const flags = (getCliFlags() || {}) as Record<string, unknown>;
+		if (flags.android) return 'android';
+		if (flags.visionos) return 'visionos';
+	} catch {}
+	return 'ios';
 }
 
 // Test-only export: allow unit tests to run the sanitizer on snippets without booting a server
@@ -7502,3 +7563,4 @@ function getServerOrigin(server: ViteDevServer): string {
 export const __test_processCodeForDevice = processCodeForDevice;
 export const __test_resolveVendorRouting = resolveVendorRouting;
 export const __test_getBlockedDeviceNodeModulesReason = getBlockedDeviceNodeModulesReason;
+export const __test_getServerOrigin = getServerOrigin;

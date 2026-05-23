@@ -92,14 +92,46 @@ export function generateImportMap(options: ImportMapOptions): ImportMap {
 	if (manifest) {
 		// Map vendor modules to ns-vendor:// — EXACT entries only.
 		// No trailing-slash prefixes: subpaths must resolve via HTTP, not vendor.
+		//
+		// IMPORTANT: `@nativescript/core` and any `@nativescript/core/<sub>` are
+		// deliberately routed through the HTTP bridge (`${origin}/ns/core/...`),
+		// NEVER through `ns-vendor://`. Two reasons:
+		//   1. Single realm. The core bridge is the canonical source for every
+		//      `Application`, `View`, `Frame`, etc. instance — having a second
+		//      copy in the vendor registry produces the classic
+		//      `vendorApplicationSame: false` realm split (different
+		//      `globalThis.Application` than the one the iOS/Android hooks
+		//      patched) and HMR placeholder finalize stalls.
+		//   2. Chicken-and-egg. esbuild's vendor build externalizes
+		//      `@nativescript/core(/...)` (see `nsCoreExternalPlugin` in
+		//      `manifest.ts`), so the externalized `import` statements stay
+		//      in `vendor.mjs` itself. If those externals resolve through
+		//      `ns-vendor://`, the synthetic wrapper module's evaluation
+		//      runs DURING `vendor.mjs` linking — but `vendor-bootstrap`
+		//      hasn't populated `__nsVendorRegistry` yet (it runs LATER,
+		//      from the clientUrl module body), so every wrapper throws
+		//      `Vendor module not found in registry: @nativescript/core/...`.
+		//      Routing core through the HTTP bridge sidesteps the registry
+		//      lookup entirely; the dev server normalizes platform suffixes
+		//      (see `normalizeCoreSub` in `ns-core-url.ts`) so
+		//      `@nativescript/core/ui/frame/activity.android` → bridge URL
+		//      `/ns/core/ui/frame/activity.android` → served from the
+		//      platform-specific `.android.ts` source.
 		const vendorModules = listVendorModules();
 		for (const specifier of vendorModules) {
+			if (specifier === '@nativescript/core' || specifier.startsWith('@nativescript/core/')) {
+				continue;
+			}
 			imports[specifier] = `ns-vendor://${specifier}`;
 		}
 
 		// Map aliases from the manifest (e.g., "solid-js/web" → ns-vendor://solid-js)
 		if (manifest.aliases) {
 			for (const [alias, canonical] of Object.entries(manifest.aliases)) {
+				// Same single-realm + chicken-and-egg reasons as above.
+				if (alias === '@nativescript/core' || alias.startsWith('@nativescript/core/')) {
+					continue;
+				}
 				if (!imports[alias] && imports[canonical]) {
 					imports[alias] = imports[canonical];
 				}

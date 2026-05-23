@@ -9,9 +9,12 @@ vi.mock('fs', () => ({
 	readFileSync: vi.fn(),
 }));
 
+const mockGetVendorManifest = vi.fn(() => null as unknown);
+const mockListVendorModules = vi.fn(() => [] as string[]);
+
 vi.mock('../shared/vendor/registry.js', () => ({
-	getVendorManifest: vi.fn(() => null),
-	listVendorModules: vi.fn(() => []),
+	getVendorManifest: (...args: unknown[]) => mockGetVendorManifest(...args),
+	listVendorModules: (...args: unknown[]) => mockListVendorModules(...args),
 }));
 
 vi.mock('../../helpers/project.js', () => ({
@@ -44,6 +47,8 @@ describe('generateImportMap', () => {
 			}
 			return [];
 		});
+		mockGetVendorManifest.mockReturnValue(null);
+		mockListVendorModules.mockReturnValue([]);
 	});
 
 	it('omits build-time package roots while keeping the NativeScript Vite runtime prefix', () => {
@@ -84,6 +89,41 @@ describe('generateImportMap', () => {
 		// `solid-js/store`, `solid-js/jsx-runtime`, etc. don't accidentally
 		// pick up the bare-specifier override.
 		expect(imports['solid-js/']).toBe('http://localhost:5173/ns/m/node_modules/solid-js/');
+	});
+
+	it('never routes @nativescript/core through ns-vendor:// even when listed as a vendor entry', () => {
+		// Regression: when the Android-specific vendor candidate
+		// `@nativescript/core/ui/frame/activity.android` ended up in the
+		// `ns-vendor://` import-map block, vendor.mjs's externalized import
+		// of the same specifier tried to resolve through a wrapper that
+		// looked the entry up in `__nsVendorRegistry` BEFORE
+		// `__nsBrowserRuntimeEnsureVendorBootstrap()` had a chance to
+		// populate it (the bootstrap is invoked from the clientUrl module
+		// body, AFTER `import vendor.mjs` finishes linking). Result: every
+		// Android HMR cold boot died with
+		// `Error: Vendor module not found in registry: @nativescript/core/ui/frame/activity.android`.
+		// Routing core (and any core subpath) through the HTTP bridge
+		// sidesteps the chicken-and-egg entirely — the bridge serves the
+		// platform-specific source via `${origin}/ns/core/...` and the
+		// runtime never has to consult the vendor registry for core.
+		mockGetVendorManifest.mockReturnValue({
+			version: 1,
+			createdAt: new Date().toISOString(),
+			hash: 'test-hash',
+			modules: {},
+			aliases: {
+				'@nativescript/core/ui/frame/activity.android': '@nativescript/core/ui/frame/activity.android',
+			},
+		});
+		mockListVendorModules.mockReturnValue(['@nativescript/core', '@nativescript/core/ui/frame/activity.android', '@nativescript/core/application', 'rxjs']);
+
+		const { imports } = generateImportMap({ origin: 'http://localhost:5173', flavor: 'angular' });
+
+		expect(imports['@nativescript/core']).toBe('http://localhost:5173/ns/core');
+		expect(imports['@nativescript/core/']).toBe('http://localhost:5173/ns/core/');
+		expect(imports['@nativescript/core/ui/frame/activity.android']).toBeUndefined();
+		expect(imports['@nativescript/core/application']).toBeUndefined();
+		expect(imports['rxjs']).toBe('ns-vendor://rxjs');
 	});
 
 	it('does not regress the Vue framework entries', () => {

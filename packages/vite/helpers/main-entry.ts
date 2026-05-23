@@ -8,6 +8,7 @@ import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath 
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { buildCoreUrl } from './ns-core-url.js';
+import { resolveDeviceReachableOrigin } from './dev-host.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -195,14 +196,23 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// the import map isn't installed yet at that phase. For non-HMR
 			// builds, we keep bare specifiers so production bundlers inline core
 			// the normal way.
+			//
+			// Routes through `resolveDeviceReachableOrigin` so the URL baked
+			// into the bundle is something the DEVICE can reach: wildcard
+			// binds (`0.0.0.0`) and Android loopback get remapped to a real
+			// LAN IP (preferred) or the platform's reachable fallback
+			// (`10.0.2.2` for the Android emulator). Without this, Android
+			// crashes at boot trying to fetch `http://0.0.0.0:5173/ns/core/xhr`.
 			const getBootOrigin = (): string | null => {
 				if (!opts.hmrActive) return null;
 				try {
-					const configuredHost = typeof resolvedConfig.server.host === 'string' && resolvedConfig.server.host ? resolvedConfig.server.host : 'localhost';
-					const bootHost = ((process.env.NS_HMR_HOST || '') as string) || configuredHost;
-					const bootProtocol = resolvedConfig.server.https || opts.useHttps ? 'https' : 'http';
-					const bootPort = Number(resolvedConfig.server.port || 5173);
-					return `${bootProtocol}://${bootHost}:${bootPort}`;
+					const { origin } = resolveDeviceReachableOrigin({
+						host: resolvedConfig.server.host,
+						platform: opts.platform,
+						protocol: resolvedConfig.server.https || opts.useHttps ? 'https' : 'http',
+						port: Number(resolvedConfig.server.port || 5173),
+					});
+					return origin;
 				} catch {
 					return null;
 				}
@@ -656,11 +666,19 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				if (opts.verbose) {
 					imports += `console.info('[ns-entry] including deterministic dev session bootstrap', { platform: ${JSON.stringify(opts.platform)}, mainRel: ${JSON.stringify(mainEntryRelPosix)} });\n`;
 				}
-				const configuredHost = typeof resolvedConfig.server.host === 'string' && resolvedConfig.server.host ? resolvedConfig.server.host : 'localhost';
-				const bootHost = ((process.env.NS_HMR_HOST || '') as string) || configuredHost;
-				const bootProtocol = resolvedConfig.server.https || opts.useHttps ? 'https' : 'http';
-				const bootPort = Number(resolvedConfig.server.port || 5173);
-				const sessionUrl = bootProtocol + '://' + bootHost + ':' + String(bootPort) + '/__ns_dev__/session';
+				// Same device-reachable origin as `getBootOrigin()` so the
+				// session-descriptor URL and every `/ns/core/*` URL baked
+				// into bundle.mjs come from one canonical source. Without
+				// this, Android's `bundle.mjs` would hit `0.0.0.0:5173` for
+				// both endpoints (server.host's wildcard bind) and fail at
+				// boot before any user code runs.
+				const { origin: bootOrigin } = resolveDeviceReachableOrigin({
+					host: resolvedConfig.server.host,
+					platform: opts.platform,
+					protocol: resolvedConfig.server.https || opts.useHttps ? 'https' : 'http',
+					port: Number(resolvedConfig.server.port || 5173),
+				});
+				const sessionUrl = bootOrigin + '/__ns_dev__/session';
 				imports += "import { startBrowserRuntimeSession } from '@nativescript/vite/hmr/shared/runtime/session-bootstrap.js';\n";
 				imports += `startBrowserRuntimeSession(${JSON.stringify(sessionUrl)}, __nsVerboseLog).catch((error) => {\n`;
 				imports += `  try { globalThis.__NS_ENTRY_ERROR__ = { phase: 'deterministic-dev-session', message: String(error && (error.message || error)), stack: error && error.stack ? String(error.stack) : '' }; } catch {}\n`;

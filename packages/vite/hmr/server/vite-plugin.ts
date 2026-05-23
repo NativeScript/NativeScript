@@ -2,9 +2,9 @@ import type { Plugin, ResolvedConfig } from 'vite';
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'path';
-import os from 'os';
 import { pathToFileURL } from 'url';
 import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
+import { resolveDeviceReachableHost } from '../../helpers/dev-host.js';
 const require = createRequire(import.meta.url);
 
 const VIRTUAL_ID = 'virtual:ns-hmr-client';
@@ -441,27 +441,6 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 	let config: ResolvedConfig | undefined;
 	const sessionId = new Date().toISOString();
 
-	const guessLanHost = (): string | undefined => {
-		try {
-			const nets = os.networkInterfaces();
-			for (const name of Object.keys(nets)) {
-				const addrs = nets[name] || [];
-				for (const a of addrs) {
-					if (!a) continue;
-					// Node typings vary across versions; keep checks defensive
-					const family = (a as any).family;
-					const internal = !!(a as any).internal;
-					const address = String((a as any).address || '');
-					if (internal) continue;
-					if (family === 'IPv4' || family === 4) {
-						if (address && address !== '127.0.0.1') return address;
-					}
-				}
-			}
-		} catch {}
-		return undefined;
-	};
-
 	return {
 		name: 'ns-hmr-client',
 		configResolved(c) {
@@ -543,18 +522,23 @@ export function nsHmrClientVitePlugin(opts: { platform: NsDevPlatform; verbose?:
 			const projectRoot = config?.root || process.cwd();
 			const clientImport = computeClientImportSpecifier({ projectRoot, clientFsPath });
 
-			// Build ws url from Vite server info
-			let host = process.env.NS_HMR_HOST || (config?.server?.host as any);
-			// If Vite is bound to all interfaces, prefer a LAN IP so physical devices work.
-			// The HMR client will still try emulator/localhost fallbacks when needed.
-			const hostStr = typeof host === 'string' ? host : '';
-			const isWildcard = host === true || hostStr === '0.0.0.0' || hostStr === '::' || hostStr === '';
-			if (isWildcard) {
-				host = guessLanHost() || (opts.platform === 'android' ? '10.0.2.2' : 'localhost');
-			} else if (!host) {
-				host = opts.platform === 'android' ? guessLanHost() || '10.0.2.2' : 'localhost';
-			}
+			// Build ws url from Vite server info. Routes through the same
+			// canonical helper as `main-entry.ts` / `base.ts` so the
+			// websocket endpoint embedded in `bundle.mjs` and every other
+			// `/ns/*` URL share one origin string — required by the iOS
+			// HTTP ESM cache identity rule, and necessary for Android
+			// emulators that can't reach `0.0.0.0` / `localhost`.
 			const port = Number(config?.server?.port || 5173);
+			// Pass `port` through so the Android emulator path attempts
+			// `adb reverse tcp:<port> tcp:<port>` before falling back to
+			// `10.0.2.2`. The websocket URL and bundle.mjs URLs both
+			// flow from this same helper, so they stay byte-identical
+			// (required by the iOS HTTP ESM cache identity rule).
+			const { host } = resolveDeviceReachableHost({
+				host: config?.server?.host,
+				platform: opts.platform,
+				port,
+			});
 			const secure = !!config?.server?.https;
 			const protocol = secure ? 'wss' : 'ws';
 			const wsUrl = `${protocol}://${host}:${port}/ns-hmr`;

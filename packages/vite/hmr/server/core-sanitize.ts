@@ -157,6 +157,89 @@ export function normalizeAnyCoreSpecToBridge(code: string): string {
 }
 
 /**
+ * Description of the URL the bridge is currently serving, used to resolve
+ * relative import specifiers (`./x`, `../x`) into absolute `/ns/core/<sub>`
+ * URLs.
+ *
+ * Why this exists: Vite's `vite:import-analysis` pass usually rewrites every
+ * relative specifier to an absolute (`/@fs/...` or `/node_modules/...`) ID
+ * before code reaches us, but for files under `node_modules` some transform
+ * paths leave relatives untouched. When the device fetches such a module at
+ * `http://host/ns/core/utils/layout-helper` (no trailing slash, no `/index`)
+ * V8/iOS apply RFC 3986 URL resolution and treat `layout-helper` as the
+ * *file*, so `./layout-helper-common` becomes
+ * `http://host/ns/core/utils/layout-helper-common` — a sibling that does not
+ * exist (the real file lives at `…/layout-helper/layout-helper-common`).
+ *
+ * Passing a `RelativeBase` lets `rewriteSpec` resolve these specifiers
+ * server-side and emit canonical absolute `/ns/core/<resolved>` URLs, so the
+ * device never has to guess. When omitted, `rewriteSpec` falls back to the
+ * pre-existing behaviour of leaving relatives alone.
+ */
+export type RelativeBase = {
+	/**
+	 * Sub-path of the served module, without the leading `/ns/core/`. May be
+	 * the empty string for the package main (`/ns/core` itself).
+	 */
+	sub: string;
+	/**
+	 * `true` when the served file is a directory-index (e.g.
+	 * `…/utils/layout-helper/index.android.ts`); in that case `sub` already
+	 * names the *directory*, and `./x` resolves to `<sub>/x`.
+	 *
+	 * `false` for plain file modules (e.g. `…/utils/native-helper.ts`); the
+	 * resolution base is the parent directory of `sub`, so `./x` resolves to
+	 * `<sub-parent>/x`.
+	 */
+	isDirectoryIndex: boolean;
+};
+
+/**
+ * Detect whether a resolved module path is a directory-index file. Matches
+ * `index.<platform?>.<ext>` shapes used across @nativescript/core (e.g.
+ * `index.js`, `index.android.ts`, `index.ios.mjs`).
+ */
+export function isDirectoryIndexFilename(modulePath: string): boolean {
+	if (!modulePath || typeof modulePath !== 'string') return false;
+	const cleaned = modulePath.split(/[?#]/)[0];
+	const base = cleaned.replace(/\\/g, '/').split('/').pop() || '';
+	return /^index(?:\.(?:android|ios|visionos))?\.(?:m?[jt]s)$/i.test(base);
+}
+
+/**
+ * Resolve a relative specifier (`./x`, `../x`) into a canonical
+ * @nativescript/core sub-path, given the base described by `relBase`.
+ *
+ * `…/index.<platform>.<ext>` files mean `sub` IS the directory (so `./x` →
+ * `<sub>/x`); plain files mean the resolution base is `sub`'s parent.
+ *
+ * Returned sub-path is sanitised by `buildCoreUrlPath`'s convention: trailing
+ * `.(m)?(j|t)s` extensions are stripped so callers can directly emit
+ * `/ns/core/<resolved>` without producing a non-canonical URL that the
+ * bridge would 301-redirect later.
+ */
+export function resolveRelativeCoreSub(spec: string, relBase: RelativeBase): string | null {
+	if (!spec || (!spec.startsWith('./') && !spec.startsWith('../'))) return null;
+	const cleanSpec = spec.split(/[?#]/)[0];
+	const stripExt = (s: string) => s.replace(/\.(?:m?[jt]s)$/i, '');
+	const splitSeg = (s: string) => s.split('/').filter((p) => p.length > 0);
+	const baseSub = String(relBase?.sub || '').replace(/^\/+|\/+$/g, '');
+	const dirParts: string[] = relBase?.isDirectoryIndex ? splitSeg(baseSub) : splitSeg(baseSub).slice(0, -1);
+	const relParts = cleanSpec.split('/');
+	for (const part of relParts) {
+		if (part === '' || part === '.') continue;
+		if (part === '..') {
+			if (dirParts.length === 0) return null;
+			dirParts.pop();
+			continue;
+		}
+		dirParts.push(part);
+	}
+	const joined = dirParts.join('/');
+	return stripExt(joined);
+}
+
+/**
  * Rewrite a single import/export specifier for device consumption.
  *
  * Converts Vite-resolved root-relative paths to URLs the device can fetch:
@@ -164,8 +247,13 @@ export function normalizeAnyCoreSpecToBridge(code: string): string {
  *   /node_modules/other-pkg/x.js          →  {origin}/ns/m/node_modules/other-pkg/x.js
  *   /src/app/foo.ts                       →  {origin}/ns/m/src/app/foo.ts
  *   already /ns/... or http://...         →  unchanged
+ *
+ * When `relBase` is supplied AND `spec` is a relative path (`./x` or `../x`),
+ * the relative specifier is resolved to an absolute `/ns/core/<resolved>`
+ * URL using `resolveRelativeCoreSub`. Without `relBase`, relatives are
+ * returned unchanged (legacy behaviour for non-core call sites).
  */
-function rewriteSpec(spec: string, origin: string, ver: number): string {
+function rewriteSpec(spec: string, origin: string, ver: number, relBase?: RelativeBase): string {
 	void ver;
 	// Strip Vite cache-busting query params for bridge URLs
 	const cleanSpec = spec.split('?')[0];
@@ -211,9 +299,30 @@ function rewriteSpec(spec: string, origin: string, ver: number): string {
 		return spec;
 	}
 
-	// Leave relative specifiers for Vite/rolldown to resolve (they do not
-	// appear after Vite transform but the guard is free)
+	// Relative specifiers (`./x`, `../x`).
+	//
+	// Vite's import-analysis usually rewrites these to absolute IDs, but
+	// for files under `node_modules` it sometimes leaves them in place.
+	// When that happens AND the served URL has no trailing slash AND is
+	// itself a directory-index file (e.g. `…/layout-helper/index.android.ts`
+	// served at `/ns/core/utils/layout-helper`), V8's URL resolver treats
+	// `layout-helper` as the file and points `./layout-helper-common` at the
+	// non-existent sibling `/ns/core/utils/layout-helper-common`. Vite then
+	// 500s with "Failed to load url … Does the file exist?" and the
+	// dependent module never finishes evaluating.
+	//
+	// When `relBase` is supplied we resolve the specifier server-side and
+	// emit a canonical absolute `/ns/core/<resolved>` URL so the device
+	// cannot guess wrong. Falling back to the unchanged relative path
+	// preserves legacy behaviour for callers that don't (yet) thread
+	// `relBase` through.
 	if (spec.startsWith('./') || spec.startsWith('../')) {
+		if (relBase) {
+			const resolvedSub = resolveRelativeCoreSub(spec, relBase);
+			if (resolvedSub !== null) {
+				return buildCoreUrlPath(resolvedSub);
+			}
+		}
 		return spec;
 	}
 
@@ -250,8 +359,13 @@ function rewriteSpec(spec: string, origin: string, ver: number): string {
  * This replaces the heavy 5-pass pipeline (processCodeForDevice →
  * rewriteImports → deduplicateLinkerImports → CJS wrapping → etc.)
  * for deep subpath core modules where Vite already produces correct ESM.
+ *
+ * When `relBase` is supplied, relative specifiers (`./x`, `../x`) are
+ * resolved server-side into canonical `/ns/core/<resolved>` URLs so the
+ * device never has to guess where a directory-index file's siblings live.
+ * See `RelativeBase` and `rewriteSpec` for the full rationale.
  */
-export function rewriteSpecifiersForDevice(code: string, origin: string, ver: number): string {
+export function rewriteSpecifiersForDevice(code: string, origin: string, ver: number, relBase?: RelativeBase): string {
 	if (!code) return code;
 	let result = code;
 
@@ -269,12 +383,12 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
 	// `from` inside the string to the NEXT quote elsewhere in the file,
 	// corrupting both tokens.
 	result = result.replace(/(?<![a-zA-Z0-9_$'"`])(from\s+)(["'])([^"']+)\2/g, (_m, pre: string, q: string, spec: string) => {
-		return `${pre}${q}${rewriteSpec(spec, origin, ver)}${q}`;
+		return `${pre}${q}${rewriteSpec(spec, origin, ver, relBase)}${q}`;
 	});
 
 	// Pattern 2: import("specifier") — dynamic imports
 	result = result.replace(/(import\s*\(\s*)(["'])([^"']+)\2(\s*\))/g, (_m, pre: string, q: string, spec: string, post: string) => {
-		return `${pre}${q}${rewriteSpec(spec, origin, ver)}${q}${post}`;
+		return `${pre}${q}${rewriteSpec(spec, origin, ver, relBase)}${q}${post}`;
 	});
 
 	// Pattern 3: import "specifier" — side-effect imports (no from clause)
@@ -289,7 +403,7 @@ export function rewriteSpecifiersForDevice(code: string, origin: string, ver: nu
 	result = result.replace(/(^|[;\n])(\s*import\s+)(["'])([^"']+)\3/g, (_m, lead: string, pre: string, q: string, spec: string) => {
 		// Skip if it looks like an identifier rather than a path
 		if (!/[/.@]/.test(spec)) return _m;
-		return `${lead}${pre}${q}${rewriteSpec(spec, origin, ver)}${q}`;
+		return `${lead}${pre}${q}${rewriteSpec(spec, origin, ver, relBase)}${q}`;
 	});
 
 	return result;
