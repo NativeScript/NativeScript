@@ -25,7 +25,6 @@ export { setFragmentClass } from './fragment';
 const INTENT_EXTRA = 'com.tns.activity';
 
 const ownerSymbol = Symbol('_owner');
-const isPendingDetachSymbol = Symbol('_isPendingDetach');
 
 let navDepth = -1;
 let fragmentId = -1;
@@ -53,12 +52,6 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 				const owner: View = view[ownerSymbol];
 				if (owner) {
 					owner._onDetachedFromWindow();
-				}
-
-				if (view[isPendingDetachSymbol]) {
-					delete view[isPendingDetachSymbol];
-					view.removeOnAttachStateChangeListener(this);
-					view[ownerSymbol] = null;
 				}
 			},
 		});
@@ -515,13 +508,13 @@ export class Frame extends FrameBase {
 		const nativeView = this.nativeViewProtected as android.view.ViewGroup;
 		const listener = getAttachListener();
 
-		// There are cases like root view when detach listener is not called upon removing view from view-tree
-		// so mark those views as pending and remove listener once the view is detached
-		if (nativeView.isAttachedToWindow()) {
-			nativeView[isPendingDetachSymbol] = true;
-		} else {
-			nativeView.removeOnAttachStateChangeListener(listener);
-			nativeView[ownerSymbol] = null;
+		nativeView.removeOnAttachStateChangeListener(listener);
+		nativeView[ownerSymbol] = null;
+
+		// There are cases like root view when detach listener is not called before the native view gets disposed
+		// so call detach method directly for these views
+		if (this._attachedToWindow && nativeView.isAttachedToWindow()) {
+			this._onDetachedFromWindow();
 		}
 
 		this._tearDownPending = !!this._executingContext;
