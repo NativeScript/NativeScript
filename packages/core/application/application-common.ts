@@ -298,7 +298,6 @@ export class ApplicationCommon {
 
 	private setRootViewCSSClasses(rootView: View): void {
 		const platform = Device.os.toLowerCase();
-		const majorVersion = Math.floor(SDK_VERSION);
 		const deviceType = Device.deviceType.toLowerCase();
 		const orientation = this.orientation();
 		const systemAppearance = this.systemAppearance();
@@ -308,7 +307,7 @@ export class ApplicationCommon {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}`);
 
 			// SDK Version CSS classes
-			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}-${majorVersion}`);
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}-${Math.floor(SDK_VERSION)}`);
 		}
 
 		if (deviceType) {
