@@ -307,6 +307,9 @@ export class ApplicationCommon {
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}`);
 
 			// SDK Version CSS classes
+			// Add exact version class (e.g., .ns-ios-26 or .ns-android-36)
+			// this acts like 'gte' for that major version range
+			// e.g., if user wants iOS 27, they can add .ns-ios-27 specifiers
 			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${platform}-${Math.floor(SDK_VERSION)}`);
 		}
 
