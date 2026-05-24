@@ -170,7 +170,7 @@ function initializeNativeClasses() {
 
 		getPageTitle(index: number) {
 			const items = this.items;
-			if (index < 0 || index >= items.length) {
+			if (!items || index < 0 || index >= items.length) {
 				return '';
 			}
 
@@ -648,11 +648,15 @@ export class TabView extends TabViewBase {
 	}
 
 	private disposeCurrentFragments(): void {
-		const fragmentManager = this._getFragmentManager();
+		const fragmentManager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
 		const transaction = fragmentManager.beginTransaction();
-		const fragments = <Array<any>>fragmentManager.getFragments().toArray();
-		for (let i = 0; i < fragments.length; i++) {
-			transaction.remove(fragments[i]);
+		const fragments: androidNative.Array<androidx.fragment.app.Fragment> = fragmentManager.getFragments().toArray();
+
+		for (let i = 0, length = fragments.length; i < length; i++) {
+			const fragment = fragments[i];
+			if (fragment?.['owner'] === this) {
+				transaction.remove(fragment);
+			}
 		}
 		transaction.commitNowAllowingStateLoss();
 	}
