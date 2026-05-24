@@ -1666,7 +1666,7 @@ export class AccessibilityServiceEnabledObservable extends CommonA11YServiceEnab
 }
 
 let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
-export function ensureA11Classes() {
+export function ensureA11yClasses() {
 	if (accessibilityServiceObservable) {
 		return;
 	}
@@ -1754,7 +1754,7 @@ function applyFontScaleToRootViews(): void {
 }
 
 export function initAccessibilityCssHelper(): void {
-	ensureA11Classes();
+	ensureA11yClasses();
 	updateCurrentHelperClasses(applyRootCssClass);
 	applyFontScaleToRootViews();
 
