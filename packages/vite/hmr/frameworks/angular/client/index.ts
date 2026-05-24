@@ -814,6 +814,20 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			if (options.verbose && envVerbose) {
 				console.info('[ns-hmr][client] calling __reboot_ng_modules__');
 			}
+			// Pre-import reset: clear Angular's `GENERATED_COMP_IDS` map BEFORE
+			// the changed component modules are re-imported. If we don't, every
+			// touched component's `ɵɵdefineComponent` call hashes to the same
+			// id as its predecessor (selectors + className haven't changed),
+			// hits a "previousCompDefType !== componentDef.type" collision, and
+			// surfaces NG0912 "Component ID generation collision detected".
+			// The map is cleared again post-reboot as a safety net, but doing
+			// it once here suppresses the warning at the source.
+			try {
+				const preResetCompiled = g.__reset_ng_compiled_components__;
+				if (typeof preResetCompiled === 'function') {
+					preResetCompiled();
+				}
+			} catch {}
 			await refreshAngularBootstrapOptions(msg, options);
 			tAfterRefresh = Date.now();
 			try {
