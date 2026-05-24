@@ -29,8 +29,8 @@ const INDEX = '_index';
 let PagerAdapter: PagerAdapter;
 let appResources: android.content.res.Resources;
 
-function computeFragmentName(viewId: number, id: number): string {
-	return 'android:viewpager:' + viewId + ':' + id;
+function computeFragmentName(viewId: number, index: number): string {
+	return 'android:viewpager:' + viewId + ':' + index;
 }
 
 function getTabById(id: number): TabView {
@@ -189,8 +189,7 @@ function initializeNativeClasses() {
 				this.mCurTransaction = fragmentManager.beginTransaction();
 			}
 
-			const itemId = this.getItemId(position);
-			const name = computeFragmentName(container.getId(), itemId);
+			const name = computeFragmentName(container.getId(), position);
 
 			let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
 			if (fragment != null) {
@@ -272,9 +271,9 @@ function initializeNativeClasses() {
 			//
 		}
 
-		getItemId(position: number): number {
-			return position;
-		}
+		// getItemId(position: number): number {
+		// 	return position;
+		// }
 
 		private _commitCurrentTransaction() {
 			if (this.mCurTransaction != null && !this.transactionRunning) {
@@ -385,23 +384,16 @@ export class TabViewItem extends TabViewItemBase {
 
 	public _getChildFragmentManager(): androidx.fragment.app.FragmentManager {
 		const tabView = this.parent as TabView;
-		const fragmentManager = tabView._getFragmentManager();
-		const fragments = fragmentManager.getFragments().toArray();
-		let tabFragment = null;
-
-		for (let i = 0, length = fragments.length; i < length; i++) {
-			if (fragments[i].index === this.index) {
-				tabFragment = fragments[i];
-				break;
-			}
-		}
+		const fragmentManager: androidx.fragment.app.FragmentManager = tabView._getFragmentManager();
+		const tabFragmentTag = tabView._getTabFragmentTagByIndex(this.index);
+		const tabFragment = fragmentManager.findFragmentByTag(tabFragmentTag);
 
 		if (!tabFragment) {
 			if (Trace.isEnabled()) {
 				Trace.write(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
 			}
 
-			return tabView._getFragmentManager();
+			return fragmentManager;
 		}
 
 		return tabFragment.getChildFragmentManager();
@@ -611,6 +603,10 @@ export class TabView extends TabViewBase {
 				item.loadView(item.view);
 			}
 		});
+	}
+
+	public _getTabFragmentTagByIndex(index: number): string {
+		return computeFragmentName(this._androidViewId, index);
 	}
 
 	public onLoaded(): void {
