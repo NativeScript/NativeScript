@@ -185,7 +185,12 @@ class UIViewControllerImpl extends UIViewController {
 					// Workaround for disabled backswipe on second custom native transition
 					if (frame.canGoBack()) {
 						const transitionState = SharedTransition.getState(owner.transitionId);
-						if (!transitionState?.interactive) {
+						if (transitionState?.interactive) {
+							// A custom interactive dismiss is wired up (shared transition with
+							// pan gesture). Disable iOS' built-in edge pan so it can't race the
+							// custom recognizer and run the standard non-interactive pop.
+							navigationController.interactivePopGestureRecognizer.enabled = false;
+						} else {
 							// only consider when interactive transitions are not enabled
 							navigationController.interactivePopGestureRecognizer.delegate = navigationController;
 							navigationController.interactivePopGestureRecognizer.enabled = owner.enableSwipeBackNavigation;

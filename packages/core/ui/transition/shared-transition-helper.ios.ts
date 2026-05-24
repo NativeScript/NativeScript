@@ -42,6 +42,10 @@ export class SharedTransitionHelper {
 							independent: [],
 						};
 					}
+					// Track every matched source view so cleanup can restore alpha,
+					// including duplicates (same album surfacing in multiple lists)
+					// that we hide but don't create a snapshot for.
+					(transition.sharedElements as any)._allPresentingViews = sharedElements.slice();
 
 					if (SharedTransition.DEBUG) {
 						console.log(`  ${type}: Present`);
@@ -60,13 +64,22 @@ export class SharedTransitionHelper {
 					// console.log('pageEndIndependentTags:', pageEndIndependentTags);
 
 					const positionSharedTags = async () => {
+						const processedTags = new Set<string>();
 						for (const presentingView of sharedElements) {
 							const presentingSharedElement = presentingView.ios;
-							// console.log('fromTarget instanceof UIImageView:', fromTarget instanceof UIImageView)
-
-							// TODO: discuss whether we should check if UIImage/UIImageView type to always snapshot images or if other view types could be duped/added vs. snapshotted
-							// Note: snapshot may be most efficient/simple
-							// console.log('---> ', presentingView.sharedTransitionTag, ': ', presentingSharedElement)
+							const tag = presentingView.sharedTransitionTag;
+							if (processedTags.has(tag)) {
+								// The same item can appear in multiple lists on the source page
+								// (e.g., a featured album also surfacing in "Recently Played").
+								// Each instance has the same sharedTransitionTag. Only the first
+								// one becomes the snapshot origin; the rest must still be hidden
+								// so they don't show through behind the animating snapshot.
+								if (presentingSharedElement) {
+									presentingSharedElement.alpha = 0;
+								}
+								continue;
+							}
+							processedTags.add(tag);
 
 							const presentedView = presented.find((v) => v.sharedTransitionTag === presentingView.sharedTransitionTag);
 							const presentedSharedElement = presentedView.ios;
@@ -78,16 +91,26 @@ export class SharedTransitionHelper {
 							}
 
 							// treat images differently...
+							let imageSourceChangeListener: ((args: any) => void) | undefined;
 							if (presentedSharedElement instanceof UIImageView) {
-								// in case the image is loaded async, we need to update the snapshot when it changes
-								// todo: remove listener on transition end
-								presentedView.on('imageSourceChange', () => {
+								// In case the image is loaded async, keep the snapshot's image in sync with
+								// the destination view's image. We hold a ref so we can detach the listener
+								// on cleanup (the View would otherwise hold a strong ref via the observers
+								// map and the snapshot closure would leak).
+								imageSourceChangeListener = () => {
 									snapshot.image = iOSUtils.snapshotView(presentedSharedElement, Screen.mainScreen.scale);
 									snapshot.tintColor = presentedSharedElement.tintColor;
-								});
+								};
+								presentedView.on('imageSourceChange', imageSourceChangeListener);
 
 								snapshot.tintColor = presentedSharedElement.tintColor;
 								snapshot.contentMode = presentedSharedElement.contentMode;
+								// Seed the snapshot with the source's already-loaded image so the very
+								// first frame of the animation isn't blank if the destination image is
+								// still loading.
+								if (presentingSharedElement instanceof UIImageView) {
+									snapshot.image = presentingSharedElement.image;
+								}
 							}
 
 							iOSUtils.copyLayerProperties(snapshot, presentingSharedElement, pageEndProps?.propertiesToMatch as any);
@@ -118,13 +141,20 @@ export class SharedTransitionHelper {
 								startOpacity: presentedView.opacity,
 								endOpacity: presentingView.opacity,
 								propertiesToMatch: pageEndProps?.propertiesToMatch,
+								imageSourceChangeListener,
 							});
 
 							// set initial opacity to match the source view opacity
 							snapshot.alpha = presentingView.opacity;
-							// hide both while animating within the transition context
-							presentingView.opacity = 0;
-							presentedView.opacity = 0;
+							// Hide both while animating in the transition context.
+							//
+							// We mutate native alpha directly rather than NS `opacity` so the NS-side
+							// style remains the user's intended value (typically 1). If we instead set
+							// `view.opacity = 0` and then a transition was interrupted before cleanup
+							// (or the page was reused), `startOpacity` here could capture 0 from a prior
+							// run and the cleanup below would leave the destination invisible.
+							presentingSharedElement.alpha = 0;
+							presentedSharedElement.alpha = 0;
 						}
 					};
 
@@ -206,7 +236,8 @@ export class SharedTransitionHelper {
 									zIndex: isNumber(pageEndProps?.zIndex) ? pageEndProps.zIndex : 0,
 								});
 
-								independentView.opacity = 0;
+								// Native alpha; see comment in positionSharedTags.
+								independentSharedElement.alpha = 0;
 							}
 						}
 					};
@@ -237,10 +268,42 @@ export class SharedTransitionHelper {
 					// Important: always set after above shared element positions have had their start positions set
 					transition.presented.view.alpha = isNumber(pageStart?.opacity) ? pageStart?.opacity : 0;
 					transition.presented.view.frame = CGRectMake(startFrame.x, startFrame.y, startFrame.width, startFrame.height);
+					// Optional top-corner rounding for sheet-style transitions (e.g.
+					// a modal that's rounded at the bottom of the screen and flattens
+					// as it slides up). Setting maskedCorners and masksToBounds here
+					// (before the animation) so they're stable during the animated
+					// cornerRadius change.
+					if (isNumber((pageStart as any)?.cornerRadius) || isNumber((pageEnd as any)?.cornerRadius)) {
+						const layer = transition.presented.view.layer;
+						// top-left | top-right | bottom-left | bottom-right (CACornerMask bits)
+						layer.maskedCorners = 15;
+						layer.masksToBounds = true;
+						if (isNumber((pageStart as any)?.cornerRadius)) {
+							layer.cornerRadius = (pageStart as any).cornerRadius;
+						}
+					}
 
 					const cleanupPresent = () => {
 						for (const presented of transition.sharedElements.presented) {
-							presented.view.opacity = presented.startOpacity;
+							// Detach the per-transition imageSourceChange listener registered
+							// during positionSharedTags so it doesn't leak (the snapshot is gone).
+							if (presented.imageSourceChangeListener) {
+								presented.view.off('imageSourceChange', presented.imageSourceChangeListener);
+								presented.imageSourceChangeListener = null;
+							}
+							// Restore the destination native alpha from the NS opacity (the source
+							// of truth). NS opacity wasn't modified during the transition, so this
+							// reflects the user's intended visibility (typically 1).
+							presented.view.ios.alpha = presented.view.opacity;
+						}
+						// Restore native alpha on every source view we touched — including
+						// duplicates that share a sharedTransitionTag and were hidden without
+						// a snapshot. Even though the source page is being removed, the View
+						// instances may be reused on subsequent navigations.
+						for (const sourceView of (transition.sharedElements as any)._allPresentingViews || []) {
+							if (sourceView?.ios) {
+								sourceView.ios.alpha = sourceView.opacity;
+							}
 						}
 						for (const presenting of transition.sharedElements.presenting) {
 							presenting.snapshot.removeFromSuperview();
@@ -248,7 +311,7 @@ export class SharedTransitionHelper {
 						for (const independent of transition.sharedElements.independent) {
 							independent.snapshot.removeFromSuperview();
 							if (independent.isPresented) {
-								independent.view.opacity = independent.startOpacity;
+								independent.view.ios.alpha = independent.view.opacity;
 							}
 						}
 						SharedTransition.updateState(transition.id, {
@@ -273,6 +336,12 @@ export class SharedTransitionHelper {
 
 						const endFrame = getRectFromProps(pageEnd);
 						transition.presented.view.frame = CGRectMake(endFrame.x, endFrame.y, endFrame.width, endFrame.height);
+						// Animate cornerRadius alongside the page frame. Implicit animation
+						// of cornerRadius is supported on iOS 11+, both inside
+						// UIView.animateWith… and UIViewPropertyAnimator's animations block.
+						if (isNumber((pageEnd as any)?.cornerRadius)) {
+							transition.presented.view.layer.cornerRadius = (pageEnd as any).cornerRadius;
+						}
 
 						if (pageOut) {
 							if (isNumber(pageOut.opacity)) {
@@ -363,6 +432,23 @@ export class SharedTransitionHelper {
 					});
 					if (type === 'page') {
 						transitionContext.containerView.insertSubviewBelowSubview(transition.presenting.view, transition.presented.view);
+						// UIKit's standard pop places the incoming source view off to the
+						// left so it can slide into position; for custom shared transitions
+						// (where the destination either slides down or morphs to source) we
+						// don't want that lateral slide. Pin the source to its fullscreen
+						// frame so it stays put underneath the animating destination.
+						// Users can still opt into a custom source animation via `pageOut`.
+						const sourceDefaults = getRectFromProps(null);
+						transition.presenting.view.frame = CGRectMake(0, 0, sourceDefaults.width, sourceDefaults.height);
+					}
+					// Morph + interactive dismiss: the gesture handler drives the
+					// animation via transforms and finalizes by calling cancel/finish
+					// on the transitionContext. Running the standard snapshot + spring
+					// rig here would race that and frequently call completeTransition(true)
+					// *before* the user's gesture ended — causing the dismiss to commit
+					// even on a cancel. Skip the rest of the dismiss setup entirely.
+					if (state.interactive?.dismiss?.morph && state.interactiveBegan) {
+						return;
 					}
 
 					// console.log('transitionContext.containerView.subviews.count:', transitionContext.containerView.subviews.count);
@@ -383,7 +469,17 @@ export class SharedTransitionHelper {
 					const pageReturn = state.pageReturn;
 
 					for (const p of transition.sharedElements.presented) {
-						p.view.opacity = 0;
+						// Use native alpha (not NS opacity) so we don't pollute the NS-side
+						// value if the dismiss is interrupted; cleanup restores from NS opacity.
+						p.view.ios.alpha = 0;
+					}
+					// Ensure top-corner masking + clipping is in place before we animate
+					// cornerRadius back toward the start value. If the present pass already
+					// set these, this is a harmless no-op.
+					if (isNumber((pageReturn as any)?.cornerRadius)) {
+						const layer = transition.presented.view.layer;
+						layer.maskedCorners = 15; // top-left | top-right | bottom-left | bottom-right
+						layer.masksToBounds = true;
 					}
 
 					// combine to order by zIndex and add to transition context
@@ -438,13 +534,44 @@ export class SharedTransitionHelper {
 						transitionContext.containerView.addSubview(data.snapshot);
 					}
 
+					// Hide every source-side shared element now that snapshots have been
+					// captured. The animating snapshot covers them; without this, the user
+					// sees a "double image" — the real source element AND the snapshot
+					// animating over it back to its position. Use the full list (not just
+					// the deduped `presenting`) so duplicates from sister lists are hidden
+					// too. Restored in cleanupDismiss below.
+					for (const sourceView of (transition.sharedElements as any)._allPresentingViews || []) {
+						if (sourceView?.ios) {
+							sourceView.ios.alpha = 0;
+						}
+					}
+
 					const cleanupDismiss = () => {
+						// Restore alpha on every source view we hid — including duplicate
+						// sources with the same sharedTransitionTag — using NS opacity as
+						// the source of truth.
+						for (const sourceView of (transition.sharedElements as any)._allPresentingViews || []) {
+							if (sourceView?.ios) {
+								sourceView.ios.alpha = sourceView.opacity;
+							}
+						}
 						for (const presenting of transition.sharedElements.presenting) {
-							presenting.view.opacity = presenting.startOpacity;
 							presenting.snapshot.removeFromSuperview();
 						}
+						for (const presented of transition.sharedElements.presented) {
+							// Detach the imageSourceChange listener and restore alpha. Even though
+							// the destination page is being torn down, NS Views can outlive their
+							// nativeView and we shouldn't leak observers.
+							if (presented.imageSourceChangeListener) {
+								presented.view.off('imageSourceChange', presented.imageSourceChangeListener);
+								presented.imageSourceChangeListener = null;
+							}
+							if (presented.view.ios) {
+								presented.view.ios.alpha = presented.view.opacity;
+							}
+						}
 						for (const independent of transition.sharedElements.independent) {
-							independent.view.opacity = independent.startOpacity;
+							independent.view.ios.alpha = independent.view.opacity;
 							independent.snapshot.removeFromSuperview();
 						}
 						SharedTransition.finishState(transition.id);
@@ -466,6 +593,11 @@ export class SharedTransitionHelper {
 
 						const endFrame = getRectFromProps(pageReturn, getPageStartDefaultsForType(type));
 						transition.presented.view.frame = CGRectMake(endFrame.x, endFrame.y, endFrame.width, endFrame.height);
+						// Animate cornerRadius back toward the start value (e.g. a sheet
+						// re-rounds as it slides offscreen).
+						if (isNumber((pageReturn as any)?.cornerRadius)) {
+							transition.presented.view.layer.cornerRadius = (pageReturn as any).cornerRadius;
+						}
 
 						if (pageOut) {
 							// always return to defaults if pageOut had been used
@@ -539,20 +671,62 @@ export class SharedTransitionHelper {
 		switch (type) {
 			case 'page':
 				interactiveState.transitionContext.containerView.insertSubviewBelowSubview(state.instance.presenting.view, state.instance.presented.view);
+				// Pin the source view to its fullscreen frame so it doesn't slide
+				// in from off-left as the user drags. The default UIKit pop expects
+				// to animate the source from off-left; for shared-element / morph
+				// transitions we want the source to stay put underneath the
+				// animating destination so the visuals feel connected.
+				{
+					const sourceDefaults = getRectFromProps(null);
+					state.instance.presenting.view.frame = CGRectMake(0, 0, sourceDefaults.width, sourceDefaults.height);
+				}
 				break;
 		}
 	}
 
 	static interactiveUpdate(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType, percent: number) {
 		if (interactiveState) {
+			if (state.interactive?.dismiss?.morph) {
+				// Morph mode: the gesture handler drives the destination view's
+				// transform directly. We only forward the event so observers can
+				// react to the gesture's percentage.
+				SharedTransition.notifyEvent(SharedTransition.interactiveUpdateEvent, {
+					id: state?.instance?.id,
+					type,
+					percent,
+				});
+				return;
+			}
 			if (!interactiveState.added) {
+				// Defer setup until the gesture has clearly committed to a horizontal
+				// dismiss motion. A vertical scroll on a descendant scroll view also
+				// triggers the page-level pan gesture (NS pan recognizers don't yield
+				// to scroll-view pans by default), producing near-zero percent values.
+				// Without this guard we'd mount the dismiss snapshots and hide the
+				// destination during a scroll, making the image look "stuck" until the
+				// cancel animation runs.
+				if (Math.abs(percent) < 0.05) {
+					return;
+				}
 				interactiveState.added = true;
 				for (const p of state.instance.sharedElements.presented) {
-					p.view.opacity = 0;
+					// Native alpha (not NS opacity) for the same reason as the dismiss path:
+					// if the user lets go without crossing the threshold, cancel uses NS
+					// opacity as source of truth to restore.
+					p.view.ios.alpha = 0;
 				}
 				for (const p of state.instance.sharedElements.presenting) {
 					p.snapshot.alpha = p.endOpacity;
 					interactiveState.transitionContext.containerView.addSubview(p.snapshot);
+				}
+				// Hide every source-side shared element (including duplicates that share
+				// a sharedTransitionTag in sister lists) so the user only sees the
+				// animating snapshot — not the snapshot AND the real source element
+				// simultaneously ("double image" during interactive dismissal).
+				for (const sourceView of (state.instance.sharedElements as any)._allPresentingViews || []) {
+					if (sourceView?.ios) {
+						sourceView.ios.alpha = 0;
+					}
 				}
 
 				const pageStart = state.pageStart;
@@ -567,6 +741,11 @@ export class SharedTransitionHelper {
 					}
 					state.instance.presented.view.alpha = isNumber(state.pageReturn?.opacity) ? state.pageReturn?.opacity : 0;
 					state.instance.presented.view.frame = CGRectMake(startFrame.x, startFrame.y, state.instance.presented.view.bounds.size.width, state.instance.presented.view.bounds.size.height);
+					// Drive cornerRadius via the same percent the user controls — round
+					// the page back up as they pan it offscreen.
+					if (isNumber((state.pageReturn as any)?.cornerRadius)) {
+						state.instance.presented.view.layer.cornerRadius = (state.pageReturn as any).cornerRadius;
+					}
 				});
 			}
 
@@ -580,13 +759,88 @@ export class SharedTransitionHelper {
 	}
 
 	static interactiveCancel(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType) {
+		if (state?.instance && interactiveState && state.interactive?.dismiss?.morph) {
+			// Morph mode cancel — spring the destination view back to identity.
+			const view = state.instance.presented?.view;
+			let didFinalize = false;
+			const finalize = () => {
+				if (didFinalize) return;
+				didFinalize = true;
+				if (view) view.transform = CGAffineTransformIdentity;
+				// Restore the source-side element alphas that the gesture hid on
+				// engagement so the source page is correct when shown again.
+				for (const v of (state.instance.sharedElements as any)?._allPresentingViews || []) {
+					if (v?.ios) v.ios.alpha = v.opacity;
+				}
+				if (interactiveState.transitionContext) {
+					interactiveState.transitionContext.cancelInteractiveTransition();
+					interactiveState.transitionContext.completeTransition(false);
+				}
+				SharedTransition.updateState(state?.instance?.id, {
+					interactiveBegan: false,
+					interactiveCancelled: true,
+				});
+				SharedTransition.notifyEvent(SharedTransition.interactiveCancelledEvent, {
+					id: state?.instance?.id,
+					type,
+				});
+			};
+			if (view) {
+				iOSUtils.animateWithSpring({
+					animations: () => {
+						view.transform = CGAffineTransformIdentity;
+						// Cross-fade sources back IN PARALLEL with the spring so
+						// they're visible from frame one of the snap-back. This
+						// also makes the source restoration robust to a new
+						// gesture interrupting our completion callback.
+						for (const v of (state.instance.sharedElements as any)?._allPresentingViews || []) {
+							if (v?.ios) v.ios.alpha = v.opacity;
+						}
+					},
+					completion: () => finalize(),
+				});
+				// Safety: ensure finalize runs even if the animation completion
+				// is dropped (e.g. interrupted by another gesture).
+				setTimeout(finalize, 800);
+			} else {
+				finalize();
+			}
+			return;
+		}
+		if (state?.instance && interactiveState && !interactiveState.added) {
+			// The gesture engaged the interactive transition but never crossed the
+			// motion threshold in interactiveUpdate (e.g., the user was scrolling
+			// vertically). Nothing was visually set up — just tell UIKit we're
+			// cancelling and clear the flags.
+			if (interactiveState.transitionContext) {
+				interactiveState.transitionContext.cancelInteractiveTransition();
+				interactiveState.transitionContext.completeTransition(false);
+			}
+			SharedTransition.updateState(state?.instance?.id, {
+				interactiveBegan: false,
+				interactiveCancelled: true,
+			});
+			SharedTransition.notifyEvent(SharedTransition.interactiveCancelledEvent, {
+				id: state?.instance?.id,
+				type,
+			});
+			return;
+		}
 		if (state?.instance && interactiveState?.added && interactiveState?.propertyAnimator) {
 			interactiveState.propertyAnimator.reversed = true;
 			const duration = isNumber(state.pageEnd?.duration) ? state.pageEnd?.duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 			interactiveState.propertyAnimator.continueAnimationWithTimingParametersDurationFactor(null, duration);
 			setTimeout(() => {
 				for (const p of state.instance.sharedElements.presented) {
-					p.view.opacity = 1;
+					// Restore native alpha from NS opacity (the user-intended value).
+					p.view.ios.alpha = p.view.opacity;
+				}
+				// Restore alpha on every source view we hid during interactiveUpdate
+				// (including duplicates from sister lists).
+				for (const sourceView of (state.instance.sharedElements as any)._allPresentingViews || []) {
+					if (sourceView?.ios) {
+						sourceView.ios.alpha = sourceView.opacity;
+					}
 				}
 				for (const p of state.instance.sharedElements.presenting) {
 					p.snapshot.removeFromSuperview();
@@ -609,15 +863,183 @@ export class SharedTransitionHelper {
 	}
 
 	static interactiveFinish(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType) {
+		if (state?.instance && interactiveState && state.interactive?.dismiss?.morph) {
+			// Morph mode finish — animate the destination view to the matching
+			// source element's frame and fade it out, then complete.
+			const view = state.instance.presented?.view;
+			const destTag = state.instance.sharedElements?.presented?.[0]?.view?.sharedTransitionTag;
+			const matchingSource = state.instance.sharedElements?.presenting?.find?.((p) => p.view.sharedTransitionTag === destTag);
+			const srcIos = matchingSource?.view?.ios;
+			const containerView = interactiveState.transitionContext?.containerView;
+			let targetTransform: any = null;
+			if (view && srcIos && containerView) {
+				const frameInContainer = srcIos.convertRectToView(srcIos.bounds, containerView);
+				const bounds = view.bounds;
+				if (bounds.size.width > 0 && bounds.size.height > 0) {
+					const targetScale = frameInContainer.size.width / bounds.size.width;
+					const targetCx = frameInContainer.origin.x + frameInContainer.size.width / 2;
+					const targetCy = frameInContainer.origin.y + frameInContainer.size.height / 2;
+					const currentCx = bounds.size.width / 2;
+					const currentCy = bounds.size.height / 2;
+					const tx = targetCx - currentCx;
+					const ty = targetCy - currentCy;
+					targetTransform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(tx, ty), CGAffineTransformMakeScale(targetScale, targetScale));
+				}
+			}
+			// Build a snapshot fly-back for each shared element so the album
+			// art (etc.) does a real shared-element transition to its source
+			// frame in parallel with the destination view's shrink+fade.
+			// Without this, the image rides along with the morphing view and
+			// lands at a visually offset position rather than precisely back
+			// at the source thumbnail.
+			const sharedSnapshots: Array<{ snap: UIImageView; endFrame: CGRect; endCornerRadius: number }> = [];
+			if (containerView) {
+				for (const presented of state.instance.sharedElements?.presented || []) {
+					const destSharedView = presented.view?.ios as UIView | undefined;
+					const tag = presented.view?.sharedTransitionTag;
+					if (!destSharedView || !tag) continue;
+					const sourceShared = state.instance.sharedElements?.presenting?.find?.((p) => p.view.sharedTransitionTag === tag);
+					const srcSharedView = sourceShared?.view?.ios as UIView | undefined;
+					if (!srcSharedView) continue;
+					const startFrame = destSharedView.convertRectToView(destSharedView.bounds, containerView);
+					const endFrame = srcSharedView.convertRectToView(srcSharedView.bounds, containerView);
+					if (startFrame.size.width <= 0 || endFrame.size.width <= 0) continue;
+					const snap = UIImageView.alloc().init();
+					if (destSharedView instanceof UIImageView && destSharedView.image) {
+						snap.image = destSharedView.image;
+						snap.contentMode = destSharedView.contentMode;
+						snap.tintColor = destSharedView.tintColor;
+					} else {
+						try {
+							snap.image = iOSUtils.snapshotView(presented.view.ios, Screen.mainScreen.scale);
+						} catch (e) {
+							continue;
+						}
+					}
+					snap.clipsToBounds = true;
+					snap.layer.cornerRadius = destSharedView.layer?.cornerRadius || 0;
+					snap.frame = startFrame;
+					containerView.addSubview(snap);
+					// Hide the destination shared element so we don't see it
+					// shrinking inside the morphing view at the same time the
+					// snapshot is flying back to source — that would double up.
+					destSharedView.alpha = 0;
+					sharedSnapshots.push({
+						snap,
+						endFrame,
+						endCornerRadius: srcSharedView.layer?.cornerRadius || 0,
+						srcSharedView,
+					} as any);
+				}
+			}
+			// Identify which source NS views have a matching fly-back snapshot.
+			// Those sources stay at alpha 0 through the spring and are restored
+			// inside finalize(), so the snapshot doesn't overlay an already-
+			// visible source mid-flight (which looks like two images for a beat).
+			const snapshottedSources = new Set<UIView>();
+			for (const entry of sharedSnapshots as any[]) {
+				if (entry.srcSharedView) snapshottedSources.add(entry.srcSharedView);
+			}
+			let didFinalize = false;
+			const finalize = () => {
+				if (didFinalize) return;
+				didFinalize = true;
+				// Detach the imageSourceChange listeners that were attached during
+				// PRESENT — the destination View is about to be torn down.
+				for (const presented of state.instance.sharedElements?.presented || []) {
+					if ((presented as any).imageSourceChangeListener) {
+						presented.view.off('imageSourceChange', (presented as any).imageSourceChangeListener);
+						(presented as any).imageSourceChangeListener = null;
+					}
+				}
+				// Restore the snapshotted sources (held at alpha 0 through the
+				// spring) immediately before removing the snapshot, so the
+				// snapshot's last frame and the source's first visible frame
+				// coincide exactly — no double-image, no gap.
+				for (const entry of sharedSnapshots as any[]) {
+					const srcSharedView: UIView | undefined = entry.srcSharedView;
+					if (srcSharedView) {
+						const nsView = state.instance.sharedElements?.presenting?.find?.((p) => p.view?.ios === srcSharedView)?.view;
+						srcSharedView.alpha = nsView ? nsView.opacity : 1;
+					}
+				}
+				for (const { snap } of sharedSnapshots) {
+					snap.removeFromSuperview();
+				}
+				if (view) {
+					view.transform = CGAffineTransformIdentity;
+					view.alpha = 1;
+				}
+				SharedTransition.finishState(state.instance.id);
+				if (interactiveState.transitionContext) {
+					interactiveState.transitionContext.finishInteractiveTransition();
+					interactiveState.transitionContext.completeTransition(true);
+				}
+				SharedTransition.notifyEvent(SharedTransition.finishedEvent, {
+					id: state?.instance?.id,
+					type,
+					action: 'interactiveFinish',
+				});
+			};
+			if (view && targetTransform) {
+				iOSUtils.animateWithSpring({
+					animations: () => {
+						view.transform = targetTransform;
+						view.alpha = 0;
+						// Restore source-side element alphas IN PARALLEL with the
+						// destination's morph + fade — but skip sources that have
+						// a flying snapshot. Those are held at alpha 0 and
+						// revealed by finalize() right before the snapshot is
+						// removed, so the user never sees both the snapshot AND
+						// the source visible at the same time.
+						for (const v of (state.instance.sharedElements as any)?._allPresentingViews || []) {
+							if (v?.ios && !snapshottedSources.has(v.ios)) {
+								v.ios.alpha = v.opacity;
+							}
+						}
+						// Fly each shared-element snapshot to its source frame.
+						// Rides the same spring so the image lands precisely back
+						// at the source position as the destination view fades.
+						for (const { snap, endFrame, endCornerRadius } of sharedSnapshots) {
+							snap.frame = endFrame;
+							snap.layer.cornerRadius = endCornerRadius;
+						}
+					},
+					completion: () => finalize(),
+				});
+				// Safety: ensure finalize runs even if the animation completion
+				// is dropped (e.g. interrupted by another gesture).
+				setTimeout(finalize, 800);
+			} else {
+				// No target transform; ensure sources are still restored.
+				for (const v of (state.instance.sharedElements as any)?._allPresentingViews || []) {
+					if (v?.ios) v.ios.alpha = v.opacity;
+				}
+				finalize();
+			}
+			return;
+		}
 		if (state?.instance && interactiveState?.added && interactiveState?.propertyAnimator) {
 			interactiveState.propertyAnimator.reversed = false;
 
 			const duration = isNumber(state.pageReturn?.duration) ? state.pageReturn?.duration / 1000 : CORE_ANIMATION_DEFAULTS.duration;
 			interactiveState.propertyAnimator.continueAnimationWithTimingParametersDurationFactor(null, duration);
 			setTimeout(() => {
+				// Restore alpha on every source view we hid (including duplicates) so
+				// the source page is visible if shown again.
+				for (const sourceView of (state.instance.sharedElements as any)._allPresentingViews || []) {
+					if (sourceView?.ios) {
+						sourceView.ios.alpha = sourceView.opacity;
+					}
+				}
 				for (const presenting of state.instance.sharedElements.presenting) {
-					presenting.view.opacity = presenting.startOpacity;
 					presenting.snapshot.removeFromSuperview();
+				}
+				for (const presented of state.instance.sharedElements.presented) {
+					if ((presented as any).imageSourceChangeListener) {
+						presented.view.off('imageSourceChange', (presented as any).imageSourceChangeListener);
+						(presented as any).imageSourceChangeListener = null;
+					}
 				}
 
 				SharedTransition.finishState(state.instance.id);

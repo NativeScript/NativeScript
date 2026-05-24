@@ -72,6 +72,19 @@ export class ScrollView extends ContentView {
 	orientation: CoreTypes.OrientationType;
 
 	/**
+	 * iOS-only. Controls how the scroll view's contentInset is adjusted relative to
+	 * the safe area. Maps to `UIScrollView.contentInsetAdjustmentBehavior`.
+	 *
+	 * - `never` (default): NativeScript subtracts safe-area insets manually.
+	 * - `automatic` / `scrollableAxes` / `always`: iOS handles inset adjustment.
+	 *   Use these when pairing a scrollview with `actionbar.iosLargeTitle="true"`
+	 *   to avoid scroll-drift during fast scroll + rubber-band bounce.
+	 *
+	 * @nsProperty
+	 */
+	iosContentInsetAdjustmentBehavior: 'never' | 'automatic' | 'scrollableAxes' | 'always';
+
+	/**
 	 * Adds a listener for the specified event name.
 	 *
 	 * @param eventName The name of the event.

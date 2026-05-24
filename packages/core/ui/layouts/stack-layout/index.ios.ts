@@ -1,6 +1,7 @@
 import { StackLayoutBase } from './stack-layout-common';
 import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
+import { IOSHelper } from '../../core/view/view-helper';
 import { Position } from '../../core/view/view-interfaces';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -94,7 +95,10 @@ export class StackLayout extends StackLayoutBase {
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
 		super.onLayout(left, top, right, bottom);
 
-		const insets = this.getSafeAreaInsets();
+		// Skip safe-area subtraction when an ancestor ScrollView has handed inset
+		// adjustment to iOS — otherwise we double-count the nav-bar / large-title
+		// inset and clobber the first children. See IOSHelper.hasIOSManagedInsetAncestor.
+		const insets = IOSHelper.hasIOSManagedInsetAncestor(this) ? { left: 0, top: 0, right: 0, bottom: 0 } : this.getSafeAreaInsets();
 		if (this.orientation === 'vertical') {
 			this.layoutVertical(left, top, right, bottom, insets);
 		} else {

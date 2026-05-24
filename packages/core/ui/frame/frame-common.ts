@@ -352,6 +352,16 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 		}
 
 		const entry = this._navigationQueue[0].entry;
+		// Entry can be undefined when a `goBack()` was queued while another
+		// navigation was still executing (e.g. an interactive dismiss that
+		// finished out-of-band). performGoBack hasn't run yet to populate it.
+		// Skip the head safely instead of crashing reading `.resolvedPage`.
+		if (!entry) {
+			this._navigationQueue.shift();
+			this._processNextNavigationEntry();
+			this._updateActionBar();
+			return;
+		}
 		const currentNavigationPage = entry.resolvedPage;
 		if (page !== currentNavigationPage) {
 			// If the page is not the one that requested navigation - skip it.

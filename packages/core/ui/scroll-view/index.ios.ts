@@ -1,5 +1,5 @@
 import type { ScrollEventData } from './scroll-view-common';
-import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty } from './scroll-view-common';
+import { ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty, iosContentInsetAdjustmentBehaviorProperty } from './scroll-view-common';
 import { layout } from '../../utils';
 import { SDK_VERSION } from '../../utils/constants';
 import { View } from '../core/view';
@@ -179,17 +179,28 @@ export class ScrollView extends ScrollViewBase {
 			return;
 		}
 
-		const insets = this.getSafeAreaInsets();
+		if (SDK_VERSION > 10) {
+			// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
+			// 0=automatic, 1=scrollableAxes, 2=never, 3=always
+			const behavior = this.iosContentInsetAdjustmentBehavior;
+			let nativeBehavior = 2; // .never (preserves prior default)
+			if (behavior === 'automatic') nativeBehavior = 0;
+			else if (behavior === 'scrollableAxes') nativeBehavior = 1;
+			else if (behavior === 'always') nativeBehavior = 3;
+			this.nativeViewProtected.contentInsetAdjustmentBehavior = nativeBehavior;
+		}
+
+		// When iOS' automatic content-inset adjustment is in use, do NOT subtract the
+		// scrollview's safe-area insets (which include the dynamic navigation bar height
+		// when `prefersLargeTitles` is on). Doing so causes contentSize and inner-content
+		// position to oscillate as the navbar grows/shrinks, producing scroll drift
+		// during fast scroll-up + rubber-band bounce. iOS will set
+		// `adjustedContentInset` itself so the content visually sits below the navbar.
+		const useIOSInsetAdjustment = SDK_VERSION > 10 && this.iosContentInsetAdjustmentBehavior !== 'never';
+		const insets = useIOSInsetAdjustment ? { left: 0, top: 0, right: 0, bottom: 0 } : this.getSafeAreaInsets();
 
 		let scrollWidth = right - left - insets.right - insets.left;
 		let scrollHeight = bottom - top - insets.bottom - insets.top;
-
-		if (SDK_VERSION > 10) {
-			// Disable automatic adjustment of scroll view insets
-			// Consider exposing this as property with all 4 modes
-			// https://developer.apple.com/documentation/uikit/uiscrollview/contentinsetadjustmentbehavior
-			this.nativeViewProtected.contentInsetAdjustmentBehavior = 2;
-		}
 
 		let scrollInsetWidth = scrollWidth + insets.left + insets.right;
 		let scrollInsetHeight = scrollHeight + insets.top + insets.bottom;

@@ -27,6 +27,13 @@ export type SharedRect = { x?: number; y?: number; width?: number; height?: numb
 export type SharedProperties = SharedRect & {
 	opacity?: number;
 	scale?: { x?: number; y?: number };
+	/**
+	 * (iOS only) Page-level corner radius to animate alongside the transition.
+	 * Useful for sheet-style modals where the top corners are rounded at the
+	 * starting offscreen position and flatten as the page reaches fullscreen
+	 * (and vice versa for dismiss). Top-left + top-right corners are masked.
+	 */
+	cornerRadius?: number;
 };
 /**
  * Properties which can be set on individual Shared Elements
@@ -92,6 +99,24 @@ export interface SharedTransitionInteractiveOptions {
 	 * @returns The percentage value to be used as the finish/cancel threshold
 	 */
 	percentFormula?: (eventData: PanGestureEventData) => number;
+	/**
+	 * (iOS only) Apple Music–style "morph" interactive dismiss.
+	 *
+	 * Instead of fading the destination and animating shared snapshots, the
+	 * entire destination view scales + translates with the user's finger.
+	 *  - If released past `finishThreshold`, the view morphs into the matching
+	 *    source element's frame and the transition completes.
+	 *  - If released before the threshold, the view springs back to its
+	 *    fullscreen position.
+	 *
+	 * Set to `true` for the default tuning. Pass an object to customize.
+	 */
+	morph?:
+		| boolean
+		| {
+				/** Smallest scale applied at maximum drag distance. Default 0.5. */
+				minScale?: number;
+		  };
 }
 export interface SharedTransitionConfig {
 	/**

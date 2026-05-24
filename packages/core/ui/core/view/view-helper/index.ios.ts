@@ -368,6 +368,40 @@ export class IOSHelper {
 		return CGRectMake(left, top, width, height);
 	}
 
+	/**
+	 * Returns `true` when `view` has an ancestor ScrollView that has handed inset
+	 * adjustment to iOS via `iosContentInsetAdjustmentBehavior !== 'never'`.
+	 *
+	 * In that case, iOS positions the scroll content below the navigation bar /
+	 * large title using `adjustedContentInset`. During the initial layout pass,
+	 * iOS may still report a non-zero `safeAreaInsets.top` on nested layouts
+	 * *inside* that scroll content before propagation settles. A nested layout
+	 * (StackLayout, GridLayout, etc.) that subtracts those insets on top of the
+	 * ScrollView's own handling double-counts them and visually clobbers its
+	 * first children (they stack at one Y while later ones land correctly).
+	 *
+	 * Layouts should call this in `onLayout` and skip applying safe-area insets
+	 * when it returns true. Uses property-name duck typing to avoid importing
+	 * ScrollView (circular dependency between layouts and scroll-view).
+	 *
+	 * Backwards compatibility: the default value of `iosContentInsetAdjustmentBehavior`
+	 * is `'never'`, so this helper returns `false` for every view in any app that
+	 * doesn't explicitly opt into the iOS-managed mode. Existing apps see no
+	 * behavior change from this check; only callers that have already opted into
+	 * `'automatic'` / `'scrollableAxes'` / `'always'` benefit from the
+	 * double-inset fix.
+	 */
+	static hasIOSManagedInsetAncestor(view: View): boolean {
+		let p: any = view.parent;
+		while (p) {
+			if (typeof p.iosContentInsetAdjustmentBehavior === 'string' && p.iosContentInsetAdjustmentBehavior !== 'never') {
+				return true;
+			}
+			p = p.parent;
+		}
+		return false;
+	}
+
 	static shrinkToSafeArea(view: View, frame: CGRect): CGRect {
 		const insets = view.getSafeAreaInsets();
 		if (insets.left || insets.top) {
@@ -386,6 +420,15 @@ export class IOSHelper {
 
 	static expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
 		const availableSpace = IOSHelper.getAvailableSpaceFromParent(view, frame);
+		// When the view is in a detached NS subtree (e.g. a view passed to TabView's
+		// `iosBottomAccessory`, which is attached to UIKit but has no NS parent), there is
+		// no viewController/scrollView ancestor to derive safe-area bounds from. In that
+		// case `safeArea` and `fullscreen` are null and `getPositionFromFrame(null)` would
+		// throw `Cannot read properties of null (reading 'origin')`. Return the frame as-is
+		// since "expand beyond safe area" is meaningless without a reference rect.
+		if (!availableSpace || !availableSpace.safeArea || !availableSpace.fullscreen) {
+			return frame;
+		}
 		const safeArea = availableSpace.safeArea;
 		const fullscreen = availableSpace.fullscreen;
 		const inWindow = availableSpace.inWindow;
@@ -438,10 +481,17 @@ export class IOSHelper {
 				parent = parent.parent as View;
 			}
 
-			if (parent.nativeViewProtected instanceof UIScrollView) {
-				scrollView = parent.nativeViewProtected;
-			} else if (parent.viewController) {
-				viewControllerView = parent.viewController.view;
+			// `parent` may be null here when `view` is part of a detached NS subtree (e.g. a
+			// view passed to TabView's `iosBottomAccessory`, which is attached to UIKit's
+			// `UITabAccessory.contentView` but never added to an NS parent). Without this
+			// guard, the next line throws "Cannot read properties of undefined (reading
+			// 'nativeViewProtected')" and the entire layout pass aborts.
+			if (parent) {
+				if (parent.nativeViewProtected instanceof UIScrollView) {
+					scrollView = parent.nativeViewProtected;
+				} else if (parent.viewController) {
+					viewControllerView = parent.viewController.view;
+				}
 			}
 		}
 

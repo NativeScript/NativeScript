@@ -305,15 +305,26 @@ function snapshotView(view: UIView, scale: number): UIImage {
 	}
 	// console.log('snapshotView view.frame:', printRect(view.frame));
 	const originalOpacity = view.layer.opacity;
-	view.layer.opacity = originalOpacity > 0 ? originalOpacity : 1;
+	const needsBump = originalOpacity <= 0;
+	if (needsBump) {
+		// Wrap in a CATransaction with actions disabled so the implicit `opacity`
+		// animation isn't kicked off when we temporarily restore visibility for
+		// the render. Restoring synchronously (instead of via setTimeout) avoids a
+		// race where the deferred restore would clobber a caller's later opacity
+		// change — most importantly the shared-transition cleanup that needs the
+		// final opacity to stick after the snapshot is taken.
+		CATransaction.begin();
+		CATransaction.setDisableActions(true);
+		view.layer.opacity = 1;
+	}
 	UIGraphicsBeginImageContextWithOptions(CGSizeMake(view.frame.size.width, view.frame.size.height), false, scale);
 	view.layer.renderInContext(UIGraphicsGetCurrentContext());
 	const image = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
-	setTimeout(() => {
-		// ensure set back properly on next tick
+	if (needsBump) {
 		view.layer.opacity = originalOpacity;
-	});
+		CATransaction.commit();
+	}
 	return image;
 }
 
