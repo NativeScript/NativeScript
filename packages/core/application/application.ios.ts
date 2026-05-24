@@ -6,7 +6,7 @@ import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import { getWindow } from '../utils/native-helper';
 import { SDK_VERSION } from '../utils/constants';
 import { ios as iosUtils, dataSerialize } from '../utils/native-helper';
-import { ApplicationCommon, initializeSdkVersionClass, SceneEvents } from './application-common';
+import { ApplicationCommon, SceneEvents } from './application-common';
 import { ApplicationEventData, SceneEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import type { iOSApplication as IiOSApplication } from './application';
@@ -1666,7 +1666,7 @@ export class AccessibilityServiceEnabledObservable extends CommonA11YServiceEnab
 }
 
 let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
-export function ensureClasses() {
+export function ensureA11Classes() {
 	if (accessibilityServiceObservable) {
 		return;
 	}
@@ -1674,9 +1674,6 @@ export function ensureClasses() {
 	setFontScaleCssClasses(new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`])));
 
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
-
-	// Initialize SDK version CSS class once
-	initializeSdkVersionClass(Application.getRootView());
 }
 
 export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: string[], newCssClass: string) => void): void {
@@ -1757,7 +1754,7 @@ function applyFontScaleToRootViews(): void {
 }
 
 export function initAccessibilityCssHelper(): void {
-	ensureClasses();
+	ensureA11Classes();
 	updateCurrentHelperClasses(applyRootCssClass);
 	applyFontScaleToRootViews();
 

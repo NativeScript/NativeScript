@@ -4,7 +4,7 @@ import type { View } from '../ui/core/view';
 import { AndroidActivityCallbacks, NavigationEntry } from '../ui/frame/frame-common';
 import { SDK_VERSION } from '../utils/constants';
 import { android as androidUtils } from '../utils';
-import { ApplicationCommon, initializeSdkVersionClass } from './application-common';
+import { ApplicationCommon } from './application-common';
 import type { AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData } from './application-interfaces';
 import { Observable } from '../data/observable';
 import { Trace } from '../trace';
@@ -819,7 +819,7 @@ export class AccessibilityServiceEnabledObservable extends CommonA11YServiceEnab
 }
 
 let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
-export function ensureClasses() {
+export function ensureA11Classes() {
 	if (accessibilityServiceObservable) {
 		return;
 	}
@@ -827,9 +827,6 @@ export function ensureClasses() {
 	setFontScaleCssClasses(new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`])));
 
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
-
-	// Initialize SDK version CSS class once
-	initializeSdkVersionClass(Application.getRootView());
 }
 
 export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: string[], newCssClass: string) => void): void {
@@ -884,7 +881,7 @@ export function updateCurrentHelperClasses(applyRootCssClass: (cssClasses: strin
 }
 
 export function initAccessibilityCssHelper(): void {
-	ensureClasses();
+	ensureA11Classes();
 	updateCurrentHelperClasses(applyRootCssClass);
 	applyFontScaleToRootViews();
 
