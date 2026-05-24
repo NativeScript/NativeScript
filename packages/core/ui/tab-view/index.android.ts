@@ -88,7 +88,7 @@ function initializeNativeClasses() {
 
 			// For offset limit 0, load view here only if the index is selected as the minimum offset on native side is 1
 			// and we want to avoid accidental loaded lifecycles
-			if (tabView.androidOffscreenTabLimit != 0 || tabView.selectedIndex === this.index) {
+			if (tabView.androidOffscreenTabLimit > 0 || tabView.selectedIndex === this.index) {
 				tabItem.loadView(tabItem.view);
 			}
 			return tabItem.view.nativeViewProtected;
