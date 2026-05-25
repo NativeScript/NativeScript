@@ -204,7 +204,13 @@ export class PageTransition extends Transition {
 							const f = srcIos.convertRectToView(srcIos.bounds, destView);
 							const bounds = destView.bounds;
 							if (bounds.size.width > 0 && bounds.size.height > 0 && f.size.width > 0) {
-								const scaleT = f.size.width / bounds.size.width;
+								// Uniform scale so the destination view fits *inside* the
+								// source's frame (not just matches its width). Source art
+								// is typically square while the modal is portrait — width-
+								// only scaling leaves the modal taller than the source art,
+								// which makes the morph land somewhere that doesn't look
+								// connected to the source thumbnail.
+								const scaleT = Math.min(f.size.width / bounds.size.width, f.size.height / bounds.size.height);
 								const txT = f.origin.x + f.size.width / 2 - bounds.size.width / 2;
 								const tyT = f.origin.y + f.size.height / 2 - bounds.size.height / 2;
 								this._morphTarget = { scale: scaleT, tx: txT, ty: tyT };
@@ -214,6 +220,16 @@ export class PageTransition extends Transition {
 						// the morphing destination. Restored on cancel/finish.
 						for (const v of sources) {
 							if (v?.ios) v.ios.alpha = 0;
+						}
+						// Reveal source-only orphan views (e.g. other album thumbnails,
+						// section headers' info) so the source page looks intact behind
+						// the morphing modal. They were hidden during present; without
+						// restoring them now, the user sees blank spots through the
+						// shrinking modal where artwork/text should be.
+						for (const ind of stateNow.instance?.sharedElements?.independent || []) {
+							if (!ind.isPresented && ind.view?.ios) {
+								ind.view.ios.alpha = ind.view.opacity;
+							}
 						}
 					}
 				}

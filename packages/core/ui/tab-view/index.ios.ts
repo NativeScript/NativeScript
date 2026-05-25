@@ -12,6 +12,7 @@ import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
+import { SharedTransition } from '../transition/shared-transition';
 import { layout } from '../../utils/layout-helper';
 import { FONT_PREFIX, isFontIconURI, isSystemURI, SYSTEM_PREFIX } from '../../utils/common';
 import { SDK_VERSION } from '../../utils/constants';
@@ -831,6 +832,9 @@ export class TabView extends TabViewBase {
 			setAccessory(null);
 			// Tear down previously managed NS view
 			if (this._bottomAccessoryNsView) {
+				// Unregister from SharedTransition before teardown so it isn't
+				// queried in subsequent transitions.
+				SharedTransition.unregisterExternalRoot(this._bottomAccessoryNsView);
 				// Do not remove from a parent; we didn't add it to the NS view tree.
 				try {
 					this._bottomAccessoryNsView._tearDownUI(true);
@@ -905,6 +909,11 @@ export class TabView extends TabViewBase {
 		}
 		// Keep references for later teardown
 		this._bottomAccessoryNsView = nsView;
+		// Expose the accessory's NS subtree to shared transitions. Tagged views
+		// inside the accessory (e.g. a "now playing" mini-player's artwork) can
+		// then participate in transitions that originate from any page, even
+		// though the accessory isn't reachable via the page's NS view tree.
+		SharedTransition.registerExternalRoot(nsView);
 	}
 }
 
