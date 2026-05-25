@@ -12,10 +12,28 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 }
 
 export class SegmentedBar extends SegmentedBarBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.Pivot;
+	nativeViewProtected: any;
+	private _isPivotAvailable: boolean = true;
 
 	public createNativeView() {
-		const pivot = new Windows.UI.Xaml.Controls.Pivot();
-		return pivot;
+		try {
+			const pivot = new Windows.UI.Xaml.Controls.Pivot();
+			this._isPivotAvailable = true;
+			this.nativeViewProtected = pivot;
+			return pivot;
+		} catch (e) {
+			// Pivot not available on some Windows hosts; fallback to a simple Grid
+			try {
+				const grid = new Windows.UI.Xaml.Controls.Grid();
+				this._isPivotAvailable = false;
+				this.nativeViewProtected = grid;
+				return grid;
+			} catch (_e) {
+				// Last resort: return null and avoid throwing during view creation
+				this._isPivotAvailable = false;
+				this.nativeViewProtected = null;
+				return null;
+			}
+		}
 	}
 }

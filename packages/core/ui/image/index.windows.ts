@@ -3,8 +3,9 @@ export * from './image-common';
 import { ImageBase, stretchProperty, imageSourceProperty, srcProperty } from './image-common';
 import { ImageSource } from '../../image-source';
 import { ImageAsset } from '../../image-asset';
+import { Trace } from '../../trace';
+import { dispatchToMainThread, isMainThread } from '../../utils/mainthread-helper';
 
-// NativeScript stretch → WinRT Windows.UI.Xaml.Media.Stretch
 const STRETCH_MAP: Record<string, number> = {
 	none: 0,         // Stretch.None
 	fill: 1,         // Stretch.Fill
@@ -14,24 +15,33 @@ const STRETCH_MAP: Record<string, number> = {
 
 function bitmapFromBytesAsync(bytes: Uint8Array): Promise<any> {
 	return new Promise((resolve, reject) => {
+		const createOnUIThread = (stream: any) => {
+			const create = () => {
+				try {
+					(stream as any).Seek(0);
+					const bmp = new (Windows as any).UI.Xaml.Media.Imaging.BitmapImage();
+					NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(
+						() => resolve(bmp),
+						(err: any) => reject(err)
+					);
+				} catch (e) {
+					reject(e);
+				}
+			};
+			if (isMainThread()) {
+				create();
+			} else {
+				dispatchToMainThread(create);
+			}
+		};
+
 		try {
 			const writer = new Windows.Storage.Streams.DataWriter();
 			writer.WriteBytes(bytes as never);
 			const buffer = writer.DetachBuffer();
 			const stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
 			NSWinRT.toPromise((stream as any).WriteAsync(buffer)).then(
-				() => {
-					try {
-						(stream as any).Seek(0);
-						const bmp = new (Windows as any).UI.Xaml.Media.Imaging.BitmapImage();
-						NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(
-							() => resolve(bmp),
-							(err: any) => reject(err)
-						);
-					} catch (e) {
-						reject(e);
-					}
-				},
+				() => createOnUIThread(stream),
 				(err: any) => reject(err)
 			);
 		} catch (e) {
@@ -42,11 +52,12 @@ function bitmapFromBytesAsync(bytes: Uint8Array): Promise<any> {
 
 export class Image extends ImageBase {
 	nativeViewProtected: Windows.UI.Xaml.Controls.Image;
-	private _windows: Windows.UI.Xaml.Controls.Image;
+	private _windows!: Windows.UI.Xaml.Controls.Image;
 
 	constructor() {
 		super();
 		this._windows = new Windows.UI.Xaml.Controls.Image();
+		this.isLoading = false;
 	}
 
 	public createNativeView() {
@@ -75,38 +86,66 @@ export class Image extends ImageBase {
 	}
 
 	[srcProperty.setNative](value: string | ImageSource | ImageAsset) {
+		console.log(`Image[src] set to: ${value}`);
 		this._createImageSourceFromSrc(value);
 	}
 
 	//@ts-ignore
 	[stretchProperty.setNative](value: string) {
 		if (this.nativeViewProtected) {
-			(this.nativeViewProtected as any).Stretch = STRETCH_MAP[value] ?? 2;
+			this.nativeViewProtected.Stretch = STRETCH_MAP[value] ?? 2;
 		}
 	}
 
 	public _setNativeImage(nativeImage: any) {
-		if (!this.nativeViewProtected) return;
+		try { console.log(`[Image.Windows] _setNativeImage called for view=${(this && (this as any).constructor && (this as any).constructor.name) || '(Image)'} nativeImageType=${nativeImage ? typeof nativeImage : 'null'}`); } catch (_e) {}
+		if (!this.nativeViewProtected) {
+			if (Trace.isEnabled()) {
+				Trace.write('Image._setNativeImage: nativeViewProtected missing', Trace.categories.Error);
+			}
+			return;
+		}
 
 		if (this.nativeViewProtected.Source) {
 			this.nativeViewProtected.Source = null as never;
 		}
 
-		if (!nativeImage) return;
+		if (!nativeImage) {
+			if (Trace.isEnabled()) {
+				Trace.write('Image._setNativeImage: nativeImage is null/undefined', Trace.categories.Debug);
+			}
+			return;
+		}
 
-		// Raw bytes stored by fromDataSync/fromBase64Sync — create BitmapImage async
 		if (nativeImage instanceof ArrayBuffer || nativeImage instanceof Uint8Array) {
 			const bytes = nativeImage instanceof Uint8Array ? nativeImage : new Uint8Array(nativeImage);
 			bitmapFromBytesAsync(bytes)
 				.then((bmp: any) => {
 					if (this.nativeViewProtected) {
 						this.nativeViewProtected.Source = bmp;
+						if (Trace.isEnabled()) {
+							Trace.write(`Image._setNativeImage: set Source to BitmapImage (PixelWidth=${bmp?.PixelWidth ?? 'unknown'})`, Trace.categories.Debug);
+						}
 					}
 				})
-				.catch(() => {});
+				.catch((err) => {
+					if (Trace.isEnabled()) {
+						Trace.write(`Image._setNativeImage: bitmapFromBytesAsync error: ${err}`, Trace.categories.Error);
+					}
+				});
 			return;
 		}
 
-		this.nativeViewProtected.Source = nativeImage;
+
+		try {
+			this.nativeViewProtected.Source = nativeImage;
+			if (Trace.isEnabled()) {
+				Trace.write(`Image._setNativeImage: set Source to nativeImage (type=${typeof nativeImage}, PixelWidth=${nativeImage?.PixelWidth ?? 'n/a'})`, Trace.categories.Debug);
+			}
+		} catch (err) {
+			if (Trace.isEnabled()) {
+				Trace.write(`Image._setNativeImage: error setting Source: ${err}`, Trace.categories.Error);
+			}
+		}
 	}
 }

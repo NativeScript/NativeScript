@@ -1,16 +1,87 @@
 export * from './text-base-common';
 
 import { TextBaseCommon, textProperty, formattedTextProperty, textTransformProperty, resetSymbol } from './text-base-common';
-import type { CoreTypes } from '../../core-types';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, fontSizeProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, fontWeightProperty, fontStyleProperty } from '../styling/style-properties';
 import { Length } from '../styling/length-shared';
-
+import { FontWeightType } from '../styling/font-interfaces';
 
 function makeThickness(options: { Left?: number; Top?: number; Right?: number; Bottom?: number }, def: Windows.UI.Xaml.Thickness): Windows.UI.Xaml.Thickness {
 	const { Left, Top, Right, Bottom } = options;
 	return Windows.UI.Xaml.ThicknessHelper.FromLengths(Left ?? def.Left, Top ?? def.Top, Right ?? def.Right, Bottom ?? def.Bottom);
 }
+
+function toFontWeight(value: FontWeightType): Windows.UI.Text.FontWeight | null {
+	switch (value) {
+		case '700':
+		case 'bold':
+			return Windows.UI.Text.FontWeights.Bold;
+		case '400':
+		case 'normal':
+			return Windows.UI.Text.FontWeights.Normal;
+		case '100': return Windows.UI.Text.FontWeights.Thin;
+		case '200': return Windows.UI.Text.FontWeights.ExtraLight;
+		case '300': return Windows.UI.Text.FontWeights.Light;
+		case '500': return Windows.UI.Text.FontWeights.Medium;
+		case '600': return Windows.UI.Text.FontWeights.SemiBold;
+		case '800': return Windows.UI.Text.FontWeights.ExtraBold;
+		case '900': return Windows.UI.Text.FontWeights.Black;
+		default:
+			return null;
+	}
+}
+
+function fromFontWeight(value: Windows.UI.Text.FontWeight): FontWeightType {
+	switch (value) {
+		case Windows.UI.Text.FontWeights.Bold:
+			return '700';
+		case Windows.UI.Text.FontWeights.Normal:
+			return '400';
+		case Windows.UI.Text.FontWeights.Thin:
+			return '100';
+		case Windows.UI.Text.FontWeights.ExtraLight:
+			return '200';
+		case Windows.UI.Text.FontWeights.Light:
+			return '300';
+		case Windows.UI.Text.FontWeights.Medium:
+			return '500';
+		case Windows.UI.Text.FontWeights.SemiBold:
+			return '600';
+		case Windows.UI.Text.FontWeights.ExtraBold:
+			return '800';
+		case Windows.UI.Text.FontWeights.Black:
+			return '900';
+		default:
+			return '400';
+	}
+}
+
+function toFontStyle(value: 'normal' | 'italic' | 'oblique'): Windows.UI.Text.FontStyle | null {
+	switch (value) {
+		case 'italic':
+			return Windows.UI.Text.FontStyle.Italic;
+		case 'normal':
+			return Windows.UI.Text.FontStyle.Normal;
+		case 'oblique':
+			return Windows.UI.Text.FontStyle.Oblique;
+		default:
+			return null;
+	}
+}
+
+function fromFontStyle(value: Windows.UI.Text.FontStyle): 'normal' | 'italic' | 'oblique' | null {
+	if (value === Windows.UI.Text.FontStyle.Italic) {
+		return 'italic';
+	} else if (value === Windows.UI.Text.FontStyle.Oblique) {
+		return 'oblique';
+	} else if (value === Windows.UI.Text.FontStyle.Normal) {
+		return 'normal';
+	} else {
+		return 'normal';
+	}
+}
+
 
 export class TextBase extends TextBaseCommon {
 	nativeViewProtected: Windows.UI.Xaml.Controls.TextBox | Windows.UI.Xaml.Controls.TextBlock | Windows.UI.Xaml.Controls.PasswordBox | Windows.UI.Xaml.Controls.Button;
@@ -60,6 +131,55 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	[fontStyleProperty.getDefault]() {
+		return fromFontStyle(this.nativeTextViewProtected.FontStyle ?? Windows.UI.Text.FontStyle.Normal);
+	}
+
+	[fontStyleProperty.setNative](value: 'normal' | 'italic' | 'oblique') {
+		if (!this.formattedText) {
+			const style = toFontStyle(value);
+			if (!style) return;
+			this.nativeTextViewProtected.FontStyle = style;
+		}
+	}
+
+	[fontWeightProperty.getDefault](): FontWeightType {
+		return fromFontWeight(this.nativeTextViewProtected.FontWeight ?? Windows.UI.Text.FontWeights.Normal) as FontWeightType;
+	}
+
+	[fontWeightProperty.setNative](value: FontWeightType) {
+		const weight = toFontWeight(value);
+		if (!weight) return;
+		this.nativeTextViewProtected.FontWeight = weight;
+	}
+
+	[fontInternalProperty.setNative](value: any) {
+		const nativeView = this.nativeTextViewProtected as any;
+		if (!nativeView) return;
+
+		if (value) {
+			value?.applyWindowsFont?.(nativeView);
+
+			if (value?.fontStyle) {
+				const style = toFontStyle(value.fontStyle);
+				if (style) {
+					nativeView.FontStyle = style;
+				}
+			}
+			if (value?.fontWeight) {
+				const weight = toFontWeight(value.fontWeight);
+				if (weight) {
+					nativeView.FontWeight = weight;
+				}
+			}
+
+			if (value?.fontSize) {
+				nativeView.FontSize = value.fontSize;
+			}
+			
+		}
+	}
+
 	[formattedTextProperty.setNative](value: any): void {
 		this._setNativeText();
 		textProperty.nativeValueChange(this, !value ? '' : value.toString());
@@ -78,7 +198,7 @@ export class TextBase extends TextBaseCommon {
 			return;
 		}
 		this.nativeTextViewProtected.Padding = makeThickness({
-			Left: Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0),
+			Top: Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0),
 		}, padding);
 	}
 

@@ -6,17 +6,17 @@ export class Color extends ColorBase implements IColor {
 
     get windows(): Windows.UI.Color {
         if (!this._windows) {
-            this._windows = Windows.UI.ColorHelper.FromArgb(Math.round(this.a * 255), Math.round(this.r * 255), Math.round(this.g * 255), Math.round(this.b * 255));
+            this._windows = Windows.UI.ColorHelper.FromArgb(Math.round(this.a), Math.round(this.r), Math.round(this.g), Math.round(this.b));
         }
 
         return this._windows;
     }
 
     get windowsArgb(): number {
-        return ((this.windows.A & 0xff) << 24) | ((this.windows.R & 0xff) << 16) | ((this.windows.G & 0xff) << 8) | (this.windows.B & 0xff) >>> 0;
+        return ((((this.windows.A & 0xff) << 24) | ((this.windows.R & 0xff) << 16) | ((this.windows.G & 0xff) << 8) | (this.windows.B & 0xff)) >>> 0);
     }
 
     public static fromWindowsColor(value: Windows.UI.Color): Color {
-        return new Color(Math.round(value.A / 255), Math.round(value.R / 255), Math.round(value.G / 255), Math.round(value.B / 255));
+        return new Color(Math.round(value.A), Math.round(value.R), Math.round(value.G), Math.round(value.B));
     }
 }

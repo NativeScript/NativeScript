@@ -1,19 +1,7 @@
 export function dispatchToMainThread(func: () => void): void {
-	const runOnMainThread = (global as any).__runOnMainThread;
-	if (runOnMainThread) {
-		runOnMainThread(func);
-		return;
-	}
-	try {
-		const dispatcher = Windows?.UI?.Core?.CoreWindow?.GetForCurrentThread?.()?.Dispatcher;
-		if (dispatcher) {
-			dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, NSWinRT.asDelegate(func));
-		} else {
-			func();
-		}
-	} catch {
+	(global as any).__nsRunOnUIThread(() => {
 		func();
-	}
+	})
 }
 
 export function isMainThread(): boolean {

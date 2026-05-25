@@ -9,10 +9,7 @@ export class StackLayout extends StackLayoutBase {
     constructor() {
         super();
         this._windows = new Windows.UI.Xaml.Controls.StackPanel();
-        // apply default orientation
-        try {
-            this._windows.Orientation = Windows.UI.Xaml.Controls.Orientation.vertical;
-        } catch (_e) {}
+        this._windows.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
     }
 
     public createNativeView() {
@@ -20,8 +17,6 @@ export class StackLayout extends StackLayoutBase {
     }
 
     [orientationProperty.setNative](value: 'horizontal' | 'vertical') {
-        try {
-            this._windows.Orientation = value === 'vertical' ? Windows.UI.Xaml.Controls.Orientation.vertical : Windows.UI.Xaml.Controls.Orientation.horizontal;
-        } catch (_e) {}
+        this._windows.Orientation = value === 'vertical' ? Windows.UI.Xaml.Controls.Orientation.Vertical : Windows.UI.Xaml.Controls.Orientation.Horizontal;
     }
 }
