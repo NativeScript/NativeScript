@@ -212,6 +212,14 @@ export class SharedTransitionHelper {
 								snapshot.contentMode = independentSharedElement.contentMode;
 							}
 							snapshot.clipsToBounds = true;
+							// Copy layer properties (cornerRadius, borderWidth/Color)
+							// from the source view so the snapshot renders with the
+							// same rounded corners. Without this, source-side
+							// thumbnails/buttons appear with sharp square corners
+							// during a non-morph interactive dismiss — the snapshot
+							// is what the user sees through the dismissing modal,
+							// and its layer is freshly created with cornerRadius 0.
+							iOSUtils.copyLayerProperties(snapshot, independentSharedElement, pageEndProps?.propertiesToMatch as any);
 
 							const startFrame = independentSharedElement.convertRectToView(independentSharedElement.bounds, transitionContext.containerView);
 							snapshot.frame = startFrame;
@@ -909,28 +917,53 @@ export class SharedTransitionHelper {
 			// Morph mode finish — animate the destination view to the matching
 			// source element's frame and fade it out, then complete.
 			const view = state.instance.presented?.view;
-			const destTag = state.instance.sharedElements?.presented?.[0]?.view?.sharedTransitionTag;
+			const destPresented = state.instance.sharedElements?.presented?.[0];
+			const destTag = destPresented?.view?.sharedTransitionTag;
 			const matchingSource = state.instance.sharedElements?.presenting?.find?.((p) => p.view.sharedTransitionTag === destTag);
 			const srcIos = matchingSource?.view?.ios;
+			const destSharedIos = destPresented?.view?.ios as UIView | undefined;
 			const containerView = interactiveState.transitionContext?.containerView;
 			let targetTransform: any = null;
 			if (view && srcIos && containerView) {
-				const frameInContainer = srcIos.convertRectToView(srcIos.bounds, containerView);
+				const sourceFrame = srcIos.convertRectToView(srcIos.bounds, containerView);
 				const bounds = view.bounds;
-				if (bounds.size.width > 0 && bounds.size.height > 0 && frameInContainer.size.width > 0 && frameInContainer.size.height > 0) {
-					// Uniform scale that fits the modal inside the source's frame
-					// (matches the gesture-handler's morph target). Width-only
-					// scaling left the modal taller than the source, so the
-					// release-spring landed past the source position and the
-					// modal appeared to just fade in place.
-					const targetScale = Math.min(frameInContainer.size.width / bounds.size.width, frameInContainer.size.height / bounds.size.height);
-					const targetCx = frameInContainer.origin.x + frameInContainer.size.width / 2;
-					const targetCy = frameInContainer.origin.y + frameInContainer.size.height / 2;
-					const currentCx = bounds.size.width / 2;
-					const currentCy = bounds.size.height / 2;
-					const tx = targetCx - currentCx;
-					const ty = targetCy - currentCy;
-					targetTransform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(tx, ty), CGAffineTransformMakeScale(targetScale, targetScale));
+				if (bounds.size.width > 0 && bounds.size.height > 0 && sourceFrame.size.width > 0 && sourceFrame.size.height > 0) {
+					// Anchor the modal's transform on the *internal* matched
+					// element (e.g. the album art inside the modal) so that the
+					// modal and the matched element converge along the same
+					// trajectory to the source thumbnail. Without this, the modal
+					// scales around its own center while the matched-element
+					// snapshot flies separately to source — making the two visibly
+					// drift apart mid-spring.
+					//
+					// Pick a uniform scale that takes the modal's matched element
+					// to the source's size. For square album art (both sides) this
+					// is exact; for slightly off-square sources (e.g. 360×380) we
+					// match width and let the small remainder be hidden by the
+					// fade-out.
+					const destSharedFrameInModal = destSharedIos ? destSharedIos.convertRectToView(destSharedIos.bounds, view) : null;
+					const sx = sourceFrame.size.width / bounds.size.width;
+					const sy = sourceFrame.size.height / bounds.size.height;
+					const targetCx = sourceFrame.origin.x + sourceFrame.size.width / 2;
+					const targetCy = sourceFrame.origin.y + sourceFrame.size.height / 2;
+					const modalCx = bounds.size.width / 2;
+					const modalCy = bounds.size.height / 2;
+					let tx: number;
+					let ty: number;
+					if (destSharedFrameInModal && destSharedFrameInModal.size.width > 0 && destSharedFrameInModal.size.height > 0) {
+						// Place the internal album art's center on the source's
+						// center. After scaling around modal center, internal art's
+						// visual center = modalCenter + (internalArtCenter - modalCenter) * scale + translation.
+						const internalCx = destSharedFrameInModal.origin.x + destSharedFrameInModal.size.width / 2;
+						const internalCy = destSharedFrameInModal.origin.y + destSharedFrameInModal.size.height / 2;
+						tx = targetCx - modalCx - (internalCx - modalCx) * sx;
+						ty = targetCy - modalCy - (internalCy - modalCy) * sy;
+					} else {
+						// Fallback: align modal center on source center.
+						tx = targetCx - modalCx;
+						ty = targetCy - modalCy;
+					}
+					targetTransform = CGAffineTransformConcat(CGAffineTransformMakeTranslation(tx, ty), CGAffineTransformMakeScale(sx, sy));
 				}
 			}
 			// Build a snapshot fly-back for each shared element so the album

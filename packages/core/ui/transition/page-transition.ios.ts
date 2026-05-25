@@ -200,19 +200,33 @@ export class PageTransition extends Transition {
 						const matchingSource = sources.find?.((v: any) => v?.sharedTransitionTag === destTag) || sources[0];
 						const srcIos = matchingSource?.ios;
 						const destView = this.presented?.view;
+						const destSharedIos = presented?.view?.ios;
 						if (srcIos && destView) {
 							const f = srcIos.convertRectToView(srcIos.bounds, destView);
 							const bounds = destView.bounds;
 							if (bounds.size.width > 0 && bounds.size.height > 0 && f.size.width > 0) {
-								// Uniform scale so the destination view fits *inside* the
-								// source's frame (not just matches its width). Source art
-								// is typically square while the modal is portrait — width-
-								// only scaling leaves the modal taller than the source art,
-								// which makes the morph land somewhere that doesn't look
-								// connected to the source thumbnail.
+								// Uniform scale during drag — feels grabbed/proportional
+								// rather than squished. The release spring switches to
+								// non-uniform scale + anchored translation in interactiveFinish
+								// so the modal's matched element lands exactly on the source.
 								const scaleT = Math.min(f.size.width / bounds.size.width, f.size.height / bounds.size.height);
-								const txT = f.origin.x + f.size.width / 2 - bounds.size.width / 2;
-								const tyT = f.origin.y + f.size.height / 2 - bounds.size.height / 2;
+								// Anchor on the modal's internal matched element so the
+								// modal and the matched element snapshot converge on the
+								// source thumbnail along the same trajectory, instead of
+								// the modal drifting toward a center-of-modal target while
+								// the matched snapshot heads to the source.
+								let txT: number;
+								let tyT: number;
+								const sharedFrameInModal = destSharedIos ? destSharedIos.convertRectToView(destSharedIos.bounds, destView) : null;
+								if (sharedFrameInModal && sharedFrameInModal.size.width > 0 && sharedFrameInModal.size.height > 0) {
+									const internalCx = sharedFrameInModal.origin.x + sharedFrameInModal.size.width / 2;
+									const internalCy = sharedFrameInModal.origin.y + sharedFrameInModal.size.height / 2;
+									txT = f.origin.x + f.size.width / 2 - bounds.size.width / 2 - (internalCx - bounds.size.width / 2) * scaleT;
+									tyT = f.origin.y + f.size.height / 2 - bounds.size.height / 2 - (internalCy - bounds.size.height / 2) * scaleT;
+								} else {
+									txT = f.origin.x + f.size.width / 2 - bounds.size.width / 2;
+									tyT = f.origin.y + f.size.height / 2 - bounds.size.height / 2;
+								}
 								this._morphTarget = { scale: scaleT, tx: txT, ty: tyT };
 							}
 						}
@@ -226,9 +240,23 @@ export class PageTransition extends Transition {
 						// the morphing modal. They were hidden during present; without
 						// restoring them now, the user sees blank spots through the
 						// shrinking modal where artwork/text should be.
+						//
+						// We also re-apply each view's NS background to nudge UIKit into
+						// re-displaying the layer with its corner-radius mask. Without
+						// this, some plugin-backed image views (e.g. SDAnimatedImageView)
+						// render their cached content with square corners during the
+						// transition's compositor pass even though the layer's
+						// cornerRadius/masksToBounds are still set correctly.
 						for (const ind of stateNow.instance?.sharedElements?.independent || []) {
 							if (!ind.isPresented && ind.view?.ios) {
 								ind.view.ios.alpha = ind.view.opacity;
+								const v: any = ind.view;
+								if (typeof v._redrawNativeBackground === 'function') {
+									try {
+										v._redrawNativeBackground(v.style?.backgroundInternal);
+									} catch (_) {}
+								}
+								ind.view.ios.layer?.setNeedsDisplay?.();
 							}
 						}
 					}
