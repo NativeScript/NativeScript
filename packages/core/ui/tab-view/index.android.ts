@@ -21,7 +21,7 @@ const PRIMARY_COLOR = 'colorPrimary';
 const DEFAULT_ELEVATION = 4;
 
 interface PagerAdapter {
-	new (owner: TabView): androidx.viewpager.widget.PagerAdapter;
+	new (owner: WeakRef<TabView>): androidx.viewpager.widget.PagerAdapter;
 }
 
 const TABID = '_tabId';
@@ -156,7 +156,7 @@ function initializeNativeClasses() {
 		// we prevent that here.
 		private transactionRunning = false;
 
-		constructor(public owner: TabView) {
+		constructor(private owner: WeakRef<TabView>) {
 			super();
 
 			return global.__native(this);
@@ -164,7 +164,6 @@ function initializeNativeClasses() {
 
 		getCount() {
 			const items = this.items;
-
 			return items ? items.length : 0;
 		}
 
@@ -184,7 +183,12 @@ function initializeNativeClasses() {
 		}
 
 		instantiateItem(container: android.view.ViewGroup, position: number): java.lang.Object {
-			const fragmentManager = this.owner._getFragmentManager();
+			const owner = this.owner?.get();
+			if (!owner) {
+				return null;
+			}
+
+			const fragmentManager = owner._getFragmentManager();
 			if (!this.mCurTransaction) {
 				this.mCurTransaction = fragmentManager.beginTransaction();
 			}
@@ -195,7 +199,7 @@ function initializeNativeClasses() {
 			if (fragment != null) {
 				this.mCurTransaction.attach(fragment);
 			} else {
-				fragment = TabFragmentImplementation.newInstance(this.owner._domId, position);
+				fragment = TabFragmentImplementation.newInstance(owner._domId, position);
 				this.mCurTransaction.add(container.getId(), fragment, name);
 			}
 
@@ -212,8 +216,13 @@ function initializeNativeClasses() {
 		}
 
 		destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
+			const owner = this.owner?.get();
+			if (!owner) {
+				return;
+			}
+
 			if (!this.mCurTransaction) {
-				const fragmentManager = this.owner._getFragmentManager();
+				const fragmentManager = owner._getFragmentManager();
 				this.mCurTransaction = fragmentManager.beginTransaction();
 			}
 
@@ -226,10 +235,14 @@ function initializeNativeClasses() {
 		}
 
 		setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
+			const owner = this.owner?.get();
+			if (!owner) {
+				return;
+			}
+
 			const fragment = <androidx.fragment.app.Fragment>object;
 			if (fragment !== this.mCurrentPrimaryItem) {
-				const tabView = this.owner;
-				const tabItems = tabView.items;
+				const tabItems = owner.items;
 				const newTabItem = tabItems ? tabItems[position] : null;
 
 				if (this.mCurrentPrimaryItem != null) {
@@ -243,10 +256,10 @@ function initializeNativeClasses() {
 				}
 
 				this.mCurrentPrimaryItem = fragment;
-				this.owner.selectedIndex = position;
+				owner.selectedIndex = position;
 
 				if (newTabItem) {
-					tabView._loadUnloadTabItems(tabView.selectedIndex);
+					owner._loadUnloadTabItems(owner.selectedIndex);
 				}
 			}
 		}
@@ -456,7 +469,6 @@ export class TabView extends TabViewBase {
 	private _tabLayout: org.nativescript.widgets.TabLayout;
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter & {
-		owner: TabView;
 		items: Array<TabViewItemDefinition>;
 	};
 	private _androidViewId = -1;
@@ -527,7 +539,7 @@ export class TabView extends TabViewBase {
 		nativeView.addView(viewPager);
 		(<any>nativeView).viewPager = viewPager;
 
-		const adapter = new PagerAdapter(this);
+		const adapter = new PagerAdapter(new WeakRef(this));
 		viewPager.setAdapter(adapter);
 		(<any>viewPager).adapter = adapter;
 
@@ -560,7 +572,6 @@ export class TabView extends TabViewBase {
 		viewPager.setId(this._androidViewId);
 		this._viewPager = viewPager;
 		this._pagerAdapter = (<any>viewPager).adapter;
-		this._pagerAdapter.owner = this;
 	}
 
 	public _loadUnloadTabItems(newIndex: number) {
@@ -629,7 +640,6 @@ export class TabView extends TabViewBase {
 
 	public disposeNativeView() {
 		this._tabLayout.setItems(null, null);
-		this._pagerAdapter.owner = null;
 		this._pagerAdapter = null;
 
 		this._tabLayout = null;
