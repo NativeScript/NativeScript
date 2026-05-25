@@ -4,10 +4,118 @@ import { isNumber } from '../../utils/types';
 import { Screen } from '../../platform';
 import { CORE_ANIMATION_DEFAULTS } from '../../utils/animation-helpers';
 import { ios as iOSUtils } from '../../utils/native-helper';
+import { Color } from '../../color';
 
 interface PlatformTransitionInteractiveState extends TransitionInteractiveState {
 	transitionContext?: UIViewControllerContextTransitioning;
 	propertyAnimator?: UIViewPropertyAnimator;
+}
+
+/**
+ * Apply a drop shadow behind the destination view during an interactive
+ * dismiss so it looks elevated above the source (Apple Music–style).
+ *
+ * Shadow + rounded corners can't coexist on the same CALayer on iOS — both
+ * `masksToBounds = true` and `layer.mask` clip the shadow as part of the
+ * compositing pipeline. So the shadow lives on a SIBLING CALayer inserted
+ * below the modal's layer in its superlayer (the same pattern NS uses for
+ * box-shadow via `outerShadowContainerLayer`). The modal keeps its own
+ * `cornerRadius` + `masksToBounds` so subviews still clip to the rounded
+ * shape.
+ *
+ * Because the shadow layer is a sibling (not a child), it doesn't inherit
+ * the modal's transform automatically — `syncInteractiveDismissShadow`
+ * mirrors transform/position/bounds during the drag.
+ *
+ * Falsy `shadowConfig` is a no-op.
+ */
+export function applyInteractiveDismissShadow(presentedView: any, shadowConfig: any): void {
+	if (!presentedView?.layer || !shadowConfig) return;
+	const layer = presentedView.layer;
+	const superlayer = layer.superlayer;
+	if (!superlayer) return;
+	const bounds = layer.bounds;
+	if (bounds.size.width <= 0 || bounds.size.height <= 0) return;
+	// Idempotent.
+	if ((presentedView as any).__sharedTransitionShadowLayer) return;
+	const cfg = shadowConfig === true ? {} : shadowConfig;
+	const colorInput = cfg.color ?? '#000';
+	let cgColor: any;
+	try {
+		const nsColor = typeof colorInput === 'string' ? new Color(colorInput) : colorInput;
+		cgColor = (nsColor as any).ios?.CGColor || (nsColor as any).CGColor || UIColor.blackColor.CGColor;
+	} catch (_) {
+		cgColor = UIColor.blackColor.CGColor;
+	}
+	const opacity = isNumber(cfg.opacity) ? cfg.opacity : 0.3;
+	const radius = isNumber(cfg.radius) ? cfg.radius : 30;
+	const offsetX = isNumber(cfg.offset?.x) ? cfg.offset.x : 0;
+	const offsetY = isNumber(cfg.offset?.y) ? cfg.offset.y : 8;
+	const cornerRadius = layer.cornerRadius || 0;
+	const roundedRectPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(CGRectMake(0, 0, bounds.size.width, bounds.size.height), cornerRadius).CGPath;
+
+	const shadowLayer = CALayer.layer();
+	// Match the modal's geometry so shadow tracks 1:1.
+	shadowLayer.anchorPoint = layer.anchorPoint;
+	shadowLayer.bounds = bounds;
+	shadowLayer.position = layer.position;
+	shadowLayer.transform = layer.transform;
+	shadowLayer.shadowColor = cgColor;
+	shadowLayer.shadowOpacity = opacity;
+	shadowLayer.shadowRadius = radius;
+	shadowLayer.shadowOffset = CGSizeMake(offsetX, offsetY);
+	// Explicit shadowPath = shadow renders from this shape outward;
+	// the layer itself stays fully transparent.
+	shadowLayer.shadowPath = roundedRectPath;
+
+	CATransaction.begin();
+	CATransaction.setDisableActions(true);
+	superlayer.insertSublayerBelow(shadowLayer, layer);
+	CATransaction.commit();
+
+	(presentedView as any).__sharedTransitionShadowLayer = shadowLayer;
+}
+
+/**
+ * Mirror the modal layer's geometry onto the sibling shadow layer so the
+ * shadow tracks the interactive drag. Called from the gesture handlers
+ * after the modal's state has been updated (either via direct transform
+ * in morph mode, or via `interactiveController.updateInteractiveTransition`
+ * for the non-morph modal/page case driven by UIViewPropertyAnimator).
+ *
+ * Reads the layer's **presentation** values when an animation is in flight
+ * — model values would point at the animation's end state and snap the
+ * shadow there. Falls back to model values when no animation is running.
+ */
+export function syncInteractiveDismissShadow(presentedView: any): void {
+	const shadowLayer = (presentedView as any)?.__sharedTransitionShadowLayer;
+	if (!shadowLayer || !presentedView?.layer) return;
+	const layer = presentedView.layer;
+	const pres = typeof layer.presentationLayer === 'function' ? layer.presentationLayer() : null;
+	const src = pres || layer;
+	const b = src.bounds;
+	CATransaction.begin();
+	CATransaction.setDisableActions(true);
+	shadowLayer.bounds = b;
+	shadowLayer.position = src.position;
+	shadowLayer.anchorPoint = src.anchorPoint;
+	shadowLayer.transform = src.transform;
+	shadowLayer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(CGRectMake(0, 0, b.size.width, b.size.height), src.cornerRadius || 0).CGPath;
+	CATransaction.commit();
+}
+
+/**
+ * Remove the sibling shadow layer. Safe to call repeatedly / when no
+ * shadow was applied.
+ */
+export function removeInteractiveDismissShadow(presentedView: any): void {
+	const shadowLayer = (presentedView as any)?.__sharedTransitionShadowLayer;
+	if (!shadowLayer) return;
+	CATransaction.begin();
+	CATransaction.setDisableActions(true);
+	shadowLayer.removeFromSuperlayer();
+	CATransaction.commit();
+	(presentedView as any).__sharedTransitionShadowLayer = null;
 }
 
 export class SharedTransitionHelper {
@@ -701,6 +809,13 @@ export class SharedTransitionHelper {
 				}
 				break;
 		}
+		// Apply the dismiss shadow here, not from the gesture handler. UIKit
+		// reparents the presented view into the transition containerView as
+		// part of starting the interactive transition; applying earlier would
+		// attach the shadow to the now-orphaned old superlayer.
+		if (state.interactive?.dismiss?.shadow && state.instance?.presented?.view) {
+			applyInteractiveDismissShadow(state.instance.presented.view, state.interactive.dismiss.shadow);
+		}
 	}
 
 	static interactiveUpdate(state: SharedTransitionState, interactiveState: PlatformTransitionInteractiveState, type: TransitionNavigationType, percent: number) {
@@ -1065,6 +1180,8 @@ export class SharedTransitionHelper {
 					view.transform = CGAffineTransformIdentity;
 					view.alpha = 1;
 				}
+				// Remove the sibling shadow view if interactive engagement added one.
+				removeInteractiveDismissShadow(view);
 				SharedTransition.finishState(state.instance.id);
 				if (interactiveState.transitionContext) {
 					interactiveState.transitionContext.finishInteractiveTransition();
@@ -1077,10 +1194,19 @@ export class SharedTransitionHelper {
 				});
 			};
 			if (view && targetTransform) {
+				const shadowViewToAnimate: any = (view as any).__sharedTransitionShadowView;
 				iOSUtils.animateWithSpring({
 					animations: () => {
 						view.transform = targetTransform;
 						view.alpha = 0;
+						// Drive the sibling shadow view through the same spring so it
+						// shrinks + translates with the modal as it morphs to the
+						// source. Also fade it out so it doesn't linger behind the
+						// finalizing snapshot.
+						if (shadowViewToAnimate) {
+							shadowViewToAnimate.transform = targetTransform;
+							shadowViewToAnimate.alpha = 0;
+						}
 						// Restore source-side element alphas IN PARALLEL with the
 						// destination's morph + fade — but skip sources that have
 						// a flying snapshot. Those are held at alpha 0 and

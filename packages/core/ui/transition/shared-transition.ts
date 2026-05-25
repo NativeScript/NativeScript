@@ -117,6 +117,27 @@ export interface SharedTransitionInteractiveOptions {
 				/** Smallest scale applied at maximum drag distance. Default 0.5. */
 				minScale?: number;
 		  };
+	/**
+	 * (iOS only) Drop shadow rendered behind the destination view during the
+	 * interactive dismiss — gives the view a sense of depth/elevation as it
+	 * morphs back toward the source (Apple Music–style).
+	 *
+	 * - `true` applies sensible defaults
+	 *   (color black, opacity 0.3, radius 30, offset (0, 8)).
+	 * - Pass an object to customize any field.
+	 * - Omit / `false` to skip.
+	 */
+	shadow?: boolean | SharedTransitionInteractiveDismissShadow;
+}
+export interface SharedTransitionInteractiveDismissShadow {
+	/** Hex / named color string or `Color` instance. Default `'#000'`. */
+	color?: string | { ios?: any /* UIColor */ };
+	/** 0–1. Default `0.3`. */
+	opacity?: number;
+	/** Blur radius in points. Default `30`. */
+	radius?: number;
+	/** Offset in points. Default `{ x: 0, y: 8 }`. */
+	offset?: { x?: number; y?: number };
 }
 export interface SharedTransitionConfig {
 	/**

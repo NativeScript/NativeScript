@@ -5,7 +5,7 @@ import { CORE_ANIMATION_DEFAULTS, getDurationWithDampingFromSpring } from '../..
 import { PanGestureEventData, GestureStateTypes } from '../gestures';
 import { ios as iOSUtils } from '../../utils/native-helper';
 import { SharedTransition, SharedTransitionAnimationType } from './shared-transition';
-import { SharedTransitionHelper } from './shared-transition-helper';
+import { SharedTransitionHelper, removeInteractiveDismissShadow, syncInteractiveDismissShadow } from './shared-transition-helper';
 
 function _findInnerScroll(view: UIView | undefined | null): UIScrollView | null {
 	// Walk the destination's view subtree breadth-first looking for the first
@@ -259,6 +259,9 @@ export class PageTransition extends Transition {
 								ind.view.ios.layer?.setNeedsDisplay?.();
 							}
 						}
+						// Dismiss shadow is applied from SharedTransitionHelper.interactiveStart
+						// (it runs after UIKit has reparented the presented view into the
+						// transition's containerView).
 					}
 				}
 				if (this._gesturePhase !== 'active') return;
@@ -294,6 +297,11 @@ export class PageTransition extends Transition {
 				if (percent < 1 && this.interactiveController) {
 					this.interactiveController.updateInteractiveTransition(percent);
 				}
+				// Mirror the destination's current visual state onto the sibling
+				// shadow layer. Done for both morph (direct transform) and non-morph
+				// (UIViewPropertyAnimator-driven) — sync reads the presentation
+				// layer so it works for both.
+				syncInteractiveDismissShadow(this.presented?.view);
 				break;
 			case GestureStateTypes.cancelled:
 			case GestureStateTypes.ended: {
@@ -323,6 +331,11 @@ export class PageTransition extends Transition {
 						});
 						this.interactiveController.cancelInteractiveTransition();
 					}
+					// Always restore the modal's layer state we touched to render
+					// the dismiss shadow — on cancel (view is being kept) AND on
+					// finish (the same NS view instance may be reused on the next
+					// presentation, so leaked layer state stacks across dismissals).
+					removeInteractiveDismissShadow(this.presented?.view);
 				} else if (morph) {
 					// Fallback: UIKit didn't engage. Reset the morph transform so the
 					// destination doesn't stay stuck.
