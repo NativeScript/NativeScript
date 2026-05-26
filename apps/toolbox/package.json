@@ -17,7 +17,7 @@
     "@nativescript/visionos": "~9.0.0",
     "@nativescript/vite": "file:../../dist/packages/vite",
     "@nativescript/webpack": "file:../../dist/packages/webpack5",
-    "@nativescript/windows": "0.1.0-alpha.102",
+    "@nativescript/windows": "0.1.0-alpha.111",
     "typescript": "~5.8.0"
   }
 }

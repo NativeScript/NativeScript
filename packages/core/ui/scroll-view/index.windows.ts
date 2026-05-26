@@ -41,7 +41,6 @@ export class ScrollView extends ScrollViewBase {
 		const current = Windows.UI.Xaml.Window.Current;
 		if (!current) return;
 		const bounds = current.Bounds;
-		console.log('[ScrollView._constrainToWindow] bounds:', bounds, 'orientation:', this.orientation);
 		// Window has not rendered yet — skip; _attachWindowSizeChanged will apply once bounds are known
 		if (!bounds || bounds.Height === 0 || bounds.Width === 0) return;
 		if (this.orientation === 'vertical') {

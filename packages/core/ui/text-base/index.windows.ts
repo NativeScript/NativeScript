@@ -106,15 +106,24 @@ export class TextBase extends TextBaseCommon {
 	[colorProperty.setNative](value: Color | Windows.UI.Color | null | undefined) {
 		if (!this.formattedText || !(value instanceof Color)) {
 			try {
+				let brush: Windows.UI.Xaml.Media.SolidColorBrush | null = null;
 				if (value instanceof Color) {
-					this.nativeTextViewProtected.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(value.windows);
+					brush = new Windows.UI.Xaml.Media.SolidColorBrush(value.windows);
 				} else if (value != null) {
 					//@ts-ignore
 					if (value instanceof Windows.UI.Color) {
-						this.nativeTextViewProtected.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(value as any);
+						brush = new Windows.UI.Xaml.Media.SolidColorBrush(value as any);
 					} else {
-						this.nativeTextViewProtected.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(new Color(value as never).windows);
+						brush = new Windows.UI.Xaml.Media.SolidColorBrush(new Color(value as never).windows);
 					}
+				}
+				if (brush) {
+					this.nativeTextViewProtected.Foreground = brush;
+					// Override ButtonForeground resource so the XAML template binding picks up
+					// our colour even when the Normal-state VSM animation replaces it.
+					try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForeground', brush); } catch (_re) {}
+					try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForegroundPointerOver', brush); } catch (_re) {}
+					try { (this.nativeTextViewProtected as any).Resources.Insert('ButtonForegroundPressed', brush); } catch (_re) {}
 				}
 			} catch (_e) { }
 		}

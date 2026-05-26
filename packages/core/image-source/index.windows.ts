@@ -3,7 +3,8 @@ import { ImageAsset } from '../image-asset';
 import { path as fsPath, knownFolders } from '../file-system';
 import { isFileOrResourcePath } from '../utils';
 import { Trace } from '../trace';
-
+import { isMainThread, dispatchToMainThread } from '../utils/mainthread-helper';
+import { requestInternal as httpRequest } from '../http/http-request-internal';
 export { isFileOrResourcePath };
 
 // Cached constants for resource name handling
@@ -20,13 +21,9 @@ function bitmapFromUriAsync(uriStr: string): Promise<Windows.UI.Xaml.Media.Imagi
 		try {
 			const bmp = makeBitmapImage();
 			const onOpened = () => {
-				bmp.ImageOpened = null;
-				bmp.ImageFailed = null;
 				resolve(bmp);
 			};
 			const onFailed = (s: any, e: any) => {
-				bmp.ImageOpened = null;
-				bmp.ImageFailed = null;
 				reject(e || new Error('Image load failed'));
 			};
 			bmp.ImageOpened = onOpened;
@@ -58,20 +55,27 @@ function bytesToStream(bytes: Uint8Array): Promise<any> {
 
 function bitmapFromStream(stream: any): Promise<any> {
 	return new Promise((resolve, reject) => {
-		try {
-			const bmp = makeBitmapImage();
-			NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(
-				() => resolve(bmp),
-				reject
-			);
-		} catch (e) { reject(e); }
+		// BitmapImage has UI thread affinity — create and load on the UI thread.
+		const create = () => {
+			try {
+				(stream as any).Seek(0);
+				const bmp = makeBitmapImage();
+				NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(
+					() => resolve(bmp),
+					reject
+				);
+			} catch (e) { reject(e); }
+		};
+		if (isMainThread()) {
+			create();
+		} else {
+			dispatchToMainThread(create);
+		}
 	});
 }
 
 function bitmapFromBytesAsync(bytes: Uint8Array): Promise<any> {
-	try { console.log(`[Image.Windows] bitmapFromBytesAsync: bytes.length=${bytes?.length ?? 0}`); } catch (_e) { }
 	return bytesToStream(bytes).then((stream) => {
-		try { console.log(`[Image.Windows] bitmapFromBytesAsync: streamReady`); } catch (_e) { }
 		return bitmapFromStream(stream);
 	});
 }
@@ -79,7 +83,6 @@ function bitmapFromBytesAsync(bytes: Uint8Array): Promise<any> {
 function fetchBytesAsync(url: string): Promise<Uint8Array> {
 	return new Promise((resolve, reject) => {
 		try {
-			try { console.log(`[Image.Windows] fetchBytesAsync: fetching ${url}`); } catch (_e) { }
 			const httpClient = new Windows.Web.Http.HttpClient();
 			const uri = new Windows.Foundation.Uri(url);
 			NSWinRT.toPromise(httpClient.GetBufferAsync(uri)).then(
@@ -88,13 +91,12 @@ function fetchBytesAsync(url: string): Promise<Uint8Array> {
 						const reader = Windows.Storage.Streams.DataReader.FromBuffer(buffer);
 						const bytes = new Uint8Array(buffer.Length);
 						reader.ReadBytes(bytes as never);
-						try { console.log(`[Image.Windows] fetchBytesAsync: fetched ${bytes.length} bytes for ${url}`); } catch (_e) { }
 						resolve(bytes);
-					} catch (e) { try { console.log(`[Image.Windows] fetchBytesAsync: error reading buffer -> ${e}`); } catch (_ee) {} ; reject(e); }
+					} catch (e) { reject(e); }
 				},
-				(err: any) => { try { console.log(`[Image.Windows] fetchBytesAsync: http error -> ${err}`); } catch (_e) {} ; reject(err); }
+				(err: any) => { reject(err); }
 			);
-		} catch (e) { try { console.log(`[Image.Windows] fetchBytesAsync: exception -> ${e}`); } catch (_e) {} ; reject(e); }
+		} catch (e) { reject(e); }
 	});
 }
 
@@ -198,60 +200,27 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromUrl(url: string): Promise<ImageSource> {
-		// Use the JS-side HttpClient + bitmap creation path to avoid using
-		// the native ImageHelper URL loader which can surface unobserved
-		// Task exceptions in some network failure scenarios.
-		return fetchBytesAsync(url).then((bytes) => {
-			return bitmapFromBytesAsync(bytes).then((bmp) => {
-				const src = new ImageSource(bmp);
-				src._rawBytes = bytes;
-				src._width = bmp.PixelWidth ?? 0;
-				src._height = bmp.PixelHeight ?? 0;
-				return src;
-			});
-		}).catch((err) => {
-			try { console.log(`[Image.Windows] fromUrl: fetch/bitmap path failed -> ${err}. Trying uri-based loader fallback for ${url}`); } catch (_e) { }
-			// Try the native Uri loader as a fallback
-			return bitmapFromUriAsync(url).then((bmp) => {
-				const src = new ImageSource(bmp);
-				src._width = bmp.PixelWidth ?? 0;
-				src._height = bmp.PixelHeight ?? 0;
-				return src;
-			});
-		});
+		return httpRequest({ url, method: 'GET' }).then((response) => response.content.toNativeImage().then((value) => new ImageSource(value)));
 	}
 
 	static fromResourceSync(name: string): ImageSource {
 		if (!name) return null as any;
 		try {
-			// Do not mutate the input `name`. Normalize into a local variable.
 			const resourceName = name.startsWith(RES_PREFIX) ? name.slice(RES_PREFIX.length) : name;
-			// Strip leading slashes using slice in a small loop (avoids regex)
-			let normalized = resourceName;
-			while (normalized.length && (normalized.charAt(0) === '/' || normalized.charAt(0) === '\\')) {
-				normalized = normalized.slice(1);
-			}
-			// Replace backslashes with forward slashes without regex
-			if (normalized.indexOf('\\') !== -1) {
-				normalized = normalized.split('\\').join('/');
-			}
+			const normalized = resourceName.replace(LEADING_SLASHES_RE, '').replace(BACKSLASH_RE, '/');
 			const exts = ['', '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.svg', '.webp'];
-
-			// Always map to the packaged app assets so Windows picks scale-qualified files
-			for (const ext of exts) {
-				try {
-					const msAppx = `ms-appx:///Assets/${normalized}${ext}`;
-					try { console.log(`[Image.Windows] fromResourceSync: trying ${msAppx}`); } catch (_e) { }
-					const src = ImageSource.fromFileSync(msAppx);
-					if (src) {
-						try { console.log(`[Image.Windows] fromResourceSync: loaded ${msAppx}`); } catch (_e) { }
-						return src;
+			const resolve = (globalThis as any).__nsMsAppxResolve;
+			if (typeof resolve === 'function') {
+				for (const ext of exts) {
+					const uri = `ms-appx:///Assets/${normalized}${ext}`;
+					if (resolve(uri) != null) {
+						return ImageSource.fromFileSync(uri);
 					}
-				} catch { /* ignore and try next */ }
+				}
+				return null as any;
 			}
-			try { console.log(`[Image.Windows] fromResourceSync: no resource found for ${name}`); } catch (_e) { }
-
-			return null as any;
+			// Fallback when runtime hasn't registered the resolver yet
+			return ImageSource.fromFileSync(`ms-appx:///Assets/${normalized}`);
 		} catch {
 			return null as any;
 		}
@@ -264,15 +233,16 @@ export class ImageSource implements ImageSourceDefinition {
 			const normalized = resourceName.replace(LEADING_SLASHES_RE, '').replace(BACKSLASH_RE, '/');
 			const exts = ['', '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.svg', '.webp'];
 
-			console.log(`ImageSource.fromResource: loading resource '${name}' (normalized: '${normalized}')`);
 			for (const ext of exts) {
-				const msAppx = `ms-appx:///Assets/${normalized}${ext}`;
 				try {
-					const result = await ImageSource.fromFile(msAppx);
-					if (result) return result;
-				} catch (err) {
-					try { console.log(`[Image.Windows] fromResource: failed to load ${msAppx} -> ${err}`); } catch (_e) { }
-				}
+					const bmp = await bitmapFromUriAsync(`ms-appx:///Assets/${normalized}${ext}`);
+					if (bmp) {
+						const src = new ImageSource(bmp);
+						src._width = bmp.PixelWidth ?? 0;
+						src._height = bmp.PixelHeight ?? 0;
+						return src;
+					}
+				} catch { /* try next extension */ }
 			}
 
 			return null as any;
@@ -288,8 +258,15 @@ export class ImageSource implements ImageSourceDefinition {
 			bmp.ImageOpened = () => {
 				src._width = bmp.PixelWidth ?? 0;
 				src._height = bmp.PixelHeight ?? 0;
+				//@ts-ignore
 				bmp.ImageOpened = null;
 			};
+			bmp.ImageFailed = () => {
+				//@ts-ignore
+				bmp.ImageOpened = null;
+				//@ts-ignore
+				bmp.ImageFailed = null;
+			}
 			bmp.UriSource = new Windows.Foundation.Uri(fileUri(filePath));
 			src.windows = bmp;
 			return src;
@@ -352,6 +329,14 @@ export class ImageSource implements ImageSourceDefinition {
 		} catch (e) {
 			return Promise.reject(e);
 		}
+	}
+
+	static fromSystemImageSync(name: string): ImageSource {
+		return ImageSource.fromResourceSync(name);
+	}
+
+	static fromSystemImage(name: string): Promise<ImageSource> {
+		return ImageSource.fromResource(name);
 	}
 
 	static fromFontIconCodeSync(_source: string, _font: any, _color: any): ImageSource {

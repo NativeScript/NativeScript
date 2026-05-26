@@ -2,195 +2,186 @@ export * from './tab-view-common';
 
 import { TabViewBase, TabViewItemBase } from './tab-view-common';
 
-export class TabViewItem extends TabViewItemBase {}
+const TAB_HEIGHT = 48;
+
+export class TabViewItem extends TabViewItemBase {
+	public _update(): void {
+		const parent = this.parent as TabView;
+		if (!parent) return;
+		parent._updateTabButton(this as any);
+	}
+}
 
 export class TabView extends TabViewBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.Pivot;
-	private _windows: Windows.UI.Xaml.Controls.Pivot;
-	private _isPivotAvailable: boolean = true;
-	private _selectionHandler: any = null;
-	private _selectionHandlerUsedAddListener: boolean = false;
+	declare nativeViewProtected: Windows.UI.Xaml.Controls.Grid;
+
+	private _outerGrid: Windows.UI.Xaml.Controls.Grid;
+	private _tabStrip: Windows.UI.Xaml.Controls.StackPanel;
+	private _contentArea: Windows.UI.Xaml.Controls.Grid;
+	private _tabButtons: Windows.UI.Xaml.Controls.Button[] = [];
 
 	constructor() {
 		super();
-		try {
-			this._windows = new Windows.UI.Xaml.Controls.Pivot();
-			this._isPivotAvailable = true;
-		} catch (e) {
-			// Pivot not available on this Windows host - use a simple Grid fallback
-			console.log('[TabView] Pivot not available, using Grid fallback:', e);
-			try {
-				this._windows = new Windows.UI.Xaml.Controls.Grid() as any;
-			} catch (_e) {
-				// last resort: null - createNativeView should still return something
-				this._windows = null as any;
-			}
-			this._isPivotAvailable = false;
-		}
+
+		this._outerGrid = new Windows.UI.Xaml.Controls.Grid();
+
+		const r0 = new Windows.UI.Xaml.Controls.RowDefinition();
+		r0.Height = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.Auto);
+		const r1 = new Windows.UI.Xaml.Controls.RowDefinition();
+		r1.Height = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.Star);
+		this._outerGrid.RowDefinitions.Append(r0);
+		this._outerGrid.RowDefinitions.Append(r1);
+
+		this._tabStrip = new Windows.UI.Xaml.Controls.StackPanel();
+		this._tabStrip.Orientation = Windows.UI.Xaml.Controls.Orientation.Horizontal;
+		Windows.UI.Xaml.Controls.Grid.SetRow(this._tabStrip, 0);
+		this._outerGrid.Children.Append(this._tabStrip);
+
+		this._contentArea = new Windows.UI.Xaml.Controls.Grid();
+		Windows.UI.Xaml.Controls.Grid.SetRow(this._contentArea, 1);
+		this._outerGrid.Children.Append(this._contentArea);
 	}
 
 	public createNativeView() {
-		return this._windows;
+		return this._outerGrid;
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.Pivot {
-		return this._windows;
+	get windows(): Windows.UI.Xaml.Controls.Grid {
+		return this._outerGrid;
 	}
 
-	public initNativeView(): void {
-		super.initNativeView();
-		const that = new WeakRef(this);
-		let usedAdd = false;
-		// Only wire selection handling if Pivot is present
-		if (this._isPivotAvailable) {
-			try {
-				this._selectionHandler = new Windows.UI.Xaml.Controls.SelectionChangedEventHandler((s, e) => {
-					const owner = that.deref();
-					if (!owner) return;
-					try {
-						const native = owner.nativeViewProtected as any;
-						const idx = native.SelectedIndex;
-						owner.selectedIndex = idx;
-					} catch (_e) {}
-				});
-				try {
-					this.nativeViewProtected.SelectionChanged = this._selectionHandler as never;
-				} catch (_e) {}
-			} catch (_e) {
-				this._selectionHandler = (s: any, e: any) => {
-					const owner = that.deref();
-					if (!owner) return;
-					try {
-						const native = owner.nativeViewProtected as any;
-						const idx = native.SelectedIndex;
-						owner.selectedIndex = idx;
-					} catch (_e) {}
-				};
-				try {
-					this.nativeViewProtected.SelectionChanged = this._selectionHandler as never;
-				} catch (_e2) {
-					try {
-						if (typeof (this.nativeViewProtected as any).addEventListener === 'function') {
-							(this.nativeViewProtected as any).addEventListener('selectionchanged', this._selectionHandler);
-							usedAdd = true;
-						}
-					} catch (_e3) {}
-				}
-			}
+
+	public _addChildFromBuilder(name: string, value: any): void {
+		if (value instanceof TabViewItemBase) {
+			(value as any).canBeLoaded = true;
 		}
-		this._selectionHandlerUsedAddListener = usedAdd;
+		super._addChildFromBuilder(name, value);
+		if (value instanceof TabViewItemBase) {
+			this._rebuildTabStrip();
+		}
 	}
 
-	public disposeNativeView(): void {
-		try {
-			if (this._selectionHandler && this.nativeViewProtected && this._isPivotAvailable) {
-				try { this.nativeViewProtected.SelectionChanged = null as never; } catch (_e) {}
-				if (this._selectionHandlerUsedAddListener) {
-					try { (this.nativeViewProtected as any).removeEventListener('selectionchanged', this._selectionHandler); } catch (_e) {}
-				}
-				this._selectionHandler = null;
-				this._selectionHandlerUsedAddListener = false;
-			}
-		} catch (_e) {}
-
-		super.disposeNativeView();
-	}
-
+	// 
 	public onItemsChanged(oldItems: any[], newItems: any[]): void {
-		if (!newItems) {
-			return;
-		}
+		this._clearTabButtons();
+		this._tabStrip.Children.Clear();
+		this._clearContent();
 
-		// If Pivot is available, use Pivot API
-		if (this._isPivotAvailable && this.nativeViewProtected && (this.nativeViewProtected as any).Items) {
-			try { (this.nativeViewProtected as any).Items.Clear(); } catch (_e) {}
-
-			for (let i = 0; i < newItems.length; i++) {
-				const item = newItems[i];
-				const pivotItem = new Windows.UI.Xaml.Controls.PivotItem();
-				pivotItem.Header = item.title ?? '';
-				try {
-					if (item.view && (item.view as any).nativeViewProtected) {
-						pivotItem.Content = (item.view as any).nativeViewProtected;
-					}
-				} catch (_e) {}
-				try { (this.nativeViewProtected as any).Items.Append(pivotItem); } catch (_e) {}
+		if (newItems) {
+			for (const item of newItems) {
+				(item as any).canBeLoaded = true;
 			}
-
-			// Coerce selected index
-			try {
-				this.selectedIndex = Math.max(0, Math.min(this.selectedIndex, newItems.length - 1));
-				if (this.nativeViewProtected && this.selectedIndex >= 0) {
-					try { (this.nativeViewProtected as any).SelectedIndex = this.selectedIndex; } catch (_e) {}
-				}
-			} catch (_e) {}
-			return;
 		}
 
-		// Fallback for hosts without Pivot: show only the selected item's native content inside the Grid
-		try {
-			const children = (this.nativeViewProtected as any)?.Children;
-			if (children) {
-				const count = children.Size || 0;
-				for (let i = count - 1; i >= 0; i--) {
-					try { children.RemoveAt(i); } catch (_e) {}
-				}
-			} else if ((this.nativeViewProtected as any)?.Content !== undefined) {
-				try { (this.nativeViewProtected as any).Content = null; } catch (_e) {}
-			}
-		} catch (_e) {}
+		super.onItemsChanged(oldItems, newItems);
 
-		const sel = Math.max(0, Math.min(this.selectedIndex ?? 0, newItems.length - 1));
-		const selected = newItems[sel];
-		if (selected && selected.view && (selected.view as any).nativeViewProtected) {
-			try {
-				const nativeChild = (selected.view as any).nativeViewProtected;
-				const children = (this.nativeViewProtected as any)?.Children;
-				if (children) {
-					try { children.Append(nativeChild); } catch (_e) {}
-				} else if ((this.nativeViewProtected as any)?.Content !== undefined) {
-					try { (this.nativeViewProtected as any).Content = nativeChild; } catch (_e) {}
-				}
-			} catch (_e) {}
+		if (!newItems) return;
+
+		this._rebuildTabStrip();
+
+		if (this.isLoaded) {
+			this._showContent(Math.max(0, this.selectedIndex ?? 0));
 		}
+	}
+
+	public onLoaded(): void {
+		super.onLoaded();
+		this._clearContent();
+		const idx = Math.max(0, this.selectedIndex ?? 0);
+		this._showContent(idx);
+		this._highlightTab(idx);
 	}
 
 	public onSelectedIndexChanged(oldIndex: number, newIndex: number): void {
 		super.onSelectedIndexChanged(oldIndex, newIndex);
-		try {
-			if (this._isPivotAvailable) {
-				if (this.nativeViewProtected && newIndex >= 0) {
-					try { (this.nativeViewProtected as any).SelectedIndex = newIndex; } catch (_e) {}
-				}
-			} else {
-				// Fallback: replace Grid content with the selected item's native view
-				try {
-					const children = (this.nativeViewProtected as any)?.Children;
-					if (children) {
-						const count = children.Size || 0;
-						for (let i = count - 1; i >= 0; i--) {
-							try { children.RemoveAt(i); } catch (_e) {}
-						}
-					} else if ((this.nativeViewProtected as any)?.Content !== undefined) {
-						try { (this.nativeViewProtected as any).Content = null; } catch (_e) {}
-					}
-				} catch (_e) {}
+		this._clearContent();
+		this._showContent(newIndex);
+		this._highlightTab(newIndex);
+	}
 
-				const items = (this.items || []);
-				const sel = newIndex >= 0 && newIndex < items.length ? newIndex : 0;
-				const selected = items[sel];
-				if (selected && selected.view && (selected.view as any).nativeViewProtected) {
-					try {
-						const nativeChild = (selected.view as any).nativeViewProtected;
-						const children = (this.nativeViewProtected as any)?.Children;
-						if (children) {
-							try { children.Append(nativeChild); } catch (_e) {}
-						} else if ((this.nativeViewProtected as any)?.Content !== undefined) {
-							try { (this.nativeViewProtected as any).Content = nativeChild; } catch (_e) {}
-						}
-					} catch (_e) {}
-				}
+	public disposeNativeView(): void {
+		this._clearTabButtons();
+		super.disposeNativeView();
+	}
+
+	public _updateTabButton(item: TabViewItemBase): void {
+		if (!this.items) return;
+		const idx = this.items.indexOf(item as any);
+		if (idx >= 0 && idx < this._tabButtons.length) {
+			try { (this._tabButtons[idx] as any).Content = item.title ?? ''; } catch (_e) { }
+		}
+	}
+
+	private _rebuildTabStrip(): void {
+		this._clearTabButtons();
+		this._tabStrip.Children.Clear();
+		const items = this.items;
+		if (!items) return;
+		for (let i = 0; i < items.length; i++) {
+			this._createTabButton(items[i], i);
+		}
+		this._highlightTab(Math.max(0, this.selectedIndex ?? 0));
+	}
+
+	private _createTabButton(item: any, index: number): void {
+		try {
+			const btn = new Windows.UI.Xaml.Controls.Button();
+			btn.Content = item.title ?? '';
+			btn.MinWidth = 80;
+			btn.Height = TAB_HEIGHT;
+
+			const that = new WeakRef(this);
+			const fn = () => {
+				const owner = that.deref();
+				if (owner) owner.selectedIndex = index;
+			};
+			let handler: any;
+			try {
+				handler = new Windows.UI.Xaml.RoutedEventHandler(fn);
+			} catch (_e) {
+				handler = fn;
 			}
-		} catch (_e) {}
+			try { btn.Click = handler as never; } catch (_e) { }
+
+			this._tabButtons[index] = btn;
+			this._tabStrip.Children.Append(btn);
+		} catch (_e) { }
+	}
+
+	private _clearTabButtons(): void {
+		for (const btn of this._tabButtons) {
+			try { if (btn) btn.Click = null as never; } catch (_e) { }
+		}
+		this._tabButtons = [];
+	}
+
+	private _clearContent(): void {
+		try {
+			const count = (this._contentArea as any).Children.Size;
+			for (let i = count - 1; i >= 0; i--) {
+				try { (this._contentArea as any).Children.RemoveAt(i); } catch (_e) { }
+			}
+		} catch (_e) { }
+	}
+
+	private _showContent(index: number): void {
+		const items = this.items;
+		if (!items || index < 0 || index >= items.length) return;
+		const native = (items[index] as any)?.view?.nativeViewProtected;
+		if (native) {
+			try { (this._contentArea as any).Children.Append(native); } catch (_e) { }
+		}
+	}
+
+	private _highlightTab(selectedIndex: number): void {
+		for (let i = 0; i < this._tabButtons.length; i++) {
+			const btn = this._tabButtons[i];
+			if (!btn) continue;
+			try {
+				(btn as any).FontWeight = i === selectedIndex
+					? Windows.UI.Text.FontWeights.Bold
+					: Windows.UI.Text.FontWeights.Normal;
+			} catch (_e) { }
+		}
 	}
 }

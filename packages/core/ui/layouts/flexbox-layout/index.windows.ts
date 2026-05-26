@@ -441,7 +441,6 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     constructor() {
         super();
         this._windows = new FlexboxLayoutImpl(new WeakRef(this));
-        this._windows.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Orange) as never;
     }
 
     public createNativeView() {

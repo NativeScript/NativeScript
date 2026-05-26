@@ -27,9 +27,11 @@ function createFontFamilyCandidate(candidate: string): Windows.UI.Xaml.Media.Fon
         }
 
         const ff = new Windows.UI.Xaml.Media.FontFamily(candidate);
+        try { console.log(`[Font] Created FontFamily "${candidate}" -> source="${ff.Source}"`); } catch (_e) {}
         fontFamilyCache.set(candidate, ff);
         return ff;
     } catch (err) {
+        console.log(`[Font] FontFamily creation failed for "${candidate}":`, err);
         fontFamilyCache.set(candidate, null);
         return null;
     }
@@ -68,12 +70,11 @@ export function applyFontFamilyTo(target: any, fontFamilyValue: string): void {
     }
 
     for (const c of candidates) {
-        const ff = null;//createFontFamilyCandidate(c);
+        const ff = createFontFamilyCandidate(c);
         if (ff) {
             try {
-            //    target.FontFamily = ff;
-            }
-            catch (e) {
+                target.FontFamily = ff;
+            } catch (_e) {
                 // ignore if target does not accept FontFamily assignment
             }
             return;

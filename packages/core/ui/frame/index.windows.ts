@@ -46,14 +46,12 @@ export class Frame extends FrameBase {
 			(this._topBar as any).Content = contentPanel;
 			(this._topBar as any).Visibility = 1; // Collapsed
 		} catch (_e) {
-			console.log('[Frame] _buildTopBar failed:', _e);
 			this._topBar = null;
 		}
 	}
 
 	private _buildContainer(): any {
 		if (!this._topBar) {
-			console.log('[Frame._buildContainer] no topBar, returning pageHost directly');
 			return this._pageHost;
 		}
 
@@ -76,10 +74,8 @@ export class Frame extends FrameBase {
 			Windows.UI.Xaml.Controls.Grid.SetRow(this._pageHost, 1);
 			(outerGrid as any).Children.Append(this._pageHost);
 
-			console.log('[Frame._buildContainer] outerGrid (row-based) created');
 			return outerGrid;
 		} catch (_e) {
-			console.log('[Frame._buildContainer] outerGrid failed:', _e);
 			return this._pageHost;
 		}
 	}
@@ -148,23 +144,17 @@ export class Frame extends FrameBase {
 		const page = backstackEntry.resolvedPage;
 		if (!this._pageHost || !page?.nativeViewProtected) return;
 
+		const isForward = navigationType !== NavigationType.back;
+		const navTransition = (this as any)._getNavigationTransition?.(backstackEntry.entry);
+		const transitionInst = navTransition?.instance;
+		const durMs = (transitionInst?.getDuration?.() ?? 0) * 1000 || 250;
+		const transName: string = transitionInst?.constructor?.name ?? '';
+
 		this._setPageContent(page.nativeViewProtected);
-		const pgrid = page.nativeViewProtected as any;
-		const pgc = pgrid?.Children?.Size;
-		console.log('[Frame._navigateCore] pageHost children:', (this._pageHost.Children as any)?.Size, 'page grid children:', pgc);
-		if (pgc > 0) {
-			const outerSP = pgrid.Children.GetAt(0);
-			const svCount = outerSP?.Children?.Size;
-			console.log('[NS-DEBUG] outerSP:', outerSP, 'children:', svCount);
-			if (svCount > 0) {
-				const sv = outerSP.Children.GetAt(0);
-				const innerSP = sv?.Content;
-				console.log('[NS-DEBUG] scrollViewer:', sv, 'Content:', innerSP, 'innerSP children:', innerSP?.Children?.Size);
-				if (innerSP?.Children?.Size > 0) {
-					const btn0 = innerSP.Children.GetAt(0);
-					console.log('[NS-DEBUG] btn[0]:', btn0, 'Content:', btn0?.Content, 'Visibility:', btn0?.Visibility, 'Opacity:', btn0?.Opacity, 'ActualWidth:', btn0?.ActualWidth, 'ActualHeight:', btn0?.ActualHeight);
-				}
-			}
+		if (transName.toLowerCase().includes('slide')) {
+			this._slideIn(page.nativeViewProtected, isForward, durMs);
+		} else if (isForward || transitionInst) {
+			this._fadeIn(page.nativeViewProtected, durMs);
 		}
 		this._updateActionBar(page as Page);
 	}
@@ -172,13 +162,58 @@ export class Frame extends FrameBase {
 	private _setPageContent(nativePageView: any): void {
 		const children = this._pageHost.Children as any;
 		if (!children) return;
-		// Remove all existing page children
 		const count = children.Size ?? 0;
 		for (let i = count - 1; i >= 0; i--) {
 			try { children.RemoveAt(i); } catch (_e) {}
 		}
-		// Add the new page
 		children.Append(nativePageView);
+	}
+
+	private _easeOutCubic(t: number): number {
+		return 1 - Math.pow(1 - t, 3);
+	}
+
+	private _animate(durationMs: number, onFrame: (ease: number) => void): void {
+		const start = Date.now();
+		const step = () => {
+			const t = Math.min(1, (Date.now() - start) / Math.max(1, durationMs));
+			onFrame(this._easeOutCubic(t));
+			if (t < 1) {
+				if (typeof requestAnimationFrame === 'function') {
+					requestAnimationFrame(step as any);
+				} else {
+					setTimeout(step, 16);
+				}
+			}
+		};
+		if (typeof requestAnimationFrame === 'function') {
+			requestAnimationFrame(step as any);
+		} else {
+			setTimeout(step, 16);
+		}
+	}
+
+	private _fadeIn(native: any, durationMs: number): void {
+		try { native.Opacity = 0; } catch (_e) { return; }
+		this._animate(durationMs, (ease) => {
+			try { native.Opacity = ease; } catch (_e) {}
+		});
+	}
+
+	private _slideIn(native: any, fromRight: boolean, durationMs: number): void {
+		let tt: any = null;
+		try {
+			tt = new Windows.UI.Xaml.Media.TranslateTransform();
+			tt.X = fromRight ? 320 : -320;
+			native.RenderTransform = tt;
+		} catch (_e) { this._fadeIn(native, durationMs); return; }
+		const startX = tt.X;
+		this._animate(durationMs, (ease) => {
+			try {
+				tt.X = startX * (1 - ease);
+				if (ease >= 1) native.RenderTransform = null;
+			} catch (_e) {}
+		});
 	}
 
 	public _goBackCore(backstackEntry: BackstackEntry) {
@@ -189,7 +224,17 @@ export class Frame extends FrameBase {
 		const page = backstackEntry.resolvedPage;
 		if (!this._pageHost || !page?.nativeViewProtected) return;
 
+		const navTransition = (this as any)._getNavigationTransition?.(backstackEntry.entry);
+		const transitionInst = navTransition?.instance;
+		const durMs = (transitionInst?.getDuration?.() ?? 0) * 1000 || 250;
+		const transName: string = transitionInst?.constructor?.name ?? '';
+
 		this._setPageContent(page.nativeViewProtected);
+		if (transName.toLowerCase().includes('slide')) {
+			this._slideIn(page.nativeViewProtected, false, durMs);
+		} else {
+			this._fadeIn(page.nativeViewProtected, durMs);
+		}
 		this._updateActionBar(page as Page);
 	}
 

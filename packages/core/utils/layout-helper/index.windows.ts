@@ -53,8 +53,27 @@ export namespace layout {
 		return layoutCommon.round(value);
 	}
 
-	export function measureNativeView(_nativeView: any, width: number, _widthMode: number, height: number, _heightMode: number): { width: number; height: number } {
-		return { width, height };
+	export function measureNativeView(nativeView: any, width: number, widthMode: number, height: number, heightMode: number): { width: number; height: number } {
+
+		if (nativeView && nativeView.Measure) {
+			const size = new Windows.Foundation.Size(
+				widthMode === 0 /* layout.UNSPECIFIED */ ? Number.NaN : toDeviceIndependentPixels(width),
+				heightMode === 0 /* layout.UNSPECIFIED */ ? Number.NaN : toDeviceIndependentPixels(height),
+			);
+
+			(nativeView as Windows.UI.Xaml.FrameworkElement).Measure(size);
+
+
+			const ret = (nativeView as Windows.UI.Xaml.FrameworkElement).DesiredSize;
+
+			return {
+				width: round(toDevicePixels(ret.Width)),
+				height: round(toDevicePixels(ret.Height)),
+			};
+
+		}
+
+		return { width: 0, height: 0 };
 	}
 
 	export function measureSpecToString(measureSpec: number) {

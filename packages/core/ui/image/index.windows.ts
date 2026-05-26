@@ -86,7 +86,6 @@ export class Image extends ImageBase {
 	}
 
 	[srcProperty.setNative](value: string | ImageSource | ImageAsset) {
-		console.log(`Image[src] set to: ${value}`);
 		this._createImageSourceFromSrc(value);
 	}
 
@@ -98,7 +97,6 @@ export class Image extends ImageBase {
 	}
 
 	public _setNativeImage(nativeImage: any) {
-		try { console.log(`[Image.Windows] _setNativeImage called for view=${(this && (this as any).constructor && (this as any).constructor.name) || '(Image)'} nativeImageType=${nativeImage ? typeof nativeImage : 'null'}`); } catch (_e) {}
 		if (!this.nativeViewProtected) {
 			if (Trace.isEnabled()) {
 				Trace.write('Image._setNativeImage: nativeViewProtected missing', Trace.categories.Error);

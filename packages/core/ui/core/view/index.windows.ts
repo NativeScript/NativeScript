@@ -39,6 +39,51 @@ function _argbToWinColor(argb: number): Windows.UI.Color {
 }
 
 
+function _resolveToWinColor(color: any): Windows.UI.Color | null {
+	if (!color) return null;
+	
+	if (typeof color.windows !== 'undefined') {
+		try { return color.windows; } catch (_e) {}
+	}
+	
+	if (typeof color.A === 'number' && typeof color.R === 'number') {
+		return color as Windows.UI.Color;
+	}
+	
+	if (typeof color === 'number') {
+		return _argbToWinColor(color >>> 0);
+	}
+	
+	if (typeof color === 'string') {
+		try {
+			return new Color(color).windows;
+		} catch (_e) {}
+	}
+	return null;
+}
+
+
+export function _ensureNativeTransforms(native: any): { scale: any; rotate: any; translate: any } | null {
+	try {
+		if (native.__ns_transforms) return native.__ns_transforms;
+
+		const tg = new Windows.UI.Xaml.Media.TransformGroup();
+		const scale = new Windows.UI.Xaml.Media.ScaleTransform();
+		const rotate = new Windows.UI.Xaml.Media.RotateTransform();
+		const translate = new Windows.UI.Xaml.Media.TranslateTransform();
+		tg.Children.Append(scale);
+		tg.Children.Append(rotate);
+		tg.Children.Append(translate);
+		native.RenderTransform = tg;
+
+		const result = { scale, rotate, translate };
+		native.__ns_transforms = result;
+		return result;
+	} catch (_e) {
+		return null;
+	}
+}
+
 const hidden = Symbol('[[hidden]]');
 function setVisibility(nativeView: Windows.UI.Xaml.UIElement & { [hidden]?: boolean }, value: CoreTypes.VisibilityType) {
 	switch (value) {
@@ -56,6 +101,7 @@ function setVisibility(nativeView: Windows.UI.Xaml.UIElement & { [hidden]?: bool
 			nativeView[hidden] = false;
 			nativeView.Opacity = 1;
 			nativeView.Visibility = Windows.UI.Xaml.Visibility.Visible;
+			break;
 		default:
 	}
 }
@@ -186,55 +232,63 @@ export class View extends ViewCommon {
 
 		const background = value as Background;
 
-
 		if (!(background && typeof background === 'object')) {
 			return;
 		}
+
+		try { console.log('[BG]', (this as any).typeName ?? (this as any).constructor?.name, 'color=', background.color?.hex, 'hasImage=', !!background.image); } catch (_) {}
 
 		// Gradient handling
 		if (background.image && typeof background.image === 'object' && 'colorStops' in background.image) {
 			try {
 				const lg: LinearGradient = background.image as any;
-				const stops = new Windows.UI.Xaml.Media.GradientStopCollection();
 				const cs = lg.colorStops || [];
+				// Create brush first so we can use its built-in GradientStops collection
+				// (GradientStopCollection is not directly constructable in WinRT JS projection)
+				const brush = new Windows.UI.Xaml.Media.LinearGradientBrush();
+				const stopsCol = brush.GradientStops;
 				for (let i = 0; i < cs.length; i++) {
 					const entry = cs[i];
 					const stop = new Windows.UI.Xaml.Media.GradientStop();
-					try { stop.Color = entry.color && (entry.color as any).windows ? (entry.color as any).windows : Windows.UI.Colors.Transparent; } catch (_e) { stop.Color = Windows.UI.Colors.Transparent; }
+					const resolvedColor = _resolveToWinColor(entry.color);
+					stop.Color = resolvedColor ?? Windows.UI.Colors.Transparent;
 					if (entry.offset && typeof (entry.offset as any).value === 'number') {
 						stop.Offset = (entry.offset as any).value;
 					} else {
 						stop.Offset = cs.length > 1 ? i / (cs.length - 1) : 0;
 					}
-					stops.Append(stop);
+					stopsCol.Append(stop);
 				}
-
-				const brush = new Windows.UI.Xaml.Media.LinearGradientBrush();
-				brush.GradientStops = stops;
+				// angle: 0 = top-to-bottom, 90deg = left-to-right (NS convention matches CSS)
 				const angleRad = typeof lg.angle === 'number' ? lg.angle : 0;
-				const rad = angleRad - Math.PI / 2;
-				const x = Math.cos(rad);
-				const y = Math.sin(rad);
-				const startX = 0.5 - x / 2;
-				const startY = 0.5 - y / 2;
-				const endX = 0.5 + x / 2;
-				const endY = 0.5 + y / 2;
-				brush.StartPoint = Windows.UI.Xaml.PointHelper.FromCoordinates(startX, startY);
-				brush.EndPoint = Windows.UI.Xaml.PointHelper.FromCoordinates(endX, endY);
+				const dx = Math.sin(angleRad);
+				const dy = -Math.cos(angleRad);
+				brush.StartPoint = Windows.UI.Xaml.PointHelper.FromCoordinates(0.5 - dx / 2, 0.5 - dy / 2);
+				brush.EndPoint = Windows.UI.Xaml.PointHelper.FromCoordinates(0.5 + dx / 2, 0.5 + dy / 2);
+				brush.MappingMode = Windows.UI.Xaml.Media.BrushMappingMode.RelativeToBoundingBox;
 				native.Background = brush;
-			} catch (_e) { /* fallback below */ }
+			} catch (_e) { /* fallback to solid color below */ }
 		} else if (background && background.color) {
-			const c = background.color as any;
-			if (c && c.windows) {
-				native.Background = new Windows.UI.Xaml.Media.SolidColorBrush(c.windows);
-				try { console.log('[View.Windows] applied SolidColorBrush from Color.windows', { a: c.windows.A, r: c.windows.R, g: c.windows.G, b: c.windows.B }); } catch (_e) { }
+			const winColor = _resolveToWinColor(background.color);
+			if (winColor) {
+				try {
+					const brush = new Windows.UI.Xaml.Media.SolidColorBrush(winColor);
+					native.Background = brush;
+					// For Button-like controls the default XAML template may ignore Background
+					// via its Normal-state VSM animation. Override the ButtonBackground resource
+					// so the template binding picks up our colour.
+					try { (native as any).Resources.Insert('ButtonBackground', brush); } catch (_re) {}
+					try { (native as any).Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_re) {}
+					try { (native as any).Resources.Insert('ButtonBackgroundPressed', brush); } catch (_re) {}
+				} catch (bgErr) {
+					console.error('[Windows] Background SolidColorBrush failed:', bgErr);
+				}
 			} else {
-				native.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent);
-				try { console.log('[View.Windows] applied Transparent SolidColorBrush (no Color.windows)'); } catch (_e) { }
+				console.warn('[Windows] _resolveToWinColor returned null for:', background.color);
+				native.Background = null;
 			}
 		} else {
 			native.Background = null;
-			try { console.log('[View.Windows] cleared native.Background'); } catch (_e) { }
 		}
 
 
@@ -333,8 +387,6 @@ export class View extends ViewCommon {
 
 		this._nativeBackgroundState = 'drawn';
 
-		/*
-
 		try {
 			// Clear existing composition visual (if any)
 			if (native._ns_box_shadow_visual) {
@@ -344,8 +396,6 @@ export class View extends ViewCommon {
 				native._ns_box_shadow_visual = null;
 			}
 
-			// If we received a Background-like object with boxShadows, apply the first shadow via Composition
-			const background = value as any;
 			if (background && typeof background.hasBoxShadows === 'function' && background.hasBoxShadows()) {
 				const boxShadows = typeof background.getBoxShadows === 'function' ? background.getBoxShadows() : background.boxShadows;
 				if (boxShadows && boxShadows.length) {
@@ -354,7 +404,6 @@ export class View extends ViewCommon {
 						const compositor = visual.Compositor;
 						const sprite = compositor.CreateSpriteVisual();
 						const drop = compositor.CreateDropShadow();
-						// Use first shadow as primary
 						const s = boxShadows[0];
 						if (s && s.color && s.color.windows) {
 							drop.Color = s.color.windows;
@@ -362,27 +411,17 @@ export class View extends ViewCommon {
 						if (typeof s.blurRadius === 'number') {
 							drop.BlurRadius = s.blurRadius;
 						}
-						// Offset is a Vector3
 						try {
 							drop.Offset = new Windows.Foundation.Numerics.Vector3(s.offsetX || 0, s.offsetY || 0, 0);
-						} catch (_e) {
-							// fallback: ignore if Vector3 constructor not available
-						}
+						} catch (_e) {}
 						sprite.Shadow = drop;
-						// Match size to element visual
 						sprite.Size = visual.Size;
 						Windows.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(native, sprite);
 						native._ns_box_shadow_visual = sprite;
-					} catch (_e) {
-						// best-effort: composition APIs may not be available on all hosts
-					}
+					} catch (_e) {}
 				}
 			}
-		} catch (_e) {
-			// swallow to avoid breaking the app if composition APIs fail
-		}
-
-		*/
+		} catch (_e) {}
 
 	}
 
@@ -442,8 +481,6 @@ export class View extends ViewCommon {
 		// Recompute any percent-based sizing when layout updates.
 		try { this._applyPercentSizing(); } catch (_e) { }
 
-		console.log('ActualWidth', this.parent.nativeView?.ActualWidth)
-		console.log(`_onSizeChanged: new size: ${nativeView.ActualWidth}x${nativeView.ActualHeight}`);
 
 		const background = this.style.backgroundInternal;
 		const backgroundDependsOnSize = (background && background.image && background.image !== 'none') || (background && background.clipPath) || (background && !background.hasUniformBorder()) || (background && background.hasBorderRadius && background.hasBorderRadius()) || (background && background.hasBoxShadows && background.hasBoxShadows());
@@ -541,7 +578,6 @@ export class View extends ViewCommon {
 		}
 
 		this._percentWidth = null;
-		try { console.log(`[View.Windows] width.setNative value=${JSON.stringify(value)}`); } catch (_e) { }
 		this.nativeViewProtected.Width = toXamlLength(value);
 	}
 
@@ -728,55 +764,19 @@ export class View extends ViewCommon {
 		const native = this.nativeViewProtected as any;
 		if (!native) return;
 		try {
-			// Ensure we have a TransformGroup with Scale, Rotate, Translate
-			let tg = native.RenderTransform;
-			if (!tg || !(tg instanceof Windows.UI.Xaml.Media.TransformGroup)) {
-				tg = new Windows.UI.Xaml.Media.TransformGroup();
-				// create in order: Scale, Rotate, Translate
-				const st = new Windows.UI.Xaml.Media.ScaleTransform();
-				const rt = new Windows.UI.Xaml.Media.RotateTransform();
-				const tt = new Windows.UI.Xaml.Media.TranslateTransform();
-				tg.Children.Append(st);
-				tg.Children.Append(rt);
-				tg.Children.Append(tt);
-				native.RenderTransform = tg;
-			}
-
-			const children = tg.Children;
-			let scaleTransform: any = null;
-			let rotateTransform: any = null;
-			let translateTransform: any = null;
-			const count = children?.Size || 0;
-			for (let i = 0; i < count; i++) {
-				const c = children.GetAt(i);
-				if (c instanceof Windows.UI.Xaml.Media.ScaleTransform) scaleTransform = c;
-				else if (c instanceof Windows.UI.Xaml.Media.RotateTransform) rotateTransform = c;
-				else if (c instanceof Windows.UI.Xaml.Media.TranslateTransform) translateTransform = c;
-			}
-			if (!scaleTransform) {
-				scaleTransform = new Windows.UI.Xaml.Media.ScaleTransform();
-				children.Append(scaleTransform);
-			}
-			if (!rotateTransform) {
-				rotateTransform = new Windows.UI.Xaml.Media.RotateTransform();
-				children.Append(rotateTransform);
-			}
-			if (!translateTransform) {
-				translateTransform = new Windows.UI.Xaml.Media.TranslateTransform();
-				children.Append(translateTransform);
-			}
+			const transforms = _ensureNativeTransforms(native);
+			if (!transforms) return;
 
 			const sx = typeof (this as any).scaleX === 'number' ? (this as any).scaleX : typeof (this as any).scale === 'number' ? (this as any).scale : 1;
 			const sy = typeof (this as any).scaleY === 'number' ? (this as any).scaleY : typeof (this as any).scale === 'number' ? (this as any).scale : 1;
-			scaleTransform.ScaleX = sx;
-			scaleTransform.ScaleY = sy;
+			transforms.scale.ScaleX = sx;
+			transforms.scale.ScaleY = sy;
 
-			rotateTransform.Angle = (this as any).rotate || 0;
+			transforms.rotate.Angle = (this as any).rotate || 0;
 
-			translateTransform.X = layout.toDeviceIndependentPixels((this as any).translateX || 0);
-			translateTransform.Y = layout.toDeviceIndependentPixels((this as any).translateY || 0);
+			transforms.translate.X = layout.toDeviceIndependentPixels((this as any).translateX || 0);
+			transforms.translate.Y = layout.toDeviceIndependentPixels((this as any).translateY || 0);
 
-			// Update origin
 			try {
 				const ox = this.originX ?? 0.5;
 				const oy = this.originY ?? 0.5;
@@ -911,9 +911,9 @@ export class View extends ViewCommon {
 						this._closeModalCallback();
 					}
 				};
-				if (typeof popup.addEventListener === 'function') {
-					popup.addEventListener('Closed', this._modalPopupClosedHandler);
-				}
+				//@ts-ignore
+				popup.AddHandler(Windows.UI.Xaml.Controls.Primitives.Popup.ClosedEvent, this._modalPopupClosedHandler, true);
+				
 			} catch (_e) { }
 
 			popup.IsOpen = true;
@@ -1055,30 +1055,14 @@ export class CustomLayoutView extends ContainerView {
 
 				try { if (!(nativeChild as any).__ns_view) (nativeChild as any).__ns_view = child; } catch (_e) { }
 
-				try { console.log('Added to tree (immediate parent prop)', nativeChild.Parent); } catch (_e) { }
-				try { console.log('Added to tree (visual parent)', Windows.UI.Xaml.Media.VisualTreeHelper.GetParent(nativeChild)); } catch (_e) { }
-
-				try { console.log('nativeParent markers __ns_createdBy, __ns_view, nativeParent:', (nativeParent as any).__ns_createdBy, (nativeParent as any).__ns_view, nativeParent); } catch (_e) { }
-
-
 				// Force layout on the appended child in case the runtime deferred measure/arrange
-				try { if (typeof (nativeChild as any).InvalidateMeasure === 'function') { (nativeChild as any).InvalidateMeasure(); try { console.log('Invalidated measure on nativeChild'); } catch (_e) { } } } catch (_e) { }
-				try { if (typeof (nativeChild as any).InvalidateArrange === 'function') { (nativeChild as any).InvalidateArrange(); try { console.log('Invalidated arrange on nativeChild'); } catch (_e) { } } } catch (_e) { }
-				try { if (typeof (nativeChild as any).UpdateLayout === 'function') { (nativeChild as any).UpdateLayout(); try { console.log('Called UpdateLayout on nativeChild'); } catch (_e) { } } } catch (_e) { }
+				try { if (typeof (nativeChild as any).InvalidateMeasure === 'function') (nativeChild as any).InvalidateMeasure(); } catch (_e) { }
+				try { if (typeof (nativeChild as any).InvalidateArrange === 'function') (nativeChild as any).InvalidateArrange(); } catch (_e) { }
+				try { if (typeof (nativeChild as any).UpdateLayout === 'function') (nativeChild as any).UpdateLayout(); } catch (_e) { }
 
 				try { if (typeof nativeParent.UpdateLayout === 'function') nativeParent.UpdateLayout(); } catch (_e) { }
 				try { if (typeof (nativeParent as any).InvalidateMeasure === 'function') (nativeParent as any).InvalidateMeasure(); } catch (_e) { }
 				try { if (typeof (nativeParent as any).InvalidateArrange === 'function') (nativeParent as any).InvalidateArrange(); } catch (_e) { }
-
-					try {
-						setTimeout(() => {
-							try { console.log('After layout tick parent prop', nativeChild.Parent); } catch (_e) { }
-							try {
-								const vp = Windows.UI.Xaml.Media.VisualTreeHelper.GetParent(nativeChild);
-								try { console.log('After layout tick visual parent', vp, 'visualParent.__ns_createdBy=', (vp as any)? (vp as any).__ns_createdBy : undefined, 'visualParent.__ns_view=', (vp as any)? (vp as any).__ns_view : undefined); } catch (_e) { }
-							} catch (_e) { }
-						}, 0);
-					} catch (_e) { }
 
 				return true;
 			}

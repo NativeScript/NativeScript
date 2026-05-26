@@ -2,6 +2,7 @@ import type { HttpRequestOptions, HttpResponse, Headers } from '../http-interfac
 import { HttpResponseEncoding } from '../http-interfaces';
 import { BaseHttpContent } from '.';
 import { addHeader } from './http-request-internal-common';
+import { isMainThread, dispatchToMainThread } from '../../utils/mainthread-helper';
 export { addHeader } from './http-request-internal-common';
 
 export function requestInternal<T extends object>(options: HttpRequestOptions, contentHandler?: T): Promise<HttpResponse<BaseHttpContent & T>> {
@@ -79,14 +80,30 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 								raw: rawBuffer,
 								requestURL: options.url,
 								toNativeImage: (): Promise<any> => {
-									const writer = new Windows.Storage.Streams.DataWriter();
-									writer.WriteBytes(bytes as never);
-									const buf = writer.DetachBuffer();
-									const stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
-									return NSWinRT.toPromise((stream as any).WriteAsync(buf)).then(() => {
-										(stream as any).Seek(0);
-										const bmp = new (Windows as any).UI.Xaml.Media.Imaging.BitmapImage();
-										return NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(() => bmp);
+									return new Promise((resolve, reject) => {
+										try {
+											const writer = new Windows.Storage.Streams.DataWriter();
+											writer.WriteBytes(bytes as never);
+											const freshBuffer = writer.DetachBuffer();
+											const stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+											NSWinRT.toPromise((stream as any).WriteAsync(freshBuffer)).then(() => {
+												const createBitmap = () => {
+													try {
+														(stream as any).Seek(0);
+														const bmp = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+														NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(
+															() => { stream.Close(); resolve(bmp); },
+															reject
+														);
+													} catch (e) { reject(e); }
+												};
+												if (isMainThread()) {
+													createBitmap();
+												} else {
+													dispatchToMainThread(createBitmap);
+												}
+											}, reject);
+										} catch (e) { reject(e); }
 									});
 								},
 								toNativeString: (encoding?: HttpResponseEncoding) => {
