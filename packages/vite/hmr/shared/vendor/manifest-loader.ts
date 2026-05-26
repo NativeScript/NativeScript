@@ -5,14 +5,15 @@ import { registerVendorManifest } from './registry.js';
 
 /**
  * Attempt to load a previously generated vendor manifest from the NativeScript
- * pre-bundled output directory (.ns-vite-build/ns-vendor-manifest.json).
+ * pre-bundled output directory (NS_VITE_DIST_DIR/ns-vendor-manifest.json,
+ * defaulting to .ns-vite-build/ns-vendor-manifest.json).
  * This allows the dev HMR WebSocket plugin to bootstrap vendor awareness even
  * before a fresh dev-server generation path runs (helpful when the app was
  * launched from a prebuilt bundle and HMR attaches later).
  */
 export function loadPrebuiltVendorManifest(projectRoot: string, verbose = false): VendorManifest | null {
 	try {
-		const buildDir = path.join(projectRoot, '.ns-vite-build');
+		const buildDir = path.join(projectRoot, process.env.NS_VITE_DIST_DIR || '.ns-vite-build');
 		const manifestPath = path.join(buildDir, 'ns-vendor-manifest.json');
 		if (!existsSync(manifestPath)) {
 			if (verbose) {

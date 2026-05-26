@@ -67,6 +67,7 @@ try {
 } catch {}
 
 const distOutputFolder = process.env.NS_VITE_DIST_DIR || '.ns-vite-build';
+const hmrPort = process.env.NS_HMR_PORT ? Number(process.env.NS_HMR_PORT) : 5173;
 // HMR dev server options with socket
 const useHttps = process.env.NS_HTTPS === '1' || process.env.NS_HTTPS === 'true';
 
@@ -356,7 +357,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 							// emulator). Same helper used by `main-entry.ts` so
 							// both code paths produce byte-identical URL strings
 							// — required by the iOS HTTP ESM cache identity rule.
-							const port = process.env.NS_HMR_PORT ? Number(process.env.NS_HMR_PORT) : 5173;
+							const port = hmrPort;
 							const proto: 'http' | 'https' = (process.env.NS_HMR_PROTO as string) === 'https' ? 'https' : 'http';
 							const { origin } = resolveDeviceReachableOrigin({
 								host: process.env.NS_HMR_HOST,
@@ -491,8 +492,8 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			? {
 					// Expose dev server to local network so simulator or device can connect
 					host: process.env.NS_HMR_HOST || (platform === 'android' ? '0.0.0.0' : 'localhost'),
-					// Use a stable port so the device URL remains correct
-					port: 5173,
+					// Use the configured stable port so multiple platform sessions can coexist.
+					port: hmrPort,
 					strictPort: true,
 					https: useHttps
 						? {
