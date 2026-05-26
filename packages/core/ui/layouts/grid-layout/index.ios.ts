@@ -410,54 +410,61 @@ class MeasureHelper {
 	}
 
 	public addMeasureSpec(measureSpec: MeasureSpecs): void {
-		// Get column stats
-		let size = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
-		for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-			const columnGroup: ItemGroup = this.columns[i];
-			if (columnGroup.getIsAuto()) {
-				measureSpec.autoColumnsCount++;
-			} else if (columnGroup.getIsStar()) {
-				measureSpec.starColumnsCount += columnGroup.rowOrColumn.value;
-			} else if (columnGroup.getIsAbsolute()) {
-				measureSpec.pixelWidth += layout.toDevicePixels(columnGroup.rowOrColumn.value);
+		const columnIndex = measureSpec.getColumnIndex();
+		const rowIndex = measureSpec.getRowIndex();
+		const columnSpan = measureSpec.getColumnSpan();
+		const rowSpan = measureSpec.getRowSpan();
+
+		const updateMeasureSpecCounts = (group: ItemGroup, measureSpec: MeasureSpecs, isColumn: boolean) => {
+			if (group.getIsAuto()) {
+				isColumn ? measureSpec.autoColumnsCount++ : measureSpec.autoRowsCount++;
+			} else if (group.getIsStar()) {
+				if (isColumn) {
+					measureSpec.starColumnsCount += group.rowOrColumn.value;
+				} else {
+					measureSpec.starRowsCount += group.rowOrColumn.value;
+				}
+			} else if (group.getIsAbsolute()) {
+				if (isColumn) {
+					measureSpec.pixelWidth += layout.toDevicePixels(group.rowOrColumn.value);
+				} else {
+					measureSpec.pixelHeight += layout.toDevicePixels(group.rowOrColumn.value);
+				}
 			}
+		};
+
+		const updateAutoGroups = (index: number, size: number, groups: ItemGroup[], measureSpec: MeasureSpecs, isColumn: boolean) => {
+			for (let i = index; i < size; i++) {
+				const group: ItemGroup = groups[i];
+				if (group.getIsAuto()) {
+					group.measureToFix++;
+				}
+			}
+		};
+
+		// Process columns
+		let size = columnIndex + columnSpan;
+		for (let i = columnIndex; i < size; i++) {
+			updateMeasureSpecCounts(this.columns[i], measureSpec, true);
 		}
 
 		if (measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0) {
-			// Determine which auto columns are affected by this element
-			for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-				const columnGroup: ItemGroup = this.columns[i];
-				if (columnGroup.getIsAuto()) {
-					columnGroup.measureToFix++;
-				}
-			}
+			updateAutoGroups(columnIndex, size, this.columns, measureSpec, true);
 		}
 
-		// Get row stats
-		size = measureSpec.getRowIndex() + measureSpec.getRowSpan();
-		for (let i = measureSpec.getRowIndex(); i < size; i++) {
-			const rowGroup: ItemGroup = this.rows[i];
-			if (rowGroup.getIsAuto()) {
-				measureSpec.autoRowsCount++;
-			} else if (rowGroup.getIsStar()) {
-				measureSpec.starRowsCount += rowGroup.rowOrColumn.value;
-			} else if (rowGroup.getIsAbsolute()) {
-				measureSpec.pixelHeight += layout.toDevicePixels(rowGroup.rowOrColumn.value);
-			}
+		// Process rows
+		size = rowIndex + rowSpan;
+		for (let i = rowIndex; i < size; i++) {
+			updateMeasureSpecCounts(this.rows[i], measureSpec, false);
 		}
 
 		if (measureSpec.autoRowsCount > 0 && measureSpec.starRowsCount === 0) {
-			// Determine which auto rows are affected by this element
-			for (let i = measureSpec.getRowIndex(); i < size; i++) {
-				const rowGroup: ItemGroup = this.rows[i];
-				if (rowGroup.getIsAuto()) {
-					rowGroup.measureToFix++;
-				}
-			}
+			updateAutoGroups(rowIndex, size, this.rows, measureSpec, false);
 		}
 
-		this.columns[measureSpec.getColumnIndex()].children.push(measureSpec);
-		this.rows[measureSpec.getRowIndex()].children.push(measureSpec);
+		// Add measureSpec to children
+		this.columns[columnIndex].children.push(measureSpec);
+		this.rows[rowIndex].children.push(measureSpec);
 	}
 
 	public clearMeasureSpecs(): void {
@@ -479,25 +486,25 @@ class MeasureHelper {
 	}
 
 	init(): void {
-		const rows = this.rows.length;
-		if (rows === 0) {
-			this.singleRowGroup.setIsLengthInfinity(this.infinityHeight);
-			this.rows.push(this.singleRowGroup);
-			this.fakeRowAdded = true;
-		} else if (rows > 1 && this.fakeRowAdded) {
-			this.rows.splice(0, 1);
-			this.fakeRowAdded = false;
-		}
+		const handleSingleGroup = (groups: ItemGroup[], singleGroup: ItemGroup, infinityLength: boolean, fakeGroupAdded: boolean, setFakeGroupAdded: (value: boolean) => void): void => {
+			const length = groups.length;
+			if (length === 0) {
+				singleGroup.setIsLengthInfinity(infinityLength);
+				groups.push(singleGroup);
+				setFakeGroupAdded(true);
+			} else if (length > 1 && fakeGroupAdded) {
+				groups.splice(0, 1);
+				setFakeGroupAdded(false);
+			}
+		};
 
-		const cols = this.columns.length;
-		if (cols === 0) {
-			this.fakeColumnAdded = true;
-			this.singleColumnGroup.setIsLengthInfinity(this.infinityWidth);
-			this.columns.push(this.singleColumnGroup);
-		} else if (cols > 1 && this.fakeColumnAdded) {
-			this.columns.splice(0, 1);
-			this.fakeColumnAdded = false;
-		}
+		handleSingleGroup(this.rows, this.singleRowGroup, this.infinityHeight, this.fakeRowAdded, (value) => {
+			this.fakeRowAdded = value;
+		});
+
+		handleSingleGroup(this.columns, this.singleColumnGroup, this.infinityWidth, this.fakeColumnAdded, (value) => {
+			this.fakeColumnAdded = value;
+		});
 
 		MeasureHelper.initList(this.rows);
 		MeasureHelper.initList(this.columns);
@@ -515,25 +522,21 @@ class MeasureHelper {
 			measureSpec.measured = true;
 		}
 
-		if (measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0) {
-			const size = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
-			for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-				const columnGroup: ItemGroup = this.columns[i];
-				if (columnGroup.getIsAuto()) {
-					columnGroup.currentMeasureToFixCount++;
+		const updateCurrentMeasureToFixCount = (index: number, span: number, groups: ItemGroup[], autoCount: number, starCount: number) => {
+			if (autoCount > 0 && starCount === 0) {
+				const size = index + span;
+				for (let i = index; i < size; i++) {
+					const group = groups[i];
+					if (group.getIsAuto()) {
+						group.currentMeasureToFixCount++;
+					}
 				}
 			}
-		}
+		};
 
-		if (measureSpec.autoRowsCount > 0 && measureSpec.starRowsCount === 0) {
-			const size = measureSpec.getRowIndex() + measureSpec.getRowSpan();
-			for (let i = measureSpec.getRowIndex(); i < size; i++) {
-				const rowGroup: ItemGroup = this.rows[i];
-				if (rowGroup.getIsAuto()) {
-					rowGroup.currentMeasureToFixCount++;
-				}
-			}
-		}
+		updateCurrentMeasureToFixCount(measureSpec.getColumnIndex(), measureSpec.getColumnSpan(), this.columns, measureSpec.autoColumnsCount, measureSpec.starColumnsCount);
+
+		updateCurrentMeasureToFixCount(measureSpec.getRowIndex(), measureSpec.getRowSpan(), this.rows, measureSpec.autoRowsCount, measureSpec.starRowsCount);
 	}
 
 	private fixColumns(): void {
