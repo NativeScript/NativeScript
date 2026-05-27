@@ -991,10 +991,10 @@ export class View extends ViewCommon {
 
 	public override _setDefaultPaddings(insets: android.graphics.Rect): void {
 		if (insets) {
-			this._defaultPaddingTop = layout.toDevicePixels(insets.top);
-			this._defaultPaddingRight = layout.toDevicePixels(insets.right);
-			this._defaultPaddingBottom = layout.toDevicePixels(insets.bottom);
-			this._defaultPaddingLeft = layout.toDevicePixels(insets.left);
+			this._defaultPaddingTop = insets.top;
+			this._defaultPaddingRight = insets.right;
+			this._defaultPaddingBottom = insets.bottom;
+			this._defaultPaddingLeft = insets.left;
 		} else {
 			this._defaultPaddingTop = 0;
 			this._defaultPaddingRight = 0;
