@@ -9,6 +9,8 @@
 	"sideEffects": [
 		"bundle-entry-points.js",
 		"./globals/index.js",
+		"./inspector_modules.js",
+		"./debugger/webinspector-*.js",
 		"./globals"
 	],
 	"files": [
