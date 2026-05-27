@@ -1,3 +1,13 @@
+## 9.0.20 (2026-05-27)
+
+### 🩹 Fixes
+
+- **android:** Removed invalid default padding conversion ([90f834138](https://github.com/NativeScript/NativeScript/commit/90f834138))
+
+### ❤️ Thank You
+
+- Dimitris - Rafail Katsampas @CatchABus
+
 ## 9.0.19 (2026-05-27)
 
 ### 🚀 Features
