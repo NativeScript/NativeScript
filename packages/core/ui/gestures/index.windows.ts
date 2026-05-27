@@ -32,19 +32,16 @@ function _attachHoverHandlers(view: View): void {
 
 	let usingAddHandler = false;
 	try {
-		const UE = Windows.UI.Xaml.UIElement;
-		native.AddHandler(UE.PointerEnteredEvent, enterDelegate, true);
-		native.AddHandler(UE.PointerExitedEvent, leaveDelegate, true);
+		const pee = native.PointerEnteredEvent;
+		const pxe = native.PointerExitedEvent;
+		if (!pee || !pxe) throw new Error('RoutedEvent properties unavailable');
+		native.AddHandler(pee, enterDelegate, true);
+		native.AddHandler(pxe, leaveDelegate, true);
 		usingAddHandler = true;
 	} catch (_e) {
 		try {
-			if (typeof native.addEventListener === 'function') {
-				native.addEventListener('pointerentered', onEnter);
-				native.addEventListener('pointerexited', onLeave);
-			} else {
-				_assignPointerHandler(native, 'PointerEntered', enterDelegate);
-				_assignPointerHandler(native, 'PointerExited', leaveDelegate);
-			}
+			_assignPointerHandler(native, 'PointerEntered', enterDelegate);
+			_assignPointerHandler(native, 'PointerExited', leaveDelegate);
 		} catch (_e2) { }
 	}
 
@@ -62,13 +59,9 @@ function _detachHoverHandlers(view: View): void {
 
 	if (native.__ns_hover_using_add_handler) {
 		try {
-			const UE = Windows.UI.Xaml.UIElement;
-			if (native.__ns_hover_enter_delegate) native.RemoveHandler(UE.PointerEnteredEvent, native.__ns_hover_enter_delegate);
-			if (native.__ns_hover_leave_delegate) native.RemoveHandler(UE.PointerExitedEvent, native.__ns_hover_leave_delegate);
+			if (native.__ns_hover_enter_delegate) native.RemoveHandler(native.PointerEnteredEvent, native.__ns_hover_enter_delegate);
+			if (native.__ns_hover_leave_delegate) native.RemoveHandler(native.PointerExitedEvent, native.__ns_hover_leave_delegate);
 		} catch (_e) { }
-	} else if (typeof native.removeEventListener === 'function') {
-		try { native.removeEventListener('pointerentered', native.__ns_hover_enter_fn); } catch (_e) { }
-		try { native.removeEventListener('pointerexited', native.__ns_hover_leave_fn); } catch (_e) { }
 	}
 
 	native.__ns_hover_attached = false;
@@ -232,17 +225,11 @@ export class GesturesObserver extends GesturesObserverBase {
 			if (native) {
 				if (this._usingAddHandler) {
 					try {
-						const UE = Windows.UI.Xaml.UIElement;
-						if (this._pointerPressedDelegate) native.RemoveHandler(UE.PointerPressedEvent, this._pointerPressedDelegate);
-						if (this._pointerMovedDelegate) native.RemoveHandler(UE.PointerMovedEvent, this._pointerMovedDelegate);
-						if (this._pointerReleasedDelegate) native.RemoveHandler(UE.PointerReleasedEvent, this._pointerReleasedDelegate);
-						if (this._rightTappedDelegate) native.RemoveHandler(UE.RightTappedEvent, this._rightTappedDelegate);
+						if (this._pointerPressedDelegate) native.RemoveHandler(native.PointerPressedEvent, this._pointerPressedDelegate);
+						if (this._pointerMovedDelegate) native.RemoveHandler(native.PointerMovedEvent, this._pointerMovedDelegate);
+						if (this._pointerReleasedDelegate) native.RemoveHandler(native.PointerReleasedEvent, this._pointerReleasedDelegate);
+						if (this._rightTappedDelegate) native.RemoveHandler(native.RightTappedEvent, this._rightTappedDelegate);
 					} catch (_e) { }
-				} else if (typeof native.removeEventListener === 'function') {
-					try { native.removeEventListener('pointerpressed', this._pointerPressedHandler); } catch (_e) { }
-					try { native.removeEventListener('pointermoved', this._pointerMovedHandler); } catch (_e) { }
-					try { native.removeEventListener('pointerreleased', this._pointerReleasedHandler); } catch (_e) { }
-					try { native.removeEventListener('righttapped', this._rightTappedHandler); } catch (_e) { }
 				} else {
 					try { native.PointerPressed = null as never; } catch (_e) { }
 					try { native.PointerMoved = null as never; } catch (_e) { }
@@ -293,17 +280,22 @@ export class GesturesObserver extends GesturesObserverBase {
 
 		// Use AddHandler with handledEventsToo=true so events fire even when
 		// Button (and other controls) mark pointer events as handled internally.
+		// Access RoutedEvent via instance property (not abstract class static) for V8 projection compatibility.
 		this._usingAddHandler = false;
 		try {
-			const UE = Windows.UI.Xaml.UIElement;
-			native.AddHandler(UE.PointerPressedEvent, this._pointerPressedDelegate, true);
-			native.AddHandler(UE.PointerMovedEvent, this._pointerMovedDelegate, true);
-			native.AddHandler(UE.PointerReleasedEvent, this._pointerReleasedDelegate, true);
+			const ppe = native.PointerPressedEvent;
+			const pme = native.PointerMovedEvent;
+			const pre = native.PointerReleasedEvent;
+			if (!ppe || !pme || !pre) throw new Error('RoutedEvent statics unavailable: ppe=' + ppe + ' pme=' + pme + ' pre=' + pre);
+			native.AddHandler(ppe, this._pointerPressedDelegate, true);
+			native.AddHandler(pme, this._pointerMovedDelegate, true);
+			native.AddHandler(pre, this._pointerReleasedDelegate, true);
 			this._usingAddHandler = true;
 		} catch (_e) {
-			_assignPointerHandler(native, 'PointerPressed', this._pointerPressedDelegate);
-			_assignPointerHandler(native, 'PointerMoved', this._pointerMovedDelegate);
-			_assignPointerHandler(native, 'PointerReleased', this._pointerReleasedDelegate);
+			console.warn('[Gestures] AddHandler path failed, using property assignment fallback:', _e && (_e as any).message);
+			_assignPointerHandler(native, 'PointerPressed', this._pointerPressedHandler);
+			_assignPointerHandler(native, 'PointerMoved', this._pointerMovedHandler);
+			_assignPointerHandler(native, 'PointerReleased', this._pointerReleasedHandler);
 		}
 
 		// RightTapped (mouse right-click) fires longPress for mouse/touchpad users.
@@ -312,9 +304,9 @@ export class GesturesObserver extends GesturesObserverBase {
 			this._rightTappedDelegate = _wrapRightTappedHandler(this._rightTappedHandler);
 			try {
 				if (this._usingAddHandler) {
-					native.AddHandler(Windows.UI.Xaml.UIElement.RightTappedEvent, this._rightTappedDelegate, true);
-				} else if (typeof native.addEventListener === 'function') {
-					native.addEventListener('righttapped', this._rightTappedHandler);
+					const rte = native.RightTappedEvent;
+					if (!rte) throw new Error('RightTappedEvent unavailable');
+					native.AddHandler(rte, this._rightTappedDelegate, true);
 				} else {
 					_assignRightTappedHandler(native, this._rightTappedDelegate);
 				}

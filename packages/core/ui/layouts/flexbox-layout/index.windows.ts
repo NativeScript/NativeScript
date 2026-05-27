@@ -136,10 +136,10 @@ class FlexboxLayoutImpl extends Windows.UI.Xaml.Controls.Panel {
         this.__owner = owner;
     }
     MeasureOverride(availableSize: Windows.Foundation.Size): Windows.Foundation.Size {
-        console.log('FlexboxLayoutImpl.MeasureOverride called with availableSize', availableSize);
         try {
             const children = this.Children;
             const count = (children && typeof children.Size === 'number') ? children.Size : 0;
+            console.log('[FlexboxLayout] MeasureOverride children:', count, 'available:', availableSize?.Width, 'x', availableSize?.Height);
             if (count === 0) return Windows.UI.Xaml.SizeHelper.FromDimensions(0, 0);
 
             const owner = this.getOwner();
@@ -236,14 +236,12 @@ class FlexboxLayoutImpl extends Windows.UI.Xaml.Controls.Panel {
             const totalCross = this.sumLineCross(lines);
             return isRow ? Windows.UI.Xaml.SizeHelper.FromDimensions(totalMain, totalCross) : Windows.UI.Xaml.SizeHelper.FromDimensions(totalCross, totalMain);
         } catch (err) {
-            console.error('FlexboxLayoutImpl.MeasureOverride failed', err);
-            try { console.log('FlexboxLayoutImpl.MeasureOverride failed', err); } catch (_e) { }
+            console.error('[FlexboxLayout] MeasureOverride failed', err);
             try { return super.MeasureOverride(availableSize); } catch (_e) { return availableSize; }
         }
     }
 
     ArrangeOverride(finalSize: Windows.Foundation.Size): Windows.Foundation.Size {
-        console.log('FlexboxLayoutImpl.ArrangeOverride is running. If you see this message multiple times, it may indicate a performance issue in the layout. Please report this to the developers with details about your layout structure and styles.');
         try {
             const lines = (this as any)._lines as any[] || [];
             if (!lines || lines.length === 0) return finalSize;
@@ -327,10 +325,9 @@ class FlexboxLayoutImpl extends Windows.UI.Xaml.Controls.Panel {
 
             return finalSize;
         } catch (err) {
-            try { console.log('FlexboxLayoutImpl.ArrangeOverride failed', err); } catch (_e) { }
+            console.error('[FlexboxLayout] ArrangeOverride failed', err);
             try { return super.ArrangeOverride(finalSize); } catch (_e) { return finalSize; }
         }
-
     }
 
     private computeLineOffsets(count: number, freeCross: number, stretchExtra: number, revWrap: boolean, startOut: number[], sizeOut: number[], owner: any, lines: any[]) {
@@ -440,11 +437,20 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _windows: FlexboxLayoutImpl;
     constructor() {
         super();
-        this._windows = new FlexboxLayoutImpl(new WeakRef(this));
+        this._windows = new Windows.UI.Xaml.Controls.StackPanel(); //new FlexboxLayoutImpl(new WeakRef(this));
     }
 
     public createNativeView() {
         return this._windows;
+    }
+
+    public _addViewToNativeVisualTree(child: any, atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
+        const nativeParent = this.nativeViewProtected as any;
+        const nativeChild = (child as any).nativeViewProtected as any;
+        console.log('[FlexboxLayout] _addViewToNativeVisualTree called: nativeParent=', !!nativeParent, 'nativeChild=', !!nativeChild, 'atIndex=', atIndex);
+        const result = super._addViewToNativeVisualTree(child, atIndex);
+        console.log('[FlexboxLayout] _addViewToNativeVisualTree result=', result, 'children now=', nativeParent?.Children?.Size);
+        return result;
     }
 
     [flexDirectionProperty.getDefault](): FlexDirection {

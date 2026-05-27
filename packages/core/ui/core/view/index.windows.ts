@@ -900,6 +900,7 @@ export class View extends ViewCommon {
 			popup.IsLightDismissEnabled = options && options.cancelable !== undefined ? !!options.cancelable : true;
 			this._modalPopup = popup;
 			this._modalOverlay = overlay;
+			
 
 			// Attach Closed handler to forward light-dismiss to modal close logic
 			try {

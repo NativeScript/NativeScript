@@ -1,141 +1,223 @@
 export * from './list-view-common';
 
-import { ListViewBase } from './list-view-common';
-import { View } from '../core/view';
+import { ListViewBase, itemTemplatesProperty } from './list-view-common';
+import { KeyedTemplate, View } from '../core/view';
 import { ChangedData } from '../../data/observable-array';
 
 const ITEMLOADING = ListViewBase.itemLoadingEvent;
-const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
+const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 
 export class ListView extends ListViewBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.ScrollViewer;
+	nativeViewProtected!: Windows.UI.Xaml.Controls.ListView;
 
-	private _stackPanel: Windows.UI.Xaml.Controls.StackPanel | null = null;
-	private _itemViews: View[] = [];
+	private _itemClickDelegate: any = null;
+	private _containerChangingDelegate: any = null;
+	// Views waiting to be reused, keyed by template key
+	private _pool = new Map<string, View[]>();
+	// WinUI container element → NS view
+	private _containerToView = new Map<any, View>();
+	// All NS views in the NS tree (active + pooled), for _addViewToNativeVisualTree interception
+	private _managedViews = new Set<View>();
 
-	public createNativeView() {
-		const scrollViewer = new Windows.UI.Xaml.Controls.ScrollViewer();
-		this._stackPanel = new Windows.UI.Xaml.Controls.StackPanel();
-		try { (this._stackPanel as any).HorizontalAlignment = 3; } catch (_e) {}
-		try { (scrollViewer as any).Content = this._stackPanel; } catch (_e) {}
-		try { (scrollViewer as any).HorizontalScrollBarVisibility = 0; } catch (_e) {} // Disabled
-		try { (scrollViewer as any).VerticalScrollBarVisibility = 1; } catch (_e) {}   // Auto
-		return scrollViewer;
+	public createNativeView(): Windows.UI.Xaml.Controls.ListView {
+		const lv = new Windows.UI.Xaml.Controls.ListView();
+		lv.IsItemClickEnabled = true;
+		lv.SelectionMode = 0; // None
+		lv.HorizontalAlignment = 3; // Stretch
+		lv.HorizontalContentAlignment = 3; // Stretch
+		lv.VerticalAlignment = 3; // Stretch
+		return lv;
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.ScrollViewer {
-		return this.nativeViewProtected;
+	public initNativeView(): void {
+		super.initNativeView();
+		const lv = this.nativeViewProtected;
+		if (!lv) return;
+		const ref = new WeakRef(this);
+
+		this._itemClickDelegate = new Windows.UI.Xaml.Controls.ItemClickEventHandler((_sender: any, e: Windows.UI.Xaml.Controls.ItemClickEventArgs) => {
+			const owner = ref.deref();
+			if (!owner) return;
+			try {
+				const marker = e?.ClickedItem;
+				if (marker == null) return;
+				const index: number = (marker as any).__ns_index ?? -1;
+				if (index < 0) return;
+				const container = lv.ContainerFromIndex(index);
+				const view = owner._containerToView.get(container) ?? null;
+				owner.notify({ eventName: ITEMTAP, object: owner, index, view });
+			} catch (_e) {}
+		});
+		lv.ItemClick = this._itemClickDelegate;
+
+		// ContainerContentChanging fires when a virtualised container enters or
+		// leaves the viewport. InRecycleQueue === true means the container is
+		// being returned to the pool — treat that as "clear container".
+		// ContainerContentChanging uses TypedEventHandler — assign a raw function via any
+		this._containerChangingDelegate = (_sender: any, args: any) => {
+			const owner = ref.deref();
+			if (!owner) return;
+			try {
+				if (args.InRecycleQueue) {
+					owner._recycleContainer(args.ItemContainer);
+				} else {
+					owner._prepareContainer(args.ItemContainer, args.ItemIndex as number);
+					args.Handled = true;
+				}
+			} catch (_e) {}
+		};
+		(lv as any).ContainerContentChanging = this._containerChangingDelegate;
 	}
 
-	// ScrollViewer has no .Children panel — suppress default child-add
-	public _addViewToNativeVisualTree(_child: any): boolean {
-		return true;
-	}
-
-	public eachChildView(callback: (child: View) => boolean): void {
-		for (const view of this._itemViews) {
-			if (!callback(view)) break;
+	public disposeNativeView(): void {
+		const lv = this.nativeViewProtected;
+		if (lv) {
+			lv.ItemClick = null;
+			try { (lv as any).ContainerContentChanging = null; } catch (_e) {}
 		}
+		this._itemClickDelegate = null;
+		this._containerChangingDelegate = null;
+		this._destroyAllViews();
+		super.disposeNativeView?.();
 	}
 
-	public onLoaded() {
-		super.onLoaded();
-		this.refresh();
+	// Item views are placed as container.Content — skip adding to our own native children.
+	public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
+		if (this._managedViews.has(child)) return true;
+		return super._addViewToNativeVisualTree(child, atIndex);
 	}
 
-	public refresh() {
-		const panel = this._stackPanel;
-		if (!panel) return;
+	public _prepareContainer(element: any, index: number): void {
+		const template = this._getItemTemplate(index);
+		const key = template.key;
 
-		const oldViews = this._itemViews.slice();
-		this._itemViews = [];
-		try { (panel as any).Children.Clear(); } catch (_e) {}
-		for (const view of oldViews) {
-			try { this._removeView(view); } catch (_e) {}
+		let view: View | undefined = this._pool.get(key)?.pop();
+		if (view) {
+			this._prepareItem(view, index);
+		} else {
+			const args: any = { eventName: ITEMLOADING, object: this, index, view: null as any };
+			try { args.view = template.createView(); } catch (_e) {}
+			if (!args.view) args.view = this._getDefaultItemContent(index);
+			this.notify(args);
+			if (!args.view) args.view = this._getDefaultItemContent(index);
+			view = args.view as View;
+			this._prepareItem(view, index);
+
+			// Mark before _addView so _addViewToNativeVisualTree skips native placement.
+			this._managedViews.add(view);
+			this._addView(view);
 		}
 
-		if (!this.items) return;
+		if (!view) return;
 
-		const len = (this.items as any)?.length ?? 0;
-		for (let i = 0; i < len; i++) {
-			const view = this._makeItemView(i);
-			if (!view) continue;
+		try {
+			(element as any).HorizontalAlignment = 3; // Stretch
+			(element as any).HorizontalContentAlignment = 3; // Stretch
+			(element as any).Padding = Windows.UI.Xaml.ThicknessHelper.FromUniformLength(0);
+		} catch (_e) {}
 
-			this._itemViews.push(view);
-
-			try { this._addView(view); } catch (_e) { continue; }
-
-			const nativeEl = (view as any).nativeViewProtected;
-			if (nativeEl) {
-				try { (nativeEl as any).HorizontalAlignment = 3; } catch (_e) {}
-				try { (panel as any).Children.Append(nativeEl); } catch (_e) {}
-				// Wire itemTap: fire on Tapped (covers taps from any child element via bubbling)
-				const capturedIndex = i;
-				const capturedView = view;
-				try {
-					(nativeEl as any).Tapped = (_s: any, _e: any) => {
-						this.notify({
-							eventName: ITEMTAP,
-							object: this,
-							index: capturedIndex,
-							view: capturedView,
-						});
-					};
-				} catch (_e) {}
-			}
+		const nativeContent = (view as any).nativeViewProtected;
+		if (nativeContent) {
+			try { (element as any).Content = nativeContent; } catch (_e) {}
 		}
 
-		if (len > 0) {
+		this._containerToView.set(element, view);
+		(element as any).__ns_templateKey = key;
+
+		if (index === this._getItemCount() - 1) {
 			this.notify({ eventName: LOADMOREITEMS, object: this });
 		}
 	}
 
-	private _makeItemView(index: number): View | null {
-		const template = this._getItemTemplate(index);
-
-		const args: any = {
-			eventName: ITEMLOADING,
-			object: this,
-			index,
-			view: null as any,
-			android: undefined,
-			ios: undefined,
-		};
-
-		try { args.view = template.createView(); } catch (_e) {}
-		if (!args.view) args.view = this._getDefaultItemContent(index);
-
-		this.notify(args);
-		if (!args.view) args.view = this._getDefaultItemContent(index);
-
-		const view: View = args.view;
-		this._prepareItem(view, index);
-		return view;
+	public _recycleContainer(element: any): void {
+		const view = this._containerToView.get(element);
+		if (view) {
+			try { (element as any).Content = null; } catch (_e) {}
+			const key: string = (element as any).__ns_templateKey ?? 'default';
+			let pool = this._pool.get(key);
+			if (!pool) { pool = []; this._pool.set(key, pool); }
+			pool.push(view);
+			this._containerToView.delete(element);
+		}
+		try { delete (element as any).__ns_templateKey; } catch (_e) {}
 	}
 
-	public scrollToIndex(index: number) {
-		const panel = this._stackPanel;
-		if (!panel) return;
+	private _destroyAllViews(): void {
+		for (const [container] of this._containerToView) {
+			try { (container as any).Content = null; } catch (_e) {}
+		}
+		this._containerToView.clear();
+		this._pool.clear();
+		for (const view of this._managedViews) {
+			try { this._removeView(view); } catch (_e) {}
+		}
+		this._managedViews.clear();
+	}
+
+	private _getItemCount(): number {
+		if (!this.items) return 0;
+		const src = this.items as any;
+		return typeof src.length === 'number' ? src.length : 0;
+	}
+
+	public refresh(): void {
+		const lv = this.nativeViewProtected;
+		if (!lv) return;
+
+		// Clear ItemsSource first; ContainerContentChanging with InRecycleQueue
+		// fires for visible containers, returning their views to the pool.
+		(lv as any).ItemsSource = null;
+
+		// Destroy everything so stale views are not reused across a full refresh.
+		this._destroyAllViews();
+
+		const count = this._getItemCount();
+		const markers: any[] = new Array(count);
+		for (let i = 0; i < count; i++) {
+			markers[i] = { __ns_index: i };
+		}
+		(lv as any).ItemsSource = markers;
+	}
+
+	public eachChildView(callback: (child: View) => boolean): void {
+		for (const view of this._managedViews) {
+			if (!callback(view)) break;
+		}
+	}
+
+	public isItemAtIndexVisible(index: number): boolean {
+		return !!this.nativeViewProtected?.ContainerFromIndex(index);
+	}
+
+	public scrollToIndex(index: number): void {
+		const lv = this.nativeViewProtected;
+		if (!lv || index < 0 || index >= this._getItemCount()) return;
 		try {
-			const children = (panel as any).Children;
-			if (index >= 0 && index < children.Size) {
-				const child = children.GetAt(index);
-				child?.BringIntoView?.();
-			}
+			const item = (lv as any).Items?.GetAt(index);
+			if (item) lv.ScrollIntoView(item);
 		} catch (_e) {}
 	}
 
-	public _onItemsChanged(_data: ChangedData<any>) {
+	public onLoaded(): void {
+		super.onLoaded();
 		this.refresh();
 	}
 
-	public disposeNativeView(): void {
-		const oldViews = this._itemViews.slice();
-		this._itemViews = [];
-		for (const view of oldViews) {
-			try { this._removeView(view); } catch (_e) {}
+	public _onItemsChanged(_data: ChangedData<any>): void {
+		this.refresh();
+	}
+
+	[itemTemplatesProperty.getDefault](): KeyedTemplate[] {
+		return null as unknown as KeyedTemplate[];
+	}
+	[itemTemplatesProperty.setNative](value: KeyedTemplate[]) {
+		this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
+		if (value) {
+			this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
 		}
-		super.disposeNativeView?.();
+		if (this.nativeViewProtected) {
+			this.refresh();
+		}
 	}
 }

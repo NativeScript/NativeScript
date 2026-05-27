@@ -23,6 +23,28 @@ function _applyFinalValue(target: any, property: string, to: any): void {
 	} catch (_e) {}
 }
 
+// Per-native-view, per-property storyboard conflict tracking.
+// When a new animation starts on the same native element + property, the previous
+// storyboard is stopped immediately and its promise resolved so the chain continues.
+const _activeStoryboards = new WeakMap<object, Map<string, () => void>>();
+
+function _cancelActiveStoryboard(native: object, property: string): void {
+	const map = _activeStoryboards.get(native);
+	if (!map) return;
+	const cancel = map.get(property);
+	if (cancel) { cancel(); map.delete(property); }
+}
+
+function _registerActiveStoryboard(native: object, property: string, cancel: () => void): void {
+	let map = _activeStoryboards.get(native);
+	if (!map) { map = new Map(); _activeStoryboards.set(native, map); }
+	map.set(property, cancel);
+}
+
+function _clearActiveStoryboard(native: object, property: string): void {
+	_activeStoryboards.get(native)?.delete(property);
+}
+
 export class Animation extends AnimationBase {
 	constructor(animationDefinitions: any[], playSequentially?: boolean) {
 		super(animationDefinitions, playSequentially);
@@ -181,14 +203,18 @@ export class Animation extends AnimationBase {
 						break;
 				}
 
+				// Cancel any previous animation on the same native element + property so
+				// animations don't fight each other (e.g. down-animation vs up-animation).
+				_cancelActiveStoryboard(native, property);
+
 				try {
 					let settled = false;
-					const done = () => {
+					const done = (applyFinal = true) => {
 						if (settled) return;
 						settled = true;
 						clearTimeout(safetyTimer);
-						// Set final NS property value before stopping so sb.Stop() doesn't revert native value
-						if (target) {
+						_clearActiveStoryboard(native, property);
+						if (applyFinal && target) {
 							try { _applyFinalValue(target, property, to); } catch (_e) {}
 						}
 						try { sb.Stop(); } catch (_e) {}
@@ -202,20 +228,14 @@ export class Animation extends AnimationBase {
 					};
 					// Safety timeout: resolve even if Completed never fires
 					const safetyTimer = setTimeout(done, Math.max(0, dur + del + 300));
-					// addEventListener is the reliable path in the V8 WinRT projection.
-					// Direct property assignment (sb.Completed = fn) silently fails for
-					// WinRT events that require a typed delegate — same root cause as Button.Click.
-					const onCompleted = () => {
-						try { (sb as any).removeEventListener?.('completed', onCompleted); } catch (_e) {}
-						done();
-					};
+					// Use Windows.Foundation.EventHandler delegate — the correct type for
+					// Timeline.Completed in the WinRT projection. Falls back to addEventListener.
 					try {
-						if (typeof (sb as any).addEventListener === 'function') {
-							(sb as any).addEventListener('completed', onCompleted);
-						} else {
-							sb.Completed = (_s: any, _e: any) => done();
-						}
-					} catch (_e) { /* safety timer covers */ }
+						sb.Completed = new Windows.Foundation.EventHandler((_s: any, _e: any) => done()) as any;
+					} catch (_e) {
+						try { (sb as any).addEventListener?.('completed', () => done()); } catch (_e2) { /* safety timer covers */ }
+					}
+					_registerActiveStoryboard(native, property, () => done(false));
 					this._runningStoryboards.push({ storyboard: sb, native, props: [property] });
 					sb.Begin();
 				} catch (err) {
@@ -229,8 +249,8 @@ export class Animation extends AnimationBase {
 		});
 	}
 
-	play(resetDelay?: boolean): any {
-		const playPromise = super.play(resetDelay);
+	play(_resetDelay?: boolean): any {
+		const playPromise = super.play();
 		
 
 		const run = async () => {
@@ -264,7 +284,10 @@ export class Animation extends AnimationBase {
 		this._runningStoryboards.length = 0;
 
 		super.cancel();
-		this._rejectAnimationFinishedPromise();
+		// Guard: only reject if play() has been called (sets _reject via super.play())
+		if (this.isPlaying) {
+			this._rejectAnimationFinishedPromise();
+		}
 	}
 
 	_resolveAnimationCurve(curve: any): any {
