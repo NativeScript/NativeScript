@@ -169,13 +169,12 @@ function resolveTsConfigPath(fullPath: string, platform: string, verbose?: boole
 function createTsConfigResolvers(opts: { paths: any; baseUrl: string; platform: string; verbose?: boolean }) {
 	const resolvers: TsConfigResolverEntry[] = [];
 
-	// Process patterns in order: wildcards first, then exact matches
+	// Match TypeScript precedence: exact aliases before wildcard fallbacks.
 	const sortedPatterns = Object.entries(opts.paths).sort(([a], [b]) => {
-		// Wildcards (with *) come first
 		const aHasWildcard = a.includes('*');
 		const bHasWildcard = b.includes('*');
-		if (aHasWildcard && !bHasWildcard) return -1;
-		if (!aHasWildcard && bHasWildcard) return 1;
+		if (aHasWildcard && !bHasWildcard) return 1;
+		if (!aHasWildcard && bHasWildcard) return -1;
 		// Within same type, longer patterns first (more specific)
 		return b.length - a.length;
 	});
@@ -184,12 +183,14 @@ function createTsConfigResolvers(opts: { paths: any; baseUrl: string; platform: 
 		if (Array.isArray(destinations) && destinations.length > 0) {
 			if (pattern.includes('*')) {
 				const aliasKey = pattern.replace(/\/\*$/, '');
-				const destination = destinations[0].replace(/\/\*$/, '');
+				// Values passed through path.resolve() contain backslashes on Windows.
+				// Do not leave a literal wildcard in a filesystem lookup path.
+				const destination = destinations[0].replace(/[\\/]\*$/, '');
 				const resolvedDestination = path.isAbsolute(destination) ? destination : path.resolve(projectRoot, opts.baseUrl, destination);
 				resolvers.push({
 					type: 'wildcard',
 					pattern,
-					regex: new RegExp(`^${aliasKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/(.*))?$`),
+					regex: new RegExp(`^${aliasKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(.*)$`),
 					resolvedDestination,
 				});
 			} else {

@@ -1256,7 +1256,7 @@ function createSolidJsxEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 		name: 'ns-vendor-solid-jsx',
 		setup(build) {
 			// Intercept .jsx and .tsx files from node_modules
-			build.onLoad({ filter: /node_modules\/.*\.[jt]sx$/ }, async (args) => {
+			build.onLoad({ filter: /node_modules[\\/].*\.[jt]sx$/ }, async (args) => {
 				try {
 					if (!babel) {
 						babel = await import('@babel/core');
@@ -1363,7 +1363,7 @@ function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 	}
 
 	// Restrict to Angular framework packages to minimize esbuild memory usage.
-	const FILTER = /node_modules\/(?:@angular|@nativescript\/angular)\/.*\.[mc]?js$/;
+	const FILTER = /node_modules[\\/](?:@angular|@nativescript[\\/]angular)[\\/].*\.[mc]?js$/;
 
 	return {
 		name: 'ns-angular-linker',

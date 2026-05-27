@@ -72,7 +72,7 @@ function angularRollupLinker(projectRoot?: string): Plugin {
 		apply: 'build',
 		async load(id) {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
-			const cleanId = id.split('?', 1)[0];
+			const cleanId = normalizeAngularWatchPath(id);
 			if (!FILTER.test(cleanId)) return null;
 			try {
 				await ensureDeps();
@@ -102,7 +102,7 @@ function angularRollupLinker(projectRoot?: string): Plugin {
 		},
 		async transform(code, id) {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
-			const cleanId = id.split('?', 1)[0];
+			const cleanId = normalizeAngularWatchPath(id);
 			if (!FILTER.test(cleanId)) return null;
 			const forceLink = cleanId.includes('/node_modules/@nativescript/angular/') && cleanId.includes('polyfills');
 			if (!code) return null;
@@ -361,7 +361,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 			enforce: 'pre',
 			apply: 'serve',
 			transform(code, id) {
-				const cleanId = id.split('?', 1)[0];
+				const cleanId = normalizeAngularWatchPath(id);
 				if (!isCandidateComponentTs(cleanId)) return null;
 
 				const componentNames = findComponentClassNames(code);
@@ -397,7 +397,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 			enforce: 'post',
 			apply: 'serve',
 			transform(code, id) {
-				const cleanId = id.split('?', 1)[0];
+				const cleanId = normalizeAngularWatchPath(id);
 				if (!isCandidateComponentTs(cleanId)) return null;
 
 				const componentNames = componentsByCleanId.get(cleanId);
@@ -631,7 +631,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 			apply: 'serve',
 			transform(code, id) {
 				if (!hmrAngularLiveReload) return null;
-				const cleanId = id.split('?', 1)[0];
+				const cleanId = normalizeAngularWatchPath(id);
 				if (!cleanId.endsWith('.ts') && !cleanId.endsWith('.mjs') && !cleanId.endsWith('.js')) return null;
 				if (cleanId.includes('/node_modules/')) return null;
 				const next = injectAngularHmrViteIgnore(code);
@@ -736,9 +736,12 @@ export const angularConfig = ({
 		apply: 'build' as const,
 		enforce: 'post' as const,
 		async generateBundle(_options: any, bundle: any) {
+			function isNsAngularPolyfillsModule(id: string): boolean {
+				return normalizeAngularWatchPath(id).includes('node_modules/@nativescript/angular/fesm2022/nativescript-angular-polyfills.mjs');
+			}
 			function isNsAngularPolyfillsChunk(chunk: any): boolean {
 				if (!chunk || !(chunk as any).modules) return false;
-				return Object.keys((chunk as any).modules).some((m) => m.includes('node_modules/@nativescript/angular/fesm2022/nativescript-angular-polyfills.mjs'));
+				return Object.keys((chunk as any).modules).some(isNsAngularPolyfillsModule);
 			}
 			const { babel } = await ensureSharedAngularLinker(process.cwd());
 			if (!babel) return;
@@ -795,10 +798,10 @@ export const angularConfig = ({
 					const chunk: any = (bundle as any)[fname];
 					const modIds = chunk?.modules
 						? Object.keys(chunk.modules)
-								.filter((m) => /node_modules\/(?:@angular|@nativescript\/angular)\//.test(m))
+								.filter((m) => /node_modules\/(?:@angular|@nativescript\/angular)\//.test(normalizeAngularWatchPath(m)))
 								.slice(0, 8)
 						: [];
-					const isOnlyPolyfills = modIds.length > 0 && modIds.every((m) => m.includes('node_modules/@nativescript/angular/fesm2022/nativescript-angular-polyfills.mjs'));
+					const isOnlyPolyfills = modIds.length > 0 && modIds.every(isNsAngularPolyfillsModule);
 					if (isOnlyPolyfills) continue;
 					let snippet = '';
 					try {

@@ -3,6 +3,10 @@ import { createRequire } from 'node:module';
 import { ensureSharedAngularLinker, resolveAngularFileSystem } from './shared-linker.js';
 import { containsRealNgDeclare } from './util.js';
 
+function normalizeAngularLinkerId(id: string): string {
+	return id.split('?', 1)[0].replace(/\\/g, '/');
+}
+
 /**
  * Vite plugin to run Angular linker (Babel) over partial-compiled Angular libraries
  * inside node_modules (e.g., @angular/*, @nativescript/angular).
@@ -56,7 +60,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 		enforce: 'pre',
 		async load(id) {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
-			const cleanId = id.split('?', 1)[0];
+			const cleanId = normalizeAngularLinkerId(id);
 			// Always process Angular framework libraries. For other node_modules,
 			// check if they contain ɵɵngDeclare* (catches @ngrx, etc.).
 			if (!strictAll && !FILTER.test(cleanId)) {
@@ -99,7 +103,7 @@ export function angularLinkerVitePlugin(projectRoot?: string): Plugin {
 		async transform(code, id) {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 			// Strip Vite/Rollup query strings before testing
-			const cleanId = id.split('?', 1)[0];
+			const cleanId = normalizeAngularLinkerId(id);
 			// Always process Angular framework libraries. For other node_modules,
 			// only link if they contain ɵɵngDeclare* (catches @ngrx, etc.).
 			if (!strictAll && !FILTER.test(cleanId)) {
