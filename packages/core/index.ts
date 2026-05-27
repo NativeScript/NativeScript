@@ -4,6 +4,7 @@
 import './globals';
 export * from './application';
 export { getNativeApp, setNativeApp } from './application/helpers-common';
+export * from './native-window';
 export * as ApplicationSettings from './application-settings';
 import * as Accessibility from './accessibility';
 export namespace AccessibilityEvents {
