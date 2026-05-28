@@ -9,7 +9,6 @@ export function _resolveAnimationCurve(curve: any): any {
 import { AnimationBase, Properties } from './animation-common';
 import type { View } from '../core/view';
 import { _ensureNativeTransforms } from '../core/view';
-import { layout } from '../../utils';
 
 function _applyFinalValue(target: any, property: string, to: any): void {
 	try {
@@ -18,6 +17,8 @@ function _applyFinalValue(target: any, property: string, to: any): void {
 			case Properties.translate: target.translateX = to?.x ?? 0; target.translateY = to?.y ?? 0; break;
 			case Properties.scale: target.scaleX = to?.x ?? 1; target.scaleY = to?.y ?? 1; break;
 			case Properties.rotate: target.rotate = to?.z ?? to; break;
+			case Properties.width: target.width = typeof to === 'object' ? (to?.value ?? to) : to; break;
+			case Properties.height: target.height = typeof to === 'object' ? (to?.value ?? to) : to; break;
 			default: break;
 		}
 	} catch (_e) {}
@@ -110,22 +111,43 @@ export class Animation extends AnimationBase {
 						const transforms = _ensureNativeTransforms(native);
 						const tt = transforms?.translate;
 						if (!tt) break;
+						// Values are already in DIPs (same as iOS) — no density conversion needed.
 						const vx = (to && (to.x ?? to)) || 0;
 						const vy = (to && (to.y ?? 0)) || 0;
 						const dax = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						dax.To = layout.toDeviceIndependentPixels(vx);
+						dax.To = vx;
 						dax.Duration = duration;
 						if (beginTime) dax.BeginTime = beginTime;
 						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(dax, tt);
 						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(dax, 'X');
 						sb.Children.Append(dax);
 						const day = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						day.To = layout.toDeviceIndependentPixels(vy);
+						day.To = vy;
 						day.Duration = duration;
 						if (beginTime) day.BeginTime = beginTime;
 						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(day, tt);
 						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(day, 'Y');
 						sb.Children.Append(day);
+						break;
+					}
+					case Properties.width:
+					case Properties.height: {
+						// PercentLength { value, unit } or plain number — both in DIPs.
+						const toVal = typeof to === 'object' ? (to?.value ?? 0) : (to ?? 0);
+						const prop = property === Properties.width ? 'Width' : 'Height';
+						const fromVal = property === Properties.width
+							? ((native as any).ActualWidth || (native as any).Width)
+							: ((native as any).ActualHeight || (native as any).Height);
+						const da = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
+						da.To = toVal;
+						// Layout-affecting animations are disabled by default in WinUI — must opt in.
+						da.EnableDependentAnimation = true;
+						if (isFinite(fromVal) && fromVal > 0) da.From = fromVal;
+						da.Duration = duration;
+						if (beginTime) da.BeginTime = beginTime;
+						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(da, native);
+						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(da, prop);
+						sb.Children.Append(da);
 						break;
 					}
 					case Properties.opacity: {

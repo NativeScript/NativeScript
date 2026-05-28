@@ -15,11 +15,8 @@ export class DatePicker extends DatePickerBase {
 		return this._windows;
 	}
 
-	// Basic accessor to the native DatePicker control for Windows.
 	get windows(): Windows.UI.Xaml.Controls.DatePicker {
 		return this._windows;
 	}
-
-	// Best-effort: platform-specific behavior (value mapping, events) can be implemented later.
 }
 

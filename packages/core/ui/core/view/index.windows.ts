@@ -4,7 +4,7 @@ export * from '../properties';
 
 import { ViewCommon, originXProperty, originYProperty } from './view-common';
 import type { CoreTypes } from '../../../core-types';
-import { visibilityProperty, opacityProperty, backgroundInternalProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, rotateProperty, rotateXProperty, rotateYProperty, perspectiveProperty } from '../../styling/style-properties';
+import { visibilityProperty, opacityProperty, backgroundInternalProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, rotateProperty, rotateXProperty, rotateYProperty, perspectiveProperty, horizontalAlignmentProperty, verticalAlignmentProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { widthProperty, heightProperty, minWidthProperty, minHeightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
@@ -126,6 +126,7 @@ class CompositionBorderHandler {
 	private _top: any; private _bottom: any; private _left: any; private _right: any;
 	private _topBrush: any; private _bottomBrush: any; private _leftBrush: any; private _rightBrush: any;
 	private _clipGeometry: any = null;
+	private _shadowSprite: any = null;
 
 	constructor(element: any, rootVisual: any) {
 		this._element = element;
@@ -204,8 +205,34 @@ class CompositionBorderHandler {
 		this._clipGeometry.CornerRadius = new (Windows.Foundation.Numerics as any).Vector2(r, r);
 	}
 
+	UpdateBoxShadow(s: any | null): void {
+		if (this._shadowSprite) {
+			try { this._container.Children.Remove(this._shadowSprite); } catch (_e) {}
+			this._shadowSprite = null;
+		}
+		if (!s) return;
+		try {
+			const c = this._rootVisual.Compositor;
+			const sprite = c.CreateSpriteVisual();
+			// Leave Brush = null so DropShadow uses the visual's bounding shape as mask.
+			// A transparent brush (A=0) would make the mask fully transparent → no shadow.
+			try {
+				(sprite as any).RelativeSizeAdjustment = { X: 1, Y: 1 };
+			} catch (_e) {
+				sprite.Size = (this._rootVisual as any).Size;
+			}
+			const drop = c.CreateDropShadow();
+			if (s?.color?.windows) { drop.Color = s.color.windows; }
+			if (typeof s?.blurRadius === 'number') { drop.BlurRadius = s.blurRadius; }
+			try { drop.Offset = new Windows.Foundation.Numerics.Vector3(s?.offsetX || 0, s?.offsetY || 0, 0); } catch (_e) {}
+			sprite.Shadow = drop;
+			this._container.Children.InsertAtBottom(sprite);
+			this._shadowSprite = sprite;
+		} catch (_e) {}
+	}
+
 	Free(): void {
-		try { Windows.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(this._element, null); } catch (_e) { }
+		try { Windows.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(this._element, null as never); } catch (_e) { }
 		this._element = null; this._rootVisual = null; this._container = null;
 	}
 }
@@ -387,41 +414,16 @@ export class View extends ViewCommon {
 
 		this._nativeBackgroundState = 'drawn';
 
-		try {
-			// Clear existing composition visual (if any)
-			if (native._ns_box_shadow_visual) {
-				try {
-					Windows.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(native, null);
-				} catch (_e) { }
-				native._ns_box_shadow_visual = null;
-			}
-
-			if (background && typeof background.hasBoxShadows === 'function' && background.hasBoxShadows()) {
+		if (this._viewCompositionHandler) {
+			const hasShadow = background && typeof background.hasBoxShadows === 'function' && background.hasBoxShadows();
+			if (hasShadow) {
 				const boxShadows = typeof background.getBoxShadows === 'function' ? background.getBoxShadows() : background.boxShadows;
-				if (boxShadows && boxShadows.length) {
-					try {
-						const visual = Windows.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(native);
-						const compositor = visual.Compositor;
-						const sprite = compositor.CreateSpriteVisual();
-						const drop = compositor.CreateDropShadow();
-						const s = boxShadows[0];
-						if (s && s.color && s.color.windows) {
-							drop.Color = s.color.windows;
-						}
-						if (typeof s.blurRadius === 'number') {
-							drop.BlurRadius = s.blurRadius;
-						}
-						try {
-							drop.Offset = new Windows.Foundation.Numerics.Vector3(s.offsetX || 0, s.offsetY || 0, 0);
-						} catch (_e) {}
-						sprite.Shadow = drop;
-						sprite.Size = visual.Size;
-						Windows.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(native, sprite);
-						native._ns_box_shadow_visual = sprite;
-					} catch (_e) {}
-				}
+				const s = boxShadows?.length ? boxShadows[boxShadows.length - 1] : null;
+				this._viewCompositionHandler.UpdateBoxShadow(s);
+			} else {
+				this._viewCompositionHandler.UpdateBoxShadow(null);
 			}
-		} catch (_e) {}
+		}
 
 	}
 
@@ -502,12 +504,6 @@ export class View extends ViewCommon {
 
 			}
 
-			if (nativeView._ns_box_shadow_visual) {
-				try {
-					const visual = Windows.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(nativeView);
-					nativeView._ns_box_shadow_visual.Size = visual.Size;
-				} catch (_e) { }
-			}
 		} catch (_e) { }
 	}
 
@@ -520,25 +516,21 @@ export class View extends ViewCommon {
 
 		try {
 			const parentNative = (this.parent as any)?.nativeViewProtected as any;
-			let parentWidth = parentNative?.ActualWidth || 0;
-			let parentHeight = parentNative?.ActualHeight || 0;
+			const parentWidth = parentNative?.ActualWidth || 0;
+			const parentHeight = parentNative?.ActualHeight || 0;
 
-			try {
-				if ((!parentWidth || parentWidth === 0) && Windows?.UI?.Xaml?.Window?.Current) {
-					parentWidth = Windows.UI.Xaml.Window.Current.Bounds.Width || 0;
-				}
-				if ((!parentHeight || parentHeight === 0) && Windows?.UI?.Xaml?.Window?.Current) {
-					parentHeight = Windows.UI.Xaml.Window.Current.Bounds.Height || 0;
-				}
-			} catch (_) { /* ignore */ }
-
-			if (this._percentWidth != null) {
-				const w = (parentWidth || 0) * (this._percentWidth);
+			// Only apply when the parent has a real layout size. Using Window.Bounds as a
+			// fallback when the parent is 0 causes nested views with height="100%" to expand
+			// to full-screen height, overflowing their container and covering sibling rows.
+			// LayoutUpdated fires again once the parent is properly sized, at which point
+			// the correct percent value is applied.
+			if (this._percentWidth != null && parentWidth > 0) {
+				const w = parentWidth * (this._percentWidth);
 				nativeView.Width = isFinite(w) ? w : NaN;
 			}
 
-			if (this._percentHeight != null) {
-				const h = (parentHeight || 0) * (this._percentHeight);
+			if (this._percentHeight != null && parentHeight > 0) {
+				const h = parentHeight * (this._percentHeight);
 				nativeView.Height = isFinite(h) ? h : NaN;
 			}
 		} catch (_e) { }
@@ -664,6 +656,54 @@ export class View extends ViewCommon {
 		} catch (_e) { }
 	}
 
+	//@ts-ignore
+	[paddingTopProperty.setNative](_value: CoreTypes.LengthType) { this._applyPadding(); }
+	//@ts-ignore
+	[paddingRightProperty.setNative](_value: CoreTypes.LengthType) { this._applyPadding(); }
+	//@ts-ignore
+	[paddingBottomProperty.setNative](_value: CoreTypes.LengthType) { this._applyPadding(); }
+	//@ts-ignore
+	[paddingLeftProperty.setNative](_value: CoreTypes.LengthType) { this._applyPadding(); }
+
+	private _applyPadding(): void {
+		const native = this.nativeViewProtected as any;
+		if (!native) return;
+		try {
+			const l = toXamlLength(this.style.paddingLeft) || 0;
+			const t = toXamlLength(this.style.paddingTop) || 0;
+			const r = toXamlLength(this.style.paddingRight) || 0;
+			const b = toXamlLength(this.style.paddingBottom) || 0;
+			native.Padding = Windows.UI.Xaml.ThicknessHelper.FromLengths(l, t, r, b);
+		} catch (_e) { }
+	}
+
+	//@ts-ignore
+	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
+		const native = this.nativeViewProtected as any;
+		if (!native) return;
+		// WinUI HorizontalAlignment: Left=0, Center=1, Right=2, Stretch=3
+		switch (value) {
+			case 'left': native.HorizontalAlignment = 0; break;
+			case 'center': native.HorizontalAlignment = 1; break;
+			case 'right': native.HorizontalAlignment = 2; break;
+			case 'stretch': native.HorizontalAlignment = 3; break;
+		}
+	}
+
+	//@ts-ignore
+	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentTextType) {
+		const native = this.nativeViewProtected as any;
+		if (!native) return;
+		// WinUI VerticalAlignment: Top=0, Center=1, Bottom=2, Stretch=3
+		switch (value) {
+			case 'top': native.VerticalAlignment = 0; break;
+			case 'middle': native.VerticalAlignment = 1; break;
+			case 'center': native.VerticalAlignment = 1; break;
+			case 'bottom': native.VerticalAlignment = 2; break;
+			case 'stretch': native.VerticalAlignment = 3; break;
+		}
+	}
+
 	[originXProperty.getDefault](): number {
 		const native = this.nativeViewProtected as any;
 		if (!native) return 0.5;
@@ -774,8 +814,9 @@ export class View extends ViewCommon {
 
 			transforms.rotate.Angle = (this as any).rotate || 0;
 
-			transforms.translate.X = layout.toDeviceIndependentPixels((this as any).translateX || 0);
-			transforms.translate.Y = layout.toDeviceIndependentPixels((this as any).translateY || 0);
+			// translateX/Y are in DIPs — WinUI TranslateTransform also uses DIPs. No conversion.
+			transforms.translate.X = (this as any).translateX || 0;
+			transforms.translate.Y = (this as any).translateY || 0;
 
 			try {
 				const ox = this.originX ?? 0.5;

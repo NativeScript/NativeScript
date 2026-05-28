@@ -6,9 +6,10 @@ import type { ViewCommon } from '../core/view/view-common';
 
 export class ScrollView extends ScrollViewBase {
 	declare nativeViewProtected: Windows.UI.Xaml.Controls.ScrollViewer;
+
 	private _scrollToken: any = null;
-	private _sizeToken: any = null;
 	private _windows: Windows.UI.Xaml.Controls.ScrollViewer;
+
 	constructor() {
 		super();
 		this._windows = new Windows.UI.Xaml.Controls.ScrollViewer();
@@ -21,12 +22,9 @@ export class ScrollView extends ScrollViewBase {
 	public initNativeView(): void {
 		super.initNativeView();
 		this._applyOrientation();
-		this._constrainToWindow();
-		this._attachWindowSizeChanged();
 	}
 
 	public disposeNativeView(): void {
-		this._detachWindowSizeChanged();
 		this._scrollToken = null;
 		super.disposeNativeView();
 	}
@@ -35,68 +33,43 @@ export class ScrollView extends ScrollViewBase {
 		return this._windows;
 	}
 
-	private _constrainToWindow(): void {
-		const viewer = this.windows;
-		if (!viewer) return;
-		const current = Windows.UI.Xaml.Window.Current;
-		if (!current) return;
-		const bounds = current.Bounds;
-		// Window has not rendered yet — skip; _attachWindowSizeChanged will apply once bounds are known
-		if (!bounds || bounds.Height === 0 || bounds.Width === 0) return;
-		if (this.orientation === 'vertical') {
-			viewer.MaxHeight = bounds.Height;
-		} else {
-			viewer.MaxWidth = bounds.Width;
-		}
-	}
-
-	private _attachWindowSizeChanged(): void {
-		const viewer = this.windows;
-		if (!viewer) return;
-		const that = new WeakRef(this);
-		// Loaded fires once the control enters the visual tree; Window.Bounds are valid by then.
-		this._sizeToken = NSWinRT.asDelegate((_sender: any, _args: any) => {
-			const owner = that.deref();
-			if (!owner) return;
-			owner._constrainToWindow();
-			// One-shot: detach after first successful constraint application.
-			(owner as any)._detachWindowSizeChanged();
-		});
-		viewer.Loaded = this._sizeToken;
-	}
-
-	private _detachWindowSizeChanged(): void {
-		const viewer = this.windows;
-		if (viewer && this._sizeToken) {
-			viewer.Loaded = null as never;
-		}
-		this._sizeToken = null;
-	}
-
 	private _applyOrientation(): void {
-		const viewer = this.windows;
-		if (!viewer) return;
-		// ScrollBarVisibility: Disabled=0, Auto=1, Hidden=2, Visible=3
-		// ScrollMode: Disabled=0, Enabled=1
+		const viewer = this.windows as any;
+		if (!viewer) {
+			return;
+		}
+
+		const HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment;
+		const VerticalAlignment = Windows.UI.Xaml.VerticalAlignment;
+		const ScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
+		const ScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
+
 		if (this.orientation === 'horizontal') {
-			viewer.HorizontalScrollBarVisibility = 1; // Auto
-			viewer.VerticalScrollBarVisibility = 0; // Disabled
-			viewer.HorizontalScrollMode = 1; // Enabled
-			viewer.VerticalScrollMode = 0; // Disabled
+			viewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+			viewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+
+			viewer.HorizontalScrollMode = ScrollMode.Enabled;
+			viewer.VerticalScrollMode = ScrollMode.Disabled;
+
+			viewer.HorizontalContentAlignment = HorizontalAlignment.Left;
+			viewer.VerticalContentAlignment = VerticalAlignment.Stretch;
 		} else {
-			viewer.VerticalScrollBarVisibility = 1; // Auto
-			viewer.HorizontalScrollBarVisibility = 0; // Disabled
-			viewer.VerticalScrollMode = 1; // Enabled
-			viewer.HorizontalScrollMode = 0; // Disabled
+			viewer.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+			viewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+
+			viewer.VerticalScrollMode = ScrollMode.Enabled;
+			viewer.HorizontalScrollMode = ScrollMode.Disabled;
+
+	
+			viewer.VerticalContentAlignment = VerticalAlignment.Top;
+			viewer.HorizontalContentAlignment = HorizontalAlignment.Stretch;
 		}
 	}
 
 	public _onOrientationChanged(): void {
 		this._applyOrientation();
-		this._constrainToWindow();
 	}
 
-	// ScrollViewer is a ContentControl — child goes into Content, not Children
 	public _addViewToNativeVisualTree(child: ViewCommon, _atIndex: number): boolean {
 		super._addViewToNativeVisualTree(child);
 
@@ -104,7 +77,31 @@ export class ScrollView extends ScrollViewBase {
 		const nativeChild = (child as any).nativeViewProtected as any;
 
 		if (nativeParent && nativeChild) {
+			const HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment;
+			const VerticalAlignment = Windows.UI.Xaml.VerticalAlignment;
+
+			
+			if (this.orientation === 'horizontal') {
+				nativeChild.HorizontalAlignment = HorizontalAlignment.Left;
+				nativeChild.VerticalAlignment = VerticalAlignment.Stretch;
+			} else {
+				nativeChild.VerticalAlignment = VerticalAlignment.Top;
+				nativeChild.HorizontalAlignment = HorizontalAlignment.Stretch;
+			}
+
 			nativeParent.Content = nativeChild;
+
+			// Force remeasure/layout so extent updates correctly.
+			try {
+				nativeChild.InvalidateMeasure();
+				nativeChild.UpdateLayout();
+			} catch (_e) {}
+
+			try {
+				nativeParent.InvalidateMeasure();
+				nativeParent.UpdateLayout();
+			} catch (_e) {}
+
 			return true;
 		}
 
@@ -115,16 +112,26 @@ export class ScrollView extends ScrollViewBase {
 		if (this.nativeViewProtected) {
 			(this.nativeViewProtected as any).Content = null;
 		}
+
 		super._removeViewFromNativeVisualTree(child);
 	}
 
 	protected attachNative(): void {
 		const viewer = this.windows;
-		if (!viewer) return;
+
+		if (!viewer) {
+			return;
+		}
+
 		const that = new WeakRef(this);
+
 		this._scrollToken = NSWinRT.asDelegate((_sender: any, _args: any) => {
 			const owner = that.deref();
-			if (!owner) return;
+
+			if (!owner) {
+				return;
+			}
+
 			owner.notify<ScrollEventData>({
 				eventName: ScrollViewBase.scrollEvent,
 				object: owner,
@@ -132,12 +139,17 @@ export class ScrollView extends ScrollViewBase {
 				scrollY: owner.verticalOffset,
 			});
 		});
+
 		viewer.ViewChanged = this._scrollToken;
 	}
 
 	protected detachNative(): void {
 		const viewer = this.windows;
-		if (!viewer) return;
+
+		if (!viewer) {
+			return;
+		}
+
 		viewer.ViewChanged = null as never;
 		this._scrollToken = null;
 	}
@@ -154,47 +166,92 @@ export class ScrollView extends ScrollViewBase {
 		if (!this.nativeViewProtected || this.orientation !== 'horizontal') {
 			return 0;
 		}
-		return Math.max(0, this.nativeViewProtected.ExtentWidth - this.nativeViewProtected.ViewportWidth);
+
+		return Math.max(
+			0,
+			this.nativeViewProtected.ExtentWidth - this.nativeViewProtected.ViewportWidth
+		);
 	}
 
 	get scrollableHeight(): number {
 		if (!this.nativeViewProtected || this.orientation !== 'vertical') {
 			return 0;
 		}
-		return Math.max(0, this.nativeViewProtected.ExtentHeight - this.nativeViewProtected.ViewportHeight);
+
+		return Math.max(
+			0,
+			this.nativeViewProtected.ExtentHeight - this.nativeViewProtected.ViewportHeight
+		);
 	}
 
 	public scrollToVerticalOffset(value: number, animated: boolean) {
-		if (this.nativeViewProtected && this.orientation === 'vertical' && this.isScrollEnabled) {
-			this.nativeViewProtected.ChangeView(null as never, value as never, null as never, !animated);
+		if (
+			this.nativeViewProtected &&
+			this.orientation === 'vertical' &&
+			this.isScrollEnabled
+		) {
+			this.nativeViewProtected.ChangeView(
+				null as never,
+				value as never,
+				null as never,
+				!animated
+			);
 		}
 	}
 
 	public scrollToHorizontalOffset(value: number, animated: boolean) {
-		if (this.nativeViewProtected && this.orientation === 'horizontal' && this.isScrollEnabled) {
-			this.nativeViewProtected.ChangeView(value as never, null as never, null as never, !animated);
+		if (
+			this.nativeViewProtected &&
+			this.orientation === 'horizontal' &&
+			this.isScrollEnabled
+		) {
+			this.nativeViewProtected.ChangeView(
+				value as never,
+				null as never,
+				null as never,
+				!animated
+			);
 		}
 	}
 
 	[isScrollEnabledProperty.setNative](value: boolean): void {
-		const viewer = this.nativeViewProtected;
-		if (!viewer) return;
-		// ScrollMode: Disabled=0, Enabled=1
+		const viewer = this.nativeViewProtected as any;
+
+		if (!viewer) {
+			return;
+		}
+
+		const ScrollMode = Windows.UI.Xaml.Controls.ScrollMode;
+
 		if (this.orientation === 'horizontal') {
-			viewer.HorizontalScrollMode = value ? 1 : 0;
+			viewer.HorizontalScrollMode = value
+				? ScrollMode.Enabled
+				: ScrollMode.Disabled;
 		} else {
-			viewer.VerticalScrollMode = value ? 1 : 0;
+			viewer.VerticalScrollMode = value
+				? ScrollMode.Enabled
+				: ScrollMode.Disabled;
 		}
 	}
 
 	[scrollBarIndicatorVisibleProperty.setNative](value: boolean): void {
 		const viewer = this.nativeViewProtected as any;
-		if (!viewer) return;
-		// ScrollBarVisibility: Disabled=0, Auto=1, Hidden=2
+
+		if (!viewer) {
+			return;
+		}
+
+		const ScrollBarVisibility =
+			Windows.UI.Xaml.Controls.ScrollBarVisibility;
+
 		if (this.orientation === 'horizontal') {
-			viewer.HorizontalScrollBarVisibility = value ? 1 : 2; // Auto or Hidden
+			viewer.HorizontalScrollBarVisibility = value
+				? ScrollBarVisibility.Auto
+				: ScrollBarVisibility.Hidden;
 		} else {
-			viewer.VerticalScrollBarVisibility = value ? 1 : 2;
+			viewer.VerticalScrollBarVisibility = value
+				? ScrollBarVisibility.Auto
+				: ScrollBarVisibility.Hidden;
 		}
 	}
 }

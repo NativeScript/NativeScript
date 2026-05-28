@@ -1,11 +1,21 @@
 export * from './text-base-common';
 
-import { TextBaseCommon, textProperty, formattedTextProperty, textTransformProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textTransformProperty, textAlignmentProperty, whiteSpaceProperty, resetSymbol } from './text-base-common';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { colorProperty, fontInternalProperty, fontSizeProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, fontWeightProperty, fontStyleProperty } from '../styling/style-properties';
-import { Length } from '../styling/length-shared';
 import { FontWeightType } from '../styling/font-interfaces';
+import { layout } from '../../utils';
+
+// WinUI uses DIPs — do not multiply by density. Convert px→dip for 'px' unit values.
+function toDip(value: CoreTypes.LengthType, auto = 0): number {
+	if (typeof value === 'number') return value;
+	if (!value || typeof value === 'string') return auto;
+	const v = value as { value: number; unit: string };
+	if (v.unit === 'dip') return v.value;
+	if (v.unit === 'px') return v.value / (layout.getDisplayDensity?.() ?? 1);
+	return auto;
+}
 
 function makeThickness(options: { Left?: number; Top?: number; Right?: number; Bottom?: number }, def: Windows.UI.Xaml.Thickness): Windows.UI.Xaml.Thickness {
 	const { Left, Top, Right, Bottom } = options;
@@ -203,11 +213,9 @@ export class TextBase extends TextBaseCommon {
 	}
 	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		const padding = this.nativeTextViewProtected.Padding;
-		if (!padding) {
-			return;
-		}
+		if (!padding) return;
 		this.nativeTextViewProtected.Padding = makeThickness({
-			Top: Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0),
+			Top: toDip(value) + toDip(this.style.borderTopWidth),
 		}, padding);
 	}
 
@@ -216,40 +224,51 @@ export class TextBase extends TextBaseCommon {
 	}
 	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		const padding = this.nativeTextViewProtected.Padding;
-		if (!padding) {
-			return;
-		}
+		if (!padding) return;
 		this.nativeTextViewProtected.Padding = makeThickness({
-			Right: Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0),
+			Right: toDip(value) + toDip(this.style.borderRightWidth),
 		}, padding);
 	}
 
 	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingBottom, unit: 'px' };
 	}
-
 	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		const padding = this.nativeTextViewProtected.Padding;
-		if (!padding) {
-			return;
-		}
+		if (!padding) return;
 		this.nativeTextViewProtected.Padding = makeThickness({
-			Bottom: Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0),
+			Bottom: toDip(value) + toDip(this.style.borderBottomWidth),
 		}, padding);
 	}
 
 	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingLeft, unit: 'px' };
 	}
-
 	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		const padding = this.nativeTextViewProtected.Padding;
-		if (!padding) {
-			return;
-		}
+		if (!padding) return;
 		this.nativeTextViewProtected.Padding = makeThickness({
-			Left: Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0),
+			Left: toDip(value) + toDip(this.style.borderLeftWidth),
 		}, padding);
+	}
+
+	// TextAlignment: Left=0, Center=1, Right=2, Justify=3
+	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
+		const nativeView = this.nativeTextViewProtected as any;
+		if (!nativeView) return;
+		switch (value) {
+			case 'left': nativeView.TextAlignment = 0; break;
+			case 'center': nativeView.TextAlignment = 1; break;
+			case 'right': nativeView.TextAlignment = 2; break;
+			case 'justify': nativeView.TextAlignment = 3; break;
+		}
+	}
+
+	// TextWrapping: NoWrap=1, Wrap=2, WrapWholeWords=3
+	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
+		const nativeView = this.nativeTextViewProtected as any;
+		if (!nativeView) return;
+		nativeView.TextWrapping = (value === 'nowrap') ? 1 : 3; // NoWrap or WrapWholeWords
 	}
 
 

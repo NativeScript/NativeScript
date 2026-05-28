@@ -1392,7 +1392,18 @@ export class ListPageModelSticky extends Observable {
 	}
 
 	itemLoading(args: EventData): void {
-		(args.object as View).backgroundColor = 'transparent';
+		const view = (args as any).view as View;
+		try {
+			const idx = (args as any).index;
+			const section = (args as any).section;
+			const argsBC = (args as any).bindingContext;
+			const obj = (args as any).object;
+			const viewCtor = view && (view as any).constructor ? (view as any).constructor.name : 'unknown';
+			const viewBC = view && (view as any).bindingContext;
+			try { console.log('[ListPageSticky] itemLoading index=', idx, 'section=', section, 'args.bindingContextType=', typeof argsBC, 'args.object=', obj ? (obj.constructor?.name || 'object') : 'null', 'viewType=', viewCtor, 'view.bindingContextType=', typeof viewBC); } catch (_e) {}
+			try { if (viewBC && typeof viewBC === 'object' && (viewBC as any).name) console.log('[ListPageSticky] item name=', (viewBC as any).name); } catch (_e) {}
+		} catch (_e) {}
+		try { view.backgroundColor = 'transparent'; } catch (_e) {}
 	}
 
 	onSearchTextChange(evt: SearchEventData): void {

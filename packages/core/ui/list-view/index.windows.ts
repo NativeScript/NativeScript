@@ -1,8 +1,10 @@
 export * from './list-view-common';
 
-import { ListViewBase, itemTemplatesProperty } from './list-view-common';
+import { ListViewBase, itemTemplatesProperty, rowHeightProperty, separatorColorProperty } from './list-view-common';
 import { KeyedTemplate, View } from '../core/view';
 import { ChangedData } from '../../data/observable-array';
+import { Color } from '../../color';
+import { layout } from '../../utils';
 
 const ITEMLOADING = ListViewBase.itemLoadingEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
@@ -12,21 +14,18 @@ export class ListView extends ListViewBase {
 	nativeViewProtected!: Windows.UI.Xaml.Controls.ListView;
 
 	private _itemClickDelegate: any = null;
-	private _containerChangingDelegate: any = null;
-	// Views waiting to be reused, keyed by template key
-	private _pool = new Map<string, View[]>();
-	// WinUI container element → NS view
-	private _containerToView = new Map<any, View>();
-	// All NS views in the NS tree (active + pooled), for _addViewToNativeVisualTree interception
-	private _managedViews = new Set<View>();
+	// All NS views in tree, keyed by item index
+	private _views = new Map<number, View>();
+	// All native views in ItemsSource, in order
+	private _nativeItems: any[] = [];
 
 	public createNativeView(): Windows.UI.Xaml.Controls.ListView {
 		const lv = new Windows.UI.Xaml.Controls.ListView();
-		lv.IsItemClickEnabled = true;
-		lv.SelectionMode = 0; // None
-		lv.HorizontalAlignment = 3; // Stretch
-		lv.HorizontalContentAlignment = 3; // Stretch
-		lv.VerticalAlignment = 3; // Stretch
+		(lv as any).IsItemClickEnabled = true;
+		(lv as any).SelectionMode = 0; // None
+		(lv as any).HorizontalAlignment = 3; // Stretch
+		(lv as any).HorizontalContentAlignment = 3; // Stretch
+		(lv as any).VerticalAlignment = 3; // Stretch
 		return lv;
 	}
 
@@ -36,167 +35,180 @@ export class ListView extends ListViewBase {
 		if (!lv) return;
 		const ref = new WeakRef(this);
 
-		this._itemClickDelegate = new Windows.UI.Xaml.Controls.ItemClickEventHandler((_sender: any, e: Windows.UI.Xaml.Controls.ItemClickEventArgs) => {
+		this._itemClickDelegate = new (Windows.UI.Xaml.Controls as any).ItemClickEventHandler((_sender: any, e: any) => {
 			const owner = ref.deref();
 			if (!owner) return;
 			try {
-				const marker = e?.ClickedItem;
-				if (marker == null) return;
-				const index: number = (marker as any).__ns_index ?? -1;
+				const clicked = e?.ClickedItem;
+				if (clicked == null) return;
+				const index: number = (clicked as any).__ns_index ?? -1;
 				if (index < 0) return;
-				const container = lv.ContainerFromIndex(index);
-				const view = owner._containerToView.get(container) ?? null;
-				owner.notify({ eventName: ITEMTAP, object: owner, index, view });
+				const view = owner._views.get(index) ?? null;
+				const section = (clicked as any).__ns_section;
+				// Include section when available (sectioned lists)
+				owner.notify({ eventName: ITEMTAP, object: owner, index, view, section });
 			} catch (_e) {}
 		});
-		lv.ItemClick = this._itemClickDelegate;
-
-		// ContainerContentChanging fires when a virtualised container enters or
-		// leaves the viewport. InRecycleQueue === true means the container is
-		// being returned to the pool — treat that as "clear container".
-		// ContainerContentChanging uses TypedEventHandler — assign a raw function via any
-		this._containerChangingDelegate = (_sender: any, args: any) => {
-			const owner = ref.deref();
-			if (!owner) return;
-			try {
-				if (args.InRecycleQueue) {
-					owner._recycleContainer(args.ItemContainer);
-				} else {
-					owner._prepareContainer(args.ItemContainer, args.ItemIndex as number);
-					args.Handled = true;
-				}
-			} catch (_e) {}
-		};
-		(lv as any).ContainerContentChanging = this._containerChangingDelegate;
+		try { (lv as any).ItemClick = this._itemClickDelegate; } catch (_e) {}
 	}
 
 	public disposeNativeView(): void {
-		const lv = this.nativeViewProtected;
-		if (lv) {
-			lv.ItemClick = null;
-			try { (lv as any).ContainerContentChanging = null; } catch (_e) {}
-		}
+		try { (this.nativeViewProtected as any).ItemClick = null; } catch (_e) {}
 		this._itemClickDelegate = null;
-		this._containerChangingDelegate = null;
 		this._destroyAllViews();
 		super.disposeNativeView?.();
 	}
 
-	// Item views are placed as container.Content — skip adding to our own native children.
+	// Views are managed manually — skip the default native visual tree placement.
 	public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
-		if (this._managedViews.has(child)) return true;
+		if (this._views.has((child as any).__ns_index ?? -2)) return true;
 		return super._addViewToNativeVisualTree(child, atIndex);
 	}
 
-	public _prepareContainer(element: any, index: number): void {
-		const template = this._getItemTemplate(index);
-		const key = template.key;
-
-		let view: View | undefined = this._pool.get(key)?.pop();
-		if (view) {
-			this._prepareItem(view, index);
-		} else {
-			const args: any = { eventName: ITEMLOADING, object: this, index, view: null as any };
-			try { args.view = template.createView(); } catch (_e) {}
-			if (!args.view) args.view = this._getDefaultItemContent(index);
-			this.notify(args);
-			if (!args.view) args.view = this._getDefaultItemContent(index);
-			view = args.view as View;
-			this._prepareItem(view, index);
-
-			// Mark before _addView so _addViewToNativeVisualTree skips native placement.
-			this._managedViews.add(view);
-			this._addView(view);
-		}
-
-		if (!view) return;
-
-		try {
-			(element as any).HorizontalAlignment = 3; // Stretch
-			(element as any).HorizontalContentAlignment = 3; // Stretch
-			(element as any).Padding = Windows.UI.Xaml.ThicknessHelper.FromUniformLength(0);
-		} catch (_e) {}
-
-		const nativeContent = (view as any).nativeViewProtected;
-		if (nativeContent) {
-			try { (element as any).Content = nativeContent; } catch (_e) {}
-		}
-
-		this._containerToView.set(element, view);
-		(element as any).__ns_templateKey = key;
-
-		if (index === this._getItemCount() - 1) {
-			this.notify({ eventName: LOADMOREITEMS, object: this });
-		}
-	}
-
-	public _recycleContainer(element: any): void {
-		const view = this._containerToView.get(element);
-		if (view) {
-			try { (element as any).Content = null; } catch (_e) {}
-			const key: string = (element as any).__ns_templateKey ?? 'default';
-			let pool = this._pool.get(key);
-			if (!pool) { pool = []; this._pool.set(key, pool); }
-			pool.push(view);
-			this._containerToView.delete(element);
-		}
-		try { delete (element as any).__ns_templateKey; } catch (_e) {}
-	}
-
 	private _destroyAllViews(): void {
-		for (const [container] of this._containerToView) {
-			try { (container as any).Content = null; } catch (_e) {}
-		}
-		this._containerToView.clear();
-		this._pool.clear();
-		for (const view of this._managedViews) {
+		for (const view of this._views.values()) {
 			try { this._removeView(view); } catch (_e) {}
 		}
-		this._managedViews.clear();
+		this._views.clear();
+		this._nativeItems = [];
 	}
 
 	private _getItemCount(): number {
 		if (!this.items) return 0;
-		const src = this.items as any;
-		return typeof src.length === 'number' ? src.length : 0;
+		if (!this.sectioned) {
+			const src = this.items as any;
+			return typeof src.length === 'number' ? src.length : 0;
+		}
+
+		// Sectioned: sum lengths of all sections
+		let total = 0;
+		const sections = this._getSectionCount();
+		for (let s = 0; s < sections; s++) {
+			const itemsInSection = this._getItemsInSection(s) as any;
+			if (!itemsInSection) continue;
+			if (typeof itemsInSection.length === 'number') {
+				total += itemsInSection.length;
+			}
+		}
+		return total;
 	}
 
 	public refresh(): void {
 		const lv = this.nativeViewProtected;
 		if (!lv) return;
 
-		// Clear ItemsSource first; ContainerContentChanging with InRecycleQueue
-		// fires for visible containers, returning their views to the pool.
-		(lv as any).ItemsSource = null;
-
-		// Destroy everything so stale views are not reused across a full refresh.
 		this._destroyAllViews();
 
 		const count = this._getItemCount();
-		const markers: any[] = new Array(count);
-		for (let i = 0; i < count; i++) {
-			markers[i] = { __ns_index: i };
+		const nativeItems: any[] = [];
+
+		if (this.sectioned) {
+			let globalIndex = 0;
+			const sections = this._getSectionCount();
+			for (let s = 0; s < sections; s++) {
+				const itemsInSection = this._getItemsInSection(s) as any;
+				const sectionLen = itemsInSection && typeof itemsInSection.length === 'number' ? itemsInSection.length : 0;
+				for (let j = 0; j < sectionLen; j++) {
+					try {
+						// Determine data item for template selection
+						const dataItem = this._getDataItemInSection(s, j);
+						let templateKey = 'default';
+						try {
+							if ((this as any)._itemTemplateSelector) {
+								templateKey = (this as any)._itemTemplateSelector(dataItem, globalIndex, this.items);
+							}
+						} catch (_e) {}
+						let template = this._itemTemplatesInternal[0];
+						for (let t of this._itemTemplatesInternal) {
+							if (t.key === templateKey) { template = t; break; }
+						}
+
+						// Create the view first
+						let view: View | null = null as any;
+						try { view = template.createView(); } catch (_e) {}
+						if (!view) view = this._getDefaultItemContent(globalIndex);
+						if (!view) { globalIndex++; continue; }
+
+						(view as any).__ns_index = globalIndex;
+						// Prepare (set bindingContext) before firing itemLoading so handlers see data-bound context
+						this._prepareItemInSection(view, s, j);
+
+						const args: any = { eventName: ITEMLOADING, object: this, index: globalIndex, view: view, section: s };
+						this.notify(args);
+						// If handler replaced the view, ensure it is prepared and indexed
+						view = args.view || view;
+						if (!(view as any).__ns_index) (view as any).__ns_index = globalIndex;
+						this._prepareItemInSection(view, s, j);
+						this._views.set(globalIndex, view as View);
+						this._addView(view as View);
+
+						const nativeContent = (view as any).nativeViewProtected;
+						if (nativeContent) {
+							(nativeContent as any).__ns_index = globalIndex;
+							(nativeContent as any).__ns_section = s;
+							(nativeContent as any).__ns_indexInSection = j;
+							nativeItems.push(nativeContent);
+						}
+						globalIndex++;
+					} catch (_e) {}
+				}
+			}
+		} else {
+			for (let i = 0; i < count; i++) {
+				try {
+					const template = this._getItemTemplate(i);
+					// Create and prepare view before notifying so bindingContext is available in handlers
+					let view: View | null = null as any;
+					try { view = template.createView(); } catch (_e) {}
+					if (!view) view = this._getDefaultItemContent(i);
+					if (!view) continue;
+
+					(view as any).__ns_index = i;
+					this._prepareItem(view, i);
+					const args: any = { eventName: ITEMLOADING, object: this, index: i, view: view };
+					this.notify(args);
+					view = args.view || view;
+					if (!(view as any).__ns_index) (view as any).__ns_index = i;
+					this._prepareItem(view, i);
+					try { console.log('[ListView.win] prepared item', i, 'bindingContext=', (view as any).bindingContext ? 'object' : typeof (view as any).bindingContext, 'hasNative=', !!(view as any).nativeViewProtected); } catch (_e) {}
+					this._views.set(i, view as View);
+					this._addView(view as View);
+
+					const nativeContent = (view as any).nativeViewProtected;
+					if (nativeContent) {
+						(nativeContent as any).__ns_index = i;
+						nativeItems.push(nativeContent);
+					}
+				} catch (_e) {}
+			}
 		}
-		(lv as any).ItemsSource = markers;
+
+		this._nativeItems = nativeItems;
+		try { (lv as any).ItemsSource = nativeItems; } catch (_e) {}
+
+		if (count > 0) {
+			this.notify({ eventName: LOADMOREITEMS, object: this });
+		}
 	}
 
 	public eachChildView(callback: (child: View) => boolean): void {
-		for (const view of this._managedViews) {
+		for (const view of this._views.values()) {
 			if (!callback(view)) break;
 		}
 	}
 
 	public isItemAtIndexVisible(index: number): boolean {
-		return !!this.nativeViewProtected?.ContainerFromIndex(index);
+		try { return !!this.nativeViewProtected?.ContainerFromIndex(index); } catch (_e) { return false; }
 	}
 
 	public scrollToIndex(index: number): void {
-		const lv = this.nativeViewProtected;
-		if (!lv || index < 0 || index >= this._getItemCount()) return;
-		try {
-			const item = (lv as any).Items?.GetAt(index);
-			if (item) lv.ScrollIntoView(item);
-		} catch (_e) {}
+		const item = this._nativeItems[index];
+		if (!item) return;
+		try { this.nativeViewProtected?.ScrollIntoView(item); } catch (_e) {}
+	}
+
+	public scrollToIndexAnimated(index: number): void {
+		this.scrollToIndex(index);
 	}
 
 	public onLoaded(): void {
@@ -216,8 +228,20 @@ export class ListView extends ListViewBase {
 		if (value) {
 			this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
 		}
-		if (this.nativeViewProtected) {
-			this.refresh();
-		}
+		if (this.nativeViewProtected) this.refresh();
+	}
+
+	[rowHeightProperty.getDefault]() {
+		return 'auto' as any;
+	}
+	[rowHeightProperty.setNative](_value: any) {
+		// Applied per-item via _effectiveRowHeight in refresh().
+	}
+
+	[separatorColorProperty.getDefault](): Color {
+		return null as unknown as Color;
+	}
+	[separatorColorProperty.setNative](_value: Color) {
+		// WinUI ListView separators are style-based; not directly settable.
 	}
 }
