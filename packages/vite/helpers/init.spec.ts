@@ -40,16 +40,19 @@ describe('init helper', () => {
 			const pkgRaw = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 			const pkg = JSON.parse(pkgRaw);
 
-			expect(pkg.devDependencies).toHaveProperty('concurrently');
-			expect(pkg.devDependencies).toHaveProperty('wait-on');
 			expect(pkg.dependencies).toHaveProperty('@valor/nativescript-websockets');
 
-			expect(pkg.scripts['dev:ios']).toBeDefined();
-			expect(pkg.scripts['dev:android']).toBeDefined();
-			expect(pkg.scripts['dev:server:ios']).toBeDefined();
-			expect(pkg.scripts['dev:server:android']).toBeDefined();
-			expect(pkg.scripts['ios']).toBeDefined();
-			expect(pkg.scripts['android']).toBeDefined();
+			// CLI-managed dev server: no concurrently/wait-on, no separate
+			// dev:server:* scripts.
+			expect(pkg.devDependencies?.concurrently).toBeUndefined();
+			expect(pkg.devDependencies?.['wait-on']).toBeUndefined();
+			expect(pkg.scripts['dev:server:ios']).toBeUndefined();
+			expect(pkg.scripts['dev:server:android']).toBeUndefined();
+
+			expect(pkg.scripts['ios']).toBe('ns debug ios');
+			expect(pkg.scripts['android']).toBe('ns debug android');
+			expect(pkg.scripts['dev:ios']).toBe('npm run ios');
+			expect(pkg.scripts['dev:android']).toBe('npm run android');
 
 			const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
 			expect(gitignore.split(/\r?\n/)).toContain('.ns-vite-build');

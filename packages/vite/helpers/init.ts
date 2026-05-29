@@ -15,11 +15,6 @@ interface PackageJson {
 	[key: string]: any;
 }
 
-const DEV_DEPS = {
-	concurrently: '^9.0.0',
-	'wait-on': '^9.0.0',
-} as const;
-
 const RUNTIME_DEPS = {
 	'@valor/nativescript-websockets': '^2.0.2',
 } as const;
@@ -37,25 +32,10 @@ function writePackageJson(pkg: PackageJson) {
 
 function ensureDependencies(pkg: PackageJson) {
 	pkg.dependencies = pkg.dependencies ?? {};
-	pkg.devDependencies = pkg.devDependencies ?? {};
-
-	for (const [name, version] of Object.entries(DEV_DEPS)) {
-		pkg.devDependencies[name] = version;
-	}
 
 	for (const [name, version] of Object.entries(RUNTIME_DEPS)) {
 		pkg.dependencies[name] = version;
 	}
-}
-
-function ensureScripts(pkg: PackageJson) {
-	pkg.scripts = pkg.scripts ?? {};
-	pkg.scripts['dev:ios'] = 'concurrently -k -n vite,ns "npm run dev:server:ios" "wait-on tcp:5173 && npm run ios"';
-	pkg.scripts['dev:android'] = 'concurrently -k -n vite,ns "npm run dev:server:android" "wait-on tcp:5173 && npm run android"';
-	pkg.scripts['dev:server:ios'] = 'vite serve -- --env.ios --env.hmr';
-	pkg.scripts['dev:server:android'] = 'vite serve -- --env.android --env.hmr';
-	pkg.scripts['ios'] = 'ns debug ios';
-	pkg.scripts['android'] = 'ns debug android';
 }
 
 function ensureGitignore() {
@@ -133,7 +113,6 @@ function ensureViteConfig() {
 export async function runInit() {
 	const pkg = readPackageJson();
 	ensureDependencies(pkg);
-	ensureScripts(pkg);
 	writePackageJson(pkg);
 	ensureGitignore();
 	ensureViteConfig();
