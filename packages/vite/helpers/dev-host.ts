@@ -76,7 +76,9 @@
  */
 
 import os from 'node:os';
-import { execSync as nodeExecSync } from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 export type DevHostPlatform = 'android' | 'ios' | 'visionos';
 
@@ -107,6 +109,14 @@ interface AdbReverseStatus {
 	error?: string;
 	/** Device serials that successfully received the reverse mapping. */
 	devices: string[];
+	/**
+	 * Set when the mapping was established by the NativeScript CLI (it
+	 * exported `NS_ADB_REVERSE_READY=1`) rather than by this plugin.
+	 * In that case the plugin never spawned `adb` at all — it simply
+	 * trusts that `127.0.0.1:<port>` already tunnels to the host. See
+	 * the CLI-handoff note in `tryEnableAdbReverse`.
+	 */
+	viaCli?: boolean;
 }
 const adbReverseCache = new Map<number, AdbReverseStatus>();
 
@@ -209,23 +219,76 @@ export interface ResolveDeviceHostOptions {
 	/**
 	 * Test seam for the adb-reverse subprocess. When passed, this
 	 * helper uses the injected exec function instead of spawning
-	 * `child_process.execSync`. Runtime callers omit this and pick
-	 * up the real ADB binary on PATH.
+	 * `child_process.execFileSync`. Runtime callers omit this and pick
+	 * up the SDK-resolved adb binary (see `resolveAdbPath`).
 	 */
 	adbExec?: AdbExec;
 }
 
 /**
  * Subprocess shim used by `tryEnableAdbReverse`. Production code
- * routes through `child_process.execSync`; tests stub it so the
- * suite can exercise success / failure / "multiple devices" /
- * "no ADB on PATH" paths without touching a real Android emulator.
+ * routes through `child_process.execFileSync` — argv form, NO
+ * `/bin/sh -c` wrapper. That matters for two reasons:
  *
- * The signature deliberately matches the subset of `execSync` we
- * need so we never have to plumb `ExecSyncOptionsWithBufferEncoding`
- * through the call chain — a string-returning shim is enough here.
+ *   1. On timeout, `execFileSync` signals the actual `adb` child
+ *      directly. The old `execSync('adb …')` form spawned a shell
+ *      that spawned adb; killing the shell on timeout ORPHANED the
+ *      adb grandchild, and a half-handshaked orphan can wedge the
+ *      adb daemon out from under the CLI's device tracker.
+ *
+ *   2. No shell means no quoting / `$PATH` surprises — we invoke an
+ *      absolute, SDK-resolved adb binary (see `resolveAdbPath`) with
+ *      a literal argv.
+ *
+ * Tests stub this so the suite can exercise success / failure /
+ * "multiple devices" / "no ADB" paths without touching a real
+ * Android emulator. The shim receives the resolved adb path and the
+ * argv array (e.g. `['-s', 'emulator-5554', 'reverse', …]`).
  */
-export type AdbExec = (cmd: string, opts: { timeout: number }) => string;
+export type AdbExec = (adbPath: string, args: string[], opts: { timeout: number }) => string;
+
+/**
+ * Resolve the `adb` executable the way the Android SDK tooling does,
+ * so the plugin and the NativeScript CLI drive the *same* adb client.
+ *
+ * Why this is load-bearing. A bare `adb` from `$PATH` is frequently a
+ * DIFFERENT version than the one the CLI resolves from the SDK. When
+ * two adb *clients* of differing versions talk to the one global adb
+ * server (port 5037), the newer client prints
+ * `adb server version (NN) doesn't match this client (MM); killing...`
+ * and restarts the daemon — severing the CLI's `track-devices` stream
+ * and hanging it at "Searching for devices…" forever. Resolving the
+ * exact SDK adb eliminates that mismatch.
+ *
+ * Precedence:
+ *   1. `NS_ADB_PATH` — the CLI exports the absolute path to the adb it
+ *      itself uses. Always wins so the two processes are byte-identical.
+ *   2. `$ANDROID_HOME/platform-tools/adb` (+ `.exe` on Windows).
+ *   3. `$ANDROID_SDK_ROOT/platform-tools/adb`.
+ *   4. Bare `adb` — last-resort PATH lookup (kept only so a machine
+ *      with adb on PATH but no SDK env still limps along).
+ *
+ * Candidates from (2)/(3) are existence-checked; a stale env var that
+ * points at a missing binary falls through rather than guaranteeing a
+ * spawn failure.
+ */
+export function resolveAdbPath(env: NodeJS.ProcessEnv = process.env): string {
+	const explicit = (env.NS_ADB_PATH || '').trim();
+	if (explicit) return explicit;
+
+	const exe = process.platform === 'win32' ? 'adb.exe' : 'adb';
+	for (const root of [env.ANDROID_HOME, env.ANDROID_SDK_ROOT]) {
+		const r = (root || '').trim();
+		if (!r) continue;
+		const candidate = path.join(r, 'platform-tools', exe);
+		try {
+			if (fs.existsSync(candidate)) return candidate;
+		} catch {
+			// fs probe failed (perms, race) — fall through to the next root.
+		}
+	}
+	return exe;
+}
 
 export interface TryEnableAdbReverseOptions {
 	/** Port to forward on both sides of the ADB bridge. */
@@ -281,26 +344,75 @@ export function __resetAdbReverseCacheForTests(): void {
  * because the wildcard "Android-ness" of the call is already implied
  * by the caller — only Android consumers hit this path.
  *
+ * CLI handoff (the preferred path). When the NativeScript CLI drives
+ * the run it already owns device discovery, install, and launch — it
+ * knows the exact target serial and exactly when the device is ready.
+ * In that mode the CLI performs the `adb reverse` itself, with its own
+ * SDK-resolved adb, AFTER the device is up, and exports
+ * `NS_ADB_REVERSE_READY=1`. Seeing that flag, this function returns a
+ * synthetic success WITHOUT spawning adb at all — removing the second,
+ * racing adb owner that used to collide with the CLI's device search
+ * during cold start. `NS_DEVICE_SERIAL` (the CLI's deploy target) and
+ * `NS_ADB_PATH` (the CLI's adb) are honored in the self-managed
+ * fallback below for setups where the CLI did NOT pre-wire the reverse.
+ *
+ * Self-managed hardening (fallback). When `NS_ADB_REVERSE_READY` is
+ * absent we still set the mapping ourselves, but defensively:
+ *   - resolve adb from the SDK (`resolveAdbPath`) — never a bare PATH
+ *     `adb` that could version-mismatch and kill the CLI's daemon;
+ *   - `adb start-server` once up front so a cold daemon is owned by a
+ *     single, version-matched client before anything else touches it;
+ *   - argv `execFileSync` (no shell) with a child-killing timeout so a
+ *     hung adb is reaped rather than orphaned;
+ *   - `wait-for-device` per serial so we don't issue `reverse` against
+ *     an emulator whose `adbd` hasn't finished coming up.
+ *
  * Failure modes (all surface as a cached `succeeded: false`):
  *   - `NS_HMR_NO_ADB_REVERSE=1` — explicit opt-out for unusual
  *     setups (e.g. Wi-Fi-connected device with no ADB tunnel, CI
  *     containers without ADB installed).
- *   - `adb` not on PATH — common in fresh dev machines that have
- *     the Android SDK installed but no shell init.
+ *   - `adb` not resolvable / not runnable.
  *   - No connected devices — user started Vite before booting the
  *     emulator. We do NOT keep retrying after the first failure
  *     because the URL is baked into bundle.mjs at config-load time
  *     and there's no point in flipping it later.
  *   - "more than one device" — fatal for unqualified `adb reverse`,
- *     so we enumerate via `adb devices` and apply the reverse
- *     individually with `-s <serial>`. As long as at least one
- *     device gets the mapping we treat the whole call as a success.
+ *     so we target each serial individually with `-s <serial>`. As
+ *     long as at least one device gets the mapping we treat the whole
+ *     call as a success.
  */
 export function tryEnableAdbReverse(opts: TryEnableAdbReverseOptions): AdbReverseStatus {
 	const cached = adbReverseCache.get(opts.port);
 	if (cached) return cached;
 
 	const env = opts.env || process.env;
+
+	// Explicit opt-out wins over everything — the user wants the
+	// `10.0.2.2` / LAN path, so don't claim a tunnel exists even if the
+	// CLI thinks it wired one.
+	if (isTruthyEnvFlag(env.NS_HMR_NO_ADB_REVERSE)) {
+		const status: AdbReverseStatus = { attempted: false, succeeded: false, devices: [], error: 'opt-out via NS_HMR_NO_ADB_REVERSE' };
+		adbReverseCache.set(opts.port, status);
+		return status;
+	}
+
+	// CLI handoff. The CLI already established the reverse with its own
+	// adb after the device was ready; we trust it and never spawn adb.
+	// This is what removes the cold-start race entirely.
+	if (isTruthyEnvFlag(env.NS_ADB_REVERSE_READY)) {
+		const serial = (env.NS_DEVICE_SERIAL || '').trim();
+		const status: AdbReverseStatus = {
+			attempted: false,
+			succeeded: true,
+			devices: serial ? [serial] : [],
+			viaCli: true,
+		};
+		adbReverseCache.set(opts.port, status);
+		try {
+			console.log(`[NativeScript] adb reverse for tcp:${opts.port} provided by the NativeScript CLI${serial ? ` (device ${serial})` : ''} — device-side 127.0.0.1:${opts.port} tunnels to host.`);
+		} catch {}
+		return status;
+	}
 
 	// Test-safety guard. When we're running inside vitest / jest /
 	// any other test runner AND the caller did NOT inject an explicit
@@ -316,44 +428,65 @@ export function tryEnableAdbReverse(opts: TryEnableAdbReverseOptions): AdbRevers
 		return { attempted: false, succeeded: false, devices: [], error: 'test environment (auto-skip)' };
 	}
 
-	const exec: AdbExec = opts.exec || ((cmd, o) => nodeExecSync(cmd, { timeout: o.timeout, stdio: ['ignore', 'pipe', 'pipe'] }).toString());
+	const adbPath = resolveAdbPath(env);
+	const exec: AdbExec =
+		opts.exec ||
+		((bin, args, o) =>
+			execFileSync(bin, args, {
+				timeout: o.timeout,
+				// No `/bin/sh` wrapper: on timeout the signal lands on the
+				// real adb child, not a shell that would orphan it.
+				killSignal: 'SIGKILL',
+				stdio: ['ignore', 'pipe', 'pipe'],
+				encoding: 'utf8',
+			}) as string);
 
-	if (isTruthyEnvFlag(env.NS_HMR_NO_ADB_REVERSE)) {
-		const status: AdbReverseStatus = { attempted: false, succeeded: false, devices: [], error: 'opt-out via NS_HMR_NO_ADB_REVERSE' };
-		adbReverseCache.set(opts.port, status);
-		return status;
-	}
-
-	// First enumerate. We need this to (a) bail cleanly when there's
-	// no device at all and (b) handle the multi-device case which
-	// makes unqualified `adb reverse` ambiguous and refuse the call.
-	let devices: string[] = [];
+	// Ensure a single, version-matched adb daemon is up and owned by
+	// THIS client before any other command. Best-effort: if it throws,
+	// the `adb devices` call below reports the real failure.
 	try {
-		const raw = exec('adb devices', { timeout: 5000 });
-		devices = parseAdbDevicesOutput(raw);
-	} catch (err: any) {
-		const status: AdbReverseStatus = {
-			attempted: true,
-			succeeded: false,
-			devices: [],
-			error: `adb not available: ${String(err?.message || err)}`,
-		};
-		adbReverseCache.set(opts.port, status);
-		return status;
+		exec(adbPath, ['start-server'], { timeout: 10000 });
+	} catch {
+		// start-server failures are reported via the enumerate step.
 	}
 
-	if (devices.length === 0) {
-		const status: AdbReverseStatus = {
-			attempted: true,
-			succeeded: false,
-			devices: [],
-			error: 'no connected Android devices',
-		};
-		adbReverseCache.set(opts.port, status);
+	// Determine target serials. When the CLI handed us the deploy
+	// target (`NS_DEVICE_SERIAL`) we scope to exactly that serial and
+	// skip enumeration — no `adb devices`, no multi-device ambiguity.
+	// Otherwise enumerate so we (a) bail cleanly when there's no device
+	// and (b) target each connected device individually.
+	let devices: string[] = [];
+	const targetSerial = (env.NS_DEVICE_SERIAL || '').trim();
+	if (targetSerial) {
+		devices = [targetSerial];
+	} else {
 		try {
-			console.warn(`[NativeScript] adb reverse skipped — no Android devices connected yet. Bundle URLs will use 10.0.2.2 (emulator NAT). For best reliability boot the emulator BEFORE \`ns run android\` so adb reverse can wire 127.0.0.1:${opts.port} through ADB instead.`);
-		} catch {}
-		return status;
+			const raw = exec(adbPath, ['devices'], { timeout: 5000 });
+			devices = parseAdbDevicesOutput(raw);
+		} catch (err: any) {
+			const status: AdbReverseStatus = {
+				attempted: true,
+				succeeded: false,
+				devices: [],
+				error: `adb not available: ${String(err?.message || err)}`,
+			};
+			adbReverseCache.set(opts.port, status);
+			return status;
+		}
+
+		if (devices.length === 0) {
+			const status: AdbReverseStatus = {
+				attempted: true,
+				succeeded: false,
+				devices: [],
+				error: 'no connected Android devices',
+			};
+			adbReverseCache.set(opts.port, status);
+			try {
+				console.warn(`[NativeScript] adb reverse skipped — no Android devices connected yet. Bundle URLs will use 10.0.2.2 (emulator NAT). For best reliability boot the emulator BEFORE \`ns run android\` so adb reverse can wire 127.0.0.1:${opts.port} through ADB instead.`);
+			} catch {}
+			return status;
+		}
 	}
 
 	// Apply per-device so multi-device setups don't hit the "more
@@ -364,7 +497,17 @@ export function tryEnableAdbReverse(opts: TryEnableAdbReverseOptions): AdbRevers
 	const errors: string[] = [];
 	for (const serial of devices) {
 		try {
-			exec(`adb -s ${serial} reverse tcp:${opts.port} tcp:${opts.port}`, { timeout: 5000 });
+			// Don't `reverse` against a device whose adbd isn't accepting
+			// yet (emulators report `device` state before `adbd` is ready).
+			// `wait-for-device` blocks only until the transport is up, then
+			// returns immediately on an already-ready device.
+			try {
+				exec(adbPath, ['-s', serial, 'wait-for-device'], { timeout: 10000 });
+			} catch {
+				// Non-fatal: fall through and let `reverse` surface the real
+				// error if the device truly isn't reachable.
+			}
+			exec(adbPath, ['-s', serial, 'reverse', `tcp:${opts.port}`, `tcp:${opts.port}`], { timeout: 5000 });
 			successes.push(serial);
 		} catch (err: any) {
 			errors.push(`${serial}: ${String(err?.message || err)}`);
@@ -380,9 +523,8 @@ export function tryEnableAdbReverse(opts: TryEnableAdbReverseOptions): AdbRevers
 	adbReverseCache.set(opts.port, status);
 
 	// One-line user-facing receipt so the dev knows why bundle.mjs
-	// suddenly switched from `10.0.2.2` to `localhost`. We only log
-	// outside test runners (covered above) so spec output stays
-	// clean.
+	// suddenly switched from `10.0.2.2` to `127.0.0.1`. We only log
+	// outside test runners (covered above) so spec output stays clean.
 	try {
 		if (status.succeeded) {
 			console.log(`[NativeScript] adb reverse tcp:${opts.port} tcp:${opts.port} → ${successes.join(', ')} (Android device-side 127.0.0.1:${opts.port} now tunnels to host — bypasses emulator NAT)`);
