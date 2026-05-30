@@ -212,6 +212,31 @@ function createTsConfigResolvers(opts: { paths: any; baseUrl: string; platform: 
 	return resolvers;
 }
 
+/**
+ * Absolute directory roots that the project's tsconfig `paths` aliases point at.
+ *
+ * Used to scope HMR to configured shared libraries in a monorepo: a file only
+ * triggers an update if it lives under the app source dir or one of these
+ * alias roots. When an alias targets a file (e.g. `@org/lib -> libs/lib/src/index.ts`)
+ * the file's directory is returned so sibling source files in that library are
+ * also in scope. Wildcard aliases (`@org/* -> libs/*`) contribute their resolved
+ * base directory (`libs`).
+ */
+export function getTsConfigAliasRoots(opts: { paths?: Record<string, string[]>; baseUrl?: string }): string[] {
+	if (!opts?.paths) return [];
+	const resolvers = createTsConfigResolvers({ paths: opts.paths, baseUrl: opts.baseUrl || '.', platform: '' });
+	const roots: string[] = [];
+	for (const resolver of resolvers) {
+		let dest = resolver.resolvedDestination;
+		if (!dest) continue;
+		if (path.extname(dest)) {
+			dest = path.dirname(dest);
+		}
+		roots.push(dest);
+	}
+	return roots;
+}
+
 export function createTsConfigPathsResolver(opts: { paths: Record<string, string[]>; baseUrl: string; platform: string; verbose?: boolean }): Plugin | undefined {
 	const resolvers = createTsConfigResolvers(opts);
 	if (!resolvers.length) {

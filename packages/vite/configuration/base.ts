@@ -38,6 +38,7 @@ import { getProjectAppPath, getProjectAppRelativePath } from '../helpers/utils.j
 import { appComponentsPlugin } from '../helpers/app-components.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { normalizeModuleId } from '../helpers/normalize-id.js';
+import { getHmrWatchIgnoreGlobs } from '../helpers/hmr-scope.js';
 // Load HMR plugins lazily to avoid compiling dev-only sources during library build
 // This prevents TypeScript from traversing the heavy HMR implementation graph when not needed
 // function getHMRPluginsSafe(opts: {
@@ -513,7 +514,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 					},
 					cors: true,
 					watch: {
-						ignored: ['**/.DS_Store', '**/hooks/**', '**/platforms/**'],
+						ignored: getHmrWatchIgnoreGlobs(distOutputFolder),
 					},
 					// Widen `fs.allow` to the detected monorepo workspace root.
 					//

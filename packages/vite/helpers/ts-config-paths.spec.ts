@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createTsConfigPathsResolver } from './ts-config-paths.js';
+import { createTsConfigPathsResolver, getTsConfigAliasRoots } from './ts-config-paths.js';
 
 const tempDirs: string[] = [];
 
@@ -65,5 +65,22 @@ describe('createTsConfigPathsResolver', () => {
 
 		expect(resolved).not.toContain('*');
 		expect(resolved!.replace(/\\/g, '/')).toMatch(/C:\/repo\/libs\/common\/src\/lib\/menu$/);
+	});
+});
+
+describe('getTsConfigAliasRoots', () => {
+	it('returns the directory of a file-targeting alias so sibling lib sources are in scope', () => {
+		const roots = getTsConfigAliasRoots({ paths: { '@org/lib': ['/abs/libs/lib/src/index.ts'] }, baseUrl: '.' });
+		expect(roots.map((r) => r.replace(/\\/g, '/'))).toContain('/abs/libs/lib/src');
+	});
+
+	it('returns the resolved base directory for a wildcard alias', () => {
+		const roots = getTsConfigAliasRoots({ paths: { '@org/*': ['/abs/libs/*'] }, baseUrl: '.' });
+		expect(roots.map((r) => r.replace(/\\/g, '/'))).toContain('/abs/libs');
+	});
+
+	it('returns an empty array when there are no paths', () => {
+		expect(getTsConfigAliasRoots({})).toEqual([]);
+		expect(getTsConfigAliasRoots({ paths: {} })).toEqual([]);
 	});
 });

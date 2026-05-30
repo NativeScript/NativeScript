@@ -39,6 +39,8 @@ import { getCliFlags } from '../../helpers/cli-flags.js';
 import { buildCoreUrl, buildCoreUrlPath, normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
 import { resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helpers/dev-host.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
+import { getHmrSourceRoots, isWithinHmrScope } from '../../helpers/hmr-scope.js';
+import { getTsConfigData } from '../../helpers/ts-config-paths.js';
 import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
 import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
@@ -111,6 +113,22 @@ const __processEnvJson = JSON.stringify(__processEnvEntries);
 const { parse, compileTemplate, compileScript } = vueSfcCompiler;
 
 const APP_ROOT_DIR = getProjectAppPath();
+
+// Absolute directories HMR is allowed to react to: the app source dir
+// (`nativescript.config.ts` > `appPath`) plus tsconfig-configured shared
+// libraries. Computed once per process (tsconfig data is itself memoized) and
+// used to scope `handleHotUpdate` so non-source changes.
+let _hmrSourceRoots: string[] | null = null;
+function getHmrSourceRootsCached(): string[] {
+	if (_hmrSourceRoots) return _hmrSourceRoots;
+	let tsConfig: { paths?: Record<string, string[]>; baseUrl?: string } = {};
+	try {
+		tsConfig = getTsConfigData({ platform: '' });
+	} catch {}
+	_hmrSourceRoots = getHmrSourceRoots(tsConfig);
+	return _hmrSourceRoots;
+}
+
 const APP_VIRTUAL_PREFIX = getProjectAppVirtualPath();
 const APP_VIRTUAL_WITH_SLASH = `${APP_VIRTUAL_PREFIX}/`;
 const DEFAULT_MAIN_ENTRY = getProjectAppRelativePath('app.ts');
@@ -6252,6 +6270,15 @@ export const piniaSymbol = p.piniaSymbol;
 				return;
 			}
 			if (isRuntimeGraphExcludedPath(file)) {
+				return;
+			}
+			// Authoritative "what triggers HMR" gate, applied before the pending
+			// overlay broadcast below: react only to files inside the app source
+			// dir (`appPath`) or a tsconfig-configured shared library.
+			if (!isWithinHmrScope(file, getHmrSourceRootsCached())) {
+				if (verbose) {
+					console.log(`[ns-hmr][server] ignored change (outside HMR source scope): ${file}`);
+				}
 				return;
 			}
 			// Always-on update timing. Captures the four phases (await,
