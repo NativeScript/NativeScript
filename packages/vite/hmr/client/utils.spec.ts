@@ -113,12 +113,9 @@ describe('buildEvictionUrls', () => {
 	});
 
 	it('builds BOTH canonical (no-ext) and extensioned /ns/m URLs and dedupes repeats', () => {
-		// Eviction emits both URL variants per spec because the iOS runtime's
-		// `g_moduleRegistry` and `g_prefetchCache` may key the same logical
-		// module under either variant depending on which code path populated
-		// the entry — see `buildEvictionUrls` in `utils.ts` for the full
-		// rationale (the "one-save-behind" bug documented in
-		// `HMR_DEEP_DIVE.md` §3).
+		// Eviction emits both URL variants per spec because the iOS runtime
+		// may key the same module under either variant depending on which
+		// code path populated the entry (see buildEvictionUrls in utils.ts).
 		const urls = buildEvictionUrls(['/src/main.ts', '/src/main.ts', 'src/util.ts']);
 		expect(urls).toEqual([`${ORIGIN}/ns/m/src/main`, `${ORIGIN}/ns/m/src/main.ts`, `${ORIGIN}/ns/m/src/util`, `${ORIGIN}/ns/m/src/util.ts`]);
 	});

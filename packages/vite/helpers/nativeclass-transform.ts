@@ -4,6 +4,7 @@ import ts from 'typescript';
 // computed property names (e.g. ['frame-in']).
 // import nativeClassTransformer from '../transformers/NativeClass/index.js';
 import { getCliFlags } from './cli-flags.js';
+import type { Platform } from './platform-types.js';
 
 /**
  * Apply the NativeClass transformer to a source string. Returns null if no change performed.
@@ -13,7 +14,7 @@ export function transformNativeClassSource(code: string, fileName: string) {
 	// Example: don't run Android-specific transforms on iOS builds and vice versa.
 	try {
 		const flags = getCliFlags();
-		const platform: 'android' | 'ios' | 'visionos' | undefined = flags.android ? 'android' : 'ios';
+		const platform: Platform | undefined = flags.android ? 'android' : 'ios';
 		if (fileName.includes('.android.') && platform !== 'android') return null;
 		if ((fileName.includes('.ios.') || fileName.includes('.visionos.')) && platform === 'android') return null;
 	} catch (e) {

@@ -2,8 +2,7 @@ import { parse as babelParse } from '@babel/parser';
 import * as t from '@babel/types';
 
 import { genCode } from '../helpers/babel.js';
-
-const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
+import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
 
 function shouldGuardAngularEntryStatement(node: any): boolean {
 	if (t.isImportDeclaration(node) || t.isExportDeclaration(node) || t.isFunctionDeclaration(node) || t.isClassDeclaration(node) || t.isVariableDeclaration(node)) {

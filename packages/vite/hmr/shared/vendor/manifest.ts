@@ -5,8 +5,10 @@ import path from 'path';
 import fs, { readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { createRequire } from 'node:module';
+import { getAngularLinkerFactory, runAngularLinker } from '../../../helpers/angular/shared-linker.js';
 import { registerVendorManifest, clearVendorManifest, getVendorManifest } from './registry.js';
 import { generatePlatformPolyfills } from '../runtime/platform-polyfills.js';
+import type { Platform } from '../../../helpers/platform-types.js';
 import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
 import { getGlobalDefines } from '../../../helpers/global-defines.js';
 
@@ -393,7 +395,7 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 		...(flavor === 'solid' ? [nsSolidJsExternalPlugin] : []),
 		// Apply NativeClass transformer to convert @NativeClass decorated classes to ES5 IIFE pattern.
 		// This MUST run before other plugins to ensure proper transformation.
-		createNativeClassEsbuildPlugin(platform as 'android' | 'ios' | 'visionos'),
+		createNativeClassEsbuildPlugin(platform as Platform),
 		// Resolve virtual modules and Angular shims used by the vendor entry.
 		createVendorEsbuildPlugin(projectRoot),
 	];
@@ -1303,65 +1305,6 @@ function createSolidJsxEsbuildPlugin(projectRoot: string): esbuild.Plugin {
  * ɵɵdefine* so runtime doesn't require the JIT compiler.
  */
 function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
-	// Lazily resolve Babel and Angular linker from the project to avoid hard deps
-	let babel: typeof import('@babel/core') | null = null;
-	let createLinker: any = null;
-	let angularFileSystem: any = null;
-
-	async function ensureDeps() {
-		if (babel && createLinker) return;
-		try {
-			const req = createRequire(projectRoot + '/package.json');
-			// Resolve from the application project first
-			const babelPath = req.resolve('@babel/core');
-			const linkerPath = req.resolve('@angular/compiler-cli/linker/babel');
-			babel = (await import(babelPath)) as any;
-			const linkerMod = await import(linkerPath);
-			createLinker = (linkerMod as any).createLinkerPlugin || (linkerMod as any).createEs2015LinkerPlugin || null;
-		} catch {
-			// As a fallback, try local resolution (hoisted installs)
-			try {
-				babel = (await import('@babel/core')) as any;
-			} catch {}
-			try {
-				const linkerMod = await import('@angular/compiler-cli/linker/babel');
-				createLinker = (linkerMod as any).createLinkerPlugin || (linkerMod as any).createEs2015LinkerPlugin || null;
-			} catch {}
-		}
-		// Angular 21+ requires a fileSystem for the linker plugin
-		if (!angularFileSystem) {
-			try {
-				const req = createRequire(projectRoot + '/package.json');
-				const cliPath = req.resolve('@angular/compiler-cli');
-				const cliMod: any = await import(cliPath);
-				if (cliMod.NodeJSFileSystem) {
-					angularFileSystem = new cliMod.NodeJSFileSystem();
-				}
-			} catch {}
-			if (!angularFileSystem) {
-				try {
-					const cliMod: any = await import('@angular/compiler-cli');
-					if (cliMod.NodeJSFileSystem) {
-						angularFileSystem = new cliMod.NodeJSFileSystem();
-					}
-				} catch {}
-			}
-			if (!angularFileSystem) {
-				// Minimal fallback
-				const nodePath = await import('node:path');
-				const nodeFs = await import('node:fs');
-				angularFileSystem = {
-					resolve: (...paths: string[]) => nodePath.resolve(...paths),
-					dirname: (p: string) => nodePath.dirname(p),
-					join: (...paths: string[]) => nodePath.join(...paths),
-					isRooted: (p: string) => nodePath.isAbsolute(p),
-					exists: (p: string) => nodeFs.existsSync(p),
-					readFile: (p: string) => nodeFs.readFileSync(p, 'utf8'),
-				};
-			}
-		}
-	}
-
 	// Restrict to Angular framework packages to minimize esbuild memory usage.
 	const FILTER = /node_modules[\\/](?:@angular|@nativescript[\\/]angular)[\\/].*\.[mc]?js$/;
 
@@ -1369,7 +1312,7 @@ function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 		name: 'ns-angular-linker',
 		async setup(build) {
 			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
-			await ensureDeps();
+			const { babel, createLinker } = await getAngularLinkerFactory(projectRoot);
 			if (!babel || !createLinker) {
 				// Nothing to do if deps unavailable
 				return;
@@ -1381,27 +1324,12 @@ function angularLinkerEsbuildPlugin(projectRoot: string): esbuild.Plugin {
 					if (!(source.includes('\u0275\u0275ngDeclare') || source.includes('ɵɵngDeclare'))) {
 						return { contents: source, loader: 'js' };
 					}
-					const plugin = createLinker({
-						sourceMapping: false,
-						fileSystem: angularFileSystem,
-					});
 					if (debug) {
 						console.log('[ns-angular-linker][vendor] linking', args.path);
 					}
-					const result = await (babel as any).transformAsync(source, {
-						filename: args.path,
-						configFile: false,
-						babelrc: false,
-						sourceMaps: false,
-						compact: false,
-						plugins: [plugin],
-					});
-					return {
-						contents: (result && result.code) || source,
-						loader: 'js',
-					};
-				} catch (e) {
-					// On any failure, return original source to avoid breaking the build
+					const linked = await runAngularLinker(source, { filename: args.path, projectRoot, freshPlugin: true });
+					return { contents: linked || source, loader: 'js' };
+				} catch {
 					return { contents: await readFile(args.path, 'utf8'), loader: 'js' };
 				}
 			});

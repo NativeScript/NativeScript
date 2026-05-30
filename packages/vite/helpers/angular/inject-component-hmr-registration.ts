@@ -43,6 +43,8 @@
  * `isAngularHmrEnabled()` is false.
  */
 
+import { findMatchingDelimiter } from './js-lexer.js';
+
 const COMPONENT_DECORATOR_RE = /@Component\s*\(/g;
 
 /**
@@ -322,78 +324,4 @@ function isInsideStringOrComment(code: string, index: number): boolean {
 	return inLineComment || inBlockComment || quote !== null;
 }
 
-/**
- * Find the index of the matching close delimiter for the opener at
- * `openIndex`. Comment- and string-aware so multi-line decorator
- * arguments (template strings, styles arrays) are scanned correctly.
- */
-function findMatchingDelimiter(source: string, openIndex: number, openChar: string, closeChar: string): number {
-	if (openIndex < 0 || source[openIndex] !== openChar) {
-		return -1;
-	}
-
-	let depth = 0;
-	let quote: string | null = null;
-	let escape = false;
-	let inLineComment = false;
-	let inBlockComment = false;
-
-	for (let index = openIndex; index < source.length; index++) {
-		const char = source[index];
-		const next = source[index + 1];
-
-		if (inLineComment) {
-			if (char === '\n') {
-				inLineComment = false;
-			}
-			continue;
-		}
-		if (inBlockComment) {
-			if (char === '*' && next === '/') {
-				inBlockComment = false;
-				index++;
-			}
-			continue;
-		}
-		if (quote) {
-			if (escape) {
-				escape = false;
-				continue;
-			}
-			if (char === '\\') {
-				escape = true;
-				continue;
-			}
-			if (char === quote) {
-				quote = null;
-			}
-			continue;
-		}
-
-		if (char === '/' && next === '/') {
-			inLineComment = true;
-			index++;
-			continue;
-		}
-		if (char === '/' && next === '*') {
-			inBlockComment = true;
-			index++;
-			continue;
-		}
-		if (char === '"' || char === "'" || char === '`') {
-			quote = char;
-			continue;
-		}
-
-		if (char === openChar) {
-			depth++;
-		} else if (char === closeChar) {
-			depth--;
-			if (depth === 0) {
-				return index;
-			}
-		}
-	}
-
-	return -1;
-}
+// Comment-aware delimiter matcher lives in ./js-lexer.ts

@@ -46,25 +46,17 @@ export interface FrameworkCleanContext {
 export interface FrameworkServerStrategy {
 	readonly flavor: string;
 	matchesFile(id: string): boolean;
-	/**
-	 * Framework-specific pre-clean phase (remove virtual style imports, etc.).
-	 */
-	preClean(code: string): string;
-	/**
-	 * Rewrite framework runtime imports to vendor bundle.
-	 */
-	rewriteFrameworkImports(code: string): string;
-	/**
-	 * Framework-specific post-clean phase (strip HMR helpers, etc.).
-	 */
-	postClean(code: string): string;
-	/**
-	 * Ensure framework-specific HTTP endpoints/imports are versioned for cache-busting.
-	 */
-	ensureVersionedImports(code: string, origin: string, version: number): string;
-	/**
-	 * Optional vendor rewrite hook (e.g. map framework helper imports to vendor).
-	 */
+	// All transform hooks below are optional and default to identity (return the
+	// code unchanged). Only frameworks with real work (Angular, Vue) implement them.
+	/** Framework-specific pre-clean phase (remove virtual style imports, etc.). */
+	preClean?(code: string): string;
+	/** Rewrite framework runtime imports to vendor bundle. */
+	rewriteFrameworkImports?(code: string): string;
+	/** Framework-specific post-clean phase (strip HMR helpers, etc.). */
+	postClean?(code: string): string;
+	/** Ensure framework-specific HTTP endpoints/imports are versioned for cache-busting. */
+	ensureVersionedImports?(code: string, origin: string, version: number): string;
+	/** Optional vendor rewrite hook (e.g. map framework helper imports to vendor). */
 	rewriteVendorSpec?(code: string, origin: string, version: number): string;
 	processFile(ctx: FrameworkProcessFileContext): Promise<void>;
 	buildRegistry(ctx: FrameworkRegistryContext): Promise<void>;

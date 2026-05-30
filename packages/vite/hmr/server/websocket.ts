@@ -34,6 +34,8 @@ import { typescriptServerStrategy } from '../frameworks/typescript/server/strate
 import { buildInlineTemplateBlock, createProcessSfcCode, extractTemplateRender, processTemplateVariantMinimal } from '../frameworks/vue/server/sfc-transforms.js';
 import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
+import { getAppCssState } from '../../helpers/app-css-state.js';
+import { buildVueVendorShim, buildPiniaVendorShim } from './vendor-bare-module-shims.js';
 import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { buildCoreUrl, buildCoreUrlPath, normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
@@ -72,10 +74,31 @@ import {
 	viteDepsPathToBareSpecifier,
 } from './websocket-module-specifiers.js';
 import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides, type EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
-import { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, extractDirectExportedNames, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest, resolveRuntimeCoreModulePath, type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
+import { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest, resolveRuntimeCoreModulePath, type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner, type SharedTransformRequestRunnerOptions } from './shared-transform-request.js';
 import { formatNsMHmrServeTag, getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
-import { ensureDynamicHmrImportHelper } from './websocket-served-module-helpers.js';
+import {
+	assertNoOptimizedArtifacts,
+	buildBootProgressSnippet,
+	collectTopLevelImportRecords,
+	deduplicateLinkerImports,
+	dedupeRtNamedImportsAgainstDestructures,
+	ensureDestructureCoreImports,
+	ensureDestructureRtImports,
+	ensureDynamicHmrImportHelper,
+	ensureGuardPlainDynamicImports,
+	ensureVariableDynamicImportHelper,
+	ensureVersionedRtImports,
+	expandStarExports,
+	extractExportMetadata,
+	hoistTopLevelStaticImports,
+	MODULE_IMPORT_ANALYSIS_PLUGINS,
+	repairImportEqualsAssignments,
+	stripCoreGlobalsImports,
+	stripViteDynamicImportVirtual,
+	wrapCommonJsModuleForDevice,
+} from './websocket-served-module-helpers.js';
+export { buildBootProgressSnippet, wrapCommonJsModuleForDevice };
 
 export { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
 export type { EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
@@ -202,10 +225,6 @@ function getHmrSocketRole(client: { __nsHmrClientRole?: string } | null | undefi
 	return typeof client.__nsHmrClientRole === 'string' && client.__nsHmrClientRole ? client.__nsHmrClientRole : 'unknown';
 }
 
-function shouldAllowLocalCoreSanitizerPaths(contextLabel: string): boolean {
-	return /\bnode_modules\/@nativescript\/vite\/hmr\/(?:client|frameworks)\//.test(contextLabel);
-}
-
 export function prepareAngularEntryForDevice(code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose: boolean = false, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp: boolean = false): string {
 	const rewrittenCode = rewriteImports(code, importerPath, sfcFileMap, depFileMap, projectRoot, verbose, outputDirOverrideRel, httpOrigin, resolveVendorAsHttp);
 
@@ -221,92 +240,6 @@ interface ProcessCodeForDeviceOptions {
 // Bare specifiers and special skip patterns (virtual, data:, etc.)
 const VENDOR_PACKAGES = /^[A-Za-z@][^:\/\s]*$/;
 const SKIP_PATTERNS = /^(?:data:|blob:|node:|virtual:|vite:|\0|\/@@?id|\/__vite|__vite|__x00__)/;
-
-const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
-
-type TopLevelImportRecord = {
-	start: number;
-	end: number;
-	text: string;
-	source: string;
-	hasOnlyNamedSpecifiers: boolean;
-	namedBindings: Array<{ importedName: string; text: string }>;
-};
-
-function collectTopLevelImportRecords(code: string): TopLevelImportRecord[] {
-	if (!code || typeof code !== 'string' || !/\bimport\b/.test(code)) {
-		return [];
-	}
-
-	try {
-		const ast = babelParse(code, {
-			sourceType: 'module',
-			plugins: MODULE_IMPORT_ANALYSIS_PLUGINS,
-		}) as any;
-		const body = ast?.program?.body;
-		if (!Array.isArray(body)) {
-			return [];
-		}
-
-		return body
-			.filter((node: any) => t.isImportDeclaration(node) && typeof node.start === 'number' && typeof node.end === 'number' && typeof node.source?.value === 'string')
-			.map((node: any) => ({
-				start: node.start as number,
-				end: node.end as number,
-				text: code.slice(node.start as number, node.end as number),
-				source: node.source.value as string,
-				hasOnlyNamedSpecifiers: Array.isArray(node.specifiers) && node.specifiers.length > 0 && node.specifiers.every((spec: any) => t.isImportSpecifier(spec)),
-				namedBindings: Array.isArray(node.specifiers)
-					? node.specifiers
-							.filter((spec: any) => t.isImportSpecifier(spec) && typeof spec.start === 'number' && typeof spec.end === 'number')
-							.map((spec: any) => ({
-								importedName: t.isIdentifier(spec.imported) ? spec.imported.name : String(spec.imported?.value || ''),
-								text: code.slice(spec.start as number, spec.end as number),
-							}))
-					: [],
-			}));
-	} catch {
-		return [];
-	}
-}
-
-function hoistTopLevelStaticImports(code: string): string {
-	const imports = collectTopLevelImportRecords(code);
-	if (!imports.length) {
-		return code;
-	}
-
-	let stripped = code;
-	for (const imp of [...imports].sort((left, right) => right.start - left.start)) {
-		stripped = stripped.slice(0, imp.start) + stripped.slice(imp.end);
-	}
-
-	const hoisted: string[] = [];
-	const seen = new Set<string>();
-	for (const imp of imports) {
-		const text = imp.text.trim();
-		if (!text || seen.has(text)) {
-			continue;
-		}
-		seen.add(text);
-		hoisted.push(text);
-	}
-
-	if (!hoisted.length) {
-		return stripped;
-	}
-
-	return `${hoisted.join('\n')}\n${stripped.replace(/^\s*\n+/, '')}`;
-}
-
-// Duplicate of `websocket-served-module-helpers.ts::buildBootProgressSnippet`
-// — both copies must stay in lock-step. See the canonical doc there for
-// why the snippet must remain fully synchronous (top-level await on a
-// boot-tagged module trips the iOS 10 s async-module deadline).
-export function buildBootProgressSnippet(bootModuleLabel: string): string {
-	const normalizedLabel = JSON.stringify(String(bootModuleLabel || '').replace(/\\/g, '/'));
-	return [`const __nsBootGlobal=globalThis;`, `try{if(!__nsBootGlobal.__NS_HMR_BOOT_COMPLETE__){__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__=Number(__nsBootGlobal.__NS_HMR_BOOT_MODULE_COUNT__||0)+1;__nsBootGlobal.__NS_HMR_BOOT_LAST_MODULE__=${normalizedLabel};}}catch(__nsBootErr){}`, ''].join('\n');
-}
 
 function rewriteVitePrebundleImportsForDevice(code: string, preserveVendorImports: boolean): string {
 	const imports = collectTopLevelImportRecords(code);
@@ -406,157 +339,6 @@ function guardBareDynamicImports(code: string): string {
 	}
 }
 
-function stripCoreGlobalsImports(code: string): string {
-	const pattern = /^\s*(?:import\s+(?:[^'"\n]*from\s+)?|export\s+\*\s+from\s+)["'][^"']*(?:@nativescript(?:[/_-])core(?:[\/_-])globals|@nativescript_core_globals)[^"']*["'];?\s*$/gm;
-	return code.replace(pattern, '');
-}
-
-function ensureVariableDynamicImportHelper(code: string): string {
-	if (!code.includes('__variableDynamicImportRuntimeHelper')) {
-		return code;
-	}
-
-	if (PAT.VARIABLE_DYNAMIC_IMPORT_HELPER_PATTERN.test(code)) {
-		return code;
-	}
-	const helper =
-		`const __variableDynamicImportRuntimeHelper = (map, request, importMode) => {\n` +
-		`  try { if (request === '@') { return import(new URL('/ns/m/__invalid_at__.mjs', import.meta.url).href); } } catch {}\n` +
-		`  const loader = map && (map[request] || map[request?.replace(/\\\\/g, "/")]);\n` +
-		`  if (!loader) {\n` +
-		`    const error = new Error(\"Cannot dynamically import: \" + request);\n` +
-		`    error.code = 'ERR_MODULE_NOT_FOUND';\n` +
-		`    return Promise.reject(error);\n` +
-		`  }\n` +
-		`  try {\n` +
-		`    return loader(importMode);\n` +
-		`  } catch (err) {\n` +
-		`    return Promise.reject(err);\n` +
-		`  }\n` +
-		`};\n`;
-
-	return `${helper}${code}`;
-}
-
-function ensureGuardPlainDynamicImports(code: string, origin: string): string {
-	try {
-		if (!code || !/\bimport\s*\(/.test(code)) return code;
-		const wrapper = `const __ns_import = (s) => { try { if (s === '@') { return import(new URL('/ns/m/__invalid_at__.mjs', import.meta.url).href); } } catch {} return import(s); }\n`;
-		const replaced = code.replace(/(^|[^\.\w$])import\s*\(/g, (_m, p1) => `${p1}__ns_import(`);
-		if (replaced !== code) {
-			return wrapper + replaced;
-		}
-		return code;
-	} catch {
-		return code;
-	}
-}
-
-// `ensureDynamicHmrImportHelper` lives in
-// `./websocket-served-module-helpers.js`. See that file for the
-// architectural rationale and the current helper implementation.
-
-async function expandStarExports(code: string, server: any, projectRoot: string, verbose?: boolean, sharedTransformer?: (url: string) => Promise<{ code?: string } | null | undefined>): Promise<string> {
-	const STAR_RE = /^[ \t]*(export\s+\*\s+from\s+["'])([^"']+)(["'];?)[ \t]*$/gm;
-	let match: RegExpExecArray | null;
-	const replacements: Array<{ full: string; url: string; prefix: string; suffix: string }> = [];
-
-	while ((match = STAR_RE.exec(code)) !== null) {
-		const url = match[2];
-		if (!url.includes('/node_modules/')) continue;
-		replacements.push({ full: match[0], url, prefix: match[1], suffix: match[3] });
-	}
-
-	if (!replacements.length) return code;
-
-	// Pull target URLs through the shared runner when it's available so each
-	// node_modules path shares the 60s TTL cache with the main /ns/m pipeline
-	// and respects the global concurrency gate. Fan them out in parallel —
-	// this block used to be a serial `for await` loop, which dominated cold
-	// boot on apps with dozens of star-re-exports.
-	const transformer = sharedTransformer ?? ((url: string) => server.transformRequest(url));
-
-	const resolved = await Promise.all(
-		replacements.map(async (rep) => {
-			try {
-				let vitePath = rep.url.replace(/^https?:\/\/[^/]+/, '');
-				vitePath = vitePath.replace(/^\/ns\/m\//, '/');
-				vitePath = vitePath.replace(/^\/__ns_boot__\/[^/]+/, '');
-				vitePath = vitePath.replace(/\/__ns_hmr__\/[^/]+/, '');
-
-				const result = await transformer(vitePath);
-				if (!result?.code) return null;
-
-				const names = extractExportedNames(result.code);
-				if (!names.length) return null;
-
-				if (verbose) {
-					console.log(`[ns/m] expanded export* -> ${names.length} names from ${vitePath}`);
-				}
-
-				return { rep, names };
-			} catch {
-				return null;
-			}
-		}),
-	);
-
-	for (const entry of resolved) {
-		if (!entry) continue;
-		const explicit = `export { ${entry.names.join(', ')} } from ${JSON.stringify(entry.rep.url)};`;
-		code = code.replace(entry.rep.full, explicit);
-	}
-
-	return code;
-}
-
-function extractExportedNames(code: string): string[] {
-	return extractDirectExportedNames(code);
-}
-function repairImportEqualsAssignments(code: string): string {
-	try {
-		if (!code || typeof code !== 'string') return code;
-		code = code.replace(/(^|\n)\s*import\s*\{([^}]+)\}\s*=\s*([^;]+);?/g, (_m, p1: string, specList: string, rhs: string) => {
-			const cleaned = String(specList)
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean)
-				.map((seg) => seg.replace(/\s+as\s+/i, ': '))
-				.join(', ');
-			return `${p1}const { ${cleaned} } = ${rhs};`;
-		});
-		code = code.replace(/(^|\n)\s*import\s*\*\s*as\s*([A-Za-z_$][\w$]*)\s*=\s*([^;]+);?/g, (_m, p1: string, ns: string, rhs: string) => `${p1}const ${ns} = (${rhs});`);
-		code = code.replace(/(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*=\s*([^;]+);?/g, (_m, p1: string, id: string, rhs: string) => `${p1}const ${id} = ${rhs};`);
-	} catch {}
-	return code;
-}
-
-function ensureVersionedRtImports(code: string, origin: string, ver: number): string {
-	if (!code || !origin || !Number.isFinite(ver)) return code;
-	code = code.replace(/(from\s+["'])(?:https?:\/\/[^"']+)?\/(?:\ns|ns)\/rt(?:\/[\d]+)?(["'])/g, (_m, p1, p3) => `${p1}/ns/rt/${ver}${p3}`);
-	code = code.replace(/(import\(\s*["'])(?:https?:\/\/[^"']+)?\/(?:\@ns|ns)\/rt(?:\/[\d]+)?(["']\s*\))/g, (_m, p1, p3) => `${p1}/ns/rt/${ver}${p3}`);
-	return code;
-}
-
-function stripViteDynamicImportVirtual(code: string): string {
-	if (!/\/@id\/__x00__vite\/dynamic-import-helper/.test(code)) {
-		return code;
-	}
-	const original = code;
-	code = code.replace(/^[\t ]*import[^\n]*\/@id\/__x00__vite\/dynamic-import-helper[^\n]*$/gm, '');
-	if (/\/@id\/__x00__vite\/dynamic-import-helper/.test(code)) {
-		code = code.replace(/\/@id\/__x00__vite\/dynamic-import-helper[^"'`)]*/g, '/__NS_UNUSED_DYNAMIC_IMPORT_HELPER__');
-	}
-	if (!/__variableDynamicImportRuntimeHelper/.test(code)) {
-		const inline = `const __variableDynamicImportRuntimeHelper = (map, request, importMode) => {\n  try { if (request === '@') { return import('/ns/m/__invalid_at__.mjs'); } } catch {}\n  const loader = map && (map[request] || map[request?.replace(/\\\\/g, '/')]);\n  if (!loader) { const e = new Error('Cannot dynamically import: ' + request); /*@ts-ignore*/ e.code = 'ERR_MODULE_NOT_FOUND'; return Promise.reject(e); }\n  try { return loader(importMode); } catch (e) { return Promise.reject(e); }\n};\n`;
-		code = inline + code;
-	}
-	if (code !== original) {
-		code = `// [hmr-sanitize] removed virtual dynamic-import-helper\n${code}`;
-	}
-	return code;
-}
-
 // Detect (and log) `require('http(s)://...')` calls made from CJS shims.
 // Pattern: HTTP-served ESM modules end up in NS-vite's `__nsRequire`
 // shim with HTTP URLs as their relative resolution targets. The guard
@@ -635,45 +417,6 @@ function stripImportMetaHotBlocks(code: string): string {
 		regex.lastIndex = start;
 	}
 	return result;
-}
-
-// Extract a quick set of export names and whether a default export exists from ESM code.
-// This uses conservative regex scanning for metadata only (no code rewriting).
-function extractExportMetadata(code: string): {
-	hasDefault: boolean;
-	named: string[];
-} {
-	const named = new Set<string>();
-	let hasDefault = /\bexport\s+default\b/.test(code);
-	try {
-		// export const foo, export let foo, export function bar, export class Baz
-		for (const m of code.matchAll(/\bexport\s+(?:const|let|var|function|class)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g)) {
-			if (m[1]) named.add(m[1]);
-		}
-		// export { a, b as c }
-		for (const m of code.matchAll(/\bexport\s*\{([^}]+)\}/g)) {
-			const inner = (m[1] || '')
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean);
-			for (const seg of inner) {
-				// forms: name or name as alias or default as name
-				const dm = seg.match(/^([A-Za-z_$][A-Za-z0-9_$]*)(?:\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*))?$/);
-				if (dm) {
-					const base = dm[1];
-					const alias = dm[2];
-					if (base === 'default') {
-						hasDefault = true;
-						continue;
-					}
-					named.add(alias || base);
-				}
-			}
-		}
-	} catch {}
-	// Remove default if accidentally included
-	named.delete('default');
-	return { hasDefault, named: Array.from(named) };
 }
 
 function normalizeImportPath(spec: string, importerDir: string): string | null {
@@ -907,8 +650,8 @@ function cleanCode(code: string): string {
 	result = result.replace(PAT.IMPORT_META_HOT_ASSIGNMENT, '');
 	// Keep import.meta.hot call sites; runtime now provides a stable import.meta.hot.
 
-	result = ACTIVE_STRATEGY.preClean(result);
-	result = ACTIVE_STRATEGY.rewriteFrameworkImports(result);
+	result = ACTIVE_STRATEGY.preClean?.(result) ?? result;
+	result = ACTIVE_STRATEGY.rewriteFrameworkImports?.(result) ?? result;
 
 	// Vendor manifest-driven import rewrites
 	// NOTE: Static and side-effect vendor imports are intentionally NOT rewritten here.
@@ -935,15 +678,13 @@ function cleanCode(code: string): string {
 	result = result.replace(PAT.VITE_CLIENT_IMPORT, '').replace(PAT.IMPORT_META_HOT_ASSIGNMENT, '');
 
 	// Clean up HMR noise
-	result = ACTIVE_STRATEGY.postClean(result);
+	result = ACTIVE_STRATEGY.postClean?.(result) ?? result;
 	result = stripCoreGlobalsImports(result);
 
 	return result;
 }
 
-// ============================================================================
-// APPLICATION IMPORT HELPERS
-// ============================================================================
+// Application import helpers
 
 /**
  * Check if a path is an application module (not node_modules, not vendor, not relative)
@@ -1113,212 +854,6 @@ function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, p
 	}
 
 	return absolute;
-}
-
-/**
- * After the Angular linker runs on code that Vite has already resolved (bare
- * specifiers → full URLs), the linker injects NEW import statements with bare
- * specifiers (e.g. `import {Component} from '@angular/core'`).  These cause:
- *   1. Duplicate-identifier SyntaxErrors (the name was already imported via URL)
- *   2. Unresolvable bare specifiers at runtime on device
- *
- * This function:
- *   • builds a map  packageName → resolvedURL  from existing resolved imports
- *   • collects all binding names already imported per package
- *   • for each bare-specifier import, removes duplicate bindings
- *   • rewrites any genuinely-new bindings to use the resolved URL
- */
-function deduplicateLinkerImports(code: string): string {
-	if (!code) return code;
-	try {
-		const imports = collectTopLevelImportRecords(code);
-		if (!imports.length) {
-			return code;
-		}
-
-		// ── Step 1: collect resolved imports already in the file ──────────
-		const pkgUrlMap = new Map<string, string>();
-		const pkgBindings = new Map<string, Set<string>>();
-
-		for (const imp of imports) {
-			const url = imp.source;
-			if (!/^https?:\/\//.test(url) && !url.startsWith('/')) {
-				continue;
-			}
-			const nmIdx = url.lastIndexOf('/node_modules/');
-			if (nmIdx === -1) continue;
-
-			const afterNm = url.substring(nmIdx + '/node_modules/'.length);
-			const parts = afterNm.split('/');
-			const pkg = parts[0].startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
-
-			if (!pkgUrlMap.has(pkg)) pkgUrlMap.set(pkg, url);
-
-			if (imp.namedBindings.length) {
-				if (!pkgBindings.has(pkg)) pkgBindings.set(pkg, new Set());
-				for (const binding of imp.namedBindings) {
-					if (binding.importedName) pkgBindings.get(pkg)!.add(binding.importedName);
-				}
-			}
-		}
-
-		if (pkgUrlMap.size === 0) return code;
-
-		// ── Step 2: rewrite bare-specifier imports ───────────────────────
-		const edits: Array<{ start: number; end: number; text: string }> = [];
-		for (const imp of imports) {
-			if (!imp.hasOnlyNamedSpecifiers) {
-				continue;
-			}
-			const specifier = imp.source;
-			if (specifier.startsWith('/') || specifier.startsWith('.') || specifier.startsWith('http')) {
-				continue;
-			}
-
-			const parts = specifier.split('/');
-			const pkg = specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
-			const url = pkgUrlMap.get(pkg);
-			if (!url) {
-				continue;
-			}
-
-			const existing = pkgBindings.get(pkg) || new Set<string>();
-			const newBindings = imp.namedBindings.filter((binding) => !existing.has(binding.importedName));
-
-			if (newBindings.length === 0) {
-				edits.push({ start: imp.start, end: imp.end, text: '' });
-				continue;
-			}
-
-			if (newBindings.length === imp.namedBindings.length) {
-				continue;
-			}
-
-			for (const binding of newBindings) {
-				existing.add(binding.importedName);
-			}
-
-			edits.push({
-				start: imp.start,
-				end: imp.end,
-				text: `import { ${newBindings.map((binding) => binding.text).join(', ')} } from ${JSON.stringify(url)};`,
-			});
-		}
-
-		if (!edits.length) {
-			return code;
-		}
-
-		let next = code;
-		for (const edit of edits.sort((left, right) => right.start - left.start)) {
-			next = next.slice(0, edit.start) + edit.text + next.slice(edit.end);
-		}
-		return next;
-	} catch {
-		return code;
-	}
-}
-
-export function wrapCommonJsModuleForDevice(code: string, absolutePath?: string | null): string {
-	if (!code) return code;
-
-	try {
-		const hasExportDefault = /\bexport\s+default\b/.test(code) || /export\s*\{\s*default\s*(?:as\s*default)?\s*\}/.test(code);
-		const hasNamedExports = /\bexport\s+(?:const|let|var|function|class|async)\b/.test(code) || /\bexport\s*\{/.test(code);
-		const hasCjsExports = /\bmodule\s*\.\s*exports\b/.test(code) || /\bexports\s*\.\s*\w/.test(code);
-		if (hasExportDefault || hasNamedExports || !hasCjsExports) {
-			return code;
-		}
-
-		const namedExports = new Set<string>();
-		const exportsRe = /\bexports\s*\.\s*([A-Za-z_$][\w$]*)\s*=/g;
-		let em: RegExpExecArray | null;
-		while ((em = exportsRe.exec(code)) !== null) {
-			const name = em[1];
-			if (name !== '__esModule' && name !== 'default') {
-				namedExports.add(name);
-			}
-		}
-
-		const defPropRe = /Object\s*\.\s*defineProperty\s*\(\s*exports\s*,\s*['"]([^'"]+)['"]/g;
-		while ((em = defPropRe.exec(code)) !== null) {
-			const name = em[1];
-			if (name !== '__esModule' && name !== 'default') {
-				namedExports.add(name);
-			}
-		}
-
-		// Static enumeration only sees `exports.foo = ...` and `Object.defineProperty(exports, 'foo', ...)`.
-		// Real-world packages like lodash attach their entire surface to a function inside an IIFE and
-		// then `module.exports = thatFunction`. Static analysis returns zero in that case. To handle
-		// these modules we ALSO load the package in the dev-server's Node context (only when we have a
-		// node_modules path) and merge the runtime keys. See `helpers/cjs-named-exports.ts` for the
-		// reasoning and safety boundaries.
-		if (absolutePath) {
-			try {
-				for (const n of getCjsNamedExports(absolutePath)) {
-					namedExports.add(n);
-				}
-			} catch {
-				/* fall through to whatever we caught statically */
-			}
-		}
-
-		let suffix = `\nvar __cjs_mod = module.exports;\nexport default __cjs_mod;\n`;
-		if (namedExports.size) {
-			const entries = Array.from(namedExports);
-			const temps = entries.map((name, i) => `var __cjs_e${i} = __cjs_mod[${JSON.stringify(name)}];`);
-			const reExports = entries.map((name, i) => `__cjs_e${i} as ${name}`);
-			suffix += `${temps.join(' ')}\nexport { ${reExports.join(', ')} };\n`;
-		}
-
-		const prelude =
-			`var module = { exports: {} }; var exports = module.exports;\n` +
-			`var __ns_cjs_require_base = (typeof globalThis.__nsBaseRequire === 'function' ? globalThis.__nsBaseRequire : (typeof globalThis.__nsRequire === 'function' ? globalThis.__nsRequire : (typeof globalThis.require === 'function' ? globalThis.require : undefined)));\n` +
-			`var __ns_cjs_require_kind = (typeof globalThis.__nsBaseRequire === 'function' ? 'base-require' : (typeof globalThis.__nsRequire === 'function' ? 'vendor-require' : 'global-require'));\n` +
-			`var require = function(spec) {\n` +
-			`  if (!__ns_cjs_require_base) { throw new Error('require is not defined'); }\n` +
-			// Resolve relative specifiers against the HTTP-served module's URL
-			// before delegating to NS's runtime require. Without this step,
-			// \`require('./base64-vlq')\` inside a CJS module served from
-			// \`http://.../ns/m/node_modules/source-map-js/lib/source-map-generator.js\`
-			// would pass a literal '"./base64-vlq"' to the native require, which
-			// has no notion of the current HTTP-module's location and either
-			// throws "Module not found" or fetches an arbitrary filesystem path
-			// that happens to parse as code (producing misleading syntax errors
-			// like "missing ) after argument list" from unrelated modules).
-			`  var __nsResolvedSpec = spec;\n` +
-			`  try {\n` +
-			`    if (typeof spec === 'string' && (spec.indexOf('./') === 0 || spec.indexOf('../') === 0)) {\n` +
-			`      var __nsParentUrl = (typeof import.meta !== 'undefined' && import.meta && typeof import.meta.url === 'string') ? import.meta.url : null;\n` +
-			`      if (__nsParentUrl) {\n` +
-			`        var __nsResolvedUrl = new URL(spec, __nsParentUrl);\n` +
-			`        // Common Node-style bare extensions: prefer .js if the resolved URL lacks an extension in its last path segment.\n` +
-			`        if (!/\\.[A-Za-z0-9]+$/.test(__nsResolvedUrl.pathname.split('/').pop() || '')) {\n` +
-			`          __nsResolvedUrl.pathname = __nsResolvedUrl.pathname.replace(/\\/+$/, '') + '.js';\n` +
-			`        }\n` +
-			`        __nsResolvedSpec = __nsResolvedUrl.href;\n` +
-			`      }\n` +
-			`    }\n` +
-			`  } catch (e) {}\n` +
-			`  try { var __nsRecord = globalThis.__NS_RECORD_MODULE_PROVENANCE__; if (typeof __nsRecord === 'function') { __nsRecord(String(__nsResolvedSpec), { kind: __ns_cjs_require_kind, specifier: String(spec), url: __nsResolvedSpec !== spec ? __nsResolvedSpec : undefined, via: 'cjs-wrapper', parent: (typeof import.meta !== 'undefined' && import.meta && import.meta.url) ? import.meta.url : undefined }); } } catch (e) {}\n` +
-			`  var mod = __ns_cjs_require_base(__nsResolvedSpec);\n` +
-			`  try {\n` +
-			`    if (mod && (typeof mod === 'object' || typeof mod === 'function') && mod.default !== undefined) {\n` +
-			`      var keys = [];\n` +
-			`      try { keys = Object.keys(mod); } catch (e) {}\n` +
-			`      var defaultOnly = keys.length === 1 && keys[0] === 'default';\n` +
-			`      var esModuleOnly = keys.length === 2 && keys.indexOf('default') !== -1 && keys.indexOf('__esModule') !== -1;\n` +
-			`      if (mod.__esModule || defaultOnly || esModuleOnly) { return mod.default; }\n` +
-			`    }\n` +
-			`  } catch (e) {}\n` +
-			`  return mod;\n` +
-			`};\n`;
-
-		return `${prelude}${code}${suffix}`;
-	} catch {
-		return code;
-	}
 }
 
 /**
@@ -1843,193 +1378,6 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 // Assert that sanitized code no longer contains any Vite optimized deps artifacts
 // or virtual ids that could break the HTTP ESM loader on device. Throws with
 // a helpful diagnostics message if any are found.
-function assertNoOptimizedArtifacts(code: string, contextLabel: string): void {
-	try {
-		const offenders: string[] = [];
-		const lines = code.split('\n');
-		const tests: Array<RegExp> = [
-			// Allow Vite dev indirections like /@id/ and /.vite/deps when served via HTTP.
-			// Only flag clearly invalid virtual placeholders if they surface in output.
-			/\b__VITE_PLUGIN__\b/,
-			/\b__VITE_PRELOAD__\b/,
-		];
-		// Absolute or relative local @nativescript/core usage indicates a split realm risk; fail fast
-		const localCore = /(^|[^\w@])(?:\.\.?\/|\/)??@nativescript[\/_-]core\//i;
-		for (let i = 0; i < lines.length; i++) {
-			const ln = lines[i];
-			for (const re of tests) {
-				if (re.test(ln)) {
-					offenders.push(`${i + 1}: ${ln.substring(0, 200)}`);
-					break;
-				}
-			}
-			if (localCore.test(ln)) {
-				// Comments can never cause split-realm risk at runtime — skip them.
-				// Library authors commonly reference @nativescript/core in comments
-				// (e.g. TSDoc /// <reference> directives, module resolution notes).
-				const trimmed = ln.trimStart();
-				if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
-					continue;
-				}
-				if (shouldAllowLocalCoreSanitizerPaths(contextLabel)) {
-					continue;
-				}
-				offenders.push(`${i + 1}: ${ln.substring(0, 200)} [local-core-path]`);
-			}
-			if (offenders.length >= 10) break;
-		}
-		if (offenders.length) {
-			const msg = `[sanitize-fail] Optimized deps/virtual id artifacts detected in ${contextLabel}. These cannot be evaluated by the device HTTP ESM loader. Offending lines (first ${Math.min(5, offenders.length)} shown):\n` + offenders.slice(0, 5).join('\n');
-			const err: any = new Error(msg);
-			// Attach details for server logs / higher-level handlers
-			(err as any).code = 'NS_SANITIZE_FAIL';
-			(err as any).offenders = offenders;
-			throw err;
-		}
-	} catch (e) {
-		// If diagnostics generation itself fails, do not mask the underlying issue
-		throw e;
-	}
-}
-
-// Ensure there are no lingering named imports from the unified core bridge.
-// Converts named imports from `/ns/core[/<sub>]` into default import +
-// destructuring. The package-main bridge serves a shape-shifted module whose
-// named exports come from `__ns_core_bridge.default` rather than ESM named
-// exports, so a named-import binding would be `undefined` at evaluation.
-function ensureDestructureCoreImports(code: string): string {
-	try {
-		let result = code;
-		let coreImportCounter = 0;
-		const toDestructure = (specList: string) =>
-			specList
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean)
-				.map((seg) => {
-					const m = seg.split(/\s+as\s+/i);
-					return m.length === 2 ? `${m[0].trim()}: ${m[1].trim()}` : seg;
-				})
-				.join(', ');
-		// import { A, B } from '/ns/core[/<sub>]'
-		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
-		result = result.replace(reNamed, (_full, pfx: string, specList: string, src: string) => {
-			// Deep subpath URLs serve actual ESM with real named exports — skip.
-			if (isDeepCoreSubpath(src)) return _full;
-			const tmp = `__ns_core_ns_re${coreImportCounter > 0 ? `_${coreImportCounter}` : ''}`;
-			coreImportCounter++;
-			const decl = `const { ${toDestructure(specList)} } = ${tmp};`;
-			return `${pfx}import ${tmp} from ${JSON.stringify(src)};\n${decl}\n`;
-		});
-		// import Default, { A, B } from '/ns/core[/<sub>]'
-		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/core(?:\/[^"']+)?)['"];?\s*/gm;
-		result = result.replace(reMixed, (_full, pfx: string, defName: string, specList: string, src: string) => {
-			if (isDeepCoreSubpath(src)) return _full;
-			const decl = `const { ${toDestructure(specList)} } = ${defName};`;
-			return `${pfx}import ${defName} from ${JSON.stringify(src)};\n${decl}\n`;
-		});
-		return result;
-	} catch {
-		return code;
-	}
-}
-
-// Converts any named imports from the runtime bridge (/ns/rt[/ver]) into a default import + destructuring.
-// This guarantees helper aliases like _resolveComponent remain bound even if we later normalize imports.
-function ensureDestructureRtImports(code: string): string {
-	try {
-		let result = code;
-		const toDestructure = (specList: string) =>
-			specList
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean)
-				.map((seg) => {
-					// Preserve alias mapping (e.g., resolveComponent as _resolveComponent)
-					const m = seg.split(/\s+as\s+/i);
-					return m.length === 2 ? `${m[0].trim()}: ${m[1].trim()}` : seg;
-				})
-				.join(', ');
-		const reNamed = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?)['"];?\s*/gm;
-		result = result.replace(reNamed, (_full, pfx: string, specList: string, src: string) => {
-			const tmp = `__ns_rt_ns_re`;
-			const decl = `const { ${toDestructure(specList)} } = ${tmp};`;
-			return `${pfx}import ${tmp} from ${JSON.stringify(src)};\n${decl}\n`;
-		});
-		const reMixed = /(^|\n)\s*import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?)['"];?\s*/gm;
-		result = result.replace(reMixed, (_full, pfx: string, defName: string, specList: string, _src: string) => {
-			const decl = `const { ${toDestructure(specList)} } = ${defName};`;
-			return `${pfx}import ${defName} from ${JSON.stringify(_src)};\n${decl}\n`;
-		});
-		return result;
-	} catch {
-		return code;
-	}
-}
-
-// Remove overlapping named imports from /ns/rt that duplicate bindings already provided
-// by destructuring a default /ns/rt import (e.g., const { $showModal } = __ns_rt_ns_1;).
-function dedupeRtNamedImportsAgainstDestructures(code: string): string {
-	try {
-		let result = code;
-		// Collect bindings created from any destructure of __ns_rt_ns* temps
-		const rtDestructureRE = /(^|\n)\s*const\s*\{([^}]+)\}\s*=\s*(__ns_rt_ns(?:\d+|_re))\s*;?/gm;
-		const rtBound = new Set<string>();
-		let m: RegExpExecArray | null;
-		while ((m = rtDestructureRE.exec(result)) !== null) {
-			const specList = String(m[2] || '');
-			specList
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean)
-				.forEach((seg) => {
-					const bind = seg.includes(':') ? seg.split(':')[1].trim() : seg;
-					if (bind) rtBound.add(bind);
-				});
-		}
-		if (!rtBound.size) return result;
-		// For any named import from /ns/rt (versioned or not), drop specifiers that are already bound
-		const rtNamedImportRE = /(^|\n)\s*import\s*\{([^}]+)\}\s*from\s*["']((?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?)["'];?\s*/gm;
-		const edits: Array<{ start: number; end: number; text: string }> = [];
-		while ((m = rtNamedImportRE.exec(result)) !== null) {
-			const full = m[0];
-			const pfx = m[1] || '';
-			const specList = String(m[2] || '');
-			const src = m[3];
-			const kept: string[] = [];
-			specList
-				.split(',')
-				.map((s) => s.trim())
-				.filter(Boolean)
-				.forEach((seg) => {
-					const importedName = seg.split(/\s+as\s+/i)[0].trim();
-					if (!rtBound.has(importedName)) kept.push(seg);
-				});
-			let replacement = '';
-			if (kept.length) {
-				replacement = `${pfx}import { ${kept.join(', ')} } from ${JSON.stringify(src)};`;
-			} else {
-				replacement = pfx || '';
-			}
-			edits.push({
-				start: rtNamedImportRE.lastIndex - full.length,
-				end: rtNamedImportRE.lastIndex,
-				text: replacement,
-			});
-		}
-		if (edits.length) {
-			edits
-				.sort((a, b) => b.start - a.start)
-				.forEach((e) => {
-					result = result.slice(0, e.start) + e.text + result.slice(e.end);
-				});
-		}
-		return result;
-	} catch {
-		return code;
-	}
-}
-
 /**
  * THE SINGLE REWRITE FUNCTION - used everywhere for consistency
  */
@@ -2626,10 +1974,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 	return result;
 }
 
-// ============================================================================
-// PLUGIN
-// ============================================================================
-
+// Plugin
 function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	const verbose = !!opts.verbose;
 	let wss: WebSocketServer | null = null;
@@ -2958,7 +2303,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 		apply: 'serve',
 
 		configureServer(server) {
-			pluginRoot = (server as any).config?.root || process.cwd();
+			pluginRoot = server.config?.root || process.cwd();
 			const httpServer = server.httpServer;
 			if (!httpServer) return;
 			const wsAny = server.ws as any;
@@ -3183,7 +2528,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			// Attempt early vendor manifest bootstrap once per server.
 			if (!vendorBootstrapDone) {
 				vendorBootstrapDone = true;
-				const root = (server as any).config?.root || process.cwd();
+				const root = server.config?.root || process.cwd();
 				const existing = getVendorManifest();
 				if (!existing) {
 					const loaded = loadPrebuiltVendorManifest(root, verbose);
@@ -3323,7 +2668,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// Transform via Vite with variant resolution (same as ws ns:fetch-module)
 					const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
 					const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
-					const transformRoot = (server as any).config?.root || process.cwd();
+					const transformRoot = server.config?.root || process.cwd();
 					const transformWorkspaceRoot = getMonorepoWorkspaceRoot(transformRoot);
 					const candidates: string[] = [];
 					if (hasExt) candidates.push(spec);
@@ -3356,7 +2701,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// for the device-side import map (ns-vendor://) instead of being
 					// transformed to __nsVendorRequire calls with fragile __nsPick lookups.
 					code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(resolvedCandidate || spec), resolvedCandidate || spec);
-					code = rewriteImports(code, spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
+					code = rewriteImports(code, spec, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 					code = ensureVariableDynamicImportHelper(code);
 					// Enforce upstream guarantee: no optimized deps or virtual ids remain
 					try {
@@ -3369,7 +2714,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					try {
 						const origin = getServerOrigin(server);
 						code = ensureVersionedRtImports(code, origin, graphVersion);
-						code = ACTIVE_STRATEGY.ensureVersionedImports(code, origin, graphVersion);
+						code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, origin, graphVersion) ?? code;
 					} catch {}
 					// Compute rel .mjs output path
 					const specForRel = resolvedCandidate || spec;
@@ -3408,7 +2753,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								let depCode = depTrans.code;
 								depCode = cleanCode(depCode);
 								depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
-								depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
+								depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 								depCode = ensureVariableDynamicImportHelper(depCode);
 								try {
 									assertNoOptimizedArtifacts(depCode, `SFC ASM dep ${depResolved}`);
@@ -3417,7 +2762,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								}
 								try {
 									depCode = ensureVersionedRtImports(depCode, getServerOrigin(server), graphVersion);
-									depCode = ACTIVE_STRATEGY.ensureVersionedImports(depCode, getServerOrigin(server), graphVersion);
+									depCode = ACTIVE_STRATEGY.ensureVersionedImports?.(depCode, getServerOrigin(server), graphVersion) ?? depCode;
 								} catch {}
 								let depRel = depResolved.replace(/^\//, '').replace(/\.(tsx?|jsx?)$/i, '.mjs');
 								if (!depRel.endsWith('.mjs')) depRel += '.mjs';
@@ -3559,7 +2904,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						res.end('export {}\n');
 						return;
 					}
-					const serverRoot = ((server as any).config?.root || process.cwd()) as string;
+					const serverRoot = (server.config?.root || process.cwd()) as string;
 					const monorepoWorkspaceRoot = getMonorepoWorkspaceRoot(serverRoot);
 					spec = spec.replace(/[?#].*$/, '');
 					// Accept path-based boot/HMR prefixes:
@@ -3607,7 +2952,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							// Fallback: decode the virtual module ID (__x00__ → \0) and
 							// load through the plugin container directly
 							const rawId = spec.slice('/@id/'.length).replace(/__x00__/g, '\0');
-							const loadResult = await (server as any).pluginContainer.load(rawId);
+							const loadResult = await server.pluginContainer.load(rawId);
 							if (loadResult) {
 								const code = typeof loadResult === 'string' ? loadResult : loadResult.code;
 								if (code) {
@@ -3660,7 +3005,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// Fallback 1: ask Vite to resolve the id, then transform the resolved id (handles aliases and virtual ids)
 					if (!transformed?.code) {
 						try {
-							const rid = await (server as any).pluginContainer?.resolveId?.(spec, undefined);
+							const rid = await server.pluginContainer?.resolveId?.(spec, undefined);
 							const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
 							if (ridStr) {
 								const r = await transformWithTimeout(ridStr);
@@ -3679,7 +3024,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							const nmIdx = spec.lastIndexOf('/node_modules/');
 							const bare = spec.slice(nmIdx + '/node_modules/'.length);
 							if (bare && !bare.startsWith('.')) {
-								const rid = await (server as any).pluginContainer?.resolveId?.(bare, undefined);
+								const rid = await server.pluginContainer?.resolveId?.(bare, undefined);
 								const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
 								if (ridStr) {
 									const r = await sharedTransformRequest(ridStr);
@@ -3892,78 +3237,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							const pkg = bare;
 							let code = '';
 							if (pkg === 'vue' || pkg === 'nativescript-vue') {
-								// Re-export Vue helpers from vendor NativeScript-Vue (fallback to 'vue' if present)
-								code = `
-const g = globalThis;
-const reg = g.__nsVendorRegistry;
-const req = reg && g.__nsVendorRequire ? g.__nsVendorRequire : (g.__nsRequire || g.require);
-let mod = reg && reg.get('${pkg === 'vue' ? 'nativescript-vue' : 'nativescript-vue'}');
-if (!mod && req) {
-  try { mod = req('${pkg === 'vue' ? 'nativescript-vue' : 'nativescript-vue'}'); } catch {}
-  ${pkg === 'vue' ? "if (!mod) { try { mod = req('vue'); } catch {} }" : ''}
-}
-mod = mod || {};
-const v = (mod.default ?? mod);
-export default v;
-export const defineComponent = v.defineComponent;
-export const resolveComponent = v.resolveComponent;
-export const createVNode = v.createVNode;
-export const createTextVNode = v.createTextVNode;
-export const createCommentVNode = v.createCommentVNode;
-export const Fragment = v.Fragment;
-export const withCtx = v.withCtx;
-export const openBlock = v.openBlock;
-export const createBlock = v.createBlock;
-export const createElementVNode = v.createElementVNode || v.createVNode;
-export const createElementBlock = v.createElementBlock || v.createBlock;
-export const renderSlot = v.renderSlot;
-export const mergeProps = v.mergeProps;
-export const toHandlers = v.toHandlers;
-export const renderList = v.renderList;
-export const normalizeProps = v.normalizeProps;
-export const guardReactiveProps = v.guardReactiveProps;
-export const withDirectives = v.withDirectives;
-export const resolveDirective = v.resolveDirective;
-export const withModifiers = v.withModifiers;
-export const withKeys = v.withKeys;
-export const ref = v.ref;
-export const shallowRef = v.shallowRef;
-export const unref = v.unref;
-export const computed = v.computed;
-export const onMounted = v.onMounted;
-export const onBeforeUnmount = v.onBeforeUnmount;
-export const onUnmounted = v.onUnmounted;
-export const watch = v.watch;
-export const nextTick = v.nextTick;
-export const createApp = v.createApp || (vm && vm.createApp);
-export const registerElement = v.registerElement || (vm && vm.registerElement);
-export const normalizeClass = v.normalizeClass;
-export const normalizeStyle = v.normalizeStyle;
-export const toDisplayString = v.toDisplayString;
-`;
+								code = buildVueVendorShim(pkg);
 							} else if (pkg === 'pinia') {
-								// Re-export Pinia APIs from vendor pinia module
-								code = `
-const g = globalThis;
-const reg = g.__nsVendorRegistry;
-const req = reg && g.__nsVendorRequire ? g.__nsVendorRequire : (g.__nsRequire || g.require);
-let mod = reg && reg.get('pinia');
-if (!mod && req) { try { mod = req('pinia'); } catch {} }
-mod = mod || {};
-const p = (mod.default ?? mod);
-export default p;
-export const createPinia = p.createPinia;
-export const defineStore = p.defineStore;
-export const storeToRefs = p.storeToRefs;
-export const setActivePinia = p.setActivePinia;
-export const getActivePinia = p.getActivePinia;
-export const mapStores = p.mapStores;
-export const mapState = p.mapState;
-export const mapGetters = p.mapGetters;
-export const mapActions = p.mapActions;
-export const mapWritableState = p.mapWritableState;
-export const piniaSymbol = p.piniaSymbol;
-`;
+								code = buildPiniaVendorShim();
 							}
 							res.statusCode = 200;
 							res.end(code || 'export {}\n');
@@ -3972,7 +3248,7 @@ export const piniaSymbol = p.piniaSymbol;
 						// Generic bare module resolution via Vite plugin container
 						if (isBare) {
 							try {
-								const resolved = await (server as any).pluginContainer?.resolveId?.(spec, undefined);
+								const resolved = await server.pluginContainer?.resolveId?.(spec, undefined);
 								const resolvedId = typeof resolved === 'string' ? resolved : resolved?.id || null;
 								if (resolvedId) {
 									const r = await server.transformRequest(resolvedId);
@@ -4009,7 +3285,7 @@ export const piniaSymbol = p.piniaSymbol;
 					// persistent hot.data that survives across module re-evaluations.
 					// cleanCode() strips Vite's __vite__createHotContext assignment, which is
 					// correct — the runtime's native hot context is better.
-					const projectRoot = (server as any).config?.root || process.cwd();
+					const projectRoot = server.config?.root || process.cwd();
 					const serverOrigin = getServerOrigin(server);
 					if (ACTIVE_STRATEGY?.flavor === 'angular') {
 						code = prepareAngularEntryForDevice(code, resolvedCandidate || spec, sfcFileMap, depFileMap, projectRoot, !!verbose, undefined, serverOrigin, true);
@@ -4023,7 +3299,7 @@ export const piniaSymbol = p.piniaSymbol;
 					// misses re-exported names). By expanding to `export { a, b } from "url"`,
 					// the engine sees explicit named exports and resolves them correctly.
 					try {
-						code = await expandStarExports(code, server, (server as any).config?.root || process.cwd(), verbose, sharedTransformRequest);
+						code = await expandStarExports(code, server, server.config?.root || process.cwd(), verbose, sharedTransformRequest);
 					} catch (e: any) {
 						if (verbose) console.warn('[ns/m] export* expansion failed:', e?.message);
 					}
@@ -4112,7 +3388,7 @@ export const piniaSymbol = p.piniaSymbol;
 					try {
 						const verNum = 0;
 						code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
-						code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), verNum);
+						code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
 					} catch {}
 					// `/ns/m` URL finalize step.
 					//
@@ -4236,7 +3512,7 @@ export const piniaSymbol = p.piniaSymbol;
 												}
 												if (!t?.code) {
 													try {
-														const rid = await (server as any).pluginContainer?.resolveId?.(local, undefined);
+														const rid = await server.pluginContainer?.resolveId?.(local, undefined);
 														const ridStr = typeof rid === 'string' ? rid : rid?.id || null;
 														if (ridStr) {
 															const r2 = await server.transformRequest(ridStr);
@@ -4421,7 +3697,7 @@ export const piniaSymbol = p.piniaSymbol;
 					const { normalizedSub, sub } = coreRequest;
 
 					const resolveModuleId = async (moduleId: string): Promise<string | null> => {
-						const resolved = await (server as any).pluginContainer?.resolveId?.(moduleId, undefined);
+						const resolved = await server.pluginContainer?.resolveId?.(moduleId, undefined);
 						return typeof resolved === 'string' ? resolved : resolved?.id || null;
 					};
 
@@ -4518,7 +3794,7 @@ export const piniaSymbol = p.piniaSymbol;
 						`const __IOS__ = ${__platformIsIOS ? 'true' : 'false'};`,
 						`const __VISIONOS__ = ${__platformIsVisionOS ? 'true' : 'false'};`,
 						`const __APPLE__ = __IOS__ || __VISIONOS__;`,
-						`const __DEV__ = ${(server as any).config?.mode === 'development' ? 'true' : 'false'};`,
+						`const __DEV__ = ${server.config?.mode === 'development' ? 'true' : 'false'};`,
 						`const __COMMONJS__ = false;`,
 						`const __NS_WEBPACK__ = false;`,
 						`const __NS_ENV_VERBOSE__ = globalThis.__NS_ENV_VERBOSE__ !== undefined ? !!globalThis.__NS_ENV_VERBOSE__ : false;`,
@@ -4938,7 +4214,7 @@ export const piniaSymbol = p.piniaSymbol;
 					let code = transformed.code;
 					// Prepend guard to capture any URL-based require attempts
 					code = REQUIRE_GUARD_SNIPPET + code;
-					const projectRoot = (server as any).config?.root || process.cwd();
+					const projectRoot = server.config?.root || process.cwd();
 					// IMPORTANT: Do not run cleanCode() on template variant; it can strip required pieces.
 					// We'll handle script/full SFC below, and treat template minimally right away.
 
@@ -4959,7 +4235,7 @@ export const piniaSymbol = p.piniaSymbol;
 							// Compile the template ourselves to guarantee no Vite HMR code and stable output
 							if (preferSelfCompile)
 								try {
-									const projectRootT = (server as any).config?.root || process.cwd();
+									const projectRootT = server.config?.root || process.cwd();
 									const basePath = fullSpec.replace(/[?#].*$/, '');
 									const abs = path.join(projectRootT, basePath.replace(/^\//, ''));
 									let sfcSrc = '';
@@ -5182,10 +4458,10 @@ export const piniaSymbol = p.piniaSymbol;
 						const verNum = Number(verFromPath || '0');
 						if (Number.isFinite(verNum) && verNum > 0) {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
-							code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), verNum);
+							code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
 						} else {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), graphVersion);
-							code = ACTIVE_STRATEGY.ensureVersionedImports(code, getServerOrigin(server), graphVersion);
+							code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, getServerOrigin(server), graphVersion) ?? code;
 						}
 					} catch {}
 					// Final guard for SFC variant output as well
@@ -5344,7 +4620,7 @@ export const piniaSymbol = p.piniaSymbol;
 						res.end(code);
 						return;
 					}
-					const projectRoot = (server as any).config?.root || process.cwd();
+					const projectRoot = server.config?.root || process.cwd();
 					// Ensure variant transforms exist so imports resolve (avoid Promise.all short-circuit on single failure)
 					const safeTransform = async (cand: string): Promise<TransformResult | null> => {
 						try {
@@ -5365,7 +4641,7 @@ export const piniaSymbol = p.piniaSymbol;
 
 					// INLINE-FIRST assembler: compile SFC source into a self-contained ESM module (enhanced diagnostics)
 					try {
-						const root = (server as any).config?.root || process.cwd();
+						const root = server.config?.root || process.cwd();
 						const abs = path.join(root, base.replace(/^\//, ''));
 						let sfcSrc = '';
 						try {
@@ -5849,7 +5125,7 @@ export const piniaSymbol = p.piniaSymbol;
 								try {
 									const origin = getServerOrigin(server);
 									inlineCode2 = ensureVersionedRtImports(inlineCode2, origin, Number(ver));
-									inlineCode2 = ACTIVE_STRATEGY.ensureVersionedImports(inlineCode2, origin, Number(ver));
+									inlineCode2 = ACTIVE_STRATEGY.ensureVersionedImports?.(inlineCode2, origin, Number(ver)) ?? inlineCode2;
 								} catch {}
 								// Normalize imports/helpers via AST to ensure _defineComponent and other helpers are bound once
 								try {
@@ -5881,7 +5157,7 @@ export const piniaSymbol = p.piniaSymbol;
 					let renderDecl = '';
 					let inlineBlock: string | undefined = undefined;
 					try {
-						const root = (server as any).config?.root || process.cwd();
+						const root = server.config?.root || process.cwd();
 						const abs = path.join(root, base.replace(/^\//, ''));
 						let sfcSrc = '';
 						try {
@@ -5952,7 +5228,7 @@ export const piniaSymbol = p.piniaSymbol;
 					try {
 						const origin = getServerOrigin(server);
 						code = ensureVersionedRtImports(code, origin, Number(ver));
-						code = ACTIVE_STRATEGY.ensureVersionedImports(code, origin, Number(ver));
+						code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, origin, Number(ver)) ?? code;
 					} catch {}
 					// Inline-template body path already runs processCodeForDevice (AST + sanitizers); no additional _defineComponent fix needed
 					res.statusCode = 200;
@@ -6035,7 +5311,7 @@ export const piniaSymbol = p.piniaSymbol;
 								// Special-case JSON package metadata requests at project root ONLY: provide a tiny stub module (no transform)
 								// Intentionally narrow match to '/package.json' (or 'package.json') to avoid catching relative imports like '../package.json'.
 								if (/^\/?package\.json(?:\/index)?$/.test(spec)) {
-									const root = (server as any).config?.root || process.cwd();
+									const root = server.config?.root || process.cwd();
 									let json = '{}';
 									try {
 										json = readFileSync(path.join(root, 'package.json'), 'utf-8');
@@ -6073,7 +5349,7 @@ export const piniaSymbol = p.piniaSymbol;
 										);
 										return;
 									}
-									const root = (server as any).config?.root || process.cwd();
+									const root = server.config?.root || process.cwd();
 									// Attempt transform via Vite with robust variant resolution (handles .mjs inputs)
 									let transformed: TransformResult | null = null;
 									let resolvedCandidate: string | null = null;
@@ -6109,7 +5385,7 @@ export const piniaSymbol = p.piniaSymbol;
 									// Reuse existing sanitation chain (lightweight)
 									code = cleanCode(code);
 									code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(resolvedCandidate || spec), resolvedCandidate || spec);
-									code = rewriteImports(code, spec, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
+									code = rewriteImports(code, spec, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 									code = ensureVariableDynamicImportHelper(code);
 									code = ensureGuardPlainDynamicImports(code, origin);
 									// Determine output relative file path (project-relative .mjs)
@@ -6154,7 +5430,7 @@ export const piniaSymbol = p.piniaSymbol;
 												let depCode = depTrans.code;
 												depCode = cleanCode(depCode);
 												depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
-												depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, (server as any).config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
+												depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 												depCode = ensureVariableDynamicImportHelper(depCode);
 												depCode = ensureGuardPlainDynamicImports(depCode, origin);
 												let depRel = depResolved.replace(/^\//, '').replace(/\.(tsx?|jsx?)$/i, '.mjs');
@@ -6518,8 +5794,9 @@ export const piniaSymbol = p.piniaSymbol;
 			// the framework's own template-update payload.
 			if (!file.endsWith('.css')) {
 				try {
-					const deps = (server as any).__nsAppCssDeps as Set<string> | undefined;
-					const appCssPath = (server as any).__nsAppCssPath as string | undefined;
+					const appCssState = getAppCssState(server);
+					const deps = appCssState?.deps;
+					const appCssPath = appCssState?.path;
 					if (deps && appCssPath) {
 						const normalizedFile = path.resolve(file).replace(/\\/g, '/');
 						if (deps.has(normalizedFile)) {
@@ -7476,9 +6753,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 	};
 }
 
-// ----------
 // Framework-specific HMR WebSocket plugins
-// ----------
 export function hmrWebSocketVue(opts: { verbose?: boolean }): Plugin {
 	ACTIVE_STRATEGY = resolveFrameworkStrategy('vue');
 	return createHmrWebSocketPlugin(opts);
@@ -7500,37 +6775,14 @@ export function hmrWebSocketTypescript(opts: { verbose?: boolean }): Plugin {
 }
 
 /**
- * Get the dev-server origin string baked into every module the rewriter
- * serves to the device (`/ns/core/...`, `/ns/m/...`, etc.).
- *
- * This MUST agree with the origin `dev-host.ts` bakes into `bundle.mjs`
- * itself. If the two disagree (e.g. the bundle imports
- * `http://localhost:5173/ns/core/utils` while the rewriter splices in
- * `http://192.168.0.8:5173/ns/core/utils`) V8's ESM loader keys those
- * as DIFFERENT modules and the app ends up with two side-by-side
- * realms of `@nativescript/core` — a classic singleton-state split.
- * `internal/debug-sessions/LATEST-05-12-2026-HMR_CORE_REALM_SPLIT.md`
- * documents the symptom.
- *
- * Routing all platforms through `resolveDeviceReachableOrigin` keeps
- * them in lock-step:
- *
- *   - Android wildcard / loopback → `10.0.2.2` (emulator NAT can't
- *     reach the host's LAN IP; physical devices opt in via
- *     `NS_HMR_PREFER_LAN_HOST=1`).
- *
- *   - iOS / visionOS wildcard → `localhost` (simulator shares the
- *     host's network stack; physical devices opt in via the same
- *     `NS_HMR_PREFER_LAN_HOST=1` or `NS_HMR_HOST=<lan-ip>` env).
- *
- *   - Explicit non-loopback `server.host` (e.g. a developer-set LAN
- *     IP) on any platform → trusted verbatim.
- *
- * The old `resolvedUrls.network[0]` preference is intentionally
- * dropped — Vite reports a LAN IP whenever it detects one, but that
- * IP is neither reachable from an Android emulator nor consistent
- * with what `dev-host.ts` selects, so leaning on it created the
- * realm-split risk above.
+ * Dev-server origin baked into every module served to the device
+ * (`/ns/core/...`, `/ns/m/...`). MUST match the origin `dev-host.ts` bakes
+ * into `bundle.mjs`; if they disagree V8 keys them as different modules and
+ * the app ends up with two `@nativescript/core` realms (a singleton-state
+ * split). `resolveDeviceReachableOrigin` keeps every platform in lock-step:
+ * Android wildcard/loopback -> `10.0.2.2`, iOS/visionOS wildcard ->
+ * `localhost`, explicit non-loopback `server.host` -> trusted verbatim
+ * (physical devices opt into LAN via `NS_HMR_PREFER_LAN_HOST`/`NS_HMR_HOST`).
  */
 function getServerOrigin(server: ViteDevServer): string {
 	const platform: DevHostPlatform = detectDevHostPlatform();

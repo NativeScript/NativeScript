@@ -1,3 +1,5 @@
+import { getCore } from './utils.js';
+
 const VERBOSE = !!(globalThis as any).__NS_ENV_VERBOSE__;
 
 // Must match the tag used by the boot virtual `app.css` emitter in
@@ -13,23 +15,6 @@ function getPreferredCssApplier(): ((cssText: string, refreshRoot?: boolean) => 
 		}
 	} catch {}
 	return null;
-}
-
-function getCore(name: string): any {
-	try {
-		const g = globalThis as any;
-		const reg = g.__nsVendorRegistry;
-		if (reg && reg.has('@nativescript/core')) {
-			const ns = reg.get('@nativescript/core');
-			return ns?.[name] || (ns?.default ?? ns)?.[name];
-		}
-		const req = g.__nsVendorRequire || g.__nsRequire || g.require;
-		if (typeof req === 'function') {
-			const ns = req('@nativescript/core');
-			return ns?.[name] || (ns?.default ?? ns)?.[name];
-		}
-	} catch {}
-	return (globalThis as any)[name];
 }
 
 type TaggedCssApi = {

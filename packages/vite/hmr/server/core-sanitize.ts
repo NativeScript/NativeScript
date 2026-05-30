@@ -108,10 +108,9 @@ export function fixDanglingCoreFrom(code: string): string {
  *      remaining `from "...@nativescript/core[/sub]..."` references that escaped
  *      both the AST normalizer and the import rewriter.
  *
- * The three sub-passes used to be open-coded at three different call sites in
- * `websocket.ts`/`websocket-ns-m-finalize.ts`. Centralising here ensures every
- * NS-M emitter applies the SAME safety net in the SAME order — drift between
- * those sites is the kind of thing that re-introduces the realm-split bug.
+ * Centralising the passes here ensures every NS-M emitter applies the same
+ * safety net in the same order; drift between call sites re-introduces the
+ * realm-split bug.
  *
  * Returns the (possibly) rewritten code; never throws.
  */

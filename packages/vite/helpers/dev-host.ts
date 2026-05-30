@@ -80,7 +80,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-export type DevHostPlatform = 'android' | 'ios' | 'visionos';
+import type { Platform } from './platform-types.js';
+export type DevHostPlatform = Platform;
 
 const WILDCARD_HOSTS = new Set(['0.0.0.0', '::', '', 'true']);
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);

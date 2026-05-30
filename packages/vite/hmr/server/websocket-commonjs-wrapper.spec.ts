@@ -63,7 +63,9 @@ describe('wrapCommonJsModuleForDevice', () => {
 
 		const wrapped = wrapCommonJsModuleForDevice(source);
 		expect(wrapped).toContain('__NS_RECORD_MODULE_PROVENANCE__');
-		expect(wrapped).toContain("__nsRecord(String(spec), { kind: __ns_cjs_require_kind, specifier: String(spec), via: 'cjs-wrapper'");
+		expect(wrapped).toContain('kind: __ns_cjs_require_kind');
+		expect(wrapped).toContain('specifier: String(spec)');
+		expect(wrapped).toContain("via: 'cjs-wrapper'");
 	});
 
 	it('preserves named exports from CommonJS assignments', () => {

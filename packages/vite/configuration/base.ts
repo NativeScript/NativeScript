@@ -28,6 +28,7 @@ import { vendorManifestPlugin } from '../hmr/shared/vendor/manifest.js';
 import { resolveVerboseFlag, createFilteredViteLogger } from '../helpers/logging.js';
 import { externalConfigMerges, applyExternalConfigs } from '../helpers/external-configs.js';
 import { getHMRPlugins } from '../hmr/server/index.js';
+import type { Platform } from '../helpers/platform-types.js';
 import { packagePlatformResolverPlugin } from '../helpers/package-platform-aliases.js';
 import { findPackageInNodeModules } from '../helpers/module-resolution.js';
 import { createPlatformCssPlugin } from '../helpers/css-platform-plugin.js';
@@ -105,8 +106,6 @@ if (themePkgDir && existsSync(themePkgDir)) {
  */
 applyExternalConfigs();
 
-type PlatformType = 'android' | 'ios' | 'visionos';
-
 export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }): UserConfig => {
 	const targetMode = mode === 'development' ? 'development' : 'production';
 
@@ -116,7 +115,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 	const isDevMode = targetMode === 'development';
 	const debug = !!process.env.DEBUG || isDevMode;
 	const hmrActive = isDevMode && !!cliFlags.hmr;
-	let platform = cliFlags.platform as PlatformType;
+	let platform = cliFlags.platform as Platform;
 	if (cliFlags.android) {
 		platform = 'android';
 	} else if (cliFlags.ios) {

@@ -452,13 +452,7 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 	const committedRoot = getCommittedRootView(application, placeholderRoot);
 
 	if (!committedRoot) {
-		// Throttled verbose-gated diagnostic. Used to be unconditional
-		// (with a `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out) while we
-		// were debugging the Android "Waiting for the app root view"
-		// stall — now that Layer 1-9 fixes have landed, surface this
-		// only when the user opted into `verbose` in their HMR config.
-		// Still throttled to 1 Hz to avoid spamming the verbose log on
-		// long stalls.
+		// Verbose-gated, throttled to 1 Hz to avoid spamming the log on long stalls.
 		try {
 			if (verbose) {
 				const now = Date.now();
@@ -545,11 +539,7 @@ function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): vo
 		}
 		attempts += 1;
 		if (Date.now() - startedAt >= maxWaitMs) {
-			// Verbose-gated — used to be unconditional with a
-			// `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out while we were
-			// debugging the Android stall. Now that the stall is
-			// resolved, users investigating a new stall should enable
-			// `verbose` in their HMR config to see this warning.
+			// Verbose-gated: enable `verbose` in the HMR config to surface stall diagnostics.
 			try {
 				if (verbose) {
 					console.warn('[ns-placeholder][diag] waiting for real root commit TIMED OUT', {
@@ -693,28 +683,14 @@ export function installRootPlaceholder(verbose?: boolean) {
 		g['__NS_DEV_PLACEHOLDER_APPLICATION__'] = Application;
 		const isAndroid = !!(g.__ANDROID__ || typeof g.android !== 'undefined');
 		// Patch `Application.resetRootView` on BOTH platforms so the placeholder
-		// finalize callback (`__NS_DEV_RESTORE_PLACEHOLDER__`) fires every time
-		// the framework swaps the root view.
-		//
-		// History: this used to be gated behind `!isAndroid` on the assumption
-		// that `core-aliases-early.ts` already installs an Android-specific
-		// `resetRootView` wrapper. That early hook is unreliable in HTTP HMR
-		// boot — it runs before `@nativescript/core/bundle-entry-points`, so
-		// `g.Application` is undefined when it runs and the wrapper is silently
-		// skipped. By the time `installRootPlaceholder` reaches this point,
-		// `getCore('Application')` has resolved a real Application (the
-		// placeholder UI is already showing, which proves it), so wrapping here
-		// works on Android too. We also coordinate with the early hook's flag
-		// (`__NS_DEV_PATCHED_RESET_ROOT__`) so we never double-wrap if it did
-		// install successfully.
+		// finalize callback (`__NS_DEV_RESTORE_PLACEHOLDER__`) fires every time the
+		// framework swaps the root view. The early Android wrapper in
+		// `core-aliases-early.ts` is unreliable under HTTP HMR boot (it runs before
+		// `g.Application` exists), so we wrap here too and coordinate via
+		// `__NS_DEV_PATCHED_RESET_ROOT__` to avoid double-wrapping.
 		const earlyAndroidWrapped = !!g['__NS_DEV_PATCHED_RESET_ROOT__'];
-		// Verbose-gated. Previously this was unconditional with a
-		// `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out — needed while we
-		// were debugging the Android "Waiting for the app root view"
-		// stall. Now that Layer 1-9 fixes have landed, the diag stream
-		// (resetRootView wraps, launch-handler entries, placeholder
-		// install state) is only useful when investigating a new
-		// stall, so it follows the user's `verbose` opt-in.
+		// Verbose-gated: the diag stream (resetRootView wraps, launch-handler
+		// entries, placeholder install state) only matters when investigating a stall.
 		const diag: (...args: any[]) => void = verbose
 			? (...args: any[]) => {
 					try {

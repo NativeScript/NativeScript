@@ -66,20 +66,9 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		// Treat only application TS/JS as candidates for ordering/graph purposes
 		return matchesRuntimeGraphModuleId(id, ANGULAR_APP_VIRTUAL_WITH_SLASH, ANGULAR_RUNTIME_FILE_PATTERN);
 	},
-	preClean(code: string) {
-		return code;
-	},
-	rewriteFrameworkImports(code: string) {
-		// Angular runtime imports are handled via the vendor bridge; no extra rewrite.
-		return code;
-	},
-	postClean(code: string) {
-		return code;
-	},
-	ensureVersionedImports(code: string, _origin: string, _version: number) {
-		// No Angular-specific HTTP endpoints yet; leave imports as-is.
-		return code;
-	},
+	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
+	// identity: Angular runtime imports go through the vendor bridge and there are
+	// no Angular-specific HTTP endpoints to version.
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// Ensure any Angular code the HMR server assembles for HTTP consumption is fully linked.
 		const { filePath, server, verbose } = ctx;

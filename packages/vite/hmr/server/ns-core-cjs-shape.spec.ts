@@ -347,7 +347,7 @@ describe('ns-core-cjs-shape', () => {
 			const out = buildDefaultExportFooter(input);
 			expect(out).toContain(`export default __ns_core_self_ns__;`);
 			// Inline comment marker makes it easy to grep in served responses.
-			expect(out).toContain('Invariant D: default export bridge');
+			expect(out).toContain('Default-export bridge for /ns/core consumers');
 		});
 
 		it('returns empty string when the module already has a default export', () => {

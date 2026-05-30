@@ -1,11 +1,11 @@
 import { mergeConfig, type Plugin, type UserConfig } from 'vite';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from '../helpers/project.js';
 import { getProjectAppPath } from '../helpers/utils.js';
 import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
+import { type BundlerPlatform, createXmlLoaderPlugin, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
 
 /**
  * TypeScript + XML NativeScript Vite configuration.
@@ -16,7 +16,7 @@ function createBundlerContextPlugin(): Plugin {
 	const VIRTUAL_ID = 'virtual:ns-bundler-context';
 	const RESOLVED_ID = '\0' + VIRTUAL_ID;
 	const flags = getCliFlags();
-	const platform: 'android' | 'ios' | 'visionos' | undefined = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
+	const platform: BundlerPlatform = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
 	// Determine the app's declared main entry to avoid eagerly importing it (which would execute Application.run too early)
 	const projectRoot = getProjectRootPath();
 	const pkg = getPackageJson();
@@ -40,53 +40,14 @@ function createBundlerContextPlugin(): Plugin {
 			if (id !== RESOLVED_ID) return null;
 			// Build platform-filtered static module registry similar to webpack's require.context.
 			// Generic: only XML, styles and their paired code-behind files. Test/app specific additions belong in app vite.config.ts.
-			const roots = [appRoot];
-			function walk(dir: string, out: string[]) {
-				let entries: string[] = [];
-				try {
-					entries = readdirSync(dir);
-				} catch {
-					return out;
-				}
-				for (const entry of entries) {
-					const full = path.posix.join(dir, entry);
-					let st: any;
-					try {
-						st = statSync(full);
-					} catch {
-						continue;
-					}
-					if (st.isDirectory()) walk(full, out);
-					else out.push(full);
-				}
-				return out;
-			}
-			function listAll(): string[] {
-				const files: string[] = [];
-				for (const r of roots) walk(r, files);
-				return files;
-			}
-			function shouldExcludeAbsolute(p: string) {
-				const file = p.split('/').pop() || '';
-				if (file.startsWith('_')) return true;
-				if (/\.d\.ts$/.test(p)) return true;
-				if (/([.-]worker)\.(ts|js)$/.test(file)) return true;
-				const isAndroidTagged = /\.android\./.test(p);
-				const isIosTagged = /\.ios\./.test(p) || /\.visionos\./.test(p);
-				if (platform === 'android' && isIosTagged) return true;
-				if (['ios', 'visionos'].includes(platform) && isAndroidTagged) return true;
-				return false;
-			}
-			function toImportSpecifier(abs: string) {
-				return '/' + abs.replace(/^\/+/, '');
-			}
+			const toImportSpecifier = toContextImportSpecifier;
 			function toCtxKey(abs: string) {
 				let rel = abs;
 				if (rel.startsWith(appRootPrefix)) rel = rel.slice(appRootPrefix.length);
 				else if (rel.startsWith('packages/core/src/')) rel = rel.slice('packages/core/src/'.length);
 				return './' + rel;
 			}
-			const allFiles = listAll().filter((f) => !shouldExcludeAbsolute(f));
+			const allFiles = walkAppFiles(appRoot).filter((f) => !shouldExcludePlatformFile(f, platform));
 			const xmlFiles = allFiles.filter((f) => f.endsWith('.xml'));
 			const styleFiles = allFiles.filter((f) => /\.(css|scss|less|sass)$/.test(f));
 			// Import only code-behind files paired with XML (mirrors webpack's contextual resolution)
@@ -134,28 +95,8 @@ function createBundlerContextPlugin(): Plugin {
 	};
 }
 
-function createXmlLoaderPlugin(): Plugin {
-	return {
-		name: 'ns-xml-loader-ts',
-		enforce: 'pre',
-		load(id) {
-			if (!id.endsWith('.xml')) return null;
-			try {
-				const src = readFileSync(id, 'utf-8');
-				const xml = JSON.stringify(src)
-					.replace(/\u2028/g, '\\u2028')
-					.replace(/\u2029/g, '\\u2029');
-				const code = `const ___XML___ = ${xml};\nexport default ___XML___;`;
-				return { code, map: null } as any;
-			} catch {
-				return null;
-			}
-		},
-	};
-}
-
 export const typescriptConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
 	return mergeConfig(baseConfig({ mode, flavor: 'typescript' }), {
-		plugins: [...getTypeCheckPlugins('typescript', options.typeCheck), createXmlLoaderPlugin(), createBundlerContextPlugin()],
+		plugins: [...getTypeCheckPlugins('typescript', options.typeCheck), createXmlLoaderPlugin('ns-xml-loader-ts'), createBundlerContextPlugin()],
 	});
 };

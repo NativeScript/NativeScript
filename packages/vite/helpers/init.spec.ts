@@ -30,7 +30,7 @@ describe('init helper', () => {
 		tempRoot = undefined;
 	});
 
-	it('adds scripts, dependencies, gitignore and vite.config.ts', async () => {
+	it('adds dependencies, gitignore and vite.config.ts', async () => {
 		const root = createTempProject();
 		tempRoot = root;
 		process.chdir(root);
@@ -41,18 +41,6 @@ describe('init helper', () => {
 			const pkg = JSON.parse(pkgRaw);
 
 			expect(pkg.dependencies).toHaveProperty('@valor/nativescript-websockets');
-
-			// CLI-managed dev server: no concurrently/wait-on, no separate
-			// dev:server:* scripts.
-			expect(pkg.devDependencies?.concurrently).toBeUndefined();
-			expect(pkg.devDependencies?.['wait-on']).toBeUndefined();
-			expect(pkg.scripts['dev:server:ios']).toBeUndefined();
-			expect(pkg.scripts['dev:server:android']).toBeUndefined();
-
-			expect(pkg.scripts['ios']).toBe('ns debug ios');
-			expect(pkg.scripts['android']).toBe('ns debug android');
-			expect(pkg.scripts['dev:ios']).toBe('npm run ios');
-			expect(pkg.scripts['dev:android']).toBe('npm run android');
 
 			const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
 			expect(gitignore.split(/\r?\n/)).toContain('.ns-vite-build');

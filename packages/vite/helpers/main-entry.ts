@@ -9,6 +9,7 @@ import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { buildCoreUrl } from './ns-core-url.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
+import { setAppCssState } from './app-css-state.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -147,9 +148,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 				} catch {}
 			};
 
-			(server as any).__nsAppCssPath = normalizedAppCssPath;
-			(server as any).__nsAppCssDeps = watchedDeps;
-			(server as any).__nsRefreshAppCssDeps = refreshDeps;
+			setAppCssState(server, { path: normalizedAppCssPath, deps: watchedDeps });
 
 			refreshDeps();
 

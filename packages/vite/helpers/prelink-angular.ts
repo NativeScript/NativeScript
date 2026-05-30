@@ -2,6 +2,7 @@ import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { createRequire } from 'node:module';
 import type { Plugin } from 'vite';
+import { getAngularLinkerFactory, runAngularLinker } from './angular/shared-linker.js';
 
 async function pathExists(p: string): Promise<boolean> {
 	try {
@@ -16,27 +17,18 @@ async function ensureDir(p: string) {
 	await fs.mkdir(p, { recursive: true });
 }
 
-async function linkFile(babel: any, createLinker: any, src: string): Promise<string | null> {
+async function linkFile(src: string, projectRoot?: string): Promise<string | null> {
 	const code = await fs.readFile(src, 'utf8');
 	if (!code) return null;
 	// Quick check to skip non-partial files
 	if (code.indexOf('\u0275\u0275ngDeclare') === -1 && code.indexOf('ɵɵngDeclare') === -1 && code.indexOf('ngDeclare') === -1) return null;
-	const plugin = createLinker({ sourceMapping: false });
-	const res = await babel.transformAsync(code, {
-		filename: src,
-		configFile: false,
-		babelrc: false,
-		sourceMaps: false,
-		compact: false,
-		plugins: [plugin],
-	});
-	return res?.code && res.code !== code ? res.code : null;
+	return runAngularLinker(code, { filename: src, projectRoot, freshPlugin: true });
 }
 
-async function copyOrLinkInto(babel: any, createLinker: any, srcFile: string, cacheFile: string) {
+async function copyOrLinkInto(srcFile: string, cacheFile: string, projectRoot?: string) {
 	const dir = path.dirname(cacheFile);
 	await ensureDir(dir);
-	const linked = await linkFile(babel, createLinker, srcFile);
+	const linked = await linkFile(srcFile, projectRoot);
 	if (linked) {
 		await fs.writeFile(cacheFile, linked, 'utf8');
 	} else {
@@ -44,30 +36,20 @@ async function copyOrLinkInto(babel: any, createLinker: any, srcFile: string, ca
 	}
 }
 
-async function prelinkPackage(req: NodeRequire, pkgName: string, cacheRoot: string, debug: boolean) {
+async function prelinkPackage(req: NodeRequire, pkgName: string, cacheRoot: string, debug: boolean, projectRoot?: string) {
 	const pkgEntry = req.resolve(path.join(pkgName, 'package.json'));
 	const pkgDir = path.dirname(pkgEntry);
 	const fesmDir = path.join(pkgDir, 'fesm2022');
 	if (!(await pathExists(fesmDir))) return;
-	// Lazy load linker deps from app
-	let babel: any = null;
-	let createLinker: any = null;
-	try {
-		const babelPath = req.resolve('@babel/core');
-		const linkerPath = req.resolve('@angular/compiler-cli/linker/babel');
-		babel = await import(babelPath);
-		const linkerMod: any = await import(linkerPath);
-		createLinker = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin;
-	} catch {
-		return; // Can't link without deps; skip quietly
-	}
+	const { babel, createLinker } = await getAngularLinkerFactory(projectRoot);
+	if (!babel || !createLinker) return; // Can't link without deps; skip quietly
 	const destDir = path.join(cacheRoot, pkgName, 'fesm2022');
 	await ensureDir(destDir);
 	const files = (await fs.readdir(fesmDir)).filter((f) => f.endsWith('.mjs'));
 	for (const file of files) {
 		const srcFile = path.join(fesmDir, file);
 		const cacheFile = path.join(destDir, file);
-		await copyOrLinkInto(babel, createLinker, srcFile, cacheFile);
+		await copyOrLinkInto(srcFile, cacheFile, projectRoot);
 		if (debug) {
 			console.log(`[ns-angular-prelink] cached`, `${pkgName}/fesm2022/${file}`);
 		}
@@ -88,7 +70,7 @@ export function createAngularPrelinkPlugin(projectRoot?: string): Plugin {
 			if (disabled) return {};
 			// Prelink synchronously to ensure alias points to ready files.
 			for (const pkg of pkgs) {
-				await prelinkPackage(req, pkg, cacheRoot, !!debug);
+				await prelinkPackage(req, pkg, cacheRoot, !!debug, projectRoot);
 			}
 			done = true;
 			const alias = [
@@ -103,7 +85,7 @@ export function createAngularPrelinkPlugin(projectRoot?: string): Plugin {
 			if (disabled) return;
 			// Fallback: in case config() path was skipped (edge), run once.
 			for (const pkg of pkgs) {
-				await prelinkPackage(req, pkg, cacheRoot, false);
+				await prelinkPackage(req, pkg, cacheRoot, false, projectRoot);
 			}
 			done = true;
 		},

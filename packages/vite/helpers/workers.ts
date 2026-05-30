@@ -159,7 +159,7 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 //      `new URL(spec, import.meta.url)` sites in the served pipeline are wrapped
 //      in `try/catch` and silently fall through; the worker creation site is not.
 //
-//   2. Pipeline routing mismatch (Class E in HMR_TRANSFORM_PIPELINE_REVIEW.md).
+//   2. Pipeline routing mismatch.
 //      Even with a valid `import.meta.url`, the resolved URL points at Vite's
 //      `?worker_file&type=classic` middleware, which serves a self-contained
 //      worker bundle whose internal imports use `/src/...` and `/@fs/...` URLs

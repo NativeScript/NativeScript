@@ -1,12 +1,13 @@
 import type { Plugin as EsbuildPlugin } from 'esbuild';
 import { transformNativeClassSource } from './nativeclass-transform.js';
+import type { Platform } from './platform-types.js';
 
 /**
  * Esbuild plugin that applies the NativeClass transformer to TypeScript/JavaScript files.
  * This is needed for vendor bundle generation which uses esbuild directly instead of Vite's
  * transform pipeline.
  */
-export function createNativeClassEsbuildPlugin(platform: 'android' | 'ios' | 'visionos'): EsbuildPlugin {
+export function createNativeClassEsbuildPlugin(platform: Platform): EsbuildPlugin {
 	const verbose = !!process.env.NS_DEBUG_NATIVECLASS;
 
 	return {

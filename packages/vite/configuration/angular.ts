@@ -1,11 +1,10 @@
 import { mergeConfig, type UserConfig, type Plugin } from 'vite';
 import path from 'path';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import angular from '@analogjs/vite-plugin-angular';
 import { angularLinkerVitePlugin, angularLinkerVitePluginPost } from '../helpers/angular/angular-linker.js';
 import { synthesizeMissingInjectableFactories } from '../helpers/angular/synthesize-injectable-factories.js';
-import { ensureSharedAngularLinker, resolveAngularFileSystem } from '../helpers/angular/shared-linker.js';
+import { getAngularLinkerFactory, runAngularLinker } from '../helpers/angular/shared-linker.js';
 import { inlineDecoratorComponentTemplates } from '../helpers/angular/inline-decorator-component-templates.js';
 import { appendComponentHmrRegistration, findComponentClassNames, INJECTION_MARKER as HMR_REGISTER_MARKER } from '../helpers/angular/inject-component-hmr-registration.js';
 import { injectAngularHmrViteIgnore } from '../helpers/angular/inject-hmr-vite-ignore.js';
@@ -16,114 +15,47 @@ import { getCliFlags } from '../helpers/cli-flags.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { resolveVerboseFlag } from '../helpers/logging.js';
 
-// Lazily import the Angular linker factory function. Used by chunk-level linkers
-// to create FRESH plugin instances per invocation (avoiding stale state in watch mode).
-let _cachedLinkerFactory: any = null;
-async function importLinkerFactory(): Promise<any> {
-	if (_cachedLinkerFactory) return _cachedLinkerFactory;
-	const req = createRequire(process.cwd() + '/package.json');
-	try {
-		const linkerPath = req.resolve('@angular/compiler-cli/linker/babel');
-		const linkerMod: any = await import(linkerPath);
-		_cachedLinkerFactory = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin || null;
-	} catch {
-		try {
-			const linkerMod: any = await import('@angular/compiler-cli/linker/babel');
-			_cachedLinkerFactory = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin || null;
-		} catch {}
-	}
-	return _cachedLinkerFactory;
+function hasNgDeclarePartial(code: string): boolean {
+	return code.indexOf('\u0275\u0275ngDeclare') !== -1 || code.indexOf('ɵɵngDeclare') !== -1 || code.indexOf('ngDeclare') !== -1;
 }
 
 // Rollup-level linker to guarantee Angular libraries are linked when included in the bundle graph.
 function angularRollupLinker(projectRoot?: string): Plugin {
-	let babel: any = null;
-	let createLinker: any = null;
-	let angularFileSystem: any = null;
 	const FILTER = /node_modules\/(?:@angular|@nativescript\/angular)\/.*\.[mc]?js$/;
-
-	async function ensureDeps() {
-		if (babel && createLinker) return;
-		try {
-			const req = createRequire((projectRoot ? projectRoot + '/package.json' : import.meta.url) as any);
-			const babelPath = req.resolve('@babel/core');
-
-			const linkerPath = req.resolve('@angular/compiler-cli/linker/babel');
-			babel = await import(babelPath);
-			const linkerMod: any = await import(linkerPath);
-			createLinker = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin;
-		} catch {
-			try {
-				babel = await import('@babel/core');
-			} catch {}
-			try {
-				const linkerMod: any = await import('@angular/compiler-cli/linker/babel');
-				createLinker = linkerMod.createLinkerPlugin || linkerMod.createEs2015LinkerPlugin;
-			} catch {}
-		}
-		if (!angularFileSystem) {
-			angularFileSystem = await resolveAngularFileSystem(projectRoot);
-		}
-	}
+	const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 
 	return {
 		name: 'ns-angular-linker-rollup',
 		enforce: 'pre',
 		apply: 'build',
 		async load(id) {
-			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 			const cleanId = normalizeAngularWatchPath(id);
 			if (!FILTER.test(cleanId)) return null;
 			try {
-				await ensureDeps();
-				if (!babel || !createLinker) return null;
 				const fs = await import('node:fs/promises');
 				const code = await fs.readFile(cleanId, 'utf8');
 				const forceLink = cleanId.includes('/node_modules/@nativescript/angular/') && cleanId.includes('polyfills');
 				if (!code) return null;
-				if (!forceLink && code.indexOf('\u0275\u0275ngDeclare') === -1 && code.indexOf('ɵɵngDeclare') === -1 && code.indexOf('ngDeclare') === -1) return null;
-				const plugin = createLinker({ sourceMapping: false, fileSystem: angularFileSystem });
-				if (debug) {
-					console.log('[ns-angular-linker][rollup-load] linking', cleanId);
-				}
-				const result = await (babel as any).transformAsync(code, {
-					filename: cleanId,
-					configFile: false,
-					babelrc: false,
-					sourceMaps: false,
-					compact: false,
-					plugins: [plugin],
-				});
-				if (result?.code && result.code !== code) {
-					return { code: result.code, map: null } as any;
+				if (!forceLink && !hasNgDeclarePartial(code)) return null;
+				const linked = await runAngularLinker(code, { filename: cleanId, projectRoot, freshPlugin: true });
+				if (linked) {
+					if (debug) console.log('[ns-angular-linker][rollup-load] linked', cleanId);
+					return { code: linked, map: null } as any;
 				}
 			} catch {}
 			return null;
 		},
 		async transform(code, id) {
-			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
 			const cleanId = normalizeAngularWatchPath(id);
 			if (!FILTER.test(cleanId)) return null;
 			const forceLink = cleanId.includes('/node_modules/@nativescript/angular/') && cleanId.includes('polyfills');
 			if (!code) return null;
-			if (!forceLink && code.indexOf('\u0275\u0275ngDeclare') === -1 && code.indexOf('ɵɵngDeclare') === -1 && code.indexOf('ngDeclare') === -1) return null;
-			await ensureDeps();
-			if (!babel || !createLinker) return null;
+			if (!forceLink && !hasNgDeclarePartial(code)) return null;
 			try {
-				const plugin = createLinker({ sourceMapping: false, fileSystem: angularFileSystem });
-				if (debug) {
-					console.log('[ns-angular-linker][rollup] linking', cleanId);
-				}
-				const result = await (babel as any).transformAsync(code, {
-					filename: cleanId,
-					configFile: false,
-					babelrc: false,
-					sourceMaps: false,
-					compact: false,
-					plugins: [plugin],
-				});
-				if (result?.code && result.code !== code) {
-					return { code: result.code, map: null };
+				const linked = await runAngularLinker(code, { filename: cleanId, projectRoot, freshPlugin: true });
+				if (linked) {
+					if (debug) console.log('[ns-angular-linker][rollup] linked', cleanId);
+					return { code: linked, map: null };
 				}
 			} catch {}
 			return null;
@@ -743,11 +675,8 @@ export const angularConfig = ({
 				if (!chunk || !(chunk as any).modules) return false;
 				return Object.keys((chunk as any).modules).some(isNsAngularPolyfillsModule);
 			}
-			const { babel } = await ensureSharedAngularLinker(process.cwd());
-			if (!babel) return;
-			const fileSystem = await resolveAngularFileSystem(process.cwd());
-			const linkerFactory = await importLinkerFactory();
-			if (!linkerFactory) return;
+			const { babel, createLinker } = await getAngularLinkerFactory(process.cwd());
+			if (!babel || !createLinker) return;
 			const strict = process.env.NS_STRICT_NG_LINK === '1' || process.env.NS_STRICT_NG_LINK === 'true';
 			const enforceStrict = process.env.NS_STRICT_NG_LINK_ENFORCE === '1' || process.env.NS_STRICT_NG_LINK_ENFORCE === 'true';
 			const debug = process.env.VITE_DEBUG_LOGS === '1' || process.env.VITE_DEBUG_LOGS === 'true';
@@ -764,19 +693,9 @@ export const angularConfig = ({
 					if (!code) continue;
 					const isNsPolyfills = isNsAngularPolyfillsChunk(chunk);
 					try {
-						// Create a FRESH linker plugin per chunk — the linker may have
-						// internal state that becomes stale across watch-mode rebuild cycles.
-						const freshPlugin = linkerFactory({ sourceMapping: false, fileSystem } as any);
-						const res = await (babel as any).transformAsync(code, {
-							filename: fileName,
-							configFile: false,
-							babelrc: false,
-							sourceMaps: false,
-							compact: false,
-							plugins: [freshPlugin],
-						});
-						const linkedCode = res?.code && res.code !== code ? res.code : code;
-						const finalCode = applyAngularChunkPostProcessing(linkedCode, { vendorInjectExport });
+						// Fresh plugin per chunk — avoids stale linker state across watch-mode rebuilds.
+						const linked = await runAngularLinker(code, { filename: fileName, projectRoot: process.cwd(), freshPlugin: true });
+						const finalCode = applyAngularChunkPostProcessing(linked ?? code, { vendorInjectExport });
 						if (finalCode !== code) {
 							(chunk as any).code = finalCode;
 							if (debug) {
@@ -840,26 +759,12 @@ export const angularConfig = ({
 			try {
 				let transformed = code;
 				if (containsRealNgDeclare(code)) {
-					const { babel } = await ensureSharedAngularLinker(process.cwd());
-					if (!babel) return null;
-					const fileSystem = await resolveAngularFileSystem(process.cwd());
-					// Fresh plugin per chunk — avoids stale linker state across watch-mode rebuilds
-					const freshPlugin = (await importLinkerFactory())?.({ sourceMapping: false, fileSystem } as any);
-					if (!freshPlugin) return null;
-					const runLink = async (input: string) => {
-						const result = await (babel as any).transformAsync(input, {
-							filename,
-							configFile: false,
-							babelrc: false,
-							sourceMaps: false,
-							compact: false,
-							plugins: [freshPlugin],
-						});
-						return result?.code ?? input;
-					};
-					transformed = await runLink(code);
+					const { babel, createLinker } = await getAngularLinkerFactory(process.cwd());
+					if (!babel || !createLinker) return null;
+					// Fresh plugin per pass — avoids stale linker state across watch-mode rebuilds.
+					transformed = (await runAngularLinker(code, { filename, projectRoot: process.cwd(), freshPlugin: true })) ?? code;
 					if (containsRealNgDeclare(transformed)) {
-						transformed = await runLink(transformed);
+						transformed = (await runAngularLinker(transformed, { filename, projectRoot: process.cwd(), freshPlugin: true })) ?? transformed;
 					}
 				}
 

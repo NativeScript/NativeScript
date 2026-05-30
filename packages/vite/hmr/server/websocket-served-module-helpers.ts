@@ -6,7 +6,7 @@ import { isDeepCoreSubpath } from './core-sanitize.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { extractDirectExportedNames } from './websocket-core-bridge.js';
 
-const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
+export const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
 
 export type TopLevelImportRecord = {
 	start: number;
@@ -217,7 +217,7 @@ function extractExportedNames(code: string): string[] {
 	return extractDirectExportedNames(code);
 }
 
-export async function expandStarExports(code: string, server: { transformRequest(path: string): Promise<{ code?: string } | null | undefined> }, _projectRoot: string, verbose?: boolean): Promise<string> {
+export async function expandStarExports(code: string, server: { transformRequest(path: string): Promise<{ code?: string } | null | undefined> }, _projectRoot: string, verbose?: boolean, sharedTransformer?: (url: string) => Promise<{ code?: string } | null | undefined>): Promise<string> {
 	const STAR_RE = /^[ \t]*(export\s+\*\s+from\s+["'])([^"']+)(["'];?)[ \t]*$/gm;
 	let match: RegExpExecArray | null;
 	const replacements: Array<{ full: string; url: string; prefix: string; suffix: string }> = [];
@@ -230,25 +230,37 @@ export async function expandStarExports(code: string, server: { transformRequest
 
 	if (!replacements.length) return code;
 
-	for (const rep of replacements) {
-		try {
-			let vitePath = rep.url.replace(/^https?:\/\/[^/]+/, '');
-			vitePath = vitePath.replace(/^\/ns\/m\//, '/');
-			vitePath = vitePath.replace(/^\/__ns_boot__\/[^/]+/, '');
-			vitePath = vitePath.replace(/\/__ns_hmr__\/[^/]+/, '');
+	// Resolve each star-export target in parallel through the shared runner
+	// (when provided) so they share the /ns/m TTL cache and concurrency gate.
+	const transformer = sharedTransformer ?? ((url: string) => server.transformRequest(url));
+	const resolved = await Promise.all(
+		replacements.map(async (rep) => {
+			try {
+				let vitePath = rep.url.replace(/^https?:\/\/[^/]+/, '');
+				vitePath = vitePath.replace(/^\/ns\/m\//, '/');
+				vitePath = vitePath.replace(/^\/__ns_boot__\/[^/]+/, '');
+				vitePath = vitePath.replace(/\/__ns_hmr__\/[^/]+/, '');
 
-			const result = await server.transformRequest(vitePath);
-			if (!result?.code) continue;
+				const result = await transformer(vitePath);
+				if (!result?.code) return null;
 
-			const names = extractExportedNames(result.code);
-			if (!names.length) continue;
+				const names = extractExportedNames(result.code);
+				if (!names.length) return null;
 
-			const explicit = `export { ${names.join(', ')} } from ${JSON.stringify(rep.url)};`;
-			code = code.replace(rep.full, explicit);
-			if (verbose) {
-				console.log(`[ns/m] expanded export* -> ${names.length} names from ${vitePath}`);
+				if (verbose) {
+					console.log(`[ns/m] expanded export* -> ${names.length} names from ${vitePath}`);
+				}
+				return { rep, names };
+			} catch {
+				return null;
 			}
-		} catch {}
+		}),
+	);
+
+	for (const entry of resolved) {
+		if (!entry) continue;
+		const explicit = `export { ${entry.names.join(', ')} } from ${JSON.stringify(entry.rep.url)};`;
+		code = code.replace(entry.rep.full, explicit);
 	}
 
 	return code;

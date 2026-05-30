@@ -17,24 +17,9 @@ export const solidServerStrategy: FrameworkServerStrategy = {
 		// Treat app TS/TSX/JS/JSX under the configured app root as Solid candidates.
 		return SOLID_FILE_PATTERN.test(id) && id.startsWith(SOLID_APP_PREFIX);
 	},
-	preClean(code: string) {
-		// No Solid-specific pre-clean yet.
-		return code;
-	},
-	rewriteFrameworkImports(code: string) {
-		// Solid HMR primarily operates via Vite's own solid-refresh plugin;
-		// @nativescript/vite vendor bridging handles NativeScript modules.
-		// We keep this hook in case we need to remap solid-js imports later.
-		return code;
-	},
-	postClean(code: string) {
-		// No extra Solid-specific cleanup for now.
-		return code;
-	},
-	ensureVersionedImports(code: string, _origin: string, _version: number) {
-		// Solid currently has no dedicated HTTP endpoints like /ns/sfc.
-		return code;
-	},
+	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
+	// identity: Solid HMR runs through Vite's solid-refresh plugin + the generic
+	// vendor bridge, and has no dedicated HTTP endpoints to version.
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// For now we rely on the generic pipeline; no per-file Solid SFC registry.
 		const { filePath, server, verbose } = ctx;

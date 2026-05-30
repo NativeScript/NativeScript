@@ -50,8 +50,9 @@ export async function safeReadDefault(mod: any): Promise<any | null> {
 	}
 }
 
-// Resolve NativeScript core classes/Application from the vendor realm or globalThis.
-export function getCore(name: 'Application' | 'Frame' | 'Page' | 'Label'): any {
+// Resolve a named export from @nativescript/core (UI classes, Application, the
+// tagged-CSS helpers, etc.) via the vendor realm, globalThis, or device require.
+export function getCore(name: string): any {
 	const g = globalThis;
 	const pickApplicationApi = (candidate: any): any => {
 		if (!candidate) return undefined;
@@ -346,23 +347,10 @@ export function buildEvictionUrls(specs: readonly string[]): string[] {
 		if (!spec) continue;
 		const path = spec.startsWith('/') ? spec : '/' + spec;
 		const canonical = stripScriptExtension(path);
-		// Emit BOTH the canonical (no-extension) URL AND the original
-		// extensioned URL when they differ. The iOS runtime's
-		// `__nsInvalidateModules` couples eviction across V8's
-		// `g_moduleRegistry` AND the speculative `g_prefetchCache`, but
-		// each cache may key entries under a different URL variant
-		// depending on whether they were populated by:
-		//   • a static rewritten import (no extension — see
-		//     `toAppModuleBaseId` in the server)
-		//   • a dynamic re-import (extension preserved — pre-fix history)
-		//   • a kickstart/prefetch BFS write (varies by source)
-		// Without emitting both shapes, an HMR cycle reliably exhibits
-		// the "one-step-behind" symptom documented in
-		// `HMR_DEEP_DIVE.md` §3 — the previous save's body sits in one
-		// of the two caches under the un-evicted variant and V8 hands
-		// it back on the next dynamic import.
-		// Vendor / virtual ids are filtered above so the duplication
-		// only applies to in-project sources.
+		// Emit BOTH the canonical (no-extension) and original extensioned
+		// URL: static rewritten imports key under the canonical id while
+		// dynamic re-imports/prefetch may key under the extensioned one, so
+		// evicting only one variant leaves a stale body in the other cache.
 		addUrl(origin + '/ns/m' + canonical);
 		if (path !== canonical) {
 			addUrl(origin + '/ns/m' + path);
@@ -389,16 +377,9 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 		// Let the server send the JSON-wrapped ESM code; we will write it as-is.
 		// We still go through the normal request flow below, but short-circuit index heuristics.
 	}
-	// Construct HTTP ESM URL for this spec.
-	//
-	// Strip script-source extensions (`.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`,
-	// `.mts`, `.cts`) so the dynamic re-import URL matches the canonical
-	// URL the server's rewriteImports produces for static imports — see
-	// `buildEvictionUrls` for the full rationale. Without this, V8 ends up
-	// with two cache entries (`/ns/m/.../foo.tsx` for HMR re-imports and
-	// `/ns/m/.../foo` for in-module static imports), and the second save
-	// of a component file silently re-evaluates against a stale cached
-	// instance because eviction only clears one of the two URL keys.
+	// Strip script-source extensions so the dynamic re-import URL matches the
+	// canonical URL rewriteImports produces for static imports (see
+	// buildEvictionUrls); otherwise eviction clears only one of the two keys.
 	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
 	if (!origin) return Promise.reject(new Error('no-http-origin'));
 	const rawPath = spec.startsWith('/') ? spec : '/' + spec;
@@ -407,37 +388,12 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 	const baseUrl = origin + basePath;
 	let url = baseUrl;
 
-	// Path-tag the URL on every HMR re-import so the iOS HTTP loader's
-	// internal response cache (which keys by exact URL string and
-	// strips query parameters before lookup) sees a fresh URL on each
-	// save and re-fetches from the dev server.
-	//
-	// The runtime canonicalizer (`CanonicalizeHttpUrlKey` in
-	// `HMRSupport.mm`) collapses any `__ns_hmr__/<tag>/` segment back
-	// to the stable cache key BEFORE V8 looks up `g_moduleRegistry`,
-	// so the tag is invisible to V8's module cache — that cache stays
-	// keyed by the canonical URL and is cleared via
-	// `invalidateModulesByUrls`. The tag's only job is to bust the
-	// HTTP-fetch layer's response cache, which (per the comment block
-	// above the legacy fallback) appears to operate independently of
-	// `g_moduleRegistry` and DOES key by exact URL.
-	//
-	// Symptom when the tag is omitted on modern runtimes: every HMR
-	// cycle is "one save behind". The eviction clears V8's module
-	// registry, V8 re-fetches the URL, the iOS HTTP loader returns the
-	// PREVIOUS save's body from its response cache, and V8 evaluates
-	// stale code. The solid-refresh patchRegistry compares signatures
-	// of the previous body against the previous body (no diff), no
-	// proxy update fires, and the visible page never picks up the
-	// latest edit — see `HMR_DEEP_DIVE.md` §3 for the original
-	// description of this class of bug (originally diagnosed as a
-	// `g_prefetchCache` issue; the symptom shape is the same here).
-	//
-	// Cost: one extra cache-busted request per re-imported module
-	// per save. The tag carries `<nonce>-<graphVersion>[-<hash>]`
-	// so it changes every save, and the canonicalizer collapses it
-	// for V8 cache identity so successive saves still share one V8
-	// module key.
+	// Path-tag each HMR re-import (`/ns/m/__ns_hmr__/<tag>/...`) so the iOS
+	// HTTP loader's response cache (keyed by exact URL) re-fetches on every
+	// save. The runtime canonicalizer strips the tag before V8's module
+	// registry lookup, so V8 still shares one cache key per module. The tag
+	// (`<nonce>-<graphVersion>[-<hash>]`) changes each save; without it an
+	// HMR cycle stays "one save behind" on stale cached response bodies.
 	try {
 		const v = typeof graphVersion === 'number' ? graphVersion : 0;
 		const h = graph.get(spec)?.hash || '';

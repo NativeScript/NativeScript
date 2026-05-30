@@ -187,7 +187,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 
 			let code = transformed.code;
 			code = options.requireGuardSnippet + code;
-			const projectRoot = (server as any).config?.root || process.cwd();
+			const projectRoot = server.config?.root || process.cwd();
 
 			if (!isVariant) {
 				const importerPath = fullSpec.replace(/[?#].*$/, '');
@@ -201,7 +201,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 				const preferSelfCompile = !!process.env.NS_HMR_SELF_COMPILE_TEMPLATE;
 				if (preferSelfCompile) {
 					try {
-						const projectRootTemplate = (server as any).config?.root || process.cwd();
+						const projectRootTemplate = server.config?.root || process.cwd();
 						const baseFilePath = fullSpec.replace(/[?#].*$/, '');
 						const absolutePath = path.join(projectRootTemplate, baseFilePath.replace(/^\//, ''));
 						let sfcSource = '';
@@ -397,7 +397,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 				const currentVersion = Number.isFinite(versionNumber) && versionNumber > 0 ? versionNumber : options.getGraphVersion();
 				const origin = options.getServerOrigin(server);
 				code = ensureVersionedRtImports(code, origin, currentVersion);
-				code = options.getStrategy().ensureVersionedImports(code, origin, currentVersion);
+				code = options.getStrategy().ensureVersionedImports?.(code, origin, currentVersion) ?? code;
 			} catch {}
 			try {
 				code = ensureDestructureCoreImports(code);
@@ -509,7 +509,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 				return;
 			}
 
-			const projectRoot = (server as any).config?.root || process.cwd();
+			const projectRoot = server.config?.root || process.cwd();
 			const safeTransform = async (candidate: string): Promise<TransformResult | null> => {
 				try {
 					return await server.transformRequest(candidate);
@@ -526,7 +526,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 			const templateCode = templateResult?.code || '';
 
 			try {
-				const root = (server as any).config?.root || process.cwd();
+				const root = server.config?.root || process.cwd();
 				const absolutePath = path.join(root, base.replace(/^\//, ''));
 				let sfcSource = '';
 				try {
@@ -932,7 +932,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 					try {
 						const origin = options.getServerOrigin(server);
 						inlineCode2 = ensureVersionedRtImports(inlineCode2, origin, Number(version));
-						inlineCode2 = options.getStrategy().ensureVersionedImports(inlineCode2, origin, Number(version));
+						inlineCode2 = options.getStrategy().ensureVersionedImports?.(inlineCode2, origin, Number(version)) ?? inlineCode2;
 					} catch {}
 					try {
 						inlineCode2 = astNormalizeModuleImportsAndHelpers(inlineCode2);
@@ -957,7 +957,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 			let renderDecl = '';
 			let inlineBlock: string | undefined;
 			try {
-				const root = (server as any).config?.root || process.cwd();
+				const root = server.config?.root || process.cwd();
 				const absolutePath = path.join(root, base.replace(/^\//, ''));
 				let sfcSource = '';
 				try {
@@ -1025,7 +1025,7 @@ export function registerVueSfcHandlers(server: ViteDevServer, options: RegisterV
 			try {
 				const origin = options.getServerOrigin(server);
 				code = ensureVersionedRtImports(code, origin, Number(version));
-				code = options.getStrategy().ensureVersionedImports(code, origin, Number(version));
+				code = options.getStrategy().ensureVersionedImports?.(code, origin, Number(version)) ?? code;
 			} catch {}
 			res.statusCode = 200;
 			res.end(code);

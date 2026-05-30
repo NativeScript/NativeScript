@@ -5,10 +5,11 @@ import path from 'node:path';
 import ts from 'typescript';
 import { getCliFlags } from './cli-flags.js';
 import { getProjectTSConfigPath } from './project.js';
+import type { Platform } from './platform-types.js';
 
 const require = createRequire(import.meta.url);
 
-export type PlatformType = 'android' | 'ios' | 'visionos';
+export type PlatformType = Platform;
 type TypeCheckFlavor = 'typescript' | 'react' | 'solid' | 'vue' | 'angular' | 'javascript';
 
 export type TypeCheckMode = 'off' | 'warn' | 'error';

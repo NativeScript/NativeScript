@@ -17,21 +17,8 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		// Treat any app TS/JS under the virtual app root as HMR-relevant.
 		return matchesRuntimeGraphModuleId(id, TS_APP_PREFIX, TS_FILE_PATTERN);
 	},
-	preClean(code: string) {
-		// No TS-specific pre-clean; generic sanitizers handle core/HMR noise.
-		return code;
-	},
-	rewriteFrameworkImports(code: string) {
-		// For plain TS apps we rely on vendor bridging and generic import rewriting.
-		return code;
-	},
-	postClean(code: string) {
-		return code;
-	},
-	ensureVersionedImports(code: string, _origin: string, _version: number) {
-		// TypeScript flavor uses direct /ns/entry-rt and HTTP graph; no extra versioning.
-		return code;
-	},
+	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
+	// identity: plain TS apps rely on the generic pipeline (vendor bridge, /ns/entry-rt).
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// Ensure that any TS app module requested by the HTTP realm is transformed once,
 		// so that downstream helpers (rewriteImports, vendor bridge) see a stable shape.

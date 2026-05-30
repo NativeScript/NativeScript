@@ -7,6 +7,7 @@ import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { getProjectRootPath } from '../../helpers/project.js';
 import { extractRootPackageName } from '../shared/package-classifier.js';
 import { isEsmFrameworkPackageSpecifier, isLikelyNativeScriptPluginSpecifier, isLikelyNativeScriptRuntimePluginSpecifier, normalizeNodeModulesSpecifier, resolveInternalRuntimePluginBareSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
+import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
 
 export interface EnsureNativeScriptModuleBindingsOptions {
 	preserveNonPluginVendorImports?: boolean;
@@ -37,7 +38,6 @@ interface TopLevelImportRecord {
 
 const sourceImportIntentCache = new Map<string, SourceImportIntentCacheEntry>();
 const EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE = /(?:\.(?:ios|android|visionos))?\.(?:ts|tsx|js|jsx|mjs|mts|cts)$/i;
-const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'decorators-legacy', 'classProperties', 'classPrivateProperties', 'classPrivateMethods'] as const;
 
 function hasExplicitRuntimePluginScriptExtension(segment: string): boolean {
 	return EXPLICIT_RUNTIME_PLUGIN_SCRIPT_EXT_RE.test(segment);

@@ -1,9 +1,8 @@
 import { mergeConfig, type Plugin, type UserConfig } from 'vite';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import path from 'node:path';
 import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { getProjectAppPath } from '../helpers/utils.js';
+import { type BundlerPlatform, createXmlLoaderPlugin, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
 
 /**
  * Registers bundler modules for plain JavaScript apps (no .ts files),
@@ -16,7 +15,7 @@ function createBundlerContextPlugin(): Plugin {
 	const RESOLVED_ID = '\0' + VIRTUAL_ID;
 	const ENTRY_ID = '\0virtual:entry-with-polyfills';
 	const flags = getCliFlags();
-	const platform: 'android' | 'ios' | 'visionos' | undefined = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
+	const platform: BundlerPlatform = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
 	const appRoot = getProjectAppPath();
 	const appRootPrefix = `${appRoot}/`;
 
@@ -30,52 +29,17 @@ function createBundlerContextPlugin(): Plugin {
 		load(id) {
 			if (id !== RESOLVED_ID) return null;
 			// Build a platform-filtered static module registry at build time using recursive fs walk (no fast-glob dependency).
-			const roots = [appRoot];
 			const styleExtsSet = new Set(['css', 'scss', 'less', 'sass']);
-			function walk(dir: string, out: string[]) {
-				let entries: string[] = [];
-				try {
-					entries = readdirSync(dir);
-				} catch {
-					return out;
-				}
-				for (const entry of entries) {
-					const full = path.posix.join(dir, entry);
-					let st: any;
-					try {
-						st = statSync(full);
-					} catch {
-						continue;
-					}
-					if (st.isDirectory()) walk(full, out);
-					else out.push(full);
-				}
-				return out;
-			}
 			function enumerate(filter: (ext: string) => boolean) {
-				const files: string[] = [];
-				for (const r of roots) walk(r, files);
-				return files.filter((f) => filter(f.split('.').pop() || ''));
-			}
-			function shouldExcludeAbsolute(p: string) {
-				const file = p.split('/').pop() || '';
-				if (file.startsWith('_')) return true;
-				if (/\.d\.ts$/.test(p)) return true;
-				if (/([.-]worker)\.(ts|js)$/.test(file)) return true;
-				const isAndroidTagged = /\.android\./.test(p);
-				const isIosTagged = /\.ios\./.test(p) || /\.visionos\./.test(p);
-				if (platform === 'android' && isIosTagged) return true;
-				if ((platform === 'ios' || platform === 'visionos') && isAndroidTagged) return true;
-				return false;
-			}
-			function toImportSpecifier(abs: string) {
-				return '/' + abs.replace(/^\/+/, '');
+				return walkAppFiles(appRoot).filter((f) => filter(f.split('.').pop() || ''));
 			}
 			function toCtxKey(abs: string) {
 				let rel = abs;
 				if (rel.startsWith(appRootPrefix)) rel = rel.slice(appRootPrefix.length);
 				return './' + rel;
 			}
+			const shouldExcludeAbsolute = (p: string) => shouldExcludePlatformFile(p, platform);
+			const toImportSpecifier = toContextImportSpecifier;
 			const xmlFiles = enumerate((ext) => ext === 'xml').filter((f) => !shouldExcludeAbsolute(f));
 			const styleFiles = enumerate((ext) => styleExtsSet.has(ext)).filter((f) => !shouldExcludeAbsolute(f));
 			const jsFiles = enumerate((ext) => ext === 'js').filter((f) => !shouldExcludeAbsolute(f));
@@ -116,28 +80,8 @@ function createBundlerContextPlugin(): Plugin {
 	};
 }
 
-function createXmlLoaderPlugin(): Plugin {
-	return {
-		name: 'ns-xml-loader-js',
-		enforce: 'pre',
-		load(id) {
-			if (!id.endsWith('.xml')) return null;
-			try {
-				const src = readFileSync(id, 'utf-8');
-				const xml = JSON.stringify(src)
-					.replace(/\u2028/g, '\\u2028')
-					.replace(/\u2029/g, '\\u2029');
-				const code = `const ___XML___ = ${xml};\nexport default ___XML___;`;
-				return { code, map: null } as any;
-			} catch {
-				return null;
-			}
-		},
-	};
-}
-
 export const javascriptConfig = ({ mode }): UserConfig => {
 	return mergeConfig(baseConfig({ mode }), {
-		plugins: [createXmlLoaderPlugin(), createBundlerContextPlugin()],
+		plugins: [createXmlLoaderPlugin('ns-xml-loader-js'), createBundlerContextPlugin()],
 	});
 };

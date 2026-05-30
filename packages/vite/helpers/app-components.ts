@@ -3,6 +3,7 @@ import fs from 'fs';
 import type { Plugin, ResolvedConfig } from 'vite';
 import { getProjectRootPath } from './project.js';
 import { getProjectAppRelativePath } from './utils.js';
+import type { Platform } from './platform-types.js';
 
 const projectRoot = getProjectRootPath();
 
@@ -13,7 +14,7 @@ export interface AppComponentsOptions {
 	 * Example: ['./app/custom-activity.android.ts', './app/custom-application.android.ts']
 	 */
 	appComponents?: string[];
-	platform: 'android' | 'ios' | 'visionos';
+	platform: Platform;
 	verbose?: boolean;
 }
 
