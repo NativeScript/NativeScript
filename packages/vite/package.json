@@ -1,11 +1,12 @@
 {
 	"name": "@nativescript/vite",
-	"version": "8.0.0-alpha.28",
+	"version": "8.0.0-alpha.29",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
 	"types": "./index.d.ts",
 	"type": "module",
+	"files": ["**/*.d.ts", "**/*.js", "**/*.mjs", "**/*.cjs", "**/*.map"],
 	"exports": {
 		".": {
 			"types": "./index.d.ts",
@@ -78,9 +79,6 @@
 		"vite"
 	],
 	"dependencies": {
-		"@analogjs/vite-plugin-angular": "^2.0.0",
-		"@angular-devkit/build-angular": "^21.0.0",
-		"@angular/build": "^21.0.0",
 		"@babel/core": "^7.28.0",
 		"@babel/generator": "^7.28.0",
 		"@babel/parser": "^7.28.0",
@@ -88,24 +86,46 @@
 		"@rollup/plugin-alias": "^6.0.0",
 		"@rollup/plugin-commonjs": "^29.0.0",
 		"@rollup/plugin-replace": "^6.0.2",
-		"@vitejs/plugin-vue": "^6.0.5",
-		"@vitejs/plugin-vue-jsx": "^5.1.5",
-		"@vue/compiler-sfc": "^3.5.0",
-		"vue-tsc": "^3.2.0",
 		"css": "^3.0.0",
 		"esbuild": "^0.27.4",
 		"minimist": "^1.2.8",
-		"react-reconciler": "^0.32.0",
 		"sass": ">=1.70.0 <2",
 		"vite": "^8.0.0",
-		"vite-plugin-solid": "^2.11.11",
 		"vite-plugin-static-copy": "^4.0.1",
 		"ws": "^8.18.0"
 	},
+	"peerDependencies": {
+		"@analogjs/vite-plugin-angular": "^2.0.0",
+		"@angular/build": "^21.0.0",
+		"@vitejs/plugin-vue": "^6.0.5",
+		"@vitejs/plugin-vue-jsx": "^5.1.5",
+		"@vue/compiler-sfc": "^3.5.0",
+		"react-reconciler": "^0.32.0",
+		"vite-plugin-solid": "^2.11.11",
+		"vue-tsc": "^3.2.0"
+	},
+	"peerDependenciesMeta": {
+		"@analogjs/vite-plugin-angular": { "optional": true },
+		"@angular/build": { "optional": true },
+		"@vitejs/plugin-vue": { "optional": true },
+		"@vitejs/plugin-vue-jsx": { "optional": true },
+		"@vue/compiler-sfc": { "optional": true },
+		"react-reconciler": { "optional": true },
+		"vite-plugin-solid": { "optional": true },
+		"vue-tsc": { "optional": true }
+	},
 	"devDependencies": {
+		"@analogjs/vite-plugin-angular": "^2.0.0",
+		"@angular/build": "^21.0.0",
 		"@types/css": "^0.0.38",
 		"@types/node": "^24.9.1",
-		"vitest": "~4.0.9"
+		"@vitejs/plugin-vue": "^6.0.5",
+		"@vitejs/plugin-vue-jsx": "^5.1.5",
+		"@vue/compiler-sfc": "^3.5.0",
+		"react-reconciler": "^0.32.0",
+		"vite-plugin-solid": "^2.11.11",
+		"vitest": "~4.0.9",
+		"vue-tsc": "^3.2.0"
 	},
 	"homepage": "https://docs.nativescript.org/configuration/vite",
 	"repository": {
