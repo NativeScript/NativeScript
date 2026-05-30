@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import type { Plugin } from 'vite';
 import { getProjectFilePath, getProjectRootPath } from './project.js';
+import { normalizeModuleId } from './normalize-id.js';
 
 let tsConfigPath: string;
 
@@ -240,7 +241,12 @@ export function createTsConfigPathsResolver(opts: { paths: Record<string, string
 		if (cached !== undefined) {
 			return cached;
 		}
-		const resolved = resolveTsConfigPath(fullPath, opts.platform, opts.verbose, debugId);
+		// Canonicalize the resolved id (forward slashes + uppercase Windows drive).
+		// path.join/string-concat inside resolveTsConfigPath emit backslashes on
+		// Windows; without this a tsconfig-aliased file would land in Rolldown's
+		// graph under a different id than the same file reached via Vite's
+		// forward-slash resolution. No-op on POSIX. See normalize-id.ts.
+		const resolved = normalizeModuleId(resolveTsConfigPath(fullPath, opts.platform, opts.verbose, debugId));
 		fsResolveCache.set(fullPath, resolved);
 		return resolved;
 	};

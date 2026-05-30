@@ -6,6 +6,7 @@ import { createTsConfigPathsResolver, getTsConfigData } from './ts-config-paths.
 import { packagePlatformResolverPlugin } from './package-platform-aliases.js';
 import { nativescriptPackageResolver } from './nativescript-package-resolver.js';
 import { findMonorepoWorkspaceRoot, getProjectRootPath } from './project.js';
+import { normalizeModuleId } from './normalize-id.js';
 
 const nodeRequire = createRequire(import.meta.url);
 
@@ -103,7 +104,9 @@ export function getWorkerPlugins(platformOrOpts: string | WorkerPluginsOptions) 
 						// Use the existing NativeScript platform file resolver
 						const platformResolvedFile = resolveNativeScriptPlatformFile(testPath, platform);
 						if (platformResolvedFile) {
-							return platformResolvedFile;
+							// Canonicalize so the worker bundle dedupes core the same way
+							// the main bundle does (forward slash + uppercase Windows drive).
+							return normalizeModuleId(platformResolvedFile);
 						}
 					}
 

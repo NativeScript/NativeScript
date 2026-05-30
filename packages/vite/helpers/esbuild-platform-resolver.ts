@@ -1,5 +1,6 @@
 import { existsSync } from 'fs';
 import path from 'path';
+import { normalizeModuleId } from './normalize-id.js';
 
 /**
  * Rolldown-compatible resolver plugin for NativeScript platform-specific file
@@ -80,7 +81,9 @@ export function optimizeDepsPlatformResolver(opts?: { platform: string; verbose?
 				// 	console.log(`ns-optimize-deps-resolver: ${relImporter ?? importer} -> ${source} => ${path.relative(process.cwd(), resolved)}`);
 				// } catch {}
 			}
-			return resolved;
+			// Canonicalize separators/drive case so the prebundle graph dedupes
+			// platform files consistently on Windows. No-op on POSIX.
+			return normalizeModuleId(resolved);
 		},
 	} as any;
 }

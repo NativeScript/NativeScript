@@ -3,6 +3,7 @@ import fs from 'fs';
 import type { Plugin } from 'vite';
 import { findPackageInNodeModules } from './module-resolution.js';
 import { getProjectRootPath } from './project.js';
+import { normalizeModuleId } from './normalize-id.js';
 
 const projectRoot = getProjectRootPath();
 
@@ -49,7 +50,7 @@ export function packagePlatformResolverPlugin(opts: { tsConfig: { paths?: Record
 									if (opts.verbose) {
 										console.log(`✅ Alias resolver: ${packageName} -> ${mainField}.${opts.platform}.js (extensionless)`);
 									}
-									return platformFile;
+									return normalizeModuleId(platformFile);
 								}
 
 								// Fallback to .js
@@ -58,7 +59,7 @@ export function packagePlatformResolverPlugin(opts: { tsConfig: { paths?: Record
 									if (opts.verbose) {
 										console.log(`✅ Alias resolver: ${packageName} -> ${mainField}.js (extensionless)`);
 									}
-									return jsFile;
+									return normalizeModuleId(jsFile);
 								}
 							}
 							// Case 2: Main field has extension but file doesn't exist - look for platform variants
@@ -73,7 +74,7 @@ export function packagePlatformResolverPlugin(opts: { tsConfig: { paths?: Record
 									if (opts.verbose) {
 										console.log(`✅ Alias resolver: ${packageName} -> ${baseName}.${opts.platform}${ext} (missing main)`);
 									}
-									return platformFile;
+									return normalizeModuleId(platformFile);
 								}
 
 								// If main file exists, let normal resolution handle it

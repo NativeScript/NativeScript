@@ -37,6 +37,7 @@ import { createPostCssConfig } from '../helpers/postcss-platform-config.js';
 import { getProjectAppPath, getProjectAppRelativePath } from '../helpers/utils.js';
 import { appComponentsPlugin } from '../helpers/app-components.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
+import { normalizeModuleId } from '../helpers/normalize-id.js';
 // Load HMR plugins lazily to avoid compiling dev-only sources during library build
 // This prevents TypeScript from traversing the heavy HMR implementation graph when not needed
 // function getHMRPluginsSafe(opts: {
@@ -82,10 +83,10 @@ const appGlobPattern = `${appSourceDir}/**`;
 let NS_CORE_ROOT = '' as string;
 const workspaceCorePkg = path.resolve(projectRoot, '../../packages/core/package.json');
 if (existsSync(workspaceCorePkg)) {
-	NS_CORE_ROOT = path.dirname(workspaceCorePkg).replace(/\\/g, '/');
+	NS_CORE_ROOT = normalizeModuleId(path.dirname(workspaceCorePkg));
 } else {
 	const corePkg = require.resolve('@nativescript/core/package.json', { paths: [projectRoot] });
-	NS_CORE_ROOT = path.dirname(corePkg).replace(/\\/g, '/');
+	NS_CORE_ROOT = normalizeModuleId(path.dirname(corePkg));
 }
 
 // Attempt to resolve hoisted workspace dependency roots from the app's project root.
@@ -94,7 +95,7 @@ if (existsSync(workspaceCorePkg)) {
 let THEME_CORE_ROOT: string | undefined;
 const themePkgDir = findPackageInNodeModules('nativescript-theme-core', projectRoot);
 if (themePkgDir && existsSync(themePkgDir)) {
-	THEME_CORE_ROOT = themePkgDir.replace(/\\/g, '/');
+	THEME_CORE_ROOT = normalizeModuleId(themePkgDir);
 }
 
 /**
@@ -214,9 +215,12 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// 1) Catch exactly `~/package.json` → virtual module (MUST be first!)
 			{ find: /^~\/package\.json$/, replacement: '~/package.json' },
 			// 2) Catch everything else under "~/" → your src/
-			{ find: /^~\/(.*)$/, replacement: path.resolve(projectRoot, `${appSourceDir}/$1`) },
+			//    Normalize so app-file ids use the same forward-slash + uppercase-drive
+			//    form as core/Vite-resolved ids — otherwise a Windows backslash app id
+			//    importing core could anchor a divergent relative-resolution chain.
+			{ find: /^~\/(.*)$/, replacement: normalizeModuleId(path.resolve(projectRoot, `${appSourceDir}/$1`)) },
 			// optional: "@" → src/
-			{ find: '@', replacement: path.resolve(projectRoot, appSourceDir) },
+			{ find: '@', replacement: normalizeModuleId(path.resolve(projectRoot, appSourceDir)) },
 		],
 		extensions: platformExtensions,
 		preserveSymlinks: true,

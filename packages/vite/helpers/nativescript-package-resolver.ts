@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { getProjectRootPath } from './project.js';
 import { findPackageInNodeModules } from './module-resolution.js';
+import { normalizeModuleId } from './normalize-id.js';
 
 const projectRoot = getProjectRootPath();
 
@@ -69,7 +70,9 @@ export function nativescriptPackageResolver(platform: string) {
 								const platformFile = path.join(packagePath, `${mainField}.${platform}.js`);
 								if (fs.existsSync(platformFile)) {
 									const result = {
-										id: platformFile,
+										// Canonicalize so Windows backslash/drive-case variants
+										// can't collide with the alias/Vite forward-slash ids.
+										id: normalizeModuleId(platformFile),
 										resolvedBy: 'nativescript-package-resolver',
 									};
 									packageCache.set(packageName, result);
@@ -84,7 +87,7 @@ export function nativescriptPackageResolver(platform: string) {
 								const jsFile = path.join(packagePath, `${mainField}.js`);
 								if (fs.existsSync(jsFile)) {
 									const result = {
-										id: jsFile,
+										id: normalizeModuleId(jsFile),
 										resolvedBy: 'nativescript-package-resolver',
 									};
 									packageCache.set(packageName, result);
@@ -105,7 +108,9 @@ export function nativescriptPackageResolver(platform: string) {
 								const platformFile = path.join(packagePath, `${baseName}.${platform}${ext}`);
 								if (fs.existsSync(platformFile)) {
 									const result = {
-										id: platformFile,
+										// Canonicalize so Windows backslash/drive-case variants
+										// can't collide with the alias/Vite forward-slash ids.
+										id: normalizeModuleId(platformFile),
 										resolvedBy: 'nativescript-package-resolver',
 									};
 									packageCache.set(packageName, result);

@@ -1,6 +1,7 @@
 import type { Plugin } from 'vite';
 import path from 'path';
 import { resolveNativeScriptPlatformFile } from './utils.js';
+import { normalizeModuleId } from './normalize-id.js';
 
 const normalizeImporterId = (importer: string): string => {
 	const cleanImporter = importer.split('?', 1)[0];
@@ -29,7 +30,13 @@ export default function NativeScriptPlugin(options: { platform: 'ios' | 'android
 			for (const ext of extVariants) {
 				const file = resolveNativeScriptPlatformFile(resolved + ext, platform);
 				if (file) {
-					return file;
+					// Canonicalize before handing the id to Rolldown. `path.resolve`
+					// emits backslashes on Windows; the @nativescript/core alias and
+					// Vite's own resolver emit forward slashes. Returning the raw
+					// backslash form here makes Rolldown treat the same core file as a
+					// second module, double-evaluating widthProperty.register. No-op on
+					// POSIX. See normalize-id.ts for the full rationale.
+					return normalizeModuleId(file);
 				}
 			}
 
