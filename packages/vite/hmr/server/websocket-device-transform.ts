@@ -132,28 +132,6 @@ function buildNodeModuleProvenancePrelude(sourceId?: string): string {
 	return `try { const __nsRecord = globalThis.__NS_RECORD_MODULE_PROVENANCE__; if (typeof __nsRecord === 'function') { __nsRecord(${JSON.stringify(rootPackage)}, ${JSON.stringify({ kind: 'http-esm', specifier: packageSpecifier, url: sourceId, via })}); } } catch {}\n`;
 }
 
-// Guard any bare dynamic import(spec) occurring in assembled module code.
-// We cannot override native dynamic import globally; for SFC assembler outputs we inline
-// a tiny helper and rewrite "import(" to "__nsDynImport(" to prevent anomalous specs like '@'.
-function guardBareDynamicImports(code: string): string {
-	try {
-		if (!code || typeof code !== 'string') return code;
-		const NEEDLE = /(^|\n)\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/\s*)*/;
-		const hasImportCall = /\bimport\s*\(/.test(code);
-		if (!hasImportCall) return code;
-		const helper = "const __nsDynImport = (spec) => { try { if (!spec || spec === '@') { return import(new URL('/ns/m/__invalid_at__.mjs', import.meta.url).href); } } catch {} try { return import(spec); } catch (e) { return Promise.reject(e); } };\n";
-		// Avoid double injection
-		const inject = code.includes('const __nsDynImport =') ? '' : helper;
-		// Replace bare import( ... ) that are not part of 'import.meta' or type-only contexts
-		// Heuristic: replace 'import(' occurrences; skip 'import.meta'
-		const rewritten = code.replace(/\bimport\s*\(/g, '__nsDynImport(');
-		if (rewritten === code && !inject) return code;
-		return inject + rewritten;
-	} catch {
-		return code;
-	}
-}
-
 function shouldRemapImport(spec: string): boolean {
 	if (!spec || typeof spec !== 'string') return false;
 	if (VENDOR_PACKAGES.test(spec)) return false;
@@ -191,37 +169,6 @@ function removeNamedImports(code: string, names: string[]): string {
 	});
 }
 
-/**
- * Inject global bindings for given names
- */
-function injectGlobalBindings(code: string, names: string[]): string {
-	if (!names.length) return code;
-	const lines = names.map((n) => `const ${n} = globalThis.${n};`);
-	return lines.join('\n') + '\n' + code;
-}
-
-/**
- * Strip import.meta.hot blocks (balanced braces)
- */
-function stripImportMetaHotBlocks(code: string): string {
-	let result = code;
-	const regex = /if\s*\(\s*import\.meta\.hot\s*\)\s*\{/g;
-	let match: RegExpExecArray | null;
-	while ((match = regex.exec(result)) !== null) {
-		let start = match.index;
-		let i = start + match[0].length;
-		let depth = 1;
-		while (i < result.length && depth > 0) {
-			const ch = result[i++];
-			if (ch === '{') depth++;
-			else if (ch === '}') depth--;
-		}
-		result = result.slice(0, start) + '/* removed import.meta.hot */\n' + result.slice(i);
-		regex.lastIndex = start;
-	}
-	return result;
-}
-
 function normalizeImportPath(spec: string, importerDir: string): string | null {
 	if (!spec) return null;
 
@@ -238,46 +185,6 @@ function normalizeImportPath(spec: string, importerDir: string): string | null {
 	}
 
 	return key.replace(PAT.QUERY_PATTERN, '');
-}
-
-function registerDependencyFile(depFileMap: Map<string, string>, candidate: string | null, fileName: string): void {
-	if (!candidate) return;
-
-	const cleaned = candidate.replace(PAT.QUERY_PATTERN, '');
-	const normalizedCandidate = normalizeNativeScriptCoreSpecifier(cleaned);
-	if (isCoreGlobalsReference(normalizedCandidate)) {
-		return;
-	}
-	if (isNativeScriptCoreModule(normalizedCandidate)) {
-		return;
-	}
-	if (isNativeScriptPluginModule(normalizedCandidate)) {
-		return;
-	}
-	if (resolveVendorFromCandidate(normalizedCandidate)) {
-		return;
-	}
-	if (!cleaned) return;
-
-	const variants = new Set<string>();
-	variants.add(normalizedCandidate);
-	variants.add(cleaned);
-
-	const normalized = path.posix.normalize(cleaned);
-	variants.add(normalized);
-
-	const withSlash = normalized.startsWith('/') ? normalized : `/${normalized}`;
-	variants.add(withSlash);
-
-	const withoutExt = withSlash.replace(/\.(ts|js|mjs|tsx|jsx)$/i, '');
-	variants.add(withoutExt);
-	variants.add(`${withoutExt}.js`);
-	variants.add(`${withoutExt}.mjs`);
-	variants.add(`${withoutExt}.ts`);
-
-	for (const variant of variants) {
-		depFileMap.set(variant, fileName);
-	}
 }
 
 function findDependencyFileName(depFileMap: Map<string, string>, key: string): string | undefined {
@@ -589,17 +496,6 @@ function getProjectRelativeImportPath(importPath: string, projectRoot?: string):
 	return normalized.replace(/^\/+/, '');
 }
 
-function toDocumentsAbsoluteImport(importPath: string, projectRoot?: string): string | null {
-	const projectRelative = getProjectRelativeImportPath(importPath, projectRoot);
-	if (!projectRelative) {
-		return null;
-	}
-	if (isNativeScriptCoreModule(projectRelative)) {
-		return null;
-	}
-	return `__NSDOC__/${projectRelative}`;
-}
-
 function toAppModuleBaseId(importPath: string, projectRoot?: string): string | null {
 	const projectRelative = getProjectRelativeImportPath(importPath, projectRoot);
 	if (!projectRelative) {
@@ -615,48 +511,6 @@ function toNodeModulesHttpModuleId(importPath: string): string | null {
 		return null;
 	}
 	return `/ns/m/node_modules/${nodeModulesSpecifier}`;
-}
-
-// `rewriteNsMImportPathForHmr` and `getNumericServeVersionTag` live in
-// `./websocket-ns-m-paths.js`. The path rewriter is part of the
-// "Stable URL + Explicit Invalidation" architecture and must be a
-// single source of truth so the canonicalization rules can't drift
-// between modules. They are imported above and re-exported below for
-// tests / external callers that historically reached them through this
-// module.
-
-function normalizeAbsoluteFilesystemImport(spec: string, importerPath: string, projectRoot?: string): string | null {
-	if (!spec || typeof spec !== 'string') {
-		return null;
-	}
-
-	let normalized = spec;
-	if (normalized.startsWith('file://')) {
-		normalized = normalized.replace(/^file:\/\//, '/');
-	}
-
-	if (!normalized.startsWith('/')) {
-		return null;
-	}
-
-	const containsDocuments = normalized.includes('/Documents/');
-	const projectRootNormalized = projectRoot?.replace(/\\/g, '/').replace(/\/+$/, '');
-	const containsProjectRoot = projectRootNormalized ? normalized.includes(projectRootNormalized) : false;
-
-	if (isNativeScriptCoreModule(normalized)) {
-		return null;
-	}
-
-	if (!containsDocuments && !containsProjectRoot) {
-		return null;
-	}
-
-	const absolute = toDocumentsAbsoluteImport(normalized, projectRoot);
-	if (!absolute || absolute === spec) {
-		return null;
-	}
-
-	return absolute;
 }
 
 /**
@@ -861,7 +715,6 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		// Only consider free uses (not property access like obj.$navigateTo)
 		const needTo = /(^|[^.\w$])\$navigateTo\b/.test(result);
 		const needBack = /(^|[^.\w$])\$navigateBack\b/.test(result);
-		const needShow = /\$showModal\b/.test(result);
 		if (needTo) navHelpers.push('$navigateTo');
 		if (needBack) navHelpers.push('$navigateBack');
 		// Intentionally exclude $showModal from navHelpers injection to prevent named import reinsertion
@@ -911,7 +764,6 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		const imports: string[] = [];
 		const hasImportTo = /(^|\n)\s*import\s*\{[^}]*\$navigateTo[^}]*\}\s*from\s*["'](?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?["']/.test(result);
 		const hasImportBack = /(^|\n)\s*import\s*\{[^}]*\$navigateBack[^}]*\}\s*from\s*["'](?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?["']/.test(result);
-		const hasImportShow = /(^|\n)\s*import\s*\{[^}]*\$showModal[^}]*\}\s*from\s*["'](?:https?:\/\/[^"']+)?\/ns\/rt(?:\/[\d]+)?["']/.test(result);
 		// Avoid adding named imports if a local binding already exists (e.g., wrapper const)
 		const hasLocalTo = /(^|[\n;])\s*(?:const|let|var|function)\s+\$navigateTo\b/.test(result);
 		const hasLocalBack = /(^|[\n;])\s*(?:const|let|var|function)\s+\$navigateBack\b/.test(result);
@@ -1473,8 +1325,6 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			}
 			return `${prefix}${httpSpec}${suffix}`;
 		}
-
-		const candidateNativeScriptSpec = nodeModulesSpecifier ?? spec;
 
 		// ── Node modules routing ──────────────────────────────────────
 		// Uses the package's own package.json exports field to determine
