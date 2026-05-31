@@ -198,8 +198,6 @@ function resolveFrameworkStrategy(flavor: string): FrameworkServerStrategy {
 	return strategy;
 }
 
-let ACTIVE_STRATEGY: FrameworkServerStrategy;
-
 function isSocketClientOpen(client: { readyState?: number; OPEN?: number } | null | undefined): boolean {
 	if (!client) {
 		return false;
@@ -642,7 +640,7 @@ function collectImportDependencies(code: string, importerPath: string): Set<stri
 /**
  * Clean code: remove Vite/Vue noise, rewrite to vendor
  */
-function cleanCode(code: string): string {
+function cleanCode(code: string, strategy: FrameworkServerStrategy): string {
 	let result = code;
 
 	// Remove Vite client and hot module noise
@@ -650,8 +648,8 @@ function cleanCode(code: string): string {
 	result = result.replace(PAT.IMPORT_META_HOT_ASSIGNMENT, '');
 	// Keep import.meta.hot call sites; runtime now provides a stable import.meta.hot.
 
-	result = ACTIVE_STRATEGY.preClean?.(result) ?? result;
-	result = ACTIVE_STRATEGY.rewriteFrameworkImports?.(result) ?? result;
+	result = strategy.preClean?.(result) ?? result;
+	result = strategy.rewriteFrameworkImports?.(result) ?? result;
 
 	// Vendor manifest-driven import rewrites
 	// NOTE: Static and side-effect vendor imports are intentionally NOT rewritten here.
@@ -678,7 +676,7 @@ function cleanCode(code: string): string {
 	result = result.replace(PAT.VITE_CLIENT_IMPORT, '').replace(PAT.IMPORT_META_HOT_ASSIGNMENT, '');
 
 	// Clean up HMR noise
-	result = ACTIVE_STRATEGY.postClean?.(result) ?? result;
+	result = strategy.postClean?.(result) ?? result;
 	result = stripCoreGlobalsImports(result);
 
 	return result;
@@ -1975,7 +1973,7 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 }
 
 // Plugin
-function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
+function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: FrameworkServerStrategy): Plugin {
 	const verbose = !!opts.verbose;
 	let wss: WebSocketServer | null = null;
 	let sharedTransformRequest!: SharedTransformRequestRunner;
@@ -2031,9 +2029,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	// Only include application modules we can serve (e.g., under /src and known .vue/.ts/.js entries in the graph).
 	function computeTxnOrderForChanged(changedIds: string[]): string[] {
 		const includeAppModule = (id: string) => matchesRuntimeGraphModuleId(id, APP_VIRTUAL_WITH_SLASH, /\.(ts|js|mjs|tsx|jsx)$/i);
-		const includeExt = (id: string) => ACTIVE_STRATEGY.matchesFile(id) || includeAppModule(id);
+		const includeExt = (id: string) => strategy.matchesFile(id) || includeAppModule(id);
 		const isApp = (id: string) => id.startsWith(APP_VIRTUAL_WITH_SLASH);
-		const roots = changedIds.map(normalizeGraphId).filter((id) => graph.has(id) && (isApp(id) || ACTIVE_STRATEGY.matchesFile(id)) && includeExt(id));
+		const roots = changedIds.map(normalizeGraphId).filter((id) => graph.has(id) && (isApp(id) || strategy.matchesFile(id)) && includeExt(id));
 		const toVisit = new Set<string>();
 		// Collect dependency closure (downstream deps from roots)
 		const stack: string[] = [...roots];
@@ -2045,7 +2043,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			if (m) {
 				for (const d of m.deps) {
 					if (!graph.has(d)) continue;
-					if ((isApp(d) || ACTIVE_STRATEGY.matchesFile(d)) && includeExt(d) && !toVisit.has(d)) {
+					if ((isApp(d) || strategy.matchesFile(d)) && includeExt(d) && !toVisit.has(d)) {
 						stack.push(d);
 					}
 				}
@@ -2189,7 +2187,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 	}
 	function isTypescriptFlavor(): boolean {
 		try {
-			return ACTIVE_STRATEGY?.flavor === 'typescript';
+			return strategy?.flavor === 'typescript';
 		} catch {
 			return false;
 		}
@@ -2615,7 +2613,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 
 					const runtimeConfig = buildRuntimeConfig({
 						origin,
-						flavor: ACTIVE_STRATEGY?.flavor || 'typescript',
+						flavor: strategy?.flavor || 'typescript',
 					});
 
 					res.setHeader('Content-Type', 'application/json');
@@ -2696,7 +2694,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// Prepend guard to capture any URL-based require attempts
 					code = REQUIRE_GUARD_SNIPPET + code;
 					// Apply same sanitation/rewrite pipeline used for WS path
-					code = cleanCode(code);
+					code = cleanCode(code, strategy);
 					// preserveVendorImports=true: vendor imports stay as bare specifiers
 					// for the device-side import map (ns-vendor://) instead of being
 					// transformed to __nsVendorRequire calls with fragile __nsPick lookups.
@@ -2714,7 +2712,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					try {
 						const origin = getServerOrigin(server);
 						code = ensureVersionedRtImports(code, origin, graphVersion);
-						code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, origin, graphVersion) ?? code;
+						code = strategy.ensureVersionedImports?.(code, origin, graphVersion) ?? code;
 					} catch {}
 					// Compute rel .mjs output path
 					const specForRel = resolvedCandidate || spec;
@@ -2751,7 +2749,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							}
 							if (depTrans?.code && depResolved) {
 								let depCode = depTrans.code;
-								depCode = cleanCode(depCode);
+								depCode = cleanCode(depCode, strategy);
 								depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
 								depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 								depCode = ensureVariableDynamicImportHelper(depCode);
@@ -2762,7 +2760,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								}
 								try {
 									depCode = ensureVersionedRtImports(depCode, getServerOrigin(server), graphVersion);
-									depCode = ACTIVE_STRATEGY.ensureVersionedImports?.(depCode, getServerOrigin(server), graphVersion) ?? depCode;
+									depCode = strategy.ensureVersionedImports?.(depCode, getServerOrigin(server), graphVersion) ?? depCode;
 								} catch {}
 								let depRel = depResolved.replace(/^\//, '').replace(/\.(tsx?|jsx?)$/i, '.mjs');
 								if (!depRel.endsWith('.mjs')) depRel += '.mjs';
@@ -3078,7 +3076,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// call when hot.data already has a stored registry, component updates
 					// apply immediately when the module re-evaluates.
 					try {
-						if (transformed?.code && ACTIVE_STRATEGY?.flavor === 'solid' && (resolvedCandidate || spec || '').includes('@solid-refresh')) {
+						if (transformed?.code && strategy?.flavor === 'solid' && (resolvedCandidate || spec || '').includes('@solid-refresh')) {
 							const PATCH_SENTINEL = '/* __ns_solid_refresh_patched__ */';
 							const alreadyPatched = transformed.code.includes(PATCH_SENTINEL);
 							if (verbose) {
@@ -3277,7 +3275,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					let code = transformed.code;
 					// Prepend guard to capture any URL-based require attempts
 					code = REQUIRE_GUARD_SNIPPET + code;
-					code = cleanCode(code);
+					code = cleanCode(code, strategy);
 					const isNodeMod = /(?:^|\/)node_modules\//.test(resolvedCandidate || spec || '');
 					code = processCodeForDevice(code, false, true, isNodeMod, resolvedCandidate || spec);
 					// Solid HMR: The NativeScript iOS/Android runtime provides import.meta.hot
@@ -3287,7 +3285,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					// correct — the runtime's native hot context is better.
 					const projectRoot = server.config?.root || process.cwd();
 					const serverOrigin = getServerOrigin(server);
-					if (ACTIVE_STRATEGY?.flavor === 'angular') {
+					if (strategy?.flavor === 'angular') {
 						code = prepareAngularEntryForDevice(code, resolvedCandidate || spec, sfcFileMap, depFileMap, projectRoot, !!verbose, undefined, serverOrigin, true);
 					} else {
 						code = rewriteImports(code, resolvedCandidate || spec, sfcFileMap, depFileMap, projectRoot, !!verbose, undefined, serverOrigin, true);
@@ -3388,7 +3386,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					try {
 						const verNum = 0;
 						code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
-						code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
+						code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
 					} catch {}
 					// `/ns/m` URL finalize step.
 					//
@@ -3611,7 +3609,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					if (!transformed?.code) return next();
 					const origin = getServerOrigin(server);
 					const ver = Number(graphVersion || 0);
-					const rewrite = ACTIVE_STRATEGY.rewriteVendorSpec;
+					const rewrite = strategy.rewriteVendorSpec;
 					if (!rewrite) return next();
 					const before = transformed.code;
 					const code = rewrite(before, origin, ver);
@@ -4447,7 +4445,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					const importerPath = fullSpec.replace(/[?#].*$/, '');
 					// Only run cleanCode for non-template cases (script/full). Template code must remain intact.
 					if (!isVariant || variantType !== 'template') {
-						code = cleanCode(code);
+						code = cleanCode(code, strategy);
 					}
 					code = rewriteImports(code, importerPath, sfcFileMap, depFileMap, projectRoot, !!verbose, undefined, getServerOrigin(server));
 					code = ensureVariableDynamicImportHelper(code);
@@ -4458,10 +4456,10 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						const verNum = Number(verFromPath || '0');
 						if (Number.isFinite(verNum) && verNum > 0) {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
-							code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
+							code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
 						} else {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), graphVersion);
-							code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, getServerOrigin(server), graphVersion) ?? code;
+							code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), graphVersion) ?? code;
 						}
 					} catch {}
 					// Final guard for SFC variant output as well
@@ -5125,7 +5123,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								try {
 									const origin = getServerOrigin(server);
 									inlineCode2 = ensureVersionedRtImports(inlineCode2, origin, Number(ver));
-									inlineCode2 = ACTIVE_STRATEGY.ensureVersionedImports?.(inlineCode2, origin, Number(ver)) ?? inlineCode2;
+									inlineCode2 = strategy.ensureVersionedImports?.(inlineCode2, origin, Number(ver)) ?? inlineCode2;
 								} catch {}
 								// Normalize imports/helpers via AST to ensure _defineComponent and other helpers are bound once
 								try {
@@ -5228,7 +5226,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					try {
 						const origin = getServerOrigin(server);
 						code = ensureVersionedRtImports(code, origin, Number(ver));
-						code = ACTIVE_STRATEGY.ensureVersionedImports?.(code, origin, Number(ver)) ?? code;
+						code = strategy.ensureVersionedImports?.(code, origin, Number(ver)) ?? code;
 					} catch {}
 					// Inline-template body path already runs processCodeForDevice (AST + sanitizers); no additional _defineComponent fix needed
 					res.statusCode = 200;
@@ -5250,24 +5248,26 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 							emitFullGraph(ws as any);
 						} else if (msg?.type === 'ns:hmr-sfc-registry-request') {
 							// Resend full SFC registry (lightweight code path)
-							ACTIVE_STRATEGY.buildRegistry({
-								server,
-								sfcFileMap,
-								depFileMap,
-								wss: wss!,
-								verbose,
-								helpers: {
-									cleanCode,
-									collectImportDependencies,
-									isCoreGlobalsReference,
-									isNativeScriptCoreModule,
-									isNativeScriptPluginModule,
-									resolveVendorFromCandidate,
-									createHash: (value: string) => createHash('md5').update(value).digest('hex'),
-									rewriteImports,
-									processSfcCode,
-								},
-							}).catch(() => {});
+							strategy
+								.buildRegistry({
+									server,
+									sfcFileMap,
+									depFileMap,
+									wss: wss!,
+									verbose,
+									helpers: {
+										cleanCode: (code: string) => cleanCode(code, strategy),
+										collectImportDependencies,
+										isCoreGlobalsReference,
+										isNativeScriptCoreModule,
+										isNativeScriptPluginModule,
+										resolveVendorFromCandidate,
+										createHash: (value: string) => createHash('md5').update(value).digest('hex'),
+										rewriteImports,
+										processSfcCode,
+									},
+								})
+								.catch(() => {});
 						} else if (msg?.type === 'ns:fetch-module' && msg.path && typeof msg.requestId !== 'undefined') {
 							(async () => {
 								const requestId = msg.requestId;
@@ -5383,7 +5383,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 									}
 									let code = transformed.code;
 									// Reuse existing sanitation chain (lightweight)
-									code = cleanCode(code);
+									code = cleanCode(code, strategy);
 									code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(resolvedCandidate || spec), resolvedCandidate || spec);
 									code = rewriteImports(code, spec, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 									code = ensureVariableDynamicImportHelper(code);
@@ -5428,7 +5428,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 											}
 											if (depTrans?.code && depResolved) {
 												let depCode = depTrans.code;
-												depCode = cleanCode(depCode);
+												depCode = cleanCode(depCode, strategy);
 												depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
 												depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
 												depCode = ensureVariableDynamicImportHelper(depCode);
@@ -5499,14 +5499,14 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				// JS context has an empty sfcArtifactMap. Without the registry the
 				// rescue-mount cannot find the root .vue component.
 				try {
-					await ACTIVE_STRATEGY.buildRegistry({
+					await strategy.buildRegistry({
 						server,
 						sfcFileMap,
 						depFileMap,
 						wss: wss!,
 						verbose,
 						helpers: {
-							cleanCode,
+							cleanCode: (code: string) => cleanCode(code, strategy),
 							collectImportDependencies,
 							isCoreGlobalsReference,
 							isNativeScriptCoreModule,
@@ -5653,11 +5653,11 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			updateMetrics.tAfterAwait = Date.now();
 			// Graph update for this file change (wrapped to avoid aborting rest of handler)
 			try {
-				const skipAngularHtmlGraphUpdate = ACTIVE_STRATEGY.flavor === 'angular' && /\.(html|htm)$/i.test(file);
+				const skipAngularHtmlGraphUpdate = strategy.flavor === 'angular' && /\.(html|htm)$/i.test(file);
 				if (!skipAngularHtmlGraphUpdate) {
 					const graphTargets = collectGraphUpdateModulesForHotUpdate({
 						file,
-						flavor: ACTIVE_STRATEGY.flavor,
+						flavor: strategy.flavor,
 						modules: ctx.modules,
 						getModuleById: (id) => server.moduleGraph.getModuleById(id) as HotUpdateGraphModuleLike | undefined,
 						verbose,
@@ -5686,7 +5686,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 								// needs the same contract because Solid HMR depends
 								// on the client re-fetching the just-changed module
 								// to drive `solid-refresh.patchRegistry`.
-								broadcastDelta: ACTIVE_STRATEGY.flavor !== 'angular' && ACTIVE_STRATEGY.flavor !== 'solid',
+								broadcastDelta: strategy.flavor !== 'angular' && strategy.flavor !== 'solid',
 							});
 						} catch (error) {
 							if (verbose) console.warn('[hmr-ws][v2] failed graph update target', mod.id, error);
@@ -5836,7 +5836,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			}
 
 			// Framework-specific hot update handling
-			if (ACTIVE_STRATEGY.flavor === 'angular') {
+			if (strategy.flavor === 'angular') {
 				// For Angular, react to component TS or external template HTML changes under /src
 				const isHtml = file.endsWith('.html');
 				const isTs = file.endsWith('.ts');
@@ -6003,7 +6003,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				}
 
 				const angularNeedsTransitive = shouldInvalidateAngularTransitiveImporters({
-					flavor: ACTIVE_STRATEGY.flavor,
+					flavor: strategy.flavor,
 					file,
 					source: angularChangedSource,
 				});
@@ -6231,14 +6231,14 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 					console.warn('[hmr-ws][angular] update failed:', error);
 				}
 				emitHmrUpdateSummary();
-				if (shouldSuppressDefaultViteHotUpdate({ flavor: ACTIVE_STRATEGY.flavor, file })) {
+				if (shouldSuppressDefaultViteHotUpdate({ flavor: strategy.flavor, file })) {
 					return [];
 				}
 				return;
 			}
 
 			// TypeScript flavor: emit generic graph delta for app XML/TS/style changes
-			if (ACTIVE_STRATEGY.flavor === 'typescript') {
+			if (strategy.flavor === 'typescript') {
 				updateMetrics.tAfterFramework = Date.now();
 				try {
 					const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
@@ -6261,7 +6261,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 			// found (e.g. new file, or moduleGraph mismatch), and provides
 			// Solid-specific logging. The client-side processQueue handles
 			// propagation from non-component .ts files to .tsx component boundaries.
-			if (ACTIVE_STRATEGY.flavor === 'solid') {
+			if (strategy.flavor === 'solid') {
 				const isSolidFile = /\.(tsx?|jsx?)$/i.test(file);
 				if (!isSolidFile) return;
 				updateMetrics.tAfterFramework = Date.now();
@@ -6428,7 +6428,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						if (verbose) console.warn('[hmr-ws][solid] post-invalidation re-transform failed', e);
 					}
 					// Broadcast the (now-fresh) delta. Suppressing this in the
-					// common upsert block (`broadcastDelta: ACTIVE_STRATEGY.flavor
+					// common upsert block (`broadcastDelta: strategy.flavor
 					// !== 'solid'`) and emitting it here ensures the client's
 					// eviction + re-import doesn't race the server's cache
 					// invalidation.
@@ -6469,7 +6469,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 				let code = transformed.code;
 
 				// Clean and process
-				code = cleanCode(code);
+				code = cleanCode(code, strategy);
 
 				// Process dependencies
 				const visitedPaths = new Set<string>();
@@ -6541,7 +6541,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 
 				// Process .vue dependencies (they stay as sfc-*.mjs imports)
 				for (const vueDep of vueDeps) {
-					await ACTIVE_STRATEGY.processFile({
+					await strategy.processFile({
 						filePath: vueDep,
 						server,
 						sfcFileMap,
@@ -6550,7 +6550,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }): Plugin {
 						wss,
 						verbose,
 						helpers: {
-							cleanCode,
+							cleanCode: (code: string) => cleanCode(code, strategy),
 							collectImportDependencies,
 							isCoreGlobalsReference,
 							isNativeScriptCoreModule,
@@ -6755,23 +6755,19 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 
 // Framework-specific HMR WebSocket plugins
 export function hmrWebSocketVue(opts: { verbose?: boolean }): Plugin {
-	ACTIVE_STRATEGY = resolveFrameworkStrategy('vue');
-	return createHmrWebSocketPlugin(opts);
+	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('vue'));
 }
 
 export function hmrWebSocketAngular(opts: { verbose?: boolean }): Plugin {
-	ACTIVE_STRATEGY = resolveFrameworkStrategy('angular');
-	return createHmrWebSocketPlugin(opts);
+	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('angular'));
 }
 
 export function hmrWebSocketSolid(opts: { verbose?: boolean }): Plugin {
-	ACTIVE_STRATEGY = resolveFrameworkStrategy('solid');
-	return createHmrWebSocketPlugin(opts);
+	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('solid'));
 }
 
 export function hmrWebSocketTypescript(opts: { verbose?: boolean }): Plugin {
-	ACTIVE_STRATEGY = resolveFrameworkStrategy('typescript');
-	return createHmrWebSocketPlugin(opts);
+	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('typescript'));
 }
 
 /**
