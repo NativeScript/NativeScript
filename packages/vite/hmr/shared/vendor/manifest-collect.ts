@@ -409,7 +409,7 @@ function compiledJsExtensionsForPlatform(platform: string | undefined): string[]
  *    duplicate installs while letting the NativeScript CLI discover
  *    plugins from the app directory.
  */
-export function isUnvendorableLocalSource(name: string, spec: unknown, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
+function isUnvendorableLocalSource(name: string, spec: unknown, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
 	if (typeof spec !== 'string') return false;
 	if (spec.startsWith('link:') || spec.startsWith('workspace:')) return true;
 	if (!spec.startsWith('file:')) return false;
@@ -422,7 +422,7 @@ export function isUnvendorableLocalSource(name: string, spec: unknown, projectRe
 	return !packageHasCompiledJsEntry(name, projectRequire, platform);
 }
 
-export function packageHasCompiledJsEntry(name: string, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
+function packageHasCompiledJsEntry(name: string, projectRequire: ReturnType<typeof createRequire>, platform?: string): boolean {
 	let pkgJsonPath: string;
 	try {
 		pkgJsonPath = projectRequire.resolve(`${name}/package.json`);

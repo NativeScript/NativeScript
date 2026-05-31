@@ -3,7 +3,8 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { __test_collectVendorModules as collectVendorModules, __test_createVendorBundleRuntimeModule as createVendorBundleRuntimeModule } from './manifest.js';
+import { createVendorBundleRuntimeModule } from './manifest.js';
+import { collectVendorModules } from './manifest-collect.js';
 
 describe('collectVendorModules', () => {
 	const tempRoots: string[] = [];

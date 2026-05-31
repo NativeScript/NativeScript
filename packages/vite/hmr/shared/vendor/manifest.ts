@@ -498,9 +498,6 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	};
 }
 
-export const __test_createVendorBundleRuntimeModule = createVendorBundleRuntimeModule;
-export { collectVendorModules as __test_collectVendorModules, isUnvendorableLocalSource as __test_isUnvendorableLocalSource, packageHasCompiledJsEntry as __test_packageHasCompiledJsEntry } from './manifest-collect.js';
-
 function createVendorEntry(entries: string[]): string {
 	if (!entries.length) {
 		return `export const __nsVendorModuleMap = {};
@@ -530,7 +527,7 @@ function createVendorEntry(entries: string[]): string {
 	return `${sideEffectImports}\n\n${namespaceImports}\n\nexport const __nsVendorModuleMap = {\n  ${modules}\n};\n`;
 }
 
-function createVendorBundleRuntimeModule(result: VendorBundleResult): string {
+export function createVendorBundleRuntimeModule(result: VendorBundleResult): string {
 	return `${result.code}
 export const vendorManifest = ${JSON.stringify(result.manifest)};
 export default vendorManifest;
