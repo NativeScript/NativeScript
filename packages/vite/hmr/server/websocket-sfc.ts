@@ -19,6 +19,7 @@ import { buildInlineTemplateBlock, extractTemplateRender, processTemplateVariant
 import { NS_NATIVE_TAGS } from './compiler.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, extractExportMetadata } from './websocket-served-module-helpers.js';
+import { cleanCode, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 
 const babelTraverse: any = (traverse as any)?.default || (traverse as any);
@@ -30,15 +31,11 @@ const pluginTransformTypescript: any = (() => {
 	return loaded?.default || loaded;
 })();
 
-type ProcessCodeForDeviceFn = (code: string, isVitePreBundled: boolean, preserveVendorImports?: boolean, isNodeModule?: boolean, sourceId?: string) => string;
-type RewriteImportsFn = (code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose?: boolean, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp?: boolean) => string;
-type CleanCodeFn = (code: string, strategy: FrameworkServerStrategy) => string;
-
 /**
- * Dependencies the SFC route handlers need from the HMR plugin closure.
- * Server-side functions (`cleanCode`, `processCodeForDevice`, `rewriteImports`,
- * `getServerOrigin`) live in `websocket.ts`; they are injected here to keep the
- * SFC pipeline in its own module without a circular import.
+ * Plugin-closure dependencies the SFC route handlers need. The pure transform
+ * functions (`cleanCode`, `processCodeForDevice`, `rewriteImports`) are imported
+ * directly from `websocket-device-transform.ts`; only genuine plugin state is
+ * injected here.
  */
 export interface RegisterSfcHandlersOptions {
 	verbose: boolean;
@@ -48,9 +45,6 @@ export interface RegisterSfcHandlersOptions {
 	getGraphVersion(): number;
 	getStrategy(): FrameworkServerStrategy;
 	getServerOrigin(server: ViteDevServer): string;
-	cleanCode: CleanCodeFn;
-	processCodeForDevice: ProcessCodeForDeviceFn;
-	rewriteImports: RewriteImportsFn;
 }
 
 /**
@@ -176,7 +170,6 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 			// Full SFCs delegate to deterministic assembler module; variants (script/template) still go through processing
 			if (!isVariant) {
 				const importerPath = fullSpec.replace(/[?#].*$/, '');
-				const origin = options.getServerOrigin(server);
 				const ver = verFromPath || '0';
 				const asmPath = `/ns/asm/${ver}?path=${encodeURIComponent(importerPath)}`;
 				const delegated = `// [sfc] kind=full (delegated to assembler) path=${importerPath}\nexport * from ${JSON.stringify(asmPath)};\nexport { default } from ${JSON.stringify(asmPath)};\n`;
@@ -339,11 +332,10 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 					code = outCode;
 				} catch {}
 
-				code = options.processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(fullSpec), fullSpec);
+				code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(fullSpec), fullSpec);
 				// Transform static .vue imports into static imports from the assembler (no TLA) via AST
 				try {
 					const importerPath = fullSpec.replace(/[?#].*$/, '');
-					const origin = options.getServerOrigin(server);
 					const ver = verFromPath || '0';
 					const ast2 = babelParse(code, {
 						sourceType: 'module',
@@ -402,9 +394,9 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 			const importerPath = fullSpec.replace(/[?#].*$/, '');
 			// Only run cleanCode for non-template cases (script/full). Template code must remain intact.
 			if (!isVariant || variantType !== 'template') {
-				code = options.cleanCode(code, strategy);
+				code = cleanCode(code, strategy);
 			}
-			code = options.rewriteImports(code, importerPath, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
+			code = rewriteImports(code, importerPath, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
 			code = ensureVariableDynamicImportHelper(code);
 			try {
 				// For variant requests under /ns/sfc, prefer the version from the path segment when present
@@ -583,9 +575,9 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 			};
 			const scriptR = await safeTransform(base + '?vue&type=script');
 			const templateR = await safeTransform(base + '?vue&type=template');
-			const fullR = await safeTransform(base + '?vue');
-			const hasScript = !!scriptR?.code;
-			const hasTemplate = !!templateR?.code;
+			// Warm Vite's transform cache for the full-SFC URL; result is unused (the
+			// assembler reads the SFC from disk and compiles it inline below).
+			await safeTransform(base + '?vue');
 			const origin = options.getServerOrigin(server);
 			const ver = String(verFromPath || options.getGraphVersion() || Date.now());
 			const scriptUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=script`;
@@ -605,8 +597,6 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 					// 1) Compile script (prefer inlineTemplate for a complete module)
 					let compiledScript = '' as string;
 					let bindingMetadata: any = undefined;
-					let triedInlineTemplate = false;
-					let hadScriptDefaultPre = false;
 					let usedInlineScript = false;
 					try {
 						// First try inlineTemplate for a holistic, self-contained module with render + hoists
@@ -625,11 +615,9 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 								},
 							} as any,
 						);
-						triedInlineTemplate = true;
 						if (/export\s+default/.test(sInline?.content || '')) {
 							compiledScript = sInline.content;
 							bindingMetadata = sInline?.bindings;
-							hadScriptDefaultPre = true;
 							usedInlineScript = true;
 						} else {
 							// Fallback to standard script (no inline) and attempt separate template compile
@@ -643,7 +631,6 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 							);
 							compiledScript = s?.content || '';
 							bindingMetadata = s?.bindings;
-							hadScriptDefaultPre = /export\s+default/.test(compiledScript);
 							usedInlineScript = false;
 						}
 					} catch (eScript) {
@@ -662,7 +649,6 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 							);
 							compiledScript = s?.content || '';
 							bindingMetadata = s?.bindings;
-							hadScriptDefaultPre = /export\s+default/.test(compiledScript);
 							usedInlineScript = false;
 						} catch (eNoInline) {
 							if (options.verbose) {
@@ -674,15 +660,10 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 					if (!compiledScript && scriptR?.code) {
 						try {
 							compiledScript = scriptR.code;
-							hadScriptDefaultPre = /export\s+default/.test(compiledScript);
 						} catch {}
 					}
-					// If inlineTemplate produced a default export AND visibly contains a render, allow early-return.
-					// Visible render forms we accept:
-					//  - export function render(...) { ... }
-					//  - setup(...) { ... return (_ctx, _cache) => { ... } }
-					const hasInlineRender = /(^|\n)\s*export\s+function\s+render\s*\(/.test(compiledScript || '') || /\breturn\s*\(\s*_ctx\s*,\s*_cache\s*\)\s*=>\s*\{/.test(compiledScript || '');
-					// Always use canonical assembler path; avoid inlineTemplate early-return which can miss render attachment
+					// Always use the canonical assembler path; we deliberately avoid the
+					// inlineTemplate early-return which can miss render attachment.
 					// If we reached here, we are going to assemble canonically. Ensure the script we use does NOT include inlineTemplate render.
 					if (usedInlineScript) {
 						try {
@@ -704,7 +685,6 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 					}
 					// 2) Compile template
 					let compiledTplCode = '' as string;
-					let templateErr: any = null;
 					try {
 						const tplSrc = descriptor.template?.content || '';
 						if (tplSrc) {
@@ -725,7 +705,6 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 							}
 						}
 					} catch (eTpl) {
-						templateErr = eTpl;
 						if (options.verbose) {
 							console.warn('[sfc-asm][compileTemplate] failed', base, (eTpl as any)?.message);
 						}
@@ -830,7 +809,7 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 					parts.push(`export function render(){ const f = (typeof __ns_getRender==='function' ? __ns_getRender() : (__ns_sfc__ && __ns_sfc__.render)); return typeof f==='function' ? f.apply(this, arguments) : undefined; }`);
 					parts.push(`export default __ns_sfc__`);
 					let inlineCode = parts.filter(Boolean).join('\n');
-					inlineCode = options.processCodeForDevice(inlineCode, false, true);
+					inlineCode = processCodeForDevice(inlineCode, false, true);
 					try {
 						inlineCode = ensureDestructureCoreImports(inlineCode);
 					} catch {}
@@ -888,7 +867,7 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 						outParts.push('export function render(){ const f = (typeof __ns_getRender==="function" ? __ns_getRender() : (typeof __ns_render==="function" ? __ns_render : (__ns_sfc__ && __ns_sfc__.render))); return typeof f === "function" ? f.apply(this, arguments) : undefined; }');
 						outParts.push('export default __ns_sfc__');
 						let inlineCode2 = outParts.filter(Boolean).join('\n');
-						inlineCode2 = options.processCodeForDevice(inlineCode2, false, true);
+						inlineCode2 = processCodeForDevice(inlineCode2, false, true);
 						try {
 							inlineCode2 = ensureDestructureCoreImports(inlineCode2);
 						} catch {}
@@ -935,7 +914,7 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 						// Removed redundant render closure heal that could inject an extra '}' before component script.
 						// Rewrite any remaining imports (e.g., relative app paths) to HTTP ESM endpoints
 						try {
-							inlineCode2 = options.rewriteImports(inlineCode2, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
+							inlineCode2 = rewriteImports(inlineCode2, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
 						} catch {}
 						// Final TS strip on the whole assembled module (safety net)
 						try {
@@ -1170,8 +1149,8 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 			}
 			// Run full device processing so helper aliasing and globals are consistent in this path too
 			let code = REQUIRE_GUARD_SNIPPET + asm;
-			code = options.processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(base), base);
-			code = options.rewriteImports(code, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
+			code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(base), base);
+			code = rewriteImports(code, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
 			try {
 				code = ensureDestructureCoreImports(code);
 			} catch {}

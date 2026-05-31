@@ -8,21 +8,21 @@ import type { HmrModuleGraph } from './hmr-module-graph.js';
 import type { SharedTransformRequestRunner } from './shared-transform-request.js';
 import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { isWithinHmrScope } from '../../helpers/hmr-scope.js';
-import { canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
+import { canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, type HotUpdateGraphModuleLike, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
 import { getAppCssState } from '../../helpers/app-css-state.js';
 import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyHmrUpdateKind, formatHmrUpdateSummary } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
+import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from './websocket-device-transform.js';
 import { isSameAngularModuleRel, type BootstrapRootComponent } from './angular-root-component.js';
 
 /**
- * Dependencies injected into {@link handleNsHotUpdate}. These are the
- * closure-locals and module-level helpers that previously surrounded the
- * inline `handleHotUpdate` hook inside `createHmrWebSocketPlugin`. They are
- * passed explicitly (rather than imported) either because they hold per-server
+ * Dependencies injected into {@link handleNsHotUpdate}. These hold per-server
  * instance state (`wss`, `moduleGraph`, the file maps, `sharedTransformRequest`)
- * or because importing them from `websocket.ts` would form an import cycle.
+ * or are plugin-closure accessors; the pure transform helpers (`cleanCode`,
+ * `rewriteImports`, `processSfcCode`, `collectImportDependencies`) are imported
+ * directly from `websocket-device-transform.ts`.
  */
 export interface NsHotUpdateContext {
 	wss: WebSocketServer | null;
@@ -32,10 +32,6 @@ export interface NsHotUpdateContext {
 	sfcFileMap: Map<string, string>;
 	depFileMap: Map<string, string>;
 	sharedTransformRequest: SharedTransformRequestRunner;
-	processSfcCode: (code: string) => string;
-	collectImportDependencies: (code: string, importerPath: string) => Set<string>;
-	rewriteImports: (code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose?: boolean, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp?: boolean) => string;
-	cleanCode: (code: string, strategy: FrameworkServerStrategy) => string;
 	getServerOrigin: (server: ViteDevServer) => string;
 	getHmrSourceRootsCached: () => string[];
 	getBootstrapEntryRelPath: () => string;
@@ -52,7 +48,6 @@ export interface NsHotUpdateContext {
 	getRootComponentIdentity: () => BootstrapRootComponent | null;
 	getGraphInitialPopulationPromise: () => Promise<void> | null;
 	appRootDir: string;
-	appVirtualWithSlash: string;
 }
 
 /**
@@ -63,9 +58,8 @@ export interface NsHotUpdateContext {
  * below is a faithful, behaviour-preserving move.
  */
 export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContext) {
-	const { wss, moduleGraph, strategy, verbose, sfcFileMap, depFileMap, sharedTransformRequest, processSfcCode, collectImportDependencies, rewriteImports, cleanCode, getServerOrigin, getHmrSourceRootsCached, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
+	const { wss, moduleGraph, strategy, verbose, sfcFileMap, depFileMap, sharedTransformRequest, getServerOrigin, getHmrSourceRootsCached, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
 	const APP_ROOT_DIR = deps.appRootDir;
-	const APP_VIRTUAL_WITH_SLASH = deps.appVirtualWithSlash;
 	const graphInitialPopulationPromise = deps.getGraphInitialPopulationPromise();
 	const { file, server } = ctx;
 	if (!wss) {
@@ -1167,12 +1161,10 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 
 		// Update SFC registry
 		const hash = createHash('md5').update(rel).digest('hex').slice(0, 8);
-		const hmrId = hash;
 		const fileName = sfcFileMap.get(rel) || `sfc-${hash}.mjs`;
 		sfcFileMap.set(rel, fileName);
 
 		const ts = Date.now();
-		const absolutePath = `file://${path.resolve(file)}`;
 
 		// FIRST: Send mapping-only registry update (no code)
 		const registryUpdateMsg = {
@@ -1189,90 +1181,10 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 			}
 		});
 
-		// SECOND/THIRD: Removed WS code-push and template URL emissions in HTTP-only mode.
-		// The device loads SFC artifacts via HTTP endpoints directly; WS remains metadata-only.
-		const id = path
-			.basename(file)
-			.replace(/\.vue$/i, '')
-			.toLowerCase();
-		// placeholder source for any legacy dynamic module shapes that may still reference it
-		const source = '';
-
-		// FOURTH: Send dynamic module message (CRITICAL - this is what triggers the actual HMR!)
-		const moduleId = `hmr-${id}-${ts}`;
-		const modulePath = `/${rel}?hmr=${ts}`;
-		let appDeps: string[] | undefined;
-		try {
-			// Enhanced dependency harvesting for pre-await:
-			//  * Preserve .mjs extension when present so client can await exact filesystem module
-			//  * Recognize rewritten __NSDOC__/foo/bar.mjs and convert to /foo/bar.mjs base form
-			//  * Convert absolute app paths to /app-style references (with extension) for uniformity
-			//  * Exclude vendor runtime/plugin modules and synthetic dep-* & sfc-* artifacts as before
-			const raw = collectImportDependencies(code, rel);
-			const filtered: Set<string> = new Set();
-			const addCandidate = (orig: string) => {
-				if (!orig) return;
-				let cleaned = orig.replace(PAT.QUERY_PATTERN, '');
-				if (isCoreGlobalsReference(cleaned)) return;
-				if (isNativeScriptCoreModule(cleaned)) return;
-				if (isNativeScriptPluginModule(cleaned)) return;
-				if (resolveVendorFromCandidate(cleaned)) return;
-				if (/\bdep-[a-f0-9]{8}\.mjs$/i.test(cleaned)) return;
-				if (/\bsfc-[a-f0-9]{8}\.mjs$/i.test(cleaned)) return;
-				// Normalize __NSDOC__/ prefix
-				if (cleaned.startsWith('__NSDOC__/')) {
-					cleaned = cleaned.substring('__NSDOC__/'.length);
-					if (!cleaned.startsWith('/')) cleaned = '/' + cleaned;
-				}
-				// Relative path (./ or ../) → resolve to absolute /path relative to SFC file
-				if (cleaned.startsWith('./') || cleaned.startsWith('../')) {
-					const importerDir = path.posix.dirname(rel);
-					let abs = path.posix.normalize(path.posix.join(importerDir, cleaned));
-					if (!abs.startsWith('/')) abs = '/' + abs;
-					cleaned = abs;
-				}
-				if (!cleaned.startsWith('/')) return; // still not absolute app path
-				cleaned = cleaned.replace(/\.(ts|js|tsx|jsx|mts|cts)$/i, '.mjs');
-				if (!/\.mjs$/i.test(cleaned)) return;
-				filtered.add(cleaned);
-			};
-			for (const spec of raw) {
-				addCandidate(spec);
-			}
-
-			// Additional scan: after rewrites, application imports may appear only as string literals
-			// with the canonical placeholder __NSDOC__/ – collect them directly.
-			const NSDOC_IMPORT_PATTERN = /__NSDOC__\/([A-Za-z0-9_\-./]+?\.mjs)\b/g;
-			{
-				let m: RegExpExecArray | null;
-				while ((m = NSDOC_IMPORT_PATTERN.exec(code)) !== null) {
-					const relSpec = m[1]; // path relative to documents root
-					if (relSpec) {
-						const normalized = '/' + relSpec.replace(/^\/+/, '');
-						addCandidate(normalized);
-					}
-				}
-			}
-
-			// Heuristic for barrel index modules that might not have explicit .mjs import strings
-			const utilsIndexCandidate = `${APP_VIRTUAL_WITH_SLASH}utils/index.mjs`;
-			const hasUtilsIndex = Array.from(filtered).some((p) => p.toLowerCase() === utilsIndexCandidate.toLowerCase());
-			if (!hasUtilsIndex) {
-				const utilsMarker = `${APP_VIRTUAL_WITH_SLASH}utils/`;
-				if (code.includes(utilsMarker)) {
-					addCandidate(utilsIndexCandidate);
-				}
-			}
-			if (filtered.size) {
-				appDeps = Array.from(filtered);
-			}
-		} catch {
-			// Silently ignore errors – dependency pre-await is an optimization only
-		}
-
-		// After computing appDeps: no WS push. Client discovers deps via HTTP imports on demand.
-
-		// Legacy dynamic module protocol removed in v2 graph system.
+		// HTTP-only mode: the device loads SFC artifacts and their dependencies via
+		// HTTP endpoints on demand, so the WS channel stays metadata-only (just the
+		// registry update above). No code-push, dependency harvest, or legacy dynamic
+		// module message is emitted here.
 	} catch (error) {
 		console.warn('[hmr-ws] HMR update failed:', error);
 		console.error(error);

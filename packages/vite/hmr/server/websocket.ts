@@ -19,7 +19,6 @@ import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } fr
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
 import { canonicalizeTransformRequestCacheKey, normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from './websocket-angular-hot-update.js';
-import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion, type GraphUpsertClassification } from './websocket-graph-upsert.js';
 import { HmrModuleGraph } from './hmr-module-graph.js';
 import { registerNsRtBridgeRoute } from './ns-rt-route.js';
 import { registerVendorUnifierHandler } from './websocket-vendor-unifier.js';
@@ -31,12 +30,10 @@ import { registerNsEntryRoutes } from './websocket-ns-entry.js';
 import { handleNsHotUpdate } from './websocket-hot-update.js';
 import { registerImportMapRoute } from './websocket-import-map-route.js';
 import { isAngularRootComponentUpdate, resolveBootstrapRootComponent, type BootstrapRootComponent } from './angular-root-component.js';
-import { cleanCode, collectImportDependencies, prepareAngularEntryForDevice, processCodeForDevice, processSfcCode, rewriteImports, shouldRemapImport } from './websocket-device-transform.js';
+import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports, shouldRemapImport } from './websocket-device-transform.js';
 import { classifyBootRoute, createColdBootRequestCounter, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
-import { type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner } from './shared-transform-request.js';
-import { buildBootProgressSnippet, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
 
@@ -618,12 +615,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				getGraphVersion: () => moduleGraph.version,
 				getStrategy: () => strategy,
 				getServerOrigin,
-				cleanCode,
-				processCodeForDevice,
-				rewriteImports,
-				prepareAngularEntryForDevice,
 				sharedTransformRequest,
-				collectImportDependencies,
 				ensureInitialGraphPopulationStarted,
 				upsertGraphModule: (id, code, deps, opts) => {
 					moduleGraph.upsert(id, code, deps, opts);
@@ -677,9 +669,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				getGraphVersion: () => moduleGraph.version,
 				getStrategy: () => strategy,
 				getServerOrigin,
-				cleanCode,
-				processCodeForDevice,
-				rewriteImports,
 			});
 
 			wss.on('connection', async (ws) => {
@@ -762,10 +751,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				sfcFileMap,
 				depFileMap,
 				sharedTransformRequest,
-				processSfcCode,
-				collectImportDependencies,
-				rewriteImports,
-				cleanCode,
 				getServerOrigin,
 				getHmrSourceRootsCached,
 				getBootstrapEntryRelPath,
@@ -776,7 +761,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				getRootComponentIdentity,
 				getGraphInitialPopulationPromise: () => graphInitialPopulationPromise,
 				appRootDir: APP_ROOT_DIR,
-				appVirtualWithSlash: APP_VIRTUAL_WITH_SLASH,
 			});
 		},
 	};

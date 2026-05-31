@@ -10,9 +10,9 @@ import { setDeviceModuleHeaders } from './route-helpers.js';
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
 
 /**
- * Dependencies the `/ns/core` bridge needs from the HMR plugin closure.
- * `getServerOrigin` / `sharedTransformRequest` live in `websocket.ts`; injecting
- * them keeps the core bridge in its own module without a circular import.
+ * Plugin-closure dependencies the `/ns/core` bridge needs: the per-server origin
+ * resolver and the shared transform runner (both hold/derive per-server state and
+ * double as testability seams), injected to keep the bridge in its own module.
  */
 export interface RegisterNsCoreRouteOptions {
 	getGraphVersion(): number;

@@ -12,25 +12,20 @@ import { getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websock
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
+import { cleanCode, collectImportDependencies, prepareAngularEntryForDevice, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 
 const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 
-type ProcessCodeForDeviceFn = (code: string, isVitePreBundled: boolean, preserveVendorImports?: boolean, isNodeModule?: boolean, sourceId?: string) => string;
-type RewriteImportsFn = (code: string, importerPath: string, sfcFileMap: Map<string, string>, depFileMap: Map<string, string>, projectRoot: string, verbose?: boolean, outputDirOverrideRel?: string, httpOrigin?: string, resolveVendorAsHttp?: boolean) => string;
-type CleanCodeFn = (code: string, strategy: FrameworkServerStrategy) => string;
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
-type CollectImportDependenciesFn = (code: string, importerPath: string) => Set<string>;
 type UpsertGraphModuleFn = (rawId: string, code: string, deps: string[], options?: { bumpVersion?: boolean; emitDeltaOnInsert?: boolean; broadcastDelta?: boolean }) => void;
 
 /**
- * Dependencies the `/ns/m` device module server needs from the HMR plugin
- * closure. The transform/codegen functions (`cleanCode`, `processCodeForDevice`,
- * `rewriteImports`, `prepareAngularEntryForDevice`, `getServerOrigin`,
- * `sharedTransformRequest`, `collectImportDependencies`) live in `websocket.ts`;
- * injecting them keeps the module server in its own file without a circular
- * import back into the plugin.
+ * Plugin-closure dependencies the `/ns/m` device module server needs. The pure
+ * transform/codegen functions are imported directly from
+ * `websocket-device-transform.ts`; only genuine plugin state (graph version,
+ * strategy, shared transform runner, graph upsert) is injected here.
  */
 export interface RegisterNsModuleServerRouteOptions {
 	verbose: boolean;
@@ -40,12 +35,7 @@ export interface RegisterNsModuleServerRouteOptions {
 	getGraphVersion(): number;
 	getStrategy(): FrameworkServerStrategy;
 	getServerOrigin(server: ViteDevServer): string;
-	cleanCode: CleanCodeFn;
-	processCodeForDevice: ProcessCodeForDeviceFn;
-	rewriteImports: RewriteImportsFn;
-	prepareAngularEntryForDevice: RewriteImportsFn;
 	sharedTransformRequest: SharedTransformRequestFn;
-	collectImportDependencies: CollectImportDependenciesFn;
 	ensureInitialGraphPopulationStarted(server: ViteDevServer): void;
 	upsertGraphModule: UpsertGraphModuleFn;
 }
@@ -67,12 +57,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			const sfcFileMap = options.sfcFileMap;
 			const depFileMap = options.depFileMap;
 			const getServerOrigin = options.getServerOrigin;
-			const cleanCode = options.cleanCode;
-			const processCodeForDevice = options.processCodeForDevice;
-			const rewriteImports = options.rewriteImports;
-			const prepareAngularEntryForDevice = options.prepareAngularEntryForDevice;
 			const sharedTransformRequest = options.sharedTransformRequest;
-			const collectImportDependencies = options.collectImportDependencies;
 			const ensureInitialGraphPopulationStarted = options.ensureInitialGraphPopulationStarted;
 			const strategy = options.getStrategy();
 			// Delegate AnalogJS Angular component live-reload endpoints.
@@ -116,7 +101,6 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// pass through unchanged.
 			if (urlObj.pathname.includes('/@ng/component')) {
 				const chunks: string[] = [];
-				const origWrite = res.write.bind(res);
 				const origEnd = res.end.bind(res);
 				let ended = false;
 				const captureChunk = (chunk: unknown): void => {
