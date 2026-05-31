@@ -19,7 +19,6 @@ import * as path from 'path';
 import { createHash } from 'crypto';
 import * as PAT from './constants.js';
 import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
-import { buildNsRtBridgeModule, discoverNsvBridgeExports } from './ns-rt-bridge.js';
 import { getMonorepoWorkspaceRoot, getPackageJson, getProjectFilePath, getProjectRootPath } from '../../helpers/project.js';
 import { loadPrebuiltVendorManifest } from '../shared/vendor/manifest-loader.js';
 import '../vendor-bootstrap.js';
@@ -48,6 +47,10 @@ import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey
 import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion, type GraphUpsertClassification } from './websocket-graph-upsert.js';
 import { HmrModuleGraph } from './hmr-module-graph.js';
+import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
+import { registerNsRtBridgeRoute } from './ns-rt-route.js';
+import { registerVendorUnifierHandler } from './websocket-vendor-unifier.js';
+import { registerTxnHandler } from './websocket-txn.js';
 import { classifyBootRoute, classifyHmrUpdateKind, createColdBootRequestCounter, formatHmrUpdateSummary, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
 import {
@@ -337,18 +340,6 @@ function guardBareDynamicImports(code: string): string {
 		return code;
 	}
 }
-
-// Detect (and log) `require('http(s)://...')` calls made from CJS shims.
-// Pattern: HTTP-served ESM modules end up in NS-vite's `__nsRequire`
-// shim with HTTP URLs as their relative resolution targets. The guard
-// is install-once-per-isolate, dedupes per-URL (so semver's ~30 deep
-// imports produce ~30 lines on the first boot and 0 on subsequent
-// boots within the same isolate), and uses `console.warn` so the
-// message reads as advisory. Forensic detail
-// (stack) lives on `globalThis.__NS_REQUIRE_GUARD_LAST__` for
-// post-mortem inspection. Set `globalThis.__NS_REQUIRE_GUARD_VERBOSE__`
-// to `true` before any module loads to restore per-call logging.
-const REQUIRE_GUARD_SNIPPET = `// [guard] install require('http(s)://') detector\n(()=>{try{var g=globalThis;if(g.__NS_REQUIRE_GUARD_INSTALLED__){}else{var seen=g.__NS_REQUIRE_GUARD_SEEN__||(g.__NS_REQUIRE_GUARD_SEEN__=new Set());var mk=function(o,l){return function(){try{var s=arguments[0];if(typeof s==='string'&&/^(?:https?:)\\/\\//.test(s)){var k=l+'|'+s;var v=g.__NS_REQUIRE_GUARD_VERBOSE__===true;var first=!seen.has(k);if(first)seen.add(k);if(first||v){var e=new Error('[ns-hmr][require-guard] require of URL: '+s+' via '+l);if(v)console.warn(e.message+'\\n'+(e.stack||''));else console.warn(e.message);try{g.__NS_REQUIRE_GUARD_LAST__={spec:s,stack:e.stack,label:l,ts:Date.now()};}catch(e3){}}}}catch(e1){}return o.apply(this, arguments);};};if(typeof g.require==='function'&&!g.require.__NS_REQ_GUARDED__){var o1=g.require;g.require=mk(o1,'require');g.require.__NS_REQ_GUARDED__=true;}if(typeof g.__nsRequire==='function'&&!g.__nsRequire.__NS_REQ_GUARDED__){var o2=g.__nsRequire;g.__nsRequire=mk(o2,'__nsRequire');g.__nsRequire.__NS_REQ_GUARDED__=true;}g.__NS_REQUIRE_GUARD_INSTALLED__=true;}}catch(e){}})();\n`;
 
 function shouldRemapImport(spec: string): boolean {
 	if (!spec || typeof spec !== 'string') return false;
@@ -3390,71 +3381,12 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				}
 			});
 
-			// 2.5) ESM runtime bridge for NativeScript-Vue: GET /ns/rt
-			// Provides a single authoritative source of Vue helpers bound to the NativeScript renderer.
-			// V2.1: Lazy ensure bridge — does not statically import vue. It lazily resolves helpers from
-			// globalThis or vendor registry/require on first evaluation, then exports references so SFCs
-			// can immediately call them during module evaluation.
-			server.middlewares.use(async (req, res, next) => {
-				try {
-					const urlObj = new URL(req.url || '', 'http://localhost');
-					// Accept only /ns/rt and /ns/rt/<ver> for cache-busting semantics
-					if (!(urlObj.pathname === '/ns/rt' || /^\/ns\/rt\/[\d]+$/.test(urlObj.pathname))) return next();
-					res.setHeader('Access-Control-Allow-Origin', '*');
-					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-					res.setHeader('Pragma', 'no-cache');
-					res.setHeader('Expires', '0');
-					const rtVerSeg = urlObj.pathname.replace(/^\/ns\/rt\/?/, '');
-					const rtVer = /^[0-9]+$/.test(rtVerSeg) ? rtVerSeg : String(moduleGraph.version || 0);
-					// Single-realm bridge: discover every export `nativescript-vue`
-					// (plus its `@vue/runtime-core` re-export chain) publishes so
-					// the bridge never silently drops a symbol. `discoverNsvBridgeExports`
-					// returns the union of static discovery and the curated baseline,
-					// with the baseline acting as the floor if discovery fails. The
-					// shared builder owns the bridge body (preamble, passthroughs,
-					// HMR shims, polyfills, default export) — there's no inline copy.
-					const vendorExports = discoverNsvBridgeExports(getProjectRootPath());
-					const code = buildNsRtBridgeModule({ rtVer, requireGuardSnippet: REQUIRE_GUARD_SNIPPET, vendorExports });
-					res.statusCode = 200;
-					res.end(code);
-				} catch (e) {
-					res.statusCode = 500;
-					res.end('export {}\n');
-				}
-			});
+			// 2.5) ESM runtime bridge for NativeScript-Vue: GET /ns/rt[/<ver>] — see ns-rt-route.ts
+			registerNsRtBridgeRoute(server, { getGraphVersion: () => moduleGraph.version });
 
 			// 2.55) Dev-only vendor import unifier: rewrite 'vue'/'nativescript-vue' to /ns/rt/<ver>
-			// This ensures plugins and app share a single Vue/NativeScript-Vue instance/realm.
-			server.middlewares.use(async (req, res, next) => {
-				try {
-					const urlObj = new URL(req.url || '', 'http://localhost');
-					const p = urlObj.pathname || '';
-					// Ignore our own core/rt bridge endpoints and non-JS assets, but DO allow /ns/m/* through
-					if (/^\/ns\/(?:rt|core)(?:\/|$)/.test(p)) return next();
-					if (!/(\.m?js$|\.ts$|\/node_modules\/|\/\.vite\/deps\/|^\/@id\/|^\/@fs\/)/.test(p)) return next();
-					if (/\.css($|\?)/.test(p)) return next();
-					const reqUrl = req.url || '';
-					const transformed = await server.transformRequest(reqUrl);
-					if (!transformed?.code) return next();
-					const origin = getServerOrigin(server);
-					const ver = Number(moduleGraph.version || 0);
-					const rewrite = strategy.rewriteVendorSpec;
-					if (!rewrite) return next();
-					const before = transformed.code;
-					const code = rewrite(before, origin, ver);
-					if (code === before) return next();
-					res.setHeader('Access-Control-Allow-Origin', '*');
-					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-					res.setHeader('Pragma', 'no-cache');
-					res.setHeader('Expires', '0');
-					res.statusCode = 200;
-					res.end(code);
-				} catch {
-					return next();
-				}
-			});
+			// so plugins and the app share a single Vue/NativeScript-Vue realm. See websocket-vendor-unifier.ts.
+			registerVendorUnifierHandler(server, { getGraphVersion: () => moduleGraph.version, getServerOrigin, getStrategy: () => strategy });
 
 			// 2.5.1) Catch-all redirect for stray /node_modules/@nativescript/core/*
 			// requests — route them to the /ns/core bridge so they get the same
@@ -3873,61 +3805,18 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				}
 			});
 
-			// 2.6) Transactional HMR endpoint: GET /ns/txn/<ver>
-			// Returns a single ESM that sequentially imports all changed modules for the given graphVersion.
-			server.middlewares.use(async (req, res, next) => {
-				try {
-					const urlObj = new URL(req.url || '', 'http://localhost');
-					const p = urlObj.pathname || '';
-					if (!p.startsWith('/ns/txn')) return next();
-					let verStr = p.replace('/ns/txn', '').replace(/^\//, '');
-					const ver = Number(verStr || urlObj.searchParams.get('v') || 0);
-					let ids = moduleGraph.getTxnBatch(ver) || [];
-					if (!ids.length) {
-						// Attempt to rebuild from any changed modules at this version if present in graph history is unavailable.
-						// Fallback heuristic: use all modules with latest hash change equal to this version (we don't store per-module version, so use any changedIds from query 'ids' if provided)
+			// 2.6) Transactional HMR endpoint: GET /ns/txn/<ver> — one ESM that sequentially
+			// imports all changed modules for the given graph version. See websocket-txn.ts.
+			registerTxnHandler(server, {
+				resolveTxnIds: (version, fallbackChangedIds) => {
+					let ids = moduleGraph.getTxnBatch(version) || [];
+					if (!ids.length && fallbackChangedIds.length) {
 						try {
-							const q = (urlObj.searchParams.get('ids') || '')
-								.split(',')
-								.map((s) => s.trim())
-								.filter(Boolean);
-							if (q.length) ids = moduleGraph.computeTxnOrderForChanged(q);
+							ids = moduleGraph.computeTxnOrderForChanged(fallbackChangedIds);
 						} catch {}
 					}
-					const origin = getServerOrigin(server) || `${urlObj.protocol}//${urlObj.host}`;
-					const lines: string[] = [];
-					lines.push(`// [txn] version=${ver} count=${ids.length}`);
-					if (!ids.length) {
-						lines.push(`export default true;`);
-						res.setHeader('Access-Control-Allow-Origin', '*');
-						res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-						res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-						res.setHeader('Pragma', 'no-cache');
-						res.setHeader('Expires', '0');
-						res.statusCode = 200;
-						res.end(lines.join('\n'));
-						return;
-					}
-					for (const id of ids) {
-						const isVue = /\.vue$/i.test(id);
-						const safe = id.startsWith('/') ? id : '/' + id;
-						const abs = isVue ? `/ns/asm/${ver}?path=${encodeURIComponent(safe)}` : `/ns/m${safe}`;
-						lines.push(`await import(${JSON.stringify(abs)});`);
-					}
-					lines.push(`export default true;`);
-					const code = lines.join('\n');
-					res.setHeader('Access-Control-Allow-Origin', '*');
-					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-					res.setHeader('Pragma', 'no-cache');
-					res.setHeader('Expires', '0');
-					res.statusCode = 200;
-					res.end(code);
-					return;
-				} catch (e) {
-					/* fallthrough */
-				}
-				return next();
+					return ids;
+				},
 			});
 
 			// 3) ESM endpoint for SFC modules: GET /ns/sfc?path=/src/Comp.vue[?vue&type=*] OR /ns/sfc/src/Comp.vue[?vue&type=*]
