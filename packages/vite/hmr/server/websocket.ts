@@ -40,13 +40,14 @@ import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { buildCoreUrl, buildCoreUrlPath, normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
 import { resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helpers/dev-host.js';
-import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
+import { isRuntimeGraphExcludedPath, normalizeRuntimeGraphPath, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { getHmrSourceRoots, isWithinHmrScope } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
 import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
 import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion, type GraphUpsertClassification } from './websocket-graph-upsert.js';
+import { HmrModuleGraph } from './hmr-module-graph.js';
 import { classifyBootRoute, classifyHmrUpdateKind, createColdBootRequestCounter, formatHmrUpdateSummary, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
 import {
@@ -1987,21 +1988,16 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 	const moduleManifest = new Map<string, string>();
 	let registrySent = false;
 	let vendorBootstrapDone = false;
-	// Graph state
-	interface GraphModule {
-		id: string;
-		deps: string[];
-		hash: string;
-	}
 	let pluginRoot: string | undefined;
-	// graphVersion starts at 1 so the very first /ns/m response uses a stable
-	// `v1` URL tag (see dynamic-import helper at lines 398-432). Keeping it
-	// stable during cold boot prevents double-loads when the graph fills up
-	// lazily as modules are served.
-	let graphVersion = 1;
-	// Transactional HMR batches: map graphVersion -> ordered list of changed ids for that version
-	const txnBatches: Map<number, string[]> = new Map();
-	const graph = new Map<string, GraphModule>();
+	// HMR module graph (spec -> deps/hash) with version tagging and delta/full
+	// broadcasts. `wss`/`pluginRoot` are read lazily via accessors because both
+	// are established later, during configureServer.
+	const moduleGraph = new HmrModuleGraph({
+		verbose,
+		strategy,
+		getWss: () => wss,
+		getPluginRoot: () => pluginRoot,
+	});
 	// Tracks the background initial-graph population so handleHotUpdate can
 	// await completion before computing delta roots for the first HMR event.
 	let graphInitialPopulationPromise: Promise<void> | null = null;
@@ -2025,166 +2021,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			}
 		}
 	}
-	// Compute a dependency-closed, topologically sorted list of modules for a given set of changed ids.
-	// Only include application modules we can serve (e.g., under /src and known .vue/.ts/.js entries in the graph).
-	function computeTxnOrderForChanged(changedIds: string[]): string[] {
-		const includeAppModule = (id: string) => matchesRuntimeGraphModuleId(id, APP_VIRTUAL_WITH_SLASH, /\.(ts|js|mjs|tsx|jsx)$/i);
-		const includeExt = (id: string) => strategy.matchesFile(id) || includeAppModule(id);
-		const isApp = (id: string) => id.startsWith(APP_VIRTUAL_WITH_SLASH);
-		const roots = changedIds.map(normalizeGraphId).filter((id) => graph.has(id) && (isApp(id) || strategy.matchesFile(id)) && includeExt(id));
-		const toVisit = new Set<string>();
-		// Collect dependency closure (downstream deps from roots)
-		const stack: string[] = [...roots];
-		while (stack.length) {
-			const id = stack.pop()!;
-			if (toVisit.has(id)) continue;
-			toVisit.add(id);
-			const m = graph.get(id);
-			if (m) {
-				for (const d of m.deps) {
-					if (!graph.has(d)) continue;
-					if ((isApp(d) || strategy.matchesFile(d)) && includeExt(d) && !toVisit.has(d)) {
-						stack.push(d);
-					}
-				}
-			}
-		}
-		// Topological order: deps first (post-order DFS)
-		const ordered: string[] = [];
-		const temp = new Set<string>();
-		const perm = new Set<string>();
-		const visit = (id: string) => {
-			if (perm.has(id)) return;
-			if (temp.has(id)) {
-				perm.add(id);
-				return;
-			} // cycle: bail out
-			temp.add(id);
-			const m = graph.get(id);
-			if (m) {
-				for (const d of m.deps) {
-					if (toVisit.has(d)) visit(d);
-				}
-			}
-			temp.delete(id);
-			perm.add(id);
-			ordered.push(id);
-		};
-		for (const id of toVisit) visit(id);
-		// Ensure we only include those that were part of closure (already ensured) and preserve an order where deps appear before dependents
-		return ordered;
-	}
-	function normalizeGraphId(raw: string): string {
-		if (!raw) return raw;
-		let id = raw.split('?')[0].replace(/\\/g, '/');
-		// Strip file:// prefix
-		id = id.replace(/^file:\/\//, '');
-		if (pluginRoot) {
-			const rootNorm = pluginRoot.replace(/\\/g, '/');
-			if (id.startsWith(rootNorm)) {
-				id = id.slice(rootNorm.length);
-			}
-		}
-		if (!id.startsWith('/')) id = '/' + id;
-		// Collapse nested app root indicators when present (defensive)
-		const idx = id.indexOf(APP_VIRTUAL_WITH_SLASH);
-		if (idx !== -1) id = id.slice(idx);
-		return id;
-	}
-	function computeHash(content: string): string {
-		let h = 0;
-		for (let i = 0; i < content.length; i++) {
-			h = (h * 31 + content.charCodeAt(i)) | 0;
-		}
-		return ('00000000' + (h >>> 0).toString(16)).slice(-8);
-	}
-	function fullGraphPayload() {
-		return {
-			type: 'ns:hmr-full-graph',
-			version: graphVersion,
-			modules: Array.from(graph.values()).map((m) => ({
-				id: m.id,
-				deps: m.deps,
-				hash: m.hash,
-			})),
-		};
-	}
-	function emitFullGraph(ws: WebSocket) {
-		try {
-			if (verbose) {
-				try {
-					const payload = fullGraphPayload();
-					console.log('[hmr-ws][graph] emitFullGraph version', payload.version, 'modules=', payload.modules.length);
-					if (payload.modules.length) {
-						console.log(
-							'[hmr-ws][graph] sample module ids',
-							payload.modules.slice(0, 5).map((m: any) => m.id),
-						);
-					}
-				} catch {}
-			}
-			ws.send(JSON.stringify(fullGraphPayload()));
-		} catch {}
-	}
-	function emitDelta(changed: GraphModule[], removed: string[]) {
-		if (!wss) return;
-		// Record this version's txn batch order
-		try {
-			const changedIds = changed.map((m) => m.id);
-			if (changedIds.length) {
-				const ordered = computeTxnOrderForChanged(changedIds);
-				txnBatches.set(graphVersion, ordered);
-				// Keep only the last ~20 versions
-				if (txnBatches.size > 20) {
-					const drop = Array.from(txnBatches.keys())
-						.sort((a, b) => a - b)
-						.slice(0, txnBatches.size - 20);
-					for (const k of drop) txnBatches.delete(k);
-				}
-			}
-		} catch {}
-		const payload = {
-			type: 'ns:hmr-delta',
-			baseVersion: graphVersion - 1,
-			newVersion: graphVersion,
-			changed: changed.map((m) => ({ id: m.id, deps: m.deps, hash: m.hash })),
-			removed,
-		};
-		const json = JSON.stringify(payload);
-		wss.clients.forEach((c) => {
-			try {
-				c.send(json);
-			} catch {}
-		});
-	}
-	function upsertGraphModule(rawId: string, code: string, deps: string[], options?: { emitDeltaOnInsert?: boolean; broadcastDelta?: boolean; bumpVersion?: boolean }) {
-		const id = normalizeGraphId(rawId);
-		const normDeps = deps
-			.map((d) => normalizeGraphId(d))
-			.filter(Boolean)
-			.slice()
-			.sort();
-		const hash = computeHash(code);
-		const existing = graph.get(id);
-		const classification = classifyGraphUpsert(existing, hash, normDeps);
-		if (classification === 'unchanged') return existing;
-		// Version bumps are only meaningful for live edits — serve-time graph
-		// warm-ups and the initial bulk walk should leave graphVersion stable.
-		const bumpVersion = shouldBumpGraphVersion(classification, options?.bumpVersion !== false);
-		if (bumpVersion) {
-			graphVersion++;
-		}
-		const gm: GraphModule = { id, deps: normDeps, hash };
-		graph.set(id, gm);
-		if (verbose) {
-			console.log('[hmr-ws][graph] upsert', { id, deps: normDeps, hash, graphVersion, classification, bumpVersion });
-			console.log('[hmr-ws][graph] size', graph.size);
-		}
-		if (shouldBroadcastGraphUpsertDelta(classification, options?.emitDeltaOnInsert === true, options?.broadcastDelta !== false)) {
-			emitDelta([gm], []);
-		}
-		return gm;
-	}
 	function isTypescriptFlavor(): boolean {
 		try {
 			return strategy?.flavor === 'typescript';
@@ -2192,16 +2028,10 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			return false;
 		}
 	}
-	function removeGraphModule(id: string) {
-		if (!graph.has(id)) return;
-		graph.delete(id);
-		graphVersion++;
-		emitDelta([], [id]);
-	}
 	async function populateInitialGraph(server: ViteDevServer) {
-		if (graph.size) return; // already populated
+		if (moduleGraph.size) return; // already populated
 		const tStart = Date.now();
-		const versionAtStart = graphVersion;
+		const versionAtStart = moduleGraph.version;
 		const root = server.config.root || process.cwd();
 		// Avoid direct require in ESM build: lazily obtain fs & path via createRequire or dynamic import
 		let fs: typeof import('fs');
@@ -2253,7 +2083,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 								// bumpVersion: false — the initial walk is a bulk load, not a live
 								// edit. Keeping graphVersion stable during cold boot avoids double
 								// cache-key drift.
-								upsertGraphModule(rel, code, deps, { bumpVersion: false });
+								moduleGraph.upsert(rel, code, deps, { bumpVersion: false });
 							} catch {}
 						}
 					}
@@ -2271,10 +2101,10 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 		if (verbose) {
 			console.info(
 				formatPopulateInitialGraphSummary({
-					moduleCount: graph.size,
+					moduleCount: moduleGraph.size,
 					durationMs: Date.now() - tStart,
-					graphVersion,
-					bumpedVersion: graphVersion !== versionAtStart,
+					graphVersion: moduleGraph.version,
+					bumpedVersion: moduleGraph.version !== versionAtStart,
 				}),
 			);
 		}
@@ -2287,7 +2117,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 		if (graphInitialPopulationPromise) {
 			return graphInitialPopulationPromise;
 		}
-		if (graph.size) {
+		if (moduleGraph.size) {
 			graphInitialPopulationPromise = Promise.resolve();
 			return graphInitialPopulationPromise;
 		}
@@ -2446,7 +2276,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 							transformConcurrency,
 							transformCacheMs,
 							lazyInitialGraph: true,
-							graphVersion,
+							graphVersion: moduleGraph.version,
 						}),
 					);
 				}
@@ -2711,8 +2541,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					}
 					try {
 						const origin = getServerOrigin(server);
-						code = ensureVersionedRtImports(code, origin, graphVersion);
-						code = strategy.ensureVersionedImports?.(code, origin, graphVersion) ?? code;
+						code = ensureVersionedRtImports(code, origin, moduleGraph.version);
+						code = strategy.ensureVersionedImports?.(code, origin, moduleGraph.version) ?? code;
 					} catch {}
 					// Compute rel .mjs output path
 					const specForRel = resolvedCandidate || spec;
@@ -2759,8 +2589,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 									/* don't include bad deps */ continue;
 								}
 								try {
-									depCode = ensureVersionedRtImports(depCode, getServerOrigin(server), graphVersion);
-									depCode = strategy.ensureVersionedImports?.(depCode, getServerOrigin(server), graphVersion) ?? depCode;
+									depCode = ensureVersionedRtImports(depCode, getServerOrigin(server), moduleGraph.version);
+									depCode = strategy.ensureVersionedImports?.(depCode, getServerOrigin(server), moduleGraph.version) ?? depCode;
 								} catch {}
 								let depRel = depResolved.replace(/^\//, '').replace(/\.(tsx?|jsx?)$/i, '.mjs');
 								if (!depRel.endsWith('.mjs')) depRel += '.mjs';
@@ -3221,7 +3051,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 										}
 										// Serve-time warm-up: no live edit happened, so don't bump
 										// graphVersion.
-										upsertGraphModule(id, code, deps, { bumpVersion: false });
+										moduleGraph.upsert(id, code, deps, { bumpVersion: false });
 									}
 								}
 							} catch {}
@@ -3409,7 +3239,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					// known follow-up.
 					try {
 						const verTag = (() => {
-							const numeric = getNumericServeVersionTag(forcedVer, Number(graphVersion || 0));
+							const numeric = getNumericServeVersionTag(forcedVer, Number(moduleGraph.version || 0));
 							return numeric > 0 ? `v${numeric}` : 'v0';
 						})();
 						const origin = getServerOrigin(server);
@@ -3576,7 +3406,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					res.setHeader('Pragma', 'no-cache');
 					res.setHeader('Expires', '0');
 					const rtVerSeg = urlObj.pathname.replace(/^\/ns\/rt\/?/, '');
-					const rtVer = /^[0-9]+$/.test(rtVerSeg) ? rtVerSeg : String(graphVersion || 0);
+					const rtVer = /^[0-9]+$/.test(rtVerSeg) ? rtVerSeg : String(moduleGraph.version || 0);
 					// Single-realm bridge: discover every export `nativescript-vue`
 					// (plus its `@vue/runtime-core` re-export chain) publishes so
 					// the bridge never silently drops a symbol. `discoverNsvBridgeExports`
@@ -3608,7 +3438,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					const transformed = await server.transformRequest(reqUrl);
 					if (!transformed?.code) return next();
 					const origin = getServerOrigin(server);
-					const ver = Number(graphVersion || 0);
+					const ver = Number(moduleGraph.version || 0);
 					const rewrite = strategy.rewriteVendorSpec;
 					if (!rewrite) return next();
 					const before = transformed.code;
@@ -3669,7 +3499,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			server.middlewares.use(async (req, res, next) => {
 				try {
 					const urlObj = new URL(req.url || '', 'http://localhost');
-					const coreRequest = parseCoreBridgeRequest(urlObj.pathname, urlObj.searchParams, Number(graphVersion || 0));
+					const coreRequest = parseCoreBridgeRequest(urlObj.pathname, urlObj.searchParams, Number(moduleGraph.version || 0));
 					if (!coreRequest) return next();
 					// Non-canonical incoming URL — every emitter is supposed
 					// to canonicalize before hitting the device. Promote the
@@ -3738,7 +3568,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					const __rawSubForRel = String(normalizedSub || sub || '').replace(/^\/+|\/+$/g, '');
 					const __isDirIndex = isDirectoryIndexFilename(modulePath || '');
 					const __relBase: RelativeBase = { sub: __rawSubForRel, isDirectoryIndex: __isDirIndex };
-					let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(graphVersion || 0), __relBase);
+					let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(moduleGraph.version || 0), __relBase);
 
 					// Invariant D (CJS/ESM interop shape) — EXPORT-SIDE fix.
 					//
@@ -3995,7 +3825,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 					res.setHeader('Pragma', 'no-cache');
 					res.setHeader('Expires', '0');
-					const ver = /^[0-9]+$/.test(verSeg) ? verSeg : String(graphVersion || 0);
+					const ver = /^[0-9]+$/.test(verSeg) ? verSeg : String(moduleGraph.version || 0);
 					const origin = getServerOrigin(server) || `${urlObj.protocol}//${urlObj.host}`;
 					// Resolve app main entry to an absolute path-like key used by /ns/m
 					let mainEntry = '/';
@@ -4052,7 +3882,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					if (!p.startsWith('/ns/txn')) return next();
 					let verStr = p.replace('/ns/txn', '').replace(/^\//, '');
 					const ver = Number(verStr || urlObj.searchParams.get('v') || 0);
-					let ids = txnBatches.get(ver) || [];
+					let ids = moduleGraph.getTxnBatch(ver) || [];
 					if (!ids.length) {
 						// Attempt to rebuild from any changed modules at this version if present in graph history is unavailable.
 						// Fallback heuristic: use all modules with latest hash change equal to this version (we don't store per-module version, so use any changedIds from query 'ids' if provided)
@@ -4061,7 +3891,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 								.split(',')
 								.map((s) => s.trim())
 								.filter(Boolean);
-							if (q.length) ids = computeTxnOrderForChanged(q);
+							if (q.length) ids = moduleGraph.computeTxnOrderForChanged(q);
 						} catch {}
 					}
 					const origin = getServerOrigin(server) || `${urlObj.protocol}//${urlObj.host}`;
@@ -4458,8 +4288,8 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 							code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
 							code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
 						} else {
-							code = ensureVersionedRtImports(code, getServerOrigin(server), graphVersion);
-							code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), graphVersion) ?? code;
+							code = ensureVersionedRtImports(code, getServerOrigin(server), moduleGraph.version);
+							code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), moduleGraph.version) ?? code;
 						}
 					} catch {}
 					// Final guard for SFC variant output as well
@@ -4481,7 +4311,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 						if (Number.isFinite(verNum) && verNum > 0) {
 							code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
 						} else {
-							code = ensureVersionedRtImports(code, getServerOrigin(server), graphVersion);
+							code = ensureVersionedRtImports(code, getServerOrigin(server), moduleGraph.version);
 						}
 					} catch {}
 					// Last-chance sanitizer for dangling Vite CJS import helper usages that may surface after late transforms
@@ -4633,7 +4463,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					const hasScript = !!scriptR?.code;
 					const hasTemplate = !!templateR?.code;
 					const origin = getServerOrigin(server);
-					const ver = String(verFromPath || graphVersion || Date.now());
+					const ver = String(verFromPath || moduleGraph.version || Date.now());
 					const scriptUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=script`;
 					const templateCode = templateR?.code || '';
 
@@ -5245,7 +5075,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					try {
 						const msg = JSON.parse(String(data));
 						if (msg?.type === 'ns:hmr-resync-request') {
-							emitFullGraph(ws as any);
+							moduleGraph.emitFullGraph(ws as any);
 						} else if (msg?.type === 'ns:hmr-sfc-registry-request') {
 							// Resend full SFC registry (lightweight code path)
 							strategy
@@ -5521,7 +5351,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				} catch (error) {
 					console.warn('[hmr-ws] Failed to send registry:', error);
 				}
-				emitFullGraph(ws as any);
+				moduleGraph.emitFullGraph(ws as any);
 
 				// After sending registry & graph also send current module manifest if any
 				if (moduleManifest.size) {
@@ -5670,7 +5500,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 								.filter(Boolean);
 							const transformed = await server.transformRequest(mod.id);
 							const code = transformed?.code || '';
-							upsertGraphModule((mod.id || '').replace(/\?.*$/, ''), code, deps, {
+							moduleGraph.upsert((mod.id || '').replace(/\?.*$/, ''), code, deps, {
 								emitDeltaOnInsert: true,
 								// Defer the delta broadcast until AFTER the framework
 								// hot-update handler has had a chance to invalidate the
@@ -6206,7 +6036,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 						type: 'ns:angular-update',
 						origin,
 						path: rel,
-						version: graphVersion,
+						version: moduleGraph.version,
 						timestamp: Date.now(),
 						evictPaths,
 						importerEntry: bootstrapEntryRel,
@@ -6246,7 +6076,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					// Treat the changed file itself as a graph module with no deps. We only
 					// care that its hash/identity changes so the client sees a delta and can
 					// perform a TS root reset. Code is not used for execution here.
-					upsertGraphModule(rel, '', [], { emitDeltaOnInsert: true });
+					moduleGraph.upsert(rel, '', [], { emitDeltaOnInsert: true });
 				} catch (e) {
 					if (verbose) console.warn('[hmr-ws][ts] failed to emit delta for', file, e);
 				}
@@ -6271,16 +6101,16 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					// If the common block already upserted (hash changed), this will
 					// detect unchanged hash and no-op. If the common block missed it
 					// (module not in Vite's graph), this forces the delta emission.
-					const normalizedId = normalizeGraphId(rel);
-					const existing = graph.get(normalizedId);
+					const normalizedId = moduleGraph.normalizeGraphId(rel);
+					const existing = moduleGraph.get(normalizedId);
 					if (!existing) {
 						// Module not in graph yet — force upsert with timestamp-based
 						// hash so the client sees a change.
-						upsertGraphModule(rel, `/* solid-hmr ${Date.now()} */`, [], { emitDeltaOnInsert: true });
+						moduleGraph.upsert(rel, `/* solid-hmr ${Date.now()} */`, [], { emitDeltaOnInsert: true });
 					}
 					// Log what we're sending so devs can trace the flow on the server side.
 					if (verbose) {
-						const gm = graph.get(normalizedId);
+						const gm = moduleGraph.get(normalizedId);
 						console.log('[hmr-ws][solid] delta module', { id: gm?.id, hash: gm?.hash });
 					}
 					// Purge the shared transform-request cache AND Vite's own
@@ -6418,9 +6248,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 							} catch {}
 						}
 						if (freshCode) {
-							const existingGm = graph.get(normalizedId);
+							const existingGm = moduleGraph.get(normalizedId);
 							const existingDeps = existingGm?.deps || [];
-							upsertGraphModule(normalizedId, freshCode, existingDeps as string[], {
+							moduleGraph.upsert(normalizedId, freshCode, existingDeps as string[], {
 								broadcastDelta: false,
 							});
 						}
@@ -6433,9 +6263,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					// eviction + re-import doesn't race the server's cache
 					// invalidation.
 					try {
-						const gm = graph.get(normalizedId);
+						const gm = moduleGraph.get(normalizedId);
 						if (gm) {
-							emitDelta([gm], []);
+							moduleGraph.emitDelta([gm], []);
 							if (verbose) {
 								console.log('[hmr-ws][solid] broadcast delta after cache invalidation', { id: gm.id, hash: gm.hash });
 							}
@@ -6567,7 +6397,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				// Rewrite ONLY .vue imports (everything else is now inlined)
 				const projectRoot = server.config.root || process.cwd();
 				code = rewriteImports(code, rel, sfcFileMap, depFileMap, projectRoot, opts.verbose, undefined);
-				upsertGraphModule(rel, code, [...deps, ...vueDeps]);
+				moduleGraph.upsert(rel, code, [...deps, ...vueDeps]);
 
 				// Add HMR runtime prelude (CRITICAL for runtime)
 				const hmrPrelude = `
@@ -6645,7 +6475,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 					path: rel,
 					fileName,
 					ts,
-					version: graphVersion,
+					version: moduleGraph.version,
 				};
 
 				wss.clients.forEach((client) => {
