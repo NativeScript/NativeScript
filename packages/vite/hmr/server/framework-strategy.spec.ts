@@ -18,17 +18,15 @@ describe('FrameworkServerStrategy contract', () => {
 		}
 	});
 
-	it('P2-A4 routes served-module transforms to their owning strategy; later-phase hooks stay unwired', () => {
+	it('P2-A4/A5 wire served-module + route/import-map/volatile hooks to their owning strategy; the rest stay unwired', () => {
 		for (const strategy of REGISTRY) {
-			// Not wired yet: handleHotUpdate → P2-A3; the remaining hooks → P2-A5.
+			// Still unwired: handleHotUpdate → P2-A3; processSfcCode → P2-A6.
 			expect(strategy.handleHotUpdate).toBeUndefined();
 			expect(strategy.processSfcCode).toBeUndefined();
-			expect(strategy.registerRoutes).toBeUndefined();
-			expect(strategy.importMapEntries).toBeUndefined();
-			expect(strategy.volatilePatterns).toBeUndefined();
 			// deferDeltaBroadcast (P2-A3) absent ⇒ falsy ⇒ today's broadcastDelta=true (TS/Vue) path.
 			expect(strategy.deferDeltaBroadcast ?? false).toBe(false);
 		}
+
 		// P2-A4 (wired): only Angular overrides the `/ns/m` served-module rewrite
 		// (register-only entry pass); only Solid patches served node_modules
 		// (`@solid-refresh`). Every other flavor keeps the shared rewriteImports
@@ -41,6 +39,24 @@ describe('FrameworkServerStrategy contract', () => {
 		expect(typescriptServerStrategy.transformNodeModule).toBeUndefined();
 		expect(vueServerStrategy.transformNodeModule).toBeUndefined();
 		expect(angularServerStrategy.transformNodeModule).toBeUndefined();
+
+		// P2-A5 (wired): Vue owns the SFC dev routes; Vue+Solid contribute
+		// import-map entries; Vue+Angular contribute volatile URL patterns.
+		// Everyone else keeps the shared (empty) default.
+		expect(typeof vueServerStrategy.registerRoutes).toBe('function');
+		expect(angularServerStrategy.registerRoutes).toBeUndefined();
+		expect(solidServerStrategy.registerRoutes).toBeUndefined();
+		expect(typescriptServerStrategy.registerRoutes).toBeUndefined();
+
+		expect(typeof vueServerStrategy.importMapEntries).toBe('function');
+		expect(typeof solidServerStrategy.importMapEntries).toBe('function');
+		expect(angularServerStrategy.importMapEntries).toBeUndefined();
+		expect(typescriptServerStrategy.importMapEntries).toBeUndefined();
+
+		expect(typeof vueServerStrategy.volatilePatterns).toBe('function');
+		expect(typeof angularServerStrategy.volatilePatterns).toBe('function');
+		expect(solidServerStrategy.volatilePatterns).toBeUndefined();
+		expect(typescriptServerStrategy.volatilePatterns).toBeUndefined();
 	});
 
 	it('a strategy can implement every P2-A1 hook with the declared types', () => {
@@ -88,7 +104,7 @@ describe('FrameworkServerStrategy contract', () => {
 		expect(fixture.importMapEntries!('http://localhost:5173')).toEqual({ 'fixture-runtime': 'http://localhost:5173/ns/m/fixture' });
 		expect(fixture.volatilePatterns!()).toEqual(['/@ns/fix/']);
 
-		fixture.registerRoutes!({ server: {} as any, wss: null, sfcFileMap: new Map(), depFileMap: new Map(), verbose: true });
+		fixture.registerRoutes!({ server: {} as any, wss: null, sfcFileMap: new Map(), depFileMap: new Map(), verbose: true, appVirtualWithSlash: '/app/', getGraphVersion: () => 0, getStrategy: () => fixture });
 		expect(calls).toContain('routes:true:true');
 	});
 });

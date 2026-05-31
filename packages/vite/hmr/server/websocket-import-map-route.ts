@@ -34,9 +34,11 @@ export function registerImportMapRoute(server: ViteDevServer, options: RegisterI
 			const protocol = 'http';
 			const origin = `${protocol}://${host}`;
 
+			const strategy = getStrategy();
 			const runtimeConfig = buildRuntimeConfig({
 				origin,
-				flavor: getStrategy()?.flavor || 'typescript',
+				flavor: strategy?.flavor || 'typescript',
+				strategy,
 			});
 
 			res.setHeader('Content-Type', 'application/json');

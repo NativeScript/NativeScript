@@ -22,6 +22,16 @@ vi.mock('../../helpers/project.js', () => ({
 }));
 
 import { generateImportMap } from './import-map.js';
+// Type-only (erased at emit): importing the concrete framework strategies here
+// would pull the SFC/babel pipeline into this fs-mocked spec. The real hook
+// outputs are golden-tested in the per-strategy specs; here we stub the hook to
+// verify generateImportMap MERGES framework entries alongside vendor/core/
+// discovered ones (ordering + conditional merge + trailing-slash coexistence).
+import type { FrameworkServerStrategy } from './framework-strategy.js';
+
+function strategyWithImportMapEntries(entries: (origin: string) => Record<string, string>): FrameworkServerStrategy {
+	return { importMapEntries: entries } as unknown as FrameworkServerStrategy;
+}
 
 function dir(name: string) {
 	return {
@@ -82,7 +92,11 @@ describe('generateImportMap', () => {
 		// vite-aliased absolute path (`/abs/.../node_modules/solid-js/dist/dev.js`
 		// → `${origin}/ns/m/node_modules/solid-js/dist/dev.js`) so V8's ESM
 		// loader dedupes the two import sites by URL.
-		const { imports } = generateImportMap({ origin: 'http://localhost:5173', flavor: 'solid' });
+		const { imports } = generateImportMap({
+			origin: 'http://localhost:5173',
+			flavor: 'solid',
+			strategy: strategyWithImportMapEntries((origin) => ({ 'solid-js': `${origin}/ns/m/node_modules/solid-js/dist/dev.js` })),
+		});
 
 		expect(imports['solid-js']).toBe('http://localhost:5173/ns/m/node_modules/solid-js/dist/dev.js');
 		// Trailing-slash prefix must still resolve subpaths via HTTP so
@@ -132,7 +146,11 @@ describe('generateImportMap', () => {
 		// directly). Belt-and-suspenders: pin the entries so a future refactor
 		// of `addFrameworkEntries` can't silently flip Vue onto the Solid
 		// dedupe path.
-		const { imports } = generateImportMap({ origin: 'http://localhost:5173', flavor: 'vue' });
+		const { imports } = generateImportMap({
+			origin: 'http://localhost:5173',
+			flavor: 'vue',
+			strategy: strategyWithImportMapEntries(() => ({ 'nativescript-vue': `ns-vendor://nativescript-vue`, vue: `ns-vendor://vue` })),
+		});
 
 		expect(imports['vue']).toBe('ns-vendor://vue');
 		expect(imports['nativescript-vue']).toBe('ns-vendor://nativescript-vue');

@@ -153,6 +153,19 @@ export const solidServerStrategy: FrameworkServerStrategy = {
 
 		return patchedCode;
 	},
+	// ── P2-A5: pin solid-js to the canonical HTTP dev.js URL ──────────────
+	// Mirrors the former `addFrameworkEntries` 'solid' arm. The vendor bundle
+	// externalizes `solid-js` for this flavor, so all three import sites
+	// (vendor's externalized `import 'solid-js'`, user code's alias-rewritten
+	// path, and `@solid-refresh`'s rewritten import) MUST converge on this one
+	// URL — V8's ESM loader dedupes by URL, giving a single reactive graph.
+	// No trailing-slash prefix: subpaths (solid-js/store, /web) resolve via
+	// HTTP from discoverInstalledPackages().
+	importMapEntries(origin: string) {
+		return {
+			'solid-js': `${origin}/ns/m/node_modules/solid-js/dist/dev.js`,
+		};
+	},
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// For now we rely on the generic pipeline; no per-file Solid SFC registry.
 		const { filePath, server, verbose } = ctx;

@@ -22,6 +22,7 @@
  */
 
 import type { VendorManifest } from '../shared/vendor/manifest.js';
+import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { getVendorManifest, listVendorModules } from '../shared/vendor/registry.js';
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
@@ -61,8 +62,16 @@ export interface ImportMap {
 export interface ImportMapOptions {
 	/** Origin of the Vite dev server (e.g. "http://192.168.1.5:5173") */
 	origin: string;
-	/** Framework flavor (vue, angular, solid, typescript) */
+	/** Framework flavor (vue, angular, solid, typescript) — framework identity. */
 	flavor: string;
+	/**
+	 * Active framework strategy (P2-A5). Its `importMapEntries(origin)` +
+	 * `volatilePatterns()` hooks supply the framework-specific pieces the
+	 * `addFrameworkEntries` / `getVolatilePatterns` switches used to hard-code.
+	 * Optional: when omitted, the map/patterns carry only the shared
+	 * vendor/core/HTTP entries (equivalent to the old `typescript` arm).
+	 */
+	strategy?: FrameworkServerStrategy;
 	/** Additional entries to add to the import map */
 	extraEntries?: Record<string, string>;
 }
@@ -85,7 +94,7 @@ export interface ImportMapOptions {
  * Everything else falls through to the runtime's normal resolution.
  */
 export function generateImportMap(options: ImportMapOptions): ImportMap {
-	const { origin, flavor, extraEntries } = options;
+	const { origin, strategy, extraEntries } = options;
 	const manifest = getVendorManifest();
 	const imports: Record<string, string> = {};
 
@@ -145,8 +154,20 @@ export function generateImportMap(options: ImportMapOptions): ImportMap {
 	imports['@nativescript/core'] = buildCoreUrl(origin);
 	imports['@nativescript/core/'] = `${buildCoreUrl(origin)}/`;
 
-	// Add framework-specific entries
-	addFrameworkEntries(imports, origin, flavor);
+	// Add framework-specific entries (P2-A5: owned by the active strategy).
+	// Merge CONDITIONALLY (existing entries win) to preserve the former
+	// `addFrameworkEntries` `if (!imports[k])` behavior byte-for-byte: Vue's
+	// vendor entries (set above) take precedence over the hook's fallback
+	// `ns-vendor://` targets, and Solid's `solid-js` (externalized from vendor,
+	// so unset here) is added. Insertion order matches the old switch.
+	const frameworkEntries = strategy?.importMapEntries?.(origin);
+	if (frameworkEntries) {
+		for (const [specifier, target] of Object.entries(frameworkEntries)) {
+			if (!imports[specifier]) {
+				imports[specifier] = target;
+			}
+		}
+	}
 
 	// Scan installed packages and add HTTP URL entries for ALL packages
 	// (including vendor ones for their subpath imports).
@@ -165,24 +186,18 @@ export function generateImportMap(options: ImportMapOptions): ImportMap {
  * These patterns tell the runtime to always re-fetch matching URLs
  * instead of using cached modules.
  */
-export function getVolatilePatterns(flavor: string): string[] {
+export function getVolatilePatterns(strategy?: FrameworkServerStrategy): string[] {
 	const patterns: string[] = [];
 
 	// Version query params (used by HMR for cache busting)
 	patterns.push('?v=');
 	patterns.push('&v=');
 
-	// Framework-specific volatile patterns
-	switch (flavor) {
-		case 'vue':
-			// Vue SFC endpoints are volatile (change on every edit)
-			patterns.push('/@ns/sfc/');
-			patterns.push('/@ns/asm/');
-			break;
-		case 'angular':
-			// Angular template/style URLs may change on edit
-			patterns.push('/@ns/asm/');
-			break;
+	// Framework-specific volatile patterns (P2-A5: owned by the active strategy;
+	// formerly a `switch (flavor)` — Vue → /@ns/sfc/ + /@ns/asm/, Angular → /@ns/asm/).
+	const frameworkPatterns = strategy?.volatilePatterns?.();
+	if (frameworkPatterns) {
+		patterns.push(...frameworkPatterns);
 	}
 
 	return patterns;
@@ -197,51 +212,12 @@ export function buildRuntimeConfig(options: ImportMapOptions): {
 	volatilePatterns: string[];
 } {
 	const importMap = generateImportMap(options);
-	const volatilePatterns = getVolatilePatterns(options.flavor);
+	const volatilePatterns = getVolatilePatterns(options.strategy);
 
 	return {
 		importMap: JSON.stringify(importMap),
 		volatilePatterns,
 	};
-}
-
-function addFrameworkEntries(imports: Record<string, string>, origin: string, flavor: string): void {
-	switch (flavor) {
-		case 'vue':
-			// nativescript-vue should resolve from vendor if available
-			if (!imports['nativescript-vue']) {
-				imports['nativescript-vue'] = `ns-vendor://nativescript-vue`;
-			}
-			if (!imports['vue']) {
-				imports['vue'] = `ns-vendor://vue`;
-			}
-			break;
-		case 'solid':
-			// Solid runtime root MUST resolve to the same HTTP URL that
-			// Vite's solid-js alias produces for user code and the
-			// HTTP-served `@solid-refresh` middleware. The vendor bundle
-			// no longer ships `solid-js` for the Solid flavor — see
-			// `manifest.ts`'s `nsSolidJsExternalPlugin` + the matching
-			// `addCandidate` skip — so all three import sites (vendor's
-			// externalized `import 'solid-js'`, user code's
-			// alias-rewritten `/ns/m/node_modules/solid-js/...`, and
-			// `@solid-refresh`'s own rewritten import) converge on the
-			// dev.js URL below. V8's ESM loader dedupes by URL, so the
-			// app sees one `Owner` module-local, one `$DEVCOMP`/`$PROXY`
-			// symbol identity, and one reactive graph end-to-end. Without
-			// this unification, `solid-refresh`'s `setComp` ticks a
-			// signal whose subscribers live in a different solid-js
-			// realm than the page tree's render effect → HMR appears to
-			// fire (toast shows) but the screen never re-renders, and
-			// boot logs the `computations created outside a createRoot`
-			// warning because solid-refresh's HMRComp memo is created in
-			// the HTTP-side solid-js whose `Owner` was never set by the
-			// vendor-side `render()` createRoot.
-			imports['solid-js'] = `${origin}/ns/m/node_modules/solid-js/dist/dev.js`;
-			// No trailing-slash prefix — subpaths like solid-js/store,
-			// solid-js/jsx-runtime resolve via HTTP from discoverInstalledPackages()
-			break;
-	}
 }
 
 /**

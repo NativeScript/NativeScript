@@ -1,25 +1,15 @@
 import type { NsDevPlatform } from '../shared/runtime/browser-runtime-contract.js';
 import { nsHmrClientVitePlugin } from './vite-plugin.js';
-import { hmrWebSocketVue, hmrWebSocketAngular, hmrWebSocketSolid, hmrWebSocketTypescript } from './websocket.js';
+import { hmrWebSocketPluginForFlavor } from './websocket.js';
 
 export function getHMRPlugins(opts: { platform: NsDevPlatform; flavor: string; verbose: boolean }) {
 	const plugins = [nsHmrClientVitePlugin(opts)];
-	switch (opts.flavor) {
-		case 'vue':
-			plugins.push(hmrWebSocketVue(opts));
-			break;
-		case 'react':
-			// React has no server-side HMR WebSocket plugin yet; the client plugin suffices.
-			break;
-		case 'angular':
-			plugins.push(hmrWebSocketAngular(opts));
-			break;
-		case 'typescript':
-			plugins.push(hmrWebSocketTypescript(opts));
-			break;
-		case 'solid':
-			plugins.push(hmrWebSocketSolid(opts));
-			break;
+	// The server-side HMR WebSocket plugin is selected from STRATEGY_REGISTRY by
+	// flavor. Flavors without a registered server strategy (e.g. `react`) ship
+	// only the client plugin above — no per-flavor switch or no-op special case.
+	const frameworkPlugin = hmrWebSocketPluginForFlavor(opts.flavor, opts);
+	if (frameworkPlugin) {
+		plugins.push(frameworkPlugin);
 	}
 	return plugins;
 }

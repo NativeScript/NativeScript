@@ -59,3 +59,15 @@ describe('solidServerStrategy.transformNodeModule (@solid-refresh patch)', () =>
 		expect(spy).toHaveBeenCalledWith('[hmr-ws][solid] @solid-refresh patch check:', expect.objectContaining({ spec: SOLID_REFRESH_ID, alreadyPatched: false }));
 	});
 });
+
+describe('solidServerStrategy.importMapEntries (P2-A5)', () => {
+	it('pins solid-js to the canonical HTTP dev.js URL so vendor + HTTP imports dedupe', () => {
+		expect(solidServerStrategy.importMapEntries!('http://localhost:5173')).toEqual({
+			'solid-js': 'http://localhost:5173/ns/m/node_modules/solid-js/dist/dev.js',
+		});
+	});
+
+	it('derives the URL from the passed origin', () => {
+		expect(solidServerStrategy.importMapEntries!('http://device.local:9000')['solid-js']).toBe('http://device.local:9000/ns/m/node_modules/solid-js/dist/dev.js');
+	});
+});

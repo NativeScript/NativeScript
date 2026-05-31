@@ -67,6 +67,12 @@ export interface FrameworkServedModuleContext {
  * Inputs for {@link FrameworkServerStrategy.registerRoutes}. A framework that
  * owns dev-only HTTP endpoints (e.g. Vue's `/ns/sfc*`) registers them here;
  * frameworks without extra endpoints leave the hook undefined (no-op default).
+ *
+ * Carries everything Vue's `registerSfcHandlers` needs (its
+ * `RegisterSfcHandlersOptions` shape): the dev server, plugin state
+ * (`sfcFileMap`/`depFileMap`/`appVirtualWithSlash`), the live graph-version
+ * accessor, and the active strategy. `wss` is included for parity with the
+ * other route registrars (the SFC handlers don't consult it today).
  */
 export interface FrameworkRouteContext {
 	server: ViteDevServer;
@@ -74,6 +80,9 @@ export interface FrameworkRouteContext {
 	sfcFileMap: Map<string, string>;
 	depFileMap: Map<string, string>;
 	verbose: boolean;
+	appVirtualWithSlash: string;
+	getGraphVersion(): number;
+	getStrategy(): FrameworkServerStrategy;
 }
 
 export interface FrameworkServerStrategy {

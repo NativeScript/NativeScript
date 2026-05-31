@@ -77,6 +77,11 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	rewriteServedModule(code: string, ctx: FrameworkServedModuleContext): string {
 		return prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true);
 	},
+	// ── P2-A5: Angular template/style asset URLs are volatile ─────────────
+	// Mirrors the former `getVolatilePatterns` 'angular' arm.
+	volatilePatterns() {
+		return ['/@ns/asm/'];
+	},
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// Ensure any Angular code the HMR server assembles for HTTP consumption is fully linked.
 		const { filePath, server, verbose } = ctx;

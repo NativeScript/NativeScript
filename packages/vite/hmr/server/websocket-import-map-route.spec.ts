@@ -110,14 +110,17 @@ describe('registerImportMapRoute', () => {
 		expect(mockBuildRuntimeConfig).toHaveBeenCalledWith(expect.objectContaining({ origin: 'http://localhost:5173' }));
 	});
 
-	it('forwards the injected strategy flavor and defaults to typescript', async () => {
+	it('forwards the injected strategy (and its flavor), defaulting to typescript when none', async () => {
+		// P2-A5: buildRuntimeConfig now consults `strategy.importMapEntries` /
+		// `strategy.volatilePatterns`, so the route must thread the whole strategy
+		// (not just the flavor string).
 		const ng = mount({ getStrategy: () => ({ flavor: 'angular' }) as any });
 		await ng.handler({ url: '/ns/import-map.json', method: 'GET', headers: {} }, makeRes(), vi.fn());
-		expect(mockBuildRuntimeConfig).toHaveBeenLastCalledWith(expect.objectContaining({ flavor: 'angular' }));
+		expect(mockBuildRuntimeConfig).toHaveBeenLastCalledWith(expect.objectContaining({ flavor: 'angular', strategy: expect.objectContaining({ flavor: 'angular' }) }));
 
 		const none = mount({ getStrategy: () => undefined });
 		await none.handler({ url: '/ns/import-map.json', method: 'GET', headers: {} }, makeRes(), vi.fn());
-		expect(mockBuildRuntimeConfig).toHaveBeenLastCalledWith(expect.objectContaining({ flavor: 'typescript' }));
+		expect(mockBuildRuntimeConfig).toHaveBeenLastCalledWith(expect.objectContaining({ flavor: 'typescript', strategy: undefined }));
 	});
 
 	it('responds 500 when config generation throws', async () => {

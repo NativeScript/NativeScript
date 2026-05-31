@@ -3,7 +3,8 @@ import { readdirSync, statSync } from 'fs';
 import * as path from 'path';
 import * as PAT from '../../../server/constants.js';
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
-import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkRouteContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import { registerSfcHandlers } from './websocket-sfc.js';
 import { getProjectAppPath } from '../../../../helpers/utils.js';
 import type { VueSfcRegistryEntry, VueSfcRegistryMessage } from '../../../shared/protocol.js';
 
@@ -292,6 +293,36 @@ export const vueServerStrategy: FrameworkServerStrategy = {
 	},
 	rewriteVendorSpec(code: string, origin: string, version: number) {
 		return rewriteVendorVueSpec(code, origin, version);
+	},
+	// ── P2-A5: Vue owns its dev HTTP surface + device config ──────────────
+	// Previously hard-coded in shared server modules: `registerSfcHandlers`
+	// ran for EVERY flavor (websocket.ts), and the `vue` arms of
+	// `addFrameworkEntries` / `getVolatilePatterns` switched on flavor in
+	// `import-map.ts`. SFC endpoints are inherently Vue-only.
+	registerRoutes(ctx: FrameworkRouteContext) {
+		registerSfcHandlers(ctx.server, {
+			verbose: ctx.verbose,
+			appVirtualWithSlash: ctx.appVirtualWithSlash,
+			sfcFileMap: ctx.sfcFileMap,
+			depFileMap: ctx.depFileMap,
+			getGraphVersion: ctx.getGraphVersion,
+			getStrategy: ctx.getStrategy,
+		});
+	},
+	importMapEntries(_origin: string) {
+		// `nativescript-vue` + `vue` resolve from the vendor bundle. Key order
+		// (nativescript-vue then vue) + `ns-vendor://` targets mirror the former
+		// `addFrameworkEntries` 'vue' arm; the caller merges conditionally so an
+		// existing vendor entry wins (today's `if (!imports[...])` behavior).
+		return {
+			'nativescript-vue': `ns-vendor://nativescript-vue`,
+			vue: `ns-vendor://vue`,
+		};
+	},
+	volatilePatterns() {
+		// SFC + assembler endpoints change on every edit. Mirrors the former
+		// `getVolatilePatterns` 'vue' arm (order: sfc then asm).
+		return ['/@ns/sfc/', '/@ns/asm/'];
 	},
 	async processFile(ctx: FrameworkProcessFileContext) {
 		await processVueSfc(ctx);

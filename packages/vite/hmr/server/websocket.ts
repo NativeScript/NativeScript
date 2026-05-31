@@ -22,7 +22,6 @@ import { HmrModuleGraph } from './hmr-module-graph.js';
 import { registerNsRtBridgeRoute } from './ns-rt-route.js';
 import { registerVendorUnifierHandler } from './websocket-vendor-unifier.js';
 import { registerTxnHandler } from './websocket-txn.js';
-import { registerSfcHandlers } from '../frameworks/vue/server/websocket-sfc.js';
 import { registerNsModuleServerRoute } from './websocket-ns-m.js';
 import { registerNsCoreRoute } from './websocket-ns-core.js';
 import { registerNsEntryRoutes } from './websocket-ns-entry.js';
@@ -113,14 +112,6 @@ const STRATEGY_REGISTRY = new Map<string, FrameworkServerStrategy>([
 	['solid', solidServerStrategy],
 	['typescript', typescriptServerStrategy],
 ]);
-
-function resolveFrameworkStrategy(flavor: string): FrameworkServerStrategy {
-	const strategy = STRATEGY_REGISTRY.get(flavor);
-	if (!strategy) {
-		throw new Error(`[ns-hmr] Unsupported framework strategy: ${flavor}`);
-	}
-	return strategy;
-}
 
 function isSocketClientOpen(client: { readyState?: number; OPEN?: number } | null | undefined): boolean {
 	if (!client) {
@@ -656,8 +647,13 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				},
 			});
 
-			// SFC endpoints (/ns/sfc, /ns/sfc-meta, /ns/asm) — see websocket-sfc.ts
-			registerSfcHandlers(server, {
+			// Framework-owned dev HTTP endpoints (Vue: /ns/sfc, /ns/sfc-meta, /ns/asm).
+			// P2-A5: previously `registerSfcHandlers` ran for EVERY flavor; now only
+			// the strategy that owns routes (Vue) registers them via `registerRoutes`.
+			// SFC/assembler endpoints are inherently Vue-only (see websocket-sfc.ts).
+			strategy.registerRoutes?.({
+				server,
+				wss,
 				verbose,
 				appVirtualWithSlash: APP_VIRTUAL_WITH_SLASH,
 				sfcFileMap,
@@ -760,19 +756,15 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 	};
 }
 
-// Framework-specific HMR WebSocket plugins
-export function hmrWebSocketVue(opts: { verbose?: boolean }): Plugin {
-	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('vue'));
-}
-
-export function hmrWebSocketAngular(opts: { verbose?: boolean }): Plugin {
-	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('angular'));
-}
-
-export function hmrWebSocketSolid(opts: { verbose?: boolean }): Plugin {
-	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('solid'));
-}
-
-export function hmrWebSocketTypescript(opts: { verbose?: boolean }): Plugin {
-	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('typescript'));
+/**
+ * Build the server-side HMR WebSocket plugin for `flavor`, or `undefined` when
+ * the flavor has no registered server strategy (e.g. `react`, which ships only
+ * the client plugin today). Driven off `STRATEGY_REGISTRY`, so adding a flavor
+ * is a one-line registry change — no per-flavor wrapper and no `getHMRPlugins`
+ * switch arm. Replaces the former hmrWebSocket{Vue,Angular,Solid,Typescript}
+ * wrappers and the explicit `case 'react': // no-op`.
+ */
+export function hmrWebSocketPluginForFlavor(flavor: string, opts: { verbose?: boolean }): Plugin | undefined {
+	const strategy = STRATEGY_REGISTRY.get(flavor);
+	return strategy ? createHmrWebSocketPlugin(opts, strategy) : undefined;
 }

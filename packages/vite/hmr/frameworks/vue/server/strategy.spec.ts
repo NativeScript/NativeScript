@@ -13,7 +13,7 @@ vi.mock('../../../helpers/vendor-rewrite.js', () => {
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
 import { vueServerStrategy } from './strategy.js';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
-import type { FrameworkProcessFileContext, FrameworkRegistryContext } from '../../../server/framework-strategy.js';
+import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkRouteContext } from '../../../server/framework-strategy.js';
 
 type ProcessHelpers = NonNullable<FrameworkProcessFileContext['helpers']>;
 type RegistryHelpers = NonNullable<FrameworkRegistryContext['helpers']>;
@@ -196,5 +196,38 @@ const lazy = import("/ns/sfc/components/View.vue");
 		} finally {
 			rmSync(tmpRoot, { recursive: true, force: true });
 		}
+	});
+
+	// ── P2-A5 hooks (own Vue's dev HTTP surface + device config) ──────────
+	it('P2-A5: registerRoutes mounts the three Vue SFC endpoints', () => {
+		const handlers: Array<(...a: any[]) => unknown> = [];
+		const server = { middlewares: { use: (fn: any) => handlers.push(fn) } } as unknown as FrameworkRouteContext['server'];
+
+		expect(typeof vueServerStrategy.registerRoutes).toBe('function');
+		vueServerStrategy.registerRoutes!({
+			server,
+			wss: null,
+			verbose: false,
+			appVirtualWithSlash: '/app/',
+			sfcFileMap: new Map(),
+			depFileMap: new Map(),
+			getGraphVersion: () => 0,
+			getStrategy: () => vueServerStrategy,
+		});
+
+		// registerSfcHandlers mounts exactly /ns/sfc, /ns/sfc-meta, /ns/asm.
+		expect(handlers).toHaveLength(3);
+	});
+
+	it('P2-A5: importMapEntries pins nativescript-vue + vue to the vendor bundle (order preserved)', () => {
+		const entries = vueServerStrategy.importMapEntries!('http://localhost:5173');
+		expect(entries).toEqual({ 'nativescript-vue': 'ns-vendor://nativescript-vue', vue: 'ns-vendor://vue' });
+		// Insertion order must match the former addFrameworkEntries 'vue' arm so
+		// the served import-map JSON stays byte-identical.
+		expect(Object.keys(entries)).toEqual(['nativescript-vue', 'vue']);
+	});
+
+	it('P2-A5: volatilePatterns marks the SFC + assembler endpoints volatile', () => {
+		expect(vueServerStrategy.volatilePatterns!()).toEqual(['/@ns/sfc/', '/@ns/asm/']);
 	});
 });
