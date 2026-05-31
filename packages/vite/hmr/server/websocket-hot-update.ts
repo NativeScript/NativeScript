@@ -52,23 +52,52 @@ export interface NsHotUpdateContext {
 	appRootDir: string;
 }
 
+/** Result of {@link handleNsHotUpdate} / a strategy's `handleHotUpdate` — the modules array Vite propagates to the next plugin, or nothing. */
+type NsHotUpdateResult = HmrContext['modules'] | void;
+
+/** Always-on per-update timing + diagnostics, mutated in place across the prologue and the framework tail. */
+interface HmrUpdateMetrics {
+	file: string;
+	kind: string;
+	t0: number;
+	tAfterAwait: number;
+	tAfterFramework: number;
+	tEnd: number;
+	invalidated: number;
+	recipients: number;
+	narrowed: boolean | undefined;
+	emitted: boolean;
+}
+
+/** Per-invocation locals computed by {@link runHotUpdatePrologue} and consumed by the per-flavor tail. */
+interface HotUpdatePrologueState {
+	root: string;
+	updateRel: string;
+	metrics: HmrUpdateMetrics;
+	emitSummary: () => void;
+}
+
 /**
- * The NativeScript `handleHotUpdate` hook, extracted verbatim from
- * `createHmrWebSocketPlugin`. Receives the live Vite {@link HmrContext} plus an
- * injected {@link NsHotUpdateContext}. The early `const` block re-binds every
- * injected dependency to the original closure-local names so the (large) body
- * below is a faithful, behaviour-preserving move.
+ * Shared, framework-agnostic prologue for {@link handleNsHotUpdate}: scope
+ * gating, update-metrics setup, the `ns:hmr-pending` broadcast, awaiting the
+ * initial graph population, the common module-graph upsert, CSS hot-update +
+ * Tailwind content-CSS broadcast, and the project-scope filter. Returns `null`
+ * when one of those steps fully handles the change (every such path resolves to
+ * Vite's `undefined` result, so the caller just returns), otherwise the
+ * per-invocation {@link HotUpdatePrologueState} (`root`, `updateRel`, the live
+ * `metrics` object, the idempotent `emitSummary`) the per-flavor tail consumes.
+ * Behaviour-preserving extraction (P2-A3 Step 0) — the body below is an in-place move.
  */
-export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContext) {
-	const { wss, moduleGraph, strategy, verbose, sfcFileMap, depFileMap, sharedTransformRequest, getHmrSourceRootsCached, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
+async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateContext): Promise<HotUpdatePrologueState | null> {
+	const { wss, moduleGraph, strategy, verbose, getHmrSourceRootsCached, isSocketClientOpen } = deps;
 	const APP_ROOT_DIR = deps.appRootDir;
 	const graphInitialPopulationPromise = deps.getGraphInitialPopulationPromise();
 	const { file, server } = ctx;
 	if (!wss) {
-		return;
+		return null;
 	}
 	if (isRuntimeGraphExcludedPath(file)) {
-		return;
+		return null;
 	}
 	// Authoritative "what triggers HMR" gate, applied before the pending
 	// overlay broadcast below: react only to files inside the app source
@@ -77,7 +106,7 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 		if (verbose) {
 			console.log(`[ns-hmr][server] ignored change (outside HMR source scope): ${file}`);
 		}
-		return;
+		return null;
 	}
 	// Always-on update timing. Captures the four phases (await,
 	// framework, broadcast, total) plus invalidated module count
@@ -262,7 +291,7 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 			}
 			if (verbose) console.log(`[hmr-ws] Hot update for: ${file} → broadcast CSS paths: ${cssPaths.join(', ')}`);
 			emitHmrUpdateSummary();
-			return;
+			return null;
 		}
 		// CSS without a broadcast target (no appEntryCss
 		// configured) — fall through to the scope filter.
@@ -275,7 +304,7 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 	const inSrcOrCore = normalizedFile.includes(srcDir) || normalizedFile.includes(coreDir);
 	const inApp = normalizedFile.includes(appDir);
 	const shouldIgnore = !(inSrcOrCore || inApp);
-	if (shouldIgnore) return;
+	if (shouldIgnore) return null;
 	if (verbose) console.log(`[hmr-ws] Hot update for: ${file}`);
 
 	// Tailwind / content-scanning CSS broadcast for non-CSS edits.
@@ -358,6 +387,25 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 			console.warn('[hmr-ws] CSS content-source broadcast failed:', error);
 		}
 	}
+
+	return { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary };
+}
+
+/**
+ * The NativeScript `handleHotUpdate` hook. Runs the shared
+ * {@link runHotUpdatePrologue}; unless it already handled the change, dispatches
+ * to the per-flavor tail below. As each flavor migrates to
+ * {@link FrameworkServerStrategy.handleHotUpdate} (P2-A3) its inline branch is
+ * removed; until then the inline tails are the documented default. Re-binds the
+ * prologue's per-invocation locals + the injected deps to their original
+ * closure-local names so the tails are a faithful, behaviour-preserving move.
+ */
+export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContext): Promise<NsHotUpdateResult> {
+	const state = await runHotUpdatePrologue(ctx, deps);
+	if (!state) return;
+	const { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary } = state;
+	const { strategy, verbose, wss, moduleGraph, sfcFileMap, depFileMap, sharedTransformRequest, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
+	const { file, server } = ctx;
 
 	// Framework-specific hot update handling
 	if (strategy.flavor === 'angular') {

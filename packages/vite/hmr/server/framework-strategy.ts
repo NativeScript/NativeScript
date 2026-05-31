@@ -115,7 +115,7 @@ export interface FrameworkServerStrategy {
 	 * shared default path runs (today's behavior). Absorbs the per-flavor switch
 	 * in `websocket-hot-update.ts`.
 	 */
-	handleHotUpdate?(ctx: HmrContext, deps: NsHotUpdateContext): Promise<void>;
+	handleHotUpdate?(ctx: HmrContext, deps: NsHotUpdateContext): Promise<HmrContext['modules'] | void>;
 
 	/**
 	 * When `true`, the per-module graph delta is NOT broadcast inline during a
