@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion } from './websocket.js';
+import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion } from './websocket-graph-upsert.js';
 
 describe('graph upsert broadcast gating', () => {
 	it('classifies first discovery as inserted', () => {

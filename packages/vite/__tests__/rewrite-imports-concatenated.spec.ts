@@ -40,7 +40,7 @@
  * the original repro).
  */
 import { describe, expect, it } from 'vitest';
-import { rewriteImports } from '../hmr/server/websocket.js';
+import { rewriteImports } from '../hmr/server/websocket-device-transform.js';
 
 const PROJECT_ROOT = '/Users/test/project';
 const SERVER_ORIGIN = 'http://localhost:5173';

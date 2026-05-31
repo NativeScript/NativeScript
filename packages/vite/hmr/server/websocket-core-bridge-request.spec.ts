@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseCoreBridgeRequest } from './websocket.js';
+import { parseCoreBridgeRequest } from './websocket-core-bridge.js';
 
 describe('parseCoreBridgeRequest', () => {
 	it('accepts the canonical root core bridge path with no redirect', () => {

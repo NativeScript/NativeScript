@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { collectGraphUpdateModulesForHotUpdate } from './websocket.js';
+import { collectGraphUpdateModulesForHotUpdate } from './websocket-angular-hot-update.js';
 
 function createModule(id: string, options: { importers?: any[]; importedModules?: any[] } = {}) {
 	return {

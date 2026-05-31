@@ -3,7 +3,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { __test_processCodeForDevice as processCodeForDevice, getProcessCodeResolvedSpecifierOverrides, rewriteImports } from './websocket.js';
+import { processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
+import { getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
 
 describe('processCodeForDevice source import intent', () => {
 	const tempRoots: string[] = [];

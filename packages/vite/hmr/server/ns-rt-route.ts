@@ -3,6 +3,7 @@ import type { ViteDevServer } from 'vite';
 import { getProjectRootPath } from '../../helpers/project.js';
 import { buildNsRtBridgeModule, discoverNsvBridgeExports } from './ns-rt-bridge.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
+import { setDeviceModuleHeaders } from './route-helpers.js';
 
 export interface NsRtRouteOptions {
 	// Current HMR graph version, read lazily — the version advances on live
@@ -25,11 +26,7 @@ export function registerNsRtBridgeRoute(server: ViteDevServer, options: NsRtRout
 			const urlObj = new URL(req.url || '', 'http://localhost');
 			// Accept only /ns/rt and /ns/rt/<ver> for cache-busting semantics
 			if (!(urlObj.pathname === '/ns/rt' || /^\/ns\/rt\/[\d]+$/.test(urlObj.pathname))) return next();
-			res.setHeader('Access-Control-Allow-Origin', '*');
-			res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-			res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-			res.setHeader('Pragma', 'no-cache');
-			res.setHeader('Expires', '0');
+			setDeviceModuleHeaders(res);
 			const rtVerSeg = urlObj.pathname.replace(/^\/ns\/rt\/?/, '');
 			const rtVer = /^[0-9]+$/.test(rtVerSeg) ? rtVerSeg : String(options.getGraphVersion() || 0);
 			const vendorExports = discoverNsvBridgeExports(getProjectRootPath());

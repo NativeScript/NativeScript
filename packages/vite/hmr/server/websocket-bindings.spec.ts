@@ -3,7 +3,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { parse as babelParse } from '@babel/parser';
 import { afterEach, describe, it, expect } from 'vitest';
-import { ensureNativeScriptModuleBindings, rewriteImports } from './websocket.js';
+import { ensureNativeScriptModuleBindings } from './websocket-module-bindings.js';
+import { rewriteImports } from './websocket-device-transform.js';
 
 // Helper to normalize whitespace for robust assertions
 function squish(s: string) {

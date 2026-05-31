@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { rewriteImports } from './websocket.js';
+import { rewriteImports } from './websocket-device-transform.js';
 
 describe('rewriteImports NativeScript runtime plugin routing', () => {
 	const tempRoots: string[] = [];

@@ -1,19 +1,12 @@
 import type { ViteDevServer } from 'vite';
 
 import type { FrameworkServerStrategy } from './framework-strategy.js';
+import { setDeviceModuleHeaders } from './route-helpers.js';
 
 export interface RegisterVendorUnifierHandlerOptions {
 	getGraphVersion(): number;
 	getServerOrigin(server: ViteDevServer): string;
 	getStrategy(): FrameworkServerStrategy;
-}
-
-function setJavascriptResponseHeaders(res: any): void {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-	res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-	res.setHeader('Pragma', 'no-cache');
-	res.setHeader('Expires', '0');
 }
 
 export function shouldHandleVendorUnifierPath(pathname: string): boolean {
@@ -52,7 +45,7 @@ export function registerVendorUnifierHandler(server: ViteDevServer, options: Reg
 			const rewritten = maybeRewriteVendorModule(transformed.code, strategy, options.getServerOrigin(server), options.getGraphVersion());
 			if (rewritten === transformed.code) return next();
 
-			setJavascriptResponseHeaders(res);
+			setDeviceModuleHeaders(res);
 			res.statusCode = 200;
 			res.end(rewritten);
 		} catch {

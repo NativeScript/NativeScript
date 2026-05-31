@@ -4,7 +4,7 @@ import { tmpdir } from 'os';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { clearVendorManifest, registerVendorManifest } from '../shared/vendor/registry.js';
-import { __test_resolveVendorRouting as resolveVendorRouting } from './websocket.js';
+import { resolveVendorRouting } from './websocket-module-specifiers.js';
 
 describe('resolveVendorRouting', () => {
 	const tempRoots: string[] = [];

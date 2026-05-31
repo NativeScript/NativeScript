@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { shouldSuppressDefaultViteHotUpdate } from './websocket.js';
+import { shouldSuppressDefaultViteHotUpdate } from './websocket-angular-hot-update.js';
 
 describe('shouldSuppressDefaultViteHotUpdate', () => {
 	it('suppresses default Vite hot handling for Angular template edits', () => {

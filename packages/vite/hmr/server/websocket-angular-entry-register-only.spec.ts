@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { prepareAngularEntryForDevice, rewriteAngularEntryRegisterOnly } from './websocket.js';
+import { prepareAngularEntryForDevice } from './websocket-device-transform.js';
+import { rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 
 describe('rewriteAngularEntryRegisterOnly', () => {
 	it('rewrites Angular entry modules to support register-only refreshes', () => {

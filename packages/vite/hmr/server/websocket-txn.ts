@@ -1,15 +1,8 @@
 import type { ViteDevServer } from 'vite';
+import { setDeviceModuleHeaders } from './route-helpers.js';
 
 export interface RegisterTxnHandlerOptions {
 	resolveTxnIds(version: number, fallbackChangedIds: string[]): string[];
-}
-
-function setJavascriptResponseHeaders(res: any): void {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-	res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-	res.setHeader('Pragma', 'no-cache');
-	res.setHeader('Expires', '0');
 }
 
 export function buildTxnModuleCode(version: number, ids: string[]): string {
@@ -41,7 +34,7 @@ export function registerTxnHandler(server: ViteDevServer, options: RegisterTxnHa
 			const ids = options.resolveTxnIds(version, fallbackChangedIds);
 			const code = buildTxnModuleCode(version, ids);
 
-			setJavascriptResponseHeaders(res);
+			setDeviceModuleHeaders(res);
 			res.statusCode = 200;
 			res.end(code);
 			return;

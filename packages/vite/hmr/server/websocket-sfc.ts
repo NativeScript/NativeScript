@@ -10,6 +10,7 @@ import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 
 import { genCode } from '../helpers/babel.js';
+import { setDeviceModuleHeaders } from './route-helpers.js';
 import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
 import { astNormalizeModuleImportsAndHelpers, astVerifyAndAnnotateDuplicates } from '../helpers/ast-normalizer.js';
 import { stripRtCoreSentinel, stripDanglingViteCjsImports } from '../helpers/sanitize.js';
@@ -71,11 +72,7 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 			const isNs = p === '/ns/sfc' || p.startsWith('/ns/sfc/');
 			if (!isNs) return next();
 			if (p.startsWith('/ns/asm') || p.startsWith('/ns/sfc-meta')) return next();
-			res.setHeader('Access-Control-Allow-Origin', '*');
-			res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-			res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-			res.setHeader('Pragma', 'no-cache');
-			res.setHeader('Expires', '0');
+			setDeviceModuleHeaders(res);
 
 			const base = '/ns/sfc';
 			// Determine request spec, preserving variant query when present and handling optional version in path
@@ -548,11 +545,7 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 		try {
 			const urlObj = new URL(req.url || '', 'http://localhost');
 			if (!urlObj.pathname.startsWith('/ns/asm')) return next();
-			res.setHeader('Access-Control-Allow-Origin', '*');
-			res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-			res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-			res.setHeader('Pragma', 'no-cache');
-			res.setHeader('Expires', '0');
+			setDeviceModuleHeaders(res);
 			// Optional version segment as first path component after /ns/asm
 			const asmBase = '/ns/asm';
 			const asmRemainder = urlObj.pathname.slice(asmBase.length) || '';
@@ -1064,7 +1057,7 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 							if (tsFinal?.code) inlineCode2 = tsFinal.code;
 						} catch {}
 						inlineCode2 = ensureVariableDynamicImportHelper(inlineCode2);
-						inlineCode2 = ensureGuardPlainDynamicImports(inlineCode2, origin);
+						inlineCode2 = ensureGuardPlainDynamicImports(inlineCode2);
 						inlineCode2 = REQUIRE_GUARD_SNIPPET + inlineCode2;
 						// If no render materialized, return a clear error module for deterministic failure
 						try {
@@ -1183,7 +1176,7 @@ export function registerSfcHandlers(server: ViteDevServer, options: RegisterSfcH
 				code = ensureDestructureCoreImports(code);
 			} catch {}
 			code = ensureVariableDynamicImportHelper(code);
-			code = ensureGuardPlainDynamicImports(code, origin);
+			code = ensureGuardPlainDynamicImports(code);
 			try {
 				const origin = options.getServerOrigin(server);
 				code = ensureVersionedRtImports(code, origin, Number(ver));

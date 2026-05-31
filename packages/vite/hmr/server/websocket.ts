@@ -1,4 +1,4 @@
-import type { Plugin, ViteDevServer, TransformResult } from 'vite';
+import type { Plugin, ViteDevServer } from 'vite';
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'fs';
 import { WebSocketServer } from 'ws';
@@ -14,12 +14,11 @@ import { angularServerStrategy } from '../frameworks/angular/server/strategy.js'
 import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
 import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
-import { getCliFlags } from '../../helpers/cli-flags.js';
-import { resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helpers/dev-host.js';
+import { getServerOrigin } from './server-origin.js';
 import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
-import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
+import { canonicalizeTransformRequestCacheKey, normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from './websocket-angular-hot-update.js';
 import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion, type GraphUpsertClassification } from './websocket-graph-upsert.js';
 import { HmrModuleGraph } from './hmr-module-graph.js';
 import { registerNsRtBridgeRoute } from './ns-rt-route.js';
@@ -34,28 +33,10 @@ import { registerImportMapRoute } from './websocket-import-map-route.js';
 import { isAngularRootComponentUpdate, resolveBootstrapRootComponent, type BootstrapRootComponent } from './angular-root-component.js';
 import { cleanCode, collectImportDependencies, prepareAngularEntryForDevice, processCodeForDevice, processSfcCode, rewriteImports, shouldRemapImport } from './websocket-device-transform.js';
 import { classifyBootRoute, createColdBootRequestCounter, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
-import { getBlockedDeviceNodeModulesReason, isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate, resolveVendorRouting } from './websocket-module-specifiers.js';
+import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
-import { createSharedTransformRequestRunner, type SharedTransformRequestRunner, type SharedTransformRequestRunnerOptions } from './shared-transform-request.js';
-import { buildBootProgressSnippet, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
-export { buildBootProgressSnippet, wrapCommonJsModuleForDevice };
-
-export { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
-export type { EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
-export { stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
-export { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, normalizeCoreExportOriginsForRuntime, parseCoreBridgeRequest } from './websocket-core-bridge.js';
-export { rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
-// Re-export the canonical URL rewriter from `websocket-ns-m-paths.js` so the
-// existing test suites (which import from `./websocket.js`) keep working
-// without churn while the implementation lives in a focused module.
-export { formatNsMHmrServeTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
-export { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, createSharedTransformRequestRunner, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion };
-export { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
-// The device code-transform subsystem lives in `websocket-device-transform.ts`;
-// re-export the public entry points so the existing spec suites keep importing
-// them from `./websocket.js` unchanged.
-export { prepareAngularEntryForDevice, rewriteImports };
-export type { CoreExportOrigin, GraphUpsertClassification, HotUpdateGraphModuleLike, ParsedCoreBridgeRequest, PendingAngularReloadSuppressionEntry, SharedTransformRequestRunner, SharedTransformRequestRunnerOptions, TransitiveImporterModuleLike };
+import { createSharedTransformRequestRunner, type SharedTransformRequestRunner } from './shared-transform-request.js';
+import { buildBootProgressSnippet, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
 
@@ -178,11 +159,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 	const pendingAngularReloadSuppressions = new Map<string, PendingAngularReloadSuppressionEntry>();
 	const sfcFileMap = new Map<string, string>();
 	const depFileMap = new Map<string, string>();
-	// Generic module manifest (spec -> emitted relative .mjs path)
-	// Populated lazily on-demand via ns:fetch-module responses and broadcast to clients.
-	// Enables clients to short-circuit fetches for already-known modules and aids
-	// consistent path normalization across reconnects.
-	const moduleManifest = new Map<string, string>();
 	let vendorBootstrapDone = false;
 	let pluginRoot: string | undefined;
 	// HMR module graph (spec -> deps/hash) with version tagging and delta/full
@@ -737,221 +713,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 									},
 								})
 								.catch(() => {});
-						} else if (msg?.type === 'ns:fetch-module' && msg.path && typeof msg.requestId !== 'undefined') {
-							(async () => {
-								const requestId = msg.requestId;
-								let spec: string = msg.path;
-								// Normalize: strip query/hash, ensure leading '/'
-								if (typeof spec === 'string') {
-									spec = spec.replace(/[?#].*$/, '');
-									if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
-									// Collapse accidental repeated index segments: /foo/index/index -> /foo/index
-									spec = spec.replace(/\/(index)(?:\/(?:index))+$/i, '/$1');
-									if (spec === '@') {
-										try {
-											((globalThis as any).__NS_FETCH_METRICS__ ||= {}).invalidAtSpec = ((globalThis as any).__NS_FETCH_METRICS__.invalidAtSpec || 0) + 1;
-										} catch {}
-										ws.send(
-											JSON.stringify({
-												type: 'ns:module-response',
-												requestId,
-												path: msg.path,
-												error: 'invalid-spec-@',
-											}),
-										);
-										return;
-									}
-									// Reject device artifact paths from _ns_hmr (client should never request these)
-									if (/(?:\/_ns_hmr|Documents)\/src\/sfc\//.test(spec) || spec.startsWith('/_ns_hmr/')) {
-										try {
-											((globalThis as any).__NS_FETCH_METRICS__ ||= {}).artifactPathRejected = ((globalThis as any).__NS_FETCH_METRICS__.artifactPathRejected || 0) + 1;
-										} catch {}
-										ws.send(
-											JSON.stringify({
-												type: 'ns:module-response',
-												requestId,
-												path: msg.path,
-												error: 'artifact-path-disallowed',
-											}),
-										);
-										return;
-									}
-								}
-								// Special-case JSON package metadata requests at project root ONLY: provide a tiny stub module (no transform)
-								// Intentionally narrow match to '/package.json' (or 'package.json') to avoid catching relative imports like '../package.json'.
-								if (/^\/?package\.json(?:\/index)?$/.test(spec)) {
-									const root = server.config?.root || process.cwd();
-									let json = '{}';
-									try {
-										json = readFileSync(path.join(root, 'package.json'), 'utf-8');
-									} catch {}
-									const code = `export default ${json}\n`;
-									const rel = 'hmr-stubs/package.json.mjs';
-									ws.send(
-										JSON.stringify({
-											type: 'ns:module-response',
-											requestId,
-											path: rel,
-											code,
-										}),
-									);
-									return;
-								}
-								// Basic transform response cache (spec -> { code, path, hash }) to reduce CPU for rapid repeated imports
-								const fetchCache: any = ((globalThis as any).__NS_FETCH_CACHE__ ||= new Map());
-								const FETCH_CACHE_VERSION = 2;
-								try {
-									// Normalize leading ./
-									if (spec.startsWith('./')) spec = spec.slice(1);
-									if (!spec.startsWith('/')) spec = '/' + spec;
-									const cacheKey = spec + '::' + FETCH_CACHE_VERSION;
-									if (fetchCache.has(cacheKey)) {
-										const cached = fetchCache.get(cacheKey);
-										ws.send(
-											JSON.stringify({
-												type: 'ns:module-response',
-												requestId,
-												path: cached.path,
-												code: cached.code,
-												cached: true,
-											}),
-										);
-										return;
-									}
-									// Attempt transform via Vite with robust variant resolution (handles .mjs inputs)
-									let transformed: TransformResult | null = null;
-									let resolvedCandidate: string | null = null;
-									const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
-									const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
-									const candidates: string[] = [];
-									if (hasExt) {
-										candidates.push(spec); // as-is
-									}
-									candidates.push(baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs');
-									for (const cand of candidates) {
-										try {
-											const r = await server.transformRequest(cand);
-											if (r?.code) {
-												transformed = r;
-												resolvedCandidate = cand;
-												break;
-											}
-										} catch {}
-									}
-									if (!transformed?.code) {
-										ws.send(
-											JSON.stringify({
-												type: 'ns:module-response',
-												requestId,
-												error: 'transform-failed',
-												path: msg.path,
-											}),
-										);
-										return;
-									}
-									let code = transformed.code;
-									// Reuse existing sanitation chain (lightweight)
-									code = cleanCode(code, strategy);
-									code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(resolvedCandidate || spec), resolvedCandidate || spec);
-									code = rewriteImports(code, spec, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
-									code = ensureVariableDynamicImportHelper(code);
-									code = ensureGuardPlainDynamicImports(code, origin);
-									// Determine output relative file path (project-relative .mjs)
-									const specForRel = resolvedCandidate || spec;
-									let rel = specForRel.replace(/^\//, '');
-									rel = rel.replace(/\.(tsx?|jsx?)$/i, '.mjs');
-									if (!rel.endsWith('.mjs')) rel += '.mjs';
-									// Collect immediate relative .mjs dependencies and transform them as additional files
-									const additionalFiles: Array<{ path: string; code: string }> = [];
-									try {
-										const importRE = /from\s+["']([^"']+\.mjs)["']|import\(\s*["']([^"']+\.mjs)["']\s*\)/g;
-										const importerDir = path.posix.dirname(specForRel);
-										let m: RegExpExecArray | null;
-										const seen = new Set<string>();
-										while ((m = importRE.exec(code)) !== null) {
-											let dep = m[1] || m[2];
-											if (!dep) continue;
-											if (!(dep.startsWith('./') || dep.startsWith('../'))) continue;
-											// Resolve to absolute
-											let abs = path.posix.normalize(path.posix.join(importerDir, dep));
-											if (!abs.startsWith('/')) abs = '/' + abs;
-											const depBase = abs.replace(/\.(ts|js|tsx|jsx|mjs|mts|cts)$/i, '');
-											if (seen.has(depBase)) continue;
-											seen.add(depBase);
-											// Transform dep via same candidate resolution
-											const depHasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(depBase);
-											const depNoExt = depHasExt ? depBase.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i, '') : depBase;
-											const depCandidates = [depNoExt + '.ts', depNoExt + '.js', depNoExt + '.tsx', depNoExt + '.jsx', depNoExt + '.mjs', depNoExt + '.mts', depNoExt + '.cts', depNoExt + '.vue', depNoExt + '/index.ts', depNoExt + '/index.js', depNoExt + '/index.tsx', depNoExt + '/index.jsx', depNoExt + '/index.mjs'];
-											let depTrans: TransformResult | null = null;
-											let depResolved: string | null = null;
-											for (const cand of depCandidates) {
-												try {
-													const r = await server.transformRequest(cand);
-													if (r?.code) {
-														depTrans = r;
-														depResolved = cand;
-														break;
-													}
-												} catch {}
-											}
-											if (depTrans?.code && depResolved) {
-												let depCode = depTrans.code;
-												depCode = cleanCode(depCode, strategy);
-												depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
-												depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
-												depCode = ensureVariableDynamicImportHelper(depCode);
-												depCode = ensureGuardPlainDynamicImports(depCode, origin);
-												let depRel = depResolved.replace(/^\//, '').replace(/\.(tsx?|jsx?)$/i, '.mjs');
-												if (!depRel.endsWith('.mjs')) depRel += '.mjs';
-												additionalFiles.push({ path: depRel, code: depCode });
-											}
-										}
-									} catch {}
-									// Store in cache (simple size cap 200 entries)
-									try {
-										if (fetchCache.size > 200) {
-											const firstKey = fetchCache.keys().next().value;
-											if (firstKey) fetchCache.delete(firstKey);
-										}
-										fetchCache.set(cacheKey, { code, path: rel });
-										// Update manifest and broadcast incremental update (debounced to minimize chatter)
-										if (!moduleManifest.has(spec)) {
-											moduleManifest.set(spec, rel);
-											const single = {
-												type: 'ns:module-manifest',
-												entries: { [spec]: rel },
-												ts: Date.now(),
-												delta: true,
-											};
-											wss?.clients.forEach((c) => {
-												if (isSocketClientOpen(c)) {
-													try {
-														c.send(JSON.stringify(single));
-													} catch {}
-												}
-											});
-										}
-									} catch {}
-									ws.send(
-										JSON.stringify({
-											type: 'ns:module-response',
-											requestId,
-											path: rel,
-											code,
-											additionalFiles,
-										}),
-									);
-								} catch (e: any) {
-									ws.send(
-										JSON.stringify({
-											type: 'ns:module-response',
-											requestId,
-											path: msg.path,
-											error: e?.message || String(e),
-										}),
-									);
-								}
-							})();
 						}
 					} catch {}
 				});
@@ -989,21 +750,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 					console.warn('[hmr-ws] Failed to send registry:', error);
 				}
 				moduleGraph.emitFullGraph(ws as any);
-
-				// After sending registry & graph also send current module manifest if any
-				if (moduleManifest.size) {
-					const manifestObj: Record<string, string> = {};
-					moduleManifest.forEach((v, k) => (manifestObj[k] = v));
-					try {
-						ws.send(
-							JSON.stringify({
-								type: 'ns:module-manifest',
-								entries: manifestObj,
-								ts: Date.now(),
-							}),
-						);
-					} catch {}
-				}
 			});
 		},
 
@@ -1052,73 +798,3 @@ export function hmrWebSocketSolid(opts: { verbose?: boolean }): Plugin {
 export function hmrWebSocketTypescript(opts: { verbose?: boolean }): Plugin {
 	return createHmrWebSocketPlugin(opts, resolveFrameworkStrategy('typescript'));
 }
-
-/**
- * Dev-server origin baked into every module served to the device
- * (`/ns/core/...`, `/ns/m/...`). MUST match the origin `dev-host.ts` bakes
- * into `bundle.mjs`; if they disagree V8 keys them as different modules and
- * the app ends up with two `@nativescript/core` realms (a singleton-state
- * split). `resolveDeviceReachableOrigin` keeps every platform in lock-step:
- * Android wildcard/loopback -> `10.0.2.2`, iOS/visionOS wildcard ->
- * `localhost`, explicit non-loopback `server.host` -> trusted verbatim
- * (physical devices opt into LAN via `NS_HMR_PREFER_LAN_HOST`/`NS_HMR_HOST`).
- */
-function getServerOrigin(server: ViteDevServer): string {
-	const platform: DevHostPlatform = detectDevHostPlatform();
-	const isHttps = !!server.config.server?.https;
-	const protocol: 'http' | 'https' = isHttps ? 'https' : 'http';
-	const httpServer = server.httpServer as any;
-	const addr = httpServer?.address?.();
-	const port = Number(server.config.server?.port || addr?.port || 5173);
-
-	try {
-		const { origin } = resolveDeviceReachableOrigin({
-			host: server.config.server?.host,
-			platform,
-			protocol,
-			port,
-		});
-		if (/^https?:\/\/[\w\-.:\[\]]+$/.test(origin)) {
-			return origin;
-		}
-		console.warn('[hmr][origin] invariant failed for resolveDeviceReachableOrigin:', origin);
-	} catch (err) {
-		console.warn('[hmr][origin] resolveDeviceReachableOrigin threw:', (err as any)?.message || String(err));
-	}
-
-	// Last-ditch fallback for the implausible case where the resolver
-	// throws (CI containers with no NICs, exotic `process.env` shapes,
-	// etc.). We deliberately do NOT consult `resolvedUrls.network[0]`
-	// here — see the file-level comment above for why.
-	const hostCfg = server.config.server?.host;
-	const fallbackHost = typeof hostCfg === 'string' && hostCfg && hostCfg !== '0.0.0.0' ? hostCfg : platform === 'android' ? '10.0.2.2' : '127.0.0.1';
-	const origin = `${protocol}://${fallbackHost}:${port}`;
-	if (!/^https?:\/\/[\w\-.:\[\]]+$/.test(origin)) {
-		console.warn('[hmr][origin] invariant failed for constructed origin:', origin);
-	}
-	return origin;
-}
-
-/**
- * Resolve the device target platform from the CLI flags the dev server
- * was launched with. The `--env.android` / `--env.visionos` flags are
- * surfaced by the NativeScript CLI when it spawns Vite; iOS is the
- * safe default when no flag is set so the helper stays a pure
- * function and standalone `vite serve` sessions still get sensible
- * URLs.
- */
-function detectDevHostPlatform(): DevHostPlatform {
-	try {
-		const flags = (getCliFlags() || {}) as Record<string, unknown>;
-		if (flags.android) return 'android';
-		if (flags.visionos) return 'visionos';
-	} catch {}
-	return 'ios';
-}
-
-// Test-only export: allow unit tests to run the sanitizer on snippets without booting a server
-// Safe in production builds; this is a named export that tests can import explicitly.
-export const __test_processCodeForDevice = processCodeForDevice;
-export const __test_resolveVendorRouting = resolveVendorRouting;
-export const __test_getBlockedDeviceNodeModulesReason = getBlockedDeviceNodeModulesReason;
-export const __test_getServerOrigin = getServerOrigin;

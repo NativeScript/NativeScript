@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parse as babelParse } from '@babel/parser';
 
-import { __test_processCodeForDevice as processCodeForDevice } from './websocket.js';
+import { processCodeForDevice } from './websocket-device-transform.js';
 
 const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
 

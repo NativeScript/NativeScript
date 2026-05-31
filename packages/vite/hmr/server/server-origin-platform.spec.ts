@@ -28,7 +28,7 @@
  * NS_HMR_PREFER_LAN_HOST → platform default).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { __test_getServerOrigin } from './websocket.js';
+import { getServerOrigin } from './server-origin.js';
 import * as cliFlagsMod from '../../helpers/cli-flags.js';
 
 interface FakeServerOptions {
@@ -84,7 +84,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedLocal: ['http://localhost:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://10.0.2.2:5173');
+		expect(getServerOrigin(server)).toBe('http://10.0.2.2:5173');
 	});
 
 	it('returns 10.0.2.2 on Android when only resolvedUrls.local is populated', () => {
@@ -97,7 +97,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedLocal: ['http://localhost:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://10.0.2.2:5173');
+		expect(getServerOrigin(server)).toBe('http://10.0.2.2:5173');
 	});
 
 	it('honors NS_HMR_HOST on Android', () => {
@@ -110,7 +110,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['http://192.168.0.8:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://tunnel.example.com:5173');
+		expect(getServerOrigin(server)).toBe('http://tunnel.example.com:5173');
 	});
 
 	it('emits LAN IP on Android when NS_HMR_PREFER_LAN_HOST is set', () => {
@@ -126,7 +126,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['http://192.168.0.8:5173/'],
 		});
 
-		const origin = __test_getServerOrigin(server);
+		const origin = getServerOrigin(server);
 		// Either picked a real LAN NIC, or fell back to 10.0.2.2 in CI
 		// containers without a non-internal IPv4 NIC — both are
 		// acceptable; what matters is the env var was consulted.
@@ -145,7 +145,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedLocal: ['http://localhost:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://localhost:5173');
+		expect(getServerOrigin(server)).toBe('http://localhost:5173');
 	});
 
 	it('preserves loopback host on iOS (no remapping)', () => {
@@ -158,7 +158,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedLocal: ['http://localhost:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://localhost:5173');
+		expect(getServerOrigin(server)).toBe('http://localhost:5173');
 	});
 
 	it('honors NS_HMR_HOST on iOS', () => {
@@ -171,7 +171,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['http://192.168.0.8:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://tunnel.example.com:5173');
+		expect(getServerOrigin(server)).toBe('http://tunnel.example.com:5173');
 	});
 
 	it('routes iOS to LAN IP when NS_HMR_PREFER_LAN_HOST is set (physical-device dev)', () => {
@@ -184,7 +184,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['http://192.168.0.8:5173/'],
 		});
 
-		const origin = __test_getServerOrigin(server);
+		const origin = getServerOrigin(server);
 		// Either picked a real LAN NIC, or fell back to localhost in CI
 		// containers without a non-internal IPv4 NIC. We just assert the
 		// env var was consulted — the exact LAN address depends on the
@@ -201,7 +201,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['http://192.168.1.42:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://192.168.1.42:5173');
+		expect(getServerOrigin(server)).toBe('http://192.168.1.42:5173');
 	});
 
 	it('routes visionOS the same way as iOS', () => {
@@ -213,7 +213,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['http://192.168.0.8:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://localhost:5173');
+		expect(getServerOrigin(server)).toBe('http://localhost:5173');
 	});
 
 	it('respects explicit non-loopback host on Android', () => {
@@ -225,7 +225,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['http://192.168.1.42:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://192.168.1.42:5173');
+		expect(getServerOrigin(server)).toBe('http://192.168.1.42:5173');
 	});
 
 	it('respects custom port on Android', () => {
@@ -238,7 +238,7 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['http://192.168.0.8:6173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('http://10.0.2.2:6173');
+		expect(getServerOrigin(server)).toBe('http://10.0.2.2:6173');
 	});
 
 	it('emits https origin when server.https is set on Android', () => {
@@ -249,6 +249,6 @@ describe('getServerOrigin platform routing', () => {
 			resolvedNetwork: ['https://192.168.0.8:5173/'],
 		});
 
-		expect(__test_getServerOrigin(server)).toBe('https://10.0.2.2:5173');
+		expect(getServerOrigin(server)).toBe('https://10.0.2.2:5173');
 	});
 });

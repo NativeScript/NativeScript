@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parse as babelParse } from '@babel/parser';
-import { buildBootProgressSnippet, ensureNativeScriptModuleBindings } from './websocket.js';
+import { buildBootProgressSnippet } from './websocket-served-module-helpers.js';
+import { ensureNativeScriptModuleBindings } from './websocket-module-bindings.js';
 
 function parseOk(code: string): { ok: boolean; error?: any } {
 	try {

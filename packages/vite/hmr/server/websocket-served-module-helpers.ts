@@ -138,7 +138,7 @@ export function ensureVariableDynamicImportHelper(code: string): string {
 	return `${helper}${code}`;
 }
 
-export function ensureGuardPlainDynamicImports(code: string, _origin: string): string {
+export function ensureGuardPlainDynamicImports(code: string): string {
 	try {
 		if (!code || !/\bimport\s*\(/.test(code)) return code;
 		const wrapper = `const __ns_import = (s) => { try { if (s === '@') { return import(new URL('/ns/m/__invalid_at__.mjs', import.meta.url).href); } } catch {} return import(s); }\n`;

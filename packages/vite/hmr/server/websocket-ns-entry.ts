@@ -7,6 +7,7 @@ import babelCore from '@babel/core';
 
 import { getPackageJson, getProjectFilePath } from '../../helpers/project.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
+import { setDeviceModuleHeaders } from './route-helpers.js';
 
 // Lazily loaded only for the source-tree fallback below (transform
 // entry-runtime.ts on the fly when the built .js isn't present).
@@ -54,11 +55,7 @@ export function registerNsEntryRoutes(server: ViteDevServer, options: RegisterNs
 				const rp = (req.socket as any)?.remotePort;
 				console.log('[hmr-http] GET /ns/entry-rt from', ra + (rp ? ':' + rp : ''));
 			}
-			res.setHeader('Access-Control-Allow-Origin', '*');
-			res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-			res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-			res.setHeader('Pragma', 'no-cache');
-			res.setHeader('Expires', '0');
+			setDeviceModuleHeaders(res);
 			let content = '';
 			try {
 				const _req = createRequire(import.meta.url);

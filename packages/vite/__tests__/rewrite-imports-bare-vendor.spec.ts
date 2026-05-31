@@ -51,7 +51,7 @@ import { tmpdir } from 'os';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { clearVendorManifest, registerVendorManifest } from '../hmr/shared/vendor/registry.js';
-import { rewriteImports } from '../hmr/server/websocket.js';
+import { rewriteImports } from '../hmr/server/websocket-device-transform.js';
 
 const SERVER_ORIGIN = 'http://localhost:5173';
 

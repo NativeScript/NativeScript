@@ -5,6 +5,7 @@ import { buildDefaultExportFooter, buildShapeInstallHeader, hasNamespaceReExport
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
 import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath } from './websocket-core-bridge.js';
+import { setDeviceModuleHeaders } from './route-helpers.js';
 
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
 
@@ -88,11 +89,7 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 				res.end();
 				return;
 			}
-			res.setHeader('Access-Control-Allow-Origin', '*');
-			res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-			res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-			res.setHeader('Pragma', 'no-cache');
-			res.setHeader('Expires', '0');
+			setDeviceModuleHeaders(res);
 			const { normalizedSub, sub } = coreRequest;
 
 			const resolveModuleId = async (moduleId: string): Promise<string | null> => {

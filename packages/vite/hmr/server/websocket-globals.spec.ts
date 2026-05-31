@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ensureNativeScriptModuleBindings } from './websocket.js';
+import { ensureNativeScriptModuleBindings } from './websocket-module-bindings.js';
 
 // We can't directly call processCodeForDevice here, but we can simulate the vendor-globals injector side effects
 // by running through process fragments: vendor prelude and bindings should appear when free identifiers are used.

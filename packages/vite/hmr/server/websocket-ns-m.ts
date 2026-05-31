@@ -9,6 +9,7 @@ import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { buildPiniaVendorShim, buildVueVendorShim } from './vendor-bare-module-shims.js';
 import { getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
+import { setDeviceModuleHeaders } from './route-helpers.js';
 import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
@@ -164,12 +165,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// and tracks finish() via res.on('close'/'finish')). This
 			// handler used to record here but that missed the
 			// round-trip timing and didn't track per-route breakdowns.
-			res.setHeader('Access-Control-Allow-Origin', '*');
-			res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-			// Disable caching for dev ESM endpoints to avoid device-side stale module reuse
-			res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-			res.setHeader('Pragma', 'no-cache');
-			res.setHeader('Expires', '0');
+			setDeviceModuleHeaders(res);
 			// Support both query (?path=/abs) and path-style (/ns/m/abs)
 			let spec = urlObj.searchParams.get('path') || '';
 			// Optional graph version pin for deterministic boot
@@ -598,7 +594,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			code = ensureVariableDynamicImportHelper(code);
 			// Final safety: guard any plain dynamic import(...) occurrences to reroute anomalous '@' specs
 			try {
-				code = ensureGuardPlainDynamicImports(code, getServerOrigin(server));
+				code = ensureGuardPlainDynamicImports(code);
 			} catch {}
 			// Extra hardening before the fast-fail assertion: run the
 			// consolidated stray-core-reference safety net. If any

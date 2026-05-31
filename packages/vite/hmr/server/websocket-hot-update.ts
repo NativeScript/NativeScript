@@ -402,17 +402,13 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 		// the root so the two paths don't race. `.ts` root edits already
 		// fall through to the reboot path; this only re-routes `.html`.
 		const rootComponent = getRootComponentIdentity();
-		const changedFileRel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
-		const isRootComponentEdit = !!rootComponent && isSameAngularModuleRel(rootComponent.moduleRel, changedFileRel);
+		// `isSameAngularModuleRel` normalizes separators + leading slash internally,
+		// so the raw project-relative path can be passed straight through.
+		const isRootComponentEdit = !!rootComponent && isSameAngularModuleRel(rootComponent.moduleRel, path.relative(root, file));
 		if (isHtml && angularLiveReloadActive && !isRootComponentEdit) {
 			updateMetrics.tAfterFramework = Date.now();
 			if (verbose) {
-				const rel =
-					'/' +
-					path.posix
-						.normalize(path.relative(server.config.root || process.cwd(), file))
-						.split(path.sep)
-						.join('/');
+				const rel = '/' + path.relative(root, file).split(path.sep).join('/');
 				console.info(`[ns-hmr][server] HTML edit handed off to Analog component-update path; skipping ns:angular-update broadcast (file=${rel})`);
 			}
 			// Re-query the moduleGraph for this file AFTER awaiting

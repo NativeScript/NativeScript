@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload } from './websocket.js';
+import { normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload } from './websocket-angular-hot-update.js';
 
 describe('shouldSuppressViteFullReloadPayload', () => {
 	const root = '/Users/example/app';

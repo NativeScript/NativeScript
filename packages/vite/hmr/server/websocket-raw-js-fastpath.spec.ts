@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { tryReadRawExplicitJavaScriptModule } from './websocket.js';
+import { tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
 
 describe('tryReadRawExplicitJavaScriptModule', () => {
 	let fixtureRoot: string | null = null;

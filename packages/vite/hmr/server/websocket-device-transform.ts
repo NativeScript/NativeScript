@@ -1,10 +1,8 @@
 // Device code-transform subsystem: rewrites a served module's imports + source
 // for the on-device ESM runtime (the HMR plugin's hot path). Extracted verbatim
-// from `websocket.ts`; that file imports these back for the plugin closure and
-// re-exports the public entry points (`rewriteImports`,
-// `prepareAngularEntryForDevice`, `__test_processCodeForDevice`) so existing
-// imports keep resolving. Pure functions only — no plugin/server state beyond
-// the project-derived `APP_ROOT_DIR` and the CLI-env snapshot below.
+// from `websocket.ts`, which imports these back for the plugin closure; specs
+// import them directly from this module. Pure functions only — no plugin/server
+// state beyond the project-derived `APP_ROOT_DIR` and the CLI-env snapshot below.
 import { sanitizeStrayCoreReferences, isDeepCoreSubpath } from './core-sanitize.js';
 import { existsSync, readFileSync } from 'fs';
 import { astNormalizeModuleImportsAndHelpers, astVerifyAndAnnotateDuplicates } from '../helpers/ast-normalizer.js';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { __test_processCodeForDevice as processCodeForDevice } from './websocket.js';
+import { processCodeForDevice } from './websocket-device-transform.js';
 
 describe('processCodeForDevice module provenance', () => {
 	it('records node_modules HTTP provenance when a source id is provided', () => {

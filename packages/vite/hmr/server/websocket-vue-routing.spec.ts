@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rewriteImports } from './websocket.js';
+import { rewriteImports } from './websocket-device-transform.js';
 
 describe('rewriteImports Vue HTTP routing', () => {
 	it('rewrites a relative Vue import to a single /ns/sfc path', () => {

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { wrapCommonJsModuleForDevice } from './websocket.js';
+import { wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { clearCjsNamedExportsCache } from '../helpers/cjs-named-exports.js';
 import { installModuleProvenanceRecorder } from '../shared/runtime/module-provenance.js';
 

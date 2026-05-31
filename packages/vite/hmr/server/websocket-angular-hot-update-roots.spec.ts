@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { collectAngularHotUpdateRoots } from './websocket.js';
+import { collectAngularHotUpdateRoots } from './websocket-angular-hot-update.js';
 
 type FakeModule = {
 	id?: string;

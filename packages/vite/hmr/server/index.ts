@@ -9,6 +9,7 @@ export function getHMRPlugins(opts: { platform: NsDevPlatform; flavor: string; v
 			plugins.push(hmrWebSocketVue(opts));
 			break;
 		case 'react':
+			// React has no server-side HMR WebSocket plugin yet; the client plugin suffices.
 			break;
 		case 'angular':
 			plugins.push(hmrWebSocketAngular(opts));

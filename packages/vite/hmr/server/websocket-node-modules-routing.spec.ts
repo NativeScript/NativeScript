@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { __test_getBlockedDeviceNodeModulesReason as getBlockedDeviceNodeModulesReason, rewriteImports, rewriteNsMImportPathForHmr, stripDecoratedServePrefixes } from './websocket.js';
+import { getBlockedDeviceNodeModulesReason, stripDecoratedServePrefixes } from './websocket-module-specifiers.js';
+import { rewriteImports } from './websocket-device-transform.js';
+import { rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
 
 describe('node_modules HTTP import canonicalization', () => {
 	it('preserves resolved dependency filenames for relative node_modules imports', () => {

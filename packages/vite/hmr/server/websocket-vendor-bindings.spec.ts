@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ensureNativeScriptModuleBindings } from './websocket.js';
+import { ensureNativeScriptModuleBindings } from './websocket-module-bindings.js';
 
 // Helper to normalize whitespace for robust assertions
 function squish(s: string) {

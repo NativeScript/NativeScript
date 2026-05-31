@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { __test_processCodeForDevice as processCodeForDevice } from './websocket.js';
+import { processCodeForDevice } from './websocket-device-transform.js';
 import { registerVendorManifest, clearVendorManifest } from '../shared/vendor/registry.js';
 
 /**
