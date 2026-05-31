@@ -1806,7 +1806,7 @@ export class ContainerView extends View {
 
 	constructor() {
 		super();
-		this.androidOverflowEdge = 'none';
+		this.androidOverflowEdge = 'ignore';
 	}
 }
 
