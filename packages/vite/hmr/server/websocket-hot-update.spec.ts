@@ -137,4 +137,21 @@ describe('handleNsHotUpdate', () => {
 
 		await pending.catch(() => {});
 	});
+
+	it('delegates to strategy.handleHotUpdate when the flavor owns the hook, skipping the inline path (P2-A3 seam)', async () => {
+		const modules = [{ id: 'mod' }] as any;
+		const handleHotUpdate = vi.fn(async () => modules);
+		const ctx = makeCtx('/app/src/foo.ts');
+		const deps = makeDeps({ strategy: { flavor: 'typescript', handleHotUpdate } as any });
+
+		const result = await handleNsHotUpdate(ctx, deps);
+
+		// The hook owns the whole handler: it is invoked with the live ctx + deps,
+		// its result is propagated, and the dispatcher's inline prologue never runs
+		// (no origin bake / pending broadcast happens out here).
+		expect(handleHotUpdate).toHaveBeenCalledTimes(1);
+		expect(handleHotUpdate).toHaveBeenCalledWith(ctx, deps);
+		expect(result).toBe(modules);
+		expect(originSpy).not.toHaveBeenCalled();
+	});
 });

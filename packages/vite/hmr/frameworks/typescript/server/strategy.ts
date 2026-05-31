@@ -2,6 +2,7 @@ import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkSe
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import * as path from 'path';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
+import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import type { TsModuleRegistryMessage } from '../../../shared/protocol.js';
 
 // TypeScript server strategy for NativeScript HMR.
@@ -17,6 +18,28 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 	matchesFile(id: string) {
 		// Treat any app TS/JS under the virtual app root as HMR-relevant.
 		return matchesRuntimeGraphModuleId(id, TS_APP_PREFIX, TS_FILE_PATTERN);
+	},
+	// HMR (P2-A3): reached via the dispatcher's delegation seam. Run the shared
+	// prologue (scope gate, pending overlay, common graph upsert, CSS), then —
+	// for an in-scope app file — emit a generic graph delta. We treat the changed
+	// file as a graph module with no deps so its hash/identity changes and the
+	// client sees a delta and can perform a TS root reset; the code body is not
+	// used for execution here.
+	async handleHotUpdate(ctx, deps) {
+		const state = await runHotUpdatePrologue(ctx, deps);
+		if (!state) return;
+		const { root, metrics, emitSummary } = state;
+		const { moduleGraph, verbose } = deps;
+		const { file } = ctx;
+		metrics.tAfterFramework = Date.now();
+		try {
+			const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+			if (verbose) console.log('[hmr-ws][ts] app file hot update', { file, rel });
+			moduleGraph.upsert(rel, '', [], { emitDeltaOnInsert: true });
+		} catch (e) {
+			if (verbose) console.warn('[hmr-ws][ts] failed to emit delta for', file, e);
+		}
+		emitSummary();
 	},
 	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
 	// identity: plain TS apps rely on the generic pipeline (vendor bridge, /ns/entry-rt).

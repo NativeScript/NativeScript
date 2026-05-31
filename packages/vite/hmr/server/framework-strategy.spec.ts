@@ -18,14 +18,21 @@ describe('FrameworkServerStrategy contract', () => {
 		}
 	});
 
-	it('P2-A4/A5 wire served-module + route/import-map/volatile hooks to their owning strategy; the rest stay unwired', () => {
+	it('P2-A3/A4/A5 wire hooks to their owning strategy; the rest stay unwired', () => {
 		for (const strategy of REGISTRY) {
-			// Still unwired: handleHotUpdate → P2-A3; processSfcCode → P2-A6.
-			expect(strategy.handleHotUpdate).toBeUndefined();
+			// Still unwired: processSfcCode → P2-A6.
 			expect(strategy.processSfcCode).toBeUndefined();
 			// deferDeltaBroadcast (P2-A3) absent ⇒ falsy ⇒ today's broadcastDelta=true (TS/Vue) path.
 			expect(strategy.deferDeltaBroadcast ?? false).toBe(false);
 		}
+
+		// P2-A3 (wiring flavor-by-flavor): TypeScript is the first flavor routed
+		// through `handleHotUpdate` (prologue + its tail); Vue/Angular/Solid still
+		// take the shared dispatcher's inline tail until their step lands.
+		expect(typeof typescriptServerStrategy.handleHotUpdate).toBe('function');
+		expect(vueServerStrategy.handleHotUpdate).toBeUndefined();
+		expect(angularServerStrategy.handleHotUpdate).toBeUndefined();
+		expect(solidServerStrategy.handleHotUpdate).toBeUndefined();
 
 		// P2-A4 (wired): only Angular overrides the `/ns/m` served-module rewrite
 		// (register-only entry pass); only Solid patches served node_modules

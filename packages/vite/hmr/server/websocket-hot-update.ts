@@ -56,7 +56,7 @@ export interface NsHotUpdateContext {
 type NsHotUpdateResult = HmrContext['modules'] | void;
 
 /** Always-on per-update timing + diagnostics, mutated in place across the prologue and the framework tail. */
-interface HmrUpdateMetrics {
+export interface HmrUpdateMetrics {
 	file: string;
 	kind: string;
 	t0: number;
@@ -70,7 +70,7 @@ interface HmrUpdateMetrics {
 }
 
 /** Per-invocation locals computed by {@link runHotUpdatePrologue} and consumed by the per-flavor tail. */
-interface HotUpdatePrologueState {
+export interface HotUpdatePrologueState {
 	root: string;
 	updateRel: string;
 	metrics: HmrUpdateMetrics;
@@ -87,8 +87,9 @@ interface HotUpdatePrologueState {
  * per-invocation {@link HotUpdatePrologueState} (`root`, `updateRel`, the live
  * `metrics` object, the idempotent `emitSummary`) the per-flavor tail consumes.
  * Behaviour-preserving extraction (P2-A3 Step 0) — the body below is an in-place move.
+ * Exported (P2-A3 Step 1) so per-flavor strategies can own `prologue + their tail`.
  */
-async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateContext): Promise<HotUpdatePrologueState | null> {
+export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateContext): Promise<HotUpdatePrologueState | null> {
 	const { wss, moduleGraph, strategy, verbose, getHmrSourceRootsCached, isSocketClientOpen } = deps;
 	const APP_ROOT_DIR = deps.appRootDir;
 	const graphInitialPopulationPromise = deps.getGraphInitialPopulationPromise();
@@ -401,6 +402,12 @@ async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateContext): 
  * closure-local names so the tails are a faithful, behaviour-preserving move.
  */
 export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContext): Promise<NsHotUpdateResult> {
+	// P2-A3 delegation seam: a flavor that owns `handleHotUpdate` runs the entire
+	// handler itself (shared prologue + its tail). The inline dispatch below is the
+	// default for flavors not yet routed (currently: angular, solid, vue).
+	if (deps.strategy.handleHotUpdate) {
+		return deps.strategy.handleHotUpdate(ctx, deps);
+	}
 	const state = await runHotUpdatePrologue(ctx, deps);
 	if (!state) return;
 	const { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary } = state;
@@ -818,22 +825,9 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 		return;
 	}
 
-	// TypeScript flavor: emit generic graph delta for app XML/TS/style changes
-	if (strategy.flavor === 'typescript') {
-		updateMetrics.tAfterFramework = Date.now();
-		try {
-			const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
-			if (verbose) console.log('[hmr-ws][ts] app file hot update', { file, rel });
-			// Treat the changed file itself as a graph module with no deps. We only
-			// care that its hash/identity changes so the client sees a delta and can
-			// perform a TS root reset. Code is not used for execution here.
-			moduleGraph.upsert(rel, '', [], { emitDeltaOnInsert: true });
-		} catch (e) {
-			if (verbose) console.warn('[hmr-ws][ts] failed to emit delta for', file, e);
-		}
-		emitHmrUpdateSummary();
-		return;
-	}
+	// TypeScript flavor is routed through `typescriptServerStrategy.handleHotUpdate`
+	// (P2-A3 Step 1) via the delegation seam at the top of this function — its tail
+	// (generic graph delta for app file changes) lives in the strategy now.
 
 	// Solid flavor: emit graph delta for app TSX/TS/JSX file changes.
 	// The common graph-update block above (moduleGraph lookup) may have
