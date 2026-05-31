@@ -10,11 +10,7 @@ import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHt
 import { handleCssUpdates } from './css-handler.js';
 import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
 
-// satisfied by define replacement
-declare const __NS_ENV_VERBOSE__: boolean | undefined;
 const VERBOSE = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;
-declare const __NS_TARGET_FLAVOR__: string | undefined;
-declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
 
 function resolveTargetFlavor(): string | undefined {
 	try {
@@ -43,8 +39,8 @@ function resolveTargetFlavor(): string | undefined {
 const TARGET_FLAVOR = resolveTargetFlavor();
 
 try {
-	if (TARGET_FLAVOR && !(globalThis as any).__NS_TARGET_FLAVOR__) {
-		(globalThis as any).__NS_TARGET_FLAVOR__ = TARGET_FLAVOR;
+	if (TARGET_FLAVOR && !globalThis.__NS_TARGET_FLAVOR__) {
+		globalThis.__NS_TARGET_FLAVOR__ = TARGET_FLAVOR;
 	}
 } catch {}
 
@@ -85,7 +81,7 @@ type HmrConnectionOverlayStage = 'connecting' | 'reconnecting' | 'synchronizing'
 
 function getHmrOverlayApi(): any {
 	try {
-		return (globalThis as any).__NS_HMR_DEV_OVERLAY__ || null;
+		return globalThis.__NS_HMR_DEV_OVERLAY__ || null;
 	} catch {}
 	return null;
 }
@@ -286,9 +282,9 @@ switch (TARGET_FLAVOR) {
 }
 
 // Track whether we've mounted an initial app root yet in HTTP-only boot
-let initialMounted = !!(globalThis as any).__NS_HMR_BOOT_COMPLETE__;
+let initialMounted = !!globalThis.__NS_HMR_BOOT_COMPLETE__;
 // Prevent duplicate initial-mount scheduling across rapid full-graph broadcasts and re-evaluations
-let initialMounting = !!(globalThis as any).__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__;
+let initialMounting = !!globalThis.__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__;
 // Track whether the first full-graph has been received. Before the full-graph,
 // delta messages are just the server discovering modules during initial boot —
 // NOT actual code changes. Re-imports must be gated behind this flag.
@@ -489,8 +485,8 @@ function applyFullGraph(payload: any) {
 	// by choosing a likely root component for the active flavor and performing a resetRootView with it.
 	try {
 		// Short-circuit if boot is complete or an initial mount is already underway (across realms/evals)
-		const bootDone = !!(globalThis as any).__NS_HMR_BOOT_COMPLETE__;
-		const bootInProgress = !!(globalThis as any).__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ || initialMounting;
+		const bootDone = !!globalThis.__NS_HMR_BOOT_COMPLETE__;
+		const bootInProgress = !!globalThis.__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ || initialMounting;
 		// Only allow initial mount when explicitly enabled. Rely on the app's own main entry start() for the first mount
 		// to avoid double-mount races that can cause duplicate navigation logs.
 		if (ALLOW_INITIAL_MOUNT && !initialMounted && !bootDone && !bootInProgress && !getCurrentApp() && !getRootFrame()) {
@@ -531,7 +527,7 @@ function applyFullGraph(payload: any) {
 				// Mark initial-mount in progress (both module-local and global) BEFORE scheduling async work
 				initialMounting = true;
 				try {
-					(globalThis as any).__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ = true;
+					globalThis.__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ = true;
 				} catch {}
 				(async () => {
 					try {
@@ -584,7 +580,7 @@ function applyFullGraph(payload: any) {
 							if (ok) {
 								initialMounted = true;
 								try {
-									(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = true;
+									globalThis.__NS_HMR_BOOT_COMPLETE__ = true;
 								} catch {}
 								if (VERBOSE) console.log('[hmr][init] initial mount complete');
 							} else if (VERBOSE) {
@@ -599,7 +595,7 @@ function applyFullGraph(payload: any) {
 						// Clear in-progress flag regardless of outcome to allow future retries if needed
 						initialMounting = false;
 						try {
-							(globalThis as any).__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ = false;
+							globalThis.__NS_HMR_INITIAL_MOUNT_IN_PROGRESS__ = false;
 						} catch {}
 					}
 				})();
@@ -691,7 +687,7 @@ function applyDelta(payload: any) {
 			}
 			if (isAppMainEntryId(id)) {
 				try {
-					const exists = (globalThis as any).require?.(id) || (globalThis as any).__nsGetModuleExports?.(id);
+					const exists = (globalThis as any).require?.(id) || globalThis.__nsGetModuleExports?.(id);
 					if (!exists && VERBOSE) console.log(`[hmr][delta] skipping unresolved ${APP_MAIN_ENTRY_SPEC} change`);
 					if (!exists) continue;
 				} catch {
@@ -827,11 +823,11 @@ function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 
 // Expose deterministic app navigation globally so /ns/rt can guarantee single-path navigation
 try {
-	(globalThis as any).__nsNavigateUsingApp = __nsNavigateUsingApp;
+	globalThis.__nsNavigateUsingApp = __nsNavigateUsingApp;
 } catch {}
 
 async function processQueue(): Promise<void> {
-	if (!(globalThis as any).__NS_HMR_BOOT_COMPLETE__) {
+	if (!globalThis.__NS_HMR_BOOT_COMPLETE__) {
 		if (VERBOSE) console.log('[hmr][gate] deferring HMR eval until boot complete');
 		setTimeout(() => {
 			try {
@@ -1292,7 +1288,7 @@ let hmrSocket: WebSocket | null = null;
 const txnClientBatches: Map<number, string[]> = new Map();
 
 // Public hook for NativeScript runtime to call from ImportModuleDynamicallyCallback later.
-(globalThis as any).__nsHmrRequestModule = async function (spec: string): Promise<string> {
+globalThis.__nsHmrRequestModule = async function (spec: string): Promise<string> {
 	let normalized = normalizeSpec(spec);
 	// Remove extension for transform lookup variants (server will try .ts/.js/.mjs)
 	normalized = normalized.replace(/\.(ts|js|tsx|jsx|mjs)$/i, '');
@@ -1318,7 +1314,7 @@ function connectHmr() {
 		return;
 	}
 	try {
-		(globalThis as any).__NS_HMR_CLIENT_SOCKET_READY__ = false;
+		globalThis.__NS_HMR_CLIENT_SOCKET_READY__ = false;
 	} catch {}
 	const overlayStage: HmrConnectionOverlayStage = hasOpenedHmrSocket ? 'reconnecting' : 'connecting';
 	const baseUrl = getHMRWsUrl() || 'ws://localhost:5173/ns-hmr';
@@ -1349,7 +1345,7 @@ function connectHmr() {
 			orderedHosts.push({ host: u.hostname, port: defaultPort });
 			// Explicit override
 			try {
-				const h = (globalThis as any).__NS_HMR_HOST;
+				const h = globalThis.__NS_HMR_HOST;
 				if (h) orderedHosts.push({ host: String(h), port: defaultPort });
 			} catch {}
 			// Common fallbacks
@@ -1415,7 +1411,7 @@ function connectHmr() {
 				hasOpenedHmrSocket = true;
 				awaitingHealthyHmrMessage = true;
 				try {
-					(globalThis as any).__NS_HMR_CLIENT_SOCKET_READY__ = true;
+					globalThis.__NS_HMR_CLIENT_SOCKET_READY__ = true;
 				} catch {}
 				if (connectionOverlayVisible) {
 					showConnectionOverlayNow('synchronizing', 'Connected. Synchronizing the HMR graph.');
@@ -1437,7 +1433,7 @@ function connectHmr() {
 			sock.onclose = (ev: any) => {
 				clearTimeout(timeout);
 				try {
-					(globalThis as any).__NS_HMR_CLIENT_SOCKET_READY__ = false;
+					globalThis.__NS_HMR_CLIENT_SOCKET_READY__ = false;
 				} catch {}
 				if (!opened) {
 					// immediate failure during connect → try another candidate
@@ -1521,7 +1517,7 @@ async function handleHmrMessage(ev: any) {
 			//    boot is "complete" but we still shouldn't re-import — all modules were
 			//    just loaded fresh. Only re-import on subsequent full-graphs (reconnect
 			//    scenarios) where prevGraph already has entries.
-			if (!(globalThis as any).__NS_HMR_BOOT_COMPLETE__) {
+			if (!globalThis.__NS_HMR_BOOT_COMPLETE__) {
 				if (VERBOSE) console.info('[hmr][full-graph] skipping initial re-import (boot in progress)');
 				const fullIds = Array.isArray(msg.modules) ? msg.modules.map((m: any) => m?.id).filter(Boolean) : [];
 				notifyAppHmrUpdate('full-graph', fullIds);
@@ -1670,7 +1666,7 @@ async function handleHmrMessage(ev: any) {
 				// runtime's `[import.meta.hot] dispatch summary` line carries
 				// the per-event match-count diagnostic.
 				try {
-					const dispatch = (globalThis as any).__NS_DISPATCH_HOT_EVENT__;
+					const dispatch = globalThis.__NS_DISPATCH_HOT_EVENT__;
 					if (typeof dispatch === 'function') {
 						dispatch(msg.event, msg.data);
 					} else {
@@ -1849,7 +1845,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 	const tStart = Date.now();
 	// Guard against re-entrant or rapid successive resets
 	try {
-		(globalThis as any).__NS_DEV_RESET_IN_PROGRESS__ = true;
+		globalThis.__NS_DEV_RESET_IN_PROGRESS__ = true;
 	} catch {}
 	try {
 		ensureCoreAliasesOnGlobalThis();
@@ -2016,7 +2012,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 	let hadPlaceholder = false;
 	let isIOS = false;
 	try {
-		hadPlaceholder = !!(globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
+		hadPlaceholder = !!globalThis.__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
 	} catch {}
 	try {
 		const AppAny: any = getCore('Application') || (globalThis as any).Application;
@@ -2141,7 +2137,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 		App2.resetRootView(entry as any);
 		// After authoritative reset, it's safe to detach the early placeholder launch handler
 		try {
-			const restore = (globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__;
+			const restore = globalThis.__NS_DEV_RESTORE_PLACEHOLDER__;
 			if (typeof restore === 'function') {
 				restore();
 			}
@@ -2155,7 +2151,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 		return false;
 	} finally {
 		try {
-			(globalThis as any).__NS_DEV_RESET_IN_PROGRESS__ = false;
+			globalThis.__NS_DEV_RESET_IN_PROGRESS__ = false;
 		} catch {}
 	}
 }
@@ -2166,7 +2162,7 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 	}
 	if (VERBOSE) console.log('[hmr-client] Initializing HMR client', getHMRWsUrl() ? `(ws: ${getHMRWsUrl()})` : '');
 	// Prevent duplicate client initialization across re-evaluations
-	const g: any = globalThis as any;
+	const g = globalThis;
 	if (g.__NS_HMR_CLIENT_ACTIVE__) {
 		if (VERBOSE) console.log('[hmr-client] HMR client already active; skipping duplicate init');
 		return;
@@ -2180,7 +2176,7 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 		connectHmr();
 	} else {
 		const waitForBoot = () => {
-			if ((globalThis as any).__NS_HMR_BOOT_COMPLETE__) {
+			if (globalThis.__NS_HMR_BOOT_COMPLETE__) {
 				if (VERBOSE) console.log('[hmr-client] boot complete, connecting HMR WebSocket');
 				connectHmr();
 			} else {

@@ -182,7 +182,7 @@ export function getGraphVersion(): number {
 export function setGraphVersion(version: number) {
 	graphVersion = version;
 	try {
-		(globalThis as any).__NS_HMR_GRAPH_VERSION__ = version;
+		globalThis.__NS_HMR_GRAPH_VERSION__ = version;
 	} catch {}
 }
 export const graph = new Map<string, HmrGraphModule>();
@@ -236,7 +236,7 @@ export function deriveHttpOrigin(wsUrl: string | undefined) {
 // devices.
 export function hasExplicitEviction(): boolean {
 	try {
-		return typeof (globalThis as any).__nsInvalidateModules === 'function';
+		return typeof globalThis.__nsInvalidateModules === 'function';
 	} catch {
 		return false;
 	}

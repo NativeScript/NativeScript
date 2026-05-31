@@ -1,8 +1,3 @@
-declare const __NS_ENV_VERBOSE__: boolean | undefined;
-declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
-declare const __NS_HMR_PROGRESS_OVERLAY_ENABLED__: boolean | undefined;
-declare const __NS_HMR_KICKSTART_MAX_URLS__: number | undefined;
-
 type GetCoreFn = (name: string) => any;
 
 // HMR-applying progress overlay.
@@ -41,7 +36,7 @@ const overlayEnabled: boolean = (() => {
 function getHmrOverlayApi(): any {
 	if (!overlayEnabled) return null;
 	try {
-		return (globalThis as any).__NS_HMR_DEV_OVERLAY__ || null;
+		return globalThis.__NS_HMR_DEV_OVERLAY__ || null;
 	} catch {}
 	return null;
 }
@@ -88,7 +83,7 @@ const envVerbose: boolean = (() => {
 })();
 
 export function installAngularHmrClientHooks(): void {
-	const g: any = globalThis;
+	const g = globalThis;
 	if (g.__NS_ANGULAR_HMR_CLIENT_INSTALLED__) {
 		return;
 	}
@@ -526,7 +521,7 @@ export function shouldRunKickstart(urlCount: number, maxUrls: number = kickstart
 
 function kickstartHmrPrefetch(urls: readonly string[], verbose: boolean): KickstartResult | null {
 	if (!urls || !urls.length) return null;
-	const g: any = globalThis;
+	const g = globalThis;
 	const fn = g.__nsKickstartHmrPrefetch;
 	if (typeof fn !== 'function') {
 		if (verbose && envVerbose) {
@@ -579,7 +574,7 @@ function getAngularBootstrapEntryCandidates(msg: any): string[] {
 }
 
 async function importAngularBootstrapEntry(url: string): Promise<unknown> {
-	const g: any = globalThis;
+	const g = globalThis;
 	if (typeof g.__NS_HMR_IMPORT__ === 'function') {
 		return g.__NS_HMR_IMPORT__(url);
 	}
@@ -587,7 +582,7 @@ async function importAngularBootstrapEntry(url: string): Promise<unknown> {
 }
 
 export async function refreshAngularBootstrapOptions(msg: any, options: AngularUpdateOptions): Promise<void> {
-	const g: any = globalThis;
+	const g = globalThis;
 	if (typeof g.__NS_UPDATE_ANGULAR_APP_OPTIONS__ !== 'function') {
 		return;
 	}
@@ -924,7 +919,7 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 		// Vite-spec error event — fires on any HMR cycle that throws.
 		// Payload shape mirrors Vite's `ErrorPayload`: `err: { message,
 		// stack? }` plus optional `path`. Soft-fails if no listeners.
-		dispatchHotEvent(globalThis as any, 'vite:error', {
+		dispatchHotEvent(globalThis, 'vite:error', {
 			type: 'error',
 			err: {
 				message: errorMessage,

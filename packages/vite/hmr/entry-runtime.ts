@@ -26,10 +26,8 @@ type TaggedCssApi = { add?: TaggedCssAdd; remove?: TaggedCssRemove };
 // boot-time selectors instead of stacking on top of them.
 export const APP_CSS_TAG = 'app.css';
 
-declare const __NS_APP_ROOT_VIRTUAL__: string;
-
 function resolveTaggedCssApi(coreModule: any): TaggedCssApi {
-	const candidates: any[] = [coreModule, coreModule?.default, globalThis as any];
+	const candidates: any[] = [coreModule, coreModule?.default, globalThis];
 	for (const candidate of candidates) {
 		if (!candidate) continue;
 		const add = candidate.addTaggedAdditionalCSS;
@@ -43,7 +41,7 @@ function resolveTaggedCssApi(coreModule: any): TaggedCssApi {
 
 function updateBootOverlay(stage: string, info?: any): void {
 	try {
-		const api = (globalThis as any).__NS_HMR_DEV_OVERLAY__;
+		const api = globalThis.__NS_HMR_DEV_OVERLAY__;
 		if (api && typeof api.setBootStage === 'function') {
 			api.setBootStage(stage, info);
 		}
@@ -56,7 +54,7 @@ async function updateBootOverlayAndYield(stage: string, info?: any): Promise<voi
 }
 
 function prepareBootImportProgress(url: string, attempt: number, attempts: number): void {
-	const g = globalThis as any;
+	const g = globalThis;
 	g.__NS_HMR_BOOT_MAIN_URL__ = url;
 	g.__NS_HMR_BOOT_MAIN_ATTEMPT__ = attempt;
 	g.__NS_HMR_BOOT_MAIN_ATTEMPTS__ = attempts;
@@ -80,7 +78,7 @@ function clearBootImportProgress(): void {
 }
 
 function buildBootImportDetail(url: string): string {
-	const g = globalThis as any;
+	const g = globalThis;
 	const count = Number(g.__NS_HMR_BOOT_MODULE_COUNT__ || 0);
 	const lastModule = typeof g.__NS_HMR_BOOT_LAST_MODULE__ === 'string' ? g.__NS_HMR_BOOT_LAST_MODULE__ : '';
 	const lines = [count > 0 ? `Evaluated ${count} modules` : 'Resolving the module graph'];
@@ -95,7 +93,7 @@ function buildBootImportDetail(url: string): string {
 // first-byte. Keep the formula in sync with `boot-progress.ts` —
 // `boot-progress.spec.ts` pins the canonical values.
 function computeBootImportProgress(): number {
-	const g = globalThis as any;
+	const g = globalThis;
 	const count = Number(g.__NS_HMR_BOOT_MODULE_COUNT__ || 0);
 	const startedAt = Number(g.__NS_HMR_BOOT_IMPORT_STARTED_AT__ || Date.now());
 	const elapsedMs = Math.max(0, Date.now() - startedAt);
@@ -115,7 +113,7 @@ function startBootImportHeartbeat(url: string, attempt: number, attempts: number
 	// 250 ms cadence matches `session-bootstrap.ts::startBootImportHeartbeat`
 	// so both boot paths feel equally responsive.
 	const timer = setInterval(() => {
-		const g = globalThis as any;
+		const g = globalThis;
 		if (g.__NS_HMR_BOOT_COMPLETE__) {
 			return;
 		}
@@ -267,9 +265,9 @@ async function fetchCodeframe(u: string, line?: number) {
 			const num = String(i).padStart(4, ' ');
 			context += `${mark}${num}: ${lines[i - 1]}\n`;
 		}
-		if ((globalThis as any).__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag]', u === (globalThis as any).__NS_ENTRY_LAST_TARGET__ ? 'sanitized' : 'raw', hash ? `(hash ${hash})` : '', '\n' + context);
+		if (globalThis.__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag]', u === globalThis.__NS_ENTRY_LAST_TARGET__ ? 'sanitized' : 'raw', hash ? `(hash ${hash})` : '', '\n' + context);
 	} catch (fe: any) {
-		if ((globalThis as any).__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag] fetch failed', u, fe && (fe.message || fe));
+		if (globalThis.__NS_ENV_VERBOSE__) console.warn('[ns-entry][diag] fetch failed', u, fe && (fe.message || fe));
 	}
 }
 
@@ -282,7 +280,7 @@ export default async function startEntry(opts: EntryOpts) {
 	if (VERBOSE) console.log(D, 'startEntry called', { origin: ORIGIN, main: MAIN, ver: VER });
 	// Announce chosen origin globally for any consumers (e.g., HMR client or helpers)
 	try {
-		(globalThis as any).__NS_HTTP_ORIGIN__ = ORIGIN;
+		globalThis.__NS_HTTP_ORIGIN__ = ORIGIN;
 	} catch {}
 
 	// Module-local trace snapshot
@@ -307,8 +305,8 @@ export default async function startEntry(opts: EntryOpts) {
 		// imports (plus the style-scope preload) are independent HTTP GETs. We
 		// fire them in parallel so the boot path is bounded by the slowest
 		// payload rather than the sum.
-		const configureRuntime = (globalThis as any).__nsConfigureRuntime;
-		const g: any = globalThis as any;
+		const configureRuntime = globalThis.__nsConfigureRuntime;
+		const g = globalThis;
 		const importMapPromise: Promise<void> = (async () => {
 			if (typeof configureRuntime !== 'function') {
 				if (VERBOSE) {
@@ -418,7 +416,7 @@ export default async function startEntry(opts: EntryOpts) {
 		const MAIN_URL = ORIGIN + '/ns/m' + MAIN + '?v=' + VER;
 		const MAIN_IMPORT_URL = ORIGIN + '/ns/m/__ns_boot__/b1' + MAIN + '?v=' + VER;
 		if (VERBOSE) console.log(D, 'importing main module:', MAIN_URL);
-		(globalThis as any).__NS_ENTRY_LAST_TARGET__ = MAIN_IMPORT_URL; // used by fetchCodeframe sanitized-vs-raw tag
+		globalThis.__NS_ENTRY_LAST_TARGET__ = MAIN_IMPORT_URL; // used by fetchCodeframe sanitized-vs-raw tag
 		const t_main = Date.now();
 		let lastMainErr: any = null;
 		for (let attempt = 0; attempt < 6; attempt++) {
@@ -452,12 +450,12 @@ export default async function startEntry(opts: EntryOpts) {
 		await updateBootOverlayAndYield('waiting-for-app', {
 			detail: 'Waiting for the real application root to replace the boot placeholder.',
 		});
-		(globalThis as any).__NS_ENTRY_OK__ = true;
+		globalThis.__NS_ENTRY_OK__ = true;
 		updateBootOverlay('ready', {
 			detail: 'HTTP HMR boot is ready. The app root should take over now.',
 		});
 		if (VERBOSE) console.log(D, '__NS_HMR_BOOT_COMPLETE__ = true');
-		(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = true;
+		globalThis.__NS_HMR_BOOT_COMPLETE__ = true;
 
 		// Belt-and-suspenders: kick off the placeholder finalize poll now. The
 		// `Application.resetRootView` wrapper (installed by `installRootPlaceholder`
@@ -529,14 +527,14 @@ export default async function startEntry(opts: EntryOpts) {
 		clearBootImportProgress();
 		const errInfo = { message: String(e && (e.message || e)), stack: e && e.stack ? String(e.stack) : '' };
 		const loc = parseStackUrlLineCol(e);
-		const TARGET = loc.url || (globalThis as any).__NS_ENTRY_LAST_TARGET__;
+		const TARGET = loc.url || globalThis.__NS_ENTRY_LAST_TARGET__;
 		(errInfo as any).url = loc.url;
 		(errInfo as any).line = loc.line;
 		(errInfo as any).column = loc.column;
 		updateBootOverlay('error', {
 			detail: errInfo.message,
 		});
-		(globalThis as any).__NS_ENTRY_ERROR__ = errInfo;
+		globalThis.__NS_ENTRY_ERROR__ = errInfo;
 		TRACE.error = errInfo;
 		console.error('[ns-entry] failed to import main via HTTP', errInfo.message);
 		if (errInfo.stack && VERBOSE) console.error(errInfo.stack);
@@ -549,13 +547,13 @@ export default async function startEntry(opts: EntryOpts) {
 			for (const u of urls) await fetchCodeframe(u, loc.line);
 			if (VERBOSE) console.info('[ns-entry][diag] Tip: append ?raw=1 to /ns/m, /ns/sfc, or /ns/asm URLs to compare raw vs sanitized output.');
 		} catch {}
-		(globalThis as any).__NS_ENTRY_OK__ = false;
+		globalThis.__NS_ENTRY_OK__ = false;
 		// Re-throw so the HTTP bootloader can try other origin candidates.
 		throw e;
 	} finally {
 		try {
 			TRACE.t1 = Date.now();
-			(globalThis as any).__NS_ENTRY_TRACE__ = TRACE;
+			globalThis.__NS_ENTRY_TRACE__ = TRACE;
 			// Always print a concise, human-readable boot timeline so anyone
 			// investigating perf can see before/after numbers without flipping
 			// the verbose flag. Verbose mode still gets the full JSON dump.

@@ -1,16 +1,12 @@
 import { deriveHttpOrigin, getCore, getCurrentApp, getGraphVersion, getHMRWsUrl, getHttpOriginForVite, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
 
-// satisfied by define replacement
-declare const __NS_ENV_VERBOSE__: boolean | undefined;
-declare const __NS_APP_ROOT_VIRTUAL__: string | undefined;
-
 const APP_VIRTUAL_WITH_SLASH = (() => {
 	const root = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
 	return root.replace(/\/+$/, '') + '/';
 })();
 
 // Optional runtime knob: allow disabling assembler path in favor of variant-only flow
-const DISABLE_ASM: boolean = !!(globalThis as any).__NS_HMR_DISABLE_ASM__;
+const DISABLE_ASM: boolean = !!globalThis.__NS_HMR_DISABLE_ASM__;
 
 // Module-scoped state to avoid leaking into globalThis
 let nsVueInitDone = false; // nativescript-vue init guard
@@ -55,7 +51,7 @@ export function installNsVueDevShims() {
 					console.warn('[diag][nv][navigateTo][error]', (e && (e as any).message) || e);
 					try {
 						// Rescue path: attempt navigation via authoritative app Frame
-						return ((globalThis as any).__nsNavigateUsingApp as any)?.(component, params);
+						return (globalThis.__nsNavigateUsingApp as any)?.(component, params);
 					} catch {}
 					throw e;
 				}
@@ -88,7 +84,7 @@ export function ensureVueGlobals() {
 		const g: any = globalThis;
 		const vueAlready = g.defineComponent && g.resolveComponent && g.createVNode;
 		const req: any = (globalThis as any).__nsVendorRegistry?.get ? (globalThis as any).__nsVendorRequire || (globalThis as any).__nsRequire || (globalThis as any).require : (globalThis as any).__nsRequire || (globalThis as any).require;
-		const registry: Map<string, any> | undefined = (globalThis as any).__nsVendorRegistry;
+		const registry: Map<string, any> | undefined = globalThis.__nsVendorRegistry;
 		let nvMod: any = null;
 		let vueMod: any = null;
 		// Prefer nativescript-vue first so createApp has .start and NSVRoot is available
@@ -446,7 +442,7 @@ function installBuiltInComponentsOnApp(app: any) {
 // regardless of which module copy a component imports.
 async function syncPiniaAcrossEsm(app: any) {
 	try {
-		const g: any = globalThis as any;
+		const g = globalThis;
 		const piniaInst = g.__NS_HMR_PINIA__ || app?._context?.provides?.pinia;
 		if (!piniaInst) return;
 		// Resolve Pinia from ESM world and set active
@@ -679,7 +675,7 @@ function resolveSfcAssemblerSpec(id: string, cacheBustTag?: string): string {
 	const ver = typeof getGraphVersion() === 'number' && getGraphVersion() > 0 ? String(getGraphVersion()) : '0';
 	let url = origin + `/ns/asm/${ver}` + `?path=${encodeURIComponent(safePath)}`;
 	try {
-		if ((globalThis as any).__NS_HMR_ASM_DIAG__) {
+		if (globalThis.__NS_HMR_ASM_DIAG__) {
 			url += '&diag=1';
 		}
 	} catch {}
@@ -941,7 +937,7 @@ export function getRootForVue(
 	if (!RootCtor) throw new Error('NSVRoot constructor unavailable during HMR remount');
 	let app: any;
 	try {
-		const mk = (globalThis as any).__NS_HMR_CREATE_APP__;
+		const mk = globalThis.__NS_HMR_CREATE_APP__;
 		if (typeof mk === 'function') {
 			app = mk(newComponent);
 			if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] app created via custom factory');
@@ -984,7 +980,7 @@ export function getRootForVue(
 		} catch {}
 	} catch {}
 	try {
-		const hook = (globalThis as any).__NS_HMR_INSTALL_PLUGINS__;
+		const hook = globalThis.__NS_HMR_INSTALL_PLUGINS__;
 		if (typeof hook === 'function') {
 			hook(app);
 			if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] plugins installed');
