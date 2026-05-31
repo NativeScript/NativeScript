@@ -4,6 +4,8 @@ import os from 'os';
 import * as path from 'path';
 
 import { angularServerStrategy } from './strategy.js';
+import { prepareAngularEntryForDevice } from '../../../server/rewrite-imports.js';
+import type { FrameworkServedModuleContext } from '../../../server/framework-strategy.js';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 
 const APP_ENTRY = getProjectAppVirtualPath('main.ts');
@@ -16,6 +18,25 @@ describe('angularServerStrategy', () => {
 		expect(angularServerStrategy.matchesFile(getProjectAppVirtualPath('main.spec.ts'))).toBe(false);
 		expect(angularServerStrategy.matchesFile(`${getProjectAppVirtualPath('main.test.ts')}?import`)).toBe(false);
 		expect(angularServerStrategy.matchesFile(getProjectAppVirtualPath('__tests__/main.ts'))).toBe(false);
+	});
+
+	it('rewriteServedModule routes the /ns/m rewrite through the register-only Angular entry pass', () => {
+		const ctx: FrameworkServedModuleContext = {
+			moduleId: '/src/main.ts',
+			sfcFileMap: new Map(),
+			depFileMap: new Map(),
+			projectRoot: '/proj',
+			serverOrigin: 'http://localhost:5173',
+			verbose: false,
+		};
+		// Representative Angular entry: bootstrapApplication + a relative import the
+		// shared rewriteImports pass rewrites before the register-only transform runs.
+		const code = ["import { AppComponent } from './app.component';", 'bootstrapApplication(AppComponent);'].join('\n');
+
+		// The hook must be byte-identical to calling prepareAngularEntryForDevice
+		// with httpOrigin = serverOrigin and resolveVendorAsHttp = true — the exact
+		// arguments the inline `/ns/m` angular fork used before P2-A4.
+		expect(angularServerStrategy.rewriteServedModule!(code, ctx)).toBe(prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true));
 	});
 
 	it('builds the Angular registry without priming or watching test files', async () => {

@@ -18,18 +18,29 @@ describe('FrameworkServerStrategy contract', () => {
 		}
 	});
 
-	it('P2-A1 hooks are optional and unimplemented today, so the shared defaults stay active', () => {
+	it('P2-A4 routes served-module transforms to their owning strategy; later-phase hooks stay unwired', () => {
 		for (const strategy of REGISTRY) {
+			// Not wired yet: handleHotUpdate → P2-A3; the remaining hooks → P2-A5.
 			expect(strategy.handleHotUpdate).toBeUndefined();
-			expect(strategy.rewriteServedModule).toBeUndefined();
-			expect(strategy.transformNodeModule).toBeUndefined();
 			expect(strategy.processSfcCode).toBeUndefined();
 			expect(strategy.registerRoutes).toBeUndefined();
 			expect(strategy.importMapEntries).toBeUndefined();
 			expect(strategy.volatilePatterns).toBeUndefined();
-			// Flag absent ⇒ falsy ⇒ today's `broadcastDelta = true` (TS/Vue) path.
+			// deferDeltaBroadcast (P2-A3) absent ⇒ falsy ⇒ today's broadcastDelta=true (TS/Vue) path.
 			expect(strategy.deferDeltaBroadcast ?? false).toBe(false);
 		}
+		// P2-A4 (wired): only Angular overrides the `/ns/m` served-module rewrite
+		// (register-only entry pass); only Solid patches served node_modules
+		// (`@solid-refresh`). Every other flavor keeps the shared rewriteImports
+		// default / identity transformNodeModule.
+		expect(typeof angularServerStrategy.rewriteServedModule).toBe('function');
+		expect(typeof solidServerStrategy.transformNodeModule).toBe('function');
+		expect(typescriptServerStrategy.rewriteServedModule).toBeUndefined();
+		expect(vueServerStrategy.rewriteServedModule).toBeUndefined();
+		expect(solidServerStrategy.rewriteServedModule).toBeUndefined();
+		expect(typescriptServerStrategy.transformNodeModule).toBeUndefined();
+		expect(vueServerStrategy.transformNodeModule).toBeUndefined();
+		expect(angularServerStrategy.transformNodeModule).toBeUndefined();
 	});
 
 	it('a strategy can implement every P2-A1 hook with the declared types', () => {

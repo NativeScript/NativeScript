@@ -126,8 +126,11 @@ export interface FrameworkServerStrategy {
 	/**
 	 * Patch a served `node_modules` module before device delivery (e.g. Solid's
 	 * inline `@solid-refresh` patch). Defaults to identity (code unchanged).
+	 * `verbose` mirrors the `/ns/m` plugin's `verbose` option and gates the
+	 * server-side diagnostics the inline patch emitted today (the device process
+	 * sets `globalThis.__NS_ENV_VERBOSE__`, but the Node server never does).
 	 */
-	transformNodeModule?(code: string, moduleId: string): string;
+	transformNodeModule?(code: string, moduleId: string, verbose?: boolean): string;
 
 	/**
 	 * Framework SFC post-processing (Vue). Defaults to identity. Mirrors the

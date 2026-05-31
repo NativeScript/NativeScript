@@ -1,8 +1,9 @@
-import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
+import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServedModuleContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
 import * as path from 'path';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import * as PAT from '../../../server/constants.js';
 import { linkAngularPartialsIfNeeded } from './linker.js';
+import { prepareAngularEntryForDevice } from '../../../server/rewrite-imports.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
 import { stripJsComments } from '../build/util.js';
@@ -69,6 +70,13 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
 	// identity: Angular runtime imports go through the vendor bridge and there are
 	// no Angular-specific HTTP endpoints to version.
+	//
+	// Override the `/ns/m` served-module rewrite: Angular entries need the
+	// register-only entry-preparation pass (`prepareAngularEntryForDevice`)
+	// instead of the shared `rewriteImports` default the other flavors use.
+	rewriteServedModule(code: string, ctx: FrameworkServedModuleContext): string {
+		return prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true);
+	},
 	async processFile(ctx: FrameworkProcessFileContext) {
 		// Ensure any Angular code the HMR server assembles for HTTP consumption is fully linked.
 		const { filePath, server, verbose } = ctx;
