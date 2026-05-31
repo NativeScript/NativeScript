@@ -14,6 +14,7 @@ import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModul
 import { assertNoOptimizedArtifacts, buildBootProgressSnippet, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, prepareAngularEntryForDevice, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
+import { getServerOrigin } from './server-origin.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 
 const babelTraverse: any = (traverse as any)?.default || (traverse as any);
@@ -34,7 +35,6 @@ export interface RegisterNsModuleServerRouteOptions {
 	depFileMap: Map<string, string>;
 	getGraphVersion(): number;
 	getStrategy(): FrameworkServerStrategy;
-	getServerOrigin(server: ViteDevServer): string;
 	sharedTransformRequest: SharedTransformRequestFn;
 	ensureInitialGraphPopulationStarted(server: ViteDevServer): void;
 	upsertGraphModule: UpsertGraphModuleFn;
@@ -56,7 +56,6 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			const APP_VIRTUAL_WITH_SLASH = options.appVirtualWithSlash;
 			const sfcFileMap = options.sfcFileMap;
 			const depFileMap = options.depFileMap;
-			const getServerOrigin = options.getServerOrigin;
 			const sharedTransformRequest = options.sharedTransformRequest;
 			const ensureInitialGraphPopulationStarted = options.ensureInitialGraphPopulationStarted;
 			const strategy = options.getStrategy();

@@ -13,6 +13,7 @@ import { NS_NATIVE_TAGS } from './compiler.js';
 import { ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports } from './websocket-served-module-helpers.js';
 import { processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
+import { getServerOrigin } from './server-origin.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
 import { compileScript, compileTemplate, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 
@@ -69,7 +70,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			// Warm Vite's transform cache for the full-SFC URL; result is unused (the
 			// assembler reads the SFC from disk and compiles it inline below).
 			await safeTransform(base + '?vue');
-			const origin = options.getServerOrigin(server);
+			const origin = getServerOrigin(server);
 			const ver = String(verFromPath || options.getGraphVersion() || Date.now());
 			const scriptUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=script`;
 			const templateCode = templateR?.code || '';
@@ -405,7 +406,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 						// Removed redundant render closure heal that could inject an extra '}' before component script.
 						// Rewrite any remaining imports (e.g., relative app paths) to HTTP ESM endpoints
 						try {
-							inlineCode2 = rewriteImports(inlineCode2, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
+							inlineCode2 = rewriteImports(inlineCode2, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, getServerOrigin(server));
 						} catch {}
 						// Final TS strip on the whole assembled module (safety net)
 						try {
@@ -545,7 +546,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 						} catch {}
 						// Bust device cache for runtime bridge so helpers are always current for this graph version
 						try {
-							const origin = options.getServerOrigin(server);
+							const origin = getServerOrigin(server);
 							inlineCode2 = ensureVersionedRtImports(inlineCode2, origin, Number(ver));
 							inlineCode2 = strategy.ensureVersionedImports?.(inlineCode2, origin, Number(ver)) ?? inlineCode2;
 						} catch {}
@@ -641,14 +642,14 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			// Run full device processing so helper aliasing and globals are consistent in this path too
 			let code = REQUIRE_GUARD_SNIPPET + asm;
 			code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(base), base);
-			code = rewriteImports(code, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
+			code = rewriteImports(code, base, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, getServerOrigin(server));
 			try {
 				code = ensureDestructureCoreImports(code);
 			} catch {}
 			code = ensureVariableDynamicImportHelper(code);
 			code = ensureGuardPlainDynamicImports(code);
 			try {
-				const origin = options.getServerOrigin(server);
+				const origin = getServerOrigin(server);
 				code = ensureVersionedRtImports(code, origin, Number(ver));
 				code = strategy.ensureVersionedImports?.(code, origin, Number(ver)) ?? code;
 			} catch {}

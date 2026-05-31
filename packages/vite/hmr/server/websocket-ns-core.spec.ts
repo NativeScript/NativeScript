@@ -44,7 +44,6 @@ function mount(overrides: Partial<RegisterNsCoreRouteOptions> = {}) {
 	} as any;
 	const options: RegisterNsCoreRouteOptions = {
 		getGraphVersion: () => 0,
-		getServerOrigin: () => 'http://localhost:5173',
 		sharedTransformRequest,
 		...overrides,
 	};

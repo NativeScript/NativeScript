@@ -1,6 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { handleNsHotUpdate, type NsHotUpdateContext } from './websocket-hot-update.js';
+import * as serverOriginModule from './server-origin.js';
+
+let originSpy: ReturnType<typeof vi.spyOn>;
 
 type FakeClient = { readyState: number; send: ReturnType<typeof vi.fn> };
 
@@ -38,7 +41,6 @@ function makeDeps(overrides: Partial<NsHotUpdateContext> = {}) {
 		collectImportDependencies: () => new Set<string>(),
 		rewriteImports: (code: string) => code,
 		cleanCode: (code: string) => code,
-		getServerOrigin: vi.fn(() => 'http://test:5173'),
 		getHmrSourceRootsCached: () => ['/app/src'],
 		getBootstrapEntryRelPath: () => '/app/src/main.ts',
 		isSocketClientOpen: (client: any) => !!client && client.readyState === 1,
@@ -68,6 +70,16 @@ function makeCtx(file: string, serverOverrides: Record<string, unknown> = {}) {
 }
 
 describe('handleNsHotUpdate', () => {
+	// handleNsHotUpdate imports getServerOrigin directly; spy via the module (the
+	// proven ESM seam — see server-origin-platform.spec.ts) to assert the
+	// origin-baking path runs (or is skipped) and to bake a deterministic origin.
+	beforeEach(() => {
+		originSpy = vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+	});
+	afterEach(() => {
+		originSpy.mockRestore();
+	});
+
 	it('is an async function', () => {
 		expect(typeof handleNsHotUpdate).toBe('function');
 		const deps = makeDeps();
@@ -78,19 +90,19 @@ describe('handleNsHotUpdate', () => {
 	it('returns early without broadcasting when wss is null', async () => {
 		const deps = makeDeps({ wss: null });
 		await handleNsHotUpdate(makeCtx('/app/src/foo.ts'), deps);
-		expect(deps.getServerOrigin).not.toHaveBeenCalled();
+		expect(originSpy).not.toHaveBeenCalled();
 	});
 
 	it('ignores runtime-graph-excluded paths (e.g. *.spec.*) before any broadcast', async () => {
 		const deps = makeDeps();
 		await handleNsHotUpdate(makeCtx('/app/src/foo.spec.ts'), deps);
-		expect(deps.getServerOrigin).not.toHaveBeenCalled();
+		expect(originSpy).not.toHaveBeenCalled();
 	});
 
 	it('ignores changes outside the HMR source scope', async () => {
 		const deps = makeDeps({ getHmrSourceRootsCached: () => ['/app/src'] });
 		await handleNsHotUpdate(makeCtx('/somewhere/else/foo.ts'), deps);
-		expect(deps.getServerOrigin).not.toHaveBeenCalled();
+		expect(originSpy).not.toHaveBeenCalled();
 	});
 
 	it('logs the ignored-change reason when verbose and out of scope', async () => {
@@ -117,7 +129,7 @@ describe('handleNsHotUpdate', () => {
 		const pending = handleNsHotUpdate(makeCtx('/app/src/foo.ts'), deps);
 
 		expect(populationPromise).toHaveBeenCalled();
-		expect(deps.getServerOrigin).toHaveBeenCalledTimes(1);
+		expect(originSpy).toHaveBeenCalledTimes(1);
 		expect(openClient.send).toHaveBeenCalledTimes(1);
 		expect(closedClient.send).not.toHaveBeenCalled();
 		const payload = String(openClient.send.mock.calls[0][0]);

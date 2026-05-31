@@ -2,10 +2,10 @@ import type { ViteDevServer } from 'vite';
 
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { getServerOrigin } from './server-origin.js';
 
 export interface RegisterVendorUnifierHandlerOptions {
 	getGraphVersion(): number;
-	getServerOrigin(server: ViteDevServer): string;
 	getStrategy(): FrameworkServerStrategy;
 }
 
@@ -42,7 +42,7 @@ export function registerVendorUnifierHandler(server: ViteDevServer, options: Reg
 			if (!transformed?.code) return next();
 
 			const strategy = options.getStrategy();
-			const rewritten = maybeRewriteVendorModule(transformed.code, strategy, options.getServerOrigin(server), options.getGraphVersion());
+			const rewritten = maybeRewriteVendorModule(transformed.code, strategy, getServerOrigin(server), options.getGraphVersion());
 			if (rewritten === transformed.code) return next();
 
 			setDeviceModuleHeaders(res);

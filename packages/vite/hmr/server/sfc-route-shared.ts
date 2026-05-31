@@ -1,5 +1,4 @@
 import { createRequire } from 'node:module';
-import type { ViteDevServer } from 'vite';
 
 import traverse from '@babel/traverse';
 
@@ -8,9 +7,10 @@ import type { FrameworkServerStrategy } from './framework-strategy.js';
 
 /**
  * Plugin-closure dependencies the SFC route handlers need. The pure transform
- * functions (`cleanCode`, `processCodeForDevice`, `rewriteImports`) are imported
- * directly from `websocket-device-transform.ts`; only genuine plugin state is
- * injected here.
+ * functions (`cleanCode`, `processCodeForDevice`, `rewriteImports`) and the
+ * device-origin resolver (`getServerOrigin`) are imported directly (from
+ * `websocket-device-transform.ts` / `server-origin.ts`); only genuine plugin
+ * state is injected here.
  */
 export interface RegisterSfcHandlersOptions {
 	verbose: boolean;
@@ -19,7 +19,6 @@ export interface RegisterSfcHandlersOptions {
 	depFileMap: Map<string, string>;
 	getGraphVersion(): number;
 	getStrategy(): FrameworkServerStrategy;
-	getServerOrigin(server: ViteDevServer): string;
 }
 
 // Babel/Vue-compiler singletons shared by the SFC route modules (serve + assemble).

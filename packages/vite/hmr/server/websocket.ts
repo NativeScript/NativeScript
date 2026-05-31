@@ -14,7 +14,6 @@ import { angularServerStrategy } from '../frameworks/angular/server/strategy.js'
 import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
 import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
-import { getServerOrigin } from './server-origin.js';
 import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
@@ -614,7 +613,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				depFileMap,
 				getGraphVersion: () => moduleGraph.version,
 				getStrategy: () => strategy,
-				getServerOrigin,
 				sharedTransformRequest,
 				ensureInitialGraphPopulationStarted,
 				upsertGraphModule: (id, code, deps, opts) => {
@@ -627,12 +625,11 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 
 			// 2.55) Dev-only vendor import unifier: rewrite 'vue'/'nativescript-vue' to /ns/rt/<ver>
 			// so plugins and the app share a single Vue/NativeScript-Vue realm. See websocket-vendor-unifier.ts.
-			registerVendorUnifierHandler(server, { getGraphVersion: () => moduleGraph.version, getServerOrigin, getStrategy: () => strategy });
+			registerVendorUnifierHandler(server, { getGraphVersion: () => moduleGraph.version, getStrategy: () => strategy });
 
 			// 2.6) @nativescript/core device bridge (+ stray /node_modules/@nativescript/core redirect) — see websocket-ns-core.ts
 			registerNsCoreRoute(server, {
 				getGraphVersion: () => moduleGraph.version,
-				getServerOrigin,
 				sharedTransformRequest,
 			});
 
@@ -643,7 +640,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				defaultMainEntry: DEFAULT_MAIN_ENTRY,
 				defaultMainEntryVirtual: DEFAULT_MAIN_ENTRY_VIRTUAL,
 				getGraphVersion: () => moduleGraph.version,
-				getServerOrigin,
 			});
 
 			// 2.6) Transactional HMR endpoint: GET /ns/txn/<ver> — one ESM that sequentially
@@ -668,7 +664,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				depFileMap,
 				getGraphVersion: () => moduleGraph.version,
 				getStrategy: () => strategy,
-				getServerOrigin,
 			});
 
 			wss.on('connection', async (ws) => {
@@ -751,7 +746,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				sfcFileMap,
 				depFileMap,
 				sharedTransformRequest,
-				getServerOrigin,
 				getHmrSourceRootsCached,
 				getBootstrapEntryRelPath,
 				isSocketClientOpen,

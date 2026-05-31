@@ -8,6 +8,7 @@ import babelCore from '@babel/core';
 import { getPackageJson, getProjectFilePath } from '../../helpers/project.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { getServerOrigin } from './server-origin.js';
 
 // Lazily loaded only for the source-tree fallback below (transform
 // entry-runtime.ts on the fly when the built .js isn't present).
@@ -28,7 +29,6 @@ export interface RegisterNsEntryRoutesOptions {
 	defaultMainEntry: string;
 	defaultMainEntryVirtual: string;
 	getGraphVersion(): number;
-	getServerOrigin(server: ViteDevServer): string;
 }
 
 /**
@@ -44,7 +44,6 @@ export function registerNsEntryRoutes(server: ViteDevServer, options: RegisterNs
 	const DEFAULT_MAIN_ENTRY = options.defaultMainEntry;
 	const DEFAULT_MAIN_ENTRY_VIRTUAL = options.defaultMainEntryVirtual;
 	const getGraphVersion = options.getGraphVersion;
-	const getServerOrigin = options.getServerOrigin;
 	// 2.6a) Serve compiled entry runtime module: GET /ns/entry-rt[?v=<ver>]
 	server.middlewares.use(async (req, res, next) => {
 		try {

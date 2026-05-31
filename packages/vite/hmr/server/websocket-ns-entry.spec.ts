@@ -1,6 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { registerNsEntryRoutes, type RegisterNsEntryRoutesOptions } from './websocket-ns-entry.js';
+import * as serverOriginModule from './server-origin.js';
+
+let originSpy: ReturnType<typeof vi.spyOn>;
 
 type FakeRes = {
 	statusCode: number;
@@ -36,23 +39,31 @@ type Handler = (req: any, res: any, next: any) => unknown;
 function mount(overrides: Partial<RegisterNsEntryRoutesOptions> = {}) {
 	const handlers: Handler[] = [];
 	const server = { middlewares: { use: (fn: Handler) => handlers.push(fn) } } as any;
-	const getServerOrigin = vi.fn(() => 'http://test:5173');
 	const options: RegisterNsEntryRoutesOptions = {
 		verbose: false,
 		appRootDir: 'app',
 		defaultMainEntry: 'app/app.ts',
 		defaultMainEntryVirtual: '/app/app.ts',
 		getGraphVersion: () => 7,
-		getServerOrigin,
 		...overrides,
 	};
 	registerNsEntryRoutes(server, options);
 	expect(handlers).toHaveLength(2);
 	const [entryRt, entry] = handlers;
-	return { entryRt, entry, getServerOrigin };
+	return { entryRt, entry, getServerOrigin: originSpy };
 }
 
 describe('registerNsEntryRoutes', () => {
+	// The route module imports getServerOrigin directly now; spy via the module
+	// (the proven ESM seam — see server-origin-platform.spec.ts) so the wrapper
+	// bakes a deterministic origin instead of a real platform lookup.
+	beforeEach(() => {
+		originSpy = vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+	});
+	afterEach(() => {
+		originSpy.mockRestore();
+	});
+
 	it('registers exactly two middlewares', () => {
 		mount();
 	});

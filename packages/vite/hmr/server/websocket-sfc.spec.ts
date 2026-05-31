@@ -45,7 +45,6 @@ function mount(overrides: Partial<RegisterSfcHandlersOptions> = {}) {
 		depFileMap: new Map(),
 		getGraphVersion: () => 0,
 		getStrategy: () => ({}) as any,
-		getServerOrigin: () => 'http://localhost:5173',
 		cleanCode: (code) => code,
 		processCodeForDevice: (code) => code,
 		rewriteImports: (code) => code,

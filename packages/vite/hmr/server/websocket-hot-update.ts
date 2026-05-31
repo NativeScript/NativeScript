@@ -1,4 +1,4 @@
-import type { ViteDevServer, HmrContext } from 'vite';
+import type { HmrContext } from 'vite';
 import type { WebSocketServer } from 'ws';
 import * as path from 'path';
 import { createHash } from 'crypto';
@@ -16,6 +16,7 @@ import { createHmrPendingMessage } from './websocket-hmr-pending.js';
 import type { AngularUpdateMessage, CssUpdateItem, CssUpdatesMessage, VueSfcRegistryUpdateMessage } from '../shared/protocol.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from './websocket-device-transform.js';
+import { getServerOrigin } from './server-origin.js';
 import { isSameAngularModuleRel, type BootstrapRootComponent } from './angular-root-component.js';
 
 /**
@@ -23,7 +24,8 @@ import { isSameAngularModuleRel, type BootstrapRootComponent } from './angular-r
  * instance state (`wss`, `moduleGraph`, the file maps, `sharedTransformRequest`)
  * or are plugin-closure accessors; the pure transform helpers (`cleanCode`,
  * `rewriteImports`, `processSfcCode`, `collectImportDependencies`) are imported
- * directly from `websocket-device-transform.ts`.
+ * directly from `websocket-device-transform.ts` (as is `getServerOrigin` from
+ * `server-origin.ts` — spy via the module in tests).
  */
 export interface NsHotUpdateContext {
 	wss: WebSocketServer | null;
@@ -33,7 +35,6 @@ export interface NsHotUpdateContext {
 	sfcFileMap: Map<string, string>;
 	depFileMap: Map<string, string>;
 	sharedTransformRequest: SharedTransformRequestRunner;
-	getServerOrigin: (server: ViteDevServer) => string;
 	getHmrSourceRootsCached: () => string[];
 	getBootstrapEntryRelPath: () => string;
 	isSocketClientOpen: (client: { readyState?: number; OPEN?: number } | null | undefined) => boolean;
@@ -59,7 +60,7 @@ export interface NsHotUpdateContext {
  * below is a faithful, behaviour-preserving move.
  */
 export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContext) {
-	const { wss, moduleGraph, strategy, verbose, sfcFileMap, depFileMap, sharedTransformRequest, getServerOrigin, getHmrSourceRootsCached, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
+	const { wss, moduleGraph, strategy, verbose, sfcFileMap, depFileMap, sharedTransformRequest, getHmrSourceRootsCached, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
 	const APP_ROOT_DIR = deps.appRootDir;
 	const graphInitialPopulationPromise = deps.getGraphInitialPopulationPromise();
 	const { file, server } = ctx;

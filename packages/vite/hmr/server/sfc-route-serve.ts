@@ -16,6 +16,7 @@ import { NS_NATIVE_TAGS } from './compiler.js';
 import { ensureDestructureCoreImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports } from './websocket-served-module-helpers.js';
 import { cleanCode, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
+import { getServerOrigin } from './server-origin.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
 import { babelTraverse, compileScript, compileTemplate, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 
@@ -367,7 +368,7 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 			if (!isVariant || variantType !== 'template') {
 				code = cleanCode(code, strategy);
 			}
-			code = rewriteImports(code, importerPath, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, options.getServerOrigin(server));
+			code = rewriteImports(code, importerPath, options.sfcFileMap, options.depFileMap, projectRoot, !!options.verbose, undefined, getServerOrigin(server));
 			code = ensureVariableDynamicImportHelper(code);
 			try {
 				// For variant requests under /ns/sfc, prefer the version from the path segment when present
@@ -375,11 +376,11 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 				// `/ns/core` URLs are intentionally unversioned (realm-split history).
 				const verNum = Number(verFromPath || '0');
 				if (Number.isFinite(verNum) && verNum > 0) {
-					code = ensureVersionedRtImports(code, options.getServerOrigin(server), verNum);
-					code = strategy.ensureVersionedImports?.(code, options.getServerOrigin(server), verNum) ?? code;
+					code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
+					code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
 				} else {
-					code = ensureVersionedRtImports(code, options.getServerOrigin(server), options.getGraphVersion());
-					code = strategy.ensureVersionedImports?.(code, options.getServerOrigin(server), options.getGraphVersion()) ?? code;
+					code = ensureVersionedRtImports(code, getServerOrigin(server), options.getGraphVersion());
+					code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), options.getGraphVersion()) ?? code;
 				}
 			} catch {}
 			// Final guard for SFC variant output as well
@@ -399,9 +400,9 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 			try {
 				const verNum = Number(verFromPath || '0');
 				if (Number.isFinite(verNum) && verNum > 0) {
-					code = ensureVersionedRtImports(code, options.getServerOrigin(server), verNum);
+					code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
 				} else {
-					code = ensureVersionedRtImports(code, options.getServerOrigin(server), options.getGraphVersion());
+					code = ensureVersionedRtImports(code, getServerOrigin(server), options.getGraphVersion());
 				}
 			} catch {}
 			// Last-chance sanitizer for dangling Vite CJS import helper usages that may surface after late transforms

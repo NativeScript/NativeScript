@@ -6,17 +6,18 @@ import { getCliFlags } from '../../helpers/cli-flags.js';
 import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-core-url.js';
 import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath } from './websocket-core-bridge.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
+import { getServerOrigin } from './server-origin.js';
 
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
 
 /**
- * Plugin-closure dependencies the `/ns/core` bridge needs: the per-server origin
- * resolver and the shared transform runner (both hold/derive per-server state and
- * double as testability seams), injected to keep the bridge in its own module.
+ * Plugin-closure dependencies the `/ns/core` bridge needs: the shared transform
+ * runner (holds/derives per-server state and doubles as a testability seam),
+ * injected to keep the bridge in its own module. The device origin comes from
+ * the directly-imported `getServerOrigin` (spy via the module in tests).
  */
 export interface RegisterNsCoreRouteOptions {
 	getGraphVersion(): number;
-	getServerOrigin(server: ViteDevServer): string;
 	sharedTransformRequest: SharedTransformRequestFn;
 }
 
@@ -136,7 +137,7 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 			const __rawSubForRel = String(normalizedSub || sub || '').replace(/^\/+|\/+$/g, '');
 			const __isDirIndex = isDirectoryIndexFilename(modulePath || '');
 			const __relBase: RelativeBase = { sub: __rawSubForRel, isDirectoryIndex: __isDirIndex };
-			let rewritten = rewriteSpecifiersForDevice(transformed.code, options.getServerOrigin(server), Number(options.getGraphVersion() || 0), __relBase);
+			let rewritten = rewriteSpecifiersForDevice(transformed.code, getServerOrigin(server), Number(options.getGraphVersion() || 0), __relBase);
 
 			// Invariant D (CJS/ESM interop shape) — EXPORT-SIDE fix.
 			//
@@ -228,7 +229,7 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 				registrationKeySet.add(rawSub);
 			}
 			const registrationKeys = Array.from(registrationKeySet).map((k) => JSON.stringify(k));
-			const canonicalUrl = `${options.getServerOrigin(server)}` + (canonicalSub ? `/ns/core/${canonicalSub}` : '/ns/core');
+			const canonicalUrl = `${getServerOrigin(server)}` + (canonicalSub ? `/ns/core/${canonicalSub}` : '/ns/core');
 			const instrumentationHeader = [
 				`/* @nativescript/core bridge — canonical URL: ${canonicalUrl} */`,
 				`try { if (typeof globalThis !== 'undefined') {`,
