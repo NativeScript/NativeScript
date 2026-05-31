@@ -1,5 +1,6 @@
 import type { WebSocket, WebSocketServer } from 'ws';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
+import type { HmrDeltaMessage, HmrFullGraphMessage } from '../shared/protocol.js';
 import { matchesRuntimeGraphModuleId } from './runtime-graph-filter.js';
 import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion } from './websocket-graph-upsert.js';
 import { getProjectAppVirtualPath } from '../../helpers/utils.js';
@@ -136,7 +137,7 @@ export class HmrModuleGraph {
 		return ordered;
 	}
 
-	private fullGraphPayload() {
+	private fullGraphPayload(): HmrFullGraphMessage {
 		return {
 			type: 'ns:hmr-full-graph',
 			version: this._version,
@@ -184,7 +185,7 @@ export class HmrModuleGraph {
 				}
 			}
 		} catch {}
-		const payload = {
+		const payload: HmrDeltaMessage = {
 			type: 'ns:hmr-delta',
 			baseVersion: this._version - 1,
 			newVersion: this._version,

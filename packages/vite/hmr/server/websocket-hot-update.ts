@@ -13,6 +13,7 @@ import { getAppCssState } from '../../helpers/app-css-state.js';
 import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyHmrUpdateKind, formatHmrUpdateSummary } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
+import type { AngularUpdateMessage, CssUpdateItem, CssUpdatesMessage, VueSfcRegistryUpdateMessage } from '../shared/protocol.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from './websocket-device-transform.js';
 import { isSameAngularModuleRel, type BootstrapRootComponent } from './angular-root-component.js';
@@ -236,15 +237,17 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 			try {
 				const origin = getServerOrigin(server);
 				const timestamp = Date.now();
-				const msg = {
+				const msg: CssUpdatesMessage = {
 					type: 'ns:css-updates',
 					origin,
-					updates: cssPaths.map((cssPath) => ({
-						type: 'css-update',
-						path: cssPath,
-						acceptedPath: cssPath,
-						timestamp,
-					})),
+					updates: cssPaths.map(
+						(cssPath): CssUpdateItem => ({
+							type: 'css-update',
+							path: cssPath,
+							acceptedPath: cssPath,
+							timestamp,
+						}),
+					),
 				};
 
 				wss.clients.forEach((client) => {
@@ -326,7 +329,7 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 					if (appCssRel) {
 						const origin = getServerOrigin(server);
 						const timestamp = Date.now();
-						const msg = {
+						const msg: CssUpdatesMessage = {
 							type: 'ns:css-updates',
 							origin,
 							updates: [
@@ -731,7 +734,7 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 				} catch {}
 			}
 
-			const msg = {
+			const msg: AngularUpdateMessage = {
 				type: 'ns:angular-update',
 				origin,
 				path: rel,
@@ -739,7 +742,7 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 				timestamp: Date.now(),
 				evictPaths,
 				importerEntry: bootstrapEntryRel,
-			} as const;
+			};
 			if (verbose) {
 				console.log(
 					'[hmr-ws][angular] broadcasting update',
@@ -1167,7 +1170,7 @@ if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
 		const ts = Date.now();
 
 		// FIRST: Send mapping-only registry update (no code)
-		const registryUpdateMsg = {
+		const registryUpdateMsg: VueSfcRegistryUpdateMessage = {
 			type: 'ns:vue-sfc-registry-update',
 			path: rel,
 			fileName,

@@ -2,6 +2,7 @@ import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkSe
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import * as path from 'path';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
+import type { TsModuleRegistryMessage } from '../../../shared/protocol.js';
 
 // TypeScript server strategy for NativeScript HMR.
 // This is a lightweight strategy that treats app TS/JS files
@@ -96,7 +97,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		// Send a TS-oriented registry message; server-side graph
 		// code will coalesce this into ns:hmr-full-graph.
 		if (!wss) return;
-		const msg = {
+		const msg: TsModuleRegistryMessage = {
 			type: 'ns:ts-module-registry',
 			modules: entries,
 			ts: Date.now(),

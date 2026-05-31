@@ -20,15 +20,11 @@
  * server.
  */
 
-export type HmrPendingKind = 'ts' | 'css' | 'html' | 'unknown';
+import type { HmrPendingKind, HmrPendingMessage } from '../shared/protocol.js';
 
-export type HmrPendingMessage = {
-	type: 'ns:hmr-pending';
-	origin: string;
-	path: string;
-	kind: HmrPendingKind;
-	timestamp: number;
-};
+// Canonical definitions live in the shared wire protocol; re-exported here so
+// existing importers of these names from this module keep working.
+export type { HmrPendingKind, HmrPendingMessage };
 
 export function createHmrPendingMessage(input: { origin: string; path: string; kind: string; timestamp: number }): HmrPendingMessage {
 	const allowed: HmrPendingKind[] = ['ts', 'css', 'html', 'unknown'];

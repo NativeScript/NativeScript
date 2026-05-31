@@ -5,6 +5,7 @@ import * as PAT from '../../../server/constants.js';
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
 import { getProjectAppPath } from '../../../../helpers/utils.js';
+import type { VueSfcRegistryEntry, VueSfcRegistryMessage } from '../../../shared/protocol.js';
 
 const VENDOR_MJS = '/@nativescript/vendor.mjs';
 const VUE_HTTP_SFC_DIR = `${getProjectAppPath()}/sfc`;
@@ -180,12 +181,7 @@ async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void
 		sfcFileMap.set(rel, `sfc-${hash}.mjs`);
 	}
 
-	const entries: Array<{
-		path: string;
-		fileName: string;
-		hmrId: string;
-		code: string;
-	}> = [];
+	const entries: VueSfcRegistryEntry[] = [];
 	const visitedPaths = new Set<string>();
 
 	for (const rel of vueFiles) {
@@ -246,7 +242,7 @@ async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void
 		return;
 	}
 
-	const msg = {
+	const msg: VueSfcRegistryMessage = {
 		type: 'ns:vue-sfc-registry',
 		entries,
 		ts: Date.now(),
