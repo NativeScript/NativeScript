@@ -4,7 +4,7 @@ vi.mock('@analogjs/vite-plugin-angular', () => ({
 	default: vi.fn(() => []),
 }));
 
-vi.mock('../helpers/angular/angular-linker.js', () => ({
+vi.mock('../hmr/frameworks/angular/build/angular-linker.js', () => ({
 	angularLinkerVitePlugin: vi.fn(() => ({ name: 'mock-angular-linker-pre' })),
 	angularLinkerVitePluginPost: vi.fn(() => ({ name: 'mock-angular-linker-post' })),
 }));

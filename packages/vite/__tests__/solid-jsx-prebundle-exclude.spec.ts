@@ -21,7 +21,7 @@
  *
  * The fix surfaces in two places:
  *
- *   1. `helpers/solid-jsx-deps.ts` — synchronous scan of the project's
+ *   1. `hmr/frameworks/solid/build/solid-jsx-deps.ts` — synchronous scan of the project's
  *      (and monorepo's) `node_modules` that picks out packages with
  *      BOTH (a) a Solid runtime dep declared and (b) at least one
  *      published `.jsx`/`.tsx` file. These two checks together avoid
@@ -56,7 +56,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { findSolidPackagesShippingJsx } from '../helpers/solid-jsx-deps.js';
+import { findSolidPackagesShippingJsx } from '../hmr/frameworks/solid/build/solid-jsx-deps.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VITE_PKG_ROOT = path.resolve(__dirname, '..');
@@ -272,7 +272,7 @@ describe('solidConfig wiring', () => {
 		// level so a missing call site is impossible to miss in
 		// review.
 		const solidSource = readSource('configuration/solid.ts');
-		expect(solidSource).toMatch(/from\s+['"]\.\.\/helpers\/solid-jsx-deps\.js['"]/);
+		expect(solidSource).toMatch(/from\s+['"]\.\.\/hmr\/frameworks\/solid\/build\/solid-jsx-deps\.js['"]/);
 		expect(solidSource).toMatch(/findSolidPackagesShippingJsx\s*\(/);
 	});
 

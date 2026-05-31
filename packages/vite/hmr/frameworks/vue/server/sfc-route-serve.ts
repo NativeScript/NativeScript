@@ -7,16 +7,16 @@ import babelCore from '@babel/core';
 import { parse as babelParse } from '@babel/parser';
 import * as t from '@babel/types';
 
-import { genCode } from '../helpers/babel.js';
-import { setDeviceModuleHeaders } from './route-helpers.js';
-import { astNormalizeModuleImportsAndHelpers } from '../helpers/ast-normalizer.js';
-import { stripRtCoreSentinel, stripDanglingViteCjsImports } from '../helpers/sanitize.js';
-import { processTemplateVariantMinimal } from '../frameworks/vue/server/sfc-transforms.js';
-import { NS_NATIVE_TAGS } from './compiler.js';
-import { ensureDestructureCoreImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports } from './websocket-served-module-helpers.js';
-import { cleanCode, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
-import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
-import { getServerOrigin } from './server-origin.js';
+import { genCode } from '../../../helpers/babel.js';
+import { setDeviceModuleHeaders } from '../../../server/route-helpers.js';
+import { astNormalizeModuleImportsAndHelpers } from '../../../helpers/ast-normalizer.js';
+import { stripRtCoreSentinel, stripDanglingViteCjsImports } from '../../../helpers/sanitize.js';
+import { processTemplateVariantMinimal } from './sfc-transforms.js';
+import { NS_NATIVE_TAGS } from '../../../server/compiler.js';
+import { ensureDestructureCoreImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports } from '../../../server/websocket-served-module-helpers.js';
+import { cleanCode, processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
+import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
+import { getServerOrigin } from '../../../server/server-origin.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
 import { babelTraverse, compileScript, compileTemplate, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 

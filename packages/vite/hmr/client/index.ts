@@ -214,7 +214,7 @@ try {
 // vitest, etc.) or when the user opted out via
 // `__NS_HMR_PROGRESS_OVERLAY_ENABLED__ === false`.
 import { applyHmrPendingFrame } from './hmr-pending-overlay.js';
-import { driveVueSfcUpdateOverlay } from './vue-sfc-update-overlay.js';
+import { driveVueSfcUpdateOverlay } from '../frameworks/vue/client/vue-sfc-update-overlay.js';
 
 function setHmrPendingOverlay(filePath: string) {
 	applyHmrPendingFrame(filePath, { getOverlay: getHmrOverlayApi });

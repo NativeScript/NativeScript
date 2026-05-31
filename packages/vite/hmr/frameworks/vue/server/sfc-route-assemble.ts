@@ -5,15 +5,15 @@ import * as path from 'path';
 
 import babelCore from '@babel/core';
 
-import { setDeviceModuleHeaders } from './route-helpers.js';
-import { astExtractImportsAndStripTypes } from '../helpers/ast-extract.js';
-import { astNormalizeModuleImportsAndHelpers, astVerifyAndAnnotateDuplicates } from '../helpers/ast-normalizer.js';
-import { buildInlineTemplateBlock, extractTemplateRender } from '../frameworks/vue/server/sfc-transforms.js';
-import { NS_NATIVE_TAGS } from './compiler.js';
-import { ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports } from './websocket-served-module-helpers.js';
-import { processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
-import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
-import { getServerOrigin } from './server-origin.js';
+import { setDeviceModuleHeaders } from '../../../server/route-helpers.js';
+import { astExtractImportsAndStripTypes } from '../../../helpers/ast-extract.js';
+import { astNormalizeModuleImportsAndHelpers, astVerifyAndAnnotateDuplicates } from '../../../helpers/ast-normalizer.js';
+import { buildInlineTemplateBlock, extractTemplateRender } from './sfc-transforms.js';
+import { NS_NATIVE_TAGS } from '../../../server/compiler.js';
+import { ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports } from '../../../server/websocket-served-module-helpers.js';
+import { processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
+import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
+import { getServerOrigin } from '../../../server/server-origin.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
 import { compileScript, compileTemplate, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 

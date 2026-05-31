@@ -1,8 +1,8 @@
 import { parse as babelParse } from '@babel/parser';
 import * as t from '@babel/types';
 
-import { genCode } from '../helpers/babel.js';
-import { MODULE_IMPORT_ANALYSIS_PLUGINS } from './websocket-served-module-helpers.js';
+import { genCode } from '../../../helpers/babel.js';
+import { MODULE_IMPORT_ANALYSIS_PLUGINS } from '../../../server/websocket-served-module-helpers.js';
 
 function shouldGuardAngularEntryStatement(node: any): boolean {
 	if (t.isImportDeclaration(node) || t.isExportDeclaration(node) || t.isFunctionDeclaration(node) || t.isClassDeclaration(node) || t.isVariableDeclaration(node)) {

@@ -7,7 +7,7 @@ import { findMonorepoWorkspaceRoot, getProjectRootPath } from '../helpers/projec
 import { mergeConfig, type UserConfig } from 'vite';
 import { baseConfig } from './base.js';
 import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
-import { findSolidPackagesShippingJsx } from '../helpers/solid-jsx-deps.js';
+import { findSolidPackagesShippingJsx } from '../hmr/frameworks/solid/build/solid-jsx-deps.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -69,7 +69,7 @@ export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): Us
 	// `.jsx`/`.tsx`, so it never sees the pre-bundled `.js` to fix it.
 	// Excluding these packages routes them through the normal serve
 	// pipeline, where the original `.jsx` ids match the Solid plugin's
-	// filter. See `helpers/solid-jsx-deps.ts` for the detection rules.
+	// filter. See `hmr/frameworks/solid/build/solid-jsx-deps.ts` for the detection rules.
 	const solidJsxPackages = findSolidPackagesShippingJsx(projectRoot, monorepoRoot);
 	return mergeConfig(baseConfig({ mode, flavor: 'solid' }), {
 		plugins: [...getTypeCheckPlugins('solid', options.typeCheck), ...plugins],

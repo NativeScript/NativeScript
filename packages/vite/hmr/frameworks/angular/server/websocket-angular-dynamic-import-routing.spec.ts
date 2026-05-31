@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { rewriteImports } from './websocket-device-transform.js';
+import { rewriteImports } from '../../../server/websocket-device-transform.js';
 
 describe('rewriteImports Angular dynamic app imports', () => {
 	it('rewrites relative dynamic app imports through the runtime HMR helper', () => {

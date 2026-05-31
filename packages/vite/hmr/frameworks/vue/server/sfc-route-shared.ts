@@ -2,8 +2,8 @@ import { createRequire } from 'node:module';
 
 import traverse from '@babel/traverse';
 
-import { vueSfcCompiler } from '../frameworks/vue/server/compiler.js';
-import type { FrameworkServerStrategy } from './framework-strategy.js';
+import { vueSfcCompiler } from './compiler.js';
+import type { FrameworkServerStrategy } from '../../../server/framework-strategy.js';
 
 /**
  * Plugin-closure dependencies the SFC route handlers need. The pure transform

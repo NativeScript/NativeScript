@@ -8,7 +8,7 @@ import type { HmrModuleGraph } from './hmr-module-graph.js';
 import type { SharedTransformRequestRunner } from './shared-transform-request.js';
 import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { isWithinHmrScope } from '../../helpers/hmr-scope.js';
-import { canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, type HotUpdateGraphModuleLike, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
+import { canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, type HotUpdateGraphModuleLike, type TransitiveImporterModuleLike } from '../frameworks/angular/server/websocket-angular-hot-update.js';
 import { getAppCssState } from '../../helpers/app-css-state.js';
 import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyHmrUpdateKind, formatHmrUpdateSummary } from './perf-instrumentation.js';
@@ -17,7 +17,7 @@ import type { AngularUpdateMessage, CssUpdateItem, CssUpdatesMessage, VueSfcRegi
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from './websocket-device-transform.js';
 import { getServerOrigin } from './server-origin.js';
-import { isSameAngularModuleRel, type BootstrapRootComponent } from './angular-root-component.js';
+import { isSameAngularModuleRel, type BootstrapRootComponent } from '../frameworks/angular/server/angular-root-component.js';
 
 /**
  * Dependencies injected into {@link handleNsHotUpdate}. These hold per-server

@@ -1,5 +1,5 @@
-import { getProjectAppVirtualPath } from '../../helpers/utils.js';
-import { isRuntimeGraphExcludedPath, normalizeRuntimeGraphPath } from './runtime-graph-filter.js';
+import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
+import { isRuntimeGraphExcludedPath, normalizeRuntimeGraphPath } from '../../../server/runtime-graph-filter.js';
 
 const APP_VIRTUAL_WITH_SLASH = `${getProjectAppVirtualPath()}/`;
 

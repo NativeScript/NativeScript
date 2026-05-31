@@ -5,7 +5,7 @@ import * as PAT from '../../../server/constants.js';
 import { linkAngularPartialsIfNeeded } from './linker.js';
 import { getProjectAppPath, getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { isRuntimeGraphExcludedPath, matchesRuntimeGraphModuleId, shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from '../../../server/runtime-graph-filter.js';
-import { stripJsComments } from '../../../../helpers/angular/util.js';
+import { stripJsComments } from '../build/util.js';
 
 // Angular server strategy for NativeScript HMR.
 //

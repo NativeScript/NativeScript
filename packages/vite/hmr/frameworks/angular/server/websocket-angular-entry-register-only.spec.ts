@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { prepareAngularEntryForDevice } from './websocket-device-transform.js';
+import { prepareAngularEntryForDevice } from '../../../server/websocket-device-transform.js';
 import { rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
 
 describe('rewriteAngularEntryRegisterOnly', () => {

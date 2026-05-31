@@ -1,7 +1,7 @@
 import type { ViteDevServer } from 'vite';
 import { createHash } from 'crypto';
 
-import { extractExportMetadata } from './websocket-served-module-helpers.js';
+import { extractExportMetadata } from '../../../server/websocket-served-module-helpers.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
 
 /**

@@ -1,7 +1,7 @@
 import * as esbuild from 'esbuild';
 import path from 'path';
 import { readFile } from 'fs/promises';
-import { getAngularLinkerFactory, runAngularLinker } from '../../../helpers/angular/shared-linker.js';
+import { getAngularLinkerFactory, runAngularLinker } from '../../frameworks/angular/build/shared-linker.js';
 import { vendorModuleShim } from './vendor-device-shim.js';
 
 export function createVendorEsbuildPlugin(projectRoot: string): esbuild.Plugin {

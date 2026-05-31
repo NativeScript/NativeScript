@@ -8,7 +8,7 @@ import * as PAT from './constants.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { getProjectAppPath } from '../../helpers/utils.js';
 import { buildCoreUrl, buildCoreUrlPath } from '../../helpers/ns-core-url.js';
-import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from './websocket-angular-entry.js';
+import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } from '../frameworks/angular/server/websocket-angular-entry.js';
 import { isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, normalizeNodeModulesSpecifier, resolveNodeModulesPackageBoundary, resolveVendorRouting, rewriteFsAbsoluteToNsM, shouldPreserveBareRuntimePluginSubpathImport } from './websocket-module-specifiers.js';
 import { ensureDynamicHmrImportHelper } from './websocket-served-module-helpers.js';
 import { collectMixedRuntimePluginHttpRootPackages, findDependencyFileName, getProjectRelativeImportPath, isApplicationImport, normalizeImportPath, stripToProjectRelative, toAppModuleBaseId, toNodeModulesHttpModuleId } from './device-transform-helpers.js';
