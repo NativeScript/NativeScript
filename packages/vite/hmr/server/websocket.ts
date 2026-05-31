@@ -26,7 +26,6 @@ import { solidServerStrategy } from '../frameworks/solid/server/strategy.js';
 import { typescriptServerStrategy } from '../frameworks/typescript/server/strategy.js';
 import { createProcessSfcCode } from '../frameworks/vue/server/sfc-transforms.js';
 import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from '../../helpers/utils.js';
-import { buildRuntimeConfig, generateImportMap } from './import-map.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { buildCoreUrl, buildCoreUrlPath } from '../../helpers/ns-core-url.js';
 import { resolveDeviceReachableOrigin, type DevHostPlatform } from '../../helpers/dev-host.js';
@@ -37,7 +36,6 @@ import { resolveAngularCoreHmrImportSource, rewriteAngularEntryRegisterOnly } fr
 import { angularSourceHasSemanticDecorator, canonicalizeTransformRequestCacheKey, collectAngularEvictionUrls, collectAngularHotUpdateRoots, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, collectGraphUpdateModulesForHotUpdate, normalizeHotReloadMatchPath, shouldInvalidateAngularTransitiveImporters, shouldSuppressDefaultViteHotUpdate, shouldSuppressViteFullReloadPayload, type HotUpdateGraphModuleLike, type PendingAngularReloadSuppressionEntry, type TransitiveImporterModuleLike } from './websocket-angular-hot-update.js';
 import { classifyGraphUpsert, shouldBroadcastGraphUpsertDelta, shouldBumpGraphVersion, type GraphUpsertClassification } from './websocket-graph-upsert.js';
 import { HmrModuleGraph } from './hmr-module-graph.js';
-import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { registerNsRtBridgeRoute } from './ns-rt-route.js';
 import { registerVendorUnifierHandler } from './websocket-vendor-unifier.js';
 import { registerTxnHandler } from './websocket-txn.js';
@@ -46,10 +44,10 @@ import { registerNsModuleServerRoute } from './websocket-ns-m.js';
 import { registerNsCoreRoute } from './websocket-ns-core.js';
 import { registerNsEntryRoutes } from './websocket-ns-entry.js';
 import { handleNsHotUpdate } from './websocket-hot-update.js';
+import { registerImportMapRoute } from './websocket-import-map-route.js';
 import { classifyBootRoute, createColdBootRequestCounter, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
 import {
 	extractVitePrebundleId,
-	filterExistingNodeModulesTransformCandidates,
 	getBlockedDeviceNodeModulesReason,
 	getFlattenedManifestMap,
 	isCoreGlobalsReference,
@@ -74,7 +72,7 @@ import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverri
 import { collectStaticExportNamesFromFile, collectStaticExportOriginsFromFile, normalizeCoreExportOriginsForRuntime, type CoreExportOrigin, type ParsedCoreBridgeRequest } from './websocket-core-bridge.js';
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner, type SharedTransformRequestRunnerOptions } from './shared-transform-request.js';
 import { formatNsMHmrServeTag, getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
-import { assertNoOptimizedArtifacts, buildBootProgressSnippet, collectTopLevelImportRecords, deduplicateLinkerImports, ensureDestructureRtImports, ensureDynamicHmrImportHelper, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, hoistTopLevelStaticImports, repairImportEqualsAssignments, stripCoreGlobalsImports, stripViteDynamicImportVirtual, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
+import { buildBootProgressSnippet, collectTopLevelImportRecords, deduplicateLinkerImports, ensureDestructureRtImports, ensureDynamicHmrImportHelper, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, hoistTopLevelStaticImports, repairImportEqualsAssignments, stripCoreGlobalsImports, stripViteDynamicImportVirtual, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 export { buildBootProgressSnippet, wrapCommonJsModuleForDevice };
 
 export { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides } from './websocket-module-bindings.js';
@@ -2377,195 +2375,10 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				console.warn('[hmr-ws] server error:', err?.message || String(err));
 			});
 
-			// Import map endpoint: GET /ns/import-map.json
-			// Returns the import map + runtime config for __nsConfigureRuntime()
-			server.middlewares.use(async (req, res, next) => {
-				try {
-					const urlObj = new URL(req.url || '', 'http://localhost');
-					if (urlObj.pathname !== '/ns/import-map.json') return next();
-
-					res.setHeader('Access-Control-Allow-Origin', '*');
-					res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-					if (req.method === 'OPTIONS') {
-						res.statusCode = 204;
-						res.end();
-						return;
-					}
-
-					// Determine origin from request headers or server config
-					const host = req.headers.host || 'localhost:5173';
-					const protocol = 'http';
-					const origin = `${protocol}://${host}`;
-
-					const runtimeConfig = buildRuntimeConfig({
-						origin,
-						flavor: strategy?.flavor || 'typescript',
-					});
-
-					res.setHeader('Content-Type', 'application/json');
-					res.end(
-						JSON.stringify(
-							{
-								importMap: JSON.parse(runtimeConfig.importMap),
-								volatilePatterns: runtimeConfig.volatilePatterns,
-							},
-							null,
-							2,
-						),
-					);
-				} catch (err: any) {
-					console.error('[import-map] error generating import map:', err?.message || err);
-					res.statusCode = 500;
-					res.end(JSON.stringify({ error: 'Failed to generate import map' }));
-				}
-			});
+			// Import map endpoint: GET /ns/import-map.json — see websocket-import-map-route.ts
+			registerImportMapRoute(server, { getStrategy: () => strategy });
 
 			// Dev-only HTTP ESM loader endpoint for device clients
-			// 1) Legacy JSON module endpoint (kept temporarily): GET /ns-module?path=/abs -> { path, code, additionalFiles }
-			server.middlewares.use(async (req, res, next) => {
-				try {
-					const urlObj = new URL(req.url || '', 'http://localhost');
-					if (urlObj.pathname !== '/ns-module') return next();
-					// CORS for device access
-					res.setHeader('Access-Control-Allow-Origin', '*');
-					res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-					if (req.method === 'OPTIONS') {
-						res.statusCode = 204;
-						res.end();
-						return;
-					}
-
-					let spec = urlObj.searchParams.get('path') || urlObj.searchParams.get('spec') || '';
-					if (!spec) {
-						res.statusCode = 400;
-						res.setHeader('Content-Type', 'application/json');
-						res.end(JSON.stringify({ error: 'missing path' }));
-						return;
-					}
-					// Mirror normalization from ws handler
-					spec = spec.replace(/[?#].*$/, '');
-					if (spec.startsWith('@/')) spec = APP_VIRTUAL_WITH_SLASH + spec.slice(2);
-					spec = spec.replace(/\/(index)(?:\/(?:index))+$/i, '/$1');
-					if (spec.startsWith('./')) spec = spec.slice(1);
-					if (!spec.startsWith('/')) spec = '/' + spec;
-
-					// Transform via Vite with variant resolution (same as ws ns:fetch-module)
-					const hasExt = /\.(ts|tsx|js|jsx|mjs|mts|cts|vue)$/i.test(spec);
-					const baseNoExt = hasExt ? spec.replace(/\.(ts|tsx|js|jsx|mjs|mts|cts)$/i, '') : spec;
-					const transformRoot = server.config?.root || process.cwd();
-					const transformWorkspaceRoot = getMonorepoWorkspaceRoot(transformRoot);
-					const candidates: string[] = [];
-					if (hasExt) candidates.push(spec);
-					candidates.push(baseNoExt + '.ts', baseNoExt + '.js', baseNoExt + '.tsx', baseNoExt + '.jsx', baseNoExt + '.mjs', baseNoExt + '.mts', baseNoExt + '.cts', baseNoExt + '.vue', baseNoExt + '/index.ts', baseNoExt + '/index.js', baseNoExt + '/index.tsx', baseNoExt + '/index.jsx', baseNoExt + '/index.mjs');
-					const transformCandidates = filterExistingNodeModulesTransformCandidates(spec, candidates, transformRoot, transformWorkspaceRoot);
-					let transformed: TransformResult | null = null;
-					let resolvedCandidate: string | null = null;
-					for (const cand of transformCandidates) {
-						try {
-							const r = await server.transformRequest(cand);
-							if (r?.code) {
-								transformed = r;
-								resolvedCandidate = cand;
-								break;
-							}
-						} catch {}
-					}
-					if (!transformed?.code) {
-						res.statusCode = 404;
-						res.setHeader('Content-Type', 'application/json');
-						res.end(JSON.stringify({ error: 'transform-failed', path: spec }));
-						return;
-					}
-					let code = transformed.code;
-					// Prepend guard to capture any URL-based require attempts
-					code = REQUIRE_GUARD_SNIPPET + code;
-					// Apply same sanitation/rewrite pipeline used for WS path
-					code = cleanCode(code, strategy);
-					// preserveVendorImports=true: vendor imports stay as bare specifiers
-					// for the device-side import map (ns-vendor://) instead of being
-					// transformed to __nsVendorRequire calls with fragile __nsPick lookups.
-					code = processCodeForDevice(code, false, true, /(?:^|\/)node_modules\//.test(resolvedCandidate || spec), resolvedCandidate || spec);
-					code = rewriteImports(code, spec, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
-					code = ensureVariableDynamicImportHelper(code);
-					// Enforce upstream guarantee: no optimized deps or virtual ids remain
-					try {
-						assertNoOptimizedArtifacts(code, `SFC ASM ${spec}`);
-					} catch (e) {
-						res.statusCode = 500;
-						res.setHeader('Content-Type', 'application/json');
-						return void res.end(JSON.stringify({ error: (e as any)?.message || String(e) }));
-					}
-					try {
-						const origin = getServerOrigin(server);
-						code = ensureVersionedRtImports(code, origin, moduleGraph.version);
-						code = strategy.ensureVersionedImports?.(code, origin, moduleGraph.version) ?? code;
-					} catch {}
-					// Compute rel .mjs output path
-					const specForRel = resolvedCandidate || spec;
-					let rel = specForRel.replace(/^\//, '').replace(/\.(tsx?|jsx?)$/i, '.mjs');
-					if (!rel.endsWith('.mjs')) rel += '.mjs';
-					// Collect immediate relative .mjs deps similarly
-					const additionalFiles: Array<{ path: string; code: string }> = [];
-					try {
-						const importRE = /from\s+["']([^"']+\.mjs)["']|import\(\s*["']([^"']+\.mjs)["']\s*\)/g;
-						const importerDir = path.posix.dirname(specForRel);
-						let m: RegExpExecArray | null;
-						const seen = new Set<string>();
-						while ((m = importRE.exec(code)) !== null) {
-							let dep = m[1] || m[2];
-							if (!dep) continue;
-							if (!(dep.startsWith('./') || dep.startsWith('../'))) continue;
-							let abs = path.posix.normalize(path.posix.join(importerDir, dep));
-							if (!abs.startsWith('/')) abs = '/' + abs;
-							const depBase = abs.replace(/\.(ts|js|tsx|jsx|mjs|mts|cts)$/i, '');
-							if (seen.has(depBase)) continue;
-							seen.add(depBase);
-							const depCandidates = filterExistingNodeModulesTransformCandidates(depBase, [depBase + '.ts', depBase + '.js', depBase + '.tsx', depBase + '.jsx', depBase + '.mjs', depBase + '.mts', depBase + '.cts', depBase + '.vue', depBase + '/index.ts', depBase + '/index.js', depBase + '/index.tsx', depBase + '/index.jsx', depBase + '/index.mjs'], transformRoot, transformWorkspaceRoot);
-							let depTrans: TransformResult | null = null;
-							let depResolved: string | null = null;
-							for (const c of depCandidates) {
-								try {
-									const r = await server.transformRequest(c);
-									if (r?.code) {
-										depTrans = r;
-										depResolved = c;
-										break;
-									}
-								} catch {}
-							}
-							if (depTrans?.code && depResolved) {
-								let depCode = depTrans.code;
-								depCode = cleanCode(depCode, strategy);
-								depCode = processCodeForDevice(depCode, false, true, /(?:^|\/)node_modules\//.test(depResolved), depResolved);
-								depCode = rewriteImports(depCode, depResolved, sfcFileMap, depFileMap, server.config?.root || process.cwd(), !!verbose, undefined, getServerOrigin(server));
-								depCode = ensureVariableDynamicImportHelper(depCode);
-								try {
-									assertNoOptimizedArtifacts(depCode, `SFC ASM dep ${depResolved}`);
-								} catch (e) {
-									/* don't include bad deps */ continue;
-								}
-								try {
-									depCode = ensureVersionedRtImports(depCode, getServerOrigin(server), moduleGraph.version);
-									depCode = strategy.ensureVersionedImports?.(depCode, getServerOrigin(server), moduleGraph.version) ?? depCode;
-								} catch {}
-								let depRel = depResolved.replace(/^\//, '').replace(/\.(tsx?|jsx?)$/i, '.mjs');
-								if (!depRel.endsWith('.mjs')) depRel += '.mjs';
-								additionalFiles.push({ path: depRel, code: depCode });
-							}
-						}
-					} catch {}
-					res.statusCode = 200;
-					res.setHeader('Content-Type', 'application/json');
-					res.end(JSON.stringify({ path: rel, code, additionalFiles }));
-				} catch (e: any) {
-					try {
-						res.statusCode = 500;
-						res.setHeader('Content-Type', 'application/json');
-						res.end(JSON.stringify({ error: e?.message || String(e) }));
-					} catch {}
-				}
-			});
-
 			// 2) ESM module server for application/source modules: GET /ns/m/* — see websocket-ns-m.ts
 			registerNsModuleServerRoute(server, {
 				verbose,
