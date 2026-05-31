@@ -14,6 +14,7 @@ import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyHmrUpdateKind, formatHmrUpdateSummary } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
+import { isSameAngularModuleRel, type BootstrapRootComponent } from './angular-root-component.js';
 
 /**
  * Dependencies injected into {@link handleNsHotUpdate}. These are the
@@ -42,6 +43,13 @@ export interface NsHotUpdateContext {
 	getHmrSocketRole: (client: { __nsHmrClientRole?: string } | null | undefined) => string;
 	shouldRemapImport: (spec: string) => boolean;
 	rememberAngularReloadSuppression: (root: string, file: string, ttlMs?: number) => void;
+	/**
+	 * Resolves the Angular bootstrap (root) component, or `null` when it
+	 * can't be statically determined. Used to force root-component template
+	 * edits through the reboot path instead of Analog's in-place update,
+	 * which is destructive for the root view (see {@link BootstrapRootComponent}).
+	 */
+	getRootComponentIdentity: () => BootstrapRootComponent | null;
 	getGraphInitialPopulationPromise: () => Promise<void> | null;
 	appRootDir: string;
 	appVirtualWithSlash: string;
@@ -55,7 +63,7 @@ export interface NsHotUpdateContext {
  * below is a faithful, behaviour-preserving move.
  */
 export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContext) {
-	const { wss, moduleGraph, strategy, verbose, sfcFileMap, depFileMap, sharedTransformRequest, processSfcCode, collectImportDependencies, rewriteImports, cleanCode, getServerOrigin, getHmrSourceRootsCached, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression } = deps;
+	const { wss, moduleGraph, strategy, verbose, sfcFileMap, depFileMap, sharedTransformRequest, processSfcCode, collectImportDependencies, rewriteImports, cleanCode, getServerOrigin, getHmrSourceRootsCached, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
 	const APP_ROOT_DIR = deps.appRootDir;
 	const APP_VIRTUAL_WITH_SLASH = deps.appVirtualWithSlash;
 	const graphInitialPopulationPromise = deps.getGraphInitialPopulationPromise();
@@ -383,7 +391,20 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 		// which gates on `hmrActive`. So this check is a clean
 		// boolean: true iff the in-place pipeline is wired up.
 		const angularLiveReloadActive = ((server.config?.plugins as Array<{ name?: string }> | undefined) ?? []).some((plugin) => plugin?.name === 'analogjs-live-reload-plugin');
-		if (isHtml && angularLiveReloadActive) {
+		// Root-component edits must NOT take Analog's in-place
+		// `ɵɵreplaceMetadata` path: the root component hosts the
+		// navigation `Frame` via `<page-router-outlet>`, and replacing
+		// its metadata recreates the root view without re-navigating,
+		// leaving a permanent white screen. We route the edit to the
+		// reboot broadcast below instead (which re-bootstraps and
+		// replays route state). The companion guard in the websocket
+		// bridge drops the in-place `angular:component-update` event for
+		// the root so the two paths don't race. `.ts` root edits already
+		// fall through to the reboot path; this only re-routes `.html`.
+		const rootComponent = getRootComponentIdentity();
+		const changedFileRel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+		const isRootComponentEdit = !!rootComponent && isSameAngularModuleRel(rootComponent.moduleRel, changedFileRel);
+		if (isHtml && angularLiveReloadActive && !isRootComponentEdit) {
 			updateMetrics.tAfterFramework = Date.now();
 			if (verbose) {
 				const rel =

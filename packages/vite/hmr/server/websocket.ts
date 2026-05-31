@@ -31,6 +31,7 @@ import { registerNsCoreRoute } from './websocket-ns-core.js';
 import { registerNsEntryRoutes } from './websocket-ns-entry.js';
 import { handleNsHotUpdate } from './websocket-hot-update.js';
 import { registerImportMapRoute } from './websocket-import-map-route.js';
+import { isAngularRootComponentUpdate, resolveBootstrapRootComponent, type BootstrapRootComponent } from './angular-root-component.js';
 import { cleanCode, collectImportDependencies, prepareAngularEntryForDevice, processCodeForDevice, processSfcCode, rewriteImports, shouldRemapImport } from './websocket-device-transform.js';
 import { classifyBootRoute, createColdBootRequestCounter, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
 import { getBlockedDeviceNodeModulesReason, isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate, resolveVendorRouting } from './websocket-module-specifiers.js';
@@ -104,6 +105,31 @@ function getBootstrapEntryRelPath(): string {
 	return entry;
 }
 
+// Memoized resolver for the project's Angular bootstrap (root) component.
+// The root component owns the navigation `Frame` via `<page-router-outlet>`,
+// so Analog's in-place `ɵɵreplaceMetadata` HMR is destructive for it (it
+// recreates the root view without re-navigating → permanent white screen).
+// Knowing which file is the root lets the bridge drop the in-place update
+// and the hot-update handler route the edit through the reboot path instead.
+// `undefined` = not yet computed; `null` = computed but unresolvable (the
+// caller then keeps its default behavior, e.g. NgModule bootstrap shapes).
+let __ns_root_component_cached: BootstrapRootComponent | null | undefined;
+function getRootComponentIdentity(): BootstrapRootComponent | null {
+	if (__ns_root_component_cached !== undefined) return __ns_root_component_cached;
+	__ns_root_component_cached = null;
+	try {
+		const pkg = getPackageJson();
+		const main = (pkg && (pkg as any).main) || DEFAULT_MAIN_ENTRY;
+		const entrySource = readFileSync(getProjectFilePath(main), 'utf-8');
+		__ns_root_component_cached = resolveBootstrapRootComponent({
+			entrySource,
+			entryRel: getBootstrapEntryRelPath(),
+			appRootRel: '/' + APP_ROOT_DIR,
+		});
+	} catch {}
+	return __ns_root_component_cached;
+}
+
 const STRATEGY_REGISTRY = new Map<string, FrameworkServerStrategy>([
 	['vue', vueServerStrategy],
 	['angular', angularServerStrategy],
@@ -157,7 +183,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 	// Enables clients to short-circuit fetches for already-known modules and aids
 	// consistent path normalization across reconnects.
 	const moduleManifest = new Map<string, string>();
-	let registrySent = false;
 	let vendorBootstrapDone = false;
 	let pluginRoot: string | undefined;
 	// HMR module graph (spec -> deps/hash) with version tagging and delta/full
@@ -190,13 +215,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			if (!entry || entry.expiresAt <= now) {
 				pendingAngularReloadSuppressions.delete(key);
 			}
-		}
-	}
-	function isTypescriptFlavor(): boolean {
-		try {
-			return strategy?.flavor === 'typescript';
-		} catch {
-			return false;
 		}
 	}
 	async function populateInitialGraph(server: ViteDevServer) {
@@ -352,6 +370,25 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 						// in-place `ɵɵreplaceMetadata` template-swap path.
 						// Filter the relay to those.
 						if (normalized.type !== 'custom') return;
+						// Root-component guard. Analog's in-place
+						// `ɵɵreplaceMetadata` recreates the edited
+						// component's `LView`s without re-navigating. For
+						// the bootstrap (root) component — which hosts the
+						// navigation `Frame` via `<page-router-outlet>` —
+						// that tears the frame down and leaves an
+						// unrecoverable white screen. Drop the in-place
+						// update for the root here; the reboot path
+						// (`ns:angular-update` → `__reboot_ng_modules__`)
+						// re-bootstraps and replays route state, which is
+						// the only mechanism that correctly rebuilds the
+						// root view. The hot-update handler ensures a reboot
+						// is broadcast for root edits (including `.html`).
+						if (normalized.event === 'angular:component-update' && isAngularRootComponentUpdate(getRootComponentIdentity(), (normalized.data as { id?: unknown } | undefined)?.id)) {
+							if (verbose) {
+								console.log('[hmr-ws][bridge] dropped angular:component-update for root component — reboot path owns the root view (PageRouterOutlet frame)');
+							}
+							return;
+						}
 						const stringified = JSON.stringify(normalized);
 						let recipients = 0;
 						wss?.clients.forEach((client: any) => {
@@ -781,7 +818,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 										);
 										return;
 									}
-									const root = server.config?.root || process.cwd();
 									// Attempt transform via Vite with robust variant resolution (handles .mjs inputs)
 									let transformed: TransformResult | null = null;
 									let resolvedCandidate: string | null = null;
@@ -949,7 +985,6 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 							processSfcCode,
 						},
 					});
-					registrySent = true;
 				} catch (error) {
 					console.warn('[hmr-ws] Failed to send registry:', error);
 				}
@@ -992,6 +1027,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				getHmrSocketRole,
 				shouldRemapImport,
 				rememberAngularReloadSuppression,
+				getRootComponentIdentity,
 				getGraphInitialPopulationPromise: () => graphInitialPopulationPromise,
 				appRootDir: APP_ROOT_DIR,
 				appVirtualWithSlash: APP_VIRTUAL_WITH_SLASH,

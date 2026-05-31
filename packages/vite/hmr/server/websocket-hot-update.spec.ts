@@ -45,6 +45,7 @@ function makeDeps(overrides: Partial<NsHotUpdateContext> = {}) {
 		getHmrSocketRole: () => 'device',
 		shouldRemapImport: () => false,
 		rememberAngularReloadSuppression: vi.fn(),
+		getRootComponentIdentity: () => null,
 		getGraphInitialPopulationPromise: vi.fn(() => null),
 		appRootDir: 'app/src',
 		appVirtualWithSlash: '/__NSDOC__/',
