@@ -649,9 +649,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			});
 
 			// Framework-owned dev HTTP endpoints (Vue: /ns/sfc, /ns/sfc-meta, /ns/asm).
-			// P2-A5: previously `registerSfcHandlers` ran for EVERY flavor; now only
-			// the strategy that owns routes (Vue) registers them via `registerRoutes`.
-			// SFC/assembler endpoints are inherently Vue-only (see websocket-sfc.ts).
+			// Only the strategy that owns routes (Vue) registers them via
+			// `registerRoutes`; SFC/assembler endpoints are inherently Vue-only
+			// (see websocket-sfc.ts).
 			strategy.registerRoutes?.({
 				server,
 				wss,

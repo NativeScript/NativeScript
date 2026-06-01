@@ -35,13 +35,13 @@ describe('angularServerStrategy', () => {
 
 		// The hook must be byte-identical to calling prepareAngularEntryForDevice
 		// with httpOrigin = serverOrigin and resolveVendorAsHttp = true — the exact
-		// arguments the inline `/ns/m` angular fork used before P2-A4.
+		// arguments the inline `/ns/m` angular fork used.
 		expect(angularServerStrategy.rewriteServedModule!(code, ctx)).toBe(prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true));
 	});
 
-	it('P2-A5: volatilePatterns marks Angular template/style asset URLs volatile', () => {
-		// Mirrors the former getVolatilePatterns 'angular' arm (asm only — Angular
-		// has no /@ns/sfc endpoints). Angular contributes no import-map entries.
+	it('volatilePatterns marks Angular template/style asset URLs volatile', () => {
+		// asm only — Angular has no /@ns/sfc endpoints. Angular contributes no
+		// import-map entries.
 		expect(angularServerStrategy.volatilePatterns!()).toEqual(['/@ns/asm/']);
 		expect(angularServerStrategy.importMapEntries).toBeUndefined();
 	});

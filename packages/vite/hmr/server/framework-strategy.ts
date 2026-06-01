@@ -101,13 +101,10 @@ export interface FrameworkServerStrategy {
 	/** Optional vendor rewrite hook (e.g. map framework helper imports to vendor). */
 	rewriteVendorSpec?(code: string, origin: string, version: number): string;
 
-	// ── Strategy hooks (P2-A1) ──────────────────────────────────────────────
-	// Interface gaps that today force inline `flavor === …` branching in shared
-	// server modules (§13.2/§13.4). All OPTIONAL: when a strategy omits a hook
-	// the shared pipeline keeps its current behavior (the documented default).
-	// Call-site wiring lands later, one concern per change: handleHotUpdate →
-	// P2-A3; rewriteServedModule + transformNodeModule → P2-A4; registerRoutes +
-	// importMapEntries + volatilePatterns → P2-A5.
+	// ── Strategy hooks ──────────────────────────────────────────────────────
+	// Optional per-framework hooks that absorb what would otherwise be inline
+	// `flavor === …` branching in the shared server modules. All OPTIONAL: when a
+	// strategy omits a hook, the shared pipeline keeps its default behavior.
 
 	/**
 	 * Full per-framework `handleHotUpdate` implementation. When defined, the
@@ -121,7 +118,6 @@ export interface FrameworkServerStrategy {
 	 * When `true`, the per-module graph delta is NOT broadcast inline during a
 	 * hot update (the framework drives its own re-fetch/patch instead — Angular
 	 * & Solid). Defaults to `false` → delta is broadcast (today's TS/Vue path).
-	 * Replaces `broadcastDelta: flavor !== 'angular' && flavor !== 'solid'`.
 	 */
 	readonly deferDeltaBroadcast?: boolean;
 

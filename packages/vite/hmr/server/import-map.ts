@@ -65,9 +65,9 @@ export interface ImportMapOptions {
 	/** Framework flavor (vue, angular, solid, typescript) — framework identity. */
 	flavor: string;
 	/**
-	 * Active framework strategy (P2-A5). Its `importMapEntries(origin)` +
-	 * `volatilePatterns()` hooks supply the framework-specific pieces the
-	 * `addFrameworkEntries` / `getVolatilePatterns` switches used to hard-code.
+	 * Active framework strategy. Its `importMapEntries(origin)` +
+	 * `volatilePatterns()` hooks supply the framework-specific pieces of the
+	 * import map and volatile-pattern list.
 	 * Optional: when omitted, the map/patterns carry only the shared
 	 * vendor/core/HTTP entries (equivalent to the old `typescript` arm).
 	 */
@@ -154,12 +154,11 @@ export function generateImportMap(options: ImportMapOptions): ImportMap {
 	imports['@nativescript/core'] = buildCoreUrl(origin);
 	imports['@nativescript/core/'] = `${buildCoreUrl(origin)}/`;
 
-	// Add framework-specific entries (P2-A5: owned by the active strategy).
-	// Merge CONDITIONALLY (existing entries win) to preserve the former
-	// `addFrameworkEntries` `if (!imports[k])` behavior byte-for-byte: Vue's
-	// vendor entries (set above) take precedence over the hook's fallback
-	// `ns-vendor://` targets, and Solid's `solid-js` (externalized from vendor,
-	// so unset here) is added. Insertion order matches the old switch.
+	// Add framework-specific entries (owned by the active strategy). Merge
+	// CONDITIONALLY (existing entries win) so Vue's vendor entries (set above)
+	// take precedence over the hook's fallback `ns-vendor://` targets, while
+	// Solid's `solid-js` (externalized from vendor, so unset here) is added.
+	// Insertion order is significant for the generated map.
 	const frameworkEntries = strategy?.importMapEntries?.(origin);
 	if (frameworkEntries) {
 		for (const [specifier, target] of Object.entries(frameworkEntries)) {
@@ -193,8 +192,8 @@ export function getVolatilePatterns(strategy?: FrameworkServerStrategy): string[
 	patterns.push('?v=');
 	patterns.push('&v=');
 
-	// Framework-specific volatile patterns (P2-A5: owned by the active strategy;
-	// formerly a `switch (flavor)` — Vue → /@ns/sfc/ + /@ns/asm/, Angular → /@ns/asm/).
+	// Framework-specific volatile patterns (owned by the active strategy —
+	// Vue → /@ns/sfc/ + /@ns/asm/, Angular → /@ns/asm/).
 	const frameworkPatterns = strategy?.volatilePatterns?.();
 	if (frameworkPatterns) {
 		patterns.push(...frameworkPatterns);

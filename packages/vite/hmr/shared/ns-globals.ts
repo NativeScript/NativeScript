@@ -1,10 +1,10 @@
 /**
  * Ambient typings for the `__NS_*` / `__ns*` globals the HMR runtime stashes on
  * `globalThis`. One `declare global` here replaces the scattered
- * `(globalThis as any).__NS_X` casts across the device client + entry runtime
- * (§13.6): consumers read/write `globalThis.__NS_X` directly and get a real type,
- * and the per-file `declare const __NS_X__` duplicates collapse to this single
- * source of truth.
+ * `(globalThis as any).__NS_X` casts across the device client + entry runtime:
+ * consumers read/write `globalThis.__NS_X` directly and get a real type, and the
+ * per-file `declare const __NS_X__` duplicates collapse to this single source of
+ * truth.
  *
  * Conventions:
  *   - Every key is `var … | undefined` — `var` (not `const`/`let`) is what adds the

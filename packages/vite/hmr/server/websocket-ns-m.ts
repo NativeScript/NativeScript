@@ -340,8 +340,8 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// Solid HMR: patch the served `@solid-refresh` runtime so $$refreshESM
 			// applies registry updates inline on module re-evaluation. The full
 			// patch (and its server-side diagnostics) lives in the Solid strategy's
-			// `transformNodeModule` hook (P2-A4); every other flavor leaves the hook
-			// undefined, so this is a no-op for them — today's behavior.
+			// `transformNodeModule` hook; every other flavor leaves the hook
+			// undefined, so this is a no-op for them.
 			try {
 				if (transformed?.code && strategy?.transformNodeModule) {
 					const patched = strategy.transformNodeModule(transformed.code, resolvedCandidate || spec || '', verbose);
@@ -437,9 +437,9 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			const projectRoot = server.config?.root || process.cwd();
 			const serverOrigin = getServerOrigin(server);
 			// Served-module import rewrite, routed through the active framework
-			// strategy (P2-A4). Angular overrides with its register-only entry pass
+			// strategy. Angular overrides with its register-only entry pass
 			// (`rewriteServedModule`); every other flavor falls through to the shared
-			// `rewriteImports` default — i.e. today's non-Angular path.
+			// `rewriteImports` default.
 			const servedModuleCtx: FrameworkServedModuleContext = {
 				moduleId: resolvedCandidate || spec,
 				sfcFileMap,

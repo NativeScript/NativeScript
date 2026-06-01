@@ -40,10 +40,10 @@ describe('FrameworkServerStrategy contract', () => {
 		expect(typescriptServerStrategy.deferDeltaBroadcast ?? false).toBe(false);
 		expect(vueServerStrategy.deferDeltaBroadcast ?? false).toBe(false);
 
-		// P2-A4 (wired): only Angular overrides the `/ns/m` served-module rewrite
-		// (register-only entry pass); only Solid patches served node_modules
-		// (`@solid-refresh`). Every other flavor keeps the shared rewriteImports
-		// default / identity transformNodeModule.
+		// Only Angular overrides the `/ns/m` served-module rewrite (register-only
+		// entry pass); only Solid patches served node_modules (`@solid-refresh`).
+		// Every other flavor keeps the shared rewriteImports default / identity
+		// transformNodeModule.
 		expect(typeof angularServerStrategy.rewriteServedModule).toBe('function');
 		expect(typeof solidServerStrategy.transformNodeModule).toBe('function');
 		expect(typescriptServerStrategy.rewriteServedModule).toBeUndefined();
@@ -53,9 +53,9 @@ describe('FrameworkServerStrategy contract', () => {
 		expect(vueServerStrategy.transformNodeModule).toBeUndefined();
 		expect(angularServerStrategy.transformNodeModule).toBeUndefined();
 
-		// P2-A5 (wired): Vue owns the SFC dev routes; Vue+Solid contribute
-		// import-map entries; Vue+Angular contribute volatile URL patterns.
-		// Everyone else keeps the shared (empty) default.
+		// Vue owns the SFC dev routes; Vue+Solid contribute import-map entries;
+		// Vue+Angular contribute volatile URL patterns. Everyone else keeps the
+		// shared (empty) default.
 		expect(typeof vueServerStrategy.registerRoutes).toBe('function');
 		expect(angularServerStrategy.registerRoutes).toBeUndefined();
 		expect(solidServerStrategy.registerRoutes).toBeUndefined();
@@ -72,7 +72,7 @@ describe('FrameworkServerStrategy contract', () => {
 		expect(typescriptServerStrategy.volatilePatterns).toBeUndefined();
 	});
 
-	it('a strategy can implement every P2-A1 hook with the declared types', () => {
+	it('a strategy can implement every optional hook with the declared types', () => {
 		const calls: string[] = [];
 		const fixture: FrameworkServerStrategy = {
 			flavor: 'fixture',
@@ -80,7 +80,7 @@ describe('FrameworkServerStrategy contract', () => {
 			deferDeltaBroadcast: true,
 			async handleHotUpdate(ctx, deps) {
 				// Exercises both context types. Not invoked here — the production
-				// dispatcher (P2-A3) supplies the live HmrContext + injected deps.
+				// dispatcher supplies the live HmrContext + injected deps.
 				calls.push(`hot:${deps.strategy.flavor}:${ctx.file}`);
 			},
 			rewriteServedModule(code, ctx: FrameworkServedModuleContext) {

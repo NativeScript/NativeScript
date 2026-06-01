@@ -111,7 +111,7 @@ describe('registerImportMapRoute', () => {
 	});
 
 	it('forwards the injected strategy (and its flavor), defaulting to typescript when none', async () => {
-		// P2-A5: buildRuntimeConfig now consults `strategy.importMapEntries` /
+		// buildRuntimeConfig consults `strategy.importMapEntries` /
 		// `strategy.volatilePatterns`, so the route must thread the whole strategy
 		// (not just the flavor string).
 		const ng = mount({ getStrategy: () => ({ flavor: 'angular' }) as any });

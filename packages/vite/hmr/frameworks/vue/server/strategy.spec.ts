@@ -198,8 +198,8 @@ const lazy = import("/ns/sfc/components/View.vue");
 		}
 	});
 
-	// ── P2-A5 hooks (own Vue's dev HTTP surface + device config) ──────────
-	it('P2-A5: registerRoutes mounts the three Vue SFC endpoints', () => {
+	// ── Vue's dev HTTP surface + device config ────────────────────────────
+	it('registerRoutes mounts the three Vue SFC endpoints', () => {
 		const handlers: Array<(...a: any[]) => unknown> = [];
 		const server = { middlewares: { use: (fn: any) => handlers.push(fn) } } as unknown as FrameworkRouteContext['server'];
 
@@ -219,15 +219,15 @@ const lazy = import("/ns/sfc/components/View.vue");
 		expect(handlers).toHaveLength(3);
 	});
 
-	it('P2-A5: importMapEntries pins nativescript-vue + vue to the vendor bundle (order preserved)', () => {
+	it('importMapEntries pins nativescript-vue + vue to the vendor bundle (order preserved)', () => {
 		const entries = vueServerStrategy.importMapEntries!('http://localhost:5173');
 		expect(entries).toEqual({ 'nativescript-vue': 'ns-vendor://nativescript-vue', vue: 'ns-vendor://vue' });
-		// Insertion order must match the former addFrameworkEntries 'vue' arm so
-		// the served import-map JSON stays byte-identical.
+		// Insertion order must stay stable so the served import-map JSON is
+		// byte-identical.
 		expect(Object.keys(entries)).toEqual(['nativescript-vue', 'vue']);
 	});
 
-	it('P2-A5: volatilePatterns marks the SFC + assembler endpoints volatile', () => {
+	it('volatilePatterns marks the SFC + assembler endpoints volatile', () => {
 		expect(vueServerStrategy.volatilePatterns!()).toEqual(['/@ns/sfc/', '/@ns/asm/']);
 	});
 });

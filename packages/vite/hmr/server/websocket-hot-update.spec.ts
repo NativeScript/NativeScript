@@ -138,7 +138,7 @@ describe('handleNsHotUpdate', () => {
 		await pending.catch(() => {});
 	});
 
-	it('delegates to strategy.handleHotUpdate when the flavor owns the hook, skipping the inline path (P2-A3 seam)', async () => {
+	it('delegates to strategy.handleHotUpdate when the flavor owns the hook, skipping the inline path', async () => {
 		const modules = [{ id: 'mod' }] as any;
 		const handleHotUpdate = vi.fn(async () => modules);
 		const ctx = makeCtx('/app/src/foo.ts');

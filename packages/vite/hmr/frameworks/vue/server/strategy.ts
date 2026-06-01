@@ -294,11 +294,10 @@ export const vueServerStrategy: FrameworkServerStrategy = {
 	rewriteVendorSpec(code: string, origin: string, version: number) {
 		return rewriteVendorVueSpec(code, origin, version);
 	},
-	// ── P2-A5: Vue owns its dev HTTP surface + device config ──────────────
-	// Previously hard-coded in shared server modules: `registerSfcHandlers`
-	// ran for EVERY flavor (websocket.ts), and the `vue` arms of
-	// `addFrameworkEntries` / `getVolatilePatterns` switched on flavor in
-	// `import-map.ts`. SFC endpoints are inherently Vue-only.
+	// ── Vue owns its dev HTTP surface + device config ─────────────────────
+	// The SFC dev endpoints are inherently Vue-only, so Vue owns registering
+	// them (and contributing its import-map + volatile-pattern entries) rather
+	// than the shared server modules branching on flavor.
 	registerRoutes(ctx: FrameworkRouteContext) {
 		registerSfcHandlers(ctx.server, {
 			verbose: ctx.verbose,
@@ -311,17 +310,15 @@ export const vueServerStrategy: FrameworkServerStrategy = {
 	},
 	importMapEntries(_origin: string) {
 		// `nativescript-vue` + `vue` resolve from the vendor bundle. Key order
-		// (nativescript-vue then vue) + `ns-vendor://` targets mirror the former
-		// `addFrameworkEntries` 'vue' arm; the caller merges conditionally so an
-		// existing vendor entry wins (today's `if (!imports[...])` behavior).
+		// (nativescript-vue then vue) is significant; the caller merges
+		// conditionally so an existing vendor entry wins.
 		return {
 			'nativescript-vue': `ns-vendor://nativescript-vue`,
 			vue: `ns-vendor://vue`,
 		};
 	},
 	volatilePatterns() {
-		// SFC + assembler endpoints change on every edit. Mirrors the former
-		// `getVolatilePatterns` 'vue' arm (order: sfc then asm).
+		// SFC + assembler endpoints change on every edit (order: sfc then asm).
 		return ['/@ns/sfc/', '/@ns/asm/'];
 	},
 	async processFile(ctx: FrameworkProcessFileContext) {

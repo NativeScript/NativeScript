@@ -68,7 +68,7 @@ describe('solidServerStrategy.transformNodeModule (@solid-refresh patch)', () =>
 	});
 });
 
-describe('solidServerStrategy.importMapEntries (P2-A5)', () => {
+describe('solidServerStrategy.importMapEntries', () => {
 	it('pins solid-js to the canonical HTTP dev.js URL so vendor + HTTP imports dedupe', () => {
 		expect(solidServerStrategy.importMapEntries!('http://localhost:5173')).toEqual({
 			'solid-js': 'http://localhost:5173/ns/m/node_modules/solid-js/dist/dev.js',

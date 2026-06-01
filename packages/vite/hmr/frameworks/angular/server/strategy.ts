@@ -82,8 +82,7 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	rewriteServedModule(code: string, ctx: FrameworkServedModuleContext): string {
 		return prepareAngularEntryForDevice(code, ctx.moduleId, ctx.sfcFileMap, ctx.depFileMap, ctx.projectRoot, ctx.verbose, undefined, ctx.serverOrigin, true);
 	},
-	// ── P2-A5: Angular template/style asset URLs are volatile ─────────────
-	// Mirrors the former `getVolatilePatterns` 'angular' arm.
+	// ── Angular template/style asset URLs are volatile ───────────────────
 	volatilePatterns() {
 		return ['/@ns/asm/'];
 	},

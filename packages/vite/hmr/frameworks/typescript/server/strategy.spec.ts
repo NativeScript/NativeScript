@@ -7,7 +7,7 @@ import { typescriptServerStrategy } from './strategy.js';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 
-// The TS strategy owns `prologue + its tail` (P2-A3 Step 1). Mock the shared
+// The TS strategy owns `prologue + its tail`. Mock the shared
 // prologue so these tests isolate the migrated tail without dragging in the full
 // HMR pipeline; the prologue itself is covered by websocket-hot-update.spec.ts.
 vi.mock('../../../server/websocket-hot-update.js', () => ({

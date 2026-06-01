@@ -1,10 +1,9 @@
 import { isRuntimeGraphExcludedPath, normalizeRuntimeGraphPath } from './runtime-graph-filter.js';
 
 // Framework-agnostic transform-cache-invalidation primitives shared by the
-// per-flavor `handleHotUpdate` tails (Angular + Solid today). Relocated here
-// (P2-A3 Step 2a) out of `frameworks/angular/server/websocket-angular-hot-update.ts`
-// so a non-Angular strategy can depend on them without importing the Angular
-// module — behaviour-preserving move (bodies are unchanged).
+// per-flavor `handleHotUpdate` tails (Angular + Solid today). They live in this
+// neutral module so a non-Angular strategy can depend on them without importing
+// the Angular module.
 
 export function canonicalizeTransformRequestCacheKey(url: string, projectRoot: string): string {
 	if (!url) return url;

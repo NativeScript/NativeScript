@@ -19,7 +19,7 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		// Treat any app TS/JS under the virtual app root as HMR-relevant.
 		return matchesRuntimeGraphModuleId(id, TS_APP_PREFIX, TS_FILE_PATTERN);
 	},
-	// HMR (P2-A3): reached via the dispatcher's delegation seam. Run the shared
+	// HMR: reached via the dispatcher's delegation seam. Run the shared
 	// prologue (scope gate, pending overlay, common graph upsert, CSS), then —
 	// for an in-scope app file — emit a generic graph delta. We treat the changed
 	// file as a graph module with no deps so its hash/identity changes and the

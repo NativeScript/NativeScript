@@ -87,8 +87,7 @@ export interface HotUpdatePrologueState {
  * Vite's `undefined` result, so the caller just returns), otherwise the
  * per-invocation {@link HotUpdatePrologueState} (`root`, `updateRel`, the live
  * `metrics` object, the idempotent `emitSummary`) the per-flavor tail consumes.
- * Behaviour-preserving extraction (P2-A3 Step 0) — the body below is an in-place move.
- * Exported (P2-A3 Step 1) so per-flavor strategies can own `prologue + their tail`.
+ * Exported so per-flavor strategies can own `prologue + their tail`.
  */
 export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateContext): Promise<HotUpdatePrologueState | null> {
 	const { wss, moduleGraph, strategy, verbose, getHmrSourceRootsCached, isSocketClientOpen } = deps;
@@ -397,15 +396,15 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
  * The NativeScript `handleHotUpdate` hook. Runs the shared
  * {@link runHotUpdatePrologue}; unless it already handled the change, dispatches
  * to the per-flavor tail below. As each flavor migrates to
- * {@link FrameworkServerStrategy.handleHotUpdate} (P2-A3) its inline branch is
- * removed; until then the inline tails are the documented default. Re-binds the
- * prologue's per-invocation locals + the injected deps to their original
- * closure-local names so the tails are a faithful, behaviour-preserving move.
+ * {@link FrameworkServerStrategy.handleHotUpdate} its inline branch is removed;
+ * until then the inline tails are the default. Re-binds the prologue's
+ * per-invocation locals + the injected deps to their original closure-local
+ * names so the tails read as a faithful move.
  */
 export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContext): Promise<NsHotUpdateResult> {
-	// P2-A3 delegation seam: a flavor that owns `handleHotUpdate` runs the entire
-	// handler itself (shared prologue + its tail). The inline dispatch below is the
-	// default for flavors not yet routed (currently: angular, solid, vue).
+	// Delegation seam: a flavor that owns `handleHotUpdate` runs the entire handler
+	// itself (shared prologue + its tail). The inline dispatch below is the default
+	// for flavors that don't own the hook (currently: angular, vue).
 	if (deps.strategy.handleHotUpdate) {
 		return deps.strategy.handleHotUpdate(ctx, deps);
 	}
