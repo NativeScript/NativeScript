@@ -54,7 +54,7 @@ export type TransitiveImporterModuleLike = {
 	importers?: Iterable<TransitiveImporterModuleLike> | null;
 };
 
-export function collectAngularTransitiveImportersForInvalidation(options: { modules: Iterable<TransitiveImporterModuleLike> | undefined | null; isExcluded?: (id: string) => boolean; maxDepth?: number }): TransitiveImporterModuleLike[] {
+export function collectTransitiveImportersForInvalidation(options: { modules: Iterable<TransitiveImporterModuleLike> | undefined | null; isExcluded?: (id: string) => boolean; maxDepth?: number }): TransitiveImporterModuleLike[] {
 	const visited = new Set<TransitiveImporterModuleLike>();
 	const collected = new Map<string, TransitiveImporterModuleLike>();
 	const isExcluded = options.isExcluded ?? ((id: string) => id.includes('/node_modules/') || isRuntimeGraphExcludedPath(id));

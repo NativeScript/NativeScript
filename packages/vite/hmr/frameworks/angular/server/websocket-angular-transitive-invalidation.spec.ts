@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { angularSourceHasSemanticDecorator, collectAngularEvictionUrls, collectAngularTransformCacheInvalidationUrls, shouldInvalidateAngularTransitiveImporters } from './websocket-angular-hot-update.js';
-import { collectAngularTransitiveImportersForInvalidation } from '../../../server/transform-cache-invalidation.js';
+import { collectTransitiveImportersForInvalidation } from '../../../server/transform-cache-invalidation.js';
 
 type FakeModule = {
 	id: string;
@@ -22,7 +22,7 @@ function addImporter(child: FakeModule, importer: FakeModule): void {
 	importer.importedModules?.add(child);
 }
 
-describe('collectAngularTransitiveImportersForInvalidation', () => {
+describe('collectTransitiveImportersForInvalidation', () => {
 	it('walks the importer chain past a lazy boundary so shared-constant edits invalidate the component importer', () => {
 		const enumModule = createModule('/src/app/common/constants/onboarding.enum.ts');
 		const componentModule = createModule('/src/app/components/onboarding/survey/onboarding-survey-question.component.ts');
@@ -33,7 +33,7 @@ describe('collectAngularTransitiveImportersForInvalidation', () => {
 		addImporter(componentModule, routesModule);
 		addImporter(routesModule, mainModule);
 
-		const importers = collectAngularTransitiveImportersForInvalidation({
+		const importers = collectTransitiveImportersForInvalidation({
 			modules: [enumModule],
 		});
 
@@ -48,7 +48,7 @@ describe('collectAngularTransitiveImportersForInvalidation', () => {
 		addImporter(enumModule, componentWithQuery);
 		addImporter(enumModule, componentCanonical);
 
-		const importers = collectAngularTransitiveImportersForInvalidation({
+		const importers = collectTransitiveImportersForInvalidation({
 			modules: [enumModule],
 		});
 
@@ -64,7 +64,7 @@ describe('collectAngularTransitiveImportersForInvalidation', () => {
 		addImporter(enumModule, appImporter);
 		addImporter(enumModule, vendorImporter);
 
-		const importers = collectAngularTransitiveImportersForInvalidation({
+		const importers = collectTransitiveImportersForInvalidation({
 			modules: [enumModule],
 		});
 
@@ -79,7 +79,7 @@ describe('collectAngularTransitiveImportersForInvalidation', () => {
 		addImporter(enumModule, appImporter);
 		addImporter(enumModule, specImporter);
 
-		const importers = collectAngularTransitiveImportersForInvalidation({
+		const importers = collectTransitiveImportersForInvalidation({
 			modules: [enumModule],
 		});
 
@@ -94,7 +94,7 @@ describe('collectAngularTransitiveImportersForInvalidation', () => {
 		addImporter(a, b);
 		addImporter(b, a); // cycle
 
-		const importers = collectAngularTransitiveImportersForInvalidation({
+		const importers = collectTransitiveImportersForInvalidation({
 			modules: [enumModule],
 		});
 
@@ -114,7 +114,7 @@ describe('collectAngularTransitiveImportersForInvalidation', () => {
 			prev = next;
 		}
 
-		const importers = collectAngularTransitiveImportersForInvalidation({
+		const importers = collectTransitiveImportersForInvalidation({
 			modules: [root],
 			maxDepth: 3,
 		});
@@ -125,15 +125,15 @@ describe('collectAngularTransitiveImportersForInvalidation', () => {
 
 	it('returns an empty list when there are no importers', () => {
 		const standalone = createModule('/src/app/standalone.ts');
-		const importers = collectAngularTransitiveImportersForInvalidation({
+		const importers = collectTransitiveImportersForInvalidation({
 			modules: [standalone],
 		});
 		expect(importers).toEqual([]);
 	});
 
 	it('handles missing modules input gracefully', () => {
-		expect(collectAngularTransitiveImportersForInvalidation({ modules: undefined })).toEqual([]);
-		expect(collectAngularTransitiveImportersForInvalidation({ modules: null })).toEqual([]);
+		expect(collectTransitiveImportersForInvalidation({ modules: undefined })).toEqual([]);
+		expect(collectTransitiveImportersForInvalidation({ modules: null })).toEqual([]);
 	});
 });
 
@@ -628,7 +628,7 @@ describe('collectAngularEvictionUrls', () => {
 			origin,
 			transitiveImporters: [
 				{ id: `${projectRoot}/src/app/components/login/login.component.ts` },
-				// Even though `collectAngularTransitiveImportersForInvalidation`
+				// Even though `collectTransitiveImportersForInvalidation`
 				// already filters node_modules, eviction must defend in depth
 				// in case an upstream caller passes a raw module set.
 				{ id: '/node_modules/@angular/core/fesm2022/core.mjs' },

@@ -26,7 +26,6 @@ import { registerTxnHandler } from './websocket-txn.js';
 import { registerNsModuleServerRoute } from './websocket-ns-m.js';
 import { registerNsCoreRoute } from './websocket-ns-core.js';
 import { registerNsEntryRoutes } from './websocket-ns-entry.js';
-import { handleNsHotUpdate } from './websocket-hot-update.js';
 import { registerImportMapRoute } from './websocket-import-map-route.js';
 import { isAngularRootComponentUpdate, resolveBootstrapRootComponent, type BootstrapRootComponent } from '../frameworks/angular/server/angular-root-component.js';
 import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports, shouldRemapImport } from './websocket-device-transform.js';
@@ -735,7 +734,9 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 		},
 
 		async handleHotUpdate(ctx) {
-			return handleNsHotUpdate(ctx, {
+			// Every flavor owns its `handleHotUpdate` (shared prologue + its tail);
+			// call the active strategy's hook directly with the injected deps.
+			return strategy.handleHotUpdate?.(ctx, {
 				wss,
 				moduleGraph,
 				strategy,

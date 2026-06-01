@@ -2,7 +2,7 @@ import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkSe
 import * as path from 'path';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import { isRuntimeGraphExcludedPath } from '../../../server/runtime-graph-filter.js';
-import { canonicalizeTransformRequestCacheKey, collectAngularTransitiveImportersForInvalidation } from '../../../server/transform-cache-invalidation.js';
+import { canonicalizeTransformRequestCacheKey, collectTransitiveImportersForInvalidation } from '../../../server/transform-cache-invalidation.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 
 // Solid server strategy for NativeScript HMR.
@@ -110,7 +110,7 @@ export const solidServerStrategy: FrameworkServerStrategy = {
 				};
 				addCacheKey(file);
 				const rootModules = server.moduleGraph.getModulesByFile?.(file);
-				const transitiveImporters = collectAngularTransitiveImportersForInvalidation({
+				const transitiveImporters = collectTransitiveImportersForInvalidation({
 					modules: rootModules ? Array.from(rootModules) : [],
 					isExcluded: (id) => id.includes('/node_modules/') || isRuntimeGraphExcludedPath(id),
 					maxDepth: 16,

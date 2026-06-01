@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import os from 'os';
 import * as path from 'path';
@@ -7,6 +7,17 @@ import { angularServerStrategy } from './strategy.js';
 import { prepareAngularEntryForDevice } from '../../../server/rewrite-imports.js';
 import type { FrameworkServedModuleContext } from '../../../server/framework-strategy.js';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
+import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
+import * as serverOriginModule from '../../../server/server-origin.js';
+
+// angularServerStrategy.handleHotUpdate owns `prologue + the Angular tail`. Mock
+// the shared prologue so the handler tests isolate the migrated Angular tail
+// (broadcast + cache purge orchestration) without the full HMR pipeline; the
+// prologue itself is covered by websocket-hot-update.spec.ts and the deep
+// Angular helpers by their own websocket-angular-*.spec.ts suites.
+vi.mock('../../../server/websocket-hot-update.js', () => ({
+	runHotUpdatePrologue: vi.fn(),
+}));
 
 const APP_ENTRY = getProjectAppVirtualPath('main.ts');
 const APP_ENTRY_WITH_QUERY = `${APP_ENTRY}?import`;
@@ -126,5 +137,103 @@ describe('angularServerStrategy', () => {
 		} finally {
 			rmSync(tmpRoot, { recursive: true, force: true });
 		}
+	});
+});
+
+describe('angularServerStrategy.skipDefaultGraphUpdate', () => {
+	it('opts HTML templates out of the prologue graph-delta upsert, but not .ts / .css', () => {
+		expect(angularServerStrategy.skipDefaultGraphUpdate!('/src/app/home.component.html')).toBe(true);
+		expect(angularServerStrategy.skipDefaultGraphUpdate!('/src/app/home.component.htm')).toBe(true);
+		expect(angularServerStrategy.skipDefaultGraphUpdate!('/src/app/home.component.ts')).toBe(false);
+		expect(angularServerStrategy.skipDefaultGraphUpdate!('/src/app/home.component.css')).toBe(false);
+	});
+});
+
+type FakeClient = { readyState: number; send: ReturnType<typeof vi.fn> };
+
+describe('angularServerStrategy.handleHotUpdate', () => {
+	beforeEach(() => {
+		vi.mocked(runHotUpdatePrologue).mockReset();
+	});
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	function makeServer() {
+		return {
+			config: { root: '/proj', plugins: [] },
+			moduleGraph: {
+				getModuleById: vi.fn(() => undefined),
+				getModulesByFile: vi.fn(() => undefined),
+				invalidateModule: vi.fn(),
+			},
+		} as any;
+	}
+
+	function makeDeps(client?: FakeClient) {
+		const clients = new Set<FakeClient>();
+		if (client) clients.add(client);
+		return {
+			wss: { clients },
+			moduleGraph: { version: 7 },
+			strategy: { flavor: 'angular' },
+			verbose: false,
+			sharedTransformRequest: { invalidateMany: vi.fn() },
+			getBootstrapEntryRelPath: () => '/src/main.ts',
+			isSocketClientOpen: (c: any) => !!c && c.readyState === 1,
+			getHmrSocketRole: () => 'device',
+			rememberAngularReloadSuppression: vi.fn(),
+			getRootComponentIdentity: () => null,
+		} as any;
+	}
+
+	it('purges caches and broadcasts ns:angular-update for a changed .ts component (reboot path)', async () => {
+		const emitSummary = vi.fn();
+		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({ root: '/proj', updateRel: '/src/app/home.component.ts', metrics, emitSummary } as any);
+		vi.spyOn(serverOriginModule, 'getServerOrigin').mockReturnValue('http://test:5173');
+
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const deps = makeDeps(openClient);
+		const ctx = { file: '/proj/src/app/home.component.ts', server: makeServer(), modules: [], read: async () => 'export class HomeComponent {}' } as any;
+
+		const result = await angularServerStrategy.handleHotUpdate!(ctx, deps);
+
+		expect(runHotUpdatePrologue).toHaveBeenCalledWith(ctx, deps);
+		expect(deps.rememberAngularReloadSuppression).toHaveBeenCalledTimes(1);
+		expect(openClient.send).toHaveBeenCalledTimes(1);
+		const payload = JSON.parse(String(openClient.send.mock.calls[0][0]));
+		expect(payload).toMatchObject({ type: 'ns:angular-update', origin: 'http://test:5173', path: '/src/app/home.component.ts', version: 7, importerEntry: '/src/main.ts' });
+		expect(Array.isArray(payload.evictPaths)).toBe(true);
+		expect(emitSummary).toHaveBeenCalledTimes(1);
+		// Angular suppresses Vite's default hot update for .ts/.html edits.
+		expect(result).toEqual([]);
+	});
+
+	it('ignores non-template/non-script files (returns before broadcasting or emitting a summary)', async () => {
+		const emitSummary = vi.fn();
+		const metrics = { invalidated: 0, recipients: 0, narrowed: undefined as boolean | undefined, tAfterFramework: 0 };
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({ root: '/proj', updateRel: '/src/app/data.json', metrics, emitSummary } as any);
+
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const deps = makeDeps(openClient);
+		const ctx = { file: '/proj/src/app/data.json', server: makeServer(), modules: [], read: async () => '{}' } as any;
+
+		const result = await angularServerStrategy.handleHotUpdate!(ctx, deps);
+
+		expect(openClient.send).not.toHaveBeenCalled();
+		expect(deps.rememberAngularReloadSuppression).not.toHaveBeenCalled();
+		expect(emitSummary).not.toHaveBeenCalled();
+		expect(result).toBeUndefined();
+	});
+
+	it('is a no-op when the prologue fully handled the change (null)', async () => {
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue(null as any);
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const deps = makeDeps(openClient);
+		const result = await angularServerStrategy.handleHotUpdate!({ file: '/proj/src/app/home.component.ts', server: makeServer(), modules: [], read: async () => '' } as any, deps);
+
+		expect(openClient.send).not.toHaveBeenCalled();
+		expect(result).toBeUndefined();
 	});
 });

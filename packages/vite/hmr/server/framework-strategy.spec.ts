@@ -24,13 +24,13 @@ describe('FrameworkServerStrategy contract', () => {
 			expect(strategy.processSfcCode).toBeUndefined();
 		}
 
-		// handleHotUpdate: TypeScript, Solid, and Vue own their hot-update handler
-		// (shared prologue + their tail); only Angular still takes the shared
-		// dispatcher's inline tail.
+		// handleHotUpdate: every flavor owns its hot-update handler (shared prologue
+		// + its own tail); the WebSocket plugin calls the active strategy's hook
+		// directly — there is no shared inline dispatcher tail left.
 		expect(typeof typescriptServerStrategy.handleHotUpdate).toBe('function');
 		expect(typeof solidServerStrategy.handleHotUpdate).toBe('function');
 		expect(typeof vueServerStrategy.handleHotUpdate).toBe('function');
-		expect(angularServerStrategy.handleHotUpdate).toBeUndefined();
+		expect(typeof angularServerStrategy.handleHotUpdate).toBe('function');
 
 		// deferDeltaBroadcast: the flavors whose client re-fetches the changed
 		// module (Solid, Angular) defer the prologue's common-block delta
@@ -39,6 +39,16 @@ describe('FrameworkServerStrategy contract', () => {
 		expect(angularServerStrategy.deferDeltaBroadcast).toBe(true);
 		expect(typescriptServerStrategy.deferDeltaBroadcast ?? false).toBe(false);
 		expect(vueServerStrategy.deferDeltaBroadcast ?? false).toBe(false);
+
+		// skipDefaultGraphUpdate: only Angular opts its HTML templates out of the
+		// prologue's default graph-delta upsert (its tail re-queries the graph and
+		// drives Analog's in-place swap / the reboot path itself).
+		expect(typeof angularServerStrategy.skipDefaultGraphUpdate).toBe('function');
+		expect(angularServerStrategy.skipDefaultGraphUpdate!('/src/app/home.component.html')).toBe(true);
+		expect(angularServerStrategy.skipDefaultGraphUpdate!('/src/app/home.component.ts')).toBe(false);
+		expect(typescriptServerStrategy.skipDefaultGraphUpdate).toBeUndefined();
+		expect(solidServerStrategy.skipDefaultGraphUpdate).toBeUndefined();
+		expect(vueServerStrategy.skipDefaultGraphUpdate).toBeUndefined();
 
 		// Only Angular overrides the `/ns/m` served-module rewrite (register-only
 		// entry pass); only Solid patches served node_modules (`@solid-refresh`).

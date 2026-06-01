@@ -107,10 +107,10 @@ export interface FrameworkServerStrategy {
 	// strategy omits a hook, the shared pipeline keeps its default behavior.
 
 	/**
-	 * Full per-framework `handleHotUpdate` implementation. When defined, the
-	 * shared `handleNsHotUpdate` dispatcher delegates to it; when omitted the
-	 * shared default path runs (today's behavior). Absorbs the per-flavor switch
-	 * in `websocket-hot-update.ts`.
+	 * Full per-framework `handleHotUpdate` implementation. Every flavor owns one:
+	 * the WebSocket plugin's `handleHotUpdate` Vite hook calls it directly, and
+	 * the implementation runs the shared {@link NsHotUpdateContext}-driven
+	 * `runHotUpdatePrologue` followed by its own framework tail.
 	 */
 	handleHotUpdate?(ctx: HmrContext, deps: NsHotUpdateContext): Promise<HmrContext['modules'] | void>;
 
@@ -120,6 +120,15 @@ export interface FrameworkServerStrategy {
 	 * & Solid). Defaults to `false` → delta is broadcast (today's TS/Vue path).
 	 */
 	readonly deferDeltaBroadcast?: boolean;
+
+	/**
+	 * When this returns `true` for the changed file, the shared prologue SKIPS
+	 * its default module-graph delta upsert — the framework's own
+	 * `handleHotUpdate` tail re-queries the graph and drives the update itself
+	 * (Angular HTML templates: Analog's in-place swap or the NS reboot path).
+	 * Defaults to no-skip (the prologue always upserts).
+	 */
+	skipDefaultGraphUpdate?(file: string): boolean;
 
 	/**
 	 * Override the `/ns/m` served-module import rewrite. Defaults to the shared
