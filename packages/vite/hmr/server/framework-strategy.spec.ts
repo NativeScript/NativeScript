@@ -24,12 +24,12 @@ describe('FrameworkServerStrategy contract', () => {
 			expect(strategy.processSfcCode).toBeUndefined();
 		}
 
-		// handleHotUpdate: TypeScript and Solid own their hot-update handler
-		// (shared prologue + their tail); Vue and Angular still take the shared
+		// handleHotUpdate: TypeScript, Solid, and Vue own their hot-update handler
+		// (shared prologue + their tail); only Angular still takes the shared
 		// dispatcher's inline tail.
 		expect(typeof typescriptServerStrategy.handleHotUpdate).toBe('function');
 		expect(typeof solidServerStrategy.handleHotUpdate).toBe('function');
-		expect(vueServerStrategy.handleHotUpdate).toBeUndefined();
+		expect(typeof vueServerStrategy.handleHotUpdate).toBe('function');
 		expect(angularServerStrategy.handleHotUpdate).toBeUndefined();
 
 		// deferDeltaBroadcast: the flavors whose client re-fetches the changed

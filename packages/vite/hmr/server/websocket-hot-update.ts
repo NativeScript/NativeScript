@@ -1,8 +1,6 @@
 import type { HmrContext } from 'vite';
 import type { WebSocketServer } from 'ws';
 import * as path from 'path';
-import { createHash } from 'crypto';
-import * as PAT from './constants.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import type { HmrModuleGraph } from './hmr-module-graph.js';
 import type { SharedTransformRequestRunner } from './shared-transform-request.js';
@@ -14,19 +12,18 @@ import { getAppCssState } from '../../helpers/app-css-state.js';
 import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyHmrUpdateKind, formatHmrUpdateSummary } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
-import type { AngularUpdateMessage, CssUpdateItem, CssUpdatesMessage, VueSfcRegistryUpdateMessage } from '../shared/protocol.js';
-import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
-import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from './websocket-device-transform.js';
+import type { AngularUpdateMessage, CssUpdateItem, CssUpdatesMessage } from '../shared/protocol.js';
 import { getServerOrigin } from './server-origin.js';
 import { isSameAngularModuleRel, type BootstrapRootComponent } from '../frameworks/angular/server/angular-root-component.js';
 
 /**
  * Dependencies injected into {@link handleNsHotUpdate}. These hold per-server
  * instance state (`wss`, `moduleGraph`, the file maps, `sharedTransformRequest`)
- * or are plugin-closure accessors; the pure transform helpers (`cleanCode`,
- * `rewriteImports`, `processSfcCode`, `collectImportDependencies`) are imported
- * directly from `websocket-device-transform.ts` (as is `getServerOrigin` from
- * `server-origin.ts` — spy via the module in tests).
+ * or are plugin-closure accessors. Pure transform helpers (`cleanCode`,
+ * `rewriteImports`, `processSfcCode`, `collectImportDependencies`) are NOT on the
+ * context — the strategies that need them import them directly from
+ * `websocket-device-transform.ts`. `getServerOrigin` is likewise imported
+ * directly here from `server-origin.ts` (spy via the module in tests).
  */
 export interface NsHotUpdateContext {
 	wss: WebSocketServer | null;
@@ -404,14 +401,14 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContext): Promise<NsHotUpdateResult> {
 	// Delegation seam: a flavor that owns `handleHotUpdate` runs the entire handler
 	// itself (shared prologue + its tail). The inline dispatch below is the default
-	// for flavors that don't own the hook (currently: angular, vue).
+	// for flavors that don't own the hook (currently: angular only).
 	if (deps.strategy.handleHotUpdate) {
 		return deps.strategy.handleHotUpdate(ctx, deps);
 	}
 	const state = await runHotUpdatePrologue(ctx, deps);
 	if (!state) return;
 	const { root, updateRel, metrics: updateMetrics, emitSummary: emitHmrUpdateSummary } = state;
-	const { strategy, verbose, wss, moduleGraph, sfcFileMap, depFileMap, sharedTransformRequest, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, shouldRemapImport, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
+	const { strategy, verbose, wss, moduleGraph, sharedTransformRequest, getBootstrapEntryRelPath, isSocketClientOpen, getHmrSocketRole, rememberAngularReloadSuppression, getRootComponentIdentity } = deps;
 	const { file, server } = ctx;
 
 	// Framework-specific hot update handling
@@ -825,226 +822,8 @@ export async function handleNsHotUpdate(ctx: HmrContext, deps: NsHotUpdateContex
 		return;
 	}
 
-	// TypeScript and Solid are routed through their strategy's `handleHotUpdate`
-	// (via the delegation seam at the top of this function); their tails — a
-	// generic graph delta (TS) and the cache-busting delta (Solid) — live in the
-	// respective strategy files.
-
-	// Handle .vue file updates
-	if (!file.endsWith('.vue')) {
-		if (verbose) console.log('[hmr-ws] Not a .vue file, skipping');
-		return;
-	}
-
-	if (verbose) console.log('[hmr-ws] Processing .vue file update...');
-
-	try {
-		const root = server.config.root || process.cwd();
-		let rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
-
-		// Transform the .vue file
-		const transformed = await server.transformRequest(rel);
-		if (!transformed?.code) return;
-
-		let code = transformed.code;
-
-		// Clean and process
-		code = cleanCode(code, strategy);
-
-		// Process dependencies
-		const visitedPaths = new Set<string>();
-		const importerDir = path.posix.dirname(rel);
-
-		// Collect dependencies from this file
-		const deps = new Set<string>();
-		const collectDeps = (pattern: RegExp) => {
-			let match: RegExpExecArray | null;
-			while ((match = pattern.exec(code)) !== null) {
-				const spec = match[2];
-				if (!spec || PAT.VUE_FILE_PATTERN.test(spec) || !shouldRemapImport(spec)) {
-					continue;
-				}
-
-				let key: string;
-				if (spec.startsWith('/')) {
-					key = spec;
-				} else if (spec.startsWith('./') || spec.startsWith('../')) {
-					key = path.posix.normalize(path.posix.join(importerDir, spec));
-					if (!key.startsWith('/')) key = '/' + key;
-				} else {
-					continue;
-				}
-
-				key = key.replace(PAT.QUERY_PATTERN, '');
-				deps.add(key);
-			}
-		};
-
-		collectDeps(PAT.IMPORT_PATTERN_1);
-		collectDeps(PAT.IMPORT_PATTERN_2);
-		collectDeps(PAT.EXPORT_PATTERN);
-		collectDeps(PAT.IMPORT_PATTERN_3);
-
-		// CRITICAL: Collect .vue file imports separately
-		// Use matchAll() to avoid regex state issues
-		const vueDeps = new Set<string>();
-		const vueImportMatches = [...code.matchAll(PAT.IMPORT_PATTERN_1), ...code.matchAll(PAT.VUE_FILE_IMPORT)];
-
-		for (const match of vueImportMatches) {
-			const spec = match[2];
-			if (!spec || !PAT.VUE_FILE_PATTERN.test(spec)) {
-				continue;
-			}
-
-			let key: string;
-			if (spec.startsWith('/')) {
-				key = spec.replace(PAT.QUERY_PATTERN, '');
-			} else if (spec.startsWith('./') || spec.startsWith('../')) {
-				key = path.posix.normalize(path.posix.join(importerDir, spec.replace(PAT.QUERY_PATTERN, '')));
-				if (!key.startsWith('/')) key = '/' + key;
-			} else {
-				continue;
-			}
-
-			// Ensure this .vue file is registered in sfcFileMap
-			if (!sfcFileMap.has(key)) {
-				const hash = createHash('md5').update(key).digest('hex').slice(0, 8);
-				sfcFileMap.set(key, `sfc-${hash}.mjs`);
-				if (verbose) {
-					console.log(`[hmr-ws] Registered .vue import: ${key} → sfc-${hash}.mjs`);
-				}
-			}
-
-			// Add to vueDeps for separate processing
-			vueDeps.add(key);
-		}
-
-		// Process .vue dependencies (they stay as sfc-*.mjs imports)
-		for (const vueDep of vueDeps) {
-			await strategy.processFile({
-				filePath: vueDep,
-				server,
-				sfcFileMap,
-				depFileMap,
-				visitedPaths,
-				wss,
-				verbose,
-				helpers: {
-					cleanCode: (code: string) => cleanCode(code, strategy),
-					collectImportDependencies,
-					isCoreGlobalsReference,
-					isNativeScriptCoreModule,
-					isNativeScriptPluginModule,
-					resolveVendorFromCandidate,
-					createHash: (value: string) => createHash('md5').update(value).digest('hex'),
-				},
-			});
-		}
-
-		// Process with consistent SFC processor (removes non-.vue imports)
-		code = processSfcCode(code);
-
-		// Rewrite ONLY .vue imports (everything else is now inlined)
-		const projectRoot = server.config.root || process.cwd();
-		code = rewriteImports(code, rel, sfcFileMap, depFileMap, projectRoot, verbose, undefined);
-		moduleGraph.upsert(rel, code, [...deps, ...vueDeps]);
-
-		// Add HMR runtime prelude (CRITICAL for runtime)
-		const hmrPrelude = `
-// Embedded HMR Runtime for NativeScript runtime
-const createHotContext = (id) => ({
-  on: (event, handler) => {
-    if (!globalThis.__NS_HMR_HANDLERS__) globalThis.__NS_HMR_HANDLERS__ = new Map();
-    if (!globalThis.__NS_HMR_HANDLERS__.has(id)) globalThis.__NS_HMR_HANDLERS__.set(id, []);
-    globalThis.__NS_HMR_HANDLERS__.get(id).push({ event, handler });
-  },
-  accept: (handler) => {
-    if (!globalThis.__NS_HMR_ACCEPTS__) globalThis.__NS_HMR_ACCEPTS__ = new Map();
-    globalThis.__NS_HMR_ACCEPTS__.set(id, handler);
-  }
-});
-
-if (typeof import.meta === 'undefined') {
-  globalThis.importMeta = { hot: null };
-} else if (!import.meta.hot) {
-  import.meta.hot = null;
-}
-
-const __vite__createHotContext = createHotContext;
-
-if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
-  globalThis.__VUE_HMR_RUNTIME__ = {
-    createRecord: () => true,
-    reload: () => {},
-    rerender: () => {},
-  };
-}
-
-// Install a lightweight guard to capture require('http(s)://...') attempts with stack traces
-(() => {
-  try {
-    const g = globalThis;
-    if (g.__NS_REQUIRE_GUARD_INSTALLED__) return;
-	const makeGuard = (orig, label) => function () {
-      try {
-        const spec = arguments[0];
-        if (typeof spec === 'string' && /^(?:https?:)\/\//.test(spec)) {
-          const err = new Error('[ns-hmr][require-guard] require of URL: ' + spec + ' via ' + label);
-          const stack = err.stack || '';
-          console.error(err.message + '\n' + stack);
-          try { g.__NS_REQUIRE_GUARD_LAST__ = { spec, stack, label, ts: Date.now() }; } catch {}
-        }
-      } catch {}
-      return orig.apply(this, arguments);
-    };
-    if (typeof g.require === 'function' && !g.require.__NS_REQ_GUARDED__) {
-      const orig = g.require; g.require = makeGuard(orig, 'require'); g.require.__NS_REQ_GUARDED__ = true;
-    }
-    if (typeof g.__nsRequire === 'function' && !g.__nsRequire.__NS_REQ_GUARDED__) {
-      const orig = g.__nsRequire; g.__nsRequire = makeGuard(orig, '__nsRequire'); g.__nsRequire.__NS_REQ_GUARDED__ = true;
-    }
-    g.__NS_REQUIRE_GUARD_INSTALLED__ = true;
-  } catch {}
-})();
-`;
-
-		code = hmrPrelude + '\n' + code;
-
-		// Update SFC registry
-		const hash = createHash('md5').update(rel).digest('hex').slice(0, 8);
-		const fileName = sfcFileMap.get(rel) || `sfc-${hash}.mjs`;
-		sfcFileMap.set(rel, fileName);
-
-		const ts = Date.now();
-
-		// FIRST: Send mapping-only registry update (no code)
-		const registryUpdateMsg: VueSfcRegistryUpdateMessage = {
-			type: 'ns:vue-sfc-registry-update',
-			path: rel,
-			fileName,
-			ts,
-			version: moduleGraph.version,
-		};
-
-		wss.clients.forEach((client) => {
-			if (isSocketClientOpen(client)) {
-				client.send(JSON.stringify(registryUpdateMsg));
-			}
-		});
-
-		// HTTP-only mode: the device loads SFC artifacts and their dependencies via
-		// HTTP endpoints on demand, so the WS channel stays metadata-only (just the
-		// registry update above). No code-push, dependency harvest, or legacy dynamic
-		// module message is emitted here.
-	} catch (error) {
-		console.warn('[hmr-ws] HMR update failed:', error);
-		console.error(error);
-	}
-
-	// Vue path emits update summary at the end of the function so
-	// every framework branch gets exactly one log line. Idempotent
-	// — if any branch already emitted, this is a no-op.
-	emitHmrUpdateSummary();
-	// CRITICAL: Return empty array to prevent Vite's default HMR
-	return [];
+	// Only Angular's tail (above) remains inline. TypeScript, Solid, and Vue own
+	// `handleHotUpdate` (each runs the shared prologue + its own tail) and reach it
+	// via the delegation seam at the top of this function. Once Angular migrates
+	// too, this dispatcher collapses to the seam and can be deleted.
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { createHash } from 'crypto';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs';
 import * as path from 'path';
@@ -10,8 +10,16 @@ vi.mock('../../../helpers/vendor-rewrite.js', () => {
 	};
 });
 
+// vueServerStrategy.handleHotUpdate owns `prologue + its tail`. Mock the shared
+// prologue so the handler tests isolate the migrated Vue SFC tail without the
+// full HMR pipeline; the prologue itself is covered by websocket-hot-update.spec.ts.
+vi.mock('../../../server/websocket-hot-update.js', () => ({
+	runHotUpdatePrologue: vi.fn(),
+}));
+
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
 import { vueServerStrategy } from './strategy.js';
+import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkRouteContext } from '../../../server/framework-strategy.js';
 
@@ -229,5 +237,103 @@ const lazy = import("/ns/sfc/components/View.vue");
 
 	it('volatilePatterns marks the SFC + assembler endpoints volatile', () => {
 		expect(vueServerStrategy.volatilePatterns!()).toEqual(['/@ns/sfc/', '/@ns/asm/']);
+	});
+});
+
+describe('vueServerStrategy.handleHotUpdate', () => {
+	beforeEach(() => {
+		vi.mocked(runHotUpdatePrologue).mockReset();
+	});
+
+	function makeDeps() {
+		const client = { readyState: 1, OPEN: 1, send: vi.fn() };
+		const moduleGraph = { version: 7, upsert: vi.fn() };
+		const deps = {
+			strategy: vueServerStrategy,
+			verbose: false,
+			wss: { clients: new Set([client]) },
+			moduleGraph,
+			sfcFileMap: new Map<string, string>(),
+			depFileMap: new Map<string, string>(),
+			isSocketClientOpen: (c: any) => !!c && c.readyState === 1,
+			shouldRemapImport: () => false,
+		} as any;
+		return { deps, client, moduleGraph };
+	}
+
+	function makeServer() {
+		return {
+			config: { root: '/proj' },
+			transformRequest: vi.fn(async () => ({ code: 'const x = 1; export default {};' })),
+		} as any;
+	}
+
+	it('re-transforms a changed .vue SFC, upserts the graph, and broadcasts a metadata-only registry update', async () => {
+		const emitSummary = vi.fn();
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({
+			root: '/proj',
+			updateRel: '/app/Home.vue',
+			metrics: { tAfterFramework: 0 } as any,
+			emitSummary,
+		} as any);
+
+		const { deps, client, moduleGraph } = makeDeps();
+		const server = makeServer();
+		const ctx = { file: '/proj/app/Home.vue', server } as any;
+
+		const result = await vueServerStrategy.handleHotUpdate!(ctx, deps);
+
+		expect(runHotUpdatePrologue).toHaveBeenCalledWith(ctx, deps);
+		expect(server.transformRequest).toHaveBeenCalledWith('/app/Home.vue');
+		expect(moduleGraph.upsert).toHaveBeenCalledTimes(1);
+		expect(moduleGraph.upsert.mock.calls[0][0]).toBe('/app/Home.vue');
+
+		// The SFC registers itself in the file map under the deterministic md5 name.
+		const expectedFileName = `sfc-${createHash('md5').update('/app/Home.vue').digest('hex').slice(0, 8)}.mjs`;
+		expect(deps.sfcFileMap.get('/app/Home.vue')).toBe(expectedFileName);
+
+		// HTTP-only mode: exactly one metadata-only registry-update frame, no code push.
+		expect(client.send).toHaveBeenCalledTimes(1);
+		const payload = JSON.parse(client.send.mock.calls[0][0]);
+		expect(payload).toMatchObject({
+			type: 'ns:vue-sfc-registry-update',
+			path: '/app/Home.vue',
+			fileName: expectedFileName,
+			version: 7,
+		});
+
+		expect(emitSummary).toHaveBeenCalledTimes(1);
+		// Returns an empty array so Vite skips its own default HMR for the SFC.
+		expect(result).toEqual([]);
+	});
+
+	it('ignores non-.vue files (returns before transforming, broadcasting, or emitting a summary)', async () => {
+		const emitSummary = vi.fn();
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue({
+			root: '/proj',
+			updateRel: '/app/styles.ts',
+			metrics: { tAfterFramework: 0 } as any,
+			emitSummary,
+		} as any);
+
+		const { deps, client, moduleGraph } = makeDeps();
+		const server = makeServer();
+		await vueServerStrategy.handleHotUpdate!({ file: '/proj/app/styles.ts', server } as any, deps);
+
+		expect(server.transformRequest).not.toHaveBeenCalled();
+		expect(moduleGraph.upsert).not.toHaveBeenCalled();
+		expect(client.send).not.toHaveBeenCalled();
+		expect(emitSummary).not.toHaveBeenCalled();
+	});
+
+	it('is a no-op when the prologue fully handled the change (null)', async () => {
+		vi.mocked(runHotUpdatePrologue).mockResolvedValue(null as any);
+		const { deps, client, moduleGraph } = makeDeps();
+		const server = makeServer();
+		await vueServerStrategy.handleHotUpdate!({ file: '/proj/app/Home.vue', server } as any, deps);
+
+		expect(server.transformRequest).not.toHaveBeenCalled();
+		expect(moduleGraph.upsert).not.toHaveBeenCalled();
+		expect(client.send).not.toHaveBeenCalled();
 	});
 });

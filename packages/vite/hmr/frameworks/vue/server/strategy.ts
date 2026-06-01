@@ -6,7 +6,10 @@ import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkRouteContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
 import { registerSfcHandlers } from './websocket-sfc.js';
 import { getProjectAppPath } from '../../../../helpers/utils.js';
-import type { VueSfcRegistryEntry, VueSfcRegistryMessage } from '../../../shared/protocol.js';
+import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
+import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from '../../../server/websocket-device-transform.js';
+import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from '../../../server/websocket-module-specifiers.js';
+import type { VueSfcRegistryEntry, VueSfcRegistryMessage, VueSfcRegistryUpdateMessage } from '../../../shared/protocol.js';
 
 const VENDOR_MJS = '/@nativescript/vendor.mjs';
 const VUE_HTTP_SFC_DIR = `${getProjectAppPath()}/sfc`;
@@ -268,6 +271,235 @@ export const vueServerStrategy: FrameworkServerStrategy = {
 	flavor: 'vue',
 	matchesFile(id: string) {
 		return PAT.VUE_FILE_PATTERN.test(id);
+	},
+	// HMR: reached via the dispatcher's delegation seam. Run the shared prologue
+	// (scope gate, pending overlay, common graph upsert, CSS), then — for a
+	// changed `.vue` SFC — re-transform + clean it, register its nested `.vue`
+	// imports in the SFC map, and broadcast a metadata-only registry update so the
+	// device re-fetches the SFC artifact over HTTP. Non-`.vue` edits fall through
+	// (the prologue already handled CSS / the common graph delta).
+	async handleHotUpdate(ctx, deps) {
+		const state = await runHotUpdatePrologue(ctx, deps);
+		if (!state) return;
+		const { emitSummary } = state;
+		const { strategy, verbose, wss, moduleGraph, sfcFileMap, depFileMap, isSocketClientOpen, shouldRemapImport } = deps;
+		const { file, server } = ctx;
+
+		if (!file.endsWith('.vue')) {
+			if (verbose) console.log('[hmr-ws] Not a .vue file, skipping');
+			return;
+		}
+
+		if (verbose) console.log('[hmr-ws] Processing .vue file update...');
+
+		try {
+			const root = server.config.root || process.cwd();
+			let rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+
+			// Transform the .vue file
+			const transformed = await server.transformRequest(rel);
+			if (!transformed?.code) return;
+
+			let code = transformed.code;
+
+			// Clean and process
+			code = cleanCode(code, strategy);
+
+			// Process dependencies
+			const visitedPaths = new Set<string>();
+			const importerDir = path.posix.dirname(rel);
+
+			// Collect dependencies from this file
+			const deps = new Set<string>();
+			const collectDeps = (pattern: RegExp) => {
+				let match: RegExpExecArray | null;
+				while ((match = pattern.exec(code)) !== null) {
+					const spec = match[2];
+					if (!spec || PAT.VUE_FILE_PATTERN.test(spec) || !shouldRemapImport(spec)) {
+						continue;
+					}
+
+					let key: string;
+					if (spec.startsWith('/')) {
+						key = spec;
+					} else if (spec.startsWith('./') || spec.startsWith('../')) {
+						key = path.posix.normalize(path.posix.join(importerDir, spec));
+						if (!key.startsWith('/')) key = '/' + key;
+					} else {
+						continue;
+					}
+
+					key = key.replace(PAT.QUERY_PATTERN, '');
+					deps.add(key);
+				}
+			};
+
+			collectDeps(PAT.IMPORT_PATTERN_1);
+			collectDeps(PAT.IMPORT_PATTERN_2);
+			collectDeps(PAT.EXPORT_PATTERN);
+			collectDeps(PAT.IMPORT_PATTERN_3);
+
+			// CRITICAL: Collect .vue file imports separately
+			// Use matchAll() to avoid regex state issues
+			const vueDeps = new Set<string>();
+			const vueImportMatches = [...code.matchAll(PAT.IMPORT_PATTERN_1), ...code.matchAll(PAT.VUE_FILE_IMPORT)];
+
+			for (const match of vueImportMatches) {
+				const spec = match[2];
+				if (!spec || !PAT.VUE_FILE_PATTERN.test(spec)) {
+					continue;
+				}
+
+				let key: string;
+				if (spec.startsWith('/')) {
+					key = spec.replace(PAT.QUERY_PATTERN, '');
+				} else if (spec.startsWith('./') || spec.startsWith('../')) {
+					key = path.posix.normalize(path.posix.join(importerDir, spec.replace(PAT.QUERY_PATTERN, '')));
+					if (!key.startsWith('/')) key = '/' + key;
+				} else {
+					continue;
+				}
+
+				// Ensure this .vue file is registered in sfcFileMap
+				if (!sfcFileMap.has(key)) {
+					const hash = createHash('md5').update(key).digest('hex').slice(0, 8);
+					sfcFileMap.set(key, `sfc-${hash}.mjs`);
+					if (verbose) {
+						console.log(`[hmr-ws] Registered .vue import: ${key} → sfc-${hash}.mjs`);
+					}
+				}
+
+				// Add to vueDeps for separate processing
+				vueDeps.add(key);
+			}
+
+			// Process .vue dependencies (they stay as sfc-*.mjs imports)
+			for (const vueDep of vueDeps) {
+				await strategy.processFile({
+					filePath: vueDep,
+					server,
+					sfcFileMap,
+					depFileMap,
+					visitedPaths,
+					wss,
+					verbose,
+					helpers: {
+						cleanCode: (code: string) => cleanCode(code, strategy),
+						collectImportDependencies,
+						isCoreGlobalsReference,
+						isNativeScriptCoreModule,
+						isNativeScriptPluginModule,
+						resolveVendorFromCandidate,
+						createHash: (value: string) => createHash('md5').update(value).digest('hex'),
+					},
+				});
+			}
+
+			// Process with consistent SFC processor (removes non-.vue imports)
+			code = processSfcCode(code);
+
+			// Rewrite ONLY .vue imports (everything else is now inlined)
+			const projectRoot = server.config.root || process.cwd();
+			code = rewriteImports(code, rel, sfcFileMap, depFileMap, projectRoot, verbose, undefined);
+			moduleGraph.upsert(rel, code, [...deps, ...vueDeps]);
+
+			// Add HMR runtime prelude (CRITICAL for runtime)
+			const hmrPrelude = `
+// Embedded HMR Runtime for NativeScript runtime
+const createHotContext = (id) => ({
+  on: (event, handler) => {
+    if (!globalThis.__NS_HMR_HANDLERS__) globalThis.__NS_HMR_HANDLERS__ = new Map();
+    if (!globalThis.__NS_HMR_HANDLERS__.has(id)) globalThis.__NS_HMR_HANDLERS__.set(id, []);
+    globalThis.__NS_HMR_HANDLERS__.get(id).push({ event, handler });
+  },
+  accept: (handler) => {
+    if (!globalThis.__NS_HMR_ACCEPTS__) globalThis.__NS_HMR_ACCEPTS__ = new Map();
+    globalThis.__NS_HMR_ACCEPTS__.set(id, handler);
+  }
+});
+
+if (typeof import.meta === 'undefined') {
+  globalThis.importMeta = { hot: null };
+} else if (!import.meta.hot) {
+  import.meta.hot = null;
+}
+
+const __vite__createHotContext = createHotContext;
+
+if (typeof __VUE_HMR_RUNTIME__ === 'undefined') {
+  globalThis.__VUE_HMR_RUNTIME__ = {
+    createRecord: () => true,
+    reload: () => {},
+    rerender: () => {},
+  };
+}
+
+// Install a lightweight guard to capture require('http(s)://...') attempts with stack traces
+(() => {
+  try {
+    const g = globalThis;
+    if (g.__NS_REQUIRE_GUARD_INSTALLED__) return;
+	const makeGuard = (orig, label) => function () {
+      try {
+        const spec = arguments[0];
+        if (typeof spec === 'string' && /^(?:https?:)\/\//.test(spec)) {
+          const err = new Error('[ns-hmr][require-guard] require of URL: ' + spec + ' via ' + label);
+          const stack = err.stack || '';
+          console.error(err.message + '\n' + stack);
+          try { g.__NS_REQUIRE_GUARD_LAST__ = { spec, stack, label, ts: Date.now() }; } catch {}
+        }
+      } catch {}
+      return orig.apply(this, arguments);
+    };
+    if (typeof g.require === 'function' && !g.require.__NS_REQ_GUARDED__) {
+      const orig = g.require; g.require = makeGuard(orig, 'require'); g.require.__NS_REQ_GUARDED__ = true;
+    }
+    if (typeof g.__nsRequire === 'function' && !g.__nsRequire.__NS_REQ_GUARDED__) {
+      const orig = g.__nsRequire; g.__nsRequire = makeGuard(orig, '__nsRequire'); g.__nsRequire.__NS_REQ_GUARDED__ = true;
+    }
+    g.__NS_REQUIRE_GUARD_INSTALLED__ = true;
+  } catch {}
+})();
+`;
+
+			code = hmrPrelude + '\n' + code;
+
+			// Update SFC registry
+			const hash = createHash('md5').update(rel).digest('hex').slice(0, 8);
+			const fileName = sfcFileMap.get(rel) || `sfc-${hash}.mjs`;
+			sfcFileMap.set(rel, fileName);
+
+			const ts = Date.now();
+
+			// FIRST: Send mapping-only registry update (no code)
+			const registryUpdateMsg: VueSfcRegistryUpdateMessage = {
+				type: 'ns:vue-sfc-registry-update',
+				path: rel,
+				fileName,
+				ts,
+				version: moduleGraph.version,
+			};
+
+			wss.clients.forEach((client) => {
+				if (isSocketClientOpen(client)) {
+					client.send(JSON.stringify(registryUpdateMsg));
+				}
+			});
+
+			// HTTP-only mode: the device loads SFC artifacts and their dependencies via
+			// HTTP endpoints on demand, so the WS channel stays metadata-only (just the
+			// registry update above). No code-push, dependency harvest, or legacy dynamic
+			// module message is emitted here.
+		} catch (error) {
+			console.warn('[hmr-ws] HMR update failed:', error);
+			console.error(error);
+		}
+
+		// Emit the update summary at the end so every code path gets exactly one
+		// log line. Idempotent — a no-op if an earlier return already emitted.
+		emitSummary();
+		// CRITICAL: Return empty array to prevent Vite's default HMR
+		return [];
 	},
 	preClean(code: string) {
 		let result = code;
