@@ -869,10 +869,11 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 			// handled by _processNextNavigationEntry. We remove all non-NativeScript fragments.
 			const fm = activity.getSupportFragmentManager();
 			const fragments = fm.getFragments();
-			if (fragments && fragments.size() > 0) {
+			const size = fragments?.size?.() ?? 0;
+			if (size > 0) {
 				const ft = fm.beginTransaction();
 				let removed = false;
-				for (let i = fragments.size() - 1; i >= 0; i--) {
+				for (let i = size - 1; i >= 0; i--) {
 					const f = fragments.get(i);
 					if (!f) continue;
 					const tag = f.getTag();
