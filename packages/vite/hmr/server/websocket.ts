@@ -17,7 +17,8 @@ import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath 
 import { shouldIncludeRuntimeGraphFile, shouldSkipRuntimeGraphDirectoryName } from './runtime-graph-filter.js';
 import { getHmrSourceRoots } from '../../helpers/hmr-scope.js';
 import { getTsConfigData } from '../../helpers/ts-config-paths.js';
-import { canonicalizeTransformRequestCacheKey, normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
+import { normalizeHotReloadMatchPath, shouldSuppressViteFullReloadPayload, type PendingAngularReloadSuppressionEntry } from '../frameworks/angular/server/websocket-angular-hot-update.js';
+import { canonicalizeTransformRequestCacheKey } from './transform-cache-invalidation.js';
 import { HmrModuleGraph } from './hmr-module-graph.js';
 import { registerNsRtBridgeRoute } from './ns-rt-route.js';
 import { registerVendorUnifierHandler } from './websocket-vendor-unifier.js';

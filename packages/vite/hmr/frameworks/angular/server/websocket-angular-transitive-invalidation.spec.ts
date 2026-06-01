@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { angularSourceHasSemanticDecorator, collectAngularEvictionUrls, collectAngularTransformCacheInvalidationUrls, collectAngularTransitiveImportersForInvalidation, shouldInvalidateAngularTransitiveImporters } from './websocket-angular-hot-update.js';
+import { angularSourceHasSemanticDecorator, collectAngularEvictionUrls, collectAngularTransformCacheInvalidationUrls, shouldInvalidateAngularTransitiveImporters } from './websocket-angular-hot-update.js';
+import { collectAngularTransitiveImportersForInvalidation } from '../../../server/transform-cache-invalidation.js';
 
 type FakeModule = {
 	id: string;
