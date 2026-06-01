@@ -4,7 +4,7 @@ import { isCssVariable } from '../core/properties';
 import { isNullOrUndefined } from '../../utils/types';
 
 import * as ReworkCSS from '../../css';
-import { checkIfMediaQueryMatches } from '../../media-query-list';
+import { checkIfMediaQueryMatches } from '../../css-mediaquery';
 
 export const MEDIA_QUERY_SEPARATOR = '&&';
 
@@ -674,7 +674,9 @@ export namespace Selector {
 		public trackChanges(node: Node, map: ChangeAccumulator): void {
 			this.selectors.forEach((sel, i) => {
 				if (i === 0) {
-					node && sel.trackChanges(node, map);
+					if (node) {
+						sel.trackChanges(node, map);
+					}
 				} else {
 					node = node.parent;
 
