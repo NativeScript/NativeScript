@@ -18,21 +18,27 @@ describe('FrameworkServerStrategy contract', () => {
 		}
 	});
 
-	it('P2-A3/A4/A5 wire hooks to their owning strategy; the rest stay unwired', () => {
+	it('routes each strategy hook to its owning flavor; the rest keep the shared default', () => {
 		for (const strategy of REGISTRY) {
-			// Still unwired: processSfcCode → P2-A6.
+			// processSfcCode is not wired to any strategy yet.
 			expect(strategy.processSfcCode).toBeUndefined();
-			// deferDeltaBroadcast (P2-A3) absent ⇒ falsy ⇒ today's broadcastDelta=true (TS/Vue) path.
-			expect(strategy.deferDeltaBroadcast ?? false).toBe(false);
 		}
 
-		// P2-A3 (wiring flavor-by-flavor): TypeScript is the first flavor routed
-		// through `handleHotUpdate` (prologue + its tail); Vue/Angular/Solid still
-		// take the shared dispatcher's inline tail until their step lands.
+		// handleHotUpdate: TypeScript and Solid own their hot-update handler
+		// (shared prologue + their tail); Vue and Angular still take the shared
+		// dispatcher's inline tail.
 		expect(typeof typescriptServerStrategy.handleHotUpdate).toBe('function');
+		expect(typeof solidServerStrategy.handleHotUpdate).toBe('function');
 		expect(vueServerStrategy.handleHotUpdate).toBeUndefined();
 		expect(angularServerStrategy.handleHotUpdate).toBeUndefined();
-		expect(solidServerStrategy.handleHotUpdate).toBeUndefined();
+
+		// deferDeltaBroadcast: the flavors whose client re-fetches the changed
+		// module (Solid, Angular) defer the prologue's common-block delta
+		// broadcast until after their own cache purge; TS/Vue broadcast inline.
+		expect(solidServerStrategy.deferDeltaBroadcast).toBe(true);
+		expect(angularServerStrategy.deferDeltaBroadcast).toBe(true);
+		expect(typescriptServerStrategy.deferDeltaBroadcast ?? false).toBe(false);
+		expect(vueServerStrategy.deferDeltaBroadcast ?? false).toBe(false);
 
 		// P2-A4 (wired): only Angular overrides the `/ns/m` served-module rewrite
 		// (register-only entry pass); only Solid patches served node_modules

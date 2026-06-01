@@ -67,6 +67,11 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 		// Treat only application TS/JS as candidates for ordering/graph purposes
 		return matchesRuntimeGraphModuleId(id, ANGULAR_APP_VIRTUAL_WITH_SLASH, ANGULAR_RUNTIME_FILE_PATTERN);
 	},
+	// Defer the prologue's common-block delta broadcast: the Angular HMR client
+	// re-fetches the changed module, so the broadcast must come AFTER the
+	// dispatcher's Angular tail purges its transform caches — otherwise the
+	// client's re-import races the server's invalidation and serves stale code.
+	deferDeltaBroadcast: true,
 	// preClean/rewriteFrameworkImports/postClean/ensureVersionedImports default to
 	// identity: Angular runtime imports go through the vendor bridge and there are
 	// no Angular-specific HTTP endpoints to version.
