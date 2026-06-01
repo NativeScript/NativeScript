@@ -214,7 +214,6 @@ try {
 // vitest, etc.) or when the user opted out via
 // `__NS_HMR_PROGRESS_OVERLAY_ENABLED__ === false`.
 import { applyHmrPendingFrame } from './hmr-pending-overlay.js';
-import { driveVueSfcUpdateOverlay } from '../frameworks/vue/client/vue-sfc-update-overlay.js';
 
 function setHmrPendingOverlay(filePath: string) {
 	applyHmrPendingFrame(filePath, { getOverlay: getHmrOverlayApi });
@@ -269,17 +268,36 @@ function markHmrConnectionHealthy() {
 
 /**
  * Flavor hooks
+ *
+ * The shared client talks to frameworks only through the client-strategy seam
+ * (`framework-client-strategy.ts`). The strategy is loaded by ONE dynamic
+ * per-flavor `import()` so a device only ever fetches its OWN framework's client
+ * module — a Vue app never fetches the Angular client, and vice versa. Solid and
+ * TypeScript have no client module, so `CLIENT_STRATEGY` stays `undefined` and
+ * the shared paths below run exactly as before.
+ *
+ * The load is async (one HTTP-ESM fetch on device), so `CLIENT_STRATEGY_READY`
+ * is awaited at the top of `handleHmrMessage` before any message is processed —
+ * every strategy call site downstream of message processing therefore observes a
+ * fully-installed strategy. `install()` itself is best-effort (idempotent dev
+ * shims) and not boot-critical, so resolving it slightly after module load is
+ * safe.
  */
-import { installNsVueDevShims, ensureBackWrapperInstalled, getRootForVue, loadSfcComponent, ensureVueGlobals, ensurePiniaOnApp, addSfcMapping, recordVuePayloadChanges, handleVueSfcRegistry, handleVueSfcRegistryUpdate, sfcArtifactMap } from '../frameworks/vue/client/index.js';
-import { handleAngularHotUpdateMessage, installAngularHmrClientHooks } from '../frameworks/angular/client/index.js';
-switch (TARGET_FLAVOR) {
-	case 'vue':
-		installNsVueDevShims();
-		break;
-	case 'angular':
-		installAngularHmrClientHooks();
-		break;
-}
+import type { FrameworkClientStrategy } from './framework-client-strategy.js';
+
+let CLIENT_STRATEGY: FrameworkClientStrategy | undefined;
+const CLIENT_STRATEGY_READY: Promise<void> =
+	TARGET_FLAVOR === 'vue' || TARGET_FLAVOR === 'angular'
+		? import(`../frameworks/${TARGET_FLAVOR}/client/strategy.js`)
+				.then((mod: any) => {
+					CLIENT_STRATEGY = mod && (mod[`${TARGET_FLAVOR}ClientStrategy`] ?? mod.default);
+					if (VERBOSE) console.log('[hmr-client] client strategy loaded for flavor:', TARGET_FLAVOR);
+					CLIENT_STRATEGY?.install();
+				})
+				.catch((err) => {
+					console.warn('[hmr-client] failed to load client strategy for', TARGET_FLAVOR, err);
+				})
+		: Promise.resolve();
 
 // Track whether we've mounted an initial app root yet in HTTP-only boot
 let initialMounted = !!globalThis.__NS_HMR_BOOT_COMPLETE__;
@@ -414,37 +432,7 @@ function applyFullGraph(payload: any) {
 						}
 						return;
 					}
-					let candidate: string | null = null;
-					switch (TARGET_FLAVOR) {
-						case 'vue': {
-							const appEntry = graph.get(APP_MAIN_ENTRY_SPEC);
-							if (appEntry && Array.isArray(appEntry.deps)) {
-								const vueDep = appEntry.deps.find((d) => typeof d === 'string' && /\.vue$/i.test(d));
-								if (vueDep) candidate = vueDep;
-							}
-							if (!candidate) {
-								for (const id of graph.keys()) {
-									if (/\.vue$/i.test(id)) {
-										candidate = id;
-										break;
-									}
-								}
-							}
-							// Fallback: when the module graph is empty (Vite 7+ may not populate it
-							// before the first full-graph broadcast), check the SFC artifact registry
-							// which is populated from the ns:vue-sfc-registry message.
-							if (!candidate && sfcArtifactMap.size > 0) {
-								for (const id of sfcArtifactMap.keys()) {
-									if (/\.vue$/i.test(id)) {
-										candidate = id;
-										if (VERBOSE) console.log('[hmr][init] rescue candidate from SFC registry:', id);
-										break;
-									}
-								}
-							}
-							break;
-						}
-					}
+					const candidate = CLIENT_STRATEGY?.selectMountCandidate?.({ graph, appMainEntrySpec: APP_MAIN_ENTRY_SPEC }) ?? null;
 					if (!candidate) return;
 					initialMounting = true;
 					try {
@@ -453,10 +441,8 @@ function applyFullGraph(payload: any) {
 					(async () => {
 						try {
 							let comp: any = null;
-							switch (TARGET_FLAVOR) {
-								case 'vue':
-									comp = await loadSfcComponent(candidate!, 'initial_mount_rescue');
-									break;
+							if (CLIENT_STRATEGY?.loadComponentForMount) {
+								comp = await CLIENT_STRATEGY.loadComponentForMount(candidate!, 'initial_mount_rescue');
 							}
 
 							if (!comp) return;
@@ -490,39 +476,11 @@ function applyFullGraph(payload: any) {
 		// Only allow initial mount when explicitly enabled. Rely on the app's own main entry start() for the first mount
 		// to avoid double-mount races that can cause duplicate navigation logs.
 		if (ALLOW_INITIAL_MOUNT && !initialMounted && !bootDone && !bootInProgress && !getCurrentApp() && !getRootFrame()) {
-			let candidate: string | null = null;
-			switch (TARGET_FLAVOR) {
-				case 'vue': {
-					const appEntry = graph.get(APP_MAIN_ENTRY_SPEC);
-					if (appEntry && Array.isArray(appEntry.deps)) {
-						const vueDep = appEntry.deps.find((d) => typeof d === 'string' && /\.vue$/i.test(d));
-						if (vueDep) candidate = vueDep;
-					}
-					if (!candidate) {
-						for (const id of graph.keys()) {
-							if (/\.vue$/i.test(id)) {
-								candidate = id;
-								break;
-							}
-						}
-					}
-					// Fallback: SFC registry (same as rescue mount above)
-					if (!candidate && sfcArtifactMap.size > 0) {
-						for (const id of sfcArtifactMap.keys()) {
-							if (/\.vue$/i.test(id)) {
-								candidate = id;
-								if (VERBOSE) console.log('[hmr][init] initial mount candidate from SFC registry:', id);
-								break;
-							}
-						}
-					}
-					break;
-				}
-				case 'typescript': {
-					// For TS flavor, do not perform client-driven initial mount; rely on Application.run.
-					return;
-				}
+			if (TARGET_FLAVOR === 'typescript') {
+				// For TS flavor, do not perform client-driven initial mount; rely on Application.run.
+				return;
 			}
+			const candidate: string | null = CLIENT_STRATEGY?.selectMountCandidate?.({ graph, appMainEntrySpec: APP_MAIN_ENTRY_SPEC }) ?? null;
 			if (candidate) {
 				// Mark initial-mount in progress (both module-local and global) BEFORE scheduling async work
 				initialMounting = true;
@@ -561,19 +519,16 @@ function applyFullGraph(payload: any) {
 							}
 						} catch {}
 						let comp: any = null;
-						switch (TARGET_FLAVOR) {
-							case 'vue':
-								comp = await loadSfcComponent(candidate!, 'initial_mount');
-								break;
-							case 'typescript':
-								try {
-									const url = await requestModuleFromServer(candidate!);
-									const mod: any = await import(/* @vite-ignore */ url);
-									comp = mod && (mod.default || mod);
-								} catch (e) {
-									if (VERBOSE) console.warn('[hmr][init] TS initial mount failed to import', candidate, e);
-								}
-								break;
+						if (TARGET_FLAVOR === 'typescript') {
+							try {
+								const url = await requestModuleFromServer(candidate!);
+								const mod: any = await import(/* @vite-ignore */ url);
+								comp = mod && (mod.default || mod);
+							} catch (e) {
+								if (VERBOSE) console.warn('[hmr][init] TS initial mount failed to import', candidate, e);
+							}
+						} else if (CLIENT_STRATEGY?.loadComponentForMount) {
+							comp = await CLIENT_STRATEGY.loadComponentForMount(candidate!, 'initial_mount');
 						}
 						if (comp) {
 							const ok = await performResetRoot(comp);
@@ -625,11 +580,7 @@ function applyDelta(payload: any) {
 	}
 
 	const changed = payload.changed || [];
-	switch (TARGET_FLAVOR) {
-		case 'vue':
-			recordVuePayloadChanges(changed, getGraphVersion());
-			break;
-	}
+	CLIENT_STRATEGY?.recordPayloadChanges?.(changed, getGraphVersion());
 
 	(payload.changed || []).forEach((m: any) => {
 		if (!m || !m.id) return;
@@ -703,11 +654,7 @@ function applyDelta(payload: any) {
 // Deterministic navigation using the current Vue app instance rather than vendor-held rootApp
 function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 	const g = globalThis as any;
-	switch (TARGET_FLAVOR) {
-		case 'vue':
-			ensureVueGlobals();
-			break;
-	}
+	CLIENT_STRATEGY?.beforeNavigateBuild?.();
 	const AppFactory = g.createApp;
 	const RootCtor = g.NSVRoot;
 	if (typeof AppFactory !== 'function' || typeof RootCtor !== 'function') {
@@ -736,11 +683,7 @@ function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 		// at the destination as `[Vue warn]: Missing required prop` and any
 		// required-prop component would render with `undefined` bindings.
 		const app = AppFactory(normalizeComponent(comp, comp && (comp.__name || comp.name)), opts && (opts as any).props);
-		switch (TARGET_FLAVOR) {
-			case 'vue':
-				ensurePiniaOnApp(app);
-				break;
-		}
+		CLIENT_STRATEGY?.onNavAppCreated?.(app);
 		try {
 			const registry: Map<string, any> | undefined = g.__nsVendorRegistry;
 			const req: any = registry?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
@@ -906,25 +849,7 @@ async function processQueue(): Promise<void> {
 			// After evaluating the batch, perform flavor-specific UI refresh.
 			switch (TARGET_FLAVOR) {
 				case 'vue':
-					// Vue SFCs are handled via the registry update path
-					// (which drives its own overlay completion through
-					// `driveVueSfcUpdateOverlay`); nothing else to do
-					// for the view-tree refresh here.
-					//
-					// However, when a non-SFC file (e.g. a `.ts`
-					// utility module imported by an SFC) is the only
-					// changed entry, no `ns:vue-sfc-registry-update`
-					// will follow — and without an explicit 'complete'
-					// the overlay would stick on "Preparing update
-					// (5%)". Drive the closing frame here so the
-					// auto-hide timer can dismiss the toast in the
-					// pure-TS-change case. The detail surfaces the
-					// changed count so a user can correlate the
-					// overlay with the server-side `[hmr-ws][update]`
-					// log.
-					setUpdateOverlayStage('complete', {
-						detail: drained.length === 1 ? `Updated ${drained[0]} in ${Math.max(0, Date.now() - tQueueStart)}ms` : `Updated ${drained.length} modules in ${Math.max(0, Date.now() - tQueueStart)}ms`,
-					});
+					await CLIENT_STRATEGY?.refreshAfterBatch?.(drained, { setUpdateOverlayStage, startedAt: tQueueStart });
 					break;
 				case 'solid': {
 					// Boundaries discovered in this HMR cycle (tsx files reachable
@@ -1493,6 +1418,11 @@ async function handleHmrMessage(ev: any) {
 			setHmrPendingOverlay(msg.path);
 			return;
 		}
+		// The per-flavor client strategy is loaded by a dynamic import(); make
+		// sure it has resolved (and `install()` has run) before any handler that
+		// delegates through it. After the first message this is an already-settled
+		// promise (microtask only); for Solid/TypeScript it is `Promise.resolve()`.
+		await CLIENT_STRATEGY_READY;
 		if (msg.type === 'ns:hmr-full-graph') {
 			// Bump a monotonic nonce so HTTP ESM imports can always be cache-busted per update.
 			try {
@@ -1717,7 +1647,7 @@ async function handleHmrMessage(ev: any) {
 			if (msg.type === 'ns:angular-update' && typeof msg.version === 'number') {
 				setGraphVersion(Number(msg.version || getGraphVersion() || 0));
 			}
-			if (await handleAngularHotUpdateMessage(msg, { getCore, verbose: VERBOSE })) {
+			if (CLIENT_STRATEGY?.handleHotUpdateMessage && (await CLIENT_STRATEGY.handleHotUpdateMessage(msg, { getCore, verbose: VERBOSE, performResetRoot, getOverlay: getHmrOverlayApi }))) {
 				return;
 			}
 		}
@@ -1772,30 +1702,16 @@ async function handleHmrMessage(ev: any) {
 		}
 	}
 	if (msg.type === 'ns:vue-sfc-registry') {
-		handleVueSfcRegistry(msg);
+		CLIENT_STRATEGY?.handleSfcRegistry?.(msg);
 		return;
 	}
 	if (msg.type === 'ns:vue-sfc-registry-update') {
 		if (typeof msg.version === 'number') setGraphVersion(msg.version);
-		// `ns:hmr-pending` already set the overlay to 'received' (5%).
-		// Without the explicit stage walk below the overlay would stick
-		// at "Preparing update" forever after a successful SFC swap —
-		// the Vue path was missing the framework-specific completion
-		// hooks that Angular drives via `handleAngularHotUpdateMessage`
-		// and CSS drives inline above. `driveVueSfcUpdateOverlay` is a
-		// thin orchestrator that walks 'evicting' → 'reimporting' →
-		// 'rebooting' → 'complete' around the load + reset steps and
-		// always lands on 'complete' (or a failure detail) so the
-		// auto-hide timer can dismiss the toast.
-		const sfcFilePath = typeof msg.path === 'string' ? msg.path : undefined;
-		await driveVueSfcUpdateOverlay(
-			{
-				filePath: sfcFilePath,
-				loadComponent: () => handleVueSfcRegistryUpdate(msg, getGraphVersion()),
-				applyComponent: (component) => performResetRoot(component),
-			},
-			{ getOverlay: getHmrOverlayApi },
-		);
+		// `ns:hmr-pending` already set the overlay to 'received' (5%). The Vue
+		// strategy walks 'evicting' → 'reimporting' → 'rebooting' → 'complete'
+		// around the SFC load + reset so the toast always lands on 'complete'
+		// (or a failure detail) and the auto-hide timer can dismiss it.
+		await CLIENT_STRATEGY?.handleSfcRegistryUpdate?.(msg, getGraphVersion(), { getCore, verbose: VERBOSE, performResetRoot, getOverlay: getHmrOverlayApi });
 		return;
 	}
 }
@@ -1814,7 +1730,7 @@ function normalizeComponent(input: any, nameHint?: string): any {
 		}
 		// If provided a render function, wrap with defineComponent
 		if (typeof input === 'function') {
-			ensureVueGlobals();
+			CLIENT_STRATEGY?.beforeNavigateBuild?.();
 			const comp = (globalThis as any).defineComponent
 				? (globalThis as any).defineComponent({
 						name: nameHint || input.name || 'AnonymousSFC',
@@ -1825,7 +1741,7 @@ function normalizeComponent(input: any, nameHint?: string): any {
 		}
 		// If object has a render function property
 		if ((input as any)?.render && typeof (input as any).render === 'function') {
-			ensureVueGlobals();
+			CLIENT_STRATEGY?.beforeNavigateBuild?.();
 			const comp = (globalThis as any).defineComponent
 				? (globalThis as any).defineComponent({
 						name: nameHint || (input as any).name || 'AnonymousSFC',
@@ -1883,32 +1799,28 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 			create: () => {
 				if (cachedRoot) return cachedRoot;
 				try {
-					switch (TARGET_FLAVOR) {
-						case 'vue':
-							cachedRoot = getRootForVue(newComponent, state);
-							break;
-						case 'typescript': {
-							// For TS flavor, treat the component as a factory or direct NS view.
-							let root: any = null;
-							try {
-								if (typeof newComponent === 'function') {
-									root = newComponent();
-								} else {
-									root = newComponent;
-								}
-							} catch (e) {
-								console.warn('[hmr-client][ts] root factory invocation failed', e);
+					if (CLIENT_STRATEGY?.createRoot) {
+						cachedRoot = CLIENT_STRATEGY.createRoot(newComponent, state);
+					} else if (TARGET_FLAVOR === 'typescript') {
+						// For TS flavor, treat the component as a factory or direct NS view.
+						let root: any = null;
+						try {
+							if (typeof newComponent === 'function') {
+								root = newComponent();
+							} else {
+								root = newComponent;
 							}
-							cachedRoot = root || {};
-							// Heuristic: if the root "looks" like a Frame, prefer frame semantics
-							try {
-								const name = String(cachedRoot?.constructor?.name || '').replace(/^_+/, '');
-								if (/^Frame(\$\d+)?$/.test(name)) {
-									rootKind = 'frame';
-								}
-							} catch {}
-							break;
+						} catch (e) {
+							console.warn('[hmr-client][ts] root factory invocation failed', e);
 						}
+						cachedRoot = root || {};
+						// Heuristic: if the root "looks" like a Frame, prefer frame semantics
+						try {
+							const name = String(cachedRoot?.constructor?.name || '').replace(/^_+/, '');
+							if (/^Frame(\$\d+)?$/.test(name)) {
+								rootKind = 'frame';
+							}
+						} catch {}
 					}
 					return cachedRoot;
 				} catch (e) {
@@ -2043,7 +1955,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 	// page to the Frame — the screen keeps showing the previous render. resetRootView with a
 	// fresh Frame correctly reparents the Page and is the proven path that produces visible
 	// in-place updates for SFC HMR cycles. Non-Vue flavors keep the legacy navigate fast path.
-	const allowNavigateFastPath = TARGET_FLAVOR !== 'vue';
+	const allowNavigateFastPath = CLIENT_STRATEGY?.allowNavigateFastPath ?? true;
 	if (allowNavigateFastPath && !hadPlaceholder && !isFrameRoot && isAuthoritativeFrame && typeof (existingAppFrame as any).navigate === 'function') {
 		try {
 			const navEntry = {
@@ -2186,12 +2098,9 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 		if (VERBOSE) console.log('[hmr-client] deferring WebSocket connection until boot completes');
 		setTimeout(waitForBoot, 100);
 	}
-	// Best-effort: install back wrapper even before first remount; original root may be captured later
-	switch (TARGET_FLAVOR) {
-		case 'vue':
-			ensureBackWrapperInstalled(performResetRoot, getCore);
-			break;
-	}
+	// Best-effort: install back wrapper even before first remount; original root may be captured later.
+	// Deferred until the dynamically-imported strategy resolves.
+	void CLIENT_STRATEGY_READY.then(() => CLIENT_STRATEGY?.installBackWrapper?.(performResetRoot, getCore));
 }
 export default function startViteHMR(opts?: { wsUrl?: string }) {
 	if (VERBOSE) console.log('[hmr-client] Starting HMR client', opts);
