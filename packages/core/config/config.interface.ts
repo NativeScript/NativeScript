@@ -11,7 +11,9 @@ interface IConfigPlatform {
 	 */
 	discardUncaughtJsExceptions?: boolean;
 	/**
-	 * Custom runtime package name
+	 * Custom runtime package name.
+	 * Override the npm package name of the NativeScript runtime used for this platform.
+	 * Useful when using a fork or a custom build of the runtime (e.g. "nativescript-android-runtime-fork").
 	 */
 	runtimePackageName?: string;
 }
