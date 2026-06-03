@@ -39,7 +39,7 @@
 		"@nx/plugin": "22.0.2",
 		"@nx/vite": "22.0.2",
 		"@nx/web": "22.0.2",
-		"@nx/workspace": "22.0.2",
+		"@nx/workspace": "22.7.5",
 		"@prettier/plugin-xml": "^3.4.1",
 		"@rollup/plugin-alias": "^6.0.0",
 		"@rollup/plugin-commonjs": "^29.0.0",
