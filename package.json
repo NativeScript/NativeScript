@@ -22,7 +22,7 @@
 	"devDependencies": {
 		"@analogjs/vite-plugin-angular": "^2.0.3",
 		"@angular/build": "^20.3.9",
-		"@angular/compiler-cli": "^20.3.10",
+		"@angular/compiler-cli": "^20.3.24",
 		"@csstools/css-calc": "~2.1.2",
 		"@csstools/css-color-parser": "^3.0.8",
 		"@csstools/css-parser-algorithms": "^3.0.4",
