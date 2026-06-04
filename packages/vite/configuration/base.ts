@@ -1,4 +1,4 @@
-import { mergeConfig, type UserConfig } from 'vite';
+import { mergeConfig, version as viteVersion, type UserConfig } from 'vite';
 import path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { createRequire } from 'node:module';
@@ -12,10 +12,9 @@ import NativeScriptPlugin from '../helpers/resolver.js';
 import nsConfigAsJsonPlugin from '../helpers/config-as-json.js';
 import { getProjectRootPath } from '../helpers/project.js';
 import { aliasCssTree } from '../helpers/css-tree.js';
-import { packagePlatformAliases } from '../helpers/package-platform-aliases.js';
 import { getGlobalDefines } from '../helpers/global-defines.js';
 import { getWorkerPlugins, workerUrlPlugin } from '../helpers/workers.js';
-import { getTsConfigData } from '../helpers/ts-config-paths.js';
+import { getTsConfigData, tsConfigPathsResolverPlugin } from '../helpers/ts-config-paths.js';
 import { commonjsPlugins } from '../helpers/commonjs-plugins.js';
 import { nativescriptPackageResolver } from '../helpers/nativescript-package-resolver.js';
 import { cliPlugin } from '../helpers/ns-cli-plugins.js';
@@ -62,6 +61,14 @@ try {
 	// use CommonJS require to load from workspace
 	postcssImport = require('postcss-import');
 } catch {}
+
+// Vite 8 bundles with Rolldown instead of Rollup. Rolldown handles CommonJS
+// natively and its native plugins (e.g. `ViteAlias`) reject some Rollup-plugin
+// shapes, so a few plugins/aliases that are valid on Vite <= 7 must be skipped.
+// Detect by Vite's reported major version (also true for the `rolldown-vite`
+// override, which reports a >= 8 version).
+const viteMajor = parseInt(String(viteVersion || '').split('.')[0], 10);
+const isRolldownVite = Number.isFinite(viteMajor) && viteMajor >= 8;
 
 const distOutputFolder = process.env.NS_VITE_DIST_DIR || '.ns-vite-build';
 // HMR dev server options with socket
@@ -175,7 +182,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// Canonicalize trailing /index subpath imports so '@nativescript/core/foo' and '@nativescript/core/foo/index'
 			// resolve to the exact same module id. This prevents duplicate evaluation of core submodules (profiling, layouts)
 			// which can break timers, decorators and alignment tests under Vite.
-			{ find: /^@nativescript\/core\/(.+)\/index$/, replacement: (m: string, sub: string) => `${NS_CORE_ROOT}/${sub}` },
+			{ find: /^@nativescript\/core\/(.+)\/index$/, replacement: `${NS_CORE_ROOT}/$1` },
 			{ find: /^@nativescript\/core$/, replacement: NS_CORE_ROOT },
 			{
 				find: /^@nativescript\/core\/(.*)$/,
@@ -205,8 +212,11 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			{ find: /^~\/package\.json$/, replacement: '~/package.json' },
 			// TypeScript path aliases from tsconfig.json
 			...tsConfig.aliases,
-			// Generic platform resolution for any npm package
-			packagePlatformAliases({ tsConfig, platform, verbose }),
+			// NOTE: generic platform resolution for npm packages is handled by the
+			// `nativescriptPackageResolver` resolveId plugin (see plugins array below),
+			// which performs the same package.json `main` + platform-variant lookup.
+			// A function-replacement alias is intentionally not used here: Vite 8 /
+			// Rolldown's native `ViteAlias` plugin rejects function replacements.
 			// 2) Catch everything else under "~/" → your src/
 			{ find: /^~\/(.*)$/, replacement: path.resolve(projectRoot, `${appSourceDir}/$1`) },
 			// optional: "@" → src/
@@ -327,18 +337,28 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			// ...flavorPlugins,
 			...commonjsPlugins,
 
+			// Apply tsconfig wildcard `paths` mappings (with platform-specific +
+			// directory-index resolution). Implemented as a resolveId plugin because
+			// Vite 8 / Rolldown rejects the function-replacement alias this replaces.
+			tsConfigPathsResolverPlugin({ wildcardRules: tsConfig.wildcardRules, platform, verbose }),
 			// Platform-specific package resolver - MUST come before commonjs plugin
 			nativescriptPackageResolver(platform),
-			// Simplified CommonJS handling - let Vite's optimizeDeps do the heavy lifting
-			commonjs({
-				include: [/node_modules/],
-				// Force specific problematic modules to be treated as CommonJS
-				requireReturnsDefault: 'auto',
-				defaultIsModuleExports: 'auto',
-				transformMixedEsModules: true,
-				// Ignore optional dependencies that are meant to fail gracefully
-				ignore: ['@nativescript/android', '@nativescript/ios'],
-			}),
+			// Simplified CommonJS handling - let Vite's optimizeDeps do the heavy lifting.
+			// On Vite 8 / Rolldown this explicit @rollup/plugin-commonjs instance crashes
+			// (`Cannot read properties of undefined (reading 'currentLoadingModule')`) and
+			// is unnecessary because Rolldown transforms CommonJS natively. Keep it only on
+			// Vite <= 7 / Rollup, where it is still required for the existing flavors.
+			isRolldownVite
+				? undefined
+				: commonjs({
+						include: [/node_modules/],
+						// Force specific problematic modules to be treated as CommonJS
+						requireReturnsDefault: 'auto',
+						defaultIsModuleExports: 'auto',
+						transformMixedEsModules: true,
+						// Ignore optional dependencies that are meant to fail gracefully
+						ignore: ['@nativescript/android', '@nativescript/ios'],
+					}),
 			nsConfigAsJsonPlugin(),
 			NativeScriptPlugin({ platform }),
 			// Ensure globals and Android activity are included early via virtual entry
