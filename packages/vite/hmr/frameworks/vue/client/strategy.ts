@@ -16,6 +16,12 @@ export const vueClientStrategy: FrameworkClientStrategy = {
 
 	install() {
 		installNsVueDevShims();
+		// Prime Vue globals (createApp/NSVRoot) eagerly the moment the dynamically
+		// imported client strategy resolves. The app-driven navigation path
+		// (`__nsNavigateUsingApp` → `beforeNavigateBuild`) is not gated on the
+		// strategy import, so seeding them here makes those later hooks pure
+		// belt-and-suspenders rather than the first time globals are ensured.
+		ensureVueGlobals();
 	},
 
 	installBackWrapper(performResetRoot, getCore) {

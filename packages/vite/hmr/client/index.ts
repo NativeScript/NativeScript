@@ -290,7 +290,7 @@ const CLIENT_STRATEGY_READY: Promise<void> =
 	TARGET_FLAVOR === 'vue' || TARGET_FLAVOR === 'angular'
 		? import(`../frameworks/${TARGET_FLAVOR}/client/strategy.js`)
 				.then((mod: any) => {
-					CLIENT_STRATEGY = mod && (mod[`${TARGET_FLAVOR}ClientStrategy`] ?? mod.default);
+					CLIENT_STRATEGY = mod && mod[`${TARGET_FLAVOR}ClientStrategy`];
 					if (VERBOSE) console.log('[hmr-client] client strategy loaded for flavor:', TARGET_FLAVOR);
 					CLIENT_STRATEGY?.install();
 				})
@@ -651,7 +651,7 @@ function applyDelta(payload: any) {
 	}
 }
 
-// Deterministic navigation using the current Vue app instance rather than vendor-held rootApp
+// Deterministic navigation using the current Vue app instance rather than vendor-held rootApp.
 function __nsNavigateUsingApp(comp: any, opts: any = {}) {
 	const g = globalThis as any;
 	CLIENT_STRATEGY?.beforeNavigateBuild?.();
