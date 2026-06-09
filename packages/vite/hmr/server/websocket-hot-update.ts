@@ -8,10 +8,9 @@ import { isRuntimeGraphExcludedPath } from './runtime-graph-filter.js';
 import { isWithinHmrScope } from '../../helpers/hmr-scope.js';
 import { collectGraphUpdateModulesForHotUpdate, type HotUpdateGraphModuleLike } from '../frameworks/angular/server/websocket-angular-hot-update.js';
 import { getAppCssState } from '../../helpers/app-css-state.js';
-import { collectCssHotUpdatePaths } from './websocket-css-hot-update.js';
 import { classifyHmrUpdateKind, formatHmrUpdateSummary } from './perf-instrumentation.js';
 import { createHmrPendingMessage } from './websocket-hmr-pending.js';
-import type { CssUpdateItem, CssUpdatesMessage } from '../shared/protocol.js';
+import type { CssUpdatesMessage } from '../shared/protocol.js';
 import { getServerOrigin } from './server-origin.js';
 import type { BootstrapRootComponent } from '../frameworks/angular/server/angular-root-component.js';
 
@@ -247,51 +246,82 @@ export async function runHotUpdatePrologue(ctx: HmrContext, deps: NsHotUpdateCon
 
 	const root = server.config.root || process.cwd();
 
-	// CSS hot-update — handled BEFORE the project-scope filter
-	// because workspace `@import` deps live outside `<root>/`.
-	// The helper maps in-scope edits to their own path and
-	// out-of-scope edits to `app.css` (Vite re-runs PostCSS
-	// through the `@import` chain on the next fetch).
+	// CSS hot-update — handled BEFORE the project-scope filter because
+	// workspace deps (component `styleUrls`, `@import` partials) live outside
+	// `<root>/`. We distinguish two kinds of style edit and apply each
+	// correctly on the device — this is the fix for the regression where
+	// component `styleUrls` edits were misrouted to a global `app.css` refresh
+	// and silently did nothing:
+	//
+	//   • GLOBAL stylesheet — the app entry CSS itself OR one of its `@import`
+	//     deps (tracked via `getAppCssState().deps`). Broadcast the app entry
+	//     CSS path so Vite re-runs PostCSS through the `@import` chain; the
+	//     device replaces the boot-time `app.css`-tagged selectors.
+	//
+	//   • COMPONENT style (`styleUrls`, including workspace-library
+	//     components). Broadcast the style file's OWN path under a per-file
+	//     tag. The device fetches that component's CSS and replaces just that
+	//     file's selectors (`addTaggedAdditionalCSS` keyed by the file path),
+	//     re-styling the live view without a reboot or `ɵɵreplaceMetadata`
+	//     swap. `app.css` is never involved — it does not contain the
+	//     component's inlined styles. Using a per-file tag (instead of the
+	//     shared `app.css` tag) avoids clobbering the global stylesheet.
 	if (file.endsWith('.css')) {
-		const cssPaths = collectCssHotUpdatePaths({
-			file,
-			root,
-			appRootDir: APP_ROOT_DIR,
-			appEntryCss: path.resolve(root, APP_ROOT_DIR, 'app.css'),
-		});
-		if (cssPaths.length > 0) {
-			updateMetrics.tAfterFramework = Date.now();
-			try {
-				const origin = getServerOrigin(server);
-				const timestamp = Date.now();
-				const msg: CssUpdatesMessage = {
-					type: 'ns:css-updates',
-					origin,
-					updates: cssPaths.map(
-						(cssPath): CssUpdateItem => ({
-							type: 'css-update',
-							path: cssPath,
-							acceptedPath: cssPath,
-							timestamp,
-						}),
-					),
-				};
+		const fileAbs = path.resolve(file).replace(/\\/g, '/');
+		const appCssState = getAppCssState(server);
+		const appEntryCssAbs = (appCssState?.path || path.resolve(root, APP_ROOT_DIR, 'app.css')).replace(/\\/g, '/');
+		const isGlobalStyle = fileAbs === appEntryCssAbs || !!appCssState?.deps?.has(fileAbs);
 
-				wss.clients.forEach((client) => {
-					if (isSocketClientOpen(client)) {
-						client.send(JSON.stringify(msg));
-						updateMetrics.recipients += 1;
-					}
-				});
-			} catch (error) {
-				console.warn('[hmr-ws] CSS update failed:', error);
-			}
-			if (verbose) console.log(`[hmr-ws] Hot update for: ${file} → broadcast CSS paths: ${cssPaths.join(', ')}`);
+		// Component-scoped style edit the framework applies in place itself
+		// (Angular + Analog liveReload → `angular:component-update`). Suppress
+		// the `ns:css-updates` broadcast: it can't win the emulated-scoping
+		// specificity battle anyway, AND the device's `?direct=1` fetch would
+		// create the css `?direct` module that stops the framework from
+		// re-emitting its component-update on subsequent edits. The framework's
+		// own `handleHotUpdate` (a separate plugin) drives the update.
+		if (!isGlobalStyle && strategy.ownsComponentStyleHmr?.(server)) {
+			updateMetrics.tAfterFramework = Date.now();
+			if (verbose) console.log(`[hmr-ws] component style edit ${file} → left to framework component-update (no css broadcast)`);
 			emitHmrUpdateSummary();
 			return null;
 		}
-		// CSS without a broadcast target (no appEntryCss
-		// configured) — fall through to the scope filter.
+
+		const toRootRel = (absOrFile: string) => '/' + path.posix.normalize(path.relative(root, absOrFile)).split(path.sep).join('/');
+		// GLOBAL → app entry CSS path (default `app.css` tag on the client).
+		// COMPONENT → the style file's own path, tagged by that path.
+		const broadcastPath = isGlobalStyle ? toRootRel(appEntryCssAbs) : toRootRel(file);
+		const tag = isGlobalStyle ? undefined : broadcastPath;
+
+		updateMetrics.tAfterFramework = Date.now();
+		try {
+			const origin = getServerOrigin(server);
+			const timestamp = Date.now();
+			const msg: CssUpdatesMessage = {
+				type: 'ns:css-updates',
+				origin,
+				updates: [
+					{
+						type: 'css-update',
+						path: broadcastPath,
+						acceptedPath: broadcastPath,
+						timestamp,
+						...(tag ? { tag } : {}),
+					},
+				],
+			};
+
+			wss.clients.forEach((client) => {
+				if (isSocketClientOpen(client)) {
+					client.send(JSON.stringify(msg));
+					updateMetrics.recipients += 1;
+				}
+			});
+		} catch (error) {
+			console.warn('[hmr-ws] CSS update failed:', error);
+		}
+		if (verbose) console.log(`[hmr-ws] Hot update for: ${file} → broadcast CSS ${broadcastPath} (${isGlobalStyle ? 'global app.css' : `component, tag=${tag}`})`);
+		emitHmrUpdateSummary();
+		return null;
 	}
 
 	const srcDir = `${root}/src`;

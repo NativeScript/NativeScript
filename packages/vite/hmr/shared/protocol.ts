@@ -30,6 +30,15 @@ export interface CssUpdateItem {
 	path: string;
 	acceptedPath: string;
 	timestamp: number;
+	/**
+	 * Tag for the client's `addTaggedAdditionalCSS`/`removeTaggedAdditionalCSS`
+	 * remove+add pair, scoping the replace so repeated edits of the SAME source
+	 * swap cleanly instead of stacking. Omitted for the app entry CSS (the
+	 * client defaults to the shared `app.css` tag). Set to the component style
+	 * file's own path for `styleUrls` edits so a component's rules replace
+	 * independently of `app.css`.
+	 */
+	tag?: string;
 }
 
 /** A single Vue SFC registry entry carried inside `ns:vue-sfc-registry`. */

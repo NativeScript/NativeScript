@@ -131,6 +131,20 @@ export interface FrameworkServerStrategy {
 	skipDefaultGraphUpdate?(file: string): boolean;
 
 	/**
+	 * When `true`, the shared prologue does NOT broadcast `ns:css-updates` for a
+	 * component-scoped style edit (a non-global `.css`) — the framework's own
+	 * `handleHotUpdate` drives the in-place component update instead. For
+	 * Angular with Analog `liveReload` active this is essential: Analog emits
+	 * `angular:component-update` only while the css's `?direct` module is absent
+	 * from the graph, and the prologue's broadcast makes the device fetch
+	 * `…?direct=1`, which creates that module and flips Analog to its
+	 * (NativeScript-inert) Vite css-update branch on every subsequent edit. The
+	 * global app-entry CSS path is unaffected (it is not component-scoped).
+	 * Defaults to `false` (every flavor keeps the component-style broadcast).
+	 */
+	ownsComponentStyleHmr?(server: ViteDevServer): boolean;
+
+	/**
 	 * Override the `/ns/m` served-module import rewrite. Defaults to the shared
 	 * `rewriteImports` (today's non-Angular path); Angular overrides with its
 	 * entry-preparation pass. Returns the rewritten code.

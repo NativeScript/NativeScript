@@ -31,8 +31,14 @@ function resolveTaggedCssApi(): TaggedCssApi {
 	return {};
 }
 
-// CSS helper: apply CSS and refresh the current page so new styles render
-export function applyCssText(cssText: string): void {
+// CSS helper: apply CSS and refresh the current page so new styles render.
+//
+// `tag` scopes the remove+add tagged pair. It defaults to {@link APP_CSS_TAG}
+// (`'app.css'`) so a global stylesheet edit replaces the boot-time selectors.
+// Component `styleUrls` edits pass the style file's own path as the tag so a
+// component's rules replace independently — applying a component's CSS under
+// the shared `app.css` tag would otherwise wipe the global stylesheet.
+export function applyCssText(cssText: string, tag: string = APP_CSS_TAG): void {
 	if (typeof cssText !== 'string' || !cssText.length) return;
 
 	try {
@@ -51,10 +57,10 @@ export function applyCssText(cssText: string): void {
 		let appliedTagged = false;
 		if (taggedCss.add && taggedCss.remove) {
 			try {
-				taggedCss.remove(APP_CSS_TAG);
-				taggedCss.add(cssText, APP_CSS_TAG);
+				taggedCss.remove(tag);
+				taggedCss.add(cssText, tag);
 				appliedTagged = true;
-				if (VERBOSE) console.info('[ns-hmr] CSS applied via tagged replace');
+				if (VERBOSE) console.info(`[ns-hmr] CSS applied via tagged replace (tag=${tag})`);
 			} catch (taggedError: any) {
 				console.warn('[ns-hmr] tagged CSS replace failed, falling back to addCss:', taggedError?.message || String(taggedError));
 			}
@@ -116,7 +122,11 @@ export async function handleCssUpdates(cssUpdates: any[], httpOrigin: string): P
 			if (VERBOSE) console.info('[ns-hmr] Fetching CSS:', url);
 			const cssText = await fetchText(url);
 			if (cssText) {
-				applyCssText(cssText);
+				// `tag` scopes the replace: app entry CSS (no tag) uses the
+				// default `app.css` tag; component `styleUrls` edits carry their
+				// own path so they replace independently of the global stylesheet.
+				const tag = typeof update.tag === 'string' && update.tag ? update.tag : undefined;
+				applyCssText(cssText, tag);
 			}
 		} catch (e) {
 			console.warn('[ns-hmr] CSS update fetch/apply failed:', e?.message || String(e));

@@ -83,6 +83,18 @@ export const angularServerStrategy: FrameworkServerStrategy = {
 	skipDefaultGraphUpdate(file: string) {
 		return /\.(html|htm)$/i.test(file);
 	},
+	// With Analog `liveReload` active, component `styleUrls` edits are applied
+	// in place via `angular:component-update` → `ɵɵreplaceMetadata` →
+	// `@nativescript/angular`'s renderer re-applying the component's scoped
+	// styles. The prologue must NOT also broadcast `ns:css-updates` for them:
+	// the device's `?direct=1` fetch would create the css `?direct` module that
+	// makes Analog stop emitting `angular:component-update` on later edits (its
+	// css branch then takes the NativeScript-inert Vite css-update path). The
+	// presence of `analogjs-live-reload-plugin` is the clean signal that this
+	// in-place pipeline is wired up (it only registers when `liveReload: true`).
+	ownsComponentStyleHmr(server) {
+		return ((server.config?.plugins as Array<{ name?: string }> | undefined) ?? []).some((plugin) => plugin?.name === 'analogjs-live-reload-plugin');
+	},
 	// Full Angular hot-update handler: shared prologue, then the Angular tail
 	// (TS/HTML + root-component detection, hot-update-root + transitive-importer
 	// invalidation, shared transform-cache purge, and the `ns:angular-update`

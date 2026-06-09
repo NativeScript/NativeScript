@@ -48,6 +48,28 @@ describe('css-handler', () => {
 		expect(onCssStateChange).toHaveBeenCalled();
 	});
 
+	it('replaces under a per-component tag (component styleUrls), independent of the app.css tag', () => {
+		const onCssStateChange = vi.fn();
+		const addTaggedAdditionalCSS = vi.fn(() => true);
+		const removeTaggedAdditionalCSS = vi.fn(() => true);
+		(globalThis as any).Application = {
+			addCss: vi.fn(),
+			getRootView: vi.fn(() => ({ _onCssStateChange: onCssStateChange })),
+		};
+		(globalThis as any).addTaggedAdditionalCSS = addTaggedAdditionalCSS;
+		(globalThis as any).removeTaggedAdditionalCSS = removeTaggedAdditionalCSS;
+
+		const tag = '/src/app/header/header.component.css';
+		applyCssText('.appstore-header { background-color: #ff6600; }', tag);
+
+		// Uses the supplied per-file tag — NOT the shared app.css tag — so a
+		// component's rules replace without wiping the global stylesheet.
+		expect(removeTaggedAdditionalCSS).toHaveBeenCalledWith(tag);
+		expect(addTaggedAdditionalCSS).toHaveBeenCalledWith('.appstore-header { background-color: #ff6600; }', tag);
+		expect(removeTaggedAdditionalCSS).not.toHaveBeenCalledWith(APP_CSS_TAG);
+		expect(onCssStateChange).toHaveBeenCalled();
+	});
+
 	it('falls back to additive Application.addCss when the tagged API throws', () => {
 		const addCss = vi.fn();
 		(globalThis as any).Application = { addCss, getRootView: vi.fn(() => null) };

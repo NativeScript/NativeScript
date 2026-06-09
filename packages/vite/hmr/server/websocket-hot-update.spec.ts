@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { runHotUpdatePrologue, type NsHotUpdateContext } from './websocket-hot-update.js';
 import * as serverOriginModule from './server-origin.js';
+import * as appCssStateModule from '../../helpers/app-css-state.js';
 
 let originSpy: ReturnType<typeof vi.spyOn>;
 
@@ -109,6 +110,89 @@ describe('runHotUpdatePrologue', () => {
 		} finally {
 			spy.mockRestore();
 		}
+	});
+
+	it('broadcasts a component styleUrls edit under a per-file tag (its own path), not app.css', async () => {
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		// No app-css state registered → the edited css is treated as a component style.
+		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src'] });
+		const result = await runHotUpdatePrologue(makeCtx('/proj/src/app/header/header.component.css'), deps);
+		expect(result).toBeNull();
+		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
+		expect(cssMsg).toBeTruthy();
+		const update = cssMsg.updates[0];
+		// Broadcasts the component css's OWN path (relative to root) — NOT app.css —
+		// tagged by that path so it replaces independently of the global stylesheet.
+		expect(update.path).toBe('/src/app/header/header.component.css');
+		expect(update.tag).toBe('/src/app/header/header.component.css');
+	});
+
+	it('suppresses the component-style broadcast when the framework owns component-style HMR (Angular liveReload)', async () => {
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		const ownsComponentStyleHmr = vi.fn(() => true);
+		const strategy = { flavor: 'angular', ownsComponentStyleHmr } as any;
+		const deps = makeDeps({ wss, strategy, getHmrSourceRootsCached: () => ['/proj/src'] });
+
+		const result = await runHotUpdatePrologue(makeCtx('/proj/src/app/header/header.component.css'), deps);
+
+		expect(result).toBeNull();
+		expect(ownsComponentStyleHmr).toHaveBeenCalledTimes(1);
+		// No ns:css-updates broadcast — the framework's own component-update owns it.
+		const sentTypes = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0])).type);
+		expect(sentTypes).not.toContain('ns:css-updates');
+	});
+
+	it('still broadcasts the GLOBAL app entry CSS even when the framework owns component-style HMR', async () => {
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		const ownsComponentStyleHmr = vi.fn(() => true);
+		const strategy = { flavor: 'angular', ownsComponentStyleHmr } as any;
+		const deps = makeDeps({ wss, strategy, getHmrSourceRootsCached: () => ['/proj/src'] });
+		const ctx = makeCtx('/proj/src/app.css');
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>() });
+
+		const result = await runHotUpdatePrologue(ctx, deps);
+
+		expect(result).toBeNull();
+		// Global stylesheet still broadcasts (it isn't component-scoped).
+		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
+		expect(cssMsg).toBeTruthy();
+		expect(cssMsg.updates[0].path).toBe('/src/app.css');
+	});
+
+	it('broadcasts the app entry CSS under the default (app.css) tag for a global stylesheet edit', async () => {
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src'] });
+		// Register app.css state so the edited file is recognized as the global entry.
+		const ctx = makeCtx('/proj/src/app.css');
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>() });
+		const result = await runHotUpdatePrologue(ctx, deps);
+		expect(result).toBeNull();
+		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
+		expect(cssMsg).toBeTruthy();
+		const update = cssMsg.updates[0];
+		expect(update.path).toBe('/src/app.css');
+		// No tag → client uses the default 'app.css' tag.
+		expect(update.tag).toBeUndefined();
+	});
+
+	it('broadcasts the app entry CSS (not the partial) when an @import dep is edited', async () => {
+		const openClient: FakeClient = { readyState: 1, send: vi.fn() };
+		const wss = { clients: new Set<FakeClient>([openClient]) } as any;
+		const deps = makeDeps({ wss, getHmrSourceRootsCached: () => ['/proj/src', '/libs'] });
+		const ctx = makeCtx('/libs/theme/_buttons.css');
+		// The edited partial is an @import dep of app.css → refetch app.css.
+		appCssStateModule.setAppCssState(ctx.server as any, { path: '/proj/src/app.css', deps: new Set<string>(['/libs/theme/_buttons.css']) });
+		const result = await runHotUpdatePrologue(ctx, deps);
+		expect(result).toBeNull();
+		const cssMsg = openClient.send.mock.calls.map((c) => JSON.parse(String(c[0]))).find((m) => m.type === 'ns:css-updates');
+		expect(cssMsg).toBeTruthy();
+		const update = cssMsg.updates[0];
+		expect(update.path).toBe('/src/app.css');
+		expect(update.tag).toBeUndefined();
 	});
 
 	it('broadcasts an ns:hmr-pending message to open clients for in-scope changes', async () => {
