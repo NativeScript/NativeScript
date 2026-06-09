@@ -331,19 +331,50 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		this._rootView = rootView;
 		setRootView(rootView);
 		// Attach to the existing iOS app
-		const window = getWindow() as UIWindow;
+		let window = getWindow() as UIWindow;
+
+		if (!window) {
+			// In-process soft reboot with OTAs.
+			// Original UIWindow is deallocated when the old JS isolate is torn down.
+			// Recreate a window bound to the active UIWindowScene so the
+			// root has somewhere to attach.
+			const app = UIApplication.sharedApplication;
+			const all = app && app.connectedScenes ? app.connectedScenes.allObjects : null;
+			let targetScene: UIWindowScene;
+			if (all) {
+				for (let i = 0; i < all.count; i++) {
+					const s = all.objectAtIndex(i) as UIWindowScene;
+					// Only UIWindowScene exposes `windows`; prefer a foreground-active one.
+					if (s && typeof s.windows !== 'undefined') {
+						targetScene = s;
+						if (s.activationState === UISceneActivationState.ForegroundActive) {
+							break;
+						}
+					}
+				}
+			}
+			if (targetScene) {
+				window = UIWindow.alloc().initWithWindowScene(targetScene);
+				this._setWindowForScene(window, targetScene);
+				this._setupWindowForScene?.(window, targetScene);
+			}
+		}
 
 		if (!window) {
 			return;
 		}
 
+		// May be null on a freshly recreated window — expected; the replace-root
+		// path below sets it. Only the embedder path needs an existing controller.
 		const rootController = window.rootViewController;
-		if (!rootController) {
-			return;
-		}
+        const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
+
+        // Embed into host app requires an existing root view controller
+        if (embedderDelegate && !rootController) {
+            return;
+        }
 
 		const controller = this.getViewController(rootView);
-		const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 
 		rootView._setupAsRootView({});
 
@@ -360,11 +391,15 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		});
 
 		if (embedderDelegate) {
+			// Embed into host app.
+			// present over the host's existing root view controller.
 			this.setViewControllerView(rootView);
 			embedderDelegate.presentNativeScriptApp(controller);
 		} else {
-			const visibleVC = iosUtils.getVisibleViewController(rootController);
-			visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
+			// No embedder delegate = NativeScript owns the UIApplication.
+			// Attach the root to the window.
+			this.setViewControllerView(rootView);
+			this.setWindowRootView(window, rootView);
 		}
 
 		this.initRootView(rootView);
