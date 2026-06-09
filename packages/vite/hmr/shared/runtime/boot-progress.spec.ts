@@ -101,9 +101,9 @@ describe('computeBootImportProgress', () => {
 });
 
 describe('formatBootImportDetail', () => {
-	it('falls back to the elapsed-time line before any module has ticked', () => {
-		expect(formatBootImportDetail({ count: 0, elapsedMs: 1234 })).toBe('Loading the module graph (1234ms)');
-		expect(formatBootImportDetail({})).toBe('Loading the module graph (0ms)');
+	it('falls back to the generic module-graph line before any module has ticked', () => {
+		expect(formatBootImportDetail({ count: 0 })).toBe('Loading the module graph…');
+		expect(formatBootImportDetail({})).toBe('Loading the module graph…');
 	});
 
 	it('emits the count + last-module line once at least one module has evaluated', () => {
@@ -115,7 +115,7 @@ describe('formatBootImportDetail', () => {
 	});
 
 	it('clamps negative counts and non-strings defensively', () => {
-		expect(formatBootImportDetail({ count: -3 as any, lastModule: 7 as any })).toBe('Loading the module graph (0ms)');
+		expect(formatBootImportDetail({ count: -3 as any, lastModule: 7 as any })).toBe('Loading the module graph…');
 	});
 });
 

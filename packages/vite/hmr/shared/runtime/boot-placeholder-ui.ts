@@ -118,8 +118,8 @@ export function formatBootPrimaryLine(snapshot: Pick<HmrOverlaySnapshot, 'phase'
 }
 
 /**
- * The secondary detail line (e.g. "Loading the module
- * graph (6259ms)").
+ * The secondary detail line (e.g. "Loading the module graph…" or
+ * "Evaluated 42 modules").
  */
 export function formatBootDetailLine(snapshot: Pick<HmrOverlaySnapshot, 'detail'> | null | undefined): string {
 	if (!snapshot) return '';

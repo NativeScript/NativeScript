@@ -92,7 +92,7 @@ function startBootImportHeartbeat(startedAt: number, verbose?: boolean): () => v
 				const lastModule = typeof g.__NS_HMR_BOOT_LAST_MODULE__ === 'string' ? g.__NS_HMR_BOOT_LAST_MODULE__ : '';
 				const elapsedMs = Math.max(0, Date.now() - startedAt);
 				const progress = applyMonotonicBootProgress(computeBootImportProgress({ count, elapsedMs }));
-				const detail = formatBootImportDetail({ count, lastModule, elapsedMs });
+				const detail = formatBootImportDetail({ count, lastModule });
 				setHmrBootStage('importing-main', { detail, progress });
 			} catch (heartbeatErr) {
 				if (verbose) {

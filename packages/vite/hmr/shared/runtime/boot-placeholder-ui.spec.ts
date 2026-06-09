@@ -97,7 +97,7 @@ describe('formatBootPrimaryLine', () => {
 
 describe('formatBootDetailLine', () => {
 	it('returns the detail string verbatim', () => {
-		expect(formatBootDetailLine({ detail: 'Loading the module graph (6259ms)' })).toBe('Loading the module graph (6259ms)');
+		expect(formatBootDetailLine({ detail: 'Loading the module graph…' })).toBe('Loading the module graph…');
 	});
 
 	it('returns the empty string for missing / non-string details', () => {

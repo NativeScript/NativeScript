@@ -77,17 +77,21 @@ export function computeBootImportProgress(input: { count?: number; elapsedMs?: n
 /**
  * Render the second-line detail for the placeholder. Surfaces the
  * count + last-loaded module path once the snippet has fired, or a
- * generic "Loading the module graph (Nms)" line during
- * the pre-snippet window.
+ * generic "Loading the module graph…" line during the pre-snippet
+ * window.
+ *
+ * No elapsed-ms readout: the primary line's percentage is the progress
+ * signal, and the heartbeat's `elapsedMs` is wall-clock since the import
+ * started — not a per-module timing — so surfacing it next to the
+ * percentage read as a confusing, inaccurate duration.
  */
-export function formatBootImportDetail(input: { count?: number; lastModule?: string; elapsedMs?: number }): string {
+export function formatBootImportDetail(input: { count?: number; lastModule?: string }): string {
 	const count = Math.max(0, Number(input?.count ?? 0));
 	const lastModule = typeof input?.lastModule === 'string' ? input.lastModule : '';
-	const elapsedMs = Math.max(0, Number(input?.elapsedMs ?? 0));
 	if (count > 0) {
 		return lastModule ? `Evaluated ${count} modules\n${lastModule}` : `Evaluated ${count} modules`;
 	}
-	return `Loading the module graph (${elapsedMs}ms)`;
+	return 'Loading the module graph…';
 }
 
 /**
