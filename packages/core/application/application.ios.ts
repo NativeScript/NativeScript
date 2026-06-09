@@ -405,9 +405,14 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		// May be null on a freshly recreated window — expected; the replace-root
 		// path below sets it. Only the embedder path needs an existing controller.
 		const rootController = window.rootViewController;
+        const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
+
+        // Embed into host app requires an existing root view controller
+        if (embedderDelegate && !rootController) {
+            return;
+        }
 
 		const controller = this.getViewController(rootView);
-		const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 
 		rootView._setupAsRootView({});
 
@@ -426,9 +431,6 @@ export class iOSApplication extends ApplicationCommon implements IiOSApplication
 		if (embedderDelegate) {
 			// Embed into host app.
 			// present over the host's existing root view controller.
-			if (!rootController) {
-				return;
-			}
 			this.setViewControllerView(rootView);
 			embedderDelegate.presentNativeScriptApp(controller);
 		} else {
