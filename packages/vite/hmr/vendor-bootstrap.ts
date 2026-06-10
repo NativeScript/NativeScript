@@ -1,3 +1,4 @@
+import { getGlobalScope } from './shared/runtime/global-scope.js';
 // HMR vendor bootstrap helper
 // Ensures a stable global lookup for vendor modules that were bundled and registered.
 // This can be injected or imported by the HMR runtime before rewriting modules rely on it.
@@ -7,10 +8,10 @@ interface VendorLookupFn {
 }
 
 (function initVendorAccessor() {
-	if ((globalThis as any).__nsVendor) return;
+	if (getGlobalScope().__nsVendor) return;
 
-	const getManifest = () => (globalThis as any).__NS_VENDOR_MANIFEST__ || null;
-	const getRegistry = () => (globalThis as any).__nsModules || (globalThis as any).__nsModuleRegistry || null;
+	const getManifest = () => getGlobalScope().__NS_VENDOR_MANIFEST__ || null;
+	const getRegistry = () => getGlobalScope().__nsModules || getGlobalScope().__nsModuleRegistry || null;
 
 	const accessor: VendorLookupFn = function (id: string): any {
 		if (!id) return undefined;

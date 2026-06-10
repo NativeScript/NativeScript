@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { formatBootTimeline, publishBootTrace, type BootTrace } from './boot-timeline.js';
+import { getGlobalScope } from './global-scope.js';
 
 describe('boot-timeline', () => {
 	afterEach(() => {
-		delete (globalThis as any).__NS_BOOT_TRACE__;
+		delete getGlobalScope().__NS_BOOT_TRACE__;
 	});
 
 	describe('formatBootTimeline', () => {
@@ -140,7 +141,7 @@ describe('boot-timeline', () => {
 
 			publishBootTrace(trace);
 
-			expect((globalThis as any).__NS_BOOT_TRACE__).toBe(trace);
+			expect(getGlobalScope().__NS_BOOT_TRACE__).toBe(trace);
 		});
 
 		it('never throws when globalThis is frozen', () => {

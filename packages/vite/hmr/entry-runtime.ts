@@ -1,3 +1,4 @@
+import { getGlobalScope } from './shared/runtime/global-scope.js';
 // Entry runtime executed on device via HTTP ESM.
 
 type EntryOpts = {
@@ -66,7 +67,7 @@ function prepareBootImportProgress(url: string, attempt: number, attempts: numbe
 }
 
 function clearBootImportProgress(): void {
-	const g = globalThis as any;
+	const g = getGlobalScope();
 	delete g.__NS_HMR_BOOT_MAIN_URL__;
 	delete g.__NS_HMR_BOOT_MAIN_ATTEMPT__;
 	delete g.__NS_HMR_BOOT_MAIN_ATTEMPTS__;
@@ -130,7 +131,7 @@ function startBootImportHeartbeat(url: string, attempt: number, attempts: number
 
 export function installHttpCoreCssSupport(coreModule: any, verbose?: boolean): HmrCssApplier | null {
 	try {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const core = coreModule?.default ?? coreModule;
 		const Application = (core && (typeof core.addCss === 'function' ? core : undefined)) || (core?.Application && typeof core.Application.addCss === 'function' ? core.Application : undefined) || (coreModule?.Application && typeof coreModule.Application.addCss === 'function' ? coreModule.Application : undefined) || g.Application;
 		if (!Application?.addCss) {
@@ -470,7 +471,7 @@ export default async function startEntry(opts: EntryOpts) {
 		// commits a non-placeholder root. Without this safety net Android can
 		// hang at "Waiting for the app root view (94 %)" indefinitely.
 		try {
-			const g: any = globalThis as any;
+			const g: any = getGlobalScope();
 			const restorePlaceholder = g.__NS_DEV_RESTORE_PLACEHOLDER__;
 			// Verbose-gated. Previously this was unconditional with a
 			// `__NS_PLACEHOLDER_DIAG_SILENT__` opt-out — left wide open
@@ -498,7 +499,7 @@ export default async function startEntry(opts: EntryOpts) {
 		// app's Application.run() call in the main module transparently replaced
 		// the placeholder with the real app UI. Restore original run() now.
 		try {
-			const g: any = globalThis as any;
+			const g: any = getGlobalScope();
 			if (typeof g.__NS_DEV_ORIGINAL_APP_RUN__ === 'function') {
 				// Restore original Application.run on ALL targets (mirrors placeholder patching)
 				const origRun = g.__NS_DEV_ORIGINAL_APP_RUN__;

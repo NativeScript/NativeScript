@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'fs';
 import path from 'path';
 import type { VendorManifest } from './manifest.js';
 import { registerVendorManifest } from './registry.js';
+import { getGlobalScope } from '../runtime/global-scope.js';
 
 /**
  * Attempt to load a previously generated vendor manifest from the NativeScript
@@ -29,7 +30,7 @@ export function loadPrebuiltVendorManifest(projectRoot: string, verbose = false)
 				console.log('[vendor-loader] Loaded prebuilt vendor manifest with', Object.keys(json.modules).length, 'modules');
 			}
 			// Expose globally (node side) for easier inspection in dev tools.
-			(globalThis as any).__NS_VENDOR_MANIFEST__ = json;
+			getGlobalScope().__NS_VENDOR_MANIFEST__ = json;
 			return json;
 		}
 	} catch (e) {

@@ -1,6 +1,7 @@
 import { BOOT_PLACEHOLDER_MOTION, computeBootProgressFillScale, formatBootDetailLine, formatBootPrimaryLine } from './boot-placeholder-ui.js';
 
 import { BOOT_TITLE, DEFAULT_SNAPSHOT, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, type HmrBootStage, type HmrConnectionStage, type HmrOverlayPosition, type HmrOverlaySnapshot, type HmrOverlayStageInfo, type HmrUpdateStage } from './dev-overlay-snapshots.js';
+import { getGlobalScope } from './global-scope.js';
 
 // Re-export the snapshot model so existing `./dev-overlay.js` importers keep working.
 export { createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot } from './dev-overlay-snapshots.js';
@@ -86,7 +87,7 @@ type HmrOverlayApi = {
 };
 
 function getOverlayGlobal(): any {
-	return globalThis as any;
+	return getGlobalScope();
 }
 
 /**

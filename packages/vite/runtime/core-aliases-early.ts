@@ -1,3 +1,4 @@
+import { getGlobalScope } from '../hmr/shared/runtime/global-scope.js';
 // Early alias installer for @nativescript/core plus Android init resilience.
 // Runs on device in the virtual entry context.
 
@@ -5,7 +6,7 @@ declare const android: any;
 
 export function installCoreAliasesEarly(verbose?: boolean) {
 	try {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		type ResolvedModule = { value: any; via: string; moduleId: string };
 		const resolveModule = (moduleIds: string[]): ResolvedModule | undefined => {
 			for (const moduleId of moduleIds) {

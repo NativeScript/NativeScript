@@ -8,6 +8,7 @@ import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { genCode } from './babel.js';
 import { buildCoreUrlPath, specToCoreSub } from '../../helpers/ns-core-url.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 // Ensure traverse callable across CJS/ESM builds
 const babelTraverse: any = (traverse as any)?.default || (traverse as any);
@@ -22,7 +23,7 @@ const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 // re-introduced the realm-split bug
 function reportUnexpectedCoreSpec(kind: string, spec: string): void {
 	try {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__NS_AST_CORE_FIRED__ ||= { Import: 0, ImportExpression: 0, ImportCall: 0, RequireCall: 0, samples: [] };
 		const bucket = g.__NS_AST_CORE_FIRED__;
 		const slot = kind as 'Import' | 'ImportExpression' | 'ImportCall' | 'RequireCall';

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { handleAngularHotUpdateMessage } from './index.js';
+import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 
 // Parallel module-source prefetch wiring.
 //
@@ -58,7 +59,7 @@ describe('Angular HMR client — kickstart wiring', () => {
 		updater: ReturnType<typeof vi.fn>;
 		teardown: () => void;
 	} {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previous = {
 			reboot: g.__reboot_ng_modules__,
 			importer: g.__NS_HMR_IMPORT__,

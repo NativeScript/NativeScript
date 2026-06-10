@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import * as path from 'node:path';
 import { normalizeCoreSub } from '../../helpers/ns-core-url.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 export type CoreExportOrigin = {
 	moduleId: string;
@@ -365,7 +366,7 @@ export function parseCoreBridgeRequest(pathname: string, _searchParams: URLSearc
 		if (pathname !== expectedPath) {
 			canonicalPath = expectedPath;
 			try {
-				const g = globalThis as any;
+				const g = getGlobalScope();
 				g.__NS_BRIDGE_NONCANON__ ||= { count: 0, samples: [] };
 				g.__NS_BRIDGE_NONCANON__.count++;
 				if (g.__NS_BRIDGE_NONCANON__.samples.length < 10) {

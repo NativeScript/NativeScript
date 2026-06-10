@@ -1,7 +1,8 @@
+import { getGlobalScope } from './global-scope.js';
 // Vendor bootstrap runtime installer. This runs on device (virtual entry) and must avoid
 // define-transform pitfalls (no dot-notation writes on globalThis; use defineProperty or bracket form).
 export function installVendorBootstrap(vendorManifest: any, __nsVendorModuleMap: Record<string, any>, verbose?: boolean) {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	const setGlobal = (k: string, v: any) => {
 		try {
 			Object.defineProperty(g, k, { value: v, configurable: true, writable: true });

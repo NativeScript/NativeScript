@@ -1,4 +1,5 @@
 import { createLogger, type Logger } from 'vite';
+import { getGlobalScope } from '../hmr/shared/runtime/global-scope.js';
 
 const GLOBAL_VERBOSE_FLAG = '__NS_ENV_VERBOSE__';
 const ENV_VERBOSE_KEYS = ['NS_VITE_VERBOSE', 'NS_ENV_VERBOSE', 'NS_VERBOSE', 'VERBOSE', 'VITE_DEBUG_LOGS', 'DEBUG'];
@@ -50,7 +51,7 @@ export function resolveVerboseFlag(options: ResolveOptions = {}): boolean {
 
 	if (resolved === undefined && options.useGlobalFlag !== false) {
 		try {
-			const globalVerbose = (globalThis as any)?.[GLOBAL_VERBOSE_FLAG];
+			const globalVerbose = getGlobalScope()?.[GLOBAL_VERBOSE_FLAG];
 			const coerced = coerceBoolean(globalVerbose);
 			if (typeof coerced === 'boolean') {
 				resolved = coerced;

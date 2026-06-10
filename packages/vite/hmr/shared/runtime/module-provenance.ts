@@ -1,3 +1,4 @@
+import { getGlobalScope } from './global-scope.js';
 type ModuleProvenanceSnapshot = {
 	key: string;
 	kind: string;
@@ -22,7 +23,7 @@ const RECORDER_KEY = '__NS_RECORD_MODULE_PROVENANCE__';
 const GETTER_KEY = '__NS_GET_MODULE_PROVENANCE__';
 
 function setGlobal(key: string, value: unknown) {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	try {
 		Object.defineProperty(g, key, { value, configurable: true, writable: true });
 	} catch {
@@ -33,7 +34,7 @@ function setGlobal(key: string, value: unknown) {
 }
 
 export function installModuleProvenanceRecorder(verbose?: boolean) {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	const store: Map<string, ModuleProvenanceSnapshot> = g[STORE_KEY] instanceof Map ? g[STORE_KEY] : new Map();
 	setGlobal(STORE_KEY, store);
 

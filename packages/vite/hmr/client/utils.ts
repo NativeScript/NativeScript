@@ -1,6 +1,7 @@
 /**
  * No circulars - don't import from other hmr/client/* modules here.
  */
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 declare const __NS_ENV_VERBOSE__: boolean | undefined;
 
 // Build-time verbose flag, read defensively so unit tests (where the
@@ -201,7 +202,7 @@ export function deriveHttpOrigin(wsUrl: string | undefined) {
 	try {
 		// Prefer explicit HTTP origin provided by entry-runtime when available
 		try {
-			const g: any = globalThis as any;
+			const g: any = getGlobalScope();
 			if (g && typeof g.__NS_HTTP_ORIGIN__ === 'string' && /^https?:\/\//.test(g.__NS_HTTP_ORIGIN__)) {
 				return String(g.__NS_HTTP_ORIGIN__);
 			}
@@ -272,7 +273,7 @@ export function _resetHmrModeBannerForTests(): void {
 export function invalidateModulesByUrls(urls: readonly string[]): boolean {
 	emitHmrModeBannerOnce();
 	if (!urls || !urls.length) return false;
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	const fn = g.__nsInvalidateModules;
 	if (typeof fn !== 'function') return false;
 	try {
@@ -397,7 +398,7 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 	try {
 		const v = typeof graphVersion === 'number' ? graphVersion : 0;
 		const h = graph.get(spec)?.hash || '';
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		const n = typeof g?.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0;
 		// Only add a tag when we have at least one signal — on the very
 		// first request before any HMR cycle the module is fresh and

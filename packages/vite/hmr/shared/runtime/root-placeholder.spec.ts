@@ -1,23 +1,24 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ensureHmrDevOverlayRuntimeInstalled } from './dev-overlay.js';
 import { installRootPlaceholder, tryFinalizeBootPlaceholder } from './root-placeholder.js';
+import { getGlobalScope } from './global-scope.js';
 
 describe('root placeholder finalization', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
-		delete (globalThis as any).Application;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
-		delete (globalThis as any).__NS_HMR_BOOT_COMPLETE__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
-		delete (globalThis as any).__NS_DEV_BOOT_STATUS_LABEL__;
-		delete (globalThis as any).__NS_DEV_BOOT_ACTIVITY_INDICATOR__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_APPLICATION__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__;
-		delete (globalThis as any).__NS_DEV_ORIGINAL_APP_RUN__;
-		delete (globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_RESTORE_TIMER__;
+		delete getGlobalScope().Application;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_BOOT_COMPLETE__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
+		delete getGlobalScope().__NS_DEV_BOOT_STATUS_LABEL__;
+		delete getGlobalScope().__NS_DEV_BOOT_ACTIVITY_INDICATOR__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_APPLICATION__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__;
+		delete getGlobalScope().__NS_DEV_ORIGINAL_APP_RUN__;
+		delete getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_RESTORE_TIMER__;
 	});
 
 	it('marks boot complete only after a real root replaces the placeholder', () => {
@@ -34,20 +35,20 @@ describe('root placeholder finalization', () => {
 			})),
 		};
 
-		(globalThis as any).Application = application;
-		(globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_VIEW__ = placeholderRoot;
-		(globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_EARLY__ = true;
-		(globalThis as any).__NS_DEV_BOOT_STATUS_LABEL__ = { text: 'waiting' };
-		(globalThis as any).__NS_DEV_PLACEHOLDER_APPLICATION__ = application;
-		(globalThis as any).__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__ = launchHandler;
-		(globalThis as any).__NS_DEV_ORIGINAL_APP_RUN__ = originalRun;
+		getGlobalScope().Application = application;
+		getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_VIEW__ = placeholderRoot;
+		getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_EARLY__ = true;
+		getGlobalScope().__NS_DEV_BOOT_STATUS_LABEL__ = { text: 'waiting' };
+		getGlobalScope().__NS_DEV_PLACEHOLDER_APPLICATION__ = application;
+		getGlobalScope().__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__ = launchHandler;
+		getGlobalScope().__NS_DEV_ORIGINAL_APP_RUN__ = originalRun;
 
 		const api = ensureHmrDevOverlayRuntimeInstalled(true);
 		const finalized = tryFinalizeBootPlaceholder('spec', true);
 
 		expect(finalized).toBe(true);
-		expect((globalThis as any).__NS_HMR_BOOT_COMPLETE__).toBe(true);
-		expect((globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_VIEW__).toBeUndefined();
+		expect(getGlobalScope().__NS_HMR_BOOT_COMPLETE__).toBe(true);
+		expect(getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_VIEW__).toBeUndefined();
 		expect(application.off).toHaveBeenCalledWith('launch', launchHandler);
 		expect(application.run).toBe(originalRun);
 		expect(api.getSnapshot()).toMatchObject({
@@ -64,12 +65,12 @@ describe('root placeholder finalization', () => {
 			getRootView: vi.fn(() => placeholderRoot),
 		};
 
-		(globalThis as any).Application = application;
-		(globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_VIEW__ = placeholderRoot;
-		(globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_EARLY__ = true;
+		getGlobalScope().Application = application;
+		getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_VIEW__ = placeholderRoot;
+		getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_EARLY__ = true;
 
 		expect(tryFinalizeBootPlaceholder('spec')).toBe(false);
-		expect((globalThis as any).__NS_HMR_BOOT_COMPLETE__).not.toBe(true);
+		expect(getGlobalScope().__NS_HMR_BOOT_COMPLETE__).not.toBe(true);
 	});
 });
 
@@ -92,22 +93,22 @@ describe('installRootPlaceholder — patched Application.run timing', () => {
 	afterEach(() => {
 		// Same teardown as the suite above — placeholder install touches many
 		// `globalThis` slots and leaving them in place would poison the next case.
-		delete (globalThis as any).Application;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
-		delete (globalThis as any).__NS_HMR_BOOT_COMPLETE__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
-		delete (globalThis as any).__NS_DEV_BOOT_STATUS_LABEL__;
-		delete (globalThis as any).__NS_DEV_BOOT_DETAIL_LABEL__;
-		delete (globalThis as any).__NS_DEV_BOOT_PROGRESS_FILL__;
-		delete (globalThis as any).__NS_DEV_BOOT_ACTIVITY_INDICATOR__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_APPLICATION__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__;
-		delete (globalThis as any).__NS_DEV_ORIGINAL_APP_RUN__;
-		delete (globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__;
-		delete (globalThis as any).__NS_DEV_PLACEHOLDER_RESTORE_TIMER__;
-		delete (globalThis as any).__NS_DEV_PATCHED_RESET_ROOT_VIEW__;
+		delete getGlobalScope().Application;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_BOOT_COMPLETE__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_VIEW__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
+		delete getGlobalScope().__NS_DEV_BOOT_STATUS_LABEL__;
+		delete getGlobalScope().__NS_DEV_BOOT_DETAIL_LABEL__;
+		delete getGlobalScope().__NS_DEV_BOOT_PROGRESS_FILL__;
+		delete getGlobalScope().__NS_DEV_BOOT_ACTIVITY_INDICATOR__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_APPLICATION__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_LAUNCH_HANDLER__;
+		delete getGlobalScope().__NS_DEV_ORIGINAL_APP_RUN__;
+		delete getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__;
+		delete getGlobalScope().__NS_DEV_PLACEHOLDER_RESTORE_TIMER__;
+		delete getGlobalScope().__NS_DEV_PATCHED_RESET_ROOT_VIEW__;
 	});
 
 	/**
@@ -137,7 +138,7 @@ describe('installRootPlaceholder — patched Application.run timing', () => {
 			// invokes the bound original (which is `resetSpy`).
 			resetRootView: ((...args: any[]) => resetSpy(...args)) as any,
 		};
-		(globalThis as any).Application = application;
+		getGlobalScope().Application = application;
 		installRootPlaceholder(false);
 		// Trigger the launchEvent handler `installRootPlaceholder` registered.
 		// Pass `args = {}` so the handler's `args.root = frame` assignment is

@@ -1,3 +1,4 @@
+import { getGlobalScope } from './global-scope.js';
 export type NsHmrUpdatePayload = {
 	type: 'full-graph' | 'delta';
 	version: number;
@@ -16,7 +17,7 @@ type NsHmrGlobalState = {
 };
 
 function getNsHmrGlobal(): NsHmrGlobalState {
-	return globalThis as any;
+	return getGlobalScope();
 }
 
 function ensureDispatcherInstalled(): {

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 
 /**
  * Kickstart-eligibility threshold tests.
@@ -38,7 +39,7 @@ interface Globals {
 }
 
 function installGlobals(): Globals {
-	const g = globalThis as any;
+	const g = getGlobalScope();
 	const reboot: RebootFn = vi.fn();
 	const importer: ImporterFn = vi.fn(async () => ({}));
 	const updater = vi.fn();
@@ -55,7 +56,7 @@ function installGlobals(): Globals {
 }
 
 function clearGlobals() {
-	const g = globalThis as any;
+	const g = getGlobalScope();
 	delete g.__reboot_ng_modules__;
 	delete g.__NS_HMR_IMPORT__;
 	delete g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
@@ -154,7 +155,7 @@ describe('Angular HMR client — kickstart threshold', () => {
 		// are erased at compile time, vitest sees a free identifier
 		// reference; we install it on globalThis BEFORE importing the
 		// module so the capture sees a number.
-		(globalThis as any).__NS_HMR_KICKSTART_MAX_URLS__ = 4;
+		getGlobalScope().__NS_HMR_KICKSTART_MAX_URLS__ = 4;
 		const ctx = installGlobals();
 
 		const { handleAngularHotUpdateMessage } = await import('./index.js');
@@ -173,7 +174,7 @@ describe('Angular HMR client — kickstart threshold', () => {
 		// 0 is the documented escape hatch: developers bisecting a
 		// perf regression should be able to turn the optimization
 		// off without uninstalling the runtime.
-		(globalThis as any).__NS_HMR_KICKSTART_MAX_URLS__ = 0;
+		getGlobalScope().__NS_HMR_KICKSTART_MAX_URLS__ = 0;
 		const ctx = installGlobals();
 
 		const { handleAngularHotUpdateMessage } = await import('./index.js');
@@ -187,7 +188,7 @@ describe('Angular HMR client — kickstart threshold', () => {
 		// (e.g. for benchmarking with a deliberately-warm dev
 		// server). `__NS_HMR_KICKSTART_MAX_URLS__ = Infinity` is the
 		// escape hatch.
-		(globalThis as any).__NS_HMR_KICKSTART_MAX_URLS__ = Number.POSITIVE_INFINITY;
+		getGlobalScope().__NS_HMR_KICKSTART_MAX_URLS__ = Number.POSITIVE_INFINITY;
 		const ctx = installGlobals();
 
 		const { handleAngularHotUpdateMessage } = await import('./index.js');

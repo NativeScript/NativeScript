@@ -1,51 +1,52 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ensureHmrDevOverlayRuntimeInstalled } from './dev-overlay.js';
 import { startBrowserRuntimeSession } from './session-bootstrap.js';
+import { getGlobalScope } from './global-scope.js';
 
 describe('browser runtime session bootstrap', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 		vi.unstubAllGlobals();
 		vi.useRealTimers();
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
-		delete (globalThis as any).__NS_HTTP_ORIGIN__;
-		delete (globalThis as any).__NS_HMR_WS_URL__;
-		delete (globalThis as any).__NS_HMR_BOOT_COMPLETE__;
-		delete (globalThis as any).__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__;
-		delete (globalThis as any).__nsSupportsRuntimeConfigUrl;
-		delete (globalThis as any).__nsStartDevSession;
-		delete (globalThis as any).__nsConfigureDevRuntime;
-		delete (globalThis as any).__nsConfigureRuntime;
-		delete (globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HTTP_ORIGIN__;
+		delete getGlobalScope().__NS_HMR_WS_URL__;
+		delete getGlobalScope().__NS_HMR_BOOT_COMPLETE__;
+		delete getGlobalScope().__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__;
+		delete getGlobalScope().__nsSupportsRuntimeConfigUrl;
+		delete getGlobalScope().__nsStartDevSession;
+		delete getGlobalScope().__nsConfigureDevRuntime;
+		delete getGlobalScope().__nsConfigureRuntime;
+		delete getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__;
 		// clear the shared dedup flag between tests so each case
 		// exercises the import-map fetch path independently.
-		delete (globalThis as any).__NS_IMPORT_MAP_CONFIGURED__;
+		delete getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__;
 		// Boot timeline trace is mirrored onto globalThis for post-boot
 		// inspection — reset it so each test sees a clean slate.
-		delete (globalThis as any).__NS_BOOT_TRACE__;
+		delete getGlobalScope().__NS_BOOT_TRACE__;
 		// Boot-progress globals (snippet + heartbeat ratchet) are reset by
 		// `clearBootProgressState` inside `startBrowserRuntimeSession`, but
 		// some tests stage these directly so wipe them defensively here too.
-		delete (globalThis as any).__NS_HMR_BOOT_MODULE_COUNT__;
-		delete (globalThis as any).__NS_HMR_BOOT_LAST_MODULE__;
-		delete (globalThis as any).__NS_HMR_BOOT_LAST_PROGRESS__;
-		delete (globalThis as any).__NS_HMR_BOOT_LAST_PROGRESS_AT__;
-		delete (globalThis as any).__NS_HMR_BOOT_IMPORT_STARTED_AT__;
+		delete getGlobalScope().__NS_HMR_BOOT_MODULE_COUNT__;
+		delete getGlobalScope().__NS_HMR_BOOT_LAST_MODULE__;
+		delete getGlobalScope().__NS_HMR_BOOT_LAST_PROGRESS__;
+		delete getGlobalScope().__NS_HMR_BOOT_LAST_PROGRESS_AT__;
+		delete getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__;
 	});
 
 	it('waits for the real app root after __nsStartDevSession resolves', async () => {
 		const startDevSession = vi.fn().mockImplementation(async (session) => {
-			expect((globalThis as any).__NS_HTTP_ORIGIN__).toBeUndefined();
-			expect((globalThis as any).__NS_HMR_WS_URL__).toBeUndefined();
-			expect((globalThis as any).__NS_HMR_BOOT_COMPLETE__).toBeUndefined();
-			(globalThis as any).__NS_HTTP_ORIGIN__ = session.origin;
-			(globalThis as any).__NS_HMR_WS_URL__ = session.wsUrl;
-			(globalThis as any).__NS_HMR_BOOT_COMPLETE__ = false;
+			expect(getGlobalScope().__NS_HTTP_ORIGIN__).toBeUndefined();
+			expect(getGlobalScope().__NS_HMR_WS_URL__).toBeUndefined();
+			expect(getGlobalScope().__NS_HMR_BOOT_COMPLETE__).toBeUndefined();
+			getGlobalScope().__NS_HTTP_ORIGIN__ = session.origin;
+			getGlobalScope().__NS_HMR_WS_URL__ = session.wsUrl;
+			getGlobalScope().__NS_HMR_BOOT_COMPLETE__ = false;
 		});
 		const restorePlaceholder = vi.fn();
 		vi.stubGlobal('__nsStartDevSession', startDevSession);
-		(globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__ = restorePlaceholder;
+		getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__ = restorePlaceholder;
 		vi.stubGlobal(
 			'fetch',
 			vi.fn().mockResolvedValue({
@@ -71,9 +72,9 @@ describe('browser runtime session bootstrap', () => {
 
 		expect(startDevSession).toHaveBeenCalledTimes(1);
 		expect(restorePlaceholder).toHaveBeenCalledWith('session-active');
-		expect((globalThis as any).__NS_HTTP_ORIGIN__).toBe('http://localhost:5173');
-		expect((globalThis as any).__NS_HMR_WS_URL__).toBe('ws://localhost:5173');
-		expect((globalThis as any).__NS_HMR_BOOT_COMPLETE__).toBe(false);
+		expect(getGlobalScope().__NS_HTTP_ORIGIN__).toBe('http://localhost:5173');
+		expect(getGlobalScope().__NS_HMR_WS_URL__).toBe('ws://localhost:5173');
+		expect(getGlobalScope().__NS_HMR_BOOT_COMPLETE__).toBe(false);
 		expect(api.getSnapshot()).toMatchObject({
 			visible: true,
 			mode: 'boot',
@@ -192,7 +193,7 @@ describe('browser runtime session bootstrap', () => {
 			}),
 		});
 
-		(globalThis as any).__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__ = true;
+		getGlobalScope().__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__ = true;
 		vi.stubGlobal('__nsSupportsRuntimeConfigUrl', true);
 		vi.stubGlobal('__nsStartDevSession', startDevSession);
 		vi.stubGlobal('fetch', fetchMock);
@@ -224,7 +225,7 @@ describe('browser runtime session bootstrap', () => {
 			}),
 		});
 
-		(globalThis as any).__NS_IMPORT_MAP_CONFIGURED__ = true;
+		getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__ = true;
 		vi.stubGlobal('__nsConfigureDevRuntime', configureRuntime);
 		vi.stubGlobal('__nsStartDevSession', startDevSession);
 		vi.stubGlobal('fetch', fetchMock);
@@ -273,7 +274,7 @@ describe('browser runtime session bootstrap', () => {
 		expect(line).toMatch(/^\[ns-boot\] ok total=\d+ms session=\d+ms importMap=\d+ms native=\d+ms$/);
 
 		// And the trace should be available on globalThis for post-boot inspection.
-		const trace = (globalThis as any).__NS_BOOT_TRACE__;
+		const trace = getGlobalScope().__NS_BOOT_TRACE__;
 		expect(trace).toBeDefined();
 		expect(typeof trace.t0).toBe('number');
 		expect(typeof trace.t1).toBe('number');
@@ -315,7 +316,7 @@ describe('browser runtime session bootstrap', () => {
 		expect(lines, 'no boot timeline line should leak when verbose is off').toEqual([]);
 
 		// The trace itself should still be published for post-boot inspection.
-		const trace = (globalThis as any).__NS_BOOT_TRACE__;
+		const trace = getGlobalScope().__NS_BOOT_TRACE__;
 		expect(trace).toBeDefined();
 		expect(typeof trace.t0).toBe('number');
 		expect(typeof trace.t1).toBe('number');
@@ -351,7 +352,7 @@ describe('browser runtime session bootstrap', () => {
 			}),
 		});
 
-		(globalThis as any).__NS_IMPORT_MAP_CONFIGURED__ = true;
+		getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__ = true;
 		vi.stubGlobal('__nsConfigureDevRuntime', vi.fn());
 		vi.stubGlobal('__nsStartDevSession', startDevSession);
 		vi.stubGlobal('fetch', fetchMock);
@@ -380,7 +381,7 @@ describe('browser runtime session bootstrap', () => {
 	it('boot heartbeat: stamps __NS_HMR_BOOT_IMPORT_STARTED_AT__ before invoking __nsStartDevSession so the snippet shares a clock', async () => {
 		const startedAtAtNativeCall: { value: number | undefined } = { value: undefined };
 		const startDevSession = vi.fn().mockImplementation(async () => {
-			startedAtAtNativeCall.value = (globalThis as any).__NS_HMR_BOOT_IMPORT_STARTED_AT__;
+			startedAtAtNativeCall.value = getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__;
 		});
 		const fetchMock = vi.fn().mockResolvedValue({
 			ok: true,
@@ -408,12 +409,12 @@ describe('browser runtime session bootstrap', () => {
 		// `clearBootProgressState()` call inside `startBrowserRuntimeSession`,
 		// the next boot would inherit those values and the bar would be
 		// stuck at 92 from the very first frame.
-		(globalThis as any).__NS_HMR_BOOT_MODULE_COUNT__ = 200;
-		(globalThis as any).__NS_HMR_BOOT_LAST_MODULE__ = '/src/stale.ts';
-		(globalThis as any).__NS_HMR_BOOT_LAST_PROGRESS__ = 92;
+		getGlobalScope().__NS_HMR_BOOT_MODULE_COUNT__ = 200;
+		getGlobalScope().__NS_HMR_BOOT_LAST_MODULE__ = '/src/stale.ts';
+		getGlobalScope().__NS_HMR_BOOT_LAST_PROGRESS__ = 92;
 		const observed: { count: any; lastModule: any; lastProgress: any } = { count: 'unset', lastModule: 'unset', lastProgress: 'unset' };
 		const startDevSession = vi.fn().mockImplementation(async () => {
-			const g = globalThis as any;
+			const g = getGlobalScope();
 			observed.count = g.__NS_HMR_BOOT_MODULE_COUNT__;
 			observed.lastModule = g.__NS_HMR_BOOT_LAST_MODULE__;
 			observed.lastProgress = g.__NS_HMR_BOOT_LAST_PROGRESS__;
@@ -491,8 +492,8 @@ describe('browser runtime session bootstrap', () => {
 
 		// Simulate the snippet bumping the module count + label, just like
 		// a `__ns_boot__/b1`-tagged module evaluating mid-boot.
-		(globalThis as any).__NS_HMR_BOOT_MODULE_COUNT__ = 5;
-		(globalThis as any).__NS_HMR_BOOT_LAST_MODULE__ = '/src/main.ts';
+		getGlobalScope().__NS_HMR_BOOT_MODULE_COUNT__ = 5;
+		getGlobalScope().__NS_HMR_BOOT_LAST_MODULE__ = '/src/main.ts';
 
 		// Advance past at least one heartbeat interval (250ms).
 		await vi.advanceTimersByTimeAsync(300);
@@ -589,9 +590,9 @@ describe('browser runtime session bootstrap', () => {
 		vi.stubGlobal('__nsStartDevSession', startDevSession);
 		vi.stubGlobal('fetch', fetchMock);
 
-		expect((globalThis as any).__NS_IMPORT_MAP_CONFIGURED__).toBeUndefined();
+		expect(getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__).toBeUndefined();
 		await startBrowserRuntimeSession('http://localhost:5173/__ns_dev__/session', true);
-		expect((globalThis as any).__NS_IMPORT_MAP_CONFIGURED__).toBe(true);
+		expect(getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__).toBe(true);
 		expect(configureRuntime).toHaveBeenCalledTimes(1);
 	});
 });

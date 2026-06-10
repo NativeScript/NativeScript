@@ -1,3 +1,4 @@
+import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 type GetCoreFn = (name: string) => any;
 
 // HMR-applying progress overlay.
@@ -26,11 +27,17 @@ type HmrUpdateOverlayInfo = {
 // the angular client (via vitest) see `undefined` and default to
 // enabled — matching the production dev-server experience.
 const overlayEnabled: boolean = (() => {
+	// Define substitution does not reach this raw-served file — fall back to
+	// the globalThis seed planted by the entry's defines-seed module (which
+	// evaluates before this client is loaded) before defaulting to enabled.
 	try {
-		return typeof __NS_HMR_PROGRESS_OVERLAY_ENABLED__ === 'boolean' ? __NS_HMR_PROGRESS_OVERLAY_ENABLED__ : true;
-	} catch {
-		return true;
-	}
+		if (typeof __NS_HMR_PROGRESS_OVERLAY_ENABLED__ === 'boolean') return __NS_HMR_PROGRESS_OVERLAY_ENABLED__;
+	} catch {}
+	try {
+		const seeded = getGlobalScope().__NS_HMR_PROGRESS_OVERLAY_ENABLED__;
+		if (typeof seeded === 'boolean') return seeded;
+	} catch {}
+	return true;
 })();
 
 function getHmrOverlayApi(): any {
@@ -489,15 +496,23 @@ type KickstartResult = { ok: boolean; fetched: number; ms: number };
 // see `undefined` and fall back to the default.
 const KICKSTART_DEFAULT_MAX_URLS = 32;
 const kickstartMaxUrls: number = (() => {
-	try {
-		const raw = __NS_HMR_KICKSTART_MAX_URLS__;
-		if (typeof raw !== 'number') return KICKSTART_DEFAULT_MAX_URLS;
+	// Define substitution does not reach this raw-served file — fall back to
+	// the globalThis seed planted by the entry's defines-seed module.
+	const normalize = (raw: unknown): number | null => {
+		if (typeof raw !== 'number') return null;
 		if (!Number.isFinite(raw)) return Number.POSITIVE_INFINITY;
-		if (raw < 0) return KICKSTART_DEFAULT_MAX_URLS;
+		if (raw < 0) return null;
 		return Math.floor(raw);
-	} catch {
-		return KICKSTART_DEFAULT_MAX_URLS;
-	}
+	};
+	try {
+		const substituted = normalize(__NS_HMR_KICKSTART_MAX_URLS__);
+		if (substituted !== null) return substituted;
+	} catch {}
+	try {
+		const seeded = normalize(getGlobalScope().__NS_HMR_KICKSTART_MAX_URLS__);
+		if (seeded !== null) return seeded;
+	} catch {}
+	return KICKSTART_DEFAULT_MAX_URLS;
 })();
 
 // Decide whether to run the kickstart for a given eviction set.
@@ -551,7 +566,10 @@ function kickstartHmrPrefetch(urls: readonly string[], verbose: boolean): Kickst
 }
 
 function getAngularBootstrapEntryCandidates(msg: any): string[] {
-	const root = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
+	// Define substitution does not reach this raw-served file; prefer the
+	// globalThis seed from the entry's defines-seed module ('app/'-rooted
+	// projects would otherwise get the wrong '/src' default).
+	const root = (typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__) || (typeof getGlobalScope().__NS_APP_ROOT_VIRTUAL__ === 'string' && getGlobalScope().__NS_APP_ROOT_VIRTUAL__) || '/src';
 	// Server announces the canonical bootstrap entry as
 	// `importerEntry`, computed from `package.json#main`. Fall back to
 	// the legacy `entryCandidates` array (for older servers) and finally

@@ -1,6 +1,7 @@
 import { getCore } from './utils.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
-const VERBOSE = !!(globalThis as any).__NS_ENV_VERBOSE__;
+const VERBOSE = !!getGlobalScope().__NS_ENV_VERBOSE__;
 
 // Must match the tag used by the boot virtual `app.css` emitter in
 // `helpers/main-entry.ts` and `entry-runtime.ts::APP_CSS_TAG` so HMR's
@@ -9,7 +10,7 @@ export const APP_CSS_TAG = 'app.css';
 
 function getPreferredCssApplier(): ((cssText: string, refreshRoot?: boolean) => void) | null {
 	try {
-		const applier = (globalThis as any).__NS_HMR_APPLY_CSS__;
+		const applier = getGlobalScope().__NS_HMR_APPLY_CSS__;
 		if (typeof applier === 'function') {
 			return applier;
 		}
@@ -89,7 +90,7 @@ export function applyCssText(cssText: string, tag: string = APP_CSS_TAG): void {
 // Fetch helper
 export async function fetchText(url: string): Promise<string> {
 	try {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		if (typeof g.fetch === 'function') {
 			const res = await g.fetch(url);
 			return await res.text();

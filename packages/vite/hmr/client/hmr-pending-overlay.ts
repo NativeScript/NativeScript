@@ -12,6 +12,7 @@
  * (`__NS_HMR_PROGRESS_OVERLAY_ENABLED__`) and detail-string formatting
  * can be unit-tested without booting the full HMR client.
  */
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 declare const __NS_HMR_PROGRESS_OVERLAY_ENABLED__: boolean | undefined;
 
@@ -39,11 +40,17 @@ export function applyHmrPendingFrame(filePath: string | undefined, deps: HmrPend
 		typeof deps.overlayEnabled === 'boolean'
 			? deps.overlayEnabled
 			: (() => {
+					// Define substitution does not reach this raw-served file — fall
+					// back to the globalThis seed planted by the entry's defines-seed
+					// module before defaulting to enabled.
 					try {
-						return typeof __NS_HMR_PROGRESS_OVERLAY_ENABLED__ === 'boolean' ? __NS_HMR_PROGRESS_OVERLAY_ENABLED__ : true;
-					} catch {
-						return true;
-					}
+						if (typeof __NS_HMR_PROGRESS_OVERLAY_ENABLED__ === 'boolean') return __NS_HMR_PROGRESS_OVERLAY_ENABLED__;
+					} catch {}
+					try {
+						const seeded = getGlobalScope().__NS_HMR_PROGRESS_OVERLAY_ENABLED__;
+						if (typeof seeded === 'boolean') return seeded;
+					} catch {}
+					return true;
 				})();
 	if (!enabled) return false;
 	let api: HmrOverlayApiLike;

@@ -116,11 +116,48 @@ export function getRuntimeDefineValues(opts: { platform?: string; isDevMode: boo
 }
 
 /**
+ * The COMPLETE set of globals the bundle entry's defines-seed module must
+ * plant. Superset of {@link getRuntimeDefineValues}: also carries every
+ * `__NS_*__` value that raw-served runtime files consume. Vite's `define`
+ * substitution never reaches those files (the HMR client and framework
+ * clients are served raw from node_modules/dist), so any define they read
+ * MUST also exist on globalThis or its build-time fallback silently wins —
+ * which is how `NS_VITE_PROGRESS_OVERLAY=0` and `NS_VITE_KICKSTART_MAX_URLS`
+ * historically never reached the device, and how '/src'-defaulted app roots
+ * broke 'app/'-rooted projects. Rule: add a define consumed by client code →
+ * add it HERE, and read it with a `globalThis` fallback at the consumer.
+ */
+export function getRuntimeSeedValues(opts: { platform?: string; isDevMode: boolean; verbose: boolean; flavor: string; isCI?: boolean }): Record<string, unknown> {
+	return {
+		...getRuntimeDefineValues(opts),
+		// Runtime flavor for the raw-served HMR client's TARGET_FLAVOR resolution.
+		__NS_TARGET_FLAVOR__: opts.flavor,
+		// App-root virtual path — every served-id → moduleName mapping (frame
+		// navigation targets, modal re-present matching) depends on this.
+		__NS_APP_ROOT_DIR__: APP_ROOT_DIR,
+		__NS_APP_ROOT_VIRTUAL__: APP_ROOT_VIRTUAL,
+		// HMR-applying overlay opt-out (NS_VITE_PROGRESS_OVERLAY=0).
+		__NS_HMR_PROGRESS_OVERLAY_ENABLED__: isHmrProgressOverlayEnabled(),
+		// Kickstart eviction-set cap (NS_VITE_KICKSTART_MAX_URLS) — may be
+		// Infinity; buildGlobalSeedStatements serializes it explicitly.
+		__NS_HMR_KICKSTART_MAX_URLS__: resolveHmrKickstartMaxUrls(),
+		__CI__: !!opts.isCI,
+	};
+}
+
+/**
  * Unconditional `globalThis.<key> = <value>;` statements — the bundle entry's
  * defines-seed module body (evaluates as a leaf before any sibling import).
+ * Accepts the full seed map; `Infinity` is serialized explicitly because
+ * `JSON.stringify(Infinity)` is the string "null".
  */
+export function buildGlobalSeedStatements(values: Record<string, unknown>): string[] {
+	return Object.entries(values).map(([key, value]) => `globalThis.${key} = ${typeof value === 'number' && !Number.isFinite(value) ? 'Infinity' : JSON.stringify(value)};`);
+}
+
+/** @deprecated kept for callers of the platform-only subset; prefer buildGlobalSeedStatements(getRuntimeSeedValues(...)) */
 export function buildDefineSeedStatements(values: RuntimeDefineValues): string[] {
-	return Object.entries(values).map(([key, value]) => `globalThis.${key} = ${JSON.stringify(value)};`);
+	return buildGlobalSeedStatements(values as unknown as Record<string, unknown>);
 }
 
 /**

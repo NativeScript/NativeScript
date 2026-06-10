@@ -32,6 +32,7 @@ import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports, s
 import { classifyBootRoute, createColdBootRequestCounter, formatPopulateInitialGraphSummary, formatServerStartupBanner, type ColdBootRequestCounter } from './perf-instrumentation.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { createSharedTransformRequestRunner, type SharedTransformRequestRunner } from './shared-transform-request.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 const APP_ROOT_DIR = getProjectAppPath();
 
@@ -537,7 +538,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				} else if (verbose) {
 					console.log('[hmr-ws][vendor] Manifest already present with', Object.keys(existing.modules).length, 'modules');
 				}
-				(globalThis as any).__NS_VENDOR_MANIFEST__ = getVendorManifest();
+				getGlobalScope().__NS_VENDOR_MANIFEST__ = getVendorManifest();
 			}
 
 			// Disable perMessageDeflate to avoid any extension negotiation quirks with native clients

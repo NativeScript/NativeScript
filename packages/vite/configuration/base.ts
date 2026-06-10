@@ -19,6 +19,7 @@ import { nativescriptPackageResolver } from '../helpers/nativescript-package-res
 import { cliPlugin } from '../helpers/ns-cli-plugins.js';
 import { dynamicImportPlugin } from '../helpers/dynamic-import-plugin.js';
 import { mainEntryPlugin } from '../helpers/main-entry.js';
+import { createUiRegistrationPlugin } from '../helpers/ui-registration.js';
 import { buildCoreUrl, specToCoreSub } from '../helpers/ns-core-url.js';
 import { resolveDeviceReachableOrigin } from '../helpers/dev-host.js';
 import { getProjectFlavor } from '../helpers/flavor.js';
@@ -436,8 +437,15 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 			nativescriptWorkerLoaderStubPlugin(),
 			nsConfigAsJsonPlugin(),
 			NativeScriptPlugin({ platform }),
+			// XML-driven flavors: provide the virtual UI-registration module the
+			// entry imports (see main-entry.ts). Registered HERE, from the same
+			// authoritative flavor the entry's emission gate uses, so the import
+			// and its resolver can never diverge — deps-based flavor detection
+			// alone misfires in workspaces whose app package.json doesn't list
+			// the framework package (hoisted to the workspace root).
+			...(flavor === 'typescript' || flavor === 'javascript' ? [createUiRegistrationPlugin(flavor as 'typescript' | 'javascript')] : []),
 			// Ensure globals and Android activity are included early via virtual entry
-			mainEntryPlugin({ platform, isDevMode, verbose, hmrActive, useHttps }),
+			mainEntryPlugin({ platform, isDevMode, verbose, hmrActive, useHttps, flavor }),
 			// Handle custom Android Activity/Application components (auto-detected or configured)
 			appComponentsPlugin({ platform, verbose }),
 			dynamicImportPlugin(),

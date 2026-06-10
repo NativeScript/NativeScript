@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { generatePlatformPolyfills } from './platform-polyfills.js';
+import { getGlobalScope } from './global-scope.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -62,28 +63,28 @@ describe('self polyfill', () => {
 
 	beforeEach(() => {
 		hadSelf = 'self' in globalThis;
-		originalSelf = (globalThis as any).self;
+		originalSelf = getGlobalScope().self;
 	});
 
 	afterEach(() => {
 		if (hadSelf) {
-			(globalThis as any).self = originalSelf;
+			getGlobalScope().self = originalSelf;
 		} else {
-			delete (globalThis as any).self;
+			delete getGlobalScope().self;
 		}
 	});
 
 	it('establishes self === globalThis when self is undefined', () => {
-		delete (globalThis as any).self;
+		delete getGlobalScope().self;
 		evalPolyfills(generatePlatformPolyfills());
-		expect((globalThis as any).self).toBe(globalThis);
+		expect(getGlobalScope().self).toBe(globalThis);
 	});
 
 	it('preserves existing self if already defined', () => {
 		const sentinel = { __test: true };
-		(globalThis as any).self = sentinel;
+		getGlobalScope().self = sentinel;
 		evalPolyfills(generatePlatformPolyfills());
-		expect((globalThis as any).self).toBe(sentinel);
+		expect(getGlobalScope().self).toBe(sentinel);
 	});
 });
 
@@ -100,28 +101,28 @@ describe('AbortController polyfill — when globals are undefined', () => {
 	beforeEach(() => {
 		hadAC = 'AbortController' in globalThis;
 		hadAS = 'AbortSignal' in globalThis;
-		originalAC = (globalThis as any).AbortController;
-		originalAS = (globalThis as any).AbortSignal;
-		delete (globalThis as any).AbortController;
-		delete (globalThis as any).AbortSignal;
+		originalAC = getGlobalScope().AbortController;
+		originalAS = getGlobalScope().AbortSignal;
+		delete getGlobalScope().AbortController;
+		delete getGlobalScope().AbortSignal;
 	});
 
 	afterEach(() => {
 		if (hadAC) {
-			(globalThis as any).AbortController = originalAC;
+			getGlobalScope().AbortController = originalAC;
 		} else {
-			delete (globalThis as any).AbortController;
+			delete getGlobalScope().AbortController;
 		}
 		if (hadAS) {
-			(globalThis as any).AbortSignal = originalAS;
+			getGlobalScope().AbortSignal = originalAS;
 		} else {
-			delete (globalThis as any).AbortSignal;
+			delete getGlobalScope().AbortSignal;
 		}
 	});
 
 	it('establishes a constructible AbortController', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const AC = (globalThis as any).AbortController;
+		const AC = getGlobalScope().AbortController;
 		expect(AC).toBeDefined();
 		expect(typeof AC).toBe('function');
 		const ctrl = new AC();
@@ -130,27 +131,27 @@ describe('AbortController polyfill — when globals are undefined', () => {
 
 	it('establishes AbortSignal on globalThis', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		expect((globalThis as any).AbortSignal).toBeDefined();
-		expect(typeof (globalThis as any).AbortSignal).toBe('function');
+		expect(getGlobalScope().AbortSignal).toBeDefined();
+		expect(typeof getGlobalScope().AbortSignal).toBe('function');
 	});
 
 	it('controller.signal.aborted is false initially', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const ctrl = new (globalThis as any).AbortController();
+		const ctrl = new (getGlobalScope().AbortController)();
 		expect(ctrl.signal).toBeDefined();
 		expect(ctrl.signal.aborted).toBe(false);
 	});
 
 	it('controller.abort() sets signal.aborted to true', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const ctrl = new (globalThis as any).AbortController();
+		const ctrl = new (getGlobalScope().AbortController)();
 		ctrl.abort();
 		expect(ctrl.signal.aborted).toBe(true);
 	});
 
 	it('controller.abort(reason) sets signal.reason', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const ctrl = new (globalThis as any).AbortController();
+		const ctrl = new (getGlobalScope().AbortController)();
 		const reason = new Error('test reason');
 		ctrl.abort(reason);
 		expect(ctrl.signal.reason).toBe(reason);
@@ -158,7 +159,7 @@ describe('AbortController polyfill — when globals are undefined', () => {
 
 	it('controller.abort() dispatches abort event on signal', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const ctrl = new (globalThis as any).AbortController();
+		const ctrl = new (getGlobalScope().AbortController)();
 		let fired = false;
 		ctrl.signal.addEventListener('abort', () => {
 			fired = true;
@@ -169,7 +170,7 @@ describe('AbortController polyfill — when globals are undefined', () => {
 
 	it('signal.removeEventListener removes listener', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const ctrl = new (globalThis as any).AbortController();
+		const ctrl = new (getGlobalScope().AbortController)();
 		let count = 0;
 		const handler = () => {
 			count++;
@@ -182,7 +183,7 @@ describe('AbortController polyfill — when globals are undefined', () => {
 
 	it('signal.throwIfAborted() throws when aborted', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const ctrl = new (globalThis as any).AbortController();
+		const ctrl = new (getGlobalScope().AbortController)();
 		expect(() => ctrl.signal.throwIfAborted()).not.toThrow();
 		ctrl.abort();
 		expect(() => ctrl.signal.throwIfAborted()).toThrow();
@@ -190,7 +191,7 @@ describe('AbortController polyfill — when globals are undefined', () => {
 
 	it('abort() is idempotent — does not fire event twice', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const ctrl = new (globalThis as any).AbortController();
+		const ctrl = new (getGlobalScope().AbortController)();
 		let count = 0;
 		ctrl.signal.addEventListener('abort', () => {
 			count++;
@@ -210,21 +211,21 @@ describe('AbortController polyfill — when global is broken', () => {
 	let originalAS: any;
 
 	beforeEach(() => {
-		originalAC = (globalThis as any).AbortController;
-		originalAS = (globalThis as any).AbortSignal;
+		originalAC = getGlobalScope().AbortController;
+		originalAS = getGlobalScope().AbortSignal;
 		// Set AbortController to something that exists but is not constructible
-		(globalThis as any).AbortController = 42;
-		(globalThis as any).AbortSignal = 'broken';
+		getGlobalScope().AbortController = 42;
+		getGlobalScope().AbortSignal = 'broken';
 	});
 
 	afterEach(() => {
-		(globalThis as any).AbortController = originalAC;
-		(globalThis as any).AbortSignal = originalAS;
+		getGlobalScope().AbortController = originalAC;
+		getGlobalScope().AbortSignal = originalAS;
 	});
 
 	it('replaces non-constructible AbortController with working polyfill', () => {
 		evalPolyfills(generatePlatformPolyfills());
-		const AC = (globalThis as any).AbortController;
+		const AC = getGlobalScope().AbortController;
 		expect(typeof AC).toBe('function');
 		const ctrl = new AC();
 		expect(ctrl.signal.aborted).toBe(false);
@@ -240,13 +241,13 @@ describe('AbortController polyfill — when global is broken', () => {
 describe('AbortController polyfill — when global already works', () => {
 	it('preserves working native AbortController', () => {
 		// Node.js has a working AbortController — verify polyfill preserves it
-		const NativeAC = (globalThis as any).AbortController;
+		const NativeAC = getGlobalScope().AbortController;
 		if (!NativeAC) {
 			// Skip if running in an environment without native AbortController
 			return;
 		}
 		const before = NativeAC;
 		evalPolyfills(generatePlatformPolyfills());
-		expect((globalThis as any).AbortController).toBe(before);
+		expect(getGlobalScope().AbortController).toBe(before);
 	});
 });

@@ -2,6 +2,7 @@ import { assertNsDevSessionDescriptor, readNsRuntimeDevHostApi, type NsDevSessio
 import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
 import { formatBootTimeline, publishBootTrace, type BootTrace } from './boot-timeline.js';
 import { applyMonotonicBootProgress, clearBootProgressState, computeBootImportProgress, formatBootImportDetail } from './boot-progress.js';
+import { getGlobalScope } from './global-scope.js';
 
 function describeError(error: unknown) {
 	if (error instanceof Error) {
@@ -30,7 +31,7 @@ type KickstartResult = { ok: boolean; fetched: number; ms: number } | null;
 
 function runColdBootKickstart(entryUrl: string, verbose?: boolean): KickstartResult {
 	if (!entryUrl || typeof entryUrl !== 'string') return null;
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	const fn = g.__nsKickstartHmrPrefetch;
 	if (typeof fn !== 'function') {
 		if (verbose) {
@@ -83,7 +84,7 @@ function startBootImportHeartbeat(startedAt: number, verbose?: boolean): () => v
 			if (stopped) {
 				return;
 			}
-			const g: any = globalThis as any;
+			const g: any = getGlobalScope();
 			if (g.__NS_HMR_BOOT_COMPLETE__) {
 				return;
 			}
@@ -119,7 +120,7 @@ function startBootImportHeartbeat(startedAt: number, verbose?: boolean): () => v
 
 function getSessionUrl(defaultSessionUrl: string) {
 	try {
-		const origin = (globalThis as any).__NS_HTTP_ORIGIN__;
+		const origin = getGlobalScope().__NS_HTTP_ORIGIN__;
 		if (typeof origin === 'string' && /^https?:\/\//.test(origin)) {
 			return `${origin.replace(/\/$/, '')}/__ns_dev__/session`;
 		}
@@ -138,7 +139,7 @@ function getRuntimeConfigUrl(session: NsDevSessionDescriptor) {
 
 function isNativeRuntimeConfigDelegationEnabled() {
 	try {
-		return (globalThis as any).__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__ === true;
+		return getGlobalScope().__NS_EXPERIMENTAL_NATIVE_RUNTIME_CONFIG_URL__ === true;
 	} catch {
 		return false;
 	}
@@ -155,7 +156,7 @@ async function configureRuntimeImportMap(runtimeConfigUrl: string, runtimeApi: N
 	// Both the entry-runtime and session-bootstrap can call this; gate
 	// on `__NS_IMPORT_MAP_CONFIGURED__` so the first writer wins and
 	// subsequent calls short-circuit (saves one extra fetch per boot).
-	const g = globalThis as any;
+	const g = getGlobalScope();
 	if (g.__NS_IMPORT_MAP_CONFIGURED__ === true) {
 		if (verbose) {
 			console.info('[ns-entry] import map already configured by an earlier boot stage; skipping fetch', {
@@ -251,7 +252,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		}
 
 		const tImap = Date.now();
-		const alreadyConfigured = (globalThis as any).__NS_IMPORT_MAP_CONFIGURED__ === true;
+		const alreadyConfigured = getGlobalScope().__NS_IMPORT_MAP_CONFIGURED__ === true;
 		await prepareRuntimeForSession(session, runtimeApi, verbose);
 		// Skip the import-map segment when an earlier stage already did
 		// the work (dedup path returns instantly with no I/O).
@@ -280,14 +281,14 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 		clearBootProgressState();
 		const tNative = Date.now();
 		try {
-			(globalThis as any).__NS_HMR_BOOT_IMPORT_STARTED_AT__ = tNative;
+			getGlobalScope().__NS_HMR_BOOT_IMPORT_STARTED_AT__ = tNative;
 		} catch {}
 		const stopBootImportHeartbeat = startBootImportHeartbeat(tNative, verbose);
 		try {
 			// Stamp the kickstart detail only when the runtime will
 			// actually run the prefetch, otherwise the placeholder would
 			// flash a misleading line on older runtimes.
-			if (typeof (globalThis as any).__nsKickstartHmrPrefetch === 'function') {
+			if (typeof getGlobalScope().__nsKickstartHmrPrefetch === 'function') {
 				setHmrBootStage('importing-main', {
 					detail: `prefetching transitive imports for ${session.entryUrl}…`,
 				});
@@ -305,7 +306,7 @@ export async function startBrowserRuntimeSession(defaultSessionUrl: string, verb
 			detail: 'The deterministic NativeScript dev session is active. Waiting for the real app root to replace the boot placeholder.',
 		});
 		try {
-			const restorePlaceholder = (globalThis as any).__NS_DEV_RESTORE_PLACEHOLDER__;
+			const restorePlaceholder = getGlobalScope().__NS_DEV_RESTORE_PLACEHOLDER__;
 			if (typeof restorePlaceholder === 'function') {
 				restorePlaceholder('session-active');
 			}

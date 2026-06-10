@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { computeIosOverlayLayout, computeIosOverlayWindowLevel, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, ensureHmrDevOverlayRuntimeInstalled, getHmrDevOverlayPosition, setHmrDevOverlayPosition, setHmrUpdateStage } from './dev-overlay.js';
+import { getGlobalScope } from './global-scope.js';
 
 describe('HMR dev overlay snapshots', () => {
 	afterEach(() => {
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
 	});
 
 	it('builds a phase-based boot snapshot with attempt detail', () => {
@@ -50,13 +51,13 @@ describe('HMR dev overlay snapshots', () => {
 
 describe('HMR dev overlay runtime API', () => {
 	beforeEach(() => {
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
 	});
 
 	afterEach(() => {
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
 	});
 
 	it('installs a stable global API and tracks boot stages', () => {
@@ -64,7 +65,7 @@ describe('HMR dev overlay runtime API', () => {
 		const sameApi = ensureHmrDevOverlayRuntimeInstalled(false);
 
 		expect(api).toBe(sameApi);
-		expect((globalThis as any).__NS_HMR_DEV_OVERLAY__).toBe(api);
+		expect(getGlobalScope().__NS_HMR_DEV_OVERLAY__).toBe(api);
 
 		api.setBootStage('loading-core-bridge', {
 			detail: 'http://localhost:5173/ns/core/7',
@@ -388,15 +389,15 @@ describe('iOS overlay layout — toast positions', () => {
 
 describe('HMR overlay position config', () => {
 	beforeEach(() => {
-		delete (globalThis as any).__NS_HMR_OVERLAY_POSITION__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
 	});
 
 	afterEach(() => {
-		delete (globalThis as any).__NS_HMR_OVERLAY_POSITION__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_OVERLAY_POSITION__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
 	});
 
 	it("defaults to 'top' so the centered modal does NOT obscure app UI", () => {
@@ -404,28 +405,28 @@ describe('HMR overlay position config', () => {
 	});
 
 	it('reads a stored override from the global flag', () => {
-		(globalThis as any).__NS_HMR_OVERLAY_POSITION__ = 'bottom';
+		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'bottom';
 		expect(getHmrDevOverlayPosition()).toBe('bottom');
-		(globalThis as any).__NS_HMR_OVERLAY_POSITION__ = 'center';
+		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'center';
 		expect(getHmrDevOverlayPosition()).toBe('center');
 	});
 
 	it('falls back to the default when an unknown value is stored', () => {
-		(globalThis as any).__NS_HMR_OVERLAY_POSITION__ = 'left';
+		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 'left';
 		expect(getHmrDevOverlayPosition()).toBe('top');
-		(globalThis as any).__NS_HMR_OVERLAY_POSITION__ = 42;
+		getGlobalScope().__NS_HMR_OVERLAY_POSITION__ = 42;
 		expect(getHmrDevOverlayPosition()).toBe('top');
 	});
 
 	it('setHmrDevOverlayPosition updates the global and ignores invalid values', () => {
 		setHmrDevOverlayPosition('bottom');
-		expect((globalThis as any).__NS_HMR_OVERLAY_POSITION__).toBe('bottom');
+		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('bottom');
 		setHmrDevOverlayPosition('center');
-		expect((globalThis as any).__NS_HMR_OVERLAY_POSITION__).toBe('center');
+		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('center');
 		// Invalid input must NOT clobber a previously-set value, so a
 		// typo in dev code can't accidentally reset the position.
 		setHmrDevOverlayPosition('elsewhere' as any);
-		expect((globalThis as any).__NS_HMR_OVERLAY_POSITION__).toBe('center');
+		expect(getGlobalScope().__NS_HMR_OVERLAY_POSITION__).toBe('center');
 	});
 });
 
@@ -503,13 +504,13 @@ describe('HMR apply overlay snapshots', () => {
 
 describe('HMR apply overlay runtime API', () => {
 	beforeEach(() => {
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
 	});
 
 	afterEach(() => {
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY__;
-		delete (globalThis as any).__NS_HMR_DEV_OVERLAY_STATE__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY__;
+		delete getGlobalScope().__NS_HMR_DEV_OVERLAY_STATE__;
 	});
 
 	it('drives the overlay through update stages via setUpdateStage', () => {
@@ -682,7 +683,7 @@ describe('HMR apply overlay runtime API', () => {
 			tone: 'success',
 			progress: 5,
 		});
-		expect((globalThis as any).__NS_HMR_DEV_OVERLAY__).toBeDefined();
+		expect(getGlobalScope().__NS_HMR_DEV_OVERLAY__).toBeDefined();
 	});
 
 	// The server emits `ns:hmr-pending` IMMEDIATELY when

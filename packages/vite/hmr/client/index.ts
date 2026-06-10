@@ -9,6 +9,7 @@
 import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore, hasExplicitEviction, invalidateModulesByUrls, buildEvictionUrls, emitHmrModeBannerOnce } from './utils.js';
 import { handleCssUpdates } from './css-handler.js';
 import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 const VERBOSE = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;
 
@@ -19,7 +20,7 @@ function resolveTargetFlavor(): string | undefined {
 		}
 	} catch {}
 	try {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		if (typeof g.__NS_TARGET_FLAVOR__ === 'string' && g.__NS_TARGET_FLAVOR__) {
 			return g.__NS_TARGET_FLAVOR__;
 		}
@@ -44,7 +45,11 @@ try {
 	}
 } catch {}
 
-const APP_ROOT_VIRTUAL = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
+// Define substitution does NOT reach this file (served raw from node_modules),
+// so prefer the globalThis seed planted by the entry's defines-seed module —
+// the '/src' literal is a last-resort default and is WRONG for 'app/'-rooted
+// projects.
+const APP_ROOT_VIRTUAL = (typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__) || (typeof getGlobalScope().__NS_APP_ROOT_VIRTUAL__ === 'string' && getGlobalScope().__NS_APP_ROOT_VIRTUAL__) || '/src';
 const APP_VIRTUAL_WITH_SLASH = APP_ROOT_VIRTUAL.endsWith('/') ? APP_ROOT_VIRTUAL : `${APP_ROOT_VIRTUAL}/`;
 const APP_MAIN_ENTRY_SPEC = `${APP_VIRTUAL_WITH_SLASH}app.ts`;
 
@@ -162,7 +167,7 @@ type NsSolidHmrListener = (ev: NsSolidHmrEvent) => void;
 // A module-local Set would not be shared across instances; the global one
 // is.
 function getNsSolidHmrListenerSet(): Set<NsSolidHmrListener> {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	let set = g.__ns_solid_hmr_listener_set as Set<NsSolidHmrListener> | undefined;
 	if (!set) {
 		set = new Set<NsSolidHmrListener>();
@@ -191,7 +196,7 @@ function nsSolidHmrEmit(ev: NsSolidHmrEvent) {
 }
 
 try {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	g.__ns_solid_hmr_subscribe = nsSolidHmrSubscribe;
 	// Eagerly create the listener set so the global exists at module load time.
 	getNsSolidHmrListenerSet();
@@ -317,7 +322,7 @@ let processingPromise: Promise<void> | null = null;
 // Detect whether the early placeholder root is still active on screen
 function isPlaceholderActive(): boolean {
 	try {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		if (g.__NS_DEV_PLACEHOLDER_ROOT_VIEW__) return true;
 		if (g.__NS_DEV_PLACEHOLDER_ROOT_EARLY__) return true;
 	} catch {}
@@ -342,7 +347,7 @@ function applyFullGraph(payload: any) {
 	// causes a double-mount race (rescue fires at 450ms, then main.ts fires ~1s later,
 	// causing a visual flash and leaving the app in an inconsistent state).
 	try {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		const bootDone = !!g.__NS_HMR_BOOT_COMPLETE__;
 		if (!bootDone && !initialMounted && !initialMounting && !g.__NS_HMR_RESCUE_SCHEDULED__ && TARGET_FLAVOR !== 'typescript') {
 			// simple snapshot helpers
@@ -492,7 +497,7 @@ function applyFullGraph(payload: any) {
 						if (VERBOSE) console.log('[hmr][init] mounting initial root from', candidate, 'flavor=', TARGET_FLAVOR);
 						// Android-only: avoid racing entry-runtime reset and Activity bring-up
 						try {
-							const g: any = globalThis as any;
+							const g: any = getGlobalScope();
 							const App = getCore('Application') || g.Application;
 							const isAndroid = !!(App && (App as any).android !== undefined);
 							if (isAndroid) {
@@ -638,7 +643,7 @@ function applyDelta(payload: any) {
 			}
 			if (isAppMainEntryId(id)) {
 				try {
-					const exists = (globalThis as any).require?.(id) || globalThis.__nsGetModuleExports?.(id);
+					const exists = getGlobalScope().require?.(id) || globalThis.__nsGetModuleExports?.(id);
 					if (!exists && VERBOSE) console.log(`[hmr][delta] skipping unresolved ${APP_MAIN_ENTRY_SPEC} change`);
 					if (!exists) continue;
 				} catch {
@@ -653,7 +658,7 @@ function applyDelta(payload: any) {
 
 // Deterministic navigation using the current Vue app instance rather than vendor-held rootApp.
 function __nsNavigateUsingApp(comp: any, opts: any = {}) {
-	const g = globalThis as any;
+	const g = getGlobalScope();
 	CLIENT_STRATEGY?.beforeNavigateBuild?.();
 	const AppFactory = g.createApp;
 	const RootCtor = g.NSVRoot;
@@ -769,6 +774,182 @@ try {
 	globalThis.__nsNavigateUsingApp = __nsNavigateUsingApp;
 } catch {}
 
+// ── Open-modal tracking for XML-flavor HMR ──────────────────────────────────
+// The typescript flavor's queue closes + re-presents a modal whose XML or
+// code-behind changed, instead of wrongly navigating the top frame to the
+// modal's page (or worse, resetting the root and losing the modal).
+//
+// Source of truth is core's live modal stack — `_moduleName` (set by the
+// Builder on every createViewFromEntry view) and `_modalOptions` (stored by
+// newer cores' `_showNativeModalView`). The View.prototype.showModal wrap
+// below is a LEGACY FALLBACK for cores that don't store `_modalOptions` yet;
+// delete it (and `openModalRecords`) once the minimum supported core does.
+type OpenModalRecord = { moduleName: string; options: any; parent: any; modal: any };
+const openModalRecords: OpenModalRecord[] = [];
+let modalTrackingInstalled = false;
+
+/**
+ * Map a served/graph module id (e.g. `/app/modal-page.xml`) to its app-root
+ * relative path (`modal-page.xml`). Single mapping point — the raw-asset
+ * re-registration, page-navigation targets, and modal matching all derive
+ * from this; keep them in sync by construction.
+ */
+function toAppRelativePath(id: string): string | null {
+	try {
+		const spec = normalizeSpec(id);
+		const appVirtual = APP_VIRTUAL_WITH_SLASH.replace(/^\//, '');
+		let relPath = spec.startsWith('/') ? spec.slice(1) : spec;
+		if (relPath.startsWith(appVirtual)) relPath = relPath.slice(appVirtual.length);
+		return relPath || null;
+	} catch {
+		return null;
+	}
+}
+
+/** App-root relative module name (no extension) for page-shaped files, else null. */
+function toAppModuleName(id: string): string | null {
+	const relPath = toAppRelativePath(id);
+	if (!relPath || !/\.(xml|ts|js)$/i.test(relPath)) return null;
+	return relPath.replace(/\.(xml|ts|js)$/i, '');
+}
+
+function ensureModalTracking(): void {
+	if (modalTrackingInstalled) return;
+	try {
+		const View: any = getCore('View') || getGlobalScope().View;
+		const proto = View?.prototype;
+		if (!proto || typeof proto.showModal !== 'function') return;
+		const orig = proto.showModal;
+		if (orig.__nsHmrModalTracked) {
+			modalTrackingInstalled = true;
+			return;
+		}
+		const wrapped = function (this: any, ...args: any[]) {
+			const result = orig.apply(this, args);
+			try {
+				if (typeof args[0] === 'string' && result) {
+					// Mirror core's getModalOptions arg shapes: (moduleName, options)
+					// or the deprecated positional form.
+					const options = args.length === 2 && args[1] && typeof args[1] === 'object' ? args[1] : { context: args[1], closeCallback: args[2], fullscreen: args[3], animated: args[4], stretched: args[5] };
+					const moduleName = String(args[0])
+						.replace(/^\.\//, '')
+						.replace(/\.(xml|ts|js)$/i, '');
+					openModalRecords.push({ moduleName, options, parent: this, modal: result });
+					if (VERBOSE) console.log('[hmr][modal] tracked open modal', moduleName);
+				}
+			} catch {}
+			return result;
+		};
+		(wrapped as any).__nsHmrModalTracked = true;
+		proto.showModal = wrapped;
+		modalTrackingInstalled = true;
+	} catch (e) {
+		if (VERBOSE) console.warn('[hmr][modal] tracking install failed', e);
+	}
+}
+
+/**
+ * Enumerate the modals that are currently presented AND were opened by module
+ * name, with everything needed to re-present them.
+ *
+ * Source of truth is core's live modal stack (`_getRootModalViews()`):
+ *   - `modal._moduleName` — set by the Builder on every createViewFromEntry
+ *     view (longstanding, used by livesync), so available on any core.
+ *   - `modal._modalOptions` — the original ShowModalOptions, stored by core's
+ *     `_showNativeModalView` (newer cores). For older cores the showModal
+ *     wrap's records (see ensureModalTracking) fill the gap.
+ *   - `modal._modalParent` — the presenting view.
+ * Stale wrap records are pruned against the live stack while we're here.
+ */
+function getOpenStringModuleModals(): OpenModalRecord[] {
+	const out: OpenModalRecord[] = [];
+	try {
+		const App: any = getCore('Application');
+		const root = App?.getRootView?.() || (App as any)?._rootView;
+		const stack: any[] = root?._getRootModalViews?.() || [];
+		// Prune wrap records whose modal is gone (keeps the fallback list small).
+		for (let i = openModalRecords.length - 1; i >= 0; i--) {
+			if (!stack.includes(openModalRecords[i].modal)) {
+				openModalRecords.splice(i, 1);
+			}
+		}
+		for (const modal of stack) {
+			const record = openModalRecords.find((r) => r.modal === modal);
+			const rawModuleName = typeof modal?._moduleName === 'string' && modal._moduleName ? modal._moduleName : record?.moduleName;
+			const parent = modal?._modalParent || record?.parent;
+			const options = modal?._modalOptions || record?.options;
+			if (!rawModuleName || !parent) continue;
+			const moduleName = String(rawModuleName)
+				.replace(/^\.\//, '')
+				.replace(/\.(xml|ts|js)$/i, '');
+			out.push({ moduleName, options, parent, modal });
+		}
+	} catch (e) {
+		if (VERBOSE) console.warn('[hmr][modal] open-modal enumeration failed', e);
+	}
+	return out;
+}
+
+/**
+ * Close and re-present an open modal so it rebuilds from the freshly
+ * re-registered XML/code-behind. Core clears the modal stack synchronously on
+ * close but the NATIVE dismissal completes asynchronously; iOS refuses a
+ * present while a dismissal is in flight. Newer cores fire `closedModally` on
+ * the modal at exactly that completion point — preferred signal. Older cores
+ * fall back to polling `isLoaded` (flipped by `_tearDownUI` in the same
+ * completion callback).
+ */
+async function reshowOpenModal(record: OpenModalRecord): Promise<void> {
+	const { parent, modal, moduleName, options } = record;
+	await new Promise<void>((resolve) => {
+		let settled = false;
+		const finish = () => {
+			if (!settled) {
+				settled = true;
+				resolve();
+			}
+		};
+		let eventArmed = false;
+		try {
+			if (typeof modal.once === 'function') {
+				modal.once('closedModally', finish);
+				eventArmed = true;
+			}
+		} catch {}
+		// Poll fallback (also the safety net if the event never fires —
+		// e.g. an interactive-dismiss cancellation).
+		const deadline = Date.now() + 2000;
+		const poll = () => {
+			if (settled) return;
+			let stillLoaded = false;
+			try {
+				stillLoaded = !!modal.isLoaded;
+			} catch {}
+			if ((!eventArmed && !stillLoaded) || Date.now() > deadline) {
+				finish();
+				return;
+			}
+			setTimeout(poll, 50);
+		};
+		setTimeout(poll, 50);
+		try {
+			modal.closeModal();
+		} catch (e) {
+			if (VERBOSE) console.warn('[hmr][modal] close failed for', moduleName, e);
+			finish();
+		}
+	});
+	// One settle beat so the platform finishes releasing the presentation
+	// before the new present begins.
+	await new Promise((resolve) => setTimeout(resolve, 100));
+	try {
+		parent.showModal(moduleName, { ...(options || {}), animated: false });
+		if (VERBOSE) console.log('[hmr][modal] re-presented', moduleName);
+	} catch (e) {
+		console.warn('[hmr][modal] re-present failed for', moduleName, e);
+	}
+}
+
 async function processQueue(): Promise<void> {
 	if (!globalThis.__NS_HMR_BOOT_COMPLETE__) {
 		if (VERBOSE) console.log('[hmr][gate] deferring HMR eval until boot complete');
@@ -842,6 +1023,24 @@ async function processQueue(): Promise<void> {
 					if (!url) continue;
 					if (VERBOSE) console.log('[hmr][queue] re-import', { id, spec, url });
 					const mod: any = await import(/* @vite-ignore */ url);
+					// TS/XML flavor: refresh the bundler module registry with the fresh
+					// exports so Builder.createViewFromEntry / loadModule('<page>')
+					// resolves the NEW code-behind (tap handlers, page events) instead
+					// of the stale module captured in the boot bundle. Without this,
+					// XML re-renders pick up new markup but keep old behavior.
+					if (TARGET_FLAVOR === 'typescript' && mod && /\.(ts|js)$/i.test(id)) {
+						try {
+							const g: any = getGlobalScope();
+							const moduleName = toAppModuleName(id);
+							if (moduleName && typeof g.registerModule === 'function') {
+								g.registerModule(moduleName, () => mod);
+								g.registerModule('./' + moduleName, () => mod);
+								if (VERBOSE) console.log('[hmr][queue] re-registered code-behind', moduleName);
+							}
+						} catch (e) {
+							if (VERBOSE) console.warn('[hmr][queue] code-behind re-register failed for', id, e);
+						}
+					}
 				} catch (e) {
 					if (VERBOSE) console.warn('[hmr][queue] re-import failed for', id, e);
 				}
@@ -950,7 +1149,7 @@ async function processQueue(): Promise<void> {
 						// then scan globalThis for any router-shaped object with routesById.
 						const findRouter = (): any => {
 							if (discoveredRouter) return discoveredRouter;
-							const g = globalThis as any;
+							const g = getGlobalScope();
 							if (g.__ns_router?.routesById) return (discoveredRouter = g.__ns_router);
 							// Fallback: scan common global keys for router
 							for (const key of ['__ns_router', 'router', '__router']) {
@@ -1086,7 +1285,7 @@ async function processQueue(): Promise<void> {
 					// This preserves the shell (Frame, ActionBar, etc.) that the app's
 					// own bootstrapping wires up via `Application.run`.
 					try {
-						const g: any = globalThis as any;
+						const g: any = getGlobalScope();
 						const App = getCore('Application') || g.Application;
 						if (!App || typeof App.resetRootView !== 'function') {
 							if (VERBOSE) console.warn('[hmr][queue] TS flavor: Application.resetRootView unavailable; skipping UI refresh');
@@ -1110,9 +1309,8 @@ async function processQueue(): Promise<void> {
 											const rawContent = await resp.text();
 											// Register under all nickname variants the module registry uses.
 											// The bundler context registers XML as e.g., './main-page.xml' and 'main-page.xml'
-											const appVirtual = APP_VIRTUAL_WITH_SLASH.replace(/^\//, '');
-											let relPath = spec.startsWith('/') ? spec.slice(1) : spec;
-											if (relPath.startsWith(appVirtual)) relPath = relPath.slice(appVirtual.length);
+											const relPath = toAppRelativePath(id);
+											if (!relPath) continue;
 											const nicknames = ['./' + relPath, relPath];
 											// Also add without extension for CSS
 											const extIdx = relPath.lastIndexOf('.');
@@ -1133,20 +1331,25 @@ async function processQueue(): Promise<void> {
 								}
 							}
 						}
+						// Modal-aware refresh: pages currently PRESENTED AS MODALS must be
+						// closed + re-presented in place — navigating the top frame to a
+						// modal's page would push it as a frame page, and resetRootView
+						// would dismiss the modal entirely. State comes from core's live
+						// modal stack (_moduleName/_modalOptions/_modalParent); the
+						// showModal wrap only backfills options on older cores.
+						ensureModalTracking();
+						const openModals = getOpenStringModuleModals();
+						const changedModuleNames = new Set(drained.map(toAppModuleName).filter(Boolean));
+						const modalsToReshow = openModals.filter((record) => changedModuleNames.has(record.moduleName));
+						const reshowModuleNames = new Set(modalsToReshow.map((record) => record.moduleName));
+
 						// Determine if we can navigate in-place to a changed page
 						// instead of resetting all the way back to app-root.
 						// This keeps the user on the page they're editing for faster iteration.
 						const changedXmlPages = drained
 							.filter((id) => /\.xml$/i.test(id))
-							.map((id) => {
-								const spec = normalizeSpec(id);
-								const appVirtual = APP_VIRTUAL_WITH_SLASH.replace(/^\//, '');
-								let relPath = spec.startsWith('/') ? spec.slice(1) : spec;
-								if (relPath.startsWith(appVirtual)) relPath = relPath.slice(appVirtual.length);
-								// Strip .xml extension to get the moduleName (e.g., 'pages/status-bar')
-								return relPath.replace(/\.xml$/i, '');
-							})
-							.filter((m) => m && m !== 'app-root');
+							.map((id) => toAppModuleName(id))
+							.filter((m) => m && m !== 'app-root' && !reshowModuleNames.has(m));
 
 						// Resolve the topmost Frame from the bundled realm.
 						// Frame.topmost() relies on an internal frameStack array, so we must
@@ -1179,7 +1382,7 @@ async function processQueue(): Promise<void> {
 								}
 							} catch {}
 						}
-						if (VERBOSE) console.log('[hmr][queue] TS: changedXmlPages=', changedXmlPages, 'topFrame=', !!topFrame);
+						if (VERBOSE) console.log('[hmr][queue] TS: changedXmlPages=', changedXmlPages, 'topFrame=', !!topFrame, 'modalsToReshow=', modalsToReshow.length);
 						if (changedXmlPages.length > 0 && topFrame) {
 							// Navigate the current frame to the changed page directly.
 							// Use the last changed XML page (most specific).
@@ -1191,9 +1394,19 @@ async function processQueue(): Promise<void> {
 								console.warn('[hmr][queue] TS flavor: in-place navigate failed, falling back to resetRootView', navErr);
 								App.resetRootView({ moduleName: 'app-root' } as any);
 							}
-						} else {
+						} else if (modalsToReshow.length === 0) {
+							// No frame page to refresh and no open modal owns the change —
+							// fall back to a full root reset. (Skipped when an open modal is
+							// being re-presented below: resetRootView would dismiss it.)
 							if (VERBOSE) console.log('[hmr][queue] TS flavor: resetRootView(app-root) after changes');
 							App.resetRootView({ moduleName: 'app-root' } as any);
+						}
+						// Re-present any open modals whose XML/code-behind changed. The
+						// modules were already re-registered above (raw XML assets + fresh
+						// code-behind exports), so the re-presented modal rebuilds from
+						// the new content while the page beneath it stays put.
+						for (const record of modalsToReshow) {
+							await reshowOpenModal(record);
 						}
 					} catch (e) {
 						console.warn('[hmr][queue] TS flavor: resetRootView(app-root) failed', e);
@@ -1260,7 +1473,7 @@ function connectHmr() {
 			// Build ordered host candidates with preference to the active HTTP origin
 			const orderedHosts: Array<{ host: string; port?: string }> = [];
 			try {
-				const g: any = globalThis as any;
+				const g: any = getGlobalScope();
 				const httpOrigin: string | undefined = g && typeof g.__NS_HTTP_ORIGIN__ === 'string' ? g.__NS_HTTP_ORIGIN__ : undefined;
 				if (httpOrigin) {
 					try {
@@ -1433,7 +1646,7 @@ async function handleHmrMessage(ev: any) {
 		if (msg.type === 'ns:hmr-full-graph') {
 			// Bump a monotonic nonce so HTTP ESM imports can always be cache-busted per update.
 			try {
-				const g: any = globalThis as any;
+				const g: any = getGlobalScope();
 				g.__NS_HMR_IMPORT_NONCE__ = (typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
 			} catch {}
 			// Capture previous graph snapshot so we can infer which modules changed.
@@ -1540,7 +1753,7 @@ async function handleHmrMessage(ev: any) {
 		if (msg.type === 'ns:hmr-delta') {
 			// Bump a monotonic nonce so HTTP ESM imports can always be cache-busted per update.
 			try {
-				const g: any = globalThis as any;
+				const g: any = getGlobalScope();
 				g.__NS_HMR_IMPORT_NONCE__ = (typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
 			} catch {}
 			try {
@@ -1738,8 +1951,8 @@ function normalizeComponent(input: any, nameHint?: string): any {
 		// If provided a render function, wrap with defineComponent
 		if (typeof input === 'function') {
 			CLIENT_STRATEGY?.beforeNavigateBuild?.();
-			const comp = (globalThis as any).defineComponent
-				? (globalThis as any).defineComponent({
+			const comp = getGlobalScope().defineComponent
+				? getGlobalScope().defineComponent({
 						name: nameHint || input.name || 'AnonymousSFC',
 						render: input,
 					})
@@ -1749,8 +1962,8 @@ function normalizeComponent(input: any, nameHint?: string): any {
 		// If object has a render function property
 		if ((input as any)?.render && typeof (input as any).render === 'function') {
 			CLIENT_STRATEGY?.beforeNavigateBuild?.();
-			const comp = (globalThis as any).defineComponent
-				? (globalThis as any).defineComponent({
+			const comp = getGlobalScope().defineComponent
+				? getGlobalScope().defineComponent({
 						name: nameHint || (input as any).name || 'AnonymousSFC',
 						render: (input as any).render,
 					})
@@ -1844,7 +2057,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 	}
 
 	// Android readiness before any root changes
-	const App = getCore('Application') || (globalThis as any).Application;
+	const App = getCore('Application') || getGlobalScope().Application;
 	const isAndroid = !!(App && (App as any).android !== undefined);
 	if (isAndroid) {
 		const isReady = () => {
@@ -1934,7 +2147,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 		hadPlaceholder = !!globalThis.__NS_DEV_PLACEHOLDER_ROOT_EARLY__;
 	} catch {}
 	try {
-		const AppAny: any = getCore('Application') || (globalThis as any).Application;
+		const AppAny: any = getCore('Application') || getGlobalScope().Application;
 		isIOS = !!(AppAny && (AppAny as any).ios !== undefined);
 	} catch {}
 	// Preferred policy:
@@ -1943,7 +2156,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 	// - Otherwise (subsequent HMR updates with an authoritative Frame already in place), re-use the
 	//   current app Frame and navigate to the new Page. This avoids a brief flash that can occur
 	//   when swapping the entire root view on Android. The placeholder is never involved here.
-	const gAnyForPolicy: any = globalThis as any;
+	const gAnyForPolicy: any = getGlobalScope();
 	const placeholderFrame = (() => {
 		try {
 			return gAnyForPolicy.__NS_DEV_PLACEHOLDER_ROOT_VIEW__ || null;
@@ -1981,7 +2194,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 
 	// Fallback or preferred path: resetRootView with a creator that builds a fresh Frame and navigates to the new Page
 	try {
-		const App2 = getCore('Application') || (globalThis as any).Application;
+		const App2 = getCore('Application') || getGlobalScope().Application;
 		if (!App2 || typeof App2.resetRootView !== 'function') {
 			console.warn('[hmr-client] Application.resetRootView unavailable');
 			return false;
@@ -1998,7 +2211,7 @@ async function performResetRoot(newComponent: any): Promise<boolean> {
 				if (win === false) {
 					if (VERBOSE) console.warn('[hmr-client] iOS Application.window is boolean false; attempting to clear cached window');
 					try {
-						const g: any = globalThis as any;
+						const g: any = getGlobalScope();
 						const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
 						const req: any = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
 						let helpers: any = null;
@@ -2088,6 +2301,20 @@ export function initHmrClient(opts?: { wsUrl?: string }) {
 	}
 	g.__NS_HMR_CLIENT_ACTIVE__ = true;
 	ensureCoreAliasesOnGlobalThis();
+	// XML flavor: record string-module modals from the moment the client is up
+	// so an already-open modal can be re-presented when its files change.
+	// Installed at init (not first-update time) because the wrap can only
+	// observe showModal calls made AFTER it lands. Retried briefly because
+	// getCore('View') may not resolve until the vendor realm finishes booting.
+	if (TARGET_FLAVOR === 'typescript') {
+		const tryInstallModalTracking = (attempts: number) => {
+			ensureModalTracking();
+			if (!modalTrackingInstalled && attempts > 0) {
+				setTimeout(() => tryInstallModalTracking(attempts - 1), 250);
+			}
+		};
+		tryInstallModalTracking(40);
+	}
 	// Defer WebSocket connection until boot completes to avoid native V8 crashes
 	// caused by concurrent WebSocket message handling + HTTP fetch during early startup.
 	// The WebSocket is only needed for HMR updates, not the initial boot sequence.

@@ -1,16 +1,17 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { APP_CSS_TAG, applyCssText } from './css-handler.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 describe('css-handler', () => {
 	beforeEach(() => {
-		delete (globalThis as any).__NS_HMR_APPLY_CSS__;
-		delete (globalThis as any).Application;
-		delete (globalThis as any).__nsVendorRegistry;
-		delete (globalThis as any).__nsVendorRequire;
-		delete (globalThis as any).__nsRequire;
-		delete (globalThis as any).require;
-		delete (globalThis as any).addTaggedAdditionalCSS;
-		delete (globalThis as any).removeTaggedAdditionalCSS;
+		delete getGlobalScope().__NS_HMR_APPLY_CSS__;
+		delete getGlobalScope().Application;
+		delete getGlobalScope().__nsVendorRegistry;
+		delete getGlobalScope().__nsVendorRequire;
+		delete getGlobalScope().__nsRequire;
+		delete getGlobalScope().require;
+		delete getGlobalScope().addTaggedAdditionalCSS;
+		delete getGlobalScope().removeTaggedAdditionalCSS;
 	});
 
 	afterEach(() => {
@@ -19,13 +20,13 @@ describe('css-handler', () => {
 
 	it('prefers the HTTP-realm CSS applier when one is installed (used by HTTP-ESM cold boot)', () => {
 		const realmApplier = vi.fn();
-		(globalThis as any).__NS_HMR_APPLY_CSS__ = realmApplier;
-		(globalThis as any).Application = { addCss: vi.fn(), getRootView: vi.fn() };
+		getGlobalScope().__NS_HMR_APPLY_CSS__ = realmApplier;
+		getGlobalScope().Application = { addCss: vi.fn(), getRootView: vi.fn() };
 
 		applyCssText('.login { color: red; }');
 
 		expect(realmApplier).toHaveBeenCalledWith('.login { color: red; }', true);
-		expect((globalThis as any).Application.addCss).not.toHaveBeenCalled();
+		expect(getGlobalScope().Application.addCss).not.toHaveBeenCalled();
 	});
 
 	it('replaces app.css selectors via the tagged remove + add pair so deleted rules disappear', () => {
@@ -33,12 +34,12 @@ describe('css-handler', () => {
 		const addCss = vi.fn();
 		const addTaggedAdditionalCSS = vi.fn(() => true);
 		const removeTaggedAdditionalCSS = vi.fn(() => true);
-		(globalThis as any).Application = {
+		getGlobalScope().Application = {
 			addCss,
 			getRootView: vi.fn(() => ({ _onCssStateChange: onCssStateChange })),
 		};
-		(globalThis as any).addTaggedAdditionalCSS = addTaggedAdditionalCSS;
-		(globalThis as any).removeTaggedAdditionalCSS = removeTaggedAdditionalCSS;
+		getGlobalScope().addTaggedAdditionalCSS = addTaggedAdditionalCSS;
+		getGlobalScope().removeTaggedAdditionalCSS = removeTaggedAdditionalCSS;
 
 		applyCssText('.login { color: red; }');
 
@@ -52,12 +53,12 @@ describe('css-handler', () => {
 		const onCssStateChange = vi.fn();
 		const addTaggedAdditionalCSS = vi.fn(() => true);
 		const removeTaggedAdditionalCSS = vi.fn(() => true);
-		(globalThis as any).Application = {
+		getGlobalScope().Application = {
 			addCss: vi.fn(),
 			getRootView: vi.fn(() => ({ _onCssStateChange: onCssStateChange })),
 		};
-		(globalThis as any).addTaggedAdditionalCSS = addTaggedAdditionalCSS;
-		(globalThis as any).removeTaggedAdditionalCSS = removeTaggedAdditionalCSS;
+		getGlobalScope().addTaggedAdditionalCSS = addTaggedAdditionalCSS;
+		getGlobalScope().removeTaggedAdditionalCSS = removeTaggedAdditionalCSS;
 
 		const tag = '/src/app/header/header.component.css';
 		applyCssText('.appstore-header { background-color: #ff6600; }', tag);
@@ -72,11 +73,11 @@ describe('css-handler', () => {
 
 	it('falls back to additive Application.addCss when the tagged API throws', () => {
 		const addCss = vi.fn();
-		(globalThis as any).Application = { addCss, getRootView: vi.fn(() => null) };
-		(globalThis as any).addTaggedAdditionalCSS = vi.fn(() => {
+		getGlobalScope().Application = { addCss, getRootView: vi.fn(() => null) };
+		getGlobalScope().addTaggedAdditionalCSS = vi.fn(() => {
 			throw new Error('boom');
 		});
-		(globalThis as any).removeTaggedAdditionalCSS = vi.fn(() => true);
+		getGlobalScope().removeTaggedAdditionalCSS = vi.fn(() => true);
 
 		applyCssText('.x { color: red; }');
 
@@ -86,7 +87,7 @@ describe('css-handler', () => {
 	it('falls back to additive Application.addCss when the tagged API is absent', () => {
 		const onCssStateChange = vi.fn();
 		const addCss = vi.fn();
-		(globalThis as any).Application = {
+		getGlobalScope().Application = {
 			addCss,
 			getRootView: vi.fn(() => ({ _onCssStateChange: onCssStateChange })),
 		};
@@ -100,9 +101,9 @@ describe('css-handler', () => {
 	it('skips empty CSS text', () => {
 		const addCss = vi.fn();
 		const addTaggedAdditionalCSS = vi.fn();
-		(globalThis as any).Application = { addCss, getRootView: vi.fn(() => null) };
-		(globalThis as any).addTaggedAdditionalCSS = addTaggedAdditionalCSS;
-		(globalThis as any).removeTaggedAdditionalCSS = vi.fn();
+		getGlobalScope().Application = { addCss, getRootView: vi.fn(() => null) };
+		getGlobalScope().addTaggedAdditionalCSS = addTaggedAdditionalCSS;
+		getGlobalScope().removeTaggedAdditionalCSS = vi.fn();
 
 		applyCssText('');
 

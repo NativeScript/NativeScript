@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { handleAngularHotUpdateMessage } from './index.js';
+import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 
 describe('handleAngularHotUpdateMessage', () => {
 	let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
@@ -15,7 +16,7 @@ describe('handleAngularHotUpdateMessage', () => {
 
 	it('bumps the HMR import nonce before rebooting Angular modules', async () => {
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousNonce = g.__NS_HMR_IMPORT_NONCE__;
 
@@ -55,7 +56,7 @@ describe('handleAngularHotUpdateMessage', () => {
 		const importer = vi.fn(async () => ({}));
 		const updater = vi.fn();
 		const invalidator = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
@@ -103,7 +104,7 @@ describe('handleAngularHotUpdateMessage', () => {
 		const reboot = vi.fn();
 		const importer = vi.fn(async () => ({}));
 		const updater = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
@@ -147,7 +148,7 @@ describe('handleAngularHotUpdateMessage', () => {
 		const invalidator = vi.fn(() => {
 			throw new Error('native bridge boom');
 		});
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
@@ -203,7 +204,7 @@ describe('handleAngularHotUpdateMessage', () => {
 			.mockImplementationOnce(async () => ({}));
 		const updater = vi.fn();
 		const invalidator = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
@@ -279,7 +280,7 @@ describe('handleAngularHotUpdateMessage', () => {
 		const importer = vi.fn(async () => ({}));
 		const updater = vi.fn();
 		const invalidator = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
@@ -312,7 +313,7 @@ describe('handleAngularHotUpdateMessage', () => {
 
 	it('emits a single-line update timing log (ok path) including refresh/reboot/total ms', async () => {
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 
 		g.__reboot_ng_modules__ = reboot;
@@ -340,7 +341,7 @@ describe('handleAngularHotUpdateMessage', () => {
 	});
 
 	it('emits a FAILED timing log when no reboot handler is installed', async () => {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		g.__reboot_ng_modules__ = undefined;
 
@@ -374,7 +375,7 @@ describe('handleAngularHotUpdateMessage', () => {
 
 	it('uses <unknown> when the broadcast message omits a path', async () => {
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		g.__reboot_ng_modules__ = reboot;
 
@@ -419,7 +420,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 	// pollution from other describe blocks can't bleed into these
 	// assertions.
 	function snapshotWorkerGlobals(): SnapshotCleanup {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousNative = g.__nsTerminateAllWorkers;
 		const previousSet = g.__NS_HMR_WORKERS__;
@@ -437,7 +438,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 		const reboot = vi.fn();
 		const nativeTerminate = vi.fn(() => 3); // pretend 3 workers were terminated
 		const fakeWorker = { terminate: vi.fn() };
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__nsTerminateAllWorkers = nativeTerminate;
@@ -472,7 +473,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 		const reboot = vi.fn();
 		const workerA = { terminate: vi.fn() };
 		const workerB = { terminate: vi.fn() };
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		// Explicitly delete so the older-runtime case is unambiguous.
@@ -497,7 +498,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 		const restore = snapshotWorkerGlobals();
 		const reboot = vi.fn();
 		const workerA = { terminate: vi.fn() };
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		// Native API exists but throws — we must NOT propagate the
@@ -527,7 +528,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 	it('does not throw when neither global is present (non-worker apps)', async () => {
 		const restore = snapshotWorkerGlobals();
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		delete g.__nsTerminateAllWorkers;
@@ -552,7 +553,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 			}),
 		};
 		const goodWorker = { terminate: vi.fn() };
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		delete g.__nsTerminateAllWorkers; // force fallback path
@@ -602,7 +603,7 @@ describe('handleAngularHotUpdateMessage — worker termination before reboot', (
 describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before reboot', () => {
 	type SnapshotCleanup = () => void;
 	function snapshotGlobals(): SnapshotCleanup {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousDispose = g.__nsRunHmrDispose;
 		const previousNative = g.__nsTerminateAllWorkers;
@@ -617,7 +618,7 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const runDispose = vi.fn(() => 7); // pretend 7 disposers ran
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__nsRunHmrDispose = runDispose;
@@ -650,7 +651,7 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 			callOrder.push('terminate');
 			return 1;
 		});
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__nsRunHmrDispose = runDispose;
@@ -673,7 +674,7 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 	it('degrades silently when the runtime does not expose __nsRunHmrDispose (older runtime)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		delete g.__nsRunHmrDispose;
@@ -694,7 +695,7 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 	it('does not propagate exceptions when __nsRunHmrDispose itself throws (defensive)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		// Runtime regression: the drain function throws (out of memory,
@@ -717,7 +718,7 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
 		const runDispose = vi.fn(() => 0);
-		const g = globalThis as any;
+		const g = getGlobalScope();
 
 		g.__reboot_ng_modules__ = reboot;
 		g.__nsRunHmrDispose = runDispose;
@@ -766,7 +767,7 @@ describe('handleAngularHotUpdateMessage — import.meta.hot.dispose drain before
 describe('handleAngularHotUpdateMessage — standard Vite event dispatching', () => {
 	type SnapshotCleanup = () => void;
 	function snapshotGlobals(): SnapshotCleanup {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousDispatcher = g.__NS_DISPATCH_HOT_EVENT__;
 		const previousDispose = g.__nsRunHmrDispose;
@@ -785,7 +786,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 
 	function installEventCapture(): { events: Array<{ event: string; payload: any }>; restore: SnapshotCleanup } {
 		const events: Array<{ event: string; payload: any }> = [];
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousDispatcher = g.__NS_DISPATCH_HOT_EVENT__;
 		g.__NS_DISPATCH_HOT_EVENT__ = (event: string, payload: any) => {
 			events.push({ event, payload });
@@ -802,7 +803,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 		const restore = snapshotGlobals();
 		const { events, restore: restoreDispatcher } = installEventCapture();
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
 
 		try {
@@ -848,7 +849,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 		const reboot = vi.fn(() => {
 			throw new Error('reboot blew up');
 		});
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
 
 		try {
@@ -879,7 +880,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 		const reboot = vi.fn();
 		const reloadDevApp = vi.fn();
 		const hasDeclined = vi.fn(() => true); // ← module declined HMR
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
 		g.__nsReloadDevApp = reloadDevApp;
 		g.__nsHasDeclinedModule = hasDeclined;
@@ -924,7 +925,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 		const reboot = vi.fn();
 		const reloadDevApp = vi.fn();
 		const hasDeclined = vi.fn(() => false);
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
 		g.__nsReloadDevApp = reloadDevApp;
 		g.__nsHasDeclinedModule = hasDeclined;
@@ -948,7 +949,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 	it('proceeds with reboot when __nsHasDeclinedModule is missing (older runtime)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
 		// No __nsHasDeclinedModule — older runtime.
 		delete g.__nsHasDeclinedModule;
@@ -967,7 +968,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 	it('proceeds with reboot when decline check throws (defensive)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
 		g.__nsHasDeclinedModule = vi.fn(() => {
 			throw new Error('runtime decline check exploded');
@@ -986,7 +987,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 	it('proceeds with reboot when module is declined but __nsReloadDevApp is unavailable', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
 		g.__nsHasDeclinedModule = vi.fn(() => true);
 		// __nsReloadDevApp NOT installed — older runtime can't full-reload.
@@ -1009,7 +1010,7 @@ describe('handleAngularHotUpdateMessage — standard Vite event dispatching', ()
 	it('does not throw when __NS_DISPATCH_HOT_EVENT__ is missing (older runtime)', async () => {
 		const restore = snapshotGlobals();
 		const reboot = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		g.__reboot_ng_modules__ = reboot;
 		// No event dispatcher → all dispatchHotEvent calls become
 		// no-ops. The HMR cycle must still complete normally.
@@ -1042,7 +1043,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 	type StageCall = { stage: string; info?: any };
 
 	function installOverlayStub(): { stages: StageCall[]; hideCount: number; restore: () => void } {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previous = g.__NS_HMR_DEV_OVERLAY__;
 		const stages: StageCall[] = [];
 		let hideCount = 0;
@@ -1082,7 +1083,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 		const importer = vi.fn(async () => ({}));
 		const updater = vi.fn();
 		const invalidator = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
@@ -1137,7 +1138,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 
 	it("hides the overlay when there's no Angular reboot handler", async () => {
 		const overlay = installOverlayStub();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		g.__reboot_ng_modules__ = undefined;
 
@@ -1162,7 +1163,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 		const reboot = vi.fn(() => {
 			throw new Error('reboot blew up');
 		});
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		g.__reboot_ng_modules__ = reboot;
 
@@ -1189,7 +1190,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 		// the overlay. The angular client must still complete its
 		// cycle without throwing, even though there's nothing to
 		// drive.
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousOverlay = g.__NS_HMR_DEV_OVERLAY__;
 		const previousReboot = g.__reboot_ng_modules__;
 		const reboot = vi.fn();
@@ -1216,7 +1217,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 		const importer = vi.fn(async () => ({}));
 		const updater = vi.fn();
 		const invalidator = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;
@@ -1280,7 +1281,7 @@ describe('handleAngularHotUpdateMessage — overlay progress integration', () =>
 			.mockImplementationOnce(async () => ({}));
 		const updater = vi.fn();
 		const invalidator = vi.fn();
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousReboot = g.__reboot_ng_modules__;
 		const previousImporter = g.__NS_HMR_IMPORT__;
 		const previousUpdater = g.__NS_UPDATE_ANGULAR_APP_OPTIONS__;

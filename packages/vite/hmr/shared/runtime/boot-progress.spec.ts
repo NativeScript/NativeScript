@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { applyMonotonicBootProgress, BOOT_IMPORT_PROGRESS_CEILING, BOOT_IMPORT_PROGRESS_MAX, BOOT_IMPORT_PROGRESS_MIN, clearBootProgressState, computeBootImportProgress, formatBootImportDetail } from './boot-progress.js';
+import { getGlobalScope } from './global-scope.js';
 
 afterEach(() => {
 	clearBootProgressState();
@@ -122,7 +123,7 @@ describe('formatBootImportDetail', () => {
 describe('applyMonotonicBootProgress', () => {
 	it('returns the candidate when no prior value is set', () => {
 		expect(applyMonotonicBootProgress(85)).toBe(85);
-		expect((globalThis as any).__NS_HMR_BOOT_LAST_PROGRESS__).toBe(85);
+		expect(getGlobalScope().__NS_HMR_BOOT_LAST_PROGRESS__).toBe(85);
 	});
 
 	it('ratchets forward when each candidate exceeds the previous', () => {
@@ -138,11 +139,11 @@ describe('applyMonotonicBootProgress', () => {
 		// ratchet the bar would visibly drop from 90 → 86. The contract is:
 		// the displayed value never goes backwards.
 		expect(applyMonotonicBootProgress(86)).toBe(90);
-		expect((globalThis as any).__NS_HMR_BOOT_LAST_PROGRESS__).toBe(90);
+		expect(getGlobalScope().__NS_HMR_BOOT_LAST_PROGRESS__).toBe(90);
 	});
 
 	it('treats stale non-numeric globals as zero so a leftover from a prior boot can not stick the bar', () => {
-		(globalThis as any).__NS_HMR_BOOT_LAST_PROGRESS__ = 'definitely not a number' as any;
+		getGlobalScope().__NS_HMR_BOOT_LAST_PROGRESS__ = 'definitely not a number' as any;
 		expect(applyMonotonicBootProgress(85)).toBe(85);
 	});
 
@@ -155,7 +156,7 @@ describe('applyMonotonicBootProgress', () => {
 
 describe('clearBootProgressState', () => {
 	it('removes every boot-progress global so a re-bootstrap starts fresh', () => {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		g.__NS_HMR_BOOT_MODULE_COUNT__ = 50;
 		g.__NS_HMR_BOOT_LAST_MODULE__ = '/src/main.ts';
 		g.__NS_HMR_BOOT_LAST_PROGRESS__ = 90;

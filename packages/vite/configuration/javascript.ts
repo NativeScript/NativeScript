@@ -3,7 +3,6 @@ import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { getProjectAppPath } from '../helpers/utils.js';
 import { type BundlerPlatform, createXmlLoaderPlugin, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
-import { createUiRegistrationPlugin } from '../helpers/ui-registration.js';
 
 /**
  * Registers bundler modules for plain JavaScript apps (no .ts files),
@@ -65,7 +64,10 @@ function createBundlerContextPlugin(): Plugin {
 }
 
 export const javascriptConfig = ({ mode }): UserConfig => {
-	return mergeConfig(baseConfig({ mode }), {
-		plugins: [createXmlLoaderPlugin('ns-xml-loader-js'), createBundlerContextPlugin(), createUiRegistrationPlugin('javascript')],
+	// Declare the flavor explicitly (like every other config) so baseConfig's
+	// flavor — which gates the virtual:ns-ui-registration plugin paired with
+	// the entry's import emission — never depends on deps-based detection.
+	return mergeConfig(baseConfig({ mode, flavor: 'javascript' }), {
+		plugins: [createXmlLoaderPlugin('ns-xml-loader-js'), createBundlerContextPlugin()],
 	});
 };

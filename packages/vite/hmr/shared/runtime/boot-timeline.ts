@@ -1,3 +1,4 @@
+import { getGlobalScope } from './global-scope.js';
 // Boot timeline instrumentation for the NativeScript dev session.
 //
 // `session-bootstrap.ts` is the real boot path on modern runtimes with
@@ -73,6 +74,6 @@ export function formatBootTimeline(trace: BootTrace): string {
 // block.
 export function publishBootTrace(trace: BootTrace): void {
 	try {
-		(globalThis as any).__NS_BOOT_TRACE__ = trace;
+		getGlobalScope().__NS_BOOT_TRACE__ = trace;
 	} catch {}
 }

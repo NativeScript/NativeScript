@@ -11,7 +11,7 @@ import { buildCoreUrl } from './ns-core-url.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { setAppCssState } from './app-css-state.js';
 import { rewritePlatformCssImports } from './css-platform-plugin.js';
-import { buildDefineSeedStatements, getRuntimeDefineValues } from './global-defines.js';
+import { buildGlobalSeedStatements, getRuntimeSeedValues } from './global-defines.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -91,8 +91,15 @@ const XHR_POLYFILL_RESOLVED = '\0' + XHR_POLYFILL_VIRTUAL_ID;
 const DEFINES_SEED_VIRTUAL_ID = 'virtual:ns-defines-seed';
 const DEFINES_SEED_RESOLVED = '\0' + DEFINES_SEED_VIRTUAL_ID;
 
-export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean; useHttps: boolean }) {
+export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'; isDevMode: boolean; verbose: boolean; hmrActive: boolean; useHttps: boolean; flavor?: string }) {
 	let resolvedConfig: ResolvedConfig;
+	// Prefer the flavor the active config DECLARES (threaded from baseConfig)
+	// over deps-based detection: in workspaces whose app package.json doesn't
+	// list the framework package (hoisted to the root), detection falls through
+	// to 'typescript' — which previously emitted the ts-only
+	// `virtual:ns-ui-registration` import into an Angular entry with no
+	// resolver registered, and seeded the wrong `__NS_TARGET_FLAVOR__`.
+	const effectiveFlavor = opts.flavor || flavor;
 	return {
 		name: 'main-entry',
 		configResolved(config: ResolvedConfig) {
@@ -315,23 +322,13 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// that transitively reaches the user's app code. See the
 			// DEFINES_SEED_VIRTUAL_ID comment at the top of this file.
 			if (id === DEFINES_SEED_RESOLVED) {
-				// Canonical values shared with Vite's `define` config and the dev
-				// server's per-module shims — see getRuntimeDefineValues for why all
-				// emitters must derive from the one source.
-				const seedValues = getRuntimeDefineValues({ platform: opts.platform, isDevMode: opts.isDevMode, verbose: opts.verbose });
-				const seedLines = [
-					...buildDefineSeedStatements(seedValues),
-					// Seed the runtime flavor so the HMR client (which is loaded from
-					// node_modules and therefore NOT processed by Vite's `define`
-					// substitution) can resolve `TARGET_FLAVOR` reliably. Without
-					// this, `resolveTargetFlavor()` in `hmr/client/index.ts` only
-					// detects 'angular' (via __reboot_ng_modules__) and 'vue' (via
-					// __VUE_HMR_RUNTIME__), and 'solid' / 'typescript' fall through
-					// to undefined — so any flavor-specific switch case in
-					// `processQueue` (Solid component boundary discovery, route-loader
-					// patching, overlay stage transitions) silently never fires.
-					`globalThis.__NS_TARGET_FLAVOR__ = ${JSON.stringify(flavor)};`,
-				];
+				// The FULL seed map: canonical platform defines (shared with Vite's
+				// `define` config and the dev server's per-module shims) PLUS every
+				// `__NS_*__` value raw-served client files consume (runtime flavor,
+				// app-root paths, overlay/kickstart knobs). Vite's define substitution
+				// never reaches those raw-served files, so anything they read must be
+				// planted on globalThis here — see getRuntimeSeedValues for the rule.
+				const seedLines = buildGlobalSeedStatements(getRuntimeSeedValues({ platform: opts.platform, isDevMode: opts.isDevMode, verbose: opts.verbose, flavor: effectiveFlavor, isCI: !!process.env.CI }));
 				return {
 					code: seedLines.join('\n') + '\n',
 					moduleType: 'js',
@@ -514,7 +511,7 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// With experimentalDecorators:true, TypeScript emits __decorate patterns.
 			// On watch-mode rebuilds the Angular compiler may not re-emit ɵfac for
 			// cached files, so the JIT compiler must be available as a fallback.
-			if (opts.isDevMode && flavor === 'angular') {
+			if (opts.isDevMode && effectiveFlavor === 'angular') {
 				imports += "import { publishFacade as __nsPublishAngularCompilerFacade } from '@angular/compiler';\n";
 				imports += '__nsPublishAngularCompilerFacade(globalThis);\n';
 				if (opts.verbose) {
@@ -556,10 +553,10 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// string-injected into this generated entry by a marker-matching
 			// transform (the marker drifted once and silently broke all XML builds
 			// with "Module 'Frame' not found").
-			if (flavor === 'typescript' || flavor === 'javascript') {
+			if (effectiveFlavor === 'typescript' || effectiveFlavor === 'javascript') {
 				imports += "import 'virtual:ns-ui-registration';\n";
 			}
-			if (flavor === 'typescript') {
+			if (effectiveFlavor === 'typescript') {
 				// Statically import bundler context synchronously before app code
 				imports += "import 'virtual:ns-bundler-context';\n";
 				if (opts.hmrActive) {

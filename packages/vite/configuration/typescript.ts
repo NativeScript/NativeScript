@@ -5,7 +5,6 @@ import { getCliFlags } from '../helpers/cli-flags.js';
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from '../helpers/project.js';
 import { getProjectAppPath } from '../helpers/utils.js';
 import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
-import { createUiRegistrationPlugin } from '../helpers/ui-registration.js';
 import { type BundlerPlatform, createXmlLoaderPlugin, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
 
 /**
@@ -85,7 +84,9 @@ function createBundlerContextPlugin(): Plugin {
 }
 
 export const typescriptConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
+	// Note: the virtual:ns-ui-registration plugin is registered by baseConfig
+	// from the declared flavor, paired with the entry import emission.
 	return mergeConfig(baseConfig({ mode, flavor: 'typescript' }), {
-		plugins: [...getTypeCheckPlugins('typescript', options.typeCheck), createXmlLoaderPlugin('ns-xml-loader-ts'), createBundlerContextPlugin(), createUiRegistrationPlugin('typescript')],
+		plugins: [...getTypeCheckPlugins('typescript', options.typeCheck), createXmlLoaderPlugin('ns-xml-loader-ts'), createBundlerContextPlugin()],
 	});
 };

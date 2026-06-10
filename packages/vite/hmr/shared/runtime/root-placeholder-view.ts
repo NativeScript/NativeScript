@@ -1,4 +1,5 @@
 import { BOOT_PLACEHOLDER_MOTION, computeBootProgressFillScale, getBootPlaceholderPalette } from './boot-placeholder-ui.js';
+import { getGlobalScope } from './global-scope.js';
 
 // Card-based placeholder view construction. Returns the refs the
 // dev-overlay needs to drive the live "Importing the app entry"
@@ -105,7 +106,7 @@ function animateCardIn(card: any): void {
 // gate) or the view is detached (animate rejects and the .catch swallows it).
 function pulseBrandMark(badge: any): void {
 	if (!badge || typeof badge.animate !== 'function') return;
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	if (g.__NS_HMR_BOOT_COMPLETE__) return;
 	try {
 		badge

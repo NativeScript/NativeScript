@@ -1,5 +1,6 @@
 import { setHmrBootStage } from './dev-overlay.js';
 import { buildPlaceholderPage } from './root-placeholder-view.js';
+import { getGlobalScope } from './global-scope.js';
 
 function isPlaceholderView(view: any, placeholderRoot: any): boolean {
 	if (!view) {
@@ -37,7 +38,7 @@ function getCommittedRootView(application: any, placeholderRoot: any): any | nul
 	// know about so we can detect the commit regardless of which twin
 	// Angular actually wrote to.
 	try {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		const known: any[] = g['__NS_DEV_KNOWN_APPLICATIONS__'] || [];
 		for (const app of known) {
 			if (!app || app === application) continue;
@@ -120,7 +121,7 @@ function clearPlaceholderGlobals(g: any): void {
 }
 
 export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): boolean {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	const placeholderRoot = g['__NS_DEV_PLACEHOLDER_ROOT_VIEW__'] || null;
 	const hadPlaceholder = !!placeholderRoot || !!g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] || !!g['__NS_DEV_BOOT_STATUS_LABEL__'] || !!g['__NS_DEV_BOOT_ACTIVITY_INDICATOR__'];
 	const application = g['__NS_DEV_PLACEHOLDER_APPLICATION__'] || g.Application;
@@ -199,7 +200,7 @@ export function tryFinalizeBootPlaceholder(reason?: string, verbose?: boolean): 
 }
 
 function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): void {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	if (g['__NS_DEV_PLACEHOLDER_RESTORE_TIMER__']) {
 		return;
 	}
@@ -260,7 +261,7 @@ function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): vo
 // root replacement instead of fighting the already-running lifecycle.
 
 export function installRootPlaceholder(verbose?: boolean) {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	if (g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__']) return;
 	g['__NS_DEV_PLACEHOLDER_ROOT_EARLY__'] = true;
 	g['__NS_DEV_RESTORE_PLACEHOLDER__'] = (reason?: string) => {

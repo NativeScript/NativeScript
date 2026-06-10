@@ -1,4 +1,5 @@
 import { ensureHmrDevOverlayRuntimeInstalled, setHmrBootStage } from './dev-overlay.js';
+import { getGlobalScope } from './global-scope.js';
 
 // HTTP-only dev boot routine
 export function transformEntryRuntimeForEval(src: string): string {
@@ -45,7 +46,7 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 					}
 				}
 				try {
-					const enc = typeof (globalThis as any).btoa === 'function' ? (globalThis as any).btoa(unescape(encodeURIComponent(t))) : '';
+					const enc = typeof getGlobalScope().btoa === 'function' ? getGlobalScope().btoa(unescape(encodeURIComponent(t))) : '';
 					if (enc) {
 						if (verbose) console.info('[ns-entry][http-import] importing data url');
 						return await import(/* @vite-ignore */ 'data:application/javascript;base64,' + enc);
@@ -60,12 +61,12 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 	}
 
 	const port = 5173;
-	const host = (globalThis as any)['__NS_HMR_HOST'] || defaultHost;
-	const protoCandidates = (globalThis as any)['__NS_HTTPS__'] ? ['https', 'http'] : ['http', 'https'];
+	const host = getGlobalScope()['__NS_HMR_HOST'] || defaultHost;
+	const protoCandidates = getGlobalScope()['__NS_HTTPS__'] ? ['https', 'http'] : ['http', 'https'];
 
 	const buildOrigins = () => {
 		const origins: string[] = [];
-		if ((globalThis as any)['__NS_HTTP_ORIGIN__']) origins.push((globalThis as any)['__NS_HTTP_ORIGIN__']);
+		if (getGlobalScope()['__NS_HTTP_ORIGIN__']) origins.push(getGlobalScope()['__NS_HTTP_ORIGIN__']);
 		const hostCandidates: string[] = [];
 		// Only accept a concrete host string from the default; ignore wildcard bind addresses.
 		try {
@@ -107,7 +108,7 @@ export async function startHttpOnlyBoot(platform: 'ios' | 'android' | 'visionos'
 		// This keeps the HTTP-only boot path tolerant of local helper exports.
 		src = transformEntryRuntimeForEval(src);
 		(0, eval)(src);
-		const fn = (globalThis as any).__NS_START_ENTRY__;
+		const fn = getGlobalScope().__NS_START_ENTRY__;
 		if (typeof fn !== 'function') throw new Error('entry-rt missing __NS_START_ENTRY__ after eval');
 		return fn;
 	}

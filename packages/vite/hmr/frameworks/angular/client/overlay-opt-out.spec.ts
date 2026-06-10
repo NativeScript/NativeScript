@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 
 /**
  * HMR-applying overlay opt-out flag
@@ -35,12 +36,12 @@ function installOverlayStub(): OverlayStub {
 		setConnectionStage: () => undefined,
 		getSnapshot: () => undefined,
 	};
-	(globalThis as any).__NS_HMR_DEV_OVERLAY__ = stub;
+	getGlobalScope().__NS_HMR_DEV_OVERLAY__ = stub;
 	return stub;
 }
 
 function clearOverlayState() {
-	const g = globalThis as any;
+	const g = getGlobalScope();
 	delete g.__NS_HMR_DEV_OVERLAY__;
 	delete g.__NS_HMR_PROGRESS_OVERLAY_ENABLED__;
 	delete g.__reboot_ng_modules__;
@@ -64,7 +65,7 @@ describe('Angular HMR client overlay opt-out', () => {
 	it('drives the overlay by default (env var unset → __NS_HMR_PROGRESS_OVERLAY_ENABLED__ undefined → enabled)', async () => {
 		const stub = installOverlayStub();
 		const reboot = vi.fn();
-		(globalThis as any).__reboot_ng_modules__ = reboot;
+		getGlobalScope().__reboot_ng_modules__ = reboot;
 
 		const { handleAngularHotUpdateMessage } = await import('./index.js');
 		await handleAngularHotUpdateMessage({ type: 'ns:angular-update', path: '/src/foo.ts' }, { getCore: () => undefined, verbose: false });
@@ -75,10 +76,10 @@ describe('Angular HMR client overlay opt-out', () => {
 	});
 
 	it('drives the overlay when the flag is explicitly true', async () => {
-		(globalThis as any).__NS_HMR_PROGRESS_OVERLAY_ENABLED__ = true;
+		getGlobalScope().__NS_HMR_PROGRESS_OVERLAY_ENABLED__ = true;
 		const stub = installOverlayStub();
 		const reboot = vi.fn();
-		(globalThis as any).__reboot_ng_modules__ = reboot;
+		getGlobalScope().__reboot_ng_modules__ = reboot;
 
 		const { handleAngularHotUpdateMessage } = await import('./index.js');
 		await handleAngularHotUpdateMessage({ type: 'ns:angular-update', path: '/src/foo.ts' }, { getCore: () => undefined, verbose: false });
@@ -87,10 +88,10 @@ describe('Angular HMR client overlay opt-out', () => {
 	});
 
 	it('does NOT touch the overlay when the flag is explicitly false (NS_VITE_PROGRESS_OVERLAY=0)', async () => {
-		(globalThis as any).__NS_HMR_PROGRESS_OVERLAY_ENABLED__ = false;
+		getGlobalScope().__NS_HMR_PROGRESS_OVERLAY_ENABLED__ = false;
 		const stub = installOverlayStub();
 		const reboot = vi.fn();
-		(globalThis as any).__reboot_ng_modules__ = reboot;
+		getGlobalScope().__reboot_ng_modules__ = reboot;
 
 		const { handleAngularHotUpdateMessage } = await import('./index.js');
 		const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update', path: '/src/foo.ts' }, { getCore: () => undefined, verbose: false });
@@ -108,9 +109,9 @@ describe('Angular HMR client overlay opt-out', () => {
 		// Belt-and-suspenders: production builds will both opt out
 		// AND have no overlay installed. Make sure neither code path
 		// produces a ReferenceError or NPE.
-		(globalThis as any).__NS_HMR_PROGRESS_OVERLAY_ENABLED__ = false;
+		getGlobalScope().__NS_HMR_PROGRESS_OVERLAY_ENABLED__ = false;
 		const reboot = vi.fn();
-		(globalThis as any).__reboot_ng_modules__ = reboot;
+		getGlobalScope().__reboot_ng_modules__ = reboot;
 
 		const { handleAngularHotUpdateMessage } = await import('./index.js');
 		const handled = await handleAngularHotUpdateMessage({ type: 'ns:angular-update', path: '/src/foo.ts' }, { getCore: () => undefined, verbose: false });

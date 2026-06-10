@@ -5,20 +5,21 @@ import { join } from 'node:path';
 import { wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { clearCjsNamedExportsCache } from '../helpers/cjs-named-exports.js';
 import { installModuleProvenanceRecorder } from '../shared/runtime/module-provenance.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 describe('wrapCommonJsModuleForDevice', () => {
 	afterEach(() => {
-		delete (globalThis as any).__nsBaseRequire;
-		delete (globalThis as any).__nsRequire;
-		delete (globalThis as any).__NS_RECORD_MODULE_PROVENANCE__;
-		delete (globalThis as any).__NS_GET_MODULE_PROVENANCE__;
-		delete (globalThis as any).__NS_MODULE_PROVENANCE__;
+		delete getGlobalScope().__nsBaseRequire;
+		delete getGlobalScope().__nsRequire;
+		delete getGlobalScope().__NS_RECORD_MODULE_PROVENANCE__;
+		delete getGlobalScope().__NS_GET_MODULE_PROVENANCE__;
+		delete getGlobalScope().__NS_MODULE_PROVENANCE__;
 	});
 
 	it('unwraps default-only namespace results for local require calls', async () => {
 		class FakeStackTraceGPS {}
 
-		(globalThis as any).__nsRequire = (specifier: string) => {
+		getGlobalScope().__nsRequire = (specifier: string) => {
 			if (specifier === 'stacktrace-gps') {
 				return { default: FakeStackTraceGPS };
 			}
@@ -38,7 +39,7 @@ describe('wrapCommonJsModuleForDevice', () => {
 	it('prefers __nsBaseRequire over shimmed __nsRequire when available', async () => {
 		class FakeStackTraceGPS {}
 
-		(globalThis as any).__nsBaseRequire = (specifier: string) => {
+		getGlobalScope().__nsBaseRequire = (specifier: string) => {
 			if (specifier === 'stacktrace-gps') {
 				return FakeStackTraceGPS;
 			}
@@ -46,7 +47,7 @@ describe('wrapCommonJsModuleForDevice', () => {
 			throw new Error(`Unexpected base require: ${specifier}`);
 		};
 
-		(globalThis as any).__nsRequire = (_specifier: string) => ({ default: { wrong: true }, helper: true });
+		getGlobalScope().__nsRequire = (_specifier: string) => ({ default: { wrong: true }, helper: true });
 
 		const source = ['(function(root, factory) {', "  if (typeof exports === 'object') {", "    module.exports = factory(require('stacktrace-gps'));", '  }', '}(this, function(StackTraceGPS) {', '  return { ok: new StackTraceGPS() instanceof StackTraceGPS };', '}));'].join('\n');
 

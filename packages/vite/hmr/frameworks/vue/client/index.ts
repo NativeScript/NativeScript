@@ -1,7 +1,11 @@
 import { deriveHttpOrigin, getCore, getCurrentApp, getGraphVersion, getHMRWsUrl, getHttpOriginForVite, normalizeSpec, safeDynImport, safeReadDefault, setCurrentApp } from '../../../client/utils.js';
+import { getGlobalScope } from '../../../shared/runtime/global-scope.js';
 
 const APP_VIRTUAL_WITH_SLASH = (() => {
-	const root = typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__ ? __NS_APP_ROOT_VIRTUAL__ : '/src';
+	// Define substitution does not reach this raw-served file; prefer the
+	// globalThis seed from the entry's defines-seed module ('app/'-rooted
+	// projects would otherwise get the wrong '/src' default).
+	const root = (typeof __NS_APP_ROOT_VIRTUAL__ === 'string' && __NS_APP_ROOT_VIRTUAL__) || (typeof getGlobalScope().__NS_APP_ROOT_VIRTUAL__ === 'string' && getGlobalScope().__NS_APP_ROOT_VIRTUAL__) || '/src';
 	return root.replace(/\/+$/, '') + '/';
 })();
 
@@ -20,7 +24,7 @@ export const sfcArtifactMap = new Map<string, string>();
 // Install dev shims for nativescript-vue navigation to observe and (optionally) rescue
 export function installNsVueDevShims() {
 	try {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
 		const req: any = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
 		const getMod = (id: string) => {
@@ -83,7 +87,7 @@ export function ensureVueGlobals() {
 	try {
 		const g: any = globalThis;
 		const vueAlready = g.defineComponent && g.resolveComponent && g.createVNode;
-		const req: any = (globalThis as any).__nsVendorRegistry?.get ? (globalThis as any).__nsVendorRequire || (globalThis as any).__nsRequire || (globalThis as any).require : (globalThis as any).__nsRequire || (globalThis as any).require;
+		const req: any = getGlobalScope().__nsVendorRegistry?.get ? getGlobalScope().__nsVendorRequire || getGlobalScope().__nsRequire || getGlobalScope().require : getGlobalScope().__nsRequire || getGlobalScope().require;
 		const registry: Map<string, any> | undefined = globalThis.__nsVendorRegistry;
 		let nvMod: any = null;
 		let vueMod: any = null;
@@ -311,7 +315,7 @@ export function ensureVueGlobals() {
 export function ensurePiniaOnApp(app: any) {
 	try {
 		if (!app || typeof app.use !== 'function') return;
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		// If this app already has a Pinia provide, skip
 		try {
 			const prov = app?._context?.provides;
@@ -408,7 +412,7 @@ export function ensureNsVueBootstrap() {
 function installBuiltInComponentsOnApp(app: any) {
 	try {
 		if (!app || typeof app.component !== 'function') return;
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		const reg: Map<string, any> | undefined = g.__nsVendorRegistry;
 		const req: any = reg?.get ? g.__nsVendorRequire || g.__nsRequire || g.require : g.__nsRequire || g.require;
 		if (typeof req !== 'function') return;
@@ -478,7 +482,7 @@ async function syncPiniaAcrossEsm(app: any) {
 
 function bridgePiniaProvides(app: any, existingApp?: any) {
 	try {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		if (!app || !(app as any)._context) return;
 		const newProv = (app as any)._context.provides || ((app as any)._context.provides = {});
 		// Determine pinia instance to bind
@@ -821,8 +825,8 @@ export async function loadSfcComponent(targetVuePath: string, tag: string): Prom
 			// Synthesize a minimal component and attach named exports as local components so template resolveComponent works.
 			try {
 				ensureVueGlobals();
-				const comp = (globalThis as any).defineComponent
-					? (globalThis as any).defineComponent({
+				const comp = getGlobalScope().defineComponent
+					? getGlobalScope().defineComponent({
 							name: targetVuePath.split('/').pop() || 'AnonymousSFC',
 							render,
 						})
@@ -882,7 +886,7 @@ export function getRootForVue(
 	const t0 = Date.now();
 	if (__NS_ENV_VERBOSE__) console.log('[hmr-client] [createRoot] begin');
 	ensureVueGlobals();
-	const g = globalThis as any;
+	const g = getGlobalScope();
 	const AppFactory = g.createApp;
 	let RootCtor = g.NSVRoot as any;
 	// Hygiene: unmount any existing app instance to avoid duplicate lifecycle hooks
@@ -1130,7 +1134,7 @@ export function getRootForVue(
  */
 export function ensureBackWrapperInstalled(performResetRoot: (comp: any) => void, getCore: (name: string) => any) {
 	try {
-		const g: any = globalThis as any;
+		const g: any = getGlobalScope();
 		// Provide global back-remount hooks for bridges to call
 		if (!g.__nsAttemptBackRemount) {
 			g.__nsAttemptBackRemount = () => {

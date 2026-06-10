@@ -1,3 +1,4 @@
+import { getGlobalScope } from './global-scope.js';
 // Pure helpers for the cold-boot "Importing the app entry" progress display.
 //
 // Pipeline:
@@ -101,7 +102,7 @@ export function formatBootImportDetail(input: { count?: number; lastModule?: str
  * `clearBootProgressState` between sessions.
  */
 export function applyMonotonicBootProgress(candidate: number): number {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	const previousRaw = g.__NS_HMR_BOOT_LAST_PROGRESS__;
 	const previous = typeof previousRaw === 'number' && Number.isFinite(previousRaw) ? previousRaw : 0;
 	const next = Math.max(previous, Math.max(0, Number(candidate) || 0));
@@ -117,7 +118,7 @@ export function applyMonotonicBootProgress(candidate: number): number {
  * inheriting the previous cycle's terminal values.
  */
 export function clearBootProgressState(): void {
-	const g: any = globalThis as any;
+	const g: any = getGlobalScope();
 	for (const key of [
 		'__NS_HMR_BOOT_MODULE_COUNT__',
 		'__NS_HMR_BOOT_LAST_MODULE__',

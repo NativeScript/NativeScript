@@ -1,20 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { _resetHmrModeBannerForTests, buildEvictionUrls, deriveHttpOrigin, emitHmrModeBannerOnce, getGraphVersion, hasExplicitEviction, invalidateModulesByUrls, moduleFetchCache, requestModuleFromServer, setGraphVersion, setHMRWsUrl, setHttpOriginForVite } from './utils.js';
+import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
 const ORIGIN = 'http://127.0.0.1:5173';
 
 function clearGlobalEvictionFn() {
-	delete (globalThis as any).__nsInvalidateModules;
+	delete getGlobalScope().__nsInvalidateModules;
 }
 
 function setGlobalEvictionFn(fn: ((urls: readonly string[]) => void) | unknown) {
-	(globalThis as any).__nsInvalidateModules = fn;
+	getGlobalScope().__nsInvalidateModules = fn;
 }
 
 describe('setGraphVersion', () => {
 	it('publishes the current graph version on globalThis', () => {
-		const g = globalThis as any;
+		const g = getGlobalScope();
 		const previousGraphVersion = getGraphVersion();
 		const previousGlobalGraphVersion = g.__NS_HMR_GRAPH_VERSION__;
 
@@ -136,9 +137,9 @@ describe('buildEvictionUrls', () => {
 		setHMRWsUrl(undefined);
 		// `deriveHttpOrigin` falls back to localhost when WS url is missing,
 		// so we drop the global hint to make this a strict negative.
-		const fakeWs = (globalThis as any).WebSocket;
+		const fakeWs = getGlobalScope().WebSocket;
 		try {
-			(globalThis as any).__NS_HTTP_ORIGIN__ = undefined;
+			getGlobalScope().__NS_HTTP_ORIGIN__ = undefined;
 			// Sanity: deriveHttpOrigin still produces a value (defaulting to localhost),
 			// so buildEvictionUrls should not be empty unless the implementation
 			// explicitly opts out — assert it produced at least one URL using the default.
@@ -148,7 +149,7 @@ describe('buildEvictionUrls', () => {
 			expect(urls[0]).toMatch(/^http:\/\/localhost:5173\/ns\/m\/src\/main$/);
 			expect(urls[1]).toMatch(/^http:\/\/localhost:5173\/ns\/m\/src\/main\.ts$/);
 		} finally {
-			(globalThis as any).WebSocket = fakeWs;
+			getGlobalScope().WebSocket = fakeWs;
 		}
 	});
 
@@ -174,7 +175,7 @@ describe('emitHmrModeBannerOnce', () => {
 
 	afterEach(() => {
 		clearGlobalEvictionFn();
-		delete (globalThis as any).__NS_ENV_VERBOSE__;
+		delete getGlobalScope().__NS_ENV_VERBOSE__;
 		vi.resetModules();
 		vi.restoreAllMocks();
 	});
@@ -183,7 +184,7 @@ describe('emitHmrModeBannerOnce', () => {
 	// module import with `__NS_ENV_VERBOSE__ = true` published BEFORE
 	// the import so the module-level capture sees a truthy define.
 	async function importVerboseUtils() {
-		(globalThis as any).__NS_ENV_VERBOSE__ = true;
+		getGlobalScope().__NS_ENV_VERBOSE__ = true;
 		vi.resetModules();
 		return await import('./utils.js');
 	}
@@ -227,7 +228,7 @@ describe('requestModuleFromServer', () => {
 		_resetHmrModeBannerForTests();
 		// Reset import nonce so legacy URL paths don't mis-count tags.
 		try {
-			(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 0;
+			getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
 		} catch {}
 		setGraphVersion(0);
 	});
@@ -238,7 +239,7 @@ describe('requestModuleFromServer', () => {
 		clearGlobalEvictionFn();
 		setGraphVersion(0);
 		try {
-			(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 0;
+			getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
 		} catch {}
 	});
 
@@ -249,7 +250,7 @@ describe('requestModuleFromServer', () => {
 		// V8's cache under the stable key on first load).
 		setGlobalEvictionFn(() => {});
 		setGraphVersion(0);
-		(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 0;
+		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
 		const url = await requestModuleFromServer('/src/main.ts');
 		expect(url).toBe(`${ORIGIN}/ns/m/src/main`);
 		expect(url).not.toMatch(/__ns_hmr__/);
@@ -267,7 +268,7 @@ describe('requestModuleFromServer', () => {
 		// still sees one logical module per URL.
 		setGlobalEvictionFn(() => {});
 		setGraphVersion(7);
-		(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 3;
+		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 3;
 		const url = await requestModuleFromServer('/src/main.ts');
 		expect(url.startsWith(`${ORIGIN}/ns/m/__ns_hmr__/`)).toBe(true);
 		expect(url).toMatch(/__ns_hmr__\/3-7/);
@@ -279,7 +280,7 @@ describe('requestModuleFromServer', () => {
 	it('embeds a tag on legacy runtimes too so the URL changes between saves', async () => {
 		clearGlobalEvictionFn();
 		setGraphVersion(5);
-		(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 9;
+		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 9;
 		const url = await requestModuleFromServer('/src/foo.ts');
 		expect(url.startsWith(`${ORIGIN}/ns/m/__ns_hmr__/`)).toBe(true);
 		expect(url.endsWith('/src/foo')).toBe(true);
@@ -289,7 +290,7 @@ describe('requestModuleFromServer', () => {
 	it('returns the bare canonical URL on legacy runtimes when no version, hash, or nonce signal is available', async () => {
 		clearGlobalEvictionFn();
 		setGraphVersion(0);
-		(globalThis as any).__NS_HMR_IMPORT_NONCE__ = 0;
+		getGlobalScope().__NS_HMR_IMPORT_NONCE__ = 0;
 		const url = await requestModuleFromServer('/src/main.ts');
 		expect(url).toBe(`${ORIGIN}/ns/m/src/main`);
 	});
