@@ -1,10 +1,96 @@
 import { parse as babelParse } from '@babel/parser';
 import * as t from '@babel/types';
+import { existsSync, readFileSync } from 'fs';
+import * as path from 'path';
 
 import * as PAT from './constants.js';
 import { isDeepCoreSubpath } from './core-sanitize.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
+import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 import { extractDirectExportedNames } from './websocket-core-bridge.js';
+
+let cachedWorkspaceCoreRoot: string | null | undefined;
+
+/**
+ * Absolute root of @nativescript/core when it is consumed from monorepo
+ * source (`<workspace>/packages/core` in the NativeScript repo) rather than
+ * node_modules. Returns null for standalone apps.
+ */
+export function getWorkspaceCoreSourceRoot(): string | null {
+	if (cachedWorkspaceCoreRoot !== undefined) return cachedWorkspaceCoreRoot;
+	cachedWorkspaceCoreRoot = null;
+	try {
+		const wsRoot = getMonorepoWorkspaceRoot();
+		if (wsRoot) {
+			const pkgPath = path.join(wsRoot, 'packages/core/package.json');
+			if (existsSync(pkgPath)) {
+				const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+				if (pkg?.name === '@nativescript/core') {
+					cachedWorkspaceCoreRoot = path.resolve(wsRoot, 'packages/core').replace(/\\/g, '/');
+				}
+			}
+		}
+	} catch {}
+	return cachedWorkspaceCoreRoot;
+}
+
+/**
+ * True when a served module path points into @nativescript/core consumed from
+ * monorepo source. These modules are library code: the app-source HMR passes
+ * (AST normalization, /ns/rt underscore-helper alias injection) must NOT run
+ * on them — they exist for compiled app/SFC output, and on core sources they
+ * misread internals (e.g. `ClassInfo._getBase`) as Vue template helpers and
+ * inject destructures that shadow real bindings or TDZ-crash on the circular
+ * /ns/rt dependency. In standalone apps core lives under node_modules and is
+ * already excluded by the node_modules check.
+ */
+export function isWorkspaceCoreModulePath(p: string | undefined | null): boolean {
+	if (!p) return false;
+	const coreRoot = getWorkspaceCoreSourceRoot();
+	if (!coreRoot) return false;
+	const normalized = String(p).split('?')[0].replace(/\\/g, '/');
+	return normalized.includes(coreRoot + '/') || /(^|\/)packages\/core\//.test(normalized);
+}
+
+/**
+ * True when a served module path points into the @nativescript/vite package
+ * routed via its monorepo build output (`dist/packages/vite/...`). Apps that
+ * consume the package via `file:../../dist/packages/vite` get a node_modules
+ * SYMLINK, and require.resolve follows it to the real dist path — so the
+ * served URL carries no `node_modules/` segment and escapes the node_modules
+ * library check. Like core source, this is library code: the app-source HMR
+ * passes (AST normalization, /ns/rt alias injection) must not run on it —
+ * e.g. the HMR client bundle already carries its own `__ns_rt_ns_re` import,
+ * and a second injected one is a duplicate-declaration SyntaxError on device.
+ */
+export function isWorkspaceVitePackageModulePath(p: string | undefined | null): boolean {
+	if (!p) return false;
+	const normalized = String(p).split('?')[0].replace(/\\/g, '/');
+	return /(^|\/)dist\/packages\/vite\//.test(normalized);
+}
+
+export type ServedModuleKind = 'app' | 'library';
+
+/**
+ * Single classification point for the /ns/m served-module pipeline. The
+ * app-source passes inside processCodeForDevice (AST normalization, /ns/rt
+ * underscore-helper alias injection) must run ONLY on 'app' modules; 'library'
+ * code is served as-is plus import rewriting. Three things count as library:
+ *   - anything under node_modules
+ *   - @nativescript/core consumed from monorepo source (packages/core)
+ *   - the @nativescript/vite package served from its dist build output
+ *     (file:../../dist/packages/vite symlinks resolve to the real dist path,
+ *     so no node_modules segment appears in the URL)
+ * Add the next workspace-library case HERE, not at a call site.
+ */
+export function classifyServedModule(p: string | undefined | null): ServedModuleKind {
+	if (!p) return 'app';
+	const normalized = String(p).split('?')[0].replace(/\\/g, '/');
+	if (/(?:^|\/)node_modules\//.test(normalized)) return 'library';
+	if (isWorkspaceCoreModulePath(normalized)) return 'library';
+	if (isWorkspaceVitePackageModulePath(normalized)) return 'library';
+	return 'app';
+}
 
 export const MODULE_IMPORT_ANALYSIS_PLUGINS = ['typescript', 'jsx', 'importMeta', 'topLevelAwait', 'classProperties', 'classPrivateProperties', 'classPrivateMethods', 'decorators-legacy'] as any;
 
@@ -296,7 +382,13 @@ export function stripViteDynamicImportVirtual(code: string): string {
 		return code;
 	}
 	const original = code;
-	code = code.replace(/^[\t ]*import[^\n]*\/@id\/__x00__vite\/dynamic-import-helper[^\n]*$/gm, '');
+	// Statement-scoped, NOT line-anchored: Vite 8 emits its injected imports
+	// concatenated on ONE line with the module's original first line, e.g.
+	//   import …"/@vite/client";import …"/@id/__x00__vite/dynamic-import-helper.js";/**
+	// A `^…$`-anchored replace would delete the whole line — including the
+	// module's leading `/**`, leaving an orphaned JSDoc body that is a
+	// SyntaxError ("Unexpected token '*'") on device.
+	code = code.replace(/import\s+[^;'"\n]*['"][^'"\n]*\/@id\/__x00__vite\/dynamic-import-helper[^'"\n]*['"]\s*;?/g, '');
 	if (/\/@id\/__x00__vite\/dynamic-import-helper/.test(code)) {
 		code = code.replace(/\/@id\/__x00__vite\/dynamic-import-helper[^"'`)]*/g, '/__NS_UNUSED_DYNAMIC_IMPORT_HELPER__');
 	}
@@ -340,7 +432,12 @@ export function extractExportMetadata(code: string): { hasDefault: boolean; name
 }
 
 function shouldAllowLocalCoreSanitizerPaths(contextLabel: string): boolean {
-	return /\bnode_modules\/@nativescript\/vite\/hmr\/(?:client|frameworks)\//.test(contextLabel);
+	// The @nativescript/vite HMR runtime (client + framework strategies)
+	// legitimately references local core paths in strings — allow it whether it
+	// is served from node_modules or from the monorepo dist output
+	// (`file:../../dist/packages/vite` symlinks resolve to the real dist path,
+	// so no node_modules segment appears in the served URL).
+	return /\b(?:node_modules\/@nativescript\/vite|dist\/packages\/vite)\/hmr\/(?:client|frameworks)\//.test(contextLabel);
 }
 
 export function assertNoOptimizedArtifacts(code: string, contextLabel: string): void {
@@ -363,6 +460,14 @@ export function assertNoOptimizedArtifacts(code: string, contextLabel: string): 
 					continue;
 				}
 				if (shouldAllowLocalCoreSanitizerPaths(contextLabel)) {
+					continue;
+				}
+				// Only module-resolution contexts (import/export/require) leak to the
+				// device ESM loader. A core path appearing as plain runtime string data
+				// — e.g. component-builder's `const CORE_UI_BARREL = '@nativescript/core/ui'`
+				// passed to `global.loadModule()`, which reads the bundler module
+				// registry, not the ESM loader — is legitimate and must not fail serving.
+				if (!/(?:\bimport\b|\bexport\b|\bfrom\s*["']|\brequire\s*\()/.test(line)) {
 					continue;
 				}
 				offenders.push(`${i + 1}: ${line.substring(0, 200)} [local-core-path]`);

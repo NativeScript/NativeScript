@@ -1198,6 +1198,13 @@ async function processQueue(): Promise<void> {
 					} catch (e) {
 						console.warn('[hmr][queue] TS flavor: resetRootView(app-root) failed', e);
 					}
+					// Tell the overlay the cycle is done — same as the solid path
+					// above. Without this the applying overlay sticks at
+					// 'received' (5%) forever even though the in-place navigate /
+					// resetRootView already applied the update.
+					setUpdateOverlayStage('complete', {
+						detail: `Total ${Math.max(0, Date.now() - tQueueStart)}ms`,
+					});
 					break;
 				}
 			}

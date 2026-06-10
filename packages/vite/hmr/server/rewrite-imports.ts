@@ -261,6 +261,18 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			// so preserve that for the unrewritable case below.
 		}
 
+		// Vite 8 oxc runtime helpers (decorators etc.) — emitted as
+		// `/@id/__x00__@oxc-project+runtime@<ver>/helpers/<name>.js`. These are
+		// real dev-server URLs serving self-contained ESM, so just origin-prefix
+		// them for the device; no /ns/m wrapping needed (processCodeForDevice
+		// exempts them from the generic /@id/ strip for the same reason).
+		if (spec.startsWith('/@id/__x00__@oxc-project+runtime')) {
+			if (httpOriginSafe) {
+				return `${prefix}${httpOriginSafe}${spec}${suffix}`;
+			}
+			return `${prefix}${spec}${suffix}`;
+		}
+
 		// Route Vite virtual modules (/@solid-refresh, etc.) through /ns/m/ so their
 		// internal imports (e.g. solid-js) get vendor-rewritten by our pipeline.
 		// Skip known Vite internals (/@vite/, /@id/) which are handled elsewhere.

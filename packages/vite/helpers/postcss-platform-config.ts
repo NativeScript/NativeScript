@@ -10,39 +10,29 @@ interface PostCssConfigOptions {
 }
 
 /**
- * Builds PostCSS configuration with platform import rewriting + postcss-import fallback.
+ * Builds PostCSS configuration with a platform-aware postcss-import fallback.
+ *
+ * Reality check under Vite 8: whenever the compiled CSS still contains
+ * `@import`, Vite UNSHIFTS its own bundled postcss-import ahead of every
+ * user plugin in this config — so by the time these plugins run, the import
+ * rules have already been inlined (or the build already failed on an
+ * unresolvable specifier). Platform-variant rewriting (`foo.css` →
+ * `foo.ios.css`) therefore happens BEFORE Vite sees the CSS:
+ *   - module pipeline: the `ns-css-platform` plugin's transform hook
+ *   - direct `preprocessCSS()` callers: `rewritePlatformCssImports()`
+ *     (both in helpers/css-platform-plugin.ts)
+ * A previous `ns-postcss-platform-import-rewrite` plugin here duplicated that
+ * rewrite at the postcss layer; it was unreachable and has been removed.
+ *
+ * The postcss-import fallback below is retained as defense-in-depth for
+ * preprocessor outputs (sass passes `@import "*.css"` through untouched) in
+ * case an app's plugin order ever bypasses Vite's internal inliner.
  */
 export function createPostCssConfig(opts: PostCssConfigOptions) {
 	const { platform, projectRoot, themeCoreRoot, postcssImport } = opts;
 	if (!postcssImport) return './postcss.config.js';
 	return {
 		plugins: [
-			{
-				postcssPlugin: 'ns-postcss-platform-import-rewrite',
-				Once(root: any) {
-					try {
-						const currentFile: string | undefined = root?.source?.input?.file;
-						if (!currentFile) return;
-						const currentDir = path.dirname(currentFile);
-						root.walkAtRules('import', (rule: any) => {
-							const m = /^\s*(?:url\()?["]?([^"')]+)["]?\)?/.exec(rule.params || '');
-							if (!m) return;
-							const spec = m[1];
-							if (!spec || !(spec.startsWith('.') || spec.startsWith('/'))) return;
-							if (!spec.endsWith('.css')) return;
-							const abs = path.isAbsolute(spec) ? spec : path.resolve(currentDir, spec);
-							if (existsSync(abs)) return;
-							const ext = platform === 'android' ? '.android.css' : '.ios.css';
-							const alt = abs.replace(/\.css$/, ext);
-							if (existsSync(alt)) {
-								let rel = path.relative(currentDir, alt).replace(/\\/g, '/');
-								if (!rel.startsWith('.')) rel = './' + rel;
-								rule.params = (rule.params as string).replace(spec, rel);
-							}
-						});
-					} catch {}
-				},
-			},
 			postcssImport({
 				resolve(id: string, basedir: string) {
 					if (id.startsWith('.') || id.startsWith('/')) {

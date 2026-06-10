@@ -69,19 +69,96 @@ export function resolveHmrKickstartMaxUrls(env: NodeJS.ProcessEnv = process.env)
 	return Math.floor(parsed);
 }
 
-export function getGlobalDefines(opts: { platform: string; targetMode: string; verbose: boolean; flavor: string; isCI?: boolean }) {
+/**
+ * Canonical runtime define VALUES, shared by every emitter:
+ *   1. Vite `define` substitution — `getGlobalDefines` below
+ *   2. the bundle entry's `virtual:ns-defines-seed` module — main-entry.ts
+ *   3. the dev server's per-module shim prelude + guarded platform seed —
+ *      processCodeForDevice
+ *
+ * All three MUST agree. They used to be maintained by hand in three places,
+ * and drift produced the HMR boot bug class where the bundle seed said
+ * `__APPLE__ = true` while a served module's shim fell back to `false` and
+ * ran Android code paths on iOS. Add new defines HERE, then thread them
+ * through the builders below.
+ */
+export interface RuntimeDefineValues {
+	__DEV__: boolean;
+	__ANDROID__: boolean;
+	__IOS__: boolean;
+	__VISIONOS__: boolean;
+	__APPLE__: boolean;
+	__COMMONJS__: boolean;
+	__NS_WEBPACK__: boolean;
+	__NS_ENV_VERBOSE__: boolean;
+	__UI_USE_XML_PARSER__: boolean;
+	__UI_USE_EXTERNAL_RENDERER__: boolean;
+	__CSS_PARSER__: string;
+	__TEST__: boolean;
+}
+
+export function getRuntimeDefineValues(opts: { platform?: string; isDevMode: boolean; verbose: boolean }): RuntimeDefineValues {
+	const platform = opts.platform || '';
 	return {
-		// Define platform flags for runtime checks
-		__ANDROID__: JSON.stringify(opts.platform === 'android'),
-		__IOS__: JSON.stringify(opts.platform === 'ios'),
-		__VISIONOS__: JSON.stringify(opts.platform === 'visionos'),
-		__APPLE__: JSON.stringify(opts.platform === 'ios' || opts.platform === 'visionos'),
-		'global.isAndroid': JSON.stringify(opts.platform === 'android'),
-		'global.isIOS': JSON.stringify(opts.platform === 'ios' || opts.platform === 'visionos'),
-		__DEV__: JSON.stringify(opts.targetMode === 'development'),
+		__DEV__: !!opts.isDevMode,
+		__ANDROID__: platform === 'android',
+		__IOS__: platform === 'ios',
+		__VISIONOS__: platform === 'visionos',
+		__APPLE__: platform === 'ios' || platform === 'visionos',
 		__COMMONJS__: false,
 		__NS_WEBPACK__: false,
-		__NS_ENV_VERBOSE__: JSON.stringify(opts.verbose),
+		__NS_ENV_VERBOSE__: !!opts.verbose,
+		__UI_USE_XML_PARSER__: true,
+		__UI_USE_EXTERNAL_RENDERER__: false,
+		__CSS_PARSER__: 'css-tree',
+		__TEST__: false,
+	};
+}
+
+/**
+ * Unconditional `globalThis.<key> = <value>;` statements — the bundle entry's
+ * defines-seed module body (evaluates as a leaf before any sibling import).
+ */
+export function buildDefineSeedStatements(values: RuntimeDefineValues): string[] {
+	return Object.entries(values).map(([key, value]) => `globalThis.${key} = ${JSON.stringify(value)};`);
+}
+
+/**
+ * Guarded seed for the dev server's per-module prelude. Under HMR the bundle's
+ * externalized core URL imports evaluate BEFORE the bundle body (ESM: imports
+ * run before the importer), so the unconditional seed above has NOT run when
+ * the HTTP core graph instantiates. Whichever served module evaluates first
+ * runs this and seeds globalThis with the correct platform; later modules and
+ * the bundle seed see it already set and no-op.
+ */
+export function buildGuardedDefineSeedStatement(values: RuntimeDefineValues): string {
+	return `if (globalThis.__IOS__ === undefined && globalThis.__ANDROID__ === undefined) { globalThis.__ANDROID__ = ${values.__ANDROID__}; globalThis.__IOS__ = ${values.__IOS__}; globalThis.__VISIONOS__ = ${values.__VISIONOS__}; globalThis.__APPLE__ = ${values.__APPLE__}; }\nif (globalThis.__DEV__ === undefined) { globalThis.__DEV__ = ${values.__DEV__}; }`;
+}
+
+/**
+ * `const <key> = globalThis.<key> !== undefined ? globalThis.<key> : <canonical>;`
+ * shim statements injected at the top of every HTTP-served module. The
+ * fallbacks are the canonical values themselves, so a module snapshots correct
+ * platform flags even if it evaluates before ANY seed has run.
+ */
+export function buildDefineShimStatements(values: RuntimeDefineValues): string[] {
+	return Object.entries(values).map(([key, value]) => `const ${key} = globalThis.${key} !== undefined ? globalThis.${key} : ${JSON.stringify(value)};`);
+}
+
+export function getGlobalDefines(opts: { platform: string; targetMode: string; verbose: boolean; flavor: string; isCI?: boolean }) {
+	const values = getRuntimeDefineValues({ platform: opts.platform, isDevMode: opts.targetMode === 'development', verbose: opts.verbose });
+	return {
+		// Define platform flags for runtime checks
+		__ANDROID__: JSON.stringify(values.__ANDROID__),
+		__IOS__: JSON.stringify(values.__IOS__),
+		__VISIONOS__: JSON.stringify(values.__VISIONOS__),
+		__APPLE__: JSON.stringify(values.__APPLE__),
+		'global.isAndroid': JSON.stringify(values.__ANDROID__),
+		'global.isIOS': JSON.stringify(values.__APPLE__),
+		__DEV__: JSON.stringify(values.__DEV__),
+		__COMMONJS__: values.__COMMONJS__,
+		__NS_WEBPACK__: values.__NS_WEBPACK__,
+		__NS_ENV_VERBOSE__: JSON.stringify(values.__NS_ENV_VERBOSE__),
 		__NS_TARGET_FLAVOR__: JSON.stringify(opts.flavor),
 		// whether to show the HMR in-progress overlay.
 		__NS_HMR_PROGRESS_OVERLAY_ENABLED__: JSON.stringify(isHmrProgressOverlayEnabled()),
@@ -93,11 +170,11 @@ export function getGlobalDefines(opts: { platform: string; targetMode: string; v
 			const n = resolveHmrKickstartMaxUrls();
 			return Number.isFinite(n) ? String(n) : 'Infinity';
 		})(),
-		__CSS_PARSER__: JSON.stringify('css-tree'),
-		__UI_USE_XML_PARSER__: true,
-		__UI_USE_EXTERNAL_RENDERER__: false,
+		__CSS_PARSER__: JSON.stringify(values.__CSS_PARSER__),
+		__UI_USE_XML_PARSER__: values.__UI_USE_XML_PARSER__,
+		__UI_USE_EXTERNAL_RENDERER__: values.__UI_USE_EXTERNAL_RENDERER__,
 		// various ecosystems use this global (react for example)
-		__TEST__: false,
+		__TEST__: values.__TEST__,
 		// determine if running in CI environment
 		__CI__: JSON.stringify(!!opts.isCI),
 		__NS_APP_ROOT_DIR__: JSON.stringify(APP_ROOT_DIR),

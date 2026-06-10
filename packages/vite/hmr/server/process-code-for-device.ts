@@ -12,6 +12,9 @@ import { getProjectRootPath } from '../../helpers/project.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { createProcessSfcCode } from '../frameworks/vue/server/sfc-transforms.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
+import { resolveVerboseFlag } from '../../helpers/logging.js';
+import { getProjectFlavor } from '../../helpers/flavor.js';
+import { buildDefineShimStatements, buildGuardedDefineSeedStatement, getRuntimeDefineValues } from '../../helpers/global-defines.js';
 import { linkAngularPartialsIfNeeded } from '../frameworks/angular/server/linker.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, resolveVendorFromCandidate } from './websocket-module-specifiers.js';
 import { ensureNativeScriptModuleBindings, getProcessCodeResolvedSpecifierOverrides, type EnsureNativeScriptModuleBindingsOptions } from './websocket-module-bindings.js';
@@ -31,6 +34,35 @@ try {
 	}
 } catch {}
 const __processEnvJson = JSON.stringify(__processEnvEntries);
+
+// Canonical define values resolved once from CLI flags (--env.ios /
+// --env.android / --env.visionos). The dev server only ever runs in
+// development mode, so isDevMode is true. Shared with the Vite `define`
+// config and the bundle's defines-seed module via getRuntimeDefineValues —
+// all emitters MUST derive from that one source (drift between them produced
+// the "__APPLE__ false on iOS" HMR boot bug class).
+const __runtimeDefines = (() => {
+	let platform: string | undefined;
+	let verbose = false;
+	try {
+		const flags = getCliFlags();
+		platform = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
+		verbose = resolveVerboseFlag();
+	} catch {}
+	return { platform, values: getRuntimeDefineValues({ platform, isDevMode: true, verbose }) };
+})();
+
+// Guarded platform seed injected ahead of the per-module define shims so
+// whichever HTTP-served module evaluates FIRST seeds globalThis correctly.
+//
+// Why this is needed: under HMR the device bundle's externalized core imports
+// (`import "http://…/ns/core/globals"` etc.) evaluate BEFORE the bundle's own
+// body per ESM semantics — so the bundle's inlined `virtual:ns-defines-seed`
+// statements have NOT run when the HTTP core graph instantiates. Without this
+// seed, code reading `globalThis.__APPLE__` directly would see undefined.
+// Only emitted when a platform flag was actually detected — seeding
+// all-false platform flags would be worse than not seeding.
+const __platformSeed = __runtimeDefines.platform ? buildGuardedDefineSeedStatement(__runtimeDefines.values) : '';
 
 interface ProcessCodeForDeviceOptions {
 	resolvedSpecifierOverrides?: Map<string, string>;
@@ -96,8 +128,9 @@ function collectImportDependencies(code: string, importerPath: string): Set<stri
 function cleanCode(code: string, strategy: FrameworkServerStrategy): string {
 	let result = code;
 
-	// Remove Vite client and hot module noise
-	result = result.replace(PAT.VITE_CLIENT_IMPORT, '');
+	// Remove Vite client and hot module noise ('$1' keeps the preceding
+	// newline/semicolon boundary — see VITE_CLIENT_IMPORT in constants.ts)
+	result = result.replace(PAT.VITE_CLIENT_IMPORT, '$1');
 	result = result.replace(PAT.IMPORT_META_HOT_ASSIGNMENT, '');
 	// Keep import.meta.hot call sites; runtime now provides a stable import.meta.hot.
 
@@ -126,7 +159,15 @@ function cleanCode(code: string, strategy: FrameworkServerStrategy): string {
 	} catch (e) {
 		// Non-fatal; fallback to original code if manifest logic fails
 	}
-	result = result.replace(PAT.VITE_CLIENT_IMPORT, '').replace(PAT.IMPORT_META_HOT_ASSIGNMENT, '');
+	result = result.replace(PAT.VITE_CLIENT_IMPORT, '$1').replace(PAT.IMPORT_META_HOT_ASSIGNMENT, '');
+
+	// The stripped /@vite/client import may have carried the `injectQuery`
+	// binding (Vite 8 rewrites worker/url dynamic imports to
+	// `__vite__injectQuery(url, 'import')`). Shim it as identity — query
+	// injection is meaningless for the on-device HTTP loader.
+	if (/\b__vite__injectQuery\s*\(/.test(result) && !/(?:const|let|var|function)\s+__vite__injectQuery\b/.test(result)) {
+		result = `const __vite__injectQuery = (url) => url;\n` + result;
+	}
 
 	// Clean up HMR noise
 	result = strategy.postClean?.(result) ?? result;
@@ -181,18 +222,13 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		// App Configuration boot module) is preserved; we never overwrite a
 		// populated env with the bare `{ NODE_ENV: 'development' }` stub.
 		`if (typeof globalThis.process === "undefined" || globalThis.process === null) { globalThis.process = { env: ${__processEnvJson} }; } else if (!globalThis.process.env) { globalThis.process.env = ${__processEnvJson}; }`,
-		'const __ANDROID__ = globalThis.__ANDROID__ !== undefined ? globalThis.__ANDROID__ : false;',
-		'const __IOS__ = globalThis.__IOS__ !== undefined ? globalThis.__IOS__ : false;',
-		'const __VISIONOS__ = globalThis.__VISIONOS__ !== undefined ? globalThis.__VISIONOS__ : false;',
-		'const __APPLE__ = globalThis.__APPLE__ !== undefined ? globalThis.__APPLE__ : (__IOS__ || __VISIONOS__);',
-		'const __DEV__ = globalThis.__DEV__ !== undefined ? globalThis.__DEV__ : false;',
-		'const __COMMONJS__ = globalThis.__COMMONJS__ !== undefined ? globalThis.__COMMONJS__ : false;',
-		'const __NS_WEBPACK__ = globalThis.__NS_WEBPACK__ !== undefined ? globalThis.__NS_WEBPACK__ : false;',
-		'const __NS_ENV_VERBOSE__ = globalThis.__NS_ENV_VERBOSE__ !== undefined ? !!globalThis.__NS_ENV_VERBOSE__ : false;',
-		"const __CSS_PARSER__ = globalThis.__CSS_PARSER__ !== undefined ? globalThis.__CSS_PARSER__ : 'css-tree';",
-		'const __UI_USE_XML_PARSER__ = globalThis.__UI_USE_XML_PARSER__ !== undefined ? globalThis.__UI_USE_XML_PARSER__ : true;',
-		'const __UI_USE_EXTERNAL_RENDERER__ = globalThis.__UI_USE_EXTERNAL_RENDERER__ !== undefined ? globalThis.__UI_USE_EXTERNAL_RENDERER__ : false;',
-		'const __TEST__ = globalThis.__TEST__ !== undefined ? globalThis.__TEST__ : false;',
+		// Seed platform defines from the dev server's CLI flags BEFORE the const
+		// shims snapshot them — see __platformSeed above for the ESM-ordering
+		// rationale (externalized core imports evaluate before the bundle body).
+		...(__platformSeed ? [__platformSeed] : []),
+		// Per-module shim consts with canonical fallbacks — generated from the
+		// same getRuntimeDefineValues source as the seed and Vite's `define`.
+		...buildDefineShimStatements(__runtimeDefines.values),
 	];
 	result = allGlobals.join('\n') + '\n' + result;
 	const nodeModuleProvenancePrelude = buildNodeModuleProvenancePrelude(sourceId);
@@ -222,7 +258,12 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 		} catch {}
 
 		try {
-			result = astNormalizeModuleImportsAndHelpers(result);
+			// The unsound underscore TEXT-SCAN fallback inside the normalizer is
+			// only meaningful for compiled Vue template helpers; on every other
+			// flavor it has misread app/library internals as helpers (see the
+			// fallback's comment in ast-normalizer.ts). AST-based detection stays
+			// on for all flavors.
+			result = astNormalizeModuleImportsAndHelpers(result, { underscoreTextFallback: getProjectFlavor() === 'vue' });
 		} catch {}
 
 		// Verify there are no duplicate top-level const/let bindings after AST normalization
@@ -234,10 +275,16 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	// If AST marker present OR this is a node_modules file, skip regex-based helper
 	// alias injection. Library code should NOT get /ns/rt destructures injected —
 	// underscore-prefixed identifiers in libraries are internal variables, not NS helpers.
-	if (!isNodeModule && !/^\s*(?:\/\/|\/\*) \[ast-normalized\]/m.test(result)) {
+	// Vue-only for the same reason as the normalizer's text fallback: /ns/rt
+	// underscore helpers (`_toDisplayString`, …) only exist in compiled Vue
+	// template output; on other flavors this scope-blind regex misreads app
+	// internals as helpers.
+	if (getProjectFlavor() === 'vue' && !isNodeModule && !/^\s*(?:\/\/|\/\*) \[ast-normalized\]/m.test(result)) {
 		try {
 			const underscored = new Set<string>();
-			const re = /(^|[^.\w$])_([A-Za-z]\w*)\b/g;
+			// `(?![\w$])` (not `\b`): `\w` excludes `$`, so `\b` would match the prefix
+			// `_Symbol` inside Babel temp vars like `_Symbol$toStringTag`.
+			const re = /(^|[^.\w$])_([A-Za-z]\w*)(?![\w$])/g;
 			let m: RegExpExecArray | null;
 			while ((m = re.exec(result))) {
 				const name = m[2];
@@ -281,7 +328,12 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 
 	// Remove Vite internal imports (dynamic-import-helper, etc.)
 	// This handles both standalone lines and concatenated imports on the same line
-	result = result.replace(/import\s+[^;]+\s+from\s+["']\/@id\/[^"']*["'];?\s*/g, '');
+	// EXCEPT oxc runtime helpers (decorators etc.): Vite 8's oxc transform emits
+	// `import _decorate from "/@id/__x00__@oxc-project+runtime@<ver>/helpers/decorate.js"`.
+	// Unlike other virtual ids these are real, servable dev-server URLs returning
+	// self-contained ESM — stripping them leaves `_decorate`/`_decorateMetadata`
+	// undefined at runtime. They're origin-prefixed for the device in rewriteImports.
+	result = result.replace(/import\s+[^;]+\s+from\s+["']\/@id\/(?!__x00__@oxc-project\+runtime)[^"']*["'];?\s*/g, '');
 	// Also remove side-effect only virtual id imports like: import "/@id/__x00__vite/dynamic-import-helper.js";
 	// These can slip through and cause the NativeScript runtime to attempt resolving
 	// a non-existent physical file (e.g. /@id/__x00__vite/dynamic-import-helper.js) leading to

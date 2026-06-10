@@ -29,13 +29,21 @@ export const typescriptServerStrategy: FrameworkServerStrategy = {
 		const state = await runHotUpdatePrologue(ctx, deps);
 		if (!state) return;
 		const { root, metrics, emitSummary } = state;
-		const { moduleGraph, verbose } = deps;
+		const { moduleGraph, verbose, wss, isSocketClientOpen } = deps;
 		const { file } = ctx;
 		metrics.tAfterFramework = Date.now();
 		try {
 			const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
 			if (verbose) console.log('[hmr-ws][ts] app file hot update', { file, rel });
 			moduleGraph.upsert(rel, '', [], { emitDeltaOnInsert: true });
+			// For this flavor the ns:hmr-delta broadcast IS the update delivery —
+			// count open sockets so the always-on summary line reflects reality
+			// instead of reporting recipients=0 for a delivered update.
+			try {
+				wss?.clients?.forEach((client: any) => {
+					if (isSocketClientOpen(client)) metrics.recipients += 1;
+				});
+			} catch {}
 		} catch (e) {
 			if (verbose) console.warn('[hmr-ws][ts] failed to emit delta for', file, e);
 		}

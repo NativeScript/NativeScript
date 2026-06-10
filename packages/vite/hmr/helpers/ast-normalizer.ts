@@ -39,7 +39,7 @@ function reportUnexpectedCoreSpec(kind: string, spec: string): void {
 // - Output: JS with a single default import from '/ns/rt' and one destructure for any underscored helpers used
 // - Navigation helpers are stripped from any /ns/rt named imports
 // - A marker comment '/* [ast-normalized] */' is injected at the top
-export function astNormalizeModuleImportsAndHelpers(code: string): string {
+export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { underscoreTextFallback?: boolean }): string {
 	try {
 		// Pre-scan for underscored helper usages to inform aliasing during import rewrite.
 		// The regex captures the part AFTER the leading `_`, so `_arguments` → `arguments`.
@@ -47,7 +47,10 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 		const needAlias = new Set<string>();
 		try {
 			const _STRICT_PRE = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
-			const re = /(^|[^.\w$])_([A-Za-z]\w*)\b/g;
+			// `(?![\w$])` (not `\b`) terminates the identifier: `\w` excludes `$`, so a
+			// plain `\b` would match the PREFIX `_Symbol` inside Babel temp vars like
+			// `_Symbol$toStringTag` and alias the global `Symbol` from /ns/rt.
+			const re = /(^|[^.\w$])_([A-Za-z]\w*)(?![\w$])/g;
 			let m: RegExpExecArray | null;
 			while ((m = re.exec(code))) {
 				const base = m[2].replace(/^_+/, '');
@@ -418,16 +421,30 @@ export function astNormalizeModuleImportsAndHelpers(code: string): string {
 		// NOTE: this scan captures m[2] (the part AFTER the leading underscore), so a source-level
 		// `_arguments` becomes `arguments` in the set — which is a strict-mode reserved word.
 		// Filter those out here to avoid generating invalid destructures like `const { arguments }`.
-		if (!underscoreUses.size) {
+		//
+		// The text scan has NO scope information, so it is inherently unsound on
+		// arbitrary code (it has misread core internals like `ClassInfo._getBase`
+		// and Babel temp vars as Vue template helpers). It exists for compiled Vue
+		// template output (`_toDisplayString`, …) when the AST pass comes up empty
+		// — callers outside the Vue pipeline pass `underscoreTextFallback: false`.
+		if (opts?.underscoreTextFallback !== false && !underscoreUses.size) {
 			try {
 				const _STRICT_RESERVED_FB = new Set(['arguments', 'eval', 'this', 'super', 'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class', 'const', 'enum', 'export', 'extends', 'import', 'let', 'static', 'yield', 'await', 'implements', 'interface', 'package', 'private', 'protected', 'public']);
-				const re = /(^|[^.\w$])_([A-Za-z]\w*)\b/g;
+				// `(?![\w$])` (not `\b`): see the pre-scan above — `\b` matches the prefix
+				// `_Symbol` inside Babel temp vars like `_Symbol$toStringTag`, which would
+				// shadow the global `Symbol` with an undefined /ns/rt destructure.
+				const re = /(^|[^.\w$])_([A-Za-z]\w*)(?![\w$])/g;
 				let m: RegExpExecArray | null;
 				while ((m = re.exec(code))) {
 					const name = m[2];
 					if (_STRICT_RESERVED_FB.has(name)) continue;
 					if (/(^|_)(ctx|cache)$/.test(name)) continue;
 					if (/^(hoisted_|component_|directive_|sfc_main|ns_sfc__|ns_sfc|sfc)/.test(name)) continue;
+					// The AST visitor skips identifiers with real bindings; this text
+					// fallback has no scope info, so at least skip module-level declarations.
+					try {
+						if (new RegExp(`(^|\\n)\\s*(?:const|let|var|function|class)\\s+_${name}\\b`).test(code)) continue;
+					} catch {}
 					underscoreUses.add(name);
 				}
 			} catch {}

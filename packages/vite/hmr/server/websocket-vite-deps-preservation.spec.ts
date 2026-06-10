@@ -88,22 +88,26 @@ describe('processCodeForDevice — .vite/deps/ vendor import preservation', () =
 			expect(out).not.toMatch(/\.vite\/deps\//);
 		});
 
-		it('strips non-vendor .vite/deps/ imports', () => {
+		it('falls back to a bare specifier for non-vendor .vite/deps/ imports', () => {
 			const input = `import { foo } from "/node_modules/.vite/deps/unknown-pkg.js?v=abc";\nexport const x = foo;`;
 			const out = run(input);
-			// Non-vendor should still be stripped
-			expect(out).not.toMatch(/unknown-pkg/);
+			// Vendor-manifest misses (e.g. emoji-regex, a transitive dep of core)
+			// must NOT be silently dropped — that leaves the consumer with an
+			// undefined binding at runtime. The import is preserved as a bare
+			// specifier so the later rewriteImports pass can route it through
+			// /ns/m/node_modules/<pkg>.
+			expect(out).toMatch(/import\s+\{[^}]*foo[^}]*\}\s+from\s+["']unknown-pkg["']/);
 			expect(out).not.toMatch(/\.vite\/deps\//);
 		});
 
-		it('handles multiple imports: vendor rewritten, non-vendor stripped', () => {
+		it('handles multiple imports: vendor rewritten, non-vendor bare fallback', () => {
 			const input = [`import { createSignal } from "/node_modules/.vite/deps/solid-js.js?v=abc";`, `import { foo } from "/node_modules/.vite/deps/unknown-lib.js?v=def";`, `import { getRouteApi } from "/node_modules/.vite/deps/@tanstack_solid-router.js?v=ghi";`, `export const route = getRouteApi("/posts");`, `export const s = createSignal(0);`].join('\n');
 			const out = run(input);
 			// Vendor imports rewritten to bare specifiers
 			expect(out).toMatch(/from\s+["']solid-js["']/);
 			expect(out).toMatch(/from\s+["']@tanstack\/solid-router["']/);
-			// Non-vendor stripped
-			expect(out).not.toMatch(/unknown-lib/);
+			// Non-vendor falls back to a bare specifier (routed over HTTP later)
+			expect(out).toMatch(/from\s+["']unknown-lib["']/);
 			// No .vite/deps/ paths remain
 			expect(out).not.toMatch(/\.vite\/deps\//);
 		});

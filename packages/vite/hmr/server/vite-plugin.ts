@@ -5,6 +5,7 @@ import path from 'path';
 import { pathToFileURL } from 'url';
 import { NS_DEFAULT_DEV_FEATURE_FLAGS, NS_DEFAULT_HOST_MODULES, type NsDevPlatform, type NsDevSessionDescriptor } from '../shared/runtime/browser-runtime-contract.js';
 import { resolveDeviceReachableHost } from '../../helpers/dev-host.js';
+import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
 const require = createRequire(import.meta.url);
 
 const VIRTUAL_ID = 'virtual:ns-hmr-client';
@@ -35,6 +36,18 @@ export function computeClientImportSpecifier(options: { projectRoot: string; cli
 			const lastNm = fsPosix.lastIndexOf('/node_modules/');
 			if (lastNm !== -1) {
 				return `/ns/m${fsPosix.slice(lastNm)}`;
+			}
+
+			// Monorepo dist symlink (e.g. `"@nativescript/vite": "file:../../dist/packages/vite"`):
+			// require.resolve follows the node_modules symlink to its REAL path under
+			// the workspace root, which contains no `/node_modules/` segment. The
+			// `../../dist/...` relative form below would resolve on-device to
+			// `${origin}/dist/...`, which Vite's middleware 404s (outside root, not
+			// /@fs/). Route through /ns/m with a workspace-root-relative path so the
+			// fetch goes through the same served-module pipeline as everything else.
+			const wsRoot = getMonorepoWorkspaceRoot(projectRoot)?.replace(/\\/g, '/');
+			if (wsRoot && fsPosix.startsWith(wsRoot + '/')) {
+				return `/ns/m/${fsPosix.slice(wsRoot.length + 1)}`;
 			}
 
 			const normalizedRel = (relPosix.startsWith('.') ? relPosix : `/${relPosix}`).replace(/\/+/g, '/');

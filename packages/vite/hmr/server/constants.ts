@@ -29,7 +29,13 @@ export const VUE_FILE_PATTERN = /\.vue(?:\?[^"']*)?$/;
 export const VUE_FILE_IMPORT = /((?:^|\n)\s*import\s+[^'";]*?\s+from\s+["'])([^"']+\.vue(?:\?[^"']*)?)(["'];?)/g;
 
 // Vite/HMR noise cleanup
-export const VITE_CLIENT_IMPORT = /(?:^|\n)\s*import\s+['"](?:\/@vite\/client|@vite\/client)['"];?/g;
+// Matches BOTH the side-effect form (`import "/@vite/client";`) and the named
+// form Vite 8 emits (`import { injectQuery as __vite__injectQuery } from "/@vite/client";`).
+// NOT line-anchored: Vite 8 concatenates injected imports onto the module's
+// original first line, so an anchored pattern either misses or over-deletes.
+// Group 1 (the preceding `^`/newline/`;` boundary) MUST be preserved by
+// replacements (`replace(..., '$1')`) so the prior statement keeps its terminator.
+export const VITE_CLIENT_IMPORT = /(^|[\n;])\s*import\s+(?:[\w$]+\s*,\s*)?(?:\{[^}]*\}\s+from\s+|[\w$]+\s+from\s+|\*\s+as\s+[\w$]+\s+from\s+)?['"](?:\/@vite\/client|@vite\/client)['"];?/g;
 // Strip Vite's injected `import.meta.hot = __vite__createHotContext(...)` assignment.
 // Important: it may appear mid-line after other tokens/spaces in sanitized HTTP output,
 // so we cannot rely on it starting at BOL.

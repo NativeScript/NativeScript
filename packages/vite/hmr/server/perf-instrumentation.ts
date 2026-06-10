@@ -200,7 +200,7 @@ export function formatPopulateInitialGraphSummary(input: PopulateInitialGraphSum
 	return `[hmr-ws][populate] modules=${Math.max(0, Math.floor(input.moduleCount))} ms=${Math.max(0, Math.floor(input.durationMs))} graphVersion=${Math.max(0, Math.floor(input.graphVersion))} bumpedVersion=${input.bumpedVersion ? 'yes' : 'no'}`;
 }
 
-export type HmrUpdateKind = 'ts' | 'html' | 'css' | 'vue' | 'tsx' | 'jsx' | 'js' | 'mjs' | 'unknown';
+export type HmrUpdateKind = 'ts' | 'html' | 'css' | 'vue' | 'tsx' | 'jsx' | 'js' | 'mjs' | 'xml' | 'unknown';
 
 /**
  * Classify a file's HMR update kind by extension. Used by the server-side
@@ -215,6 +215,7 @@ export function classifyHmrUpdateKind(file: string): HmrUpdateKind {
 	if (lower.endsWith('.tsx')) return 'tsx';
 	if (lower.endsWith('.jsx')) return 'jsx';
 	if (lower.endsWith('.html') || lower.endsWith('.htm')) return 'html';
+	if (lower.endsWith('.xml')) return 'xml';
 	if (lower.endsWith('.css') || lower.endsWith('.scss') || lower.endsWith('.sass') || lower.endsWith('.less')) return 'css';
 	if (lower.endsWith('.vue')) return 'vue';
 	if (lower.endsWith('.mjs')) return 'mjs';

@@ -12,6 +12,46 @@ import { collectTopLevelImportRecords } from './websocket-served-module-helpers.
 const VENDOR_PACKAGES = /^[A-Za-z@][^:\/\s]*$/;
 const SKIP_PATTERNS = /^(?:data:|blob:|node:|virtual:|vite:|\0|\/@@?id|\/__vite|__vite|__x00__)/;
 
+// One warning per dep so vendor-manifest misses are visible without spamming
+// the console on every served module.
+const warnedVendorMisses = new Set<string>();
+
+/**
+ * Vendor-manifest miss fallback — e.g. `emoji-regex`, a transitive dep of
+ * @nativescript/core that is never part of the vendor bundle. Dropping the
+ * import leaves the consumer with an undefined binding at runtime
+ * ("emojiRegexModule is not defined"), so instead derive a bare specifier from
+ * Vite's flattened prebundle id; the later rewriteImports pass routes it to
+ * /ns/m/node_modules/<pkg> and the package is served over HTTP like any other
+ * node_modules subpath.
+ *
+ * Vite's flattenId encodes `/` as `_`, so the decoding is ambiguous (package
+ * names may legitimately contain `_`). For scoped ids the first `_` is the
+ * scope slash. Each candidate is verified against node_modules on disk before
+ * being committed; if nothing resolves, the first candidate is used anyway —
+ * a loud 404 on device beats a silent undefined binding.
+ */
+function bareSpecifierFromFlatDepPath(depPath: string): string {
+	const flat = depPath.split('?')[0].replace(/\.m?js$/, '');
+	const candidates = flat.startsWith('@') ? [flat.replace('_', '/'), flat] : [flat];
+	let resolved: string | null = null;
+	for (const candidate of candidates) {
+		try {
+			const { packageName } = resolveNodeModulesPackageBoundary(candidate, getProjectRootPath());
+			if (packageName) {
+				resolved = candidate;
+				break;
+			}
+		} catch {}
+	}
+	const bareSpecifier = resolved || candidates[0];
+	if (!warnedVendorMisses.has(depPath)) {
+		warnedVendorMisses.add(depPath);
+		console.warn(`[ns-vite] vendor-manifest miss: prebundled dep '${depPath}' is not in the vendor bundle — serving '${bareSpecifier}' over HTTP via /ns/m/node_modules/${resolved ? '' : ' (could not verify the package on disk; the specifier is a best-effort decode of the flattened id)'}.`);
+	}
+	return bareSpecifier;
+}
+
 function rewriteVitePrebundleImportsForDevice(code: string, preserveVendorImports: boolean): string {
 	const imports = collectTopLevelImportRecords(code);
 	if (!imports.length) {
@@ -30,7 +70,10 @@ function rewriteVitePrebundleImportsForDevice(code: string, preserveVendorImport
 		let replacement = '';
 		if (preserveVendorImports) {
 			const canonical = resolveVendorFromCandidate(`.vite/deps/${depPath}`);
-			const bareSpecifier = canonical || viteDepsPathToBareSpecifier(depPath);
+			let bareSpecifier = canonical || viteDepsPathToBareSpecifier(depPath);
+			if (!bareSpecifier) {
+				bareSpecifier = bareSpecifierFromFlatDepPath(depPath);
+			}
 			if (bareSpecifier) {
 				replacement = imp.text.replace(source, bareSpecifier);
 			}

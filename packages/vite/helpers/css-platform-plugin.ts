@@ -10,33 +10,51 @@ import { existsSync, readFileSync } from 'fs';
  * Also rewrites relative @import specifiers inside CSS files to platform variants
  * when the generic file does not exist but a platform suffixed version does.
  */
+/**
+ * Rewrites relative `@import "foo.css"` specifiers to their platform-suffixed
+ * variants (`foo.android.css` / `foo.ios.css`) when the generic file does not
+ * exist on disk but the platform one does. Returns the rewritten code, or
+ * `null` when nothing changed.
+ *
+ * Exported so code paths that feed raw CSS straight into Vite's
+ * `preprocessCSS()` (e.g. the `virtual:ns-app-css` module in `main-entry.ts`)
+ * can apply the same rewrite — those paths bypass the plugin transform chain,
+ * and Vite's internal postcss-import resolver never consults plugin
+ * `resolveId` hooks, so without this pre-rewrite they fail with
+ * "Unable to resolve @import".
+ */
+export function rewritePlatformCssImports(code: string, dir: string, platform: string): string | null {
+	if (!code.includes('@import')) return null;
+	const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
+	let changed = false;
+	// Support @import "foo.css"; @import 'foo.css'; @import url("foo.css"); preserving rest
+	const importRegex = /@import\s+(?:url\()?['"]([^'"()]+\.css)['"]\)?/g;
+	const newCode = code.replace(importRegex, (full, spec) => {
+		if (/^(https?:|data:)/.test(spec) || spec.includes('nativescript-theme-core') || spec.endsWith(platformExt)) return full;
+		if (!(spec.startsWith('.') || spec.startsWith('/'))) return full;
+		const abs = path.isAbsolute(spec) ? spec : path.resolve(dir, spec);
+		if (existsSync(abs)) return full;
+		const alt = abs.replace(/\.css$/, platformExt);
+		if (existsSync(alt)) {
+			let rel = path.relative(dir, alt).replace(/\\/g, '/');
+			if (!rel.startsWith('.')) rel = './' + rel;
+			changed = true;
+			return full.replace(spec, rel);
+		}
+		return full;
+	});
+	return changed ? newCode : null;
+}
+
 export function createPlatformCssPlugin(platform: string): Plugin {
 	return {
 		name: 'ns-css-platform',
 		enforce: 'pre',
 		transform(code: string, id: string) {
 			const baseId = id.split('?')[0];
-			if (!baseId.endsWith('.css') || !code.includes('@import')) return null;
-			const dir = path.dirname(baseId);
-			const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
-			let changed = false;
-			// Support @import "foo.css"; @import 'foo.css'; @import url("foo.css"); preserving rest
-			const importRegex = /@import\s+(?:url\()?['"]([^'"()]+\.css)['"]\)?/g;
-			const newCode = code.replace(importRegex, (full, spec) => {
-				if (/^(https?:|data:)/.test(spec) || spec.includes('nativescript-theme-core') || spec.endsWith(platformExt)) return full;
-				if (!(spec.startsWith('.') || spec.startsWith('/'))) return full;
-				const abs = path.isAbsolute(spec) ? spec : path.resolve(dir, spec);
-				if (existsSync(abs)) return full;
-				const alt = abs.replace(/\.css$/, platformExt);
-				if (existsSync(alt)) {
-					let rel = path.relative(dir, alt).replace(/\\/g, '/');
-					if (!rel.startsWith('.')) rel = './' + rel;
-					changed = true;
-					return full.replace(spec, rel);
-				}
-				return full;
-			});
-			return changed ? { code: newCode, map: null } : null;
+			if (!baseId.endsWith('.css')) return null;
+			const newCode = rewritePlatformCssImports(code, path.dirname(baseId), platform);
+			return newCode ? { code: newCode, map: null } : null;
 		},
 		resolveId(id: string, importer: string | undefined) {
 			if (!id || !importer) return null;

@@ -10,6 +10,8 @@ import { toStaticImportSpecifier } from './import-specifier.js';
 import { buildCoreUrl } from './ns-core-url.js';
 import { resolveDeviceReachableOrigin } from './dev-host.js';
 import { setAppCssState } from './app-css-state.js';
+import { rewritePlatformCssImports } from './css-platform-plugin.js';
+import { buildDefineSeedStatements, getRuntimeDefineValues } from './global-defines.js';
 // Switched to runtime modules to avoid fragile string injection and enable TS checks
 const projectRoot = getProjectRootPath();
 const appRootDir = getProjectAppPath();
@@ -130,7 +132,10 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 
 			const refreshDeps = async (): Promise<void> => {
 				try {
-					const code = fs.readFileSync(appCssPath, 'utf-8');
+					const rawCode = fs.readFileSync(appCssPath, 'utf-8');
+					// Same platform @import rewrite as the virtual:ns-app-css load hook —
+					// this raw read also bypasses the ns-css-platform transform.
+					const code = rewritePlatformCssImports(rawCode, path.dirname(appCssPath), opts.platform) ?? rawCode;
 					const result = await preprocessCSS(code, appCssPath, server.config);
 					server.watcher.add(appCssPath);
 					const next = new Set<string>([normalizedAppCssPath]);
@@ -267,7 +272,13 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//     raw-text fallback for that case.
 			if (id === APP_CSS_RESOLVED) {
 				const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
-				const code = fs.readFileSync(appCssPath, 'utf-8');
+				const rawCode = fs.readFileSync(appCssPath, 'utf-8');
+				// Rewrite platform-suffixed @imports (foo.css -> foo.ios.css) BEFORE
+				// preprocessCSS: this raw read bypasses the plugin transform chain, so
+				// the ns-css-platform plugin never sees this content, and Vite's
+				// internal postcss-import (which runs ahead of any user postcss
+				// plugins) can't resolve the generic specifier on its own.
+				const code = rewritePlatformCssImports(rawCode, path.dirname(appCssPath), opts.platform) ?? rawCode;
 				const result = await preprocessCSS(code, appCssPath, resolvedConfig);
 				const ast = parseCssToAst(result.code, { silent: true });
 				// `css` emits `position` metadata on every AST node. NS doesn't
@@ -304,16 +315,12 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			// that transitively reaches the user's app code. See the
 			// DEFINES_SEED_VIRTUAL_ID comment at the top of this file.
 			if (id === DEFINES_SEED_RESOLVED) {
-				const isApple = opts.platform === 'ios' || opts.platform === 'visionos';
+				// Canonical values shared with Vite's `define` config and the dev
+				// server's per-module shims — see getRuntimeDefineValues for why all
+				// emitters must derive from the one source.
+				const seedValues = getRuntimeDefineValues({ platform: opts.platform, isDevMode: opts.isDevMode, verbose: opts.verbose });
 				const seedLines = [
-					`globalThis.__DEV__ = ${opts.isDevMode ? 'true' : 'false'};`,
-					`globalThis.__ANDROID__ = ${opts.platform === 'android' ? 'true' : 'false'};`,
-					`globalThis.__IOS__ = ${opts.platform === 'ios' ? 'true' : 'false'};`,
-					`globalThis.__VISIONOS__ = ${opts.platform === 'visionos' ? 'true' : 'false'};`,
-					`globalThis.__APPLE__ = ${isApple ? 'true' : 'false'};`,
-					'globalThis.__COMMONJS__ = false;',
-					'globalThis.__NS_WEBPACK__ = false;',
-					`globalThis.__NS_ENV_VERBOSE__ = ${opts.verbose ? 'true' : 'false'};`,
+					...buildDefineSeedStatements(seedValues),
 					// Seed the runtime flavor so the HMR client (which is loaded from
 					// node_modules and therefore NOT processed by Vite's `define`
 					// substitution) can resolve `TARGET_FLAVOR` reliably. Without
@@ -324,10 +331,6 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 					// `processQueue` (Solid component boundary discovery, route-loader
 					// patching, overlay stage transitions) silently never fires.
 					`globalThis.__NS_TARGET_FLAVOR__ = ${JSON.stringify(flavor)};`,
-					'globalThis.__UI_USE_XML_PARSER__ = true;',
-					'globalThis.__UI_USE_EXTERNAL_RENDERER__ = false;',
-					"globalThis.__CSS_PARSER__ = 'css-tree';",
-					'globalThis.__TEST__ = false;',
 				];
 				return {
 					code: seedLines.join('\n') + '\n',
@@ -544,6 +547,17 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			imports += `import ${JSON.stringify(coreSpec('bundle-entry-points'))};\n`;
 			if (opts.verbose) {
 				imports += `console.info('[ns-entry] bundle-entry-points loaded');\n`;
+			}
+			// XML-driven flavors: register @nativescript/core/ui + element nicknames
+			// with the bundler module registry, import the bundler context, and apply
+			// View prototype guards. Provided as a virtual module by
+			// createUiRegistrationPlugin (wired in typescript.ts / javascript.ts) —
+			// imported HERE, right after bundle-entry-points, instead of being
+			// string-injected into this generated entry by a marker-matching
+			// transform (the marker drifted once and silently broke all XML builds
+			// with "Module 'Frame' not found").
+			if (flavor === 'typescript' || flavor === 'javascript') {
+				imports += "import 'virtual:ns-ui-registration';\n";
 			}
 			if (flavor === 'typescript') {
 				// Statically import bundler context synchronously before app code

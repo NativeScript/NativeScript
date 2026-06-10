@@ -11,7 +11,7 @@ import { buildPiniaVendorShim, buildVueVendorShim } from './vendor-bare-module-s
 import { getNumericServeVersionTag, rewriteNsMImportPathForHmr } from './websocket-ns-m-paths.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { filterExistingNodeModulesTransformCandidates, getBlockedDeviceNodeModulesReason, resolveCandidateFilePath, stripDecoratedServePrefixes, tryReadRawExplicitJavaScriptModule } from './websocket-module-specifiers.js';
-import { assertNoOptimizedArtifacts, buildBootProgressSnippet, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
+import { assertNoOptimizedArtifacts, buildBootProgressSnippet, classifyServedModule, dedupeRtNamedImportsAgainstDestructures, deduplicateLinkerImports, ensureDestructureCoreImports, ensureGuardPlainDynamicImports, ensureVariableDynamicImportHelper, ensureVersionedRtImports, expandStarExports, hoistTopLevelStaticImports, MODULE_IMPORT_ANALYSIS_PLUGINS, wrapCommonJsModuleForDevice } from './websocket-served-module-helpers.js';
 import { cleanCode, collectImportDependencies, processCodeForDevice, rewriteImports } from './websocket-device-transform.js';
 import { REQUIRE_GUARD_SNIPPET } from './require-guard.js';
 import { getServerOrigin } from './server-origin.js';
@@ -427,7 +427,11 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// Prepend guard to capture any URL-based require attempts
 			code = REQUIRE_GUARD_SNIPPET + code;
 			code = cleanCode(code, strategy);
-			const isNodeMod = /(?:^|\/)node_modules\//.test(resolvedCandidate || spec || '');
+			// Library code (node_modules, monorepo core source, dist vite package)
+			// must skip the app-source passes inside processCodeForDevice (AST
+			// normalization, /ns/rt helper-alias injection). One classification
+			// point — see classifyServedModule for the full case list.
+			const isNodeMod = classifyServedModule(resolvedCandidate || spec) === 'library';
 			code = processCodeForDevice(code, false, true, isNodeMod, resolvedCandidate || spec);
 			// Solid HMR: The NativeScript iOS/Android runtime provides import.meta.hot
 			// natively (via InitializeImportMetaHot in HMRSupport.mm) with C++-backed

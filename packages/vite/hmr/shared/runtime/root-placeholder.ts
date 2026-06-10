@@ -214,6 +214,20 @@ function scheduleBootPlaceholderFinalize(reason?: string, verbose?: boolean): vo
 		}
 		attempts += 1;
 		if (Date.now() - startedAt >= maxWaitMs) {
+			// Always-on: a dev session that never commits a real root used to be
+			// an INFINITE silent spinner — the most common cause (a swallowed
+			// XML/Builder error during Application.run) printed one console line
+			// and nothing else. Flip the boot overlay to its error stage with the
+			// last captured builder error so the failure is visible on-device.
+			// Core's SourceErrorFormat stashes that error on
+			// `globalThis.__NS_LAST_XML_ERROR__` for exactly this hand-off.
+			try {
+				const lastXmlError = g.__NS_LAST_XML_ERROR__;
+				const hint = lastXmlError && lastXmlError.message ? `Last UI build error — ${lastXmlError.uri}: ${lastXmlError.message}` : 'No error was captured; check the device console for the first failure after launch.';
+				setHmrBootStage('error', {
+					detail: `Dev session is active but the app root never replaced the boot placeholder (waited ${Math.round((Date.now() - startedAt) / 1000)}s). ${hint}`,
+				});
+			} catch {}
 			// Verbose-gated: enable `verbose` in the HMR config to surface stall diagnostics.
 			try {
 				if (verbose) {
