@@ -16,26 +16,23 @@ export class SplitView extends SplitViewBase {
 	inspectorButtonAttached = false;
 	inspectorShowing = false;
 	primaryShowing = true;
-	nativeViewProtected: Windows.UI.Xaml.Controls.Grid;
-	private _grid: Windows.UI.Xaml.Controls.Grid;
-	// role -> container/native element and role -> child view
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.Grid;
+	private _grid: Microsoft.UI.Xaml.Controls.Grid;
 	private _containers = new Map<SplitRole, any>();
 	private _children = new Map<SplitRole, View>();
+	private _primaryDelegate: any = null;
+	private _inspectorDelegate: any = null;
 
-	constructor() {
-		super();
-		this._grid = new Windows.UI.Xaml.Controls.Grid();
-		try { this._grid.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Stretch; } catch (_e) {}
-		try { this._grid.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Stretch; } catch (_e) {}
-	}
-
-	get windows(): Windows.UI.Xaml.Controls.Grid {
+	get windows(): Microsoft.UI.Xaml.Controls.Grid {
 		return this._grid;
 	}
 
 	public createNativeView() {
+		this._grid = new Microsoft.UI.Xaml.Controls.Grid();
+		this._grid.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch;
+		this._grid.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 		SplitView.instance = this;
-		try { this.nativeViewProtected = this._grid; } catch (_e) {}
+		this.nativeViewProtected = this._grid;
 		return this._grid;
 	}
 
@@ -45,76 +42,49 @@ export class SplitView extends SplitViewBase {
 	}
 
 	public disposeNativeView(): void {
-		try {
-			if (this._grid) {
-				try { (this._grid as any).ColumnDefinitions.Clear(); } catch (_e) {}
-				try { (this._grid as any).Children.Clear(); } catch (_e) {}
-			}
-		} catch (_e) {}
+		if (this._grid) {
+			this._grid.ColumnDefinitions.Clear();
+			this._grid.Children.Clear();
+		}
 
 		this._containers.clear();
 		this._children.clear();
+		this._primaryDelegate = null;
+		this._inspectorDelegate = null;
 		SplitView.instance = null;
 		this._grid = null;
 		super.disposeNativeView && super.disposeNativeView();
 	}
 
 	public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
-		// Call base implementation so the native/logic parent relationships and layout
-		// bookkeeping are performed. This ensures measurement and layout work correctly.
+		// Call base so native/logic parent relationships and layout bookkeeping are set up correctly.
 		let res = true;
 		try { res = super._addViewToNativeVisualTree(child, atIndex); } catch (_e) { res = true; }
 
 		try {
-			const role = this._resolveRoleForChild(child, atIndex);
-			// Register logical child mapping so consumers can find it
+			const role = this._resolveRoleForChild(child as SplitViewBase, atIndex);
 			this._children.set(role, child);
 
-			const nativeChild = (child as any).nativeViewProtected as any;
-			// Store native child as the container for this role (avoid wrapping/reparenting)
-			let container = this._containers.get(role);
+			const nativeChild = (child as any).nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
+			let container = this._containers.get(role) as Microsoft.UI.Xaml.FrameworkElement;
 			if (!container && nativeChild) {
 				// nativeChild was appended to this._grid by super; keep it there and track it
-				try { nativeChild.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Stretch; } catch (_e) {}
-				try { nativeChild.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Stretch; } catch (_e) {}
+				nativeChild.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch;
+				nativeChild.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
 				this._containers.set(role, nativeChild);
 				container = nativeChild;
-			}
-
-			// Lightweight debug: walk the native child's subtree to locate ListView-like elements
-			if (nativeChild) {
-				try {
-					const walk = (node: any, depth = 0) => {
-						if (!node || depth > 6) return;
-						try {
-							const ctor = node && node.constructor ? node.constructor.name : null;
-							try { console.log('[SplitView] native node', depth, ctor || (node as any).GetType?.Name || 'unknown'); } catch (_e) {}
-						} catch (_e) {}
-						try {
-							const children = node.Children as any;
-							if (children && typeof children.Size === 'number') {
-								for (let i = 0; i < (children.Size ?? 0); i++) {
-									try { walk(children.GetAt(i), depth + 1); } catch (_e) {}
-								}
-							} else {
-								// If leaf, check for Items/ItemsSource
-								try { if ((node as any).Items) { console.log('[SplitView] found Items with Size=', (node as any).Items?.Size ?? 'unknown'); } } catch (_e) {}
-								try { if ((node as any).ItemsSource) { console.log('[SplitView] found ItemsSource'); } } catch (_e) {}
-							}
-						} catch (_e) {}
-					};
-					walk(nativeChild);
-				} catch (_e) {}
 			}
 
 			this._syncColumns();
 
 			// Ensure native layout pass occurs so children (ListView, Pages) can measure and render.
-			try { Windows.UI.Xaml.Controls.Grid.SetRow(container, 0); } catch (_e) {}
-			try { (container as any).InvalidateMeasure && (container as any).InvalidateMeasure(); } catch (_e) {}
-			try { (container as any).UpdateLayout && (container as any).UpdateLayout(); } catch (_e) {}
-			try { (this._grid as any).InvalidateMeasure && (this._grid as any).InvalidateMeasure(); } catch (_e) {}
-			try { (this._grid as any).UpdateLayout && (this._grid as any).UpdateLayout(); } catch (_e) {}
+			if (container) {
+				Microsoft.UI.Xaml.Controls.Grid.SetRow(container, 0);
+				container.InvalidateMeasure();
+				container.UpdateLayout();
+			}
+			this._grid.InvalidateMeasure();
+			this._grid.UpdateLayout();
 			this._invalidateAllChildLayouts();
 		} catch (_e) {}
 
@@ -127,10 +97,8 @@ export class SplitView extends SplitViewBase {
 			if (role) {
 				const container = this._containers.get(role);
 				if (container) {
-					// Remove the container element (could be a native child or a wrapper grid)
-					try { (this._grid as any).Children.Remove(container); } catch (_e) {}
+					(this._grid as any).Children.Remove(container);
 				}
-				// Cleanup any attached buttons/handlers on the removed child
 				try {
 					const childView: any = child as any;
 					const cmdBar = this._findCommandBarFor(childView);
@@ -197,41 +165,34 @@ export class SplitView extends SplitViewBase {
 	}
 
 	public _invalidateAllChildLayouts(): void {
-		// Wait a short time to allow native transitions to finish
-		setTimeout(() => this.invalidateChildLayouts(), 350);
+		setTimeout(() => this.invalidateChildLayouts(), 0);
 	}
 
 	invalidateChildLayouts(delay: number = 0): void {
 		const refreshLayouts = () => {
 			for (const [role, child] of this._children.entries()) {
 				try { child.requestLayout && child.requestLayout(); } catch (_e) {}
-				try {
-					const native = (child as any).nativeViewProtected as any;
-					if (native) {
-						try { native.InvalidateMeasure && native.InvalidateMeasure(); } catch (_e) {}
-						try { native.UpdateLayout && native.UpdateLayout(); } catch (_e) {}
-					}
-				} catch (_e) {}
+				const native = (child as any).nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
+				if (native) {
+					native.InvalidateMeasure();
+					native.UpdateLayout();
+				}
 
 				if ((child as FrameBase)?.currentPage?.requestLayout) {
 					try { (child as FrameBase).currentPage.requestLayout(); } catch (_e) {}
-					try {
-						const np = (child as FrameBase).currentPage.nativeViewProtected as any;
-						if (np) {
-							try { np.InvalidateMeasure && np.InvalidateMeasure(); } catch (_e) {}
-							try { np.UpdateLayout && np.UpdateLayout(); } catch (_e) {}
-						}
-					} catch (_e) {}
+					const np = (child as FrameBase).currentPage.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
+					if (np) {
+						np.InvalidateMeasure();
+						np.UpdateLayout();
+					}
 				}
 			}
 
 			try { this.requestLayout(); } catch (_e) {}
-			try {
-				if (this._grid) {
-					try { (this._grid as any).InvalidateMeasure && (this._grid as any).InvalidateMeasure(); } catch (_e) {}
-					try { (this._grid as any).UpdateLayout && (this._grid as any).UpdateLayout(); } catch (_e) {}
-				}
-			} catch (_e) {}
+			if (this._grid) {
+				this._grid.InvalidateMeasure();
+				this._grid.UpdateLayout();
+			}
 		};
 
 		if (delay > 0) {
@@ -259,11 +220,8 @@ export class SplitView extends SplitViewBase {
 
 		try {
 			const ORDER: SplitRole[] = ['primary', 'secondary', 'supplementary', 'inspector'];
-			try { console.log('[SplitView] _syncColumns start'); } catch (_e) {}
 			const activeRoles = ORDER.filter((r) => this._children.has(r));
-			try { console.log('[SplitView] activeRoles=', activeRoles); } catch (_e) {}
 
-			// Build fractions map
 			const specified = new Map<SplitRole, number>();
 			let sumSpecified = 0;
 			if (activeRoles.indexOf('primary') >= 0 && typeof this.preferredPrimaryColumnWidthFraction === 'number' && this.preferredPrimaryColumnWidthFraction > 0) {
@@ -290,56 +248,39 @@ export class SplitView extends SplitViewBase {
 					fractions.push(unspecifiedCount > 0 ? remaining / unspecifiedCount : 0);
 				}
 			}
-			try { console.log('[SplitView] fractions=', fractions); } catch (_e) {}
 
-			// Create ColumnDefinitions
-			const colDefs: any[] = [];
+			const colDefs: Microsoft.UI.Xaml.Controls.ColumnDefinition[] = [];
 			for (let i = 0; i < fractions.length; i++) {
-				try {
-					const cd = new Windows.UI.Xaml.Controls.ColumnDefinition();
-					// Use star sizing based on fraction weight
-					const weight = fractions[i] > 0 ? fractions[i] : 1;
-					cd.Width = new Windows.UI.Xaml.GridLength(weight, Windows.UI.Xaml.GridUnitType.star);
-					colDefs.push(cd);
-				} catch (_e) {}
+				const cd = new Microsoft.UI.Xaml.Controls.ColumnDefinition();
+				const weight = fractions[i] > 0 ? fractions[i] : 1;
+				cd.Width = Microsoft.UI.Xaml.GridLengthHelper.FromValueAndType(weight, Microsoft.UI.Xaml.GridUnitType.Star);
+				colDefs.push(cd);
 			}
 
-			// Replace native column definitions
-			try { (this._grid as any).ColumnDefinitions.ReplaceAll(colDefs); } catch (_e) {
-				try { (this._grid as any).ColumnDefinitions.Clear(); } catch (_e2) {}
+			try { this._grid.ColumnDefinitions.ReplaceAll(colDefs); } catch (_e) {
+				try { this._grid.ColumnDefinitions.Clear(); } catch (_e2) {}
 				for (const cd of colDefs) {
-					try { (this._grid as any).ColumnDefinitions.Append(cd); } catch (_e3) {}
+					try { this._grid.ColumnDefinitions.Append(cd); } catch (_e3) {}
 				}
 			}
-			try { console.log('[SplitView] applied', colDefs.length, 'ColumnDefinitions'); } catch (_e) {}
 
-			// Ensure containers are in correct columns and present
 			for (let i = 0; i < activeRoles.length; i++) {
 				const role = activeRoles[i];
-				let container = this._containers.get(role);
+				let container = this._containers.get(role) as Microsoft.UI.Xaml.FrameworkElement;
 				if (!container) {
-					container = new Windows.UI.Xaml.Controls.Grid();
-					container.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Stretch;
-					container.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Stretch;
-					this._containers.set(role, container);
-					try { (this._grid as any).Children.Append(container); } catch (_e) {}
+					const grid = new Microsoft.UI.Xaml.Controls.Grid();
+					grid.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch;
+					grid.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
+					this._containers.set(role, grid);
+					container = grid;
+					this._grid.Children.Append(grid);
 				}
-				try { Windows.UI.Xaml.Controls.Grid.SetColumn(container, i); } catch (_e) {}
+				Microsoft.UI.Xaml.Controls.Grid.SetColumn(container, i);
 			}
-			try {
-				for (let i = 0; i < activeRoles.length; i++) {
-					const role = activeRoles[i];
-					const container = this._containers.get(role) as any;
-					const ctorName = container && container.constructor ? (container.constructor.name || (container as any).GetType?.Name) : 'none';
-					const childCount = container ? (container.Children?.Size ?? 0) : 0;
-					try { console.log('[SplitView] container', role, 'ctor=', ctorName, 'children=', childCount); } catch (_e) {}
-				}
-			} catch (_e) {}
 
-			// Remove any containers for roles no longer active
 			for (const [role, container] of Array.from(this._containers.entries())) {
 				if (activeRoles.indexOf(role) === -1) {
-					try { (this._grid as any).Children.Remove(container); } catch (_e) {}
+					try { (this._grid.Children as any).Remove(container); } catch (_e) {}
 					this._containers.delete(role);
 				}
 			}
@@ -352,39 +293,19 @@ export class SplitView extends SplitViewBase {
 		if (!this._grid) return;
 
 		try {
-			// Ensure column visibility according to simple displayMode heuristics
 			const ORDER: SplitRole[] = ['primary', 'secondary', 'supplementary', 'inspector'];
 			const activeRoles = ORDER.filter((r) => this._children.has(r));
 
-			// Update column widths if ColumnDefinitions exist
-			const cols = (this._grid as any).ColumnDefinitions as any;
+			const cols = this._grid.ColumnDefinitions;
 			const colCount = cols?.Size ?? 0;
 			for (let i = 0; i < colCount; i++) {
 				try {
 					const cd = cols.GetAt(i);
-					// keep existing star sizing; nothing to change per-column here since _syncColumns sets fractions
+					// star sizing already set by _syncColumns; nothing to change per-column here
 				} catch (_e) {}
 			}
 
-			// Show/hide specific columns based on explicit show/hide calls by client
-			// (Client code should call showPrimary/hidePrimary etc.)
-			// If preferred fractions are set, we already applied them in _syncColumns
-			// Attach toggle buttons to Frame command bars when possible (methods defined at class scope)
-			try {
-				const primary = this._children.get('primary');
-				if (primary) {
-					this.attachPrimaryButton();
-				}
-				const inspector = this._children.get('inspector');
-				if (inspector) {
-					this.attachInspectorButton();
-				}
-			} catch (_e) {}
-
-			// Show/hide specific columns based on explicit show/hide calls by client
-			// (Client code should call showPrimary/hidePrimary etc.)
-			// If preferred fractions are set, we already applied them in _syncColumns
-			// Attach toggle buttons to Frame command bars when possible
+			// Attach toggle buttons to Frame command bars (show/hide primary/inspector columns).
 			try {
 				const primary = this._children.get('primary');
 				if (primary) {
@@ -399,61 +320,61 @@ export class SplitView extends SplitViewBase {
 	}
 
 	showPrimary(): void {
-		const container = this._containers.get('primary');
+		const container = this._containers.get('primary') as Microsoft.UI.Xaml.UIElement;
 		if (!container) return;
-		try { container.Visibility = Windows.UI.Xaml.Visibility.Visible; } catch (_e) {}
+		container.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 		this.primaryShowing = true;
 		this._invalidateAllChildLayouts();
 	}
 
 	hidePrimary(): void {
-		const container = this._containers.get('primary');
+		const container = this._containers.get('primary') as Microsoft.UI.Xaml.UIElement;
 		if (!container) return;
-		try { container.Visibility = Windows.UI.Xaml.Visibility.Collapsed; } catch (_e) {}
+		container.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 		this.primaryShowing = false;
 		this._invalidateAllChildLayouts();
 	}
 
 	showSecondary(): void {
-		const container = this._containers.get('secondary');
+		const container = this._containers.get('secondary') as Microsoft.UI.Xaml.UIElement;
 		if (!container) return;
-		try { container.Visibility = Windows.UI.Xaml.Visibility.Visible; } catch (_e) {}
+		container.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 		this._invalidateAllChildLayouts();
 	}
 
 	hideSecondary(): void {
-		const container = this._containers.get('secondary');
+		const container = this._containers.get('secondary') as Microsoft.UI.Xaml.UIElement;
 		if (!container) return;
-		try { container.Visibility = Windows.UI.Xaml.Visibility.Collapsed; } catch (_e) {}
+		container.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 		this._invalidateAllChildLayouts();
 	}
 
 	showSupplementary(): void {
-		const container = this._containers.get('supplementary');
+		const container = this._containers.get('supplementary') as Microsoft.UI.Xaml.UIElement;
 		if (!container) return;
-		try { container.Visibility = Windows.UI.Xaml.Visibility.Visible; } catch (_e) {}
+		container.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 		this._invalidateAllChildLayouts();
 	}
 
 	hideSupplementary(): void {
-		const container = this._containers.get('supplementary');
+		const container = this._containers.get('supplementary') as Microsoft.UI.Xaml.UIElement;
 		if (!container) return;
-		try { container.Visibility = Windows.UI.Xaml.Visibility.Collapsed; } catch (_e) {}
+		container.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 		this._invalidateAllChildLayouts();
 	}
 
 	showInspector(): void {
-		const container = this._containers.get('inspector');
+		const container = this._containers.get('inspector') as Microsoft.UI.Xaml.UIElement;
 		if (!container) return;
-		try { container.Visibility = Windows.UI.Xaml.Visibility.Visible; } catch (_e) {}
+		container.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 		this.notifyInspectorChange(true);
 		this._invalidateAllChildLayouts();
 	}
 
 	hideInspector(): void {
-		const container = this._containers.get('inspector');
+		const container = this._containers.get('inspector') as Microsoft.UI.Xaml.UIElement;
 		if (!container) return;
-		try { container.Visibility = Windows.UI.Xaml.Visibility.Collapsed; } catch (_e) {}
+		container.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 		this.notifyInspectorChange(false);
 		this._invalidateAllChildLayouts();
 	}
@@ -513,51 +434,23 @@ export class SplitView extends SplitViewBase {
 			return;
 		}
 
-		// Avoid duplicates
 		if (primaryChild._splitViewPrimaryButton) return;
 
-		try {
-			const btn = new (Windows.UI.Xaml.Controls as any).AppBarButton();
-			try {
-				const fontIcon = new Windows.UI.Xaml.Controls.FontIcon();
-				fontIcon.Glyph = '\u2630';
-				(btn as any).Icon = fontIcon;
-			} catch (_e) {}
+		const btn = new Microsoft.UI.Xaml.Controls.AppBarButton();
+		const fontIcon = new Microsoft.UI.Xaml.Controls.FontIcon();
+		fontIcon.Glyph = '\u2630';
+		btn.Icon = fontIcon;
 
-			const that = new WeakRef(this);
-			let delegate: any = null;
-			try {
-				delegate = new Windows.UI.Xaml.RoutedEventHandler(() => {
-					const owner = that.deref();
-					if (!owner) return;
-					if (owner.primaryShowing) {
-						owner.hidePrimary();
-						owner.primaryShowing = false;
-					} else {
-						owner.showPrimary();
-						owner.primaryShowing = true;
-					}
-				});
-				(btn as any).Click = delegate as never;
-			} catch (_e) {
-				delegate = () => {
-					const owner = that.deref();
-					if (!owner) return;
-					if (owner.primaryShowing) {
-						owner.hidePrimary();
-						owner.primaryShowing = false;
-					} else {
-						owner.showPrimary();
-						owner.primaryShowing = true;
-					}
-				};
-				try { (btn as any).Click = delegate as never; } catch (_e2) { try { if (typeof (btn as any).addEventListener === 'function') (btn as any).addEventListener('click', delegate); } catch (_e3) {} }
-			}
-
-			try { (cmdBar as any).PrimaryCommands.Append(btn); } catch (_e) {}
-			primaryChild._splitViewPrimaryButton = btn;
-			this.primaryButtonAttached = true;
-		} catch (_e) {}
+		const that = new WeakRef(this);
+		this._primaryDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.RoutedEventHandler', () => {
+			const owner = that.deref();
+			if (!owner) return;
+			if (owner.primaryShowing) { owner.hidePrimary(); } else { owner.showPrimary(); }
+		});
+		btn.Click = this._primaryDelegate as never;
+		try { (cmdBar as any).PrimaryCommands.Append(btn); } catch (_e) {}
+		primaryChild._splitViewPrimaryButton = btn;
+		this.primaryButtonAttached = true;
 	}
 
 	private attachInspectorButton(): void {
@@ -579,44 +472,21 @@ export class SplitView extends SplitViewBase {
 
 		if (inspectorChild._splitViewInspectorButton) return;
 
-		try {
-			const btn = new (Windows.UI.Xaml.Controls as any).AppBarButton();
-			try {
-				const fontIcon = new Windows.UI.Xaml.Controls.FontIcon();
-				fontIcon.Glyph = '\u25A3';
-				(btn as any).Icon = fontIcon;
-			} catch (_e) {}
+		const btn = new Microsoft.UI.Xaml.Controls.AppBarButton();
+		const fontIcon = new Microsoft.UI.Xaml.Controls.FontIcon();
+		fontIcon.Glyph = '\u25A3';
+		btn.Icon = fontIcon;
 
-			const that = new WeakRef(this);
-			let delegate: any = null;
-			try {
-				delegate = new Windows.UI.Xaml.RoutedEventHandler(() => {
-					const owner = that.deref();
-					if (!owner) return;
-					if (owner.inspectorShowing) {
-						owner.hideInspector();
-					} else {
-						owner.showInspector();
-					}
-				});
-				(btn as any).Click = delegate as never;
-			} catch (_e) {
-				delegate = () => {
-					const owner = that.deref();
-					if (!owner) return;
-					if (owner.inspectorShowing) {
-						owner.hideInspector();
-					} else {
-						owner.showInspector();
-					}
-				};
-				try { (btn as any).Click = delegate as never; } catch (_e2) { try { if (typeof (btn as any).addEventListener === 'function') (btn as any).addEventListener('click', delegate); } catch (_e3) {} }
-			}
-
-			try { (cmdBar as any).PrimaryCommands.Append(btn); } catch (_e) {}
-			inspectorChild._splitViewInspectorButton = btn;
-			this.inspectorButtonAttached = true;
-		} catch (_e) {}
+		const that = new WeakRef(this);
+		this._inspectorDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.RoutedEventHandler', () => {
+			const owner = that.deref();
+			if (!owner) return;
+			if (owner.inspectorShowing) { owner.hideInspector(); } else { owner.showInspector(); }
+		});
+		btn.Click = this._inspectorDelegate as never;
+		try { (cmdBar as any).PrimaryCommands.Append(btn); } catch (_e) {}
+		inspectorChild._splitViewInspectorButton = btn;
+		this.inspectorButtonAttached = true;
 	}
 
 	[displayModeProperty.setNative](value: string) {
@@ -640,7 +510,7 @@ export class SplitView extends SplitViewBase {
 	}
 
 	[navigationBarTintColorProperty.setNative](value: Color) {
-		// No-op on Windows for now; keep API parity
+		// iOS-only tint color; no-op on Windows.
 	}
 }
 

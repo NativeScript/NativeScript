@@ -10,19 +10,20 @@ import { widthProperty, heightProperty, minWidthProperty, minHeightProperty, mar
 import { layout } from '../../../utils';
 import { unsetValue } from '../properties/property-shared';
 import { Background } from '../../styling/background';
+import { BoxShadow } from '../../styling/box-shadow';
 import { Color } from '../../../color';
 import { hiddenProperty } from '../view-base';
+import { getCurrentWindowBounds, getCurrentWindowContent } from '../../../application/window-helper.windows';
+import { ImageSource } from '../../../image-source';
 type WindowsColor = Color & { windows: Windows.UI.Color, windowsArgb: number };
 
-let _defaultBackground: Windows.UI.Color;
+// Windows.UI.Color is a plain {A,R,G,B} struct — bridge reads fields directly, no WinRT call needed.
+const _defaultBackground: Windows.UI.Color = { A: 0, R: 0, G: 0, B: 0 } as unknown as Windows.UI.Color;
 export function getDefaultBackground() {
-	if (!_defaultBackground) {
-		_defaultBackground = Windows.UI.ColorHelper.FromArgb(0, 0, 0, 0);
-	}
 	return _defaultBackground;
 }
 
-// NOTE: `_nativeBackgroundState` will be initialized on the prototype after the class definition
+// `_nativeBackgroundState` is initialized on the prototype after the class definition
 
 function toXamlLength(value: CoreTypes.PercentLengthType | CoreTypes.LengthType): number {
 	if (!value || value === 'auto') return NaN;
@@ -34,30 +35,38 @@ function toXamlLength(value: CoreTypes.PercentLengthType | CoreTypes.LengthType)
 	return NaN;
 }
 
+// Color struct cache: Windows.UI.Color is {A,R,G,B} bytes — construct directly, no ColorHelper.FromArgb().
+// Cache avoids allocating a new object for every border/shadow color update with the same color.
+const _winColorCache = new Map<number, Windows.UI.Color>();
 function _argbToWinColor(argb: number): Windows.UI.Color {
-	return Windows.UI.ColorHelper.FromArgb((argb >>> 24) & 0xFF, (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF);
+	const cached = _winColorCache.get(argb);
+	if (cached !== undefined) return cached;
+	const c = { A: (argb >>> 24) & 0xFF, R: (argb >> 16) & 0xFF, G: (argb >> 8) & 0xFF, B: argb & 0xFF } as unknown as Windows.UI.Color;
+	if (_winColorCache.size >= 32) _winColorCache.delete(_winColorCache.keys().next().value);
+	_winColorCache.set(argb, c);
+	return c;
 }
 
 
 function _resolveToWinColor(color: any): Windows.UI.Color | null {
 	if (!color) return null;
-	
+
 	if (typeof color.windows !== 'undefined') {
-		try { return color.windows; } catch (_e) {}
+		try { return color.windows; } catch (_e) { }
 	}
-	
+
 	if (typeof color.A === 'number' && typeof color.R === 'number') {
 		return color as Windows.UI.Color;
 	}
-	
+
 	if (typeof color === 'number') {
 		return _argbToWinColor(color >>> 0);
 	}
-	
+
 	if (typeof color === 'string') {
 		try {
 			return new Color(color).windows;
-		} catch (_e) {}
+		} catch (_e) { }
 	}
 	return null;
 }
@@ -67,15 +76,14 @@ export function _ensureNativeTransforms(native: any): { scale: any; rotate: any;
 	try {
 		if (native.__ns_transforms) return native.__ns_transforms;
 
-		const tg = new Windows.UI.Xaml.Media.TransformGroup();
-		const scale = new Windows.UI.Xaml.Media.ScaleTransform();
-		const rotate = new Windows.UI.Xaml.Media.RotateTransform();
-		const translate = new Windows.UI.Xaml.Media.TranslateTransform();
+		const tg = new Microsoft.UI.Xaml.Media.TransformGroup();
+		const scale = new Microsoft.UI.Xaml.Media.ScaleTransform();
+		const rotate = new Microsoft.UI.Xaml.Media.RotateTransform();
+		const translate = new Microsoft.UI.Xaml.Media.TranslateTransform();
 		tg.Children.Append(scale);
 		tg.Children.Append(rotate);
 		tg.Children.Append(translate);
 		native.RenderTransform = tg;
-
 		const result = { scale, rotate, translate };
 		native.__ns_transforms = result;
 		return result;
@@ -85,33 +93,40 @@ export function _ensureNativeTransforms(native: any): { scale: any; rotate: any;
 }
 
 const hidden = Symbol('[[hidden]]');
-function setVisibility(nativeView: Windows.UI.Xaml.UIElement & { [hidden]?: boolean }, value: CoreTypes.VisibilityType) {
+function setVisibility(nativeView: Microsoft.UI.Xaml.UIElement & { [hidden]?: boolean }, value: CoreTypes.VisibilityType) {
 	switch (value) {
 		case "collapse":
 		case "collapsed":
 			nativeView[hidden] = true;
-			nativeView.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+			nativeView.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+			try { (nativeView as any).IsHitTestVisible = true; } catch (_e) { } // moot while collapsed; correct once shown
 			break;
 		case "hidden":
+			// 'hidden' = invisible but STILL TAKES LAYOUT SPACE — must stay Visibility=Visible (not
+			// Collapsed). An invisible element that still captures pointer input blocks taps on whatever
+			// it overlaps, so also disable hit-testing.
 			nativeView[hidden] = true;
 			nativeView.Opacity = 0;
-			nativeView.Visibility = Windows.UI.Xaml.Visibility.Visible;
+			nativeView.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+			try { (nativeView as any).IsHitTestVisible = false; } catch (_e) { }
 			break;
 		case "visible":
+			if (!nativeView[hidden]) return; // symbol unset = native default (Visible/Opacity=1/HitTest=true) — skip 4 WinRT calls
 			nativeView[hidden] = false;
 			nativeView.Opacity = 1;
-			nativeView.Visibility = Windows.UI.Xaml.Visibility.Visible;
+			nativeView.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+			try { (nativeView as any).IsHitTestVisible = true; } catch (_e) { } // restore (in case it was 'hidden' before)
 			break;
 		default:
 	}
 }
 
-function getVisibility(nativeView: Windows.UI.Xaml.UIElement & { [hidden]?: boolean }): CoreTypes.VisibilityType {
+function getVisibility(nativeView: Microsoft.UI.Xaml.UIElement & { [hidden]?: boolean }): CoreTypes.VisibilityType {
 	if (nativeView[hidden]) {
 		if (nativeView.Opacity === 0) {
 			return "hidden";
 		} else {
-			if (nativeView.Visibility === Windows.UI.Xaml.Visibility.Collapsed) {
+			if (nativeView.Visibility === Microsoft.UI.Xaml.Visibility.Collapsed) {
 				return "collapse";
 			}
 		}
@@ -119,139 +134,594 @@ function getVisibility(nativeView: Windows.UI.Xaml.UIElement & { [hidden]?: bool
 	return "visible";
 }
 
-class CompositionBorderHandler {
-	private _element: any;
-	private _rootVisual: any;
-	private _container: any;
-	private _top: any; private _bottom: any; private _left: any; private _right: any;
-	private _topBrush: any; private _bottomBrush: any; private _leftBrush: any; private _rightBrush: any;
-	private _clipGeometry: any = null;
-	private _shadowSprite: any = null;
+// Box-shadow uses native Microsoft.UI.Composition DropShadow (GPU, per element). Shadow hosts are
+// inserted as siblings behind the target in its parent panel. NativeScript.Widgets.ShadowHelper
+// handles the CPU blur fallback path on a thread-pool thread (never touches JS/UI thread).
 
-	constructor(element: any, rootVisual: any) {
+class CompositionBorderHandler {
+	private _element: Microsoft.UI.Xaml.UIElement;
+	private _rootVisual: Microsoft.UI.Composition.Visual;
+	private _container: Microsoft.UI.Composition.ContainerVisual;
+	// Border SpriteVisuals are created lazily in _ensureBorderSprites() — only when UpdateBorder()
+	// is first called with a non-zero width. Shadow-only handlers never allocate these (~18 WinRT
+	// objects saved per shadow-only view, eliminating most of the launch/nav freeze).
+	private _top: Microsoft.UI.Composition.SpriteVisual | null = null;
+	private _bottom: Microsoft.UI.Composition.SpriteVisual | null = null;
+	private _left: Microsoft.UI.Composition.SpriteVisual | null = null;
+	private _right: Microsoft.UI.Composition.SpriteVisual | null = null;
+	private _topBrush: Microsoft.UI.Composition.CompositionColorBrush | null = null;
+	private _bottomBrush: Microsoft.UI.Composition.CompositionColorBrush | null = null;
+	private _leftBrush: Microsoft.UI.Composition.CompositionColorBrush | null = null;
+	private _rightBrush: Microsoft.UI.Composition.CompositionColorBrush | null = null;
+	private _clipGeometry: Microsoft.UI.Composition.CompositionRoundedRectangleGeometry | null = null;
+	// Sig of last applied border geometry (w×h + all widths/colors/radius). UpdateBorder is called
+	// on every SizeChanged; this guard short-circuits the 12 WinRT property sets when nothing changed.
+	private _lastBorderUpdateSig: string | null = null;
+	// One host per CSS shadow, stacked behind element (first-listed shadow nearest/highest z).
+	private _shadowImages: Microsoft.UI.Xaml.FrameworkElement[] = [];
+	// Compositor objects kept alive alongside each host for fast-path size-only updates.
+	// Parallel array to _shadowImages (same length, same index correspondence).
+	private _shadowEntries: Array<{ layer: any; shapeVisual: any; geo: any }> = [];
+	// Children collection captured at insert time — re-reading el.Parent at removal returns undefined
+	// on this host, causing old shadows to accumulate.
+	private _shadowKids: unknown = null;
+	// Signature of last applied shadow render. UpdateBoxShadow runs on SizeChanged; re-inserting
+	// hosts re-invalidates layout → LayoutCycleException. Only mutate the tree when sig changes.
+	private _lastShadowSig: string | null = null;
+	// Config-only sig (no size). When only w×h changes the host Border and all Compositor objects
+	// are updated in-place — no XAML tree mutation, no new WinRT allocations.
+	private _lastShadowConfigSig: string | null = null;
+	// Per-side colored border drawn as a bitmap overlay ON TOP of the element (native XAML BorderBrush
+	// is one color, so 4-color borders need a separate bitmap). Inserted right after the element (higher z).
+	private _borderOverlayActive = false;
+	private _borderKids: unknown = null;
+	private _lastBorderSig: string | null = null;
+
+	constructor(element: Microsoft.UI.Xaml.UIElement, rootVisual: Microsoft.UI.Composition.Visual) {
 		this._element = element;
 		this._rootVisual = rootVisual;
 		const c = rootVisual.Compositor;
 
 		this._container = c.CreateContainerVisual();
-		const sizeAnim = c.CreateExpressionAnimation('host.Size');
-		sizeAnim.SetReferenceParameter('host', rootVisual);
-		this._container.StartAnimation('Size', sizeAnim);
+		// Expression animations on `Size` throw E_INVALIDARG in this V8/UWP composition projection;
+		// RelativeSizeAdjustment(1,1) tracks the parent size natively without an animation.
+		this._container.RelativeSizeAdjustment = new Windows.Foundation.Numerics.Vector2(1, 1);
 
-		this._topBrush = c.CreateColorBrush(); this._bottomBrush = c.CreateColorBrush();
-		this._leftBrush = c.CreateColorBrush(); this._rightBrush = c.CreateColorBrush();
+		// Border SpriteVisuals NOT created here — see _ensureBorderSprites().
+		Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(element, this._container);
+	}
 
-		this._top = c.CreateSpriteVisual(); this._top.Brush = this._topBrush;
-		this._bottom = c.CreateSpriteVisual(); this._bottom.Brush = this._bottomBrush;
-		this._left = c.CreateSpriteVisual(); this._left.Brush = this._leftBrush;
-		this._right = c.CreateSpriteVisual(); this._right.Brush = this._rightBrush;
-
-		this._container.Children.InsertAtTop(this._top);
-		this._container.Children.InsertAtTop(this._bottom);
-		this._container.Children.InsertAtTop(this._left);
-		this._container.Children.InsertAtTop(this._right);
-
-		Windows.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(element, this._container);
+	// Lazily allocate the 4 border SpriteVisuals. Only called by UpdateBorder when a real border
+	// width is present. Returns false if allocation fails (handler unusable for borders).
+	private _ensureBorderSprites(): boolean {
+		if (this._top) return true;
+		try {
+			const c = this._rootVisual.Compositor;
+			this._topBrush = c.CreateColorBrush();
+			this._bottomBrush = c.CreateColorBrush();
+			this._leftBrush = c.CreateColorBrush();
+			this._rightBrush = c.CreateColorBrush();
+			this._top = c.CreateSpriteVisual(); this._top.Brush = this._topBrush;
+			this._bottom = c.CreateSpriteVisual(); this._bottom.Brush = this._bottomBrush;
+			this._left = c.CreateSpriteVisual(); this._left.Brush = this._leftBrush;
+			this._right = c.CreateSpriteVisual(); this._right.Brush = this._rightBrush;
+			this._container.Children.InsertAtTop(this._top);
+			this._container.Children.InsertAtTop(this._bottom);
+			this._container.Children.InsertAtTop(this._left);
+			this._container.Children.InsertAtTop(this._right);
+			return true;
+		} catch (_e) {
+			return false;
+		}
 	}
 
 	static Create(element: any): CompositionBorderHandler | null {
 		try {
-			const rootVisual = Windows.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(element);
+			const rootVisual = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(element);
 			return new CompositionBorderHandler(element, rootVisual);
 		} catch (_e) {
 			return null;
 		}
 	}
 
-	private _animate(target: any, prop: string, expr: string): void {
-		const anim = this._rootVisual.Compositor.CreateExpressionAnimation(expr);
-		anim.SetReferenceParameter('host', this._rootVisual);
-		target.StartAnimation(prop, anim);
+	private _animate(target: Microsoft.UI.Composition.Visual, prop: string, expr: string): void {
+		// Expression animations throw E_INVALIDARG in this V8/UWP composition projection; guard so a
+		// failure can't abort background setup (which would blank the page).
+		try {
+			const anim = this._rootVisual.Compositor.CreateExpressionAnimation(expr);
+			anim.SetReferenceParameter('host', this._rootVisual);
+			target.StartAnimation(prop, anim);
+		} catch (_e) { }
 	}
 
-	UpdateBorderWidth(left: number, top: number, right: number, bottom: number): void {
-		this._animate(this._top, 'Offset', 'Vector3(0, 0, 0)');
-		this._animate(this._top, 'Size', `Vector2(host.Size.X, ${top})`);
-		this._animate(this._bottom, 'Offset', `Vector3(0, host.Size.Y - ${bottom}, 0)`);
-		this._animate(this._bottom, 'Size', `Vector2(host.Size.X, ${bottom})`);
-		this._animate(this._left, 'Offset', `Vector3(0, ${top}, 0)`);
-		this._animate(this._left, 'Size', `Vector2(${left}, host.Size.Y - ${top} - ${bottom})`);
-		this._animate(this._right, 'Offset', `Vector3(host.Size.X - ${right}, ${top}, 0)`);
-		this._animate(this._right, 'Size', `Vector2(${right}, host.Size.Y - ${top} - ${bottom})`);
+	// Four explicitly-sized SpriteVisuals (one per side) for per-side widths/colors; rounded geometric
+	// clip for corner radius. Explicit sizing avoids E_INVALIDARG from expression animations. Works on
+	// plain panels (no native BorderThickness/BorderBrush) and renders above the element edge.
+	UpdateBorder(w: number, h: number, tW: number, rW: number, bW: number, lW: number, tC: number, rC: number, bC: number, lC: number, radius: number): void {
+		if (w <= 0 || h <= 0) {
+			return; // not laid out yet — _redrawNativeBackground re-runs on SizeChanged
+		}
+		// Sig guards the 12 WinRT property sets below. UpdateBorder is called on every SizeChanged;
+		// skipping when nothing changed eliminates the dominant per-frame bridge cost for bordered views.
+		const sig = `${Math.round(w)}x${Math.round(h)}|${tW},${rW},${bW},${lW},${tC},${rC},${bC},${lC},${radius}`;
+		if (sig === this._lastBorderUpdateSig) return;
+		this._lastBorderUpdateSig = sig;
+		if (!this._ensureBorderSprites()) return;
+		try {
+			const N = Windows.Foundation.Numerics;
+			const tWc = Math.max(0, tW), rWc = Math.max(0, rW), bWc = Math.max(0, bW), lWc = Math.max(0, lW);
+			const midH = Math.max(0, h - tWc - bWc);
+
+			this._top.Offset = new N.Vector3(0, 0, 0);
+			this._top.Size = new N.Vector2(w, tWc);
+			this._topBrush.Color = _argbToWinColor(tC);
+
+			this._bottom.Offset = new N.Vector3(0, Math.max(0, h - bWc), 0);
+			this._bottom.Size = new N.Vector2(w, bWc);
+			this._bottomBrush.Color = _argbToWinColor(bC);
+
+			this._left.Offset = new N.Vector3(0, tWc, 0);
+			this._left.Size = new N.Vector2(lWc, midH);
+			this._leftBrush.Color = _argbToWinColor(lC);
+
+			this._right.Offset = new N.Vector3(Math.max(0, w - rWc), tWc, 0);
+			this._right.Size = new N.Vector2(rWc, midH);
+			this._rightBrush.Color = _argbToWinColor(rC);
+
+			const c = this._rootVisual.Compositor;
+			if (radius > 0) {
+				if (!this._clipGeometry) {
+					this._clipGeometry = c.CreateRoundedRectangleGeometry();
+					this._container.Clip = c.CreateGeometricClip(this._clipGeometry);
+				}
+				this._clipGeometry.Size = new N.Vector2(w, h);
+				this._clipGeometry.CornerRadius = new N.Vector2(radius, radius);
+			} else if (this._clipGeometry) {
+				try { this._container.Clip = null as never; } catch (_e) { }
+				this._clipGeometry = null;
+			}
+		} catch (_e) { }
 	}
 
-	UpdateBorderColor(left: number, top: number, right: number, bottom: number): void {
-		this._topBrush.Color = _argbToWinColor(top);
-		this._bottomBrush.Color = _argbToWinColor(bottom);
-		this._leftBrush.Color = _argbToWinColor(left);
-		this._rightBrush.Color = _argbToWinColor(right);
+	ClearBorder(): void {
+		// No sprites ever created (shadow-only handler) or already cleared — nothing to do.
+		if (!this._top || this._lastBorderUpdateSig === 'none') return;
+		this._lastBorderUpdateSig = 'none';
+		try {
+			const z = new Windows.Foundation.Numerics.Vector2(0, 0);
+			this._top.Size = z; this._bottom.Size = z; this._left.Size = z; this._right.Size = z;
+			if (this._clipGeometry) {
+				try { this._container.Clip = null as never; } catch (_e) { }
+				this._clipGeometry = null;
+			}
+		} catch (_e) { }
 	}
 
-	UpdateBorderRadius(tl: number, tr: number, br: number, bl: number): void {
-		const r = Math.max(tl, tr, br, bl);
-		if (r <= 0) {
-			this._container.Clip = null;
-			this._clipGeometry = null;
+	UpdateBoxShadow(shadows: BoxShadow[] | BoxShadow | null, cornerRadius = 0): void {
+		// One element-sized DropShadow host per CSS shadow, inserted as a sibling behind the target.
+		// Overlap-capable parents only — StackPanel would stack the host as a new row (skipped below).
+		const el = this._element as Microsoft.UI.Xaml.FrameworkElement;
+		if (!el) {
 			return;
 		}
-		const c = this._rootVisual.Compositor;
-		if (!this._clipGeometry) {
-			this._clipGeometry = c.CreateRoundedRectangleGeometry();
-			const sizeAnim = c.CreateExpressionAnimation('host.Size');
-			sizeAnim.SetReferenceParameter('host', this._rootVisual);
-			this._clipGeometry.StartAnimation('Size', sizeAnim);
-			this._container.Clip = c.CreateGeometricClip(this._clipGeometry);
-		}
-		this._clipGeometry.CornerRadius = new (Windows.Foundation.Numerics as any).Vector2(r, r);
+		try {
+			const list = shadows == null ? [] : (Array.isArray(shadows) ? shadows : [shadows]);
+
+			// No shadows → clear (only mutate tree if we currently have images).
+			if (!list.length) {
+				if (this._lastShadowSig === 'none') {
+					return;
+				}
+				this._lastShadowSig = 'none';
+				this._lastShadowConfigSig = null;
+				this._removeShadowImages();
+				return;
+			}
+
+			const w = el.ActualWidth || 0;
+			const h = el.ActualHeight || 0;
+			if (w <= 0 || h <= 0) {
+				return; // not laid out yet — re-applied on the next SizeChanged redraw (sig not cached)
+			}
+
+			// Signature guards against LayoutCycleException: inserting/removing hosts re-invalidates
+			// layout. Only mutate the XAML tree when the shadow config changes. When only w×h changes
+			// (size-only path) update Compositor objects in-place — no tree mutation, no new WinRT allocs.
+			// Use pure-JS `.argb` for the sig — `.windows` would call ColorHelper.FromArgb() + 4 struct
+			// reads per shadow color on every call, even when the sig matches and work is skipped.
+			const configSig = `${cornerRadius}|` + list.map((s) => {
+				const a = (s.color as any)?.argb ?? 0;
+				return `${a}:${s.offsetX || 0},${s.offsetY || 0},${s.blurRadius || 0},${s.spreadRadius || 0}`;
+			}).join(';');
+			const sig = `${Math.round(w)}x${Math.round(h)}|${configSig}`;
+			if (sig === this._lastShadowSig && this._shadowImages.length > 0) {
+				return;
+			}
+
+			// Fast path: only w×h changed, same shadow config, same count → update sizes in-place.
+			const configUnchanged = configSig === this._lastShadowConfigSig
+				&& this._shadowImages.length === list.length
+				&& this._shadowEntries.length === list.length
+				&& this._shadowImages.length > 0;
+			this._lastShadowSig = sig;
+			// _lastShadowConfigSig is set AFTER _removeShadowImages() in the full-rebuild path so that
+			// a mid-rebuild exception can't leave a stale configSig that fools the fast path.
+
+			if (configUnchanged) {
+				try {
+					const N = Windows.Foundation.Numerics;
+					const cssOrder = list.slice().reverse();
+					for (let i = 0; i < this._shadowEntries.length; i++) {
+						const entry = this._shadowEntries[i];
+						const s = cssOrder[i];
+						const spread = Math.max(0, layout.toDeviceIndependentPixels(s.spreadRadius || 0));
+						const cw = Math.max(0, w + 2 * spread);
+						const chh = Math.max(0, h + 2 * spread);
+						(this._shadowImages[i] as any).Width = w;
+						(this._shadowImages[i] as any).Height = h;
+						entry.layer.Size = new N.Vector2(cw, chh);
+						entry.shapeVisual.Size = new N.Vector2(cw, chh);
+						entry.geo.Size = new N.Vector2(cw, chh);
+					}
+					return; // no tree mutation needed
+				} catch (_e) { /* fall through to full rebuild on error */ }
+			}
+
+			this._removeShadowImages();
+			// Now safe to record the new configSig — hosts have been removed, rebuild is starting.
+			this._lastShadowConfigSig = configSig;
+
+			const parent = el.Parent as unknown as Microsoft.UI.Xaml.Controls.Panel;
+			const kids = parent?.Children;
+			if (!kids || typeof kids.Size !== 'number') {
+				return;
+			}
+			if (typeof (parent as unknown as Microsoft.UI.Xaml.Controls.StackPanel).Orientation !== 'undefined') {
+				return; // StackPanel — sibling overlap not possible
+			}
+
+			const G = Microsoft.UI.Xaml.Controls.Grid;
+
+			// style-properties stores shadows in reverse CSS order; restore so built[0] is first-listed
+			// (nearest the element after insertion).
+			const cssOrder = list.slice().reverse();
+
+			// CRITICAL: ActualWidth/Height and cornerRadius are in DIPs, but blurRadius/spreadRadius/
+			// offsetX/offsetY are in device pixels (style system converts via Length.toDevicePixels).
+			// Convert back to DIPs — mixing units over-blurs and swamps the offset (flat halo artifact).
+			const built: Array<{ host: Microsoft.UI.Xaml.FrameworkElement; layer: any; shapeVisual: any; geo: any }> = [];
+			for (const s of cssOrder) {
+				const entry = this._buildShadowHost(s, w, h, cornerRadius);
+				if (!entry) {
+					continue;
+				}
+				const host = entry.host;
+				// Match grid cell + alignment of the element. Composition shadow overflows host bounds
+				// (XAML doesn't clip child visuals), so element-sized host is sufficient.
+				try {
+					host.HorizontalAlignment = el.HorizontalAlignment;
+					host.VerticalAlignment = el.VerticalAlignment;
+					G.SetRow(host, G.GetRow(el));
+					G.SetColumn(host, G.GetColumn(el));
+					G.SetRowSpan(host, G.GetRowSpan(el));
+					G.SetColumnSpan(host, G.GetColumnSpan(el));
+				} catch (_e) { }
+
+				built.push(entry);
+			}
+			if (!built.length) {
+				return;
+			}
+
+			// Insert behind the element (lower index = lower z). Always inserting at the element's index
+			// pushes earlier-inserted images up, so the first-listed shadow ends up nearest (per CSS).
+			let idx = -1;
+			for (let i = 0; i < kids.Size; i++) {
+				if (kids.GetAt(i) === el) {
+					idx = i;
+					break;
+				}
+			}
+			for (const entry of built) {
+				if (idx < 0) {
+					kids.Append(entry.host);
+				} else {
+					kids.InsertAt(idx, entry.host);
+				}
+			}
+			this._shadowImages = built.map(e => e.host);
+			this._shadowEntries = built.map(e => ({ layer: e.layer, shapeVisual: e.shapeVisual, geo: e.geo }));
+			this._shadowKids = kids; // remember the exact collection for removal (el.Parent is unreliable later)
+		} catch (_e) { }
 	}
 
-	UpdateBoxShadow(s: any | null): void {
-		if (this._shadowSprite) {
-			try { this._container.Children.Remove(this._shadowSprite); } catch (_e) {}
-			this._shadowSprite = null;
-		}
-		if (!s) return;
+	// Element-sized host carrying one DropShadow per CSS box-shadow entry. The opaque shadow caster is
+	// covered by the (opaque) element, so only the blurred shadow shows. Spread inflates the caster and
+	// its corner radius. Uses LayerVisual + ShapeVisual (a GeometricClip would clip the shadow away).
+	private _buildShadowHost(s: BoxShadow, w: number, h: number, cornerRadius: number): { host: Microsoft.UI.Xaml.FrameworkElement; layer: any; shapeVisual: any; geo: any } | null {
 		try {
-			const c = this._rootVisual.Compositor;
-			const sprite = c.CreateSpriteVisual();
-			// Leave Brush = null so DropShadow uses the visual's bounding shape as mask.
-			// A transparent brush (A=0) would make the mask fully transparent → no shadow.
-			try {
-				(sprite as any).RelativeSizeAdjustment = { X: 1, Y: 1 };
-			} catch (_e) {
-				sprite.Size = (this._rootVisual as any).Size;
+			const winColor = (s.color as Color & { windows?: Windows.UI.Color })?.windows;
+			if (!winColor) {
+				return null;
 			}
+			const N = Windows.Foundation.Numerics;
+			const CH = Windows.UI.ColorHelper;
+			const blur = Math.max(0, layout.toDeviceIndependentPixels(s.blurRadius || 0));
+			const spread = Math.max(0, layout.toDeviceIndependentPixels(s.spreadRadius || 0));
+			const offX = layout.toDeviceIndependentPixels(s.offsetX || 0);
+			const offY = layout.toDeviceIndependentPixels(s.offsetY || 0);
+			const cr = Math.max(0, cornerRadius);
+			const cw = Math.max(0, w + 2 * spread);
+			const chh = Math.max(0, h + 2 * spread);
+
+			// DropShadow.Color carries the alpha for CSS opacity; caster fill is opaque for full-strength shadow.
+			const shadowColor = CH.FromArgb(winColor.A ?? 255, winColor.R ?? 0, winColor.G ?? 0, winColor.B ?? 0);
+			const casterColor = CH.FromArgb(255, winColor.R ?? 0, winColor.G ?? 0, winColor.B ?? 0);
+
+			const host = new Microsoft.UI.Xaml.Controls.Border();
+			host.Width = w;
+			host.Height = h;
+			try { (host as Microsoft.UI.Xaml.UIElement).IsHitTestVisible = false; } catch (_e) { }
+
+			const ECP = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview;
+			const c = ECP.GetElementVisual(host).Compositor;
+
 			const drop = c.CreateDropShadow();
-			if (s?.color?.windows) { drop.Color = s.color.windows; }
-			if (typeof s?.blurRadius === 'number') { drop.BlurRadius = s.blurRadius; }
-			try { drop.Offset = new Windows.Foundation.Numerics.Vector3(s?.offsetX || 0, s?.offsetY || 0, 0); } catch (_e) {}
-			sprite.Shadow = drop;
-			this._container.Children.InsertAtBottom(sprite);
-			this._shadowSprite = sprite;
-		} catch (_e) {}
+			drop.BlurRadius = blur;
+			drop.Color = shadowColor;
+			drop.Offset = new N.Vector3(offX, offY, 0);
+
+			// LayerVisual content isn't painted — only its DropShadow is — giving a pure soft shadow
+			// with no visible opaque caster edge (the old SpriteVisual caster painted a hard edge at spread).
+			const cornerR = cr > 0 ? cr + spread : 0;
+			const layer = c.CreateLayerVisual();
+			layer.Size = new N.Vector2(cw, chh);
+			layer.Offset = new N.Vector3(-spread, -spread, 0);
+			const shapeVisual = c.CreateShapeVisual();
+			shapeVisual.Size = new N.Vector2(cw, chh);
+			const geo = c.CreateRoundedRectangleGeometry();
+			geo.Size = new N.Vector2(cw, chh);
+			geo.CornerRadius = new N.Vector2(cornerR, cornerR);
+			const shape = c.CreateSpriteShape(geo);
+			const fb = c.CreateColorBrush();
+			fb.Color = casterColor;
+			shape.FillBrush = fb;
+			shapeVisual.Shapes.Append(shape);
+			layer.Children.InsertAtTop(shapeVisual);
+			layer.Shadow = drop;
+
+			ECP.SetElementChildVisual(host, layer);
+			return { host, layer, shapeVisual, geo };
+		} catch (_e) {
+			return null;
+		}
+	}
+
+	private _removeShadowImages(): void {
+		const count = this._shadowImages.length;
+		this._shadowImages = [];
+		this._shadowEntries = [];
+		if (count <= 0) {
+			return;
+		}
+		// Remove by position, not identity: collection has no Remove()/IndexOf; GetAt returns a fresh
+		// JS wrapper per call so `=== img` is false. Only `GetAt(i) === el` is stable. Shadow images
+		// are the `count` siblings immediately before the element — find el, RemoveAt the slots before it.
+		const kids = this._shadowKids as { Size: number; GetAt: (i: number) => unknown; RemoveAt: (i: number) => void } | null;
+		const el = this._element;
+		if (!kids || typeof kids.Size !== 'number' || !el) {
+			return;
+		}
+		try {
+			let elIdx = -1;
+			for (let i = 0; i < kids.Size; i++) {
+				if (kids.GetAt(i) === el) { elIdx = i; break; }
+			}
+			if (elIdx < 0) {
+				return;
+			}
+			for (let k = 1; k <= count; k++) {
+				const idx = elIdx - k;
+				if (idx >= 0) {
+					try { kids.RemoveAt(idx); } catch (_e) { }
+				}
+			}
+		} catch (_e) { }
+	}
+
+	// Per-side ("colorful") border drawn as a bitmap overlay on top of the element. Pass null to clear.
+	UpdateColorfulBorder(b: { w: number; h: number; tW: number; rW: number; bW: number; lW: number; tC: number; rC: number; bC: number; lC: number; radius: number } | null): void {
+		const el = this._element as Microsoft.UI.Xaml.FrameworkElement;
+		if (!el) {
+			return;
+		}
+		try {
+			if (!b || (b.tW <= 0 && b.rW <= 0 && b.bW <= 0 && b.lW <= 0)) {
+				if (this._lastBorderSig === 'none') {
+					return;
+				}
+				this._lastBorderSig = 'none';
+				this._removeBorderOverlay();
+				return;
+			}
+			// Not laid out yet — do NOT touch the existing overlay; a transient w=0 pass must not
+			// tear down a valid overlay (would flicker/vanish).
+			if (b.w <= 0 || b.h <= 0) {
+				return;
+			}
+			const sig = `${Math.round(b.w)}x${Math.round(b.h)}|${b.radius}|${b.tW},${b.rW},${b.bW},${b.lW}|${b.tC},${b.rC},${b.bC},${b.lC}`;
+			if (sig === this._lastBorderSig && this._borderOverlayActive) {
+				return;
+			}
+			this._lastBorderSig = sig;
+			this._removeBorderOverlay();
+			const parent = el.Parent as unknown as Microsoft.UI.Xaml.Controls.Panel;
+			const kids = parent?.Children;
+			if (!kids || typeof kids.Size !== 'number') {
+				return;
+			}
+			if (typeof (parent as unknown as Microsoft.UI.Xaml.Controls.StackPanel).Orientation !== 'undefined') {
+				return; // StackPanel — overlay positioning not supported
+			}
+			const result = NativeScript.Widgets.ShadowHelper.CreateBorder(b.w, b.h, b.tW, b.rW, b.bW, b.lW, b.tC as never, b.rC as never, b.bC as never, b.lC as never, b.radius);
+			const img = result?.Image;
+			if (!img) {
+				return;
+			}
+			try {
+				img.HorizontalAlignment = el.HorizontalAlignment;
+				img.VerticalAlignment = el.VerticalAlignment;
+				const G = Microsoft.UI.Xaml.Controls.Grid;
+				G.SetRow(img, G.GetRow(el));
+				G.SetColumn(img, G.GetColumn(el));
+				G.SetRowSpan(img, G.GetRowSpan(el));
+				G.SetColumnSpan(img, G.GetColumnSpan(el));
+			} catch (_e) { }
+			// Insert immediately AFTER the element (just above it in z-order).
+			let elIdx = -1;
+			for (let i = 0; i < kids.Size; i++) {
+				if (kids.GetAt(i) === el) { elIdx = i; break; }
+			}
+			if (elIdx < 0 || elIdx + 1 >= kids.Size) {
+				kids.Append(img);
+			} else {
+				kids.InsertAt(elIdx + 1, img);
+			}
+			this._borderKids = kids;
+			this._borderOverlayActive = true;
+		} catch (_e) { }
+	}
+
+	private _removeBorderOverlay(): void {
+		if (!this._borderOverlayActive) {
+			return;
+		}
+		this._borderOverlayActive = false;
+		const kids = this._borderKids as { Size: number; GetAt: (i: number) => unknown; RemoveAt: (i: number) => void } | null;
+		const el = this._element;
+		if (!kids || typeof kids.Size !== 'number' || !el) {
+			return;
+		}
+		try {
+			// Overlay sits immediately after the element (or last if appended). Position-based removal
+			// since wrapper identity for our Image is unreliable (fresh wrapper per GetAt).
+			let elIdx = -1;
+			for (let i = 0; i < kids.Size; i++) {
+				if (kids.GetAt(i) === el) { elIdx = i; break; }
+			}
+			if (elIdx >= 0 && elIdx + 1 < kids.Size) {
+				kids.RemoveAt(elIdx + 1);
+			} else if (kids.Size > 0) {
+				kids.RemoveAt(kids.Size - 1); // was appended as last
+			}
+		} catch (_e) { }
 	}
 
 	Free(): void {
-		try { Windows.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(this._element, null as never); } catch (_e) { }
-		this._element = null; this._rootVisual = null; this._container = null;
+		this._removeShadowImages();
+		this._removeBorderOverlay();
+		if (this._element) {
+			try { Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(this._element, null as never); } catch (_e) { }
+		}
+		this._element = null;
+		this._rootVisual = null;
+		this._container = null;
+		this._top = null; this._bottom = null; this._left = null; this._right = null;
+		this._topBrush = null; this._bottomBrush = null; this._leftBrush = null; this._rightBrush = null;
 	}
 }
 
 export class View extends ViewCommon {
-	nativeViewProtected: Windows.UI.Xaml.FrameworkElement;
+	nativeViewProtected: Microsoft.UI.Xaml.FrameworkElement;
 
 	_nativeBackgroundState: 'invalid' | 'drawn' = 'invalid';
 
-	// Percent sizing state (null = not set)
-	private _percentWidth: number | null = null;
+	private _percentWidth: number | null = null; // null = not set
 	private _percentHeight: number | null = null;
+	// Held SizeChanged delegate (prevents GC — see _ensureSizeWatch).
+	private _sizeChangedDelegate: any = null;
+	private _sizeWatchWired = false;
+	private _sizeRedrawPending = false;
+	// Background-application caches — prevent redundant WinRT calls across repeated _redrawNativeBackground calls.
+	// IMPORTANT: all sigs are value-based (not object-reference-based) because Background uses a clone pattern:
+	// every withBorderWidth/withBorderRadius/withColor call creates a new object, so reference equality
+	// is always false and would never skip anything.
+	private _lastStaticSig: string | null = null;  // skip color/gradient rebuild when color+image unchanged
+	private _lastRadiusSig: string | null = null;  // skip CornerRadius set when unchanged
+	private _lastBorderSig: string | null = null;  // skip BorderThickness/UpdateBorder when unchanged
+	private _isNativeButton: boolean | null = null; // cached once in initNativeView — avoids per-call 'in' check
+	private _lastMarginSig: string | null = null;  // coalesce the 4 individual margin setNative calls into 1 WinRT set
+	private _lastPaddingSig: string | null = null; // coalesce the 4 individual padding setNative calls into 1 WinRT set
+	_colorAnimBrush: any = null; // the current SolidColorBrush used as Background; lets animation reuse it without QI
 
-	// initialized below for downlevel compatibility
+	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+		super.measure(widthMeasureSpec, heightMeasureSpec);
+		this.onMeasure(widthMeasureSpec, heightMeasureSpec);
+	}
 
-	// XAML handles layout natively — these are no-ops on Windows
-	public onMeasure(_widthMeasureSpec: number, _heightMeasureSpec: number): void { }
-	public onLayout(_left: number, _top: number, _right: number, _bottom: number): void { }
-	public layoutNativeView(_left: number, _top: number, _right: number, _bottom: number): void { }
+	public layout(left: number, top: number, right: number, bottom: number, setFrame = true): void {
+		super.layout(left, top, right, bottom);
+		if (setFrame) {
+			this.layoutNativeView(left, top, right, bottom);
+		}
+		this.onLayout(left, top, right, bottom);
+	}
+
+	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+		const view = this.nativeViewProtected;
+		const width = layout.getMeasureSpecSize(widthMeasureSpec);
+		const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+		const height = layout.getMeasureSpecSize(heightMeasureSpec);
+		const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+
+		let nativeWidth = 0;
+		let nativeHeight = 0;
+		if (view) {
+			const nativeSize = layout.measureNativeView(view, width, widthMode, height, heightMode);
+			nativeWidth = nativeSize.width;
+			nativeHeight = nativeSize.height;
+		}
+
+		const measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
+		const measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
+
+		const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+		const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+
+		this.setMeasuredDimension(widthAndState, heightAndState);
+	}
+
+	public onLayout(_left: number, _top: number, _right: number, _bottom: number): void {
+		// Native panels (StackPanel, Grid, etc.) position children; Canvas layouts set positions in their own handlers.
+	}
+
+	public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
+		const native = this.nativeViewProtected;
+		if (!native) {
+			return;
+		}
+
+		const w = layout.toDeviceIndependentPixels(right - left);
+		const h = layout.toDeviceIndependentPixels(bottom - top);
+		const l = layout.toDeviceIndependentPixels(left);
+		const t = layout.toDeviceIndependentPixels(top);
+
+		try {
+			if (native.Parent) {
+				Microsoft.UI.Xaml.Controls.Canvas.SetLeft(native, l);
+				Microsoft.UI.Xaml.Controls.Canvas.SetTop(native, t);
+			}
+		} catch (_e) { }
+
+		try {
+			if (w > 0) {
+				native.Width = w;
+			}
+			if (h > 0) {
+				native.Height = h;
+			}
+		} catch (_e) { }
+	}
 
 	_redrawNativeBackground(value: any): void {
 		const native = this.nativeViewProtected as any;
@@ -263,178 +733,384 @@ export class View extends ViewCommon {
 			return;
 		}
 
-		try { console.log('[BG]', (this as any).typeName ?? (this as any).constructor?.name, 'color=', background.color?.hex, 'hasImage=', !!background.image); } catch (_) {}
-
-		// Gradient handling
-		if (background.image && typeof background.image === 'object' && 'colorStops' in background.image) {
-			try {
-				const lg: LinearGradient = background.image as any;
-				const cs = lg.colorStops || [];
-				// Create brush first so we can use its built-in GradientStops collection
-				// (GradientStopCollection is not directly constructable in WinRT JS projection)
-				const brush = new Windows.UI.Xaml.Media.LinearGradientBrush();
-				const stopsCol = brush.GradientStops;
-				for (let i = 0; i < cs.length; i++) {
-					const entry = cs[i];
-					const stop = new Windows.UI.Xaml.Media.GradientStop();
-					const resolvedColor = _resolveToWinColor(entry.color);
-					stop.Color = resolvedColor ?? Windows.UI.Colors.Transparent;
-					if (entry.offset && typeof (entry.offset as any).value === 'number') {
-						stop.Offset = (entry.offset as any).value;
-					} else {
-						stop.Offset = cs.length > 1 ? i / (cs.length - 1) : 0;
-					}
-					stopsCol.Append(stop);
-				}
-				// angle: 0 = top-to-bottom, 90deg = left-to-right (NS convention matches CSS)
-				const angleRad = typeof lg.angle === 'number' ? lg.angle : 0;
-				const dx = Math.sin(angleRad);
-				const dy = -Math.cos(angleRad);
-				brush.StartPoint = Windows.UI.Xaml.PointHelper.FromCoordinates(0.5 - dx / 2, 0.5 - dy / 2);
-				brush.EndPoint = Windows.UI.Xaml.PointHelper.FromCoordinates(0.5 + dx / 2, 0.5 + dy / 2);
-				brush.MappingMode = Windows.UI.Xaml.Media.BrushMappingMode.RelativeToBoundingBox;
-				native.Background = brush;
-			} catch (_e) { /* fallback to solid color below */ }
-		} else if (background && background.color) {
-			const winColor = _resolveToWinColor(background.color);
-			if (winColor) {
-				try {
-					const brush = new Windows.UI.Xaml.Media.SolidColorBrush(winColor);
-					native.Background = brush;
-					// For Button-like controls the default XAML template may ignore Background
-					// via its Normal-state VSM animation. Override the ButtonBackground resource
-					// so the template binding picks up our colour.
-					try { (native as any).Resources.Insert('ButtonBackground', brush); } catch (_re) {}
-					try { (native as any).Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_re) {}
-					try { (native as any).Resources.Insert('ButtonBackgroundPressed', brush); } catch (_re) {}
-				} catch (bgErr) {
-					console.error('[Windows] Background SolidColorBrush failed:', bgErr);
-				}
-			} else {
-				console.warn('[Windows] _resolveToWinColor returned null for:', background.color);
-				native.Background = null;
-			}
-		} else {
-			native.Background = null;
+		// Wire size watcher for size-dependent backgrounds (border/shadow/clip/radius/image). Not wired
+		// on every view so plain views skip SizeChanged and fast scroll stays cheap.
+		const depends = !!(
+			(background.borderTopWidth || background.borderRightWidth || background.borderBottomWidth || background.borderLeftWidth) ||
+			(background.clipPath) ||
+			(background.image && background.image !== 'none') ||
+			(typeof background.hasBorderRadius === 'function' && background.hasBorderRadius()) ||
+			(typeof background.hasBoxShadows === 'function' && background.hasBoxShadows())
+		);
+		if (depends) {
+			this._ensureSizeWatch();
 		}
 
+		// ── Phase 1: Static background (color / gradient / image) ────────────────────────────────
+		// Guards via a value-based sig rather than object identity — Background uses a clone
+		// pattern (each withBorderWidth/withRadius/withColor returns a new object), so reference
+		// equality is always false and would never skip anything.
+		// Sig encodes just color+image because those are the only static parts; border/radius/shadow
+		// are size-dependent and handled in Phase 2 with their own per-value sigs.
+		// Use pure-JS `color.argb` (returns the stored _argb integer) — NOT `color.windowsArgb`
+		// which calls Windows.UI.ColorHelper.FromArgb() + 4 WinRT struct reads on every call.
+		const _colorArgb = (background.color as any)?.argb ?? 0;
+		const _imageKey  = background.image
+			? (typeof background.image === 'string' ? background.image : 'lg')
+			: '';
+		const _staticSig = `${_colorArgb}|${_imageKey}`;
+		// Save prior sig BEFORE updating — used below to detect first call (fresh view).
+		const _prevStaticSig = this._lastStaticSig;
+		if (_staticSig !== this._lastStaticSig) {
+			this._lastStaticSig = _staticSig;
+			// When color/image changes, invalidate Phase-2 sigs — the composition handler may not
+			// yet exist (element newly created), so stale radius/border sigs must not persist.
+			this._lastRadiusSig = null;
+			this._lastBorderSig = null;
+			// Clear cached solid-color brush; re-set only if background is still a solid color.
+			this._colorAnimBrush = null;
 
+			if (background.image && typeof background.image === 'object' && 'colorStops' in background.image) {
+				try {
+					const lg: LinearGradient = background.image as any;
+					const cs = lg.colorStops || [];
+					// Create brush first to access its built-in GradientStops collection
+					// (GradientStopCollection is not directly constructable in WinRT JS projection).
+					const brush = new Microsoft.UI.Xaml.Media.LinearGradientBrush();
+					const stopsCol = brush.GradientStops;
+					for (let i = 0; i < cs.length; i++) {
+						const entry = cs[i];
+						const stop = new Microsoft.UI.Xaml.Media.GradientStop();
+						const resolvedColor = _resolveToWinColor(entry.color);
+						stop.Color = resolvedColor ?? Windows.UI.Colors.Transparent;
+						if (entry.offset && typeof (entry.offset as any).value === 'number') {
+							stop.Offset = (entry.offset as any).value;
+						} else {
+							stop.Offset = cs.length > 1 ? i / (cs.length - 1) : 0;
+						}
+						stopsCol.Append(stop);
+					}
+					// angle: 0 = top-to-bottom, 90deg = left-to-right (NS convention matches CSS)
+					const angleRad = typeof lg.angle === 'number' ? lg.angle : 0;
+					const dx = Math.sin(angleRad);
+					const dy = -Math.cos(angleRad);
+					brush.StartPoint = Microsoft.UI.Xaml.PointHelper.FromCoordinates(0.5 - dx / 2, 0.5 - dy / 2);
+					brush.EndPoint = Microsoft.UI.Xaml.PointHelper.FromCoordinates(0.5 + dx / 2, 0.5 + dy / 2);
+					brush.MappingMode = Microsoft.UI.Xaml.Media.BrushMappingMode.RelativeToBoundingBox;
+					native.Background = brush;
+				} catch (_e) { /* fallback to solid color below */ }
+			} else if (background.image && typeof background.image === 'string' && background.image !== 'none') {
+				// Raster background-image: url(...). Rendered via an ImageBrush (XAML can't tile, so CSS
+				// background-repeat beyond no-repeat is approximated by stretch/alignment).
+				this._applyBackgroundImage(native, background.image as string, background);
+			} else if (background && background.color) {
+				const winColor = _resolveToWinColor(background.color);
+				if (winColor) {
+					try {
+						const brush = new Microsoft.UI.Xaml.Media.SolidColorBrush(winColor);
+						native.Background = brush;
+						// Cache the brush so backgroundColor animations can reuse it without a WinRT QI.
+						this._colorAnimBrush = brush;
+						// For Button controls the default XAML template ignores Background via its VSM
+						// Normal-state animation. Override the ButtonBackground theme resource on the
+						// instance so the template binding picks up our colour.
+						// IMPORTANT: only do this for actual Button-type controls — Resources.Insert on
+						// a non-Button creates a useless ResourceDictionary (~15ms one-time overhead).
+						if (this._isNativeButton) {
+							try { native.Resources.Insert('ButtonBackground', brush); } catch (_re) { }
+							try { native.Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_re) { }
+							try { native.Resources.Insert('ButtonBackgroundPressed', brush); } catch (_re) { }
+						}
+					} catch (bgErr) {
+						console.error('[Windows] Background SolidColorBrush failed:', bgErr);
+					}
+				} else {
+					// Transparent color (winColor = null) — XAML default Background is null for non-buttons.
+					// Skip the no-op setter on fresh views to save 1 WinRT call per transparent view.
+					if (this._isNativeButton || _prevStaticSig !== null) {
+						native.Background = null;
+					}
+				}
+			} else {
+				// No color, no image — same result as transparent.
+				// Skip null-set on fresh non-button views (XAML default is already null).
+				if (this._isNativeButton || _prevStaticSig !== null) {
+					native.Background = null;
+				}
+			}
+		}
+
+		// ── Phase 2: Size-dependent work (composition, border, radius, shadow) ───────────────────
+		this._applySizeDependentNativeBackground(native, background);
+	}
+
+	// Size-dependent half of background rendering — called from both _redrawNativeBackground
+	// (full redraw) and _onSizeChanged (size-change-only redraw, skips Phase 1 above).
+	private _applySizeDependentNativeBackground(native: any, background: Background): void {
 		let radius = 0;
 		if (typeof background.getUniformBorderRadius === 'function') {
 			radius = background.getUniformBorderRadius();
 		}
 
-		if (!this._viewCompositionHandler) {
+		// Read border-color argb early (pure JS, no WinRT) — used for both needsComposition and
+		// the border sig / native XAML path below.
+		const tCArgb = (background.borderTopColor as any)?.argb ?? 0;
+		const rCArgb = (background.borderRightColor as any)?.argb ?? 0;
+		const bCArgb = (background.borderBottomColor as any)?.argb ?? 0;
+		const lCArgb = (background.borderLeftColor as any)?.argb ?? 0;
+		const _anyBorderWidth = !!(background.borderTopWidth || background.borderRightWidth || background.borderBottomWidth || background.borderLeftWidth);
+		// Per-side different colors → XAML BorderBrush (single color) can't handle it.
+		const _hasNonUniformBorderColor = _anyBorderWidth && (tCArgb !== rCArgb || tCArgb !== bCArgb || tCArgb !== lCArgb);
+		const _hasBoxShadow = typeof background.hasBoxShadows === 'function' && background.hasBoxShadows();
+		// Whether XAML has native BorderThickness + BorderBrush on this element.
+		// Controls (Button, TextBox, etc.) and Border do; layout panels (Grid, StackPanel) do NOT.
+		// `'BorderThickness' in native` is a free prototype check — no WinRT getter invoked.
+		const _nativeHasBorderSupport = 'BorderThickness' in native;
+		// Only create the Compositor handler for features XAML can't handle natively:
+		//   • box-shadows (no XAML equivalent at the NativeScript level)
+		//   • per-side different border colors (XAML BorderBrush is a single uniform color)
+		//   • layout panels: Grid/StackPanel/etc. have no BorderThickness, so they need Compositor
+		//     for any border regardless of uniformity
+		// Controls with uniform-color borders are handled natively via BorderThickness + BorderBrush
+		// + CornerRadius — no WinRT Compositor overhead (~20 WinRT calls per element) needed.
+		const needsComposition = !!(_hasBoxShadow || _hasNonUniformBorderColor || (_anyBorderWidth && !_nativeHasBorderSupport));
+		if (needsComposition && !this._viewCompositionHandler) {
 			this._viewCompositionHandler = CompositionBorderHandler.Create(native);
 		}
 
+		// Borders/radius via native XAML CornerRadius. Use `'CornerRadius' in native` (JS prototype
+		// chain check, no getter invocation) instead of `typeof native.CornerRadius !== 'undefined'`
+		// (which would invoke the WinRT getter). Sig-guard skips the WinRT set when nothing changed.
+		const tlr = background.borderTopLeftRadius || 0;
+		const trr = background.borderTopRightRadius || 0;
+		const brr = background.borderBottomRightRadius || 0;
+		const blr = background.borderBottomLeftRadius || 0;
+		const radiusSig = `${radius}|${tlr}|${trr}|${brr}|${blr}`;
+		if (radiusSig !== this._lastRadiusSig) {
+			this._lastRadiusSig = radiusSig;
+			try {
+				if ('CornerRadius' in native) {
+					if (radius > 0) {
+						const radiusDp = layout.toDeviceIndependentPixels(radius);
+						native.CornerRadius = Microsoft.UI.Xaml.CornerRadiusHelper.FromUniformRadius(radiusDp);
+					} else {
+						native.CornerRadius = Microsoft.UI.Xaml.CornerRadiusHelper.FromRadii(
+							layout.toDeviceIndependentPixels(tlr),
+							layout.toDeviceIndependentPixels(trr),
+							layout.toDeviceIndependentPixels(brr),
+							layout.toDeviceIndependentPixels(blr)
+						);
+					}
+				}
+			} catch (_e) { }
+		}
 
-		if (radius > 0) {
+		// Border rendering: XAML-native path (BorderThickness + BorderBrush) or composition path.
+		// Only access native.ActualWidth/Height when a composition handler actually exists —
+		// those are WinRT getter calls and are wasted on elements with no handler.
+		// (tCArgb / rCArgb / bCArgb / lCArgb computed above before needsComposition check.)
+		try {
+			const lW = layout.toDeviceIndependentPixels(background.borderLeftWidth || 0);
+			const tW = layout.toDeviceIndependentPixels(background.borderTopWidth || 0);
+			const rW = layout.toDeviceIndependentPixels(background.borderRightWidth || 0);
+			const bW = layout.toDeviceIndependentPixels(background.borderBottomWidth || 0);
+			const anyWidth = lW > 0 || tW > 0 || rW > 0 || bW > 0;
 			const radiusDp = layout.toDeviceIndependentPixels(radius || 0);
-			if (this._viewCompositionHandler) {
-				this._viewCompositionHandler.UpdateBorderRadius(
-					radiusDp, radiusDp, radiusDp, radiusDp,
-				);
-			} else {
-				native.CornerRadius = Windows.UI.Xaml.CornerRadiusHelper.FromUniformRadius(radiusDp);
+			// Border config sig excludes size — size is only needed inside UpdateBorder (lazy).
+			// Including size would force ActualWidth/Height reads even for elements with no handler.
+			const borderConfigSig = `${tW},${rW},${bW},${lW},${tCArgb},${rCArgb},${bCArgb},${lCArgb},${radiusDp}`;
+			if (borderConfigSig !== this._lastBorderSig) {
+				this._lastBorderSig = borderConfigSig;
+				if (!this._viewCompositionHandler) {
+					// XAML-native path: uniform-color border via BorderThickness + BorderBrush.
+					// CornerRadius already set above. No WinRT Compositor objects needed.
+					// `'BorderThickness' in native` is a free prototype check (no WinRT getter).
+					try {
+						if ('BorderThickness' in native) {
+							if (anyWidth) {
+								native.BorderThickness = { Left: lW, Top: tW, Right: rW, Bottom: bW } as any;
+								// All 4 colors are equal (enforced by needsComposition → use top as canonical).
+								const borderBrush = tCArgb
+									? new Microsoft.UI.Xaml.Media.SolidColorBrush(_argbToWinColor(tCArgb))
+									: null;
+								native.BorderBrush = borderBrush;
+								// Button VSM overrides BorderBrush via {ThemeResource ButtonBorderBrush}.
+								// Insert into the instance ResourceDictionary so the binding resolves our value.
+								if (this._isNativeButton && borderBrush) {
+									try { native.Resources.Insert('ButtonBorderBrush', borderBrush); } catch (_re) { }
+									try { native.Resources.Insert('ButtonBorderBrushPointerOver', borderBrush); } catch (_re) { }
+									try { native.Resources.Insert('ButtonBorderBrushPressed', borderBrush); } catch (_re) { }
+								}
+							} else {
+								native.BorderThickness = { Left: 0, Top: 0, Right: 0, Bottom: 0 } as any;
+								native.BorderBrush = null;
+							}
+						}
+					} catch (_e) { }
+				} else {
+					// Composition path: clear native XAML border (composition draws its own).
+					try {
+						if ('BorderThickness' in native) {
+							native.BorderThickness = { Left: 0, Top: 0, Right: 0, Bottom: 0 } as any;
+						}
+					} catch (_e) { }
+					this._viewCompositionHandler?.UpdateColorfulBorder(null);
+				}
 			}
-
-		} else {
+			// ActualWidth/Height reads gated inside the anyWidth branch — shadow-only handlers never
+			// pay these 2 WinRT getter calls. _argbToWinColor uses the module-level cache.
 			if (this._viewCompositionHandler) {
-				this._viewCompositionHandler.UpdateBorderRadius(
-					layout.toDeviceIndependentPixels(background.borderTopLeftRadius || 0),
-					layout.toDeviceIndependentPixels(background.borderTopRightRadius || 0),
-					layout.toDeviceIndependentPixels(background.borderBottomRightRadius || 0),
-					layout.toDeviceIndependentPixels(background.borderBottomLeftRadius || 0)
-				);
-			} else {
-
-				native.CornerRadius = Windows.UI.Xaml.CornerRadiusHelper.FromRadii(
-					layout.toDeviceIndependentPixels(background.borderTopLeftRadius || 0),
-					layout.toDeviceIndependentPixels(background.borderTopRightRadius || 0),
-					layout.toDeviceIndependentPixels(background.borderBottomRightRadius || 0),
-					layout.toDeviceIndependentPixels(background.borderBottomLeftRadius || 0)
-				)
+				if (anyWidth) {
+					const aw = native.ActualWidth || 0;
+					const ah = native.ActualHeight || 0;
+					this._viewCompositionHandler.UpdateBorder(aw, ah, tW, rW, bW, lW, tCArgb, rCArgb, bCArgb, lCArgb, radiusDp);
+				} else {
+					this._viewCompositionHandler.ClearBorder();
+				}
 			}
-		}
-
-
-		const borderWidth = typeof background.getUniformBorderWidth === 'function' ? background.getUniformBorderWidth() : 0;
-		const borderColor = (typeof background.getUniformBorderColor === 'function' ? background.getUniformBorderColor() as WindowsColor : undefined);
-		if (borderWidth && borderWidth > 0 && borderColor) {
-			const borderWidthDp = layout.toDeviceIndependentPixels(borderWidth);
-			if (this._viewCompositionHandler) {
-				this._viewCompositionHandler.UpdateBorderWidth(
-					borderWidthDp, borderWidthDp, borderWidthDp, borderWidthDp,
-				);
-
-				const uniformColor = borderColor?.windowsArgb ?? 0;
-
-				this._viewCompositionHandler.UpdateBorderColor(
-					uniformColor, uniformColor, uniformColor, uniformColor,
-				);
-			} else {
-				native.BorderThickness = Windows.UI.Xaml.ThicknessHelper.FromUniformLength(
-					layout.toDeviceIndependentPixels(borderWidth)
-				);
-				native.BorderBrush = new Windows.UI.Xaml.Media.SolidColorBrush(borderColor?.windows ?? Windows.UI.Colors.Transparent);
-			}
-
-		} else {
-
-			const leftWidth = layout.toDeviceIndependentPixels(background.borderLeftWidth || 0);
-			const topWidth = layout.toDeviceIndependentPixels(background.borderTopWidth || 0);
-			const rightWidth = layout.toDeviceIndependentPixels(background.borderRightWidth || 0);
-			const bottomWidth = layout.toDeviceIndependentPixels(background.borderBottomWidth || 0);
-
-			if (this._viewCompositionHandler) {
-
-				this._viewCompositionHandler.UpdateBorderWidth(
-					leftWidth, topWidth, rightWidth, bottomWidth,
-				);
-
-				const leftColor = (background.borderLeftColor || borderColor) as WindowsColor;
-				const topColor = (background.borderTopColor || borderColor) as WindowsColor;
-				const rightColor = (background.borderRightColor || borderColor) as WindowsColor;
-				const bottomColor = (background.borderBottomColor || borderColor) as WindowsColor;
-
-
-				this._viewCompositionHandler.UpdateBorderColor(
-					leftColor?.windowsArgb ?? 0, topColor?.windowsArgb ?? 0, rightColor?.windowsArgb ?? 0, bottomColor?.windowsArgb ?? 0,
-				);
-
-			} else {
-				// per-side border thickness is not directly supported in XAML
-				native.BorderThickness = Windows.UI.Xaml.ThicknessHelper.FromLengths(leftWidth, topWidth, rightWidth, bottomWidth);
-			}
-
-		}
-
-
+		} catch (_e) { }
 
 		this._nativeBackgroundState = 'drawn';
 
 		if (this._viewCompositionHandler) {
 			const hasShadow = background && typeof background.hasBoxShadows === 'function' && background.hasBoxShadows();
 			if (hasShadow) {
-				const boxShadows = typeof background.getBoxShadows === 'function' ? background.getBoxShadows() : background.boxShadows;
-				const s = boxShadows?.length ? boxShadows[boxShadows.length - 1] : null;
-				this._viewCompositionHandler.UpdateBoxShadow(s);
+				const boxShadows = typeof background.getBoxShadows === 'function' ? background.getBoxShadows() : (background as any).boxShadows;
+				this._viewCompositionHandler.UpdateBoxShadow(boxShadows?.length ? boxShadows : null, layout.toDeviceIndependentPixels(radius || 0));
 			} else {
 				this._viewCompositionHandler.UpdateBoxShadow(null);
 			}
 		}
-
 	}
+
+	// Last layout size we reacted to. LayoutUpdated fires on every layout pass (including scrolling);
+	// tracking size avoids expensive _onSizeChanged (tree mutation via box-shadow/border Images) when unchanged.
+	private _lastLayoutW = NaN;
+	private _lastLayoutH = NaN;
 
 	initNativeView(): void {
 		super.initNativeView();
+		// Size-dependent work (percent sizing, border/shadow/clip redraw) is wired ON DEMAND via
+		// _ensureSizeWatch(). SizeChanged fires for every recycled cell + child during fast scroll;
+		// wiring it unconditionally crossed the JS bridge per cell and blocked scrolling.
+		//
+		// Cache whether this native control is a Button-family control. The JS `in` operator checks
+		// the prototype chain without invoking a getter — free. We use this to gate the
+		// ButtonBackground ResourceDictionary inserts (button-template-only VSM resource).
+		try {
+			const nv = this.nativeViewProtected as any;
+			// `in` is unreliable on COM proxy objects — use direct property access instead.
+			// ClickMode is declared on ButtonBase (Button/AppBarButton/etc.) and returns 0 (Release)
+			// by default; non-button controls return `undefined` for absent properties.
+			this._isNativeButton = !!(nv && nv.ClickMode !== undefined);
+		} catch (_e) {
+			this._isNativeButton = false;
+		}
+	}
+
+	// Renders CSS background-image as a native ImageBrush. Resolves NS path forms (res://, ~/, data:,
+	// http(s) async, ms-appx). background-size → Stretch, background-position → alignment. CSS tiling
+	// (repeat) isn't expressible with ImageBrush; only single no-repeat is supported.
+	private _applyBackgroundImage(native: any, src: string, background: Background): void {
+		const Media: any = Microsoft.UI.Xaml.Media;
+		const apply = (bmp: any) => {
+			if (!bmp || !native) {
+				return;
+			}
+			try {
+				const brush = new Media.ImageBrush();
+				brush.ImageSource = bmp;
+				// Map background-size → Stretch (default no-repeat shows the image at natural size).
+				const size = ((background as any).backgroundSize || '').toString().toLowerCase();
+				try {
+					if (size === 'cover') {
+						brush.Stretch = Media.Stretch.UniformToFill;
+					} else if (size === 'contain') {
+						brush.Stretch = Media.Stretch.Uniform;
+					} else if (size === '100% 100%' || size === 'fill') {
+						brush.Stretch = Media.Stretch.Fill;
+					} else {
+						brush.Stretch = Media.Stretch.None;
+					}
+				} catch (_e) { }
+				// Map background-position keywords → alignment (CSS default is top-left).
+				const pos = ((background as any).backgroundPosition || '').toString().toLowerCase();
+				try {
+					brush.AlignmentX = pos.includes('right') ? Media.AlignmentX.Right : pos.includes('center') ? Media.AlignmentX.Center : Media.AlignmentX.Left;
+					brush.AlignmentY = pos.includes('bottom') ? Media.AlignmentY.Bottom : pos.includes('center') ? Media.AlignmentY.Center : Media.AlignmentY.Top;
+				} catch (_e) { }
+				native.Background = brush;
+				// Buttons ignore Background in their default template (VSM); override the template brush too.
+				try { (native as any).Resources.Insert('ButtonBackground', brush); } catch (_e) { }
+				try { (native as any).Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_e) { }
+				try { (native as any).Resources.Insert('ButtonBackgroundPressed', brush); } catch (_e) { }
+			} catch (_e) { }
+		};
+
+		try {
+			let url = (src || '').trim();
+			const m = url.match(/^url\(\s*['"]?([^'")]+)['"]?\s*\)$/i);
+			if (m) {
+				url = m[1];
+			}
+			if (url.startsWith('~/')) {
+				url = 'ms-appx:///app/' + url.slice(2);
+			}
+
+			if (/^data:/i.test(url)) {
+				const is = ImageSource.fromBase64Sync(url.replace(/^data:[^,]*,/, ''));
+				apply(is && (is as any).windows);
+			} else if (/^https?:/i.test(url)) {
+				ImageSource.fromUrl(url).then((is) => apply(is && (is as any).windows)).catch(() => { });
+			} else if (url.startsWith('res://')) {
+				const is = ImageSource.fromResourceSync(url);
+				apply(is && (is as any).windows);
+			} else {
+				const is = ImageSource.fromFileSync(url);
+				apply(is && (is as any).windows);
+			}
+		} catch (_e) { }
+	}
+
+	// Lazily wire SizeChanged via asDelegate (the only event that reliably subscribes in this host;
+	// raw-fn LayoutUpdated does not). Idempotent. Only called for views that need it.
+	private _ensureSizeWatch(): void {
+		if (this._sizeWatchWired) return;
+		const nv = this.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
+		if (!nv) return;
+		this._sizeWatchWired = true;
 		const ref = new WeakRef(this);
-		this.nativeViewProtected.LayoutUpdated = () => {
+		const onSize = () => {
 			const owner = ref.deref();
 			if (!owner) return;
-			owner._onSizeChanged();
-		}
+			const n = owner.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
+			if (!n) return;
+			// NOTE: _applyPercentSizing() is intentionally NOT called here synchronously.
+			// Setting Width/Height from within a SizeChanged handler mutates the layout tree
+			// mid-pass and triggers XAML's LayoutCycleException (0x80000003 fail-fast).
+			// The deferred _onSizeChanged() path calls it safely after the layout pass ends.
+			let w = NaN, h = NaN;
+			try { w = n.ActualWidth; h = n.ActualHeight; } catch (_e) { return; }
+			if (Math.abs(w - owner._lastLayoutW) < 0.5 && Math.abs(h - owner._lastLayoutH) < 0.5) {
+				return; // size unchanged (e.g. scrolling) — nothing to redraw
+			}
+			owner._lastLayoutW = w;
+			owner._lastLayoutH = h;
+			// Coalesce rapid size changes into one deferred redraw; defer out of the layout callback
+			// (tree mutation inside it risks a 0xC000027B fail-fast).
+			if (owner._sizeRedrawPending) return;
+			owner._sizeRedrawPending = true;
+			setTimeout(() => { const o = ref.deref(); if (o) { o._sizeRedrawPending = false; try { o._onSizeChanged(); } catch (_e) { } } }, 0);
+		};
+		try {
+			this._sizeChangedDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.SizeChangedEventHandler', onSize);
+			nv.SizeChanged = this._sizeChangedDelegate;
+		} catch (_e) { }
+		// LayoutUpdated intentionally NOT wired: it fires on every layout pass (scrolling, sibling
+		// changes, etc.) causing bridge round-trips per element per frame. SizeChanged is sufficient —
+		// it only fires when the element's actual pixel size changes.
+		// Apply immediately + once on load (covers percent before SizeChanged fires).
+		try { this._applyPercentSizing(); } catch (_e) { }
 	}
 
 	private _easeOutCubic(t: number) {
@@ -469,8 +1145,19 @@ export class View extends ViewCommon {
 	disposeNativeView(): void {
 		const nativeView = this.nativeViewProtected as any;
 		if (nativeView) {
-			nativeView.LayoutUpdated = null;
+			nativeView.SizeChanged = null;
 		}
+		// Reset so a recycled view re-wires on the next size-dependent property set.
+		this._sizeWatchWired = false;
+		this._sizeChangedDelegate = null;
+		// Reset background caches so recycled view re-applies on next use.
+		this._lastStaticSig = null;
+		this._lastRadiusSig = null;
+		this._lastBorderSig = null;
+		this._isNativeButton = null;
+		this._lastMarginSig = null;
+		this._lastPaddingSig = null;
+		this._colorAnimBrush = null;
 		super.disposeNativeView();
 	}
 
@@ -480,34 +1167,41 @@ export class View extends ViewCommon {
 			return;
 		}
 
-		// Recompute any percent-based sizing when layout updates.
 		try { this._applyPercentSizing(); } catch (_e) { }
 
-
 		const background = this.style.backgroundInternal;
-		const backgroundDependsOnSize = (background && background.image && background.image !== 'none') || (background && background.clipPath) || (background && !background.hasUniformBorder()) || (background && background.hasBorderRadius && background.hasBorderRadius()) || (background && background.hasBoxShadows && background.hasBoxShadows());
+		// Any border width makes the background size-dependent (composition border needs measured size).
+		const anyBorderWidth = !!(background && (background.borderTopWidth || background.borderRightWidth || background.borderBottomWidth || background.borderLeftWidth));
+		const backgroundDependsOnSize = (background && background.image && background.image !== 'none') || (background && background.clipPath) || anyBorderWidth || (background && !background.hasUniformBorder()) || (background && background.hasBorderRadius && background.hasBorderRadius()) || (background && background.hasBoxShadows && background.hasBoxShadows());
 
-		if (this._nativeBackgroundState === 'invalid' || (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize)) {
+		if (this._nativeBackgroundState === 'invalid') {
+			// Full redraw needed (background property changed while view had no size yet).
 			this._redrawNativeBackground(background);
+		} else if (this._nativeBackgroundState === 'drawn' && backgroundDependsOnSize) {
+			// Size changed — only re-run the size-dependent phase.  The static background
+			// (brush creation, native.Background=, Resources.Insert) is unchanged and
+			// skipping it saves ~15ms per element on every SizeChanged fire.
+			const native = this.nativeViewProtected as any;
+			if (native && background && typeof background === 'object') {
+				this._applySizeDependentNativeBackground(native, background);
+			}
 		}
 
-		// Update clip geometry and composition visuals size if needed
 		try {
-			if (nativeView.Clip && nativeView.Clip instanceof Windows.UI.Xaml.Media.RectangleGeometry) {
-				const rectGeom = nativeView.Clip as Windows.UI.Xaml.Media.RectangleGeometry;
+			if (nativeView.Clip && nativeView.Clip instanceof Microsoft.UI.Xaml.Media.RectangleGeometry) {
+				const rectGeom = nativeView.Clip as Microsoft.UI.Xaml.Media.RectangleGeometry;
 				const w = nativeView.ActualWidth || nativeView.Width || 0;
 				const h = nativeView.ActualHeight || nativeView.Height || 0;
 
-				const location = Windows.UI.Xaml.PointHelper.FromCoordinates(0, 0);
-				const size = Windows.UI.Xaml.SizeHelper.FromDimensions(w, h);
-				rectGeom.Rect = Windows.UI.Xaml.RectHelper.FromLocationAndSize(location, size);
+				const location = Microsoft.UI.Xaml.PointHelper.FromCoordinates(0, 0);
+				const size = Microsoft.UI.Xaml.SizeHelper.FromDimensions(w, h);
+				rectGeom.Rect = Microsoft.UI.Xaml.RectHelper.FromLocationAndSize(location, size);
 
 			}
 
 		} catch (_e) { }
 	}
 
-	// Compute and apply percent-based width/height (percent values stored in _percentWidth/_percentHeight)
 	private _applyPercentSizing(): void {
 		const nativeView = this.nativeViewProtected as any;
 		if (!nativeView) {
@@ -519,11 +1213,9 @@ export class View extends ViewCommon {
 			const parentWidth = parentNative?.ActualWidth || 0;
 			const parentHeight = parentNative?.ActualHeight || 0;
 
-			// Only apply when the parent has a real layout size. Using Window.Bounds as a
-			// fallback when the parent is 0 causes nested views with height="100%" to expand
-			// to full-screen height, overflowing their container and covering sibling rows.
-			// LayoutUpdated fires again once the parent is properly sized, at which point
-			// the correct percent value is applied.
+			// Only apply when parent has a real layout size. Using Window.Bounds as fallback when
+			// parent is 0 causes nested height="100%" views to overflow the container and cover
+			// sibling rows; LayoutUpdated fires again once the parent is properly sized.
 			if (this._percentWidth != null && parentWidth > 0) {
 				const w = parentWidth * (this._percentWidth);
 				nativeView.Width = isFinite(w) ? w : NaN;
@@ -548,8 +1240,6 @@ export class View extends ViewCommon {
 
 	private _viewCompositionHandler: any;
 
-	private _modalAnimatedOptions: any[] | undefined;
-
 	[backgroundInternalProperty.setNative](value: any) {
 		this._nativeBackgroundState = 'invalid';
 		this._redrawNativeBackground(value);
@@ -561,15 +1251,36 @@ export class View extends ViewCommon {
 			return;
 		}
 
-		// Handle percent-based widths specially: store percent and compute on layout updates.
 		if (value && typeof value === 'object' && (value as any).unit === '%') {
-			this._percentWidth = (value as any).value;
+			const pct = (value as any).value;
+			this._percentWidth = pct;
+			this._ensureSizeWatch(); // re-apply percent when the parent resizes
 			this.nativeViewProtected.Width = NaN;
-			try { this._applyPercentSizing(); } catch (_e) { }
+			if (pct >= 1) {
+				// 100% → let the container size it natively (NativeScript.Widgets.StackLayout gives
+				// a Stretch child the remaining bounded extent; Grid Stretch fills the cell).
+				(this.nativeViewProtected as any).HorizontalAlignment = 3; // Stretch
+			} else {
+				try { this._applyPercentSizing(); } catch (_e) { }
+			}
+			// Feed FlexBasisPercent so the C++ FlexboxLayout panel's MeasureOverride sets
+			// item.MainSize = containerWidth * pct, which triggers a line break on flexWrap:wrap.
+			// pct is stored as a 0..1 fraction; the C++ property expects 0..100.
+			try {
+				(NativeScript as any).Widgets.FlexboxLayout.SetFlexBasisPercent(
+					this.nativeViewProtected as any, pct * 100
+				);
+			} catch (_e) {}
 			return;
 		}
 
 		this._percentWidth = null;
+		// Clear any previously set flex-basis so the C++ widget falls back to DesiredSize.
+		try {
+			(NativeScript as any).Widgets.FlexboxLayout.SetFlexBasisPercent(
+				this.nativeViewProtected as any, -1
+			);
+		} catch (_e) {}
 		this.nativeViewProtected.Width = toXamlLength(value);
 	}
 
@@ -580,9 +1291,20 @@ export class View extends ViewCommon {
 		}
 
 		if (value && typeof value === 'object' && (value as any).unit === '%') {
-			this._percentHeight = (value as any).value;
+			const pct = (value as any).value;
+			this._percentHeight = pct;
+			this._ensureSizeWatch(); // re-apply percent when the parent resizes
 			this.nativeViewProtected.Height = NaN;
-			try { this._applyPercentSizing(); } catch (_e) { }
+			if (pct >= 1) {
+				// 100% → let the container size it natively (NativeScript.Widgets.StackLayout sizes a
+				// Stretch child to remaining bounded extent; a Grid Stretch fills the cell).
+				(this.nativeViewProtected as any).VerticalAlignment = 3; // Stretch
+				// VerticalAlignment is ARRANGE-only; changing it doesn't re-run MeasureOverride.
+				// Force a re-measure so the panel re-evaluates this child as a fill child.
+				try { this.nativeViewProtected.InvalidateMeasure(); } catch (_e) { }
+			} else {
+				try { this._applyPercentSizing(); } catch (_e) { }
+			}
 			return;
 		}
 
@@ -652,7 +1374,21 @@ export class View extends ViewCommon {
 			const t = toXamlLength(this.style.marginTop) || 0;
 			const r = toXamlLength(this.style.marginRight) || 0;
 			const b = toXamlLength(this.style.marginBottom) || 0;
-			(this.nativeViewProtected as any).Margin = Windows.UI.Xaml.ThicknessHelper.FromLengths(l, t, r, b);
+			// All 4 margin properties share this helper — CSS `margin:` decomposes into 4 separate
+			// setNative calls in the same synchronous applyAllNativeSetters loop. The sig check
+			// coalesces them: the first call does the WinRT set; the remaining 3 are no-ops.
+			const sig = `${l},${t},${r},${b}`;
+			if (sig === this._lastMarginSig) return;
+			const prev = this._lastMarginSig;
+			this._lastMarginSig = sig;
+			// Skip the WinRT call on the very first zero-margin assignment: XAML default Margin is
+			// already {0,0,0,0}, so setting it is a no-op. Only safe when prev===null (native never
+			// touched); if margin was previously non-zero and is now reset to 0, we still call WinRT.
+			if (l === 0 && t === 0 && r === 0 && b === 0 && prev === null) return;
+			// Thickness is a plain value struct {Left,Top,Right,Bottom: f64} — pass as a plain JS
+			// object via the bridge's append_struct_object_bytes path (same as Windows.UI.Color).
+			// Saves the ThicknessHelper.FromLengths WinRT static call on every margin change.
+			(this.nativeViewProtected as any).Margin = { Left: l, Top: t, Right: r, Bottom: b } as any;
 		} catch (_e) { }
 	}
 
@@ -673,7 +1409,13 @@ export class View extends ViewCommon {
 			const t = toXamlLength(this.style.paddingTop) || 0;
 			const r = toXamlLength(this.style.paddingRight) || 0;
 			const b = toXamlLength(this.style.paddingBottom) || 0;
-			native.Padding = Windows.UI.Xaml.ThicknessHelper.FromLengths(l, t, r, b);
+			const sig = `${l},${t},${r},${b}`;
+			if (sig === this._lastPaddingSig) return;
+			const prev = this._lastPaddingSig;
+			this._lastPaddingSig = sig;
+			// XAML default Padding is {0,0,0,0} — skip the WinRT call on the first zero-padding set.
+			if (l === 0 && t === 0 && r === 0 && b === 0 && prev === null) return;
+			native.Padding = { Left: l, Top: t, Right: r, Bottom: b } as any;
 		} catch (_e) { }
 	}
 
@@ -718,8 +1460,8 @@ export class View extends ViewCommon {
 		try {
 			const native = this.nativeViewProtected as any;
 			const y = this.originY ?? 0.5;
-			if (native && typeof Windows !== 'undefined' && Windows.UI && Windows.UI.Xaml && Windows.UI.Xaml.PointHelper) {
-				native.RenderTransformOrigin = Windows.UI.Xaml.PointHelper.FromCoordinates(value, y);
+			if (native && typeof Windows !== 'undefined' && Windows.UI && Microsoft.UI.Xaml && Microsoft.UI.Xaml.PointHelper) {
+				native.RenderTransformOrigin = Microsoft.UI.Xaml.PointHelper.FromCoordinates(value, y);
 			}
 		} catch (_e) { }
 	}
@@ -738,8 +1480,8 @@ export class View extends ViewCommon {
 		try {
 			const native = this.nativeViewProtected as any;
 			const x = this.originX ?? 0.5;
-			if (native && typeof Windows !== 'undefined' && Windows.UI && Windows.UI.Xaml && Windows.UI.Xaml.PointHelper) {
-				native.RenderTransformOrigin = Windows.UI.Xaml.PointHelper.FromCoordinates(x, value);
+			if (native && typeof Windows !== 'undefined' && Windows.UI && Microsoft.UI.Xaml && Microsoft.UI.Xaml.PointHelper) {
+				native.RenderTransformOrigin = Microsoft.UI.Xaml.PointHelper.FromCoordinates(x, value);
 			}
 		} catch (_e) { }
 	}
@@ -821,18 +1563,16 @@ export class View extends ViewCommon {
 			try {
 				const ox = this.originX ?? 0.5;
 				const oy = this.originY ?? 0.5;
-				native.RenderTransformOrigin = Windows.UI.Xaml.PointHelper.FromCoordinates(ox, oy);
+				native.RenderTransformOrigin = Microsoft.UI.Xaml.PointHelper.FromCoordinates(ox, oy);
 			} catch (_e) { }
-		} catch (_e) {
-			// best-effort
-		}
+		} catch (_e) { }
 	}
 
-	// Simple modal implementation using a Popup overlay
+	// Modal implemented as a Popup overlay (ContentDialog callbacks never reach V8).
 	private _modalPopup: any;
 	private _modalOverlay: any;
 	private _modalAnimatedOptions: Array<boolean>;
-	// Saved previous layout/size/alignment for restoring after modal closes
+	// Saved layout/size/alignment to restore after modal closes.
 	private _modalPrevHorizontalAlignment: any;
 	private _modalPrevVerticalAlignment: any;
 	private _modalPrevWidth: number;
@@ -845,35 +1585,30 @@ export class View extends ViewCommon {
 	private _isModalClosing: boolean;
 
 	protected _showNativeModalView(parent: ViewCommon, options: any) {
-		// Prepare as root view and call base
 		this._setupAsRootView({});
 		super._showNativeModalView(parent, options);
 
 		this._raiseShowingModallyEvent();
 
 		try {
-			const popup = new Windows.UI.Xaml.Controls.Primitives.Popup();
-			const overlay = new Windows.UI.Xaml.Controls.Grid();
+			const popup = new Microsoft.UI.Xaml.Controls.Primitives.Popup();
+			const overlay = new Microsoft.UI.Xaml.Controls.Grid();
 			overlay.HorizontalAlignment = 3; // Stretch
 			overlay.VerticalAlignment = 3; // Stretch
-			// Transparent background to capture clicks; caller can style the modal's background
-			overlay.Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent);
+			overlay.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent);
 
-			// Ensure overlay fills window (best-effort)
 			try {
-				const bounds = Windows.UI.Xaml.Window.Current.Bounds;
-				overlay.Width = bounds.Width;
-				overlay.Height = bounds.Height;
+				const bounds = getCurrentWindowBounds(this.nativeViewProtected);
+				if (bounds) {
+					overlay.Width = bounds.Width;
+					overlay.Height = bounds.Height;
+				}
 			} catch (_e) { }
 
-			// Determine show animation preference early
 			const showAnimated = options && options.animated === undefined ? true : !!options.animated;
-			// Prepare overlay opacity for animation
 			try { overlay.Opacity = showAnimated ? 0 : 1; } catch (_e) { }
 
-			// Host the modal native element inside overlay
 			try {
-				// Save previous alignment/size to restore later
 				try {
 					this._modalPrevHorizontalAlignment = this.horizontalAlignment;
 					this._modalPrevVerticalAlignment = this.verticalAlignment;
@@ -895,13 +1630,14 @@ export class View extends ViewCommon {
 					try {
 						(this.nativeViewProtected as any).HorizontalAlignment = 3; // Stretch
 						(this.nativeViewProtected as any).VerticalAlignment = 3; // Stretch
-						// If fullscreen, make it fill window bounds
 						try {
-							const bounds = Windows.UI.Xaml.Window.Current.Bounds;
-							this.width = bounds.Width;
-							this.height = bounds.Height;
-							(this.nativeViewProtected as any).Width = bounds.Width;
-							(this.nativeViewProtected as any).Height = bounds.Height;
+							const bounds = getCurrentWindowBounds(this.nativeViewProtected);
+							if (bounds) {
+								this.width = bounds.Width;
+								this.height = bounds.Height;
+								(this.nativeViewProtected as any).Width = bounds.Width;
+								(this.nativeViewProtected as any).Height = bounds.Height;
+							}
 						} catch (_e) { }
 					} catch (_e) { }
 				} else {
@@ -912,7 +1648,6 @@ export class View extends ViewCommon {
 						(this.nativeViewProtected as any).VerticalAlignment = 1; // Center
 					} catch (_e) { }
 
-					// Honor width/height if provided (top-level or ios-specific)
 					try {
 						const w = options && typeof options.width === 'number' ? options.width : options && options.ios && typeof options.ios.width === 'number' ? options.ios.width : undefined;
 						const h = options && typeof options.height === 'number' ? options.height : options && options.ios && typeof options.ios.height === 'number' ? options.ios.height : undefined;
@@ -920,7 +1655,6 @@ export class View extends ViewCommon {
 							this.width = w;
 							try { (this.nativeViewProtected as any).Width = w; } catch (_e) { }
 						} else {
-							// allow natural measurement when no explicit width provided
 							this.width = unsetValue;
 							try { (this.nativeViewProtected as any).Width = NaN; } catch (_e) { }
 						}
@@ -941,9 +1675,9 @@ export class View extends ViewCommon {
 			popup.IsLightDismissEnabled = options && options.cancelable !== undefined ? !!options.cancelable : true;
 			this._modalPopup = popup;
 			this._modalOverlay = overlay;
-			
 
-			// Attach Closed handler to forward light-dismiss to modal close logic
+
+			// Closed handler forwards light-dismiss to modal close logic.
 			try {
 				this._modalPopupClosedHandler = () => {
 					if (this._isModalClosing) {
@@ -954,13 +1688,23 @@ export class View extends ViewCommon {
 					}
 				};
 				//@ts-ignore
-				popup.AddHandler(Windows.UI.Xaml.Controls.Primitives.Popup.ClosedEvent, this._modalPopupClosedHandler, true);
-				
+				popup.AddHandler(Microsoft.UI.Xaml.Controls.Primitives.Popup.ClosedEvent, this._modalPopupClosedHandler, true);
+
+			} catch (_e) { }
+
+			// A Popup with no XamlRoot throws E_UNEXPECTED (0x8000FFFF) on open. Anchor to the XamlRoot
+			// of an element already in the live tree (the modal element isn't attached yet).
+			try {
+				const xamlRoot = (parent as any)?.nativeViewProtected?.XamlRoot
+					|| (getCurrentWindowContent() as any)?.XamlRoot
+					|| (this.nativeViewProtected as any)?.XamlRoot;
+				if (xamlRoot && typeof (popup as any).XamlRoot !== 'undefined') {
+					(popup as any).XamlRoot = xamlRoot;
+				}
 			} catch (_e) { }
 
 			popup.IsOpen = true;
 
-			// Ensure the modal view lifecycle runs (loaded) so pages and child views initialize
 			try {
 				this.callLoaded();
 			} catch (_e) { }
@@ -971,14 +1715,13 @@ export class View extends ViewCommon {
 			}
 			this._modalAnimatedOptions.push(animated);
 			this._raiseShownModallyEvent();
-			// Perform show animation (fade-in)
 			try {
 				if (showAnimated && this._modalOverlay) {
 					this._animateNativeOpacity(this._modalOverlay, 0, 1, 240);
 				}
 			} catch (_e) { }
 		} catch (e) {
-			console.log('[View._showNativeModalView] failed to open popup modal:', e);
+			console.error('[View._showNativeModalView] failed to open popup modal:', e);
 		}
 	}
 
@@ -989,18 +1732,15 @@ export class View extends ViewCommon {
 		}
 		this._isModalClosing = true;
 		try {
-			// Remove Closed handler if attached
 			try {
 				if (this._modalPopup && this._modalPopupClosedHandler && typeof this._modalPopup.removeEventListener === 'function') {
 					try { this._modalPopup.removeEventListener('Closed', this._modalPopupClosedHandler); } catch (_e) { }
 				}
 			} catch (_e) { }
 
-			// Determine whether we should animate closing
 			const animated = this._modalAnimatedOptions && this._modalAnimatedOptions.length ? !!this._modalAnimatedOptions.pop() : true;
 
 			const finalize = () => {
-				// Restore previous alignment/size
 				try {
 					if (this._modalPrevHorizontalAlignment !== undefined) {
 						this.horizontalAlignment = this._modalPrevHorizontalAlignment;
@@ -1030,20 +1770,18 @@ export class View extends ViewCommon {
 					} catch (_e) { }
 				} catch (_e) { }
 
-				// Close popup and clear overlay
 				try {
 					if (this._modalPopup) {
-						try { this._modalPopup.IsOpen = false; } catch (_e) { }
-						try { this._modalPopup.Child = null; } catch (_e) { }
+						this._modalPopup.IsOpen = false;
+						this._modalPopup.Child = null;
 						this._modalPopup = null;
 					}
 					if (this._modalOverlay) {
-						try { this._modalOverlay.Children.Clear(); } catch (_e) { }
+						this._modalOverlay.Children.Clear();
 						this._modalOverlay = null;
 					}
 				} catch (_e) { }
 
-				// Reset modal closing flag
 				this._isModalClosing = false;
 
 				whenClosedCallback();
@@ -1064,7 +1802,6 @@ export class View extends ViewCommon {
 	}
 }
 
-// Default native background state set on prototype for downlevel emitters
 try {
 	(View.prototype as any)._nativeBackgroundState = 'unset';
 } catch (_e) { }
@@ -1074,7 +1811,7 @@ export class ContainerView extends View { }
 export class CustomLayoutView extends ContainerView {
 
 	createNativeView() {
-		return new Windows.UI.Xaml.Controls.StackPanel();
+		return new Microsoft.UI.Xaml.Controls.StackPanel();
 	}
 
 	public _addViewToNativeVisualTree(child: ViewCommon, _atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
@@ -1097,14 +1834,15 @@ export class CustomLayoutView extends ContainerView {
 
 				try { if (!(nativeChild as any).__ns_view) (nativeChild as any).__ns_view = child; } catch (_e) { }
 
-				// Force layout on the appended child in case the runtime deferred measure/arrange
-				try { if (typeof (nativeChild as any).InvalidateMeasure === 'function') (nativeChild as any).InvalidateMeasure(); } catch (_e) { }
-				try { if (typeof (nativeChild as any).InvalidateArrange === 'function') (nativeChild as any).InvalidateArrange(); } catch (_e) { }
-				try { if (typeof (nativeChild as any).UpdateLayout === 'function') (nativeChild as any).UpdateLayout(); } catch (_e) { }
-
-				try { if (typeof nativeParent.UpdateLayout === 'function') nativeParent.UpdateLayout(); } catch (_e) { }
-				try { if (typeof (nativeParent as any).InvalidateMeasure === 'function') (nativeParent as any).InvalidateMeasure(); } catch (_e) { }
-				try { if (typeof (nativeParent as any).InvalidateArrange === 'function') (nativeParent as any).InvalidateArrange(); } catch (_e) { }
+				// Do NOT call UpdateLayout() / InvalidateMeasure() / InvalidateArrange() here.
+				// XAML's Children.Append() / InsertAt() already marks both the new child and
+				// the parent panel dirty for the next layout pass. Calling these explicitly:
+				//   • nativeChild.UpdateLayout()  — forces a synchronous measure+arrange on the
+				//     child's full template tree immediately after insertion (wasteful)
+				//   • nativeParent.UpdateLayout() — forces a full synchronous layout of the
+				//     entire panel after EACH child add, making construction O(n²): a page with
+				//     50 children triggers 1+2+…+50 = 1275 forced layout passes.
+				// XAML batches and defers layout to a single pass at frame time — trust it.
 
 				return true;
 			}

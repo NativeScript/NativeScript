@@ -15,106 +15,162 @@ const KEYBOARD_SCOPE: Record<string, number> = {
 	integer: 29,
 };
 
-function applyInputScope(nativeView: any, kbType: string): void {
+function applyInputScope(nativeView: Microsoft.UI.Xaml.Controls.TextBox, kbType: string): void {
+	const scopeValue = KEYBOARD_SCOPE[kbType];
+	if (scopeValue === undefined) {
+		return;
+	}
+	const scope = new Microsoft.UI.Xaml.Input.InputScope();
+	const scopeName = new Microsoft.UI.Xaml.Input.InputScopeName(scopeValue);
+	// Names is typed as `IVector | array`; the runtime hands back the IVector, so building
+	// the collection can throw across the bridge — keep this guarded.
 	try {
-		const scopeValue = KEYBOARD_SCOPE[kbType];
-		if (scopeValue === undefined) return;
-		const scope = new Windows.UI.Xaml.Input.InputScope();
-		const scopeName = new Windows.UI.Xaml.Input.InputScopeName();
-		(scopeName as any).NameValue = scopeValue;
-		((scope as any).Names as Windows.Foundation.Collections.IVector<Windows.UI.Xaml.Input.InputScopeName>).Append(scopeName);
+		(scope.Names as Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Input.InputScopeName>).Append(scopeName);
 		nativeView.InputScope = scope;
 	} catch (_e) {}
 }
 
 export class TextField extends TextFieldBase {
-	declare nativeViewProtected: Windows.UI.Xaml.Controls.TextBox | Windows.UI.Xaml.Controls.PasswordBox;
+	declare nativeViewProtected: Microsoft.UI.Xaml.Controls.TextBox | Microsoft.UI.Xaml.Controls.PasswordBox;
 	private _isSecure = false;
+	private _keyDownDelegate: Microsoft.UI.Xaml.Input.KeyEventHandler | null = null;
 
-	public createNativeView(): any {
-		return this._isSecure
-			? new Windows.UI.Xaml.Controls.PasswordBox()
-			: new Windows.UI.Xaml.Controls.TextBox();
+	// Declared so TS sees it through the common base; re-attached after the secure view swap.
+	declare _attachTextChangeListener: () => void;
+
+	public createNativeView(): Microsoft.UI.Xaml.Controls.TextBox | Microsoft.UI.Xaml.Controls.PasswordBox {
+		// `secure` is parsed before the native view is created; pick the correct control up-front.
+		if (this.secure != null) {
+			this._isSecure = !!this.secure;
+		}
+		return this._isSecure ? new Microsoft.UI.Xaml.Controls.PasswordBox() : new Microsoft.UI.Xaml.Controls.TextBox();
 	}
 
+	public initNativeView(): void {
+		super.initNativeView(); // wires TextChanged/PasswordChanged from editable-text-base
+		this._attachReturnKeyListener();
+	}
+
+	public _attachReturnKeyListener(): void {
+		const nv = this.nativeViewProtected;
+		if (!nv) {
+			return;
+		}
+		const ref = new WeakRef(this);
+		this._keyDownDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.Input.KeyEventHandler', (_sender: any, e: Microsoft.UI.Xaml.Input.KeyRoutedEventArgs) => {
+			if (e.Key === Windows.System.VirtualKey.Enter) {
+				const owner = ref.deref();
+				if (owner) owner.notify({ eventName: TextFieldBase.returnPressEvent, object: owner });
+			}
+		});
+		// AddHandler(KeyDownEvent) throws E_INVALIDARG (0x80070057) in the runtime's RoutedEvent
+		// projection — an uncaught throw jams frame navigation. Fall back to instance KeyDown.
+		try {
+			nv.AddHandler(Microsoft.UI.Xaml.UIElement.KeyDownEvent, this._keyDownDelegate, true);
+		} catch (_e) {
+			try {
+				(nv as Microsoft.UI.Xaml.UIElement).KeyDown = this._keyDownDelegate;
+			} catch (_e2) {}
+		}
+	}
+
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
 	[secureProperty.setNative](value: boolean) {
-		if (this._isSecure === !!value) return;
+		if (this._isSecure === !!value) {
+			return;
+		}
 		this._isSecure = !!value;
 
-		const prev = this.nativeViewProtected as any;
-		const currentText = this._isSecure ? (prev?.Password ?? '') : (prev?.Text ?? '');
+		const prev = this.nativeViewProtected;
+		const currentText = this._isSecure ? (prev as Microsoft.UI.Xaml.Controls.PasswordBox)?.Password ?? '' : (prev as Microsoft.UI.Xaml.Controls.TextBox)?.Text ?? '';
 
-		try {
-			const newView: any = this._isSecure
-				? new Windows.UI.Xaml.Controls.PasswordBox()
-				: new Windows.UI.Xaml.Controls.TextBox();
+		const newView = this._isSecure ? new Microsoft.UI.Xaml.Controls.PasswordBox() : new Microsoft.UI.Xaml.Controls.TextBox();
 
-			// Try to swap in parent visual tree
-			const nativeParent = (this.parent as any)?.nativeViewProtected;
-			if (nativeParent?.Children) {
-				const children: any = nativeParent.Children;
-				const count: number = children.Size;
-				for (let i = 0; i < count; i++) {
+		// Must swap in the ACTUAL visual parent (not the NS parent's nativeViewProtected) —
+		// using the NS parent's Border missed the real container and the swap silently no-op'd,
+		// leaving secure fields as cleartext TextBoxes.
+		const visualParent = prev?.Parent;
+		let swapped = false;
+		if (visualParent) {
+			const children = (visualParent as Microsoft.UI.Xaml.Controls.Panel).Children;
+			if (children && typeof children.Size === 'number') {
+				for (let i = 0; i < children.Size; i++) {
 					if (children.GetAt(i) === prev) {
 						children.RemoveAt(i);
-						children.Append(newView);
+						children.InsertAt(i, newView); // preserve position
+						swapped = true;
 						break;
 					}
 				}
 			}
-			this.nativeViewProtected = newView;
-			if (this._isSecure) {
-				newView.Password = currentText;
-			} else {
-				newView.Text = currentText;
+			if (!swapped) {
+				const contentHost = visualParent as Microsoft.UI.Xaml.Controls.ContentControl;
+				if (contentHost.Content === prev) {
+					contentHost.Content = newView;
+					swapped = true;
+				}
 			}
-		} catch (_e) {}
+			if (!swapped) {
+				const borderHost = visualParent as Microsoft.UI.Xaml.Controls.Border;
+				if (borderHost.Child === prev) {
+					borderHost.Child = newView;
+					swapped = true;
+				}
+			}
+		}
+		this.nativeViewProtected = newView;
+		if (this._isSecure) {
+			(newView as Microsoft.UI.Xaml.Controls.PasswordBox).Password = currentText;
+		} else {
+			(newView as Microsoft.UI.Xaml.Controls.TextBox).Text = currentText;
+		}
+		this._attachTextChangeListener();
+		this._attachReturnKeyListener();
 	}
 
 	[hintProperty.setNative](value: string) {
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView && typeof nativeView.PlaceholderText !== 'undefined') {
+		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
+		if (typeof nativeView.PlaceholderText !== 'undefined') {
 			nativeView.PlaceholderText = value ?? '';
 		}
 	}
 
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
 	[editableProperty.setNative](value: boolean) {
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView && typeof nativeView.IsReadOnly !== 'undefined') {
+		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
+		if (typeof nativeView.IsReadOnly !== 'undefined') {
 			nativeView.IsReadOnly = !value;
 		}
 	}
 
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
 	[maxLengthProperty.setNative](value: number) {
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView && typeof nativeView.MaxLength !== 'undefined') {
+		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
+		if (typeof nativeView.MaxLength !== 'undefined') {
 			nativeView.MaxLength = value ?? 0;
 		}
 	}
 
-	//@ts-ignore
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
 	[keyboardTypeProperty.setNative](value: CoreTypes.KeyboardInputType) {
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView) applyInputScope(nativeView, value);
+		if (this.nativeViewProtected) {
+			applyInputScope(this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox, value);
+		}
 	}
 
-	//@ts-ignore
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
 	[autocapitalizationTypeProperty.setNative](value: CoreTypes.AutocapitalizationInputType) {
-		const nativeView = this.nativeViewProtected as any;
-		if (!nativeView) return;
-		try {
+		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
+		if (typeof nativeView.CharacterCasing !== 'undefined') {
 			nativeView.CharacterCasing = value === 'allcharacters' ? 1 : 0;
-		} catch (_e) {}
+		}
 	}
 
-	//@ts-ignore
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
 	[colorProperty.setNative](value: Color | null) {
-		const nativeView = this.nativeViewProtected as any;
-		if (!nativeView) return;
-		try {
-			if (value instanceof Color) {
-				nativeView.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(value.windows);
-			}
-		} catch (_e) {}
+		const nativeView = this.nativeViewProtected;
+		if (nativeView && value instanceof Color) {
+			nativeView.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);
+		}
 	}
 }

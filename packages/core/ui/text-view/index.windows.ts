@@ -1,7 +1,7 @@
 export * from './text-view-common';
 
 import { TextViewBase } from './text-view-common';
-import { hintProperty, editableProperty, maxLengthProperty, keyboardTypeProperty } from '../editable-text-base/editable-text-base-common';
+import { keyboardTypeProperty } from '../editable-text-base/editable-text-base-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import type { CoreTypes } from '../../core-types';
@@ -16,60 +16,36 @@ const KEYBOARD_SCOPE: Record<string, number> = {
 };
 
 export class TextView extends TextViewBase {
-	declare nativeViewProtected: Windows.UI.Xaml.Controls.TextBox;
+	declare nativeViewProtected: Microsoft.UI.Xaml.Controls.TextBox;
 
-	createNativeView(): any {
-		const textBox = new Windows.UI.Xaml.Controls.TextBox();
-		(textBox as any).AcceptsReturn = true;
-		(textBox as any).TextWrapping = 1; // Wrap
-		(textBox as any).VerticalScrollBarVisibility = 1; // Auto
+	createNativeView(): Microsoft.UI.Xaml.Controls.TextBox {
+		const textBox = new Microsoft.UI.Xaml.Controls.TextBox();
+		textBox.AcceptsReturn = true;
+		textBox.TextWrapping = 1 as never; // Wrap
+		textBox.VerticalScrollBarVisibility = 1 as never; // Auto
 		return textBox;
-	}
-
-	[hintProperty.setNative](value: string) {
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView && typeof nativeView.PlaceholderText !== 'undefined') {
-			nativeView.PlaceholderText = value ?? '';
-		}
-	}
-
-	[editableProperty.setNative](value: boolean) {
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView && typeof nativeView.IsReadOnly !== 'undefined') {
-			nativeView.IsReadOnly = !value;
-		}
-	}
-
-	[maxLengthProperty.setNative](value: number) {
-		const nativeView = this.nativeViewProtected as any;
-		if (nativeView && typeof nativeView.MaxLength !== 'undefined') {
-			nativeView.MaxLength = value ?? 0;
-		}
 	}
 
 	//@ts-ignore
 	[keyboardTypeProperty.setNative](value: CoreTypes.KeyboardInputType) {
-		const nativeView = this.nativeViewProtected as any;
+		const nativeView = this.nativeViewProtected;
 		if (!nativeView) return;
+		const scopeValue = KEYBOARD_SCOPE[value];
+		if (scopeValue === undefined) return;
+		const scope = new Microsoft.UI.Xaml.Input.InputScope();
+		const scopeName = new Microsoft.UI.Xaml.Input.InputScopeName(scopeValue);
+		// Names is typed as `IVector | array`; the runtime hands back the IVector, so
+		// building the collection can throw across the bridge — keep this guarded.
 		try {
-			const scopeValue = KEYBOARD_SCOPE[value];
-			if (scopeValue === undefined) return;
-			const scope = new Windows.UI.Xaml.Input.InputScope();
-			const scopeName = new Windows.UI.Xaml.Input.InputScopeName();
-			(scopeName as any).NameValue = scopeValue;
-			((scope as any).Names as Windows.Foundation.Collections.IVector<Windows.UI.Xaml.Input.InputScopeName>).Append(scopeName);
+			(scope.Names as Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Input.InputScopeName>).Append(scopeName);
 			nativeView.InputScope = scope;
 		} catch (_e) {}
 	}
 
 	//@ts-ignore
 	[colorProperty.setNative](value: Color | null) {
-		const nativeView = this.nativeViewProtected as any;
-		if (!nativeView) return;
-		try {
-			if (value instanceof Color) {
-				nativeView.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(value.windows);
-			}
-		} catch (_e) {}
+		if (this.nativeViewProtected && value instanceof Color) {
+			this.nativeViewProtected.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);
+		}
 	}
 }

@@ -4,15 +4,11 @@ import { PageBase } from './page-common';
 import type { View } from '../core/view';
 
 export class Page extends PageBase {
-	declare nativeViewProtected: Windows.UI.Xaml.Controls.Grid;
-	private _grid: Windows.UI.Xaml.Controls.Grid;
+	declare nativeViewProtected: Microsoft.UI.Xaml.Controls.Grid;
+	private _grid: Microsoft.UI.Xaml.Controls.Grid;
 
-	constructor() {
-		super();
-		this._grid = new Windows.UI.Xaml.Controls.Grid();
-	}
-
-	public createNativeView() {
+	public createNativeView(): Microsoft.UI.Xaml.Controls.Grid {
+		this._grid = new Microsoft.UI.Xaml.Controls.Grid();
 		return this._grid;
 	}
 
@@ -21,20 +17,18 @@ export class Page extends PageBase {
 		super.disposeNativeView();
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.Grid {
+	get windows(): Microsoft.UI.Xaml.Controls.Grid {
 		return this._grid;
 	}
 
 	public _addViewToNativeVisualTree(child: View, _atIndex: number): boolean {
-		if (this.actionBar && child === (this.actionBar as any)) {
+		if (this.actionBar && child === (this.actionBar as unknown as View)) {
 			return true;
 		}
 
-		const nativeGrid = this._grid;
-		const nativeChild = (child as any).nativeViewProtected as any;
-
-		if (nativeGrid && nativeChild) {
-			(nativeGrid as any).Children.Append(nativeChild);
+		const nativeChild = child.nativeViewProtected as Microsoft.UI.Xaml.UIElement;
+		if (this._grid && nativeChild) {
+			this._grid.Children.Append(nativeChild);
 			return true;
 		}
 
@@ -42,14 +36,13 @@ export class Page extends PageBase {
 	}
 
 	public _removeViewFromNativeVisualTree(child: View): void {
-		if (this.actionBar && child === (this.actionBar as any)) {
+		if (this.actionBar && child === (this.actionBar as unknown as View)) {
 			return;
 		}
 
 		if (this._grid) {
-			const children = (this._grid as any).Children;
-			const count = children?.Size ?? 0;
-			for (let i = count - 1; i >= 0; i--) {
+			const children = this._grid.Children;
+			for (let i = children.Size - 1; i >= 0; i--) {
 				try { children.RemoveAt(i); } catch (_e) {}
 			}
 		}

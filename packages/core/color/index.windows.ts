@@ -6,14 +6,16 @@ export class Color extends ColorBase implements IColor {
 
     get windows(): Windows.UI.Color {
         if (!this._windows) {
-            this._windows = Windows.UI.ColorHelper.FromArgb(Math.round(this.a), Math.round(this.r), Math.round(this.g), Math.round(this.b));
+            // Windows.UI.Color is a plain {A,R,G,B} struct — bridge reads fields directly,
+            // no need to round-trip through ColorHelper.FromArgb.
+            this._windows = { A: Math.round(this.a), R: Math.round(this.r), G: Math.round(this.g), B: Math.round(this.b) } as unknown as Windows.UI.Color;
         }
-
         return this._windows;
     }
 
     get windowsArgb(): number {
-        return ((((this.windows.A & 0xff) << 24) | ((this.windows.R & 0xff) << 16) | ((this.windows.G & 0xff) << 8) | (this.windows.B & 0xff)) >>> 0);
+        // _argb already stores the packed unsigned ARGB integer — no WinRT round-trip needed.
+        return this.argb;
     }
 
     public static fromWindowsColor(value: Windows.UI.Color): Color {

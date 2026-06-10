@@ -32,9 +32,10 @@ function _attachHoverHandlers(view: View): void {
 
 	let usingAddHandler = false;
 	try {
-		const pee = native.PointerEnteredEvent;
-		const pxe = native.PointerExitedEvent;
-		if (!pee || !pxe) throw new Error('RoutedEvent properties unavailable');
+		const UIElement = Microsoft.UI.Xaml.UIElement;
+		const pee = UIElement?.PointerEnteredEvent ?? native.PointerEnteredEvent;
+		const pxe = UIElement?.PointerExitedEvent ?? native.PointerExitedEvent;
+		if (!pee || !pxe) throw new Error('RoutedEvent statics unavailable');
 		native.AddHandler(pee, enterDelegate, true);
 		native.AddHandler(pxe, leaveDelegate, true);
 		usingAddHandler = true;
@@ -83,27 +84,19 @@ const LONG_PRESS_TIMEOUT = 500;
 const TAP_SLOP = 20; // pixels
 
 function _wrapPointerHandler(fn: (s: any, e: any) => void): any {
-	try {
-		return new Windows.UI.Xaml.Input.PointerEventHandler(fn);
-	} catch (_e) {
-		return fn;
-	}
+	return NSWinRT.asDelegate('Microsoft.UI.Xaml.Input.PointerEventHandler', fn);
 }
 
 function _wrapRightTappedHandler(fn: (s: any, e: any) => void): any {
-	try {
-		return new Windows.UI.Xaml.Input.RightTappedEventHandler(fn);
-	} catch (_e) {
-		return fn;
-	}
+	return NSWinRT.asDelegate('Microsoft.UI.Xaml.Input.RightTappedEventHandler', fn);
 }
 
-function _assignPointerHandler(native: any, prop: string, fn: (s: any, e: any) => void): void {
-	try { native[prop] = _wrapPointerHandler(fn) as never; } catch (_e) { }
+function _assignPointerHandler(native: any, prop: string, del: any): void {
+	native[prop] = del as never;
 }
 
-function _assignRightTappedHandler(native: any, fn: (s: any, e: any) => void): void {
-	try { native.RightTapped = _wrapRightTappedHandler(fn) as never; } catch (_e) { }
+function _assignRightTappedHandler(native: any, del: any): void {
+	native.RightTapped = del as never;
 }
 
 function _executeCallback(observer: GesturesObserver, args: any) {
@@ -141,14 +134,12 @@ function extractPoint(e: any, relativeTo?: any) {
 	try {
 		if (e.getCurrentPoint) {
 			const pt = e.getCurrentPoint(relativeTo || null);
-			// PointerPoint may expose Position or position
 			const pos = pt.Position || pt.position || pt; // fallback
 			return { x: pos.X ?? pos.x ?? (pos.Position && pos.Position.X) ?? 0, y: pos.Y ?? pos.y ?? (pos.Position && pos.Position.Y) ?? 0 };
 		}
 	} catch (_e) { }
 
 	try {
-		// some runtimes expose currentPoint
 		const cp = e.currentPoint || e.CurrentPoint;
 		if (cp) {
 			const pos = cp.Position || cp.position || cp;
@@ -182,7 +173,7 @@ export class GesturesObserver extends GesturesObserverBase {
 	private _rightTappedDelegate: any;
 	private _usingAddHandler = false;
 
-	private _pointerDownMap: Map<number, { x: number; y: number; t: number }> = new Map();
+	private _pointerDownMap: Map<number, { x: number; y: number; t: number; nativeTs: number | null }> = new Map();
 	private _lastUpTime = 0;
 	private _tapTimeoutId: any;
 	private _longPressTimeouts: Map<number, any> = new Map();
@@ -231,10 +222,10 @@ export class GesturesObserver extends GesturesObserverBase {
 						if (this._rightTappedDelegate) native.RemoveHandler(native.RightTappedEvent, this._rightTappedDelegate);
 					} catch (_e) { }
 				} else {
-					try { native.PointerPressed = null as never; } catch (_e) { }
-					try { native.PointerMoved = null as never; } catch (_e) { }
-					try { native.PointerReleased = null as never; } catch (_e) { }
-					try { native.RightTapped = null as never; } catch (_e) { }
+					native.PointerPressed = null as never;
+					native.PointerMoved = null as never;
+					native.PointerReleased = null as never;
+					native.RightTapped = null as never;
 				}
 			}
 		} catch (_e) { }
@@ -278,24 +269,26 @@ export class GesturesObserver extends GesturesObserverBase {
 		this._pointerMovedDelegate = _wrapPointerHandler(this._pointerMovedHandler);
 		this._pointerReleasedDelegate = _wrapPointerHandler(this._pointerReleasedHandler);
 
-		// Use AddHandler with handledEventsToo=true so events fire even when
-		// Button (and other controls) mark pointer events as handled internally.
-		// Access RoutedEvent via instance property (not abstract class static) for V8 projection compatibility.
+		// Use AddHandler with handledEventsToo=true so events fire even when Button (and other
+		// controls) mark pointer events as handled internally.
+		// PointerPressedEvent is a STATIC property on UIElement, not an instance property —
+		// access it from the class namespace so it resolves correctly in the V8 WinRT projection.
 		this._usingAddHandler = false;
 		try {
-			const ppe = native.PointerPressedEvent;
-			const pme = native.PointerMovedEvent;
-			const pre = native.PointerReleasedEvent;
-			if (!ppe || !pme || !pre) throw new Error('RoutedEvent statics unavailable: ppe=' + ppe + ' pme=' + pme + ' pre=' + pre);
+			const UIElement = Microsoft.UI.Xaml.UIElement;
+			const ppe = UIElement?.PointerPressedEvent ?? native.PointerPressedEvent;
+			const pme = UIElement?.PointerMovedEvent ?? native.PointerMovedEvent;
+			const pre = UIElement?.PointerReleasedEvent ?? native.PointerReleasedEvent;
+			if (!ppe || !pme || !pre) throw new Error('RoutedEvent statics unavailable');
 			native.AddHandler(ppe, this._pointerPressedDelegate, true);
 			native.AddHandler(pme, this._pointerMovedDelegate, true);
 			native.AddHandler(pre, this._pointerReleasedDelegate, true);
 			this._usingAddHandler = true;
 		} catch (_e) {
-			console.warn('[Gestures] AddHandler path failed, using property assignment fallback:', _e && (_e as any).message);
-			_assignPointerHandler(native, 'PointerPressed', this._pointerPressedHandler);
-			_assignPointerHandler(native, 'PointerMoved', this._pointerMovedHandler);
-			_assignPointerHandler(native, 'PointerReleased', this._pointerReleasedHandler);
+			// Fallback: plain property assignment (only one handler per event, can be overwritten).
+			_assignPointerHandler(native, 'PointerPressed', this._pointerPressedDelegate);
+			_assignPointerHandler(native, 'PointerMoved', this._pointerMovedDelegate);
+			_assignPointerHandler(native, 'PointerReleased', this._pointerReleasedDelegate);
 		}
 
 		// RightTapped (mouse right-click) fires longPress for mouse/touchpad users.
@@ -332,9 +325,12 @@ export class GesturesObserver extends GesturesObserverBase {
 		try {
 			const id = (e && (e.pointerId || (e.getCurrentPoint && e.getCurrentPoint(null)?.PointerId))) || 0;
 			const pt = extractPoint(e);
-			this._pointerDownMap.set(id, { x: pt.x, y: pt.y, t: Date.now() });
+			// Capture WinRT hardware timestamp (µs since device boot) alongside JS time.
+			// If V8 is busy when PointerReleased arrives, Date.now() will be inflated by the
+			// scheduling delay — the WinRT timestamp is immune to this and gives the real gesture duration.
+			const nativeTs: number | null = typeof e?.Timestamp === 'number' ? e.Timestamp : null;
+			this._pointerDownMap.set(id, { x: pt.x, y: pt.y, t: Date.now(), nativeTs });
 
-			// schedule long press
 			if (this.type === GestureTypes.longPress) {
 				const timeoutId = timer.setTimeout(() => {
 					const args = {
@@ -404,8 +400,15 @@ export class GesturesObserver extends GesturesObserverBase {
 			const pt = extractPoint(e);
 			const start = this._pointerDownMap.get(id);
 			const now = Date.now();
+			// Use WinRT hardware timestamps when available so the tap-duration check reflects the actual
+			// gesture time, not V8 scheduling latency. When JS is busy (e.g. processing a navigation),
+			// Date.now() at release can be 300ms+ later than the real release time, causing valid fast
+			// taps to be silently dropped by the dt < DOUBLE_TAP_TIMEOUT guard below.
+			const upNativeTs: number | null = typeof e?.Timestamp === 'number' ? e.Timestamp : null;
+			const dt = (upNativeTs !== null && start?.nativeTs !== null && start?.nativeTs !== undefined)
+				? (upNativeTs - start.nativeTs) / 1000 // µs → ms, V8-latency-free
+				: now - (start?.t ?? now);
 
-			// clear long press timeout
 			const lp = this._longPressTimeouts.get(id);
 			if (lp) {
 				timer.clearTimeout(lp);
@@ -431,18 +434,14 @@ export class GesturesObserver extends GesturesObserverBase {
 				_executeCallback(this, args);
 			}
 
-			// Try detect tap / doubleTap
 			if (start) {
-				const dt = now - start.t;
 				const dx = pt.x - start.x;
 				const dy = pt.y - start.y;
 				const dist = Math.sqrt(dx * dx + dy * dy);
 
 				if (dt < DOUBLE_TAP_TIMEOUT && dist < TAP_SLOP) {
-					// Possible tap
-					if (this.target.getGestureObservers && this.target.getGestureObservers(GestureTypes.doubleTap) && this.target.getGestureObservers(GestureTypes.doubleTap).length) {
-						// wait for double-tap
-						this._tapTimeoutId = timer.setTimeout(() => {
+						if (this.target.getGestureObservers && this.target.getGestureObservers(GestureTypes.doubleTap) && this.target.getGestureObservers(GestureTypes.doubleTap).length) {
+							this._tapTimeoutId = timer.setTimeout(() => {
 							const args = {
 								type: GestureTypes.tap,
 								view: this.target,
@@ -471,12 +470,10 @@ export class GesturesObserver extends GesturesObserverBase {
 						_executeCallback(this, args);
 					}
 
-					// Double tap detection
-					if (this.target.getGestureObservers && this.target.getGestureObservers(GestureTypes.doubleTap) && this.target.getGestureObservers(GestureTypes.doubleTap).length) {
+						if (this.target.getGestureObservers && this.target.getGestureObservers(GestureTypes.doubleTap) && this.target.getGestureObservers(GestureTypes.doubleTap).length) {
 						const nowUp = Date.now();
 						if (this._lastUpTime && nowUp - this._lastUpTime <= DOUBLE_TAP_TIMEOUT) {
-							// emit doubleTap
-							const args = {
+								const args = {
 								type: GestureTypes.doubleTap,
 								view: this.target,
 								ios: undefined,

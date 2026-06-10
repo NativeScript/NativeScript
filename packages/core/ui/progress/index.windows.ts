@@ -1,22 +1,34 @@
 import { maxValueProperty, ProgressBase, valueProperty } from './progress-common';
 import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
+import { Background } from '../styling/background';
 
 export * from './progress-common';
 
-export class Progress extends ProgressBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.ProgressBar;
-	private _windows: Windows.UI.Xaml.Controls.ProgressBar;
-
-	constructor() {
-		super();
-		this._windows = new Windows.UI.Xaml.Controls.ProgressBar();
+// ProgressBar is not WinRT-activatable in this WinAppSDK build: `new ProgressBar()` throws E_NOTIMPL (0x80004001).
+// Create via XamlReader instead; attempt `new` only until first failure, then go straight to XamlReader.
+let _progressBarActivatable: boolean | undefined;
+function createProgressBar(): Microsoft.UI.Xaml.Controls.ProgressBar {
+	if (_progressBarActivatable !== false) {
+		try {
+			const pb = new Microsoft.UI.Xaml.Controls.ProgressBar();
+			_progressBarActivatable = true;
+			return pb;
+		} catch (_e) {
+			_progressBarActivatable = false;
+		}
 	}
+	return Microsoft.UI.Xaml.Markup.XamlReader.Load('<ProgressBar xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />') as Microsoft.UI.Xaml.Controls.ProgressBar;
+}
 
-	public createNativeView() {
+export class Progress extends ProgressBase {
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.ProgressBar;
+	private _windows: Microsoft.UI.Xaml.Controls.ProgressBar;
+
+	public createNativeView(): Microsoft.UI.Xaml.Controls.ProgressBar {
+		this._windows = createProgressBar();
 		return this._windows;
 	}
-
 
 	[valueProperty.getDefault](): number {
 		return 0;
@@ -32,50 +44,30 @@ export class Progress extends ProgressBase {
 		this.nativeViewProtected.Maximum = value;
 	}
 
-	[colorProperty.getDefault](): android.graphics.drawable.Drawable {
-		return null;
+	[colorProperty.getDefault](): number {
+		return -1;
 	}
-	[colorProperty.setNative](value: Color) {
-		const color = value instanceof Color ? value.windows : value
-		if (color) {
-			if (typeof color === 'number') {
-				this.nativeViewProtected.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(
-					new Color(color).windows
-				);
-			} else {
-				this.nativeViewProtected.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(
-					color
-				);
-			}
+	[colorProperty.setNative](value: Color | number) {
+		if (value instanceof Color) {
+			this.nativeViewProtected.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);
 		} else {
-			this.nativeViewProtected.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush();
+			this.nativeViewProtected.Foreground = null;
 		}
 	}
 
 	[backgroundColorProperty.getDefault](): number {
-		return null;
+		return -1;
 	}
-	[backgroundColorProperty.setNative](value: Color) {
-		const color = value instanceof Color ? value.windows : value
-		if (color) {
-			if (typeof color === 'number') {
-				this.nativeViewProtected.Background = new Windows.UI.Xaml.Media.SolidColorBrush(
-					new Color(color).windows
-				);
-			} else {
-				this.nativeViewProtected.Background = new Windows.UI.Xaml.Media.SolidColorBrush(
-					color
-				);
-			}
+	[backgroundColorProperty.setNative](value: Color | number) {
+		if (value instanceof Color) {
+			this.nativeViewProtected.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);
 		} else {
-			this.nativeViewProtected.Background = new Windows.UI.Xaml.Media.SolidColorBrush();
+			this.nativeViewProtected.Background = null;
 		}
 	}
 
-	[backgroundInternalProperty.getDefault](): number {
+	[backgroundInternalProperty.getDefault](): Background {
 		return null;
 	}
-	[backgroundInternalProperty.setNative](value: Color) {
-		//
-	}
+	[backgroundInternalProperty.setNative](_value: Background) {}
 }

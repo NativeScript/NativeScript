@@ -6,12 +6,12 @@ import { BaseHttpContent, requestInternal } from '../http-request-internal';
 import { getFilenameFromUrl, parseJSON } from './http-request-common';
 
 const contentHandler: HttpContentHandler = {
-	toArrayBuffer(this: BaseHttpContent) {
+	toArrayBuffer(this: BaseHttpContent): ArrayBuffer {
 		if (this.raw instanceof ArrayBuffer) {
 			return this.raw;
 		}
 		if (this.raw instanceof Uint8Array) {
-			return this.raw.buffer;
+			return this.raw.buffer as ArrayBuffer;
 		}
 		return new ArrayBuffer(0);
 	},

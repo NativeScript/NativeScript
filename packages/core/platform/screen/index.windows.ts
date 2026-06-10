@@ -1,34 +1,25 @@
+import { getCurrentWindowBounds, getCurrentWindowScale } from '../../application/window-helper.windows';
+
 class MainScreen {
+	// Metrics derived from the current window's XamlRoot (WinUI3 has no GetForCurrentView()).
 	get widthPixels(): number {
-		try {
-			return Windows.Graphics.Display.DisplayInformation.GetForCurrentView().ScreenWidthInRawPixels;
-		} catch {
-			return 1920;
-		}
+		return Math.round(this.widthDIPs * this.scale);
 	}
 
 	get heightPixels(): number {
-		try {
-			return Windows.Graphics.Display.DisplayInformation.GetForCurrentView().ScreenHeightInRawPixels;
-		} catch {
-			return 1080;
-		}
+		return Math.round(this.heightDIPs * this.scale);
 	}
 
 	get scale(): number {
-		try {
-			return Windows.Graphics.Display.DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel || 1;
-		} catch {
-			return 1;
-		}
+		return getCurrentWindowScale();
 	}
 
 	get widthDIPs(): number {
-		return this.widthPixels / this.scale;
+		return getCurrentWindowBounds()?.Width ?? 1920;
 	}
 
 	get heightDIPs(): number {
-		return this.heightPixels / this.scale;
+		return getCurrentWindowBounds()?.Height ?? 1080;
 	}
 
 	public _updateMetrics(): void {}

@@ -4,24 +4,68 @@ import { Background } from '../styling/background';
 import { SliderBase, valueProperty, minValueProperty, maxValueProperty } from './slider-common';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { AndroidHelper } from '../core/view';
 import { LinearGradient } from '../styling/linear-gradient';
 
-export class Slider extends SliderBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.Slider;
-	private _windows: Windows.UI.Xaml.Controls.Slider;
-	private _pendingGradient: any = null;
-	constructor() {
-		super();
-		this._windows = new Windows.UI.Xaml.Controls.Slider();
+// Build a LinearGradientBrush from a NativeScript gradient, applying an optional alpha scale per stop.
+function buildGradientBrush(gradient: LinearGradient, startPt: any, endPt: any, alphaFactor: number): Microsoft.UI.Xaml.Media.LinearGradientBrush {
+	const brush = new Microsoft.UI.Xaml.Media.LinearGradientBrush();
+	brush.StartPoint = startPt;
+	brush.EndPoint = endPt;
+	for (let i = 0; i < gradient.colorStops.length; i++) {
+		const stop = gradient.colorStops[i];
+		const gs = new Microsoft.UI.Xaml.Media.GradientStop();
+
+		let winColor: Windows.UI.Color;
+		const src = stop.color as Color & { windows?: Windows.UI.Color };
+		if (src?.windows) {
+			const wc = src.windows;
+			winColor = { A: Math.max(0, Math.min(255, Math.round(wc.A * alphaFactor))), R: wc.R, G: wc.G, B: wc.B } as unknown as Windows.UI.Color;
+		} else {
+			const c = stop.color as { r?: number; g?: number; b?: number; a?: number } ?? {};
+			const norm = (v: number | undefined) => typeof v === 'number' ? (v <= 1 ? Math.round(v * 255) : Math.round(v)) : 0;
+			const a = Math.max(0, Math.min(255, Math.round(norm(c.a ?? 255) * alphaFactor)));
+			winColor = { A: a, R: norm(c.r), G: norm(c.g), B: norm(c.b) } as unknown as Windows.UI.Color;
+		}
+		gs.Color = winColor;
+
+		const offset = stop.offset as { unit?: string; value?: number } | undefined;
+		gs.Offset = offset?.unit === '%'
+			? Math.max(0, Math.min(1, (offset.value ?? 0) / 100))
+			: i / Math.max(1, gradient.colorStops.length - 1);
+
+		brush.GradientStops.Append(gs);
 	}
-	public createNativeView() {
-		// If a gradient was set before native view creation, apply it now.
+	return brush;
+}
+
+export class Slider extends SliderBase {
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.Slider;
+	private _windows: Microsoft.UI.Xaml.Controls.Slider;
+	private _pendingGradient: LinearGradient | null = null;
+	private _valueChangedDelegate: any = null;
+
+	public createNativeView(): Microsoft.UI.Xaml.Controls.Slider {
+		this._windows = new Microsoft.UI.Xaml.Controls.Slider();
 		if (this._pendingGradient) {
-			try { this._applyGradientToTrack(this._pendingGradient); } catch (_e) { }
+			this._applyGradientToTrack(this._pendingGradient);
 			this._pendingGradient = null;
 		}
 		return this._windows;
+	}
+
+	public initNativeView(): void {
+		super.initNativeView();
+		const ref = new WeakRef(this);
+		this._valueChangedDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventHandler', (_sender: any, e: any) => {
+			const owner = ref.deref();
+			if (owner) valueProperty.nativeValueChange(owner, e.NewValue);
+		});
+		this.nativeViewProtected.ValueChanged = this._valueChangedDelegate;
+	}
+
+	public disposeNativeView(): void {
+		this._valueChangedDelegate = null;
+		super.disposeNativeView();
 	}
 
 	[valueProperty.setNative](value: number) {
@@ -46,7 +90,7 @@ export class Slider extends SliderBase {
 		if (!this.nativeViewProtected) return;
 		const resources = this.nativeViewProtected.Resources;
 		if (value instanceof Color) {
-			resources.Insert('SliderThumbBackground', new Windows.UI.Xaml.Media.SolidColorBrush(value.windows) as never);
+			resources.Insert('SliderThumbBackground', new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows));
 		} else {
 			resources.Remove('SliderThumbBackground');
 		}
@@ -59,7 +103,7 @@ export class Slider extends SliderBase {
 		if (!this.nativeViewProtected) return;
 		const resources = this.nativeViewProtected.Resources;
 		if (value instanceof Color) {
-			resources.Insert('SliderTrackValueFill', new Windows.UI.Xaml.Media.SolidColorBrush(value.windows) as never);
+			resources.Insert('SliderTrackValueFill', new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows));
 		} else {
 			resources.Remove('SliderTrackValueFill');
 		}
@@ -69,121 +113,32 @@ export class Slider extends SliderBase {
 		return null;
 	}
 	[backgroundInternalProperty.setNative](value: Background) {
-		try { console.log(`[Slider.Windows] backgroundInternal.setNative called for view=${(this && (this as any).constructor && (this as any).constructor.name) || '(Slider)'} hasImage=${!!(value && value.image)}`); } catch (_e) {}
-		// If native view isn't created yet, stash the gradient for later.
 		if (!this.nativeViewProtected) {
-			if (value && value.image) {
-				this._pendingGradient = (value as any).image;
-			} else {
-				this._pendingGradient = null;
-			}
+			this._pendingGradient = value && value.image instanceof LinearGradient ? value.image : null;
 			return;
 		}
 		const resources = this.nativeViewProtected.Resources;
-		if (value && value.image) {
-			const image = value.image as any;
-			if (image instanceof LinearGradient || (image && image.colorStops)) {
-				this._applyGradientToTrack(image);
-				return;
-			}
-		}
-		// No usable gradient — remove any previously inserted resources
-		try { resources.Remove('SliderTrackValueFill'); resources.Remove('SliderTrackBackgroundFill'); } catch (_e) { }
-	}
-
-	private _applyGradientToTrack(gradient: LinearGradient | any): void {
-		const nativeView = this.nativeViewProtected;
-		if (!nativeView || !gradient || !gradient.colorStops || gradient.colorStops.length === 0) {
-			try { console.log(`[Slider.Windows] _applyGradientToTrack skipped: no gradient or stops`); } catch (_e) {}
+		if (value && value.image instanceof LinearGradient) {
+			this._applyGradientToTrack(value.image);
 			return;
 		}
-		try { console.log(`[Slider.Windows] _applyGradientToTrack applying ${gradient.colorStops.length} stops`); } catch (_e) {}
+		resources.Remove('SliderTrackValueFill');
+		resources.Remove('SliderTrackBackgroundFill');
+	}
 
-		const resources = nativeView.Resources;
+	private _applyGradientToTrack(gradient: LinearGradient): void {
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView || !gradient?.colorStops?.length) return;
 
-		// Helper to map CSS angle to StartPoint/EndPoint
 		const angle = typeof gradient.angle === 'number' ? gradient.angle : 0;
 		const rad = (angle * Math.PI) / 180;
 		const dx = Math.cos(rad);
 		const dy = Math.sin(rad);
-		const startPt = Windows.UI.Xaml.PointHelper.FromCoordinates(0.5 - dx / 2, 0.5 - dy / 2);
-		const endPt = Windows.UI.Xaml.PointHelper.FromCoordinates(0.5 + dx / 2, 0.5 + dy / 2);
+		const startPt = Microsoft.UI.Xaml.PointHelper.FromCoordinates(0.5 - dx / 2, 0.5 - dy / 2);
+		const endPt = Microsoft.UI.Xaml.PointHelper.FromCoordinates(0.5 + dx / 2, 0.5 + dy / 2);
 
-		// Build filled (value) gradient brush
-		const valueBrush = new Windows.UI.Xaml.Media.LinearGradientBrush();
-		valueBrush.StartPoint = startPt;
-		valueBrush.EndPoint = endPt;
-			for (let i = 0; i < gradient.colorStops.length; i++) {
-				const stop = gradient.colorStops[i];
-				const gs = new Windows.UI.Xaml.Media.GradientStop();
-				// If the stop already provides a Windows color (via `Color.windows`), use it directly
-				let winColor: any = null;
-				if (stop.color && (stop.color as any).windows) {
-					winColor = (stop.color as any).windows;
-				} else {
-					const c = stop.color || { r: 0, g: 0, b: 0, a: 255 };
-					// Support colors specified as 0..1 normalized or 0..255 integers.
-					const normalizeChannel = (v: any) => {
-						if (typeof v !== 'number') return 0;
-						if (v <= 1) return Math.round(v * 255);
-						return Math.round(v);
-					};
-					const aCh = normalizeChannel(c.a ?? 255);
-					const rCh = normalizeChannel(c.r ?? 0);
-					const gCh = normalizeChannel(c.g ?? 0);
-					const bCh = normalizeChannel(c.b ?? 0);
-					winColor = Windows.UI.ColorHelper.FromArgb(aCh, rCh, gCh, bCh);
-				}
-				gs.Color = winColor;
-				if (stop.offset && (stop.offset as any).unit === '%') {
-					const v = (stop.offset as any).value || 0;
-					gs.Offset = Math.max(0, Math.min(1, v / 100));
-				} else {
-					gs.Offset = i / Math.max(1, gradient.colorStops.length - 1);
-				}
-				valueBrush.GradientStops.Append(gs);
-				try {
-					const hex = '#' + ('000000' + ((winColor.A << 24) >>> 0 | (winColor.R << 16) | (winColor.G << 8) | winColor.B).toString(16).toUpperCase()).slice(-8);
-					console.log(`[Slider.Windows] Gradient stop ${i}: r=${c.r} g=${c.g} b=${c.b} a=${c.a} -> ${hex}`);
-				} catch (_e) { }
-			}
-
-		// Build background (faded) gradient brush
-		const bgBrush = new Windows.UI.Xaml.Media.LinearGradientBrush();
-		bgBrush.StartPoint = startPt;
-		bgBrush.EndPoint = endPt;
-		for (let i = 0; i < gradient.colorStops.length; i++) {
-			const stop = gradient.colorStops[i];
-			const gs = new Windows.UI.Xaml.Media.GradientStop();
-				let r: number, g: number, b: number, aRaw: number;
-				if (stop.color && (stop.color as any).windows) {
-					const wc = (stop.color as any).windows;
-					r = wc.R; g = wc.G; b = wc.B; aRaw = wc.A;
-				} else {
-					const c = stop.color || { r: 0, g: 0, b: 0, a: 255 };
-					const normalizeChannel = (v: any) => {
-						if (typeof v !== 'number') return 0;
-						if (v <= 1) return Math.round(v * 255);
-						return Math.round(v);
-					};
-					r = normalizeChannel(c.r ?? 0);
-					g = normalizeChannel(c.g ?? 0);
-					b = normalizeChannel(c.b ?? 0);
-					aRaw = normalizeChannel(c.a ?? 255);
-				}
-				const a = Math.max(0, Math.min(255, Math.round(aRaw * 0.3)));
-				gs.Color = Windows.UI.ColorHelper.FromArgb(a, r, g, b);
-			if (stop.offset && (stop.offset as any).unit === '%') {
-				const v = (stop.offset as any).value || 0;
-				gs.Offset = Math.max(0, Math.min(1, v / 100));
-			} else {
-				gs.Offset = i / Math.max(1, gradient.colorStops.length - 1);
-			}
-			bgBrush.GradientStops.Append(gs);
-		}
-
-		resources.Insert('SliderTrackValueFill', valueBrush as never);
-		resources.Insert('SliderTrackBackgroundFill', bgBrush as never);
-
+		const resources = nativeView.Resources;
+		resources.Insert('SliderTrackValueFill', buildGradientBrush(gradient, startPt, endPt, 1) as never);
+		resources.Insert('SliderTrackBackgroundFill', buildGradientBrush(gradient, startPt, endPt, 0.3) as never);
 	}
 }

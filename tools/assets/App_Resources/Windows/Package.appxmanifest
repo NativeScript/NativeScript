@@ -3,11 +3,11 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
-  IgnorableNamespaces="uap">
+  IgnorableNamespaces="uap rescap">
 
   <mp:PhoneIdentity PhoneProductId="00000000-0000-0000-0000-000000000000" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
-
 
   <Identity Name="__APP_IDENTIFIER__" Publisher="CN=ui" Version="1.0.0.0" />
 
@@ -19,6 +19,9 @@
 
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+    <!-- WinUI3 / Windows App SDK 1.6 framework package (framework-dependent). Without this, the
+         registered app can't activate Microsoft.UI.Xaml.* and fails with REGDB_E_CLASSNOTREG. -->
+    <PackageDependency Name="Microsoft.WindowsAppRuntime.1.6" MinVersion="6000.0.0.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
   </Dependencies>
 
   <Resources>
@@ -26,7 +29,8 @@
   </Resources>
 
   <Applications>
-    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="__PROJECT_NAME__.App">
+    <!-- WinUI3 desktop: full-trust Win32 entry (runs Program.Main), not a UWP managed class entry. -->
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements DisplayName="__PROJECT_NAME__"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
@@ -38,7 +42,24 @@
     </Application>
   </Applications>
 
+  <!-- PACKAGE-level activatable-class registration (NOT Application-level, which only allows
+       background-task categories). Registers the prebuilt C++/WinRT NativeScript.Widgets component
+       as an in-proc server so the runtime's RoGetActivationFactory can create its classes directly
+       (no DotNetBridge). The DLL + winmd are copied to the package root via App_Resources app.csproj. -->
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>NativeScript.Widgets.dll</Path>
+        <ActivatableClass ActivatableClassId="NativeScript.Widgets.StackLayout" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="NativeScript.Widgets.FlexboxLayout" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="NativeScript.Widgets.ImageHelper" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="NativeScript.Widgets.ShadowHelper" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+  </Extensions>
+
   <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
     <Capability Name="internetClient" />
     <Capability Name="privateNetworkClientServer" />
   </Capabilities>

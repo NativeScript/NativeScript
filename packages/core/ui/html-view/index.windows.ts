@@ -58,23 +58,23 @@ function decodeEntities(s: string): string {
 		.replace(/&nbsp;/g, ' ');
 }
 
-type InlineParent = Windows.UI.Xaml.Documents.Paragraph | Windows.UI.Xaml.Documents.Span;
+type InlineParent = Microsoft.UI.Xaml.Documents.Paragraph | Microsoft.UI.Xaml.Documents.Span;
 
-function buildParagraphs(html: string, linkColor?: Color): Windows.UI.Xaml.Documents.Paragraph[] {
+function buildParagraphs(html: string, linkColor?: Color): Microsoft.UI.Xaml.Documents.Paragraph[] {
 	const tokens = tokenize(html);
-	const paragraphs: Windows.UI.Xaml.Documents.Paragraph[] = [];
-	let para = new Windows.UI.Xaml.Documents.Paragraph();
+	const paragraphs: Microsoft.UI.Xaml.Documents.Paragraph[] = [];
+	let para = new Microsoft.UI.Xaml.Documents.Paragraph();
 	paragraphs.push(para);
 	const stack: InlineParent[] = [para];
 
 	const top = () => stack[stack.length - 1];
 
-	function appendInline(inline: Windows.UI.Xaml.Documents.Inline): void {
+	function appendInline(inline: Microsoft.UI.Xaml.Documents.Inline): void {
 		top().Inlines.Append(inline);
 	}
 
-	function pushSpan(span: Windows.UI.Xaml.Documents.Span): void {
-		appendInline(span as unknown as Windows.UI.Xaml.Documents.Inline);
+	function pushSpan(span: Microsoft.UI.Xaml.Documents.Span): void {
+		appendInline(span as unknown as Microsoft.UI.Xaml.Documents.Inline);
 		stack.push(span);
 	}
 
@@ -83,7 +83,7 @@ function buildParagraphs(html: string, linkColor?: Color): Windows.UI.Xaml.Docum
 			case 'text': {
 				const text = decodeEntities(token.text);
 				if (text) {
-					const run = new Windows.UI.Xaml.Documents.Run();
+					const run = new Microsoft.UI.Xaml.Documents.Run();
 					run.Text = text;
 					appendInline(run);
 				}
@@ -91,13 +91,13 @@ function buildParagraphs(html: string, linkColor?: Color): Windows.UI.Xaml.Docum
 			}
 			case 'void':
 				if (token.tag === 'br') {
-					appendInline(new Windows.UI.Xaml.Documents.LineBreak());
+					appendInline(new Microsoft.UI.Xaml.Documents.LineBreak());
 				}
 				break;
 			case 'open':
 				switch (token.tag) {
 					case 'p': {
-						para = new Windows.UI.Xaml.Documents.Paragraph();
+						para = new Microsoft.UI.Xaml.Documents.Paragraph();
 						paragraphs.push(para);
 						stack.length = 1;
 						stack[0] = para;
@@ -105,36 +105,36 @@ function buildParagraphs(html: string, linkColor?: Color): Windows.UI.Xaml.Docum
 					}
 					case 'b':
 					case 'strong':
-						pushSpan(new Windows.UI.Xaml.Documents.Bold());
+						pushSpan(new Microsoft.UI.Xaml.Documents.Bold());
 						break;
 					case 'i':
 					case 'em':
-						pushSpan(new Windows.UI.Xaml.Documents.Italic());
+						pushSpan(new Microsoft.UI.Xaml.Documents.Italic());
 						break;
 					case 'u':
-						pushSpan(new Windows.UI.Xaml.Documents.Underline());
+						pushSpan(new Microsoft.UI.Xaml.Documents.Underline());
 						break;
 					case 'a': {
-						const link = new Windows.UI.Xaml.Documents.Hyperlink();
+						const link = new Microsoft.UI.Xaml.Documents.Hyperlink();
 						const href = (token as { kind: 'open'; tag: string; attrs: Record<string, string> }).attrs['href'];
 						if (href) {
 							try { link.NavigateUri = new Windows.Foundation.Uri(href); } catch (_) { }
 						}
 						if (linkColor) {
-							link.Foreground = new Windows.UI.Xaml.Media.SolidColorBrush(linkColor.windows);
+							link.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(linkColor.windows);
 						}
 						pushSpan(link);
 						break;
 					}
 					case 'span':
-						pushSpan(new Windows.UI.Xaml.Documents.Span());
+						pushSpan(new Microsoft.UI.Xaml.Documents.Span());
 						break;
 				}
 				break;
 			case 'close':
 				switch (token.tag) {
 					case 'p': {
-						para = new Windows.UI.Xaml.Documents.Paragraph();
+						para = new Microsoft.UI.Xaml.Documents.Paragraph();
 						paragraphs.push(para);
 						stack.length = 1;
 						stack[0] = para;
@@ -159,15 +159,15 @@ function buildParagraphs(html: string, linkColor?: Color): Windows.UI.Xaml.Docum
 }
 
 export class HtmlView extends HtmlViewBase {
-	declare nativeViewProtected: Windows.UI.Xaml.Controls.RichTextBlock;
+	declare nativeViewProtected: Microsoft.UI.Xaml.Controls.RichTextBlock;
 
 	public createNativeView() {
-		const nativeView = new Windows.UI.Xaml.Controls.RichTextBlock();
+		const nativeView = new Microsoft.UI.Xaml.Controls.RichTextBlock();
 		nativeView.IsTextSelectionEnabled = true;
 		return nativeView;
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.RichTextBlock {
+	get windows(): Microsoft.UI.Xaml.Controls.RichTextBlock {
 		return this.nativeViewProtected;
 	}
 
@@ -193,12 +193,12 @@ export class HtmlView extends HtmlViewBase {
 		this.nativeViewProtected.IsTextSelectionEnabled = value;
 	}
 
-	[colorProperty.getDefault](): Windows.UI.Xaml.Media.Brush {
+	[colorProperty.getDefault](): Microsoft.UI.Xaml.Media.Brush {
 		return this.nativeViewProtected.Foreground;
 	}
-	[colorProperty.setNative](value: Color | Windows.UI.Xaml.Media.Brush) {
+	[colorProperty.setNative](value: Color | Microsoft.UI.Xaml.Media.Brush) {
 		this.nativeViewProtected.Foreground = value instanceof Color
-			? new Windows.UI.Xaml.Media.SolidColorBrush(value.windows)
+			? new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows)
 			: value;
 	}
 

@@ -13,13 +13,13 @@ const STRETCH_MAP: Record<string, number> = {
 	aspectFill: 3,   // Stretch.UniformToFill
 };
 
-function bitmapFromBytesAsync(bytes: Uint8Array): Promise<any> {
+function bitmapFromBytesAsync(bytes: Uint8Array): Promise<Microsoft.UI.Xaml.Media.Imaging.BitmapImage> {
 	return new Promise((resolve, reject) => {
-		const createOnUIThread = (stream: any) => {
+		const createOnUIThread = (stream: Windows.Storage.Streams.InMemoryRandomAccessStream) => {
 			const create = () => {
 				try {
-					(stream as any).Seek(0);
-					const bmp = new (Windows as any).UI.Xaml.Media.Imaging.BitmapImage();
+					stream.Seek(0);
+					const bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
 					NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(
 						() => resolve(bmp),
 						(err: any) => reject(err)
@@ -40,7 +40,7 @@ function bitmapFromBytesAsync(bytes: Uint8Array): Promise<any> {
 			writer.WriteBytes(bytes as never);
 			const buffer = writer.DetachBuffer();
 			const stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
-			NSWinRT.toPromise((stream as any).WriteAsync(buffer)).then(
+			NSWinRT.toPromise(stream.WriteAsync(buffer)).then(
 				() => createOnUIThread(stream),
 				(err: any) => reject(err)
 			);
@@ -51,20 +51,21 @@ function bitmapFromBytesAsync(bytes: Uint8Array): Promise<any> {
 }
 
 export class Image extends ImageBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.Image;
-	private _windows!: Windows.UI.Xaml.Controls.Image;
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.Image;
+	private _windows!: Microsoft.UI.Xaml.Controls.Image;
 
 	constructor() {
 		super();
-		this._windows = new Windows.UI.Xaml.Controls.Image();
 		this.isLoading = false;
+		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
 	}
 
 	public createNativeView() {
+		this._windows = new Microsoft.UI.Xaml.Controls.Image();
 		return this._windows;
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.Image {
+	get windows(): Microsoft.UI.Xaml.Controls.Image {
 		return this._windows;
 	}
 

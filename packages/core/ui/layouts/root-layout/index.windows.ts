@@ -30,16 +30,14 @@ export class RootLayout extends RootLayoutBase {
 			for (let i = 0; i < children.Size; i++) {
 				try {
 					const child = children.GetAt(i);
-					const z = Windows.UI.Xaml.Controls.Panel.GetZIndex(child) || 0;
+					const z = Microsoft.UI.Xaml.Controls.Panel.GetZIndex(child) || 0;
 					if (z > maxZ) maxZ = z;
-				} catch (_e) {
-					// ignore
-				}
+				} catch (_e) { }
 			}
 
 			const newZ = (maxZ === Number.MIN_SAFE_INTEGER) ? 0 : (maxZ + 1);
 			try {
-				Windows.UI.Xaml.Controls.Panel.SetZIndex(native, newZ);
+				Microsoft.UI.Xaml.Controls.Panel.SetZIndex(native, newZ);
 			} catch (_e) { }
 		} catch (_e) { }
 	}
@@ -54,18 +52,23 @@ export class RootLayout extends RootLayoutBase {
 			const native = view.nativeViewProtected as any;
 			if (!native) return;
 
-			// Set initial platform native values
+			// The shared base sets verticalAlignment='bottom', so on Windows the shade cover shrinks to
+			// its (empty) content and the backdrop is invisible. Force Stretch so it actually covers the layout.
+			try { view.horizontalAlignment = 'stretch'; } catch (_e) { }
+			try { view.verticalAlignment = 'stretch'; } catch (_e) { }
+			try { native.HorizontalAlignment = 3; native.VerticalAlignment = 3; } catch (_e) { } // Stretch
+
 			try { native.Opacity = options.opacity; } catch (_e) { }
 
 			try {
-				const ct = new Windows.UI.Xaml.Media.CompositeTransform();
+				const ct = new Microsoft.UI.Xaml.Media.CompositeTransform();
 				ct.TranslateX = layout.toDeviceIndependentPixels(options.translateX);
 				ct.TranslateY = layout.toDeviceIndependentPixels(options.translateY);
 				ct.ScaleX = options.scaleX;
 				ct.ScaleY = options.scaleY;
 				ct.Rotation = options.rotate;
 				native.RenderTransform = ct;
-				native.RenderTransformOrigin = Windows.UI.Xaml.PointHelper.FromCoordinates(0.5, 0.5);
+				native.RenderTransformOrigin = Microsoft.UI.Xaml.PointHelper.FromCoordinates(0.5, 0.5);
 			} catch (_e) { }
 		} catch (_e) { }
 	}
@@ -76,20 +79,16 @@ export class RootLayout extends RootLayoutBase {
 			...(shadeOptions || {}),
 		} as ShadeCoverOptions;
 
-		// Determine if background is a gradient string
 		const isBackgroundGradient = typeof options.color === 'string' && options.color.indexOf('linear-gradient') === 0;
 
 		if (isBackgroundGradient) {
-			// prefer backgroundImage for gradients
 			try {
 				if (view.backgroundColor) {
 					view.backgroundColor = undefined;
 				}
 				const parsed = parseLinearGradient(options.color as string);
 				view.backgroundImage = LinearGradient.parse(parsed.value);
-			} catch (_e) {
-				// fail silently
-			}
+			} catch (_e) { }
 		} else {
 			try {
 				if (view.backgroundImage) {
@@ -101,9 +100,15 @@ export class RootLayout extends RootLayoutBase {
 			} catch (_e) { }
 		}
 
-		// Animate shade cover to default state (enter animation)
+		// getEnterAnimation animates opacity to 1 (fully opaque), but the intended shade is semi-transparent
+		// (e.g. 0.7) to let page content show through — match iOS by applying targetOpacity as the final state.
+		// Pre-set before play() so a freshly-mounted element doesn't flash opaque.
+		const targetOpacity = typeof options.opacity === 'number' ? options.opacity : 0.5;
 		const enterFrom = options.animation && options.animation.enterFrom ? options.animation.enterFrom : defaultShadeCoverOptions.animation.enterFrom;
-		return this.getEnterAnimation(view as View, enterFrom).play();
+		try { view.opacity = targetOpacity; } catch (_e) { }
+		return this.getEnterAnimation(view as View, enterFrom).play().then(() => {
+			try { view.opacity = targetOpacity; } catch (_e) { }
+		});
 	}
 
 	protected _closeShadeCover(view: View, shadeOptions: ShadeCoverOptions = {}): Promise<void> {

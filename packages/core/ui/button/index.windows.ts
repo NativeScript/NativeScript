@@ -11,43 +11,35 @@ function onButtonStateChange(args: any) {
 		case TouchAction.up:
 		case TouchAction.cancel:
 			button._removeVisualState('highlighted');
-			try {
-				if (typeof button._defaultOpacity === 'number' && button.nativeViewProtected) {
-					(button.nativeViewProtected as any).Opacity = button._defaultOpacity;
-				}
-			} catch (_e) {}
+			if (typeof button._defaultOpacity === 'number' && button.nativeViewProtected) {
+				button.nativeViewProtected.Opacity = button._defaultOpacity;
+			}
 			break;
 		case TouchAction.down:
 			button._addVisualState('highlighted');
-			try {
-				if (button.nativeViewProtected) {
-					if (typeof button._defaultOpacity !== 'number') {
-						button._defaultOpacity = (button.nativeViewProtected as any).Opacity || 1;
-					}
-					(button.nativeViewProtected as any).Opacity = Math.max(0, (button._defaultOpacity || 1) * 0.85);
+			if (button.nativeViewProtected) {
+				if (typeof button._defaultOpacity !== 'number') {
+					button._defaultOpacity = button.nativeViewProtected.Opacity || 1;
 				}
-			} catch (_e) {}
+				button.nativeViewProtected.Opacity = Math.max(0, (button._defaultOpacity || 1) * 0.85);
+			}
 			break;
 	}
 }
 
 
 export class Button extends ButtonBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.Button;
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.Button;
 	private _delegate: any = null;
-	private _delegateUsedAddListener: boolean = false;
-	private _windows: Windows.UI.Xaml.Controls.Button;
+	private _windows: Microsoft.UI.Xaml.Controls.Button;
 	private _defaultOpacity?: number;
-	constructor() {
-		super();
-		this._windows = new Windows.UI.Xaml.Controls.Button();
-	}
 
 	public createNativeView() {
+		this._windows = new Microsoft.UI.Xaml.Controls.Button();
 		return this._windows;
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.Button {
+	get windows(): Microsoft.UI.Xaml.Controls.Button {
 		return this._windows;
 	}
 
@@ -55,55 +47,24 @@ export class Button extends ButtonBase {
 		super.initNativeView();
 		const nativeView = this.nativeViewProtected;
 		const that = new WeakRef(this);
-		let usedAdd = false;
-		try {
-			this._delegate = new Windows.UI.Xaml.RoutedEventHandler((args) => {
-				const owner = that.deref();
-				if (!owner) {
-					return;
-				}
-				owner.notify({ eventName: ButtonBase.tapEvent, object: owner });
-			});
-			nativeView.Click = this._delegate as never;
-		} catch (_e) {
-			this._delegate = (args: any) => {
-				const owner = that.deref();
-				if (!owner) return;
-				owner.notify({ eventName: ButtonBase.tapEvent, object: owner });
-			};
-			try {
-				nativeView.Click = this._delegate as never;
-			} catch (_e2) {
-				try {
-					if (typeof (nativeView as any).addEventListener === 'function') {
-						(nativeView as any).addEventListener('click', this._delegate);
-						usedAdd = true;
-					}
-				} catch (_e3) {}
-			}
-		}
-		this._delegateUsedAddListener = usedAdd;
-		// remember default opacity for pressed-state visual
-		try {
-			this._defaultOpacity = (nativeView as any).Opacity || 1;
-		} catch (_e) {}
+		this._delegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.RoutedEventHandler', () => {
+			const owner = that.deref();
+			if (owner) owner.notify({ eventName: ButtonBase.tapEvent, object: owner });
+		});
+		nativeView.Click = this._delegate as never;
+		this._defaultOpacity = nativeView.Opacity || 1;
 	}
 
 	public disposeNativeView(): void {
 		if (this._delegate) {
-			try { this.nativeViewProtected.Click = null as never; } catch (_e) {}
-			if (this._delegateUsedAddListener) {
-				try { (this.nativeViewProtected as any).removeEventListener('click', this._delegate); } catch (_e) {}
-			}
+			this.nativeViewProtected.Click = null as never;
 			this._delegate = null;
-			this._delegateUsedAddListener = false;
 		}
 		super.disposeNativeView();
 	}
 
 	@PseudoClassHandler('normal', 'highlighted', 'pressed', 'active')
 	_updateButtonStateChangeHandler(subscribe: boolean) {
-		console.log('Updating button state change handler for Windows is not implemented yet.'); // TODO: Implement updating button state change handler for Windows
 		if (subscribe) {
 			this.on(GestureTypes[GestureTypes.touch], onButtonStateChange);
 		} else {

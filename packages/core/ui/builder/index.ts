@@ -41,6 +41,7 @@ export const ios = platformNames.ios.toLowerCase();
 export const android = platformNames.android.toLowerCase();
 export const visionos = platformNames.visionos.toLowerCase();
 export const apple = platformNames.apple.toLowerCase();
+export const windows = platformNames.windows.toLowerCase();
 export const defaultNameSpaceMatcher = /tns\.xsd$/i;
 
 export interface LoadOptions {
@@ -432,7 +433,7 @@ export namespace xml2ui {
 			if (value) {
 				const toLower = value.toLowerCase();
 
-				return toLower === android || toLower === ios || toLower === visionos || toLower === apple;
+				return toLower === android || toLower === ios || toLower === visionos || toLower === apple || toLower === windows;
 			}
 
 			return false;

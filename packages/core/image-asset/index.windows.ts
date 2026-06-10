@@ -1,4 +1,4 @@
-import { ImageAssetBase, getRequestedImageSize } from './image-asset-common';
+import { ImageAssetBase } from './image-asset-common';
 import { path as fsPath, knownFolders } from '../file-system';
 
 export * from './image-asset-common';
@@ -28,17 +28,15 @@ export class ImageAsset extends ImageAssetBase {
 
 	public getImageAsync(callback: (image: any, error: any) => void) {
 		try {
-			if (typeof this._windows === 'string') {
-				const path = this._windows;
-				(Windows.Storage.StorageFile.GetFileFromPathAsync(path) as any).then(
-					(file: any) => {
-						callback(file, null);
-					},
-					(err: any) => callback(null, err),
-				);
-			} else {
-				callback(this._windows, null);
+			// Use _windows first, fall back to base-class nativeImage (set via asset.nativeImage = x).
+			// fromAsset dispatches on type: string paths go through fromFile, StorageFile objects
+			// go through OpenAsync — no conversion needed here.
+			const image = this._windows ?? this.nativeImage;
+			if (image == null) {
+				callback(null, new Error('ImageAsset: no image data'));
+				return;
 			}
+			callback(image, null);
 		} catch (ex) {
 			callback(null, ex);
 		}

@@ -18,6 +18,12 @@
 	visibility: collapse;
 }
 
+/* h-full is referenced in markup but was never defined; map it to full height so a
+   ScrollView inside an auto-sized StackLayout gets a bounded viewport and can scroll. */
+.h-full {
+	height: 100%;
+}
+
 /* Simple shadow/gradient fallbacks — some Windows hosts may not fully support composition */
 .shadow {
 	box-shadow: 0 2 6 rgba(0,0,0,0.2);

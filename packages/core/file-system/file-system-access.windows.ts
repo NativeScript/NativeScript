@@ -170,7 +170,7 @@ export class FileSystemAccess {
 		const enc = encoding ?? textEncoding.UTF_8;
 		return new Promise<string>((resolve, reject) => {
 			try {
-				(Windows.Storage.PathIO.ReadTextAsync(path) as any).then(resolve, reject);
+				NSWinRT.toPromise(Windows.Storage.PathIO.ReadTextAsync(path)).then(resolve, reject);
 			} catch (ex) {
 				reject(new Error(`Failed to read file at path '${path}': ${ex}`));
 			}
@@ -195,7 +195,7 @@ export class FileSystemAccess {
 	public writeTextAsync(path: string, content: string, _encoding?: any): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			try {
-				(Windows.Storage.PathIO.WriteTextAsync(path, content) as any).then(resolve, reject);
+				NSWinRT.toPromise(Windows.Storage.PathIO.WriteTextAsync(path, content)).then(resolve, reject);
 			} catch (ex) {
 				reject(new Error(`Failed to write file at path '${path}': ${ex}`));
 			}
@@ -215,7 +215,7 @@ export class FileSystemAccess {
 	public appendTextAsync(path: string, content: string, _encoding?: any): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			try {
-				(Windows.Storage.PathIO.AppendTextAsync(path, content) as any).then(resolve, reject);
+				NSWinRT.toPromise(Windows.Storage.PathIO.AppendTextAsync(path, content)).then(resolve, reject);
 			} catch (ex) {
 				reject(new Error(`Failed to append to file at path '${path}': ${ex}`));
 			}
@@ -235,10 +235,10 @@ export class FileSystemAccess {
 	public readBufferAsync(path: string): Promise<ArrayBuffer> {
 		return new Promise<ArrayBuffer>((resolve, reject) => {
 			try {
-				(Windows.Storage.PathIO.ReadBufferAsync(path) as any).then((buffer: any) => {
+				NSWinRT.toPromise(Windows.Storage.PathIO.ReadBufferAsync(path)).then((buffer: any) => {
 					const reader = Windows.Storage.Streams.DataReader.FromBuffer(buffer);
 					const bytes = new Uint8Array(buffer.Length);
-					reader.ReadBytes(bytes);
+					reader.ReadBytes(bytes as any);
 					resolve(bytes.buffer);
 				}, reject);
 			} catch (ex) {
@@ -253,7 +253,7 @@ export class FileSystemAccess {
 			(Windows.Storage.PathIO.ReadBufferAsync(path) as any).done((buffer: any) => {
 				const reader = Windows.Storage.Streams.DataReader.FromBuffer(buffer);
 				const bytes = new Uint8Array(buffer.Length);
-				reader.ReadBytes(bytes);
+				reader.ReadBytes(bytes as any);
 				result = bytes.buffer;
 			});
 			return result;
@@ -269,9 +269,9 @@ export class FileSystemAccess {
 		return new Promise<void>((resolve, reject) => {
 			try {
 				const writer = new Windows.Storage.Streams.DataWriter();
-				writer.WriteBytes(new Uint8Array(content));
+				writer.WriteBytes(new Uint8Array(content) as any);
 				const buf = writer.DetachBuffer();
-				(Windows.Storage.PathIO.WriteBufferAsync(path, buf) as any).then(resolve, reject);
+				NSWinRT.toPromise(Windows.Storage.PathIO.WriteBufferAsync(path, buf)).then(resolve, reject);
 			} catch (ex) {
 				reject(new Error(`Failed to write buffer at path '${path}': ${ex}`));
 			}
@@ -281,7 +281,7 @@ export class FileSystemAccess {
 	public writeBufferSync(path: string, content: ArrayBuffer, onError?: (error: any) => any) {
 		try {
 			const writer = new Windows.Storage.Streams.DataWriter();
-			writer.WriteBytes(new Uint8Array(content));
+			writer.WriteBytes(new Uint8Array(content) as any);
 			const buf = writer.DetachBuffer();
 			(Windows.Storage.PathIO.WriteBufferAsync(path, buf) as any).done();
 		} catch (ex) {
@@ -315,9 +315,9 @@ export class FileSystemAccess {
 		return new Promise<void>((resolve, reject) => {
 			try {
 				const writer = new Windows.Storage.Streams.DataWriter();
-				writer.WriteBytes(new Uint8Array(content));
+				writer.WriteBytes(new Uint8Array(content) as any);
 				const buf = writer.DetachBuffer();
-				(Windows.Storage.PathIO.WriteBufferAsync(path, buf) as any).then(resolve, reject);
+				NSWinRT.toPromise(Windows.Storage.PathIO.WriteBufferAsync(path, buf)).then(resolve, reject);
 			} catch (ex) {
 				reject(ex);
 			}
@@ -327,7 +327,7 @@ export class FileSystemAccess {
 	public appendSync(path: string, content: any, onError?: (error: any) => any) {
 		try {
 			const writer = new Windows.Storage.Streams.DataWriter();
-			writer.WriteBytes(new Uint8Array(content));
+			writer.WriteBytes(new Uint8Array(content) as any);
 			const buf = writer.DetachBuffer();
 			(Windows.Storage.PathIO.WriteBufferAsync(path, buf) as any).done();
 		} catch (ex) {
@@ -352,19 +352,13 @@ export class FileSystemAccess {
 	}
 
 	public copyAsync(src: string, dest: string): Promise<boolean> {
-		return new Promise<boolean>((resolve, reject) => {
-			try {
-				(Windows.Storage.StorageFile.GetFileFromPathAsync(src) as any).then((srcFile: any) => {
-					const destParent = this.getParent(dest)?.path;
-					(Windows.Storage.StorageFolder.GetFolderFromPathAsync(destParent) as any).then((destFolder: any) => {
-						const destName = getFileName(dest);
-						srcFile.CopyAsync(destFolder, destName, Windows.Storage.NameCollisionOption.ReplaceExisting).then(() => resolve(true), reject);
-					}, reject);
-				}, reject);
-			} catch (ex) {
-				reject(ex);
-			}
-		});
+		const destParent = this.getParent(dest)?.path;
+		const destName = getFileName(dest);
+		return NSWinRT.toPromise(Windows.Storage.StorageFile.GetFileFromPathAsync(src))
+			.then((srcFile: any) => NSWinRT.toPromise(Windows.Storage.StorageFolder.GetFolderFromPathAsync(destParent))
+				.then((destFolder: any) => NSWinRT.toPromise(srcFile.CopyAsync(destFolder, destName, Windows.Storage.NameCollisionOption.ReplaceExisting)))
+			)
+			.then(() => true);
 	}
 
 	public getPathSeparator(): string {

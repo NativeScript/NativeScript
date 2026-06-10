@@ -1,0 +1,11 @@
+namespace NativeScript.Widgets
+{
+    // Custom stacking panel (NativeScript StackLayout). Does its own measure/arrange in compiled
+    // C++ — the JS layout class becomes a thin wrapper. Orientation: 0 = Vertical, 1 = Horizontal.
+    [default_interface]
+    runtimeclass StackLayout : Microsoft.UI.Xaml.Controls.Panel
+    {
+        StackLayout();
+        Int32 Orientation;
+    }
+}

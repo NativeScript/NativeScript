@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  @nativescript/core — Windows plugin targets.
+
+  Copies the active-architecture NativeScript.Widgets C++/WinRT component (its
+  native .dll + .winmd metadata) to the package root ($(OutDir)). The runtime
+  resolves the winmd there via RoGetMetaDataFile and activates the in-proc server
+  (registered as windows.activatableClass.inProcessServer in the app's
+  Package.appxmanifest). An explicit Copy (rather than Content) is used so the
+  files survive EnableMsixTooling Content interception.
+
+  Native DLLs are per-architecture (no universal binary on Windows), so the
+  matching arch folder is chosen from $(Platform). The CLI stages this plugin's
+  platforms/windows/{x64,arm64}/ next to this file, so $(MSBuildThisFileDirectory)
+  resolves the arch subfolders.
+-->
+<Project>
+  <Target Name="CopyNativeScriptWidgets" AfterTargets="Build">
+    <PropertyGroup>
+      <_NSWidgetsArchDir Condition="'$(Platform)'=='ARM64' or '$(Platform)'=='arm64'">$(MSBuildThisFileDirectory)arm64\</_NSWidgetsArchDir>
+      <_NSWidgetsArchDir Condition="'$(Platform)'=='x64' or '$(Platform)'=='x86_64'">$(MSBuildThisFileDirectory)x64\</_NSWidgetsArchDir>
+      <!-- Fallback to x64 when $(Platform) is unset/AnyCPU during evaluation. -->
+      <_NSWidgetsArchDir Condition="'$(_NSWidgetsArchDir)'==''">$(MSBuildThisFileDirectory)x64\</_NSWidgetsArchDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_NSWidgetsFiles Include="$(_NSWidgetsArchDir)NativeScript.Widgets.dll" Condition="Exists('$(_NSWidgetsArchDir)NativeScript.Widgets.dll')" />
+      <_NSWidgetsFiles Include="$(_NSWidgetsArchDir)NativeScript.Widgets.winmd" Condition="Exists('$(_NSWidgetsArchDir)NativeScript.Widgets.winmd')" />
+    </ItemGroup>
+    <Message Text="[@nativescript/core] Copying NativeScript.Widgets ($(Platform)) to $(OutDir)" Importance="normal" Condition="'@(_NSWidgetsFiles)' != ''" />
+    <Copy SourceFiles="@(_NSWidgetsFiles)"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true"
+          Condition="'@(_NSWidgetsFiles)' != ''" />
+  </Target>
+</Project>

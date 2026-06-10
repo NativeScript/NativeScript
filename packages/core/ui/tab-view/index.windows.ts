@@ -1,8 +1,30 @@
 export * from './tab-view-common';
 
 import { TabViewBase, TabViewItemBase } from './tab-view-common';
+import { ImageSource } from '../../image-source';
+import { knownFolders, path as fsPath } from '../../file-system';
 
 const TAB_HEIGHT = 48;
+
+// Resolves a tab `iconSource` (res://, ~/, file/abs path, http(s)) to a native bitmap and applies it.
+function resolveIconBitmap(src: string, apply: (bmp: any) => void): void {
+	if (!src) return;
+	try {
+		if (src.indexOf('res://') === 0) {
+			const imgSrc = ImageSource.fromResourceSync(src.substring('res://'.length)) as any;
+			if (imgSrc?.windows) apply(imgSrc.windows);
+		} else if (src.indexOf('~/') === 0) {
+			const filePath = fsPath.join(knownFolders.currentApp().path, src.replace('~/', ''));
+			const imgSrc = ImageSource.fromFileSync(filePath) as any;
+			if (imgSrc?.windows) apply(imgSrc.windows);
+		} else if (src.indexOf('http') === 0) {
+			ImageSource.fromUrl(src).then((imgSrc: any) => { if (imgSrc?.windows) apply(imgSrc.windows); }).catch(() => {});
+		} else {
+			const imgSrc = ImageSource.fromFileSync(src) as any;
+			if (imgSrc?.windows) apply(imgSrc.windows);
+		}
+	} catch (_e) {}
+}
 
 export class TabViewItem extends TabViewItemBase {
 	public _update(): void {
@@ -13,43 +35,40 @@ export class TabViewItem extends TabViewItemBase {
 }
 
 export class TabView extends TabViewBase {
-	declare nativeViewProtected: Windows.UI.Xaml.Controls.Grid;
+	declare nativeViewProtected: Microsoft.UI.Xaml.Controls.Grid;
 
-	private _outerGrid: Windows.UI.Xaml.Controls.Grid;
-	private _tabStrip: Windows.UI.Xaml.Controls.StackPanel;
-	private _contentArea: Windows.UI.Xaml.Controls.Grid;
-	private _tabButtons: Windows.UI.Xaml.Controls.Button[] = [];
+	private _outerGrid: Microsoft.UI.Xaml.Controls.Grid;
+	private _tabStrip: Microsoft.UI.Xaml.Controls.StackPanel;
+	private _contentArea: Microsoft.UI.Xaml.Controls.Grid;
+	private _tabButtons: Microsoft.UI.Xaml.Controls.Button[] = [];
+	// Held to prevent V8 from GC'ing the JS wrappers (a collected delegate goes dead on click).
+	private _tabButtonDelegates: any[] = [];
 
-	constructor() {
-		super();
+	public createNativeView(): Microsoft.UI.Xaml.Controls.Grid {
+		this._outerGrid = new Microsoft.UI.Xaml.Controls.Grid();
 
-		this._outerGrid = new Windows.UI.Xaml.Controls.Grid();
-
-		const r0 = new Windows.UI.Xaml.Controls.RowDefinition();
-		r0.Height = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.Auto);
-		const r1 = new Windows.UI.Xaml.Controls.RowDefinition();
-		r1.Height = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.Star);
+		const r0 = new Microsoft.UI.Xaml.Controls.RowDefinition();
+		r0.Height = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Auto);
+		const r1 = new Microsoft.UI.Xaml.Controls.RowDefinition();
+		r1.Height = new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star);
 		this._outerGrid.RowDefinitions.Append(r0);
 		this._outerGrid.RowDefinitions.Append(r1);
 
-		this._tabStrip = new Windows.UI.Xaml.Controls.StackPanel();
-		this._tabStrip.Orientation = Windows.UI.Xaml.Controls.Orientation.Horizontal;
-		Windows.UI.Xaml.Controls.Grid.SetRow(this._tabStrip, 0);
+		this._tabStrip = new Microsoft.UI.Xaml.Controls.StackPanel();
+		this._tabStrip.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
+		Microsoft.UI.Xaml.Controls.Grid.SetRow(this._tabStrip, 0);
 		this._outerGrid.Children.Append(this._tabStrip);
 
-		this._contentArea = new Windows.UI.Xaml.Controls.Grid();
-		Windows.UI.Xaml.Controls.Grid.SetRow(this._contentArea, 1);
+		this._contentArea = new Microsoft.UI.Xaml.Controls.Grid();
+		Microsoft.UI.Xaml.Controls.Grid.SetRow(this._contentArea, 1);
 		this._outerGrid.Children.Append(this._contentArea);
-	}
 
-	public createNativeView() {
 		return this._outerGrid;
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.Grid {
+	get windows(): Microsoft.UI.Xaml.Controls.Grid {
 		return this._outerGrid;
 	}
-
 
 	public _addChildFromBuilder(name: string, value: any): void {
 		if (value instanceof TabViewItemBase) {
@@ -61,10 +80,14 @@ export class TabView extends TabViewBase {
 		}
 	}
 
-	// 
+	public initNativeView(): void {
+		super.initNativeView();
+		this._rebuildTabStrip();
+	}
+
 	public onItemsChanged(oldItems: any[], newItems: any[]): void {
 		this._clearTabButtons();
-		this._tabStrip.Children.Clear();
+		if (this._tabStrip) this._tabStrip.Children.Clear();
 		this._clearContent();
 
 		if (newItems) {
@@ -108,11 +131,40 @@ export class TabView extends TabViewBase {
 		if (!this.items) return;
 		const idx = this.items.indexOf(item as any);
 		if (idx >= 0 && idx < this._tabButtons.length) {
-			try { (this._tabButtons[idx] as any).Content = item.title ?? ''; } catch (_e) { }
+			this._tabButtons[idx].Content = this._buildButtonContent(item);
 		}
 	}
 
+	// WinUI Button shows only its string Content unless given a UIElement, so an icon-only tab
+	// needs an Image element; if both title and icon are present they are stacked vertically.
+	private _buildButtonContent(item: any): any {
+		const title: string = item?.title ?? '';
+		const iconSrc: string = item?.iconSource;
+		if (!iconSrc) {
+			return title;
+		}
+		const img = new Microsoft.UI.Xaml.Controls.Image();
+		img.Width = 24;
+		img.Height = 24;
+		img.Stretch = 2 as never; // Uniform
+		resolveIconBitmap(iconSrc, (bmp) => { try { img.Source = bmp; } catch (_e) {} });
+		if (!title) {
+			return img;
+		}
+		const stack = new Microsoft.UI.Xaml.Controls.StackPanel();
+		stack.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
+		stack.HorizontalAlignment = 1 as never; // Center
+		const tb = new Microsoft.UI.Xaml.Controls.TextBlock();
+		tb.Text = title;
+		tb.FontSize = 12;
+		tb.HorizontalAlignment = 1 as never; // Center
+		stack.Children.Append(img);
+		stack.Children.Append(tb);
+		return stack;
+	}
+
 	private _rebuildTabStrip(): void {
+		if (!this._tabStrip) return;
 		this._clearTabButtons();
 		this._tabStrip.Children.Clear();
 		const items = this.items;
@@ -124,52 +176,79 @@ export class TabView extends TabViewBase {
 	}
 
 	private _createTabButton(item: any, index: number): void {
-		try {
-			const btn = new Windows.UI.Xaml.Controls.Button();
-			btn.Content = item.title ?? '';
-			btn.MinWidth = 80;
-			btn.Height = TAB_HEIGHT;
+		const btn = new Microsoft.UI.Xaml.Controls.Button();
+		btn.Content = this._buildButtonContent(item);
+		btn.MinWidth = 80;
+		btn.Height = TAB_HEIGHT;
 
-			const that = new WeakRef(this);
-			const fn = () => {
-				const owner = that.deref();
-				if (owner) owner.selectedIndex = index;
-			};
-			let handler: any;
-			try {
-				handler = new Windows.UI.Xaml.RoutedEventHandler(fn);
-			} catch (_e) {
-				handler = fn;
-			}
-			try { btn.Click = handler as never; } catch (_e) { }
+		const that = new WeakRef(this);
+		const fn = () => {
+			const owner = that.deref();
+			if (owner) owner.selectedIndex = index;
+		};
+		const del = NSWinRT.asDelegate('Microsoft.UI.Xaml.RoutedEventHandler', fn);
+		btn.Click = del as never;
+		this._tabButtonDelegates[index] = del;
 
-			this._tabButtons[index] = btn;
-			this._tabStrip.Children.Append(btn);
-		} catch (_e) { }
+		this._tabButtons[index] = btn;
+		this._tabStrip.Children.Append(btn);
 	}
 
 	private _clearTabButtons(): void {
 		for (const btn of this._tabButtons) {
-			try { if (btn) btn.Click = null as never; } catch (_e) { }
+			if (btn) btn.Click = null as never;
 		}
 		this._tabButtons = [];
+		this._tabButtonDelegates = [];
 	}
 
 	private _clearContent(): void {
-		try {
-			const count = (this._contentArea as any).Children.Size;
-			for (let i = count - 1; i >= 0; i--) {
-				try { (this._contentArea as any).Children.RemoveAt(i); } catch (_e) { }
-			}
-		} catch (_e) { }
+		if (!this._contentArea) return;
+		const children = this._contentArea.Children;
+		for (let i = children.Size - 1; i >= 0; i--) {
+			try { children.RemoveAt(i); } catch (_e) {}
+		}
 	}
 
 	private _showContent(index: number): void {
+		if (!this._contentArea) return;
 		const items = this.items;
 		if (!items || index < 0 || index >= items.length) return;
-		const native = (items[index] as any)?.view?.nativeViewProtected;
+		const item = items[index] as any;
+		const view = item?.view;
+		const native = view?.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
 		if (native) {
-			try { (this._contentArea as any).Children.Append(native); } catch (_e) { }
+			try {
+				native.HorizontalAlignment = 3 as never; // Stretch
+				native.VerticalAlignment = 3 as never; // Stretch
+				this._contentArea.Children.Append(native);
+			} catch (_e) {
+				console.error('[TabView] _showContent: failed to append native view for tab', index, _e);
+			}
+			// Ensure the NS view is marked loaded so Repeaters flush _isDirty and bindings
+			// propagate. super.onLoaded() loads all tabs, but if something races (e.g. items
+			// set after the first load), this guarantees the shown view is always live.
+			if (view && !view.isLoaded) {
+				try { view.callLoaded?.(); } catch (_e) {}
+			}
+		} else if (!native) {
+			// nativeViewProtected not yet created — defer until after the layout pass.
+			setTimeout(() => {
+				if (!this._contentArea) return;
+				const deferred = (this.items?.[index] as any)?.view;
+				const n = deferred?.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
+				if (n) {
+					try {
+						n.HorizontalAlignment = 3 as never;
+						n.VerticalAlignment = 3 as never;
+						this._clearContent();
+						this._contentArea.Children.Append(n);
+					} catch (_e) {}
+					if (deferred && !deferred.isLoaded) {
+						try { deferred.callLoaded?.(); } catch (_e) {}
+					}
+				}
+			}, 0);
 		}
 	}
 
@@ -177,11 +256,9 @@ export class TabView extends TabViewBase {
 		for (let i = 0; i < this._tabButtons.length; i++) {
 			const btn = this._tabButtons[i];
 			if (!btn) continue;
-			try {
-				(btn as any).FontWeight = i === selectedIndex
-					? Windows.UI.Text.FontWeights.Bold
-					: Windows.UI.Text.FontWeights.Normal;
-			} catch (_e) { }
+			(btn as any).FontWeight = i === selectedIndex
+				? Microsoft.UI.Text.FontWeights.Bold
+				: Microsoft.UI.Text.FontWeights.Normal;
 		}
 	}
 }

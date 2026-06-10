@@ -1,7 +1,7 @@
 export class FPSCallback {
 	public running: boolean = false;
 	private onFrame: (currentTimeMillis: number) => void;
-	private _timer: any = null;
+	private _delegate: any = null;
 
 	constructor(onFrame: (currentTimeMillis: number) => void) {
 		this.onFrame = onFrame;
@@ -14,18 +14,16 @@ export class FPSCallback {
 		this.running = true;
 
 		try {
-			const timer = new Windows.UI.Xaml.DispatcherTimer();
-			const interval = { Duration: 160000 }; // 16ms in 100-nanosecond ticks
-			timer.Interval = interval as any;
-			timer.Tick = NSWinRT.asDelegate(() => {
+			// CompositionTarget.Rendering fires once per compositor frame at the display's
+			// native refresh rate (60/120/144/240 Hz), unlike a fixed-interval DispatcherTimer
+			// which caps at ~62 fps regardless of display refresh rate.
+			this._delegate = NSWinRT.asDelegate('Windows.Foundation.EventHandler`1<Object>', () => {
 				if (this.running) {
 					this.onFrame(Date.now());
 				}
 			});
-			timer.Start();
-			this._timer = timer;
+			Microsoft.UI.Xaml.Media.CompositionTarget.Rendering = this._delegate;
 		} catch {
-			// Fallback: no-op if WinRT not available
 		}
 	}
 
@@ -34,11 +32,11 @@ export class FPSCallback {
 			return;
 		}
 		this.running = false;
-		if (this._timer) {
+		if (this._delegate) {
 			try {
-				this._timer.Stop();
+				Microsoft.UI.Xaml.Media.CompositionTarget.Rendering = null;
 			} catch {}
-			this._timer = null;
+			this._delegate = null;
 		}
 	}
 }

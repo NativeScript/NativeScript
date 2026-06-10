@@ -46,234 +46,354 @@ function _clearActiveStoryboard(native: object, property: string): void {
 	_activeStoryboards.get(native)?.delete(property);
 }
 
+const num = (v: any, d = 0) => (typeof v === 'number' ? v : (v && typeof v.value === 'number' ? v.value : (v && typeof v.x === 'number' ? v.x : d)));
+
+// Duration struct: { TimeSpan: { Duration: <100ns ticks> }, Type: 1 (DurationType.TimeSpan) }.
+// Keep ticks as a JS number — the struct marshaler uses number_value; a BigInt would read as 0.
+function _duration(ms: number): Microsoft.UI.Xaml.Duration {
+	return { TimeSpan: { Duration: Math.max(0, Math.round(ms)) * 10000 }, Type: 1 } as never;
+}
+
+// Easing function objects are stateless in XAML — the same CubicEase/BackEase can be shared
+// across all concurrent animations that use the same curve. Cache per curve name so 100
+// simultaneous animations only pay the WinRT construction cost once.
+const _xamlEasingCache = new Map<string, any>();
+
 export class Animation extends AnimationBase {
 	constructor(animationDefinitions: any[], playSequentially?: boolean) {
 		super(animationDefinitions, playSequentially);
 	}
 
+	// Per-instance cancel hooks for in-flight storyboards.
+	private _activeCancels: Array<() => void> = [];
 
-	// Track running XAML storyboards so we can stop them on cancel
-	private _runningStoryboards: Array<{ storyboard: any; native: any; props: string[] }> = [];
+	// Maps a NativeScript curve to a XAML easing function; returns null for linear/unknown (native linear).
+	// Results are cached in the module-level _xamlEasingCache — easing objects are stateless in XAML
+	// so 100 animations with the same curve share one object instead of paying 100× WinRT construction.
+	private _xamlEasing(curve: any): any {
+		try {
+			const A: any = Microsoft.UI.Xaml.Media.Animation;
+			const EM: any = A.EasingMode;
+			let name: string | null = null;
+			if (typeof curve === 'string') name = curve;
+			else if (curve && typeof curve === 'object' && typeof curve.name === 'string') name = curve.name;
+			// Normalise 'ease' (CSS) → 'easeInOut' so both map to the same cache entry.
+			const cacheKey = (name === 'ease' ? 'easeInOut' : (name ?? 'linear'));
+			if (_xamlEasingCache.has(cacheKey)) return _xamlEasingCache.get(cacheKey);
+			let ease: any = null;
+			switch (name) {
+				case 'easeIn': { const e = new A.CubicEase(); e.EasingMode = EM.EaseIn; ease = e; break; }
+				case 'easeOut': { const e = new A.CubicEase(); e.EasingMode = EM.EaseOut; ease = e; break; }
+				case 'ease':
+				case 'easeInOut': { const e = new A.CubicEase(); e.EasingMode = EM.EaseInOut; ease = e; break; }
+				case 'spring': { const e = new A.BackEase() as Microsoft.UI.Xaml.Media.Animation.BackEase; e.EasingMode = EM.EaseOut; e.Amplitude = 0.3; ease = e; break; }
+				default: ease = null; break; // 'linear', cubic-bezier objects, raw functions → linear
+			}
+			_xamlEasingCache.set(cacheKey, ease);
+			return ease;
+		} catch (_e) { return null; }
+	}
 
-
-	private _startStoryboardForProperty(native: any, property: string, to: any, dur: number, del: number, tid2: string, target?: any) {
+	// Native WinUI3 Storyboard animation (compositor-thread, vsync-aligned). Animates the SAME
+	// TransformGroup objects that _ensureNativeTransforms creates (scale/rotate/translate) so animated
+	// and static transforms stay consistent. Replaces the old setTimeout interpolation loop.
+	private _startStoryboardForProperty(native: any, property: string, to: any, dur: number, del: number, _tid2: string, target?: any, curve?: any, iterations?: number) {
 		return new Promise<void>((resolve) => {
-					try {
-						const sb = new Windows.UI.Xaml.Media.Animation.Storyboard();
-				// DurationHelper.FromTimeSpan expects a raw TimeSpan struct by value.
-				// BeginTime expects IReference<TimeSpan> — box it via PropertyValue.
-				const makeTimeSpanStruct = (ms: number) => ({ Duration: Math.round(ms * 10000) });
-				const makeTimeSpanRef = (ms: number) =>
-					Windows.Foundation.PropertyValue.CreateTimeSpan(makeTimeSpanStruct(ms)) as any;
+			const A: any = Microsoft.UI.Xaml.Media.Animation;
+			const dur2 = Math.max(0, Math.round(dur || 0));
+			const del2 = Math.max(0, Math.round(del || 0));
+			const ease = this._xamlEasing(curve);
+			const infinite = typeof iterations === 'number' && (iterations <= 0 || !isFinite(iterations));
+			const reps = typeof iterations === 'number' && iterations > 1 && isFinite(iterations) ? iterations : 1;
 
-				const duration = Windows.UI.Xaml.DurationHelper.FromTimeSpan(makeTimeSpanStruct(dur));
-				const beginTime = del > 0 ? makeTimeSpanRef(del) : null;
+			_cancelActiveStoryboard(native, property);
+
+			let sb: any;
+			try {
+				sb = new A.Storyboard();
+
+				// addDouble accepts an optional per-call ease override (pass null to force linear).
+				// The default (undefined) falls through to the outer `ease` computed from `curve`.
+				const addDouble = (targetObj: any, prop: string, toVal: number, dependent?: boolean, fromVal?: number, easeOverride?: any) => {
+					const da = new A.DoubleAnimation();
+					// Width/Height start as NaN (Auto) when not explicitly sized, so the animation must be
+					// seeded with an explicit From (the rendered size) or it can't interpolate.
+					if (typeof fromVal === 'number' && isFinite(fromVal)) da.From = fromVal;
+					da.To = toVal;
+					da.Duration = _duration(dur2) as never;
+					if (dependent) da.EnableDependentAnimation = true;
+					const effectiveEase = easeOverride !== undefined ? easeOverride : ease;
+					if (effectiveEase) da.EasingFunction = effectiveEase;
+					A.Storyboard.SetTarget(da, targetObj);
+					A.Storyboard.SetTargetProperty(da, prop);
+					sb.Children.Append(da);
+				};
+
+				const measuredSize = (actual: number, explicit: number): number | undefined => {
+					if (typeof actual === 'number' && actual > 0) return actual;
+					if (typeof explicit === 'number' && isFinite(explicit) && explicit > 0) return explicit;
+					return undefined;
+				};
+
+				// BackEase (spring) overshoots its target value.  For Height/Width this means the
+				// animated value can go negative mid-animation, which WinUI3 rejects with
+				// "Invalid attribute value Unknown for property Height/Width".
+				// Substitute null (linear) for dimensional properties when the curve is spring.
+				const isSpring = curve === 'spring' || (curve && typeof curve === 'object' && curve.name === 'spring');
+				const dimEase = isSpring ? null : ease;
 
 				switch (property) {
+					case Properties.opacity:
+						addDouble(native, 'Opacity', num(to, 1));
+						break;
+					case Properties.width:
+						addDouble(native, 'Width', num(to, 0), true, measuredSize(native.ActualWidth, native.Width), dimEase);
+						break;
+					case Properties.height:
+						addDouble(native, 'Height', num(to, 0), true, measuredSize(native.ActualHeight, native.Height), dimEase);
+						break;
+					case Properties.translate: {
+						const tr = _ensureNativeTransforms(native);
+						if (!tr) { resolve(); return; }
+						const toX = num(to && to.x !== undefined ? to.x : to, 0);
+						const toY = (to && typeof to.y === 'number') ? to.y : 0;
+						addDouble(tr.translate, 'X', toX);
+						addDouble(tr.translate, 'Y', toY);
+						break;
+					}
 					case Properties.scale: {
-						const transforms = _ensureNativeTransforms(native);
-						const st = transforms?.scale;
-						if (!st) break;
-						const sx = (to && (to.x ?? to)) || 1;
-						const sy = (to && (to.y ?? to)) || 1;
-						const daX = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						daX.To = sx;
-						daX.Duration = duration;
-						if (beginTime) daX.BeginTime = beginTime;
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(daX, st);
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(daX, 'ScaleX');
-						sb.Children.Append(daX);
-
-						const daY = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						daY.To = sy;
-						daY.Duration = duration;
-						if (beginTime) daY.BeginTime = beginTime;
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(daY, st);
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(daY, 'ScaleY');
-						sb.Children.Append(daY);
+						const tr = _ensureNativeTransforms(native);
+						if (!tr) { resolve(); return; }
+						const sx = num(to && to.x !== undefined ? to.x : to, 1);
+						const sy = (to && typeof to.y === 'number') ? to.y : sx;
+						addDouble(tr.scale, 'ScaleX', sx);
+						addDouble(tr.scale, 'ScaleY', sy);
 						break;
 					}
 					case Properties.rotate: {
-						const transforms = _ensureNativeTransforms(native);
-						const rt = transforms?.rotate;
-						if (!rt) break;
-						const angle = (to && (to.z ?? to)) || 0;
-						const da = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						da.To = angle;
-						da.Duration = duration;
-						if (beginTime) da.BeginTime = beginTime;
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(da, rt);
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(da, 'Angle');
-						sb.Children.Append(da);
-						break;
-					}
-					case Properties.translate: {
-						const transforms = _ensureNativeTransforms(native);
-						const tt = transforms?.translate;
-						if (!tt) break;
-						// Values are already in DIPs (same as iOS) — no density conversion needed.
-						const vx = (to && (to.x ?? to)) || 0;
-						const vy = (to && (to.y ?? 0)) || 0;
-						const dax = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						dax.To = vx;
-						dax.Duration = duration;
-						if (beginTime) dax.BeginTime = beginTime;
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(dax, tt);
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(dax, 'X');
-						sb.Children.Append(dax);
-						const day = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						day.To = vy;
-						day.Duration = duration;
-						if (beginTime) day.BeginTime = beginTime;
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(day, tt);
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(day, 'Y');
-						sb.Children.Append(day);
-						break;
-					}
-					case Properties.width:
-					case Properties.height: {
-						// PercentLength { value, unit } or plain number — both in DIPs.
-						const toVal = typeof to === 'object' ? (to?.value ?? 0) : (to ?? 0);
-						const prop = property === Properties.width ? 'Width' : 'Height';
-						const fromVal = property === Properties.width
-							? ((native as any).ActualWidth || (native as any).Width)
-							: ((native as any).ActualHeight || (native as any).Height);
-						const da = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						da.To = toVal;
-						// Layout-affecting animations are disabled by default in WinUI — must opt in.
-						da.EnableDependentAnimation = true;
-						if (isFinite(fromVal) && fromVal > 0) da.From = fromVal;
-						da.Duration = duration;
-						if (beginTime) da.BeginTime = beginTime;
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(da, native);
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(da, prop);
-						sb.Children.Append(da);
-						break;
-					}
-					case Properties.opacity: {
-						const da = new Windows.UI.Xaml.Media.Animation.DoubleAnimation();
-						da.To = to;
-						da.Duration = duration;
-						if (beginTime) da.BeginTime = beginTime;
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(da, native);
-						Windows.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(da, 'Opacity');
-						sb.Children.Append(da);
+						const tr = _ensureNativeTransforms(native);
+						if (!tr) { resolve(); return; }
+						const ang = (to && typeof to.z === 'number') ? to.z : num(to, 0);
+						addDouble(tr.rotate, 'Angle', ang);
 						break;
 					}
 					case Properties.backgroundColor: {
-						// ColorAnimation.To expects IReference<Windows.UI.Color> which cannot
-						// be boxed without a WinRT helper. Use a JS lerp loop instead:
-						// read current brush color, interpolate, and write directly to brush.Color
-						// (a struct property setter that works correctly after the struct ABI fix).
-						try {
-							const toColor = to && typeof to === 'object' && to.r !== undefined ? to : null;
-							if (!toColor) { resolve(); return; }
-
-							const toA = Math.round(toColor.a ?? 255);
-							const toR = Math.round(toColor.r ?? 0);
-							const toG = Math.round(toColor.g ?? 0);
-							const toB = Math.round(toColor.b ?? 0);
-
-							let fromA = 255, fromR = 0, fromG = 0, fromB = 0;
-							try {
-								const existing = native.Background;
-								if (existing instanceof Windows.UI.Xaml.Media.SolidColorBrush) {
-									const c = (existing as Windows.UI.Xaml.Media.SolidColorBrush).Color;
-									fromA = (c as any).A ?? 255;
-									fromR = (c as any).R ?? 0;
-									fromG = (c as any).G ?? 0;
-									fromB = (c as any).B ?? 0;
-								}
-							} catch (_e) {}
-
-							const brush = new Windows.UI.Xaml.Media.SolidColorBrush(
-								Windows.UI.ColorHelper.FromArgb(fromA, fromR, fromG, fromB)
-							);
-							native.Background = brush;
-							try { (native as any).Resources.Insert('ButtonBackground', brush); } catch (_re) {}
-							try { (native as any).Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_re) {}
-							try { (native as any).Resources.Insert('ButtonBackgroundPressed', brush); } catch (_re) {}
-
-							let colorSettled = false;
-							let colorTimer: any;
-							const colorDone = () => {
-								if (colorSettled) return;
-								colorSettled = true;
-								clearTimeout(colorTimer);
-								try { brush.Color = Windows.UI.ColorHelper.FromArgb(toA, toR, toG, toB); } catch (_e) {}
-								resolve();
-							};
-							const animStart = Date.now() + del;
-							const step = () => {
-								if (colorSettled) return;
-								const now = Date.now();
-								if (now < animStart) { colorTimer = setTimeout(step, animStart - now); return; }
-								const t = Math.min(1, (now - animStart) / Math.max(1, dur));
-								const a = Math.round(fromA + (toA - fromA) * t);
-								const r = Math.round(fromR + (toR - fromR) * t);
-								const g = Math.round(fromG + (toG - fromG) * t);
-								const b = Math.round(fromB + (toB - fromB) * t);
-								try { brush.Color = Windows.UI.ColorHelper.FromArgb(a, r, g, b); } catch (_e) {}
-								if (t < 1) { colorTimer = setTimeout(step, 16); } else { colorDone(); }
-							};
-							colorTimer = setTimeout(step, 0);
-							setTimeout(colorDone, dur + del + 300);
-						} catch (_e) { resolve(); }
-						return;
-					}
-					default:
-						break;
-				}
-
-				// Cancel any previous animation on the same native element + property so
-				// animations don't fight each other (e.g. down-animation vs up-animation).
-				_cancelActiveStoryboard(native, property);
-
-				try {
-					let settled = false;
-					const done = (applyFinal = true) => {
-						if (settled) return;
-						settled = true;
-						clearTimeout(safetyTimer);
-						_clearActiveStoryboard(native, property);
-						if (applyFinal && target) {
-							try { _applyFinalValue(target, property, to); } catch (_e) {}
-						}
-						try { sb.Stop(); } catch (_e) {}
-						for (let i = 0; i < this._runningStoryboards.length; i++) {
-							if (this._runningStoryboards[i].storyboard === sb) {
-								this._runningStoryboards.splice(i, 1);
-								break;
+						const toColor = to && typeof to === 'object' && to.r !== undefined ? to : null;
+						if (!toColor) { resolve(); return; }
+						// Fast path: the View caches its SolidColorBrush in _colorAnimBrush, set by
+						// _setNativeSolidColor. Avoids native.Background getter + instanceof QI (2 WinRT calls).
+						let brush: any = (target as any)?._colorAnimBrush ?? null;
+						if (!brush) {
+							try { if (native.Background instanceof Microsoft.UI.Xaml.Media.SolidColorBrush) brush = native.Background; } catch (_e) {}
+							if (!brush) {
+								brush = new Microsoft.UI.Xaml.Media.SolidColorBrush({ A: 255, R: 0, G: 0, B: 0 } as any);
+								try { native.Background = brush; } catch (_e) {}
 							}
 						}
-						resolve();
-					};
-					// Safety timeout: resolve even if Completed never fires
-					const safetyTimer = setTimeout(done, Math.max(0, dur + del + 300));
-					// Use Windows.Foundation.EventHandler delegate — the correct type for
-					// Timeline.Completed in the WinRT projection. Falls back to addEventListener.
-					try {
-						sb.Completed = new Windows.Foundation.EventHandler((_s: any, _e: any) => done()) as any;
-					} catch (_e) {
-						try { (sb as any).addEventListener?.('completed', () => done()); } catch (_e2) { /* safety timer covers */ }
+						// Resources.Insert wires Button VSM theme brushes — only needed for actual Button
+						// controls. `'IsDefault' in native` is a free prototype check (no WinRT getter).
+						if ('IsDefault' in native) {
+							try { (native as any).Resources.Insert('ButtonBackground', brush); } catch (_e) {}
+							try { (native as any).Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_e) {}
+							try { (native as any).Resources.Insert('ButtonBackgroundPressed', brush); } catch (_e) {}
+						}
+						// Use ColorAnimationUsingKeyFrames + EasingColorKeyFrame/LinearColorKeyFrame instead
+						// of ColorAnimation.  ColorAnimation.To requires IReference<Windows.UI.Color> (a COM
+						// nullable wrapper) which the JS→Rust bridge cannot produce from a plain JS object.
+						// EasingColorKeyFrame.Value is a plain Windows.UI.Color struct — the bridge handles
+						// it via append_struct_object_bytes without any COM boxing.
+						const cauk = new A.ColorAnimationUsingKeyFrames();
+						cauk.EnableDependentAnimation = true;
+						let kf: any;
+						if (ease) {
+							kf = new A.EasingColorKeyFrame();
+							kf.EasingFunction = ease;
+						} else {
+							kf = new A.LinearColorKeyFrame();
+						}
+						kf.Value = { A: Math.round(toColor.a ?? 255), R: Math.round(toColor.r ?? 0), G: Math.round(toColor.g ?? 0), B: Math.round(toColor.b ?? 0) } as any;
+						// KeyTime is a struct: { TimeSpan: { Duration: 100ns-ticks } }
+						kf.KeyTime = { TimeSpan: { Duration: Math.max(0, dur2) * 10000 } } as any;
+						cauk.KeyFrames.Append(kf);
+						A.Storyboard.SetTarget(cauk, brush);
+						A.Storyboard.SetTargetProperty(cauk, 'Color');
+						sb.Children.Append(cauk);
+						break;
 					}
-					_registerActiveStoryboard(native, property, () => done(false));
-					this._runningStoryboards.push({ storyboard: sb, native, props: [property] });
-					sb.Begin();
-				} catch (err) {
-					console.error('[Animation.Windows] Storyboard begin failed', err);
-					resolve();
+					default: resolve(); return;
 				}
-			} catch (err) {
-				console.error('[Animation.Windows] Storyboard fallback building failed', err);
+
+				// RepeatBehavior: Type 0=Count, 1=Duration, 2=Forever; nested TimeSpan unused.
+				const repeatBehavior = (count: number, type: number) =>
+					({ Count: count, Duration: { Duration: 0 }, Type: type } as never);
+				if (infinite) {
+					try { sb.RepeatBehavior = repeatBehavior(0, 2); } catch (_e) {}
+				} else if (reps > 1) {
+					try { sb.RepeatBehavior = repeatBehavior(reps, 0); } catch (_e) {}
+				}
+			} catch (_e) {
 				resolve();
+				return;
 			}
+
+			let settled = false;
+			let safety: any;
+			const finalize = () => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(safety);
+				_clearActiveStoryboard(native, property);
+				if (target) { try { _applyFinalValue(target, property, to); } catch (_e) {} }
+				resolve();
+			};
+			const cancel = () => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(safety);
+				_clearActiveStoryboard(native, property);
+				try { sb.Stop(); } catch (_e) {}
+				resolve();
+			};
+
+			// Completed fires once for a finite storyboard (after all iterations); never for Forever.
+			try { sb.Completed = (() => finalize()) as never; } catch (_e) {}
+
+			_registerActiveStoryboard(native, property, cancel);
+			this._activeCancels.push(cancel);
+
+			const begin = () => { try { sb.Begin(); } catch (_e) { finalize(); } };
+			if (del2 > 0) setTimeout(begin, del2); else begin();
+
+			// Safety net so the promise can't hang if Completed never fires (element detached, etc.).
+			// Skipped for infinite animations — those resolve only via cancel().
+			if (!infinite) {
+				const total = del2 + dur2 * Math.max(1, reps) + 400;
+				safety = setTimeout(finalize, total);
+			}
+		});
+	}
+
+	// Batched single-Storyboard path for homogeneous backgroundColor animation sets.
+	// Instead of spawning N storyboards (one per target), this builds ONE Storyboard with N
+	// ColorAnimations, each having a BeginTime for its cascade delay.  This reduces WinRT
+	// crossings from ~8N to ~5N+2 and, more importantly, cuts the number of Storyboard.Begin()
+	// calls from N to 1 — eliminating the ~4ms-per-tick setTimeout storm on large batches.
+	//
+	// BeginTime is a nullable TimeSpan (IReference<TimeSpan> in ABI).  Pass null for del=0
+	// (immediate start) and Windows.Foundation.PropertyValue.CreateTimeSpan() to box a
+	// non-zero delay into the reference wrapper the compositor expects.
+	private _playBatchedColorAnims(anims: any[]): Promise<void> {
+		const A: any = Microsoft.UI.Xaml.Media.Animation;
+		let sb: any;
+		try { sb = new A.Storyboard(); } catch (_e) { return Promise.resolve(); }
+
+		let maxEnd = 0;
+		// Collect (native, property) pairs for conflict-tracking registration after cancel is created.
+		const registered: Array<{ native: any; prop: string }> = [];
+
+		for (const anim of anims) {
+			const target = anim.target;
+			const native = target?.nativeViewProtected;
+			if (!native) continue;
+
+			const to = anim.value;
+			const toColor = to && typeof to === 'object' && to.r !== undefined ? to : null;
+			if (!toColor) continue;
+
+			const dur2 = Math.max(0, Math.round(anim.duration ?? 300));
+			const del2 = Math.max(0, Math.round(anim.delay ?? 0));
+			const ease = this._xamlEasing(anim.curve);
+
+			// Cancel any previous storyboard running on this element+property.
+			_cancelActiveStoryboard(native, anim.property);
+			registered.push({ native, prop: anim.property });
+
+			let brush: any = target._colorAnimBrush ?? null;
+			if (!brush) {
+				try { if (native.Background instanceof Microsoft.UI.Xaml.Media.SolidColorBrush) brush = native.Background; } catch (_e) {}
+				if (!brush) {
+					brush = new Microsoft.UI.Xaml.Media.SolidColorBrush({ A: 255, R: 0, G: 0, B: 0 } as any);
+					try { native.Background = brush; } catch (_e) {}
+				}
+			}
+			if ('IsDefault' in native) {
+				try { (native as any).Resources.Insert('ButtonBackground', brush); } catch (_e) {}
+				try { (native as any).Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_e) {}
+				try { (native as any).Resources.Insert('ButtonBackgroundPressed', brush); } catch (_e) {}
+			}
+
+			try {
+				// ColorAnimationUsingKeyFrames: EasingColorKeyFrame.Value is a plain Windows.UI.Color
+				// struct — no IReference<Color> boxing needed (unlike ColorAnimation.To).
+				const cauk = new A.ColorAnimationUsingKeyFrames();
+				cauk.EnableDependentAnimation = true;
+				// BeginTime is IReference<TimeSpan> — box via PropertyValue for non-zero delays.
+				// For del2=0, leave unset (null → immediate start).
+				if (del2 > 0) {
+					try {
+						const ts = Windows.Foundation.PropertyValue.CreateTimeSpan({ Duration: del2 * 10000 } as any);
+						cauk.BeginTime = ts as never;
+					} catch (_e) {
+						// PropertyValue unavailable — animation will start at t=0 instead of del2
+					}
+				}
+				let kf: any;
+				if (ease) {
+					kf = new A.EasingColorKeyFrame();
+					kf.EasingFunction = ease;
+				} else {
+					kf = new A.LinearColorKeyFrame();
+				}
+				kf.Value = { A: Math.round(toColor.a ?? 255), R: Math.round(toColor.r ?? 0), G: Math.round(toColor.g ?? 0), B: Math.round(toColor.b ?? 0) } as any;
+				// KeyTime drives the per-animation duration: { TimeSpan: { Duration: 100ns-ticks } }
+				kf.KeyTime = { TimeSpan: { Duration: Math.max(0, dur2) * 10000 } } as any;
+				cauk.KeyFrames.Append(kf);
+				A.Storyboard.SetTarget(cauk, brush);
+				A.Storyboard.SetTargetProperty(cauk, 'Color');
+				sb.Children.Append(cauk);
+			} catch (_e) {}
+
+			if (del2 + dur2 > maxEnd) maxEnd = del2 + dur2;
+		}
+
+		return new Promise<void>((resolve) => {
+			let settled = false;
+			let safety: any;
+			const finalize = () => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(safety);
+				for (const { native, prop } of registered) { _clearActiveStoryboard(native, prop); }
+				for (const anim of anims) {
+					try { _applyFinalValue(anim.target, anim.property, anim.value); } catch (_e) {}
+				}
+				resolve();
+			};
+			const cancel = () => {
+				if (settled) return;
+				settled = true;
+				clearTimeout(safety);
+				for (const { native, prop } of registered) { _clearActiveStoryboard(native, prop); }
+				try { sb.Stop(); } catch (_e) {}
+				resolve();
+			};
+
+			try { sb.Completed = (() => finalize()) as never; } catch (_e) {}
+
+			// Register one shared cancel on every element+property so a subsequent animation
+			// on any of these elements will correctly stop this batch storyboard first.
+			for (const { native, prop } of registered) { _registerActiveStoryboard(native, prop, cancel); }
+			this._activeCancels.push(cancel);
+
+			// Safety net: max(BeginTime + Duration) + 400ms buffer.
+			safety = setTimeout(finalize, maxEnd + 400);
+
+			try { sb.Begin(); } catch (_e) { finalize(); }
 		});
 	}
 
 	play(_resetDelay?: boolean): any {
 		const playPromise = super.play();
-		
 
 		const run = async () => {
 			try {
@@ -281,9 +401,22 @@ export class Animation extends AnimationBase {
 					for (const anim of this._propertyAnimations) {
 						await this._playKeyframeAnimation(anim);
 					}
-					
 				} else {
-					await Promise.all(this._propertyAnimations.map((anim) => this._playKeyframeAnimation(anim)));
+					const anims = this._propertyAnimations;
+					// Fast path: all parallel animations target backgroundColor with finite iterations.
+					// Merge into one Storyboard with per-animation BeginTime — single Begin() call,
+					// no per-animation setTimeout storm, compositor handles all cascade timing.
+					const canBatch = anims.length > 1 && anims.every(a =>
+						a.property === Properties.backgroundColor &&
+						a.target?.nativeViewProtected &&
+						a.value && typeof a.value === 'object' && a.value.r !== undefined &&
+						!(typeof a.iterations === 'number' && (a.iterations <= 0 || !isFinite(a.iterations)))
+					);
+					if (canBatch) {
+						await this._playBatchedColorAnims(anims);
+					} else {
+						await Promise.all(anims.map((anim) => this._playKeyframeAnimation(anim)));
+					}
 				}
 
 				this._resolveAnimationFinishedPromise();
@@ -297,16 +430,14 @@ export class Animation extends AnimationBase {
 	}
 
 	public cancel(): void {
-		// Stop any running XAML storyboards
+		// Stop in-flight storyboards and resolve their promises.
 		try {
-			for (const it of this._runningStoryboards) {
-				try { it.storyboard.Stop(); } catch (_e) { }
-			}
+			const cancels = this._activeCancels.splice(0);
+			for (const c of cancels) { try { c(); } catch (_e) { } }
 		} catch (_e) { }
-		this._runningStoryboards.length = 0;
 
 		super.cancel();
-		// Guard: only reject if play() has been called (sets _reject via super.play())
+		// Only reject if play() set _reject via super.play().
 		if (this.isPlaying) {
 			this._rejectAnimationFinishedPromise();
 		}
@@ -328,50 +459,13 @@ export class Animation extends AnimationBase {
 			const to = animation.value;
 			const duration = typeof animation.duration === 'number' ? animation.duration : 300;
 			const delay = typeof animation.delay === 'number' ? animation.delay : 0;
-			const iterations = typeof animation.iterations === 'number' && animation.iterations > 0 ? animation.iterations : 1;
-			const curve = typeof animation.curve === 'function' ? animation.curve : (t: number) => t;
-
-			let startValues: any = null;
-
-			function getNumeric(v: any, fallback = 0) {
-				return typeof v === 'number' ? v : fallback;
-			}
-
-			// Determine start values
-			switch (property) {
-				case Properties.opacity:
-					startValues = { opacity: getNumeric((target as any).opacity ?? (target as any).get?.('opacity') ?? 1, 1) };
-					break;
-				case Properties.translate:
-					startValues = {
-						x: getNumeric((target as any).translateX ?? 0, 0),
-						y: getNumeric((target as any).translateY ?? 0, 0),
-					};
-					break;
-				case Properties.scale:
-					startValues = {
-						x: getNumeric((target as any).scaleX ?? (target as any).scale ?? 1, 1),
-						y: getNumeric((target as any).scaleY ?? (target as any).scale ?? 1, 1),
-					};
-					break;
-				case Properties.rotate:
-					startValues = { rotate: getNumeric((target as any).rotate ?? 0, 0) };
-					break;
-				case Properties.backgroundColor:
-					const bg = (target as any).backgroundColor ?? (target as any).style?.backgroundColor ?? null;
-					startValues = { color: bg };
-					break;
-				default:
-					startValues = {};
-					break;
-			}
+			const iterations = typeof animation.iterations === 'number' && animation.iterations !== 0 ? animation.iterations : 1;
 
 			const native = (target as any).nativeViewProtected;
 			if (native) {
-				// Use XAML Storyboard for all properties — reliable, no Composition fallback needed
-				this._startStoryboardForProperty(native, property, to, duration, delay, '', target).then(() => resolve());
+				this._startStoryboardForProperty(native, property, to, duration, delay, '', target, animation.curve, iterations).then(() => resolve());
 			} else {
-				// No native view yet — apply final value immediately so the animation doesn't hang
+				// No native view yet — apply final value immediately so the animation doesn't hang.
 				_applyFinalValue(target, property, to);
 				resolve();
 			}

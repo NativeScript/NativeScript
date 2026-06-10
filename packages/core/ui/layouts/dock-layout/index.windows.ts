@@ -1,20 +1,40 @@
 export * from './dock-layout-common';
 
-import { DockLayoutBase, dockProperty, stretchLastChildProperty } from './dock-layout-common';
+import { DockLayoutBase, stretchLastChildProperty } from './dock-layout-common';
 import { View } from '../../core/view';
-import { layout } from '../../../utils';
+import type { CoreTypes } from '../../../core-types';
 
 export class DockLayout extends DockLayoutBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.Canvas;
-	private _windows: Windows.UI.Xaml.Controls.Canvas;
+	nativeViewProtected!: Microsoft.UI.Xaml.Controls.Canvas;
+	private _canvas!: Microsoft.UI.Xaml.Controls.Canvas;
+	private _layoutBusy = false;
 
 	constructor() {
 		super();
-		this._windows = new Windows.UI.Xaml.Controls.Canvas();
+		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
 	}
 
-	public createNativeView() {
-		return this._windows;
+	public createNativeView(): Microsoft.UI.Xaml.Controls.Canvas {
+		this._canvas = new Microsoft.UI.Xaml.Controls.Canvas();
+		return this._canvas;
+	}
+
+	public initNativeView(): void {
+		super.initNativeView();
+		const canvas = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.Canvas;
+		const ref = new WeakRef(this);
+		canvas.SizeChanged = NSWinRT.asDelegate('Microsoft.UI.Xaml.SizeChangedEventHandler', () => {
+			ref.deref()?._runDockLayout();
+		});
+	}
+
+	public disposeNativeView(): void {
+		const native = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.Canvas;
+		if (native) {
+			native.SizeChanged = null;
+			native.LayoutUpdated = null;
+		}
+		super.disposeNativeView();
 	}
 
 	[stretchLastChildProperty.getDefault](): boolean {
@@ -22,144 +42,177 @@ export class DockLayout extends DockLayoutBase {
 	}
 
 	[stretchLastChildProperty.setNative](value: boolean) {
-		// keep property in sync and request layout
 		this.stretchLastChild = value;
-		this.requestLayout();
+		this._runDockLayout();
 	}
 
-	public onDockChanged(view: View, oldValue: any, newValue: any) {
-		this.requestLayout();
+	public onDockChanged(_view: View, _oldValue: CoreTypes.DockType, _newValue: CoreTypes.DockType) {
+		this._runDockLayout();
 	}
 
-	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-		let measureWidth = 0;
-		let measureHeight = 0;
-
-		const width = layout.getMeasureSpecSize(widthMeasureSpec);
-		const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
-
-		const height = layout.getMeasureSpecSize(heightMeasureSpec);
-		const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
-
-		const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
-		const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
-
-		let remainingWidth = widthMode === layout.UNSPECIFIED ? Number.MAX_VALUE : width - horizontalPaddingsAndMargins;
-		let remainingHeight = heightMode === layout.UNSPECIFIED ? Number.MAX_VALUE : height - verticalPaddingsAndMargins;
-
-		let tempHeight = 0;
-		let tempWidth = 0;
-		let childWidthMeasureSpec: number;
-		let childHeightMeasureSpec: number;
-
-		this.eachLayoutChild((child, last) => {
-			if (this.stretchLastChild && last) {
-				childWidthMeasureSpec = layout.makeMeasureSpec(remainingWidth, widthMode);
-				childHeightMeasureSpec = layout.makeMeasureSpec(remainingHeight, heightMode);
+	public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
+		super._addViewToNativeVisualTree(child, atIndex);
+		const nativeChild = child.nativeViewProtected as Microsoft.UI.Xaml.UIElement;
+		const children = this._canvas?.Children;
+		if (!nativeChild || !children) {
+			return false;
+		}
+		try {
+			const size: number = children.Size;
+			if (atIndex >= 0 && atIndex < size && atIndex < Number.MAX_SAFE_INTEGER) {
+				children.InsertAt(atIndex, nativeChild);
 			} else {
-				childWidthMeasureSpec = layout.makeMeasureSpec(remainingWidth, widthMode === layout.EXACTLY ? layout.AT_MOST : widthMode);
-				childHeightMeasureSpec = layout.makeMeasureSpec(remainingHeight, heightMode === layout.EXACTLY ? layout.AT_MOST : heightMode);
+				children.Append(nativeChild);
 			}
-
-			const childSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
-
-			switch (child.dock) {
-				case 'top':
-				case 'bottom':
-					remainingHeight = Math.max(0, remainingHeight - childSize.measuredHeight);
-					tempHeight += childSize.measuredHeight;
-					measureWidth = Math.max(measureWidth, tempWidth + childSize.measuredWidth);
-					measureHeight = Math.max(measureHeight, tempHeight);
-					break;
-
-				case 'left':
-				case 'right':
-				default:
-					remainingWidth = Math.max(0, remainingWidth - childSize.measuredWidth);
-					tempWidth += childSize.measuredWidth;
-					measureWidth = Math.max(measureWidth, tempWidth);
-					measureHeight = Math.max(measureHeight, tempHeight + childSize.measuredHeight);
-					break;
-			}
-		});
-
-		measureWidth += horizontalPaddingsAndMargins;
-		measureHeight += verticalPaddingsAndMargins;
-
-		measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
-		measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
-
-		const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-		const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
-
-		this.setMeasuredDimension(widthAndState, heightAndState);
+			try { (nativeChild as any).__ns_view = child; } catch (_e) { }
+		} catch {
+			return false;
+		}
+		this._runDockLayout();
+		return true;
 	}
 
-	public onLayout(left: number, top: number, right: number, bottom: number): void {
-		super.onLayout(left, top, right, bottom);
+	public _removeViewFromNativeVisualTree(child: View): void {
+		const nativeChild = child.nativeViewProtected as Microsoft.UI.Xaml.UIElement;
+		const children = this._canvas?.Children;
+		if (nativeChild && children) {
+			const count: number = children.Size ?? 0;
+			for (let i = 0; i < count; i++) {
+				try {
+					if (children.GetAt(i) === nativeChild) {
+						children.RemoveAt(i);
+						break;
+					}
+				} catch (_e) { }
+			}
+		}
+		super._removeViewFromNativeVisualTree(child);
+		this._runDockLayout();
+	}
 
-		const insets = this.getSafeAreaInsets();
-		const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth + insets.left + insets.right;
-		const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth + insets.top + insets.bottom;
+	// XAML Canvas has no native dock; children are measured and placed manually (same pattern as Wrap/Flex).
+	private _runDockLayout(): void {
+		if (this._layoutBusy) {
+			return;
+		}
+		const canvas = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.Canvas;
+		if (!canvas) {
+			return;
+		}
 
-		let childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
-		let childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
+		const children = canvas.Children;
+		const count: number = children?.Size ?? 0;
+		if (count === 0) {
+			return;
+		}
 
-		let x = childLeft;
-		let y = childTop;
+		const padLeft = (this.effectiveBorderLeftWidth || 0) + (this.effectivePaddingLeft || 0);
+		const padTop = (this.effectiveBorderTopWidth || 0) + (this.effectivePaddingTop || 0);
+		const padRight = (this.effectiveBorderRightWidth || 0) + (this.effectivePaddingRight || 0);
+		const padBottom = (this.effectiveBorderBottomWidth || 0) + (this.effectivePaddingBottom || 0);
 
-		let remainingWidth = Math.max(0, right - left - horizontalPaddingsAndMargins);
-		let remainingHeight = Math.max(0, bottom - top - verticalPaddingsAndMargins);
+		const availW = Math.max(0, ((canvas.ActualWidth as number) || 0) - padLeft - padRight);
+		const availH = Math.max(0, ((canvas.ActualHeight as number) || 0) - padTop - padBottom);
 
-		this.eachLayoutChild((child, last) => {
-			let childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
-			let childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
+		this._layoutBusy = true;
+		try {
+			let remainingW = availW;
+			let remainingH = availH;
+			let x = padLeft;
+			let y = padTop;
 
-			if (last && this.stretchLastChild) {
-				View.layoutChild(this, child, x, y, x + remainingWidth, y + remainingHeight);
-				return;
+			const visibleIndices: number[] = [];
+			for (let i = 0; i < count; i++) {
+				const nc = children.GetAt(i) as Microsoft.UI.Xaml.FrameworkElement;
+				if (nc.Visibility !== Microsoft.UI.Xaml.Visibility.Collapsed) {
+					visibleIndices.push(i);
+				}
 			}
 
-			const dock = DockLayout.getDock(child);
-			let childLeftPos = 0;
-			let childTopPos = 0;
+			for (let vi = 0; vi < visibleIndices.length; vi++) {
+				const i = visibleIndices[vi];
+				const nc = children.GetAt(i) as Microsoft.UI.Xaml.FrameworkElement;
+				const childView = (nc as any).__ns_view as View;
+				const dock = childView ? DockLayout.getDock(childView) : 'left';
+				const stretch = this.stretchLastChild && vi === visibleIndices.length - 1;
 
-			switch (dock) {
-				case 'top':
-					childLeftPos = x;
-					childTopPos = y;
-					childWidth = remainingWidth;
-					y += childHeight;
-					remainingHeight = Math.max(0, remainingHeight - childHeight);
-					break;
+				let childW = 0;
+				let childH = 0;
 
-				case 'bottom':
-					childLeftPos = x;
-					childTopPos = y + remainingHeight - childHeight;
-					childWidth = remainingWidth;
-					remainingHeight = Math.max(0, remainingHeight - childHeight);
-					break;
+				if (stretch) {
+					childW = remainingW;
+					childH = remainingH;
+				} else {
+					let measureW = remainingW > 0 ? remainingW : Number.POSITIVE_INFINITY;
+					let measureH = remainingH > 0 ? remainingH : Number.POSITIVE_INFINITY;
+					if (dock === 'top' || dock === 'bottom') {
+						measureW = availW > 0 ? availW : Number.POSITIVE_INFINITY;
+					} else {
+						measureH = availH > 0 ? availH : Number.POSITIVE_INFINITY;
+					}
+					try {
+						nc.Measure(Microsoft.UI.Xaml.SizeHelper.FromDimensions(measureW, measureH));
+						const d = nc.DesiredSize;
+						childW = d.Width;
+						childH = d.Height;
+					} catch (_e) {
+						childW = 0;
+						childH = 0;
+					}
+				}
 
-				case 'right':
-					childLeftPos = x + remainingWidth - childWidth;
-					childTopPos = y;
-					childHeight = remainingHeight;
-					remainingWidth = Math.max(0, remainingWidth - childWidth);
-					break;
+				let left = x;
+				let top = y;
+				let width = childW;
+				let height = childH;
 
-				case 'left':
-				default:
-					childLeftPos = x;
-					childTopPos = y;
-					childHeight = remainingHeight;
-					x += childWidth;
-					remainingWidth = Math.max(0, remainingWidth - childWidth);
+				switch (dock) {
+					case 'top':
+						width = availW;
+						left = padLeft;
+						top = y;
+						y += childH;
+						remainingH = Math.max(0, remainingH - childH);
+						break;
+					case 'bottom':
+						width = availW;
+						left = padLeft;
+						top = padTop + remainingH - childH;
+						remainingH = Math.max(0, remainingH - childH);
+						break;
+					case 'right':
+						height = availH;
+						left = padLeft + remainingW - childW;
+						top = padTop;
+						remainingW = Math.max(0, remainingW - childW);
+						break;
+					case 'left':
+					default:
+						height = availH;
+						left = x;
+						top = padTop;
+						x += childW;
+						remainingW = Math.max(0, remainingW - childW);
+						break;
+				}
+
+				try {
+					Microsoft.UI.Xaml.Controls.Canvas.SetLeft(nc, left);
+					Microsoft.UI.Xaml.Controls.Canvas.SetTop(nc, top);
+					if (width > 0) {
+						nc.Width = width;
+					}
+					if (height > 0) {
+						nc.Height = height;
+					}
+				} catch (_e) { }
+
+				if (stretch) {
 					break;
+				}
 			}
-
-			View.layoutChild(this, child, childLeftPos, childTopPos, childLeftPos + childWidth, childTopPos + childHeight);
-		});
+		} finally {
+			this._layoutBusy = false;
+		}
 	}
 }

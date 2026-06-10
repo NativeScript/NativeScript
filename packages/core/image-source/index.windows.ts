@@ -12,11 +12,18 @@ const RES_PREFIX = 'res://';
 const LEADING_SLASHES_RE = /^[\\/]+/;
 const BACKSLASH_RE = /\\/g;
 
-function makeBitmapImage() {
-	return new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+function resolveAppPath(filePath: string): string {
+	if (filePath.startsWith('~/')) {
+		return fsPath.join(knownFolders.currentApp().path, filePath.substring(2));
+	}
+	return filePath;
 }
 
-function bitmapFromUriAsync(uriStr: string): Promise<Windows.UI.Xaml.Media.Imaging.BitmapImage> {
+function makeBitmapImage() {
+	return new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
+}
+
+function bitmapFromUriAsync(uriStr: string): Promise<Microsoft.UI.Xaml.Media.Imaging.BitmapImage> {
 	return new Promise((resolve, reject) => {
 		try {
 			const bmp = makeBitmapImage();
@@ -253,6 +260,7 @@ export class ImageSource implements ImageSourceDefinition {
 
 	static fromFileSync(filePath: string): ImageSource {
 		try {
+			const resolved = resolveAppPath(filePath);
 			const bmp = makeBitmapImage();
 			const src = new ImageSource();
 			bmp.ImageOpened = () => {
@@ -267,7 +275,7 @@ export class ImageSource implements ImageSourceDefinition {
 				//@ts-ignore
 				bmp.ImageFailed = null;
 			}
-			bmp.UriSource = new Windows.Foundation.Uri(fileUri(filePath));
+			bmp.UriSource = new Windows.Foundation.Uri(fileUri(resolved));
 			src.windows = bmp;
 			return src;
 		} catch {
@@ -276,7 +284,8 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromFile(filePath: string): Promise<ImageSource> {
-		return readFileBytes(filePath).then((bytes) => {
+		const resolved = resolveAppPath(filePath);
+		return readFileBytes(resolved).then((bytes) => {
 			return bitmapFromBytesAsync(bytes).then((bmp) => {
 				const src = new ImageSource(bmp);
 				src._rawBytes = bytes;
@@ -285,7 +294,7 @@ export class ImageSource implements ImageSourceDefinition {
 				return src;
 			});
 		}).catch(() => {
-			return bitmapFromUriAsync(filePath).then((bmp) => {
+			return bitmapFromUriAsync(fileUri(resolved)).then((bmp) => {
 				const src = new ImageSource(bmp);
 				src._width = bmp.PixelWidth ?? 0;
 				src._height = bmp.PixelHeight ?? 0;

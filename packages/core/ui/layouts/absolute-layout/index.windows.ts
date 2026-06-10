@@ -4,40 +4,52 @@ import { AbsoluteLayoutBase, leftProperty, topProperty } from './absolute-layout
 import { View } from '../../core/view';
 import { layout } from '../../../utils';
 
-function setCanvasAttachedProperty(setterName: string, native: any, value: number) {
+// Canvas does NOT lay out its children — position comes entirely from Canvas.Left/Top attached properties.
+// (Previously this call was missing, causing all children to pile up at 0,0 and breaking the animation-curves demo.)
+// Prefer the static setter; fall back to SetValue(Canvas.*Property) if the runtime doesn't project it.
+function setCanvasAttachedProperty(prop: 'Left' | 'Top', native: any, value: number) {
 	try {
-		const Canvas = Windows.UI.Xaml.Controls.Canvas as any;
-		if (Canvas && typeof Canvas[setterName] === 'function') {
-		//	Canvas[setterName](native, value);
+		const Canvas = Microsoft.UI.Xaml.Controls.Canvas as any;
+		if (!Canvas || !native) {
+			return;
+		}
+		const setter = 'Set' + prop; // SetLeft / SetTop
+		if (typeof Canvas[setter] === 'function') {
+			Canvas[setter](native, value);
+			return;
+		}
+		const dp = Canvas[prop + 'Property']; // LeftProperty / TopProperty
+		if (dp && typeof native.SetValue === 'function') {
+			native.SetValue(dp, value);
 		}
 	} catch (_e) {}
 }
 
-// Attach native setters on View so Canvas attached properties apply to native elements
 (View.prototype as any)[leftProperty.setNative] = function (value: number) {
 	const native = (this as any).nativeViewProtected as any;
 	if (native) {
-		setCanvasAttachedProperty('SetLeft', native, value);
+		setCanvasAttachedProperty('Left', native, value);
 	}
 };
 
 (View.prototype as any)[topProperty.setNative] = function (value: number) {
 	const native = (this as any).nativeViewProtected as any;
 	if (native) {
-		setCanvasAttachedProperty('SetTop', native, value);
+		setCanvasAttachedProperty('Top', native, value);
 	}
 };
 
 export class AbsoluteLayout extends AbsoluteLayoutBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.Canvas;
-	private _windows: Windows.UI.Xaml.Controls.Canvas;
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.Canvas;
+	private _windows: Microsoft.UI.Xaml.Controls.Canvas;
 
 	constructor() {
 		super();
-		this._windows = new Windows.UI.Xaml.Controls.Canvas();
+		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
 	}
 
 	public createNativeView() {
+		this._windows = new Microsoft.UI.Xaml.Controls.Canvas();
 		return this._windows;
 	}
 	

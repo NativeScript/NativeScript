@@ -134,7 +134,6 @@ function arrayBufferToString(buf: ArrayBuffer | Uint8Array): string {
             return new TextDecoder('utf-8').decode(buf instanceof ArrayBuffer ? new Uint8Array(buf) : (buf as Uint8Array));
         }
 
-        // Fallback manual decode
         const bytes = buf instanceof ArrayBuffer ? new Uint8Array(buf) : (buf as Uint8Array);
         let str = '';
         for (let i = 0; i < bytes.length; i++) {
@@ -155,7 +154,6 @@ function arrayBufferToBase64(buf: ArrayBuffer | Uint8Array): string {
             return Buffer.from(buf as Uint8Array).toString('base64');
         }
 
-        // Use Windows API if available
         try {
             if (typeof Windows !== 'undefined' && Windows.Security && Windows.Security.Cryptography) {
                 const writer = new Windows.Storage.Streams.DataWriter();
@@ -169,7 +167,6 @@ function arrayBufferToBase64(buf: ArrayBuffer | Uint8Array): string {
             }
         } catch (e) {}
 
-        // Fallback to btoa over chunks
         const bytes = buf instanceof ArrayBuffer ? new Uint8Array(buf) : (buf as Uint8Array);
         let binary = '';
         const chunkSize = 0x8000;
@@ -241,8 +238,6 @@ export class NetworkDomainDebugger implements inspectorCommands.NetworkDomain.Ne
             return { body: '', base64Encoded: false };
         }
 
-        // Try to handle multiple data shapes across platforms/runtimes
-        // Prefer text decoding for text-like resources
         try {
             if (resource_data.hasTextContent) {
                 if (typeof resource_data.data === 'string') {
@@ -251,28 +246,24 @@ export class NetworkDomainDebugger implements inspectorCommands.NetworkDomain.Ne
                 if (resource_data.data instanceof ArrayBuffer || resource_data.data instanceof Uint8Array) {
                     return { body: arrayBufferToString(resource_data.data), base64Encoded: false };
                 }
-                // Fallback: attempt toString
                 return { body: resource_data.data?.toString() ?? '', base64Encoded: false };
             } else {
                 if (resource_data.data instanceof ArrayBuffer || resource_data.data instanceof Uint8Array) {
                     return { body: arrayBufferToBase64(resource_data.data), base64Encoded: true };
                 }
 
-                // If underlying platform produced a Windows IBuffer or similar, try Windows API
+                // If the platform returned a WinRT IBuffer (has .Length), encode it directly.
                 try {
                     if (typeof Windows !== 'undefined' && Windows.Security && Windows.Security.Cryptography && resource_data.data && (resource_data.data as any).Length !== undefined) {
-                        // resource_data.data is likely an IBuffer-like object
                         return { body: Windows.Security.Cryptography.CryptographicBuffer.EncodeToBase64String(resource_data.data as any), base64Encoded: true };
                     }
                 } catch (e) {}
 
-                // Last-ditch: attempt Buffer or btoa
                 if (typeof Buffer !== 'undefined' && Buffer.from) {
                     try {
                         return { body: Buffer.from(resource_data.data as any).toString('base64'), base64Encoded: true };
                     } catch (e) {}
                 }
-                // fallback empty
                 return { body: '', base64Encoded: true };
             }
         } catch (e) {

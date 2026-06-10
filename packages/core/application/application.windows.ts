@@ -4,6 +4,17 @@ import { setAppMainEntry, setToggleApplicationEventListenersCallback, setApplica
 import type { View } from '../ui/core/view';
 import { setRootView } from './helpers-common';
 import { CoreTypes } from 'index';
+import { activateCurrentWindow, getCurrentWindowContent, setCurrentWindowContent, getCurrentWindowBounds, setCurrentWindowTitle } from './window-helper.windows';
+
+
+enum AppEventKind {
+	Activated = 1,
+	Deactivated = 2,
+	Shown = 3,
+	Hidden = 4,
+	UncaughtError = 5,
+	Exit = 6
+}
 
 export class WindowsApplication extends ApplicationCommon {
 
@@ -38,49 +49,64 @@ export class WindowsApplication extends ApplicationCommon {
 
 		rootView._setupAsRootView({});
 
-		const win = Windows.UI.Xaml.Window.Current;
-		win.Content = rootView.nativeViewProtected;
-		win.Activate();
+		if (!setCurrentWindowContent(rootView.nativeViewProtected)) {
+			throw new Error('Unable to resolve the current Windows window.');
+		}
+		this.setupOrientationTracking(rootView.nativeViewProtected);
+		activateCurrentWindow();
+		this._applyWindowTitle();
 
 		this.initRootView(rootView);
 		rootView.callLoaded();
 	}
 
+	// Give the window a sensible title. A code-created WinUI3 Window starts with an empty Title and
+	// does NOT inherit the package DisplayName, so the caption otherwise shows the host exe name.
+	private _applyWindowTitle(): void {
+		try {
+			let title = '';
+			try {
+				title = Windows.ApplicationModel.Package.Current.DisplayName || '';
+			} catch (_e) { /* Package projection unavailable (e.g. unpackaged) — fall through */ }
+			if (title) {
+				setCurrentWindowTitle(title);
+			}
+		} catch (_e) { /* never let window titling break app startup */ }
+	}
+
 	getNativeApplication() {
-		return Windows?.UI?.Xaml?.Application?.Current ?? Windows?.ApplicationModel?.Core?.CoreApplication;
+		return Microsoft.UI.Xaml.Application.Current;
 	}
 
 	protected getOrientation(): 'portrait' | 'landscape' | 'unknown' {
-		try {
-			const displayInfo = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
-			const orientation = displayInfo?.CurrentOrientation;
-			const DisplayOrientations = Windows.Graphics.Display.DisplayOrientations;
+		const bounds = getCurrentWindowBounds();
+		if (!bounds) {
+			return 'unknown';
+		}
 
-			if (orientation === DisplayOrientations.Portrait || orientation === DisplayOrientations.PortraitFlipped) {
-				return 'portrait';
-			}
+		const width = bounds.Width;
+		const height = bounds.Height;
 
-			if (orientation === DisplayOrientations.Landscape || orientation === DisplayOrientations.LandscapeFlipped) {
-				return 'landscape';
-			}
-		} catch (e) { }
+		if (width === height) {
+			return 'unknown';
+		}
 
-		return 'unknown';
+		return width >= height ? 'landscape' : 'portrait';
 	}
 
 	protected getSystemAppearance(): 'dark' | 'light' | null {
 		try {
-			const content: any = Windows.UI.Xaml.Window.Current.Content;
+			const content: any = getCurrentWindowContent();
 
 			const actualTheme = content?.ActualTheme;
-			const ElementTheme = Windows.UI.Xaml.ElementTheme;
+			const ElementTheme = Microsoft.UI.Xaml.ElementTheme;
 			if (typeof actualTheme === 'number' && ElementTheme) {
 				if (actualTheme === ElementTheme.Dark) return 'dark';
 				if (actualTheme === ElementTheme.Light) return 'light';
 			}
 
-			const appTheme = Windows.UI.Xaml.Application.Current.RequestedTheme;
-			const ApplicationTheme = Windows.UI.Xaml.ApplicationTheme;
+			const appTheme = Microsoft.UI.Xaml.Application.Current.RequestedTheme;
+			const ApplicationTheme = Microsoft.UI.Xaml.ApplicationTheme;
 			if (appTheme === ApplicationTheme.Dark) return 'dark';
 			if (appTheme === ApplicationTheme.Light) return 'light';
 
@@ -99,7 +125,7 @@ export class WindowsApplication extends ApplicationCommon {
 	}
 
 	protected getLayoutDirection(): CoreTypes.LayoutDirectionType {
-		const content = Windows.UI.Xaml.Window.Current.Content as Windows.UI.Xaml.FrameworkElement | null;
+		const content = getCurrentWindowContent<Microsoft.UI.Xaml.FrameworkElement>();
 		if (!content) {
 			return null as never;
 		}
@@ -107,45 +133,58 @@ export class WindowsApplication extends ApplicationCommon {
 
 		const direction = content.FlowDirection;
 
-		if (direction === Windows.UI.Xaml.FlowDirection.RightToLeft) {
+		if (direction === Microsoft.UI.Xaml.FlowDirection.RightToLeft) {
 			return 'rtl';
 		}
 		return 'ltr';
 	}
 
 	private setupLifecycleEvents(): void {
-		const coreApp = Windows.ApplicationModel.Core.CoreApplication;
+		(globalThis as any).__nsOnAppEvent = (kind: number, message: string | undefined) => {
 
-		if (coreApp) {
-			coreApp.Suspending = (_sender: any, args: any) => this.setSuspended(true, { win: args });
-			coreApp.Resuming = (_sender: any, args: any) => this.setSuspended(false, { win: args });
-			coreApp.EnteredBackground = (_sender: any, args: any) => this.setInBackground(true, { win: args });
-			coreApp.LeavingBackground = (_sender: any, args: any) => this.setInBackground(false, { win: args });
-			coreApp.Exiting = (_sender: any, args: any) => this.notify({ eventName: this.exitEvent, object: this, win: args });
-			coreApp.UnhandledErrorDetected = (_sender: any, args: any) => this.notify({ eventName: this.uncaughtErrorEvent, object: this, win: args });
-		}
-
-		const displayInfo = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
-		const onOrientationChanged = () => {
-			const newValue = this.getOrientation();
-			this.setOrientation(newValue);
-		};
-
-		if (displayInfo && displayInfo.OrientationChanged !== undefined) {
-			displayInfo.OrientationChanged = () => onOrientationChanged();
-		}
-
-		const ui = new Windows.UI.ViewManagement.UISettings();
-		const onColorValuesChanged = () => {
-			const newSys = this.getSystemAppearance();
-			if (newSys !== null) {
-				this.setSystemAppearance(newSys);
+			switch (kind) {
+				case AppEventKind.Shown:
+					this.setInBackground(false);
+					this.setSuspended(false);
+					break;
+				case AppEventKind.Deactivated:
+					this.setInBackground(true);
+					break;
+				case AppEventKind.Hidden:
+					this.setInBackground(true);
+					this.setSuspended(true);
+					break;
+				case AppEventKind.Exit:
+					this.notify({ eventName: this.exitEvent, object: this });
+					break;
+				case AppEventKind.UncaughtError:
+					this.notify({ eventName: this.uncaughtErrorEvent, object: this, error: new Error(message ?? 'Unhandled exception') } as any);
+					break;
 			}
 		};
 
-		if (ui && ui.ColorValuesChanged !== undefined) {
-			ui.ColorValuesChanged = () => onColorValuesChanged();
-		}
+		try {
+			const ui = new Windows.UI.ViewManagement.UISettings();
+			if (ui && ui.ColorValuesChanged !== undefined) {
+				ui.ColorValuesChanged = () => {
+					const newSys = this.getSystemAppearance();
+					if (newSys !== null) {
+						this.setSystemAppearance(newSys);
+					}
+				};
+			}
+		} catch (_e) { }
+	}
+
+	// Orientation derives from window size, so re-evaluate when the root content resizes.
+	private _orientationDelegate: any = null; // held so the handler isn't GC'd
+	private setupOrientationTracking(content: Microsoft.UI.Xaml.UIElement): void {
+			const element = content as Microsoft.UI.Xaml.FrameworkElement;
+			if (element && element.SizeChanged !== undefined) {
+				// Wire via asDelegate (a raw-fn assignment does not reliably subscribe in this host) + hold it.
+				this._orientationDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.SizeChangedEventHandler', () => this.setOrientation(this.getOrientation()));
+				(element as any).SizeChanged = this._orientationDelegate;
+			}
 	}
 }
 
@@ -156,7 +195,6 @@ function updateAccessibilityProperties(view: any): void {
 		return;
 	}
 
-	// todo
 }
 
 setA11yUpdatePropertiesCallback(updateAccessibilityProperties);

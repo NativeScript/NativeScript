@@ -1,10 +1,11 @@
 export * from './text-base-common';
 
-import { TextBaseCommon, textProperty, formattedTextProperty, textTransformProperty, textAlignmentProperty, whiteSpaceProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textTransformProperty, textAlignmentProperty, whiteSpaceProperty, resetSymbol, textShadowProperty } from './text-base-common';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { colorProperty, fontInternalProperty, fontSizeProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, fontWeightProperty, fontStyleProperty } from '../styling/style-properties';
 import { FontWeightType } from '../styling/font-interfaces';
+import type { ShadowCSSValues } from '../styling/css-shadow';
 import { layout } from '../../utils';
 
 // WinUI uses DIPs — do not multiply by density. Convert px→dip for 'px' unit values.
@@ -17,84 +18,103 @@ function toDip(value: CoreTypes.LengthType, auto = 0): number {
 	return auto;
 }
 
-function makeThickness(options: { Left?: number; Top?: number; Right?: number; Bottom?: number }, def: Windows.UI.Xaml.Thickness): Windows.UI.Xaml.Thickness {
+function makeThickness(options: { Left?: number; Top?: number; Right?: number; Bottom?: number }, def: Microsoft.UI.Xaml.Thickness): Microsoft.UI.Xaml.Thickness {
 	const { Left, Top, Right, Bottom } = options;
-	return Windows.UI.Xaml.ThicknessHelper.FromLengths(Left ?? def.Left, Top ?? def.Top, Right ?? def.Right, Bottom ?? def.Bottom);
+	return Microsoft.UI.Xaml.ThicknessHelper.FromLengths(Left ?? def.Left, Top ?? def.Top, Right ?? def.Right, Bottom ?? def.Bottom);
 }
 
-function toFontWeight(value: FontWeightType): Windows.UI.Text.FontWeight | null {
-	switch (value) {
-		case '700':
-		case 'bold':
-			return Windows.UI.Text.FontWeights.Bold;
-		case '400':
-		case 'normal':
-			return Windows.UI.Text.FontWeights.Normal;
-		case '100': return Windows.UI.Text.FontWeights.Thin;
-		case '200': return Windows.UI.Text.FontWeights.ExtraLight;
-		case '300': return Windows.UI.Text.FontWeights.Light;
-		case '500': return Windows.UI.Text.FontWeights.Medium;
-		case '600': return Windows.UI.Text.FontWeights.SemiBold;
-		case '800': return Windows.UI.Text.FontWeights.ExtraBold;
-		case '900': return Windows.UI.Text.FontWeights.Black;
-		default:
-			return null;
+// Microsoft.UI.Text.FontWeights resolves in WinUI3; guarded so a future projection gap degrades gracefully.
+function toFontWeight(value: FontWeightType): Microsoft.UI.Text.FontWeight | null {
+	try {
+		switch (value) {
+			case '700':
+			case 'bold':
+				return Microsoft.UI.Text.FontWeights.Bold;
+			case '400':
+			case 'normal':
+				return Microsoft.UI.Text.FontWeights.Normal;
+			case '100': return Microsoft.UI.Text.FontWeights.Thin;
+			case '200': return Microsoft.UI.Text.FontWeights.ExtraLight;
+			case '300': return Microsoft.UI.Text.FontWeights.Light;
+			case '500': return Microsoft.UI.Text.FontWeights.Medium;
+			case '600': return Microsoft.UI.Text.FontWeights.SemiBold;
+			case '800': return Microsoft.UI.Text.FontWeights.ExtraBold;
+			case '900': return Microsoft.UI.Text.FontWeights.Black;
+			default:
+				return null;
+		}
+	} catch {
+		return null;
 	}
 }
 
-function fromFontWeight(value: Windows.UI.Text.FontWeight): FontWeightType {
+function fromFontWeight(value: Microsoft.UI.Text.FontWeight): FontWeightType {
 	switch (value) {
-		case Windows.UI.Text.FontWeights.Bold:
+		case Microsoft.UI.Text.FontWeights.Bold:
 			return '700';
-		case Windows.UI.Text.FontWeights.Normal:
+		case Microsoft.UI.Text.FontWeights.Normal:
 			return '400';
-		case Windows.UI.Text.FontWeights.Thin:
+		case Microsoft.UI.Text.FontWeights.Thin:
 			return '100';
-		case Windows.UI.Text.FontWeights.ExtraLight:
+		case Microsoft.UI.Text.FontWeights.ExtraLight:
 			return '200';
-		case Windows.UI.Text.FontWeights.Light:
+		case Microsoft.UI.Text.FontWeights.Light:
 			return '300';
-		case Windows.UI.Text.FontWeights.Medium:
+		case Microsoft.UI.Text.FontWeights.Medium:
 			return '500';
-		case Windows.UI.Text.FontWeights.SemiBold:
+		case Microsoft.UI.Text.FontWeights.SemiBold:
 			return '600';
-		case Windows.UI.Text.FontWeights.ExtraBold:
+		case Microsoft.UI.Text.FontWeights.ExtraBold:
 			return '800';
-		case Windows.UI.Text.FontWeights.Black:
+		case Microsoft.UI.Text.FontWeights.Black:
 			return '900';
 		default:
 			return '400';
 	}
 }
 
+// FontStyle is `Windows.UI.Text.FontStyle` — NOT `Microsoft.UI.Text` (which was NOT migrated from
+// WinUI3; only FontWeights was). `Microsoft.UI.Text.FontStyle` is undefined, so `.Normal` throws.
+// Guard: a throw inside applyAllNativeSetters aborts loading every following sibling, blanking the page.
 function toFontStyle(value: 'normal' | 'italic' | 'oblique'): Windows.UI.Text.FontStyle | null {
-	switch (value) {
-		case 'italic':
-			return Windows.UI.Text.FontStyle.Italic;
-		case 'normal':
-			return Windows.UI.Text.FontStyle.Normal;
-		case 'oblique':
-			return Windows.UI.Text.FontStyle.Oblique;
-		default:
-			return null;
+	try {
+		switch (value) {
+			case 'italic':
+				return Windows.UI.Text.FontStyle.Italic;
+			case 'normal':
+				return Windows.UI.Text.FontStyle.Normal;
+			case 'oblique':
+				return Windows.UI.Text.FontStyle.Oblique;
+			default:
+				return null;
+		}
+	} catch {
+		return null;
 	}
 }
 
-function fromFontStyle(value: Windows.UI.Text.FontStyle): 'normal' | 'italic' | 'oblique' | null {
-	if (value === Windows.UI.Text.FontStyle.Italic) {
-		return 'italic';
-	} else if (value === Windows.UI.Text.FontStyle.Oblique) {
-		return 'oblique';
-	} else if (value === Windows.UI.Text.FontStyle.Normal) {
-		return 'normal';
-	} else {
-		return 'normal';
+function fromFontStyle(value: Windows.UI.Text.FontStyle): 'normal' | 'italic' | 'oblique' {
+	try {
+		if (value === Windows.UI.Text.FontStyle.Italic) {
+			return 'italic';
+		} else if (value === Windows.UI.Text.FontStyle.Oblique) {
+			return 'oblique';
+		}
+	} catch {
 	}
+	return 'normal';
 }
 
+
+// Module-level foreground brush cache. Avoids creating a new SolidColorBrush COM object for
+// every text view that shares the same color. Foreground brushes are not mutated by animations
+// (NativeScript's color animation calls setNative per frame, re-assigning Foreground rather than
+// targeting the brush's Color property directly), so sharing is safe.
+const _fgBrushCache = new Map<number, any>(); // argb → SolidColorBrush
+const _FG_BRUSH_MAX = 32;
 
 export class TextBase extends TextBaseCommon {
-	nativeViewProtected: Windows.UI.Xaml.Controls.TextBox | Windows.UI.Xaml.Controls.TextBlock | Windows.UI.Xaml.Controls.PasswordBox | Windows.UI.Xaml.Controls.Button;
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.TextBox | Microsoft.UI.Xaml.Controls.TextBlock | Microsoft.UI.Xaml.Controls.PasswordBox | Microsoft.UI.Xaml.Controls.Button;
 
 	[textProperty.getDefault](): symbol {
 		return resetSymbol;
@@ -108,7 +128,49 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText(reset);
 	}
 
-	[colorProperty.getDefault](): Windows.UI.Xaml.Media.Brush | null {
+	private _textShadowVisual: Microsoft.UI.Composition.SpriteVisual | null = null;
+
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	[textShadowProperty.setNative](value: ShadowCSSValues) {
+		// Guarded: a throw here would abort page setup / navigation.
+		try {
+			const tv = this.nativeTextViewProtected as Microsoft.UI.Xaml.Controls.TextBlock;
+			if (!tv) {
+				return;
+			}
+			const host = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(tv);
+			const compositor = host.Compositor;
+
+			if (this._textShadowVisual) {
+				Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(tv, null as never);
+				this._textShadowVisual = null;
+			}
+			if (!value || !value.color || typeof tv.GetAlphaMask !== 'function') {
+				return;
+			}
+
+			// GetAlphaMask gives the text's exact silhouette as a CompositionBrush — the correct
+			// mask for a text DropShadow (WinUI's canonical text-shadow technique).
+			const sprite = compositor.CreateSpriteVisual();
+			const sizeAnim = compositor.CreateExpressionAnimation('host.Size');
+			sizeAnim.SetReferenceParameter('host', host);
+			sprite.StartAnimation('Size', sizeAnim);
+
+			const drop = compositor.CreateDropShadow();
+			drop.Mask = tv.GetAlphaMask();
+			drop.Color = (value.color as Color & { windows: Windows.UI.Color }).windows;
+			drop.BlurRadius = toDip(value.blurRadius, 0);
+			drop.Offset = new Windows.Foundation.Numerics.Vector3(toDip(value.offsetX, 0), toDip(value.offsetY, 0), 0);
+			// Sprite has no fill brush, so only the shadow paints (the crisp text still renders
+			// from the TextBlock itself).
+			sprite.Shadow = drop;
+
+			Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.SetElementChildVisual(tv, sprite);
+			this._textShadowVisual = sprite;
+		} catch (_e) {}
+	}
+
+	[colorProperty.getDefault](): Microsoft.UI.Xaml.Media.Brush | null {
 		const nativeView = this.nativeTextViewProtected;
 		return nativeView?.Foreground ?? null;
 	}
@@ -116,15 +178,25 @@ export class TextBase extends TextBaseCommon {
 	[colorProperty.setNative](value: Color | Windows.UI.Color | null | undefined) {
 		if (!this.formattedText || !(value instanceof Color)) {
 			try {
-				let brush: Windows.UI.Xaml.Media.SolidColorBrush | null = null;
+				let brush: any = null;
 				if (value instanceof Color) {
-					brush = new Windows.UI.Xaml.Media.SolidColorBrush(value.windows);
+					// Reuse cached brush for the same ARGB — avoids a new SolidColorBrush COM object
+					// per text view when multiple views share the same color (e.g. theme text color).
+					const argb = (value as any).argb as number;
+					brush = _fgBrushCache.get(argb) ?? null;
+					if (!brush) {
+						brush = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);
+						if (_fgBrushCache.size >= _FG_BRUSH_MAX) {
+							_fgBrushCache.delete(_fgBrushCache.keys().next().value);
+						}
+						_fgBrushCache.set(argb, brush);
+					}
 				} else if (value != null) {
 					//@ts-ignore
 					if (value instanceof Windows.UI.Color) {
-						brush = new Windows.UI.Xaml.Media.SolidColorBrush(value as any);
+						brush = new Microsoft.UI.Xaml.Media.SolidColorBrush(value as any);
 					} else {
-						brush = new Windows.UI.Xaml.Media.SolidColorBrush(new Color(value as never).windows);
+						brush = new Microsoft.UI.Xaml.Media.SolidColorBrush(new Color(value as never).windows);
 					}
 				}
 				if (brush) {
@@ -140,7 +212,9 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[fontSizeProperty.getDefault](): { nativeSize: number } {
-		return { nativeSize: this.nativeTextViewProtected.FontSize ?? 0 };
+		// WinUI3 default FontSize = 14. Hardcoded to avoid a WinRT property read per text view
+		// during applyAllNativeSetters — saves 1 WinRT call per Label/Button/TextField created.
+		return { nativeSize: 14 };
 	}
 
 	[fontSizeProperty.setNative](value: number | { nativeSize: number }) {
@@ -151,7 +225,9 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[fontStyleProperty.getDefault]() {
-		return fromFontStyle(this.nativeTextViewProtected.FontStyle ?? Windows.UI.Text.FontStyle.Normal);
+		// WinUI3 default FontStyle = Normal for all standard text controls.
+		// Hardcoded to avoid a WinRT read per text view.
+		return 'normal';
 	}
 
 	[fontStyleProperty.setNative](value: 'normal' | 'italic' | 'oblique') {
@@ -163,7 +239,9 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[fontWeightProperty.getDefault](): FontWeightType {
-		return fromFontWeight(this.nativeTextViewProtected.FontWeight ?? Windows.UI.Text.FontWeights.Normal) as FontWeightType;
+		// WinUI3 default FontWeight = Normal (400) for TextBlock, Button, TextBox, etc.
+		// Hardcoded to avoid a WinRT read per text view; saves 1 WinRT call during creation.
+		return '400' as FontWeightType;
 	}
 
 	[fontWeightProperty.setNative](value: FontWeightType) {
@@ -276,7 +354,10 @@ export class TextBase extends TextBaseCommon {
 		const nativeView = this.nativeTextViewProtected as any;
 		if (!nativeView) return;
 
-		const text = reset ? '' : getTransformedText(this.text ?? '', this.textTransform);
+		const transformed = reset ? '' : getTransformedText(this.text ?? '', this.textTransform);
+		// Native Text/Content are HSTRING — a non-string value (e.g. a number bound straight from a
+		// ListView item) fails to marshal with 0x80004005. Coerce so any bound value renders as text.
+		const text = typeof transformed === 'string' ? transformed : String(transformed ?? '');
 
 		if (typeof nativeView.Text !== 'undefined') {
 			nativeView.Text = text;

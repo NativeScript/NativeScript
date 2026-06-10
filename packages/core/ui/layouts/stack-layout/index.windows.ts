@@ -4,30 +4,39 @@ import { StackLayoutBase, orientationProperty } from './stack-layout-common';
 import type { ViewCommon } from '../../core/view/view-common';
 
 export class StackLayout extends StackLayoutBase {
-    // nativeViewProtected is the Border wrapper — it carries Padding and stretches to fill its parent.
-    nativeViewProtected!: Windows.UI.Xaml.Controls.Border;
-    private _border!: Windows.UI.Xaml.Controls.Border;
-    private _panel!: Windows.UI.Xaml.Controls.StackPanel;
+    // Border wrapper carries Padding; the inner NativeScript.Widgets.StackLayout (C++/WinRT, no DotNetBridge)
+    // does the actual measure/arrange. The Border can be dropped once the native panel handles padding.
+    nativeViewProtected!: Microsoft.UI.Xaml.Controls.Border;
+    private _border!: Microsoft.UI.Xaml.Controls.Border;
+    private _panel!: NativeScript.Widgets.StackLayout;
 
     constructor() {
         super();
-        this._border = new Windows.UI.Xaml.Controls.Border();
-        this._panel = new Windows.UI.Xaml.Controls.StackPanel();
-        this._panel.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
-        (this._border as any).Child = this._panel;
+        // WinRT deferred to createNativeView() — keeps constructor pure-JS.
     }
 
-    public createNativeView(): Windows.UI.Xaml.Controls.Border {
+    public createNativeView(): Microsoft.UI.Xaml.Controls.Border {
+        this._border = new Microsoft.UI.Xaml.Controls.Border();
+        this._panel = new NativeScript.Widgets.StackLayout();
+        this._panel.Orientation = 0; // 0 = Vertical
+        this._border.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch;
+        this._border.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Stretch;
+        this._panel.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch;
+        this._panel.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top;
+        this._border.Child = this._panel;
         return this._border;
     }
 
-    // Children go into the inner StackPanel, not the Border.
+    // Children go into the inner panel, not the Border.
     public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
         super._addViewToNativeVisualTree(child, atIndex);
-        const nativeChild = (child as any).nativeViewProtected as any;
+        const nativeChild = child.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
         if (!nativeChild) return false;
-        const children = (this._panel as any).Children;
+        const children = this._panel.Children;
         if (!children) return false;
+        nativeChild.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch;
+        nativeChild.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Top;
+        // InsertAt/Append cross the WinRT collection projection and can throw.
         try {
             const size: number = children.Size;
             if (atIndex >= 0 && atIndex < size && atIndex < Number.MAX_SAFE_INTEGER) {
@@ -42,25 +51,21 @@ export class StackLayout extends StackLayoutBase {
     }
 
     public _removeViewFromNativeVisualTree(child: ViewCommon): void {
-        const nativeChild = (child as any).nativeViewProtected as any;
+        const nativeChild = child.nativeViewProtected as Microsoft.UI.Xaml.UIElement;
         if (nativeChild) {
-            const children = (this._panel as any).Children;
+            const children = this._panel.Children;
             const count: number = children?.Size ?? 0;
             for (let i = 0; i < count; i++) {
-                try {
-                    if (children.GetAt(i) === nativeChild) {
-                        children.RemoveAt(i);
-                        break;
-                    }
-                } catch (_e) {}
+                if (children.GetAt(i) === nativeChild) {
+                    children.RemoveAt(i);
+                    break;
+                }
             }
         }
         super._removeViewFromNativeVisualTree(child);
     }
 
     [orientationProperty.setNative](value: 'horizontal' | 'vertical') {
-        this._panel.Orientation = value === 'vertical'
-            ? Windows.UI.Xaml.Controls.Orientation.Vertical
-            : Windows.UI.Xaml.Controls.Orientation.Horizontal;
+        this._panel.Orientation = value === 'vertical' ? 0 : 1;
     }
 }

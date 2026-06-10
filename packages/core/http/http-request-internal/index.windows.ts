@@ -90,7 +90,7 @@ export function requestInternal<T extends object>(options: HttpRequestOptions, c
 												const createBitmap = () => {
 													try {
 														(stream as any).Seek(0);
-														const bmp = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+														const bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
 														NSWinRT.toPromise(bmp.SetSourceAsync(stream)).then(
 															() => { stream.Close(); resolve(bmp); },
 															reject

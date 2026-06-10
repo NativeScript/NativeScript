@@ -4,28 +4,55 @@ import { ListViewBase, itemTemplatesProperty, rowHeightProperty, separatorColorP
 import { KeyedTemplate, View } from '../core/view';
 import { ChangedData } from '../../data/observable-array';
 import { Color } from '../../color';
-import { layout } from '../../utils';
+import { Builder } from '../builder';
+
+declare const NSWinRT: any;
 
 const ITEMLOADING = ListViewBase.itemLoadingEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
 const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
+const HEADER_KEY = '__ns_header';
 
+const CHOOSING_TYPE = 'Windows.Foundation.TypedEventHandler`2<Microsoft.UI.Xaml.Controls.ListViewBase,Microsoft.UI.Xaml.Controls.ChoosingItemContainerEventArgs>';
+const CC_TYPE = 'Windows.Foundation.TypedEventHandler`2<Microsoft.UI.Xaml.Controls.ListViewBase,Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs>';
+
+interface Row {
+	header: boolean;
+	templateKey: string;
+	globalIndex: number;
+	section?: number;
+	indexInSection?: number;
+	data: any;
+}
+
+// Virtualized + recycling ListView (RecyclerView/UITableView model).
+// ItemsSource is a native IVector<IInspectable> (NSWinRT.makeItemsSource) — JS arrays can't marshal to ItemsSource.
+// ChoosingItemContainer supplies our own ListViewItem containers so WinUI virtualizes + recycles them, avoiding the
+// DataTemplate ContentTemplateRoot typing problem. ContainerContentChanging binds each NS view as a ViewHolder —
+// reusing on rebind, building only on first use or template change.
 export class ListView extends ListViewBase {
-	nativeViewProtected!: Windows.UI.Xaml.Controls.ListView;
+	nativeViewProtected!: Microsoft.UI.Xaml.Controls.ListView;
 
-	private _itemClickDelegate: any = null;
-	// All NS views in tree, keyed by item index
-	private _views = new Map<number, View>();
-	// All native views in ItemsSource, in order
-	private _nativeItems: any[] = [];
+	private _clickDelegate: Microsoft.UI.Xaml.Controls.ItemClickEventHandler | null = null;
+	// Held so their JS wrappers aren't GC'd. If collected, ChoosingItemContainer/ContainerContentChanging
+	// fire into dead callbacks → rows never bind → blank/white on scroll. (GC problem, NOT thread-marshal;
+	// JS and these XAML events share the UI thread.)
+	private _choosingDelegate: any = null;
+	private _ccDelegate: any = null;
+	private _rows: Row[] = [];
+	private _viewPool = new Map<string, View[]>();
+	private _active = new Set<View>();
+	// Bumped on every refresh() so containers holding a view from a previous data set
+	// (torn down by _teardown) are detected and never reused.
+	private _generation = 0;
 
-	public createNativeView(): Windows.UI.Xaml.Controls.ListView {
-		const lv = new Windows.UI.Xaml.Controls.ListView();
-		(lv as any).IsItemClickEnabled = true;
-		(lv as any).SelectionMode = 0; // None
-		(lv as any).HorizontalAlignment = 3; // Stretch
-		(lv as any).HorizontalContentAlignment = 3; // Stretch
-		(lv as any).VerticalAlignment = 3; // Stretch
+	public createNativeView(): Microsoft.UI.Xaml.Controls.ListView {
+		const lv = new Microsoft.UI.Xaml.Controls.ListView();
+		lv.IsItemClickEnabled = true;
+		lv.SelectionMode = 0; // None
+		lv.HorizontalAlignment = 3; // Stretch
+		lv.HorizontalContentAlignment = 3;
+		lv.VerticalAlignment = 3;
 		return lv;
 	}
 
@@ -35,165 +62,268 @@ export class ListView extends ListViewBase {
 		if (!lv) return;
 		const ref = new WeakRef(this);
 
-		this._itemClickDelegate = new (Windows.UI.Xaml.Controls as any).ItemClickEventHandler((_sender: any, e: any) => {
+		// ChoosingItemContainer/ContainerContentChanging are generic TypedEventHandlers — runtime can't derive
+		// their parameterized GUID from a plain assignment, so build via asDelegate (can throw; keep guarded).
+		try {
+			this._choosingDelegate = NSWinRT.asDelegate(CHOOSING_TYPE, (_s: any, args: any) => {
+				ref.deref()?._onChoosingItemContainer(args);
+			});
+			lv.ChoosingItemContainer = this._choosingDelegate;
+		} catch (_e) {}
+
+		try {
+			this._ccDelegate = NSWinRT.asDelegate(CC_TYPE, (_s: any, args: any) => {
+				ref.deref()?._onContainerContentChanging(args);
+			});
+			lv.ContainerContentChanging = this._ccDelegate;
+		} catch (_e) {}
+
+		this._clickDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.Controls.ItemClickEventHandler', (_s: any, e: any) => {
 			const owner = ref.deref();
 			if (!owner) return;
 			try {
-				const clicked = e?.ClickedItem;
-				if (clicked == null) return;
-				const index: number = (clicked as any).__ns_index ?? -1;
-				if (index < 0) return;
-				const view = owner._views.get(index) ?? null;
-				const section = (clicked as any).__ns_section;
-				// Include section when available (sectioned lists)
-				owner.notify({ eventName: ITEMTAP, object: owner, index, view, section });
+				const lv2 = owner.nativeViewProtected;
+				const container = lv2.ContainerFromItem(e.ClickedItem);
+				const idx = container ? (container as any).__ns_row_index ?? -1 : -1;
+				const row = owner._rows[idx];
+				if (!row || row.header || row.globalIndex < 0) return;
+				owner.notify({ eventName: ITEMTAP, object: owner, index: row.globalIndex, view: owner._findActive(row.globalIndex), section: row.section });
 			} catch (_e) {}
 		});
-		try { (lv as any).ItemClick = this._itemClickDelegate; } catch (_e) {}
+		lv.ItemClick = this._clickDelegate;
 	}
 
 	public disposeNativeView(): void {
-		try { (this.nativeViewProtected as any).ItemClick = null; } catch (_e) {}
-		this._itemClickDelegate = null;
-		this._destroyAllViews();
+		const lv = this.nativeViewProtected;
+		lv.ChoosingItemContainer = null;
+		lv.ContainerContentChanging = null;
+		lv.ItemClick = null;
+		this._clickDelegate = null;
+		this._choosingDelegate = null;
+		this._ccDelegate = null;
+		this._teardown();
 		super.disposeNativeView?.();
 	}
 
-	// Views are managed manually — skip the default native visual tree placement.
-	public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
-		if (this._views.has((child as any).__ns_index ?? -2)) return true;
-		return super._addViewToNativeVisualTree(child, atIndex);
+	public _addViewToNativeVisualTree(_child: View, _atIndex?: number): boolean {
+		return true;
 	}
 
-	private _destroyAllViews(): void {
-		for (const view of this._views.values()) {
-			try { this._removeView(view); } catch (_e) {}
+	private _keyForData(data: any, globalIndex: number): string {
+		const selector = (this as any)._itemTemplateSelector;
+		if (typeof selector === 'function') {
+			try { return selector(data, globalIndex, this.items); } catch (_e) {}
 		}
-		this._views.clear();
-		this._nativeItems = [];
+		return 'default';
 	}
 
-	private _getItemCount(): number {
-		if (!this.items) return 0;
-		if (!this.sectioned) {
-			const src = this.items as any;
-			return typeof src.length === 'number' ? src.length : 0;
+	private _templateByKey(key: string): KeyedTemplate {
+		for (const t of this._itemTemplatesInternal) {
+			if (t.key === key) return t;
 		}
-
-		// Sectioned: sum lengths of all sections
-		let total = 0;
-		const sections = this._getSectionCount();
-		for (let s = 0; s < sections; s++) {
-			const itemsInSection = this._getItemsInSection(s) as any;
-			if (!itemsInSection) continue;
-			if (typeof itemsInSection.length === 'number') {
-				total += itemsInSection.length;
-			}
-		}
-		return total;
+		return this._itemTemplatesInternal[0];
 	}
 
 	public refresh(): void {
-		const lv = this.nativeViewProtected;
+		const lv = this.nativeViewProtected as any;
 		if (!lv) return;
 
-		this._destroyAllViews();
+		this._teardown();
 
-		const count = this._getItemCount();
-		const nativeItems: any[] = [];
-
+		const rows: Row[] = [];
 		if (this.sectioned) {
-			let globalIndex = 0;
+			let gi = 0;
 			const sections = this._getSectionCount();
 			for (let s = 0; s < sections; s++) {
+				const sectionData = (this as any)._getSectionData ? this._getSectionData(s) : null;
+				if (this.stickyHeaderTemplate) {
+					rows.push({ header: true, templateKey: HEADER_KEY, globalIndex: -1, section: s, data: sectionData ?? { title: '' } });
+				}
 				const itemsInSection = this._getItemsInSection(s) as any;
-				const sectionLen = itemsInSection && typeof itemsInSection.length === 'number' ? itemsInSection.length : 0;
-				for (let j = 0; j < sectionLen; j++) {
-					try {
-						// Determine data item for template selection
-						const dataItem = this._getDataItemInSection(s, j);
-						let templateKey = 'default';
-						try {
-							if ((this as any)._itemTemplateSelector) {
-								templateKey = (this as any)._itemTemplateSelector(dataItem, globalIndex, this.items);
-							}
-						} catch (_e) {}
-						let template = this._itemTemplatesInternal[0];
-						for (let t of this._itemTemplatesInternal) {
-							if (t.key === templateKey) { template = t; break; }
-						}
-
-						// Create the view first
-						let view: View | null = null as any;
-						try { view = template.createView(); } catch (_e) {}
-						if (!view) view = this._getDefaultItemContent(globalIndex);
-						if (!view) { globalIndex++; continue; }
-
-						(view as any).__ns_index = globalIndex;
-						// Prepare (set bindingContext) before firing itemLoading so handlers see data-bound context
-						this._prepareItemInSection(view, s, j);
-
-						const args: any = { eventName: ITEMLOADING, object: this, index: globalIndex, view: view, section: s };
-						this.notify(args);
-						// If handler replaced the view, ensure it is prepared and indexed
-						view = args.view || view;
-						if (!(view as any).__ns_index) (view as any).__ns_index = globalIndex;
-						this._prepareItemInSection(view, s, j);
-						this._views.set(globalIndex, view as View);
-						this._addView(view as View);
-
-						const nativeContent = (view as any).nativeViewProtected;
-						if (nativeContent) {
-							(nativeContent as any).__ns_index = globalIndex;
-							(nativeContent as any).__ns_section = s;
-							(nativeContent as any).__ns_indexInSection = j;
-							nativeItems.push(nativeContent);
-						}
-						globalIndex++;
-					} catch (_e) {}
+				const len = itemsInSection && typeof itemsInSection.length === 'number' ? itemsInSection.length : 0;
+				for (let j = 0; j < len; j++) {
+					const data = this._getDataItemInSection(s, j);
+					rows.push({ header: false, templateKey: this._keyForData(data, gi), globalIndex: gi, section: s, indexInSection: j, data });
+					gi++;
 				}
 			}
 		} else {
+			const src = this.items as any;
+			const count = src && typeof src.length === 'number' ? src.length : 0;
 			for (let i = 0; i < count; i++) {
-				try {
-					const template = this._getItemTemplate(i);
-					// Create and prepare view before notifying so bindingContext is available in handlers
-					let view: View | null = null as any;
-					try { view = template.createView(); } catch (_e) {}
-					if (!view) view = this._getDefaultItemContent(i);
-					if (!view) continue;
-
-					(view as any).__ns_index = i;
-					this._prepareItem(view, i);
-					const args: any = { eventName: ITEMLOADING, object: this, index: i, view: view };
-					this.notify(args);
-					view = args.view || view;
-					if (!(view as any).__ns_index) (view as any).__ns_index = i;
-					this._prepareItem(view, i);
-					try { console.log('[ListView.win] prepared item', i, 'bindingContext=', (view as any).bindingContext ? 'object' : typeof (view as any).bindingContext, 'hasNative=', !!(view as any).nativeViewProtected); } catch (_e) {}
-					this._views.set(i, view as View);
-					this._addView(view as View);
-
-					const nativeContent = (view as any).nativeViewProtected;
-					if (nativeContent) {
-						(nativeContent as any).__ns_index = i;
-						nativeItems.push(nativeContent);
-					}
-				} catch (_e) {}
+				const data = (this as any)._getDataItem ? (this as any)._getDataItem(i) : src[i];
+				rows.push({ header: false, templateKey: this._keyForData(data, i), globalIndex: i, data });
 			}
 		}
 
-		this._nativeItems = nativeItems;
-		try { (lv as any).ItemsSource = nativeItems; } catch (_e) {}
+		this._rows = rows;
+		try {
+			lv.ItemsSource = typeof NSWinRT !== 'undefined' && NSWinRT.makeItemsSource ? NSWinRT.makeItemsSource(rows.length) : null;
+		} catch (_e) {}
 
-		if (count > 0) {
+		if (rows.length) {
 			this.notify({ eventName: LOADMOREITEMS, object: this });
 		}
 	}
 
+	private _onChoosingItemContainer(args: any): void {
+		try {
+			if (!args.ItemContainer) {
+				args.ItemContainer = this._makeContainer();
+			}
+			args.IsContainerPrepared = true;
+		} catch (_e) {}
+	}
+
+	private _makeContainer(): Microsoft.UI.Xaml.Controls.ListViewItem {
+		const lvi = new Microsoft.UI.Xaml.Controls.ListViewItem();
+		lvi.HorizontalContentAlignment = 3; // Stretch
+		lvi.VerticalContentAlignment = 0; // Top
+		lvi.Padding = Microsoft.UI.Xaml.ThicknessHelper.FromUniformLength(0);
+		// Reserve a deterministic min height so a recycled container never collapses to 0
+		// before its content re-measures (0-height rows render blank and skew scroll math).
+		lvi.MinHeight = this._effectiveRowHeight && this._effectiveRowHeight > 0 ? this._effectiveRowHeight : 52;
+		return lvi;
+	}
+
+	private _onContainerContentChanging(args: any): void {
+		const container = args?.ItemContainer;
+		if (!container) return;
+
+		// Container leaving the viewport: return its view to the pool (bounded view creation = virtualization).
+		// _detach clears Content so re-attaching to another container doesn't throw "element already has a parent".
+		if (args.InRecycleQueue) {
+			this._detach(container);
+			try { args.Handled = true; } catch (_e) {}
+			return;
+		}
+
+		const idx = args.ItemIndex;
+		const row = this._rows[idx];
+		if (!row) { try { args.Handled = true; } catch (_e) {} return; }
+		(container as any).__ns_row_index = idx;
+
+		// Reuse the container's current view only if it's from this data set AND the same template;
+		// otherwise repool it and obtain the right one.
+		let view = (container as any).__ns_view as View;
+		if (view && ((view as any).__ns_gen !== this._generation || (view as any).__ns_templateKey !== row.templateKey)) {
+			this._detach(container);
+			view = null as any;
+		}
+		if (!view) {
+			view = this._obtain(row);
+			this._attach(container, view);
+		}
+
+		this._bind(view, row);
+
+		const native = (view as any)?.nativeViewProtected;
+		try { native.HorizontalAlignment = 3; } catch (_e) {}
+		try { native.MinHeight = (this._effectiveRowHeight && this._effectiveRowHeight > 0) ? this._effectiveRowHeight : 44; } catch (_e) {}
+		try { container.IsHitTestVisible = !row.header; } catch (_e) {}
+		// WinUI may have cleared a reused container's Content; re-attach if needed.
+		try { if (container.Content !== native) container.Content = native; } catch (_e) {}
+		try { args.Handled = true; } catch (_e) {}
+	}
+
+	// Host a view's native element inside a container, first detaching it from any previous
+	// container so one native element never has two parents.
+	private _attach(container: any, view: View): void {
+		const native = (view as any)?.nativeViewProtected;
+		const prev = (view as any).__ns_container;
+		if (prev && prev !== container) {
+			try { if (prev.Content === native) prev.Content = null; } catch (_e) {}
+			if (prev.__ns_view === view) prev.__ns_view = null;
+		}
+		container.__ns_view = view;
+		(view as any).__ns_container = container;
+		try { if (container.Content !== native) container.Content = native; } catch (_e) {}
+	}
+
+	// Detach the container's view, clear its Content, and return the view to the pool
+	// (unless it's stale from a previous data set, in which case just drop it).
+	private _detach(container: any): void {
+		const view = (container as any).__ns_view as View;
+		container.__ns_view = null;
+		if (!view) return;
+		const native = (view as any)?.nativeViewProtected;
+		try { if (container.Content === native) container.Content = null; } catch (_e) {}
+		if ((view as any).__ns_container === container) (view as any).__ns_container = null;
+		if ((view as any).__ns_gen === this._generation) {
+			this._recycle(view);
+		}
+	}
+
+	private _obtain(row: Row): View {
+		const key = row.templateKey;
+		const free = this._viewPool.get(key);
+		if (free && free.length) {
+			return free.pop() as View;
+		}
+
+		let view: View | null = null;
+		if (row.header) {
+			const tmpl = this.stickyHeaderTemplate as any;
+			try { view = typeof tmpl === 'function' ? tmpl() : Builder.parse(tmpl, this); } catch (_e) {}
+		} else {
+			const t = this._templateByKey(key);
+			try { view = t?.createView() ?? null; } catch (_e) {}
+			if (!view) view = this._getDefaultItemContent(row.globalIndex);
+		}
+		if (!view) view = this._getDefaultItemContent(row.globalIndex);
+
+		(view as any).__ns_templateKey = key;
+		(view as any).__ns_gen = this._generation;
+		(view as any).__ns_isNew = true;
+		if (!(view as any).nativeViewProtected) {
+			try { view._setupUI(this._context || ({} as any)); } catch (_e) {}
+		}
+		this._addView(view);
+		this._active.add(view);
+		return view;
+	}
+
+	private _bind(view: View, row: Row): void {
+		try { (view as any).bindingContext = row.data; } catch (_e) {}
+		if (!row.header && (view as any).__ns_isNew) {
+			const args: any = { eventName: ITEMLOADING, object: this, index: row.globalIndex, view, bindingContext: row.data, section: row.section };
+			this.notify(args);
+		}
+		(view as any).__ns_isNew = false;
+	}
+
+	private _recycle(view: View): void {
+		const key = (view as any).__ns_templateKey || 'default';
+		let arr = this._viewPool.get(key);
+		if (!arr) { arr = []; this._viewPool.set(key, arr); }
+		arr.push(view);
+	}
+
+	private _findActive(globalIndex: number): View | null {
+		const row = this._rows[globalIndex];
+		if (!row) return null;
+		for (const v of this._active) {
+			if ((v as any).bindingContext === row.data) return v;
+		}
+		return null;
+	}
+
+	private _teardown(): void {
+		// Invalidate any views still referenced by live containers — the generation guard in
+		// _onContainerContentChanging will discard them instead of reusing torn-down views.
+		this._generation++;
+		for (const v of this._active) {
+			try { this._removeView(v); } catch (_e) {}
+		}
+		this._active.clear();
+		this._viewPool.clear();
+		this._rows = [];
+		try { (this.nativeViewProtected as any).ItemsSource = null; } catch (_e) {}
+	}
+
 	public eachChildView(callback: (child: View) => boolean): void {
-		for (const view of this._views.values()) {
-			if (!callback(view)) break;
+		for (const v of this._active) {
+			if (!callback(v)) break;
 		}
 	}
 
@@ -202,9 +332,7 @@ export class ListView extends ListViewBase {
 	}
 
 	public scrollToIndex(index: number): void {
-		const item = this._nativeItems[index];
-		if (!item) return;
-		try { this.nativeViewProtected?.ScrollIntoView(item); } catch (_e) {}
+		try { this.nativeViewProtected?.ScrollIntoView((this.nativeViewProtected as any).Items.GetAt(index)); } catch (_e) {}
 	}
 
 	public scrollToIndexAnimated(index: number): void {
@@ -234,14 +362,11 @@ export class ListView extends ListViewBase {
 	[rowHeightProperty.getDefault]() {
 		return 'auto' as any;
 	}
-	[rowHeightProperty.setNative](_value: any) {
-		// Applied per-item via _effectiveRowHeight in refresh().
-	}
+	[rowHeightProperty.setNative](_value: any) {}
 
 	[separatorColorProperty.getDefault](): Color {
 		return null as unknown as Color;
 	}
-	[separatorColorProperty.setNative](_value: Color) {
-		// WinUI ListView separators are style-based; not directly settable.
-	}
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	[separatorColorProperty.setNative](_value: Color) {}
 }

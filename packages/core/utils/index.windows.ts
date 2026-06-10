@@ -99,6 +99,6 @@ export function copyToClipboard(value: string): void {
 		dataPackage.SetText(value);
 		Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
 	} catch (err) {
-		console.log(err);
+		console.error(err);
 	}
 }

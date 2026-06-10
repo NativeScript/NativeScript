@@ -1,4 +1,5 @@
 import * as layoutCommon from './layout-helper-common';
+import { getCurrentWindowScale } from '../../application/window-helper.windows';
 
 export namespace layout {
 	export const MODE_SHIFT = 30;
@@ -34,11 +35,7 @@ export namespace layout {
 	}
 
 	export function getDisplayDensity(): number {
-		try {
-			return Windows.Graphics.Display.DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel || 1;
-		} catch {
-			return 1;
-		}
+		return getCurrentWindowScale();
 	}
 
 	export function toDevicePixels(value: number): number {
@@ -53,24 +50,28 @@ export namespace layout {
 		return layoutCommon.round(value);
 	}
 
-	export function measureNativeView(nativeView: any, width: number, widthMode: number, height: number, heightMode: number): { width: number; height: number } {
+	function toXamlMeasureConstraint(size: number, mode: number): number {
+		if (mode === UNSPECIFIED) {
+			return Number.POSITIVE_INFINITY;
+		}
+		return toDeviceIndependentPixels(size);
+	}
 
+	export function measureNativeView(nativeView: any, width: number, widthMode: number, height: number, heightMode: number): { width: number; height: number } {
 		if (nativeView && nativeView.Measure) {
-			const size = new Windows.Foundation.Size(
-				widthMode === 0 /* layout.UNSPECIFIED */ ? Number.NaN : toDeviceIndependentPixels(width),
-				heightMode === 0 /* layout.UNSPECIFIED */ ? Number.NaN : toDeviceIndependentPixels(height),
+			const size = Microsoft.UI.Xaml.SizeHelper.FromDimensions(
+				toXamlMeasureConstraint(width, widthMode),
+				toXamlMeasureConstraint(height, heightMode),
 			);
 
-			(nativeView as Windows.UI.Xaml.FrameworkElement).Measure(size);
+			(nativeView as Microsoft.UI.Xaml.FrameworkElement).Measure(size);
 
-
-			const ret = (nativeView as Windows.UI.Xaml.FrameworkElement).DesiredSize;
+			const ret = (nativeView as Microsoft.UI.Xaml.FrameworkElement).DesiredSize;
 
 			return {
 				width: round(toDevicePixels(ret.Width)),
 				height: round(toDevicePixels(ret.Height)),
 			};
-
 		}
 
 		return { width: 0, height: 0 };

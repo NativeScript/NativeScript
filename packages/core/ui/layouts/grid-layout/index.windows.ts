@@ -4,54 +4,45 @@ import { GridLayoutBase, ItemSpec as ItemSpecBase, rowProperty, columnProperty, 
 import { View } from '../../core/view';
 import { layout } from '../../../utils';
 
-function setGridAttachedProperty(setterName: string, native: any, value: number) {
-    try {
-        const Grid = Windows.UI.Xaml.Controls.Grid as any;
-        if (Grid && typeof Grid[setterName] === 'function') {
-            Grid[setterName](native, value);
-        }
-    } catch (_e) {}
-}
-
-// Attach native setters on View so Grid layout attached properties apply to native elements
 (View.prototype as any)[rowProperty.setNative] = function (value: number) {
-    const native = (this as any).nativeViewProtected as any;
+    const native = this.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
     if (native) {
-        setGridAttachedProperty('SetRow', native, value);
+        Microsoft.UI.Xaml.Controls.Grid.SetRow(native, value);
     }
 };
 
 (View.prototype as any)[columnProperty.setNative] = function (value: number) {
-    const native = (this as any).nativeViewProtected as any;
+    const native = this.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
     if (native) {
-        setGridAttachedProperty('SetColumn', native, value);
+        Microsoft.UI.Xaml.Controls.Grid.SetColumn(native, value);
     }
 };
 
 (View.prototype as any)[rowSpanProperty.setNative] = function (value: number) {
-    const native = (this as any).nativeViewProtected as any;
+    const native = this.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
     if (native) {
-        setGridAttachedProperty('SetRowSpan', native, value);
+        Microsoft.UI.Xaml.Controls.Grid.SetRowSpan(native, value);
     }
 };
 
 (View.prototype as any)[columnSpanProperty.setNative] = function (value: number) {
-    const native = (this as any).nativeViewProtected as any;
+    const native = this.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
     if (native) {
-        setGridAttachedProperty('SetColumnSpan', native, value);
+        Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(native, value);
     }
 };
 
 export class GridLayout extends GridLayoutBase {
-    nativeViewProtected: Windows.UI.Xaml.Controls.Grid;
-    private _windows: Windows.UI.Xaml.Controls.Grid;
+    nativeViewProtected: Microsoft.UI.Xaml.Controls.Grid;
+    private _windows: Microsoft.UI.Xaml.Controls.Grid;
 
     constructor() {
         super();
-        this._windows = new Windows.UI.Xaml.Controls.Grid();
+        // WinRT deferred to createNativeView() — keeps constructor pure-JS.
     }
 
     public createNativeView() {
+        this._windows = new Microsoft.UI.Xaml.Controls.Grid();
         return this._windows;
     }
 
@@ -61,89 +52,70 @@ export class GridLayout extends GridLayoutBase {
     }
 
     public resetNativeView(): void {
-        try {
-            if (this._windows) {
-                try { this._windows.RowDefinitions.Clear(); } catch (_e) {}
-                try { this._windows.ColumnDefinitions.Clear(); } catch (_e) {}
-            }
-        } catch (_e) {}
+        if (this._windows) {
+            this._windows.RowDefinitions.Clear();
+            this._windows.ColumnDefinitions.Clear();
+        }
         super.resetNativeView && super.resetNativeView();
     }
 
-    private _createRowDefinition(itemSpec: ItemSpecBase) {
-        try {
-            const rd = new Windows.UI.Xaml.Controls.RowDefinition();
-            try {
-                if (itemSpec.gridUnitType === GridUnitType.AUTO) {
-                    rd.Height = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.auto);
-                } else if (itemSpec.gridUnitType === GridUnitType.STAR) {
-                    rd.Height = new Windows.UI.Xaml.GridLength(itemSpec.value, Windows.UI.Xaml.GridUnitType.star);
-                } else {
-                    // pixel
-                    rd.Height = new Windows.UI.Xaml.GridLength(layout.toDeviceIndependentPixels(itemSpec.value), Windows.UI.Xaml.GridUnitType.pixel);
-                }
-            } catch (_e) {}
-            return rd;
-        } catch (_e) {
-            return null;
+    // GridLength is a plain value struct {Value: f64, GridUnitType: i32} in WinRT ABI.
+    // Pass as a plain JS object via the bridge's append_struct_object_bytes path — same
+    // technique as Windows.UI.Color / Thickness. Skips the GridLengthHelper static WinRT
+    // call that was previously required (constructing GridLength via `new` silently fails).
+    // WinUI GridUnitType enum: Auto=0, Pixel=1, Star=2.
+    private _toGridLength(itemSpec: ItemSpecBase): Microsoft.UI.Xaml.GridLength {
+        if (itemSpec.gridUnitType === GridUnitType.AUTO) {
+            return { Value: 1, GridUnitType: 0 } as any;
+        } else if (itemSpec.gridUnitType === GridUnitType.STAR) {
+            return { Value: itemSpec.value || 1, GridUnitType: 2 } as any;
         }
+        return { Value: layout.toDeviceIndependentPixels(itemSpec.value), GridUnitType: 1 } as any;
     }
 
-    private _createColumnDefinition(itemSpec: ItemSpecBase) {
-        try {
-            const cd = new Windows.UI.Xaml.Controls.ColumnDefinition();
-            try {
-                if (itemSpec.gridUnitType === GridUnitType.AUTO) {
-                    cd.Width = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.auto);
-                } else if (itemSpec.gridUnitType === GridUnitType.STAR) {
-                    cd.Width = new Windows.UI.Xaml.GridLength(itemSpec.value, Windows.UI.Xaml.GridUnitType.star);
-                } else {
-                    // pixel
-                    cd.Width = new Windows.UI.Xaml.GridLength(layout.toDeviceIndependentPixels(itemSpec.value), Windows.UI.Xaml.GridUnitType.pixel);
-                }
-            } catch (_e) {}
-            return cd;
-        } catch (_e) {
-            return null;
-        }
+    private _createRowDefinition(itemSpec: ItemSpecBase): Microsoft.UI.Xaml.Controls.RowDefinition {
+        const rd = new Microsoft.UI.Xaml.Controls.RowDefinition();
+        rd.Height = this._toGridLength(itemSpec);
+        return rd;
+    }
+
+    private _createColumnDefinition(itemSpec: ItemSpecBase): Microsoft.UI.Xaml.Controls.ColumnDefinition {
+        const cd = new Microsoft.UI.Xaml.Controls.ColumnDefinition();
+        cd.Width = this._toGridLength(itemSpec);
+        return cd;
     }
 
     private _updateRowAndColumnDefinitions(): void {
-        const native = this._windows as any;
+        const native = this._windows;
         if (!native) return;
 
+        const rowDefs: Microsoft.UI.Xaml.Controls.RowDefinition[] = [];
+        for (let i = 0; i < this.rowsInternal.length; i++) {
+            rowDefs.push(this._createRowDefinition(this.rowsInternal[i]));
+        }
+        // ReplaceAll crosses the WinRT IVector bridge and can throw on some
+        // projections; fall back to Clear + per-item Append when it does.
         try {
-            // Build row defs
-            const rowDefs = [] as any[];
-            for (let i = 0; i < this.rowsInternal.length; i++) {
-                const item = this.rowsInternal[i];
-                const rd = this._createRowDefinition(item);
-                if (rd) rowDefs.push(rd);
+            native.RowDefinitions.ReplaceAll(rowDefs);
+        } catch (_e) {
+            native.RowDefinitions.Clear();
+            for (const rd of rowDefs) {
+                native.RowDefinitions.Append(rd);
             }
-            try { native.RowDefinitions.ReplaceAll(rowDefs); } catch (_e) {
-                // fallback: append
-                try { native.RowDefinitions.Clear(); } catch (_e2) {}
-                for (const rd of rowDefs) {
-                    try { native.RowDefinitions.Append(rd); } catch (_e3) {}
-                }
-            }
-        } catch (_e) {}
+        }
 
+        const colDefs: Microsoft.UI.Xaml.Controls.ColumnDefinition[] = [];
+        for (let i = 0; i < this.columnsInternal.length; i++) {
+            colDefs.push(this._createColumnDefinition(this.columnsInternal[i]));
+        }
         try {
-            // Build column defs
-            const colDefs = [] as any[];
-            for (let i = 0; i < this.columnsInternal.length; i++) {
-                const item = this.columnsInternal[i];
-                const cd = this._createColumnDefinition(item);
-                if (cd) colDefs.push(cd);
+            native.ColumnDefinitions.ReplaceAll(colDefs);
+        } catch (_e) {
+            native.ColumnDefinitions.Clear();
+            for (const cd of colDefs) {
+                native.ColumnDefinitions.Append(cd);
             }
-            try { native.ColumnDefinitions.ReplaceAll(colDefs); } catch (_e) {
-                try { native.ColumnDefinitions.Clear(); } catch (_e2) {}
-                for (const cd of colDefs) {
-                    try { native.ColumnDefinitions.Append(cd); } catch (_e3) {}
-                }
-            }
-        } catch (_e) {}
+        }
     }
 
     public _onRowAdded(itemSpec: ItemSpecBase) {
@@ -165,16 +137,13 @@ export class GridLayout extends GridLayoutBase {
     public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
         const res = super._addViewToNativeVisualTree(child, atIndex);
 
-        try {
-            const nativeChild = (child as any).nativeViewProtected as any;
-            if (res && nativeChild && this._windows) {
-                const Grid = Windows.UI.Xaml.Controls.Grid as any;
-                try { Grid.SetRow(nativeChild, GridLayout.getRow(child)); } catch (_e) {}
-                try { Grid.SetColumn(nativeChild, GridLayout.getColumn(child)); } catch (_e) {}
-                try { Grid.SetRowSpan(nativeChild, GridLayout.getRowSpan(child)); } catch (_e) {}
-                try { Grid.SetColumnSpan(nativeChild, GridLayout.getColumnSpan(child)); } catch (_e) {}
-            }
-        } catch (_e) {}
+        const nativeChild = child.nativeViewProtected as Microsoft.UI.Xaml.FrameworkElement;
+        if (res && nativeChild && this._windows) {
+            Microsoft.UI.Xaml.Controls.Grid.SetRow(nativeChild, GridLayout.getRow(child));
+            Microsoft.UI.Xaml.Controls.Grid.SetColumn(nativeChild, GridLayout.getColumn(child));
+            Microsoft.UI.Xaml.Controls.Grid.SetRowSpan(nativeChild, GridLayout.getRowSpan(child));
+            Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(nativeChild, GridLayout.getColumnSpan(child));
+        }
 
         return res;
     }

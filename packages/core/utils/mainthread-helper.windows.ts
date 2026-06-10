@@ -6,8 +6,8 @@ export function dispatchToMainThread(func: () => void): void {
 
 export function isMainThread(): boolean {
 	try {
-		const dispatcher = Windows?.UI?.Core?.CoreWindow?.GetForCurrentThread?.()?.Dispatcher;
-		return dispatcher ? dispatcher.HasThreadAccess : true;
+		const queue = Microsoft?.UI?.Dispatching?.DispatcherQueue?.GetForCurrentThread?.();
+		return queue ? queue.HasThreadAccess : true;
 	} catch {
 		return true;
 	}

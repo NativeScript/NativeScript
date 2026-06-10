@@ -1,182 +1,191 @@
 export * from './wrap-layout-common';
 
-import { WrapLayoutBase } from './wrap-layout-common';
-
+import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty } from './wrap-layout-common';
 import { View } from '../../core/view';
-import { layout } from '../../../utils';
 
+// XAML owns measure/arrange so the shared onMeasure/onLayout is a no-op on Windows.
+// Wrapping is implemented manually (same as FlexboxLayout): a Canvas whose children are
+// measured and placed via Canvas.SetLeft/SetTop, re-running on every size change.
 export class WrapLayout extends WrapLayoutBase {
-	private _lengths: Array<number> = new Array<number>();
+	nativeViewProtected!: Microsoft.UI.Xaml.Controls.Canvas;
+	private _canvas!: Microsoft.UI.Xaml.Controls.Canvas;
+	private _layoutBusy = false;
+	// The cross-axis size we set on the Canvas ourselves, so we can tell it apart from a user value.
+	private _ownCross = NaN;
 
-	private static getChildMeasureSpec(parentMode: number, parentLength: number, itemLength): number {
-		if (itemLength > 0) {
-			return layout.makeMeasureSpec(itemLength, layout.EXACTLY);
-		} else if (parentMode === layout.UNSPECIFIED) {
-			return layout.makeMeasureSpec(0, layout.UNSPECIFIED);
-		} else {
-			return layout.makeMeasureSpec(parentLength, layout.AT_MOST);
-		}
+	constructor() {
+		super();
+		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
 	}
 
-	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+	createNativeView(): Microsoft.UI.Xaml.Controls.Canvas {
+		this._canvas = new Microsoft.UI.Xaml.Controls.Canvas();
+		return this._canvas;
+	}
 
-		let measureWidth = 0;
-		let measureHeight = 0;
+	initNativeView(): void {
+		super.initNativeView(); // preserves LayoutUpdated = _onSizeChanged (background, clip, etc.)
+		const canvas = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.Canvas;
+		const ref = new WeakRef(this);
+		canvas.SizeChanged = NSWinRT.asDelegate('Microsoft.UI.Xaml.SizeChangedEventHandler', () => {
+			ref.deref()?._runWrapLayout();
+		});
+	}
 
-		const width = layout.getMeasureSpecSize(widthMeasureSpec);
-		const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+	disposeNativeView(): void {
+		const native = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.Canvas;
+		if (native) {
+			native.SizeChanged = null;
+			native.LayoutUpdated = null;
+		}
+		super.disposeNativeView();
+	}
 
-		const height = layout.getMeasureSpecSize(heightMeasureSpec);
-		const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+	public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_SAFE_INTEGER): boolean {
+		super._addViewToNativeVisualTree(child, atIndex);
+		const nativeChild = (child as any).nativeViewProtected as Microsoft.UI.Xaml.UIElement;
+		const children = this._canvas?.Children;
+		if (!nativeChild || !children) return false;
+		try {
+			const size: number = children.Size;
+			if (atIndex >= 0 && atIndex < size && atIndex < Number.MAX_SAFE_INTEGER) {
+				children.InsertAt(atIndex, nativeChild);
+			} else {
+				children.Append(nativeChild);
+			}
+		} catch {
+			return false;
+		}
+		this._runWrapLayout();
+		return true;
+	}
 
-		const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
-		const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
+	public _removeViewFromNativeVisualTree(child: View): void {
+		const nativeChild = (child as any).nativeViewProtected as Microsoft.UI.Xaml.UIElement;
+		const children = this._canvas?.Children;
+		if (nativeChild && children) {
+			const count: number = children.Size ?? 0;
+			for (let i = 0; i < count; i++) {
+				try {
+					if (children.GetAt(i) === nativeChild) {
+						children.RemoveAt(i);
+						break;
+					}
+				} catch (_e) {}
+			}
+		}
+		super._removeViewFromNativeVisualTree(child);
+		this._runWrapLayout();
+	}
 
-		const availableWidth = widthMode === layout.UNSPECIFIED ? Number.MAX_VALUE : width - horizontalPaddingsAndMargins;
-		const availableHeight = heightMode === layout.UNSPECIFIED ? Number.MAX_VALUE : height - verticalPaddingsAndMargins;
+	[orientationProperty.setNative](_v: 'horizontal' | 'vertical') {
+		this._runWrapLayout();
+	}
+	//@ts-ignore — itemWidth/itemHeight use valueChanged for effective* but we still relayout natively
+	[itemWidthProperty.setNative]() {
+		this._runWrapLayout();
+	}
+	//@ts-ignore
+	[itemHeightProperty.setNative]() {
+		this._runWrapLayout();
+	}
 
-		const childWidthMeasureSpec: number = WrapLayout.getChildMeasureSpec(widthMode, availableWidth, this.effectiveItemWidth);
-		const childHeightMeasureSpec: number = WrapLayout.getChildMeasureSpec(heightMode, availableHeight, this.effectiveItemHeight);
+	private _runWrapLayout(): void {
+		if (this._layoutBusy) return;
+		const canvas = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.Canvas;
+		if (!canvas) return;
 
-		let remainingWidth = availableWidth;
-		let remainingHeight = availableHeight;
-
-		this._lengths.length = 0;
-		let rowOrColumn = 0;
-		let maxLength = 0;
+		const children = canvas.Children;
+		const count: number = children?.Size ?? 0;
+		if (count === 0) return;
 
 		const isVertical = this.orientation === 'vertical';
 
-		const useItemWidth: boolean = this.effectiveItemWidth > 0;
-		const useItemHeight: boolean = this.effectiveItemHeight > 0;
-		const itemWidth = this.effectiveItemWidth;
-		const itemHeight = this.effectiveItemHeight;
+		const padLeft = (this.effectiveBorderLeftWidth || 0) + (this.effectivePaddingLeft || 0);
+		const padTop = (this.effectiveBorderTopWidth || 0) + (this.effectivePaddingTop || 0);
+		const padRight = (this.effectiveBorderRightWidth || 0) + (this.effectivePaddingRight || 0);
+		const padBottom = (this.effectiveBorderBottomWidth || 0) + (this.effectivePaddingBottom || 0);
 
-		this.eachLayoutChild((child, last) => {
-			const desiredSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
-			const childMeasuredWidth = useItemWidth ? itemWidth : desiredSize.measuredWidth;
-			const childMeasuredHeight = useItemHeight ? itemHeight : desiredSize.measuredHeight;
-			const isFirst = this._lengths.length <= rowOrColumn;
+		// Canvas does not self-size; in an auto-sized parent the relevant axis can be 0 → treat as unconstrained.
+		const actualW = (canvas.ActualWidth as number) || 0;
+		const actualH = (canvas.ActualHeight as number) || 0;
+		const availW = actualW > 0 ? actualW - padLeft - padRight : Infinity;
+		const availH = actualH > 0 ? actualH - padTop - padBottom : Infinity;
 
-			if (isVertical) {
-				if (childMeasuredHeight > remainingHeight) {
-					rowOrColumn++;
-					maxLength = Math.max(maxLength, measureHeight);
-					measureHeight = childMeasuredHeight;
-					remainingHeight = availableHeight - childMeasuredHeight;
-					this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn] = childMeasuredWidth;
-				} else {
-					remainingHeight -= childMeasuredHeight;
-					measureHeight += childMeasuredHeight;
+		const mainAvail = isVertical ? availH : availW;
+
+		const fixedW = this.effectiveItemWidth > 0 ? this.effectiveItemWidth : NaN;
+		const fixedH = this.effectiveItemHeight > 0 ? this.effectiveItemHeight : NaN;
+
+		this._layoutBusy = true;
+		try {
+			let mainPos = isVertical ? padTop : padLeft;
+			let crossPos = isVertical ? padLeft : padTop;
+			let lineCross = 0; // max cross-extent of the current line
+			let maxMain = 0; // furthest main extent reached (for self-sizing on vertical)
+
+			for (let i = 0; i < count; i++) {
+				const nc = children.GetAt(i) as Microsoft.UI.Xaml.FrameworkElement;
+				if (nc.Visibility === Microsoft.UI.Xaml.Visibility.Collapsed) continue;
+
+				let w = fixedW;
+				let h = fixedH;
+				if (isNaN(w) || isNaN(h)) {
+					try {
+						nc.Measure(Microsoft.UI.Xaml.SizeHelper.FromDimensions(Infinity, Infinity));
+						const d = nc.DesiredSize;
+						if (isNaN(w)) w = d.Width;
+						if (isNaN(h)) h = d.Height;
+					} catch (_e) {
+						if (isNaN(w)) w = 0;
+						if (isNaN(h)) h = 0;
+					}
 				}
-			} else {
-				if (childMeasuredWidth > remainingWidth) {
-					rowOrColumn++;
-					maxLength = Math.max(maxLength, measureWidth);
-					measureWidth = childMeasuredWidth;
-					remainingWidth = availableWidth - childMeasuredWidth;
-					this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn] = childMeasuredHeight;
-				} else {
-					remainingWidth -= childMeasuredWidth;
-					measureWidth += childMeasuredWidth;
+
+				const itemMain = isVertical ? h : w;
+				const itemCross = isVertical ? w : h;
+
+				const lineStart = isVertical ? padTop : padLeft;
+				const lineHasItems = mainPos > lineStart + 0.001;
+				if (Number.isFinite(mainAvail) && lineHasItems && mainPos + itemMain > (isVertical ? padTop + mainAvail : padLeft + mainAvail) + 0.001) {
+					mainPos = lineStart;
+					crossPos += lineCross;
+					lineCross = 0;
 				}
+
+				Microsoft.UI.Xaml.Controls.Canvas.SetLeft(nc, isVertical ? crossPos : mainPos);
+				Microsoft.UI.Xaml.Controls.Canvas.SetTop(nc, isVertical ? mainPos : crossPos);
+				// Only force size when a uniform itemWidth/itemHeight was requested;
+				// otherwise let the child render at its natural (measured) size.
+				if (!isNaN(fixedW)) nc.Width = fixedW;
+				if (!isNaN(fixedH)) nc.Height = fixedH;
+
+				mainPos += itemMain;
+				if (itemCross > lineCross) lineCross = itemCross;
+				if (mainPos > maxMain) maxMain = mainPos;
 			}
 
-			if (isFirst) {
-				this._lengths[rowOrColumn] = isVertical ? childMeasuredWidth : childMeasuredHeight;
-			} else {
-				this._lengths[rowOrColumn] = Math.max(this._lengths[rowOrColumn], isVertical ? childMeasuredWidth : childMeasuredHeight);
-			}
-		});
+			const contentCross = crossPos + lineCross + (isVertical ? padRight : padBottom);
+			const contentMain = maxMain + (isVertical ? padBottom : padRight);
 
-		if (isVertical) {
-			measureHeight = Math.max(maxLength, measureHeight);
-			this._lengths.forEach((value, index, array) => {
-				measureWidth += value;
-			});
-		} else {
-			measureWidth = Math.max(maxLength, measureWidth);
-			this._lengths.forEach((value, index, array) => {
-				measureHeight += value;
-			});
+			// Self-size the Canvas on the unconstrained axis so the parent re-measures correctly (mirrors FlexboxLayout).
+			this._selfSizeCanvas(canvas, isVertical ? contentMain : contentCross, isVertical);
+		} finally {
+			this._layoutBusy = false;
 		}
-
-		measureWidth += horizontalPaddingsAndMargins;
-		measureHeight += verticalPaddingsAndMargins;
-
-		// Check against our minimum sizes
-		measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
-		measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
-
-		const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-		const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
-
-		this.setMeasuredDimension(widthAndState, heightAndState);
 	}
 
-	public onLayout(left: number, top: number, right: number, bottom: number): void {
-		super.onLayout(left, top, right, bottom);
-
-		const insets = this.getSafeAreaInsets();
-		const isVertical = this.orientation === 'vertical';
-		const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
-		const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
-		const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
-		const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
-
-		let childLeft = paddingLeft;
-		let childTop = paddingTop;
-		const childrenHeight = bottom - top - paddingBottom;
-		const childrenWidth = right - left - paddingRight;
-		let rowOrColumn = 0;
-
-		this.eachLayoutChild((child, last) => {
-			let childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
-			let childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
-
-			const length = this._lengths[rowOrColumn];
+	private _selfSizeCanvas(canvas: Microsoft.UI.Xaml.Controls.Canvas, crossContent: number, isVertical: boolean): void {
+		const current = (isVertical ? canvas.Width : canvas.Height) as number;
+		const actual = (isVertical ? canvas.ActualWidth : canvas.ActualHeight) as number;
+		const inAutoMode = isNaN(current) || (!isNaN(this._ownCross) && Math.abs(current - this._ownCross) < 0.5);
+		if (inAutoMode && crossContent > 0 && Math.abs(actual - crossContent) > 0.5) {
+			this._ownCross = crossContent;
 			if (isVertical) {
-				childWidth = length;
-				childHeight = this.effectiveItemHeight > 0 ? this.effectiveItemHeight : childHeight;
-				const isFirst = childTop === paddingTop;
-				if (childTop + childHeight > childrenHeight && childLeft + childWidth <= childrenWidth) {
-					childTop = paddingTop;
-
-					if (!isFirst) {
-						childLeft += length;
-					}
-
-					rowOrColumn++;
-					childWidth = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
-				}
-
-				if (childLeft < childrenWidth && childTop < childrenHeight) {
-					View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
-				}
-
-				childTop += childHeight;
+				canvas.Width = crossContent;
 			} else {
-				childWidth = this.effectiveItemWidth > 0 ? this.effectiveItemWidth : childWidth;
-				childHeight = length;
-				const isFirst = childLeft === paddingLeft;
-				if (childLeft + childWidth > childrenWidth && childTop + childHeight <= childrenHeight) {
-					childLeft = paddingLeft;
-
-					if (!isFirst) {
-						childTop += length;
-					}
-
-					rowOrColumn++;
-					childHeight = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
-				}
-
-				if (childLeft < childrenWidth && childTop < childrenHeight) {
-					View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
-				}
-
-				childLeft += childWidth;
+				canvas.Height = crossContent;
 			}
-		});
+		}
 	}
 }

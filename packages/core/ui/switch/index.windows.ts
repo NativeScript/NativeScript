@@ -4,42 +4,22 @@ import { SwitchBase, checkedProperty, offBackgroundColorProperty } from './switc
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 
-
-/* other states to handle
-//hover
-ToggleSwitchFillOnPointerOver
-ToggleSwitchFillOffPointerOver
-
-// thumb
-ToggleSwitchKnobFillOnPointerOver
-ToggleSwitchKnobFillOffPointerOver
-
-
-// Pressed
-ToggleSwitchFillOnPressed
-ToggleSwitchFillOffPressed
-
-// Disabled
-ToggleSwitchFillOnDisabled
-ToggleSwitchFillOffDisabled
-*/
-
 export class Switch extends SwitchBase {
-	nativeViewProtected: Windows.UI.Xaml.Controls.ToggleSwitch;
-	private _toggledHandler: any = null;
-	private _toggledHandlerUsedAddListener: boolean = false;
-	private _windows: Windows.UI.Xaml.Controls.ToggleSwitch;
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.ToggleSwitch;
+	private _toggledHandler: ((sender: Microsoft.UI.Xaml.Controls.ToggleSwitch) => void) | null = null;
+	private _windows: Microsoft.UI.Xaml.Controls.ToggleSwitch;
 
 	constructor() {
 		super();
-		this._windows = new Windows.UI.Xaml.Controls.ToggleSwitch();
+		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
 	}
 
 	public createNativeView() {
+		this._windows = new Microsoft.UI.Xaml.Controls.ToggleSwitch();
 		return this._windows;
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.ToggleSwitch {
+	get windows(): Microsoft.UI.Xaml.Controls.ToggleSwitch {
 		return this._windows;
 	}
 
@@ -49,46 +29,27 @@ export class Switch extends SwitchBase {
 		const that = new WeakRef(this);
 		const native = this.nativeViewProtected;
 
-		let usedAddListener = false;
+		// Toggled is a generic TypedEventHandler<ToggleSwitch, RoutedEventArgs> — the runtime can't derive
+		// the parameterized GUID from a plain assignment, so build via asDelegate (can throw; keep guarded).
+		const handler = (s: Microsoft.UI.Xaml.Controls.ToggleSwitch) => {
+			const owner = that.deref();
+			if (!owner) return;
+			checkedProperty.nativeValueChange(owner, s.IsOn ?? false);
+		};
+		this._toggledHandler = handler;
 		try {
-			this._toggledHandler = new Windows.Foundation.TypedEventHandler<Windows.UI.Xaml.Controls.ToggleSwitch, any>((s) => {
-				const owner = that.deref();
-				if (!owner) return;
-				checkedProperty.nativeValueChange(owner, (s as any).isOn || (s as any).IsOn || false);
-			});
-
-			(native as any).Toggled = this._toggledHandler as never;
+			const typeName = 'Windows.Foundation.TypedEventHandler`2<Microsoft.UI.Xaml.Controls.ToggleSwitch,Microsoft.UI.Xaml.RoutedEventArgs>';
+			native.Toggled = NSWinRT.asDelegate(typeName, handler);
 		} catch (_e) {
-			this._toggledHandler = (s: any) => {
-				const owner = that.deref();
-				if (!owner) return;
-				checkedProperty.nativeValueChange(owner, (s as any).isOn || (s as any).IsOn || false);
-			};
-
-			try {
-				(native as any).Toggled = this._toggledHandler as never;
-			} catch (_e2) {
-				try {
-					if (typeof (native as any).addEventListener === 'function') {
-						(native as any).addEventListener('toggled', this._toggledHandler);
-						usedAddListener = true;
-					}
-				} catch (_e3) { }
-			}
+			native.Toggled = handler as unknown as Microsoft.UI.Xaml.RoutedEventHandler;
 		}
-
-		this._toggledHandlerUsedAddListener = usedAddListener;
 	}
 
 	public disposeNativeView(): void {
 		const native = this.nativeViewProtected;
 		if (native && this._toggledHandler) {
-			try { (native as any).Toggled = null as never; } catch (_e) { }
-			if (this._toggledHandlerUsedAddListener) {
-				try { (native as any).removeEventListener('toggled', this._toggledHandler); } catch (_e) { }
-			}
+			native.Toggled = null;
 			this._toggledHandler = null;
-			this._toggledHandlerUsedAddListener = false;
 		}
 
 		super.disposeNativeView();
@@ -99,7 +60,7 @@ export class Switch extends SwitchBase {
 	}
 	[checkedProperty.setNative](value: boolean) {
 		if (this.nativeViewProtected) {
-			(this.nativeViewProtected as any).IsOn = !!value;
+			this.nativeViewProtected.IsOn = !!value;
 		}
 	}
 
@@ -108,7 +69,7 @@ export class Switch extends SwitchBase {
 		const resources = this.nativeViewProtected.Resources;
 
 		if (value instanceof Color) {
-			const color = new Windows.UI.Xaml.Media.SolidColorBrush(value.windows) as never;
+			const color = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);
 			resources.Insert('ToggleSwitchKnobFillOn', color);
 			resources.Insert('ToggleSwitchKnobFillOff', color);
 		} else {
@@ -122,23 +83,22 @@ export class Switch extends SwitchBase {
 		if (!this.offBackgroundColor || this.checked) {
 			const resources = this.nativeViewProtected.Resources;
 			if (value instanceof Color) {
-				resources.Insert('ToggleSwitchFillOn', new Windows.UI.Xaml.Media.SolidColorBrush(value.windows) as never);
+				resources.Insert('ToggleSwitchFillOn', new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows));
 			} else {
 				resources.Remove('ToggleSwitchFillOn');
 			}
 		}
 	}
 
-	[backgroundInternalProperty.setNative](_value: any) {
-		// No-op for now
-	}
+	[backgroundInternalProperty.setNative](_value: any) {}
+
 
 	[offBackgroundColorProperty.setNative](value: number | Color) {
 		if (!this.nativeViewProtected) return;
 		if (!this.checked) {
 			const resources = this.nativeViewProtected.Resources;
 			if (value instanceof Color) {
-				resources.Insert('ToggleSwitchFillOff', new Windows.UI.Xaml.Media.SolidColorBrush(value.windows) as never);
+				resources.Insert('ToggleSwitchFillOff', new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows));
 			} else {
 				resources.Remove('ToggleSwitchFillOff');
 			}

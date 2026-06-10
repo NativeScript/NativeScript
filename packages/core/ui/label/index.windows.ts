@@ -5,33 +5,34 @@ import { booleanConverter } from '../core/view-base';
 @CSSType('Label')
 export class Label extends TextBase {
 	// nativeViewProtected is the Border wrapper — carries Background, CornerRadius, and border via CompositionBorderHandler.
-	nativeViewProtected: Windows.UI.Xaml.Controls.Border;
-	private _border: Windows.UI.Xaml.Controls.Border;
-	private _textBlock: Windows.UI.Xaml.Controls.TextBlock;
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.Border;
+	private _border: Microsoft.UI.Xaml.Controls.Border;
+	private _textBlock: Microsoft.UI.Xaml.Controls.TextBlock;
 
 	constructor() {
 		super();
-		this._textBlock = new Windows.UI.Xaml.Controls.TextBlock();
-		this._border = new Windows.UI.Xaml.Controls.Border();
-		(this._border as any).Child = this._textBlock;
+		// WinRT objects deferred to createNativeView() so the XML-parse constructor is pure-JS.
+		// This eliminates wasted bridge calls for the orphaned page created by _resolvePageFromEntry
+		// on every cache-hit navigation (the orphaned page is GC'd without ever calling createNativeView).
 	}
 
-	public createNativeView(): Windows.UI.Xaml.Controls.Border {
+	public createNativeView(): Microsoft.UI.Xaml.Controls.Border {
+		this._textBlock = new Microsoft.UI.Xaml.Controls.TextBlock();
+		this._border = new Microsoft.UI.Xaml.Controls.Border();
+		(this._border as any).Child = this._textBlock;
 		return this._border;
 	}
 
-	// TextBase routes all text/font/color setNative handlers through nativeTextViewProtected.
-	get nativeTextViewProtected(): Windows.UI.Xaml.Controls.TextBlock {
+	get nativeTextViewProtected(): Microsoft.UI.Xaml.Controls.TextBlock {
 		return this._textBlock;
 	}
 
 	public initNativeView(): void {
 		super.initNativeView();
-		// Center the TextBlock vertically within the Border so text appears centered.
-		try { (this._textBlock as any).VerticalAlignment = 1; } catch (_e) {}
+		this._textBlock.VerticalAlignment = 1 as never;
 	}
 
-	get windows(): Windows.UI.Xaml.Controls.TextBlock {
+	get windows(): Microsoft.UI.Xaml.Controls.TextBlock {
 		return this._textBlock;
 	}
 
@@ -49,7 +50,7 @@ export class Label extends TextBase {
 	// MaxLines: 0 = unlimited
 	//@ts-ignore
 	[maxLinesProperty.setNative](value: number) {
-		try { (this._textBlock as any).MaxLines = value <= 0 ? 0 : value; } catch (_e) {}
+		(this._textBlock as any).MaxLines = value <= 0 ? 0 : value;
 	}
 
 	// TextTrimming: None=0, CharacterEllipsis=1, WordEllipsis=2, Clip=3
