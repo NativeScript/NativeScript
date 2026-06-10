@@ -1,25 +1,8 @@
-import { Observable, EventData, Page, File, knownFolders } from '@nativescript/core';
-
-// Write timing to a well-known file that the external benchmark script can read.
-// Uses writeText (async Promise) — completes within ~50ms so polling at 400ms works.
-function writeTiming(elapsed: number) {
-	try {
-		const path = `${knownFolders.documents().path}/ns_timing.txt`;
-		File.fromPath(path).writeText(`${elapsed}`).catch(() => {});
-	} catch (_e) {}
-	console.log(`[BENCH] box-shadow navigatedTo: ${elapsed}ms`);
-}
+import { Observable, EventData, Page } from '@nativescript/core';
 
 export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;
-	(page as any).__navStart = Date.now();
 	page.bindingContext = new BoxShadowModel();
-}
-
-export function navigatedTo(args: EventData) {
-	const page = <Page>args.object;
-	const elapsed = Date.now() - ((page as any).__navStart || Date.now());
-	writeTiming(elapsed);
 }
 
 export class BoxShadowModel extends Observable {
