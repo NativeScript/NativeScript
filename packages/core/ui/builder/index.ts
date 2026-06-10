@@ -376,7 +376,14 @@ export namespace xml2ui {
 
 	export function SourceErrorFormat(uri): ErrorFormatter {
 		return (e: Error, p: xml.Position) => {
-			console.error(uri);
+			console.error(uri, e?.message ?? e);
+			// Stash for dev tooling: callers up the stack frequently swallow this
+			// error (e.g. deferred Application.run paths), leaving nothing but the
+			// console line above. The NativeScript Vite dev overlay reads this to
+			// surface the failure when the app root never commits during boot.
+			try {
+				(<any>globalThis).__NS_LAST_XML_ERROR__ = { uri, message: (e && e.message) || String(e), time: Date.now() };
+			} catch {}
 			const source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
 			e = new SourceError(e, source, 'Building UI from XML.');
 
