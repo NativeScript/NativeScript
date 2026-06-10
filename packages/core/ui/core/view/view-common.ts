@@ -76,6 +76,13 @@ export abstract class ViewCommon extends ViewBase {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
+	/**
+	 * Fired on the modal view once its native dismissal has fully completed
+	 * (after the close callback and UI teardown). Unlike `closeCallback` —
+	 * which is captured per-show — any observer can listen for this, e.g.
+	 * tooling that needs to re-present a modal (dev-time HMR).
+	 */
+	public static closedModallyEvent = 'closedModally';
 	public static accessibilityBlurEvent = accessibilityBlurEvent;
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
@@ -117,6 +124,13 @@ export abstract class ViewCommon extends ViewBase {
 	protected _closeModalCallback: Function;
 	public _manager: any;
 	public _modalParent?: ViewCommon;
+	/**
+	 * The ShowModalOptions this view is currently presented with (set in
+	 * _showNativeModalView, cleared on close). Lets tooling re-present the
+	 * modal with its original options — e.g. dev-time HMR re-show — which
+	 * are otherwise only captured inside the close-callback closure.
+	 */
+	public _modalOptions?: ShowModalOptions;
 	private _modalContext: any;
 	private _modal: ViewCommon;
 
@@ -458,6 +472,7 @@ export abstract class ViewCommon extends ViewBase {
 		this.style.fontScaleInternal = getFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
+		this._modalOptions = options;
 		this._closeModalCallback = (...originalArgs) => {
 			const cleanupModalViews = () => {
 				const modalIndex = _rootModalViews.indexOf(this);
@@ -467,6 +482,7 @@ export abstract class ViewCommon extends ViewBase {
 
 				this._modalParent = null;
 				this._modalContext = null;
+				this._modalOptions = null;
 				this._closeModalCallback = null;
 				this._dialogClosed();
 				parent._modal = null;
@@ -489,6 +505,15 @@ export abstract class ViewCommon extends ViewBase {
 					}
 
 					this._tearDownUI(true);
+
+					// Native dismissal fully completed (this callback runs in the
+					// platform dismissal completion) — observable counterpart to the
+					// per-show closeCallback. Used by dev tooling (HMR modal
+					// re-present) to know exactly when a new present is safe.
+					this.notify(<EventData>{
+						eventName: ViewCommon.closedModallyEvent,
+						object: this,
+					});
 				}
 			};
 

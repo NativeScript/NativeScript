@@ -7,7 +7,7 @@ import { GestureTypes, GesturesObserver, TouchAnimationOptions, VisionHoverOptio
 import { ShadowCSSValues } from '../../styling/css-shadow';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { InheritedProperty, Property } from '../properties';
-import { ViewBase } from '../view-base';
+import { ShowModalOptions, ViewBase } from '../view-base';
 import { GlassEffectType, ViewCommon } from './view-common';
 import type { Point, ShownModallyData, Size } from './view-interfaces';
 
@@ -70,6 +70,15 @@ export abstract class View extends ViewCommon {
 	 * @nsEvent {ShownModallyData} shownModally
 	 */
 	public static shownModallyEvent: string;
+
+	/**
+	 * String value used when hooking to closedModally event. Fired on the
+	 * modal view once its native dismissal has fully completed (after the
+	 * close callback and UI teardown).
+	 *
+	 * @nsEvent {EventData} closedModally
+	 */
+	public static closedModallyEvent: string;
 
 	/**
 	 * String value used when hooking to accessibilityBlur event.
@@ -981,6 +990,13 @@ export abstract class View extends ViewCommon {
 	 * @private
 	 */
 	_modalParent?: View;
+	/**
+	 * The ShowModalOptions this view is currently presented with (set while
+	 * shown modally, cleared on close). Lets tooling re-present the modal
+	 * with its original options.
+	 * @private
+	 */
+	_modalOptions?: ShowModalOptions;
 	/**
 	 * @private
 	 */
