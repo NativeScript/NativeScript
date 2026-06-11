@@ -460,7 +460,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			// misses re-exported names). By expanding to `export { a, b } from "url"`,
 			// the engine sees explicit named exports and resolves them correctly.
 			try {
-				code = await expandStarExports(code, server, server.config?.root || process.cwd(), verbose, sharedTransformRequest);
+				code = await expandStarExports(code, server, server.config?.root || process.cwd(), verbose, sharedTransformRequest, resolvedCandidate || spec);
 			} catch (e: any) {
 				if (verbose) console.warn('[ns/m] export* expansion failed:', e?.message);
 			}

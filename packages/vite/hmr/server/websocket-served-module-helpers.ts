@@ -7,7 +7,7 @@ import * as PAT from './constants.js';
 import { isDeepCoreSubpath } from './core-sanitize.js';
 import { getCjsNamedExports } from '../helpers/cjs-named-exports.js';
 import { getMonorepoWorkspaceRoot } from '../../helpers/project.js';
-import { extractDirectExportedNames } from './websocket-core-bridge.js';
+import { extractDirectExportedNames, parseExportSpecList } from './websocket-core-bridge.js';
 
 let cachedWorkspaceCoreRoot: string | null | undefined;
 
@@ -299,53 +299,179 @@ export function ensureDynamicHmrImportHelper(code: string): string {
 	}
 }
 
-function extractExportedNames(code: string): string[] {
-	return extractDirectExportedNames(code);
+/**
+ * Star-export expansion must be TRANSITIVE.
+ *
+ * The expansion below replaces `export * from "url"` with an explicit named
+ * list, so any name missing from that list is silently dropped from the
+ * importer's export surface — the device then fails at link time with
+ * "does not provide an export named '<name>'". Real packages routinely chain
+ * star re-exports (`index.ios.js → export * from './canvas'` →
+ * `canvas.ios.js → export * from './canvas.common'`), so the name set for a
+ * star target is the union of its direct exports, its named re-exports, and
+ * — recursively — every nested `export * from` chain, cycles included.
+ *
+ * This mirrors `collectStaticExportOriginsFromFile` in
+ * `websocket-core-bridge.ts`, which solved the identical problem for the
+ * /ns/core bridge (see its `Application` comment). That walker reads files
+ * from disk; this one works on Vite-transformed code via the shared
+ * transformer, because star targets here are served URLs (aliases, /@fs
+ * paths, platform-extension resolution already applied by Vite's resolver).
+ * If you change export-name semantics in one walker, check the other.
+ */
+const STAR_EXPANSION_MAX_DEPTH = 64;
+
+/**
+ * Normalize a star-export target (served URL or nested transformed
+ * specifier) into a root-relative path feedable to Vite's transform
+ * pipeline. Returns null for specifiers that cannot be walked (bare ids,
+ * relative specs with no parent context).
+ */
+function normalizeStarExportTargetPath(spec: string, parentVitePath?: string | null): string | null {
+	let p = String(spec || '').trim();
+	if (!p) return null;
+	p = p.replace(/^https?:\/\/[^/]+/, '');
+	p = p.replace(/[?#].*$/, '');
+	p = p.replace(/^\/ns\/m\//, '/');
+	p = p.replace(/^\/__ns_boot__\/[^/]+/, '');
+	p = p.replace(/\/__ns_hmr__\/[^/]+/, '');
+	if (p.startsWith('.')) {
+		// Vite's import analysis normally rewrites nested specifiers to
+		// root-relative URLs; resolve any relative stragglers against the
+		// parent module's directory.
+		const parent = String(parentVitePath || '')
+			.replace(/\\/g, '/')
+			.replace(/[?#].*$/, '');
+		if (!parent.startsWith('/')) return null;
+		p = path.posix.normalize(path.posix.join(path.posix.dirname(parent), p));
+	}
+	return p.startsWith('/') ? p : null;
 }
 
-export async function expandStarExports(code: string, server: { transformRequest(path: string): Promise<{ code?: string } | null | undefined> }, _projectRoot: string, verbose?: boolean, sharedTransformer?: (url: string) => Promise<{ code?: string } | null | undefined>): Promise<string> {
-	const STAR_RE = /^[ \t]*(export\s+\*\s+from\s+["'])([^"']+)(["'];?)[ \t]*$/gm;
+type ModuleExportSurface = {
+	/** Names this module exports lexically (direct decls, `export {}` lists, named re-exports, `export * as ns`). */
+	ownNames: Set<string>;
+	/** Source specifiers of `export * from "..."` statements. */
+	starSources: string[];
+};
+
+function scanModuleExportSurface(code: string): ModuleExportSurface {
+	const ownNames = new Set<string>(extractDirectExportedNames(code));
+	for (const m of code.matchAll(/\bexport\s+\*\s+as\s+([A-Za-z_$][\w$]*)\s+from\s*["'][^"']+["']/g)) {
+		ownNames.add(m[1]);
+	}
+	for (const m of code.matchAll(/\bexport\s*\{([^}]+)\}\s*from\s*["'][^"']+["']/g)) {
+		for (const { exportedName } of parseExportSpecList(m[1])) {
+			ownNames.add(exportedName);
+		}
+	}
+	const starSources: string[] = [];
+	// Tolerate trailing comments/code on the line (see the identical fix in
+	// websocket-core-bridge.ts: a strict `$` anchor silently skipped
+	// `export * from './layouts'; // barrel export` lines).
+	for (const m of code.matchAll(/^[ \t]*export\s+\*\s+from\s+["']([^"']+)["'][^\n]*$/gm)) {
+		starSources.push(m[1]);
+	}
+	return { ownNames, starSources };
+}
+
+/**
+ * Recursively collect the full export-name set of a star-export target,
+ * following nested `export * from` chains. Cycle-safe via the DFS `stack`
+ * set (a revisited module contributes nothing new at that point — its names
+ * are already being collected by the outer visit, matching spec
+ * GetExportedNames semantics). Returns null when the target itself cannot
+ * be transformed; partial failures deeper in the chain are reported through
+ * `diagnostics` while still returning every name that could be collected.
+ */
+async function collectStarTargetExportNames(vitePath: string, transformer: (url: string) => Promise<{ code?: string } | null | undefined>, stack: Set<string>, depth: number, diagnostics: string[]): Promise<Set<string> | null> {
+	if (stack.has(vitePath)) return new Set();
+	if (depth > STAR_EXPANSION_MAX_DEPTH) {
+		diagnostics.push(`star-export chain deeper than ${STAR_EXPANSION_MAX_DEPTH} at ${vitePath}`);
+		return null;
+	}
+	let targetCode: string | undefined;
+	try {
+		targetCode = (await transformer(vitePath))?.code ?? undefined;
+	} catch {}
+	if (!targetCode) {
+		diagnostics.push(`unresolvable star-export target ${vitePath}`);
+		return null;
+	}
+	const surface = scanModuleExportSurface(targetCode);
+	const names = new Set(surface.ownNames);
+	stack.add(vitePath);
+	try {
+		for (const spec of surface.starSources) {
+			const childPath = normalizeStarExportTargetPath(spec, vitePath);
+			if (!childPath) {
+				diagnostics.push(`unwalkable nested star-export specifier ${JSON.stringify(spec)} in ${vitePath}`);
+				continue;
+			}
+			const childNames = await collectStarTargetExportNames(childPath, transformer, stack, depth + 1, diagnostics);
+			if (!childNames) continue;
+			for (const n of childNames) names.add(n);
+		}
+	} finally {
+		stack.delete(vitePath);
+	}
+	// `export *` never re-exports default.
+	names.delete('default');
+	return names;
+}
+
+export async function expandStarExports(code: string, server: { transformRequest(path: string): Promise<{ code?: string } | null | undefined> }, _projectRoot: string, verbose?: boolean, sharedTransformer?: (url: string) => Promise<{ code?: string } | null | undefined>, importerId?: string): Promise<string> {
+	const STAR_RE = /^[ \t]*export\s+\*\s+from\s+["']([^"']+)["'];?(?=[ \t]*(?:\/\/[^\n]*)?$)/gm;
 	let match: RegExpExecArray | null;
-	const replacements: Array<{ full: string; url: string; prefix: string; suffix: string }> = [];
+	const replacements: Array<{ full: string; url: string }> = [];
 
 	while ((match = STAR_RE.exec(code)) !== null) {
-		const url = match[2];
+		const url = match[1];
 		if (!url.includes('/node_modules/')) continue;
-		replacements.push({ full: match[0], url, prefix: match[1], suffix: match[3] });
+		replacements.push({ full: match[0], url });
 	}
 
 	if (!replacements.length) return code;
+
+	// Names already exported lexically by the importing module. Per spec,
+	// lexical exports shadow star-exported names — re-emitting them in an
+	// explicit list would be a duplicate-export SyntaxError on device.
+	const claimed = new Set(scanModuleExportSurface(code).ownNames);
 
 	// Resolve each star-export target in parallel through the shared runner
 	// (when provided) so they share the /ns/m TTL cache and concurrency gate.
 	const transformer = sharedTransformer ?? ((url: string) => server.transformRequest(url));
 	const resolved = await Promise.all(
 		replacements.map(async (rep) => {
-			try {
-				let vitePath = rep.url.replace(/^https?:\/\/[^/]+/, '');
-				vitePath = vitePath.replace(/^\/ns\/m\//, '/');
-				vitePath = vitePath.replace(/^\/__ns_boot__\/[^/]+/, '');
-				vitePath = vitePath.replace(/\/__ns_hmr__\/[^/]+/, '');
-
-				const result = await transformer(vitePath);
-				if (!result?.code) return null;
-
-				const names = extractExportedNames(result.code);
-				if (!names.length) return null;
-
-				if (verbose) {
-					console.log(`[ns/m] expanded export* -> ${names.length} names from ${vitePath}`);
-				}
-				return { rep, names };
-			} catch {
-				return null;
+			const diagnostics: string[] = [];
+			const vitePath = normalizeStarExportTargetPath(rep.url, null);
+			if (!vitePath) {
+				diagnostics.push(`unwalkable star-export URL ${rep.url}`);
+				return { rep, names: null as Set<string> | null, diagnostics };
 			}
+			const names = await collectStarTargetExportNames(vitePath, transformer, new Set<string>(), 0, diagnostics);
+			if (verbose && names) {
+				console.log(`[ns/m] expanded export* -> ${names.size} names from ${vitePath}${diagnostics.length ? ' (partial)' : ''}`);
+			}
+			return { rep, names, diagnostics };
 		}),
 	);
 
 	for (const entry of resolved) {
-		if (!entry) continue;
-		const explicit = `export { ${entry.names.join(', ')} } from ${JSON.stringify(entry.rep.url)};`;
+		if (entry.diagnostics.length) {
+			// Always-on: an incomplete expansion silently narrows the importer's
+			// export surface, which surfaces on device as a link-time
+			// "does not provide an export named ..." with no server-side trace.
+			console.warn(`[ns/m][export*] incomplete star-export expansion${importerId ? ` in ${importerId}` : ''} for ${entry.rep.url}: ${entry.diagnostics.join('; ')}`);
+		}
+		if (!entry.names) continue;
+		// First star wins for names provided by multiple siblings; duplicates
+		// would be a SyntaxError, and spec-ambiguous names have no good answer.
+		const emit = Array.from(entry.names).filter((n) => !claimed.has(n));
+		for (const n of emit) claimed.add(n);
+		// An empty list still keeps the dependency edge (side effects,
+		// evaluation order) via a side-effect import.
+		const explicit = emit.length ? `export { ${emit.join(', ')} } from ${JSON.stringify(entry.rep.url)};` : `import ${JSON.stringify(entry.rep.url)};`;
 		code = code.replace(entry.rep.full, explicit);
 	}
 

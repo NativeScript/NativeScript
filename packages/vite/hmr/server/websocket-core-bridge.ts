@@ -74,7 +74,7 @@ export function extractDirectExportedNames(code: string): string[] {
 	return Array.from(names);
 }
 
-function parseExportSpecList(specList: string): Array<{ importedName: string; exportedName: string }> {
+export function parseExportSpecList(specList: string): Array<{ importedName: string; exportedName: string }> {
 	return String(specList || '')
 		.split(',')
 		.map((part) => part.trim())
@@ -197,6 +197,12 @@ function resolveLocalExportTarget(spec: string, importerId: string): string | nu
 	return null;
 }
 
+// NOTE: `expandStarExports` in websocket-served-module-helpers.ts implements
+// the same transitive export-name semantics for arbitrary node_modules
+// packages (transformer-based rather than filesystem-based). If you change
+// export-name collection rules here, check that walker too — a shallow or
+// diverging implementation surfaces on device as a link-time
+// "does not provide an export named ..." with no server-side trace.
 export function collectStaticExportNamesFromFile(modulePath: string, seen: Set<string> = new Set()): string[] {
 	return Object.keys(collectStaticExportOriginsFromFile(modulePath, modulePath, seen));
 }
