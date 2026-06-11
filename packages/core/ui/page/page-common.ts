@@ -166,6 +166,11 @@ export class PageBase extends ContentView {
 PageBase.prototype.recycleNativeView = 'never';
 
 export interface PageBase {
+	/**
+	 * iOS only. Perform an action when the user performs the "escape" gesture.
+	 */
+	onAccessibilityPerformEscape?: () => boolean;
+
 	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
 	on(event: 'navigatingTo', callback: (args: NavigatedData) => void, thisArg?: any): void;
 	on(event: 'navigatedTo', callback: (args: NavigatedData) => void, thisArg?: any): void;

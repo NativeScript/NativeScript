@@ -130,7 +130,7 @@ export function test_set_itemsLayout_accepted() {
 	var repeater = new Repeater();
 	var stackLayout = new StackLayout();
 	stackLayout.orientation = 'horizontal';
-	repeater.itemsLayout = stackLayout;
+	repeater.itemsLayout = stackLayout as unknown as LayoutBase;
 	// << article-repeater-layout
 
 	function testAction(views: Array<View>) {
@@ -503,7 +503,7 @@ export var test_RepeaterItemsBindingsShouldWork = function () {
 export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {
 	var repeater = new Repeater();
 
-	repeater.itemsLayout = new WrapLayout();
+	repeater.itemsLayout = new WrapLayout() as unknown as LayoutBase;
 	TKUnit.assertEqual(getChildrenCount(repeater), 0, 'Repeater should not create its children until loaded.');
 
 	repeater.itemTemplate = '<Label id="testLabel" text="{{ $value, $value + \' some static text\' }}" />';

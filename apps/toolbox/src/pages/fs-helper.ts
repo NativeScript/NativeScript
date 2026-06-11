@@ -1,4 +1,4 @@
-import { Page, EventData, Application, File, Folder, knownFolders, path, getFileAccess, Utils, Screen, Http, AndroidDirectory, ImageSource, alert } from '@nativescript/core';
+import { Page, EventData, Application, File, Folder, knownFolders, path, getFileAccess, Utils, Screen, Http, AndroidDirectory, ImageSource, alert, AndroidActivityResultEventData } from '@nativescript/core';
 
 let page: Page;
 
@@ -77,7 +77,7 @@ export function pickFiles() {
 		return;
 	}
 	const Intent = android.content.Intent;
-	Application.android.on('activityResult', (args) => {
+	Application.android.on('activityResult', (args: AndroidActivityResultEventData) => {
 		if (args.requestCode === 1000) {
 			const intent: android.content.Intent = args.intent;
 			const clip = intent.getClipData();
@@ -104,7 +104,7 @@ export function pickFile() {
 	if (!global.isAndroid) {
 		return;
 	}
-	Application.android.on('activityResult', (args) => {
+	Application.android.on('activityResult', (args: AndroidActivityResultEventData) => {
 		if (args.requestCode === 1000) {
 			const file = args.intent.getData().toString();
 			//const file = File.fromPath(args.intent.getData().toString());

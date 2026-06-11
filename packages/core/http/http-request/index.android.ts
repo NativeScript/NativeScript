@@ -3,7 +3,8 @@ import type { HttpResponse, HttpRequestOptions, HttpContentHandler } from '../..
 import { ImageSource } from '../../image-source';
 import { File } from '../../file-system';
 import { HttpResponseEncoding } from '../http-interfaces';
-import { BaseHttpContent, requestInternal } from '../http-request-internal';
+import type { BaseHttpContent } from '../http-request-internal';
+import { requestInternal } from '../http-request-internal';
 import { getFilenameFromUrl, parseJSON } from './http-request-common';
 
 const contentHandler: HttpContentHandler = {
