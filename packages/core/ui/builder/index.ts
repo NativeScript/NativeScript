@@ -382,7 +382,7 @@ export namespace xml2ui {
 			// console line above. The NativeScript Vite dev overlay reads this to
 			// surface the failure when the app root never commits during boot.
 			try {
-				(<any>globalThis).__NS_LAST_XML_ERROR__ = { uri, message: (e && e.message) || String(e), time: Date.now() };
+				(globalThis as any).__NS_LAST_XML_ERROR__ = { uri, message: (e && e.message) || String(e), time: Date.now() };
 			} catch {}
 			const source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
 			e = new SourceError(e, source, 'Building UI from XML.');
