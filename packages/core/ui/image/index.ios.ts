@@ -9,7 +9,7 @@ import { SDK_VERSION } from '../../utils/constants';
 export * from './image-common';
 
 export class Image extends ImageBase {
-	nativeViewProtected: UIImageView;
+	declare nativeViewProtected: UIImageView;
 	private _imageSourceAffectsLayout = true;
 	private _templateImageWasCreated: boolean;
 
