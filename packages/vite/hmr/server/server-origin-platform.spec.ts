@@ -133,11 +133,20 @@ describe('getServerOrigin platform routing', () => {
 		expect(origin === 'http://10.0.2.2:5173' || /^http:\/\/(?:\d+\.){3}\d+:5173$/.test(origin)).toBe(true);
 	});
 
-	it('routes iOS wildcard to localhost (matching what dev-host.ts bakes into bundle.mjs)', () => {
+	it('routes iOS wildcard through dev-host.ts (NOT resolvedUrls — that caused the realm-split mismatch)', () => {
 		// Before the unification, iOS picked `resolvedUrls.network[0]`
-		// (the LAN IP) here while `dev-host.ts` baked `localhost` into
+		// here while `dev-host.ts` baked a different host into
 		// bundle.mjs — exactly the URL mismatch that splits the
 		// @nativescript/core realm across two module instances.
+		//
+		// In production the iOS wildcard default is the host's LAN IP
+		// (reachable by both physical devices and the Simulator) — that
+		// path is covered in dev-host.spec.ts with an injected
+		// `lanHostResolver`. Here, inside the test runner, the resolver's
+		// ambient-NIC guard kicks in (no injected resolver → never read
+		// real NICs → machine-independent specs), so the observable
+		// answer is the `localhost` fallback. What this test pins down is
+		// that the answer comes from dev-host.ts, not `resolvedUrls`.
 		getCliFlagsSpy.mockReturnValue({});
 		const server = makeFakeServer({
 			host: '0.0.0.0',
@@ -205,8 +214,9 @@ describe('getServerOrigin platform routing', () => {
 	});
 
 	it('routes visionOS the same way as iOS', () => {
-		// visionOS Simulator shares the host's network stack just like
-		// the iOS Simulator, so it gets `localhost` for wildcard binds.
+		// Same Apple branch as iOS: LAN IP in production, `localhost`
+		// here because the test runner trips the ambient-NIC guard (see
+		// the iOS wildcard test above).
 		getCliFlagsSpy.mockReturnValue({ visionos: true });
 		const server = makeFakeServer({
 			host: '0.0.0.0',

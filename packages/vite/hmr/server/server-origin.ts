@@ -8,9 +8,11 @@ import { getCliFlags } from '../../helpers/cli-flags.js';
  * into `bundle.mjs`; if they disagree V8 keys them as different modules and
  * the app ends up with two `@nativescript/core` realms (a singleton-state
  * split). `resolveDeviceReachableOrigin` keeps every platform in lock-step:
- * Android wildcard/loopback -> `10.0.2.2`, iOS/visionOS wildcard ->
- * `localhost`, explicit non-loopback `server.host` -> trusted verbatim
- * (physical devices opt into LAN via `NS_HMR_PREFER_LAN_HOST`/`NS_HMR_HOST`).
+ * Android wildcard/loopback -> `127.0.0.1`-via-adb-reverse / `10.0.2.2`,
+ * iOS/visionOS wildcard -> the host's LAN IP when a NIC is up (reachable
+ * from both physical devices and the Simulator) else `localhost`, explicit
+ * non-loopback `server.host` -> trusted verbatim. `NS_HMR_HOST` overrides
+ * everything; `NS_HMR_PREFER_LAN_HOST=0` forces loopback.
  */
 export function getServerOrigin(server: ViteDevServer): string {
 	const platform: DevHostPlatform = detectDevHostPlatform();

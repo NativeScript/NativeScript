@@ -502,8 +502,14 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		// Development server configuration for HMR
 		server: isDevMode
 			? {
-					// Expose dev server to local network so simulator or device can connect
-					host: process.env.NS_HMR_HOST || (platform === 'android' ? '0.0.0.0' : 'localhost'),
+					// Bind all interfaces so every consumer can connect: Android
+					// emulator NAT / adb-reverse, the iOS Simulator (loopback),
+					// AND physical devices fetching over the LAN. Vite prints
+					// both `Local:` and `Network:` URLs with this bind, so the
+					// LAN address devices use is visible at startup. The URL
+					// host devices are told to use is decided separately by
+					// `resolveDeviceReachableHost`. `NS_HMR_HOST` overrides.
+					host: process.env.NS_HMR_HOST || '0.0.0.0',
 					// Use the configured stable port so multiple platform sessions can coexist.
 					port: hmrPort,
 					strictPort: true,

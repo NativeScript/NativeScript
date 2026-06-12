@@ -11,6 +11,25 @@
  *     `127.0.0.1` work from inside the simulator and even `0.0.0.0`
  *     sometimes resolves there. The simulator path is forgiving.
  *
+ *   - Physical iOS / visionOS devices are NOT forgiving: `localhost`
+ *     on the phone is the phone itself, and there is no iOS analog of
+ *     `adb reverse` (usbmuxd's `iproxy` forwards host→device only, the
+ *     wrong direction for a device-side fetch). The first HTTP ESM
+ *     import in `bundle.mjs` dies with
+ *     `HTTP import failed: http://localhost:5173/ns/core/xhr (status=0)`
+ *     before any user code runs. The standard route is the host's LAN IP over
+ *     a shared network. Because the Simulator shares the host's
+ *     network stack, it reaches that LAN IP exactly as well as
+ *     loopback — so iOS/visionOS dev URLs simply USE the LAN IP
+ *     whenever a LAN NIC is up. One deterministic origin, both
+ *     targets, no device detection. (We deliberately do NOT probe for
+ *     attached hardware: `xcrun devicectl` state flaps between
+ *     `connected` and `available (paired)` for an idle USB/Wi-Fi
+ *     phone, so any probe-based answer is a coin toss.) `localhost`
+ *     remains the fallback when no NIC is found, and
+ *     `NS_HMR_PREFER_LAN_HOST=0` forces loopback for firewalled Macs
+ *     that block LAN inbound.
+ *
  *   - Android Emulator runs inside a virtual NIC with NAT (QEMU
  *     `slirp`). `0.0.0.0` and `localhost` / `127.0.0.1` refer to the
  *     EMULATOR ITSELF, not the development host. Two routable paths
@@ -66,9 +85,11 @@
  *      For Android, we first try `adb reverse tcp:<port> tcp:<port>`
  *      and emit `127.0.0.1` on success (bypasses slirp NAT entirely
  *      and avoids Android API 36+'s missing-`localhost`-from-resolver
- *      bug); on failure we fall back to `10.0.2.2`. iOS/visionOS get
- *      `localhost` directly. iOS/visionOS loopback passes through
- *      unchanged.
+ *      bug); on failure we fall back to `10.0.2.2`. iOS/visionOS emit
+ *      the host's LAN IP when a LAN NIC is up (reachable from both
+ *      physical devices and the Simulator), otherwise `localhost`.
+ *      `NS_HMR_PREFER_LAN_HOST=0` forces `localhost`. iOS/visionOS
+ *      loopback passes through unchanged.
  *
  * Every dev-mode emitter that bakes a URL into `bundle.mjs` or sends
  * one to a device-side fetch site MUST run through this helper so the
@@ -139,6 +160,10 @@ export function guessLanHost(): string | undefined {
 				const address = String((addr as any).address || '');
 				if (internal) continue;
 				if (family !== 'IPv4' && family !== 4) continue;
+				// Skip link-local (APIPA) addresses — macOS surfaces
+				// 169.254.x.x on AWDL / idle USB NICs and they don't
+				// route reliably across devices.
+				if (address.startsWith('169.254.')) continue;
 				if (address && address !== '127.0.0.1') return address;
 			}
 		}
@@ -336,9 +361,7 @@ export function __resetAdbReverseCacheForTests(): void {
  *
  * `adb reverse` bypasses the emulator NIC entirely — the device-side
  * connection is multiplexed over the existing ADB USB / TCP channel
- * to the host. It's the same mechanism React Native, Expo, and
- * Flutter use for Android dev, and it works for both emulators and
- * USB-connected physical devices.
+ * to the host.
  *
  * Caching. The result is cached per-port so repeat callers don't
  * fork extra subprocesses. The cache is keyed on port (not platform)
@@ -666,9 +689,7 @@ function platformDefault(opts: ResolveDeviceHostOptions): DeviceHostResolution {
 				// `UnknownHostException: No address associated with
 				// hostname` BEFORE the TCP connect even starts. The IPv4
 				// literal bypasses DNS entirely and ADB reverse intercepts
-				// loopback traffic regardless of how it's spelled. This is
-				// the same workaround React Native, Expo, and Chrome
-				// DevTools port forwarding all use.
+				// loopback traffic regardless of how it's spelled.
 				return { host: '127.0.0.1', source: 'adb-reverse' };
 			}
 		}
@@ -677,7 +698,58 @@ function platformDefault(opts: ResolveDeviceHostOptions): DeviceHostResolution {
 		// NS_HMR_PREFER_LAN_HOST=1.
 		return { host: '10.0.2.2', source: 'platform-default' };
 	}
+	// iOS / visionOS. `localhost` only works from simulators (they share
+	// the host's network stack); on physical hardware it points at the
+	// device itself and the very first HTTP ESM import in bundle.mjs dies
+	// with `status=0` before any user code runs — and iOS has no
+	// device→host port forward to tunnel around that. The Simulator
+	// reaches the host's LAN IP exactly as well as loopback, so the LAN
+	// IP is the one origin that serves BOTH targets: emit it whenever a
+	// LAN NIC is up, no device detection involved. `localhost` remains
+	// the no-NIC (offline) fallback; `NS_HMR_PREFER_LAN_HOST=0` forces
+	// loopback for Macs whose firewall blocks LAN inbound.
+	if (!isExplicitlyFalsyEnvFlag((opts.env || process.env).NS_HMR_PREFER_LAN_HOST)) {
+		// Ambient-machine guard, same shape as the adb test-skip above:
+		// inside a test runner with no injected `lanHostResolver`, don't
+		// read real NICs — specs would become machine-dependent.
+		const ambient = process.env;
+		const inTestRunner = ambient.VITEST === 'true' || ambient.NODE_ENV === 'test' || typeof ambient.JEST_WORKER_ID === 'string';
+		if (opts.lanHostResolver || !inTestRunner) {
+			const lan = (opts.lanHostResolver || guessLanHost)();
+			if (lan) {
+				logAppleLanReceiptOnce(lan);
+				return { host: lan, source: 'lan' };
+			}
+		}
+	}
 	return { host: 'localhost', source: 'platform-default' };
+}
+
+/**
+ * Whether the env flag is SET and spells "off". Distinct from
+ * `!isTruthyEnvFlag(...)` — an unset flag must not count as an explicit
+ * opt-out.
+ */
+function isExplicitlyFalsyEnvFlag(value: string | undefined): boolean {
+	if (typeof value !== 'string') return false;
+	const v = value.trim().toLowerCase();
+	if (!v) return false;
+	return v === '0' || v === 'false' || v === 'off' || v === 'no';
+}
+
+/**
+ * One-line receipt (once per process) so the dev knows why URLs say
+ * `192.168.x.x` instead of `localhost` and which knobs change it.
+ */
+let appleLanReceiptLogged = false;
+function logAppleLanReceiptOnce(lan: string): void {
+	if (appleLanReceiptLogged) return;
+	appleLanReceiptLogged = true;
+	try {
+		console.log(`[NativeScript] iOS dev-server URLs use this Mac's LAN address ${lan} so physical devices on the same network can reach Vite (simulators reach it too). Override with NS_HMR_HOST=<host>, or force localhost with NS_HMR_PREFER_LAN_HOST=0.`);
+	} catch {
+		// Logging is best-effort, never boot-fatal.
+	}
 }
 
 export interface ResolveDeviceOriginOptions extends ResolveDeviceHostOptions {

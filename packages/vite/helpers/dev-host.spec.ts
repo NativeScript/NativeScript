@@ -109,21 +109,34 @@ describe('resolveDeviceReachableHost — precedence', () => {
 });
 
 describe('resolveDeviceReachableHost — wildcard binds (emulator-safe default)', () => {
-	it('iOS: wildcard → localhost (simulator shares host network stack)', () => {
-		// LAN IP not picked even when available — `localhost` works
-		// transparently in the iOS Simulator and avoids the LAN-IP
-		// firewall headaches the Android branch hits.
+	it('iOS: wildcard → LAN IP (one origin both physical devices AND the simulator can reach)', () => {
+		// Physical iOS hardware can never reach `localhost` (that's the
+		// phone itself, and iOS has no adb-reverse analog), while the
+		// Simulator reaches the host's LAN IP exactly as well as
+		// loopback. So the LAN IP is the deterministic default whenever
+		// a NIC is up — no fragile attached-device detection.
 		const r = resolveDeviceReachableHost({
 			host: '0.0.0.0',
 			platform: 'ios',
 			env: {},
 			lanHostResolver: () => '192.168.1.42',
 		});
-		expect(r.host).toBe('localhost');
-		expect(r.source).toBe('platform-default');
+		expect(r.host).toBe('192.168.1.42');
+		expect(r.source).toBe('lan');
 	});
 
-	it('iOS: wildcard → localhost when no LAN NIC detected', () => {
+	it('visionOS: wildcard → LAN IP (same Apple path)', () => {
+		const r = resolveDeviceReachableHost({
+			host: '0.0.0.0',
+			platform: 'visionos',
+			env: {},
+			lanHostResolver: () => '192.168.1.42',
+		});
+		expect(r.host).toBe('192.168.1.42');
+		expect(r.source).toBe('lan');
+	});
+
+	it('iOS: wildcard → localhost when no LAN NIC detected (offline simulator dev)', () => {
 		const r = resolveDeviceReachableHost({
 			host: '0.0.0.0',
 			platform: 'ios',
@@ -132,6 +145,42 @@ describe('resolveDeviceReachableHost — wildcard binds (emulator-safe default)'
 		});
 		expect(r.host).toBe('localhost');
 		expect(r.source).toBe('platform-default');
+	});
+
+	it('iOS: wildcard + NS_HMR_PREFER_LAN_HOST=0 forces localhost (firewalled-Mac rollback knob)', () => {
+		for (const v of ['0', 'false', 'off', 'no']) {
+			const r = resolveDeviceReachableHost({
+				host: '0.0.0.0',
+				platform: 'ios',
+				env: { NS_HMR_PREFER_LAN_HOST: v },
+				lanHostResolver: () => '192.168.1.42',
+			});
+			expect(r.host).toBe('localhost');
+			expect(r.source).toBe('platform-default');
+		}
+	});
+
+	it('iOS: NS_HMR_HOST still wins over the LAN default', () => {
+		const r = resolveDeviceReachableHost({
+			host: '0.0.0.0',
+			platform: 'ios',
+			env: { NS_HMR_HOST: 'tunnel.example.dev' },
+			lanHostResolver: () => '192.168.1.42',
+		});
+		expect(r.host).toBe('tunnel.example.dev');
+		expect(r.source).toBe('env');
+	});
+
+	it('iOS: wildcard origin threads the LAN IP through resolveDeviceReachableOrigin', () => {
+		const r = resolveDeviceReachableOrigin({
+			host: '0.0.0.0',
+			platform: 'ios',
+			env: {},
+			port: 5173,
+			lanHostResolver: () => '192.168.1.42',
+		});
+		expect(r.origin).toBe('http://192.168.1.42:5173');
+		expect(r.source).toBe('lan');
 	});
 
 	it('Android: wildcard → 10.0.2.2 (NOT the LAN IP — standard emulator NAT drops LAN-IP packets)', () => {
