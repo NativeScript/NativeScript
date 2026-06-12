@@ -15,7 +15,7 @@ import { processCodeForDevice, rewriteImports } from '../../../server/websocket-
 import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
 import { getServerOrigin } from '../../../server/server-origin.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
-import { compileScript, compileTemplate, parse, pluginTransformTypescript } from './sfc-route-shared.js';
+import { compileScript, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 
 /**
  * Registers `GET /ns/asm` — the deterministic, self-contained SFC assembler module.
@@ -549,6 +549,10 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 							const origin = getServerOrigin(server);
 							inlineCode2 = ensureVersionedRtImports(inlineCode2, origin, Number(ver));
 							inlineCode2 = strategy.ensureVersionedImports?.(inlineCode2, origin, Number(ver)) ?? inlineCode2;
+							// App-source deps too: the artifact must link against the
+							// CURRENT dep content even when V8 still caches the stable
+							// `/ns/m/<app-path>` key from a previous save.
+							inlineCode2 = ensureVersionedNsMAppImports(inlineCode2, Number(ver));
 						} catch {}
 						// Normalize imports/helpers via AST to ensure _defineComponent and other helpers are bound once
 						try {
@@ -652,6 +656,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 				const origin = getServerOrigin(server);
 				code = ensureVersionedRtImports(code, origin, Number(ver));
 				code = strategy.ensureVersionedImports?.(code, origin, Number(ver)) ?? code;
+				code = ensureVersionedNsMAppImports(code, Number(ver));
 			} catch {}
 			// Inline-template body path already runs processCodeForDevice (AST + sanitizers); no additional _defineComponent fix needed
 			res.statusCode = 200;

@@ -6,12 +6,12 @@
  * The HMR client is evaluated via HTTP ESM on device; static imports would create secondary instances.
  */
 
-import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore, hasExplicitEviction, invalidateModulesByUrls, buildEvictionUrls, emitHmrModeBannerOnce } from './utils.js';
+import { setHMRWsUrl, getHMRWsUrl, pendingModuleFetches, deriveHttpOrigin, setHttpOriginForVite, moduleFetchCache, requestModuleFromServer, getHttpOriginForVite, normalizeSpec, hmrMetrics, graph, setGraphVersion, getGraphVersion, getCurrentApp, getRootFrame, setCurrentApp, setRootFrame, getCore, hasExplicitEviction, invalidateModulesByUrls, buildEvictionUrls, emitHmrModeBannerOnce, ENV_VERBOSE } from './utils.js';
 import { handleCssUpdates } from './css-handler.js';
 import { buildCssApplyingDetail, buildCssAppliedDetail } from './css-update-overlay.js';
 import { getGlobalScope } from '../shared/runtime/global-scope.js';
 
-const VERBOSE = typeof __NS_ENV_VERBOSE__ !== 'undefined' && __NS_ENV_VERBOSE__;
+const VERBOSE = ENV_VERBOSE;
 
 function resolveTargetFlavor(): string | undefined {
 	try {
@@ -1048,7 +1048,10 @@ async function processQueue(): Promise<void> {
 			// After evaluating the batch, perform flavor-specific UI refresh.
 			switch (TARGET_FLAVOR) {
 				case 'vue':
-					await CLIENT_STRATEGY?.refreshAfterBatch?.(drained, { setUpdateOverlayStage, startedAt: tQueueStart });
+					// graph + performResetRoot + getOverlay let the Vue strategy
+					// propagate non-SFC dep changes to the nearest `.vue` boundary
+					// and remount it (see `propagateDepChangeToSfcBoundary`).
+					await CLIENT_STRATEGY?.refreshAfterBatch?.(drained, { setUpdateOverlayStage, startedAt: tQueueStart, graph, performResetRoot, getOverlay: getHmrOverlayApi });
 					break;
 				case 'solid': {
 					// Boundaries discovered in this HMR cycle (tsx files reachable
@@ -1455,7 +1458,7 @@ globalThis.__nsHmrRequestModule = async function (spec: string): Promise<string>
 function connectHmr() {
 	if (hmrSocket?.readyState === WebSocket.OPEN) return;
 	if (hmrSocket?.readyState === WebSocket.CONNECTING) {
-		if (__NS_ENV_VERBOSE__) console.log('[hmr-client] Already connecting to HMR WebSocket, skipping');
+		if (VERBOSE) console.log('[hmr-client] Already connecting to HMR WebSocket, skipping');
 		return;
 	}
 	try {
@@ -1533,7 +1536,7 @@ function connectHmr() {
 			scheduleConnectionOverlay(overlayStage, connectionDetail);
 		}
 		try {
-			if (__NS_ENV_VERBOSE__) console.log('[hmr-client] Connecting to HMR WebSocket:', url);
+			if (VERBOSE) console.log('[hmr-client] Connecting to HMR WebSocket:', url);
 			const sock = new WebSocket(url);
 			hmrSocket = sock;
 			setHttpOriginForVite(deriveHttpOrigin(url));

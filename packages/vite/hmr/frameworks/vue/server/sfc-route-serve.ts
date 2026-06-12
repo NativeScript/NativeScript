@@ -18,7 +18,7 @@ import { cleanCode, processCodeForDevice, rewriteImports } from '../../../server
 import { REQUIRE_GUARD_SNIPPET } from '../../../server/require-guard.js';
 import { getServerOrigin } from '../../../server/server-origin.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
-import { babelTraverse, compileScript, compileTemplate, parse, pluginTransformTypescript } from './sfc-route-shared.js';
+import { babelTraverse, compileScript, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 
 /**
  * Registers `GET /ns/sfc` — serves SFC modules. Full SFCs delegate to the `/ns/asm`
@@ -378,9 +378,11 @@ export function registerSfcServeRoute(server: ViteDevServer, options: RegisterSf
 				if (Number.isFinite(verNum) && verNum > 0) {
 					code = ensureVersionedRtImports(code, getServerOrigin(server), verNum);
 					code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), verNum) ?? code;
+					code = ensureVersionedNsMAppImports(code, verNum);
 				} else {
 					code = ensureVersionedRtImports(code, getServerOrigin(server), options.getGraphVersion());
 					code = strategy.ensureVersionedImports?.(code, getServerOrigin(server), options.getGraphVersion()) ?? code;
+					code = ensureVersionedNsMAppImports(code, options.getGraphVersion());
 				}
 			} catch {}
 			// Final guard for SFC variant output as well

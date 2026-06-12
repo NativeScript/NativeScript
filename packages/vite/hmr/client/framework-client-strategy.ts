@@ -33,6 +33,12 @@ export interface FrameworkClientBatchContext {
 	setUpdateOverlayStage: (stage: any, opts?: any) => void;
 	/** Wall-clock (ms) when the queue drain started, for "Updated … in Nms". */
 	startedAt: number;
+	/** Live client module graph (id → {id, deps, hash}) for reverse-import propagation. */
+	graph?: Map<string, ClientGraphModule>;
+	/** Swap the live root view to a freshly loaded component (resolves true on success). */
+	performResetRoot?: (component: any) => Promise<boolean> | any;
+	/** Resolves the live dev-overlay API (null/undefined when not installed). */
+	getOverlay?: () => any;
 }
 
 /** Shared helpers handed to the framework message hooks. */

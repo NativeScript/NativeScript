@@ -18,7 +18,7 @@ vi.mock('../../../server/websocket-hot-update.js', () => ({
 }));
 
 import { rewriteVendorVueSpec } from '../../../helpers/vendor-rewrite.js';
-import { vueServerStrategy } from './strategy.js';
+import { purgeVueTransformCachesForHotUpdate, vueServerStrategy } from './strategy.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkRouteContext } from '../../../server/framework-strategy.js';
@@ -335,5 +335,71 @@ describe('vueServerStrategy.handleHotUpdate', () => {
 		expect(server.transformRequest).not.toHaveBeenCalled();
 		expect(moduleGraph.upsert).not.toHaveBeenCalled();
 		expect(client.send).not.toHaveBeenCalled();
+	});
+});
+
+describe('purgeVueTransformCachesForHotUpdate', () => {
+	function makeCacheMocks(importers: Array<{ id: string; importers?: any[] }> = []) {
+		const rootModule = { id: '/src/test2.ts', file: '/proj/src/test2.ts', importers };
+		const moduleGraph = {
+			getModulesByFile: vi.fn(() => new Set([rootModule])),
+			onFileChange: vi.fn(),
+			invalidateModule: vi.fn(),
+		};
+		const sharedTransformRequest = {
+			invalidateMany: vi.fn(),
+			clear: vi.fn(),
+		};
+		return { rootModule, moduleGraph, sharedTransformRequest };
+	}
+
+	it('purges shared transform cache + Vite module graph for a changed .ts dep (the test2.ts repro)', () => {
+		const homeImporter = { id: '/src/components/Home.vue', importers: [] };
+		const { moduleGraph, sharedTransformRequest } = makeCacheMocks([homeImporter]);
+
+		purgeVueTransformCachesForHotUpdate({
+			file: '/proj/src/test2.ts',
+			server: { config: { root: '/proj' }, moduleGraph },
+			sharedTransformRequest,
+		});
+
+		expect(moduleGraph.onFileChange).toHaveBeenCalledWith('/proj/src/test2.ts');
+		expect(moduleGraph.invalidateModule).toHaveBeenCalled();
+		expect(sharedTransformRequest.invalidateMany).toHaveBeenCalledTimes(1);
+		const urls = Array.from(sharedTransformRequest.invalidateMany.mock.calls[0][0] as Set<string>);
+		// Changed file: project-relative, with and without the script extension
+		// (the /ns/m handler probes multiple extension candidates per spec).
+		expect(urls).toContain('/src/test2.ts');
+		expect(urls).toContain('/src/test2');
+		// Transitive importer (the SFC boundary) is purged too.
+		expect(urls).toContain('/src/components/Home.vue');
+		// Sledgehammer to catch extension-fallback cache keys targeted purge misses.
+		expect(sharedTransformRequest.clear).toHaveBeenCalledTimes(1);
+	});
+
+	it('soft-fails without a sharedTransformRequest runner', () => {
+		const { moduleGraph } = makeCacheMocks();
+		expect(() =>
+			purgeVueTransformCachesForHotUpdate({
+				file: '/proj/src/test2.ts',
+				server: { config: { root: '/proj' }, moduleGraph },
+				sharedTransformRequest: null,
+			}),
+		).not.toThrow();
+		expect(moduleGraph.onFileChange).toHaveBeenCalled();
+	});
+
+	it('excludes node_modules importers from the transitive purge', () => {
+		const vendorImporter = { id: '/proj/node_modules/some-lib/index.js', importers: [] };
+		const { moduleGraph, sharedTransformRequest } = makeCacheMocks([vendorImporter]);
+
+		purgeVueTransformCachesForHotUpdate({
+			file: '/proj/src/test2.ts',
+			server: { config: { root: '/proj' }, moduleGraph },
+			sharedTransformRequest,
+		});
+
+		const urls = Array.from(sharedTransformRequest.invalidateMany.mock.calls[0][0] as Set<string>);
+		expect(urls.some((u) => u.includes('node_modules'))).toBe(false);
 	});
 });

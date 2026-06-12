@@ -630,6 +630,17 @@ export function recordVuePayloadChanges(changed: any[], graphVersion: number) {
 	if (sawVue) sfcChangedVersion = graphVersion;
 }
 
+/**
+ * True when the delta for `version` included a `.vue` change. The dep-change
+ * propagation in `refreshAfterBatch` uses this to stand down for mixed batches:
+ * the SFC registry-update path will already remount with a freshly assembled
+ * artifact at this version, which links against the re-imported deps — a second
+ * resetRoot from propagation would just double the work (and the flash).
+ */
+export function sfcChangedInVersion(version: number): boolean {
+	return sfcChangedVersion != null && sfcChangedVersion === version && sfcChangedIds.size > 0;
+}
+
 async function waitForSfcMapping(id: string, timeoutMs = 350): Promise<boolean> {
 	if (!/\.vue$/i.test(id)) return true;
 	const base = id.split('?')[0];

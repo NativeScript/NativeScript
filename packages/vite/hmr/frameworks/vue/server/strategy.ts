@@ -9,6 +9,8 @@ import { getProjectAppPath } from '../../../../helpers/utils.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from '../../../server/websocket-device-transform.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from '../../../server/websocket-module-specifiers.js';
+import { canonicalizeTransformRequestCacheKey, collectTransitiveImportersForInvalidation } from '../../../server/transform-cache-invalidation.js';
+import { isRuntimeGraphExcludedPath } from '../../../server/runtime-graph-filter.js';
 import type { VueSfcRegistryEntry, VueSfcRegistryMessage, VueSfcRegistryUpdateMessage } from '../../../shared/protocol.js';
 
 const VENDOR_MJS = '/@nativescript/vendor.mjs';
@@ -171,6 +173,80 @@ function findVueFiles(dir: string, root: string, result: string[] = []): string[
 	return result;
 }
 
+/**
+ * Purge BOTH transform-cache layers for a changed file so the device's
+ * eviction + re-import evaluates the CURRENT save's code (mirrors the
+ * Solid/Angular hot-update tails — see solid/server/strategy.ts for the full
+ * two-layer rationale):
+ *
+ *   1. `sharedTransformRequest` keeps a 60s TTL result cache to amortize the
+ *      cold-boot bulk walk + device request bursts. Without purging, a save
+ *      that lands inside the TTL window (e.g. the FIRST save after boot, whose
+ *      entry the initial graph walk populated) serves the device the PREVIOUS
+ *      transform — the HMR cycle runs perfectly on-device yet renders stale
+ *      values.
+ *   2. Vite's own `ModuleNode.transformResult` for the file + transitive
+ *      importers, so `server.transformRequest` re-runs the pipeline.
+ *
+ * Ends with the same `clear()` sledgehammer Solid uses: the `/ns/m/` handler
+ * probes many candidate extensions per spec and EACH candidate is a separate
+ * cache key, so targeted invalidation alone can miss the key a previous serve
+ * actually populated.
+ */
+export function purgeVueTransformCachesForHotUpdate(options: { file: string; server: { config?: { root?: string }; moduleGraph?: any }; sharedTransformRequest?: { invalidateMany: (urls: Iterable<string>) => void; clear: () => void } | null; verbose?: boolean }): void {
+	const { file, server, sharedTransformRequest, verbose } = options;
+	try {
+		const projectRoot = server.config?.root || process.cwd();
+		const cacheInvalidationUrls = new Set<string>();
+		const addCacheKey = (rawId: string | null | undefined) => {
+			const id = String(rawId || '');
+			if (!id) return;
+			const cacheKey = canonicalizeTransformRequestCacheKey(id, projectRoot);
+			cacheInvalidationUrls.add(cacheKey);
+			const noQuery = cacheKey.replace(/\?.*$/, '');
+			const stripped = noQuery.replace(/\.(?:[mc]?[jt]sx?)$/i, '');
+			if (stripped !== noQuery) {
+				cacheInvalidationUrls.add(stripped);
+			}
+		};
+		addCacheKey(file);
+		const rootModules = server.moduleGraph?.getModulesByFile?.(file);
+		const transitiveImporters = collectTransitiveImportersForInvalidation({
+			modules: rootModules ? Array.from(rootModules) : [],
+			isExcluded: (id: string) => id.includes('/node_modules/') || isRuntimeGraphExcludedPath(id),
+			maxDepth: 16,
+		});
+		try {
+			server.moduleGraph?.onFileChange?.(file);
+		} catch {}
+		if (rootModules) {
+			for (const mod of rootModules) {
+				try {
+					server.moduleGraph?.invalidateModule?.(mod);
+				} catch {}
+			}
+		}
+		for (const mod of transitiveImporters) {
+			addCacheKey(mod?.id);
+			try {
+				server.moduleGraph?.invalidateModule?.(mod as any);
+			} catch {}
+		}
+		if (!sharedTransformRequest) return;
+		if (cacheInvalidationUrls.size) {
+			sharedTransformRequest.invalidateMany(cacheInvalidationUrls);
+			if (verbose) {
+				console.log('[hmr-ws][vue] purged shared transform cache entries:', cacheInvalidationUrls.size, 'transitiveImporters=', transitiveImporters.length);
+			}
+		}
+		try {
+			sharedTransformRequest.clear();
+		} catch {}
+	} catch (error) {
+		if (verbose) console.warn('[hmr-ws][vue] transform cache purge failed', error);
+	}
+}
+
 async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void> {
 	const { server, sfcFileMap, depFileMap, wss, verbose, helpers } = ctx;
 	const root = server.config.root || process.cwd();
@@ -282,8 +358,13 @@ export const vueServerStrategy: FrameworkServerStrategy = {
 		const state = await runHotUpdatePrologue(ctx, deps);
 		if (!state) return;
 		const { emitSummary } = state;
-		const { strategy, verbose, wss, moduleGraph, sfcFileMap, depFileMap, isSocketClientOpen, shouldRemapImport } = deps;
+		const { strategy, verbose, wss, moduleGraph, sfcFileMap, depFileMap, isSocketClientOpen, shouldRemapImport, sharedTransformRequest } = deps;
 		const { file, server } = ctx;
+
+		// Runs for EVERY changed file (not just .vue): the device HMR client
+		// re-imports changed .ts/.js deps and re-assembles their SFC boundary,
+		// and both must transform against the CURRENT file content.
+		purgeVueTransformCachesForHotUpdate({ file, server, sharedTransformRequest, verbose });
 
 		if (!file.endsWith('.vue')) {
 			if (verbose) console.log('[hmr-ws] Not a .vue file, skipping');
