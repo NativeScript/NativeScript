@@ -1,12 +1,18 @@
 {
 	"name": "@nativescript/vite",
-	"version": "8.0.0-alpha.37",
+	"version": "8.0.0-alpha.38",
 	"description": "Vite for NativeScript",
 	"main": "./index.js",
 	"module": "./index.js",
 	"types": "./index.d.ts",
 	"type": "module",
-	"files": ["**/*.d.ts", "**/*.js", "**/*.mjs", "**/*.cjs", "**/*.map"],
+	"files": [
+		"**/*.d.ts",
+		"**/*.js",
+		"**/*.mjs",
+		"**/*.cjs",
+		"**/*.map"
+	],
 	"exports": {
 		".": {
 			"types": "./index.d.ts",
@@ -105,14 +111,30 @@
 		"vue-tsc": "^3.2.0"
 	},
 	"peerDependenciesMeta": {
-		"@analogjs/vite-plugin-angular": { "optional": true },
-		"@angular/build": { "optional": true },
-		"@vitejs/plugin-vue": { "optional": true },
-		"@vitejs/plugin-vue-jsx": { "optional": true },
-		"@vue/compiler-sfc": { "optional": true },
-		"react-reconciler": { "optional": true },
-		"vite-plugin-solid": { "optional": true },
-		"vue-tsc": { "optional": true }
+		"@analogjs/vite-plugin-angular": {
+			"optional": true
+		},
+		"@angular/build": {
+			"optional": true
+		},
+		"@vitejs/plugin-vue": {
+			"optional": true
+		},
+		"@vitejs/plugin-vue-jsx": {
+			"optional": true
+		},
+		"@vue/compiler-sfc": {
+			"optional": true
+		},
+		"react-reconciler": {
+			"optional": true
+		},
+		"vite-plugin-solid": {
+			"optional": true
+		},
+		"vue-tsc": {
+			"optional": true
+		}
 	},
 	"devDependencies": {
 		"@analogjs/vite-plugin-angular": "^2.0.0",
