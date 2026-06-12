@@ -15,6 +15,7 @@ import { Color } from '../../../color';
 import { hiddenProperty } from '../view-base';
 import { getCurrentWindowBounds, getCurrentWindowContent } from '../../../application/window-helper.windows';
 import { ImageSource } from '../../../image-source';
+import { ClipPathFunction } from '../../styling/clip-path-function';
 type WindowsColor = Color & { windows: Windows.UI.Color, windowsArgb: number };
 
 // Windows.UI.Color is a plain {A,R,G,B} struct — bridge reads fields directly, no WinRT call needed.
@@ -47,6 +48,22 @@ function _argbToWinColor(argb: number): Windows.UI.Color {
 	return c;
 }
 
+
+// Parse a CSS clip-path dimension value: "50%"→fraction of totalDip, "10px"→px/density, "10"→raw DIP.
+function _parseClipDim(val: string, totalDip: number, density: number): number {
+	const s = (val || '').trim();
+	if (s.endsWith('%')) return (parseFloat(s) / 100) * totalDip;
+	if (s.endsWith('px')) return parseFloat(s) / density;
+	return parseFloat(s) || 0;
+}
+
+// True for CSS background-repeat values that tile along at least one axis (repeat / repeat-x /
+// repeat-y, incl. the two-value 'repeat repeat'). WinUI's ImageBrush can't tile, so these go through
+// TileHelper. 'space'/'round' aren't implemented and fall through to the plain (no-repeat) path.
+function _isTilingRepeat(repeat: unknown): boolean {
+	const r = String(repeat ?? '').toLowerCase().trim();
+	return r === 'repeat' || r === 'repeat-x' || r === 'repeat-y' || r === 'repeat repeat';
+}
 
 function _resolveToWinColor(color: any): Windows.UI.Color | null {
 	if (!color) return null;
@@ -652,6 +669,9 @@ export class View extends ViewCommon {
 	private _isNativeButton: boolean | null = null; // cached once in initNativeView — avoids per-call 'in' check
 	private _lastMarginSig: string | null = null;  // coalesce the 4 individual margin setNative calls into 1 WinRT set
 	private _lastPaddingSig: string | null = null; // coalesce the 4 individual padding setNative calls into 1 WinRT set
+	private _lastClipSig: string | null = null;    // skip clip-path rebuild when shape+dims unchanged
+	private _lastTileSig: string | null = null;    // skip background-repeat tile rebuild when image+repeat+size unchanged
+	private _tileBytesCache = new Map<string, Windows.Storage.Streams.IBuffer>(); // url → encoded source bytes (read once)
 	_colorAnimBrush: any = null; // the current SolidColorBrush used as Background; lets animation reuse it without QI
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -755,10 +775,20 @@ export class View extends ViewCommon {
 		// Use pure-JS `color.argb` (returns the stored _argb integer) — NOT `color.windowsArgb`
 		// which calls Windows.UI.ColorHelper.FromArgb() + 4 WinRT struct reads on every call.
 		const _colorArgb = (background.color as any)?.argb ?? 0;
-		const _imageKey  = background.image
-			? (typeof background.image === 'string' ? background.image : 'lg')
-			: '';
-		const _staticSig = `${_colorArgb}|${_imageKey}`;
+		let _imageKey = '';
+		if (background.image) {
+			if (typeof background.image === 'string') {
+				_imageKey = background.image;
+			} else {
+				// Gradient: key on its actual content (angle + stops) so switching between gradients
+				// invalidates the cache. A constant 'lg' here would skip the brush rebuild.
+				const lg = background.image as any;
+				const stops = (lg.colorStops || []).map((s: any) => `${(s.color as any)?.argb ?? ''}@${(s.offset as any)?.value ?? ''}`).join(',');
+				_imageKey = `lg:${lg.angle ?? ''}:${stops}`;
+			}
+		}
+		// Include position/repeat/size so changes to those (without color/image change) still trigger a redraw.
+		const _staticSig = `${_colorArgb}|${_imageKey}|${background.repeat || ''}|${background.position || ''}|${background.size || ''}`;
 		// Save prior sig BEFORE updating — used below to detect first call (fresh view).
 		const _prevStaticSig = this._lastStaticSig;
 		if (_staticSig !== this._lastStaticSig) {
@@ -800,9 +830,12 @@ export class View extends ViewCommon {
 					native.Background = brush;
 				} catch (_e) { /* fallback to solid color below */ }
 			} else if (background.image && typeof background.image === 'string' && background.image !== 'none') {
-				// Raster background-image: url(...). Rendered via an ImageBrush (XAML can't tile, so CSS
-				// background-repeat beyond no-repeat is approximated by stretch/alignment).
-				this._applyBackgroundImage(native, background.image as string, background);
+				// Raster background-image: url(...). A repeating background needs the element's pixel
+				// size to build the tiled bitmap, so it's deferred to the size-dependent phase below;
+				// here we only handle the non-repeating case via a plain ImageBrush.
+				if (!_isTilingRepeat(background.repeat)) {
+					this._applyBackgroundImage(native, background.image as string, background);
+				}
 			} else if (background && background.color) {
 				const winColor = _resolveToWinColor(background.color);
 				if (winColor) {
@@ -854,10 +887,13 @@ export class View extends ViewCommon {
 
 		// Read border-color argb early (pure JS, no WinRT) — used for both needsComposition and
 		// the border sig / native XAML path below.
-		const tCArgb = (background.borderTopColor as any)?.argb ?? 0;
-		const rCArgb = (background.borderRightColor as any)?.argb ?? 0;
-		const bCArgb = (background.borderBottomColor as any)?.argb ?? 0;
-		const lCArgb = (background.borderLeftColor as any)?.argb ?? 0;
+		// Default an unset border-color to opaque black on any side that has a width — matches CSS
+		// (initial border-color resolves to currentColor → black here) and iOS/Android, which both
+		// fall back to black. Without this, a width-only border renders invisible on Windows.
+		const tCArgb = (background.borderTopColor as any)?.argb ?? (background.borderTopWidth ? 0xff000000 : 0);
+		const rCArgb = (background.borderRightColor as any)?.argb ?? (background.borderRightWidth ? 0xff000000 : 0);
+		const bCArgb = (background.borderBottomColor as any)?.argb ?? (background.borderBottomWidth ? 0xff000000 : 0);
+		const lCArgb = (background.borderLeftColor as any)?.argb ?? (background.borderLeftWidth ? 0xff000000 : 0);
 		const _anyBorderWidth = !!(background.borderTopWidth || background.borderRightWidth || background.borderBottomWidth || background.borderLeftWidth);
 		// Per-side different colors → XAML BorderBrush (single color) can't handle it.
 		const _hasNonUniformBorderColor = _anyBorderWidth && (tCArgb !== rCArgb || tCArgb !== bCArgb || tCArgb !== lCArgb);
@@ -981,6 +1017,102 @@ export class View extends ViewCommon {
 				this._viewCompositionHandler.UpdateBoxShadow(null);
 			}
 		}
+
+		// Clip-path via Composition Visual.Clip — rect, inset, circle, ellipse, polygon.
+		const clipPath = background.clipPath;
+		if (clipPath) {
+			try {
+				const aw = (native.ActualWidth as number) || 0;
+				const ah = (native.ActualHeight as number) || 0;
+				const sig = String(clipPath) + `|${aw}|${ah}`;
+				if (sig !== this._lastClipSig) {
+					this._lastClipSig = sig;
+					this._applyClipGeometry(native, clipPath instanceof ClipPathFunction ? clipPath : null, aw, ah);
+				}
+			} catch (_e) { }
+		} else if (this._lastClipSig !== null) {
+			this._lastClipSig = null;
+			try { NativeScript.Widgets.ClipHelper.ClearClip(native); } catch (_e) { }
+		}
+
+		// CSS background-repeat tiling. WinUI's ImageBrush can't tile, so the C++ TileHelper renders a
+		// bitmap tiled to the element's pixel size and we use that as the brush. Size-dependent, so it
+		// regenerates on resize; sig-guarded to skip when image/repeat/size are unchanged.
+		const bgImage = background.image;
+		if (typeof bgImage === 'string' && bgImage && bgImage !== 'none' && _isTilingRepeat(background.repeat)) {
+			const aw = (native.ActualWidth as number) || 0;
+			const ah = (native.ActualHeight as number) || 0;
+			if (aw > 0 && ah > 0) {
+				const density = layout.getDisplayDensity?.() || 1;
+				const wPx = Math.max(1, Math.round(aw * density));
+				const hPx = Math.max(1, Math.round(ah * density));
+				const repeat = String(background.repeat).toLowerCase();
+				const tileSig = `${bgImage}|${repeat}|${wPx}x${hPx}`;
+				if (tileSig !== this._lastTileSig) {
+					this._lastTileSig = tileSig;
+					this._applyTiledBackgroundImage(native, bgImage, repeat, wPx, hPx);
+				}
+			}
+		} else if (this._lastTileSig !== null) {
+			this._lastTileSig = null;
+		}
+	}
+
+	// Resolves a CSS background-image url to a path that ImageHelper.ReadFileAsync can read
+	// (ms-appx:/// for ~/, res:// and bare; passthrough for ms-appx/file/http). Returns '' if unusable.
+	private _resolveBackgroundImagePath(src: string): string {
+		let url = (src || '').trim();
+		const m = url.match(/^url\(\s*['"]?([^'")]+)['"]?\s*\)$/i);
+		if (m) url = m[1];
+		if (!url) return '';
+		if (url.startsWith('~/')) return 'ms-appx:///app/' + url.slice(2);
+		if (url.startsWith('res://')) return 'ms-appx:///Assets/' + url.slice('res://'.length);
+		if (/^ms-appx/i.test(url) || /^https?:/i.test(url) || /^file:/i.test(url)) return url;
+		return url; // bare filesystem path
+	}
+
+	// Builds the tiled bitmap via the C++ TileHelper and applies it as the native Background brush.
+	private _applyTiledBackgroundImage(native: any, src: string, repeat: string, wPx: number, hPx: number): void {
+		const repeatX = repeat === 'repeat' || repeat === 'repeat-x';
+		const repeatY = repeat === 'repeat' || repeat === 'repeat-y';
+		const path = this._resolveBackgroundImagePath(src);
+		if (!path) return;
+
+		const applyTiled = (sourceBytes: Windows.Storage.Streams.IBuffer) => {
+			NSWinRT.toPromise(NativeScript.Widgets.TileHelper.CreateTiledImageAsync(sourceBytes, wPx, hPx, repeatX, repeatY))
+				.then((tiled: Windows.Storage.Streams.IBuffer) => NSWinRT.toPromise(NativeScript.Widgets.ImageHelper.LoadFromBufferAsync(tiled)))
+				.then((result: NativeScript.Widgets.ImageResult) => {
+					const bmp = result?.Bitmap;
+					if (!bmp || !native) return;
+					// Guard against a later size/image change that superseded this async result.
+					const repeatNow = String((this.style.backgroundInternal as any)?.repeat ?? '').toLowerCase();
+					if (!_isTilingRepeat(repeatNow)) return;
+					const Media: any = Microsoft.UI.Xaml.Media;
+					const brush = new Media.ImageBrush();
+					brush.ImageSource = bmp;
+					// The tiled bitmap is exactly the element's pixel size, so Fill maps it 1:1.
+					try { brush.Stretch = Media.Stretch.Fill; } catch (_e) { }
+					native.Background = brush;
+					try { native.Resources.Insert('ButtonBackground', brush); } catch (_e) { }
+					try { native.Resources.Insert('ButtonBackgroundPointerOver', brush); } catch (_e) { }
+					try { native.Resources.Insert('ButtonBackgroundPressed', brush); } catch (_e) { }
+				})
+				.catch(() => { });
+		};
+
+		const cached = this._tileBytesCache.get(path);
+		if (cached) {
+			applyTiled(cached);
+			return;
+		}
+		// http(s) sources can't be read by ReadFileAsync; fetch via image-source bytes path instead.
+		NSWinRT.toPromise(NativeScript.Widgets.ImageHelper.ReadFileAsync(path))
+			.then((bytes: Windows.Storage.Streams.IBuffer) => {
+				if (!bytes) return;
+				this._tileBytesCache.set(path, bytes);
+				applyTiled(bytes);
+			})
+			.catch(() => { });
 	}
 
 	// Last layout size we reacted to. LayoutUpdated fires on every layout pass (including scrolling);
@@ -1008,6 +1140,77 @@ export class View extends ViewCommon {
 		}
 	}
 
+	// Applies CSS clip-path by calling the C++ NativeScript.Widgets.ClipHelper, which performs
+	// strongly-typed WinRT calls that bypass V8-bridge interface-matching limitations.
+	// rect/inset/circle/ellipse use a composition rounded-rect (radius=size/2 is a true ellipse);
+	// polygon goes through a Direct2D path geometry wrapped in IGeometrySource2DInterop.
+	private _applyClipGeometry(native: any, clipPath: ClipPathFunction | null, w: number, h: number): void {
+		try {
+			if (!clipPath) {
+				NativeScript.Widgets.ClipHelper.ClearClip(native);
+				return;
+			}
+
+			const density = layout.getDisplayDensity() || 1;
+			const dim = (v: string, t: number) => _parseClipDim(v, t, density);
+			const { shape, rule } = clipPath;
+
+			if (shape === 'rect') {
+				const parts = rule.trim().split(/\s+/);
+				const top    = dim(parts[0] || '0', h);
+				const right  = dim(parts[1] || String(w), w);
+				const bottom = dim(parts[2] || String(h), h);
+				const left   = dim(parts[3] || '0', w);
+				NativeScript.Widgets.ClipHelper.ApplyRoundedRectClip(
+					native, left, top,
+					Math.max(0, right - left), Math.max(0, bottom - top),
+					0, 0);
+			} else if (shape === 'inset') {
+				const parts = rule.trim().split(/\s+/);
+				const t = dim(parts[0] || '0', h);
+				const r = dim(parts.length >= 2 ? parts[1] : parts[0], w);
+				const b = dim(parts.length >= 3 ? parts[2] : parts[0], h);
+				const l = dim(parts.length >= 4 ? parts[3] : (parts.length >= 2 ? parts[1] : parts[0]), w);
+				NativeScript.Widgets.ClipHelper.ApplyRoundedRectClip(
+					native, l, t,
+					Math.max(0, w - l - r), Math.max(0, h - t - b),
+					0, 0);
+			} else if (shape === 'circle') {
+				const m = rule.trim().match(/^([^\s]+)\s+at\s+([^\s]+)\s+([^\s]+)$/i);
+				// CSS circle() percentage radius resolves against min(width,height)/2 (matches iOS/Android).
+				const radiusRef = Math.min(w, h) / 2;
+				let radius: number, cx: number, cy: number;
+				if (m) {
+					radius = dim(m[1], radiusRef);
+					cx = dim(m[2], w);
+					cy = dim(m[3], h);
+				} else {
+					radius = dim(rule.trim(), radiusRef);
+					cx = w / 2; cy = h / 2;
+				}
+				NativeScript.Widgets.ClipHelper.ApplyRoundedRectClip(
+					native, cx - radius, cy - radius,
+					radius * 2, radius * 2,
+					radius, radius);
+			} else if (shape === 'ellipse') {
+				const m = rule.trim().match(/^([^\s]+)\s+([^\s]+)\s+at\s+([^\s]+)\s+([^\s]+)$/i);
+				if (m) {
+					const rx = dim(m[1], w);
+					const ry = dim(m[2], h);
+					const cx = dim(m[3], w);
+					const cy = dim(m[4], h);
+					NativeScript.Widgets.ClipHelper.ApplyRoundedRectClip(
+						native, cx - rx, cy - ry,
+						rx * 2, ry * 2,
+						rx, ry);
+				}
+			} else if (shape === 'polygon') {
+				// Direct2D path via C++ helper — no Win2D NuGet needed.
+				NativeScript.Widgets.ClipHelper.ApplyPolygonClip(native, w, h, rule, density);
+			}
+		} catch (_e) { }
+	}
+
 	// Renders CSS background-image as a native ImageBrush. Resolves NS path forms (res://, ~/, data:,
 	// http(s) async, ms-appx). background-size → Stretch, background-position → alignment. CSS tiling
 	// (repeat) isn't expressible with ImageBrush; only single no-repeat is supported.
@@ -1015,13 +1218,20 @@ export class View extends ViewCommon {
 		const Media: any = Microsoft.UI.Xaml.Media;
 		const apply = (bmp: any) => {
 			if (!bmp || !native) {
+				// Image missing / failed to decode → fall back to the element's background-color so it
+				// still shows (CSS + iOS/Android parity). Phase 1 skipped the color branch because an
+				// image was specified, so without this the element would render with no background.
+				try {
+					const winColor = background && background.color ? _resolveToWinColor(background.color) : null;
+					native.Background = winColor ? new Media.SolidColorBrush(winColor) : null;
+				} catch (_e) { }
 				return;
 			}
 			try {
 				const brush = new Media.ImageBrush();
 				brush.ImageSource = bmp;
 				// Map background-size → Stretch (default no-repeat shows the image at natural size).
-				const size = ((background as any).backgroundSize || '').toString().toLowerCase();
+				const size = (background.size || '').toString().toLowerCase();
 				try {
 					if (size === 'cover') {
 						brush.Stretch = Media.Stretch.UniformToFill;
@@ -1034,7 +1244,7 @@ export class View extends ViewCommon {
 					}
 				} catch (_e) { }
 				// Map background-position keywords → alignment (CSS default is top-left).
-				const pos = ((background as any).backgroundPosition || '').toString().toLowerCase();
+				const pos = (background.position || '').toString().toLowerCase();
 				try {
 					brush.AlignmentX = pos.includes('right') ? Media.AlignmentX.Right : pos.includes('center') ? Media.AlignmentX.Center : Media.AlignmentX.Left;
 					brush.AlignmentY = pos.includes('bottom') ? Media.AlignmentY.Bottom : pos.includes('center') ? Media.AlignmentY.Center : Media.AlignmentY.Top;

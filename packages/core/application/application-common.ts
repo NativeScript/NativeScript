@@ -10,7 +10,7 @@ import type { View } from '../ui/core/view';
 import type { Frame } from '../ui/frame';
 import type { NavigationEntry } from '../ui/frame/frame-interfaces';
 import type { StyleScope } from '../ui/styling/style-scope';
-import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType } from '.';
+import type { AndroidApplication as AndroidApplicationType, iOSApplication as iOSApplicationType, WindowsApplication as WindowsApplicationType } from '.';
 import type { ApplicationEventData, CssChangedEventData, DiscardedErrorEventData, FontScaleChangedEventData, InitRootViewEventData, LaunchEventData, LoadAppCSSEventData, NativeScriptError, OrientationChangedEventData, SystemAppearanceChangedEventData, LayoutDirectionChangedEventData, UnhandledErrorEventData } from './application-interfaces';
 import { readyInitAccessibilityCssHelper, readyInitFontScale } from '../accessibility/accessibility-common';
 import { getAppMainEntry, isAppInBackground, setAppInBackground, setAppMainEntry } from './helpers-common';
@@ -747,7 +747,7 @@ export class ApplicationCommon {
 		return undefined;
 	}
 
-	get windows() {
+	get windows(): WindowsApplicationType {
 		return undefined;
 	}
 

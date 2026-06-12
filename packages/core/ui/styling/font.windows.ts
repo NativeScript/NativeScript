@@ -6,55 +6,131 @@ export * from './font-common';
 
 export const fontFamilyCache = new Map<string, Microsoft.UI.Xaml.Media.FontFamily | null>();
 
-// Maps lowercase font family name → ms-appx:///fonts/<file>#<face> URI for app-packaged fonts.
-const _fontNameToUri = new Map<string, string>();
-let _fontsScanDone = false;
+// Maps lowercase font family name / filename stem → ms-appx:///app/fonts/<file>#<face> URI.
+// `score` resolves conflicts when several files share a family (e.g. Muli-*.ttf all expose
+// family "Muli"): exact stem==family match > "regular" styles > anything else.
+const _fontNameToUri = new Map<string, { uri: string; score: number }>();
+let _scanStarted = false;
+let _scanCompleted = false;
+const _onScanReady: Array<() => void> = [];
 
-// Scans the app package's app/fonts/ directory once (blocking via .done()) and populates
-// _fontNameToUri so bare family names like "FontAwesome" resolve to their ms-appx URI.
-// NativeScript Windows packages bundle app assets under <InstallRoot>/app/, so fonts live at
-// <InstallRoot>/app/fonts/ → accessible as ms-appx:///app/fonts/<file>.
-function ensureFontsScan(): void {
-    if (_fontsScanDone) return;
-    _fontsScanDone = true;
-    try {
-        (Windows.ApplicationModel.Package.Current.InstalledLocation.GetFolderAsync('app') as any).done((appFolder: any) => {
-            if (!appFolder) return;
-            (appFolder.GetFolderAsync('fonts') as any).done((fontsFolder: any) => {
-                if (!fontsFolder) return;
-                (fontsFolder.GetFilesAsync() as any).done((files: any) => {
-                    if (!files) return;
-                    const count: number = files.Size ?? 0;
-                    for (let i = 0; i < count; i++) {
-                        const file = files.GetAt(i);
-                        const name: string = file.Name;
-                        if (/\.(ttf|otf|woff|woff2)$/i.test(name)) {
-                            const faceName = name.replace(/\.[^.]+$/, '');
-                            _fontNameToUri.set(faceName.toLowerCase(), `ms-appx:///app/fonts/${name}#${faceName}`);
-                        }
-                    }
-                });
-            });
-        });
-    } catch (_e) {}
+function _completeScan(): void {
+    if (_scanCompleted) return;
+    _scanCompleted = true;
+    const cbs = _onScanReady.splice(0);
+    for (const cb of cbs) cb();
 }
 
-function sanitizeFontFamily(raw: string): string {
-    if (!raw) return '';
-    let f = String(raw).trim();
-    if ((f.startsWith('"') && f.endsWith('"')) || (f.startsWith("'") && f.endsWith("'"))) {
-        f = f.substring(1, f.length - 1);
+function _registerFont(key: string, uri: string, score: number): void {
+    const k = key.toLowerCase();
+    const existing = _fontNameToUri.get(k);
+    if (!existing || score > existing.score) {
+        _fontNameToUri.set(k, { uri, score });
     }
-    const commaIdx = f.indexOf(',');
-    if (commaIdx >= 0) f = f.substring(0, commaIdx).trim();
-    // Map NativeScript tilde path (~/) to Windows app directory (ms-appx:///app/).
-    // ~/fonts/Foo.ttf#Foo → app/fonts/Foo.ttf#Foo → handled as ms-appx path below.
+}
+
+// Scans the app package's app/fonts/ directory once, synchronously, via the C++ FontHelper
+// (DirectWrite font-set enumeration). XAML FontFamily URIs need the font's REAL family name
+// after '#' (Muli-Regular.ttf must be referenced as ...Muli-Regular.ttf#Muli), so each font
+// registers three lookup keys:
+//   filename stem      → uri#win32Family  (matches Android's filename-based lookup)
+//   win32 family       → uri#win32Family  (e.g. "Muli Black")
+//   typographic family → uri#typoFamily   (e.g. "Muli" — groups all weights)
+function ensureFontsScan(): void {
+    if (_scanStarted) return;
+    _scanStarted = true;
+    try {
+        const root = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+        const listing = NativeScript.Widgets.FontHelper.ScanFontsDirectory(root + '\\app\\fonts');
+        const norm = (s: string) => s.toLowerCase().replace(/[\s_-]/g, '');
+        for (const line of String(listing || '').split('\n')) {
+            if (!line) continue;
+            const [fileName, win32Family, typoFamily] = line.split('|');
+            if (!fileName) continue;
+            const stem = fileName.replace(/\.[^.]+$/, '');
+            const baseUri = `ms-appx:///app/fonts/${fileName}`;
+            const legacy = win32Family || typoFamily || stem;
+            // Exact stem↔family match (Pacifico.ttf#Pacifico) outranks "regular" styles
+            // (Muli-Regular.ttf for family "Muli"), which outrank Bold/Italic variants.
+            // Scored per KEY: Muli-Black.ttf scores 3 for "Muli Black" but only 1 for "Muli",
+            // so the plain "Muli" key ends up at Muli-Regular.ttf, not the Black variant.
+            const scoreFor = (key: string) => (norm(stem) === norm(key) ? 3 : (/regular/i.test(stem) ? 2 : 1));
+            _registerFont(stem, `${baseUri}#${legacy}`, 3); // stem key is unique per file
+            _registerFont(legacy, `${baseUri}#${legacy}`, scoreFor(legacy));
+            if (typoFamily && norm(typoFamily) !== norm(legacy)) {
+                _registerFont(typoFamily, `${baseUri}#${typoFamily}`, scoreFor(typoFamily));
+            }
+        }
+    } catch (_e) {}
+    _completeScan();
+}
+
+export namespace windows {
+    export function triggerFontScan(): void {
+        ensureFontsScan();
+    }
+    export function whenFontScanReady(callback: () => void): void {
+        if (_scanCompleted) {
+            callback();
+        } else {
+            _onScanReady.push(callback);
+        }
+    }
+}
+
+
+// CSS generic families → Windows system fonts.
+const _genericFamilyMap = new Map<string, string>([
+    [genericFontFamilies.sansSerif, 'Segoe UI'],
+    [genericFontFamilies.serif, 'Times New Roman'],
+    [genericFontFamilies.monospace, 'Consolas'],
+    [genericFontFamilies.system, 'Segoe UI'],
+    ['system-ui', 'Segoe UI'],
+]);
+
+// Resolves one CSS font-family token to a XAML-usable source: app-font URI, system font name,
+// or ms-appx path. Returns null for empty tokens.
+function _resolveFamilyToken(raw: string): string | null {
+    let f = String(raw || '').trim();
+    if ((f.startsWith('"') && f.endsWith('"')) || (f.startsWith("'") && f.endsWith("'"))) {
+        f = f.substring(1, f.length - 1).trim();
+    }
+    if (!f) return null;
+
+    // NativeScript tilde path: ~/fonts/Foo.ttf#Foo → app/fonts/Foo.ttf#Foo.
     if (f.startsWith('~/')) {
         f = 'app/' + f.substring(2);
     }
-    // Strip common URI scheme prefixes (e.g. font://, sys://)
-    f = f.replace(/^[a-zA-Z]+:\/\//, '');
-    return f;
+    // Strip non-ms-appx URI scheme prefixes (e.g. font://, sys://).
+    if (!/^ms-appx/i.test(f)) {
+        f = f.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, '');
+    }
+
+    if (f.includes('/') || f.includes('\\')) {
+        // Path (with or without #face) — normalise to ms-appx.
+        return /^ms-appx/i.test(f) ? f : 'ms-appx:///' + f.replace(/^\/+/, '');
+    }
+
+    const generic = _genericFamilyMap.get(f.toLowerCase());
+    if (generic) return generic;
+
+    // Bare family name: app-packaged font URI when scanned, else system font name.
+    return _fontNameToUri.get(f.toLowerCase())?.uri ?? f;
+}
+
+// Builds the XAML FontFamily source string for a CSS font-family list. XAML FontFamily natively
+// supports comma-separated fallbacks ("ms-appx:///app/fonts/Muli.ttf#Muli, Segoe UI"), so all
+// resolvable candidates are kept in order.
+function _resolveFamilySource(fontFamilyValue: string): string {
+    const tokens = parseFontFamily(String(fontFamilyValue || ''));
+    const resolved: string[] = [];
+    for (const token of tokens) {
+        const source = _resolveFamilyToken(token);
+        if (source && !resolved.includes(source)) {
+            resolved.push(source);
+        }
+    }
+    return resolved.join(', ');
 }
 
 function createFontFamilyCandidate(candidate: string): Microsoft.UI.Xaml.Media.FontFamily | null {
@@ -74,49 +150,15 @@ function createFontFamilyCandidate(candidate: string): Microsoft.UI.Xaml.Media.F
 }
 
 export function getFontFamilyCached(family: string): Microsoft.UI.Xaml.Media.FontFamily | null {
-    ensureFontsScan();
-    const candidate = sanitizeFontFamily(String(family || ''));
-    if (!candidate) return null;
-
-    // Resolve bare name to app-packaged font URI before cache lookup.
-    let uri = candidate;
-    if (!candidate.includes('#') && !candidate.includes('/') && !candidate.includes('\\')) {
-        uri = _fontNameToUri.get(candidate.toLowerCase()) ?? candidate;
-    } else if (!candidate.includes('#') && (candidate.includes('/') || candidate.includes('\\'))) {
-        uri = candidate.startsWith('ms-appx') ? candidate
-            : 'ms-appx:///' + candidate.replace(/^\/+/, '');
-    }
-
-    if (fontFamilyCache.has(uri)) {
-        return fontFamilyCache.get(uri) ?? null;
-    }
-
-    return createFontFamilyCandidate(uri);
+    windows.triggerFontScan();
+    const source = _resolveFamilySource(family);
+    if (!source) return null;
+    return createFontFamilyCandidate(source);
 }
 
 export function applyFontFamilyTo(target: any, fontFamilyValue: string): void {
     if (!target || !fontFamilyValue) return;
-    ensureFontsScan();
-
-    const candidate = sanitizeFontFamily(String(fontFamilyValue || ''));
-    if (!candidate) return;
-
-    let uri: string;
-    if (candidate.includes('#')) {
-        // Already has face name (full URI or path#face) — normalise to ms-appx if it's a bare path.
-        uri = candidate.startsWith('ms-appx') ? candidate
-            : 'ms-appx:///' + candidate.replace(/^\/+/, '');
-    } else if (candidate.includes('/') || candidate.includes('\\')) {
-        // Path without face name — try ms-appx prefix.
-        uri = candidate.startsWith('ms-appx') ? candidate
-            : 'ms-appx:///' + candidate.replace(/^\/+/, '');
-    } else {
-        // Bare font family name. Check the scanned app font map first so "FontAwesome" resolves
-        // to "ms-appx:///fonts/FontAwesome.ttf#FontAwesome"; fall back to system font name.
-        uri = _fontNameToUri.get(candidate.toLowerCase()) ?? candidate;
-    }
-
-    const ff = createFontFamilyCandidate(uri);
+    const ff = getFontFamilyCached(fontFamilyValue);
     if (ff) {
         try {
             target.FontFamily = ff;
@@ -129,7 +171,7 @@ export function clearFontFamilyCache(): void {
 }
 
 export class Font extends FontBase {
-    static default = new Font('', 0);
+    static default = new Font(undefined, undefined);
 
     constructor(family: string, size: number, style?: FontStyleType, weight?: FontWeightType, scale?: number, variationSettings?: Array<FontVariationSettingsType>) {
         super(family, size, style, weight, scale, variationSettings ?? undefined);

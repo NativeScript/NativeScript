@@ -375,7 +375,12 @@ export class FileSystemAccess {
 		return `${l}\\${r}`;
 	}
 
-	public joinPaths(...paths: string[]): string {
+	// Single string[] arg (matches the interface and how path.join calls it). A rest param made the
+	// array arrive as [[a,b]], so reduce returned it unchanged and path.join produced an array.
+	public joinPaths(paths: string[]): string {
+		if (!paths || paths.length === 0) {
+			return '';
+		}
 		return paths.reduce((acc, p) => this.joinPath(acc, p));
 	}
 

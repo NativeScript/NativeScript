@@ -2,10 +2,17 @@
 // Do not edit - re-run build.windows.ps1 to regenerate.
 
 declare namespace NativeScript.Widgets {
+    class ClipHelper {
+      static ApplyRoundedRectClip(element: Microsoft.UI.Xaml.UIElement, offsetX: number, offsetY: number, width: number, height: number, cornerRadiusX: number, cornerRadiusY: number): void;
+      static ApplyPolygonClip(element: Microsoft.UI.Xaml.UIElement, elementWidth: number, elementHeight: number, rule: string, density: number): void;
+      static ClearClip(element: Microsoft.UI.Xaml.UIElement): void;
+    }
     class FlexboxLayout extends Microsoft.UI.Xaml.Controls.Panel implements NativeScript.Widgets.IFlexboxLayout {
+      RowGap: number;
       JustifyContent: number;
       FlexWrap: number;
       FlexDirection: number;
+      ColumnGap: number;
       AlignItems: number;
       AlignContent: number;
       constructor();
@@ -22,6 +29,9 @@ declare namespace NativeScript.Widgets {
       static GetWrapBefore(result: Microsoft.UI.Xaml.UIElement): boolean;
       static SetWrapBefore(element: Microsoft.UI.Xaml.UIElement, value: boolean): void;
     }
+    class FontHelper {
+      static ScanFontsDirectory(result: string): string;
+    }
     class ImageHelper {
       static LoadFromBufferAsync(operation: Windows.Storage.Streams.IBuffer): Windows.Foundation.IAsyncOperation<NativeScript.Widgets.ImageResult>;
       static LoadFromUrlAsync(operation: string): Windows.Foundation.IAsyncOperation<NativeScript.Widgets.ImageResult>;
@@ -37,6 +47,16 @@ declare namespace NativeScript.Widgets {
       readonly RawBuffer: Windows.Storage.Streams.IBuffer;
       readonly Width: number;
     }
+    class ScrollHelper {
+      static ScrollToVerticalOffset(result: Microsoft.UI.Xaml.UIElement, element: number, offset: boolean): boolean;
+      static ScrollToHorizontalOffset(result: Microsoft.UI.Xaml.UIElement, element: number, offset: boolean): boolean;
+      static GetVerticalOffset(result: Microsoft.UI.Xaml.UIElement): number;
+      static GetHorizontalOffset(result: Microsoft.UI.Xaml.UIElement): number;
+      static GetExtentHeight(result: Microsoft.UI.Xaml.UIElement): number;
+      static GetExtentWidth(result: Microsoft.UI.Xaml.UIElement): number;
+      static GetViewportHeight(result: Microsoft.UI.Xaml.UIElement): number;
+      static GetViewportWidth(result: Microsoft.UI.Xaml.UIElement): number;
+    }
     class ShadowHelper {
       static CreateShadow(result: number, width: number, height: number, blurRadius: number, spread: number, cornerRadius: number, offsetX: number, offsetY: number): NativeScript.Widgets.ShadowImageResult;
       static CreateBorder(result: number, width: number, height: number, topW: number, rightW: number, bottomW: number, leftW: number, topArgb: number, rightArgb: number, bottomArgb: number, leftArgb: number): NativeScript.Widgets.ShadowImageResult;
@@ -50,6 +70,13 @@ declare namespace NativeScript.Widgets {
     class StackLayout extends Microsoft.UI.Xaml.Controls.Panel implements NativeScript.Widgets.IStackLayout {
       Orientation: number;
       constructor();
+    }
+    class TextShadowHelper {
+      static Apply(element: Microsoft.UI.Xaml.UIElement, argb: number, blurRadius: number, offsetX: number, offsetY: number): void;
+      static Clear(element: Microsoft.UI.Xaml.UIElement): void;
+    }
+    class TileHelper {
+      static CreateTiledImageAsync(operation: Windows.Storage.Streams.IBuffer, source: number, targetWidth: number, targetHeight: boolean, repeatX: boolean): Windows.Foundation.IAsyncOperation<Windows.Storage.Streams.IBuffer>;
     }
 }
 

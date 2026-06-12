@@ -2,6 +2,7 @@ export * from './editable-text-base-common';
 
 import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty } from './editable-text-base-common';
 import { textProperty, resetSymbol } from '../text-base';
+import { Color } from '../../color';
 
 export * from './editable-text-base-common';
 
@@ -135,6 +136,32 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		const nativeView = this.nativeViewProtected as Microsoft.UI.Xaml.Controls.TextBox;
 		if (typeof nativeView.PlaceholderText !== 'undefined') {
 			nativeView.PlaceholderText = value ?? '';
+		}
+	}
+
+	// Hint colour. Set PlaceholderForeground and also override the TextControlPlaceholderForeground*
+	// theme brushes (the visual states re-apply them, so the property alone only holds at rest).
+	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
+	[placeholderColorProperty.setNative](value: Color | null) {
+		const nativeView = this.nativeViewProtected as any;
+		if (!nativeView) {
+			return;
+		}
+		const brush = value instanceof Color ? new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows) : null;
+		if (typeof nativeView.PlaceholderForeground !== 'undefined') {
+			nativeView.PlaceholderForeground = brush;
+		}
+		const resources = nativeView.Resources;
+		if (resources && typeof resources.Insert === 'function') {
+			for (const key of ['TextControlPlaceholderForeground', 'TextControlPlaceholderForegroundPointerOver', 'TextControlPlaceholderForegroundFocused', 'TextControlPlaceholderForegroundDisabled']) {
+				try {
+					if (brush) {
+						resources.Insert(key, brush);
+					} else {
+						resources.Remove(key);
+					}
+				} catch (_e) {}
+			}
 		}
 	}
 

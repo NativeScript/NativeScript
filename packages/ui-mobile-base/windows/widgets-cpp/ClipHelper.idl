@@ -1,0 +1,25 @@
+namespace NativeScript.Widgets
+{
+    // Applies a Composition clip to a WinUI3 UIElement's handout visual.
+    // Rounded-rect covers rect/inset/circle/ellipse; polygon uses Direct2D IGeometrySource2D.
+    static runtimeclass ClipHelper
+    {
+        // rect/inset: cornerRadiusX = cornerRadiusY = 0.
+        // circle(r): offsetX = cx-r, offsetY = cy-r, width = height = 2r, cornerRadius = r.
+        // ellipse(rx,ry): offsetX = cx-rx, offsetY = cy-ry, width = 2rx, height = 2ry, cornerRadius = (rx,ry).
+        static void ApplyRoundedRectClip(
+            Microsoft.UI.Xaml.UIElement element,
+            Double offsetX, Double offsetY,
+            Double width, Double height,
+            Double cornerRadiusX, Double cornerRadiusY);
+
+        // Polygon clip from a CSS polygon() rule string, e.g. "50% 0%, 100% 100%, 0% 100%".
+        // Uses Direct2D IGeometrySource2D — no Win2D NuGet needed.
+        static void ApplyPolygonClip(
+            Microsoft.UI.Xaml.UIElement element,
+            Double elementWidth, Double elementHeight,
+            String rule, Double density);
+
+        static void ClearClip(Microsoft.UI.Xaml.UIElement element);
+    }
+}

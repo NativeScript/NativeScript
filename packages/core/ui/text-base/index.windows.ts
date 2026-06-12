@@ -1,9 +1,10 @@
 export * from './text-base-common';
 
-import { TextBaseCommon, textProperty, formattedTextProperty, textTransformProperty, textAlignmentProperty, whiteSpaceProperty, resetSymbol, textShadowProperty } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textTransformProperty, textAlignmentProperty, whiteSpaceProperty, resetSymbol, textShadowProperty, letterSpacingProperty, lineHeightProperty, textDecorationProperty } from './text-base-common';
 import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { colorProperty, fontInternalProperty, fontSizeProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, fontWeightProperty, fontStyleProperty } from '../styling/style-properties';
+import { getFontFamilyCached } from '../styling/font.windows';
 import { FontWeightType } from '../styling/font-interfaces';
 import type { ShadowCSSValues } from '../styling/css-shadow';
 import { layout } from '../../utils';
@@ -106,6 +107,65 @@ function fromFontStyle(value: Windows.UI.Text.FontStyle): 'normal' | 'italic' | 
 }
 
 
+// TextAlignment enum: Center=0, Left=1, Right=2, Justify=3 (note: NOT Left=0). undefined leaves the default.
+function toTextAlignment(value: CoreTypes.TextAlignmentType): number | undefined {
+	switch (value) {
+		case 'center': return 0;
+		case 'left': return 1;
+		case 'right': return 2;
+		case 'justify': return 3;
+		default: return undefined;
+	}
+}
+
+// Windows.UI.Text.TextDecorations flags: None=0, Underline=1, Strikethrough=2.
+function toTextDecorations(value: CoreTypes.TextDecorationType): number {
+	const v = value || 'none';
+	let flags = 0;
+	if (v.includes('underline')) flags |= 1;
+	if (v.includes('line-through')) flags |= 2;
+	return flags;
+}
+
+// Build TextBlock.Inlines from a NativeScript FormattedString, applying per-span font/color/
+// decoration. Falls back to plain text for views without an Inlines property (TextBox, Button).
+function _buildFormattedInlines(formattedText: any, inlines: any): void {
+	inlines.Clear();
+	const spans = formattedText?.spans;
+	if (!spans) return;
+
+	for (let i = 0; i < spans.length; i++) {
+		const span = spans.getItem(i);
+		const run = new Microsoft.UI.Xaml.Documents.Run();
+		run.Text = span.text ?? '';
+
+		if (span.fontFamily) {
+			const ff = getFontFamilyCached(span.fontFamily);
+			if (ff) run.FontFamily = ff;
+		}
+		if (span.fontSize) run.FontSize = span.fontSize;
+		if (span.fontStyle) {
+			const fs = toFontStyle(span.fontStyle);
+			if (fs !== null) run.FontStyle = fs;
+		}
+		if (span.fontWeight) {
+			const fw = toFontWeight(span.fontWeight);
+			if (fw !== null) run.FontWeight = fw;
+		}
+		if (span.color) {
+			try { run.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush((span.color as any).windows); } catch (_e) {}
+		}
+
+		// Span-level decoration only — host-level decoration is set on the TextBlock itself and
+		// renders block-wide without needing per-run flags.
+		const flags = toTextDecorations(span.textDecoration);
+		if (flags) {
+			run.TextDecorations = flags;
+		}
+		inlines.Append(run);
+	}
+}
+
 // Module-level foreground brush cache. Avoids creating a new SolidColorBrush COM object for
 // every text view that shares the same color. Foreground brushes are not mutated by animations
 // (NativeScript's color animation calls setNative per frame, re-assigning Foreground rather than
@@ -129,14 +189,58 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	private _textShadowVisual: Microsoft.UI.Composition.SpriteVisual | null = null;
+	private _wrapTextBlock: Microsoft.UI.Xaml.Controls.TextBlock | null = null;
+	// Active text-shadow for a TextBox (TextField/TextView). The C++ glyph mask is a snapshot, so we
+	// remember the value and rebuild it when the text changes. null when no shadow / not a TextBox.
+	private _textBoxShadow: ShadowCSSValues | null = null;
+
+	// Apply (or clear) a CSS text-shadow on a WinUI TextBox via the C++ TextShadowHelper, which draws
+	// the glyph alpha mask on a GPU composition surface (no PNG) and attaches a DropShadow.
+	private _applyTextBoxShadow(nv: any, value: ShadowCSSValues): void {
+		try {
+			if (!value || !value.color) {
+				this._textBoxShadow = null;
+				NativeScript.Widgets.TextShadowHelper.Clear(nv);
+				return;
+			}
+			this._textBoxShadow = value;
+			const argb = ((value.color as Color & { argb: number }).argb) >>> 0;
+			NativeScript.Widgets.TextShadowHelper.Apply(nv, argb, toDip(value.blurRadius, 0), toDip(value.offsetX, 0), toDip(value.offsetY, 0));
+		} catch (_e) { }
+	}
 
 	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
 	[textShadowProperty.setNative](value: ShadowCSSValues) {
 		// Guarded: a throw here would abort page setup / navigation.
 		try {
-			const tv = this.nativeTextViewProtected as Microsoft.UI.Xaml.Controls.TextBlock;
-			if (!tv) {
+			const nv = this.nativeTextViewProtected as any;
+			if (!nv) {
 				return;
+			}
+			// Resolve the TextBlock whose text silhouette (GetAlphaMask) the shadow is cast from:
+			//  • Label IS a TextBlock → use it directly.
+			//  • Button has plain string Content (no alpha mask) → hoist it into a TextBlock (shared with
+			//    the decoration / white-space hoist) and shadow that, matching iOS (shadow on all text).
+			//  • TextField/TextView are a WinUI TextBox: no GetAlphaMask and no Content to hoist, so a
+			//    composition text-shadow can't be produced there (WinUI capability gap).
+			let tv: any = nv;
+			if (typeof nv.GetAlphaMask !== 'function') {
+				if (typeof nv.Content !== 'undefined' && typeof nv.TextWrapping === 'undefined') {
+					if (!this._wrapTextBlock) {
+						const tb = new Microsoft.UI.Xaml.Controls.TextBlock();
+						tb.Text = getTransformedText(this.text ?? '', this.textTransform);
+						nv.Content = tb;
+						this._wrapTextBlock = tb;
+					}
+					tv = this._wrapTextBlock;
+				} else {
+					// TextField/TextView are a WinUI TextBox (no GetAlphaMask, no hoistable Content). The
+					// C++ TextShadowHelper rasterizes the glyphs onto a GPU composition surface and applies
+					// the same DropShadow mask — no PNG round-trip, so it's cheap to redraw. Remember the
+					// value so the snapshot mask can be rebuilt when the text changes (see _setNativeText).
+					this._applyTextBoxShadow(nv, value);
+					return;
+				}
 			}
 			const host = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(tv);
 			const compositor = host.Compositor;
@@ -152,9 +256,11 @@ export class TextBase extends TextBaseCommon {
 			// GetAlphaMask gives the text's exact silhouette as a CompositionBrush — the correct
 			// mask for a text DropShadow (WinUI's canonical text-shadow technique).
 			const sprite = compositor.CreateSpriteVisual();
-			const sizeAnim = compositor.CreateExpressionAnimation('host.Size');
-			sizeAnim.SetReferenceParameter('host', host);
-			sprite.StartAnimation('Size', sizeAnim);
+			// Track the host element's size natively. Expression animations on `Size` throw E_INVALIDARG
+			// in this V8/UWP composition projection (same gotcha documented in CompositionBorderHandler),
+			// which left the sprite at Size 0 → the DropShadow had no area to cast → text-shadow was
+			// invisible. RelativeSizeAdjustment(1,1) tracks the parent (the text element) size natively.
+			sprite.RelativeSizeAdjustment = new Windows.Foundation.Numerics.Vector2(1, 1);
 
 			const drop = compositor.CreateDropShadow();
 			drop.Mask = tv.GetAlphaMask();
@@ -278,11 +384,34 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[formattedTextProperty.setNative](value: any): void {
-		this._setNativeText();
+		const nativeView = this.nativeTextViewProtected as any;
+		if (value && nativeView) {
+			let inlinesHost = nativeView;
+			if (typeof nativeView.Inlines === 'undefined' && typeof nativeView.Content !== 'undefined') {
+				// Button: no Inlines on the control itself — host the spans in a TextBlock Content.
+				if (!this._wrapTextBlock) {
+					this._wrapTextBlock = new Microsoft.UI.Xaml.Controls.TextBlock();
+					nativeView.Content = this._wrapTextBlock;
+					// The Button itself has no TextDecorations — carry the host-level value over
+					// to the freshly created TextBlock.
+					this._wrapTextBlock.TextDecorations = toTextDecorations(this.style.textDecoration);
+				}
+				inlinesHost = this._wrapTextBlock;
+			}
+			if (typeof inlinesHost.Inlines !== 'undefined') {
+				_buildFormattedInlines(value, inlinesHost.Inlines);
+			} else {
+				// TextBox/PasswordBox: no rich text support — plain text fallback.
+				this._setNativeText();
+			}
+		} else {
+			this._setNativeText();
+		}
 		textProperty.nativeValueChange(this, !value ? '' : value.toString());
 	}
 
 	[textTransformProperty.setNative](_value: CoreTypes.TextTransformType): void {
+		if (this.formattedText) return;
 		this._setNativeText();
 	}
 
@@ -330,15 +459,17 @@ export class TextBase extends TextBaseCommon {
 		}, padding);
 	}
 
-	// TextAlignment: Left=0, Center=1, Right=2, Justify=3
 	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const nativeView = this.nativeTextViewProtected as any;
 		if (!nativeView) return;
-		switch (value) {
-			case 'left': nativeView.TextAlignment = 0; break;
-			case 'center': nativeView.TextAlignment = 1; break;
-			case 'right': nativeView.TextAlignment = 2; break;
-			case 'justify': nativeView.TextAlignment = 3; break;
+		const ta = toTextAlignment(value);
+		if (ta === undefined) return;
+		// A wrapping Button hoists its text into a TextBlock; the Button itself has no TextAlignment.
+		if (this._wrapTextBlock) {
+			(this._wrapTextBlock as any).TextAlignment = ta;
+		}
+		if (typeof nativeView.TextAlignment !== 'undefined') {
+			nativeView.TextAlignment = ta;
 		}
 	}
 
@@ -346,7 +477,82 @@ export class TextBase extends TextBaseCommon {
 	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
 		const nativeView = this.nativeTextViewProtected as any;
 		if (!nativeView) return;
+
+		// Button has no TextWrapping — use a TextBlock as its Content so word-wrap works.
+		if (typeof nativeView.TextWrapping === 'undefined' && typeof nativeView.Content !== 'undefined') {
+			if (value !== 'nowrap') {
+				if (!this._wrapTextBlock) {
+					const tb = new Microsoft.UI.Xaml.Controls.TextBlock();
+					// Read the text from the model, not nativeView.Content: a Button's Content getter does
+				// NOT return a JS string after boxing (it's an IInspectable wrapper), so the old
+				// `=== 'string'` check failed and the TextBlock was created empty → blank Button.
+				tb.Text = getTransformedText(this.text ?? '', this.textTransform);
+					nativeView.Content = tb;
+					nativeView.HorizontalContentAlignment = 3; // Stretch
+					// Carry the host's text-align onto the new TextBlock (may have been applied earlier).
+					const wrapTa = toTextAlignment(this.style.textAlignment);
+					if (wrapTa !== undefined) tb.TextAlignment = wrapTa;
+					this._wrapTextBlock = tb;
+				}
+				(this._wrapTextBlock as any).TextWrapping = 2; // Wrap
+			} else {
+				if (this._wrapTextBlock) {
+					nativeView.Content = (this._wrapTextBlock as any).Text;
+					nativeView.HorizontalContentAlignment = 1; // Center (default)
+					this._wrapTextBlock = null;
+				}
+			}
+			return;
+		}
+
 		nativeView.TextWrapping = (value === 'nowrap') ? 1 : 3; // NoWrap or WrapWholeWords
+	}
+
+	// CharacterSpacing is in 1/1000 em units; NativeScript letterSpacing is in em.
+	// @ts-ignore — setNative is a symbol index
+	[letterSpacingProperty.setNative](value: number) {
+		const nativeView = this.nativeTextViewProtected as any;
+		if (!nativeView) return;
+		if (typeof nativeView.CharacterSpacing !== 'undefined') {
+			nativeView.CharacterSpacing = Math.round((value || 0) * 1000);
+		}
+	}
+
+	// @ts-ignore — setNative is a symbol index
+	[lineHeightProperty.setNative](value: number) {
+		const nativeView = this.nativeTextViewProtected as any;
+		if (!nativeView) return;
+		// TextBlock.LineHeight: 0 = auto (default), positive value = exact line height in DIPs.
+		// TextBox/Button have no LineHeight property; the undefined-check makes this a no-op there.
+		if (typeof nativeView.LineHeight !== 'undefined') {
+			nativeView.LineHeight = value > 0 ? value : 0;
+		}
+	}
+
+	// @ts-ignore — setNative is a symbol index
+	[textDecorationProperty.setNative](value: CoreTypes.TextDecorationType) {
+		const nativeView = this.nativeTextViewProtected as any;
+		if (!nativeView) return;
+		const flags = toTextDecorations(value);
+		// Property existence on COM proxies must be checked via value access, not `in`.
+		let host = (this._wrapTextBlock as any) ?? nativeView;
+		if (host.TextDecorations === undefined && flags && typeof nativeView.Content !== 'undefined') {
+			// Button: string Content can't render decorations — hoist it into a TextBlock.
+			if (!this._wrapTextBlock) {
+				const tb = new Microsoft.UI.Xaml.Controls.TextBlock();
+				// Read the text from the model, not nativeView.Content: a Button's Content getter does
+				// NOT return a JS string after boxing (it's an IInspectable wrapper), so the old
+				// `=== 'string'` check failed and the TextBlock was created empty → blank Button.
+				tb.Text = getTransformedText(this.text ?? '', this.textTransform);
+				nativeView.Content = tb;
+				this._wrapTextBlock = tb;
+			}
+			host = this._wrapTextBlock;
+		}
+		if (host.TextDecorations !== undefined) {
+			host.TextDecorations = flags;
+		}
+		// TextBox/PasswordBox have no TextDecorations — no-op there (matches WinUI capability).
 	}
 
 
@@ -361,6 +567,14 @@ export class TextBase extends TextBaseCommon {
 
 		if (typeof nativeView.Text !== 'undefined') {
 			nativeView.Text = text;
+			// The TextBox shadow mask is a glyph snapshot (no live GetAlphaMask) — rebuild it on text
+			// change so the shadow tracks the new text. Only set for a TextBox.
+			if (this._textBoxShadow) {
+				this._applyTextBoxShadow(nativeView, this._textBoxShadow);
+			}
+		} else if (this._wrapTextBlock) {
+			// Button in wrap mode: update the inner TextBlock, not the Button.Content directly.
+			(this._wrapTextBlock as any).Text = text;
 		} else if (typeof nativeView.Content !== 'undefined') {
 			nativeView.Content = text;
 		}

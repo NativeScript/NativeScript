@@ -5,6 +5,10 @@ import type { View } from '../ui/core/view';
 import { setRootView } from './helpers-common';
 import { CoreTypes } from 'index';
 import { activateCurrentWindow, getCurrentWindowContent, setCurrentWindowContent, getCurrentWindowBounds, setCurrentWindowTitle } from './window-helper.windows';
+import { windows } from '../ui/styling/font';
+import { resolveModuleName, ModuleNameResolver } from '../module-name-resolver';
+import { _setResolver } from '../module-name-resolver/helpers';
+import { Screen, Device } from '../platform';
 
 
 enum AppEventKind {
@@ -24,6 +28,10 @@ export class WindowsApplication extends ApplicationCommon {
 		return this._rootView;
 	}
 
+	get windows() {
+		return this;
+	}
+
 	run(entry?: string | NavigationEntry): void {
 		if (this.started) {
 			throw new Error('Application is already started.');
@@ -33,6 +41,7 @@ export class WindowsApplication extends ApplicationCommon {
 
 		this.started = true;
 		setAppMainEntry(typeof entry === 'string' ? { moduleName: entry } : entry);
+		windows.triggerFontScan();
 		this.setWindowContent();
 	}
 
@@ -52,26 +61,26 @@ export class WindowsApplication extends ApplicationCommon {
 		if (!setCurrentWindowContent(rootView.nativeViewProtected)) {
 			throw new Error('Unable to resolve the current Windows window.');
 		}
-		this.setupOrientationTracking(rootView.nativeViewProtected);
 		activateCurrentWindow();
+		this.setupOrientationTracking(rootView.nativeViewProtected);
 		this._applyWindowTitle();
 
 		this.initRootView(rootView);
 		rootView.callLoaded();
 	}
 
-	// Give the window a sensible title. A code-created WinUI3 Window starts with an empty Title and
+	// A code-created WinUI3 Window starts with an empty Title and
 	// does NOT inherit the package DisplayName, so the caption otherwise shows the host exe name.
 	private _applyWindowTitle(): void {
 		try {
 			let title = '';
 			try {
 				title = Windows.ApplicationModel.Package.Current.DisplayName || '';
-			} catch (_e) { /* Package projection unavailable (e.g. unpackaged) — fall through */ }
+			} catch (_e) { }
 			if (title) {
 				setCurrentWindowTitle(title);
 			}
-		} catch (_e) { /* never let window titling break app startup */ }
+		} catch (_e) {  }
 	}
 
 	getNativeApplication() {
@@ -176,15 +185,150 @@ export class WindowsApplication extends ApplicationCommon {
 		} catch (_e) { }
 	}
 
-	// Orientation derives from window size, so re-evaluate when the root content resizes.
-	private _orientationDelegate: any = null; // held so the handler isn't GC'd
+	private _orientationDelegate: Microsoft.UI.Xaml.SizeChangedEventHandler | null = null;
+	private _resizeDebounceId: any = null;
+	private _lastResizeW = NaN;
+	private _lastResizeH = NaN;
 	private setupOrientationTracking(content: Microsoft.UI.Xaml.UIElement): void {
-			const element = content as Microsoft.UI.Xaml.FrameworkElement;
-			if (element && element.SizeChanged !== undefined) {
-				// Wire via asDelegate (a raw-fn assignment does not reliably subscribe in this host) + hold it.
-				this._orientationDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.SizeChangedEventHandler', () => this.setOrientation(this.getOrientation()));
-				(element as any).SizeChanged = this._orientationDelegate;
+		const element = content as Microsoft.UI.Xaml.FrameworkElement;
+		if (!element) return;
+		const bounds = getCurrentWindowBounds();
+		this._lastResizeW = bounds?.Width ?? NaN;
+		this._lastResizeH = bounds?.Height ?? NaN;
+		try {
+			this._orientationDelegate = NSWinRT.asDelegate('Microsoft.UI.Xaml.SizeChangedEventHandler', () => this._onWindowResized());
+			element.SizeChanged = this._orientationDelegate;
+		} catch (_e) { }
+	}
+
+	
+	private _onWindowResized(): void {
+		if (this._resizeDebounceId) {
+			clearTimeout(this._resizeDebounceId);
+		}
+		this._resizeDebounceId = setTimeout(() => {
+			this._resizeDebounceId = null;
+			this._applyResize();
+		}, 80);
+	}
+
+	// Desktop windows resize continuously, so width-based @media rules and matchMedia listeners must
+	// re-evaluate on resize — not just on portrait/landscape flips. setOrientation() short-circuits
+	// when the orientation value is unchanged, so we additionally force a CSS/media re-evaluation
+	// when only the dimensions changed.
+	private _applyResize(): void {
+		const bounds = getCurrentWindowBounds();
+		const w = bounds?.Width ?? NaN;
+		const h = bounds?.Height ?? NaN;
+		if (!(w > 0) || !(h > 0)) {
+			return;
+		}
+		if (Math.abs(w - this._lastResizeW) < 1 && Math.abs(h - this._lastResizeH) < 1) {
+			return; // size unchanged
+		}
+		this._lastResizeW = w;
+		this._lastResizeH = h;
+
+		// Capture the page variant currently on screen BEFORE the orientation handling below — the
+		// framework resets the module resolver on orientationChanged (application-common), so reading
+		// it afterwards would already reflect the NEW metrics, hiding the change.
+		const displayed = this._currentPageVariant();
+
+		const newOrientation = this.getOrientation();
+		const orientationChanged = newOrientation !== this.orientation();
+		// Real portrait/landscape flip: updates the cached value, re-applies the ns-portrait/
+		// ns-landscape class, re-styles, and fires orientationChangedEvent.
+		this.setOrientation(newOrientation);
+
+		if (!orientationChanged) {
+			// Same orientation but dimensions changed — re-match @media against the (live) Screen
+			// metrics and notify matchMedia listeners (which key off orientationChangedEvent).
+			const rootView = this.getRootView();
+			if (rootView) {
+				this.orientationChanged(rootView, newOrientation);
 			}
+			this.notify({
+				eventName: this.orientationChangedEvent,
+				object: this,
+				windows: this.windows,
+				newValue: newOrientation,
+			} as never);
+		}
+
+		// File-name screen qualifiers (main-page.minWH360.xml, .land/.port, etc.) are resolved at
+		// navigation time. On desktop the window resizes continuously, so re-resolve the current
+		// page's variant against the new metrics and hot-swap it when it crosses a qualifier
+		// threshold. (Mobile never resizes continuously, so this is desktop specific.)
+		this._swapQualifiedPageIfChanged(displayed);
+	}
+
+	// Resolves the current page's on-screen variant using the (pre-orientation-reset) global resolver.
+	private _currentPageVariant(): { frame: any; moduleName: string; xml: string; js: string } | null {
+		// Find the current frame from the root view.
+		// Descends through nested frames to the deepest active one.
+		let frame: any = this.getRootView();
+		let guard = 0;
+		while (frame && guard++ < 10) {
+			const child = frame.currentPage?.content;
+			if (child && typeof child.replacePage === 'function') {
+				frame = child;
+			} else {
+				break;
+			}
+		}
+		if (!frame || typeof frame.replacePage !== 'function') {
+			return null;
+		}
+		const moduleName: string = frame?._currentEntry?.entry?.moduleName;
+		if (!moduleName) {
+			return null;
+		}
+		try {
+			return { frame, moduleName, xml: resolveModuleName(moduleName, 'xml'), js: resolveModuleName(moduleName, '') };
+		} catch (_e) {
+			return null;
+		}
+	}
+
+	private _swapQualifiedPageIfChanged(displayed: { frame: any; moduleName: string; xml: string; js: string } | null): void {
+		if (!displayed) {
+			return;
+		}
+		const { frame, moduleName } = displayed;
+		// Resolve against the CURRENT (resized) metrics via a throwaway resolver — independent of the
+		// global resolver's state (which the orientation handler may or may not have reset).
+		const ctx = {
+			width: Screen.mainScreen.widthDIPs,
+			height: Screen.mainScreen.heightDIPs,
+			os: Device.os,
+			deviceType: Device.deviceType,
+		};
+		let candidateXml: string, candidateJs: string;
+		try {
+			const probe = new ModuleNameResolver(ctx);
+			candidateXml = probe.resolveModuleName(moduleName, 'xml');
+			candidateJs = probe.resolveModuleName(moduleName, '');
+		} catch (_e) {
+			return;
+		}
+		if (candidateXml === displayed.xml && candidateJs === displayed.js) {
+			return; // no qualifier boundary crossed — keep the current page
+		}
+
+		// Variant changed: point the global resolver at the new metrics so Builder resolves the new
+		// variant, flush the Windows page cache (keyed by base module name) so the freshly-built
+		// variant isn't overridden by a stale cached page, then swap.
+		try {
+			_setResolver(new ModuleNameResolver(ctx));
+		} catch (_e) {
+			return;
+		}
+		try {
+			frame._flushPageCache?.();
+		} catch (_e) { }
+		try {
+			frame.replacePage({ moduleName });
+		} catch (_e) { }
 	}
 }
 

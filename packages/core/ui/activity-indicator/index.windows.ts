@@ -4,30 +4,29 @@ import { ActivityIndicatorBase, busyProperty } from './activity-indicator-common
 import { Color } from '../../color';
 export * from './activity-indicator-common';
 
-// ProgressBar is not WinRT-activatable in this WinAppSDK build: ActivateInstance/RoActivateInstance return E_NOTIMPL,
-// so `new ProgressBar()` throws. Create via XamlReader instead; attempt `new` only until first failure, then remember.
-let _progressBarActivatable: boolean | undefined;
-function createProgressBar(): Microsoft.UI.Xaml.Controls.ProgressBar {
-	if (_progressBarActivatable !== false) {
+// ProgressRing may not be WinRT-activatable (ActivateInstance returns
+// E_NOTIMPL); fall back to XamlReader and remember the outcome.
+let _progressRingActivatable: boolean | undefined;
+function createProgressRing(): Microsoft.UI.Xaml.Controls.ProgressRing {
+	if (_progressRingActivatable !== false) {
 		try {
-			const pb = new Microsoft.UI.Xaml.Controls.ProgressBar();
-			_progressBarActivatable = true;
-			return pb;
+			const ring = new Microsoft.UI.Xaml.Controls.ProgressRing();
+			_progressRingActivatable = true;
+			return ring;
 		} catch (_e) {
-			_progressBarActivatable = false;
+			_progressRingActivatable = false;
 		}
 	}
-	return Microsoft.UI.Xaml.Markup.XamlReader.Load('<ProgressBar xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />') as Microsoft.UI.Xaml.Controls.ProgressBar;
+	return Microsoft.UI.Xaml.Markup.XamlReader.Load('<ProgressRing xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" />') as Microsoft.UI.Xaml.Controls.ProgressRing;
 }
 
 export class ActivityIndicator extends ActivityIndicatorBase {
-	nativeViewProtected: Microsoft.UI.Xaml.Controls.ProgressBar;
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.ProgressRing;
 
-	public createNativeView(): Microsoft.UI.Xaml.Controls.ProgressBar {
-		const indicator = createProgressBar();
-		indicator.IsIndeterminate = true;
-		indicator.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-		return indicator;
+	public createNativeView(): Microsoft.UI.Xaml.Controls.ProgressRing {
+		const ring = createProgressRing();
+		ring.IsActive = false;
+		return ring;
 	}
 
 	[busyProperty.getDefault](): boolean {
@@ -35,9 +34,8 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 	}
 
 	[busyProperty.setNative](value: boolean) {
-		if (this.visibility === CoreTypes.Visibility.visible) {
-			this.nativeViewProtected.Visibility = value ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-		}
+		// Only spin while visible (matches the Android visibility gate).
+		this.nativeViewProtected.IsActive = !!value && this.visibility === CoreTypes.Visibility.visible;
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
@@ -47,10 +45,12 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
 			case CoreTypes.Visibility.visible:
-				this.nativeViewProtected.Visibility = this.busy ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
+				this.nativeViewProtected.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+				this.nativeViewProtected.IsActive = this.busy;
 				break;
 			case CoreTypes.Visibility.hidden:
 			case CoreTypes.Visibility.collapse:
+				this.nativeViewProtected.IsActive = false;
 				this.nativeViewProtected.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
 				break;
 			default:
@@ -61,6 +61,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 	[colorProperty.getDefault](): number {
 		return -1;
 	}
+
 	[colorProperty.setNative](value: Color | number) {
 		if (value instanceof Color) {
 			this.nativeViewProtected.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(value.windows);

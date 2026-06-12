@@ -154,14 +154,23 @@ export function getCurrentWindowBounds(preferredElement?: FrameworkElementLike |
 		return windowBounds;
 	}
 
+	// XamlRoot.Size is the authoritative WinUI3 window client size (DIPs) and is valid as soon as
+	// the window is shown — before content layout completes. Read it from the window's own content
+	// first (Screen.mainScreen calls this with no preferredElement), then any preferredElement.
+	const content = (getCurrentWindowContent<FrameworkElementLike>() ?? preferredElement) as FrameworkElementLike | null;
+	const contentXamlRootBounds = getBoundsFromSize(content?.XamlRoot?.Size);
+	if (contentXamlRootBounds) {
+		return contentXamlRootBounds;
+	}
+
 	const xamlRootBounds = getBoundsFromSize(preferredElement?.XamlRoot?.Size);
 	if (xamlRootBounds) {
 		return xamlRootBounds;
 	}
 
-	const content = (window?.Content ?? preferredElement) as any;
-	const width = getPositiveNumber(content?.ActualWidth ?? content?.Width);
-	const height = getPositiveNumber(content?.ActualHeight ?? content?.Height);
+	const measured = (content ?? window?.Content) as any;
+	const width = getPositiveNumber(measured?.ActualWidth ?? measured?.Width);
+	const height = getPositiveNumber(measured?.ActualHeight ?? measured?.Height);
 	if (width == null || height == null) {
 		return null;
 	}

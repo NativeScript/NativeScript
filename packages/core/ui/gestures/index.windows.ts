@@ -4,7 +4,6 @@ export * from './touch-manager';
 
 import { GesturesObserverBase, GestureTypes, GestureEvents, GestureStateTypes, toString } from './gestures-common';
 import type { View } from '../core/view';
-import { layout } from '../../utils/layout-helper';
 import * as timer from '../../timer';
 
 // Per-view hover tracking to enable CSS :hover pseudo-class.
@@ -108,57 +107,53 @@ function _executeCallback(observer: GesturesObserver, args: any) {
 class WindowsPointer {
 	public id: number;
 	private event: any;
-	constructor(id: number, event: any) {
+	private relativeTo: any;
+	constructor(id: number, event: any, relativeTo?: any) {
 		this.id = id;
 		this.event = event;
+		this.relativeTo = relativeTo;
 	}
 	getX(): number {
-		try {
-			const p = extractPoint(this.event);
-			return p.x ?? 0;
-		} catch (_e) {
-			return 0;
-		}
+		return extractPoint(this.event, this.relativeTo).x;
 	}
 	getY(): number {
-		try {
-			const p = extractPoint(this.event);
-			return p.y ?? 0;
-		} catch (_e) {
-			return 0;
-		}
+		return extractPoint(this.event, this.relativeTo).y;
 	}
 }
 
-function extractPoint(e: any, relativeTo?: any) {
+// PointerRoutedEventArgs.GetCurrentPoint(relativeTo) → PointerPoint whose .Position (a Point in DIPs)
+// is relative to `relativeTo` (the native view), matching iOS/Android view-relative getX/getY.
+function extractPoint(e: any, relativeTo?: any): { x: number; y: number } {
 	try {
-		if (e.getCurrentPoint) {
-			const pt = e.getCurrentPoint(relativeTo || null);
-			const pos = pt.Position || pt.position || pt; // fallback
-			return { x: pos.X ?? pos.x ?? (pos.Position && pos.Position.X) ?? 0, y: pos.Y ?? pos.y ?? (pos.Position && pos.Position.Y) ?? 0 };
-		}
-	} catch (_e) { }
-
-	try {
-		const cp = e.currentPoint || e.CurrentPoint;
-		if (cp) {
-			const pos = cp.Position || cp.position || cp;
-			return { x: pos.X ?? pos.x ?? 0, y: pos.Y ?? pos.y ?? 0 };
-		}
-	} catch (_e) { }
-
-	try {
-		if (e.clientX !== undefined && e.clientY !== undefined) {
-			return { x: e.clientX, y: e.clientY };
+		if (e?.GetCurrentPoint) {
+			const pt = e.GetCurrentPoint(relativeTo ?? null);
+			const pos = pt?.Position ?? pt?.position;
+			const x = pos?.X ?? pos?.x;
+			const y = pos?.Y ?? pos?.y;
+			if (typeof x === 'number' && typeof y === 'number') {
+				return { x, y };
+			}
 		}
 	} catch (_e) { }
 
 	return { x: 0, y: 0 };
 }
 
+// PointerRoutedEventArgs.Pointer.PointerId identifies the contact across down/move/up.
+function extractPointerId(e: any): number {
+	try {
+		const pointer = e?.Pointer;
+		const id = pointer?.PointerId ?? pointer?.pointerId;
+		if (typeof id === 'number') {
+			return id;
+		}
+	} catch (_e) { }
+	return 0;
+}
+
 export class GesturesObserver extends GesturesObserverBase {
-	private _onTargetLoaded: () => void;
-	private _onTargetUnloaded: () => void;
+	private _onTargetLoaded: (() => void) | null = null;
+	private _onTargetUnloaded: (() => void) | null = null;
 
 	private _pointerPressedHandler: any;
 	private _pointerMovedHandler: any;
@@ -166,7 +161,6 @@ export class GesturesObserver extends GesturesObserverBase {
 	private _pointerCanceledHandler: any;
 	private _rightTappedHandler: any;
 
-	// Wrapped WinRT delegates (needed for RemoveHandler calls)
 	private _pointerPressedDelegate: any;
 	private _pointerMovedDelegate: any;
 	private _pointerReleasedDelegate: any;
@@ -200,8 +194,12 @@ export class GesturesObserver extends GesturesObserverBase {
 		this._detach();
 
 		if (this.target) {
-			this.target.off('loaded', this._onTargetLoaded);
-			this.target.off('unloaded', this._onTargetUnloaded);
+			if (this._onTargetLoaded) {
+				this.target.off('loaded', this._onTargetLoaded);
+			}
+			if (this._onTargetUnloaded) {
+				this.target.off('unloaded', this._onTargetUnloaded);
+			}
 
 			this._onTargetLoaded = null;
 			this._onTargetUnloaded = null;
@@ -271,8 +269,6 @@ export class GesturesObserver extends GesturesObserverBase {
 
 		// Use AddHandler with handledEventsToo=true so events fire even when Button (and other
 		// controls) mark pointer events as handled internally.
-		// PointerPressedEvent is a STATIC property on UIElement, not an instance property —
-		// access it from the class namespace so it resolves correctly in the V8 WinRT projection.
 		this._usingAddHandler = false;
 		try {
 			const UIElement = Microsoft.UI.Xaml.UIElement;
@@ -318,13 +314,13 @@ export class GesturesObserver extends GesturesObserverBase {
 		});
 	}
 
-	// Required by GesturesObserverDefinition (Android compatibility).
 	public androidOnTouchEvent(_motionEvent: any): void { }
 
 	private _onPointerPressed(e: any) {
 		try {
-			const id = (e && (e.pointerId || (e.getCurrentPoint && e.getCurrentPoint(null)?.PointerId))) || 0;
-			const pt = extractPoint(e);
+			const relativeTo = (this.target as any)?.nativeViewProtected ?? null;
+			const id = extractPointerId(e);
+			const pt = extractPoint(e, relativeTo);
 			// Capture WinRT hardware timestamp (µs since device boot) alongside JS time.
 			// If V8 is busy when PointerReleased arrives, Date.now() will be inflated by the
 			// scheduling delay — the WinRT timestamp is immune to this and gives the real gesture duration.
@@ -337,8 +333,6 @@ export class GesturesObserver extends GesturesObserverBase {
 						type: GestureTypes.longPress,
 						view: this.target,
 						windows: e,
-						ios: undefined,
-						android: undefined,
 						object: this.target,
 						eventName: toString(GestureTypes.longPress),
 						state: GestureStateTypes.began,
@@ -358,10 +352,10 @@ export class GesturesObserver extends GesturesObserverBase {
 					eventName: toString(GestureTypes.touch),
 					action: 'down',
 					getPointerCount: () => 1,
-					getActivePointers: () => [new WindowsPointer(id, e)],
-					getAllPointers: () => [new WindowsPointer(id, e)],
-					getX: () => pt.x ?? 0,
-					getY: () => pt.y ?? 0,
+					getActivePointers: () => [new WindowsPointer(id, e, relativeTo)],
+					getAllPointers: () => [new WindowsPointer(id, e, relativeTo)],
+					getX: () => pt.x,
+					getY: () => pt.y,
 				};
 
 				_executeCallback(this, args);
@@ -371,8 +365,9 @@ export class GesturesObserver extends GesturesObserverBase {
 
 	private _onPointerMoved(e: any) {
 		try {
-			const id = (e && (e.pointerId || (e.getCurrentPoint && e.getCurrentPoint(null)?.PointerId))) || 0;
-			const pt = extractPoint(e);
+			const relativeTo = (this.target as any)?.nativeViewProtected ?? null;
+			const id = extractPointerId(e);
+			const pt = extractPoint(e, relativeTo);
 			if (this.type === GestureTypes.touch) {
 				const args: any = {
 					type: GestureTypes.touch,
@@ -383,10 +378,10 @@ export class GesturesObserver extends GesturesObserverBase {
 					eventName: toString(GestureTypes.touch),
 					action: 'move',
 					getPointerCount: () => 1,
-					getActivePointers: () => [new WindowsPointer(id, e)],
-					getAllPointers: () => [new WindowsPointer(id, e)],
-					getX: () => pt.x ?? 0,
-					getY: () => pt.y ?? 0,
+					getActivePointers: () => [new WindowsPointer(id, e, relativeTo)],
+					getAllPointers: () => [new WindowsPointer(id, e, relativeTo)],
+					getX: () => pt.x,
+					getY: () => pt.y,
 				};
 
 				_executeCallback(this, args);
@@ -396,8 +391,9 @@ export class GesturesObserver extends GesturesObserverBase {
 
 	private _onPointerReleased(e: any) {
 		try {
-			const id = (e && (e.pointerId || (e.getCurrentPoint && e.getCurrentPoint(null)?.PointerId))) || 0;
-			const pt = extractPoint(e);
+			const relativeTo = (this.target as any)?.nativeViewProtected ?? null;
+			const id = extractPointerId(e);
+			const pt = extractPoint(e, relativeTo);
 			const start = this._pointerDownMap.get(id);
 			const now = Date.now();
 			// Use WinRT hardware timestamps when available so the tap-duration check reflects the actual
@@ -419,16 +415,15 @@ export class GesturesObserver extends GesturesObserverBase {
 				const args: any = {
 					type: GestureTypes.touch,
 					view: this.target,
-					ios: undefined,
-					android: undefined,
+					windows: e,
 					object: this.target,
 					eventName: toString(GestureTypes.touch),
 					action: 'up',
 					getPointerCount: () => 1,
-					getActivePointers: () => [new WindowsPointer(id, e)],
-					getAllPointers: () => [new WindowsPointer(id, e)],
-					getX: () => pt.x ?? 0,
-					getY: () => pt.y ?? 0,
+					getActivePointers: () => [new WindowsPointer(id, e, relativeTo)],
+					getAllPointers: () => [new WindowsPointer(id, e, relativeTo)],
+					getX: () => pt.x,
+					getY: () => pt.y,
 				};
 
 				_executeCallback(this, args);
@@ -445,8 +440,7 @@ export class GesturesObserver extends GesturesObserverBase {
 							const args = {
 								type: GestureTypes.tap,
 								view: this.target,
-								ios: undefined,
-								android: undefined,
+								windows: e,
 								object: this.target,
 								eventName: toString(GestureTypes.tap),
 								getPointerCount: () => 1,
@@ -476,8 +470,7 @@ export class GesturesObserver extends GesturesObserverBase {
 								const args = {
 								type: GestureTypes.doubleTap,
 								view: this.target,
-								ios: undefined,
-								android: undefined,
+								windows: e,
 								object: this.target,
 								eventName: toString(GestureTypes.doubleTap),
 								getPointerCount: () => 1,
@@ -497,17 +490,17 @@ export class GesturesObserver extends GesturesObserverBase {
 
 	private _onRightTapped(e: any) {
 		try {
-			const pt = extractPoint(e);
+			const relativeTo = (this.target as any)?.nativeViewProtected ?? null;
+			const pt = extractPoint(e, relativeTo);
 			const args: any = {
 				type: GestureTypes.longPress,
 				view: this.target,
-				ios: undefined,
-				android: undefined,
+				windows: e,
 				object: this.target,
 				eventName: toString(GestureTypes.longPress),
 				state: GestureStateTypes.ended,
-				getX: () => pt.x ?? 0,
-				getY: () => pt.y ?? 0,
+				getX: () => pt.x,
+				getY: () => pt.y,
 			};
 			_executeCallback(this, args);
 		} catch (_e) { }

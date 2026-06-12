@@ -45,6 +45,15 @@ function fileUri(filePath: string): string {
 	return 'file:///' + filePath.replace(/\\/g, '/');
 }
 
+// Packaged MSIX apps cannot load bundled assets via file:// — currentApp().path is the
+// InstalledLocation, which is access-restricted for file:// URIs (BitmapImage.ImageFailed fires).
+// App-relative ~/ paths must use the ms-appx:/// scheme instead (the same scheme the
+// background-image path already relies on). Other schemes / absolute paths pass through fileUri.
+function appContentUri(filePath: string): string {
+	if (filePath.startsWith('~/')) return 'ms-appx:///app/' + filePath.substring(2);
+	return fileUri(resolveAppPath(filePath));
+}
+
 function bytesToStream(bytes: Uint8Array): Promise<any> {
 	return new Promise((resolve, reject) => {
 		try {
@@ -260,7 +269,6 @@ export class ImageSource implements ImageSourceDefinition {
 
 	static fromFileSync(filePath: string): ImageSource {
 		try {
-			const resolved = resolveAppPath(filePath);
 			const bmp = makeBitmapImage();
 			const src = new ImageSource();
 			bmp.ImageOpened = () => {
@@ -275,7 +283,7 @@ export class ImageSource implements ImageSourceDefinition {
 				//@ts-ignore
 				bmp.ImageFailed = null;
 			}
-			bmp.UriSource = new Windows.Foundation.Uri(fileUri(resolved));
+			bmp.UriSource = new Windows.Foundation.Uri(appContentUri(filePath));
 			src.windows = bmp;
 			return src;
 		} catch {
@@ -284,6 +292,16 @@ export class ImageSource implements ImageSourceDefinition {
 	}
 
 	static fromFile(filePath: string): Promise<ImageSource> {
+		// App-relative ~/ assets load via ms-appx:/// (like fromFileSync); the InstalledLocation
+		// filesystem path lacks the app/ folder and PathIO.ReadBufferAsync against it can stall.
+		if (filePath && filePath.startsWith('~/')) {
+			return bitmapFromUriAsync(appContentUri(filePath)).then((bmp) => {
+				const src = new ImageSource(bmp);
+				src._width = bmp.PixelWidth ?? 0;
+				src._height = bmp.PixelHeight ?? 0;
+				return src;
+			});
+		}
 		const resolved = resolveAppPath(filePath);
 		return readFileBytes(resolved).then((bytes) => {
 			return bitmapFromBytesAsync(bytes).then((bmp) => {
@@ -294,7 +312,7 @@ export class ImageSource implements ImageSourceDefinition {
 				return src;
 			});
 		}).catch(() => {
-			return bitmapFromUriAsync(fileUri(resolved)).then((bmp) => {
+			return bitmapFromUriAsync(appContentUri(filePath)).then((bmp) => {
 				const src = new ImageSource(bmp);
 				src._width = bmp.PixelWidth ?? 0;
 				src._height = bmp.PixelHeight ?? 0;
@@ -348,6 +366,19 @@ export class ImageSource implements ImageSourceDefinition {
 		return ImageSource.fromResource(name);
 	}
 
+	static fromFileOrResourceSync(path: string): ImageSource {
+		if (!isFileOrResourcePath(path)) {
+			if (Trace.isEnabled()) {
+				Trace.write('Path "' + path + '" is not a valid file or resource.', Trace.categories.Binding, Trace.messageType.error);
+			}
+			return null as any;
+		}
+		if (path.indexOf(RES_PREFIX) === 0) {
+			return ImageSource.fromResourceSync(path.slice(RES_PREFIX.length));
+		}
+		return ImageSource.fromFileSync(path);
+	}
+
 	static fromFontIconCodeSync(_source: string, _font: any, _color: any): ImageSource {
 		return null as any;
 	}
@@ -364,6 +395,68 @@ export class ImageSource implements ImageSourceDefinition {
 				this._height = source.PixelHeight;
 			}
 		} catch { }
+	}
+
+	// Deprecated instance loaders (parity with iOS/Android): delegate to the static factories and
+	// mutate `this`. Windows previously had only the statics, so `new ImageSource().fromAsset(...)` threw.
+	private _adoptFrom(imgSource: ImageSource | null): boolean {
+		this.windows = imgSource ? imgSource.windows : null;
+		this._width = imgSource ? imgSource.width : 0;
+		this._height = imgSource ? imgSource.height : 0;
+		return !!this.windows;
+	}
+
+	public fromAsset(asset: ImageAsset): Promise<ImageSource> {
+		console.log('fromAsset() is deprecated. Use ImageSource.fromAsset() instead.');
+		return ImageSource.fromAsset(asset).then((imgSource) => {
+			this._adoptFrom(imgSource);
+			return this;
+		});
+	}
+
+	public loadFromResource(name: string): boolean {
+		console.log('loadFromResource() is deprecated. Use ImageSource.fromResourceSync() instead.');
+		return this._adoptFrom(ImageSource.fromResourceSync(name));
+	}
+
+	public fromResource(name: string): Promise<boolean> {
+		console.log('fromResource() is deprecated. Use ImageSource.fromResource() instead.');
+		return ImageSource.fromResource(name).then((imgSource) => this._adoptFrom(imgSource));
+	}
+
+	public loadFromFile(path: string): boolean {
+		console.log('loadFromFile() is deprecated. Use ImageSource.fromFileSync() instead.');
+		return this._adoptFrom(ImageSource.fromFileSync(path));
+	}
+
+	public fromFile(path: string): Promise<boolean> {
+		console.log('fromFile() is deprecated. Use ImageSource.fromFile() instead.');
+		return ImageSource.fromFile(path).then((imgSource) => this._adoptFrom(imgSource));
+	}
+
+	public loadFromData(data: any): boolean {
+		console.log('loadFromData() is deprecated. Use ImageSource.fromDataSync() instead.');
+		return this._adoptFrom(ImageSource.fromDataSync(data));
+	}
+
+	public fromData(data: any): Promise<boolean> {
+		console.log('fromData() is deprecated. Use ImageSource.fromData() instead.');
+		return ImageSource.fromData(data).then((imgSource) => this._adoptFrom(imgSource));
+	}
+
+	public loadFromBase64(source: string): boolean {
+		console.log('loadFromBase64() is deprecated. Use ImageSource.fromBase64Sync() instead.');
+		return this._adoptFrom(ImageSource.fromBase64Sync(source));
+	}
+
+	public fromBase64(source: string): Promise<boolean> {
+		console.log('fromBase64() is deprecated. Use ImageSource.fromBase64() instead.');
+		return ImageSource.fromBase64(source).then((imgSource) => this._adoptFrom(imgSource));
+	}
+
+	public loadFromFontIconCode(source: string, font: any, color: any): boolean {
+		console.log('loadFromFontIconCode() is deprecated. Use ImageSource.fromFontIconCodeSync() instead.');
+		return this._adoptFrom(ImageSource.fromFontIconCodeSync(source, font, color));
 	}
 
 	public saveToFile(_path: string, _format: string, _quality?: number): boolean {
@@ -406,4 +499,9 @@ export class ImageSource implements ImageSourceDefinition {
 			return src;
 		}).catch(() => this);
 	}
+}
+
+export function fromFileOrResource(path: string): ImageSource {
+	console.log('fromFileOrResource() is deprecated. Use ImageSource.fromFileOrResourceSync() instead.');
+	return ImageSource.fromFileOrResourceSync(path);
 }

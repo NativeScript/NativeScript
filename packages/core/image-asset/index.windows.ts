@@ -1,5 +1,4 @@
 import { ImageAssetBase } from './image-asset-common';
-import { path as fsPath, knownFolders } from '../file-system';
 
 export * from './image-asset-common';
 
@@ -8,14 +7,10 @@ export class ImageAsset extends ImageAssetBase {
 
 	constructor(asset: string | any) {
 		super();
-		if (typeof asset === 'string') {
-			if (asset.indexOf('~/') === 0) {
-				asset = fsPath.join(knownFolders.currentApp().path, asset.replace('~/', ''));
-			}
-			this._windows = asset;
-		} else {
-			this._windows = asset;
-		}
+		// Keep the path/object as-is. Converting ~/ to an InstalledLocation filesystem path pointed at a
+		// missing file (no app/ subfolder, not file:// loadable) and stalled fromFile; ImageSource
+		// resolves ~/ via ms-appx:///app/.
+		this._windows = asset;
 	}
 
 	get windows(): any {

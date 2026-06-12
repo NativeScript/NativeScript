@@ -51,27 +51,29 @@ function bitmapFromBytesAsync(bytes: Uint8Array): Promise<Microsoft.UI.Xaml.Medi
 }
 
 export class Image extends ImageBase {
-	nativeViewProtected: Microsoft.UI.Xaml.Controls.Image;
-	private _windows!: Microsoft.UI.Xaml.Controls.Image;
+	nativeViewProtected: Microsoft.UI.Xaml.Controls.Border;
+	private _image!: Microsoft.UI.Xaml.Controls.Image;
+	private _border!: Microsoft.UI.Xaml.Controls.Border;
 
 	constructor() {
 		super();
 		this.isLoading = false;
-		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
 	}
 
 	public createNativeView() {
-		this._windows = new Microsoft.UI.Xaml.Controls.Image();
-		return this._windows;
+		this._image = new Microsoft.UI.Xaml.Controls.Image();
+		this._border = new Microsoft.UI.Xaml.Controls.Border();
+		this._border.Child = this._image;
+		return this._border;
 	}
 
 	get windows(): Microsoft.UI.Xaml.Controls.Image {
-		return this._windows;
+		return this._image;
 	}
 
 	public disposeImageSource() {
-		if (this.nativeViewProtected?.Source === this.imageSource?.windows) {
-			this.nativeViewProtected.Source = null as never;
+		if (this._image?.Source === this.imageSource?.windows) {
+			this._image.Source = null as never;
 		}
 		if (this.imageSource?.windows) {
 			this.imageSource.windows = null;
@@ -92,21 +94,21 @@ export class Image extends ImageBase {
 
 	//@ts-ignore
 	[stretchProperty.setNative](value: string) {
-		if (this.nativeViewProtected) {
-			this.nativeViewProtected.Stretch = STRETCH_MAP[value] ?? 2;
+		if (this._image) {
+			this._image.Stretch = STRETCH_MAP[value] ?? 2;
 		}
 	}
 
 	public _setNativeImage(nativeImage: any) {
-		if (!this.nativeViewProtected) {
+		if (!this._image) {
 			if (Trace.isEnabled()) {
-				Trace.write('Image._setNativeImage: nativeViewProtected missing', Trace.categories.Error);
+				Trace.write('Image._setNativeImage: native image host missing', Trace.categories.Error);
 			}
 			return;
 		}
 
-		if (this.nativeViewProtected.Source) {
-			this.nativeViewProtected.Source = null as never;
+		if (this._image.Source) {
+			this._image.Source = null as never;
 		}
 
 		if (!nativeImage) {
@@ -120,8 +122,8 @@ export class Image extends ImageBase {
 			const bytes = nativeImage instanceof Uint8Array ? nativeImage : new Uint8Array(nativeImage);
 			bitmapFromBytesAsync(bytes)
 				.then((bmp: any) => {
-					if (this.nativeViewProtected) {
-						this.nativeViewProtected.Source = bmp;
+					if (this._image) {
+						this._image.Source = bmp;
 						if (Trace.isEnabled()) {
 							Trace.write(`Image._setNativeImage: set Source to BitmapImage (PixelWidth=${bmp?.PixelWidth ?? 'unknown'})`, Trace.categories.Debug);
 						}
@@ -137,7 +139,7 @@ export class Image extends ImageBase {
 
 
 		try {
-			this.nativeViewProtected.Source = nativeImage;
+			this._image.Source = nativeImage;
 			if (Trace.isEnabled()) {
 				Trace.write(`Image._setNativeImage: set Source to nativeImage (type=${typeof nativeImage}, PixelWidth=${nativeImage?.PixelWidth ?? 'n/a'})`, Trace.categories.Debug);
 			}

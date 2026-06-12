@@ -81,6 +81,11 @@
     <ClInclude Include="ImageHelper.h" />
     <ClInclude Include="ShadowImageResult.h" />
     <ClInclude Include="ShadowHelper.h" />
+    <ClInclude Include="ClipHelper.h" />
+    <ClInclude Include="FontHelper.h" />
+    <ClInclude Include="ScrollHelper.h" />
+    <ClInclude Include="TileHelper.h" />
+    <ClInclude Include="TextShadowHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -90,6 +95,11 @@
     <ClCompile Include="FlexboxLayout.cpp" />
     <ClCompile Include="ImageHelper.cpp" />
     <ClCompile Include="ShadowHelper.cpp" />
+    <ClCompile Include="ClipHelper.cpp" />
+    <ClCompile Include="FontHelper.cpp" />
+    <ClCompile Include="ScrollHelper.cpp" />
+    <ClCompile Include="TileHelper.cpp" />
+    <ClCompile Include="TextShadowHelper.cpp" />
     <ClCompile Include="exports.cpp" />
     <!-- cppwinrt generates module.g.cpp (DllGetActivationFactory / DllCanUnloadNow exports) under
          "Generated Files\", but our hand-authored project doesn't auto-include it, so the DLL
@@ -104,6 +114,11 @@
     <Midl Include="FlexboxLayout.idl" />
     <Midl Include="ImageHelper.idl" />
     <Midl Include="ShadowHelper.idl" />
+    <Midl Include="ClipHelper.idl" />
+    <Midl Include="FontHelper.idl" />
+    <Midl Include="ScrollHelper.idl" />
+    <Midl Include="TileHelper.idl" />
+    <Midl Include="TextShadowHelper.idl" />
   </ItemGroup>
 
   <ItemGroup>

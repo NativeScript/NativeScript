@@ -32,6 +32,8 @@ export class Frame extends FrameBase {
 	private _backButtonDelegate: any = null;
 	// GC guard: delegates held only by btn.Click can be collected before the user taps.
 	private _actionItemDelegates: any[] = [];
+	// ActionBar `color` brush for the current page; applied to title, back button and action items.
+	private _abFgBrush: Microsoft.UI.Xaml.Media.SolidColorBrush | null = null;
 	// LRU native-view cache. Keeps the last N pages' XAML trees alive so navigating
 	// back — or forward — to a previously-visited page skips the entire view-creation +
 	// applyAllNativeSetters pipeline. This mirrors what iOS UINavigationController and
@@ -551,6 +553,27 @@ export class Frame extends FrameBase {
 
 		if (!visible) return;
 
+		// ActionBar style → native bar: background-color fills the bar Grid, color becomes the
+		// foreground brush for title/back/action items. The bar is shared across pages, so an
+		// unset style must RESET to defaults (ClearValue), not keep the previous page's colors.
+		const pageActionBar = (page as any).actionBar;
+		try {
+			const bg = pageActionBar?.style?.backgroundColor;
+			this._topBar.Background = bg?.windows ? new Microsoft.UI.Xaml.Media.SolidColorBrush(bg.windows) : (null as never);
+		} catch (_e) {}
+		try {
+			const fg = pageActionBar?.style?.color;
+			this._abFgBrush = fg?.windows ? new Microsoft.UI.Xaml.Media.SolidColorBrush(fg.windows) : null;
+			if (this._titleBlock) {
+				if (this._abFgBrush) this._titleBlock.Foreground = this._abFgBrush;
+				else this._titleBlock.ClearValue(Microsoft.UI.Xaml.Controls.TextBlock.ForegroundProperty);
+			}
+			if (this._backButton) {
+				if (this._abFgBrush) this._backButton.Foreground = this._abFgBrush;
+				else this._backButton.ClearValue(Microsoft.UI.Xaml.Controls.Control.ForegroundProperty);
+			}
+		} catch (_e) {}
+
 		if (this._backButton) {
 			const navBtn = (page as any).actionBar?.navigationButton;
 			this._backButton.Content = navBtn?.text || '←';
@@ -626,6 +649,9 @@ export class Frame extends FrameBase {
 				const del = NSWinRT.asDelegate('Microsoft.UI.Xaml.RoutedEventHandler', () => item._raiseTap());
 				this._actionItemDelegates.push(del); // keep alive until next rebuild
 				btn.Click = del as never;
+				if (this._abFgBrush) {
+					btn.Foreground = this._abFgBrush;
+				}
 				if (item.actionView?.nativeViewProtected) {
 					btn.Content = item.actionView.nativeViewProtected as never;
 				} else {

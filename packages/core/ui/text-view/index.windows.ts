@@ -21,7 +21,7 @@ export class TextView extends TextViewBase {
 	createNativeView(): Microsoft.UI.Xaml.Controls.TextBox {
 		const textBox = new Microsoft.UI.Xaml.Controls.TextBox();
 		textBox.AcceptsReturn = true;
-		textBox.TextWrapping = 1 as never; // Wrap
+		textBox.TextWrapping = 2 as never; // Wrap=2
 		textBox.VerticalScrollBarVisibility = 1 as never; // Auto
 		return textBox;
 	}

@@ -14,7 +14,7 @@ using namespace winrt::Windows::Storage::Streams;
 using namespace winrt::Windows::Graphics::Imaging;
 using BitmapImage = winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage;
 
-// THREADING: these coroutines deliberately do NOT resume_background(). The NativeScript Windows
+// THREADING: these deliberately do NOT resume_background(). The NativeScript Windows
 // runtime hosts V8 on the UI thread and only marshals WinRT async `Completed` callbacks back into
 // JS when they fire on that (UI) apartment. WinRT async operations started on the UI apartment
 // marshal their completion back to it automatically, so awaiting them inline keeps every resume on

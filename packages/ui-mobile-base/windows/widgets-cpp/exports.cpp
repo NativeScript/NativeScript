@@ -17,7 +17,12 @@ extern "C" __declspec(dllexport) int32_t __stdcall DllGetActivationFactory(void*
     return WINRT_GetActivationFactory(classId, factory);
 }
 
-extern "C" __declspec(dllexport) int32_t __stdcall DllCanUnloadNow() noexcept
+// pch.h's <unknwn.h> exposes the system combaseapi declaration of DllCanUnloadNow
+// (HRESULT, no dllexport), so this definition must match it exactly — the export is added
+// via the linker pragma instead of __declspec(dllexport). PRIVATE keeps it out of the
+// import library (LNK4104), matching COM in-proc server convention.
+#pragma comment(linker, "/export:DllCanUnloadNow,PRIVATE")
+extern "C" HRESULT __stdcall DllCanUnloadNow()
 {
     return WINRT_CanUnloadNow();
 }

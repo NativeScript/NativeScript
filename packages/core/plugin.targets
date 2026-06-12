@@ -32,4 +32,40 @@
           SkipUnchangedFiles="true"
           Condition="'@(_NSWidgetsFiles)' != ''" />
   </Target>
+
+  <!--
+    Registers the NativeScript.Widgets C++/WinRT runtimeclasses as an in-proc activatable-class
+    server in the app's Package.appxmanifest, so the OS RoGetActivationFactory can create them.
+    Owned here in @nativescript/core (which ships the DLL) so apps NEVER hand-maintain the list in
+    their App_Resources manifest — adding a new C++ widget class only requires updating
+    NSWidgetsActivatableClass below. The injection is idempotent (skips classes already present),
+    so it is safe even if an app's manifest still lists some entries.
+
+    Runs after the app's manifest overrides/merge (ApplyManifestOverrides / MergeAppResourcesManifest
+    in the Windows project template's Directory.Build.targets), while the manifest is still being
+    assembled in the BeforeBuild phase — before the appx packaging consumes it.
+  -->
+  <ItemGroup>
+    <!-- Keep in sync with the runtimeclasses exported by NativeScript.Widgets.dll. -->
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.StackLayout" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.FlexboxLayout" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.ImageHelper" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.ShadowHelper" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.ClipHelper" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.FontHelper" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.ScrollHelper" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.TileHelper" />
+    <NSWidgetsActivatableClass Include="NativeScript.Widgets.TextShadowHelper" />
+  </ItemGroup>
+
+  <!-- Idempotent XML injection via PowerShell (guaranteed present on Windows, full .NET XML, no
+       RoslynCodeTaskFactory assembly-reference issues). Adds only the ActivatableClass entries that
+       aren't already in the manifest, so it's safe regardless of what the app manifest already lists. -->
+  <Target Name="NSRegisterWidgetsActivatableClasses"
+          AfterTargets="ApplyManifestOverrides;MergeAppResourcesManifest"
+          BeforeTargets="Build"
+          Condition="Exists('$(MSBuildProjectDirectory)\Package.appxmanifest')">
+    <Message Text="[@nativescript/core] Registering NativeScript.Widgets activatable classes in Package.appxmanifest" Importance="normal" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$ErrorActionPreference='Stop'; $p='$(MSBuildProjectDirectory)\Package.appxmanifest'; if(-not (Test-Path $p)){exit 0}; $dll='NativeScript.Widgets.dll'; $ids='@(NSWidgetsActivatableClass)'.Split(';'); [xml]$d=Get-Content -LiteralPath $p; $ns='http://schemas.microsoft.com/appx/manifest/foundation/windows10'; $m=New-Object System.Xml.XmlNamespaceManager($d.NameTable); $m.AddNamespace('a',$ns); $pkg=$d.DocumentElement; $ext=$pkg.SelectSingleNode('a:Extensions',$m); if(-not $ext){$ext=$d.CreateElement('Extensions',$ns);[void]$pkg.AppendChild($ext)}; $srv=$ext.SelectSingleNode('a:Extension[@Category=''windows.activatableClass.inProcessServer'']/a:InProcessServer',$m); if(-not $srv){$e=$d.CreateElement('Extension',$ns);$e.SetAttribute('Category','windows.activatableClass.inProcessServer');$srv=$d.CreateElement('InProcessServer',$ns);$pa=$d.CreateElement('Path',$ns);$pa.InnerText=$dll;[void]$srv.AppendChild($pa);[void]$e.AppendChild($srv);[void]$ext.AppendChild($e)}; $have=@($srv.SelectNodes('a:ActivatableClass',$m)|ForEach-Object{$_.GetAttribute('ActivatableClassId')}); $chg=$false; foreach($id in $ids){if($id -and ($have -notcontains $id)){$c=$d.CreateElement('ActivatableClass',$ns);$c.SetAttribute('ActivatableClassId',$id);$c.SetAttribute('ThreadingModel','both');[void]$srv.AppendChild($c);$chg=$true}}; if($chg){$d.Save($p)}&quot;" />
+  </Target>
 </Project>

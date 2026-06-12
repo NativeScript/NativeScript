@@ -1,0 +1,14 @@
+namespace NativeScript.Widgets
+{
+    // CSS text-shadow for WinUI3, done the canonical way: a Composition DropShadow masked to the
+    // text's GLYPH alpha (so the shadow follows the letters, not the control rectangle).
+    //   • TextBlock (Label / hoisted Button content) exposes GetAlphaMask() — used directly in JS.
+    //   • TextBox (TextField / TextView) has NO GetAlphaMask, so this helper rasterizes the control's
+    //     glyphs with DirectWrite into a LoadedImageSurface and uses that as the DropShadow mask.
+    // Apply attaches the shadow as the element's child visual; Clear removes it. argb is 0xAARRGGBB.
+    static runtimeclass TextShadowHelper
+    {
+        static void Apply(Microsoft.UI.Xaml.UIElement element, UInt32 argb, Single blurRadius, Single offsetX, Single offsetY);
+        static void Clear(Microsoft.UI.Xaml.UIElement element);
+    }
+}

@@ -45,6 +45,8 @@ export class ListView extends ListViewBase {
 	// Bumped on every refresh() so containers holding a view from a previous data set
 	// (torn down by _teardown) are detected and never reused.
 	private _generation = 0;
+	// Row-separator colour (drawn as a 1px composition line at each container's bottom edge); null = none.
+	private _separatorColor: Windows.UI.Color | null = null;
 
 	public createNativeView(): Microsoft.UI.Xaml.Controls.ListView {
 		const lv = new Microsoft.UI.Xaml.Controls.ListView();
@@ -186,6 +188,37 @@ export class ListView extends ListViewBase {
 		return lvi;
 	}
 
+	// Draw (or clear) the row separator as a 1px composition line pinned to the container's bottom edge.
+	// (ListViewItem.BorderBrush isn't honoured by the ListViewItemPresenter template, so a child visual
+	// is used instead.) The sprite is created once per container and reused on recycle.
+	private _applySeparator(container: any): void {
+		if (!container) return;
+		try {
+			const EP = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview;
+			if (!this._separatorColor) {
+				if (container.__ns_sepVisual) {
+					EP.SetElementChildVisual(container, null as never);
+					container.__ns_sepVisual = null;
+				}
+				return;
+			}
+			let sprite = container.__ns_sepVisual as Microsoft.UI.Composition.SpriteVisual;
+			if (!sprite) {
+				const N = Windows.Foundation.Numerics;
+				const c = EP.GetElementVisual(container).Compositor;
+				sprite = c.CreateSpriteVisual();
+				sprite.RelativeSizeAdjustment = new N.Vector2(1, 0); // full width
+				sprite.Size = new N.Vector2(0, 1); // 1px tall
+				sprite.RelativeOffsetAdjustment = new N.Vector3(0, 1, 0); // anchor to the bottom edge
+				sprite.Offset = new N.Vector3(0, -1, 0); // sit just inside it
+				sprite.Brush = c.CreateColorBrush();
+				container.__ns_sepVisual = sprite;
+				EP.SetElementChildVisual(container, sprite);
+			}
+			(sprite.Brush as Microsoft.UI.Composition.CompositionColorBrush).Color = this._separatorColor;
+		} catch (_e) {}
+	}
+
 	private _onContainerContentChanging(args: any): void {
 		const container = args?.ItemContainer;
 		if (!container) return;
@@ -221,6 +254,7 @@ export class ListView extends ListViewBase {
 		try { native.HorizontalAlignment = 3; } catch (_e) {}
 		try { native.MinHeight = (this._effectiveRowHeight && this._effectiveRowHeight > 0) ? this._effectiveRowHeight : 44; } catch (_e) {}
 		try { container.IsHitTestVisible = !row.header; } catch (_e) {}
+		this._applySeparator(container);
 		// WinUI may have cleared a reused container's Content; re-attach if needed.
 		try { if (container.Content !== native) container.Content = native; } catch (_e) {}
 		try { args.Handled = true; } catch (_e) {}
@@ -332,11 +366,24 @@ export class ListView extends ListViewBase {
 	}
 
 	public scrollToIndex(index: number): void {
-		try { this.nativeViewProtected?.ScrollIntoView((this.nativeViewProtected as any).Items.GetAt(index)); } catch (_e) {}
+		this._scrollToIndexCore(index, false);
 	}
 
 	public scrollToIndexAnimated(index: number): void {
-		this.scrollToIndex(index);
+		this._scrollToIndexCore(index, true);
+	}
+
+	private _scrollToIndexCore(index: number, animated: boolean): void {
+		const lv = this.nativeViewProtected as any;
+		if (!lv) return;
+		try {
+			const count = this._rows.length || 1;
+			const extent = NativeScript.Widgets.ScrollHelper.GetExtentHeight(lv);
+			if (extent > 0) {
+				const clamped = Math.max(0, Math.min(index, count - 1));
+				NativeScript.Widgets.ScrollHelper.ScrollToVerticalOffset(lv, (extent / count) * clamped, !animated);
+			}
+		} catch (_e) {}
 	}
 
 	public onLoaded(): void {
@@ -368,5 +415,13 @@ export class ListView extends ListViewBase {
 		return null as unknown as Color;
 	}
 	// @ts-ignore — setNative is a symbol index whose value type is widened across properties.
-	[separatorColorProperty.setNative](_value: Color) {}
+	[separatorColorProperty.setNative](value: Color) {
+		this._separatorColor = value instanceof Color ? value.windows : null;
+		const lv = this.nativeViewProtected as any;
+		if (!lv) return;
+		// Update already-realized containers; off-screen ones pick it up via _onContainerContentChanging.
+		for (let i = 0; i < this._rows.length; i++) {
+			try { this._applySeparator(lv.ContainerFromIndex(i)); } catch (_e) {}
+		}
+	}
 }
