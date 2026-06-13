@@ -71,12 +71,15 @@ describe('css-tree createRequire polyfill protection', () => {
 	it('keeps bare `module` and `node:module` out of the depscanner pre-bundle set', () => {
 		// If this fails, css-tree's `data-patch.js` will crash on the device
 		// with `ReferenceError: createRequire is not defined` under HMR. See
-		// the top-of-file comment for the full chain. To fix: add `'module'`
-		// and `'node:module'` back to `optimizeDepsExclude` in
-		// `configuration/base.ts`.
-		const exclude = extractArrayLiteral(baseSource, 'optimizeDepsExclude');
+		// the top-of-file comment for the full chain. The canonical exclude list
+		// now lives in `helpers/optimize-deps.ts` (NS_OPTIMIZE_DEPS_EXCLUDE),
+		// consumed by `configuration/base.ts` and `configuration/angular.ts`.
+		const optimizeDepsSource = readSource('helpers/optimize-deps.ts');
+		const exclude = extractArrayLiteral(optimizeDepsSource, 'NS_OPTIMIZE_DEPS_EXCLUDE');
 		expect(exclude).toContain('module');
 		expect(exclude).toContain('node:module');
+		// base.ts must consume the shared constant (not re-list it inline).
+		expect(baseSource).toContain('NS_OPTIMIZE_DEPS_EXCLUDE');
 	});
 
 	it('aliases the bare `module` specifier to the local css-tree polyfill', () => {

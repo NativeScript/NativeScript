@@ -5,6 +5,15 @@ vi.mock('./import-map.js', () => ({
 	buildRuntimeConfig: (...args: unknown[]) => mockBuildRuntimeConfig(...args),
 }));
 
+// Plan 002: the route now derives the origin from the trusted, https-aware
+// `getServerOrigin(server)` (NOT the client-supplied `Host` header). Mock it to
+// a deterministic value so we can assert the route uses it verbatim.
+const TRUSTED_ORIGIN = 'http://trusted-host:5173';
+const mockGetServerOrigin = vi.fn(() => TRUSTED_ORIGIN);
+vi.mock('./server-origin.js', () => ({
+	getServerOrigin: (...args: unknown[]) => mockGetServerOrigin(...(args as [])),
+}));
+
 import { registerImportMapRoute, type RegisterImportMapRouteOptions } from './websocket-import-map-route.js';
 
 type FakeRes = {
@@ -42,7 +51,7 @@ function mount(overrides: Partial<RegisterImportMapRouteOptions> = {}) {
 	const getStrategy = vi.fn(() => ({ flavor: 'vue' }) as any);
 	registerImportMapRoute(server, { getStrategy, ...overrides });
 	expect(handlers).toHaveLength(1);
-	return { handler: handlers[0], getStrategy };
+	return { handler: handlers[0], getStrategy, server };
 }
 
 describe('registerImportMapRoute', () => {
@@ -52,6 +61,8 @@ describe('registerImportMapRoute', () => {
 			importMap: JSON.stringify({ imports: { '@nativescript/core': 'http://localhost:5173/ns/core' } }),
 			volatilePatterns: ['?v=', '&v='],
 		});
+		mockGetServerOrigin.mockClear();
+		mockGetServerOrigin.mockReturnValue(TRUSTED_ORIGIN);
 	});
 
 	it('registers exactly one middleware', () => {
@@ -96,18 +107,22 @@ describe('registerImportMapRoute', () => {
 		expect(parsed.volatilePatterns).toEqual(['?v=', '&v=']);
 	});
 
-	it('derives the origin from the request Host header', async () => {
-		const { handler } = mount();
+	it('uses the trusted server origin and IGNORES the client Host header', async () => {
+		// Security regression for plan 002: a spoofed Host header must NOT change
+		// the origin baked into device module URLs. The origin comes from the
+		// trusted getServerOrigin(server) resolver, called with the server.
+		const { handler, server } = mount();
 		const res = makeRes();
-		await handler({ url: '/ns/import-map.json', method: 'GET', headers: { host: 'device.local:9000' } }, res, vi.fn());
-		expect(mockBuildRuntimeConfig).toHaveBeenCalledWith(expect.objectContaining({ origin: 'http://device.local:9000' }));
+		await handler({ url: '/ns/import-map.json', method: 'GET', headers: { host: 'attacker.example:9000' } }, res, vi.fn());
+		expect(mockGetServerOrigin).toHaveBeenCalledWith(server);
+		expect(mockBuildRuntimeConfig).toHaveBeenCalledWith(expect.objectContaining({ origin: TRUSTED_ORIGIN }));
 	});
 
-	it('falls back to localhost:5173 when the Host header is missing', async () => {
+	it('uses the trusted origin even when the Host header is absent', async () => {
 		const { handler } = mount();
 		const res = makeRes();
 		await handler({ url: '/ns/import-map.json', method: 'GET', headers: {} }, res, vi.fn());
-		expect(mockBuildRuntimeConfig).toHaveBeenCalledWith(expect.objectContaining({ origin: 'http://localhost:5173' }));
+		expect(mockBuildRuntimeConfig).toHaveBeenCalledWith(expect.objectContaining({ origin: TRUSTED_ORIGIN }));
 	});
 
 	it('forwards the injected strategy (and its flavor), defaulting to typescript when none', async () => {

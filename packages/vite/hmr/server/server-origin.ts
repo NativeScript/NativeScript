@@ -14,7 +14,23 @@ import { getCliFlags } from '../../helpers/cli-flags.js';
  * non-loopback `server.host` -> trusted verbatim. `NS_HMR_HOST` overrides
  * everything; `NS_HMR_PREFER_LAN_HOST=0` forces loopback.
  */
+// Per-session memo: the device-reachable origin is stable for a dev server's
+// lifetime, but `getServerOrigin` is called multiple times per `/ns/m` request
+// (each call re-runs CLI-flag parsing + NIC enumeration via
+// `resolveDeviceReachableOrigin`). Cache it on the server instance via a
+// WeakMap so a long-running session computes it once and a fresh server (new
+// session) recomputes. See docs/plans/007-memoize-server-origin.md.
+const ORIGIN_CACHE = new WeakMap<object, string>();
+
 export function getServerOrigin(server: ViteDevServer): string {
+	const cached = ORIGIN_CACHE.get(server as unknown as object);
+	if (cached) return cached;
+	const origin = computeServerOrigin(server);
+	ORIGIN_CACHE.set(server as unknown as object, origin);
+	return origin;
+}
+
+function computeServerOrigin(server: ViteDevServer): string {
 	const platform: DevHostPlatform = detectDevHostPlatform();
 	const isHttps = !!server.config.server?.https;
 	const protocol: 'http' | 'https' = isHttps ? 'https' : 'http';

@@ -14,6 +14,7 @@ import { baseConfig } from './base.js';
 import { getCliFlags } from '../helpers/cli-flags.js';
 import { resolveRelativeToImportMeta } from '../helpers/import-meta-path.js';
 import { resolveVerboseFlag } from '../helpers/logging.js';
+import { NS_OPTIMIZE_DEPS_EXCLUDE } from '../helpers/optimize-deps.js';
 
 function hasNgDeclarePartial(code: string): boolean {
 	return code.indexOf('\u0275\u0275ngDeclare') !== -1 || code.indexOf('ɵɵngDeclare') !== -1 || code.indexOf('ngDeclare') !== -1;
@@ -580,7 +581,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 				const od = (userConfig as any)?.optimizeDeps || {};
 				const prevExclude: string[] = Array.isArray(od.exclude) ? od.exclude : [];
 				const exclude = new Set<string>(prevExclude);
-				['@nativescript/core', 'rxjs', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'].forEach((x) => exclude.add(x));
+				[...NS_OPTIMIZE_DEPS_EXCLUDE, 'rxjs'].forEach((x) => exclude.add(x));
 				return {
 					optimizeDeps: {
 						noDiscovery: true,
@@ -601,7 +602,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 				deps.entries = [];
 				deps.include = [];
 				const exclude = new Set<string>(Array.isArray(deps.exclude) ? deps.exclude : []);
-				['@nativescript/core', 'rxjs', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript'].forEach((x) => exclude.add(x));
+				[...NS_OPTIMIZE_DEPS_EXCLUDE, 'rxjs'].forEach((x) => exclude.add(x));
 				deps.exclude = Array.from(exclude);
 				const rolldownOptions = (deps.rolldownOptions ||= {});
 				rolldownOptions.plugins = [];

@@ -71,7 +71,13 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			// assembler reads the SFC from disk and compiles it inline below).
 			await safeTransform(base + '?vue');
 			const origin = getServerOrigin(server);
-			const ver = String(verFromPath || options.getGraphVersion() || Date.now());
+			// Preserve graph version 0 (a valid, falsy version): `||` would fall
+			// through to a non-deterministic Date.now() timestamp, giving the same
+			// SFC a different URL on every fetch (defeats the device module cache
+			// and disagrees with the client, which sends ver='0').
+			// See docs/plans/005-fix-vue-assembler-version-fallback.md.
+			const graphVer = options.getGraphVersion();
+			const ver = String(verFromPath ?? (graphVer != null ? graphVer : Date.now()));
 			const scriptUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=script`;
 			const templateCode = templateR?.code || '';
 

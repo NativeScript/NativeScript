@@ -1,8 +1,7 @@
 import ts from 'typescript';
-// We retain the advanced transformer for future enhancement but perform a safer
-// localized textual + AST-assisted downlevel here to avoid edge corruption of
-// computed property names (e.g. ['frame-in']).
-// import nativeClassTransformer from '../transformers/NativeClass/index.js';
+// This is the active NativeClass transform: a localized textual + AST-assisted
+// downlevel that avoids edge corruption of computed property names (e.g.
+// ['frame-in']). It is the single production implementation in this package.
 import { getCliFlags } from './cli-flags.js';
 import type { Platform } from './platform-types.js';
 
@@ -108,7 +107,7 @@ export function transformNativeClassSource(code: string, fileName: string) {
 					let cleaned = down.replace(/export \{\};?\s*$/m, '');
 					if (hadExport) {
 						const name = (node as ts.ClassDeclaration).name?.text;
-						if (name && !new RegExp(`export\s*{\s*${name}\s*}`, 'm').test(cleaned)) {
+						if (name && !new RegExp(`export\\s*\\{\\s*${name}\\s*\\}`, 'm').test(cleaned)) {
 							cleaned += `\nexport { ${name} };\n`;
 						}
 					}

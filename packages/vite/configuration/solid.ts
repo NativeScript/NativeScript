@@ -15,13 +15,15 @@ const __dirname = dirname(__filename);
 const projectRoot = getProjectRootPath();
 const solidPath = path.resolve(projectRoot, 'node_modules/solid-js');
 
-const prod = !!process.env.production;
-
 // Built-in JSX runtime shim — maps automatic JSX transform's jsx() to
 // Solid's createComponent() without pulling in the web renderer (solid-js/h).
 const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'solid-jsx-runtime.js');
 
-const plugins = [
+// Build the Solid plugin stack for a given build kind. `prod` is derived from
+// Vite's `mode` inside the factory (NOT a non-standard `process.env.production`),
+// so a production build resolves Solid's prod bundles and disables dev/hot.
+// See docs/plans/004-fix-solid-prod-detection.md.
+const buildSolidPlugins = (prod: boolean) => [
 	{
 		...alias({
 			entries: {
@@ -57,6 +59,7 @@ const plugins = [
 ];
 
 export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): UserConfig => {
+	const prod = mode !== 'development';
 	const projectRoot = getProjectRootPath();
 	const monorepoRoot = findMonorepoWorkspaceRoot(projectRoot);
 	// Any Solid library that ships `.jsx`/`.tsx` files in its published
@@ -72,7 +75,7 @@ export const solidConfig = ({ mode }, options: TypeCheckControlOptions = {}): Us
 	// filter. See `hmr/frameworks/solid/build/solid-jsx-deps.ts` for the detection rules.
 	const solidJsxPackages = findSolidPackagesShippingJsx(projectRoot, monorepoRoot);
 	return mergeConfig(baseConfig({ mode, flavor: 'solid' }), {
-		plugins: [...getTypeCheckPlugins('solid', options.typeCheck), ...plugins],
+		plugins: [...getTypeCheckPlugins('solid', options.typeCheck), ...buildSolidPlugins(prod)],
 		optimizeDeps: {
 			// Defense-in-depth: keep `module` / `node:module` out of the
 			// depscanner's pre-bundle set even if a downstream config swaps

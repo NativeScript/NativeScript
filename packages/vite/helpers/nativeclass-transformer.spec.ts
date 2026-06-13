@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import ts from 'typescript';
 import { transformNativeClassSource } from '../helpers/nativeclass-transform.js';
 import { postCleanupNativeClass } from '../helpers/nativeclass-transformer-plugin.js';
-import nativeClassTransformer from '../transformers/NativeClass/index.js';
 
 const SAMPLE_TS = `
 
@@ -136,16 +135,28 @@ describe('NativeClass transformer helper', () => {
 		expect(code).not.toMatch(/__decorate/);
 	});
 
-	it('does not change code without @NativeClass', () => {
-		const result = ts.transpileModule(NO_DECORATOR_TS, {
-			fileName: '/app/src/none.ts',
-			compilerOptions: {
-				module: ts.ModuleKind.ESNext,
-				target: ts.ScriptTarget.ESNext,
-			},
-			transformers: { before: [nativeClassTransformer as unknown as ts.TransformerFactory<ts.SourceFile>] },
-		});
-		expect(result.outputText).toContain('class Foo');
+	it('does not emit a duplicate `export { Name }` for multiple exported NativeClasses', () => {
+		// Regression for plan 006: the dedup guard regex was built with `\s` inside
+		// a template literal (collapsing to literal `s`), so it never matched a real
+		// `export { Name };` and the export was appended unconditionally. With the
+		// fixed regex, each exported class must have exactly one export statement.
+		const TWO_EXPORTED_TS = `
+@NativeClass()
+export class AlphaImpl extends NSObject { a() { return 1 } }
+
+@NativeClass()
+export class BetaImpl extends NSObject { b() { return 2 } }
+`;
+		const res = transformNativeClassSource(TWO_EXPORTED_TS, '/app/src/two-exported.ts');
+		expect(res).toBeTruthy();
+		const code = res!.code;
+		expect(code).not.toContain('@NativeClass');
+		for (const name of ['AlphaImpl', 'BetaImpl']) {
+			const exportCount = (code.match(new RegExp(`export\\s*\\{[^}]*\\b${name}\\b[^}]*\\}`, 'g')) || []).length;
+			expect(exportCount).toBeLessThanOrEqual(1);
+			// the class must still be present/exported in some form
+			expect(code).toContain(name);
+		}
 	});
 
 	it('returns null for sources without @NativeClass', () => {
