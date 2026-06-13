@@ -434,10 +434,14 @@ export async function safeDynImport(spec: string): Promise<any> {
 		if (!finalSpec || finalSpec === '@') {
 			finalSpec = (origin ? origin : '') + '/ns/m/__invalid_at__.mjs';
 		}
-		// Use native dynamic import
+		// Use native dynamic import. The /* @vite-ignore */ matters: this file
+		// is served through Vite's transform pipeline on device (the vite
+		// package is a file: dependency resolved from dist), and without it
+		// Vite's import-analysis warns it "cannot be analyzed" on every boot.
+		// The spec is always a full runtime URL — nothing for Vite to resolve.
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore - dynamic import expression
-		return await import(finalSpec);
+		return await import(/* @vite-ignore */ finalSpec);
 	} catch (e) {
 		throw e;
 	}

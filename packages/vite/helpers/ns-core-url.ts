@@ -162,6 +162,37 @@ export function specToCoreSub(spec: string): string | null {
 }
 
 /**
+ * Convert an absolute path INSIDE a known @nativescript/core root directory
+ * into the canonical sub path. Complements {@link specToCoreSub}, which only
+ * recognizes bare specifiers and `node_modules` installs: in a monorepo where
+ * core is consumed from source (`<workspace>/packages/core` via a `file:`
+ * dependency), the resolve-alias step rewrites bare `@nativescript/core[/sub]`
+ * specifiers to absolute paths under that source root BEFORE the
+ * `ns-core-external-urls` build plugin sees them. Without this mapping those
+ * paths escape externalization and the entire core library is inlined into
+ * bundle.mjs — a dead second realm whose `Frame.topmost()` is undefined while
+ * the dev-server-served realm owns the live UI.
+ *
+ *   corePathToSub('/ws/packages/core', '/ws/packages/core')                 → ''
+ *   corePathToSub('/ws/packages/core/ui/frame', '/ws/packages/core')        → 'ui/frame'
+ *   corePathToSub('/ws/packages/core/ui/frame/index.ios.ts', same root)     → 'ui/frame'
+ *   corePathToSub('/elsewhere/file.ts', '/ws/packages/core')                → null
+ */
+export function corePathToSub(spec: string, coreRoot: string | null | undefined): string | null {
+	if (!spec || !coreRoot) return null;
+	const cleaned = spec.split('?')[0].split('#')[0].replace(/\\/g, '/');
+	const root = String(coreRoot).replace(/\\/g, '/').replace(/\/+$/, '');
+	if (!root) return null;
+	if (cleaned === root) return '';
+	if (!cleaned.startsWith(root + '/')) return null;
+	// Monorepo core is TypeScript source; strip TS extensions before the
+	// canonical normalizer (which handles .js/.mjs/.cjs, platform suffixes
+	// and trailing /index).
+	const rel = cleaned.slice(root.length + 1).replace(/\.(?:ts|tsx|mts|cts)$/, '');
+	return normalizeCoreSub(rel);
+}
+
+/**
  * Produce the set of "runtime module id" strings we expose in
  * `globalThis.__NS_CORE_MODULES__` for a given sub. Callers of the vendor
  * CJS shim may request any of these forms for the same module; we register

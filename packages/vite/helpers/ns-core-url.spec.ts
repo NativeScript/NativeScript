@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCoreUrl, buildCoreUrlPath, extractCoreSub, isCoreBridgeUrl, moduleRegistrationKeys, normalizeCoreSub, specToCoreSub } from './ns-core-url.js';
+import { buildCoreUrl, buildCoreUrlPath, corePathToSub, extractCoreSub, isCoreBridgeUrl, moduleRegistrationKeys, normalizeCoreSub, specToCoreSub } from './ns-core-url.js';
 
 describe('ns-core-url — Invariant A canonical form', () => {
 	const origin = 'http://localhost:5173';
@@ -131,6 +131,37 @@ describe('ns-core-url — Invariant A canonical form', () => {
 			expect(specToCoreSub('@angular/core')).toBe(null);
 			expect(specToCoreSub('/foo/bar/baz')).toBe(null);
 			expect(specToCoreSub('')).toBe(null);
+		});
+
+		it('returns null for monorepo-source core paths (corePathToSub covers those)', () => {
+			expect(specToCoreSub('/ws/packages/core/ui/frame')).toBe(null);
+		});
+	});
+
+	describe('corePathToSub', () => {
+		const ROOT = '/ws/packages/core';
+
+		it('core root itself → empty sub (package main)', () => {
+			expect(corePathToSub(ROOT, ROOT)).toBe('');
+			expect(corePathToSub(`${ROOT}/index.ts`, ROOT)).toBe('');
+		});
+
+		it('subpaths, with and without TS source extensions', () => {
+			expect(corePathToSub(`${ROOT}/ui/frame`, ROOT)).toBe('ui/frame');
+			expect(corePathToSub(`${ROOT}/ui/frame/index.ts`, ROOT)).toBe('ui/frame');
+			expect(corePathToSub(`${ROOT}/application/index.ios.ts`, ROOT)).toBe('application');
+			expect(corePathToSub(`${ROOT}/data/observable/index.ts?v=1`, ROOT)).toBe('data/observable');
+		});
+
+		it('windows separators and trailing-slash root', () => {
+			expect(corePathToSub('C:\\ws\\packages\\core\\ui\\frame\\index.ts', 'C:/ws/packages/core/')).toBe('ui/frame');
+		});
+
+		it('returns null outside the root or without a root', () => {
+			expect(corePathToSub('/elsewhere/file.ts', ROOT)).toBe(null);
+			expect(corePathToSub(`${ROOT}-sibling/file.ts`, ROOT)).toBe(null);
+			expect(corePathToSub(`${ROOT}/ui/frame`, '')).toBe(null);
+			expect(corePathToSub('', ROOT)).toBe(null);
 		});
 	});
 
