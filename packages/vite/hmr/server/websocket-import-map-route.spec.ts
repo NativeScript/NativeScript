@@ -5,7 +5,7 @@ vi.mock('./import-map.js', () => ({
 	buildRuntimeConfig: (...args: unknown[]) => mockBuildRuntimeConfig(...args),
 }));
 
-// Plan 002: the route now derives the origin from the trusted, https-aware
+// The route derives the origin from the trusted, https-aware
 // `getServerOrigin(server)` (NOT the client-supplied `Host` header). Mock it to
 // a deterministic value so we can assert the route uses it verbatim.
 const TRUSTED_ORIGIN = 'http://trusted-host:5173';
@@ -108,8 +108,8 @@ describe('registerImportMapRoute', () => {
 	});
 
 	it('uses the trusted server origin and IGNORES the client Host header', async () => {
-		// Security regression for plan 002: a spoofed Host header must NOT change
-		// the origin baked into device module URLs. The origin comes from the
+		// Security: a spoofed Host header must NOT change the origin baked into
+		// device module URLs. The origin comes from the
 		// trusted getServerOrigin(server) resolver, called with the server.
 		const { handler, server } = mount();
 		const res = makeRes();

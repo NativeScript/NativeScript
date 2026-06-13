@@ -11,7 +11,6 @@
  * `ReferenceError: createRequire is not defined` inside `css-tree`.
  *
  * Centralized here so base/angular configs share one source of truth instead of
- * hand-maintaining divergent copies. See
- * docs/plans/011-dedupe-optimizedeps-exclude.md.
+ * hand-maintaining divergent copies.
  */
 export const NS_OPTIMIZE_DEPS_EXCLUDE = ['@nativescript/core', '@valor/nativescript-websockets', 'set-value', 'react', 'react-reconciler', 'react-nativescript', 'module', 'node:module'] as const;

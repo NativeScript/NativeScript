@@ -35,7 +35,7 @@ export function registerImportMapRoute(server: ViteDevServer, options: RegisterI
 			// byte-identical to the origin baked into bundle.mjs by dev-host.ts).
 			// Do NOT derive the origin from the client-supplied `Host` header: the
 			// dev server binds 0.0.0.0, so a spoofed Host would rewrite the origin
-			// of every device module URL. See docs/plans/002-fix-import-map-host-origin.md.
+			// of every device module URL.
 			const origin = getServerOrigin(server);
 
 			const strategy = getStrategy();

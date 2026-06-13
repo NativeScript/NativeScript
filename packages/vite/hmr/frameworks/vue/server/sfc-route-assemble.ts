@@ -75,7 +75,6 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 			// through to a non-deterministic Date.now() timestamp, giving the same
 			// SFC a different URL on every fetch (defeats the device module cache
 			// and disagrees with the client, which sends ver='0').
-			// See docs/plans/005-fix-vue-assembler-version-fallback.md.
 			const graphVer = options.getGraphVersion();
 			const ver = String(verFromPath ?? (graphVer != null ? graphVer : Date.now()));
 			const scriptUrl = `${origin}/ns/sfc/${ver}${base}?vue&type=script`;

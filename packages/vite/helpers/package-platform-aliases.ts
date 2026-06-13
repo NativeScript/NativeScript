@@ -16,7 +16,7 @@ export function packagePlatformResolverPlugin(opts: { tsConfig: { paths?: Record
 	// every resolve. The platform is fixed for this plugin instance (a fresh
 	// instance is created per worker build via the `worker.plugins` factory), so
 	// the package name is a sufficient key. Mirrors the cache in
-	// `nativescript-package-resolver.ts`. See docs/plans/008-cache-package-platform-resolver.md.
+	// `nativescript-package-resolver.ts`.
 	const resolveCache = new Map<string, string | null>();
 	return {
 		name: 'ns-package-platform-resolver',

@@ -22,7 +22,6 @@ const jsxRuntimeShimPath = resolve(dirname(__dirname), 'shims', 'solid-jsx-runti
 // Build the Solid plugin stack for a given build kind. `prod` is derived from
 // Vite's `mode` inside the factory (NOT a non-standard `process.env.production`),
 // so a production build resolves Solid's prod bundles and disables dev/hot.
-// See docs/plans/004-fix-solid-prod-detection.md.
 const buildSolidPlugins = (prod: boolean) => [
 	{
 		...alias({

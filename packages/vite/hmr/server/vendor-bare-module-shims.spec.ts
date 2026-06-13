@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildVueVendorShim, buildPiniaVendorShim } from './vendor-bare-module-shims.js';
 
-// Regression for plan 001: the generated Vue shim must not reference an
-// undeclared `vm` identifier. In strict-mode ESM, `v.createApp || (vm && ...)`
+// The generated Vue shim must not reference an undeclared `vm` identifier.
+// In strict-mode ESM, `v.createApp || (vm && ...)`
 // throws `ReferenceError: vm is not defined` the moment `v.createApp` is falsy
 // (the case the registry-miss fallback exists for), aborting the whole module.
 

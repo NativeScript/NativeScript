@@ -1,4 +1,4 @@
-import { mergeConfig, type UserConfig } from 'vite';
+import { type UserConfig } from 'vite';
 import path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { createRequire } from 'node:module';
@@ -27,7 +27,7 @@ import { preserveImportsPlugin } from '../helpers/preserve-imports.js';
 import { optimizeDepsPlatformResolver } from '../helpers/esbuild-platform-resolver.js';
 import { vendorManifestPlugin } from '../hmr/shared/vendor/manifest.js';
 import { resolveVerboseFlag, createFilteredViteLogger } from '../helpers/logging.js';
-import { externalConfigMerges, applyExternalConfigs } from '../helpers/external-configs.js';
+import { externalConfigsPlugin } from '../helpers/external-configs.js';
 import { getHMRPlugins } from '../hmr/server/index.js';
 import type { Platform } from '../helpers/platform-types.js';
 import { packagePlatformResolverPlugin } from '../helpers/package-platform-aliases.js';
@@ -101,12 +101,6 @@ const themePkgDir = findPackageInNodeModules('nativescript-theme-core', projectR
 if (themePkgDir && existsSync(themePkgDir)) {
 	THEME_CORE_ROOT = normalizeModuleId(themePkgDir);
 }
-
-/**
- * Plugins can define nativescript.vite.mjs
- * which export Vite configs to merge into the base config.
- */
-applyExternalConfigs();
 
 export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }): UserConfig => {
 	const targetMode = mode === 'development' ? 'development' : 'production';
@@ -324,7 +318,7 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 				},
 			};
 
-	let baseViteConfig = {
+	const baseViteConfig = {
 		// Suppress logs during HMR development if desired:
 		// ...(hmrActive ? { logLevel: "warn" as const } : {}),
 		// Filter out noisy sourcemap warnings from dependencies while keeping other warnings intact
@@ -333,6 +327,9 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		define: defineConfig,
 		optimizeDeps: optimizeDepsConfig,
 		plugins: [
+			// Merge any dependency-provided `nativescript.vite.mjs` configs. Runs
+			// in an awaited `config` hook so ESM configs load correctly.
+			externalConfigsPlugin(),
 			// Under HMR, rewrite every bare `@nativescript/core*` specifier to
 			// the full /ns/core HTTP URL so bundle.mjs contains NO bundled copy
 			// of the core runtime. The plugin runs with enforce:'pre' so it
@@ -368,7 +365,6 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 							// match the dev server's protocol. `NS_HTTPS` is the single
 							// switch (it also drives the server TLS + `wss` HMR socket);
 							// `NS_HMR_PROTO` remains an explicit override when set.
-							// See docs/plans/003-unify-https-protocol-env.md.
 							const proto: 'http' | 'https' = (process.env.NS_HMR_PROTO ? process.env.NS_HMR_PROTO === 'https' : useHttps) ? 'https' : 'http';
 							const { origin } = resolveDeviceReachableOrigin({
 								host: process.env.NS_HMR_HOST,
@@ -755,10 +751,5 @@ export const baseConfig = ({ mode, flavor }: { mode: string; flavor?: string }):
 		},
 	} as UserConfig;
 
-	if (externalConfigMerges?.length) {
-		externalConfigMerges.forEach((config) => {
-			baseViteConfig = mergeConfig(baseViteConfig, config);
-		});
-	}
 	return baseViteConfig;
 };

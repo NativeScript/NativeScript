@@ -19,7 +19,7 @@ import { getCliFlags } from '../../helpers/cli-flags.js';
 // (each call re-runs CLI-flag parsing + NIC enumeration via
 // `resolveDeviceReachableOrigin`). Cache it on the server instance via a
 // WeakMap so a long-running session computes it once and a fresh server (new
-// session) recomputes. See docs/plans/007-memoize-server-origin.md.
+// session) recomputes.
 const ORIGIN_CACHE = new WeakMap<object, string>();
 
 export function getServerOrigin(server: ViteDevServer): string {

@@ -136,7 +136,7 @@ describe('NativeClass transformer helper', () => {
 	});
 
 	it('does not emit a duplicate `export { Name }` for multiple exported NativeClasses', () => {
-		// Regression for plan 006: the dedup guard regex was built with `\s` inside
+		// Regression: the dedup guard regex was built with `\s` inside
 		// a template literal (collapsing to literal `s`), so it never matched a real
 		// `export { Name };` and the export was appended unconditionally. With the
 		// fixed regex, each exported class must have exactly one export statement.
