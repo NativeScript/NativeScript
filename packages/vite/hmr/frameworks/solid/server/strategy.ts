@@ -1,8 +1,7 @@
 import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkServerStrategy } from '../../../server/framework-strategy.js';
 import * as path from 'path';
 import { getProjectAppVirtualPath } from '../../../../helpers/utils.js';
-import { isRuntimeGraphExcludedPath } from '../../../server/runtime-graph-filter.js';
-import { canonicalizeTransformRequestCacheKey, collectTransitiveImportersForInvalidation } from '../../../server/transform-cache-invalidation.js';
+import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 
 // Solid server strategy for NativeScript HMR.
@@ -94,74 +93,13 @@ export const solidServerStrategy: FrameworkServerStrategy = {
 			//
 			// The transitive walk is bounded (max depth 16, node_modules /
 			// virtual ids excluded) so vendor packages stay hot.
-			try {
-				const projectRoot = server.config.root || process.cwd();
-				const cacheInvalidationUrls = new Set<string>();
-				const addCacheKey = (rawId: string | null | undefined) => {
-					const id = String(rawId || '');
-					if (!id) return;
-					const cacheKey = canonicalizeTransformRequestCacheKey(id, projectRoot);
-					cacheInvalidationUrls.add(cacheKey);
-					const noQuery = cacheKey.replace(/\?.*$/, '');
-					const stripped = noQuery.replace(/\.(?:[mc]?[jt]sx?)$/i, '');
-					if (stripped !== noQuery) {
-						cacheInvalidationUrls.add(stripped);
-					}
-				};
-				addCacheKey(file);
-				const rootModules = server.moduleGraph.getModulesByFile?.(file);
-				const transitiveImporters = collectTransitiveImportersForInvalidation({
-					modules: rootModules ? Array.from(rootModules) : [],
-					isExcluded: (id) => id.includes('/node_modules/') || isRuntimeGraphExcludedPath(id),
-					maxDepth: 16,
-				});
-				// Invalidate Vite's moduleGraph for the changed file +
-				// every transitive importer so `server.transformRequest`
-				// re-runs the transform pipeline instead of returning
-				// the cached `ModuleNode.transformResult`. We call
-				// `onFileChange` (Vite's authoritative file-changed
-				// signal — walks all module variants including `?v=`,
-				// `?import`, `?t=`) AND per-module `invalidateModule`
-				// for transitive importers (which onFileChange
-				// doesn't reach).
-				try {
-					server.moduleGraph.onFileChange(file);
-				} catch {}
-				if (rootModules) {
-					for (const mod of rootModules) {
-						try {
-							server.moduleGraph.invalidateModule(mod);
-						} catch {}
-					}
-				}
-				for (const mod of transitiveImporters) {
-					addCacheKey(mod?.id);
-					try {
-						server.moduleGraph.invalidateModule(mod as any);
-					} catch {}
-				}
-				if (cacheInvalidationUrls.size && sharedTransformRequest) {
-					sharedTransformRequest.invalidateMany(cacheInvalidationUrls);
-					if (verbose) {
-						console.log('[hmr-ws][solid] purged shared transform cache entries:', cacheInvalidationUrls.size, 'transitiveImporters=', transitiveImporters.length);
-					}
-				}
-				// Sledgehammer: nuke EVERY entry in sharedTransformRequest's
-				// result cache. The targeted `invalidateMany` above only
-				// clears keys we know about. The `/ns/m/` handler iterates
-				// a long list of candidate extensions (`.ts`, `.js`, `.tsx`,
-				// `.jsx`, `.mjs`, `.mts`, `.cts`, `.vue`, `index.*`) and
-				// EACH candidate is a separate cache key. If a previous
-				// serve populated cache for `/src/components/home.js` (via
-				// extension fallback that resolves to `home.tsx`), our
-				// targeted invalidate misses it and iOS HITs the stale
-				// entry — serving the previous save's transformed code.
-				try {
-					sharedTransformRequest.clear();
-				} catch {}
-			} catch (e) {
-				if (verbose) console.warn('[hmr-ws][solid] transform cache invalidation failed', e);
-			}
+			// Invalidate Vite's module graph for the changed file + its bounded
+			// transitive importers, then clear the shared transform-request cache.
+			// Transitive importers matter because TanStack file-based routing (and
+			// similar) statically import their components: when `home.tsx` changes,
+			// `routes/index.tsx`'s cached transform still encodes the previous
+			// resolution and must be re-run.
+			purgeTransformCachesForHotUpdate({ file, server, sharedTransformRequest, verbose, label: 'solid' });
 			// Re-run the transform AFTER all caches are invalidated, then
 			// re-upsert the graph so the broadcast hash matches the freshly-
 			// transformed content. The prologue's common upsert block ran

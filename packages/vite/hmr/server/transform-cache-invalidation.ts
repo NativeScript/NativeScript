@@ -54,6 +54,71 @@ export type TransitiveImporterModuleLike = {
 	importers?: Iterable<TransitiveImporterModuleLike> | null;
 };
 
+/**
+ * Purge stale transform-cache state for a changed file before a hot update is
+ * re-served. Invalidates Vite's module graph for the file + its bounded
+ * transitive importers (so `transformRequest` re-runs the pipeline) and clears
+ * `sharedTransformRequest`'s result cache (the `/ns/m/` route probes many
+ * candidate extensions per spec, each a distinct cache key, so targeted
+ * invalidation alone can miss the key a previous serve populated).
+ *
+ * Shared by the per-flavor `handleHotUpdate` tails (Vue, Solid). `label` only
+ * affects verbose log lines.
+ */
+export function purgeTransformCachesForHotUpdate(options: { file: string; server: { config?: { root?: string }; moduleGraph?: any }; sharedTransformRequest?: { invalidateMany: (urls: Iterable<string>) => void; clear: () => void } | null; verbose?: boolean; label?: string }): void {
+	const { file, server, sharedTransformRequest, verbose, label = 'hmr' } = options;
+	try {
+		const projectRoot = server.config?.root || process.cwd();
+		const cacheInvalidationUrls = new Set<string>();
+		const addCacheKey = (rawId: string | null | undefined) => {
+			const id = String(rawId || '');
+			if (!id) return;
+			const cacheKey = canonicalizeTransformRequestCacheKey(id, projectRoot);
+			cacheInvalidationUrls.add(cacheKey);
+			const noQuery = cacheKey.replace(/\?.*$/, '');
+			const stripped = noQuery.replace(/\.(?:[mc]?[jt]sx?)$/i, '');
+			if (stripped !== noQuery) {
+				cacheInvalidationUrls.add(stripped);
+			}
+		};
+		addCacheKey(file);
+		const rootModules = server.moduleGraph?.getModulesByFile?.(file);
+		const transitiveImporters = collectTransitiveImportersForInvalidation({
+			modules: rootModules ? Array.from(rootModules) : [],
+			isExcluded: (id: string) => id.includes('/node_modules/') || isRuntimeGraphExcludedPath(id),
+			maxDepth: 16,
+		});
+		try {
+			server.moduleGraph?.onFileChange?.(file);
+		} catch {}
+		if (rootModules) {
+			for (const mod of rootModules) {
+				try {
+					server.moduleGraph?.invalidateModule?.(mod);
+				} catch {}
+			}
+		}
+		for (const mod of transitiveImporters) {
+			addCacheKey(mod?.id);
+			try {
+				server.moduleGraph?.invalidateModule?.(mod as any);
+			} catch {}
+		}
+		if (!sharedTransformRequest) return;
+		if (cacheInvalidationUrls.size) {
+			sharedTransformRequest.invalidateMany(cacheInvalidationUrls);
+			if (verbose) {
+				console.log(`[hmr-ws][${label}] purged shared transform cache entries:`, cacheInvalidationUrls.size, 'transitiveImporters=', transitiveImporters.length);
+			}
+		}
+		try {
+			sharedTransformRequest.clear();
+		} catch {}
+	} catch (error) {
+		if (verbose) console.warn(`[hmr-ws][${label}] transform cache purge failed`, error);
+	}
+}
+
 export function collectTransitiveImportersForInvalidation(options: { modules: Iterable<TransitiveImporterModuleLike> | undefined | null; isExcluded?: (id: string) => boolean; maxDepth?: number }): TransitiveImporterModuleLike[] {
 	const visited = new Set<TransitiveImporterModuleLike>();
 	const collected = new Map<string, TransitiveImporterModuleLike>();

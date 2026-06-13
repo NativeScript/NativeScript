@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { getProjectRootPath } from './project.js';
 import { findPackageInNodeModules } from './module-resolution.js';
-import { normalizeModuleId } from './normalize-id.js';
+import { resolveMainFieldPlatformVariant } from './resolve-main-field-platform.js';
 
 const projectRoot = getProjectRootPath();
 
@@ -59,77 +59,16 @@ export function nativescriptPackageResolver(platform: string) {
 				if (fs.existsSync(packageJsonPath)) {
 					try {
 						const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-						const mainField = packageJson.main;
-
-						if (mainField) {
-							const mainFilePath = path.join(packagePath, mainField);
-
-							// Case 1: Main field has no extension - try to add extensions
-							if (!mainField.includes('.')) {
-								// Try platform-specific file first
-								const platformFile = path.join(packagePath, `${mainField}.${platform}.js`);
-								if (fs.existsSync(platformFile)) {
-									const result = {
-										// Canonicalize so Windows backslash/drive-case variants
-										// can't collide with the alias/Vite forward-slash ids.
-										id: normalizeModuleId(platformFile),
-										resolvedBy: 'nativescript-package-resolver',
-									};
-									packageCache.set(packageName, result);
-
-									//   console.log(
-									//     `🔧 Package resolver: ${packageName} -> ${mainField}.${platform}.js (extensionless)`,
-									//   );
-									return result;
-								}
-
-								// Fallback to .js
-								const jsFile = path.join(packagePath, `${mainField}.js`);
-								if (fs.existsSync(jsFile)) {
-									const result = {
-										id: normalizeModuleId(jsFile),
-										resolvedBy: 'nativescript-package-resolver',
-									};
-									packageCache.set(packageName, result);
-
-									// console.log(
-									//   `🔧 Package resolver: ${packageName} -> ${mainField}.js (extensionless)`,
-									// );
-									return result;
-								}
-							}
-							// Case 2: Main field has extension but file doesn't exist - look for platform variants
-							else if (!fs.existsSync(mainFilePath)) {
-								// Extract base name and extension
-								const ext = path.extname(mainField);
-								const baseName = mainField.slice(0, -ext.length);
-
-								// Try platform-specific file first
-								const platformFile = path.join(packagePath, `${baseName}.${platform}${ext}`);
-								if (fs.existsSync(platformFile)) {
-									const result = {
-										// Canonicalize so Windows backslash/drive-case variants
-										// can't collide with the alias/Vite forward-slash ids.
-										id: normalizeModuleId(platformFile),
-										resolvedBy: 'nativescript-package-resolver',
-									};
-									packageCache.set(packageName, result);
-
-									//   console.log(
-									//     `🔧 Package resolver: ${packageName} -> ${baseName}.${platform}${ext} (missing main)`,
-									//   );
-									return result;
-								}
-
-								// Cache as null - no platform variant found
-								packageCache.set(packageName, null);
-								return null;
-							} else {
-								// Main file exists - let normal resolution handle it
-								packageCache.set(packageName, null);
-								return null;
-							}
+						// Shared main-field platform-variant rules (Case 1/2). Returns a
+						// normalizeModuleId-canonical id, or null when no rewrite applies.
+						const resolved = resolveMainFieldPlatformVariant(packagePath, packageJson.main, platform);
+						if (resolved) {
+							const result = { id: resolved, resolvedBy: 'nativescript-package-resolver' };
+							packageCache.set(packageName, result);
+							return result;
 						}
+						packageCache.set(packageName, null);
+						return null;
 					} catch (e) {
 						// Cache as null on error
 						packageCache.set(packageName, null);
@@ -145,10 +84,6 @@ export function nativescriptPackageResolver(platform: string) {
 				packageCache.set(packageName, null);
 				return null;
 			}
-
-			// Cache as null and return null
-			packageCache.set(packageName, null);
-			return null;
 		},
 	};
 }

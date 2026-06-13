@@ -3,7 +3,7 @@ import fs from 'fs';
 import type { Plugin } from 'vite';
 import { findPackageInNodeModules } from './module-resolution.js';
 import { getProjectRootPath } from './project.js';
-import { normalizeModuleId } from './normalize-id.js';
+import { resolveMainFieldPlatformVariant } from './resolve-main-field-platform.js';
 
 const projectRoot = getProjectRootPath();
 
@@ -45,63 +45,21 @@ export function packagePlatformResolverPlugin(opts: { tsConfig: { paths?: Record
 			// known package short-circuits on the next resolve).
 			const resolved = ((): string | null => {
 				const packagePath = findPackageInNodeModules(packageName, projectRoot);
-
-				if (packagePath) {
-					const packageJsonPath = path.join(packagePath, 'package.json');
-					if (fs.existsSync(packageJsonPath)) {
-						try {
-							const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-							const mainField = packageJson.main;
-
-							if (mainField) {
-								const mainFilePath = path.join(packagePath, mainField);
-
-								// Case 1: Main field has no extension - try to add extensions
-								if (!mainField.includes('.')) {
-									// Try platform-specific file first
-									const platformFile = path.join(packagePath, `${mainField}.${opts.platform}.js`);
-									if (fs.existsSync(platformFile)) {
-										if (opts.verbose) {
-											console.log(`✅ Alias resolver: ${packageName} -> ${mainField}.${opts.platform}.js (extensionless)`);
-										}
-										return normalizeModuleId(platformFile);
-									}
-
-									// Fallback to .js
-									const jsFile = path.join(packagePath, `${mainField}.js`);
-									if (fs.existsSync(jsFile)) {
-										if (opts.verbose) {
-											console.log(`✅ Alias resolver: ${packageName} -> ${mainField}.js (extensionless)`);
-										}
-										return normalizeModuleId(jsFile);
-									}
-								}
-								// Case 2: Main field has extension but file doesn't exist - look for platform variants
-								else if (!fs.existsSync(mainFilePath)) {
-									// Extract base name and extension
-									const ext = path.extname(mainField);
-									const baseName = mainField.slice(0, -ext.length);
-
-									// Try platform-specific file first
-									const platformFile = path.join(packagePath, `${baseName}.${opts.platform}${ext}`);
-									if (fs.existsSync(platformFile)) {
-										if (opts.verbose) {
-											console.log(`✅ Alias resolver: ${packageName} -> ${baseName}.${opts.platform}${ext} (missing main)`);
-										}
-										return normalizeModuleId(platformFile);
-									}
-
-									// If main file exists, let normal resolution handle it
-									// If it doesn't exist and no platform variant found, let it fail naturally
-								}
-							}
-						} catch (e) {
-							// Ignore parse errors and fall through
-						}
+				if (!packagePath) return null;
+				const packageJsonPath = path.join(packagePath, 'package.json');
+				if (!fs.existsSync(packageJsonPath)) return null;
+				try {
+					const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+					// Shared main-field platform-variant rules (Case 1/2).
+					const out = resolveMainFieldPlatformVariant(packagePath, packageJson.main, opts.platform);
+					if (out && opts.verbose) {
+						console.log(`✅ Alias resolver: ${packageName} -> ${out}`);
 					}
+					return out;
+				} catch {
+					// Ignore parse errors and fall through.
+					return null;
 				}
-
-				return null;
 			})();
 
 			resolveCache.set(packageName, resolved);

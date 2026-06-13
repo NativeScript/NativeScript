@@ -9,8 +9,7 @@ import { getProjectAppPath } from '../../../../helpers/utils.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
 import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from '../../../server/websocket-device-transform.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from '../../../server/websocket-module-specifiers.js';
-import { canonicalizeTransformRequestCacheKey, collectTransitiveImportersForInvalidation } from '../../../server/transform-cache-invalidation.js';
-import { isRuntimeGraphExcludedPath } from '../../../server/runtime-graph-filter.js';
+import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
 import type { VueSfcRegistryEntry, VueSfcRegistryMessage, VueSfcRegistryUpdateMessage } from '../../../shared/protocol.js';
 
 const VENDOR_MJS = '/@nativescript/vendor.mjs';
@@ -194,57 +193,7 @@ function findVueFiles(dir: string, root: string, result: string[] = []): string[
  * actually populated.
  */
 export function purgeVueTransformCachesForHotUpdate(options: { file: string; server: { config?: { root?: string }; moduleGraph?: any }; sharedTransformRequest?: { invalidateMany: (urls: Iterable<string>) => void; clear: () => void } | null; verbose?: boolean }): void {
-	const { file, server, sharedTransformRequest, verbose } = options;
-	try {
-		const projectRoot = server.config?.root || process.cwd();
-		const cacheInvalidationUrls = new Set<string>();
-		const addCacheKey = (rawId: string | null | undefined) => {
-			const id = String(rawId || '');
-			if (!id) return;
-			const cacheKey = canonicalizeTransformRequestCacheKey(id, projectRoot);
-			cacheInvalidationUrls.add(cacheKey);
-			const noQuery = cacheKey.replace(/\?.*$/, '');
-			const stripped = noQuery.replace(/\.(?:[mc]?[jt]sx?)$/i, '');
-			if (stripped !== noQuery) {
-				cacheInvalidationUrls.add(stripped);
-			}
-		};
-		addCacheKey(file);
-		const rootModules = server.moduleGraph?.getModulesByFile?.(file);
-		const transitiveImporters = collectTransitiveImportersForInvalidation({
-			modules: rootModules ? Array.from(rootModules) : [],
-			isExcluded: (id: string) => id.includes('/node_modules/') || isRuntimeGraphExcludedPath(id),
-			maxDepth: 16,
-		});
-		try {
-			server.moduleGraph?.onFileChange?.(file);
-		} catch {}
-		if (rootModules) {
-			for (const mod of rootModules) {
-				try {
-					server.moduleGraph?.invalidateModule?.(mod);
-				} catch {}
-			}
-		}
-		for (const mod of transitiveImporters) {
-			addCacheKey(mod?.id);
-			try {
-				server.moduleGraph?.invalidateModule?.(mod as any);
-			} catch {}
-		}
-		if (!sharedTransformRequest) return;
-		if (cacheInvalidationUrls.size) {
-			sharedTransformRequest.invalidateMany(cacheInvalidationUrls);
-			if (verbose) {
-				console.log('[hmr-ws][vue] purged shared transform cache entries:', cacheInvalidationUrls.size, 'transitiveImporters=', transitiveImporters.length);
-			}
-		}
-		try {
-			sharedTransformRequest.clear();
-		} catch {}
-	} catch (error) {
-		if (verbose) console.warn('[hmr-ws][vue] transform cache purge failed', error);
-	}
+	purgeTransformCachesForHotUpdate({ ...options, label: 'vue' });
 }
 
 async function buildAndSendRegistry(ctx: FrameworkRegistryContext): Promise<void> {
