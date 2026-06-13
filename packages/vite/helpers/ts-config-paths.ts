@@ -30,7 +30,7 @@ function getTsConfigPaths(debugViteLogs: boolean = false) {
 			} catch (parseError) {
 				// Clean up JSONC
 				if (debugViteLogs) console.log('📁 Cleaning JSONC for:', configPath);
-				let cleanContent = tsConfigContent
+				const cleanContent = tsConfigContent
 					.replace(/\/\/.*$/gm, '')
 					.replace(/\/\*[\s\S]*?\*\//g, '')
 					.replace(/,(\s*[}\]])/g, '$1');

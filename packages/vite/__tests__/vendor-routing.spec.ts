@@ -86,7 +86,7 @@ function normalizeRuntimeNodeModulesSpecifier(specifier: string): string {
 	}
 
 	let normalized = pkgName;
-	let remainder = subNoQuery.slice(pkgName.length).replace(/^\//, '');
+	const remainder = subNoQuery.slice(pkgName.length).replace(/^\//, '');
 	if (remainder) {
 		let preserveSubpath = remainder.includes('/');
 		if (!preserveSubpath) {

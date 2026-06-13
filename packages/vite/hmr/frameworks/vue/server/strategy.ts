@@ -80,7 +80,7 @@ async function processVueSfc(ctx: FrameworkProcessFileContext): Promise<void> {
 		}
 
 		const clean = helpers?.cleanCode ?? ((code: string) => code);
-		let code = clean(transformed.code);
+		const code = clean(transformed.code);
 
 		const collectDeps = helpers?.collectImportDependencies;
 		const deps = collectDeps ? collectDeps(code, filePath) : new Set<string>();
@@ -375,7 +375,7 @@ export const vueServerStrategy: FrameworkServerStrategy = {
 
 		try {
 			const root = server.config.root || process.cwd();
-			let rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
+			const rel = '/' + path.posix.normalize(path.relative(root, file)).split(path.sep).join('/');
 
 			// Transform the .vue file
 			const transformed = await server.transformRequest(rel);

@@ -373,26 +373,13 @@ export function rewriteImports(code: string, importerPath: string, sfcFileMap: M
 			// Case B: plain .vue module → rewrite to SFC endpoint or local artifact
 			const vueKey = resolveVueKey(spec.replace(PAT.QUERY_PATTERN, '')) || '';
 			if (vueKey) {
-				if (true) {
-					const absVue = vueKey.startsWith('/') ? vueKey : '/' + vueKey;
-					const out = `/ns/sfc${absVue}`;
-					if (verbose) {
-						console.log(`[rewrite] .vue rewrite (http): ${spec} → ${out}`);
-					}
-					return `${prefix}${out}${suffix}`;
-				} else {
-					const vueFile = sfcFileMap.get(vueKey);
-					if (vueFile) {
-						const target = `_ns_hmr/${APP_ROOT_DIR}/sfc/${vueFile}`;
-						const relPath = importerOutDir ? ensureRel(path.posix.relative(importerOutDir, target)) : ensureRel(target);
-						if (verbose) {
-							console.log(`[rewrite] .vue rewrite: ${spec} → ${relPath}`);
-						}
-						return `${prefix}${relPath}${suffix}`;
-					} else if (verbose) {
-						console.log(`[rewrite] .vue NOT in sfcFileMap: ${vueKey}`);
-					}
+				// `.vue` modules are always rewritten to the `/ns/sfc` HTTP endpoint.
+				const absVue = vueKey.startsWith('/') ? vueKey : '/' + vueKey;
+				const out = `/ns/sfc${absVue}`;
+				if (verbose) {
+					console.log(`[rewrite] .vue rewrite (http): ${spec} → ${out}`);
 				}
+				return `${prefix}${out}${suffix}`;
 			}
 			return `${prefix}${spec}${suffix}`;
 		}

@@ -1,3 +1,5 @@
+/* eslint-disable no-var -- ambient global declarations below must use `var`: only `var`
+   in `declare global` registers the property on `typeof globalThis`. */
 export type NsDevPlatform = 'ios' | 'android' | 'visionos';
 
 export type NsHostModuleId = `ns-host://${string}`;

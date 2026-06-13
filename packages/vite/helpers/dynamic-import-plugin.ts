@@ -24,7 +24,7 @@ export function dynamicImportPlugin() {
 						if (vitePreloadStart !== -1) {
 							// Find the matching closing brace by counting braces
 							let braceCount = 0;
-							let functionStart = chunk.code.indexOf('{', vitePreloadStart);
+							const functionStart = chunk.code.indexOf('{', vitePreloadStart);
 							let i = functionStart;
 
 							while (i < chunk.code.length) {

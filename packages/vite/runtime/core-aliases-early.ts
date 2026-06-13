@@ -287,16 +287,12 @@ export function installCoreAliasesEarly(verbose?: boolean) {
 								}
 							});
 						}
+						const res = origReset.call(this, entry);
 						try {
-							const res = origReset.call(this, entry);
-							try {
-								const restore = g['__NS_DEV_RESTORE_PLACEHOLDER__'];
-								if (typeof restore === 'function') restore();
-							} catch {}
-							return res;
-						} catch (e) {
-							throw e;
-						}
+							const restore = g['__NS_DEV_RESTORE_PLACEHOLDER__'];
+							if (typeof restore === 'function') restore();
+						} catch {}
+						return res;
 					} as any;
 					try {
 						App.resetRootView = patched;

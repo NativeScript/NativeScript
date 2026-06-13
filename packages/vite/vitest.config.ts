@@ -8,5 +8,12 @@ export default defineConfig({
 		globals: false,
 		reporters: 'default',
 		watch: false,
+		coverage: {
+			provider: 'v8',
+			reportsDirectory: '../../coverage/packages/vite',
+			reporter: ['text-summary', 'html'],
+			include: ['configuration/**', 'helpers/**', 'hmr/**', 'polyfills/**', 'runtime/**', 'shims/**', 'transformers/**', 'index.ts'],
+			exclude: ['**/*.spec.ts', '**/__tests__/**', 'dist/**', '**/*.d.ts'],
+		},
 	},
 });

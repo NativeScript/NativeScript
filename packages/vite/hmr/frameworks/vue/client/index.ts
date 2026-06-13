@@ -50,6 +50,7 @@ export function installNsVueDevShims() {
 							paramKeys: Object.keys(params || {}),
 						});
 					}
+					// eslint-disable-next-line prefer-rest-params -- forwards all args verbatim to the patched original (arity-preserving)
 					return orig.apply(this, arguments as any);
 				} catch (e) {
 					console.warn('[diag][nv][navigateTo][error]', (e && (e as any).message) || e);
@@ -80,7 +81,7 @@ export function installNsVueDevShims() {
 }
 
 // initial root component for back fallback
-let ORIG_ROOT_COMPONENT: any | null = null;
+const ORIG_ROOT_COMPONENT: any | null = null;
 
 // Ensure Vue runtime global functions exist before evaluating SFC artifacts that rely on globalThis.* indirections.
 export function ensureVueGlobals() {
@@ -677,7 +678,7 @@ function resolveSfcVariantSpec(id: string, type: 'script' | 'template', cacheBus
 	if (!origin) return base + `?vue&type=${type}`;
 	const safePath = base.startsWith('/') ? base : '/' + base;
 	const ver = typeof getGraphVersion() === 'number' && getGraphVersion() > 0 ? String(getGraphVersion()) : '0';
-	let url = origin + `/ns/sfc/${ver}` + safePath + `?vue&type=${type}`;
+	const url = origin + `/ns/sfc/${ver}` + safePath + `?vue&type=${type}`;
 	return url;
 }
 
@@ -704,7 +705,7 @@ function resolveSfcMetaSpec(id: string, cacheBustTag?: string): string {
 	if (!origin) return base;
 	const safePath = base.startsWith('/') ? base : '/' + base;
 	const ver = typeof getGraphVersion() === 'number' && getGraphVersion() > 0 ? String(getGraphVersion()) : '0';
-	let url = origin + `/ns/sfc-meta/${ver}` + `?path=${encodeURIComponent(safePath)}`;
+	const url = origin + `/ns/sfc-meta/${ver}` + `?path=${encodeURIComponent(safePath)}`;
 	return url;
 }
 

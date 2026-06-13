@@ -48,11 +48,7 @@ export async function safeReadDefault(mod: any): Promise<any | null> {
 	}
 	// Final microtask after macrotask
 	await Promise.resolve();
-	try {
-		return mod?.default ?? mod ?? null;
-	} catch (e) {
-		throw e;
-	}
+	return mod?.default ?? mod ?? null;
 }
 
 // Resolve a named export from @nativescript/core (UI classes, Application, the
@@ -428,23 +424,19 @@ export async function requestModuleFromServer(spec: string): Promise<string> {
 
 // Centralized safe dynamic import wrapper to guard anomalous specifiers
 export async function safeDynImport(spec: string): Promise<any> {
-	try {
-		const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
-		let finalSpec = spec;
-		if (!finalSpec || finalSpec === '@') {
-			finalSpec = (origin ? origin : '') + '/ns/m/__invalid_at__.mjs';
-		}
-		// Use native dynamic import. The /* @vite-ignore */ matters: this file
-		// is served through Vite's transform pipeline on device (the vite
-		// package is a file: dependency resolved from dist), and without it
-		// Vite's import-analysis warns it "cannot be analyzed" on every boot.
-		// The spec is always a full runtime URL — nothing for Vite to resolve.
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore - dynamic import expression
-		return await import(/* @vite-ignore */ finalSpec);
-	} catch (e) {
-		throw e;
+	const origin = httpOriginForVite || deriveHttpOrigin(hmrWsUrl);
+	let finalSpec = spec;
+	if (!finalSpec || finalSpec === '@') {
+		finalSpec = (origin ? origin : '') + '/ns/m/__invalid_at__.mjs';
 	}
+	// Use native dynamic import. The /* @vite-ignore */ matters: this file
+	// is served through Vite's transform pipeline on device (the vite
+	// package is a file: dependency resolved from dist), and without it
+	// Vite's import-analysis warns it "cannot be analyzed" on every boot.
+	// The spec is always a full runtime URL — nothing for Vite to resolve.
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore - dynamic import expression
+	return await import(/* @vite-ignore */ finalSpec);
 }
 
 // Normalize import specifiers for HTTP-only ESM runtime

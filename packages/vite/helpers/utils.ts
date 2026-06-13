@@ -9,7 +9,6 @@ const require = createRequire(import.meta.url);
 const packageJson = getPackageJson();
 
 export function nsConfigToJson() {
-	let configObject: Record<string, any>;
 	const tsPath = getProjectFilePath('nativescript.config.ts');
 	const tsCode = fs.readFileSync(tsPath, 'utf-8');
 
@@ -24,7 +23,7 @@ export function nsConfigToJson() {
 	const module = { exports: {} as any };
 	const requireFunc = (id: string) => require(id);
 	new Function('exports', 'require', 'module', '__filename', '__dirname', cjsCode)(module.exports, requireFunc, module, tsPath, path.dirname(tsPath));
-	configObject = module.exports.default ?? module.exports;
+	const configObject: Record<string, any> = module.exports.default ?? module.exports;
 	// ensure the config has a name
 	configObject.name = packageJson.name;
 	// ensure the main entry is set to "bundle"

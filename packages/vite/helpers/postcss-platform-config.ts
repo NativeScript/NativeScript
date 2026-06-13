@@ -37,7 +37,7 @@ export function createPostCssConfig(opts: PostCssConfigOptions) {
 				resolve(id: string, basedir: string) {
 					if (id.startsWith('.') || id.startsWith('/')) {
 						const cleanBasedir = basedir ? basedir.split('?')[0] : basedir;
-						let abs = path.resolve(cleanBasedir || '', id);
+						const abs = path.resolve(cleanBasedir || '', id);
 						if (!existsSync(abs) && /\.css$/.test(abs)) {
 							const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
 							const alt = abs.replace(/\.css$/, platformExt);
@@ -48,8 +48,8 @@ export function createPostCssConfig(opts: PostCssConfigOptions) {
 					if (id.startsWith('nativescript-theme-core/')) {
 						const pkgRoot = themeCoreRoot || findPackageInNodeModules('nativescript-theme-core', projectRoot);
 						if (!pkgRoot) return id;
-						let rel = id.substring('nativescript-theme-core/'.length);
-						let target = path.join(pkgRoot, rel);
+						const rel = id.substring('nativescript-theme-core/'.length);
+						const target = path.join(pkgRoot, rel);
 						if (/^css\/.+\.css$/.test(rel)) {
 							const platformExt = platform === 'android' ? '.android.css' : '.ios.css';
 							const base = target.replace(/\.css$/, '');

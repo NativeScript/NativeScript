@@ -73,7 +73,7 @@ export function transformNativeClassSource(code: string, fileName: string) {
 	// Match @NativeClass (optionally with args, multi-line) not preceded by another decorator line capturing stacked sequences.
 	// We'll place the marker right before the class declaration start to simplify slicing.
 	const DECORATOR_BLOCK_RE = /(^|\n)((?:\s*@[\w$][^\n]*\n)*)\s*@NativeClass(?:\([\s\S]*?\))?\s*(?=\n(?:\s*@[\w$][^\n]*\n)*\s*(?:export\s+)?class\s)/g;
-	let working = code.replace(DECORATOR_BLOCK_RE, (full, prefix, stacked) => {
+	const working = code.replace(DECORATOR_BLOCK_RE, (full, prefix, stacked) => {
 		// Keep other decorators, inject marker after them.
 		return `${prefix || '\n'}${stacked || ''}/*__NativeClass__*/`;
 	});

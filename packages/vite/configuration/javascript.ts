@@ -42,9 +42,9 @@ function createBundlerContextPlugin(): Plugin {
 			const xmlFiles = enumerate((ext) => ext === 'xml').filter((f) => !shouldExcludeAbsolute(f));
 			const styleFiles = enumerate((ext) => styleExtsSet.has(ext)).filter((f) => !shouldExcludeAbsolute(f));
 			const jsFiles = enumerate((ext) => ext === 'js').filter((f) => !shouldExcludeAbsolute(f));
-			let importLines: string[] = [];
-			let registryEntries: string[] = [];
-			let moduleMapLines: string[] = [];
+			const importLines: string[] = [];
+			const registryEntries: string[] = [];
+			const moduleMapLines: string[] = [];
 			let index = 0;
 			function pushImport(abs: string, raw: boolean) {
 				const id = `__m${index++}`;

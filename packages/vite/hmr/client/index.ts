@@ -1467,7 +1467,7 @@ function connectHmr() {
 	const overlayStage: HmrConnectionOverlayStage = hasOpenedHmrSocket ? 'reconnecting' : 'connecting';
 	const baseUrl = getHMRWsUrl() || 'ws://localhost:5173/ns-hmr';
 	const buildCandidates = (url: string): string[] => {
-		let candidates: string[] = [];
+		const candidates: string[] = [];
 		try {
 			const u = new URL(url);
 			const proto = u.protocol === 'wss:' ? ['wss'] : ['ws'];
@@ -1564,7 +1564,7 @@ function connectHmr() {
 				if (connectionOverlayVisible) {
 					showConnectionOverlayNow('synchronizing', 'Connected. Synchronizing the HMR graph.');
 				}
-				VERBOSE && console.log('[hmr-client] Connected to HMR WebSocket');
+				if (VERBOSE) console.log('[hmr-client] Connected to HMR WebSocket');
 				// Print the active module reload mode once on first
 				// successful connect so the user can correlate HMR latency
 				// with runtime capability without grepping for protocol

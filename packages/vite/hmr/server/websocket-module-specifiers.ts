@@ -63,7 +63,7 @@ export function normalizeNodeModulesSpecifier(spec: string): string | null {
 		return null;
 	}
 
-	let normalized = spec.replace(/\\/g, '/');
+	const normalized = spec.replace(/\\/g, '/');
 	const idx = normalized.lastIndexOf('/node_modules/');
 	if (idx === -1) {
 		return null;

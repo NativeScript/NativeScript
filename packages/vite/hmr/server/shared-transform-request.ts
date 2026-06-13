@@ -151,8 +151,7 @@ export function createSharedTransformRequestRunner(transformRequest: (url: strin
 			rememberRecentResult(url, result, generation);
 			return result;
 		});
-		let execution: Promise<TransformResult | null>;
-		execution = scheduled.execution.finally(() => {
+		const execution: Promise<TransformResult | null> = scheduled.execution.finally(() => {
 			if (inFlight.get(cacheKey)?.execution === execution) {
 				inFlight.delete(cacheKey);
 			}

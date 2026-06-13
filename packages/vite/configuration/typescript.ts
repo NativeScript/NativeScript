@@ -60,9 +60,9 @@ function createBundlerContextPlugin(): Plugin {
 				else if ((!mainEntryRel || jsCandidate !== mainEntryRel) && allFiles.includes(jsCandidate)) codeFiles.push(jsCandidate);
 			}
 			// Do not include additional modules beyond XML-paired code-behind to avoid early side effects.
-			let importLines: string[] = [];
-			let registryEntries: string[] = [];
-			let moduleMapLines: string[] = [];
+			const importLines: string[] = [];
+			const registryEntries: string[] = [];
+			const moduleMapLines: string[] = [];
 			let index = 0;
 			function pushImport(abs: string, raw: boolean) {
 				const idLocal = `__m${index++}`;

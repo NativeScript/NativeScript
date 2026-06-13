@@ -130,7 +130,7 @@ function canonicalCoreSubpathForFile(modulePath: string, rootEntryPath: string):
 function canonicalCoreSubpathFromLocalSpecifier(spec: string, currentCanonicalSubpath: string | null): string | null {
 	if (!spec.startsWith('.')) return null;
 	const baseDir = currentCanonicalSubpath ? path.posix.dirname(currentCanonicalSubpath) : '.';
-	let rel = path.posix.normalize(path.posix.join(baseDir, spec)).replace(/^\.?\/?/, '');
+	const rel = path.posix.normalize(path.posix.join(baseDir, spec)).replace(/^\.?\/?/, '');
 	if (!rel) return null;
 	if (/\.(?:ts|js|mjs)$/i.test(rel)) {
 		return rel.replace(/\.(?:ts|js|mjs)$/i, '.js');

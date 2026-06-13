@@ -1,3 +1,5 @@
+/* eslint-disable no-var -- ambient global declarations must use `var`: only `var`
+   in `declare global` registers the property on `typeof globalThis` (see header). */
 /**
  * Ambient typings for the `__NS_*` / `__ns*` globals the HMR runtime stashes on
  * `globalThis`. One `declare global` here replaces the scattered

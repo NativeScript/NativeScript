@@ -567,47 +567,43 @@ function shouldAllowLocalCoreSanitizerPaths(contextLabel: string): boolean {
 }
 
 export function assertNoOptimizedArtifacts(code: string, contextLabel: string): void {
-	try {
-		const offenders: string[] = [];
-		const lines = code.split('\n');
-		const tests: Array<RegExp> = [/\b__VITE_PLUGIN__\b/, /\b__VITE_PRELOAD__\b/];
-		const localCore = /(^|[^\w@])(?:\.\.?\/|\/)??@nativescript[\/_-]core\//i;
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
-			for (const re of tests) {
-				if (re.test(line)) {
-					offenders.push(`${i + 1}: ${line.substring(0, 200)}`);
-					break;
-				}
+	const offenders: string[] = [];
+	const lines = code.split('\n');
+	const tests: Array<RegExp> = [/\b__VITE_PLUGIN__\b/, /\b__VITE_PRELOAD__\b/];
+	const localCore = /(^|[^\w@])(?:\.\.?\/|\/)??@nativescript[\/_-]core\//i;
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		for (const re of tests) {
+			if (re.test(line)) {
+				offenders.push(`${i + 1}: ${line.substring(0, 200)}`);
+				break;
 			}
-			if (localCore.test(line)) {
-				const trimmed = line.trimStart();
-				if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
-					continue;
-				}
-				if (shouldAllowLocalCoreSanitizerPaths(contextLabel)) {
-					continue;
-				}
-				// Only module-resolution contexts (import/export/require) leak to the
-				// device ESM loader. A core path appearing as plain runtime string data
-				// — e.g. component-builder's `const CORE_UI_BARREL = '@nativescript/core/ui'`
-				// passed to `global.loadModule()`, which reads the bundler module
-				// registry, not the ESM loader — is legitimate and must not fail serving.
-				if (!/(?:\bimport\b|\bexport\b|\bfrom\s*["']|\brequire\s*\()/.test(line)) {
-					continue;
-				}
-				offenders.push(`${i + 1}: ${line.substring(0, 200)} [local-core-path]`);
+		}
+		if (localCore.test(line)) {
+			const trimmed = line.trimStart();
+			if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
+				continue;
 			}
-			if (offenders.length >= 10) break;
+			if (shouldAllowLocalCoreSanitizerPaths(contextLabel)) {
+				continue;
+			}
+			// Only module-resolution contexts (import/export/require) leak to the
+			// device ESM loader. A core path appearing as plain runtime string data
+			// — e.g. component-builder's `const CORE_UI_BARREL = '@nativescript/core/ui'`
+			// passed to `global.loadModule()`, which reads the bundler module
+			// registry, not the ESM loader — is legitimate and must not fail serving.
+			if (!/(?:\bimport\b|\bexport\b|\bfrom\s*["']|\brequire\s*\()/.test(line)) {
+				continue;
+			}
+			offenders.push(`${i + 1}: ${line.substring(0, 200)} [local-core-path]`);
 		}
-		if (offenders.length) {
-			const msg = `[sanitize-fail] Optimized deps/virtual id artifacts detected in ${contextLabel}. These cannot be evaluated by the device HTTP ESM loader. Offending lines (first ${Math.min(5, offenders.length)} shown):\n` + offenders.slice(0, 5).join('\n');
-			const error: any = new Error(msg);
-			error.code = 'NS_SANITIZE_FAIL';
-			error.offenders = offenders;
-			throw error;
-		}
-	} catch (error) {
+		if (offenders.length >= 10) break;
+	}
+	if (offenders.length) {
+		const msg = `[sanitize-fail] Optimized deps/virtual id artifacts detected in ${contextLabel}. These cannot be evaluated by the device HTTP ESM loader. Offending lines (first ${Math.min(5, offenders.length)} shown):\n` + offenders.slice(0, 5).join('\n');
+		const error: any = new Error(msg);
+		error.code = 'NS_SANITIZE_FAIL';
+		error.offenders = offenders;
 		throw error;
 	}
 }

@@ -55,7 +55,7 @@ export function rewriteNsMImportPathForHmr(p: string, _ver: string | number, boo
 	// `__ns_boot__/b1/` segment is stripped here too — we'll re-add it
 	// below if `bootTaggedRequest` is set, so the canonicalization is
 	// idempotent (a boot URL that flows through twice ends up correct).
-	let canonical = p
+	const canonical = p
 		.replace(/^\/ns\/m\/__ns_boot__\/b1\/__ns_hmr__\/[^/]+\//, '/ns/m/')
 		.replace(/^\/ns\/m\/__ns_hmr__\/[^/]+\//, '/ns/m/')
 		.replace(/^\/ns\/m\/__ns_boot__\/b1\//, '/ns/m/');

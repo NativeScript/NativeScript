@@ -302,7 +302,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { under
 
 					// Non-rt core path: handle like before
 					if (named.length) {
-						let tmpName = hasDefault && !hasNamespace ? (path.node.specifiers.find((s) => t.isImportDefaultSpecifier(s)) as t.ImportDefaultSpecifier).local.name : makeUid(isCore ? 'core_ns' : 'ns');
+						const tmpName = hasDefault && !hasNamespace ? (path.node.specifiers.find((s) => t.isImportDefaultSpecifier(s)) as t.ImportDefaultSpecifier).local.name : makeUid(isCore ? 'core_ns' : 'ns');
 						if (!hasDefault || hasNamespace) {
 							path.node.specifiers = [t.importDefaultSpecifier(t.identifier(tmpName))];
 						}

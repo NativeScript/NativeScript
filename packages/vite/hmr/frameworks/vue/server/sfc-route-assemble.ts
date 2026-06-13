@@ -610,7 +610,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 								isCustomElement: (tag: string) => NS_NATIVE_TAGS.has(tag),
 							},
 						});
-						let compiled = (ct && (ct.code || '')) || '';
+						const compiled = (ct && (ct.code || '')) || '';
 						if (compiled) {
 							// Prefer a full inline template block preserving hoists
 							inlineBlock = buildInlineTemplateBlock(compiled) || undefined;

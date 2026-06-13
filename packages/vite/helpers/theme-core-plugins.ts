@@ -90,7 +90,7 @@ export function createThemeCoreCssFallbackPlugin(themeCoreRoot: string | undefin
 			const idx = id.lastIndexOf('nativescript-theme-core/');
 			if (idx === -1) return null;
 			const rel = id.substring(idx + 'nativescript-theme-core/'.length);
-			let target = path.join(pkgRoot, rel);
+			const target = path.join(pkgRoot, rel);
 			try {
 				if (existsSync(target)) {
 					return readFileSync(target, 'utf-8');

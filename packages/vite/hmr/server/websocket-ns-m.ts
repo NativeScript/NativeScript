@@ -156,7 +156,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 			let bootTaggedRequest = false;
 			if (!spec) {
 				const base = '/ns/m';
-				let rest = urlObj.pathname.slice(base.length);
+				const rest = urlObj.pathname.slice(base.length);
 				if (rest && rest !== '/') spec = rest;
 			}
 			// Special-case stub for anomalous '@' imports emitted as '/__invalid_at__.mjs'
