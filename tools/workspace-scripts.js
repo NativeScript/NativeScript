@@ -148,6 +148,18 @@ module.exports = {
 					script: 'nx test vite',
 					description: '@nativescript/vite: Unit tests'
 				},
+				lint: {
+					script: 'nx lint vite',
+					description: '@nativescript/vite: Lint'
+				},
+				verify: {
+					script: 'nx run-many --targets=lint,test,build --projects=vite',
+					description: '@nativescript/vite: Lint + unit tests + build'
+				},
+				e2e: {
+					script: 'node packages/vite/e2e/run.mjs',
+					description: '@nativescript/vite: Cross-flavor e2e HMR gate (requires ns-apple-music apps repo)'
+				},
 			},
     },
     "⚡": {
