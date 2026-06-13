@@ -63,11 +63,11 @@ module.exports = {
           description: '⚆  Run Android  🤖'
         },
         devios: {
-          script: 'nx dev apps-toolbox --platform=ios',
+          script: 'nx debug apps-toolbox ios -c=hmr',
           description: '⚆  Dev iOS  ' 
         },
         devandroid: {
-          script: 'nx dev apps-toolbox --platform=android',
+          script: 'nx debug apps-toolbox android -c=hmr',
           description: '⚆  Dev Android  🤖' 
         }
       },
