@@ -6,6 +6,8 @@ export class TimePicker extends TimePickerBase {
 	nativeViewProtected: Microsoft.UI.Xaml.Controls.TimePicker;
 	private _windows: Microsoft.UI.Xaml.Controls.TimePicker;
 	private _timeChangedHandler: any = null;
+	// Guards the SelectedTimeChanged feedback loop when we set the value programmatically.
+	private _suppressChange = false;
 
 	public createNativeView(): Microsoft.UI.Xaml.Controls.TimePicker {
 		this._windows = new Microsoft.UI.Xaml.Controls.TimePicker();
@@ -21,7 +23,7 @@ export class TimePicker extends TimePickerBase {
 		const that = new WeakRef(this);
 		const handler = (_sender: Microsoft.UI.Xaml.Controls.TimePicker, args: Microsoft.UI.Xaml.Controls.TimePickerSelectedValueChangedEventArgs) => {
 			const owner = that.deref();
-			if (!owner) return;
+			if (!owner || owner._suppressChange) return;
 			const raw = args.NewTime as any; // System.Nullable<System.TimeSpan>
 			if (!raw) return;
 			// System.TimeSpan.Duration is 100-nanosecond ticks
@@ -50,11 +52,14 @@ export class TimePicker extends TimePickerBase {
 	}
 
 	private _setTime(ms: number): void {
-		const ts = NSWinRT.interop.timeSpan(ms);
-		this._windows.Time = ts;
-		// SelectedTime (IReference<TimeSpan>) makes the picker show the time as selected rather
-		// than showing placeholder dashes. Pass raw ms; the runtime handles boxing.
-		this._windows.SelectedTime = NSWinRT.interop.reference('Windows.Foundation.TimeSpan', ms);
+		// SelectedTime (IReference<TimeSpan>) drives the display; Duration is 100ns ticks.
+		const ts = { Duration: BigInt(Math.max(0, Math.round(ms)) * 10000) } as never;
+		this._suppressChange = true;
+		try {
+			this._windows.SelectedTime = Windows.Foundation.PropertyValue.CreateTimeSpan(ts) as never;
+		} finally {
+			this._suppressChange = false;
+		}
 	}
 
 	[hourProperty.getDefault](): number {

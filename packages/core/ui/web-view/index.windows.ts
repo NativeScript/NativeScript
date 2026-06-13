@@ -29,7 +29,6 @@ export class WebView extends WebViewBase {
 
 	constructor() {
 		super();
-		// WinRT deferred to createNativeView() — keeps constructor pure-JS.
 	}
 
 	public createNativeView() {
@@ -99,8 +98,6 @@ export class WebView extends WebViewBase {
 			src = src.replace(/%5C/gi, '/').replace(/\\/g, '/');
 		}
 		this._currentUrl = src;
-		// Navigate via the WebView2 control's Source property — the CoreWebView2.Navigate method
-		// does not resolve through the V8/WinRT bridge (its COM proxy lacks the projected method).
 		this._run(() => {
 			try {
 				this.nativeViewProtected.Source = new Windows.Foundation.Uri(src);
@@ -113,8 +110,6 @@ export class WebView extends WebViewBase {
 	}
 
 	public stopLoading(): void {
-		// No Stop on the WebView2 control and CoreWebView2.Stop is unavailable through the bridge;
-		// re-assigning Source to the current page is the closest no-op-safe equivalent.
 		this._run(() => {
 			try { (this.nativeViewProtected as any).CoreWebView2?.Stop?.(); } catch (_e) {}
 		});

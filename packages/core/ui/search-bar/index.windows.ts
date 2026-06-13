@@ -11,6 +11,10 @@ export class SearchBar extends SearchBarBase {
 
 	public createNativeView(): Microsoft.UI.Xaml.Controls.AutoSuggestBox {
 		this._windows = new Microsoft.UI.Xaml.Controls.AutoSuggestBox();
+		// AutoSuggestBox has no query icon by default;
+		try {
+			this._windows.QueryIcon = new Microsoft.UI.Xaml.Controls.SymbolIcon(Microsoft.UI.Xaml.Controls.Symbol.Find) as never;
+		} catch (_e) {}
 		return this._windows;
 	}
 

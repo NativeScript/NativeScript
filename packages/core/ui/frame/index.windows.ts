@@ -4,6 +4,9 @@ import { profile } from '../../profiling';
 import type { Page } from '../page';
 import { SharedTransition } from '../transition/shared-transition';
 import { SharedTransitionHelper } from '../transition/shared-transition-helper';
+import { ImageSource } from '../../image-source';
+import { isFontIconURI } from '../../utils';
+import { getFontFamilyCached } from '../styling/font';
 
 export * from './frame-common';
 
@@ -576,7 +579,9 @@ export class Frame extends FrameBase {
 
 		if (this._backButton) {
 			const navBtn = (page as any).actionBar?.navigationButton;
-			this._backButton.Content = navBtn?.text || '←';
+			const navIconSrc: string = navBtn?.windows?.icon ?? navBtn?.icon ?? '';
+			const navIcon = navIconSrc ? this._createActionItemIcon(navIconSrc, navBtn) : null;
+			this._backButton.Content = (navIcon ?? navBtn?.text ?? '←') as never;
 			this._backButton.Visibility = this.canGoBack() ? 0 : 1;
 		}
 
@@ -657,23 +662,12 @@ export class Frame extends FrameBase {
 				} else {
 					const label: string = item.text ?? '';
 					const iconSrc: string = item.windows?.icon ?? item.icon ?? '';
-					if (label) {
+					// Icon takes priority over text when it resolves (matches iOS loadActionIcon).
+					const iconContent = iconSrc ? this._createActionItemIcon(iconSrc, item) : null;
+					if (iconContent) {
+						btn.Content = iconContent as never;
+					} else if (label) {
 						btn.Content = label as never;
-					} else if (iconSrc && !iconSrc.startsWith('res://') && !iconSrc.startsWith('font://')) {
-						try {
-							const img = new Microsoft.UI.Xaml.Controls.Image();
-							img.Width = 24; img.Height = 24;
-							img.Stretch = 2 as never; // Uniform
-							let uri = iconSrc;
-							if (uri.startsWith('~/')) uri = 'ms-appx:///app/' + uri.substring(2);
-							else if (!uri.startsWith('ms-appx') && !uri.startsWith('http')) uri = 'ms-appx:///app/' + uri;
-							const bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
-							(bmp as any).UriSource = new Windows.Foundation.Uri(uri);
-							img.Source = bmp;
-							btn.Content = img as never;
-						} catch (_e) {
-							btn.Content = '▶' as never;
-						}
 					} else {
 						// No text and no usable icon (ios.systemIcon / android.systemIcon are ignored on Windows).
 						// Show a generic visible marker so the button is tappable.
@@ -682,6 +676,43 @@ export class Frame extends FrameBase {
 				}
 				children.Append(btn);
 			} catch (_e) {}
+		}
+	}
+
+	// Resolves an ActionItem icon URI to a XAML element: font:// → glyph TextBlock, res://|~/|file →
+	// Image. Returns null if unresolved (caller falls back to text/marker).
+	private _createActionItemIcon(iconSrc: string, item: any): Microsoft.UI.Xaml.UIElement | null {
+		try {
+			if (isFontIconURI(iconSrc)) {
+				const glyph = iconSrc.split('//')[1];
+				if (!glyph) return null;
+				const tb = new Microsoft.UI.Xaml.Controls.TextBlock();
+				tb.Text = glyph;
+				tb.VerticalAlignment = 1; // Center
+				const itemStyle = item.style;
+				const font = itemStyle?.fontInternal;
+				if (font?.fontFamily) {
+					const ff = getFontFamilyCached(font.fontFamily);
+					if (ff) tb.FontFamily = ff;
+				}
+				if (font?.fontSize) tb.FontSize = font.fontSize;
+				const color = itemStyle?.color;
+				if (color?.windows) tb.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(color.windows);
+				else if (this._abFgBrush) tb.Foreground = this._abFgBrush;
+				return tb;
+			}
+			const is = ImageSource.fromFileOrResourceSync(iconSrc);
+			const bmp = is?.windows;
+			if (bmp && !(bmp instanceof ArrayBuffer) && !(bmp instanceof Uint8Array)) {
+				const img = new Microsoft.UI.Xaml.Controls.Image();
+				img.Width = 24; img.Height = 24;
+				img.Stretch = 2 as never; // Uniform
+				img.Source = bmp as never;
+				return img;
+			}
+			return null;
+		} catch (_e) {
+			return null;
 		}
 	}
 }

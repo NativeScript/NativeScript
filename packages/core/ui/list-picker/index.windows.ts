@@ -55,12 +55,10 @@ export class ListPicker extends ListPickerBase {
 		const native = this.nativeViewProtected;
 		if (!native) return;
 		try { native.Items.Clear(); } catch (_e) {}
-		if (value && Array.isArray(value)) {
-			for (let i = 0; i < value.length; i++) {
-				const dataItem = this._getDataItem(i);
-				const label = dataItem != null ? (dataItem.toString ? dataItem.toString() : String(dataItem)) : '';
-				try { native.Items.Append(label); } catch (_e) {}
-			}
+		// `_getItemAsString` (base) resolves arrays, ItemsSource and textField to a display string.
+		const length = value ? (Array.isArray(value) ? value.length : (value as ItemsSource).length) : 0;
+		for (let i = 0; i < length; i++) {
+			try { native.Items.Append(this._getItemAsString(i)); } catch (_e) {}
 		}
 		selectedIndexProperty.coerce(this);
 	}

@@ -127,6 +127,8 @@ function toTextDecorations(value: CoreTypes.TextDecorationType): number {
 	return flags;
 }
 
+const HYPERLINK_CLICK_TYPE = 'Windows.Foundation.TypedEventHandler`2<Microsoft.UI.Xaml.Documents.Hyperlink,Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs>';
+
 // Build TextBlock.Inlines from a NativeScript FormattedString, applying per-span font/color/
 // decoration. Falls back to plain text for views without an Inlines property (TextBox, Button).
 function _buildFormattedInlines(formattedText: any, inlines: any): void {
@@ -134,10 +136,14 @@ function _buildFormattedInlines(formattedText: any, inlines: any): void {
 	const spans = formattedText?.spans;
 	if (!spans) return;
 
+	// text-transform on the host Label applies to every span's text (matches iOS/Android).
+	const textTransform = formattedText?.parent?.textTransform;
+
 	for (let i = 0; i < spans.length; i++) {
 		const span = spans.getItem(i);
 		const run = new Microsoft.UI.Xaml.Documents.Run();
-		run.Text = span.text ?? '';
+		const spanText = span.text ?? '';
+		run.Text = textTransform && textTransform !== 'none' ? getTransformedText(spanText, textTransform) : spanText;
 
 		if (span.fontFamily) {
 			const ff = getFontFamilyCached(span.fontFamily);
@@ -161,6 +167,25 @@ function _buildFormattedInlines(formattedText: any, inlines: any): void {
 		const flags = toTextDecorations(span.textDecoration);
 		if (flags) {
 			run.TextDecorations = flags;
+		}
+
+		// Tappable spans → wrap the Run in a Hyperlink (XAML hit-tests it and raises Click).
+		// UnderlineStyle=None keeps the span's own styling; the delegate is parked on the span so
+		// it isn't GC'd while only the native Click holds it.
+		if (span.tappable) {
+			try {
+				const link = new Microsoft.UI.Xaml.Documents.Hyperlink();
+				try { link.UnderlineStyle = 0 as never; } catch (_e) {}
+				if (span.color) {
+					try { link.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush((span.color as any).windows); } catch (_e) {}
+				}
+				const del = NSWinRT.asDelegate(HYPERLINK_CLICK_TYPE, () => span._emit('linkTap'));
+				(span as any).__winLinkDelegate = del;
+				link.Click = del as never;
+				link.Inlines.Append(run);
+				inlines.Append(link);
+				continue;
+			} catch (_e) { /* fall back to a plain, non-tappable run */ }
 		}
 		inlines.Append(run);
 	}
@@ -385,6 +410,9 @@ export class TextBase extends TextBaseCommon {
 
 	[formattedTextProperty.setNative](value: any): void {
 		const nativeView = this.nativeTextViewProtected as any;
+		// Sync the `text` mirror FIRST so the plain-text fallback below (TextBox/PasswordBox have no
+		// rich Inlines) reads the current value, not the stale one.
+		textProperty.nativeValueChange(this, !value ? '' : value.toString());
 		if (value && nativeView) {
 			let inlinesHost = nativeView;
 			if (typeof nativeView.Inlines === 'undefined' && typeof nativeView.Content !== 'undefined') {
@@ -407,11 +435,14 @@ export class TextBase extends TextBaseCommon {
 		} else {
 			this._setNativeText();
 		}
-		textProperty.nativeValueChange(this, !value ? '' : value.toString());
 	}
 
 	[textTransformProperty.setNative](_value: CoreTypes.TextTransformType): void {
-		if (this.formattedText) return;
+		if (this.formattedText) {
+			// Rebuild the spans so the new transform applies to each span's text.
+			this[formattedTextProperty.setNative](this.formattedText);
+			return;
+		}
 		this._setNativeText();
 	}
 
@@ -572,6 +603,9 @@ export class TextBase extends TextBaseCommon {
 			if (this._textBoxShadow) {
 				this._applyTextBoxShadow(nativeView, this._textBoxShadow);
 			}
+		} else if (typeof nativeView.Password !== 'undefined') {
+			// Secure TextField → PasswordBox, which has no Text property; its value is Password.
+			nativeView.Password = text;
 		} else if (this._wrapTextBlock) {
 			// Button in wrap mode: update the inner TextBlock, not the Button.Content directly.
 			(this._wrapTextBlock as any).Text = text;

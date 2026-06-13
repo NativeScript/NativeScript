@@ -82,7 +82,8 @@ export class TextField extends TextFieldBase {
 		this._isSecure = !!value;
 
 		const prev = this.nativeViewProtected;
-		const currentText = this._isSecure ? (prev as Microsoft.UI.Xaml.Controls.PasswordBox)?.Password ?? '' : (prev as Microsoft.UI.Xaml.Controls.TextBox)?.Text ?? '';
+		// Carry the value across the swap from the JS model (source of truth), not off `prev`.
+		const currentText = this.text ?? '';
 
 		const newView = this._isSecure ? new Microsoft.UI.Xaml.Controls.PasswordBox() : new Microsoft.UI.Xaml.Controls.TextBox();
 

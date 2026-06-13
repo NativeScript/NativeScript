@@ -6,6 +6,8 @@ export class DatePicker extends DatePickerBase {
 	nativeViewProtected: Microsoft.UI.Xaml.Controls.DatePicker;
 	private _windows: Microsoft.UI.Xaml.Controls.DatePicker;
 	private _dateChangedHandler: any = null;
+	// Guards the SelectedDateChanged feedback loop when we set the value programmatically.
+	private _suppressChange = false;
 
 	public createNativeView(): Microsoft.UI.Xaml.Controls.DatePicker {
 		this._windows = new Microsoft.UI.Xaml.Controls.DatePicker();
@@ -21,7 +23,7 @@ export class DatePicker extends DatePickerBase {
 		const that = new WeakRef(this);
 		const handler = (_sender: Microsoft.UI.Xaml.Controls.DatePicker, args: Microsoft.UI.Xaml.Controls.DatePickerSelectedValueChangedEventArgs) => {
 			const owner = that.deref();
-			if (!owner) return;
+			if (!owner || owner._suppressChange) return;
 			const raw = args.NewDate as any; // IReference<DateTime>
 			if (!raw) return;
 			const jsDate = NSWinRT.interop.fromWinRTDateTimeTicks(raw);
@@ -61,11 +63,14 @@ export class DatePicker extends DatePickerBase {
 	}
 
 	private _setDate(value: Date): void {
-		const dt = NSWinRT.interop.dateTime(value);
-		this._windows.Date = dt;
-		// SelectedDate (IReference<DateTime>) makes the picker show the date as selected rather
-		// than showing placeholder dashes. Pass the original Date; the runtime handles boxing.
-		this._windows.SelectedDate = NSWinRT.interop.reference('Windows.Foundation.DateTime', value);
+		// SelectedDate (IReference<DateTime>) drives the display; UniversalTime is 100ns ticks (>2^53 → BigInt).
+		const dt = { UniversalTime: NSWinRT.interop.toWinRTDateTimeTicks(value) } as never;
+		this._suppressChange = true;
+		try {
+			this._windows.SelectedDate = Windows.Foundation.PropertyValue.CreateDateTime(dt) as never;
+		} finally {
+			this._suppressChange = false;
+		}
 	}
 
 	[dateProperty.setNative](value: Date) {
@@ -87,13 +92,20 @@ export class DatePicker extends DatePickerBase {
 		this._setDate(this._fromYMD());
 	}
 
+	// MinYear/MaxYear are by-value DateTime; pass the 8-byte little-endian Int64 UniversalTime.
+	private _dateTimeBuffer(value: Date): ArrayBuffer {
+		const ab = new ArrayBuffer(8);
+		new DataView(ab).setBigInt64(0, NSWinRT.interop.toWinRTDateTimeTicks(value), true);
+		return ab;
+	}
+
 	//@ts-ignore
 	[minDateProperty.setNative](value: Date) {
-		this._windows.MinYear = NSWinRT.interop.dateTime(value);
+		this._windows.MinYear = this._dateTimeBuffer(value) as never;
 	}
 
 	//@ts-ignore
 	[maxDateProperty.setNative](value: Date) {
-		this._windows.MaxYear = NSWinRT.interop.dateTime(value);
+		this._windows.MaxYear = this._dateTimeBuffer(value) as never;
 	}
 }
