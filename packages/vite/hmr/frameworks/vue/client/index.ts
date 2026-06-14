@@ -698,54 +698,13 @@ function resolveSfcAssemblerSpec(id: string, cacheBustTag?: string): string {
 	return url;
 }
 
-// Resolve metadata endpoint for an SFC
-function resolveSfcMetaSpec(id: string, cacheBustTag?: string): string {
-	const origin = getHttpOriginForVite() || deriveHttpOrigin(getHMRWsUrl());
-	const base = id.split('?')[0];
-	if (!origin) return base;
-	const safePath = base.startsWith('/') ? base : '/' + base;
-	const ver = typeof getGraphVersion() === 'number' && getGraphVersion() > 0 ? String(getGraphVersion()) : '0';
-	const url = origin + `/ns/sfc-meta/${ver}` + `?path=${encodeURIComponent(safePath)}`;
-	return url;
-}
-
-type SfcMeta = {
-	path: string;
-	hasScript: boolean;
-	hasTemplate: boolean;
-	hasStyle: boolean;
-	scriptExports: string[];
-	scriptHasDefault: boolean;
-	templateHasRender: boolean;
-	hmrId: string;
-};
-
-async function fetchSfcMeta(id: string, tag: string): Promise<SfcMeta | null> {
-	try {
-		const url = resolveSfcMetaSpec(id, tag + '_meta');
-		const res = await fetch(url, { method: 'GET' as any });
-		if (!res.ok) return null;
-		const json = await res.json();
-		return json as SfcMeta;
-	} catch {
-		return null;
-	}
-}
-
 // Safely load a component for a .vue SFC. Prefer deterministic assembler first to avoid
 // any variant-compile or TDZ flakiness; only fall back to variant assembly if needed.
 export async function loadSfcComponent(targetVuePath: string, tag: string): Promise<any | null> {
 	// Minimal mode removed: always go through deterministic assembler + device reset
 	// Ensure Vue globals exist BEFORE evaluating variant modules; their top-level aliasing reads globalThis.* once.
 	ensureVueGlobals();
-	// Consult metadata to choose optimal path
-	let meta: SfcMeta | null = null;
-	try {
-		meta = await fetchSfcMeta(targetVuePath, tag);
-	} catch {}
-	if (__NS_ENV_VERBOSE__ && meta) {
-		console.log('[hmr][vue-reset][meta]', targetVuePath, meta);
-	}
+
 	// Prefer deterministic assembler first so AST normalization (including nav helpers) always applies.
 	try {
 		if (!DISABLE_ASM) {

@@ -17,6 +17,22 @@ import { getServerOrigin } from '../../../server/server-origin.js';
 import type { RegisterSfcHandlersOptions } from './sfc-route-shared.js';
 import { compileScript, compileTemplate, ensureVersionedNsMAppImports, parse, pluginTransformTypescript } from './sfc-route-shared.js';
 
+// Cache assembled SFC modules keyed on `base | version | source-content-hash`.
+// The source hash in the key means a changed SFC always produces a new key —
+// stale output can never be served — and a new graph version (HMR) also rotates
+// the key. This skips the full compile (compileScript ×N + multiple Babel
+// passes) on repeat requests for unchanged content. Bounded with FIFO eviction.
+const sfcAsmCache = new Map<string, string>();
+const SFC_ASM_CACHE_MAX = 128;
+function setAsmCache(key: string, value: string): void {
+	if (sfcAsmCache.has(key)) sfcAsmCache.delete(key);
+	sfcAsmCache.set(key, value);
+	if (sfcAsmCache.size > SFC_ASM_CACHE_MAX) {
+		const oldest = sfcAsmCache.keys().next().value;
+		if (oldest !== undefined) sfcAsmCache.delete(oldest);
+	}
+}
+
 /**
  * Registers `GET /ns/asm` — the deterministic, self-contained SFC assembler module.
  * Extracted verbatim from `websocket-sfc.ts` (pure move, no behavior change).
@@ -26,6 +42,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 	// Place BEFORE any broader /ns/sfc* handlers that might accidentally match and delegate.
 	server.middlewares.use(async (req, res, next) => {
 		const strategy = options.getStrategy();
+		let asmCacheKey: string | null = null;
 		try {
 			const urlObj = new URL(req.url || '', 'http://localhost');
 			if (!urlObj.pathname.startsWith('/ns/asm')) return next();
@@ -89,6 +106,15 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 					sfcSrc = readFileSync(abs, 'utf-8');
 				} catch {}
 				if (sfcSrc) {
+					// Content+version keyed cache: serve a prior assembly of identical
+					// source for this base/version without recompiling.
+					asmCacheKey = `${base}|${ver}|${createHash('md5').update(sfcSrc).digest('hex')}`;
+					const cachedAsm = sfcAsmCache.get(asmCacheKey);
+					if (cachedAsm !== undefined) {
+						res.statusCode = 200;
+						res.end(cachedAsm);
+						return;
+					}
 					const { descriptor } = parse(sfcSrc, { filename: abs });
 					const id = createHash('md5').update(abs).digest('hex').slice(0, 8);
 					// 1) Compile script (prefer inlineTemplate for a complete module)
@@ -576,6 +602,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 							inlineCode2 = inlineCode2.replace(/(^|[\n;])\s*var\s+__ns_sfc__\s*;?/g, '$1var __ns_sfc__ = {};');
 						} catch {}
 						if (!/export\s+default\s+__ns_sfc__/.test(inlineCode2) && /__ns_sfc__/.test(inlineCode2)) inlineCode2 += '\nexport default __ns_sfc__';
+						if (asmCacheKey) setAsmCache(asmCacheKey, inlineCode2);
 						res.statusCode = 200;
 						res.end(inlineCode2);
 						return;
@@ -664,6 +691,7 @@ export function registerSfcAsmRoute(server: ViteDevServer, options: RegisterSfcH
 				code = ensureVersionedNsMAppImports(code, Number(ver));
 			} catch {}
 			// Inline-template body path already runs processCodeForDevice (AST + sanitizers); no additional _defineComponent fix needed
+			if (asmCacheKey) setAsmCache(asmCacheKey, code);
 			res.statusCode = 200;
 			res.end(code);
 		} catch (e) {

@@ -1,5 +1,6 @@
 import type { ViteDevServer } from 'vite';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { existsSync, readFileSync } from 'fs';
 import * as path from 'path';
 
@@ -44,6 +45,11 @@ export function registerNsEntryRoutes(server: ViteDevServer, options: RegisterNs
 	const DEFAULT_MAIN_ENTRY = options.defaultMainEntry;
 	const DEFAULT_MAIN_ENTRY_VIRTUAL = options.defaultMainEntryVirtual;
 	const getGraphVersion = options.getGraphVersion;
+	// The compiled entry runtime is static for a dev-server session (a package
+	// rebuild restarts the server), so read/transform it once and reuse — avoids a
+	// `readFileSync` (and, in a source-tree checkout, a synchronous Babel
+	// transform) on every device boot.
+	let cachedEntryRtContent: string | null = null;
 	// 2.6a) Serve compiled entry runtime module: GET /ns/entry-rt[?v=<ver>]
 	server.middlewares.use(async (req, res, next) => {
 		try {
@@ -55,30 +61,37 @@ export function registerNsEntryRoutes(server: ViteDevServer, options: RegisterNs
 				console.log('[hmr-http] GET /ns/entry-rt from', ra + (rp ? ':' + rp : ''));
 			}
 			setDeviceModuleHeaders(res);
-			let content = '';
-			try {
-				const _req = createRequire(import.meta.url);
-				const entryRtPath = _req.resolve('@nativescript/vite/hmr/entry-runtime.js');
-				content = readFileSync(entryRtPath, 'utf-8');
-			} catch (e) {
-				// .js not found (source tree without build) — transform .ts on the fly
+			let content = cachedEntryRtContent || '';
+			if (!content) {
 				try {
-					const tsPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', 'entry-runtime.ts');
-					if (existsSync(tsPath)) {
-						const tsSource = readFileSync(tsPath, 'utf-8');
-						const result = babelCore.transformSync(tsSource, {
-							filename: tsPath,
-							plugins: [[pluginTransformTypescript, { isTSX: false, allowDeclareFields: true }]],
-							sourceType: 'module',
-						});
-						if (result?.code) {
-							content = result.code;
+					const _req = createRequire(import.meta.url);
+					const entryRtPath = _req.resolve('@nativescript/vite/hmr/entry-runtime.js');
+					content = readFileSync(entryRtPath, 'utf-8');
+				} catch (e) {
+					// .js not found (source tree without build) — transform .ts on the fly
+					try {
+						// fileURLToPath (not `new URL(...).pathname`) so the `/C:/…`
+						// leading-slash on Windows file URLs doesn't break the lookup.
+						const tsPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'entry-runtime.ts');
+						if (existsSync(tsPath)) {
+							const tsSource = readFileSync(tsPath, 'utf-8');
+							const result = babelCore.transformSync(tsSource, {
+								filename: tsPath,
+								plugins: [[pluginTransformTypescript, { isTSX: false, allowDeclareFields: true }]],
+								sourceType: 'module',
+							});
+							if (result?.code) {
+								content = result.code;
+							}
 						}
+					} catch (e2) {
+						if (verbose) console.warn('[hmr-http] entry-runtime.ts transform failed', e2);
 					}
-				} catch (e2) {
-					if (verbose) console.warn('[hmr-http] entry-runtime.ts transform failed', e2);
 				}
-				if (!content) {
+				// Cache only successful content; never cache the not-found fallback stub.
+				if (content) {
+					cachedEntryRtContent = content;
+				} else {
 					content = 'export default async function start(){ console.error("[/ns/entry-rt] not found"); }\n';
 				}
 			}

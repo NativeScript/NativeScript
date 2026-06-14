@@ -24,7 +24,7 @@
 import type { VendorManifest } from '../shared/vendor/manifest.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
 import { getVendorManifest, listVendorModules } from '../shared/vendor/registry.js';
-import { readFileSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 import { getProjectRootPath } from '../../helpers/project.js';
 import { buildCoreUrl } from '../../helpers/ns-core-url.js';
@@ -255,6 +255,33 @@ function discoverInstalledPackages(imports: Record<string, string>, origin: stri
 		}
 	};
 
+	// Replay the (cheap, in-memory) addPackage step for every installed package
+	// name. The names themselves come from a per-session cache so the directory
+	// sweep below runs once per dev server, not on every `/ns/import-map.json`
+	// request (a hot, per-boot route).
+	for (const name of getInstalledPackageNames(nodeModulesDir)) {
+		addPackage(name);
+	}
+}
+
+// Cache the discovered package-name list per node_modules dir, invalidated when
+// the directory's mtime changes (an install/remove of a top-level entry). Avoids
+// a full `readdirSync` sweep (+ per-scope readdir) on every import-map request.
+let installedPackageNamesCache: { dir: string; mtimeMs: number; names: string[] } | null = null;
+
+function getInstalledPackageNames(nodeModulesDir: string): string[] {
+	// mtime guards the cache; if it can't be read (e.g. a mocked fs in tests),
+	// fall back to sweeping every call (original behavior) rather than caching.
+	let mtimeMs: number | null = null;
+	try {
+		mtimeMs = statSync(nodeModulesDir).mtimeMs;
+	} catch {
+		mtimeMs = null;
+	}
+	if (mtimeMs !== null && installedPackageNamesCache && installedPackageNamesCache.dir === nodeModulesDir && installedPackageNamesCache.mtimeMs === mtimeMs) {
+		return installedPackageNamesCache.names;
+	}
+	const names: string[] = [];
 	try {
 		const entries = readdirSync(nodeModulesDir, { withFileTypes: true });
 		for (const entry of entries) {
@@ -270,12 +297,18 @@ function discoverInstalledPackages(imports: Record<string, string>, origin: stri
 					for (const scopeEntry of scopeEntries) {
 						if (!scopeEntry.isDirectory() && !scopeEntry.isSymbolicLink()) continue;
 						if (scopeEntry.name.startsWith('.')) continue;
-						addPackage(`${name}/${scopeEntry.name}`);
+						names.push(`${name}/${scopeEntry.name}`);
 					}
 				} catch {}
 			} else {
-				addPackage(name);
+				names.push(name);
 			}
 		}
-	} catch {}
+	} catch {
+		return [];
+	}
+	if (mtimeMs !== null) {
+		installedPackageNamesCache = { dir: nodeModulesDir, mtimeMs, names };
+	}
+	return names;
 }
