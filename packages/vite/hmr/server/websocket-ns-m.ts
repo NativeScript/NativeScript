@@ -578,7 +578,7 @@ export function registerNsModuleServerRoute(server: ViteDevServer, options: Regi
 				const origin = getServerOrigin(server);
 				const rewritePath = (p: string) => rewriteNsMImportPathForHmr(p, 'v0', bootTaggedRequest);
 				// /ns/m URL forms — all collapse to canonical stable
-				// URLs via the Phase 3a rewriter.
+				// URLs via the `rewriteNsMImportPathForHmr` rewriter.
 				// 1) Static imports: import ... from "/ns/m/..."
 				code = code.replace(/(from\s*["'])(\/ns\/m\/[^"'?]+)(["'])/g, (_m: string, a: string, p: string, b: string) => `${a}${rewritePath(p)}${b}`);
 				// 2) Side-effect imports: import "/ns/m/..."

@@ -7,6 +7,7 @@ import { normalizeCoreSub as normalizeCoreSubCanonical } from '../../helpers/ns-
 import { parseCoreBridgeRequest, resolveRuntimeCoreModulePath } from './websocket-core-bridge.js';
 import { setDeviceModuleHeaders } from './route-helpers.js';
 import { getServerOrigin } from './server-origin.js';
+import { resolveVerboseFlag } from '../../helpers/logging.js';
 
 type SharedTransformRequestFn = (url: string, timeoutMs?: number) => Promise<TransformResult | null>;
 
@@ -29,7 +30,8 @@ export interface RegisterNsCoreRouteOptions {
  *     device (single module realm, shared class identities, one-time `register()`).
  */
 export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCoreRouteOptions): void {
-	// 2.5.1) Catch-all redirect for stray /node_modules/@nativescript/core/*
+	const verbose = resolveVerboseFlag();
+	// Catch-all redirect for stray /node_modules/@nativescript/core/*
 	// requests — route them to the /ns/core bridge so they get the same
 	// __DEV__/__IOS__ preamble and specifier rewriting. Without this,
 	// Vite's default /node_modules/ handler serves the raw file, which
@@ -81,9 +83,12 @@ export function registerNsCoreRoute(server: ViteDevServer, options: RegisterNsCo
 			// caller is forced to update. We log the offending raw
 			// pathname so the regression source is easy to find.
 			if (coreRequest.canonicalPath) {
-				try {
-					console.warn(`[ns-core-bridge] 301 ${urlObj.pathname}${urlObj.search} → ${coreRequest.canonicalPath} (non-canonical core URL — please update emitter)`);
-				} catch {}
+				// Diagnostic only — the 301 below transparently serves the canonical file, so this is not a user-facing problem.
+				if (verbose) {
+					try {
+						console.warn(`[ns-core-bridge] 301 ${urlObj.pathname}${urlObj.search} → ${coreRequest.canonicalPath} (non-canonical core URL — please update emitter)`);
+					} catch {}
+				}
 				res.setHeader('Access-Control-Allow-Origin', '*');
 				res.setHeader('Location', coreRequest.canonicalPath);
 				res.statusCode = 301;

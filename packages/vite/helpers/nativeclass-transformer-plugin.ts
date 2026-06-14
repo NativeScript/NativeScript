@@ -148,13 +148,13 @@ export function postCleanupNativeClass(code: string, bareId: string, verbose = f
 
 	if (!classNamesToDownlevel.size) return null;
 
-	// Apply decorator-stripping edits first so the AST we re-parse for Phase 2 is consistent.
+	// Apply decorator-stripping edits first so the AST we re-parse for the downlevel pass is consistent.
 	let output = code;
 	for (const e of decorateEdits.sort((a, b) => b.start - a.start)) {
 		output = output.slice(0, e.start) + e.text + output.slice(e.end);
 	}
 
-	// Phase 2: Downlevel any ES6 class expression that extends a native base.
+	// Downlevel any ES6 class expression that extends a native base.
 	// Angular's re-compilation typically emits:
 	//   var AppDelegate = class AppDelegate extends UIResponder { ... };
 	// or with _1 alias:

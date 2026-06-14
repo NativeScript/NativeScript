@@ -253,7 +253,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 	};
 
 	return [
-		// HMR self-registration runs in two phases:
+		// HMR self-registration runs in two steps:
 		//
 		//   1. (this plugin, `enforce: 'pre'`) Walk the raw TypeScript
 		//      source for each user `.ts` file and record the names of
@@ -268,7 +268,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 		//      append the global `__NS_HMR_REGISTER_COMPONENT__`
 		//      registration calls keyed by the names recorded in step 1.
 		//
-		// Why the two-phase split: the Analog Angular plugin's `transform`
+		// Why the two-step split: the Analog Angular plugin's `transform`
 		// returns its OWN regenerated compiled output (from its internal
 		// `outputFiles` cache populated at `buildStart`), discarding any
 		// code modifications applied earlier in the pipeline. We
@@ -319,7 +319,7 @@ function createAngularPlugins(opts: { useAngularCompilationAPI: boolean; fileRep
 				return null;
 			},
 		},
-		// Phase 2: append the HMR registration snippet to the compiled
+		// Step 2 (post plugin): append the HMR registration snippet to the compiled
 		// JS output produced by `@analogjs/vite-plugin-angular`. Runs
 		// `enforce: 'post'` so we see the post-Angular code (where the
 		// pre plugin's work would otherwise be discarded). Reads the

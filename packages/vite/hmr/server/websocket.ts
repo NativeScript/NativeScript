@@ -597,7 +597,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 			registerImportMapRoute(server, { getStrategy: () => strategy });
 
 			// Dev-only HTTP ESM loader endpoint for device clients
-			// 2) ESM module server for application/source modules: GET /ns/m/* — see websocket-ns-m.ts
+			// ESM module server for application/source modules: GET /ns/m/* — see websocket-ns-m.ts
 			registerNsModuleServerRoute(server, {
 				verbose,
 				appVirtualWithSlash: APP_VIRTUAL_WITH_SLASH,
@@ -612,20 +612,20 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				},
 			});
 
-			// 2.5) ESM runtime bridge for NativeScript-Vue: GET /ns/rt[/<ver>] — see ns-rt-route.ts
+			// ESM runtime bridge for NativeScript-Vue: GET /ns/rt[/<ver>] — see ns-rt-route.ts
 			registerNsRtBridgeRoute(server, { getGraphVersion: () => moduleGraph.version });
 
-			// 2.55) Dev-only vendor import unifier: rewrite 'vue'/'nativescript-vue' to /ns/rt/<ver>
+			// Dev-only vendor import unifier: rewrite 'vue'/'nativescript-vue' to /ns/rt/<ver>
 			// so plugins and the app share a single Vue/NativeScript-Vue realm. See websocket-vendor-unifier.ts.
 			registerVendorUnifierHandler(server, { getGraphVersion: () => moduleGraph.version, getStrategy: () => strategy });
 
-			// 2.6) @nativescript/core device bridge (+ stray /node_modules/@nativescript/core redirect) — see websocket-ns-core.ts
+			// @nativescript/core device bridge (+ stray /node_modules/@nativescript/core redirect) — see websocket-ns-core.ts
 			registerNsCoreRoute(server, {
 				getGraphVersion: () => moduleGraph.version,
 				sharedTransformRequest,
 			});
 
-			// 2.6a/2.6b) Device bootstrap: GET /ns/entry-rt + GET /ns/entry — see websocket-ns-entry.ts
+			// Device bootstrap: GET /ns/entry-rt + GET /ns/entry — see websocket-ns-entry.ts
 			registerNsEntryRoutes(server, {
 				verbose,
 				appRootDir: APP_ROOT_DIR,
@@ -634,7 +634,7 @@ function createHmrWebSocketPlugin(opts: { verbose?: boolean }, strategy: Framewo
 				getGraphVersion: () => moduleGraph.version,
 			});
 
-			// 2.6) Transactional HMR endpoint: GET /ns/txn/<ver> — one ESM that sequentially
+			// Transactional HMR endpoint: GET /ns/txn/<ver> — one ESM that sequentially
 			// imports all changed modules for the given graph version. See websocket-txn.ts.
 			registerTxnHandler(server, {
 				resolveTxnIds: (version, fallbackChangedIds) => {

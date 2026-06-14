@@ -849,13 +849,13 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			try {
 				g.__NS_DEV_RESET_IN_PROGRESS__ = true;
 			} catch {}
-			// Two-phase pre-reboot cleanup. Order matters: dispose runs
+			// Two-step pre-reboot cleanup. Order matters: dispose runs
 			// FIRST so user-code disposers see a still-live runtime
 			// (sockets, workers, etc.) and can issue graceful "I'm
 			// going away" messages; then we hard-terminate any worker
 			// the user didn't manually clean up.
 			//
-			// Phase 1 — `import.meta.hot.dispose(cb)` callbacks
+			// Step 1 — `import.meta.hot.dispose(cb)` callbacks
 			// ────────────────────────────────────────────────
 			// The NS iOS runtime exposes
 			// `globalThis.__nsRunHmrDispose()` (registered in
@@ -873,7 +873,7 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			// fire before the next Angular reboot — no NS-specific
 			// knowledge required.
 			runHmrDisposeCallbacks(g, options);
-			// Phase 2 — worker auto-terminate (defence in depth)
+			// Step 2 — worker auto-terminate (defence in depth)
 			// ───────────────────────────────────────────────────
 			// Even with perfect dispose() coverage, workers spawned
 			// from constructors that re-run on Angular reboot (e.g.

@@ -15,7 +15,7 @@ const babelTraverse: any = (traverse as any)?.default || (traverse as any);
 
 // `core-sanitize.rewriteSpec` plus the `ns-core-external-urls` resolve plugin
 // canonicalize every `@nativescript/core[/sub]` import to a `/ns/core/...`
-// bridge URL upstream of this normalizer. Empirical Phase 1 telemetry across
+// bridge URL upstream of this normalizer. Empirical telemetry across
 // cold boot, full app load, and HMR TS/HTML updates showed zero fires for the
 // AST `isNsCorePackage` branches under the Angular pipeline. We keep the
 // rewrite as a defense-in-depth safety net, but if it ever runs we want the
@@ -123,7 +123,7 @@ export function astNormalizeModuleImportsAndHelpers(code: string, opts?: { under
 					// `rewriteSpec` + the `ns-core-external-urls` resolve
 					// plugin) are supposed to have already converted every
 					// `@nativescript/core[/sub]` to a canonical bridge URL
-					// before the AST normalizer runs. Empirical Phase 1
+					// before the AST normalizer runs. Empirical
 					// telemetry for Angular showed zero fires across cold
 					// boot, full app load, and HMR TS/HTML updates, so this
 					// path is effectively dead.
