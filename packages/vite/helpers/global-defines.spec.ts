@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { HMR_KICKSTART_DEFAULT_MAX_URLS, isHmrProgressOverlayEnabled, resolveHmrKickstartMaxUrls } from './global-defines.js';
+import { HMR_KICKSTART_DEFAULT_MAX_URLS, getGlobalDefines, isHmrProgressOverlayEnabled, resolveHmrKickstartMaxUrls } from './global-defines.js';
 
 describe('isHmrProgressOverlayEnabled (NS_VITE_PROGRESS_OVERLAY)', () => {
 	it('defaults to enabled when the env var is unset', () => {
@@ -99,5 +99,17 @@ describe('resolveHmrKickstartMaxUrls (NS_VITE_KICKSTART_MAX_URLS)', () => {
 
 	it('trims whitespace before parsing (e.g. NS_VITE_KICKSTART_MAX_URLS=" 16 ")', () => {
 		expect(resolveHmrKickstartMaxUrls({ NS_VITE_KICKSTART_MAX_URLS: '  16  ' } as any)).toBe(16);
+	});
+});
+
+describe('getGlobalDefines — webpack compatibility', () => {
+	it('maps __non_webpack_require__ to the runtime require (raw expression, not a string literal)', () => {
+		// webpack's APIPlugin provides `__non_webpack_require__`; some NativeScript
+		// plugins (e.g. @nativescript/firebase-core on Android) reference it unguarded,
+		// so Vite must define it or those plugins ReferenceError at runtime.
+		const defines = getGlobalDefines({ platform: 'android', targetMode: 'development', verbose: false, flavor: 'angular' });
+		expect((defines as Record<string, unknown>).__non_webpack_require__).toBe('globalThis.require');
+		// Must be a bare expression, not JSON.stringified (which would inject a string).
+		expect((defines as Record<string, unknown>).__non_webpack_require__).not.toBe('"globalThis.require"');
 	});
 });

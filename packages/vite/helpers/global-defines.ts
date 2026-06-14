@@ -195,6 +195,12 @@ export function getGlobalDefines(opts: { platform: string; targetMode: string; v
 		__DEV__: JSON.stringify(values.__DEV__),
 		__COMMONJS__: values.__COMMONJS__,
 		__NS_WEBPACK__: values.__NS_WEBPACK__,
+		// webpack exposes `__non_webpack_require__` (its APIPlugin) as the native,
+		// non-bundler require. Some NativeScript plugins (e.g. @nativescript/firebase-core's
+		// Android config reader) reference it unguarded. Map it to the runtime's
+		// global require so those plugins work under Vite/Rolldown too. Raw
+		// expression (NOT JSON.stringified) so it substitutes as code, not a string.
+		__non_webpack_require__: 'globalThis.require',
 		__NS_ENV_VERBOSE__: JSON.stringify(values.__NS_ENV_VERBOSE__),
 		__NS_TARGET_FLAVOR__: JSON.stringify(opts.flavor),
 		// whether to show the HMR in-progress overlay.
