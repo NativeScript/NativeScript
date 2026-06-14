@@ -7,10 +7,16 @@ import type { FrameworkProcessFileContext, FrameworkRegistryContext, FrameworkRo
 import { registerSfcHandlers } from './websocket-sfc.js';
 import { getProjectAppPath } from '../../../../helpers/utils.js';
 import { runHotUpdatePrologue } from '../../../server/websocket-hot-update.js';
-import { cleanCode, collectImportDependencies, processSfcCode, rewriteImports } from '../../../server/websocket-device-transform.js';
+import { cleanCode, collectImportDependencies, processCodeForDevice, rewriteImports } from '../../../server/websocket-device-transform.js';
 import { isCoreGlobalsReference, isNativeScriptCoreModule, isNativeScriptPluginModule, resolveVendorFromCandidate } from '../../../server/websocket-module-specifiers.js';
 import { purgeTransformCachesForHotUpdate } from '../../../server/transform-cache-invalidation.js';
+import { createProcessSfcCode } from './sfc-transforms.js';
 import type { VueSfcRegistryEntry, VueSfcRegistryMessage, VueSfcRegistryUpdateMessage } from '../../../shared/protocol.js';
+
+// The Vue SFC post-processor is owned here (not in the shared device-transform
+// core) so the generic transform path stays framework-agnostic. `websocket.ts`
+// imports this to inject it as the `processSfcCode` helper for Vue's hooks.
+export const processSfcCode = createProcessSfcCode(processCodeForDevice);
 
 const VENDOR_MJS = '/@nativescript/vendor.mjs';
 const VUE_HTTP_SFC_DIR = `${getProjectAppPath()}/sfc`;

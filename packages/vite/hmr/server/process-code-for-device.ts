@@ -10,7 +10,6 @@ import { stripDanglingViteCjsImports } from '../helpers/sanitize.js';
 import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
 import { getProjectRootPath } from '../../helpers/project.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
-import { createProcessSfcCode } from '../frameworks/vue/server/sfc-transforms.js';
 import { getCliFlags } from '../../helpers/cli-flags.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
 import { getProjectFlavor } from '../../helpers/flavor.js';
@@ -67,8 +66,6 @@ const __platformSeed = __runtimeDefines.platform ? buildGuardedDefineSeedStateme
 interface ProcessCodeForDeviceOptions {
 	resolvedSpecifierOverrides?: Map<string, string>;
 }
-
-const processSfcCode = createProcessSfcCode(processCodeForDevice);
 
 function collectImportDependencies(code: string, importerPath: string): Set<string> {
 	const importerDir = path.posix.dirname(importerPath);
@@ -703,4 +700,4 @@ function processCodeForDevice(code: string, isVitePreBundled: boolean, preserveV
 	return result;
 }
 
-export { processCodeForDevice, cleanCode, collectImportDependencies, processSfcCode };
+export { processCodeForDevice, cleanCode, collectImportDependencies };
