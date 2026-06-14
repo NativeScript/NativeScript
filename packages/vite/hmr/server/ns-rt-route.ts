@@ -33,7 +33,10 @@ export function registerNsRtBridgeRoute(server: ViteDevServer, options: NsRtRout
 			const code = buildNsRtBridgeModule({ rtVer, requireGuardSnippet: REQUIRE_GUARD_SNIPPET, vendorExports });
 			res.statusCode = 200;
 			res.end(code);
-		} catch {
+		} catch (err) {
+			// Don't fail silently: a broken /ns/rt bridge leaves the device unable
+			// to resolve the unified Vue runtime, so surface the cause.
+			console.error('[ns-rt] failed to build the /ns/rt runtime bridge module:', (err as Error)?.message || err);
 			res.statusCode = 500;
 			res.end('export {}\n');
 		}

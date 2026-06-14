@@ -1016,6 +1016,7 @@ async function processQueue(): Promise<void> {
 					detail: drained.length === 1 ? `Re-importing ${drained[0]}` : `Re-importing ${drained.length} modules`,
 				});
 			}
+			let reimportFailures = 0;
 			for (const id of drained) {
 				try {
 					const spec = normalizeSpec(id);
@@ -1042,8 +1043,16 @@ async function processQueue(): Promise<void> {
 						}
 					}
 				} catch (e) {
-					if (VERBOSE) console.warn('[hmr][queue] re-import failed for', id, e);
+					// Never silent: a failed re-import means the device may keep
+					// running the previous module body, so always surface it (not
+					// verbose-gated) — otherwise the overlay reports success while
+					// the app runs stale code.
+					reimportFailures++;
+					console.warn('[hmr][queue] re-import FAILED for', id, '-', (e as any)?.message ?? e);
 				}
+			}
+			if (reimportFailures > 0) {
+				console.warn(`[hmr][queue] ${reimportFailures}/${drained.length} module(s) failed to re-import; the applied update may be incomplete.`);
 			}
 			// After evaluating the batch, perform flavor-specific UI refresh.
 			switch (TARGET_FLAVOR) {
@@ -1427,11 +1436,35 @@ async function processQueue(): Promise<void> {
 		} finally {
 			processingQueue = false;
 			processingPromise = null;
+			// If a delta arrived mid-cycle (pushed onto changedQueue while
+			// processingQueue was still true, so its processQueue() call early-
+			// returned), re-drain — otherwise that save is stranded until the next
+			// delta. Deferred via setTimeout to avoid synchronous re-entrancy as
+			// this promise settles.
+			if (changedQueue.length) {
+				setTimeout(() => {
+					try {
+						processQueue();
+					} catch {}
+				}, 0);
+			}
 		}
 	})();
 	return processingPromise;
 }
 let hmrSocket: WebSocket | null = null;
+// Single reconnect timer. Overlapping close/timeout events used to each schedule
+// their own `setTimeout(connectHmr, …)`, stacking multiple pending reconnects
+// that could spawn (and leak) duplicate sockets/listeners. Route all reconnect
+// scheduling through here so only one is ever pending.
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleReconnect(delayMs: number) {
+	if (reconnectTimer) clearTimeout(reconnectTimer);
+	reconnectTimer = setTimeout(() => {
+		reconnectTimer = null;
+		connectHmr();
+	}, delayMs);
+}
 // Track server-announced batches for each version so we can import in-order client-side
 const txnClientBatches: Map<number, string[]> = new Map();
 
@@ -1460,6 +1493,12 @@ function connectHmr() {
 	if (hmrSocket?.readyState === WebSocket.CONNECTING) {
 		if (VERBOSE) console.log('[hmr-client] Already connecting to HMR WebSocket, skipping');
 		return;
+	}
+	// A reconnect fired (or a manual connect raced one) — cancel any other pending
+	// reconnect so we don't end up with overlapping connect attempts.
+	if (reconnectTimer) {
+		clearTimeout(reconnectTimer);
+		reconnectTimer = null;
 	}
 	try {
 		globalThis.__NS_HMR_CLIENT_SOCKET_READY__ = false;
@@ -1525,7 +1564,7 @@ function connectHmr() {
 		if (idx >= candidates.length) {
 			showConnectionOverlayNow('offline', 'Waiting for the Vite websocket to come back.');
 			console.warn('[hmr-client] All WS candidates failed:', candidates.join(', '));
-			setTimeout(connectHmr, 1500);
+			scheduleReconnect(1500);
 			return;
 		}
 		const url = candidates[idx++];
@@ -1591,7 +1630,7 @@ function connectHmr() {
 					if (VERBOSE) console.log('[hmr-client] WebSocket closed (code', ev?.code, '), will reconnect…');
 					scheduleConnectionOverlay('reconnecting', 'The websocket closed. Waiting to reconnect.', 700);
 					// try to reconnect with full candidate list again
-					setTimeout(connectHmr, 1000);
+					scheduleReconnect(1000);
 				}
 			};
 		} catch (e) {
