@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import ts from 'typescript';
-import { getCliFlags } from './cli-flags.js';
+import { getCliFlags, resolvePlatform } from './cli-flags.js';
 import { getProjectTSConfigPath } from './project.js';
 import type { Platform } from './platform-types.js';
 
@@ -171,7 +171,7 @@ function normalizeTypeCheckSetting(base: ResolvedTypeCheckOptions, setting?: Typ
 
 function getTypeCheckOptions(setting?: TypeCheckSetting): ResolvedTypeCheckOptions {
 	const flags = getCliFlags();
-	const platform: PlatformType | undefined = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
+	const platform: PlatformType | undefined = resolvePlatform(flags);
 	const verbose = process.env.DEBUG === '1' || process.env.DEBUG === 'true';
 	const envMode = coerceTypeCheckMode(process.env.NS_VITE_TYPECHECK ?? process.env.NS_VITE_TYPE_CHECK);
 	const cliMode = coerceTypeCheckMode(flags.typecheck ?? flags['type-check'] ?? flags.typeCheck);

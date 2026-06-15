@@ -10,7 +10,7 @@ import { stripDanglingViteCjsImports } from '../helpers/sanitize.js';
 import { getVendorManifest, resolveVendorSpecifier } from '../shared/vendor/registry.js';
 import { getProjectRootPath } from '../../helpers/project.js';
 import type { FrameworkServerStrategy } from './framework-strategy.js';
-import { getCliFlags } from '../../helpers/cli-flags.js';
+import { getCliFlags, resolvePlatform } from '../../helpers/cli-flags.js';
 import { resolveVerboseFlag } from '../../helpers/logging.js';
 import { getProjectFlavor } from '../../helpers/flavor.js';
 import { buildDefineShimStatements, buildGuardedDefineSeedStatement, getRuntimeDefineValues } from '../../helpers/global-defines.js';
@@ -34,18 +34,12 @@ try {
 } catch {}
 const __processEnvJson = JSON.stringify(__processEnvEntries);
 
-// Canonical define values resolved once from CLI flags (--env.ios /
-// --env.android / --env.visionos). The dev server only ever runs in
-// development mode, so isDevMode is true. Shared with the Vite `define`
-// config and the bundle's defines-seed module via getRuntimeDefineValues —
-// all emitters MUST derive from that one source (drift between them produced
-// the "__APPLE__ false on iOS" HMR boot bug class).
+// Canonical define values resolved once
 const __runtimeDefines = (() => {
 	let platform: string | undefined;
 	let verbose = false;
 	try {
-		const flags = getCliFlags();
-		platform = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
+		platform = resolvePlatform();
 		verbose = resolveVerboseFlag();
 	} catch {}
 	return { platform, values: getRuntimeDefineValues({ platform, isDevMode: true, verbose }) };

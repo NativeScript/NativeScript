@@ -1,7 +1,7 @@
 import { mergeConfig, type Plugin, type UserConfig } from 'vite';
 import path from 'node:path';
 import { baseConfig } from './base.js';
-import { getCliFlags } from '../helpers/cli-flags.js';
+import { resolvePlatform } from '../helpers/cli-flags.js';
 import { getPackageJson, getProjectFilePath, getProjectRootPath } from '../helpers/project.js';
 import { getProjectAppPath } from '../helpers/utils.js';
 import { getTypeCheckPlugins, type TypeCheckControlOptions } from '../helpers/typescript-check.js';
@@ -15,8 +15,7 @@ import { type BundlerPlatform, createXmlLoaderPlugin, shouldExcludePlatformFile,
 function createBundlerContextPlugin(): Plugin {
 	const VIRTUAL_ID = 'virtual:ns-bundler-context';
 	const RESOLVED_ID = '\0' + VIRTUAL_ID;
-	const flags = getCliFlags();
-	const platform: BundlerPlatform = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
+	const platform: BundlerPlatform = resolvePlatform();
 	// Determine the app's declared main entry to avoid eagerly importing it (which would execute Application.run too early)
 	const projectRoot = getProjectRootPath();
 	const pkg = getPackageJson();

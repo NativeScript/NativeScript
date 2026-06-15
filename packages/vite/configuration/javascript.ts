@@ -1,6 +1,6 @@
 import { mergeConfig, type Plugin, type UserConfig } from 'vite';
 import { baseConfig } from './base.js';
-import { getCliFlags } from '../helpers/cli-flags.js';
+import { resolvePlatform } from '../helpers/cli-flags.js';
 import { getProjectAppPath } from '../helpers/utils.js';
 import { type BundlerPlatform, createXmlLoaderPlugin, shouldExcludePlatformFile, toContextImportSpecifier, walkAppFiles } from '../helpers/bundler-context.js';
 
@@ -13,8 +13,7 @@ import { type BundlerPlatform, createXmlLoaderPlugin, shouldExcludePlatformFile,
 function createBundlerContextPlugin(): Plugin {
 	const VIRTUAL_ID = 'virtual:ns-bundler-context';
 	const RESOLVED_ID = '\0' + VIRTUAL_ID;
-	const flags = getCliFlags();
-	const platform: BundlerPlatform = flags.android ? 'android' : flags.ios ? 'ios' : flags.visionos ? 'visionos' : undefined;
+	const platform: BundlerPlatform = resolvePlatform();
 	const appRoot = getProjectAppPath();
 	const appRootPrefix = `${appRoot}/`;
 
