@@ -410,6 +410,11 @@ function terminateTrackedWorkers(g: any, options: { verbose?: boolean }): void {
 	}
 }
 
+// Narrow an unknown eviction-list entry to a fetchable http(s) URL. Shared by
+// the reboot path (refreshAngularBootstrapOptions) and the leaf re-import
+// fallback so the two stay in lockstep on what counts as a valid evict URL.
+const isHttpUrl = (u: unknown): u is string => typeof u === 'string' && /^https?:\/\//.test(u);
+
 function invalidateModules(urls: readonly string[], verbose: boolean): boolean {
 	if (!urls || !urls.length) return false;
 	const g: any = globalThis;
@@ -620,7 +625,7 @@ export async function refreshAngularBootstrapOptions(msg: any, options: AngularU
 	// `g_moduleRegistry` so V8's subsequent `import(entry)` walks the
 	// dep graph and re-fetches ONLY those modules. Everything else stays
 	// hot in the cache.
-	const evictPaths = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)) : [];
+	const evictPaths = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter(isHttpUrl) : [];
 
 	// Diagnostic: log eviction set client-side so we can verify what
 	// the runtime is being asked to drop. Up to 32 entries are sampled
@@ -919,13 +924,63 @@ export async function handleAngularHotUpdateMessage(msg: any, options: AngularUp
 			return true;
 		}
 
+		// Reached only when the NgModule reboot path above was skipped — i.e.
+		// `g.__reboot_ng_modules__` was not a function at the time this update
+		// arrived, so no full re-bootstrap ran. (That handler is installed by
+		// `runNativeScriptAngularApp()`, so this is NOT about how the app boots;
+		// it covers the window where the handler isn't registered yet, or any
+		// update that never wires one up.) Fall back to the standard Vite
+		// leaf-module path: evict + re-import the changed module(s) so their
+		// top-level side-effects and `import.meta.hot.accept` callbacks re-run
+		// WITHOUT a full reboot. The server narrows leaf edits (no @Component/
+		// @Directive/@Pipe/@Injectable/@NgModule decorator) to just the changed
+		// file, so this is cheap. This is what makes self-accepting utility
+		// modules (e.g. a live-tuning module that posts values to native on
+		// evaluation) hot-reload at all — without it they were silently dropped
+		// here.
+		try {
+			const origin = (typeof g.__NS_HTTP_ORIGIN__ === 'string' ? g.__NS_HTTP_ORIGIN__ : '').replace(/\/$/, '');
+			let urls: string[] = Array.isArray(msg?.evictPaths) ? (msg.evictPaths as unknown[]).filter(isHttpUrl) : [];
+			// Derive the canonical /ns/m/<rel> URL from msg.path when the server
+			// sent no evictPaths (V8 keys app modules by their extensionless URL).
+			if (!urls.length && typeof msg?.path === 'string' && origin) {
+				const rel = (msg.path as string).replace(/^\//, '').replace(/\.(?:[mc]?[jt]sx?)$/i, '');
+				urls = [`${origin}/ns/m/${rel}`];
+			}
+			if (urls.length) {
+				setUpdateOverlayStage('reimporting', { detail: `Re-importing ${urls.length} module${urls.length === 1 ? '' : 's'}` });
+				invalidateModules(urls, options.verbose);
+				const nonce = (typeof g.__NS_HMR_IMPORT_NONCE__ === 'number' ? g.__NS_HMR_IMPORT_NONCE__ : 0) + 1;
+				g.__NS_HMR_IMPORT_NONCE__ = nonce;
+				let reimported = 0;
+				for (const u of urls) {
+					try {
+						await importAngularBootstrapEntry(`${u}${u.includes('?') ? '&' : '?'}hmr=${nonce}`);
+						reimported++;
+					} catch (e) {
+						if (options.verbose) {
+							console.warn('[ns-hmr][leaf] re-import failed', u, (e && (e as any).message) || e);
+						}
+					}
+				}
+				const ok = reimported > 0;
+				tEnd = Date.now();
+				emitTiming(ok, ok ? 'leaf-reimport' : 'leaf-reimport-failed');
+				hideUpdateOverlay();
+				return ok;
+			}
+		} catch (e) {
+			if (options.verbose) {
+				console.warn('[ns-hmr][leaf] fallback threw', (e && (e as any).message) || e);
+			}
+		}
 		if (options.verbose && envVerbose) {
 			console.warn('[hmr-angular] No Angular HMR handler found. Ensure runNativeScriptAngularApp() has been called.');
 		}
 		tEnd = Date.now();
 		emitTiming(false, 'no-reboot-handler');
-		// No reboot handler → we can't apply the update; hide the
-		// overlay rather than leaving stale progress on screen.
+		// No reboot handler and nothing to re-import → hide the overlay rather
+		// than leaving stale progress on screen.
 		hideUpdateOverlay();
 	} catch (error) {
 		if (options.verbose) {
