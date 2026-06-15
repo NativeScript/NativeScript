@@ -756,6 +756,21 @@ export function installRootPlaceholder(verbose?: boolean) {
 			const nativeApp = appAny.nativeApp;
 			const iosNativeApp = appAny.ios?.nativeApp;
 			const canRunAsMainApp = typeof appAny.runAsMainApp === 'function';
+			// iOS family only: when NativeScript runs EMBEDDED inside a host
+			// UIApplication (a visionOS SwiftUI `App`, or iOS built with
+			// `NS_SWIFTUI_BOOT=1`), the UIApplication singleton ALREADY exists by
+			// the time this placeholder runs — the SwiftUI `@main` created it
+			// before `[NativeScriptStart boot]` ran our entry. Calling
+			// `UIApplicationMain` again (via `runAsMainApp`/`run`) asserts in
+			// `UIApplicationInstantiateSingleton` and crashes at boot.
+			//
+			// `runAsMainApp` is an iOS-only method, so gating on `canRunAsMainApp`
+			// scopes this to Apple platforms (it leaves Android's `appAny.run()`
+			// branch untouched, where `nativeApp` is legitimately present early).
+			// On STANDALONE iOS the UIApplication is not created until
+			// `runAsMainApp()` itself calls `UIApplicationMain`, so `nativeApp` is
+			// still null here and the normal boot path below is preserved.
+			const hostUIApplicationExists = canRunAsMainApp && !!(nativeApp || iosNativeApp);
 			if (verbose) {
 				console.info('[ns-placeholder] boot state', {
 					hasLaunched,
@@ -764,15 +779,19 @@ export function installRootPlaceholder(verbose?: boolean) {
 					nativeApp: !!nativeApp,
 					iosNativeApp: !!iosNativeApp,
 					canRunAsMainApp,
+					hostUIApplicationExists,
 					hasResetRootView: typeof appAny.resetRootView === 'function',
 				});
 			}
 
-			if (hasLaunched || hasRootView) {
-				// App lifecycle is already active. Skip starting it again and only install
-				// the placeholder root/patching behavior for the existing instance.
+			if (hasLaunched || hasRootView || hostUIApplicationExists) {
+				// App lifecycle is already active — either a standalone app that has
+				// already launched, or NativeScript embedded inside a host
+				// UIApplication (visionOS SwiftUI). Skip starting it again
+				// (a second `UIApplicationMain` would assert) and only install the
+				// placeholder root/patching behavior for the existing instance.
 				if (verbose) {
-					console.info('[ns-placeholder] boot branch: existing lifecycle');
+					console.info('[ns-placeholder] boot branch: existing lifecycle', { hostUIApplicationExists });
 				}
 				try {
 					__ns_launch_handler();
