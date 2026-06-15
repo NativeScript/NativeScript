@@ -463,6 +463,89 @@ function resolveActivePage(): any {
 	return null;
 }
 
+function readCachedAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
+	const g = getOverlayGlobal();
+	const cached = g.__NS_HMR_ANDROID_SAFE_INSETS__;
+	if (cached && typeof cached.top === 'number') {
+		return cached as AndroidSafeAreaInsets;
+	}
+	return null;
+}
+
+/**
+ * Read the Android system-bar safe-area insets (status bar / navigation
+ * bar / display cutout) in device-independent pixels.
+ *
+ * NativeScript runs every Android activity edge-to-edge, so the overlay
+ * wrapper fills the whole window — we need these insets to keep the toast
+ * chip out from under the system bars (see `computeAndroidToastMargin`).
+ *
+ * Returns null on non-Android runtimes (iOS / web / vitest) so callers
+ * fall back to base margins. The last good reading is cached on the
+ * global so a transient null (e.g. insets queried before the decor view
+ * is attached) reuses the previous value instead of snapping the chip
+ * back under the status bar.
+ */
+function readAndroidSafeAreaInsets(): AndroidSafeAreaInsets | null {
+	const g = getOverlayGlobal();
+	// `android.*` is exposed as a global only on the NativeScript Android
+	// runtime; its absence means iOS, web, or a test environment.
+	const androidNs = g.android || (typeof (globalThis as any).android !== 'undefined' ? (globalThis as any).android : undefined);
+	if (!androidNs) {
+		return null;
+	}
+	try {
+		const Application = resolveCoreExport('Application');
+		const activity = Application?.android?.foregroundActivity || Application?.android?.startActivity;
+		const decorView = activity?.getWindow?.()?.getDecorView?.();
+		const rootInsets = decorView?.getRootWindowInsets?.();
+		if (!rootInsets) {
+			return readCachedAndroidSafeAreaInsets();
+		}
+
+		let density = 1;
+		try {
+			const metricsDensity = Number(activity?.getResources?.()?.getDisplayMetrics?.()?.density);
+			if (Number.isFinite(metricsDensity) && metricsDensity > 0) {
+				density = metricsDensity;
+			}
+		} catch {}
+
+		let px = { top: 0, bottom: 0, left: 0, right: 0 };
+		const WindowInsets = androidNs.view?.WindowInsets;
+		const Type = WindowInsets?.Type;
+		if (typeof rootInsets.getInsets === 'function' && Type && typeof Type.systemBars === 'function') {
+			// API 30+: query the system bars + display cutout so notches /
+			// camera holes are respected in landscape.
+			let mask = Type.systemBars();
+			if (typeof Type.displayCutout === 'function') {
+				mask = mask | Type.displayCutout();
+			}
+			const i = rootInsets.getInsets(mask);
+			px = { top: Number(i?.top) || 0, bottom: Number(i?.bottom) || 0, left: Number(i?.left) || 0, right: Number(i?.right) || 0 };
+		} else {
+			// API < 30 fallback.
+			px = {
+				top: Number(rootInsets.getSystemWindowInsetTop?.()) || 0,
+				bottom: Number(rootInsets.getSystemWindowInsetBottom?.()) || 0,
+				left: Number(rootInsets.getSystemWindowInsetLeft?.()) || 0,
+				right: Number(rootInsets.getSystemWindowInsetRight?.()) || 0,
+			};
+		}
+
+		const insets: AndroidSafeAreaInsets = {
+			top: px.top / density,
+			bottom: px.bottom / density,
+			left: px.left / density,
+			right: px.right / density,
+		};
+		g.__NS_HMR_ANDROID_SAFE_INSETS__ = insets;
+		return insets;
+	} catch {
+		return readCachedAndroidSafeAreaInsets();
+	}
+}
+
 function buildLiveOverlayView(snapshot: HmrOverlaySnapshot): Omit<LiveOverlayRefs, 'page' | 'wrapper'> | null {
 	const GridLayout = resolveCoreExport('GridLayout');
 	const StackLayout = resolveCoreExport('StackLayout');
@@ -627,21 +710,37 @@ function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot): void 
 				panel.borderRadius = 12;
 			} catch {}
 
-			// Position-aware alignment. The wrapper GridLayout fills
-			// the page content area, which on iOS is already inside
-			// the safe area; we add a small extra margin so the chip
-			// doesn't kiss the notch / home indicator.
+			// Position-aware alignment. The wrapper GridLayout fills the
+			// page content area. NativeScript runs every Android activity
+			// edge-to-edge, so that area extends under the status bar and
+			// navigation bar — we fold the system-bar safe-area insets into
+			// the chip's margin (via computeAndroidToastMargin) so a top
+			// chip clears the status bar and a bottom chip clears the nav
+			// bar instead of being clipped behind them. readAndroidSafeAreaInsets
+			// returns null off-Android, so the margins collapse to their base
+			// values (no behavioural change on iOS's in-tree fallback / tests).
 			try {
-				if (position === 'top') {
-					panel.verticalAlignment = 'top';
-					panel.margin = '12 16 0 16';
-				} else if (position === 'bottom') {
-					panel.verticalAlignment = 'bottom';
-					panel.margin = '0 16 12 16';
+				if (position === 'top' || position === 'bottom') {
+					const m = computeAndroidToastMargin({ position, safeInsets: readAndroidSafeAreaInsets() });
+					panel.verticalAlignment = position;
+					panel.margin = `${m.top} ${m.right} ${m.bottom} ${m.left}`;
 				} else {
 					panel.verticalAlignment = 'middle';
 					panel.margin = 24;
 				}
+			} catch {}
+
+			// Force a tight re-measure so the StackLayout panel hugs the
+			// CURRENT title+status text. Connection stages can swap between
+			// frames whose text wraps to a different number of lines (e.g. a
+			// long 'reconnecting' "Retrying ws://…" detail vs. the short
+			// 'offline' message). Without an explicit relayout the panel can
+			// retain the tallest height it ever measured, leaving an oversized
+			// gap between title and message. Mirrors updateBootStatusLabel.
+			try {
+				refs.titleLabel.requestLayout?.();
+				refs.statusLabel.requestLayout?.();
+				panel.requestLayout?.();
 			} catch {}
 		}
 	} catch {}
@@ -677,6 +776,17 @@ function applySnapshotToLiveRefs(refs: any, snapshot: HmrOverlaySnapshot): void 
 			refs.overlay.visibility = 'collapse';
 		}
 	} else {
+		// Steady-state refresh (e.g. offline → reconnecting → offline while
+		// already visible): no slide animation fires here, so clear any
+		// transform residue a previously-interrupted slide-in/out may have
+		// left on the panel. Otherwise the chip can appear shifted or
+		// faded across rapid connection-stage swaps.
+		if (visible && panel) {
+			try {
+				panel.translateY = 0;
+				panel.opacity = 1;
+			} catch {}
+		}
 		refs.overlay.visibility = visible ? 'visible' : 'collapse';
 	}
 
@@ -863,6 +973,76 @@ export function computeIosOverlayLayout(input: { viewWidth: number; viewHeight: 
 			height: statusHeight,
 		},
 	};
+}
+
+// Safe-area insets (in device-independent pixels) for the in-tree
+// Android live/update overlay. Read at runtime from the foreground
+// activity's root window insets; null on non-Android runtimes (iOS,
+// tests) so the toast falls back to its base margins.
+export type AndroidSafeAreaInsets = { top: number; bottom: number; left: number; right: number };
+
+// Resolved margin (top/right/bottom/left, in DIPs) for the in-tree toast
+// chip. Fed straight into `panel.margin` as a "top right bottom left"
+// string.
+export type AndroidToastMargin = { top: number; right: number; bottom: number; left: number };
+
+/**
+ * Margin math for the in-tree (Android) live/update toast chip.
+ *
+ * NativeScript enables edge-to-edge on every Android activity
+ * (`@nativescript/core` → `application.android.ts` → `enableEdgeToEdge`),
+ * so the page content — and therefore the overlay wrapper we inject into
+ * it — extends underneath the status bar and navigation bar. A fixed
+ * top/bottom margin leaves the chip tucked behind the system bars, where
+ * it gets clipped (Android 15 / API 35 enforces edge-to-edge, so this is
+ * now the norm rather than the exception).
+ *
+ * This pure helper folds the system-bar safe-area insets into the chip's
+ * margin so the toast always clears the status bar (top position) /
+ * navigation bar (bottom position). It is deterministic and free of
+ * native deps so the rules stay unit-testable — the runtime reads the
+ * live insets via `readAndroidSafeAreaInsets()` and forwards them here.
+ *
+ *   - 'top':    margin.top    = baseVerticalInset + safeInsets.top
+ *   - 'bottom': margin.bottom = baseVerticalInset + safeInsets.bottom
+ *   - 'center': fixed `centerMargin` all around (vertically centered, so
+ *               it never approaches the system bars on normal viewports).
+ *
+ * Horizontal margins always include the relevant safe-area inset so a
+ * landscape display cutout / gesture pill doesn't clip the chip edge.
+ */
+export function computeAndroidToastMargin(input: { position: HmrOverlayPosition; safeInsets?: AndroidSafeAreaInsets | null; baseVerticalInset?: number; baseHorizontalInset?: number; centerMargin?: number }): AndroidToastMargin {
+	// Clamp to a finite, non-negative number; fall back to `fallback`
+	// for missing/NaN input so a glitched measurement can't produce a
+	// negative or NaN margin (which NativeScript would silently drop).
+	const clamp = (value: any, fallback: number): number => {
+		const n = Number(value);
+		return Number.isFinite(n) && n >= 0 ? n : fallback;
+	};
+
+	const safe = {
+		top: clamp(input.safeInsets?.top, 0),
+		bottom: clamp(input.safeInsets?.bottom, 0),
+		left: clamp(input.safeInsets?.left, 0),
+		right: clamp(input.safeInsets?.right, 0),
+	};
+	const baseVerticalInset = clamp(input.baseVerticalInset, 8);
+	const baseHorizontalInset = clamp(input.baseHorizontalInset, 16);
+	const centerMargin = clamp(input.centerMargin, 24);
+
+	if (input.position === 'center') {
+		return { top: centerMargin, right: centerMargin, bottom: centerMargin, left: centerMargin };
+	}
+
+	const left = Math.round(baseHorizontalInset + safe.left);
+	const right = Math.round(baseHorizontalInset + safe.right);
+
+	if (input.position === 'bottom') {
+		return { top: 0, right, bottom: Math.round(baseVerticalInset + safe.bottom), left };
+	}
+
+	// 'top' (and any unexpected value) hugs the status-bar safe area.
+	return { top: Math.round(baseVerticalInset + safe.top), right, bottom: 0, left };
 }
 
 type IosOverlayHost = {

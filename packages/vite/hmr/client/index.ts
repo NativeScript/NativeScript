@@ -230,6 +230,23 @@ let hasOpenedHmrSocket = false;
 let awaitingHealthyHmrMessage = false;
 let pendingConnectionOverlayStage: HmrConnectionOverlayStage = 'connecting';
 let pendingConnectionOverlayDetail = '';
+// The stage currently PAINTED on screen (set only when we actually show
+// the overlay, not when we merely schedule it). Used to suppress the
+// sub-perceptible offline↔reconnecting flicker during the reconnect
+// retry loop — see the deferral in `connectHmr`/`tryNext`.
+let shownConnectionOverlayStage: HmrConnectionOverlayStage | null = null;
+
+// While the terminal 'offline' frame is showing, a fresh reconnect
+// attempt that is refused near-instantly (the norm when the dev server
+// is down — especially on the Android emulator, where connection-refused
+// returns in ~1ms) would flip the overlay to 'reconnecting' and straight
+// back to 'offline', producing a jarring 1-frame flicker. We defer the
+// 'reconnecting' frame by this much so an instant failure (→ back to
+// 'offline') or a success (→ 'synchronizing') cancels it before it ever
+// paints; only a genuinely in-flight attempt surfaces 'reconnecting'.
+// On iOS real connect attempts exceed this threshold, so the behaviour
+// there is unchanged.
+const RECONNECTING_OVER_OFFLINE_DELAY_MS = 500;
 
 function clearConnectionOverlayTimer() {
 	if (connectionOverlayTimer) {
@@ -239,9 +256,14 @@ function clearConnectionOverlayTimer() {
 }
 
 function showConnectionOverlayNow(stage: HmrConnectionOverlayStage, detail?: string) {
+	// Painting a stage now supersedes any scheduled (deferred) stage, so
+	// cancel the pending timer — otherwise a deferred 'reconnecting' could
+	// fire moments after we settle back on 'offline' and revive the flicker.
+	clearConnectionOverlayTimer();
 	pendingConnectionOverlayStage = stage;
 	pendingConnectionOverlayDetail = detail || '';
 	connectionOverlayVisible = true;
+	shownConnectionOverlayStage = stage;
 	setConnectionOverlayStage(stage, detail);
 }
 
@@ -265,6 +287,7 @@ function updateConnectionOverlay(stage: HmrConnectionOverlayStage, detail?: stri
 function markHmrConnectionHealthy() {
 	awaitingHealthyHmrMessage = false;
 	clearConnectionOverlayTimer();
+	shownConnectionOverlayStage = null;
 	if (connectionOverlayVisible) {
 		connectionOverlayVisible = false;
 		hideConnectionOverlay();
@@ -1569,7 +1592,16 @@ function connectHmr() {
 		}
 		const url = candidates[idx++];
 		const connectionDetail = `${overlayStage === 'reconnecting' ? 'Retrying' : 'Opening'} ${url}`;
-		if (connectionOverlayVisible) {
+		if (overlayStage === 'reconnecting' && shownConnectionOverlayStage === 'offline') {
+			// Don't flip the visible 'offline' frame to 'reconnecting' for an
+			// attempt that may fail instantly — defer it so only a genuinely
+			// in-flight attempt surfaces. The deferred show is cancelled by
+			// showConnectionOverlayNow (offline re-show / synchronizing) the
+			// moment this attempt resolves. Keeps 'offline' stable instead of
+			// flickering once per retry. (Checking the PAINTED stage, not the
+			// pending one, so every candidate in the loop keeps deferring.)
+			scheduleConnectionOverlay(overlayStage, connectionDetail, RECONNECTING_OVER_OFFLINE_DELAY_MS);
+		} else if (connectionOverlayVisible) {
 			updateConnectionOverlay(overlayStage, connectionDetail);
 		} else {
 			scheduleConnectionOverlay(overlayStage, connectionDetail);

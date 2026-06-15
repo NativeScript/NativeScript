@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeIosOverlayLayout, computeIosOverlayWindowLevel, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, ensureHmrDevOverlayRuntimeInstalled, getHmrDevOverlayPosition, setHmrDevOverlayPosition, setHmrUpdateStage } from './dev-overlay.js';
+import { computeAndroidToastMargin, computeIosOverlayLayout, computeIosOverlayWindowLevel, createBootOverlaySnapshot, createConnectionOverlaySnapshot, createUpdateOverlaySnapshot, ensureHmrDevOverlayRuntimeInstalled, getHmrDevOverlayPosition, setHmrDevOverlayPosition, setHmrUpdateStage } from './dev-overlay.js';
 import { getGlobalScope } from './global-scope.js';
 
 describe('HMR dev overlay snapshots', () => {
@@ -384,6 +384,77 @@ describe('iOS overlay layout — toast positions', () => {
 			toastVerticalInset: 24,
 		});
 		expect(layout.panel.y).toBe(47 + 24);
+	});
+});
+
+// Android in-tree toast margins. NativeScript runs every Android
+// activity edge-to-edge, so the overlay wrapper extends under the
+// status bar / navigation bar; these tests pin the rule that the
+// chip's margin absorbs the system-bar safe-area insets so it is
+// never clipped behind them (the bug shown in the original screenshots).
+describe('Android toast margin', () => {
+	const insets = { top: 24, bottom: 48, left: 0, right: 0 };
+
+	it("position='top' adds the status-bar inset to the top margin", () => {
+		const m = computeAndroidToastMargin({ position: 'top', safeInsets: insets });
+		// baseVerticalInset (8) + status bar (24) = 32
+		expect(m.top).toBe(32);
+		expect(m.bottom).toBe(0);
+		// baseHorizontalInset (16) + 0 horizontal inset on each side.
+		expect(m.left).toBe(16);
+		expect(m.right).toBe(16);
+	});
+
+	it("position='bottom' adds the navigation-bar inset to the bottom margin", () => {
+		const m = computeAndroidToastMargin({ position: 'bottom', safeInsets: insets });
+		expect(m.top).toBe(0);
+		// baseVerticalInset (8) + nav bar (48) = 56
+		expect(m.bottom).toBe(56);
+		expect(m.left).toBe(16);
+		expect(m.right).toBe(16);
+	});
+
+	it("position='center' keeps a fixed margin and ignores insets", () => {
+		const m = computeAndroidToastMargin({ position: 'center', safeInsets: insets });
+		expect(m).toEqual({ top: 24, right: 24, bottom: 24, left: 24 });
+	});
+
+	it('folds horizontal insets (landscape cutout / gesture pill) into the side margins', () => {
+		const m = computeAndroidToastMargin({ position: 'top', safeInsets: { top: 0, bottom: 0, left: 30, right: 44 } });
+		expect(m.left).toBe(16 + 30);
+		expect(m.right).toBe(16 + 44);
+	});
+
+	it('falls back to base margins when no insets are available (null = non-Android)', () => {
+		// readAndroidSafeAreaInsets() returns null off-Android, so the
+		// chip behaves exactly as before this change on iOS / web / tests.
+		const top = computeAndroidToastMargin({ position: 'top', safeInsets: null });
+		expect(top).toEqual({ top: 8, right: 16, bottom: 0, left: 16 });
+		const bottom = computeAndroidToastMargin({ position: 'bottom' });
+		expect(bottom).toEqual({ top: 0, right: 16, bottom: 8, left: 16 });
+	});
+
+	it('honors caller-supplied base insets', () => {
+		const m = computeAndroidToastMargin({ position: 'top', safeInsets: insets, baseVerticalInset: 12, baseHorizontalInset: 20 });
+		expect(m.top).toBe(12 + 24);
+		expect(m.left).toBe(20);
+		expect(m.right).toBe(20);
+	});
+
+	it('guards against NaN / negative insets', () => {
+		const m = computeAndroidToastMargin({
+			position: 'top',
+			safeInsets: { top: Number.NaN, bottom: -10, left: -5, right: Number.POSITIVE_INFINITY },
+		});
+		// NaN top → 0 inset, so just the base vertical inset remains.
+		expect(m.top).toBe(8);
+		// Negative / non-finite horizontal insets clamp to 0.
+		expect(m.left).toBe(16);
+		expect(m.right).toBe(16);
+		for (const v of [m.top, m.right, m.bottom, m.left]) {
+			expect(Number.isFinite(v)).toBe(true);
+			expect(v).toBeGreaterThanOrEqual(0);
+		}
 	});
 });
 
