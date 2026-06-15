@@ -13,7 +13,7 @@ interface IConfigPlatform {
 	/**
 	 * Custom runtime package name.
 	 * Override the npm package name of the NativeScript runtime used for this platform.
-	 * Useful when using a fork or a custom build of the runtime (e.g. "@nativescript/ios-hermes").
+	 * For example, "@nativescript/ios-hermes"
 	 */
 	runtimePackageName?: string;
 }
