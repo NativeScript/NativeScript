@@ -8,7 +8,7 @@ import { generatePlatformPolyfills } from '../runtime/platform-polyfills.js';
 import type { Platform } from '../../../helpers/platform-types.js';
 import { createNativeClassEsbuildPlugin } from '../../../helpers/nativeclass-esbuild-plugin.js';
 import { getGlobalDefines } from '../../../helpers/global-defines.js';
-import { createVendorEsbuildPlugin, createSolidJsxEsbuildPlugin, angularLinkerEsbuildPlugin } from './vendor-esbuild-plugins.js';
+import { createVendorEsbuildPlugin, createSolidJsxEsbuildPlugin, angularLinkerEsbuildPlugin, createUnicodeRegexEsbuildPlugin } from './vendor-esbuild-plugins.js';
 
 interface VendorManifestModuleEntry {
 	id: string;
@@ -306,6 +306,12 @@ async function generateVendorBundle(options: GenerateVendorOptions): Promise<Ven
 	if (flavor === 'solid') {
 		plugins.push(createSolidJsxEsbuildPlugin(projectRoot));
 	}
+	// Registered last so the framework-specific passes above own their files
+	// first (esbuild stops at the first onLoad that returns a result). Applies
+	// to every flavor: any vendored dependency (e.g. highlight.js) may ship
+	// `\p{…}` regexes that NativeScript's non-ICU V8 cannot compile, which would
+	// otherwise abort the entire vendor.mjs compile. See the plugin for details.
+	plugins.push(createUnicodeRegexEsbuildPlugin(projectRoot));
 
 	const buildResult = await esbuild.build({
 		stdin: {

@@ -63,6 +63,15 @@ const ALWAYS_EXCLUDE = new Set<string>([
 	// path, child_process, etc.). Now that we collect transitive runtime deps,
 	// these need explicit exclusion.
 	'esbuild',
+	// Bundlers / dev-server tooling. These get dragged into the vendor set as a
+	// peerDependency of runtime packages (e.g. `@tanstack/solid-start` declares
+	// `vite` as a peer). Bundling Vite pulls its Node-only core (rolldown, jiti)
+	// on-device, whose `import { Buffer } from 'node:buffer'` — plus
+	// node:worker_threads/tty/readline/process/… — fails to instantiate on
+	// NativeScript's runtime. A bundler must never ship on-device.
+	'vite',
+	'rollup',
+	'rolldown',
 	'prettier',
 	'acorn',
 	'recast',
@@ -125,6 +134,15 @@ export function collectVendorModules(projectRoot: string, platform: string, flav
 	// also skip them.
 	const localSourceNames = new Set<string>();
 
+	// Packages the user explicitly opted out of via NS_VENDOR_EXCLUDE. Applied
+	// here — not only as the final `vendor.delete()` sweep below — so an excluded
+	// package is never queued for peer-dependency traversal. Otherwise it can
+	// still drag its peers (notably build tools such as `vite`, declared as a
+	// peer of `@tanstack/solid-start`) into the bundle before it is itself
+	// removed. Anything genuinely needed at runtime but kept out of vendor is
+	// still served over HTTP by the dev server's module loader.
+	const envExcludes = new Set(parseEnvList(process.env.NS_VENDOR_EXCLUDE));
+
 	const isPackageRootSpecifier = (name: string): boolean => {
 		if (!name) return false;
 		if (name.startsWith('@')) {
@@ -140,6 +158,11 @@ export function collectVendorModules(projectRoot: string, platform: string, flav
 	const isSolidFlavor = flavor === 'solid';
 	const addCandidate = (name: string) => {
 		if (!name || shouldSkipDependency(name)) {
+			return;
+		}
+		// Honor NS_VENDOR_EXCLUDE up front so an opted-out package is neither
+		// vendored nor traversed for peers (see envExcludes above).
+		if (envExcludes.has(name)) {
 			return;
 		}
 		// Avoid pulling Angular compiler/runtime into the dev vendor bundle when

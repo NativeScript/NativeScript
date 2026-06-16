@@ -172,6 +172,97 @@ export function createSolidJsxEsbuildPlugin(projectRoot: string): esbuild.Plugin
 }
 
 /**
+ * esbuild plugin that rewrites Unicode property-escape regular expressions
+ * (`\p{…}` / `\P{…}` used with the `u`/`v` flag) in vendored `node_modules`
+ * code into explicit character ranges, via
+ * `@babel/plugin-transform-unicode-property-regex`.
+ *
+ * NativeScript's V8 is compiled WITHOUT ICU/Intl, so Unicode property escapes
+ * are unrecognized and throw `SyntaxError: Invalid property name in character
+ * class` at *compile* time — not at match time. Because the HMR vendor bundle
+ * is a single large module, one offending regex (e.g. highlight.js's
+ * `TAG_NAME_RE = regex.concat(/[\p{L}_]/u, …)`) aborts the whole `vendor.mjs`
+ * compile and takes the entire dev session down with the misleading
+ * "ES module returned empty namespace" error.
+ *
+ * Babel expands the escapes to explicit ranges (`[A-Za-z\xAA…]`) that compile
+ * on a non-ICU engine while preserving match semantics — the `u` flag itself
+ * works fine without ICU; only the `\p{…}` property lookups need it. The
+ * transform is gated on a cheap substring check so only files that actually
+ * contain `\p{` / `\P{` pay the parse/regenerate cost, and any failure falls
+ * through to the untransformed source rather than aborting the build.
+ */
+export function createUnicodeRegexEsbuildPlugin(projectRoot: string): esbuild.Plugin {
+	// Lazy-load Babel and the transform so the cost is only paid when a vendored
+	// package actually ships property-escape regexes.
+	let babel: any;
+	let unicodePropertyRegexPlugin: any;
+	let toolingUnavailable = false;
+	return {
+		name: 'ns-vendor-unicode-regex',
+		setup(build) {
+			const debug = process.env.VITE_DEBUG_LOGS === 'true' || process.env.VITE_DEBUG_LOGS === '1';
+			// .js/.mjs/.cjs only — .jsx/.tsx are owned by the Solid JSX pass and
+			// Angular partials by the linker pass.
+			build.onLoad({ filter: /node_modules[\\/].*\.[mc]?js$/ }, async (args) => {
+				// Angular framework files are handled by the linker pass; leave them
+				// to it to avoid double-processing the same module.
+				if (/[\\/](?:@angular|@nativescript[\\/]angular)[\\/]/.test(args.path)) {
+					return undefined;
+				}
+				let source: string;
+				try {
+					source = await readFile(args.path, 'utf-8');
+				} catch {
+					return undefined;
+				}
+				// Fast path: skip files that cannot contain a property escape.
+				if (!source.includes('\\p{') && !source.includes('\\P{')) {
+					return undefined;
+				}
+				if (toolingUnavailable) {
+					return undefined;
+				}
+				try {
+					if (!babel) {
+						babel = await import('@babel/core');
+						unicodePropertyRegexPlugin = (await import('@babel/plugin-transform-unicode-property-regex')).default;
+					}
+				} catch (e: any) {
+					// Don't fail the build if the optional transform tooling is
+					// missing — leave the regex as-is (it only matters if the
+					// package is actually evaluated on-device).
+					toolingUnavailable = true;
+					console.warn(`[ns-vendor-unicode-regex] @babel/plugin-transform-unicode-property-regex unavailable; leaving \\p{} regexes untransformed:`, e?.message || e);
+					return undefined;
+				}
+				try {
+					const result = await babel.transformAsync(source, {
+						filename: args.path,
+						// node_modules dist files may be ESM or CJS/UMD; let Babel decide.
+						sourceType: 'unambiguous',
+						plugins: [unicodePropertyRegexPlugin],
+						ast: false,
+						sourceMaps: false,
+						configFile: false,
+						babelrc: false,
+					});
+					if (result?.code) {
+						if (debug) {
+							console.log('[ns-vendor-unicode-regex] transformed', args.path);
+						}
+						return { contents: result.code, loader: 'js' };
+					}
+				} catch (e: any) {
+					console.warn(`[ns-vendor-unicode-regex] failed to transform ${args.path}:`, e?.message || e);
+				}
+				return undefined;
+			});
+		},
+	};
+}
+
+/**
  * Minimal esbuild plugin to run Angular linker (Babel) over partial-compiled
  * Angular packages in node_modules. This converts ɵɵngDeclare* calls into
  * ɵɵdefine* so runtime doesn't require the JIT compiler.

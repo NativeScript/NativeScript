@@ -3,6 +3,7 @@
 // collection support, and provenance preludes. Shared by
 // process-code-for-device.ts and rewrite-imports.ts.
 import * as path from 'path';
+import { existsSync } from 'fs';
 import * as PAT from './constants.js';
 import { getProjectRootPath } from '../../helpers/project.js';
 import { isLikelyNativeScriptRuntimePluginSpecifier, isNativeScriptCoreModule, isNativeScriptPluginModule, normalizeNativeScriptCoreSpecifier, normalizeNodeModulesSpecifier, resolveNodeModulesPackageBoundary, resolveVendorFromCandidate, viteDepsPathToBareSpecifier } from './websocket-module-specifiers.js';
@@ -31,14 +32,52 @@ const warnedVendorMisses = new Set<string>();
  * being committed; if nothing resolves, the first candidate is used anyway —
  * a loud 404 on device beats a silent undefined binding.
  */
+function decodeFlattenedDepId(flat: string): string {
+	// Reverse Vite's flattenId, which encodes '.' as '__' and '/' (and ':') as
+	// '_'. Split on the '__' (dot) boundaries first so a single '_' inside each
+	// segment becomes a '/', then rejoin the segments with '.'. This avoids any
+	// placeholder sentinel (a literal NUL would corrupt the served module).
+	return flat
+		.split('__')
+		.map((segment) => segment.replace(/_/g, '/'))
+		.join('.');
+}
+
+function packageIsInstalled(packageName: string): boolean {
+	if (!packageName) return false;
+	try {
+		return existsSync(path.join(getProjectRootPath(), 'node_modules', ...packageName.split('/'), 'package.json'));
+	} catch {
+		return false;
+	}
+}
+
 function bareSpecifierFromFlatDepPath(depPath: string): string {
 	const flat = depPath.split('?')[0].replace(/\.m?js$/, '');
-	const candidates = flat.startsWith('@') ? [flat.replace('_', '/'), flat] : [flat];
+	// flattenId is lossy (names may contain '_'), so build candidates from the
+	// most-decoded form down to the raw flat id and pick the first that maps to a
+	// package actually present in node_modules. Without this, a NON-scoped subpath
+	// dep such as `solid-js/web` (flattened to `solid-js_web`) was never decoded
+	// back — only scoped ids were — so it resolved to the bogus package
+	// `solid-js_web` and 404'd over HTTP on device.
+	const candidates: string[] = [];
+	const pushCandidate = (c: string) => {
+		if (c && !candidates.includes(c)) candidates.push(c);
+	};
+	pushCandidate(decodeFlattenedDepId(flat));
+	if (flat.startsWith('@')) {
+		// Scope-only decode: just the first '_' is the scope separator.
+		pushCandidate(flat.replace('_', '/'));
+	}
+	pushCandidate(flat);
+
 	let resolved: string | null = null;
 	for (const candidate of candidates) {
 		try {
 			const { packageName } = resolveNodeModulesPackageBoundary(candidate, getProjectRootPath());
-			if (packageName) {
+			// Require the resolved package to exist on disk so a decode that merely
+			// *parses* (e.g. the bogus `solid-js_web`) does not win over the real one.
+			if (packageName && packageIsInstalled(packageName)) {
 				resolved = candidate;
 				break;
 			}
