@@ -9,6 +9,7 @@ import UIKit
 var hasMainInit = false
 var hasMainBoot = false
 var hasMainSetMainScene = false
+var hasWindowNotificationObservers = false
 
 @available(iOS 14.0, *)
 struct NativeScriptMainWindow: Scene {
@@ -38,29 +39,46 @@ struct NativeScriptMainWindow: Scene {
                         NativeScriptEmbedder.boot()
                     }
                  }
-            }.onReceive(NotificationCenter.default
-                .publisher(for: NSNotification.Name("NativeScriptWindowOpen")), perform: { obj in
-                    let info = parseWindowInfo(obj: obj)
-                    let id = info.keys.first
-                    Task {
-                        if (info[id!]!) {
-                            await openImmersiveSpace(id: id!)
-                        } else {
-                            openWindow(id: id!)
+                 // Standard observers more reliable that .onReceive for this
+                if (!hasWindowNotificationObservers) {
+                    hasWindowNotificationObservers = true
+                    let openSpace = openImmersiveSpace
+                    let dismissSpace = dismissImmersiveSpace
+                    let openWin = openWindow
+                    let dismissWin = dismissWindow
+                    let parse: (Notification) -> (String, Bool)? = { note in
+                        guard let userInfo = note.userInfo else { return nil }
+                        var id = ""
+                        var isImmersive = false
+                        for (key, value) in userInfo {
+                            guard let k = key as? String else { continue }
+                            if k == "type" { id = (value as? String) ?? "" }
+                            else if k == "isImmersive" { isImmersive = (value as? Bool) ?? false }
+                        }
+                        return id.isEmpty ? nil : (id, isImmersive)
+                    }
+                    NotificationCenter.default.addObserver(forName: NSNotification.Name("NativeScriptWindowOpen"), object: nil, queue: .main) { note in
+                        guard let (id, isImmersive) = parse(note) else { return }
+                        Task { @MainActor in
+                            if isImmersive {
+                                await openSpace(id: id)
+                            } else {
+                                openWin(id: id)
+                            }
                         }
                     }
-            }).onReceive(NotificationCenter.default
-                .publisher(for: NSNotification.Name("NativeScriptWindowClose")), perform: { obj in
-                    let info = parseWindowInfo(obj: obj)
-                    let id = info.keys.first
-                    Task {
-                        if (info[id!]!) {
-                            await dismissImmersiveSpace()
-                        } else {
-                            dismissWindow(id: id!)
+                    NotificationCenter.default.addObserver(forName: NSNotification.Name("NativeScriptWindowClose"), object: nil, queue: .main) { note in
+                        guard let (id, isImmersive) = parse(note) else { return }
+                        Task { @MainActor in
+                            if isImmersive {
+                                await dismissSpace()
+                            } else {
+                                dismissWin(id: id)
+                            }
                         }
                     }
-                })
+                }
+            }
             .onOpenURL { (url) in
                 NotificationCenter.default.post(name: Notification.Name("NativeScriptOpenURL"), object: nil, userInfo: ["url": url.absoluteString ])
             }
