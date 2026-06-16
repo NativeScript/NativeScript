@@ -814,6 +814,34 @@ export class ActivityCallbacksImplementation implements AndroidActivityCallbacks
 		const isRestart = !!savedInstanceState && moduleLoaded;
 		superFunc.call(activity, isRestart ? savedInstanceState : null);
 
+		if (isRestart && activity.getSupportFragmentManager) {
+			// Remove restored fragments that NativeScript will recreate via _setupUI/createNativeView.
+			// NativeScript tears down and rebuilds the entire view tree on activity recreation,
+			// so restored fragments (especially from ViewPager2/tabs) become orphaned without views.
+			// NativeScript core's own fragments use tags like "fragment{id}[{depth}]" and are
+			// handled by _processNextNavigationEntry. We remove all non-NativeScript fragments.
+			const fm = activity.getSupportFragmentManager();
+			const fragments = fm.getFragments();
+			const size = fragments?.size?.() ?? 0;
+			if (size > 0) {
+				const ft = fm.beginTransaction();
+				let removed = false;
+				for (let i = size - 1; i >= 0; i--) {
+					const f = fragments.get(i);
+					if (!f) continue;
+					const tag = f.getTag();
+					if (tag && tag.startsWith('fragment')) {
+						continue;
+					}
+					ft.remove(f);
+					removed = true;
+				}
+				if (removed) {
+					ft.commitNowAllowingStateLoss();
+				}
+			}
+		}
+
 		// Try to get the rootViewId form the saved state in case the activity
 		// was destroyed and we are now recreating it.
 		if (savedInstanceState) {

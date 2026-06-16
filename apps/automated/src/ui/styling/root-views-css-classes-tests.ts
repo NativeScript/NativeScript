@@ -54,6 +54,35 @@ function _test_platform_css_class(rootView: View, shouldSetClassName: boolean) {
 	}
 }
 
+function _test_platform_sdk_css_class(rootView: View, shouldSetClassName: boolean) {
+	if (shouldSetClassName) {
+		rootView.className = CLASS_NAME;
+	}
+
+	const cssClasses = rootView.cssClasses;
+	const deviceType = Device.os.toLowerCase();
+	const majorVersion = Math.floor(Utils.SDK_VERSION);
+	const sdkClass = `ns-${deviceType}-${majorVersion}`;
+
+	if (isAndroid) {
+		const iosSdkClass = `ns-ios-${majorVersion}`;
+		const visionosSdkClass = `ns-visionos-${majorVersion}`;
+
+		TKUnit.assertTrue(cssClasses.has(sdkClass), `${sdkClass} CSS class is missing`);
+		TKUnit.assertFalse(cssClasses.has(iosSdkClass), `${iosSdkClass} CSS class is present`);
+		TKUnit.assertFalse(cssClasses.has(visionosSdkClass), `${visionosSdkClass} CSS class is present`);
+	} else {
+		const androidSdkClass = `ns-android-${majorVersion}`;
+
+		TKUnit.assertTrue(cssClasses.has(sdkClass), `${sdkClass} CSS class is missing`);
+		TKUnit.assertFalse(cssClasses.has(androidSdkClass), `${androidSdkClass} CSS class is present`);
+	}
+
+	if (shouldSetClassName) {
+		TKUnit.assertTrue(cssClasses.has(CLASS_NAME), `${CLASS_NAME} CSS class is missing`);
+	}
+}
+
 function _test_device_type_css_class(rootView: View, shouldSetClassName: boolean) {
 	if (shouldSetClassName) {
 		rootView.className = CLASS_NAME;
@@ -188,6 +217,16 @@ export function test_root_view_class_name_preserve_platform_css_class() {
 	_test_platform_css_class(rootView, true);
 }
 
+export function test_root_view_platform_sdk_css_class() {
+	const rootView = Application.getRootView();
+	_test_platform_sdk_css_class(rootView, false);
+}
+
+export function test_root_view_class_name_preserve_platform_sdk_css_class() {
+	const rootView = Application.getRootView();
+	_test_platform_sdk_css_class(rootView, true);
+}
+
 export function test_root_view_device_type_css_class() {
 	const rootView = Application.getRootView();
 	_test_device_type_css_class(rootView, false);
@@ -216,6 +255,16 @@ export function test_root_view_system_appearance_css_class() {
 export function test_root_view_class_name_preserve_system_appearance_css_class() {
 	const rootView = Application.getRootView();
 	_test_system_appearance_css_class(rootView, true);
+}
+
+export function test_root_view_layout_direction_css_class() {
+	const rootView = Application.getRootView();
+	_test_layout_direction_css_class(rootView, false);
+}
+
+export function test_root_view_class_name_preserve_layout_direction_css_class() {
+	const rootView = Application.getRootView();
+	_test_layout_direction_css_class(rootView, true);
 }
 
 // Modal root view

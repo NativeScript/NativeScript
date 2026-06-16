@@ -421,7 +421,11 @@ export class TextBase extends TextBaseCommon {
 	[fontSizeProperty.getDefault](): { nativeSize: number } {
 		return { nativeSize: this.nativeTextViewProtected.getTextSize() };
 	}
-	[fontSizeProperty.setNative](value: number | { nativeSize: number }) {
+	[fontSizeProperty.setNative](value: number | { nativeSize: number } | null | undefined) {
+		if (value == null) {
+			return;
+		}
+
 		if (!this.formattedText || typeof value !== 'number') {
 			if (typeof value === 'number') {
 				this.nativeTextViewProtected.setTextSize(value);

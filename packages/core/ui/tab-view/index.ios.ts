@@ -244,6 +244,7 @@ export class TabViewItem extends TabViewItemBase {
 
 	public disposeNativeView() {
 		this.__controller = undefined;
+		this.canBeLoaded = false;
 		this.setNativeView(undefined);
 	}
 
@@ -565,7 +566,7 @@ export class TabView extends TabViewBase {
 				}
 
 				tabs.push(tab);
-				(<TabViewItemDefinition>item).canBeLoaded = true;
+				item.canBeLoaded = true;
 			});
 
 			try {
@@ -591,7 +592,7 @@ export class TabView extends TabViewBase {
 
 				controller.tabBarItem = tabBarItem;
 				controllers.push(controller);
-				(<TabViewItemDefinition>item).canBeLoaded = true;
+				item.canBeLoaded = true;
 			});
 
 			if (SDK_VERSION >= 15) {

@@ -17,6 +17,8 @@ export const traceCategory = 'TabView';
 
 @CSSType('TabViewItem')
 export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
+	declare canBeLoaded?: boolean;
+
 	role: string;
 	private _title = '';
 	private _view: View;
@@ -81,7 +83,7 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
 		const tabView = this.parent as TabViewBase;
 		if (tabView && tabView.items) {
 			// Don't load items until their fragments are instantiated.
-			if ((<TabViewItemDefinition>this).canBeLoaded) {
+			if (this.canBeLoaded) {
 				super.loadView(view);
 			}
 		}
@@ -265,10 +267,16 @@ export const itemsProperty = new Property<TabViewBase, TabViewItemDefinition[]>(
 });
 itemsProperty.register(TabViewBase);
 
-export const iosIconRenderingModeProperty = new Property<TabViewBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'iosIconRenderingMode', defaultValue: 'automatic' });
+export const iosIconRenderingModeProperty = new Property<TabViewBase, 'automatic' | 'alwaysOriginal' | 'alwaysTemplate'>({
+	name: 'iosIconRenderingMode',
+	defaultValue: 'automatic',
+});
 iosIconRenderingModeProperty.register(TabViewBase);
 
-export const androidIconRenderingModeProperty = new Property<TabViewBase, 'alwaysOriginal' | 'alwaysTemplate'>({ name: 'androidIconRenderingMode', defaultValue: 'alwaysOriginal' });
+export const androidIconRenderingModeProperty = new Property<TabViewBase, 'alwaysOriginal' | 'alwaysTemplate'>({
+	name: 'androidIconRenderingMode',
+	defaultValue: 'alwaysOriginal',
+});
 androidIconRenderingModeProperty.register(TabViewBase);
 
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
@@ -279,7 +287,10 @@ export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number
 });
 androidOffscreenTabLimitProperty.register(TabViewBase);
 
-export const androidTabsPositionProperty = new Property<TabViewBase, 'top' | 'bottom'>({ name: 'androidTabsPosition', defaultValue: 'top' });
+export const androidTabsPositionProperty = new Property<TabViewBase, 'top' | 'bottom'>({
+	name: 'androidTabsPosition',
+	defaultValue: 'top',
+});
 androidTabsPositionProperty.register(TabViewBase);
 
 export const androidSwipeEnabledProperty = new Property<TabViewBase, boolean>({

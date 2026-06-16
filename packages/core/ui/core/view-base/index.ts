@@ -1273,7 +1273,7 @@ export abstract class ViewBase extends Observable {
 	 */
 	public destroyNode(forceDestroyChildren?: boolean): void {
 		this.reusable = false;
-		this.callUnloaded();
+		this.unloadView(this);
 		this._tearDownUI(forceDestroyChildren);
 	}
 
@@ -1293,7 +1293,9 @@ export abstract class ViewBase extends Observable {
 
 		if (!preserveNativeView) {
 			this.eachChild((child) => {
-				child._tearDownUI(force);
+				// if we decided to tear down the current view, we should also tear down the children, even if they are reusable
+				// the developer is responsible to detach them if they need to reuse them somewhere else
+				child._tearDownUI(true);
 
 				return true;
 			});
