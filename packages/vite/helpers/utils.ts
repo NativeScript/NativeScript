@@ -154,3 +154,26 @@ export function getProjectAppVirtualPath(subPath = ''): string {
 	const rel = getProjectAppRelativePath(subPath).replace(/^\/+/, '');
 	return `/${rel.replace(/\/+/g, '/')}`;
 }
+
+// Global stylesheet candidates under the app directory, in priority order.
+// `app.css` is the NativeScript convention; `styles.css` is common in web
+// projects that share a codebase with NativeScript (e.g. Vite / TanStack
+// Start), so it is used as a fallback when `app.css` is absent.
+export const GLOBAL_APP_CSS_CANDIDATES = ['app.css', 'styles.css'];
+
+/**
+ * Resolve the project's global stylesheet, preferring `app.css` and falling
+ * back to `styles.css`. Returns the absolute filesystem path of the first
+ * candidate that exists under the app directory, or `null` when none are
+ * present. All call sites share this single resolver so the entry generator,
+ * the virtual-module loader, and the HMR watcher always agree on the same file.
+ */
+export function resolveProjectGlobalCssPath(projectRoot: string = getProjectRootPath()): string | null {
+	for (const name of GLOBAL_APP_CSS_CANDIDATES) {
+		const abs = path.resolve(projectRoot, getProjectAppRelativePath(name));
+		if (fs.existsSync(abs)) {
+			return abs;
+		}
+	}
+	return null;
+}

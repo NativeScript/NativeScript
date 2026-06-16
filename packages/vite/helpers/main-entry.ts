@@ -4,7 +4,7 @@ import path from 'path';
 import { preprocessCSS, type ResolvedConfig, type ViteDevServer } from 'vite';
 import { parse as parseCssToAst } from 'css';
 import { getProjectFlavor } from './flavor.js';
-import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath } from './utils.js';
+import { getProjectAppPath, getProjectAppRelativePath, getProjectAppVirtualPath, resolveProjectGlobalCssPath } from './utils.js';
 import { getResolvedAppComponents } from './app-components.js';
 import { toStaticImportSpecifier } from './import-specifier.js';
 import { buildCoreUrl } from './ns-core-url.js';
@@ -130,8 +130,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 		// links back to a CSS module. The dep set fills that gap.
 		configureServer(server: ViteDevServer) {
 			if (server.config.command !== 'serve') return;
-			const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
-			if (!fs.existsSync(appCssPath)) return;
+			// Prefer `app.css`, fall back to `styles.css` (common in web projects).
+			const appCssPath = resolveProjectGlobalCssPath(projectRoot);
+			if (!appCssPath) return;
 
 			const normalizeFsPath = (p: string): string => path.resolve(p).replace(/\\/g, '/');
 			const normalizedAppCssPath = normalizeFsPath(appCssPath);
@@ -278,7 +279,13 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			//     dev-server WebSocket, so `installHttpCoreCssSupport` keeps the
 			//     raw-text fallback for that case.
 			if (id === APP_CSS_RESOLVED) {
-				const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
+				// Same resolver as the entry generator (app.css → styles.css fallback)
+				// so both always pick the same file. Only reached when a global
+				// stylesheet exists, but guard defensively against a mid-session delete.
+				const appCssPath = resolveProjectGlobalCssPath(projectRoot);
+				if (!appCssPath) {
+					return { code: 'export default "";', moduleType: 'js' };
+				}
 				const rawCode = fs.readFileSync(appCssPath, 'utf-8');
 				// Rewrite platform-suffixed @imports (foo.css -> foo.ios.css) BEFORE
 				// preprocessCSS: this raw read bypasses the plugin transform chain, so
@@ -617,8 +624,9 @@ export function mainEntryPlugin(opts: { platform: 'ios' | 'android' | 'visionos'
 			}
 
 			// ---- Global CSS injection (always-needed if file exists) ----
-			const appCssPath = path.resolve(projectRoot, getProjectAppRelativePath('app.css'));
-			const hasAppCss = fs.existsSync(appCssPath);
+			// Prefer `app.css`, fall back to `styles.css` (common in web projects).
+			const appCssPath = resolveProjectGlobalCssPath(projectRoot);
+			const hasAppCss = !!appCssPath;
 
 			// Import Application statically if needed for CSS or Android activity defer
 			if (hasAppCss || needsAndroidActivityDefer) {
