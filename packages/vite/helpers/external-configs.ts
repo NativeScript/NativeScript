@@ -6,6 +6,7 @@ import { createRequire } from 'module';
 import { pathToFileURL } from 'url';
 
 import { getAllDependencies, getDependencyPath } from './utils.js';
+import { resolveVerboseFlag } from './logging.js';
 const require = createRequire(import.meta.url);
 
 let cached: Promise<UserConfig[]> | null = null;
@@ -22,6 +23,7 @@ let cached: Promise<UserConfig[]> | null = null;
  */
 async function collectExternalConfigs(): Promise<UserConfig[]> {
 	const merges: UserConfig[] = [];
+	const verbose = resolveVerboseFlag();
 
 	for (const dependency of getAllDependencies()) {
 		const packagePath = getDependencyPath(dependency);
@@ -40,14 +42,14 @@ async function collectExternalConfigs(): Promise<UserConfig[]> {
 			const externalModule = require(configPath);
 			const externalConfig = externalModule?.default ?? externalModule;
 			merges.push(externalConfig());
-			console.log(`Merged external config: ${configPath}`);
+			if (verbose) console.log(`Merged external config: ${configPath}`);
 		} catch (err: any) {
 			if (err?.code === 'ERR_REQUIRE_ESM' || err?.code === 'ERR_REQUIRE_ASYNC_MODULE' || /require.*ES Module/i.test(String(err))) {
 				try {
 					const mod = await import(pathToFileURL(configPath).href);
 					const externalConfig = mod?.default ?? mod;
 					merges.push(externalConfig());
-					console.log(`Merged external config: ${configPath}`);
+					if (verbose) console.log(`Merged external config: ${configPath}`);
 				} catch (importErr) {
 					console.warn(`Unable to apply external config ${configPath}: ${importErr}`);
 				}

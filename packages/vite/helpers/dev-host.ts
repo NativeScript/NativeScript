@@ -102,6 +102,7 @@ import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
 import type { Platform } from './platform-types.js';
+import { resolveVerboseFlag } from './logging.js';
 export type DevHostPlatform = Platform;
 
 const WILDCARD_HOSTS = new Set(['0.0.0.0', '::', '', 'true']);
@@ -433,7 +434,9 @@ export function tryEnableAdbReverse(opts: TryEnableAdbReverseOptions): AdbRevers
 		};
 		adbReverseCache.set(opts.port, status);
 		try {
-			console.log(`[NativeScript] adb reverse for tcp:${opts.port} provided by the NativeScript CLI${serial ? ` (device ${serial})` : ''} — device-side 127.0.0.1:${opts.port} tunnels to host.`);
+			if (resolveVerboseFlag()) {
+				console.log(`[NativeScript] adb reverse for tcp:${opts.port} provided by the NativeScript CLI${serial ? ` (device ${serial})` : ''} — device-side 127.0.0.1:${opts.port} tunnels to host.`);
+			}
 		} catch {}
 		return status;
 	}
@@ -546,12 +549,11 @@ export function tryEnableAdbReverse(opts: TryEnableAdbReverseOptions): AdbRevers
 	};
 	adbReverseCache.set(opts.port, status);
 
-	// One-line user-facing receipt so the dev knows why bundle.mjs
-	// suddenly switched from `10.0.2.2` to `127.0.0.1`. We only log
-	// outside test runners (covered above) so spec output stays clean.
 	try {
 		if (status.succeeded) {
-			console.log(`[NativeScript] adb reverse tcp:${opts.port} tcp:${opts.port} → ${successes.join(', ')} (Android device-side 127.0.0.1:${opts.port} now tunnels to host — bypasses emulator NAT)`);
+			if (resolveVerboseFlag()) {
+				console.log(`[NativeScript] adb reverse tcp:${opts.port} tcp:${opts.port} → ${successes.join(', ')} (Android device-side 127.0.0.1:${opts.port} now tunnels to host — bypasses emulator NAT)`);
+			}
 		} else if (errors.length > 0) {
 			console.warn(`[NativeScript] adb reverse failed for tcp:${opts.port} — falling back to 10.0.2.2 (slirp NAT). Module fetches may hit IOException: unexpected end of stream under load. Reasons: ${status.error}`);
 		}
